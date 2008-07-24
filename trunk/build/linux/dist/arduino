@@ -1,0 +1,16 @@
+#!/bin/sh
+
+CLASSPATH=java/lib/rt.jar:lib:lib/build:lib/pde.jar:lib/core.jar:lib/antlr.jar:lib/oro.jar:lib/registry.jar:lib/mrj.jar:lib/RXTXcomm.jar
+export CLASSPATH
+
+# put the directory where this file lives in the front of the path, because
+# that directory also contains jikes, which we will need at runtime.
+#
+PATH=`pwd`/tools:${PATH}
+export PATH
+
+# put the directory with the native RXTX libs in the library path
+LD_LIBRARY_PATH=`pwd`/lib:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH
+
+java processing.app.Base
