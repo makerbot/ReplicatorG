@@ -1,5 +1,5 @@
 /*
-  Part of the Arduino project - http://arduino.berlios.de
+  Part of the ReplicatorG project - http://www.replicat.org
 
   This class reads from an input stream
   and flushes out everything to the System.out
@@ -8,6 +8,8 @@
   @author	DojoDave
   @www http://www.0j0.org
 
+  @author	Hoeken
+  @www http://www.zachhoeken.org
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,7 +26,7 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// TODO migrate codebase to arduino.app
+// TODO migrate codebase to replicatorg.app
 package processing.app;
 
 import java.io.*;
