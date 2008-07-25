@@ -1,5 +1,5 @@
 /*
-  Part of the Arduino project - http://arduino.berlios.de
+  Part of the ReplicatorG project - http://www.replicat.org
 
   This class creates a compilation thread
   this is needed for detecting time-outs
@@ -9,6 +9,9 @@
   
   @author	DojoDave
   @www http://www.0j0.org
+  
+  @author	Hoeken
+  @www http://www.zachhoeken.org
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -104,14 +107,14 @@ class Command extends Thread
 	{
 		try {
 	        process = Runtime.getRuntime().exec(command);
-	        ArduinoMessageSiphon input;
-	        ArduinoMessageSiphon error;
+	        ReplicatorGMessageSiphon input;
+	        ReplicatorGMessageSiphon error;
 	        if (logAllOutput) {
-		        input = new ArduinoMessageSiphon(process.getInputStream(), this, logAllOutput);
-		        error = new ArduinoMessageSiphon(process.getErrorStream(), this, logAllOutput);
+		        input = new ReplicatorGMessageSiphon(process.getInputStream(), this, logAllOutput);
+		        error = new ReplicatorGMessageSiphon(process.getErrorStream(), this, logAllOutput);
 	        } else {
-		        input = new ArduinoMessageSiphon(process.getInputStream(), this, debugWarning, debugError);
-		        error = new ArduinoMessageSiphon(process.getErrorStream(), this, debugWarning, debugError);
+		        input = new ReplicatorGMessageSiphon(process.getInputStream(), this, debugWarning, debugError);
+		        error = new ReplicatorGMessageSiphon(process.getErrorStream(), this, debugWarning, debugError);
 	        }
 	        input.start();
 	        error.start();

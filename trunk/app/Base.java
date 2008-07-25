@@ -1,7 +1,5 @@
-/* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
-
 /*
-  Part of the Arduino project - http://arduino.berlios.de
+  Part of the ReplicatorG project - http://www.replicat.org
 
   
 
@@ -53,8 +51,8 @@ import processing.core.*;
  * files and images, etc) that comes from that.
  */
 public class Base {
-  static final int VERSION = 12;
-  static final String VERSION_NAME = "0012 Alpha";
+  static final int VERSION = 1;
+  static final String VERSION_NAME = "0001 Alpha";
 
   /**
    * Path of filename opened on the command line,
@@ -157,8 +155,9 @@ public class Base {
     // show the window
     editor.show();
 
+    //TODO: check this out, we dont have any libraries to build.
     // attempt to build libraries
-    editor.prepareLibraries();
+    //editor.prepareLibraries();
 
     // check for updates
     if (Preferences.getBoolean("update.check")) {

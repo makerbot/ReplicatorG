@@ -59,7 +59,7 @@ public class Editor extends JFrame
              MRJOpenDocumentHandler //, MRJOpenApplicationHandler
 {
   // yeah
-  static final String WINDOW_TITLE = "Arduino" + " - " + Base.VERSION_NAME;
+  static final String WINDOW_TITLE = "ReplicatorG" + " - " + Base.VERSION_NAME;
 
   // p5 icon for the window
   Image icon;
@@ -373,30 +373,6 @@ public class Editor extends JFrame
   // ...................................................................
 
   /**
-   * Builds any unbuilt buildable libraries
-   * Adds syntax coloring from those libraries (if exists)
-   * Rebuilds sketchbook menu with library examples (if they exist)
-   */
-  public void prepareLibraries() {
-    // build any unbuilt libraries
-    try {
-      LibraryManager libraryManager = new LibraryManager();
-      libraryManager.buildAllUnbuilt();
-      // update syntax coloring table
-      libraryManager.addSyntaxColoring(new PdeKeywords());
-    } catch (RunnerException re) {
-      message("Error compiling library ...");
-      error(re);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
-    // update sketchbook menu, this adds examples of any built libs
-    sketchbook.rebuildMenus();
-  }
-
-  // ...................................................................
-
-  /**
    * Post-constructor setup for the editor area. Loads the last
    * sketch that was used (if any), and restores other Editor settings.
    * The complement to "storePreferences", this is called when the
@@ -586,7 +562,7 @@ public class Editor extends JFrame
       });
     menu.add(saveAsMenuItem);
 
-    item = newJMenuItem("Upload to I/O Board", 'U');
+    item = newJMenuItem("Run GCode", 'R');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           handleExport();
@@ -652,9 +628,9 @@ public class Editor extends JFrame
 
   protected JMenu buildSketchMenu() {
     JMenuItem item;
-    JMenu menu = new JMenu("Sketch");
+    JMenu menu = new JMenu("GCode");
 
-    item = newJMenuItem("Verify/Compile", 'R');
+    item = newJMenuItem("Simulate", 'L');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           handleRun(false);
@@ -670,6 +646,15 @@ public class Editor extends JFrame
       });
     menu.add(item);
     */
+
+    item = new JMenuItem("Pause");
+    item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          handlePause();
+        }
+      });
+    menu.add(item);
+
     item = new JMenuItem("Stop");
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -698,14 +683,6 @@ public class Editor extends JFrame
     }
 
     //menu.addSeparator();
-
-    item = new JMenuItem("Add File...");
-    item.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          sketch.addFile();
-        }
-      });
-    menu.add(item);
 
     // TODO re-enable history
     //history.attachMenu(menu);
@@ -747,18 +724,6 @@ public class Editor extends JFrame
       });
     menu.add(item);
 
-    item = new JMenuItem("Copy for Forum");
-    item.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          SwingUtilities.invokeLater(new Runnable() {
-              public void run() {
-                new DiscourseFormat(Editor.this).show();
-              }
-            });
-        }
-      });
-    menu.add(item);
-
     item = new JMenuItem("Archive Sketch");
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -783,7 +748,7 @@ public class Editor extends JFrame
     */
     menu.addSeparator();
     
-    JMenu boardsMenu = new JMenu("Board");
+    JMenu boardsMenu = new JMenu("Machine");
     ButtonGroup boardGroup = new ButtonGroup();
     for (Iterator i = Preferences.getSubKeys("boards"); i.hasNext(); ) {
       String board = (String) i.next();
@@ -796,21 +761,11 @@ public class Editor extends JFrame
     }
     menu.add(boardsMenu);
     
+    //TODO:eventually move this into machine specific config.
     serialMenu = new JMenu("Serial Port");
     populateSerialMenu();
     menu.add(serialMenu);
 	  
-    menu.addSeparator();
-    
-    JMenu bootloaderMenu = new JMenu("Burn Bootloader");
-    for (Iterator i = Preferences.getSubKeys("programmers"); i.hasNext(); ) {
-      String programmer = (String) i.next();
-      Action action = new BootloaderMenuAction(programmer);
-      item = new JMenuItem(action);
-      bootloaderMenu.add(item);
-    }
-    menu.add(bootloaderMenu);
-        
     menu.addMenuListener(new MenuListener() {
       public void menuCanceled(MenuEvent e) {}
       public void menuDeselected(MenuEvent e) {}
@@ -997,10 +952,10 @@ public class Editor extends JFrame
       });
     menu.add(item);
 
-    item = newJMenuItem("Visit www.arduino.cc", '5');
+    item = newJMenuItem("Visit www.replicat.org", '5');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          Base.openURL("http://www.arduino.cc/");
+          Base.openURL("http://www.replicat.org/");
         }
       });
     menu.add(item);
@@ -1008,7 +963,7 @@ public class Editor extends JFrame
     // macosx already has its own about menu
     if (!Base.isMacOS()) {
       menu.addSeparator();
-      item = new JMenuItem("About Arduino");
+      item = new JMenuItem("About ReplicatorG");
       item.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
             handleAbout();
@@ -1505,11 +1460,39 @@ public class Editor extends JFrame
     buttons.clear();
   }
 
-
   /**
    * Stop the applet but don't kill its window.
    */
   public void doStop() {
+    //if (runtime != null) runtime.stop();
+    if (debugging)  {
+      status.unserial();
+      serialPort.dispose();
+      debugging = false;
+    }
+    if (watcher != null) watcher.stop();
+    message(EMPTY);
+
+    // the buttons are sometimes still null during the constructor
+    // is this still true? are people still hitting this error?
+    /*if (buttons != null)*/ buttons.clear();
+
+    running = false;
+  }
+
+  public void handlePause() {  // called by menu or buttons
+    if (presenting) {
+      doClose();
+    } else {
+      doPause();
+    }
+    buttons.clear();
+  }
+
+  /**
+   * Stop the applet but don't kill its window.
+   */
+  public void doPause() {
     //if (runtime != null) runtime.stop();
     if (debugging)  {
       status.unserial();
@@ -1731,7 +1714,7 @@ public class Editor extends JFrame
       // just cause more trouble), then they've gotta quit.
       Base.showError("Problem creating a new sketch",
                      "An error occurred while creating\n" +
-                     "a new sketch. Arduino must now quit.", e);
+                     "a new sketch. ReplicatorG must now quit.", e);
     }
     buttons.clear();
   }
@@ -1831,10 +1814,10 @@ public class Editor extends JFrame
         path = altFile.getAbsolutePath();
         //System.out.println("found alt file in same folder");
 
-      } else if (!path.endsWith(".pde")) {
+      } else if (!path.endsWith(".gcode")) {
         Base.showWarning("Bad file selected",
-                            "Arduino can only open its own sketches\n" +
-                            "and other files ending in .pde", null);
+                            "ReplicatorG can only open its own sketches\n" +
+                            "and other files ending in .gcode", null);
         return;
 
       } else {
@@ -2183,31 +2166,6 @@ public class Editor extends JFrame
         Base.showReference(referenceFile + ".html");
       }
     }
-  }
-
-  protected void handleBurnBootloader(final String programmer) {
-    if(debugging)
-      doStop();
-    console.clear();
-    message("Burning bootloader to I/O Board (this may take a minute)...");
-    SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-        try {
-          Uploader uploader = new AvrdudeUploader();
-          if (uploader.burnBootloader(programmer)) {
-            message("Done burning bootloader.");
-          } else {
-            // error message will already be visible
-          }
-        } catch (RunnerException e) {
-          message("Error while burning bootloader.");
-          //e.printStackTrace();
-          error(e);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-        buttons.clear();
-      }});
   }
 
   public void highlightLine(int lnum) {
