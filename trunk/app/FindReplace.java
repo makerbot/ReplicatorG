@@ -92,22 +92,6 @@ public class FindReplace extends JFrame implements ActionListener {
     //System.out.println("setting find str to " + findString);
     //findField.requestFocusInWindow();
 
-    //pain.setDefault
-    /*
-    findField.addFocusListener(new FocusListener() {
-        public void focusGained(FocusEvent e) {
-          System.out.println("Focus gained " + e.getOppositeComponent());
-        }
-
-        public void focusLost(FocusEvent e) {
-          System.out.println("Focus lost "); // + e.getOppositeComponent());
-          if (e.getOppositeComponent() == null) {
-            requestFocusInWindow();
-          }
-        }
-      });
-    */
-
     // +1 since it's better to tend downwards
     int yoff = (1 + d2.height - d1.height) / 2;
 

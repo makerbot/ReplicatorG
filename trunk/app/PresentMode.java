@@ -86,43 +86,4 @@ public class PresentMode {
     return selector;
   }
 
-
-  /*
-  static public JFrame create() {
-    int deviceIndex = PrePreferences.getInteger("run.present.display") - 1;
-    if ((deviceIndex < 0) || (deviceIndex >= devices.length)) {
-      Base.showWarning("Display doesn't exist",
-                          "Present Mode is set to use display " +
-                          (deviceIndex+1) +
-                          " but that doesn't seem to exist.    \n" +
-                          "This preference will be reset to " +
-                          "use the default display.", null);
-      deviceIndex = defaultIndex;
-    }
-    //GraphicsDevice device = devices[
-    //JFrame frame = new JFrame(devices[deviceIndex]);
-    PresentFrame frame = new PresentFrame(devices[deviceIndex]);
-  }
-
-
-  public void show() {
-    setUndecorated(true);
-    setResizable(false);
-    device.setFullScreenWindow(this);
-  }
-
-
-  public Window getWindow() {
-    return device.getFullScreenWindow();  // isn't this just me?
-  }
-
-
-  public void dispose() {
-    Window window = device.getFullScreenWindow();
-    if (window != null) {
-      window.dispose();
-    }
-    device.setFullScreenWindow(null);
-  }
-  */
 }

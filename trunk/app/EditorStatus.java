@@ -205,22 +205,6 @@ public class EditorStatus extends JPanel implements ActionListener {
     empty();
   }
 
-
-  /*
-  public void update() {
-    Graphics g = this.getGraphics();
-    try {
-      setBackground(bgcolor[mode]);
-    } catch (NullPointerException e) { } // if not ready yet
-    if (g != null) paint(g);
-  }
-
-  public void update(Graphics g) {
-    paint(g);
-  }
-  */
-
-
   public void paintComponent(Graphics screen) {
     //if (screen == null) return;
     if (yesButton == null) setup();

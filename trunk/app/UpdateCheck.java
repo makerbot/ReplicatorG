@@ -1,5 +1,3 @@
-/* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
-
 /*
   Part of the Processing project - http://processing.org
 
@@ -56,7 +54,7 @@ import com.ice.jni.registry.*;
  */
 public class UpdateCheck implements Runnable {
   Editor editor;
-  String downloadURL = "http://arduino.berlios.de/latest.txt";
+  String downloadURL = "http://update.replicat.org/latest.txt";
 
   static final long ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -105,7 +103,7 @@ public class UpdateCheck implements Runnable {
       Preferences.set("update.last", String.valueOf(now));
 
       String prompt =
-        "A new version of Processing is available,\n" +
+        "A new version of ReplicatorG is available,\n" +
         "would you like to visit the Processing download page?";
 
       if (latest > Base.VERSION) {
@@ -120,7 +118,7 @@ public class UpdateCheck implements Runnable {
                                                   options[0]);
 
         if (result == JOptionPane.YES_OPTION) {
-          Base.openURL("http://processing.org/download/");
+          Base.openURL("http://replicat.org/download");
 
         //} else if (result == JOptionPane.NO_OPTION) {
         }

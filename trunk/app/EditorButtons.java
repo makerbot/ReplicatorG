@@ -1,5 +1,3 @@
-/* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
-
 /*
   Part of the Processing project - http://processing.org
 
@@ -37,7 +35,7 @@ import javax.swing.event.*;
 public class EditorButtons extends JComponent implements MouseInputListener {
 
   static final String title[] = {
-    "Verify", "Stop", "New", "Open", "Save", "Upload to I/O Board", "Serial Monitor"
+    "Simulate", "Stop", "New", "Open", "Save", "Run", "Serial Monitor"
   };
 
   static final int BUTTON_COUNT  = title.length;
@@ -47,13 +45,13 @@ public class EditorButtons extends JComponent implements MouseInputListener {
   /// amount of space between groups of buttons on the toolbar
   static final int BUTTON_GAP = 15; 
 
-  static final int RUN      = 0;
+  static final int SIMULATE = 0;
   static final int STOP     = 1;
 
   static final int NEW      = 2;
   static final int OPEN     = 3;
   static final int SAVE     = 4;
-  static final int EXPORT   = 5;
+  static final int RUN      = 5;
   static final int SERIAL   = 6;
 
   static final int INACTIVE = 0;
@@ -100,12 +98,12 @@ public class EditorButtons extends JComponent implements MouseInputListener {
     which = new int[BUTTON_COUNT];
 
     //which[buttonCount++] = NOTHING;
-    which[buttonCount++] = RUN;
+    which[buttonCount++] = SIMULATE;
     which[buttonCount++] = STOP;
     which[buttonCount++] = NEW;
     which[buttonCount++] = OPEN;
     which[buttonCount++] = SAVE;
-    which[buttonCount++] = EXPORT;
+    which[buttonCount++] = RUN;
     which[buttonCount++] = SERIAL;
 
     currentRollover = -1;
@@ -317,44 +315,20 @@ public class EditorButtons extends JComponent implements MouseInputListener {
     //if (currentSelection == OPEN) {
     //switch (currentSelection) {
     switch (sel) {
-    case RUN:
-      //if (!disableRun) {
-      editor.handleRun(e.isShiftDown());
-      //}
+    case SIMULATE:
+      editor.handleSimulate(e.isShiftDown());
       break;
 
     case STOP:
-      //if (!disableRun) {
-      //setState(RUN, INACTIVE, true);
-      //setInactive();
       editor.handleStop();
-      //}
       break;
 
     case OPEN:
       if (popup == null) {
-        //popup = new JPopupMenu();
         popup = editor.sketchbook.getPopupMenu();
-        // no events properly being fired, so nevermind
-        /*
-        popup.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-              System.out.println("action " + e);
-            }
-          });
-        popup.addComponentListener(new ComponentAdapter() {
-            public void componentHidden(ComponentEvent e) {
-              System.out.println("hidden " + e);
-            }
-          });
-        */
         add(popup);
       }
-      //activate(OPEN);
-      //SwingUtilities.invokeLater(new Runnable() {
-      //public void run() {
       popup.show(EditorButtons.this, x, y);
-      //}});
       break;
 
     case NEW:
@@ -365,8 +339,8 @@ public class EditorButtons extends JComponent implements MouseInputListener {
       editor.handleSave(false);
       break;
 
-    case EXPORT:
-      editor.handleExport();
+    case RUN:
+      editor.handleRun();
       break;
 
     case SERIAL:
@@ -379,45 +353,8 @@ public class EditorButtons extends JComponent implements MouseInputListener {
   public void mouseClicked(MouseEvent e) { }
 
 
-  public void mouseReleased(MouseEvent e) {
-    /*
-    switch (currentSelection) {
-      case RUN:
-        if (!disableRun) {
-          editor.handleRun(e.isShiftDown());
-        }
-        break;
+  public void mouseReleased(MouseEvent e) { }
 
-      case STOP:
-        if (!disableRun) {
-          setState(RUN, INACTIVE, true);
-          editor.handleStop();
-        }
-        break;
-
-      case OPEN:   setState(OPEN, INACTIVE, true); break;
-      case NEW:    editor.handleNew(e.isShiftDown()); break;
-      case SAVE:   editor.handleSave(); break;
-      case EXPORT: editor.handleExport(); break;
-      case SERIAL: editor.handleSerial(); break;
-    }
-    currentSelection = -1;
-    */
-  }
-
-
-  //public void disableRun(boolean what) {
-  //disableRun = what;
-  //}
-
-
-  /*
-  public void run() {
-    if (inactive == null) return;
-    clear();
-    setState(RUN, ACTIVE, true);
-  }
-  */
 
 
   public void running(boolean yesno) {

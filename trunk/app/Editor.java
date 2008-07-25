@@ -1,6 +1,6 @@
-/* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
-
 /*
+  Part of the ReplicatorG project - http://www.replicat.org
+
   Editor - main editor panel for the processing development environment
   Part of the Processing project - http://processing.org
 

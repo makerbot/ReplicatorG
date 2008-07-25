@@ -159,7 +159,7 @@ public class Preferences {
 
     } catch (Exception e) {
       Base.showError(null, "Could not read default settings.\n" +
-                     "You'll need to reinstall Arduino.", e);
+                     "You'll need to reinstall ReplicatorG.", e);
     }
 
     // check for platform-specific properties in the defaults
@@ -205,7 +205,7 @@ public class Preferences {
                        "Error reading the preferences file. " +
                        "Please delete (or move)\n" +
                        preferencesFile.getAbsolutePath() +
-                       " and restart Arduino.", ex);
+                       " and restart ReplicatorG.", ex);
       }
     }
     
@@ -218,7 +218,7 @@ public class Preferences {
     } catch (Exception ex) {
         Base.showError("Error reading board definitions",
                        "Error reading the board definitions file. " +
-                       "Please re-download or re-unzip Arduino.\n", ex);
+                       "Please re-download or re-unzip ReplicatorG.\n", ex);
     }
     
     try {
@@ -230,7 +230,7 @@ public class Preferences {
     } catch (Exception ex) {
         Base.showError("Error reading programmers definitions",
                        "Error reading the programmers definitions file. " +
-                       "Please re-download or re-unzip Arduino.\n", ex);
+                       "Please re-download or re-unzip ReplicatorG.\n", ex);
     }
   }
 
@@ -339,7 +339,7 @@ public class Preferences {
     box.add(label);
     fontSizeField = new JTextField(4);
     box.add(fontSizeField);
-    label = new JLabel("  (requires restart of Arduino)");
+    label = new JLabel("  (requires restart of ReplicatorG)");
     box.add(label);
     pain.add(box);
     d = box.getPreferredSize();
@@ -387,7 +387,7 @@ public class Preferences {
     right = Math.max(right, left + d.width);
     top += d.height;
 
-    label = new JLabel("(edit only when Arduino is not running)");
+    label = new JLabel("(edit only when ReplicatorG is not running)");
     pain.add(label);
     d = label.getPreferredSize();
     label.setForeground(Color.gray);
@@ -599,61 +599,6 @@ public class Preferences {
       writer.flush();
       writer.close();
 
-      /*
-      FileOutputStream output = null;
-
-      if ((Base.platform == Base.MACOSX) ||
-          (Base.platform == Base.MACOS9)) {
-        output = new FileOutputStream("lib/preferences.txt");
-
-      } else { // win95/98/ME doesn't set cwd properly
-        URL url = getClass().getResource("buttons.gif");
-        String urlstr = url.getFile();
-        urlstr = urlstr.substring(0, urlstr.lastIndexOf("/") + 1) +
-          ".properties";
-        output = new FileOutputStream(URLDecoder.decode(urlstr));
-      }
-      */
-
-      /*
-      //base.storePreferences();
-
-      Properties skprops = new Properties();
-
-      //Rectangle window = Base.frame.getBounds();
-      Rectangle window = editor.getBounds();
-      Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-
-      skprops.put("last.window.x", String.valueOf(window.x));
-      skprops.put("last.window.y", String.valueOf(window.y));
-      skprops.put("last.window.w", String.valueOf(window.width));
-      skprops.put("last.window.h", String.valueOf(window.height));
-
-      skprops.put("last.screen.w", String.valueOf(screen.width));
-      skprops.put("last.screen.h", String.valueOf(screen.height));
-
-      skprops.put("last.sketch.name", sketchName);
-      skprops.put("last.sketch.directory", sketchDir.getAbsolutePath());
-      //skprops.put("user.name", userName);
-
-      skprops.put("last.divider.location",
-                  String.valueOf(splitPane.getDividerLocation()));
-
-      //
-
-      skprops.put("editor.external", externalEditor ? "true" : "false");
-
-      //skprops.put("serial.port", Preferences.get("serial.port", "unspecified"));
-
-      // save() is deprecated, and didn't properly
-      // throw exceptions when it wasn't working
-      skprops.store(output, "Settings for arduino. " +
-                    "See lib/preferences.txt for defaults.");
-
-      // need to close the stream.. didn't do this before
-      skprops.close();
-      */
-
     } catch (IOException ex) {
       Base.showWarning(null, "Error while saving the settings file", ex);
       //e.printStackTrace();
@@ -684,14 +629,6 @@ public class Preferences {
       }
     }
     return (String) table.get(attribute);
-    /*
-    //String value = (properties != null) ?
-    //properties.getProperty(attribute) : applet.getParameter(attribute);
-    String value = properties.getProperty(attribute);
-
-    return (value == null) ?
-      defaultValue : value;
-    */
   }
   
   /**
@@ -725,19 +662,6 @@ public class Preferences {
   static public boolean getBoolean(String attribute) {
     String value = get(attribute); //, null);
     return (new Boolean(value)).booleanValue();
-
-    /*
-      supposedly not needed, because anything besides 'true'
-      (ignoring case) will just be false.. so if malformed -> false
-    if (value == null) return defaultValue;
-
-    try {
-      return (new Boolean(value)).booleanValue();
-    } catch (NumberFormatException e) {
-      System.err.println("expecting an integer: " + attribute + " = " + value);
-    }
-    return defaultValue;
-    */
   }
 
 
@@ -748,22 +672,6 @@ public class Preferences {
 
   static public int getInteger(String attribute /*, int defaultValue*/) {
     return Integer.parseInt(get(attribute));
-
-    /*
-    String value = get(attribute, null);
-    if (value == null) return defaultValue;
-
-    try {
-      return Integer.parseInt(value);
-    } catch (NumberFormatException e) {
-      // ignored will just fall through to returning the default
-      System.err.println("expecting an integer: " + attribute + " = " + value);
-    }
-    return defaultValue;
-    //if (value == null) return defaultValue;
-    //return (value == null) ? defaultValue :
-    //Integer.parseInt(value);
-    */
   }
 
 
@@ -828,66 +736,3 @@ public class Preferences {
     return new SyntaxStyle(color, italic, bold);
   }
 }
-
-
-    // Default serial port:  [ COM1 + ]
-
-    /*
-    label = new JLabel("Default serial port:");
-    pain.add(label);
-    d = label.getPreferredSize();
-
-    Vector list = buildPortList();
-    combo = new JComboBox(list);
-    pain.add(combo);
-    d2 = combo.getPreferredSize();
-
-    if (list.size() == 0) {
-      label.setEnabled(false);
-      combo.setEnabled(false);
-
-    } else {
-      String defaultName = Preferences.get("serial.port", "unspecified");
-      combo.setSelectedItem(defaultName);
-    }
-
-    vmax = Math.max(d.height, d2.height);
-    label.setBounds(left, top + (vmax-d.height)/2,
-                    d.width, d.height);
-    h = left + d.width + BETWEEN;
-    combo.setBounds(h, top + (vmax-d2.height)/2,
-                    d2.width, d2.height);
-    right = Math.max(right, h + d2.width + BIG);
-    top += vmax + BETWEEN;
-    */
-
-  // open the last-used sketch, etc
-
-  //public void init() {
-
-    //String what = path + File.separator + name + ".pde";
-
-    ///String serialPort = skprops.getProperty("serial.port");
-    //if (serialPort != null) {
-    //  properties.put("serial.port", serialPort);
-    //}
-
-    //boolean ee = new Boolean(skprops.getProperty("editor.external", "false")).booleanValue();
-    //editor.setExternalEditor(ee);
-
-    ///} catch (Exception e) {
-      // this exception doesn't matter, it's just the normal course of things
-      // the app reaches here when no sketch.properties file exists
-      //e.printStackTrace();
-
-      // indicator that this is the first time this feller has used p5
-    //firstTime = true;
-
-      // even if folder for 'default' user doesn't exist, or
-      // sketchbook itself is missing, mkdirs() will make it happy
-      //userName = "default";
-
-      // doesn't exist, not available, make my own
-      //skNew();
-      //}
-  //}

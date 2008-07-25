@@ -640,30 +640,4 @@ public class EditorListener {
     }
     return c;
   }
-
-  /*
-  protected char[] getCleanedContents() {
-    char c[] = textarea.getText().toCharArray();
-    boolean insideMulti;  // multi-line comment
-    boolean insideSingle;  // single line double slash
-
-    //for (int i = 0; i < c.length - 1; i++) {
-    int index = 0;
-    while (index < c.length - 1) {
-      if (insideMulti && (c[index] == '*') && (c[index+1] == '/')) {
-        insideMulti = false;
-        index += 2;
-      } else if ((c[index] == '/') && (c[index+1] == '*')) {
-        insideMulti = true;
-        index += 2;
-      } else if ((c[index] == '/') && (c[index+1] == '/')) {
-        // clear out until the end of the line
-        while (c[index] != 10) {
-          c[index++] = 0;
-        }
-        index++;
-      }
-    }
-  }
-  */
 }
