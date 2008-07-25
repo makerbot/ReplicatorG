@@ -115,13 +115,7 @@ public class Editor extends JFrame
   JMenuItem saveMenuItem;
   JMenuItem saveAsMenuItem;
   
-  JMenuItem burnBootloader8Item = null;
-  JMenuItem burnBootloader8ParallelItem = null;
-  JMenuItem burnBootloader168DiecimilaItem = null;
-  JMenuItem burnBootloader168DiecimilaParallelItem = null;
-  JMenuItem burnBootloader168NGItem = null;
-  JMenuItem burnBootloader168NGParallelItem = null;
-  
+ 
   JMenu serialMenu;
   JMenu serialRateMenu;
   JMenu mcuMenu;
@@ -129,9 +123,11 @@ public class Editor extends JFrame
   SerialMenuListener serialMenuListener;
 
   boolean running;
-  boolean presenting;
+  boolean simulating;
   boolean debugging;
 
+  //boolean presenting;
+  
   // undo fellers
   JMenuItem undoItem, redoItem;
   protected UndoAction undoAction;
@@ -322,8 +318,8 @@ public class Editor extends JFrame
 
                   // see if this is a .pde file to be opened
                   String filename = file.getName();
-                  if (filename.endsWith(".pde")) {
-                    String name = filename.substring(0, filename.length() - 4);
+                  if (filename.endsWith(".gcode")) {
+                    String name = filename.substring(0, filename.length() - 6);
                     File parent = file.getParentFile();
                     if (name.equals(parent.getName())) {
                       handleOpenFile(file);
@@ -565,23 +561,12 @@ public class Editor extends JFrame
     item = newJMenuItem("Run GCode", 'R');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
+		//TODO: change this to handleRun()
           handleExport();
         }
       });
     menu.add(item);
 
-    /*exportAppItem = newJMenuItem("Export Application", 'E', true);
-    exportAppItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          //buttons.activate(EditorButtons.EXPORT);
-          //SwingUtilities.invokeLater(new Runnable() {
-          //public void run() {
-          handleExportApplication();
-          //}});
-        }
-      });
-    menu.add(exportAppItem);
-    */
     menu.addSeparator();
 
     item = newJMenuItem("Page Setup", 'P', true);
@@ -633,19 +618,10 @@ public class Editor extends JFrame
     item = newJMenuItem("Simulate", 'L');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          handleRun(false);
+          handleSimulate(false);
         }
       });
     menu.add(item);
-
-    /*item = newJMenuItem("Present", 'R', true);
-    item.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          handleRun(true);
-        }
-      });
-    menu.add(item);
-    */
 
     item = new JMenuItem("Pause");
     item.addActionListener(new ActionListener() {
@@ -818,6 +794,8 @@ public class Editor extends JFrame
       this.board = board;
     }
     public void actionPerformed(ActionEvent actionevent) {
+	//TODO: make this machine specific
+	/*
       //System.out.println("Switching to " + board);
       Preferences.set("board", board);
       try {
@@ -829,17 +807,7 @@ public class Editor extends JFrame
         message("Error rebuilding libraries...");
         error(e);
       }
-    }
-  }
-  
-  class BootloaderMenuAction extends AbstractAction {
-    private String programmer;
-    public BootloaderMenuAction(String programmer) {
-      super("w/ " + Preferences.get("programmers." + programmer + ".name"));
-      this.programmer = programmer;
-    }
-    public void actionPerformed(ActionEvent actionevent) {
-      handleBurnBootloader(programmer);
+	*/
     }
   }
   
@@ -1308,14 +1276,18 @@ public class Editor extends JFrame
 
   // ...................................................................
 
-
-  public void handleRun(final boolean present) {
+  //TODO: figure out what 'present' means and does.
+  public void handleSimulate(boolean present) {
     doClose();
-    running = true;
-    buttons.activate(EditorButtons.RUN);
-    message("Compiling...");
-    // do this for the terminal window / dos prompt / etc
-    for (int i = 0; i < 10; i++) System.out.println();
+
+    simulating = true;
+    buttons.activate(EditorButtons.SIMULATE);
+
+    message("Simulating...");
+    
+	// do this for the terminal window / dos prompt / etc
+    for (int i = 0; i < 10; i++)
+		System.out.println();
 
     // clear the console on each run, unless the user doesn't want to
     //if (Base.getBoolean("console.auto_clear", true)) {
@@ -1324,70 +1296,33 @@ public class Editor extends JFrame
       console.clear();
     }
 
-    presenting = present;
-    if (presenting && Base.isMacOS()) {
-      // check to see if osx 10.2, if so, show a warning
-      String osver = System.getProperty("os.version").substring(0, 4);
-      if (osver.equals("10.2")) {
-        Base.showWarning("Time for an OS Upgrade",
-                         "The \"Present\" feature may not be available on\n" +
-                         "Mac OS X 10.2, because of what appears to be\n" +
-                         "a bug in the Java 1.4 implementation on 10.2.\n" +
-                         "In case it works on your machine, present mode\n" +
-                         "will start, but if you get a flickering white\n" +
-                         "window, using Command-Q to quit the sketch", null);
-      }
+   	//TODO: show and draw simulation window.
+
+    buttons.clear();
+  }
+
+
+  public void handleRun(boolean present) {
+    doClose();
+
+    simulating = true;
+    buttons.activate(EditorButtons.RUN);
+
+    message("Running...");
+    
+	// do this for the terminal window / dos prompt / etc
+    for (int i = 0; i < 10; i++)
+		System.out.println();
+
+    // clear the console on each run, unless the user doesn't want to
+    //if (Base.getBoolean("console.auto_clear", true)) {
+    //if (Preferences.getBoolean("console.auto_clear", true)) {
+    if (Preferences.getBoolean("console.auto_clear")) {
+      console.clear();
     }
 
-    SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-        try {
-          if (!sketch.handleRun(new Target(
-              System.getProperty("user.dir") + File.separator + "hardware" +
-              File.separator + "cores",
-              Preferences.get("boards." + Preferences.get("board") + ".build.core"))))
-            return;
-    
-          //runtime = new Runner(sketch, Editor.this);
-          //runtime.start(appletLocation);
-          watcher = new RunButtonWatcher();
-          message("Done compiling.");
-          if(watcher != null) watcher.stop();
-    
-        } catch (RunnerException e) {
-          message("Error compiling...");
-          error(e);
+   	//TODO: run the actual program.
 
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-      }});
-    
-    // this doesn't seem to help much or at all
-    /*
-    final SwingWorker worker = new SwingWorker() {
-        public Object construct() {
-          try {
-            if (!sketch.handleRun()) return null;
-
-            runtime = new Runner(sketch, Editor.this);
-            runtime.start(presenting ? presentLocation : appletLocation);
-            watcher = new RunButtonWatcher();
-            message("Done compiling.");
-
-          } catch (RunnerException e) {
-            message("Error compiling...");
-            error(e);
-          
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-          return null;  // needn't return anything
-        }
-      };
-    worker.start();
-    */
-    //sketch.cleanup();  // where does this go?
     buttons.clear();
   }
 
@@ -1452,11 +1387,9 @@ public class Editor extends JFrame
 
 
   public void handleStop() {  // called by menu or buttons
-    if (presenting) {
-      doClose();
-    } else {
-      doStop();
-    }
+	//TODO: make it stop simluation vs. stop running
+    doStop();
+
     buttons.clear();
   }
 
@@ -1481,11 +1414,8 @@ public class Editor extends JFrame
   }
 
   public void handlePause() {  // called by menu or buttons
-    if (presenting) {
-      doClose();
-    } else {
-      doPause();
-    }
+    doPause();
+
     buttons.clear();
   }
 
@@ -1515,34 +1445,10 @@ public class Editor extends JFrame
    * mode, this will always be called instead of doStop().
    */
   public void doClose() {
-    //if (presenting) {
-    //presentationWindow.hide();
-    //} else {
-    //try {
-      // the window will also be null the process was running
-      // externally. so don't even try setting if window is null
-      // since Runner will set the appletLocation when an
-      // external process is in use.
-//      if (runtime.window != null) {
-//        appletLocation = runtime.window.getLocation();
-//      }
-    //} catch (NullPointerException e) { }
-    //}
 
-    //if (running) doStop();
     doStop();  // need to stop if runtime error
-
-    //try {
-      /*if (runtime != null) {
-        runtime.close();  // kills the window
-        runtime = null; // will this help?
-      }*/
-    //} catch (Exception e) { }
-    //buttons.clear();  // done by doStop
-
     sketch.cleanup();
 
-    // [toxi 030903]
     // focus the PDE again after quitting presentation mode
     toFront();
   }
@@ -1798,7 +1704,7 @@ public class Editor extends JFrame
       File file = new File(path);
       File parentFile = new File(file.getParent());
       String parentName = parentFile.getName();
-      String pdeName = parentName + ".pde";
+      String pdeName = parentName + ".gcode";
       File altFile = new File(file.getParent(), pdeName);
 
       //System.out.println("path = " + file.getParent());
@@ -1973,21 +1879,20 @@ public class Editor extends JFrame
   synchronized public void handleExport() {
     if(debugging)
       doStop();
-    buttons.activate(EditorButtons.EXPORT);
+    buttons.activate(EditorButtons.RUN);
     console.clear();
     //String what = sketch.isLibrary() ? "Applet" : "Library";
     //message("Exporting " + what + "...");
     message("Uploading to I/O Board...");
 
+/*
     SwingUtilities.invokeLater(new Runnable() {
         public void run() {
           try {
-            //boolean success = sketch.isLibrary() ?
-            //sketch.exportLibrary() : sketch.exportApplet();
-            boolean success = sketch.exportApplet(new Target(
-                System.getProperty("user.dir") + File.separator + "hardware" +
-                File.separator + "cores",
-                Preferences.get("boards." + Preferences.get("board") + ".build.core")));
+
+			//TODO: make it run the code!
+			boolean success = true;
+			
             if (success) {
               message("Done uploading.");
             } else {
@@ -2002,23 +1907,8 @@ public class Editor extends JFrame
           }
           buttons.clear();
         }});
-  }
-
-
-  synchronized public void handleExportApp() {
-    message("Exporting application...");
-    try {
-      if (sketch.exportApplication()) {
-        message("Done exporting.");
-      } else {
-        // error message will already be visible
-      }
-    } catch (Exception e) {
-      message("Error during export.");
-      e.printStackTrace();
-    }
-    buttons.clear();
-  }
+*/ 
+ }
 
 
   /**

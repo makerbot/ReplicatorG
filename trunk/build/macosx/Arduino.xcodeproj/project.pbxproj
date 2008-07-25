@@ -150,7 +150,6 @@
 		335A291E0C8CCC0900D8A7F4 /* PPolygon.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29110C8CCC0900D8A7F4 /* PPolygon.java */; };
 		335A291F0C8CCC0900D8A7F4 /* PShape.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29120C8CCC0900D8A7F4 /* PShape.java */; };
 		335A29200C8CCC0900D8A7F4 /* PTriangle.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29130C8CCC0900D8A7F4 /* PTriangle.java */; };
-		335A29240C8CCC5E00D8A7F4 /* DiscourseFormat.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29230C8CCC5E00D8A7F4 /* DiscourseFormat.java */; };
 		3378B7620D82FDEF00FE72F7 /* FTDIUSBSerialDriver_v2_1_9.dmg in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3378B75E0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_1_9.dmg */; };
 		3378B7630D82FDEF00FE72F7 /* FTDIUSBSerialDriver_v2_2_9_Intel.dmg in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3378B75F0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_2_9_Intel.dmg */; };
 		339514FA097AEB8000193C89 /* license.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 33FF02B60965BD170016AC38 /* license.txt */; };
@@ -197,7 +196,6 @@
 		33AF61B40965C54B00B514A9 /* JEditTextArea.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE630965BD110016AC38 /* JEditTextArea.java */; };
 		33AF61B50965C54B00B514A9 /* Base.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE240965BD100016AC38 /* Base.java */; };
 		33BEDDD509D6E8D800430D5B /* Archiver.java in Sources */ = {isa = PBXBuildFile; fileRef = 33BEDDD309D6E8D800430D5B /* Archiver.java */; };
-		33BEDDD609D6E8D800430D5B /* ExportFolder.java in Sources */ = {isa = PBXBuildFile; fileRef = 33BEDDD409D6E8D800430D5B /* ExportFolder.java */; };
 		33CF03B209662CB700F2C9A9 /* replicatorg.icns in Resources */ = {isa = PBXBuildFile; fileRef = 33CF03B009662CA800F2C9A9 /* replicatorg.icns */; };
 		33CF03CC09662DC000F2C9A9 /* mrj.jar in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = 33AF620C0965D67900B514A9 /* mrj.jar */; settings = {JAVA_ARCHIVE_SUBDIR = ../shared/lib; }; };
 		33CF03CD09662DC000F2C9A9 /* RXTXcomm.jar in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = 33AF620F0965D67A00B514A9 /* RXTXcomm.jar */; settings = {JAVA_ARCHIVE_SUBDIR = ../shared/lib; }; };
@@ -310,7 +308,6 @@
 		335A29110C8CCC0900D8A7F4 /* PPolygon.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PPolygon.java; sourceTree = "<group>"; };
 		335A29120C8CCC0900D8A7F4 /* PShape.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PShape.java; sourceTree = "<group>"; };
 		335A29130C8CCC0900D8A7F4 /* PTriangle.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PTriangle.java; sourceTree = "<group>"; };
-		335A29230C8CCC5E00D8A7F4 /* DiscourseFormat.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = DiscourseFormat.java; sourceTree = "<group>"; };
 		336EA4DB09FF87E30052D765 /* examples */ = {isa = PBXFileReference; lastKnownFileType = folder; path = examples; sourceTree = "<group>"; };
 		3378B75E0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_1_9.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = FTDIUSBSerialDriver_v2_1_9.dmg; sourceTree = "<group>"; };
 		3378B75F0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_2_9_Intel.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = FTDIUSBSerialDriver_v2_2_9_Intel.dmg; sourceTree = "<group>"; };
@@ -322,7 +319,6 @@
 		33AF620E0965D67A00B514A9 /* registry.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = registry.jar; sourceTree = "<group>"; };
 		33AF620F0965D67A00B514A9 /* RXTXcomm.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = RXTXcomm.jar; sourceTree = "<group>"; };
 		33BEDDD309D6E8D800430D5B /* Archiver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Archiver.java; sourceTree = "<group>"; };
-		33BEDDD409D6E8D800430D5B /* ExportFolder.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ExportFolder.java; sourceTree = "<group>"; };
 		33CF03B009662CA800F2C9A9 /* replicatorg.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = replicatorg.icns; path = dist/replicatorg.icns; sourceTree = "<group>"; };
 		33DD8FB6096AC8DA0013AF8F /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		33FF01DE0965BD160016AC38 /* about.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = about.jpg; sourceTree = "<group>"; };
@@ -576,9 +572,7 @@
 		33FFFE710965BD110016AC38 /* tools */ = {
 			isa = PBXGroup;
 			children = (
-				335A29230C8CCC5E00D8A7F4 /* DiscourseFormat.java */,
 				33BEDDD309D6E8D800430D5B /* Archiver.java */,
-				33BEDDD409D6E8D800430D5B /* ExportFolder.java */,
 				33FFFE720965BD110016AC38 /* AutoFormat.java */,
 			);
 			path = tools;
@@ -759,7 +753,6 @@
 				33AF61B50965C54B00B514A9 /* Base.java in Sources */,
 				332D4DB609CF147F00BF81F6 /* Sizer.java in Sources */,
 				33BEDDD509D6E8D800430D5B /* Archiver.java in Sources */,
-				33BEDDD609D6E8D800430D5B /* ExportFolder.java in Sources */,
 				335A29140C8CCC0900D8A7F4 /* PApplet.java in Sources */,
 				335A29150C8CCC0900D8A7F4 /* PConstants.java in Sources */,
 				335A29160C8CCC0900D8A7F4 /* PFont.java in Sources */,
@@ -773,7 +766,6 @@
 				335A291E0C8CCC0900D8A7F4 /* PPolygon.java in Sources */,
 				335A291F0C8CCC0900D8A7F4 /* PShape.java in Sources */,
 				335A29200C8CCC0900D8A7F4 /* PTriangle.java in Sources */,
-				335A29240C8CCC5E00D8A7F4 /* DiscourseFormat.java in Sources */,
 				33055EFF0CB8187700824CD9 /* SerialException.java in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

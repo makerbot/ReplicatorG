@@ -340,7 +340,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
       break;
 
     case RUN:
-      editor.handleRun();
+      editor.handleRun(e.isShiftDown());
       break;
 
     case SERIAL:

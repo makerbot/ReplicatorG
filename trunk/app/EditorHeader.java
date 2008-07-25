@@ -184,7 +184,7 @@ public class EditorHeader extends JComponent {
     for (int i = 0; i < sketch.codeCount; i++) {
       SketchCode code = sketch.code[i];
 
-      String codeName = (code.flavor == Sketch.PDE) ?
+      String codeName = (code.flavor == Sketch.GCODE) ?
         code.name : code.file.getName();
 
       // if modified, add the li'l glyph next to the name

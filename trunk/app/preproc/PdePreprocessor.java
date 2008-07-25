@@ -211,8 +211,7 @@ public class PdePreprocessor {
   //public String write(String program, String buildPath, String name,
   //                  String extraImports[]) throws java.lang.Exception {
   public String write(String program, String buildPath,
-                      String name, String codeFolderPackages[],
-                      Target target)
+                      String name, String codeFolderPackages[])
     throws java.lang.Exception {
     // if the program ends with no CR or LF an OutOfMemoryError will happen.
     // not gonna track down the bug now, so here's a hack for it:
@@ -310,7 +309,7 @@ public class PdePreprocessor {
     writeHeader(stream);
     //added to write the pde code to the cpp file
     writeProgram(stream, program, prototypes);
-    writeFooter(stream, target);
+    writeFooter(stream);
     stream.close();
 
     return name;
@@ -344,10 +343,8 @@ public class PdePreprocessor {
    *
    * @param out         PrintStream to write it to.
    */
-  void writeFooter(PrintStream out, Target target) throws java.lang.Exception {
-    // Open the file main.cxx and copy its entire contents to the bottom of the
-    // generated sketch .cpp file...
-
+  void writeFooter(PrintStream out) throws java.lang.Exception {
+/*
     String mainFileName = target.getPath() + File.separator + "main.cxx";
     FileReader reader = null;
     reader = new FileReader(mainFileName);
@@ -360,6 +357,7 @@ public class PdePreprocessor {
     }
 
     mainfile.close();
+*/
   }
 
 

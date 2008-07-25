@@ -429,29 +429,6 @@ public class Sketchbook {
         }
       };
 
-    try {
-      LibraryManager libManager = new LibraryManager();
-      JMenu examplesMenu = new JMenu("Examples");
-      addSketches(examplesMenu, examplesFolder);
-      libManager.populateExamplesMenu(examplesMenu, listener);
-      menu.add(examplesMenu);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    /*
-    // don't do this until it's finished
-    // libraries don't show up as proper sketches anyway
-    try {
-      if (Preferences.getBoolean("export.library")) {
-        JMenu librariesMenu = new JMenu("Libraries");
-        addSketches(librariesMenu, librariesFolder);
-        menu.add(librariesMenu);
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    */
   }
 
 
