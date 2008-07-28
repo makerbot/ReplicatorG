@@ -31,7 +31,7 @@ package processing.app;
 
 import java.io.*;
 
-class ArduinoMessageSiphon extends Thread
+class ReplicatorGMessageSiphon extends Thread
 {
 	/** Stream to read from */
 	InputStream is;
@@ -58,7 +58,7 @@ class ArduinoMessageSiphon extends Thread
 	  * @param	theIS is the input stream we will monitor
 	  *         process is the parent process that called this
 	  */
-	public ArduinoMessageSiphon(InputStream theIS, Thread process)
+	public ReplicatorGMessageSiphon(InputStream theIS, Thread process)
 	{
 		// Assign to member variables
 		is = theIS;
@@ -79,7 +79,7 @@ class ArduinoMessageSiphon extends Thread
 	  * 	49 - 0  for the programmer's errors
 	  * 	99 - 50 for the compiler's errors
 	  */
-	public ArduinoMessageSiphon(InputStream theIS, Thread process, boolean warnings, boolean errors)
+	public ReplicatorGMessageSiphon(InputStream theIS, Thread process, boolean warnings, boolean errors)
 	{
 		// Assign to member variables
 		is = theIS;
@@ -94,7 +94,7 @@ class ArduinoMessageSiphon extends Thread
 	  * 	49 - 0  for the programmer's errors
 	  * 	99 - 50 for the compiler's errors
 	  */
-	public ArduinoMessageSiphon(InputStream theIS, Thread process, boolean outlog)
+	public ReplicatorGMessageSiphon(InputStream theIS, Thread process, boolean outlog)
 	{
 		// Assign to member variables
 		is = theIS;

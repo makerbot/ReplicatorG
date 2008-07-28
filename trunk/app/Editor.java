@@ -184,8 +184,6 @@ public class Editor extends JFrame
     menubar.add(buildEditMenu());
     menubar.add(buildSketchMenu());
     menubar.add(buildToolsMenu());
-    // what platform has their help menu way on the right? motif?
-    //menubar.add(Box.createHorizontalGlue());
     menubar.add(buildHelpMenu());
 
     setJMenuBar(menubar);
@@ -272,35 +270,6 @@ public class Editor extends JFrame
         public boolean importData(JComponent src, Transferable transferable) {
           DataFlavor[] flavors = transferable.getTransferDataFlavors();
 
-    /*
-    DropTarget dt = new DropTarget(this, new DropTargetListener() {
-
-        public void dragEnter(DropTargetDragEvent event) {
-          // debug messages for diagnostics
-          //System.out.println("dragEnter " + event);
-          event.acceptDrag(DnDConstants.ACTION_COPY);
-        }
-
-        public void dragExit(DropTargetEvent event) {
-          //System.out.println("dragExit " + event);
-        }
-
-        public void dragOver(DropTargetDragEvent event) {
-          //System.out.println("dragOver " + event);
-          event.acceptDrag(DnDConstants.ACTION_COPY);
-        }
-
-        public void dropActionChanged(DropTargetDragEvent event) {
-          //System.out.println("dropActionChanged " + event);
-        }
-
-        public void drop(DropTargetDropEvent event) {
-          //System.out.println("drop " + event);
-          event.acceptDrop(DnDConstants.ACTION_COPY);
-
-          Transferable transferable = event.getTransferable();
-          DataFlavor flavors[] = transferable.getTransferDataFlavors();
-    */
           int successful = 0;
 
           for (int i = 0; i < flavors.length; i++) {
@@ -316,7 +285,7 @@ public class Editor extends JFrame
                 if (item instanceof File) {
                   File file = (File) item;
 
-                  // see if this is a .pde file to be opened
+                  // see if this is a .gcode file to be opened
                   String filename = file.getName();
                   if (filename.endsWith(".gcode")) {
                     String name = filename.substring(0, filename.length() - 6);
@@ -1449,7 +1418,7 @@ public class Editor extends JFrame
   public void doClose() {
 
     doStop();  // need to stop if runtime error
-    sketch.cleanup();
+    //sketch.cleanup();
 
     // focus the PDE again after quitting presentation mode
     toFront();

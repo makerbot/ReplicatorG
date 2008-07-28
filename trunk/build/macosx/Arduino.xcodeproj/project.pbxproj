@@ -134,7 +134,6 @@
 
 /* Begin PBXBuildFile section */
 		33055EFF0CB8187700824CD9 /* SerialException.java in Sources */ = {isa = PBXBuildFile; fileRef = 33055EFE0CB8187600824CD9 /* SerialException.java */; };
-		332D4DB609CF147F00BF81F6 /* Sizer.java in Sources */ = {isa = PBXBuildFile; fileRef = 332D4DB509CF147F00BF81F6 /* Sizer.java */; };
 		335A28F50C8CCB0A00D8A7F4 /* quaqua.jar in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = 335A28F30C8CCAF700D8A7F4 /* quaqua.jar */; };
 		335A28FE0C8CCB4000D8A7F4 /* libquaqua.jnilib in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = 335A28F20C8CCAF700D8A7F4 /* libquaqua.jnilib */; };
 		335A29140C8CCC0900D8A7F4 /* PApplet.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29070C8CCC0900D8A7F4 /* PApplet.java */; };
@@ -336,7 +335,6 @@
 
 /* Begin PBXFileReference section */
 		33055EFE0CB8187600824CD9 /* SerialException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SerialException.java; sourceTree = "<group>"; };
-		332D4DB509CF147F00BF81F6 /* Sizer.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Sizer.java; sourceTree = "<group>"; };
 		335A28F20C8CCAF700D8A7F4 /* libquaqua.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libquaqua.jnilib; sourceTree = "<group>"; };
 		335A28F30C8CCAF700D8A7F4 /* quaqua.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = quaqua.jar; sourceTree = "<group>"; };
 		335A29070C8CCC0900D8A7F4 /* PApplet.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PApplet.java; sourceTree = "<group>"; };
@@ -363,7 +361,7 @@
 		33AF620F0965D67A00B514A9 /* RXTXcomm.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = RXTXcomm.jar; sourceTree = "<group>"; };
 		33BEDDD309D6E8D800430D5B /* Archiver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Archiver.java; sourceTree = "<group>"; };
 		33CF03B009662CA800F2C9A9 /* replicatorg.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = replicatorg.icns; path = dist/replicatorg.icns; sourceTree = "<group>"; };
-		33DD8FB6096AC8DA0013AF8F /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		33DD8FB6096AC8DA0013AF8F /* ReplicatorG.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; name = ReplicatorG.app; path = /Users/iowa/replicatorg/trunk/build/macosx/build/work/ReplicatorG.app; sourceTree = "<absolute>"; };
 		33FF01DE0965BD160016AC38 /* about.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = about.jpg; sourceTree = "<group>"; };
 		33FF02770965BD160016AC38 /* buttons.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = buttons.gif; sourceTree = "<group>"; };
 		33FF02780965BD160016AC38 /* icon.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = icon.gif; sourceTree = "<group>"; };
@@ -562,7 +560,6 @@
 				33FFFE800965BD110016AC38 /* build */,
 				33FF02B60965BD170016AC38 /* license.txt */,
 				33FF02B70965BD170016AC38 /* readme.txt */,
-				33DD8FB6096AC8DA0013AF8F /* ReplicatorG.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -597,7 +594,6 @@
 				33FFFE710965BD110016AC38 /* tools */,
 				33FFFE730965BD110016AC38 /* UpdateCheck.java */,
 				33FFFE740965BD110016AC38 /* Uploader.java */,
-				332D4DB509CF147F00BF81F6 /* Sizer.java */,
 			);
 			includeInIndex = 0;
 			name = app;
@@ -845,7 +841,6 @@
 				33AF61B20965C54B00B514A9 /* PdeTextAreaDefaults.java in Sources */,
 				33AF61B40965C54B00B514A9 /* JEditTextArea.java in Sources */,
 				33AF61B50965C54B00B514A9 /* Base.java in Sources */,
-				332D4DB609CF147F00BF81F6 /* Sizer.java in Sources */,
 				33BEDDD509D6E8D800430D5B /* Archiver.java in Sources */,
 				335A29140C8CCC0900D8A7F4 /* PApplet.java in Sources */,
 				335A29150C8CCC0900D8A7F4 /* PConstants.java in Sources */,

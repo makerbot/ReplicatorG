@@ -28,7 +28,6 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// TODO migrate codebase to arduino.app
 package processing.app;
 
 import java.io.*;

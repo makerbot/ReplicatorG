@@ -42,7 +42,7 @@ import processing.core.*;
 
 
 /**
- * The base class for the main Arduino application.
+ * The base class for the main ReplicatorG application.
  * <P>
  * Primary role of this class is for platform identification and
  * general interaction with the system (launching URLs, loading
@@ -114,12 +114,6 @@ public class Base {
         UIManager.put("Component.visualMargin", new Insets(1, 1, 1, 1));
 
       } else if (Base.isLinux()) {
-        // Linux is by default even uglier than metal (Motif?).
-        // Actually, i'm using native menus, so they're even uglier
-        // and Motif-looking (Lesstif?). Ick. Need to fix this.
-        //String lfname = UIManager.getCrossPlatformLookAndFeelClassName();
-        //UIManager.setLookAndFeel(lfname);
-
         // For 0120, trying out the gtk+ look and feel as the default.
         // This is available in Java 1.4.2 and later, and it can't possibly
         // be any worse than Metal. (Ocean might also work, but that's for
@@ -129,11 +123,6 @@ public class Base {
       } else {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       }
-    //} catch (ClassNotFoundException cnfe) {
-      // just default to the native look and feel for this platform
-      // i.e. appears that some linux systems don't have the gtk l&f
-      //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -168,7 +157,7 @@ public class Base {
 
 
   /**
-   * returns true if the Arduino is running on a Mac OS machine,
+   * returns true if the ReplicatorG is running on a Mac OS machine,
    * specifically a Mac OS X machine because it doesn't run on OS 9 anymore.
    */
   static public boolean isMacOS() {
@@ -228,14 +217,6 @@ public class Base {
 
       // not clear if i can write to this folder tho..
       try {
-        /*
-        if (false) {
-          // this is because the mrjtoolkit stubs don't have the
-          // thows exception around them
-          new FileInputStream("ignored");
-        }
-        */
-
         // this method has to be dynamically loaded, because
         MRJOSType domainLibrary = new MRJOSType("dlib");
         Method findFolderMethod =
@@ -246,7 +227,7 @@ public class Base {
           findFolderMethod.invoke(null, new Object[] { new Short(kUserDomain),
                                                        domainLibrary });
 
-        dataFolder = new File(libraryFolder, "Arduino");
+        dataFolder = new File(libraryFolder, "ReplicatorG");
 
       } catch (Exception e) {
         // this could be FileNotFound or NoSuchMethod
@@ -254,11 +235,11 @@ public class Base {
         //e.printStackTrace();
         //System.exit(1);
         showError("Problem getting data folder",
-                  "Error getting the Arduino data folder.", e);
+                  "Error getting the ReplicatorG data folder.", e);
       }
 
     } else if (Base.isWindows()) {
-      // looking for Documents and Settings/blah/Application Data/Arduino
+      // looking for Documents and Settings/blah/Application Data/ReplicatorG
 
       // this is just based on the other documentation, and eyeballing
       // that part of the registry.. not confirmed by any msft/msdn docs.
@@ -282,18 +263,18 @@ public class Base {
         //topKey.closeKey();  // necessary?
         //localKey.closeKey();
 
-        dataFolder = new File(appDataPath, "Arduino");
+        dataFolder = new File(appDataPath, "ReplicatorG");
 
       } catch (Exception e) {
         showError("Problem getting data folder",
-                  "Error getting the Arduino data folder.", e);
+                  "Error getting the ReplicatorG data folder.", e);
       }
       //return null;
 
     } else {
-      // otherwise make a .arduino directory int the user's home dir
+      // otherwise make a .replicatorg directory int the user's home dir
       File home = new File(System.getProperty("user.home"));
-      dataFolder = new File(home, ".arduino");
+      dataFolder = new File(home, ".replicatorg");
     }
 
     // create the folder if it doesn't exist already
@@ -314,7 +295,7 @@ public class Base {
 
     if (!result) {
       showError("Settings issues",
-                "Arduino cannot run because it could not\n" +
+                "ReplicatorG cannot run because it could not\n" +
                 "create a folder to store your settings.", null);
     }
 
@@ -387,7 +368,7 @@ public class Base {
     File sketchbookFolder = null;
 
     if (Base.isMacOS()) {
-      // looking for /Users/blah/Documents/Arduino
+      // looking for /Users/blah/Documents/ReplicatorG
 
       // carbon folder constants
       // http://developer.apple.com/documentation/Carbon/Reference/Folder_Manager/folder_manager_ref/constant_6.html#//apple_ref/doc/uid/TP30000238/C006889
@@ -413,7 +394,7 @@ public class Base {
         File documentsFolder = (File)
           findFolderMethod.invoke(null, new Object[] { new Short(kUserDomain),
                                                        domainDocuments });
-        sketchbookFolder = new File(documentsFolder, "Arduino");
+        sketchbookFolder = new File(documentsFolder, "ReplicatorG");
 
       } catch (Exception e) {
         //showError("Could not find folder",
@@ -422,7 +403,7 @@ public class Base {
       }
 
     } else if (isWindows()) {
-      // looking for Documents and Settings/blah/My Documents/Arduino
+      // looking for Documents and Settings/blah/My Documents/ReplicatorG
       // (though using a reg key since it's different on other platforms)
 
       // http://support.microsoft.com/?kbid=221837&sd=RMVP
@@ -444,7 +425,7 @@ public class Base {
         String personalPath = cleanKey(localKey.getStringValue("Personal"));
         //topKey.closeKey();  // necessary?
         //localKey.closeKey();
-        sketchbookFolder = new File(personalPath, "Arduino");
+        sketchbookFolder = new File(personalPath, "ReplicatorG");
 
       } catch (Exception e) {
         //showError("Problem getting folder",
@@ -459,7 +440,7 @@ public class Base {
       // on linux (or elsewhere?) prompt the user for the location
       JFileChooser fc = new JFileChooser();
       fc.setDialogTitle("Select the folder where " +
-                        "Arduino programs should be stored...");
+                        "ReplicatorG programs should be stored...");
       //fc.setSelectedFile(new File(sketchbookLocationField.getText()));
       fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
@@ -493,7 +474,7 @@ public class Base {
 
     if (!result) {
       showError("error",
-                "Arduino cannot run because it could not\n" +
+                "ReplicatorG cannot run because it could not\n" +
                 "create a folder to store your sketchbook.", null);
     }
 
@@ -878,11 +859,11 @@ public class Base {
   }
 
   static public String getLibContents(String what) {
-      /* On MacOSX, the arduino.app-resources property points to the
+      /* On MacOSX, the replicatorg.app-resources property points to the
        * resources directory inside the app bundle. On other platforms
        * it's not set.
        */
-      String appResources = System.getProperty("arduino.app-resources");
+      String appResources = System.getProperty("replicatorg.app-resources");
       if (appResources != null) {
           return appResources + File.separator + what;
       } else {

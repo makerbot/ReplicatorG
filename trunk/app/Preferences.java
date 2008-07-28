@@ -1,7 +1,5 @@
-/* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
-
 /*
-  Part of the Arduino project - http://arduino.berlios.de
+  Part of the ReplicatorG project - http://www.replicat.org
 
   Based on the Processing project - http://www.processing.org
 
