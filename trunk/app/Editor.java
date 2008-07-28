@@ -558,15 +558,6 @@ public class Editor extends JFrame
       });
     menu.add(saveAsMenuItem);
 
-    item = newJMenuItem("Run GCode", 'R');
-    item.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-		//TODO: change this to handleRun()
-          handleExport();
-        }
-      });
-    menu.add(item);
-
     menu.addSeparator();
 
     item = newJMenuItem("Page Setup", 'P', true);
@@ -623,7 +614,16 @@ public class Editor extends JFrame
       });
     menu.add(item);
 
-    item = new JMenuItem("Pause");
+    item = newJMenuItem("Run GCode", 'R');
+    item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+		//TODO: change this to handleRun()
+          handleExport();
+        }
+      });
+    menu.add(item);
+
+    item = new JMenuItem("Pause", '.');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           handlePause();
@@ -631,7 +631,7 @@ public class Editor extends JFrame
       });
     menu.add(item);
 
-    item = new JMenuItem("Stop");
+    item = new JMenuItem("Stop", 'O');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           handleStop();
@@ -724,6 +724,7 @@ public class Editor extends JFrame
     */
     menu.addSeparator();
     
+	/*
     JMenu boardsMenu = new JMenu("Machine");
     ButtonGroup boardGroup = new ButtonGroup();
     for (Iterator i = Preferences.getSubKeys("boards"); i.hasNext(); ) {
@@ -736,7 +737,8 @@ public class Editor extends JFrame
       boardsMenu.add(item);
     }
     menu.add(boardsMenu);
-    
+    */
+
     //TODO:eventually move this into machine specific config.
     serialMenu = new JMenu("Serial Port");
     populateSerialMenu();

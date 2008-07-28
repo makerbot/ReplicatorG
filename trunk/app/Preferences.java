@@ -208,30 +208,6 @@ public class Preferences {
                        " and restart ReplicatorG.", ex);
       }
     }
-    
-    try {
-      load(new FileInputStream(new File(
-        System.getProperty("user.dir") +
-        File.separator + "hardware" +
-        File.separator + "boards.txt")),
-        "boards");
-    } catch (Exception ex) {
-        Base.showError("Error reading board definitions",
-                       "Error reading the board definitions file. " +
-                       "Please re-download or re-unzip ReplicatorG.\n", ex);
-    }
-    
-    try {
-      load(new FileInputStream(new File(
-        System.getProperty("user.dir") +
-        File.separator + "hardware" +
-        File.separator + "programmers.txt")),
-        "programmers");
-    } catch (Exception ex) {
-        Base.showError("Error reading programmers definitions",
-                       "Error reading the programmers definitions file. " +
-                       "Please re-download or re-unzip ReplicatorG.\n", ex);
-    }
   }
 
 
