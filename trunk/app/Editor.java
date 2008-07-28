@@ -748,16 +748,6 @@ public class Editor extends JFrame
       //System.out.println("set to " + get("serial.port"));
     }
 
-    /*
-    public void actionPerformed(ActionEvent e) {
-      System.out.println(e.getSource());
-      String name = e.getActionCommand();
-      PdeBase.properties.put("serial.port", name);
-      System.out.println("set to " + get("serial.port"));
-      //editor.skOpen(path + File.separator + name, name);
-      // need to push "serial.port" into PdeBase.properties
-    }
-    */
   }
   
   class BoardMenuAction extends AbstractAction {
@@ -1422,7 +1412,7 @@ public class Editor extends JFrame
     doStop();  // need to stop if runtime error
     sketch.cleanup();
 
-    // focus the PDE again after quitting presentation mode
+    // focus the GCode again after quitting presentation mode
     toFront();
   }
 
@@ -1610,7 +1600,7 @@ public class Editor extends JFrame
 
 
   /**
-   * Open a sketch given the full path to the .pde file.
+   * Open a sketch given the full path to the .gcode file.
    * Pass in 'null' to prompt the user for the name of the sketch.
    */
   public void handleOpen(final String ipath) {
@@ -1672,7 +1662,7 @@ public class Editor extends JFrame
     }
 
     try {
-      // check to make sure that this .pde file is
+      // check to make sure that this .gcode file is
       // in a folder of the same name
       File file = new File(path);
       File parentFile = new File(file.getParent());
@@ -1688,8 +1678,7 @@ public class Editor extends JFrame
         // no beef with this guy
 
       } else if (altFile.exists()) {
-        // user selected a .java from the same sketch,
-        // but open the .pde instead
+        // but open the .gcode instead
         path = altFile.getAbsolutePath();
         //System.out.println("found alt file in same folder");
 
@@ -1702,7 +1691,7 @@ public class Editor extends JFrame
 
       } else {
         String properParent =
-          file.getName().substring(0, file.getName().length() - 4);
+          file.getName().substring(0, file.getName().length() - 6);
 
         Object[] options = { "OK", "Cancel" };
         String prompt =

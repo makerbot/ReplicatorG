@@ -46,12 +46,12 @@ public class Sketch {
 
   /**
    * Name of sketch, which is the name of main file
-   * (without .pde or .java extension)
+   * (without .gcode extension)
    */
   String name;
 
   /**
-   * Name of 'main' file, used by load(), such as sketch_04040.pde
+   * Name of 'main' file, used by load(), such as sketch_04040.gcode
    */
   String mainFilename;
 
@@ -87,7 +87,7 @@ public class Sketch {
   public Vector importedLibraries; // vec of Library objects
 
   /**
-   * path is location of the main .pde file, because this is also
+   * path is location of the main .gcode file, because this is also
    * simplest to use when opening the file from the finder/explorer.
    */
   public Sketch(Editor editor, String path) throws IOException {
@@ -310,7 +310,7 @@ public class Sketch {
     // add .gcode to file if it has no extension
     if (newName.endsWith(".gcode")) {
       newFilename = newName;
-      newName = newName.substring(0, newName.length() - 4);
+      newName = newName.substring(0, newName.length() - 6);
       newFlavor = GCODE;
 
     } 
@@ -320,8 +320,8 @@ public class Sketch {
       newFlavor = GCODE;
 	}
 
-    // dots are allowed for the .pde and .java, but not in the name
-    // make sure the user didn't name things poo.time.pde
+    // dots are allowed for the .gcode and .java, but not in the name
+    // make sure the user didn't name things poo.time.gcode
     // or something like that (nothing against poo time)
     if (newName.indexOf('.') != -1) {
       newName = Sketchbook.sanitizedName(newName);
@@ -876,9 +876,7 @@ public class Sketch {
   /**
    * Add a file to the sketch.
    * <p/>
-   * .pde or .java files will be added to the sketch folder. <br/>
-   * .jar, .class, .dll, .jnilib, and .so files will all
-   * be added to the "code" folder. <br/>
+   * .gcode files will be added to the sketch folder. <br/>
    * All other files will be added to the "data" folder.
    * <p/>
    * If they don't exist already, the "code" or "data" folder
@@ -891,18 +889,7 @@ public class Sketch {
     File destFile = null;
     boolean addingCode = false;
 
-    // if the file appears to be code related, drop it
-    // into the code folder, instead of the data folder
-    if (filename.toLowerCase().endsWith(".o") /*||
-        filename.toLowerCase().endsWith(".jar") ||
-        filename.toLowerCase().endsWith(".dll") ||
-        filename.toLowerCase().endsWith(".jnilib") ||
-        filename.toLowerCase().endsWith(".so") */ ) {
-      //File codeFolder = new File(this.folder, "code");
-      if (!codeFolder.exists()) codeFolder.mkdirs();
-      destFile = new File(codeFolder, filename);
-
-    } else if (filename.toLowerCase().endsWith(".gcode")) {
+    if (filename.toLowerCase().endsWith(".gcode")) {
       destFile = new File(this.folder, filename);
       addingCode = true;
 
@@ -1218,7 +1205,7 @@ public class Sketch {
 
 
   /**
-   * Returns path to the main .pde file for this sketch.
+   * Returns path to the main .gcode file for this sketch.
    */
   public String getMainFilePath() {
     return code[0].file.getAbsolutePath();
