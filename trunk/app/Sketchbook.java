@@ -106,6 +106,8 @@ public class Sketchbook {
       }
     }
 
+
+
     if (sketchbookPath == null) {
       // by default, set default sketchbook path to the user's
       // home folder with 'sketchbook' as a subdirectory of that
@@ -148,7 +150,7 @@ public class Sketchbook {
 
 
   /**
-   * Handle creating a sketch folder, return its base .pde file
+   * Handle creating a sketch folder, return its base .gcode file
    * or null if the operation was cancelled.
    */
   public String handleNew(boolean noPrompt,
@@ -207,8 +209,8 @@ public class Sketchbook {
       new File(newbieDir, "library").mkdirs();
     }
 
-    // make an empty pde file
-    File newbieFile = new File(newbieDir, newbieName + ".pde");
+    // make an empty gcode file
+    File newbieFile = new File(newbieDir, newbieName + ".gcode");
     new FileOutputStream(newbieFile);  // create the file
 
     // TODO this wouldn't be needed if i could figure out how to
@@ -220,7 +222,7 @@ public class Sketchbook {
     if (Base.isMacOS()) {
       MRJFileUtils.setFileTypeAndCreator(newbieFile,
                                          MRJOSType.kTypeTEXT,
-                                         new MRJOSType("Pde1"));
+                                         new MRJOSType("Gcde"));
       // thank you apple, for changing this @#$)(*
       //com.apple.eio.setFileTypeAndCreator(String filename, int, int)
     }
@@ -315,12 +317,12 @@ public class Sketchbook {
     //fd.setDirectory(Preferences.get("sketchbook.path"));
     //fd.setDirectory(getSketchbookPath());
 
-    // only show .pde files as eligible bachelors
+    // only show .gcode files as eligible bachelors
     // TODO this doesn't seem to ever be used. AWESOME.
     fd.setFilenameFilter(new FilenameFilter() {
         public boolean accept(File dir, String name) {
           //System.out.println("check filter on " + dir + " " + name);
-          return name.toLowerCase().endsWith(".pde");
+          return name.toLowerCase().endsWith(".gcode");
         }
       });
 
@@ -476,8 +478,8 @@ public class Sketchbook {
       File subfolder = new File(folder, list[i]);
       if (!subfolder.isDirectory()) continue;
 
-      File entry = new File(subfolder, list[i] + ".pde");
-      // if a .pde file of the same prefix as the folder exists..
+      File entry = new File(subfolder, list[i] + ".gcode");
+      // if a .gcode file of the same prefix as the folder exists..
       if (entry.exists()) {
         //String sanityCheck = sanitizedName(list[i]);
         //if (!sanityCheck.equals(list[i])) {
@@ -623,12 +625,12 @@ public class Sketchbook {
 
         //File prey = new File(userPath, entries[j]);
         File prey = new File(sketchbookFolder, entries[j]);
-        File pde = new File(prey, entries[j] + ".pde");
+        File gcode = new File(prey, entries[j] + ".gcode");
 
-        // make sure this is actually a sketch folder with a .pde,
+        // make sure this is actually a sketch folder with a .gcode,
         // not a .DS_Store file or another random user folder
 
-        if (pde.exists() &&
+        if (gcode.exists() &&
             (Base.calcFolderSize(prey) == 0)) {
           //System.out.println("i want to remove " + prey);
 

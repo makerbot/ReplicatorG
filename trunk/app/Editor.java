@@ -149,6 +149,8 @@ public class Editor extends JFrame
   public Editor() {
     super(WINDOW_TITLE);
 
+	System.out.println("foo");
+
     // #@$*(@#$ apple.. always gotta think different
     MRJApplicationUtils.registerAboutHandler(this);
     MRJApplicationUtils.registerPrefsHandler(this);
@@ -1418,7 +1420,7 @@ public class Editor extends JFrame
   public void doClose() {
 
     doStop();  // need to stop if runtime error
-    //sketch.cleanup();
+    sketch.cleanup();
 
     // focus the PDE again after quitting presentation mode
     toFront();
@@ -1695,7 +1697,8 @@ public class Editor extends JFrame
         Base.showWarning("Bad file selected",
                             "ReplicatorG can only open its own sketches\n" +
                             "and other files ending in .gcode", null);
-        return;
+        throw new Exception();
+		//return;
 
       } else {
         String properParent =

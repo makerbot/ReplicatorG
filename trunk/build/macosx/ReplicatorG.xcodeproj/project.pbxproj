@@ -51,7 +51,7 @@
 			name = App;
 			productInstallPath = "$(USER_APPS_DIR)";
 			productName = App;
-			productReference = 33DD8FB6096AC8DA0013AF8F /* ReplicatorG.app */;
+			productReference = 91045E300E3E4D5800BE08F5 /* ReplicatorG.app */;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
 <plist version=\"1.0\">
@@ -216,27 +216,6 @@
 		33FF07310965C1E30016AC38 /* tab-unsel-menu.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02860965BD160016AC38 /* tab-unsel-menu.gif */; };
 		33FF07320965C1E30016AC38 /* tab-unsel-mid.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02870965BD160016AC38 /* tab-unsel-mid.gif */; };
 		33FF07330965C1E30016AC38 /* tab-unsel-right.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02880965BD160016AC38 /* tab-unsel-right.gif */; };
-		910908A00E3E253200B0389E /* about.jpg in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109088B0E3E253200B0389E /* about.jpg */; };
-		910908A10E3E253200B0389E /* antlr.jar in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109088C0E3E253200B0389E /* antlr.jar */; };
-		910908A20E3E253200B0389E /* applet.html in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109088D0E3E253200B0389E /* applet.html */; };
-		910908A30E3E253200B0389E /* buttons.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109088E0E3E253200B0389E /* buttons.gif */; };
-		910908A40E3E253200B0389E /* icon.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109088F0E3E253200B0389E /* icon.gif */; };
-		910908A50E3E253200B0389E /* keywords.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908900E3E253200B0389E /* keywords.txt */; };
-		910908A60E3E253200B0389E /* loading.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908910E3E253200B0389E /* loading.gif */; };
-		910908A70E3E253200B0389E /* mrj.jar in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908920E3E253200B0389E /* mrj.jar */; };
-		910908A80E3E253200B0389E /* oro.jar in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908930E3E253200B0389E /* oro.jar */; };
-		910908A90E3E253200B0389E /* preferences.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908940E3E253200B0389E /* preferences.txt */; };
-		910908AA0E3E253200B0389E /* registry.jar in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908950E3E253200B0389E /* registry.jar */; };
-		910908AB0E3E253200B0389E /* resize.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908960E3E253200B0389E /* resize.gif */; };
-		910908AC0E3E253200B0389E /* RXTXcomm.jar in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908970E3E253200B0389E /* RXTXcomm.jar */; };
-		910908AD0E3E253200B0389E /* tab-sel-left.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908980E3E253200B0389E /* tab-sel-left.gif */; };
-		910908AE0E3E253200B0389E /* tab-sel-menu.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908990E3E253200B0389E /* tab-sel-menu.gif */; };
-		910908AF0E3E253200B0389E /* tab-sel-mid.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109089A0E3E253200B0389E /* tab-sel-mid.gif */; };
-		910908B00E3E253200B0389E /* tab-sel-right.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109089B0E3E253200B0389E /* tab-sel-right.gif */; };
-		910908B10E3E253200B0389E /* tab-unsel-left.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109089C0E3E253200B0389E /* tab-unsel-left.gif */; };
-		910908B20E3E253200B0389E /* tab-unsel-menu.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109089D0E3E253200B0389E /* tab-unsel-menu.gif */; };
-		910908B30E3E253200B0389E /* tab-unsel-mid.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109089E0E3E253200B0389E /* tab-unsel-mid.gif */; };
-		910908B40E3E253200B0389E /* tab-unsel-right.gif in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9109089F0E3E253200B0389E /* tab-unsel-right.gif */; };
 		910908BD0E3E260400B0389E /* todo.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908B60E3E25B400B0389E /* todo.txt */; };
 		A337296F0D22505C00E82412 /* librxtxSerial.jnilib in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = A33729630D224FA700E82412 /* librxtxSerial.jnilib */; };
 		A3688DF40D284554003CBAA1 /* applet.html in Resources */ = {isa = PBXBuildFile; fileRef = 33AF620B0965D67900B514A9 /* applet.html */; };
@@ -266,27 +245,6 @@
 			dstPath = lib;
 			dstSubfolderSpec = 16;
 			files = (
-				910908A00E3E253200B0389E /* about.jpg in CopyFiles */,
-				910908A10E3E253200B0389E /* antlr.jar in CopyFiles */,
-				910908A20E3E253200B0389E /* applet.html in CopyFiles */,
-				910908A30E3E253200B0389E /* buttons.gif in CopyFiles */,
-				910908A40E3E253200B0389E /* icon.gif in CopyFiles */,
-				910908A50E3E253200B0389E /* keywords.txt in CopyFiles */,
-				910908A60E3E253200B0389E /* loading.gif in CopyFiles */,
-				910908A70E3E253200B0389E /* mrj.jar in CopyFiles */,
-				910908A80E3E253200B0389E /* oro.jar in CopyFiles */,
-				910908A90E3E253200B0389E /* preferences.txt in CopyFiles */,
-				910908AA0E3E253200B0389E /* registry.jar in CopyFiles */,
-				910908AB0E3E253200B0389E /* resize.gif in CopyFiles */,
-				910908AC0E3E253200B0389E /* RXTXcomm.jar in CopyFiles */,
-				910908AD0E3E253200B0389E /* tab-sel-left.gif in CopyFiles */,
-				910908AE0E3E253200B0389E /* tab-sel-menu.gif in CopyFiles */,
-				910908AF0E3E253200B0389E /* tab-sel-mid.gif in CopyFiles */,
-				910908B00E3E253200B0389E /* tab-sel-right.gif in CopyFiles */,
-				910908B10E3E253200B0389E /* tab-unsel-left.gif in CopyFiles */,
-				910908B20E3E253200B0389E /* tab-unsel-menu.gif in CopyFiles */,
-				910908B30E3E253200B0389E /* tab-unsel-mid.gif in CopyFiles */,
-				910908B40E3E253200B0389E /* tab-unsel-right.gif in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,7 +319,6 @@
 		33AF620F0965D67A00B514A9 /* RXTXcomm.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = RXTXcomm.jar; sourceTree = "<group>"; };
 		33BEDDD309D6E8D800430D5B /* Archiver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Archiver.java; sourceTree = "<group>"; };
 		33CF03B009662CA800F2C9A9 /* replicatorg.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = replicatorg.icns; path = dist/replicatorg.icns; sourceTree = "<group>"; };
-		33DD8FB6096AC8DA0013AF8F /* ReplicatorG.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; name = ReplicatorG.app; path = /Users/iowa/replicatorg/trunk/build/macosx/build/work/ReplicatorG.app; sourceTree = "<absolute>"; };
 		33FF01DE0965BD160016AC38 /* about.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = about.jpg; sourceTree = "<group>"; };
 		33FF02770965BD160016AC38 /* buttons.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = buttons.gif; sourceTree = "<group>"; };
 		33FF02780965BD160016AC38 /* icon.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = icon.gif; sourceTree = "<group>"; };
@@ -424,27 +381,7 @@
 		33FFFE810965BD110016AC38 /* howto.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = howto.txt; sourceTree = "<group>"; };
 		33FFFE930965BD110016AC38 /* .cvsignore */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = .cvsignore; sourceTree = "<group>"; };
 		33FFFE940965BD110016AC38 /* ReplicatorG.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = ReplicatorG.xcodeproj; sourceTree = "<group>"; };
-		9109088B0E3E253200B0389E /* about.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = about.jpg; sourceTree = "<group>"; };
-		9109088C0E3E253200B0389E /* antlr.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = antlr.jar; sourceTree = "<group>"; };
-		9109088D0E3E253200B0389E /* applet.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html; path = applet.html; sourceTree = "<group>"; };
-		9109088E0E3E253200B0389E /* buttons.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = buttons.gif; sourceTree = "<group>"; };
-		9109088F0E3E253200B0389E /* icon.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = icon.gif; sourceTree = "<group>"; };
-		910908900E3E253200B0389E /* keywords.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = keywords.txt; sourceTree = "<group>"; };
-		910908910E3E253200B0389E /* loading.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = loading.gif; sourceTree = "<group>"; };
-		910908920E3E253200B0389E /* mrj.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = mrj.jar; sourceTree = "<group>"; };
-		910908930E3E253200B0389E /* oro.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = oro.jar; sourceTree = "<group>"; };
-		910908940E3E253200B0389E /* preferences.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = preferences.txt; sourceTree = "<group>"; };
-		910908950E3E253200B0389E /* registry.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = registry.jar; sourceTree = "<group>"; };
-		910908960E3E253200B0389E /* resize.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = resize.gif; sourceTree = "<group>"; };
-		910908970E3E253200B0389E /* RXTXcomm.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = RXTXcomm.jar; sourceTree = "<group>"; };
-		910908980E3E253200B0389E /* tab-sel-left.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tab-sel-left.gif"; sourceTree = "<group>"; };
-		910908990E3E253200B0389E /* tab-sel-menu.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tab-sel-menu.gif"; sourceTree = "<group>"; };
-		9109089A0E3E253200B0389E /* tab-sel-mid.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tab-sel-mid.gif"; sourceTree = "<group>"; };
-		9109089B0E3E253200B0389E /* tab-sel-right.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tab-sel-right.gif"; sourceTree = "<group>"; };
-		9109089C0E3E253200B0389E /* tab-unsel-left.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tab-unsel-left.gif"; sourceTree = "<group>"; };
-		9109089D0E3E253200B0389E /* tab-unsel-menu.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tab-unsel-menu.gif"; sourceTree = "<group>"; };
-		9109089E0E3E253200B0389E /* tab-unsel-mid.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tab-unsel-mid.gif"; sourceTree = "<group>"; };
-		9109089F0E3E253200B0389E /* tab-unsel-right.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tab-unsel-right.gif"; sourceTree = "<group>"; };
+		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = ReplicatorG.app; path = build/work/ReplicatorG.app; sourceTree = "<group>"; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
 		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; path = librxtxSerial.jnilib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -553,13 +490,13 @@
 			isa = PBXGroup;
 			children = (
 				910908B60E3E25B400B0389E /* todo.txt */,
-				9109088A0E3E253200B0389E /* lib */,
 				33CF03B009662CA800F2C9A9 /* replicatorg.icns */,
 				33FFFE220965BD100016AC38 /* app */,
 				335A29060C8CCC0800D8A7F4 /* core */,
 				33FFFE800965BD110016AC38 /* build */,
 				33FF02B60965BD170016AC38 /* license.txt */,
 				33FF02B70965BD170016AC38 /* readme.txt */,
+				91045E300E3E4D5800BE08F5 /* ReplicatorG.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -689,34 +626,6 @@
 			path = drivers;
 			sourceTree = "<group>";
 		};
-		9109088A0E3E253200B0389E /* lib */ = {
-			isa = PBXGroup;
-			children = (
-				9109088B0E3E253200B0389E /* about.jpg */,
-				9109088C0E3E253200B0389E /* antlr.jar */,
-				9109088D0E3E253200B0389E /* applet.html */,
-				9109088E0E3E253200B0389E /* buttons.gif */,
-				9109088F0E3E253200B0389E /* icon.gif */,
-				910908900E3E253200B0389E /* keywords.txt */,
-				910908910E3E253200B0389E /* loading.gif */,
-				910908920E3E253200B0389E /* mrj.jar */,
-				910908930E3E253200B0389E /* oro.jar */,
-				910908940E3E253200B0389E /* preferences.txt */,
-				910908950E3E253200B0389E /* registry.jar */,
-				910908960E3E253200B0389E /* resize.gif */,
-				910908970E3E253200B0389E /* RXTXcomm.jar */,
-				910908980E3E253200B0389E /* tab-sel-left.gif */,
-				910908990E3E253200B0389E /* tab-sel-menu.gif */,
-				9109089A0E3E253200B0389E /* tab-sel-mid.gif */,
-				9109089B0E3E253200B0389E /* tab-sel-right.gif */,
-				9109089C0E3E253200B0389E /* tab-unsel-left.gif */,
-				9109089D0E3E253200B0389E /* tab-unsel-menu.gif */,
-				9109089E0E3E253200B0389E /* tab-unsel-mid.gif */,
-				9109089F0E3E253200B0389E /* tab-unsel-right.gif */,
-			);
-			path = lib;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXJavaArchiveBuildPhase section */
@@ -732,7 +641,7 @@
 /* Begin PBXProject section */
 		33FFFD3F0965B1E40016AC38 /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = 33FFFD400965B1E40016AC38 /* Build configuration list for PBXProject "Arduino" */;
+			buildConfigurationList = 33FFFD400965B1E40016AC38 /* Build configuration list for PBXProject "ReplicatorG" */;
 			hasScannedForEncodings = 0;
 			mainGroup = 33FFFD3D0965B1E40016AC38;
 			productRefGroup = 33FFFD3D0965B1E40016AC38;
@@ -952,7 +861,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = work;
 		};
-		33FFFD400965B1E40016AC38 /* Build configuration list for PBXProject "Arduino" */ = {
+		33FFFD400965B1E40016AC38 /* Build configuration list for PBXProject "ReplicatorG" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				33FFFD410965B1E40016AC38 /* work */,
