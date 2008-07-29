@@ -25,7 +25,10 @@ package processing.app;
 
 import java.util.regex.*;
 
-public class Driver extends Thread
+import org.xml.sax.*;
+import org.xml.sax.helpers.XMLReaderFactory;
+
+public class Driver
 {
 	// command to parse
 	protected String command;
