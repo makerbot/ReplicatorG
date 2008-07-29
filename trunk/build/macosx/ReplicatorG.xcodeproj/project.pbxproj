@@ -217,6 +217,8 @@
 		33FF07330965C1E30016AC38 /* tab-unsel-right.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02880965BD160016AC38 /* tab-unsel-right.gif */; };
 		910908BD0E3E260400B0389E /* todo.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908B60E3E25B400B0389E /* todo.txt */; };
 		915701430E3F8E2A0033A586 /* SerialPassthroughDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */; };
+		916CA3380E3FBC8500146F38 /* machines.xml in Resources */ = {isa = PBXBuildFile; fileRef = 916CA3370E3FBC8500146F38 /* machines.xml */; };
+		916CA3390E3FBC9800146F38 /* machines.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 916CA3370E3FBC8500146F38 /* machines.xml */; };
 		91A5A5AA0E3F9C5D00D3BB80 /* Machine.java in Sources */ = {isa = PBXBuildFile; fileRef = 91A5A5A90E3F9C5D00D3BB80 /* Machine.java */; };
 		91C444440E3F6704005F055C /* Driver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91C444430E3F6704005F055C /* Driver.java */; };
 		A337296F0D22505C00E82412 /* librxtxSerial.jnilib in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = A33729630D224FA700E82412 /* librxtxSerial.jnilib */; };
@@ -285,6 +287,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				916CA3390E3FBC9800146F38 /* machines.xml in CopyFiles */,
 				910908BD0E3E260400B0389E /* todo.txt in CopyFiles */,
 				339514FA097AEB8000193C89 /* license.txt in CopyFiles */,
 				339514FB097AEB8000193C89 /* readme.txt in CopyFiles */,
@@ -385,6 +388,7 @@
 		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
 		915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SerialPassthroughDriver.java; sourceTree = "<group>"; };
+		916CA3370E3FBC8500146F38 /* machines.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = machines.xml; path = ../shared/machines.xml; sourceTree = SOURCE_ROOT; };
 		91A5A5A90E3F9C5D00D3BB80 /* Machine.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Machine.java; sourceTree = "<group>"; };
 		91C444430E3F6704005F055C /* Driver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Driver.java; sourceTree = "<group>"; };
 		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; path = librxtxSerial.jnilib; sourceTree = "<group>"; };
@@ -493,6 +497,7 @@
 		33FFFD3D0965B1E40016AC38 = {
 			isa = PBXGroup;
 			children = (
+				916CA3370E3FBC8500146F38 /* machines.xml */,
 				910908B60E3E25B400B0389E /* todo.txt */,
 				33CF03B009662CA800F2C9A9 /* replicatorg.icns */,
 				33FFFE220965BD100016AC38 /* app */,
@@ -697,6 +702,7 @@
 				33FF07310965C1E30016AC38 /* tab-unsel-menu.gif in Resources */,
 				33FF07320965C1E30016AC38 /* tab-unsel-mid.gif in Resources */,
 				33FF07330965C1E30016AC38 /* tab-unsel-right.gif in Resources */,
+				916CA3380E3FBC8500146F38 /* machines.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

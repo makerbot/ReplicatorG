@@ -48,17 +48,18 @@ import processing.core.*;
  * general interaction with the system (launching URLs, loading
  * files and images, etc) that comes from that.
  */
-public class Base {
-  static final int VERSION = 1;
-  static final String VERSION_NAME = "0001 Alpha";
+public class Base
+{
+	static final int VERSION = 1;
+	static final String VERSION_NAME = "0001 Alpha";
 
-  /**
-   * Path of filename opened on the command line,
-   * or via the MRJ open document handler.
-   */
-  static String openedAtStartup;
+	/**
+	* Path of filename opened on the command line,
+	* or via the MRJ open document handler.
+	*/
+	static String openedAtStartup;
 
-  Editor editor;
+	Editor editor;
 
 
   static public void main(String args[]) {
@@ -141,10 +142,6 @@ public class Base {
 
     // show the window
     editor.show();
-
-    //TODO: check this out, we dont have any libraries to build.
-    // attempt to build libraries
-    //editor.prepareLibraries();
 
     // check for updates
     if (Preferences.getBoolean("update.check")) {

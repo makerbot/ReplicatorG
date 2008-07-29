@@ -23,13 +23,14 @@
 
 package processing.app;
 
+import java.io.*;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
 import org.xml.sax.*;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 public class Machine
 {
-	// our xml reader object.
-	protected XMLReader xr;
+	protected Document dom;
 	
 	// the name of our machine.
 	protected String name;
@@ -40,16 +41,15 @@ public class Machine
 	/**
 	  * Creates the machine object.
 	  */
-	public Machine()
+	public Machine(Document idom, String iname)
 	{
-		try{
-			xr = XMLReaderFactory.createXMLReader();
-		} catch (Exception e) {
-			//todo: handle this.
-		}
+		//save our params
+		dom = idom;
+		name = iname;
 		
 		loadDriver();
 	}
+	
 	
 	private void loadDriver()
 	{

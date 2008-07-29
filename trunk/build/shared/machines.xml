@@ -11,4 +11,16 @@
 			<stopbits>N</stopbits>
 		</driver>
 	</machine>
-</machine>
+	<machine>
+		<name>Machine 2</name>
+		<geometry>cartesian</geometry>
+		<driver>
+			<name>serialpassthrough</name>
+			<portname>COM1</portname>
+			<speed>19200</speed>
+			<parity>8</parity>
+			<databits>1</databits>
+			<stopbits>N</stopbits>
+		</driver>
+	</machine>
+</machines>

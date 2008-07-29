@@ -41,6 +41,10 @@ import java.net.*;
 import java.util.*;
 import java.util.zip.*;
 
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
+import org.xml.sax.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -63,6 +67,11 @@ public class Editor extends JFrame
 
   // p5 icon for the window
   Image icon;
+
+  // our machines.xml document.
+  public org.w3c.dom.Document dom;
+
+  Machine machine;
 
   // otherwise, if the window is resized with the message label
   // set to blank, it's preferredSize() will be fukered
@@ -115,12 +124,15 @@ public class Editor extends JFrame
   JMenuItem saveMenuItem;
   JMenuItem saveAsMenuItem;
   
- 
+
   JMenu serialMenu;
   JMenu serialRateMenu;
   JMenu mcuMenu;
-  
   SerialMenuListener serialMenuListener;
+
+  JMenu machineMenu;
+  MachineMenuListener machineMenuListener;
+  
 
   boolean running;
   boolean simulating;
@@ -149,8 +161,6 @@ public class Editor extends JFrame
   public Editor() {
     super(WINDOW_TITLE);
 
-	System.out.println("foo");
-
     // #@$*(@#$ apple.. always gotta think different
     MRJApplicationUtils.registerAboutHandler(this);
     MRJApplicationUtils.registerPrefsHandler(this);
@@ -177,6 +187,9 @@ public class Editor extends JFrame
     // of that via the handleQuitInternal() methods
     // http://dev.processing.org/bugs/show_bug.cgi?id=440
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+	//load our XML
+	loadMachinesConfig();
 
     PdeKeywords keywords = new PdeKeywords();
     sketchbook = new Sketchbook(this);
@@ -612,8 +625,6 @@ public class Editor extends JFrame
 
     menu.addSeparator();
 
-    menu.add(sketchbook.getImportMenu());
-
     //if (Base.isWindows() || Base.isMacOS()) {
       // no way to do an 'open in file browser' on other platforms
       // since there isn't any sort of standard
@@ -642,7 +653,7 @@ public class Editor extends JFrame
     JMenuItem rbMenuItem;
     JMenuItem cbMenuItem;
     
-    serialMenuListener  = new SerialMenuListener();
+    machineMenuListener  = new MachineMenuListener();
 
     JMenu menu = new JMenu("Tools");
 
@@ -650,23 +661,6 @@ public class Editor extends JFrame
     item.addActionListener(new ActionListener() {
         synchronized public void actionPerformed(ActionEvent e) {
           new AutoFormat(Editor.this).show();
-
-          /*
-          Jalopy jalopy = new Jalopy();
-          jalopy.setInput(getText(), sketch.current.file.getAbsolutePath());
-          StringBuffer buffer = new StringBuffer();
-          jalopy.setOutput(buffer);
-          jalopy.setInspect(false);
-          jalopy.format();
-          setText(buffer.toString(), 0, 0);
-
-          if (jalopy.getState() == Jalopy.State.OK)
-            System.out.println("successfully formatted");
-          else if (jalopy.getState() == Jalopy.State.WARN)
-            System.out.println(" formatted with warnings");
-          else if (jalopy.getState() == Jalopy.State.ERROR)
-            System.out.println(" could not be formatted");
-          */
         }
       });
     menu.add(item);
@@ -675,52 +669,22 @@ public class Editor extends JFrame
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           new Archiver(Editor.this).show();
-          //Archiver archiver = new Archiver();
-          //archiver.setup(Editor.this);
-          //archiver.show();
         }
       });
     menu.add(item);
 
-    /*
-    item = new JMenuItem("Export Folder...");
-    item.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          SwingUtilities.invokeLater(new Runnable() {
-              public void run() {
-          new ExportFolder(Editor.this).show();
-        }
-      });
-    menu.add(item);
-    */
     menu.addSeparator();
     
-	/*
-    JMenu boardsMenu = new JMenu("Machine");
-    ButtonGroup boardGroup = new ButtonGroup();
-    for (Iterator i = Preferences.getSubKeys("boards"); i.hasNext(); ) {
-      String board = (String) i.next();
-      Action action = new BoardMenuAction(board);
-      item = new JRadioButtonMenuItem(action);
-      if (board.equals(Preferences.get("board")))
-        item.setSelected(true);
-      boardGroup.add(item);
-      boardsMenu.add(item);
-    }
-    menu.add(boardsMenu);
-    */
-
     //TODO:eventually move this into machine specific config.
-    serialMenu = new JMenu("Serial Port");
-    populateSerialMenu();
-    menu.add(serialMenu);
+    machineMenu = new JMenu("Machine");
+    populateMachineMenu();
+    menu.add(machineMenu);
 	  
     menu.addMenuListener(new MenuListener() {
       public void menuCanceled(MenuEvent e) {}
       public void menuDeselected(MenuEvent e) {}
       public void menuSelected(MenuEvent e) {
-        //System.out.println("Tools menu selected.");
-        populateSerialMenu();
+        populateMachineMenu();
       }
     });
 
@@ -749,30 +713,29 @@ public class Editor extends JFrame
     }
 
   }
-  
-  class BoardMenuAction extends AbstractAction {
-    private String board;
-    public BoardMenuAction(String board) {
-      super(Preferences.get("boards." + board + ".name"));
-      this.board = board;
-    }
-    public void actionPerformed(ActionEvent actionevent) {
-	//TODO: make this machine specific
-	/*
-      //System.out.println("Switching to " + board);
-      Preferences.set("board", board);
-      try {
-        LibraryManager libraryManager = new LibraryManager();
-        libraryManager.rebuildAllBuilt();
-      } catch (IOException e) {
-        e.printStackTrace();
-      } catch (RunnerException e) {
-        message("Error rebuilding libraries...");
-        error(e);
-      }
-	*/
-    }
-  }
+
+	class MachineMenuListener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			if(machineMenu == null)
+			{
+				System.out.println("machineMenu is null");
+				return;
+			}
+
+			int count = machineMenu.getItemCount();
+			for (int i = 0; i < count; i++)
+			{
+				((JCheckBoxMenuItem)machineMenu.getItem(i)).setState(false);
+			}
+
+			JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
+			item.setState(true);
+			String name = item.getText();
+			Preferences.set("machine.name", name);
+		}
+	}
   
   protected void populateSerialMenu() {
     // getting list of ports
@@ -821,6 +784,59 @@ public class Editor extends JFrame
     //serialMenu.addSeparator();
     //serialMenu.add(item);
   }
+
+	protected void populateMachineMenu()
+	{
+		JMenuItem rbMenuItem;
+
+		//System.out.println("Clearing machine menu.");
+
+		machineMenu.removeAll();
+		boolean empty = true;
+
+		try
+		{
+			//get each machines
+			NodeList nl = dom.getElementsByTagName("machine");
+
+			for (int i=0; i<nl.getLength(); i++)
+			{
+				//look up each machines set of kids
+				Node n = nl.item(i);
+				NodeList kids = n.getChildNodes();
+
+				for (int j=0; j<kids.getLength(); j++)
+				{
+					Node kid = kids.item(j);
+
+					if (kid.getNodeName().equals("name"))
+					{
+						String machineName = kid.getFirstChild().getNodeValue().trim();
+						rbMenuItem = new JCheckBoxMenuItem(machineName, machineName.equals(Preferences.get("machine.name")));
+						rbMenuItem.addActionListener(machineMenuListener);
+						machineMenu.add(rbMenuItem);
+						empty = false;
+					}
+				}
+			}
+			
+			if (!empty)
+			{
+				//System.out.println("enabling the machineMenu");
+				machineMenu.setEnabled(true);
+			}
+    	}
+		catch (Exception exception)
+		{
+			System.out.println("error retrieving port list");
+			exception.printStackTrace();
+		}
+	
+		if (machineMenu.getItemCount() == 0)
+		{
+			machineMenu.setEnabled(false);
+		}
+	}
 
   protected JMenu buildHelpMenu() {
     JMenu menu = new JMenu("Help");
@@ -2217,5 +2233,35 @@ public class Editor extends JFrame
       super.show(component, x, y);
     }
   }
+
+	private void loadMachinesConfig()
+	{
+		//attempt to load our xml document.
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		try
+		{
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			try
+			{
+				File f = new File("machines.xml");
+				try
+				{
+					dom = db.parse(f);
+				}
+				catch (SAXException e)
+				{ 
+					e.printStackTrace();
+				}
+			}
+			catch (IOException e)
+			{ 
+				e.printStackTrace();
+			}
+		}
+		catch (ParserConfigurationException e)
+		{
+			e.printStackTrace();
+		}
+	}
 }
 
