@@ -267,21 +267,9 @@ linestatus.font	   = SansSerif,plain,10
 linestatus.color   = #ffffff
 linestatus.height  = 20
 
-# set the upload defaults
-upload.verbose=false
-upload.using=bootloader
-
-# set the parallel port defaults (used if upload.programmer=dapa)
-parallel.port=0x378
-
 # set the serial port defaults
 serial.port=COM1
 serial.databits=8
 serial.stopbits=1
 serial.parity=N
-serial.debug_rate=9600
-serial.burn_rate=115200
-
-build.verbose=false
-
-board=diecimila
+serial.debug_rate=19200

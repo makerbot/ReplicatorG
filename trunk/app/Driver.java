@@ -25,7 +25,7 @@ package processing.app;
 
 import java.util.regex.*;
 
-class Driver extends Thread
+public class Driver extends Thread
 {
 	// command to parse
 	protected String command;
@@ -52,7 +52,7 @@ class Driver extends Thread
 	//our gcode variables
 	protected double dCode = -1;
 	protected double fCode = -1;
-	protected double gGode = -1;
+	protected double gCode = -1;
 	protected double hCode = -1;
 	protected double iCode = -1;
 	protected double jCode = -1;
@@ -76,14 +76,44 @@ class Driver extends Thread
 	{
 	}
 	
+	/**
+	 * Parses a line of GCode, sets up the variables, etc.
+	 * @param String cmd a line of GCode to parse
+	 */
 	public boolean parse(String cmd)
 	{
+		//save our command
 		command = cmd;
+		
+		//parse all our codes
+		dCode = parseCode('D');
+		fCode = parseCode('F');
+		gCode = parseCode('G');
+		hCode = parseCode('H');
+		iCode = parseCode('I');
+		jCode = parseCode('J');
+		kCode = parseCode('K');
+		lCode = parseCode('L');
+		mCode = parseCode('M');
+		pCode = parseCode('P');
+		qCode = parseCode('Q');
+		rCode = parseCode('R');
+		sCode = parseCode('S');
+		tCode = parseCode('T');
+		xCode = parseCode('X');
+		yCode = parseCode('Y');
+		zCode = parseCode('Z');
 		
 		return true;
 	}
-	
-	public boolean hasCode(char code)
+
+
+	/**
+	 * Checks to see if our current line of GCode has this particular code
+	 * @param char code the code to check for (G, M, X, etc.)
+	 * @return boolean if the code was found or not
+	 */
+	private boolean hasCode(char code)
 	{
 		if (command.indexOf(code) >= 0)
 			return true;
@@ -91,7 +121,12 @@ class Driver extends Thread
 			return false;
 	}
 	
-	public double parseCode(char code)
+	/**
+	 * Finds out the value of the code we're looking for
+	 * @param char code the code whose value we're looking up
+	 * @return double the value of the code, -1 if not found.
+	 */
+	private double parseCode(char code)
 	{
 		Pattern myPattern = Pattern.compile(code + "([0-9.+-]+)");
 		Matcher myMatcher = myPattern.matcher(command);
@@ -111,6 +146,17 @@ class Driver extends Thread
 		return -1;
 	}
 	
+	/**
+	 * Actually execute the GCode we just parsed.
+	 */
+	public void execute()
+	{
+		
+	}
+	
+	/**
+	 * Prepare us for the next gcode command to come in.
+	 */
 	public void commandFinished()
 	{
 		//move us to our target.
@@ -121,7 +167,7 @@ class Driver extends Thread
 		//clear our gcodes.
 		dCode = -1;
 		fCode = -1;
-		gGode = -1;
+		gCode = -1;
 		hCode = -1;
 		iCode = -1;
 		jCode = -1;
@@ -139,6 +185,11 @@ class Driver extends Thread
 		zCode = -1;
 	}
 	
+	/**
+	 * Create and instantiate the driver class for our particular machine
+	 * @param String name the name of the driver to instantiate
+	 * @return Driver a driver object ready for parsing / running gcode
+	 */
 	public static Driver factory(String name)
 	{
 		//TODO: add driver subclasses.
