@@ -11,6 +11,7 @@
 			<stopbits>N</stopbits>
 		</driver>
 	</machine>
+	<!--
 	<machine>
 		<name>Machine 2</name>
 		<geometry>cartesian</geometry>
@@ -23,4 +24,5 @@
 			<stopbits>N</stopbits>
 		</driver>
 	</machine>
+	-->
 </machines>

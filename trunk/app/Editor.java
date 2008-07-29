@@ -123,7 +123,8 @@ public class Editor extends JFrame
   JMenuItem exportAppItem;
   JMenuItem saveMenuItem;
   JMenuItem saveAsMenuItem;
-  
+  JMenuItem stopItem;
+  JMenuItem pauseItem;
 
   JMenu serialMenu;
   JMenu serialRateMenu;
@@ -137,6 +138,7 @@ public class Editor extends JFrame
   boolean running;
   boolean simulating;
   boolean debugging;
+  boolean paused;
 
   //boolean presenting;
   
@@ -593,7 +595,7 @@ public class Editor extends JFrame
     item = newJMenuItem("Simulate", 'L');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          handleSimulate(false);
+          handleSimulate();
         }
       });
     menu.add(item);
@@ -602,26 +604,28 @@ public class Editor extends JFrame
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
 		//TODO: change this to handleRun()
-          handleExport();
+          handleRun();
         }
       });
     menu.add(item);
 
-    item = new JMenuItem("Pause", '.');
-    item.addActionListener(new ActionListener() {
+    pauseItem = newJMenuItem("Pause", 'E');
+    pauseItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           handlePause();
         }
       });
-    menu.add(item);
+	pauseItem.disable();
+    menu.add(pauseItem);
 
-    item = new JMenuItem("Stop", 'O');
-    item.addActionListener(new ActionListener() {
+    stopItem = newJMenuItem("Stop", '.');
+    stopItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           handleStop();
         }
       });
-    menu.add(item);
+	stopItem.disable();
+    menu.add(stopItem);
 
     menu.addSeparator();
 
@@ -1255,55 +1259,44 @@ public class Editor extends JFrame
 
   // ...................................................................
 
-  //TODO: figure out what 'present' means and does.
-  public void handleSimulate(boolean present) {
-    doClose();
+	public void handleSimulate()
+	{
+		doClose();
 
-    simulating = true;
-    buttons.activate(EditorButtons.SIMULATE);
+		simulating = true;
+		buttons.activate(EditorButtons.SIMULATE);
+		stopItem.enable();
+		pauseItem.enable();
 
-    message("Simulating...");
-    
-	// do this for the terminal window / dos prompt / etc
-    for (int i = 0; i < 10; i++)
-		System.out.println();
+		// clear the console on each run, unless the user doesn't want to
+		if (Preferences.getBoolean("console.auto_clear")) {
+			console.clear();
+		}
 
-    // clear the console on each run, unless the user doesn't want to
-    //if (Base.getBoolean("console.auto_clear", true)) {
-    //if (Preferences.getBoolean("console.auto_clear", true)) {
-    if (Preferences.getBoolean("console.auto_clear")) {
-      console.clear();
-    }
+		message("Simulating...");
 
-   	//TODO: show and draw simulation window.
-
-    buttons.clear();
-  }
+		//TODO: show and draw simulation window.
+	}
 
 
-  public void handleRun(boolean present) {
-    doClose();
+	public void handleRun()
+	{
+		doClose();
 
-    simulating = true;
-    buttons.activate(EditorButtons.RUN);
+		running = true;
+		buttons.activate(EditorButtons.RUN);
+		stopItem.enable();
+		pauseItem.enable();
 
-    message("Running...");
-    
-	// do this for the terminal window / dos prompt / etc
-    for (int i = 0; i < 10; i++)
-		System.out.println();
+		// clear the console on each run, unless the user doesn't want to
+		if (Preferences.getBoolean("console.auto_clear")) {
+		console.clear();
+		}
 
-    // clear the console on each run, unless the user doesn't want to
-    //if (Base.getBoolean("console.auto_clear", true)) {
-    //if (Preferences.getBoolean("console.auto_clear", true)) {
-    if (Preferences.getBoolean("console.auto_clear")) {
-      console.clear();
-    }
+		message("Running...");
 
-   	//TODO: run the actual program.
-
-    buttons.clear();
-  }
+		buttons.clear();
+	}
 
 
   class RunButtonWatcher implements Runnable {
@@ -1365,59 +1358,70 @@ public class Editor extends JFrame
   }
 
 
-  public void handleStop() {  // called by menu or buttons
-	//TODO: make it stop simluation vs. stop running
-    doStop();
+	public void handleStop()
+	{
+		// called by menu or buttons
+		doStop();
+		
+		stopItem.disable();
+		pauseItem.disable();
+		
+		buttons.clear();
+	}
 
-    buttons.clear();
-  }
+	/**
+	* Stop the applet but don't kill its window.
+	*/
+	public void doStop()
+	{
+		if (running)
+		{
+			//do something
+		}
+		
+		if (simulating)
+		{
+			//do something
+		}
 
-  /**
-   * Stop the applet but don't kill its window.
-   */
-  public void doStop() {
-    //if (runtime != null) runtime.stop();
-    if (debugging)  {
-      status.unserial();
-      serialPort.dispose();
-      debugging = false;
-    }
-    if (watcher != null) watcher.stop();
-    message(EMPTY);
+		if (watcher != null)
+			watcher.stop();
 
-    // the buttons are sometimes still null during the constructor
-    // is this still true? are people still hitting this error?
-    /*if (buttons != null)*/ buttons.clear();
+		message(EMPTY);
 
-    running = false;
-  }
+		buttons.clear();
 
-  public void handlePause() {  // called by menu or buttons
-    doPause();
+		running = false;
+		simulating = false;
+	}
 
-    buttons.clear();
-  }
+	public void handlePause()
+	{
+		// called by menu or buttons
+		doPause();
+	}
 
-  /**
-   * Stop the applet but don't kill its window.
-   */
-  public void doPause() {
-    //if (runtime != null) runtime.stop();
-    if (debugging)  {
-      status.unserial();
-      serialPort.dispose();
-      debugging = false;
-    }
-    if (watcher != null) watcher.stop();
-    message(EMPTY);
+	/**
+	* Pause the applet but don't kill its window.
+	*/
+	public void doPause()
+	{
 
-    // the buttons are sometimes still null during the constructor
-    // is this still true? are people still hitting this error?
-    /*if (buttons != null)*/ buttons.clear();
-
-    running = false;
-  }
-
+		/*
+		if (paused)
+		{
+			machine.unpause();
+			buttons.activate(EditorButtonstorButtons.PAUSE);
+		}
+		else
+		{
+			machine.pause();
+			buttons.inactive(EditorButtons.PAUSE);
+		}
+	
+		paused = !paused;
+		*/
+	}
 
   /**
    * Stop the applet and kill its window. When running in presentation

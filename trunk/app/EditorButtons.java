@@ -316,7 +316,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
     //switch (currentSelection) {
     switch (sel) {
     case SIMULATE:
-      editor.handleSimulate(e.isShiftDown());
+      editor.handleSimulate();
       break;
 
     case STOP:
@@ -340,7 +340,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
       break;
 
     case RUN:
-      editor.handleRun(e.isShiftDown());
+      editor.handleRun();
       break;
 
     case SERIAL:
@@ -368,6 +368,14 @@ public class EditorButtons extends JComponent implements MouseInputListener {
   public void activate(int what) {
     if (inactive == null) return;
     setState(what, ACTIVE, true);
+  }
+
+  /**
+   * Set a particular button to be active.
+   */
+  public void inactivate(int what) {
+    if (inactive == null) return;
+    setState(what, INACTIVE, false);
   }
 
 
