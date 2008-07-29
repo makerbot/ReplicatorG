@@ -165,7 +165,6 @@
 		33AF61810965C54B00B514A9 /* EditorHeader.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2A0965BD110016AC38 /* EditorHeader.java */; };
 		33AF61820965C54B00B514A9 /* EditorButtons.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE280965BD100016AC38 /* EditorButtons.java */; };
 		33AF61830965C54B00B514A9 /* SyntaxStyle.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE690965BD110016AC38 /* SyntaxStyle.java */; };
-		33AF61840965C54B00B514A9 /* Uploader.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE740965BD110016AC38 /* Uploader.java */; };
 		33AF61850965C54B00B514A9 /* RunnerException.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE580965BD110016AC38 /* RunnerException.java */; };
 		33AF61870965C54B00B514A9 /* TextAreaPainter.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6C0965BD110016AC38 /* TextAreaPainter.java */; };
 		33AF61880965C54B00B514A9 /* Sketchbook.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE5B0965BD110016AC38 /* Sketchbook.java */; };
@@ -217,6 +216,7 @@
 		33FF07320965C1E30016AC38 /* tab-unsel-mid.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02870965BD160016AC38 /* tab-unsel-mid.gif */; };
 		33FF07330965C1E30016AC38 /* tab-unsel-right.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02880965BD160016AC38 /* tab-unsel-right.gif */; };
 		910908BD0E3E260400B0389E /* todo.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908B60E3E25B400B0389E /* todo.txt */; };
+		91C444440E3F6704005F055C /* Driver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91C444430E3F6704005F055C /* Driver.java */; };
 		A337296F0D22505C00E82412 /* librxtxSerial.jnilib in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = A33729630D224FA700E82412 /* librxtxSerial.jnilib */; };
 		A3688DF40D284554003CBAA1 /* applet.html in Resources */ = {isa = PBXBuildFile; fileRef = 33AF620B0965D67900B514A9 /* applet.html */; };
 /* End PBXBuildFile section */
@@ -377,12 +377,12 @@
 		33FFFE6F0965BD110016AC38 /* TokenMarker.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = TokenMarker.java; sourceTree = "<group>"; };
 		33FFFE720965BD110016AC38 /* AutoFormat.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = AutoFormat.java; sourceTree = "<group>"; };
 		33FFFE730965BD110016AC38 /* UpdateCheck.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = UpdateCheck.java; sourceTree = "<group>"; };
-		33FFFE740965BD110016AC38 /* Uploader.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Uploader.java; sourceTree = "<group>"; };
 		33FFFE810965BD110016AC38 /* howto.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = howto.txt; sourceTree = "<group>"; };
 		33FFFE930965BD110016AC38 /* .cvsignore */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = .cvsignore; sourceTree = "<group>"; };
 		33FFFE940965BD110016AC38 /* ReplicatorG.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = ReplicatorG.xcodeproj; sourceTree = "<group>"; };
-		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = ReplicatorG.app; path = build/work/ReplicatorG.app; sourceTree = "<group>"; };
+		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
+		91C444430E3F6704005F055C /* Driver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Driver.java; sourceTree = "<group>"; };
 		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; path = librxtxSerial.jnilib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -503,6 +503,7 @@
 		33FFFE220965BD100016AC38 /* app */ = {
 			isa = PBXGroup;
 			children = (
+				91C444430E3F6704005F055C /* Driver.java */,
 				33055EFE0CB8187600824CD9 /* SerialException.java */,
 				33FFFE240965BD100016AC38 /* Base.java */,
 				33FFFE270965BD100016AC38 /* Editor.java */,
@@ -530,7 +531,6 @@
 				33FFFE5F0965BD110016AC38 /* syntax */,
 				33FFFE710965BD110016AC38 /* tools */,
 				33FFFE730965BD110016AC38 /* UpdateCheck.java */,
-				33FFFE740965BD110016AC38 /* Uploader.java */,
 			);
 			includeInIndex = 0;
 			name = app;
@@ -721,7 +721,6 @@
 				33AF61810965C54B00B514A9 /* EditorHeader.java in Sources */,
 				33AF61820965C54B00B514A9 /* EditorButtons.java in Sources */,
 				33AF61830965C54B00B514A9 /* SyntaxStyle.java in Sources */,
-				33AF61840965C54B00B514A9 /* Uploader.java in Sources */,
 				33AF61850965C54B00B514A9 /* RunnerException.java in Sources */,
 				33AF61870965C54B00B514A9 /* TextAreaPainter.java in Sources */,
 				33AF61880965C54B00B514A9 /* Sketchbook.java in Sources */,
@@ -765,6 +764,7 @@
 				335A291F0C8CCC0900D8A7F4 /* PShape.java in Sources */,
 				335A29200C8CCC0900D8A7F4 /* PTriangle.java in Sources */,
 				33055EFF0CB8187700824CD9 /* SerialException.java in Sources */,
+				91C444440E3F6704005F055C /* Driver.java in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
