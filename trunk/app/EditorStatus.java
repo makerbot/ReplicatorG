@@ -41,13 +41,11 @@ public class EditorStatus extends JPanel implements ActionListener {
   static final int ERR    = 1;
   static final int PROMPT = 2;
   static final int EDIT   = 3;
-  static final int SERIAL = 4;
 
   static final int YES    = 1;
   static final int NO     = 2;
   static final int CANCEL = 3;
   static final int OK     = 4;
-  static final int SEND   = 5;
 
   static final String NO_MESSAGE = "";
 
@@ -68,10 +66,7 @@ public class EditorStatus extends JPanel implements ActionListener {
   JButton noButton;
   JButton cancelButton;
   JButton okButton;
-  JButton sendButton;
   JTextField editField;
-  JTextField serialField;
-  JComboBox serialRates;
 
   //Thread promptThread;
   int response;
@@ -173,28 +168,6 @@ public class EditorStatus extends JPanel implements ActionListener {
     empty();
   }
   
-  public void serial()
-  {
-    mode = SERIAL;
-    this.message = NO_MESSAGE;
-    
-    sendButton.setVisible(true);
-    serialRates.setVisible(true);
-    serialField.setVisible(true);
-    serialField.setText("");
-    serialField.requestFocus();
-
-    repaint();
-  }
-  
-  public void unserial()
-  {
-    sendButton.setVisible(false);
-    serialField.setVisible(false);
-    serialRates.setVisible(false);
-    empty();
-  }
-
   public void paintComponent(Graphics screen) {
     //if (screen == null) return;
     if (yesButton == null) setup();
@@ -254,7 +227,6 @@ public class EditorStatus extends JPanel implements ActionListener {
       noButton     = new JButton(Preferences.PROMPT_NO);
       cancelButton = new JButton(Preferences.PROMPT_CANCEL);
       okButton     = new JButton(Preferences.PROMPT_OK);
-      sendButton   = new JButton(Preferences.PROMPT_SEND);
 
       // !@#(* aqua ui #($*(( that turtle-neck wearing #(** (#$@)(
       // os9 seems to work if bg of component is set, but x still a bastard
@@ -263,7 +235,6 @@ public class EditorStatus extends JPanel implements ActionListener {
         noButton.setBackground(bgcolor[PROMPT]);
         cancelButton.setBackground(bgcolor[PROMPT]);
         okButton.setBackground(bgcolor[PROMPT]);
-        sendButton.setBackground(bgcolor[SERIAL]);
       }
       setLayout(null);
 
@@ -271,19 +242,16 @@ public class EditorStatus extends JPanel implements ActionListener {
       noButton.addActionListener(this);
       cancelButton.addActionListener(this);
       okButton.addActionListener(this);
-      sendButton.addActionListener(this);
 
       add(yesButton);
       add(noButton);
       add(cancelButton);
       add(okButton);
-      add(sendButton);
 
       yesButton.setVisible(false);
       noButton.setVisible(false);
       cancelButton.setVisible(false);
       okButton.setVisible(false);
-      sendButton.setVisible(false);
 
       editField = new JTextField();
       editField.addActionListener(this);
@@ -385,42 +353,6 @@ public class EditorStatus extends JPanel implements ActionListener {
         });
       add(editField);
       editField.setVisible(false);
-            
-      serialField = new JTextField();
-      serialField.addActionListener(this);
-
-      serialField.addKeyListener(new KeyAdapter() {
-        public void keyTyped(KeyEvent event) {
-          int c = event.getKeyChar();
-            
-          if (c == KeyEvent.VK_ENTER) {  // accept the input
-            editor.serialPort.write(serialField.getText());
-            event.consume();
-            serialField.setText("");
-          } 
-        }});
-        
-      add(serialField);
-      serialField.setVisible(false);
-
-      String[] serialRateStrings = {
-        "300","1200","2400","4800","9600","14400",
-        "19200","28800","38400","57600","115200"
-      };
-      
-      serialRates = new JComboBox();
-
-      if (Base.isMacOS())
-        serialRates.setBackground(bgcolor[SERIAL]);
-        
-      for (int i = 0; i < serialRateStrings.length; i++)
-        serialRates.addItem(serialRateStrings[i] + " baud");
-
-      serialRates.setSelectedItem(
-        Preferences.get("serial.debug_rate") + " baud");
-      serialRates.addActionListener(this);      
-      add(serialRates);
-      serialRates.setVisible(false);
     }
   }
 
@@ -437,19 +369,13 @@ public class EditorStatus extends JPanel implements ActionListener {
     noButton.setLocation(noLeft, top);
     cancelButton.setLocation(cancelLeft, top);
     editField.setLocation(yesLeft - Preferences.BUTTON_WIDTH, top);
-    serialField.setLocation(yesLeft - Preferences.BUTTON_WIDTH, top);
     okButton.setLocation(noLeft, top);
-    serialRates.setLocation(0, top);
-    sendButton.setLocation(cancelLeft, top);
 
     yesButton.setSize(      Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
     noButton.setSize(       Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
     cancelButton.setSize(   Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
     okButton.setSize(       Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
-    sendButton.setSize(     Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
-    serialRates.setSize(  3*Preferences.BUTTON_WIDTH/2, Preferences.BUTTON_HEIGHT);
     editField.setSize(    2*Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
-    serialField.setSize(  3*Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
   }
 
 
@@ -491,20 +417,6 @@ public class EditorStatus extends JPanel implements ActionListener {
       //editor.handleSaveAs2(answer);
       editor.sketch.nameCode(answer);
       unedit();
-    } else if (e.getSource() == sendButton) {
-      editor.serialPort.write(serialField.getText());
-      serialField.setText("");
-    } else if (e.getSource() == serialRates) {
-      String wholeString = (String) serialRates.getSelectedItem();
-      String rateString = wholeString.substring(0, wholeString.indexOf(' '));
-      int rate = Integer.parseInt(rateString);
-      Preferences.set("serial.debug_rate", rateString);
-      editor.serialPort.dispose();
-      try {
-        editor.serialPort = new Serial(true);
-      } catch (SerialException err) {
-        editor.error(err);
-      }
     }
   }
 }

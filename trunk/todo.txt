@@ -1,3 +1,24 @@
 0001 ReplicatorG
 
-* add more todos
+TODO:
+* get GUI working reliably
+* create gcode running thread
+* create gcode simulation thread
+* create gcode simulation driver
+* get auto-formatting working
+* get text-highlighting up and running
+* get machine driver-loading based on XML
+* create and add 'pause' button
+* get help menu up and running properly (send everyone to website)
+* update RunButtonWatcher to work with our running and/or simulating thread
+* remove HandleNewLibrary
+* add our ReplicatorG header to every 
+* change colors to RepRap green
+* test build process on linux/windows
+
+
+DONE:
+
+* convert from Arduino to ReplicatorG
+* get new app to build
+* convert .pde to .gcode

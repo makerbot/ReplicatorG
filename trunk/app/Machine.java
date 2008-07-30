@@ -38,6 +38,9 @@ public class Machine
 	// our driver object
 	protected Driver driver;
 	
+	//our pause variable
+	protected boolean paused = false;
+	
 	/**
 	  * Creates the machine object.
 	  */
@@ -47,6 +50,8 @@ public class Machine
 		dom = idom;
 		name = iname;
 		
+		paused = false;
+		
 		loadDriver();
 	}
 	
@@ -54,5 +59,23 @@ public class Machine
 	private void loadDriver()
 	{
 		driver = Driver.factory(name);
+	}
+	
+	public void pause()
+	{
+		paused = true;
+	}
+	
+	public void unpause()
+	{
+		paused = false;
+	}
+	
+	public void stop()
+	{
+	}
+	
+	public void run()
+	{
 	}
 }

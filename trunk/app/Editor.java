@@ -53,7 +53,6 @@ import javax.swing.undo.*;
 
 import com.apple.mrj.*;
 import com.oroinc.text.regex.*;
-//import de.hunsicker.jalopy.*;
 
 import com.apple.mrj.*;
 import gnu.io.*;
@@ -86,6 +85,7 @@ public class Editor extends JFrame
   static final int HANDLE_NEW  = 1;
   static final int HANDLE_OPEN = 2;
   static final int HANDLE_QUIT = 3;
+
   int checkModifiedMode;
   String handleOpenPath;
   boolean handleNewShift;
@@ -98,7 +98,6 @@ public class Editor extends JFrame
   EditorHeader header;
   EditorStatus status;
   EditorConsole console;
-  Serial serialPort;
   JSplitPane splitPane;
   JPanel consolePanel;
 
@@ -125,11 +124,6 @@ public class Editor extends JFrame
   JMenuItem saveAsMenuItem;
   JMenuItem stopItem;
   JMenuItem pauseItem;
-
-  JMenu serialMenu;
-  JMenu serialRateMenu;
-  JMenu mcuMenu;
-  SerialMenuListener serialMenuListener;
 
   JMenu machineMenu;
   MachineMenuListener machineMenuListener;
@@ -185,6 +179,7 @@ public class Editor extends JFrame
           handleQuitInternal();
         }
       });
+
     // don't close the window when clicked, the app will take care
     // of that via the handleQuitInternal() methods
     // http://dev.processing.org/bugs/show_bug.cgi?id=440
@@ -205,11 +200,6 @@ public class Editor extends JFrame
 
     setJMenuBar(menubar);
 
-    // doesn't matter when this is created, just make it happen at some point
-    //find = new FindReplace(Editor.this);
-
-    //Container pain = getContentPane();
-    //pain.setLayout(new BorderLayout());
     // for rev 0120, placing things inside a JPanel because
     Container contentPain = getContentPane();
     contentPain.setLayout(new BorderLayout());
@@ -405,33 +395,32 @@ public class Editor extends JFrame
 
 
     // last sketch that was in use, or used to launch the app
+    if (Base.openedAtStartup != null)
+	{
+		handleOpen2(Base.openedAtStartup);
+    }
+	else
+	{
+		String sketchPath = Preferences.get("last.sketch.path");
+		//Sketch sketchTemp = new Sketch(sketchPath);
 
-    if (Base.openedAtStartup != null) {
-      handleOpen2(Base.openedAtStartup);
-
-    } else {
-      //String sketchName = Preferences.get("last.sketch.name");
-      String sketchPath = Preferences.get("last.sketch.path");
-      //Sketch sketchTemp = new Sketch(sketchPath);
-
-      if ((sketchPath != null) && (new File(sketchPath)).exists()) {
-        // don't check modified because nothing is open yet
-        handleOpen2(sketchPath);
-
-      } else {
-        handleNew2(true);
-      }
+		if ((sketchPath != null) && (new File(sketchPath)).exists())
+		{
+			// don't check modified because nothing is open yet
+			handleOpen2(sketchPath);
+		}
+		else
+		{
+			handleNew2(true);
+		}
     }
 
 
     // location for the console/editor area divider
-
     int location = Preferences.getInteger("last.divider.location");
     splitPane.setDividerLocation(location);
 
-
     // read the preferences that are settable in the preferences window
-
     applyPreferences();
   }
 
@@ -603,7 +592,6 @@ public class Editor extends JFrame
     item = newJMenuItem("Run GCode", 'R');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-		//TODO: change this to handleRun()
           handleRun();
         }
       });
@@ -629,25 +617,20 @@ public class Editor extends JFrame
 
     menu.addSeparator();
 
-    //if (Base.isWindows() || Base.isMacOS()) {
-      // no way to do an 'open in file browser' on other platforms
-      // since there isn't any sort of standard
-      item = newJMenuItem("Show Sketch Folder", 'K', false);
-      item.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          //Base.openFolder(sketchDir);
-          Base.openFolder(sketch.folder);
-        }
-      });
-      menu.add(item);
+	// no way to do an 'open in file browser' on other platforms
+	// since there isn't any sort of standard
+	item = newJMenuItem("Show Sketch Folder", 'K', false);
+	item.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			Base.openFolder(sketch.folder);
+		}
+	});
+	menu.add(item);
+
     if (!Base.openFolderAvailable()) {
       item.setEnabled(false);
     }
 
-    //menu.addSeparator();
-
-    // TODO re-enable history
-    //history.attachMenu(menu);
     return menu;
   }
 
@@ -679,7 +662,6 @@ public class Editor extends JFrame
 
     menu.addSeparator();
     
-    //TODO:eventually move this into machine specific config.
     machineMenu = new JMenu("Machine");
     populateMachineMenu();
     menu.add(machineMenu);
@@ -694,28 +676,6 @@ public class Editor extends JFrame
 
 
     return menu;
-  }
-
-  class SerialMenuListener implements ActionListener {
-    //public SerialMenuListener() { }
-
-    public void actionPerformed(ActionEvent e) {
-      if(serialMenu == null) {
-        System.out.println("serialMenu is null");
-        return;
-      }
-      int count = serialMenu.getItemCount();
-      for (int i = 0; i < count; i++) {
-        ((JCheckBoxMenuItem)serialMenu.getItem(i)).setState(false);
-      }
-      JCheckBoxMenuItem item = (JCheckBoxMenuItem)e.getSource();
-      item.setState(true);
-      String name = item.getText();
-      //System.out.println(item.getLabel());
-      Preferences.set("serial.port", name);
-      //System.out.println("set to " + get("serial.port"));
-    }
-
   }
 
 	class MachineMenuListener implements ActionListener
@@ -741,54 +701,6 @@ public class Editor extends JFrame
 		}
 	}
   
-  protected void populateSerialMenu() {
-    // getting list of ports
-
-    JMenuItem rbMenuItem;
-    
-    //System.out.println("Clearing serial port menu.");
-	
-    serialMenu.removeAll();
-    boolean empty = true;
-
-    try
-    {
-      for (Enumeration enumeration = CommPortIdentifier.getPortIdentifiers(); enumeration.hasMoreElements();)
-      {
-        CommPortIdentifier commportidentifier = (CommPortIdentifier)enumeration.nextElement();
-        //System.out.println("Found communication port: " + commportidentifier);
-        if (commportidentifier.getPortType() == CommPortIdentifier.PORT_SERIAL)
-        {
-          //System.out.println("Adding port to serial port menu: " + commportidentifier);
-          String curr_port = commportidentifier.getName();
-          rbMenuItem = new JCheckBoxMenuItem(curr_port, curr_port.equals(Preferences.get("serial.port")));
-          rbMenuItem.addActionListener(serialMenuListener);
-          //serialGroup.add(rbMenuItem);
-          serialMenu.add(rbMenuItem);
-          empty = false;
-        }
-      }
-      if (!empty) {
-        //System.out.println("enabling the serialMenu");
-        serialMenu.setEnabled(true);
-      }
-
-    }
-
-    catch (Exception exception)
-    {
-      System.out.println("error retrieving port list");
-      exception.printStackTrace();
-    }
-	
-    if (serialMenu.getItemCount() == 0) {
-      serialMenu.setEnabled(false);
-    }
-
-    //serialMenu.addSeparator();
-    //serialMenu.add(item);
-  }
-
 	protected void populateMachineMenu()
 	{
 		JMenuItem rbMenuItem;
@@ -1148,18 +1060,6 @@ public class Editor extends JFrame
   public void handlePrefs() {
     Preferences preferences = new Preferences();
     preferences.showFrame(this);
-
-    // since this can't actually block, it'll hide
-    // the editor window while the prefs are open
-    //preferences.showFrame(this);
-    // and then call applyPreferences if 'ok' is hit
-    // and then unhide
-
-    // may need to rebuild sketch and other menus
-    //applyPreferences();
-
-    // next have editor do its thing
-    //editor.appyPreferences();
   }
 
 
@@ -1276,6 +1176,16 @@ public class Editor extends JFrame
 		message("Simulating...");
 
 		//TODO: show and draw simulation window.
+		try {
+			Thread.sleep(5000);
+		} catch (Exception e) {}
+		
+		simulating = false;
+		stopItem.disable();
+		pauseItem.disable();
+
+		message("Done.");
+		buttons.clear();
 	}
 
 
@@ -1295,6 +1205,15 @@ public class Editor extends JFrame
 
 		message("Running...");
 
+		try {
+			Thread.sleep(5000);
+		} catch (Exception e) {}
+
+		simulating = false;
+		stopItem.disable();
+		pauseItem.disable();
+
+		message("Done.");
 		buttons.clear();
 	}
 
@@ -1310,23 +1229,6 @@ public class Editor extends JFrame
 
     public void run() {
       while (Thread.currentThread() == thread) {
-        /*if (runtime == null) {
-          stop();
-
-        } else {
-          if (runtime.applet != null) {
-            if (runtime.applet.finished) {
-              stop();
-            }
-            //buttons.running(!runtime.applet.finished);
-
-          } else if (runtime.process != null) {
-            //buttons.running(true);  // ??
-
-          } else {
-            stop();
-          }
-        }*/
         try {
           Thread.sleep(250);
         } catch (InterruptedException e) { }
@@ -1337,23 +1239,6 @@ public class Editor extends JFrame
     public void stop() {
       buttons.running(false);
       thread = null;
-    }
-  }
-
-
-  public void handleSerial() {
-    if (!debugging) {
-      try {
-        serialPort = new Serial(true);
-        console.clear();
-        buttons.activate(EditorButtons.SERIAL);
-        debugging = true;
-        status.serial();
-      } catch(SerialException e) {
-        error(e);
-      }
-    } else {
-      doStop();
     }
   }
 
@@ -1406,21 +1291,18 @@ public class Editor extends JFrame
 	*/
 	public void doPause()
 	{
-
-		/*
 		if (paused)
 		{
 			machine.unpause();
-			buttons.activate(EditorButtonstorButtons.PAUSE);
+//			buttons.inactive(EditorButtons.PAUSE);
 		}
 		else
 		{
 			machine.pause();
-			buttons.inactive(EditorButtons.PAUSE);
+//			buttons.activate(EditorButtons.PAUSE);
 		}
 	
 		paused = !paused;
-		*/
 	}
 
   /**
