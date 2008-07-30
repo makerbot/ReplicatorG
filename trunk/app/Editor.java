@@ -1159,7 +1159,7 @@ public class Editor extends JFrame
 
   // ...................................................................
 
-	public void handleSimulate()
+	synchronized public void handleSimulate()
 	{
 		doClose();
 
@@ -1174,22 +1174,34 @@ public class Editor extends JFrame
 		}
 
 		message("Simulating...");
-
-		//TODO: show and draw simulation window.
-		try {
-			Thread.sleep(5000);
-		} catch (Exception e) {}
 		
-		simulating = false;
-		stopItem.disable();
-		pauseItem.disable();
-
-		message("Done.");
-		buttons.clear();
+		SwingUtilities.invokeLater(
+			new Runnable()
+			{
+				public void run()
+				{
+					try
+					{
+						try{
+							Thread.sleep(2000);
+						} catch (InterruptedException e) {}
+						
+						message("Done simulating.");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
+					simulating = false;
+					stopItem.disable();
+					pauseItem.disable();
+					buttons.clear();
+				}
+			}
+		);
 	}
 
 
-	public void handleRun()
+	synchronized public void handleRun()
 	{
 		doClose();
 
@@ -1205,16 +1217,29 @@ public class Editor extends JFrame
 
 		message("Running...");
 
-		try {
-			Thread.sleep(5000);
-		} catch (Exception e) {}
-
-		simulating = false;
-		stopItem.disable();
-		pauseItem.disable();
-
-		message("Done.");
-		buttons.clear();
+		SwingUtilities.invokeLater(
+			new Runnable()
+			{
+				public void run()
+				{
+					try
+					{
+						try{
+							Thread.sleep(2000);
+						} catch (InterruptedException e) {}
+						
+						message("Done running.");
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
+					running = false;
+					stopItem.disable();
+					pauseItem.disable();
+					buttons.clear();
+				}
+			}
+		);
 	}
 
 

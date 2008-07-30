@@ -369,7 +369,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
    */
   public void inactivate(int what) {
     if (inactive == null) return;
-    setState(what, INACTIVE, false);
+    setState(what, INACTIVE, true);
   }
 
 
@@ -382,14 +382,16 @@ public class EditorButtons extends JComponent implements MouseInputListener {
   /**
    * Clear all the state of all buttons.
    */
-  public void clear() { // (int button) {
-    if (inactive == null) return;
+  public void clear()
+  {
+    if (inactive == null)
+		return;
 
     // skip the run button, do the others
-    for (int i = 1; i < buttonCount; i++) {
+    for (int i = 0; i < buttonCount; i++) {
       setState(i, INACTIVE, false);
     }
-    repaint(); // changed for swing from update();
+    repaint();
   }
 
 

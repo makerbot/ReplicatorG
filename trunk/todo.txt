@@ -16,7 +16,6 @@ TODO:
 * change colors to RepRap green
 * test build process on linux/windows
 
-
 DONE:
 
 * convert from Arduino to ReplicatorG
