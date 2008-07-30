@@ -25,6 +25,7 @@ import processing.core.*;
 
 import gnu.io.*;
 import java.util.*;
+import org.w3c.dom.*;
 
 public class SerialPassthroughDriver extends Driver
 {
@@ -63,7 +64,7 @@ public class SerialPassthroughDriver extends Driver
 	*/
 	private String result = "";
 		
-	public SerialPassthroughDriver()
+	public SerialPassthroughDriver(Node xml)
 	{
 		super();
 		

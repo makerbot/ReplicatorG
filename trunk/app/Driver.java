@@ -22,11 +22,14 @@
 */
 
 package processing.app;
+import processing.app.drivers.*;
 
 import java.util.regex.*;
 
-import org.xml.sax.*;
-import org.xml.sax.helpers.XMLReaderFactory;
+import org.w3c.dom.*;
+
+//import org.xml.sax.*;
+//import org.xml.sax.helpers.XMLReaderFactory;
 
 public class Driver
 {
@@ -193,10 +196,38 @@ public class Driver
 	 * @param String name the name of the driver to instantiate
 	 * @return Driver a driver object ready for parsing / running gcode
 	 */
-	public static Driver factory(String name)
+	public static Driver factory(Node xml)
 	{
-		//TODO: add driver subclasses.
-		return new Driver();
+		NodeList kids = xml.getChildNodes();
+
+		for (int j=0; j<kids.getLength(); j++)
+		{
+			Node kid = kids.item(j);
+
+			if (kid.getNodeName().equals("name"))
+			{
+				String driverName = kid.getFirstChild().getNodeValue().trim();
+
+				System.out.println("Loading driver: " + driverName);
+
+				//create our driver and give it the config so it can self-configure.
+				if (driverName.equals("serialpassthrough"))
+					return new SerialPassthroughDriver(xml);
+				else
+					return new SimulationDriver(xml);
+			}
+		}
+		
+		//bail with a simulation driver.
+		return new SimulationDriver();
+	}
+	
+	/**
+	* empty parameters?  give up a simulation driver.
+	*/
+	public static Driver factory()
+	{
+		return new SimulationDriver();
 	}
 	
 	// our getter functions

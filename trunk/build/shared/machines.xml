@@ -1,6 +1,16 @@
 <machines>
+	<!-- do not remove this machine configuration!!! -->
 	<machine>
-		<name>My Machine</name>
+		<name>3-Axis Simulator</name>
+		<geometry>cartesian</geometry>
+		<driver>
+			<name>simulation</name>
+			<wait>250</wait> <!-- in milliseconds -->
+		</driver>
+	</machine>
+	<!-- end protected configuration -->
+	<machine>
+		<name>Darwin</name>
 		<geometry>cartesian</geometry>
 		<driver>
 			<name>serialpassthrough</name>
@@ -11,18 +21,4 @@
 			<stopbits>N</stopbits>
 		</driver>
 	</machine>
-	<!--
-	<machine>
-		<name>Machine 2</name>
-		<geometry>cartesian</geometry>
-		<driver>
-			<name>serialpassthrough</name>
-			<portname>COM1</portname>
-			<speed>19200</speed>
-			<parity>8</parity>
-			<databits>1</databits>
-			<stopbits>N</stopbits>
-		</driver>
-	</machine>
-	-->
 </machines>

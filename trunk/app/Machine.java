@@ -30,7 +30,7 @@ import org.xml.sax.*;
 
 public class Machine
 {
-	protected Document dom;
+	protected Node machineNode;
 	
 	// the name of our machine.
 	protected String name;
@@ -44,38 +44,76 @@ public class Machine
 	/**
 	  * Creates the machine object.
 	  */
-	public Machine(Document idom, String iname)
+	public Machine(Node mNode)
 	{
-		//save our params
-		dom = idom;
-		name = iname;
-		
+		//save our XML
+		machineNode = mNode;
+
+		parseName();
+
 		paused = false;
+		
+		System.out.println("Loading machine: " + name);
 		
 		loadDriver();
 	}
 	
+	private void parseName()
+	{
+		NodeList kids = machineNode.getChildNodes();
+
+		for (int j=0; j<kids.getLength(); j++)
+		{
+			Node kid = kids.item(j);
+
+			if (kid.getNodeName().equals("name"))
+			{
+				name = kid.getFirstChild().getNodeValue().trim();
+				return;
+			}
+		}
+		
+		name = "Unknown";
+	}
+
+	public void run()
+	{
+	}
 	
 	private void loadDriver()
 	{
-		driver = Driver.factory(name);
+		NodeList kids = machineNode.getChildNodes();
+
+		for (int j=0; j<kids.getLength(); j++)
+		{
+			Node kid = kids.item(j);
+
+			if (kid.getNodeName().equals("driver"))
+			{
+				driver = Driver.factory(kid);
+			}
+		}
+		
+		driver = Driver.factory();
 	}
 	
-	public void pause()
+	synchronized public void pause()
 	{
 		paused = true;
 	}
 	
-	public void unpause()
+	synchronized public void unpause()
 	{
 		paused = false;
 	}
 	
-	public void stop()
+	synchronized public boolean isPaused()
+	{
+		return paused;
+	}
+	
+	synchronized public void stop()
 	{
 	}
 	
-	public void run()
-	{
-	}
 }

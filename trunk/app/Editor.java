@@ -134,7 +134,6 @@ public class Editor extends JFrame
   boolean running;
   boolean simulating;
   boolean debugging;
-  boolean paused;
 
   //boolean presenting;
   
@@ -746,7 +745,7 @@ public class Editor extends JFrame
     	}
 		catch (Exception exception)
 		{
-			System.out.println("error retrieving port list");
+			System.out.println("error retrieving machine list");
 			exception.printStackTrace();
 		}
 	
@@ -1174,6 +1173,9 @@ public class Editor extends JFrame
 		buttons.activate(EditorButtons.SIMULATE);
 		stopItem.enable();
 		pauseItem.enable();
+		
+		//load our simulator machine
+		loadSimulator();
 
 		// clear the console on each run, unless the user doesn't want to
 		if (Preferences.getBoolean("console.auto_clear")) {
@@ -1201,6 +1203,16 @@ public class Editor extends JFrame
 			return;
 		if (simulating)
 			return;
+
+		doClose();
+
+		running = true;
+		buttons.activate(EditorButtons.RUN);
+		stopItem.enable();
+		pauseItem.enable();
+		
+		//load our actual machine
+		loadMachine();
 
 		runningThread = new RunningThread(this);
 		runningThread.start();
@@ -1342,7 +1354,7 @@ public class Editor extends JFrame
 	*/
 	public void doPause()
 	{
-		if (paused)
+		if (machine.isPaused())
 		{
 			machine.unpause();
 //			buttons.inactive(EditorButtons.PAUSE);
@@ -1352,8 +1364,6 @@ public class Editor extends JFrame
 			machine.pause();
 //			buttons.activate(EditorButtons.PAUSE);
 		}
-	
-		paused = !paused;
 	}
 
   /**
@@ -2171,6 +2181,58 @@ public class Editor extends JFrame
       super.show(component, x, y);
     }
   }
+
+	private void loadMachine()
+	{
+		for (int i=0; i<machineMenu.getItemCount(); i++)
+		{
+			JMenuItem jmi = machineMenu.getItem(i);
+			
+			if (jmi.isSelected())
+			{
+				machine = new Machine(getMachineNode(jmi.getText()));
+				return;
+			}
+		}
+
+		//fail to the simulator
+		error("No machine found, loading simulator instead.");
+		loadSimulator();
+	}
+	
+	private Node getMachineNode(String name)
+	{
+		//get each machines
+		NodeList nl = dom.getElementsByTagName("machine");
+
+		for (int i=0; i<nl.getLength(); i++)
+		{
+			//look up each machines set of kids
+			Node n = nl.item(i);
+			NodeList kids = n.getChildNodes();
+
+			for (int j=0; j<kids.getLength(); j++)
+			{
+				Node kid = kids.item(j);
+
+				if (kid.getNodeName().equals("name"))
+				{
+					String machineName = kid.getFirstChild().getNodeValue().trim();
+
+					if (machineName.equals(name))
+						return n;
+				}
+			}
+		}
+		
+		//fail with our dom.
+		return dom.getFirstChild();
+	}
+	
+	private void loadSimulator()
+	{
+		machine = new Machine(getMachineNode("3-Axis Simulator"));
+	}
 
 	private void loadMachinesConfig()
 	{
