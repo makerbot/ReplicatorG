@@ -118,6 +118,8 @@ public class Editor extends JFrame
   RunButtonWatcher watcher;
   //Runner runtime;
 
+  RunningThread runningThread;
+  SimulationThread simulationThread;
 
   JMenuItem exportAppItem;
   JMenuItem saveMenuItem;
@@ -1159,8 +1161,13 @@ public class Editor extends JFrame
 
   // ...................................................................
 
-	synchronized public void handleSimulate()
+	public void handleSimulate()
 	{
+		if (running)
+			return;
+		if (simulating)
+			return;
+
 		doClose();
 
 		simulating = true;
@@ -1173,75 +1180,94 @@ public class Editor extends JFrame
 			console.clear();
 		}
 
-		message("Simulating...");
-		
-		SwingUtilities.invokeLater(
-			new Runnable()
-			{
-				public void run()
-				{
-					try
-					{
-						try{
-							Thread.sleep(2000);
-						} catch (InterruptedException e) {}
-						
-						message("Done simulating.");
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					
-					simulating = false;
-					stopItem.disable();
-					pauseItem.disable();
-					buttons.clear();
-				}
-			}
-		);
+		//fire off our thread.
+		simulationThread = new SimulationThread(this);
+		simulationThread.start();
+		//SwingUtilities.invokeLater(simulationThread);
 	}
-
+	
+	synchronized public void simulationOver()
+	{
+		message("Done simulating.");
+		simulating = false;
+		stopItem.disable();
+		pauseItem.disable();
+		buttons.clear();
+	}
 
 	synchronized public void handleRun()
 	{
-		doClose();
+		if (running)
+			return;
+		if (simulating)
+			return;
 
-		running = true;
-		buttons.activate(EditorButtons.RUN);
-		stopItem.enable();
-		pauseItem.enable();
-
-		// clear the console on each run, unless the user doesn't want to
-		if (Preferences.getBoolean("console.auto_clear")) {
-		console.clear();
-		}
-
-		message("Running...");
-
-		SwingUtilities.invokeLater(
-			new Runnable()
-			{
-				public void run()
-				{
-					try
-					{
-						try{
-							Thread.sleep(2000);
-						} catch (InterruptedException e) {}
-						
-						message("Done running.");
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					
-					running = false;
-					stopItem.disable();
-					pauseItem.disable();
-					buttons.clear();
-				}
-			}
-		);
+		runningThread = new RunningThread(this);
+		runningThread.start();
 	}
 
+	class RunningThread extends Thread
+	{
+		Editor editor;
+		
+		public RunningThread(Editor edit)
+		{
+			editor = edit;
+		}
+		
+		public void run()
+		{
+			message("Running...");
+
+			for (int i=0; i<5; i++)
+			{
+				double length = 5 - i;
+				try{
+					this.sleep(1000);
+				} catch (InterruptedException e) {}
+				
+				message(Double.toString(length));
+			}
+
+			editor.runningOver();
+		}
+	}
+	
+	synchronized public void runningOver()
+	{
+		message("Done running.");
+		running = false;
+		stopItem.disable();
+		pauseItem.disable();
+		buttons.clear();
+	}
+
+	class SimulationThread extends Thread
+	{
+		Editor editor;
+		
+		public SimulationThread(Editor edit)
+		{
+			editor = edit;
+		}
+		
+		public void run()
+		{
+			message("Simulating...");
+
+			for (int i=0; i<5; i++)
+			{
+				double length = 5 - i;
+				try{
+					this.sleep(1000);
+				} catch (InterruptedException e) {}
+				
+				message(Double.toString(length));
+			}
+
+			editor.simulationOver();
+		}
+	}
 
   class RunButtonWatcher implements Runnable {
     Thread thread;
@@ -2057,8 +2083,9 @@ public class Editor extends JFrame
 
 
 
-  public void message(String msg) {
+  synchronized public void message(String msg) {
     status.notice(msg);
+	System.out.println(msg);
   }
 
 
