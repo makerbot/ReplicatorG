@@ -66,18 +66,6 @@ public class Sketchbook {
   static File examplesFolder;
   static String examplesPath;  // canonical path (for comparison)
 
-  static File librariesFolder;
-  static String librariesPath;
-
-  // maps imported packages to their library folder
-  static Hashtable importToLibraryTable = new Hashtable();
-
-  // classpath for all known libraries for p5
-  // (both those in the p5/libs folder and those with lib subfolders
-  // found in the sketchbook)
-  static String librariesClassPath;
-
-
   public Sketchbook(Editor editor) {
     this.editor = editor;
 
@@ -85,10 +73,6 @@ public class Sketchbook {
     // but only one instance of sketchbook will be built so who cares
     examplesFolder = new File(System.getProperty("user.dir"), "examples");
     examplesPath = examplesFolder.getAbsolutePath();
-
-    librariesFolder = new File(System.getProperty("user.dir"),
-      "hardware" + File.separator + "libraries");
-    librariesPath = librariesFolder.getAbsolutePath();
 
     String sketchbookPath = Preferences.get("sketchbook.path");
 
@@ -140,7 +124,6 @@ public class Sketchbook {
     }
     openMenu = new JMenu("Sketchbook");
     popupMenu = new JMenu("Sketchbook");
-    importMenu = new JMenu("Import Library");
   }
 
 
@@ -154,8 +137,7 @@ public class Sketchbook {
    * or null if the operation was cancelled.
    */
   public String handleNew(boolean noPrompt,
-                          boolean shift,
-                          boolean library) throws IOException {
+                          boolean shift) throws IOException {
     File newbieDir = null;
     String newbieName = null;
 
@@ -203,11 +185,6 @@ public class Sketchbook {
 
     // make the directory for the new sketch
     newbieDir.mkdirs();
-
-    // if it's a library, make a library subfolder to tag it as such
-    if (library) {
-      new File(newbieDir, "library").mkdirs();
-    }
 
     // make an empty gcode file
     File newbieFile = new File(newbieDir, newbieName + ".gcode");
@@ -371,32 +348,10 @@ public class Sketchbook {
    */
   public void rebuildMenus() {
     //EditorConsole.systemOut.println("rebuilding menus");
-    try {
       // rebuild file/open and the toolbar popup menus
       buildMenu(openMenu);
       builtOnce = true;  // disable error messages while loading
       buildMenu(popupMenu);
-
-      // rebuild the "import library" menu
-      librariesClassPath = "";
-      importMenu.removeAll();
-      /*
-      if (addLibraries(importMenu, new File(getSketchbookPath()))) {
-        importMenu.addSeparator();
-      }
-      */
-      if (addLibraries(importMenu, examplesFolder)) {
-        importMenu.addSeparator();
-      }
-      addLibraries(importMenu, librariesFolder);
-      //System.out.println("libraries cp is now " + librariesClassPath);
-
-    } catch (IOException e) {
-      Base.showWarning("Problem while building sketchbook menu",
-                          "There was a problem with building the\n" +
-                          "sketchbook menu. Things might get a little\n" +
-                          "kooky around here.", e);
-    }
     //EditorConsole.systemOut.println("done rebuilding menus");
   }
 
@@ -517,95 +472,6 @@ public class Sketchbook {
     }
     return ifound;  // actually ignored, but..
   }
-
-
-  protected boolean addLibraries(JMenu menu, File folder) throws IOException {
-    // skip .DS_Store files, etc
-    if (!folder.isDirectory()) return false;
-
-    String list[] = folder.list();
-    // if a bad folder or something like that, this might come back null
-    if (list == null) return false;
-
-    // alphabetize list, since it's not always alpha order
-    // replaced hella slow bubble sort with this feller for 0093
-    Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
-
-    ActionListener listener = new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          editor.sketch.importLibrary(e.getActionCommand());
-        }
-      };
-
-    boolean ifound = false;
-
-    for (int i = 0; i < list.length; i++) {
-      if ((list[i].charAt(0) == '.') ||
-          list[i].equals("CVS")) continue;
-
-      File subfolder = new File(folder, list[i]);
-      if (!subfolder.isDirectory()) continue;
-
-      //File exported = new File(subfolder, "library");
-      //File entry = new File(exported, list[i] + ".o");
-      FileFilter onlyHFiles = new FileFilter() {
-        public boolean accept(File file) {
-          return (file.getName()).endsWith(".h");
-        }
-      };
-      
-      // if the folder has header files
-      if (subfolder.listFiles(onlyHFiles).length > 0) {
-      // if a .jar file of the same prefix as the folder exists
-      // inside the 'library' subfolder of the sketch
-      //if (entry.exists()) {
-        /*
-        String sanityCheck = sanitizedName(list[i]);
-        if (!sanityCheck.equals(list[i])) {
-          String mess =
-            "The library \"" + list[i] + "\" cannot be used.\n" +
-            "Library names must contain only basic letters and numbers.\n" +
-            "(ascii only and no spaces, and it cannot start with a number)";
-          Base.showMessage("Ignoring bad sketch name", mess);
-          continue;
-        }
-        */
-/*
-        // get the path for all .jar files in this code folder
-        String libraryClassPath =
-          Compiler.contentsToClassPath(exported);
-        // grab all jars and classes from this folder,
-        // and append them to the library classpath
-        librariesClassPath +=
-          File.pathSeparatorChar + libraryClassPath;
-        // need to associate each import with a library folder
-        String packages[] =
-          Compiler.packageListFromClassPath(libraryClassPath);
-        for (int k = 0; k < packages.length; k++) {
-          //System.out.println(packages[k] + " -> " + exported);
-          //String already = (String) importToLibraryTable.get(packages[k]);
-          importToLibraryTable.put(packages[k], exported);
-        }
-*/
-        JMenuItem item = new JMenuItem(list[i]);
-        item.addActionListener(listener);
-        item.setActionCommand(subfolder.getAbsolutePath());
-        menu.add(item);
-        ifound = true;
-
-      } else {  // not a library, but is still a folder, so recurse
-        JMenu submenu = new JMenu(list[i]);
-        // needs to be separate var, otherwise would set ifound to false
-        boolean found = addLibraries(submenu, subfolder);
-        if (found) {
-          menu.add(submenu);
-          ifound = true;
-        }
-      }
-    }
-    return ifound;
-  /*return false;*/  }
-
 
   /**
    * Clear out projects that are empty.

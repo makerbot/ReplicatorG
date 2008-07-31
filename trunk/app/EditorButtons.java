@@ -35,7 +35,7 @@ import javax.swing.event.*;
 public class EditorButtons extends JComponent implements MouseInputListener {
 
   static final String title[] = {
-    "Simulate", "Stop", "New", "Open", "Save", "Run"
+    "Simulate", "Stop", "New", "Open", "Save", "Build"
   };
 
   static final int BUTTON_COUNT  = title.length;
@@ -51,15 +51,13 @@ public class EditorButtons extends JComponent implements MouseInputListener {
   static final int NEW      = 2;
   static final int OPEN     = 3;
   static final int SAVE     = 4;
-  static final int RUN      = 5;
+  static final int BUILD      = 5;
 
   static final int INACTIVE = 0;
   static final int ROLLOVER = 1;
   static final int ACTIVE   = 2;
 
   Editor editor;
-  //boolean disableRun;
-  //Label status;
 
   Image offscreen;
   int width, height;
@@ -102,7 +100,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
     which[buttonCount++] = NEW;
     which[buttonCount++] = OPEN;
     which[buttonCount++] = SAVE;
-    which[buttonCount++] = RUN;
+    which[buttonCount++] = BUILD;
 
     currentRollover = -1;
 
@@ -337,8 +335,8 @@ public class EditorButtons extends JComponent implements MouseInputListener {
       editor.handleSave(false);
       break;
 
-    case RUN:
-      editor.handleRun();
+    case BUILD:
+      editor.handleBuild();
       break;
     }    
   }
@@ -351,8 +349,8 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 
 
 
-  public void running(boolean yesno) {
-    setState(RUN, yesno ? ACTIVE : INACTIVE, true);
+  public void building(boolean yesno) {
+    setState(BUILD, yesno ? ACTIVE : INACTIVE, true);
   }
 
 
@@ -371,12 +369,6 @@ public class EditorButtons extends JComponent implements MouseInputListener {
     if (inactive == null) return;
     setState(what, INACTIVE, true);
   }
-
-
-  //public void clearRun() {
-  //if (inactive == null) return;
-  //setState(RUN, INACTIVE, true);
-  //}
 
 
   /**

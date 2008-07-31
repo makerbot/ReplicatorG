@@ -4,12 +4,9 @@ TODO:
 * get auto-formatting working
 * create and add 'pause' button
 * get help menu up and running properly (send everyone to website)
-* remove HandleNewLibrary
 * add our ReplicatorG header to every file
 * change colors to RepRap green (bilton?)
 * test build process on linux/windows
-* change 'Run' to 'Build'
-* add 'Open' to the File menu.
 
 DONE:
 
@@ -24,3 +21,5 @@ DONE:
 * get machine driver-loading based on XML
 * update RunButtonWatcher to work with our running and/or simulating thread (obsolete)
 * move percentage / line count to bottom of window.
+* remove HandleNewLibrary
+* change 'Run' to 'Build'

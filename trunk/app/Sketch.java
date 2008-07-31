@@ -82,9 +82,7 @@ public class Sketch {
   // all these set each time build() is called
   String mainClassName;
   String classPath;
-  String libraryPath;
   boolean externalRuntime;
-  public Vector importedLibraries; // vec of Library objects
 
   /**
    * path is location of the main .gcode file, because this is also
@@ -941,42 +939,6 @@ public class Sketch {
     return true;
   }
 
-
-  public void importLibrary(String jarPath) {
-    //System.out.println(jarPath);
-    // make sure the user didn't hide the sketch folder
-    ensureExistence();
-
-    //String list[] = Compiler.packageListFromClassPath(jarPath);
-    FileFilter onlyHFiles = new FileFilter() {
-      public boolean accept(File file) {
-        return (file.getName()).endsWith(".h");
-      }
-    };
-    
-    File list[] = new File(jarPath).listFiles(onlyHFiles);
-
-    // import statements into the main sketch file (code[0])
-    // if the current code is a .java file, insert into current
-    if (current.flavor == GCODE) {
-      setCurrent(0);
-    }
-    // could also scan the text in the file to see if each import
-    // statement is already in there, but if the user has the import
-    // commented out, then this will be a problem.
-    StringBuffer buffer = new StringBuffer();
-    for (int i = 0; i < list.length; i++) {
-      buffer.append("#include <");
-      buffer.append(list[i].getName());
-      buffer.append(">\n");
-    }
-    buffer.append('\n');
-    buffer.append(editor.getText());
-    editor.setText(buffer.toString(), 0, 0);  // scroll to start
-    setModified(true);
-  }
-
-
   /**
    * Change what file is currently being edited.
    * <OL>
@@ -1182,13 +1144,6 @@ public class Sketch {
    */
   public boolean isReadOnly() {
     String apath = folder.getAbsolutePath();
-    if (apath.startsWith(Sketchbook.examplesPath) ||
-        apath.startsWith(Sketchbook.librariesPath)) {
-      return true;
-
-      // canWrite() doesn't work on directories
-      //} else if (!folder.canWrite()) {
-    } else {
       // check to see if each modified code file can be written to
       for (int i = 0; i < codeCount; i++) {
         if (code[i].modified &&
@@ -1198,8 +1153,6 @@ public class Sketch {
           return true;
         }
       }
-      //return true;
-    }
     return false;
   }
 

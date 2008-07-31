@@ -89,7 +89,6 @@ public class Editor extends JFrame
   int checkModifiedMode;
   String handleOpenPath;
   boolean handleNewShift;
-  boolean handleNewLibrary;
 
   PageFormat pageFormat;
   PrinterJob printerJob;
@@ -114,10 +113,9 @@ public class Editor extends JFrame
   // runtime information and window placement
   Point appletLocation;
 
-  public RunningThread runningThread;
+  public BuildingThread buildingThread;
   public SimulationThread simulationThread;
 
-  JMenuItem exportAppItem;
   JMenuItem saveMenuItem;
   JMenuItem saveAsMenuItem;
   JMenuItem stopItem;
@@ -127,7 +125,7 @@ public class Editor extends JFrame
   MachineMenuListener machineMenuListener;
   
 
-  public boolean running;
+  public boolean building;
   public boolean simulating;
   public boolean debugging;
 
@@ -514,6 +512,14 @@ public class Editor extends JFrame
     menu.add(item);
     menu.add(sketchbook.getOpenMenu());
 
+    item = newJMenuItem("Open...", 'O', false);
+    item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          handleOpen(null);
+        }
+      });
+    menu.add(item);
+
     saveMenuItem = newJMenuItem("Save", 'S');
     saveMenuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -586,10 +592,10 @@ public class Editor extends JFrame
       });
     menu.add(item);
 
-    item = newJMenuItem("Run GCode", 'R');
+    item = newJMenuItem("Build", 'B');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          handleRun();
+          handleBuild();
         }
       });
     menu.add(item);
@@ -1158,7 +1164,7 @@ public class Editor extends JFrame
 
 	public void handleSimulate()
 	{
-		if (running)
+		if (building)
 			return;
 		if (simulating)
 			return;
@@ -1173,7 +1179,7 @@ public class Editor extends JFrame
 		//load our simulator machine
 		loadSimulator();
 
-		// clear the console on each run, unless the user doesn't want to
+		// clear the console on each build, unless the user doesn't want to
 		if (Preferences.getBoolean("console.auto_clear")) {
 			console.clear();
 		}
@@ -1193,49 +1199,49 @@ public class Editor extends JFrame
 		buttons.clear();
 	}
 
-	synchronized public void handleRun()
+	synchronized public void handleBuild()
 	{
-		if (running)
+		if (building)
 			return;
 		if (simulating)
 			return;
 
 		doClose();
 
-		running = true;
-		buttons.activate(EditorButtons.RUN);
+		building = true;
+		buttons.activate(EditorButtons.BUILD);
 		stopItem.enable();
 		pauseItem.enable();
 		
 		//load our actual machine
 		loadMachine();
 
-		runningThread = new RunningThread(this);
-		runningThread.start();
+		buildingThread = new BuildingThread(this);
+		buildingThread.start();
 	}
 
-	class RunningThread extends Thread
+	class BuildingThread extends Thread
 	{
 		Editor editor;
 		
-		public RunningThread(Editor edit)
+		public BuildingThread(Editor edit)
 		{
 			editor = edit;
 		}
 		
 		public void run()
 		{
-			message("Running...");
+			message("Building...");
 			machine.setThread(this);
 			machine.run();
-			editor.runningOver();
+			editor.buildingOver();
 		}
 	}
 	
-	synchronized public void runningOver()
+	synchronized public void buildingOver()
 	{
-		message("Done running.");
-		running = false;
+		message("Done building.");
+		building = false;
 		stopItem.disable();
 		pauseItem.disable();
 		buttons.clear();
@@ -1282,7 +1288,7 @@ public class Editor extends JFrame
 
 		buttons.clear();
 
-		running = false;
+		building = false;
 		simulating = false;
 	}
 
@@ -1303,8 +1309,8 @@ public class Editor extends JFrame
 			
 			if (simulating)
 				message("Simulating...");
-			else if (running)
-				message("Running...");
+			else if (building)
+				message("Building...");
 				
 //			buttons.inactive(EditorButtons.PAUSE);
 		}
@@ -1445,7 +1451,6 @@ public class Editor extends JFrame
         public void run() {
           doStop();
           handleNewShift = shift;
-          handleNewLibrary = false;
           checkModified(HANDLE_NEW);
         }});
   }
@@ -1459,21 +1464,7 @@ public class Editor extends JFrame
   public void handleNewUnchecked() {
     doStop();
     handleNewShift = false;
-    handleNewLibrary = false;
     handleNew2(true);
-  }
-
-
-  /**
-   * User selected "New Library", this will act just like handleNew
-   * but internally set a flag that the new guy is a library,
-   * meaning that a "library" subfolder will be added.
-   */
-  public void handleNewLibrary() {
-    doStop();
-    handleNewShift = false;
-    handleNewLibrary = true;
-    checkModified(HANDLE_NEW);
   }
 
 
@@ -1487,7 +1478,7 @@ public class Editor extends JFrame
   protected void handleNew2(boolean noPrompt) {
     try {
       String pdePath =
-        sketchbook.handleNew(noPrompt, handleNewShift, handleNewLibrary);
+        sketchbook.handleNew(noPrompt, handleNewShift);
       if (pdePath != null) handleOpen2(pdePath);
 
     } catch (IOException e) {
@@ -1650,10 +1641,6 @@ public class Editor extends JFrame
       }
 
       sketch = new Sketch(this, path);
-      // TODO re-enable this once export application works
-      //exportAppItem.setEnabled(false);
-      //exportAppItem.setEnabled(false && !sketch.isLibrary());
-      //buttons.disableRun(sketch.isLibrary());
       header.rebuild();
       if (Preferences.getBoolean("console.auto_clear")) {
         console.clear();
@@ -1743,84 +1730,6 @@ public class Editor extends JFrame
           buttons.clear();
         }});
   }
-
-
-  /**
-   * Handles calling the export() function on sketch, and
-   * queues all the gui status stuff that comes along with it.
-   *
-   * Made synchronized to (hopefully) avoid problems of people
-   * hitting export twice, quickly, and horking things up.
-   */
-  synchronized public void handleExport() {
-    if(debugging)
-      doStop();
-    buttons.activate(EditorButtons.RUN);
-    console.clear();
-    //String what = sketch.isLibrary() ? "Applet" : "Library";
-    //message("Exporting " + what + "...");
-    message("Uploading to I/O Board...");
-
-/*
-    SwingUtilities.invokeLater(new Runnable() {
-        public void run() {
-          try {
-
-			//TODO: make it run the code!
-			boolean success = true;
-			
-            if (success) {
-              message("Done uploading.");
-            } else {
-              // error message will already be visible
-            }
-          } catch (RunnerException e) {
-            message("Error during upload.");
-            //e.printStackTrace();
-            error(e);
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-          buttons.clear();
-        }});
-*/ 
- }
-
-
-  /**
-   * Checks to see if the sketch has been modified, and if so,
-   * asks the user to save the sketch or cancel the export.
-   * This prevents issues where an incomplete version of the sketch
-   * would be exported, and is a fix for
-   * <A HREF="http://dev.processing.org/bugs/show_bug.cgi?id=157">Bug 157</A>
-   */
-  public boolean handleExportCheckModified() {
-    if (!sketch.modified) return true;
-
-    Object[] options = { "OK", "Cancel" };
-    int result = JOptionPane.showOptionDialog(this,
-                                              "Save changes before export?",
-                                              "Save",
-                                              JOptionPane.OK_CANCEL_OPTION,
-                                              JOptionPane.QUESTION_MESSAGE,
-                                              null,
-                                              options,
-                                              options[0]);
-
-    if (result == JOptionPane.OK_OPTION) {
-      handleSave(true);
-
-    } else {
-      // why it's not CANCEL_OPTION is beyond me (at least on the mac)
-      // but f-- it.. let's get this shite done..
-      //} else if (result == JOptionPane.CANCEL_OPTION) {
-      message("Export canceled, changes must first be saved.");
-      buttons.clear();
-      return false;
-    }
-    return true;
-  }
-
 
   public void handlePageSetup() {
     //printerJob = null;
