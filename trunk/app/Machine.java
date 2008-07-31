@@ -101,6 +101,9 @@ public class Machine
 
 	public void run()
 	{
+		SimulationWindow simulation = new SimulationWindow();
+		simulation.setVisible(true);
+		
 		editor.textarea.selectNone();
 		editor.textarea.disable();
 		editor.textarea.scrollTo(0, 0);
@@ -147,6 +150,7 @@ public class Machine
 			}
 		}	
 		
+		simulation.setVisible(false);
 		editor.textarea.enable();
 	}
 	

@@ -208,6 +208,7 @@
 		33FF07320965C1E30016AC38 /* tab-unsel-mid.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02870965BD160016AC38 /* tab-unsel-mid.gif */; };
 		33FF07330965C1E30016AC38 /* tab-unsel-right.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02880965BD160016AC38 /* tab-unsel-right.gif */; };
 		910908BD0E3E260400B0389E /* todo.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908B60E3E25B400B0389E /* todo.txt */; };
+		912A74770E42659F00BB58C7 /* SimulationWindow.java in Sources */ = {isa = PBXBuildFile; fileRef = 912A74760E42659F00BB58C7 /* SimulationWindow.java */; };
 		915701430E3F8E2A0033A586 /* SerialPassthroughDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */; };
 		916CA3380E3FBC8500146F38 /* machines.xml in Resources */ = {isa = PBXBuildFile; fileRef = 916CA3370E3FBC8500146F38 /* machines.xml */; };
 		916CA3390E3FBC9800146F38 /* machines.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 916CA3370E3FBC8500146F38 /* machines.xml */; };
@@ -372,6 +373,7 @@
 		33FFFE940965BD110016AC38 /* ReplicatorG.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = ReplicatorG.xcodeproj; sourceTree = "<group>"; };
 		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
+		912A74760E42659F00BB58C7 /* SimulationWindow.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow.java; sourceTree = "<group>"; };
 		915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SerialPassthroughDriver.java; sourceTree = "<group>"; };
 		916CA3370E3FBC8500146F38 /* machines.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = machines.xml; path = ../shared/machines.xml; sourceTree = SOURCE_ROOT; };
 		917F02550E41111400CA05D0 /* SimulationDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationDriver.java; sourceTree = "<group>"; };
@@ -498,6 +500,7 @@
 		33FFFE220965BD100016AC38 /* app */ = {
 			isa = PBXGroup;
 			children = (
+				912A74760E42659F00BB58C7 /* SimulationWindow.java */,
 				91A5A5A90E3F9C5D00D3BB80 /* Machine.java */,
 				915701410E3F8E2A0033A586 /* drivers */,
 				91C444430E3F6704005F055C /* Driver.java */,
@@ -751,6 +754,7 @@
 				915701430E3F8E2A0033A586 /* SerialPassthroughDriver.java in Sources */,
 				91A5A5AA0E3F9C5D00D3BB80 /* Machine.java in Sources */,
 				917F02560E41111400CA05D0 /* SimulationDriver.java in Sources */,
+				912A74770E42659F00BB58C7 /* SimulationWindow.java in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
