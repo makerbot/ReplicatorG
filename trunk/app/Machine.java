@@ -120,6 +120,8 @@ public class Machine
 				driver.handleStops();
 			} catch (JobEndException e) {
 				break;
+			} catch (JobCancelledException e) {
+				break;
 			} catch (JobRewindException e) {
 				i = -1;
 				continue;

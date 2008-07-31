@@ -6,7 +6,6 @@ TODO:
 * test build process on linux/windows
 * test serialpassthrough driver
 * add simple simulation window
-* change message dialog to yes/no dialog that allows you to cancel the operation
 
 DONE:
 
@@ -26,6 +25,7 @@ DONE:
 * get help menu up and running properly (send everyone to website)
 * add our ReplicatorG header to every file
 * implement support for various gcode pauses / prompts / etc.
+* change message dialog to yes/no dialog that allows you to cancel the operation
 
 
 0002 ReplicatorG

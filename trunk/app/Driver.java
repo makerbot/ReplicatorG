@@ -120,9 +120,10 @@ public class Driver
 		return true;
 	}
 
-	public void handleStops() throws JobRewindException, JobEndException
+	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
 	{
 		String message = "";
+		int result = 0;
 		
 		if (mCode == 0)
 		{
@@ -131,7 +132,8 @@ public class Driver
 			else
 				message = "Automatic Halt";
 				
-			JOptionPane.showMessageDialog(null, message);
+			if (!showContinueDialog(message))
+				throw new JobCancelledException();
 		}
 		else if (mCode == 1 && Preferences.getBoolean("machine.optionalstops"))
 		{
@@ -140,7 +142,8 @@ public class Driver
 			else
 				message = "Optional Halt";
 
-			JOptionPane.showMessageDialog(null, message);
+			if (!showContinueDialog(message))
+				throw new JobCancelledException();
 		}
 		else if (mCode == 2)
 		{
@@ -151,7 +154,6 @@ public class Driver
 		
 			JOptionPane.showMessageDialog(null, message);
 			
-			commandFinished();
 			throw new JobEndException();
 		}
 		else if (mCode == 30)
@@ -161,11 +163,22 @@ public class Driver
 			else
 				message = "Program Rewind";
 		
-			JOptionPane.showMessageDialog(null, message);
+			if (!showContinueDialog(message))
+				throw new JobCancelledException();
 			
 			commandFinished();
 			throw new JobRewindException();
 		}
+	}
+	
+	protected boolean showContinueDialog(String message)
+	{
+		int result = JOptionPane.showConfirmDialog(null, message, "Continue Build?", JOptionPane.YES_NO_OPTION);
+		
+		if (result == JOptionPane.YES_OPTION)
+			return true;
+		else
+			return false;
 	}
 
 	/**
@@ -194,6 +207,7 @@ public class Driver
 			
 		//clean it up.
 		comment = comment.trim();
+		comment = comment.replace('|', '\n');
 
 		//echo it?
 		if (comment.length() > 0)
@@ -330,6 +344,10 @@ public class Driver
 	public void setCurrentX(double x) { currentX = x; }
 	public void setCurrentY(double y) { currentY = y; }
 	public void setCurrentZ(double z) { currentZ = z; }
+}
+
+class JobCancelledException extends Exception
+{
 }
 
 class JobEndException extends Exception
