@@ -762,63 +762,48 @@ public class Editor extends JFrame
     JMenuItem item;
 
     if (!Base.isLinux()) {
-      item = new JMenuItem("Getting Started");
+      item = newJMenuItem("Getting Started", '1');
       item.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-            if (Base.isWindows())
-              Base.openURL(System.getProperty("user.dir") + File.separator +
-                           "reference" + File.separator + "Guide_Windows.html");
-            else
-              Base.openURL(System.getProperty("user.dir") + File.separator +
-                           "reference" + File.separator + "Guide_MacOSX.html");
-          }
+	        public void actionPerformed(ActionEvent e) {
+	          Base.openURL("http://www.replicat.org/getting-started");
+	        }
         });
       menu.add(item);
     }
 
-    item = new JMenuItem("Environment");
+    item = newJMenuItem("Hardware Setup", '2');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          Base.showEnvironment();
+          Base.openURL("http://www.replicat.org/hardware");
         }
       });
     menu.add(item);
 
-    item = new JMenuItem("Troubleshooting");
+    item = newJMenuItem("Troubleshooting", '3');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          Base.showTroubleshooting();
+          Base.openURL("http://www.replicat.org/troubleshooting");
         }
       });
     menu.add(item);
 
-    item = new JMenuItem("Reference");
+    item = newJMenuItem("Reference", '4');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          Base.showReference();
+          Base.openURL("http://www.replicat.org/reference");
         }
       });
     menu.add(item);
 
-    item = newJMenuItem("Find in Reference", 'F', true);
+    item = newJMenuItem("Frequently Asked Questions", '5');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          if (textarea.isSelectionActive()) {
-            handleReference();
-          }
+          Base.openURL("http://www.replicat.org/faq");
         }
       });
     menu.add(item);
 
-    item = new JMenuItem("Frequently Asked Questions");
-    item.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          Base.showFAQ();
-        }
-      });
-    menu.add(item);
-
-    item = newJMenuItem("Visit www.replicat.org", '5');
+    item = newJMenuItem("Visit Replicat.orG", '6');
     item.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           Base.openURL("http://www.replicat.org/");
