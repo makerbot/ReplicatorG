@@ -275,3 +275,4 @@ serial.parity=N
 serial.debug_rate=19200
 
 machine.name=Default
+machine.optionalstops=true

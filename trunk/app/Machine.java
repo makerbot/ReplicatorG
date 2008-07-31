@@ -114,6 +114,17 @@ public class Machine
 			String line = editor.textarea.getLineText(i);
 			
 			driver.parse(line);
+			
+			//for handling job flow.
+			try {
+				driver.handleStops();
+			} catch (JobEndException e) {
+				break;
+			} catch (JobRewindException e) {
+				i = -1;
+				continue;
+			}
+			
 			driver.execute();
 			driver.commandFinished();
 			

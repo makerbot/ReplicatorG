@@ -25,6 +25,7 @@ package processing.app;
 import processing.app.drivers.*;
 
 import java.util.regex.*;
+import javax.swing.JOptionPane;
 
 import org.w3c.dom.*;
 
@@ -52,9 +53,6 @@ public class Driver
 	// a comment passed in
 	protected String comment = "";
 	
-	// a message and/or prompt
-	protected String message = "";
-	
 	//our gcode variables
 	protected double dCode = -1;
 	protected double fCode = -1;
@@ -75,11 +73,16 @@ public class Driver
 	protected double yCode = -1;
 	protected double zCode = -1;
 	
+	Pattern parenPattern;
+	Pattern semiPattern;
+	
 	/**
 	  * Creates the driver object.
 	  */
 	public Driver()
 	{
+		parenPattern = Pattern.compile("\\((.*)\\)");
+		semiPattern = Pattern.compile(";(.*)");
 	}
 	
 	/**
@@ -90,6 +93,9 @@ public class Driver
 	{
 		//save our command
 		command = cmd;
+
+		parseComments();
+		stripComments();
 		
 		//parse all our codes
 		dCode = parseCode('D');
@@ -110,9 +116,57 @@ public class Driver
 		yCode = parseCode('Y');
 		zCode = parseCode('Z');
 		
+		
 		return true;
 	}
 
+	public void handleStops() throws JobRewindException, JobEndException
+	{
+		String message = "";
+		
+		if (mCode == 0)
+		{
+			if (comment.length() > 0)
+				message = "Automatic Halt: " + comment;
+			else
+				message = "Automatic Halt";
+				
+			JOptionPane.showMessageDialog(null, message);
+		}
+		else if (mCode == 1 && Preferences.getBoolean("machine.optionalstops"))
+		{
+			if (comment.length() > 0)
+				message = "Optional Halt: " + comment;
+			else
+				message = "Optional Halt";
+
+			JOptionPane.showMessageDialog(null, message);
+		}
+		else if (mCode == 2)
+		{
+			if (comment.length() > 0)
+				message = "Program End: " + comment;
+			else
+				message = "Program End";
+		
+			JOptionPane.showMessageDialog(null, message);
+			
+			commandFinished();
+			throw new JobEndException();
+		}
+		else if (mCode == 30)
+		{
+			if (comment.length() > 0)
+				message = "Program Rewind: " + comment;
+			else
+				message = "Program Rewind";
+		
+			JOptionPane.showMessageDialog(null, message);
+			
+			commandFinished();
+			throw new JobRewindException();
+		}
+	}
 
 	/**
 	 * Checks to see if our current line of GCode has this particular code
@@ -125,6 +179,34 @@ public class Driver
 			return true;
 		else
 			return false;
+	}
+	
+	private void parseComments()
+	{
+		Matcher parenMatcher = parenPattern.matcher(command);
+		Matcher semiMatcher = semiPattern.matcher(command);
+
+		if (parenMatcher.find())
+			comment = parenMatcher.group(1);
+
+		if (semiMatcher.find())
+			comment = semiMatcher.group(1);
+			
+		//clean it up.
+		comment = comment.trim();
+
+		//echo it?
+		if (comment.length() > 0)
+			System.out.println(comment);
+	}
+	
+	private void stripComments()
+	{
+		Matcher parenMatcher = parenPattern.matcher(command);
+		command = parenMatcher.replaceAll("");
+
+		Matcher semiMatcher = semiPattern.matcher(command);
+		command = semiMatcher.replaceAll("");
 	}
 	
 	/**
@@ -189,6 +271,8 @@ public class Driver
 		xCode = -1;
 		yCode = -1;
 		zCode = -1;
+		
+		comment = "";
 	}
 	
 	/**
@@ -246,4 +330,12 @@ public class Driver
 	public void setCurrentX(double x) { currentX = x; }
 	public void setCurrentY(double y) { currentY = y; }
 	public void setCurrentZ(double z) { currentZ = z; }
+}
+
+class JobEndException extends Exception
+{
+}
+
+class JobRewindException extends Exception
+{
 }
