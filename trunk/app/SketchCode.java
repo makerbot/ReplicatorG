@@ -1,9 +1,10 @@
-/* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
-
 /*
-  SketchCode - data class for a single file inside a sketch
-  Part of the Processing project - http://processing.org
+  Part of the ReplicatorG project - http://www.replicat.org
+  Copyright (c) 2008 Zach Smith
 
+  Forked from Arduino: http://www.arduino.cc
+
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 

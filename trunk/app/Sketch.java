@@ -1,8 +1,10 @@
-/* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
-
 /*
-  Part of the Processing project - http://processing.org
+  Part of the ReplicatorG project - http://www.replicat.org
+  Copyright (c) 2008 Zach Smith
 
+  Forked from Arduino: http://www.arduino.cc
+
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 
@@ -23,7 +25,6 @@
 
 package processing.app;
 
-import processing.app.preproc.*;
 import processing.core.*;
 
 import java.awt.*;
@@ -1025,9 +1026,9 @@ public class Sketch {
 
 
   /**
-   * Preprocess, and Run the GCode.
+   * Run the GCode.
    */
-  public boolean handleRun() throws RunnerException {
+  public boolean handleRun() {
     // make sure the user didn't hide the sketch folder
     ensureExistence();
 

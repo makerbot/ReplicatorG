@@ -1,7 +1,10 @@
 /*
-  SerialPassthroughDriver
+  SerialPassthroughDriver.java
 
   This is a driver to control a machine that contains a GCode parser and communicates via Serial Port.
+
+  Part of the ReplicatorG project - http://www.replicat.org
+  Copyright (c) 2008 Zach Smith
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by

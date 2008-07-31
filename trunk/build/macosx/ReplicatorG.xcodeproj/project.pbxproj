@@ -158,30 +158,22 @@
 		33AF617A0965C54B00B514A9 /* TextUtilities.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6D0965BD110016AC38 /* TextUtilities.java */; };
 		33AF617B0965C54B00B514A9 /* EditorConsole.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE290965BD110016AC38 /* EditorConsole.java */; };
 		33AF617C0965C54B00B514A9 /* TokenMarker.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6F0965BD110016AC38 /* TokenMarker.java */; };
-		33AF617D0965C54B00B514A9 /* MessageSiphon.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE310965BD110016AC38 /* MessageSiphon.java */; };
 		33AF617E0965C54B00B514A9 /* FindReplace.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2E0965BD110016AC38 /* FindReplace.java */; };
 		33AF617F0965C54B00B514A9 /* SketchCode.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE5C0965BD110016AC38 /* SketchCode.java */; };
 		33AF61800965C54B00B514A9 /* EditorLineStatus.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2B0965BD110016AC38 /* EditorLineStatus.java */; };
 		33AF61810965C54B00B514A9 /* EditorHeader.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2A0965BD110016AC38 /* EditorHeader.java */; };
 		33AF61820965C54B00B514A9 /* EditorButtons.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE280965BD100016AC38 /* EditorButtons.java */; };
 		33AF61830965C54B00B514A9 /* SyntaxStyle.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE690965BD110016AC38 /* SyntaxStyle.java */; };
-		33AF61850965C54B00B514A9 /* RunnerException.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE580965BD110016AC38 /* RunnerException.java */; };
 		33AF61870965C54B00B514A9 /* TextAreaPainter.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6C0965BD110016AC38 /* TextAreaPainter.java */; };
 		33AF61880965C54B00B514A9 /* Sketchbook.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE5B0965BD110016AC38 /* Sketchbook.java */; };
 		33AF61890965C54B00B514A9 /* EditorStatus.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2D0965BD110016AC38 /* EditorStatus.java */; };
 		33AF618B0965C54B00B514A9 /* TextAreaDefaults.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6B0965BD110016AC38 /* TextAreaDefaults.java */; };
-		33AF618C0965C54B00B514A9 /* PdePreprocessor.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE3C0965BD110016AC38 /* PdePreprocessor.java */; };
-		33AF618F0965C54B00B514A9 /* RunnerClassLoader.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE570965BD110016AC38 /* RunnerClassLoader.java */; };
-		33AF61900965C54B00B514A9 /* MessageStream.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE320965BD110016AC38 /* MessageStream.java */; };
 		33AF61910965C54B00B514A9 /* SyntaxUtilities.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6A0965BD110016AC38 /* SyntaxUtilities.java */; };
-		33AF61930965C54B00B514A9 /* PresentMode.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE550965BD110016AC38 /* PresentMode.java */; };
 		33AF61950965C54B00B514A9 /* CTokenMarker.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE600965BD110016AC38 /* CTokenMarker.java */; };
-		33AF61990965C54B00B514A9 /* Runner.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE560965BD110016AC38 /* Runner.java */; };
 		33AF619B0965C54B00B514A9 /* KeywordMap.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE640965BD110016AC38 /* KeywordMap.java */; };
 		33AF619D0965C54B00B514A9 /* Sketch.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE5A0965BD110016AC38 /* Sketch.java */; };
 		33AF61A10965C54B00B514A9 /* UpdateCheck.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE730965BD110016AC38 /* UpdateCheck.java */; };
 		33AF61A20965C54B00B514A9 /* InputHandler.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE620965BD110016AC38 /* InputHandler.java */; };
-		33AF61A30965C54B00B514A9 /* MessageConsumer.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE300965BD110016AC38 /* MessageConsumer.java */; };
 		33AF61A60965C54B00B514A9 /* AutoFormat.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE720965BD110016AC38 /* AutoFormat.java */; };
 		33AF61A90965C54B00B514A9 /* PdeKeywords.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE650965BD110016AC38 /* PdeKeywords.java */; };
 		33AF61AA0965C54B00B514A9 /* Editor.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE270965BD100016AC38 /* Editor.java */; };
@@ -351,15 +343,7 @@
 		33FFFE2C0965BD110016AC38 /* EditorListener.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EditorListener.java; sourceTree = "<group>"; };
 		33FFFE2D0965BD110016AC38 /* EditorStatus.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EditorStatus.java; sourceTree = "<group>"; };
 		33FFFE2E0965BD110016AC38 /* FindReplace.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = FindReplace.java; sourceTree = "<group>"; };
-		33FFFE300965BD110016AC38 /* MessageConsumer.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = MessageConsumer.java; sourceTree = "<group>"; };
-		33FFFE310965BD110016AC38 /* MessageSiphon.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = MessageSiphon.java; sourceTree = "<group>"; };
-		33FFFE320965BD110016AC38 /* MessageStream.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = MessageStream.java; sourceTree = "<group>"; };
 		33FFFE330965BD110016AC38 /* Preferences.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Preferences.java; sourceTree = "<group>"; };
-		33FFFE3C0965BD110016AC38 /* PdePreprocessor.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PdePreprocessor.java; sourceTree = "<group>"; };
-		33FFFE550965BD110016AC38 /* PresentMode.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PresentMode.java; sourceTree = "<group>"; };
-		33FFFE560965BD110016AC38 /* Runner.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Runner.java; sourceTree = "<group>"; };
-		33FFFE570965BD110016AC38 /* RunnerClassLoader.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = RunnerClassLoader.java; sourceTree = "<group>"; };
-		33FFFE580965BD110016AC38 /* RunnerException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = RunnerException.java; sourceTree = "<group>"; };
 		33FFFE590965BD110016AC38 /* Serial.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Serial.java; sourceTree = "<group>"; };
 		33FFFE5A0965BD110016AC38 /* Sketch.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Sketch.java; sourceTree = "<group>"; };
 		33FFFE5B0965BD110016AC38 /* Sketchbook.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Sketchbook.java; sourceTree = "<group>"; };
@@ -527,15 +511,7 @@
 				33FFFE2C0965BD110016AC38 /* EditorListener.java */,
 				33FFFE2D0965BD110016AC38 /* EditorStatus.java */,
 				33FFFE2E0965BD110016AC38 /* FindReplace.java */,
-				33FFFE300965BD110016AC38 /* MessageConsumer.java */,
-				33FFFE310965BD110016AC38 /* MessageSiphon.java */,
-				33FFFE320965BD110016AC38 /* MessageStream.java */,
 				33FFFE330965BD110016AC38 /* Preferences.java */,
-				33FFFE340965BD110016AC38 /* preproc */,
-				33FFFE550965BD110016AC38 /* PresentMode.java */,
-				33FFFE560965BD110016AC38 /* Runner.java */,
-				33FFFE570965BD110016AC38 /* RunnerClassLoader.java */,
-				33FFFE580965BD110016AC38 /* RunnerException.java */,
 				33FFFE590965BD110016AC38 /* Serial.java */,
 				33FFFE5A0965BD110016AC38 /* Sketch.java */,
 				33FFFE5B0965BD110016AC38 /* Sketchbook.java */,
@@ -549,14 +525,6 @@
 			name = app;
 			path = ../../app;
 			sourceTree = SOURCE_ROOT;
-		};
-		33FFFE340965BD110016AC38 /* preproc */ = {
-			isa = PBXGroup;
-			children = (
-				33FFFE3C0965BD110016AC38 /* PdePreprocessor.java */,
-			);
-			path = preproc;
-			sourceTree = "<group>";
 		};
 		33FFFE5F0965BD110016AC38 /* syntax */ = {
 			isa = PBXGroup;
@@ -737,30 +705,22 @@
 				33AF617A0965C54B00B514A9 /* TextUtilities.java in Sources */,
 				33AF617B0965C54B00B514A9 /* EditorConsole.java in Sources */,
 				33AF617C0965C54B00B514A9 /* TokenMarker.java in Sources */,
-				33AF617D0965C54B00B514A9 /* MessageSiphon.java in Sources */,
 				33AF617E0965C54B00B514A9 /* FindReplace.java in Sources */,
 				33AF617F0965C54B00B514A9 /* SketchCode.java in Sources */,
 				33AF61800965C54B00B514A9 /* EditorLineStatus.java in Sources */,
 				33AF61810965C54B00B514A9 /* EditorHeader.java in Sources */,
 				33AF61820965C54B00B514A9 /* EditorButtons.java in Sources */,
 				33AF61830965C54B00B514A9 /* SyntaxStyle.java in Sources */,
-				33AF61850965C54B00B514A9 /* RunnerException.java in Sources */,
 				33AF61870965C54B00B514A9 /* TextAreaPainter.java in Sources */,
 				33AF61880965C54B00B514A9 /* Sketchbook.java in Sources */,
 				33AF61890965C54B00B514A9 /* EditorStatus.java in Sources */,
 				33AF618B0965C54B00B514A9 /* TextAreaDefaults.java in Sources */,
-				33AF618C0965C54B00B514A9 /* PdePreprocessor.java in Sources */,
-				33AF618F0965C54B00B514A9 /* RunnerClassLoader.java in Sources */,
-				33AF61900965C54B00B514A9 /* MessageStream.java in Sources */,
 				33AF61910965C54B00B514A9 /* SyntaxUtilities.java in Sources */,
-				33AF61930965C54B00B514A9 /* PresentMode.java in Sources */,
 				33AF61950965C54B00B514A9 /* CTokenMarker.java in Sources */,
-				33AF61990965C54B00B514A9 /* Runner.java in Sources */,
 				33AF619B0965C54B00B514A9 /* KeywordMap.java in Sources */,
 				33AF619D0965C54B00B514A9 /* Sketch.java in Sources */,
 				33AF61A10965C54B00B514A9 /* UpdateCheck.java in Sources */,
 				33AF61A20965C54B00B514A9 /* InputHandler.java in Sources */,
-				33AF61A30965C54B00B514A9 /* MessageConsumer.java in Sources */,
 				33AF61A60965C54B00B514A9 /* AutoFormat.java in Sources */,
 				33AF61A90965C54B00B514A9 /* PdeKeywords.java in Sources */,
 				33AF61AA0965C54B00B514A9 /* Editor.java in Sources */,

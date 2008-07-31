@@ -1,7 +1,14 @@
 /*
-  Part of the ReplicatorG project - http://www.replicat.org
+  Base.java
 
-  Based on processing http://www.processing.org
+  Main class for the app.
+
+  Part of the ReplicatorG project - http://www.replicat.org
+  Copyright (c) 2008 Zach Smith
+
+  Forked from Arduino: http://www.arduino.cc
+  
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 

@@ -1,10 +1,10 @@
 /*
+  Driver.java
+
+  Provides an interface for driving various machines.
+
   Part of the ReplicatorG project - http://www.replicat.org
-
-  This class takes a gcode command, parses it and then does something with it.
-
-  @author	Hoeken
-  @www http://www.zachhoeken.org
+  Copyright (c) 2008 Zach Smith
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by

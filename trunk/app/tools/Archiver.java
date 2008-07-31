@@ -1,10 +1,14 @@
-/* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
-
 /*
   Archiver - plugin tool for archiving sketches
-  Part of the Processing project - http://processing.org
 
+  Part of the ReplicatorG project - http://www.replicat.org
+  Copyright (c) 2008 Zach Smith
+
+  Forked from Arduino: http://www.arduino.cc
+
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
+  Copyright (c) 2001-04 Massachusetts Institute of Technology
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -163,15 +167,3 @@ public class Archiver {
     }
   }
 }
-
-
-    /*
-    int index = 0;
-    SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd");
-    String purty = formatter.format(new Date());
-    do {
-      newbieName = "sketch_" + purty + ((char) ('a' + index));
-      newbieDir = new File(newbieParentDir, newbieName);
-      index++;
-    } while (newbieDir.exists());
-    */

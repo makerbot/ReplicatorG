@@ -1,9 +1,10 @@
 /*
   Part of the ReplicatorG project - http://www.replicat.org
+  Copyright (c) 2008 Zach Smith
 
-  Editor - main editor panel for the processing development environment
-  Part of the Processing project - http://processing.org
+  Forked from Arduino: http://www.arduino.cc
 
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 
@@ -1911,31 +1912,6 @@ public class Editor extends JFrame
     }
     e.printStackTrace();
   }
-
-
-  public void error(RunnerException e) {
-    //System.out.println("file and line is " + e.file + " " + e.line);
-    if (e.file >= 0) sketch.setCurrent(e.file);
-    if (e.line >= 0) highlightLine(e.line);
-
-    // remove the RuntimeException: message since it's not
-    // really all that useful to the user
-    //status.error(e.getMessage());
-    String mess = e.getMessage();
-    String rxString = "RuntimeException: ";
-    if (mess.indexOf(rxString) == 0) {
-      mess = mess.substring(rxString.length());
-      //System.out.println("MESS3: " + mess);
-    }
-    String javaLang = "java.lang.";
-    if (mess.indexOf(javaLang) == 0) {
-      mess = mess.substring(javaLang.length());
-    }
-    error(mess);
-    buttons.clear();
-  }
-
-
 
   synchronized public void message(String msg) {
     status.notice(msg);

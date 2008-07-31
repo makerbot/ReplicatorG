@@ -1,11 +1,11 @@
 0001 ReplicatorG
 
 TODO:
-* get auto-formatting working
 * create and add 'pause' button
-* add our ReplicatorG header to every file
 * change colors to RepRap green (bilton?)
 * test build process on linux/windows
+* test serialpassthrough driver
+* add simple simulation window
 
 DONE:
 
@@ -23,3 +23,18 @@ DONE:
 * remove HandleNewLibrary
 * change 'Run' to 'Build'
 * get help menu up and running properly (send everyone to website)
+* add our ReplicatorG header to every file
+
+0002 ReplicatorG
+
+* get auto-formatting working
+* enhance simulation window
+* experiment with SNAP driver?
+* add simple exerciser / status window
+
+0003 ReplicatorG
+
+* add support for adding STL to sketch (for slicing)
+* add STL 3D preview
+* add simluation 3D preview (with 2D option as well)
+* add support for slice/dice plugins (skeinforge?  reprap?)
