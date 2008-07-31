@@ -113,10 +113,6 @@ public class Editor extends JFrame
 
   // runtime information and window placement
   Point appletLocation;
-  //Point presentLocation;
-  //Window presentationWindow;
-  RunButtonWatcher watcher;
-  //Runner runtime;
 
   public RunningThread runningThread;
   public SimulationThread simulationThread;
@@ -1230,17 +1226,8 @@ public class Editor extends JFrame
 		public void run()
 		{
 			message("Running...");
-
-			for (int i=0; i<5; i++)
-			{
-				double length = 5 - i;
-				try{
-					this.sleep(1000);
-				} catch (InterruptedException e) {}
-				
-				message(Double.toString(length));
-			}
-
+			machine.setThread(this);
+			machine.run();
 			editor.runningOver();
 		}
 	}
@@ -1271,31 +1258,6 @@ public class Editor extends JFrame
 			editor.simulationOver();
 		}
 	}
-
-  class RunButtonWatcher implements Runnable {
-    Thread thread;
-
-    public RunButtonWatcher() {
-      thread = new Thread(this, "run button watcher");
-      thread.setPriority(Thread.MIN_PRIORITY);
-      thread.start();
-    }
-
-    public void run() {
-      while (Thread.currentThread() == thread) {
-        try {
-          Thread.sleep(250);
-        } catch (InterruptedException e) { }
-        //System.out.println("still inside runner thread");
-      }
-    }
-
-    public void stop() {
-      buttons.running(false);
-      thread = null;
-    }
-  }
-
 
 	public void handleStop()
 	{
@@ -2083,7 +2045,7 @@ public class Editor extends JFrame
 
   synchronized public void message(String msg) {
     status.notice(msg);
-	System.out.println(msg);
+	//System.out.println(msg);
   }
 
 

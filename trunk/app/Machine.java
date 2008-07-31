@@ -27,6 +27,7 @@ import java.io.*;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
 import org.xml.sax.*;
+import java.lang.Math.*;
 
 public class Machine
 {
@@ -104,16 +105,23 @@ public class Machine
 
 	public void run()
 	{
+		String mode = editor.status.message;
+		
 		editor.textarea.selectNone();
 		editor.textarea.disable();
 		editor.textarea.scrollTo(0, 0);
 		
-		for (int i=0; i<editor.textarea.getLineCount(); i++)
+		int total = editor.textarea.getLineCount();
+		for (int i=0; i<total; i++)
 		{
 			editor.textarea.scrollTo(i, 0);
 			editor.highlightLine(i);
 			
 			String line = editor.textarea.getLineText(i);
+			
+			double percentage = Math.round(((double)i / (double)total) * 10000.0) / 100.0;
+			
+			editor.message(mode + " || " + i + "/" + total + " || " + percentage + "%");
 			driver.parse(line);
 			driver.execute();
 			driver.commandFinished();
