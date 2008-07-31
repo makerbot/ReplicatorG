@@ -30,7 +30,13 @@ import org.xml.sax.*;
 
 public class Machine
 {
+	// our editor object.
+	protected Editor editor;
+	
+	// this is the xml config for this machine.
 	protected Node machineNode;
+	
+	protected Thread thread;
 	
 	// the name of our machine.
 	protected String name;
@@ -40,22 +46,42 @@ public class Machine
 	
 	//our pause variable
 	protected boolean paused = false;
+	protected boolean stopped = false;
+
+/*	
+	Color currentLineBackground;
+	Color successfulLineBackground;
+	Color failedLineBackground;
+*/
 	
 	/**
 	  * Creates the machine object.
 	  */
-	public Machine(Node mNode)
+	public Machine(Node mNode, Editor edit)
 	{
 		//save our XML
+		editor = edit;
 		machineNode = mNode;
 
 		parseName();
 
 		paused = false;
+		stopped = false;
 		
 		System.out.println("Loading machine: " + name);
 		
 		loadDriver();
+		
+/*
+		currentLineBackground = new Color(0x00, 0x99, 0xFF);
+		successfulLineBackground = new Color(0x33, 0xFF, 0x66);
+		failedLineBackground = new Color(0xCC, 0x33, 0x33);
+*/
+	}
+	
+	public void setThread(Thread iThread)
+	{
+		thread = iThread;
 	}
 	
 	private void parseName()
@@ -78,6 +104,38 @@ public class Machine
 
 	public void run()
 	{
+		editor.textarea.selectNone();
+		editor.textarea.disable();
+		editor.textarea.scrollTo(0, 0);
+		
+		for (int i=0; i<editor.textarea.getLineCount(); i++)
+		{
+			editor.textarea.scrollTo(i, 0);
+			editor.highlightLine(i);
+			
+			String line = editor.textarea.getLineText(i);
+			driver.parse(line);
+			driver.execute();
+			driver.commandFinished();
+			
+			while (this.isPaused())
+			{
+				try {
+					thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			//bail if we got interrupted.
+			if (this.isStopped())
+			{
+				System.out.println("stopped.");
+				break;
+			}
+		}	
+		
+		editor.textarea.enable();
 	}
 	
 	private void loadDriver()
@@ -97,6 +155,16 @@ public class Machine
 		driver = Driver.factory();
 	}
 	
+	synchronized public void stop()
+	{
+		stopped = true;
+	}
+	
+	synchronized public boolean isStopped()
+	{
+		return stopped;
+	}
+	
 	synchronized public void pause()
 	{
 		paused = true;
@@ -110,10 +178,5 @@ public class Machine
 	synchronized public boolean isPaused()
 	{
 		return paused;
-	}
-	
-	synchronized public void stop()
-	{
-	}
-	
+	}	
 }

@@ -118,8 +118,8 @@ public class Editor extends JFrame
   RunButtonWatcher watcher;
   //Runner runtime;
 
-  RunningThread runningThread;
-  SimulationThread simulationThread;
+  public RunningThread runningThread;
+  public SimulationThread simulationThread;
 
   JMenuItem exportAppItem;
   JMenuItem saveMenuItem;
@@ -131,9 +131,9 @@ public class Editor extends JFrame
   MachineMenuListener machineMenuListener;
   
 
-  boolean running;
-  boolean simulating;
-  boolean debugging;
+  public boolean running;
+  public boolean simulating;
+  public boolean debugging;
 
   //boolean presenting;
   
@@ -1266,17 +1266,8 @@ public class Editor extends JFrame
 		public void run()
 		{
 			message("Simulating...");
-
-			for (int i=0; i<5; i++)
-			{
-				double length = 5 - i;
-				try{
-					this.sleep(1000);
-				} catch (InterruptedException e) {}
-				
-				message(Double.toString(length));
-			}
-
+			machine.setThread(this);
+			machine.run();
 			editor.simulationOver();
 		}
 	}
@@ -1310,6 +1301,9 @@ public class Editor extends JFrame
 	{
 		// called by menu or buttons
 		doStop();
+
+		if (machine != null)
+			machine.stop();
 		
 		stopItem.disable();
 		pauseItem.disable();
@@ -1322,19 +1316,6 @@ public class Editor extends JFrame
 	*/
 	public void doStop()
 	{
-		if (running)
-		{
-			//do something
-		}
-		
-		if (simulating)
-		{
-			//do something
-		}
-
-		if (watcher != null)
-			watcher.stop();
-
 		message(EMPTY);
 
 		buttons.clear();
@@ -1357,10 +1338,17 @@ public class Editor extends JFrame
 		if (machine.isPaused())
 		{
 			machine.unpause();
+			
+			if (simulating)
+				message("Simulating...");
+			else if (running)
+				message("Running...");
+				
 //			buttons.inactive(EditorButtons.PAUSE);
 		}
 		else
 		{
+			message("Paused");
 			machine.pause();
 //			buttons.activate(EditorButtons.PAUSE);
 		}
@@ -2190,7 +2178,7 @@ public class Editor extends JFrame
 			
 			if (jmi.isSelected())
 			{
-				machine = new Machine(getMachineNode(jmi.getText()));
+				machine = new Machine(getMachineNode(jmi.getText()), this);
 				return;
 			}
 		}
@@ -2231,7 +2219,7 @@ public class Editor extends JFrame
 	
 	private void loadSimulator()
 	{
-		machine = new Machine(getMachineNode("3-Axis Simulator"));
+		machine = new Machine(getMachineNode("3-Axis Simulator"), this);
 	}
 
 	private void loadMachinesConfig()

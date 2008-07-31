@@ -94,7 +94,7 @@ public class EditorHeader extends JComponent {
         //Preferences.getColor("header.bgcolor");
 	  // hardcoding new blue color scheme for consistency with images,
 	  // see EditorStatus.java for details.		
-      backgroundColor = new Color(0x21, 0x68, 0x86);
+      backgroundColor = new Color(0x00, 0x99, 0x33);
       textColor[SELECTED] =
         Preferences.getColor("header.text.selected.color");
       textColor[UNSELECTED] =

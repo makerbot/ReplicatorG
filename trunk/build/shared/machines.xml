@@ -5,7 +5,7 @@
 		<geometry>cartesian</geometry>
 		<driver>
 			<name>simulation</name>
-			<wait>250</wait> <!-- in milliseconds -->
+			<wait>100</wait> <!-- in milliseconds -->
 		</driver>
 	</machine>
 	<!-- end protected configuration -->

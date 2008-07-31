@@ -32,11 +32,18 @@ public class SimulationDriver extends Driver
 	{
 		super();
 
-		delay = 250;
+		delay = 100;
 	}
 	
 	public SimulationDriver(Node node)
 	{
 		super();
+	}
+	
+	public void execute()
+	{
+		try {
+			Thread.sleep(delay);
+		} catch (InterruptedException e) {}
 	}
 }
