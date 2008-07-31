@@ -8,7 +8,6 @@ TODO:
 * add our ReplicatorG header to every file
 * change colors to RepRap green (bilton?)
 * test build process on linux/windows
-* move percentage / line count to bottom of window.
 * change 'Run' to 'Build'
 * add 'Open' to the File menu.
 
@@ -24,5 +23,4 @@ DONE:
 * get text-highlighting up and running
 * get machine driver-loading based on XML
 * update RunButtonWatcher to work with our running and/or simulating thread (obsolete)
-
-
+* move percentage / line count to bottom of window.

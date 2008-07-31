@@ -82,9 +82,15 @@ public class EditorLineStatus extends JComponent {
       text = "Lines " + (start + 1) + " to " + (stop + 1);
     }
     */
-    if (start == stop) {
-      text = String.valueOf(start+1);
-    } else {
+	
+	if (start == stop)
+	{
+		long total = textarea.getLineCount();
+		double percentage = Math.round(((double)newStart / (double)total) * 10000.0) / 100.0;
+		text = newStart + " / " + total + "     |     " + percentage + "%";
+    }
+	else
+	{
       text = (start+1) + " - " + (stop+1);
     }
 

@@ -105,8 +105,6 @@ public class Machine
 
 	public void run()
 	{
-		String mode = editor.status.message;
-		
 		editor.textarea.selectNone();
 		editor.textarea.disable();
 		editor.textarea.scrollTo(0, 0);
@@ -119,9 +117,6 @@ public class Machine
 			
 			String line = editor.textarea.getLineText(i);
 			
-			double percentage = Math.round(((double)i / (double)total) * 10000.0) / 100.0;
-			
-			editor.message(mode + " || " + i + "/" + total + " || " + percentage + "%");
 			driver.parse(line);
 			driver.execute();
 			driver.commandFinished();
