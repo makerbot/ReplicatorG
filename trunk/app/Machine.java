@@ -33,6 +33,10 @@ public class Machine
 	// this is the xml config for this machine.
 	protected Node machineNode;
 	
+	// this is our simulation window
+	protected SimulationWindow simulation;
+	
+	// our current thread.
 	protected Thread thread;
 	
 	// the name of our machine.
@@ -101,13 +105,35 @@ public class Machine
 
 	public void run()
 	{
-		SimulationWindow simulation = new SimulationWindow();
+		simulation = new SimulationWindow();
 		simulation.setVisible(true);
 		
+		editor.setVisible(true);
 		editor.textarea.selectNone();
 		editor.textarea.disable();
 		editor.textarea.scrollTo(0, 0);
 		
+		process();
+		build();
+		
+		simulation.setVisible(false);
+		editor.textarea.enable();
+	}
+	
+	private void process()
+	{
+		int total = editor.textarea.getLineCount();
+		for (int i=0; i<total; i++)
+		{
+			String line = editor.textarea.getLineText(i);
+			
+			driver.parse(line);
+			driver.commandFinished();			
+		}		
+	}
+	
+	private void build()
+	{
 		int total = editor.textarea.getLineCount();
 		for (int i=0; i<total; i++)
 		{
@@ -148,10 +174,7 @@ public class Machine
 				System.out.println("stopped.");
 				break;
 			}
-		}	
-		
-		simulation.setVisible(false);
-		editor.textarea.enable();
+		}		
 	}
 	
 	private void loadDriver()

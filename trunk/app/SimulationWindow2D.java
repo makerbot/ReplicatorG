@@ -1,10 +1,12 @@
 /*
-  SerialPassthroughDriver.java
-
-  This is a driver to control a machine that contains a GCode parser and communicates via Serial Port.
-
   Part of the ReplicatorG project - http://www.replicat.org
   Copyright (c) 2008 Zach Smith
+
+  Forked from Arduino: http://www.arduino.cc
+
+  Based on Processing http://www.processing.org
+  Copyright (c) 2004-05 Ben Fry and Casey Reas
+  Copyright (c) 2001-04 Massachusetts Institute of Technology
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -19,35 +21,16 @@
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software Foundation,
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  
+  $Id: Editor.java 370 2008-01-19 16:37:19Z mellis $
 */
 
-package processing.app.drivers;
+package processing.app;
 
-import processing.app.*;
-import processing.core.*;
-import org.w3c.dom.*;
-
-public class SimulationDriver extends Driver
-{
-	private int delay;
-	
-	public SimulationDriver()
+public class SimulationWindow2D extends SimulationWindow
+{	
+	public SimulationWindow2D ()
 	{
 		super();
-
-		delay = 100;
-	}
-	
-	public SimulationDriver(Node node)
-	{
-		super();
-		delay = 100;
-	}
-	
-	public void execute()
-	{
-		try {
-			Thread.currentThread().sleep(delay);
-		} catch (InterruptedException e) {}
 	}
 }

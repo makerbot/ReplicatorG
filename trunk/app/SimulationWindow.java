@@ -29,11 +29,15 @@ package processing.app;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.vecmath.*;
 
 public class SimulationWindow extends JFrame
 {
-	int myWidth = 0;
-	int myHeight = 0;
+	private int myWidth = 0;
+	private int myHeight = 0;
+	
+	protected Point3d minimum;
+	protected Point3d maximum;
 	
 	public SimulationWindow ()
 	{
@@ -55,5 +59,48 @@ public class SimulationWindow extends JFrame
 		
 		//no menu bar.
 		this.setMenuBar(null);
+		
+		//init our bounds.
+		minimum = new Point3d(0,0,0);
+		maximum = new Point3D(0,0,0);
+	}
+	
+	public void setMinimums(Point3d p)
+	{
+		minimum = p;
+	}
+	
+	public void setMaximums(Point3d p)
+	{
+		maximum = p;
+	}
+	
+	public void plotLine(Point3d start, Point3d end, boolean extruding)
+	{
+		repaint();
+	}
+	
+	//TODO: make this
+	public double convertRealXToPointX(double x)
+	{
+		// i think?
+		// round(myWidth * (abs(min - x) / abs(max - min)))
+		
+		return x;
+	}
+	
+	//todo: make this
+	public double convertRealYtoPointY(double y)
+	{
+		// i think?
+		// round(myHeight * (abs(min - y) / abs(max - min)))
+
+		return y;
+	}
+	
+	//todo: make this
+	public double convertRealZtoPointZ(double z)
+	{
+		return z;
 	}
 }

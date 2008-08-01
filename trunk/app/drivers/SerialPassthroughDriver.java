@@ -99,7 +99,7 @@ public class SerialPassthroughDriver extends Driver
 		
 		System.out.println("Initializing Arduino.");
 		try {
-			Thread.sleep(10000);
+			Thread.currentThread().sleep(10000);
 		} catch (InterruptedException e) { }
 	}
 	
