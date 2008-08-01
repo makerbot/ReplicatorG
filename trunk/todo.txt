@@ -5,8 +5,7 @@ TODO:
 * update 'build' button graphic to be rotated 90 deg.
 * reformat GUI with different button ordering
 * change colors to RepRap green (bilton?)
-* test build process on linux/windows
-* test serialpassthrough driver
+* test build process on windows
 * add simple simulation window
 
 DONE:
@@ -28,7 +27,8 @@ DONE:
 * add our ReplicatorG header to every file
 * implement support for various gcode pauses / prompts / etc.
 * change message dialog to yes/no dialog that allows you to cancel the operation
-
+* test build process on linux
+* test serialpassthrough driver
 
 0002 ReplicatorG
 

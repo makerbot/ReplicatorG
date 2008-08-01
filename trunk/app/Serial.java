@@ -125,14 +125,14 @@ public class Serial implements SerialPortEventListener {
         if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
           //System.out.println("found " + portId.getName());
           if (portId.getName().equals(iname)) {
-            //System.out.println("looking for "+iname);
+            System.out.println("looking for "+iname);
             port = (SerialPort)portId.open("serial madness", 2000);
             input = port.getInputStream();
             output = port.getOutputStream();
             port.setSerialPortParams(rate, databits, stopbits, parity);
             port.addEventListener(this);
             port.notifyOnDataAvailable(true);
-            //System.out.println("opening, ready to roll");
+            System.out.println("opening, ready to roll");
           }
         }
       }
@@ -214,24 +214,21 @@ public class Serial implements SerialPortEventListener {
               System.arraycopy(buffer, 0, temp, 0, bufferLast);
               buffer = temp;
             }
-            //buffer[bufferLast++] = (byte) input.read();
+            buffer[bufferLast++] = (byte) input.read();
             if(monitor == true)
               System.out.print((char) input.read());
             
-            /*
-            System.err.println(input.available() + " " + 
-                               ((char) buffer[bufferLast-1]));
-            */            //}
+            //System.err.println(input.available() + " " + ((char) buffer[bufferLast-1]));
           }
         }
         //System.out.println("no more");
 
       } catch (IOException e) {
         errorMessage("serialEvent", e);
-        //e.printStackTrace();
-        //System.out.println("angry");
+        e.printStackTrace();
       }
       catch (Exception e) {
+        e.printStackTrace();
       }
     }
     //System.out.println("out of");

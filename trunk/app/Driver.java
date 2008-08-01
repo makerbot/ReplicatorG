@@ -210,8 +210,8 @@ public class Driver
 		comment = comment.replace('|', '\n');
 
 		//echo it?
-		if (comment.length() > 0)
-			System.out.println(comment);
+		//if (comment.length() > 0)
+		//	System.out.println(comment);
 	}
 	
 	private void stripComments()
@@ -315,6 +315,8 @@ public class Driver
 					return new SimulationDriver(xml);
 			}
 		}
+		
+		System.out.println("Failing over to simulation driver.");
 		
 		//bail with a simulation driver.
 		return new SimulationDriver();

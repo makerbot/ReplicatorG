@@ -165,8 +165,11 @@ public class Machine
 			if (kid.getNodeName().equals("driver"))
 			{
 				driver = Driver.factory(kid);
+				return;
 			}
 		}
+		
+		System.out.println("No driver config found.");
 		
 		driver = Driver.factory();
 	}

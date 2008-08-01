@@ -88,7 +88,7 @@ public class EditorLineStatus extends JComponent {
 	
 	if (start == stop)
 	{
-		long total = textarea.getLineCount();
+		long total = textarea.getLineCount() - 1;
 		double percentage = Math.round(((double)newStart / (double)total) * 10000.0) / 100.0;
 		text = newStart + " / " + total + "     |     " + percentage + "%";
     }

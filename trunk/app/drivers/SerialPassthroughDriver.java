@@ -83,16 +83,24 @@ public class SerialPassthroughDriver extends Driver
 		char   parity = Preferences.get("serial.parity").charAt(0);
 		int    databits = Preferences.getInteger("serial.databits");
 		float  stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
-		
+
 		//load from our XML config, if we have it.
 		//TODO: actually load up from XML.
+
+		System.out.println("Connecting to " + name + " at " + rate);
 		
 		//declare our serial guy.
 		try {
 			serial = new Serial(name, rate, parity, databits, stopbits);
 		} catch (SerialException e) {
 			//TODO: report the error here.
+			e.printStackTrace();
 		}
+		
+		System.out.println("Initializing Arduino.");
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) { }
 	}
 	
 	/**
@@ -101,7 +109,7 @@ public class SerialPassthroughDriver extends Driver
 	public void execute()
 	{
 		String next = clean(command);
-
+		
 		//skip empty commands.
 		if (next.length() == 0)
 			return;
@@ -117,7 +125,7 @@ public class SerialPassthroughDriver extends Driver
 			serial.write(next + "\n");
 			
 			//wait between commands.
-			try{ Thread.sleep(5); } catch (Exception e){}
+			//try{ Thread.sleep(5); } catch (Exception e){}
 			
 			//record it in our buffer tracker.
 			commands.add(next);
@@ -126,18 +134,13 @@ public class SerialPassthroughDriver extends Driver
 			
 			//debug... let us know whts up!
 			//Debug.c("Sent: " + next);
-			//Debug.d("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
+			System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
 		}
 	}
 
 	public String clean(String command)
 	{
 		String clean = command;
-		
-		//strip comments
-		int commentIndex = clean.indexOf(';');
-		if (commentIndex >= -1)
-			clean = clean.substring(0, commentIndex);
 		
 		//trim whitespace
 		clean = clean.trim();	
@@ -164,6 +167,8 @@ public class SerialPassthroughDriver extends Driver
 					char c = serial.readChar();
 					result += c;
 				
+					//System.out.println("got: " + c);
+				
 					//is it a done command?
 					if (c == '\n')
 					{
@@ -172,7 +177,7 @@ public class SerialPassthroughDriver extends Driver
 							cmd = (String)commands.get(currentCommand);
 
 							//if (result.length() > 2)
-							//	Debug.c("got: " + result.substring(0, result.length()-2) + "(" + bufferSize + " - " + (cmd.length() + 1) + " = " + (bufferSize - (cmd.length() + 1)) + ")");
+							//	System.out.println("got: " + result.substring(0, result.length()-2) + "(" + bufferSize + " - " + (cmd.length() + 1) + " = " + (bufferSize - (cmd.length() + 1)) + ")");
 
 							bufferSize -= cmd.length() + 1;
 							bufferLength--;
@@ -190,10 +195,10 @@ public class SerialPassthroughDriver extends Driver
 							//if (bufferLength == 0)
 							//	Debug.d("Empty buffer!! :(");
 						}
-						//else if (result.startsWith("T:"))
-						//	Debug.d(result.substring(0, result.length()-2));
-						//else
-						//	Debug.c(result.substring(0, result.length()-2));
+						else if (result.startsWith("T:"))
+							System.out.println(result.substring(0, result.length()-2));
+						else
+							System.out.println(result.substring(0, result.length()-2));
 							
 						result = "";
 					}

@@ -41,6 +41,7 @@ public class SimulationDriver extends Driver
 	public SimulationDriver(Node node)
 	{
 		super();
+		delay = 100;
 	}
 	
 	public void execute()
