@@ -26,6 +26,7 @@ package processing.app.drivers;
 import processing.app.*;
 import processing.core.*;
 import org.w3c.dom.*;
+import javax.vecmath.*;
 
 public class SimulationDriver extends Driver
 {
@@ -38,6 +39,13 @@ public class SimulationDriver extends Driver
 		delay = 100;
 	}
 	
+	public SimulationDriver(int d)
+	{
+		super();
+
+		delay = d;
+	}
+	
 	public SimulationDriver(Node node)
 	{
 		super();
@@ -46,8 +54,17 @@ public class SimulationDriver extends Driver
 	
 	public void execute()
 	{
-		try {
-			Thread.currentThread().sleep(delay);
-		} catch (InterruptedException e) {}
+		super.execute();
+		
+		double distance = delta.distance(new Point3d());
+		if (distance != 0.0)
+			System.out.println("Moving to: " + target.x + ", " + target.y + ", " + target.z + "(" + distance + "mm)");
+			
+		if (delay > 0)
+		{
+			try {
+				Thread.currentThread().sleep(delay);
+			} catch (InterruptedException e) {}
+		}
 	}
 }

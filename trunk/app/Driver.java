@@ -26,6 +26,7 @@ import processing.app.drivers.*;
 
 import java.util.regex.*;
 import javax.swing.JOptionPane;
+import javax.vecmath.*;
 
 import org.w3c.dom.*;
 
@@ -38,17 +39,24 @@ public class Driver
 	protected String command;
 	
 	// machine state varibles
-	protected double currentX = 0.0;
-	protected double currentY = 0.0;
-	protected double currentZ = 0.0;
+	protected Point3d current;
+	protected Point3d target;
+	protected Point3d delta;
+	
+	//0 = incremental; 1 = absolute
+	boolean abs_mode = false;
+	
+	//our feedrate variables.
+	double feedrate = 0.0;
 
-	// target variables
-	protected double targetX = 0.0;
-	protected double targetY = 0.0;
-	protected double targetZ = 0.0;
+	/* keep track of the last G code - this is the command mode to use
+	 * if there is no command in the current string 
+	 */
+	int lastGCode = -1;
 	
 	// current selected tool
 	protected int tool = 0;
+	boolean extruding = false;
 	
 	// a comment passed in
 	protected String comment = "";
@@ -73,8 +81,10 @@ public class Driver
 	protected double yCode = -1;
 	protected double zCode = -1;
 	
+	//pattern matchers.
 	Pattern parenPattern;
 	Pattern semiPattern;
+	Pattern deleteBlockPattern;
 	
 	/**
 	  * Creates the driver object.
@@ -83,6 +93,11 @@ public class Driver
 	{
 		parenPattern = Pattern.compile("\\((.*)\\)");
 		semiPattern = Pattern.compile(";(.*)");
+		deleteBlockPattern = Pattern.compile("^(\\.*)");
+		
+		current = new Point3d(0.0, 0.0, 0.0);
+		target = new Point3d(0.0, 0.0, 0.0);
+		delta = new Point3d(0.0, 0.0, 0.0);
 	}
 	
 	/**
@@ -94,6 +109,7 @@ public class Driver
 		//save our command
 		command = cmd;
 
+		//handle comments.
 		parseComments();
 		stripComments();
 		
@@ -116,8 +132,373 @@ public class Driver
 		yCode = parseCode('Y');
 		zCode = parseCode('Z');
 		
+		/* if no command was seen, but parameters were, then use the last G code as 
+		 * the current command
+		 */
+		if (!hasCode('G') && (hasCode('X') || hasCode('Y') || hasCode('Z')))
+			gCode = lastGCode;
 		
 		return true;
+	}
+	
+	/**
+	 * Actually execute the GCode we just parsed.
+	 */
+	public void execute()
+	{
+		Point3d temp = new Point3d();
+		
+		//did we get a gcode?
+		if (gCode >= 0)
+		{
+			temp = current;
+			if (abs_mode)
+			{
+				if (hasCode('X'))
+					temp.x = xCode;
+				if (hasCode('Y'))
+					temp.y = yCode;
+				if (hasCode('Z'))
+					temp.z = zCode;
+			}
+			else
+			{
+				if (hasCode('X'))
+					temp.x += xCode;
+				if (hasCode('Y'))
+					temp.y += yCode;
+				if (hasCode('Z'))
+					temp.z += zCode;
+			}
+
+			// Get feedrate if supplied
+			if (hasCode('F'))
+				feedrate = fCode;
+
+			//do something!
+			switch ((int)gCode)
+			{
+				//Rapid Positioning
+				//Linear Interpolation
+				//these are basically the same thing.
+				case 0:
+				case 1:
+					//set our target.
+					setTarget(temp);
+					break;
+
+				//Clockwise arc
+				case 2:
+				//Counterclockwise arc
+				case 3:
+				/*
+				//TODO: make this work.
+				{
+					FloatPoint cent;
+
+					// Centre coordinates are always relative
+					if (gc.seen & GCODE_I) cent.x = current_units.x + gc.I;
+					else cent.x = current_units.x;
+					if (gc.seen & GCODE_J) cent.y = current_units.y + gc.J;
+
+					float angleA, angleB, angle, radius, length, aX, aY, bX, bY;
+
+					aX = (current_units.x - cent.x);
+					aY = (current_units.y - cent.y);
+					bX = (fp.x - cent.x);
+					bY = (fp.y - cent.y);
+
+					// Clockwise
+					if (gc.G == 2)
+					{
+						angleA = atan2(bY, bX);
+						angleB = atan2(aY, aX);
+					}
+					// Counterclockwise
+					else
+					{
+						angleA = atan2(aY, aX);
+						angleB = atan2(bY, bX);
+					}
+
+					// Make sure angleB is always greater than angleA
+					// and if not add 2PI so that it is (this also takes
+					// care of the special case of angleA == angleB,
+					// ie we want a complete circle)
+					if (angleB <= angleA)
+						angleB += 2 * M_PI;
+					angle = angleB - angleA;
+
+					radius = sqrt(aX * aX + aY * aY);
+					length = radius * angle;
+					int steps, s, step;
+
+					// Maximum of either 2.4 times the angle in radians or the length of the curve divided by the constant specified in _init.pde
+					steps = (int) ceil(max(angle * 2.4, length / curve_section));
+
+					FloatPoint newPoint;
+					float arc_start_z = current_units.z;
+					for (s = 1; s <= steps; s++)
+					{
+						step = (gc.G == 3) ? s : steps - s; // Work backwards for CW
+						newPoint.x = cent.x + radius * cos(angleA + angle
+								* ((float) step / steps));
+						newPoint.y = cent.y + radius * sin(angleA + angle
+								* ((float) step / steps));
+						set_target(newPoint.x, newPoint.y, arc_start_z + (fp.z
+								- arc_start_z) * s / steps);
+
+						// Need to calculate rate for each section of curve
+						if (feedrate > 0)
+							feedrate_micros = calculate_feedrate_delay(feedrate);
+						else
+							feedrate_micros = getMaxSpeed();
+
+						// Make step
+						dda_move(feedrate_micros);
+					}
+				}
+				*/
+				break;
+
+
+				//Dwell
+				case 4:
+					//TODO: add delay call.
+					//delay((int)(gc.P * 1000));
+					break;
+
+					//Inches for Units
+				case 20:
+					//TODO: figure this out
+					break;
+
+					//mm for Units
+				case 21:
+					//TODO: figure this out
+					break;
+
+					//go home.
+				case 28:
+					setTarget(new Point3d());
+					break;
+
+				/*
+				//TODO: this may be wrong.
+					//go home via an intermediate point.
+				case 30:
+					//set our target.
+					set_target(fp.x, fp.y, fp.z);
+
+					//go there.
+					dda_move(getMaxSpeed());
+
+					//go home.
+					set_target(0.0, 0.0, 0.0);
+					dda_move(getMaxSpeed());
+					break;
+				*/
+				/*
+				TODO: still need to do this.
+				// Drilling canned cycles
+				case 81: // Without dwell
+				case 82: // With dwell
+				case 83: // Peck drilling
+				{
+					float retract = gc.R;
+
+					if (!abs_mode)
+						retract += current_units.z;
+
+					// Retract to R position if Z is currently below this
+					if (current_units.z < retract)
+					{
+						set_target(current_units.x, current_units.y, retract);
+						dda_move(getMaxSpeed());
+					}
+
+					// Move to start XY
+					set_target(fp.x, fp.y, current_units.z);
+					dda_move(getMaxSpeed());
+
+					// Do the actual drilling
+					float target_z = retract;
+					float delta_z;
+
+					// For G83 move in increments specified by Q code, otherwise do in one pass
+					if (gc.G == 83)
+						delta_z = gc.Q;
+					else
+						delta_z = retract - fp.z;
+
+					do {
+						// Move rapidly to bottom of hole drilled so far (target Z if starting hole)
+						set_target(fp.x, fp.y, target_z);
+						dda_move(getMaxSpeed());
+
+						// Move with controlled feed rate by delta z (or to bottom of hole if less)
+						target_z -= delta_z;
+						if (target_z < fp.z)
+							target_z = fp.z;
+						set_target(fp.x, fp.y, target_z);
+						if (feedrate > 0)
+							feedrate_micros = calculate_feedrate_delay(feedrate);
+						else
+							feedrate_micros = getMaxSpeed();
+						dda_move(feedrate_micros);
+
+						// Dwell if doing a G82
+						if (gc.G == 82)
+							delay((int)(gc.P * 1000));
+
+						// Retract
+						set_target(fp.x, fp.y, retract);
+						dda_move(getMaxSpeed());
+					} while (target_z > fp.z);
+				}
+				break;
+				*/
+
+				case 90: //Absolute Positioning
+					abs_mode = true;
+					break;
+
+
+				case 91: //Incremental Positioning
+					abs_mode = false;
+					break;
+
+
+				case 92: //Set as home
+					setPosition(new Point3d(0.0, 0.0, 0.0));
+					break;
+
+					/*
+					 //Inverse Time Feed Mode
+					 case 93:
+
+					 break;  //TODO: add this
+
+					 //Feed per Minute Mode
+					 case 94:
+
+					 break;  //TODO: add this
+					 */
+
+				default:
+					System.out.println("Unknown GCode: G" + (int)gCode);
+			}
+		}
+
+		//find us an m code.
+		if (hasCode('M'))
+		{
+			switch ((int)mCode)
+			{
+				case 101:
+					extruding = true;
+					//extruder_set_direction(1);
+					//extruder_set_speed(extruder_speed);
+					break;
+
+					//turn extruder on, reverse
+				case 102:
+					extruding = false;
+					//extruder_set_direction(0);
+					//extruder_set_speed(extruder_speed);
+					break;
+
+					//turn extruder off
+				case 103:
+					extruding = false;
+					//extruder_set_speed(0);
+					break;
+
+					//custom code for temperature control
+				case 104:
+					/*
+					//TODO: handle this
+					if (hasCode('S'))
+					{
+						extruder_set_temperature((int)gc.S);
+
+						//warmup if we're too cold.
+						while (extruder_get_temperature() < extruder_target_celsius)
+						{
+							extruder_manage_temperature();
+							Serial.print("T:");
+							Serial.println(extruder_get_temperature());
+							delay(1000);
+						}
+					}
+					*/
+					break;
+
+					//custom code for temperature reading
+				case 105:
+					/*
+					TODO: handle this
+					Serial.print("T:");
+					Serial.println(extruder_get_temperature());
+					*/
+					break;
+
+					//turn fan on
+				case 106:
+					//extruder_set_cooler(255);
+					break;
+
+					//turn fan off
+				case 107:
+					//extruder_set_cooler(0);
+					break;
+
+				//set max extruder speed, 0-255 PWM
+				case 108:
+					/*
+					if (gc.seen & GCODE_S)
+						extruder_speed = (int)gc.S;
+					*/
+					break;
+					
+				//valve open
+				case 126:
+					break;
+
+				//valve close
+				case 127:
+					break;
+					
+
+				default:
+					System.out.println("Unknown Mcode: M" + (int)mCode);
+			}
+		}
+	}
+
+	protected void setPosition(Point3d p)
+	{
+		current = p;
+		
+		calculateDeltas();
+	}
+
+	protected void setTarget(Point3d t)
+	{
+		target = t;
+
+		//System.out.println("target: " + t.x + ", " + t.y + ", " + t.z);
+		
+		calculateDeltas();
+	}
+	
+	protected void calculateDeltas()
+	{
+		//figure our deltas.
+		delta.x = Math.abs(target.x - current.x);
+		delta.y = Math.abs(target.y - current.y);
+		delta.z = Math.abs(target.z - current.z);
+		
 	}
 
 	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
@@ -181,19 +562,6 @@ public class Driver
 			return false;
 	}
 
-	/**
-	 * Checks to see if our current line of GCode has this particular code
-	 * @param char code the code to check for (G, M, X, etc.)
-	 * @return boolean if the code was found or not
-	 */
-	private boolean hasCode(char code)
-	{
-		if (command.indexOf(code) >= 0)
-			return true;
-		else
-			return false;
-	}
-	
 	private void parseComments()
 	{
 		Matcher parenMatcher = parenPattern.matcher(command);
@@ -224,6 +592,19 @@ public class Driver
 	}
 	
 	/**
+	 * Checks to see if our current line of GCode has this particular code
+	 * @param char code the code to check for (G, M, X, etc.)
+	 * @return boolean if the code was found or not
+	 */
+	private boolean hasCode(char code)
+	{
+		if (command.indexOf(code) >= 0)
+			return true;
+		else
+			return false;
+	}
+	
+	/**
 	 * Finds out the value of the code we're looking for
 	 * @param char code the code whose value we're looking up
 	 * @return double the value of the code, -1 if not found.
@@ -242,18 +623,13 @@ public class Driver
 
 				return number;
 			}
+			//send a 0 to that its noted somewhere.
+			else
+				return 0;
 		}
 		
 		//bail/fail with a -1
 		return -1;
-	}
-	
-	/**
-	 * Actually execute the GCode we just parsed.
-	 */
-	public void execute()
-	{
-		
 	}
 	
 	/**
@@ -262,9 +638,11 @@ public class Driver
 	public void commandFinished()
 	{
 		//move us to our target.
-		currentX = targetX;
-		currentY = targetY;
-		currentZ = targetZ;
+		current = target;
+		delta = new Point3d(0.0, 0.0, 0.0);
+		
+		//save our gcode
+		lastGCode = (int)gCode;
 
 		//clear our gcodes.
 		dCode = -1;
@@ -332,20 +710,20 @@ public class Driver
 	
 	// our getter functions
 	//TODO: add getPosition(x, y, z) function and convert all to use it
-	public double getCurrentX() { return currentX; }
-	public double getCurrentY() { return currentY; }
-	public double getCurrentZ() { return currentZ; }
+	public double getCurrentX() { return current.x; }
+	public double getCurrentY() { return current.y; }
+	public double getCurrentZ() { return current.z; }
 	
 	//TODO: add getTarget(x, y, z) function and convert all to use it
-	public double getTargetX() { return targetX; }
-	public double getTargetY() { return targetY; }
-	public double getTargetZ() { return targetZ; }
+	public double getTargetX() { return target.x; }
+	public double getTargetY() { return target.y; }
+	public double getTargetZ() { return target.z; }
 	
 	// our setter functions
 	//TODO: add setCurrentPosition(x, y, z) and convert all to use it
-	public void setCurrentX(double x) { currentX = x; }
-	public void setCurrentY(double y) { currentY = y; }
-	public void setCurrentZ(double z) { currentZ = z; }
+	public void setCurrentX(double x) { current.x = x; }
+	public void setCurrentY(double y) { current.y = y; }
+	public void setCurrentZ(double z) { current.z = z; }
 }
 
 class JobCancelledException extends Exception

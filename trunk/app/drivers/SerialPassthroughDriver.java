@@ -108,6 +108,8 @@ public class SerialPassthroughDriver extends Driver
 	 */
 	public void execute()
 	{
+		super.execute();
+		
 		String next = clean(command);
 		
 		//skip empty commands.

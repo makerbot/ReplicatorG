@@ -19,9 +19,12 @@
 
 package processing.app;
 
+import processing.app.drivers.*;
+
 import java.io.*;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
+import javax.vecmath.*;
 import org.xml.sax.*;
 import java.lang.Math.*;
 
@@ -44,6 +47,9 @@ public class Machine
 	
 	// our driver object
 	protected Driver driver;
+	
+	// our simulator object.
+	protected Driver simulator;
 	
 	//our pause variable
 	protected boolean paused = false;
@@ -113,7 +119,10 @@ public class Machine
 		editor.textarea.disable();
 		editor.textarea.scrollTo(0, 0);
 		
-		process();
+		System.out.println("Processing GCode...");
+		//process();
+		
+		System.out.println("Running GCode...");
 		build();
 		
 		simulation.setVisible(false);
@@ -127,9 +136,10 @@ public class Machine
 		{
 			String line = editor.textarea.getLineText(i);
 			
-			driver.parse(line);
-			driver.commandFinished();			
-		}		
+			simulator.parse(line);
+			simulator.execute();
+			simulator.commandFinished();
+		}
 	}
 	
 	private void build()
@@ -179,6 +189,8 @@ public class Machine
 	
 	private void loadDriver()
 	{
+		simulator = new SimulationDriver(0);
+		
 		NodeList kids = machineNode.getChildNodes();
 
 		for (int j=0; j<kids.getLength(); j++)
