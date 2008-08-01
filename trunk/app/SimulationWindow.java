@@ -61,8 +61,8 @@ public class SimulationWindow extends JFrame
 		this.setMenuBar(null);
 		
 		//init our bounds.
-		minimum = new Point3d(0,0,0);
-		maximum = new Point3D(0,0,0);
+		minimum = new Point3d(0.0, 0.0, 0.0);
+		maximum = new Point3d(0.0, 0.0, 0.0);
 	}
 	
 	public void setMinimums(Point3d p)
