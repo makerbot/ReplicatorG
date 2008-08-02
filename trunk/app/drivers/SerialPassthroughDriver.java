@@ -108,8 +108,16 @@ public class SerialPassthroughDriver extends Driver
 	 */
 	public void execute()
 	{
-		super.execute();
-		
+		// we *DONT* want to use the parents one, 
+		// as that will call all sorts of misc functions.
+		// we'll simply pass it along.
+		//super.execute();
+
+		sendCommand(command);
+	}
+	
+	protected void sendCommand(String next)
+	{
 		String next = clean(command);
 		
 		//skip empty commands.
@@ -124,10 +132,8 @@ public class SerialPassthroughDriver extends Driver
 		//will it fit into our buffer?
 		if (bufferSize + next.length() < maxBufferSize)
 		{
+			//do the actual send.
 			serial.write(next + "\n");
-			
-			//wait between commands.
-			//try{ Thread.sleep(5); } catch (Exception e){}
 			
 			//record it in our buffer tracker.
 			commands.add(next);
@@ -135,14 +141,14 @@ public class SerialPassthroughDriver extends Driver
 			bufferLength++;
 			
 			//debug... let us know whts up!
-			//Debug.c("Sent: " + next);
-			System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
+			//System.out.println("Sent: " + next);
+			//System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
 		}
 	}
-
-	public String clean(String command)
+	
+	public String clean(String str)
 	{
-		String clean = command;
+		String clean = str;
 		
 		//trim whitespace
 		clean = clean.trim();	

@@ -30,6 +30,8 @@ import javax.vecmath.*;
 
 public class SimulationDriver extends Driver
 {
+	private SimulationWindow simulation;
+	
 	private int delay;
 	
 	public SimulationDriver()
@@ -50,6 +52,17 @@ public class SimulationDriver extends Driver
 	{
 		super();
 		delay = 100;
+	}
+	
+	public void createWindow()
+	{
+		simulation = new SimulationWindow();
+		simulation.setVisible(true);
+	}
+	
+	public void hideWindow()
+	{
+		simulation.setVisible(false);
 	}
 	
 	public void execute()

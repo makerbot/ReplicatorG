@@ -93,9 +93,6 @@ public class GCodeParser
 		//init our value tables.
 		codeValues = new HashTable(codes.length, 1.0);
 		seenCodes = new HashTable(codes.length, 1.0);
-		
-		//our paths and such
-		path = new ToolPath();
 	}
 	
 	/**
@@ -104,9 +101,6 @@ public class GCodeParser
 	 */
 	public boolean parse(String cmd)
 	{
-		//save our paths.
-		path = new ToolPath();
-
 		//save our command
 		command = cmd;
 
@@ -116,7 +110,10 @@ public class GCodeParser
 		
 		//load all codes
 		for (int i=0; i<codes.length; i++)
-			parseCode(codes[i]);
+		{
+			double value = parseCode(codes[i]);
+			codeValues.put(codes[i], value);
+		}
 		
 		// if no command was seen, but parameters were, 
 		// then use the last G code as the current command
@@ -127,6 +124,83 @@ public class GCodeParser
 		}
 		
 		return true;
+	}
+	
+	private boolean findCode(char code)
+	{
+		if (command.indexOf(code) >= 0)
+			return true;
+		else
+			return false;
+	}	
+	
+	/**
+	 * Checks to see if our current line of GCode has this particular code
+	 * @param char code the code to check for (G, M, X, etc.)
+	 * @return boolean if the code was found or not
+	 */
+	private boolean hasCode(char code)
+	{
+		return seenCodes.get(code);
+	}
+	
+	/**
+	 * Finds out the value of the code we're looking for
+	 * @param char code the code whose value we're looking up
+	 * @return double the value of the code, -1 if not found.
+	 */
+	private double parseCode(char code)
+	{
+		Pattern myPattern = Pattern.compile(code + "([0-9.+-]+)");
+		Matcher myMatcher = myPattern.matcher(command);
+		
+		if (findCode(code))
+		{
+			seenCodes.put(code, true);
+
+			if (myMatcher.find())
+			{
+				String match = myMatcher.group(1);
+				double number = Double.parseDouble(match);
+
+				return number;
+			}
+			//send a 0 to that its noted somewhere.
+			else
+				return 0;
+		}
+		
+		//bail/fail with a -1
+		return -1;
+	}
+	
+	private void parseComments()
+	{
+		Matcher parenMatcher = parenPattern.matcher(command);
+		Matcher semiMatcher = semiPattern.matcher(command);
+
+		if (parenMatcher.find())
+			comment = parenMatcher.group(1);
+
+		if (semiMatcher.find())
+			comment = semiMatcher.group(1);
+			
+		//clean it up.
+		comment = comment.trim();
+		comment = comment.replace('|', '\n');
+
+		//echo it?
+		//if (comment.length() > 0)
+		//	System.out.println(comment);
+	}
+	
+	private void stripComments()
+	{
+		Matcher parenMatcher = parenPattern.matcher(command);
+		command = parenMatcher.replaceAll("");
+
+		Matcher semiMatcher = semiPattern.matcher(command);
+		command = semiMatcher.replaceAll("");
 	}
 	
 	/**
@@ -147,13 +221,13 @@ public class GCodeParser
 			{
 				//turn extruder on, forward
 				case 101:
-					driver.currentTool().setDirection(Tool.MOTOR_FORWARD);
+					driver.currentTool().setMotorDirection(Tool.MOTOR_FORWARD);
 					driver.currentTool().enableMotor();
 					break;
 
 				//turn extruder on, reverse
 				case 102:
-					driver.currentTool().setDirection(TOOL.MOTOR_REVERSE);
+					driver.currentTool().setMotorDirection(TOOL.MOTOR_REVERSE);
 					driver.currentTool().enableMotor();
 					break;
 
@@ -183,7 +257,7 @@ public class GCodeParser
 					driver.currentTool().disableFan();					
 					break;
 
-				//set max extruder speed, 0-255 PWM
+				//set max extruder speed, RPM
 				case 108:
 					driver.currentTool().setMotorSpeed(getCodeValue('S');
 					break;
@@ -203,7 +277,7 @@ public class GCodeParser
 			}
 		}
 
-		//start us off here...
+		//start us off at our current position...
 		temp = current;
 		
 		//absolute just specifies the new position
@@ -243,13 +317,14 @@ public class GCodeParser
 				//these are basically the same thing.
 				case 0:
 					driver.setFeedrate(maximumFeedrate);
-					setTarget(temp);
+					setTarget(temp, driver);
 					break;
 
 				//Rapid Positioning
 				case 1:
 					//set our target.
-					setTarget(temp, feedrate);
+					driver.setFeedrate(feedrate);
+					setTarget(temp, driver);
 					break;
 
 				//Clockwise arc
@@ -301,8 +376,6 @@ public class GCodeParser
 					radius = Math.sqrt(aX * aX + aY * aY);
 					length = radius * angle;
 				
-					/**
-					* TODO: finish converting
 					int steps, s, step;
 
 					// Maximum of either 2.4 times the angle in radians
@@ -310,28 +383,24 @@ public class GCodeParser
 					// specified in _init.pde
 					steps = (int) Math.ceil(Math.max(angle * 2.4, length / curve_section));
 
-					FloatPoint newPoint;
-					float arc_start_z = current_units.z;
+					Point3d newPoint = new Point3d();
+					double arc_start_z = current.z;
 					for (s = 1; s <= steps; s++)
 					{
-						step = (gc.G == 3) ? s : steps - s; // Work backwards for CW
-						newPoint.x = cent.x + radius * cos(angleA + angle
-								* ((float) step / steps));
-						newPoint.y = cent.y + radius * sin(angleA + angle
-								* ((float) step / steps));
-						set_target(newPoint.x, newPoint.y, arc_start_z + (fp.z
-								- arc_start_z) * s / steps);
-
-						// Need to calculate rate for each section of curve
-						if (feedrate > 0)
-							feedrate_micros = calculate_feedrate_delay(feedrate);
+						if (getCodeValue('G') == 3)
+							step = s
+						// Work backwards for CW
 						else
-							feedrate_micros = getMaxSpeed();
+							step = steps - s;
 
-						// Make step
-						dda_move(feedrate_micros);
+						//calculate our waypoint.
+						newPoint.x = cent.x + radius * cos(angleA + angle * ((double) step / steps));
+						newPoint.y = cent.y + radius * sin(angleA + angle * ((double) step / steps));
+						newPoint.z = arc_start_z + (temp.z - arc_start_z) * s / steps;
+
+						//start the move
+						setTarget(newPoint, driver);
 					}
-					*/
 				}
 				break;
 
@@ -347,7 +416,6 @@ public class GCodeParser
 
 				//go home to your limit switches
 				case 28:
-			
 					//home all axes?
 					if (hasCode('X') && hasCode('Y') && hasCode('Z'))
 						driver.homeXYZ();
@@ -380,11 +448,14 @@ public class GCodeParser
 
 					// Retract to R position if Z is currently below this
 					if (current.z < retract)
-						setTarget(new Point3d(current.x, current.y, retract), maxFeedrate);
-
+					{
+						driver.setFeedrate(maxFeedrate);
+						setTarget(new Point3d(current.x, current.y, retract), driver);
+					}
+					
 					// Move to start XY
 					driver.setFeedrate(maxFeedrate);
-					setTarget(new Point3d(temp.x, temp.y, current.z));
+					setTarget(new Point3d(temp.x, temp.y, current.z), driver);
 
 					// Do the actual drilling
 					double target_z = retract;
@@ -401,8 +472,8 @@ public class GCodeParser
 					{
 						// Move rapidly to bottom of hole drilled so far
 						// (target Z if starting hole)
-						setFeedrate(maxFeedrate);
-						setTarget(new Point3d(fp.x, fp.y, target_z));
+						driver.setFeedrate(maxFeedrate);
+						setTarget(new Point3d(fp.x, fp.y, target_z), driver);
 
 						// Move with controlled feed rate by delta z
 						// (or to bottom of hole if less)
@@ -411,7 +482,7 @@ public class GCodeParser
 							target_z = temp.z;
 						
 						driver.setFeedrate(feedrate);
-						setTarget(fp.x, fp.y, target_z);
+						setTarget(new Point3d(fp.x, fp.y, target_z), driver);
 
 						// Dwell if doing a G82
 						if (gc.G == 82)
@@ -419,7 +490,7 @@ public class GCodeParser
 
 						// Retract
 						driver.setFeedrate(maxFeedrate);
-						setTarget(new Point3d(temp.x, temp.y, retract));
+						setTarget(new Point3d(temp.x, temp.y, retract), driver);
 					} while (target_z > temp.z);
 					break;
 
@@ -434,13 +505,20 @@ public class GCodeParser
 
 
 				case 92: //Set as home
-					setPosition(new Point3d());
+					current = new Point3d();
+					driver.setCurrentPosition(new Point3d());
 					break;
 
 				default:
 					System.out.println("Unknown GCode: G" + (int)gCode);
 			}
 		}
+	}
+	
+	private void setTarget(Point3d p, Driver driver)
+	{
+		driver.queuePoint(p);
+		current = p;
 	}
 
 	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
@@ -505,76 +583,6 @@ public class GCodeParser
 			return false;
 	}
 
-	private void parseComments()
-	{
-		Matcher parenMatcher = parenPattern.matcher(command);
-		Matcher semiMatcher = semiPattern.matcher(command);
-
-		if (parenMatcher.find())
-			comment = parenMatcher.group(1);
-
-		if (semiMatcher.find())
-			comment = semiMatcher.group(1);
-			
-		//clean it up.
-		comment = comment.trim();
-		comment = comment.replace('|', '\n');
-
-		//echo it?
-		//if (comment.length() > 0)
-		//	System.out.println(comment);
-	}
-	
-	private void stripComments()
-	{
-		Matcher parenMatcher = parenPattern.matcher(command);
-		command = parenMatcher.replaceAll("");
-
-		Matcher semiMatcher = semiPattern.matcher(command);
-		command = semiMatcher.replaceAll("");
-	}
-	
-	/**
-	 * Checks to see if our current line of GCode has this particular code
-	 * @param char code the code to check for (G, M, X, etc.)
-	 * @return boolean if the code was found or not
-	 */
-	private boolean hasCode(char code)
-	{
-		if (command.indexOf(code) >= 0)
-			return true;
-		else
-			return false;
-	}
-	
-	/**
-	 * Finds out the value of the code we're looking for
-	 * @param char code the code whose value we're looking up
-	 * @return double the value of the code, -1 if not found.
-	 */
-	private double parseCode(char code)
-	{
-		Pattern myPattern = Pattern.compile(code + "([0-9.+-]+)");
-		Matcher myMatcher = myPattern.matcher(command);
-		
-		if (hasCode(code))
-		{
-			if (myMatcher.find())
-			{
-				String match = myMatcher.group(1);
-				double number = Double.parseDouble(match);
-
-				return number;
-			}
-			//send a 0 to that its noted somewhere.
-			else
-				return 0;
-		}
-		
-		//bail/fail with a -1
-		return -1;
-	}
-	
 	/**
 	 * Prepare us for the next gcode command to come in.
 	 */

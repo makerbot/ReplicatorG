@@ -37,7 +37,9 @@ public class Machine
 	protected Node machineNode;
 	
 	// this is our simulation window
-	protected SimulationWindow simulation;
+	//protected SimulationWindow simulation;
+	
+	protected GCodeParser parser;
 	
 	// our current thread.
 	protected Thread thread;
@@ -77,7 +79,9 @@ public class Machine
 		
 		System.out.println("Loading machine: " + name);
 		
-		loadDriver();
+		loadDrivers();
+		
+		parser = new GCodeParser();
 		
 /*
 		currentLineBackground = new Color(0x00, 0x99, 0xFF);
@@ -111,39 +115,43 @@ public class Machine
 
 	public void run()
 	{
-		simulation = new SimulationWindow();
-		simulation.setVisible(true);
-		
+		simulator.createWindow();
+				
 		editor.setVisible(true);
 		editor.textarea.selectNone();
 		editor.textarea.disable();
 		editor.textarea.scrollTo(0, 0);
 		
 		System.out.println("Processing GCode...");
-		//process();
+		process();
 		
 		System.out.println("Running GCode...");
 		build();
 		
-		simulation.setVisible(false);
+		simulator.hideWindow();
 		editor.textarea.enable();
 	}
 	
 	private void process()
 	{
+		parser = new GCodeParser();
+		
 		int total = editor.textarea.getLineCount();
 		for (int i=0; i<total; i++)
 		{
 			String line = editor.textarea.getLineText(i);
 			
-			simulator.parse(line);
-			simulator.execute();
-			simulator.commandFinished();
+			parser.parse(line);
+			parser.execute(processor);
+			parser.cleanup();
 		}
 	}
 	
 	private void build()
 	{
+		parser = new GCodeParser();
+		simParser = new GCodeParser();
+		
 		int total = editor.textarea.getLineCount();
 		for (int i=0; i<total; i++)
 		{
@@ -152,6 +160,8 @@ public class Machine
 			
 			String line = editor.textarea.getLineText(i);
 			
+			//use our parser to handle the stuff.
+			simulator.parse(line);
 			driver.parse(line);
 			
 			//for handling job flow.
@@ -166,9 +176,11 @@ public class Machine
 				continue;
 			}
 			
+			//do the command
+			simulator.execute();
 			driver.execute();
-			driver.commandFinished();
 			
+			//are we paused?
 			while (this.isPaused())
 			{
 				try {
@@ -187,12 +199,14 @@ public class Machine
 		}		
 	}
 	
-	private void loadDriver()
+	private void loadDrivers()
 	{
+		//load our utility drivers
+		processor = new NullDriver();
 		simulator = new SimulationDriver(0);
 		
+		//load our actual driver
 		NodeList kids = machineNode.getChildNodes();
-
 		for (int j=0; j<kids.getLength(); j++)
 		{
 			Node kid = kids.item(j);
