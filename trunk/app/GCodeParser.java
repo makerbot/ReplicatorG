@@ -23,7 +23,7 @@
 
 package processing.app;
 
-import java.util.*
+import java.util.*;
 import java.util.regex.*;
 import javax.vecmath.*;
 
@@ -211,7 +211,7 @@ public class GCodeParser
 		Point3d temp = new Point3d();
 
 		// Select our tool?
-		if (hasCode('T')
+		if (hasCode('T'))
 			driver.selectTool((int)getCodeValue('T'));
 
 		//find us an m code.
@@ -259,7 +259,7 @@ public class GCodeParser
 
 				//set max extruder speed, RPM
 				case 108:
-					driver.currentTool().setMotorSpeed(getCodeValue('S');
+					driver.currentTool().setMotorSpeed(getCodeValue('S'));
 					break;
 				
 				//valve open
@@ -341,7 +341,7 @@ public class GCodeParser
 						center.x = current.x;
 					
 					if (hasCode('J'))
-						center.y = current.y + getCodeValue('J);
+						center.y = current.y + getCodeValue('J');
 					else
 						center.y = current.y;
 
@@ -388,7 +388,7 @@ public class GCodeParser
 					for (s = 1; s <= steps; s++)
 					{
 						if (getCodeValue('G') == 3)
-							step = s
+							step = s;
 						// Work backwards for CW
 						else
 							step = steps - s;
@@ -425,13 +425,13 @@ public class GCodeParser
 						if (hasCode('X') && hasCode('Y'))
 							driver.homeXY();
 						//just x?
-						else if (hasCode('X')
+						else if (hasCode('X'))
 							driver.homeX();
 						//just y?
-						else if (hasCode('Y')
+						else if (hasCode('Y'))
 							driver.homeY();
 						//just z?
-						else if (hasCode('Z')
+						else if (hasCode('Z'))
 							driver.homeZ();
 					}
 					break;
