@@ -25,7 +25,6 @@ package processing.app;
 import processing.app.drivers.*;
 
 import java.util.regex.*;
-import javax.swing.JOptionPane;
 import javax.vecmath.*;
 
 import org.w3c.dom.*;
@@ -42,15 +41,26 @@ public class Driver
 	protected GCodeParser parser;
 	
 	//our tool drivers
-	protected Tool[] tools;
-	protected Tool currentTool;
+	protected ToolDriver[] tools;
+	protected ToolDriver currentTool;
+
+	//our current
+	protected Point3d current;
 
 	/**
 	  * Creates the driver object.
 	  */
 	public Driver()
 	{
-		parser = new Parser();
+		parser = new GCodeParser();
+		
+		current = new Point3d();
+	}
+
+	public void parse(String cmd)
+	{
+		command = cmd;
+		driver.parse(cmd);
 	}
 
 	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
@@ -61,57 +71,6 @@ public class Driver
 	public void execute()
 	{
 		parser.execute(this);
-	}
-
-	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
-	{
-		String message = "";
-		int result = 0;
-		
-		if (mCode == 0)
-		{
-			if (comment.length() > 0)
-				message = "Automatic Halt: " + comment;
-			else
-				message = "Automatic Halt";
-				
-			if (!showContinueDialog(message))
-				throw new JobCancelledException();
-		}
-		else if (mCode == 1 && Preferences.getBoolean("machine.optionalstops"))
-		{
-			if (comment.length() > 0)
-				message = "Optional Halt: " + comment;
-			else
-				message = "Optional Halt";
-
-			if (!showContinueDialog(message))
-				throw new JobCancelledException();
-		}
-		else if (mCode == 2)
-		{
-			if (comment.length() > 0)
-				message = "Program End: " + comment;
-			else
-				message = "Program End";
-		
-			JOptionPane.showMessageDialog(null, message);
-			
-			throw new JobEndException();
-		}
-		else if (mCode == 30)
-		{
-			if (comment.length() > 0)
-				message = "Program Rewind: " + comment;
-			else
-				message = "Program Rewind";
-		
-			if (!showContinueDialog(message))
-				throw new JobCancelledException();
-			
-			commandFinished();
-			throw new JobRewindException();
-		}
 	}
 	
 	protected boolean showContinueDialog(String message)
@@ -165,6 +124,11 @@ public class Driver
 		return new NullDriver();
 	}
 	
+	public ToolDriver currentTool()
+	{
+		return currentTool;
+	}
+	
 	public void setCurrentPosition(Point3d p)
 	{
 		current = p;
@@ -189,7 +153,6 @@ public class Driver
 	*/
 	public void setFeedrate(double feed)
 	{
-		feedrate = feed;
 	}
 	
 	public void homeXYZ()

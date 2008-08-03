@@ -36,11 +36,6 @@ public class Machine
 	// this is the xml config for this machine.
 	protected Node machineNode;
 	
-	// this is our simulation window
-	//protected SimulationWindow simulation;
-	
-	protected GCodeParser parser;
-	
 	// our current thread.
 	protected Thread thread;
 	
@@ -49,10 +44,9 @@ public class Machine
 	
 	// our driver object
 	protected Driver driver;
-	
-	// our simulator object.
-	protected Driver simulator;
-	
+	protected SimulationDriver simulator;
+	protected Driver processor;
+		
 	//our pause variable
 	protected boolean paused = false;
 	protected boolean stopped = false;
@@ -80,8 +74,6 @@ public class Machine
 		System.out.println("Loading machine: " + name);
 		
 		loadDrivers();
-		
-		parser = new GCodeParser();
 		
 /*
 		currentLineBackground = new Color(0x00, 0x99, 0xFF);
@@ -134,24 +126,18 @@ public class Machine
 	
 	private void process()
 	{
-		parser = new GCodeParser();
-		
 		int total = editor.textarea.getLineCount();
 		for (int i=0; i<total; i++)
 		{
 			String line = editor.textarea.getLineText(i);
 			
-			parser.parse(line);
-			parser.execute(processor);
-			parser.cleanup();
+			processor.parse(line);
+			processor.execute();
 		}
 	}
 	
 	private void build()
 	{
-		parser = new GCodeParser();
-		simParser = new GCodeParser();
-		
 		int total = editor.textarea.getLineCount();
 		for (int i=0; i<total; i++)
 		{

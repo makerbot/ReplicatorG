@@ -69,10 +69,6 @@ public class SimulationDriver extends Driver
 	{
 		super.execute();
 		
-		double distance = delta.distance(new Point3d());
-		if (distance != 0.0)
-			System.out.println("Moving to: " + target.x + ", " + target.y + ", " + target.z + "(" + distance + "mm)");
-			
 		if (delay > 0)
 		{
 			try {

@@ -118,7 +118,7 @@ public class SerialPassthroughDriver extends Driver
 	
 	protected void sendCommand(String next)
 	{
-		String next = clean(command);
+		next = clean(next);
 		
 		//skip empty commands.
 		if (next.length() == 0)

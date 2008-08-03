@@ -26,6 +26,7 @@ package processing.app;
 import java.util.*;
 import java.util.regex.*;
 import javax.vecmath.*;
+import javax.swing.JOptionPane;
 
 public class GCodeParser
 {
@@ -33,11 +34,11 @@ public class GCodeParser
 	protected String command;
 
 	//our code data storage guys.
-	protected HashTable codeValues;
-	protected HashTable seenCodes;
-	static protected char[] codes = {
-		'D', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-		'M', 'P', 'Q', 'R', 'S', 'T', 'X', 'Y', 'Z'
+	protected Hashtable codeValues;
+	protected Hashtable seenCodes;
+	static protected String[] codes = {
+		"D", "F", "G", "H", "I", "J", "K", "L",
+		"M", "P", "Q", "R", "S", "T", "X", "Y", "Z"
 	};
 	
 	// machine state varibles
@@ -91,8 +92,8 @@ public class GCodeParser
 		delta = new Point3d();
 		
 		//init our value tables.
-		codeValues = new HashTable(codes.length, 1.0);
-		seenCodes = new HashTable(codes.length, 1.0);
+		codeValues = new Hashtable(codes.length, 1);
+		seenCodes = new Hashtable(codes.length, 1);
 	}
 	
 	/**
@@ -112,7 +113,7 @@ public class GCodeParser
 		for (int i=0; i<codes.length; i++)
 		{
 			double value = parseCode(codes[i]);
-			codeValues.put(codes[i], value);
+			codeValues.put(new String(codes[i]), new Double(value));
 		}
 		
 		// if no command was seen, but parameters were, 
@@ -132,7 +133,12 @@ public class GCodeParser
 			return true;
 		else
 			return false;
-	}	
+	}
+	
+	public double getCodeValue(char c)
+	{
+		return (double)codeValues.get(c);
+	}
 	
 	/**
 	 * Checks to see if our current line of GCode has this particular code
@@ -149,7 +155,7 @@ public class GCodeParser
 	 * @param char code the code whose value we're looking up
 	 * @return double the value of the code, -1 if not found.
 	 */
-	private double parseCode(char code)
+	private double parseCode(String code)
 	{
 		Pattern myPattern = Pattern.compile(code + "([0-9.+-]+)");
 		Matcher myMatcher = myPattern.matcher(command);
@@ -217,17 +223,17 @@ public class GCodeParser
 		//find us an m code.
 		if (hasCode('M'))
 		{
-			switch ((int)mCode)
+			switch ((int)getCodeValue('M'))
 			{
 				//turn extruder on, forward
 				case 101:
-					driver.currentTool().setMotorDirection(Tool.MOTOR_FORWARD);
+					driver.currentTool().setMotorDirection(ToolDriver.MOTOR_FORWARD);
 					driver.currentTool().enableMotor();
 					break;
 
 				//turn extruder on, reverse
 				case 102:
-					driver.currentTool().setMotorDirection(TOOL.MOTOR_REVERSE);
+					driver.currentTool().setMotorDirection(ToolDriver.MOTOR_REVERSE);
 					driver.currentTool().enableMotor();
 					break;
 
@@ -273,7 +279,7 @@ public class GCodeParser
 					break;
 
 				default:
-					System.out.println("Unknown Mcode: M" + (int)mCode);
+					System.out.println("Unknown Mcode: M" + (int)getCodeValue('M'));
 			}
 		}
 
@@ -332,7 +338,7 @@ public class GCodeParser
 				//Counterclockwise arc
 				case 3:
 				{
-					Point3D center;
+					Point3d center;
 
 					// Centre coordinates are always relative
 					if (hasCode('I'))
@@ -347,10 +353,10 @@ public class GCodeParser
 
 					double angleA, angleB, angle, radius, length, aX, aY, bX, bY;
 
-					aX = current.x - cent.x;
-					aY = current.y - cent.y;
-					bX = temp.x - cent.x;
-					bY = temp.y - cent.y;
+					aX = current.x - center.x;
+					aY = current.y - center.y;
+					bX = temp.x - center.x;
+					bY = temp.y - center.y;
 
 					// Clockwise
 					if ((int)getCodeValue('G') == 2)
@@ -394,8 +400,8 @@ public class GCodeParser
 							step = steps - s;
 
 						//calculate our waypoint.
-						newPoint.x = cent.x + radius * cos(angleA + angle * ((double) step / steps));
-						newPoint.y = cent.y + radius * sin(angleA + angle * ((double) step / steps));
+						newPoint.x = center.x + radius * cos(angleA + angle * ((double) step / steps));
+						newPoint.y = center.y + radius * sin(angleA + angle * ((double) step / steps));
 						newPoint.z = arc_start_z + (temp.z - arc_start_z) * s / steps;
 
 						//start the move
@@ -510,7 +516,7 @@ public class GCodeParser
 					break;
 
 				default:
-					System.out.println("Unknown GCode: G" + (int)gCode);
+					System.out.println("Unknown GCode: G" + (int)getCodeValue('G'));
 			}
 		}
 	}
@@ -568,7 +574,7 @@ public class GCodeParser
 			if (!showContinueDialog(message))
 				throw new JobCancelledException();
 			
-			commandFinished();
+			cleanup();
 			throw new JobRewindException();
 		}
 	}
@@ -593,7 +599,7 @@ public class GCodeParser
 		delta = new Point3d();
 		
 		//save our gcode
-		lastGCode = (int)gCode;
+		lastGCode = (int)getCodeValue('G');
 
 		//clear our gcodes.
 		codeValues.clear();
