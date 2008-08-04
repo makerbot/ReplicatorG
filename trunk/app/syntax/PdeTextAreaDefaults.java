@@ -130,6 +130,9 @@ public class PdeTextAreaDefaults extends TextAreaDefaults {
     // moved from SyntaxUtilities
     //DEFAULTS.styles = SyntaxUtilities.getDefaultSyntaxStyles();
 
+	styles = SyntaxUtilities.getDefaultSyntaxStyles();
+
+	/*
     styles = new SyntaxStyle[Token.ID_COUNT];
 
     // comments
@@ -159,7 +162,7 @@ public class PdeTextAreaDefaults extends TextAreaDefaults {
 
     // area that's not in use by the text (replaced with tildes)
     styles[Token.INVALID] = Preferences.getStyle("invalid");
-
+	*/
 
     // moved from TextAreaPainter
 

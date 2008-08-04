@@ -300,9 +300,15 @@ public abstract class TokenMarker
                 }
                 else
                 {
+					try {
                         lastToken = lastToken.next;
                         lastToken.length = length;
                         lastToken.id = id;
+					} catch (Exception e) {
+						//TODO: revisit this someday and see if i can be fixed - ZMS
+						//System.out.println("ignore this error.");
+						//e.printStackTrace();
+					}
                 }
         }
 
