@@ -126,7 +126,48 @@ class SimulationCanvas2D extends Canvas
 	    g.setFont(new Font("SansSerif", Font.BOLD, 14));
 	    g.setColor(Color.black);
 		g.drawString("Layer at z: " + currentZ, 20, 20);
+
+		//TODO: add/fix scale indicators
+//		drawScaleIndicators(g);
+		drawToolpaths(g);
+	}
+	
+	private void drawScaleIndicators(Graphics g)
+	{
+		int xIncrements = 9;
+		int yIncrements = 9;
+		int xSpacing = 2;
+		int ySpacing = 3;
 		
+		double xIncrement = (maximum.x - minimum.x - xSpacing) / xIncrements;
+		double yIncrement = (maximum.y - minimum.y - ySpacing) / yIncrements;
+		
+		//draw the main bars.
+		g.drawLine(xSpacing, ySpacing, xSpacing, getHeight()-ySpacing);
+		g.drawLine(xSpacing, getHeight()-ySpacing, getWidth()-xSpacing, getHeight()-ySpacing);
+		
+		//draw our x ticks
+		for (int i=1; i<=xIncrements+1; i++)
+		{
+			double xReal = i * xIncrement;
+			int xPoint = convertRealXToPointX(xReal);
+			
+			g.drawLine(xPoint, getHeight()-ySpacing, xPoint, getHeight()-ySpacing-10);
+		}
+		
+		//draw our y ticks
+		for (int i=1; i<yIncrements; i++)
+		{
+			double yReal = i * yIncrement;
+			int yPoint = convertRealYToPointY(yReal);
+			
+			g.drawLine(ySpacing, getHeight()-ySpacing-yPoint, ySpacing+10, getHeight()-ySpacing-yPoint);
+		}
+		
+	}
+	
+	private void drawToolpaths(Graphics g)
+	{
 		Vector toolpaths = getLayerPaths(currentZ);
 		Point3d start = new Point3d();
 		Point3d end = new Point3d();
