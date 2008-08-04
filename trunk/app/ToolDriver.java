@@ -53,7 +53,7 @@ public class ToolDriver
 	public void enableMotor() {}
 	public void disableMotor() {}
 	
-	public void setTemperature() {}
+	public void setTemperature(double temperature) {}
 	public void readTemperature() {}
 
 	public void enableFan() {}

@@ -41,6 +41,11 @@ public class GCodeParser
 		"M", "P", "Q", "R", "S", "T", "X", "Y", "Z"
 	};
 	
+	//our curve section variables.
+	public static double curveSectionInches = 0.019685;
+	public static double curveSectionMM = 0.5;
+	protected double curveSection = 0.0;
+	
 	// machine state varibles
 	protected Point3d current;
 	protected Point3d target;
@@ -50,6 +55,7 @@ public class GCodeParser
 	boolean absoluteMode = false;
 	
 	//our feedrate variables.
+	double maximumFeedrate = 0.0;
 	double feedrate = 0.0;
 
 	/* keep track of the last G code - this is the command mode to use
@@ -80,6 +86,7 @@ public class GCodeParser
 	{
 		//we default to millimeters
 		units = UNITS_MM;
+		curveSection = curveSectionMM;
 		
 		//precompile regexes for speed
 		parenPattern = Pattern.compile("\\((.*)\\)");
@@ -118,16 +125,16 @@ public class GCodeParser
 		
 		// if no command was seen, but parameters were, 
 		// then use the last G code as the current command
-		if (!hasCode('G') && (hasCode('X') || hasCode('Y') || hasCode('Z')))
+		if (!hasCode("G") && (hasCode("X") || hasCode("Y") || hasCode("Z")))
 		{
-			seenCodes.put('G', true);
-			codeValues.put('G', lastGCode);
+			seenCodes.put(new String("G"), new Boolean(true));
+			codeValues.put(new String("G"), new Double(lastGCode));
 		}
 		
 		return true;
 	}
 	
-	private boolean findCode(char code)
+	private boolean findCode(String code)
 	{
 		if (command.indexOf(code) >= 0)
 			return true;
@@ -135,9 +142,10 @@ public class GCodeParser
 			return false;
 	}
 	
-	public double getCodeValue(char c)
+	public double getCodeValue(String c)
 	{
-		return (double)codeValues.get(c);
+		Double d = (Double)codeValues.get(c);
+		return d.doubleValue();
 	}
 	
 	/**
@@ -145,9 +153,11 @@ public class GCodeParser
 	 * @param char code the code to check for (G, M, X, etc.)
 	 * @return boolean if the code was found or not
 	 */
-	private boolean hasCode(char code)
+	private boolean hasCode(String code)
 	{
-		return seenCodes.get(code);
+		Boolean b = (Boolean)seenCodes.get(code);
+		
+		return b.booleanValue();
 	}
 	
 	/**
@@ -162,7 +172,7 @@ public class GCodeParser
 		
 		if (findCode(code))
 		{
-			seenCodes.put(code, true);
+			seenCodes.put(code, new Boolean(true));
 
 			if (myMatcher.find())
 			{
@@ -217,13 +227,13 @@ public class GCodeParser
 		Point3d temp = new Point3d();
 
 		// Select our tool?
-		if (hasCode('T'))
-			driver.selectTool((int)getCodeValue('T'));
+		if (hasCode("T"))
+			driver.selectTool((int)getCodeValue("T"));
 
 		//find us an m code.
-		if (hasCode('M'))
+		if (hasCode("M"))
 		{
-			switch ((int)getCodeValue('M'))
+			switch ((int)getCodeValue("M"))
 			{
 				//turn extruder on, forward
 				case 101:
@@ -244,8 +254,8 @@ public class GCodeParser
 
 				//custom code for temperature control
 				case 104:
-					if (hasCode('S'))
-						driver.currentTool().setTemparature(getCodeValue('S'));
+					if (hasCode("S"))
+						driver.currentTool().setTemperature(getCodeValue("S"));
 					break;
 
 				//custom code for temperature reading
@@ -265,7 +275,7 @@ public class GCodeParser
 
 				//set max extruder speed, RPM
 				case 108:
-					driver.currentTool().setMotorSpeed(getCodeValue('S'));
+					driver.currentTool().setMotorSpeed(getCodeValue("S"));
 					break;
 				
 				//valve open
@@ -279,7 +289,7 @@ public class GCodeParser
 					break;
 
 				default:
-					System.out.println("Unknown Mcode: M" + (int)getCodeValue('M'));
+					System.out.println("Unknown Mcode: M" + (int)getCodeValue("M"));
 			}
 		}
 
@@ -289,35 +299,35 @@ public class GCodeParser
 		//absolute just specifies the new position
 		if (absoluteMode)
 		{
-			if (hasCode('X'))
-				temp.x = getCodeValue('X');
-			if (hasCode('Y'))
-				temp.y = getCodeValue('Y');
-			if (hasCode('Z'))
-				temp.z = getCodeValue('Z');
+			if (hasCode("X"))
+				temp.x = getCodeValue("X");
+			if (hasCode("Y"))
+				temp.y = getCodeValue("Y");
+			if (hasCode("Z"))
+				temp.z = getCodeValue("Z");
 		}
 		//relative specifies a delta
 		else
 		{
-			if (hasCode('X'))
-				temp.x += getCodeValue('X');
-			if (hasCode('Y'))
-				temp.y += getCodeValue('Y');
-			if (hasCode('Z'))
-				temp.z += getCodeValue('Z');
+			if (hasCode("X"))
+				temp.x += getCodeValue("X");
+			if (hasCode("Y"))
+				temp.y += getCodeValue("Y");
+			if (hasCode("Z"))
+				temp.z += getCodeValue("Z");
 		}
 
 		// Get feedrate if supplied
-		if (hasCode('F'))
+		if (hasCode("F"))
 		{
-			feedrate = getCodeValue('F');
+			feedrate = getCodeValue("F");
 			driver.setFeedrate(feedrate);
 		}
 
 		//did we get a gcode?
-		if (hasCode('G'))
+		if (hasCode("G"))
 		{
-			switch ((int)getCodeValue('G'))
+			switch ((int)getCodeValue("G"))
 			{
 				//Linear Interpolation
 				//these are basically the same thing.
@@ -338,16 +348,16 @@ public class GCodeParser
 				//Counterclockwise arc
 				case 3:
 				{
-					Point3d center;
+					Point3d center = new Point3d();
 
 					// Centre coordinates are always relative
-					if (hasCode('I'))
-						center.x = current.x + getCodeValue('I');
+					if (hasCode("I"))
+						center.x = current.x + getCodeValue("I");
 					else
 						center.x = current.x;
 					
-					if (hasCode('J'))
-						center.y = current.y + getCodeValue('J');
+					if (hasCode("J"))
+						center.y = current.y + getCodeValue("J");
 					else
 						center.y = current.y;
 
@@ -359,7 +369,7 @@ public class GCodeParser
 					bY = temp.y - center.y;
 
 					// Clockwise
-					if ((int)getCodeValue('G') == 2)
+					if ((int)getCodeValue("G") == 2)
 					{
 						angleA = Math.atan2(bY, bX);
 						angleB = Math.atan2(aY, aX);
@@ -387,21 +397,21 @@ public class GCodeParser
 					// Maximum of either 2.4 times the angle in radians
 					// or the length of the curve divided by the constant
 					// specified in _init.pde
-					steps = (int) Math.ceil(Math.max(angle * 2.4, length / curve_section));
+					steps = (int) Math.ceil(Math.max(angle * 2.4, length / curveSection));
 
 					Point3d newPoint = new Point3d();
 					double arc_start_z = current.z;
 					for (s = 1; s <= steps; s++)
 					{
-						if (getCodeValue('G') == 3)
+						if (getCodeValue("G") == 3)
 							step = s;
 						// Work backwards for CW
 						else
 							step = steps - s;
 
 						//calculate our waypoint.
-						newPoint.x = center.x + radius * cos(angleA + angle * ((double) step / steps));
-						newPoint.y = center.y + radius * sin(angleA + angle * ((double) step / steps));
+						newPoint.x = center.x + radius * Math.cos(angleA + angle * ((double) step / steps));
+						newPoint.y = center.y + radius * Math.sin(angleA + angle * ((double) step / steps));
 						newPoint.z = arc_start_z + (temp.z - arc_start_z) * s / steps;
 
 						//start the move
@@ -413,31 +423,33 @@ public class GCodeParser
 				//Inches for Units
 				case 20:
 					units = UNITS_INCHES;
+					curveSection = curveSectionInches;
 					break;
 
 				//mm for Units
 				case 21:
 					units = UNITS_MM;
+					curveSection = curveSectionMM;
 					break;
 
 				//go home to your limit switches
 				case 28:
 					//home all axes?
-					if (hasCode('X') && hasCode('Y') && hasCode('Z'))
+					if (hasCode("X") && hasCode("Y") && hasCode("Z"))
 						driver.homeXYZ();
 					else
 					{
 						//x and y?
-						if (hasCode('X') && hasCode('Y'))
+						if (hasCode("X") && hasCode("Y"))
 							driver.homeXY();
 						//just x?
-						else if (hasCode('X'))
+						else if (hasCode("X"))
 							driver.homeX();
 						//just y?
-						else if (hasCode('Y'))
+						else if (hasCode("Y"))
 							driver.homeY();
 						//just z?
-						else if (hasCode('Z'))
+						else if (hasCode("Z"))
 							driver.homeZ();
 					}
 					break;
@@ -447,7 +459,7 @@ public class GCodeParser
 				case 82: // With dwell
 				case 83: // Peck drilling
 				
-					double retract = getCodeValue('R');
+					double retract = getCodeValue("R");
 
 					if (!absoluteMode)
 						retract += current.z;
@@ -455,12 +467,12 @@ public class GCodeParser
 					// Retract to R position if Z is currently below this
 					if (current.z < retract)
 					{
-						driver.setFeedrate(maxFeedrate);
+						driver.setFeedrate(maximumFeedrate);
 						setTarget(new Point3d(current.x, current.y, retract), driver);
 					}
 					
 					// Move to start XY
-					driver.setFeedrate(maxFeedrate);
+					driver.setFeedrate(maximumFeedrate);
 					setTarget(new Point3d(temp.x, temp.y, current.z), driver);
 
 					// Do the actual drilling
@@ -469,8 +481,8 @@ public class GCodeParser
 
 					// For G83 move in increments specified by Q code
 					// otherwise do in one pass
-					if ((int)getCodeValue('G') == 83)
-						delta_z = getCodeValue('Q');
+					if ((int)getCodeValue("G") == 83)
+						delta_z = getCodeValue("Q");
 					else
 						delta_z = retract - temp.z;
 
@@ -478,8 +490,8 @@ public class GCodeParser
 					{
 						// Move rapidly to bottom of hole drilled so far
 						// (target Z if starting hole)
-						driver.setFeedrate(maxFeedrate);
-						setTarget(new Point3d(fp.x, fp.y, target_z), driver);
+						driver.setFeedrate(maximumFeedrate);
+						setTarget(new Point3d(temp.x, temp.y, target_z), driver);
 
 						// Move with controlled feed rate by delta z
 						// (or to bottom of hole if less)
@@ -488,14 +500,15 @@ public class GCodeParser
 							target_z = temp.z;
 						
 						driver.setFeedrate(feedrate);
-						setTarget(new Point3d(fp.x, fp.y, target_z), driver);
+						setTarget(new Point3d(temp.x, temp.y, target_z), driver);
 
 						// Dwell if doing a G82
-						if (gc.G == 82)
-							driver.delay((int)getCodeValue('P'));
+						if ((int)getCodeValue("G") == 82)
+							driver.delay((int)getCodeValue("P"));
 
 						// Retract
-						driver.setFeedrate(maxFeedrate);
+						driver.setFeedrate(maximumFeedrate);
+						
 						setTarget(new Point3d(temp.x, temp.y, retract), driver);
 					} while (target_z > temp.z);
 					break;
@@ -516,7 +529,7 @@ public class GCodeParser
 					break;
 
 				default:
-					System.out.println("Unknown GCode: G" + (int)getCodeValue('G'));
+					System.out.println("Unknown GCode: G" + (int)getCodeValue("G"));
 			}
 		}
 	}
@@ -531,7 +544,7 @@ public class GCodeParser
 	{
 		String message = "";
 		int result = 0;
-		int mCode = (int)getCodeValue('M');
+		int mCode = (int)getCodeValue("M");
 		
 		if (mCode == 0)
 		{
@@ -599,7 +612,7 @@ public class GCodeParser
 		delta = new Point3d();
 		
 		//save our gcode
-		lastGCode = (int)getCodeValue('G');
+		lastGCode = (int)getCodeValue("G");
 
 		//clear our gcodes.
 		codeValues.clear();

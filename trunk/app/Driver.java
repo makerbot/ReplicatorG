@@ -60,7 +60,7 @@ public class Driver
 	public void parse(String cmd)
 	{
 		command = cmd;
-		driver.parse(cmd);
+		parser.parse(cmd);
 	}
 
 	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
@@ -71,16 +71,6 @@ public class Driver
 	public void execute()
 	{
 		parser.execute(this);
-	}
-	
-	protected boolean showContinueDialog(String message)
-	{
-		int result = JOptionPane.showConfirmDialog(null, message, "Continue Build?", JOptionPane.YES_NO_OPTION);
-		
-		if (result == JOptionPane.YES_OPTION)
-			return true;
-		else
-			return false;
 	}
 	
 	/**
