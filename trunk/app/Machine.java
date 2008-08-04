@@ -114,8 +114,8 @@ public class Machine
 		editor.textarea.disable();
 		editor.textarea.scrollTo(0, 0);
 		
-		System.out.println("Processing GCode...");
-		process();
+		//System.out.println("Processing GCode...");
+		//process();
 		
 		System.out.println("Running GCode...");
 		build();

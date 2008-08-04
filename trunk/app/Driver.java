@@ -55,6 +55,7 @@ public class Driver
 		parser = new GCodeParser();
 		current = new Point3d();
 		
+		//TODO: remove this.
 		currentTool = new ToolDriver();
 	}
 

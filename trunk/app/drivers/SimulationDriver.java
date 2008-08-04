@@ -37,7 +37,7 @@ public class SimulationDriver extends Driver
 	public SimulationDriver()
 	{
 		super();
-
+		
 		delay = 100;
 	}
 	
@@ -54,13 +54,13 @@ public class SimulationDriver extends Driver
 		delay = 100;
 	}
 	
-	synchronized public void createWindow()
+	public void createWindow()
 	{
-		simulation = new SimulationWindow();
+		simulation = new SimulationWindow2D();
 		simulation.setVisible(true);
 	}
 	
-	synchronized public void hideWindow()
+	public void hideWindow()
 	{
 		simulation.setVisible(false);
 	}
@@ -75,5 +75,10 @@ public class SimulationDriver extends Driver
 				Thread.currentThread().sleep(delay);
 			} catch (InterruptedException e) {}
 		}
+	}
+	
+	public void queuePoint(Point3d p)
+	{
+		simulation.queuePoint(p);
 	}
 }

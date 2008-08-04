@@ -26,6 +26,7 @@ package processing.app.drivers;
 import processing.app.*;
 import processing.core.*;
 import org.w3c.dom.*;
+import javax.vecmath.*;
 
 
 public class NullDriver extends Driver
@@ -63,4 +64,10 @@ public class NullDriver extends Driver
 			} catch (InterruptedException e) {}
 		}
 	}
+	
+	public void queuePoint(Point3d p)
+	{
+		current = p;
+	}
+	
 }
