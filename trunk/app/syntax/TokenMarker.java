@@ -276,8 +276,10 @@ public abstract class TokenMarker
          */
         protected void addToken(int length, byte id)
         {
-                if(id >= Token.INTERNAL_FIRST && id <= Token.INTERNAL_LAST)
-                        throw new InternalError("Invalid id: " + id);
+            if(id >= Token.INTERNAL_FIRST && id <= Token.INTERNAL_LAST)
+                    throw new InternalError("Invalid id: " + id);
+
+			try {
 
                 if(length == 0 && id != Token.END)
                         return;
@@ -300,16 +302,16 @@ public abstract class TokenMarker
                 }
                 else
                 {
-					try {
                         lastToken = lastToken.next;
                         lastToken.length = length;
                         lastToken.id = id;
-					} catch (Exception e) {
-						//TODO: revisit this someday and see if i can be fixed - ZMS
-						//System.out.println("ignore this error.");
-						//e.printStackTrace();
-					}
                 }
+			} catch (Exception e) {
+				//TODO: revisit this someday and see if i can be fixed - ZMS
+				//System.out.println("ignore this error.");
+				//e.printStackTrace();
+			}
+
         }
 
         /**
