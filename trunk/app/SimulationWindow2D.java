@@ -163,38 +163,6 @@ class SimulationCanvas2D extends Canvas
 				}
 			}
 		}
-
-/*
-		//draw our toolpaths.
-		if (toolpaths.size() > 0)
-		{
-			for (int i=0; i<toolpaths.size(); i++)
-			{
-				Vector path = (Vector)toolpaths.get(i);
-				//System.out.println("path points:" + path.size());
-
-				if (path.size() > 1)
-				{
-					g.setColor(Color.black);
-					start = (Point3d)path.get(0);
-					for (int j=1; j<path.size(); j++)
-					{
-						end = (Point3d)path.get(j);
-
-						int startX = convertRealXToPointX(start.x);
-						int startY = convertRealYToPointY(start.y);
-						int endX = convertRealXToPointX(end.x);
-						int endY = convertRealYToPointY(end.y);
-
-						System.out.println("line from: " + startX + ", " + startY + " to " + endX + ", " + endY);
-						g.drawLine(startX, startY, endX, endY);
-
-						start = end;
-					}
-				}
-			}
-		}
-*/
 	}
 	
 	private Vector getLayerPaths(double layerZ)

@@ -45,7 +45,6 @@ public class Machine
 	// our driver object
 	protected Driver driver;
 	protected SimulationDriver simulator;
-	protected Driver processor;
 		
 	//our pause variable
 	protected boolean paused = false;
@@ -114,26 +113,11 @@ public class Machine
 		editor.textarea.disable();
 		editor.textarea.scrollTo(0, 0);
 		
-		//System.out.println("Processing GCode...");
-		//process();
-		
 		System.out.println("Running GCode...");
 		build();
 		
 		//simulator.hideWindow();
 		editor.textarea.enable();
-	}
-	
-	private void process()
-	{
-		int total = editor.textarea.getLineCount();
-		for (int i=0; i<total; i++)
-		{
-			String line = editor.textarea.getLineText(i);
-			
-			processor.parse(line);
-			processor.execute();
-		}
 	}
 	
 	private void build()
@@ -188,7 +172,6 @@ public class Machine
 	private void loadDrivers()
 	{
 		//load our utility drivers
-		processor = new NullDriver(0);
 		simulator = new SimulationDriver(0);
 		
 		//load our actual driver
