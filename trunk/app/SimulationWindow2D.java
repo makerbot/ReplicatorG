@@ -73,7 +73,6 @@ class SimulationCanvas2D extends Canvas
 		
 		//initialize our vector
 		points = new Vector();
-		points.addElement(new Point3d());
 		
 		setBackground(Color.white);
 		setForeground(Color.white);
@@ -82,24 +81,32 @@ class SimulationCanvas2D extends Canvas
 	synchronized public void queuePoint(Point3d point)
 	{
 		//System.out.println("queued: " + point.toString());
-		
+
+		if (points.size() == 0)
+		{
+			minimum = new Point3d(point);
+			maximum = new Point3d(point);
+		}
+		else
+		{
+			if (point.x < minimum.x)
+				minimum.x = point.x;
+			if (point.y < minimum.y)
+				minimum.y = point.y;
+			if (point.z < minimum.z)
+				minimum.z = point.z;
+
+			if (point.x > maximum.x)
+				maximum.x = point.x;
+			if (point.y > maximum.y)
+				maximum.y = point.y;
+			if (point.z > maximum.z)
+				maximum.z = point.z;
+		}
+			
 		Point3d myPoint = new Point3d(point);
 		points.addElement(myPoint);
 		
-		if (point.x < minimum.x)
-			minimum.x = point.x;
-		if (point.y < minimum.y)
-			minimum.y = point.y;
-		if (point.z < minimum.z)
-			minimum.z = point.z;
-			
-		if (point.x > maximum.x)
-			maximum.x = point.x;
-		if (point.y > maximum.y)
-			maximum.y = point.y;
-		if (point.z > maximum.z)
-			maximum.z = point.z;
-			
 		currentZ = point.z;
 
 		calculateRatio();

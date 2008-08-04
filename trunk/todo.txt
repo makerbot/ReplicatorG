@@ -6,7 +6,8 @@ TODO:
 * reformat GUI with different button ordering
 * change colors to RepRap green (bilton?)
 * test build process on windows
-* add gcode parsing for proper coordinates / machine status / etc.
+* finish gcode parsing for proper coordinates / machine status / etc.
+* add a processing drive to calculate build time, look for errors, etc.
 
 DONE:
 
