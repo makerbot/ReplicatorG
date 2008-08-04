@@ -57,6 +57,8 @@ class SimulationCanvas2D extends Canvas
 	private Point3d minimum;
 	private Point3d maximum;
 	private double currentZ;
+	
+	private double ratio = 1.0;
 
 	private Vector points;
 	
@@ -100,38 +102,30 @@ class SimulationCanvas2D extends Canvas
 			
 		currentZ = point.z;
 
-		/*
-		System.out.println("current queue:");
-		for (Enumeration e = points.elements(); e.hasMoreElements();)
-		{
-			Point3d p = (Point3d)e.nextElement();
-			System.out.println(p.toString());
-		}
-		*/
-
-//		resizeIfNeeded();
+		calculateRatio();
 			
 		repaint();
 	}
 	
-	public void resizeIfNeeded()
+	public void calculateRatio()
 	{
+		//calculate the ratios that will keep us inside our box
+		double yRatio = (getWidth() - 40) / (maximum.y - minimum.y);
+		double xRatio = (getHeight() - 20) / (maximum.x - minimum.x);
 		
+		//which one is smallest?
+		ratio = Math.min(yRatio, xRatio);
 	}
 	
 	public void paint(Graphics g)
 	{
 	    Graphics2D g2 = (Graphics2D) g;
-	    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+	    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g2.setPaint(Color.black);
 
-	    g.setFont(new Font("SansSerif", Font.PLAIN, 11));
+	    g.setFont(new Font("SansSerif", Font.BOLD, 14));
 	    g.setColor(Color.black);
-		g.drawString("Layer at z:" + currentZ, 20, 20);
-		g.drawString("Points:" + points.size(), 20, 40);
-
-		g.drawLine(40, 40, 200, 200);
-		g.drawLine(200, 40, 40, 200);
+		g.drawString("Layer at z: " + currentZ, 20, 20);
 		
 		Vector toolpaths = getLayerPaths(currentZ);
 		Point3d start = new Point3d();
@@ -161,7 +155,7 @@ class SimulationCanvas2D extends Canvas
 						int endX = convertRealXToPointX(end.x);
 						int endY = convertRealYToPointY(end.y);
 
-						System.out.println("line from: " + startX + ", " + startY + " to " + endX + ", " + endY);
+						//System.out.println("line from: " + startX + ", " + startY + " to " + endX + ", " + endY);
 						g.drawLine(startX, startY, endX, endY);
 
 						start = new Point3d(end);
@@ -218,7 +212,7 @@ class SimulationCanvas2D extends Canvas
 			if (p.z == layerZ)
 			{
 				path.addElement(p);
-				System.out.println("added: " + p.toString());
+				//System.out.println("added: " + p.toString());
 			}
 			//okay, not on layer... did we find a path?
 			else if (path.size() > 0)
@@ -238,13 +232,12 @@ class SimulationCanvas2D extends Canvas
 	
 	public int convertRealXToPointX(double x)
 	{
-		return (int)(x * 10);
-//		return (int)Math.round(getWidth() * (Math.abs(minimum.x - x) / Math.abs(maximum.x - minimum.x)));
+		return (int)((x - minimum.x) * ratio) + 10;
 	}
 	
 	public int convertRealYToPointY(double y)
 	{
-		return (int)(y * 10);
-//		return (int)Math.round(getWidth() * (Math.abs(minimum.y - y) / Math.abs(maximum.y - minimum.y)));
+		// subtract from getheight to get a normal origin.
+		return (getHeight() - (int)((y - minimum.y) * ratio));
 	}
 }
