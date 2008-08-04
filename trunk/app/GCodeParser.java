@@ -229,6 +229,11 @@ public class GCodeParser
 		command = semiMatcher.replaceAll("");
 	}
 	
+	public String getCommand()
+	{
+		return command;
+	}
+	
 	/**
 	 * Actually execute the GCode we just parsed.
 	 */

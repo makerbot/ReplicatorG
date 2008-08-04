@@ -72,13 +72,9 @@ public class Machine
 		
 		System.out.println("Loading machine: " + name);
 		
-		loadDrivers();
-		
-/*
-		currentLineBackground = new Color(0x00, 0x99, 0xFF);
-		successfulLineBackground = new Color(0x33, 0xFF, 0x66);
-		failedLineBackground = new Color(0xCC, 0x33, 0x33);
-*/
+		//load our drivers
+		loadDriver();
+		loadToolDrivers();
 	}
 	
 	public void setThread(Thread iThread)
@@ -106,7 +102,11 @@ public class Machine
 
 	public void run()
 	{
+		System.out.println("running");
+		
 		simulator.createWindow();
+		
+		System.out.println("window created");
 				
 		editor.setVisible(true);
 		editor.textarea.selectNone();
@@ -169,7 +169,7 @@ public class Machine
 		}		
 	}
 	
-	private void loadDrivers()
+	private void loadDriver()
 	{
 		//load our utility drivers
 		simulator = new SimulationDriver(0);
@@ -187,25 +187,13 @@ public class Machine
 			}
 		}
 
-		//load our tool drivers
-		for (int j=0; j<kids.getLength(); j++)
-		{
-			Node kid = kids.item(j);
-
-			if (kid.getNodeName().equals("toolheads"))
-			{
-				driver.loadToolDrivers(kid);
-			}
-		}
-
 		System.out.println("No driver config found.");
 		
 		driver = Driver.factory();
 	}
 	
-	private void loadToolDrivers(Node n)
+	private void loadToolDrivers()
 	{
-		
 	}
 	
 	synchronized public void stop()

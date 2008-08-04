@@ -57,7 +57,9 @@ public class NullDriver extends Driver
 	{
 		super.execute();
 		
-		if (delay > 0)
+		String command = parser.getCommand();
+		
+		if (command.length() > 0 && delay > 0)
 		{
 			try {
 				Thread.currentThread().sleep(delay);
