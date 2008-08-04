@@ -54,11 +54,11 @@ public class SimulationWindow2D extends SimulationWindow
 
 class SimulationCanvas2D extends Canvas
 {
-	protected Point3d minimum;
-	protected Point3d maximum;
-	protected double currentZ;
-	
-	protected Vector points;
+	private Point3d minimum;
+	private Point3d maximum;
+	private double currentZ;
+
+	private Vector points;
 	
 	public SimulationCanvas2D()
 	{
@@ -71,17 +71,18 @@ class SimulationCanvas2D extends Canvas
 		
 		//initialize our vector
 		points = new Vector();
-		points.add(new Point3d());
+		points.addElement(new Point3d());
 		
 		setBackground(Color.white);
 		setForeground(Color.white);
-		
-		System.out.println("2d canvas build.");
 	}
 	
 	synchronized public void queuePoint(Point3d point)
 	{
-		points.add(point);
+		//System.out.println("queued: " + point.toString());
+		
+		Point3d myPoint = new Point3d(point);
+		points.addElement(myPoint);
 		
 		if (point.x < minimum.x)
 			minimum.x = point.x;
@@ -99,7 +100,16 @@ class SimulationCanvas2D extends Canvas
 			
 		currentZ = point.z;
 
-		resizeIfNeeded();
+		/*
+		System.out.println("current queue:");
+		for (Enumeration e = points.elements(); e.hasMoreElements();)
+		{
+			Point3d p = (Point3d)e.nextElement();
+			System.out.println(p.toString());
+		}
+		*/
+
+//		resizeIfNeeded();
 			
 		repaint();
 	}
@@ -118,45 +128,123 @@ class SimulationCanvas2D extends Canvas
 	    g.setFont(new Font("SansSerif", Font.PLAIN, 11));
 	    g.setColor(Color.black);
 		g.drawString("Layer at z:" + currentZ, 20, 20);
+		g.drawString("Points:" + points.size(), 20, 40);
+
+		g.drawLine(40, 40, 200, 200);
+		g.drawLine(200, 40, 40, 200);
 		
-		Point3d start = null;
-		Point3d current = null;
+		Vector toolpaths = getLayerPaths(currentZ);
+		Point3d start = new Point3d();
+		Point3d end = new Point3d();
 		
-		//loop through points and draw them all.
-		for (int i=0; i<points.size(); i++)
+		//System.out.println("toolpaths:" + toolpaths.size());
+
+		//draw our toolpaths.
+		if (toolpaths.size() > 0)
 		{
-			current = (Point3d)points.get(i);
-			if (current.z == currentZ)
+			for (Enumeration e = toolpaths.elements(); e.hasMoreElements();)
 			{
-				if (start == null)
-				{
-					start = current;
-					continue;
-				}
-				else if (start.x != current.x || start.y != current.y)
-				{
-					int startX = convertRealXToPointX(start.x);
-					int startY = convertRealYToPointY(start.y);
-					int endX = convertRealXToPointX(current.x);
-					int endY = convertRealYToPointY(current.y);
+				Vector path = (Vector)e.nextElement();
+				//System.out.println("path points:" + path.size());
 
-					System.out.println("line from " + startX + ", " + startY + " to " + endX + ", " + endX);
-					g.drawLine(startX, startY, endX, endY);
+				if (path.size() > 1)
+				{
+					g.setColor(Color.black);
+					start = (Point3d)path.firstElement();
 
-					//save it for next time.
-					start = current;
+					for (Enumeration e2 = path.elements(); e2.hasMoreElements();)
+					{
+						end = (Point3d)e2.nextElement();
+
+						int startX = convertRealXToPointX(start.x);
+						int startY = convertRealYToPointY(start.y);
+						int endX = convertRealXToPointX(end.x);
+						int endY = convertRealYToPointY(end.y);
+
+						System.out.println("line from: " + startX + ", " + startY + " to " + endX + ", " + endY);
+						g.drawLine(startX, startY, endX, endY);
+
+						start = new Point3d(end);
+					}
 				}
 			}
 		}
+
+/*
+		//draw our toolpaths.
+		if (toolpaths.size() > 0)
+		{
+			for (int i=0; i<toolpaths.size(); i++)
+			{
+				Vector path = (Vector)toolpaths.get(i);
+				//System.out.println("path points:" + path.size());
+
+				if (path.size() > 1)
+				{
+					g.setColor(Color.black);
+					start = (Point3d)path.get(0);
+					for (int j=1; j<path.size(); j++)
+					{
+						end = (Point3d)path.get(j);
+
+						int startX = convertRealXToPointX(start.x);
+						int startY = convertRealYToPointY(start.y);
+						int endX = convertRealXToPointX(end.x);
+						int endY = convertRealYToPointY(end.y);
+
+						System.out.println("line from: " + startX + ", " + startY + " to " + endX + ", " + endY);
+						g.drawLine(startX, startY, endX, endY);
+
+						start = end;
+					}
+				}
+			}
+		}
+*/
+	}
+	
+	private Vector getLayerPaths(double layerZ)
+	{
+		Vector paths = new Vector();
+		Vector path = new Vector();
+		Point3d p;
+		int i;
+		
+		for (Enumeration e = points.elements(); e.hasMoreElements();)
+		{
+			p = (Point3d)e.nextElement();
+			
+			//is this on our current layer?
+			if (p.z == layerZ)
+			{
+				path.addElement(p);
+				System.out.println("added: " + p.toString());
+			}
+			//okay, not on layer... did we find a path?
+			else if (path.size() > 0)
+			{
+				//System.out.println("added path of size " + path.size());
+				paths.addElement(path);
+				path = new Vector();
+			}
+		}
+		
+		//did we end on our current path?
+		if (path.size() > 0)
+			paths.addElement(path);
+		
+		return paths;
 	}
 	
 	public int convertRealXToPointX(double x)
 	{
-		return (int)Math.round(getWidth() * (Math.abs(minimum.x - x) / Math.abs(maximum.x - minimum.x)));
+		return (int)(x * 10);
+//		return (int)Math.round(getWidth() * (Math.abs(minimum.x - x) / Math.abs(maximum.x - minimum.x)));
 	}
 	
 	public int convertRealYToPointY(double y)
 	{
-		return (int)Math.round(getWidth() * (Math.abs(minimum.y - y) / Math.abs(maximum.y - minimum.y)));
+		return (int)(y * 10);
+//		return (int)Math.round(getWidth() * (Math.abs(minimum.y - y) / Math.abs(maximum.y - minimum.y)));
 	}
 }

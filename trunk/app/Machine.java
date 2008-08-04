@@ -120,7 +120,7 @@ public class Machine
 		System.out.println("Running GCode...");
 		build();
 		
-		simulator.hideWindow();
+		//simulator.hideWindow();
 		editor.textarea.enable();
 	}
 	
