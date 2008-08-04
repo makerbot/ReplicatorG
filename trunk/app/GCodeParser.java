@@ -109,6 +109,9 @@ public class GCodeParser
 	 */
 	public boolean parse(String cmd)
 	{
+		//get ready for last one.
+		cleanup();
+		
 		//save our command
 		command = cmd;
 
@@ -145,7 +148,11 @@ public class GCodeParser
 	public double getCodeValue(String c)
 	{
 		Double d = (Double)codeValues.get(c);
-		return d.doubleValue();
+		
+		if (d != null)
+			return d.doubleValue();
+		else
+			return -1.0;
 	}
 	
 	/**
@@ -157,7 +164,10 @@ public class GCodeParser
 	{
 		Boolean b = (Boolean)seenCodes.get(code);
 		
-		return b.booleanValue();
+		if (b != null)
+			return b.booleanValue();
+		else
+			return false;
 	}
 	
 	/**
@@ -289,7 +299,7 @@ public class GCodeParser
 					break;
 
 				default:
-					System.out.println("Unknown Mcode: M" + (int)getCodeValue("M"));
+					System.out.println("Unknown M code: M" + (int)getCodeValue("M"));
 			}
 		}
 
@@ -529,7 +539,7 @@ public class GCodeParser
 					break;
 
 				default:
-					System.out.println("Unknown GCode: G" + (int)getCodeValue("G"));
+					System.out.println("Unknown G code: G" + (int)getCodeValue("G"));
 			}
 		}
 	}
@@ -612,7 +622,8 @@ public class GCodeParser
 		delta = new Point3d();
 		
 		//save our gcode
-		lastGCode = (int)getCodeValue("G");
+		if (hasCode("G"))
+			lastGCode = (int)getCodeValue("G");
 
 		//clear our gcodes.
 		codeValues.clear();

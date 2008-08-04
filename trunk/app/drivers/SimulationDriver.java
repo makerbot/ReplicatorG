@@ -54,13 +54,13 @@ public class SimulationDriver extends Driver
 		delay = 100;
 	}
 	
-	public void createWindow()
+	synchronized public void createWindow()
 	{
 		simulation = new SimulationWindow();
 		simulation.setVisible(true);
 	}
 	
-	public void hideWindow()
+	synchronized public void hideWindow()
 	{
 		simulation.setVisible(false);
 	}

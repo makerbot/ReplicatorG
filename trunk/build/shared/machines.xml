@@ -4,7 +4,7 @@
 		<name>3-Axis Simulator</name>
 		<geometry>cartesian</geometry>
 		<driver>
-			<name>simulation</name>
+			<name>null</name> <!-- use a fake driver -->
 			<wait>100</wait> <!-- in milliseconds -->
 		</driver>
 	</machine>

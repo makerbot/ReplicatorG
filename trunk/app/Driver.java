@@ -53,8 +53,9 @@ public class Driver
 	public Driver()
 	{
 		parser = new GCodeParser();
-		
 		current = new Point3d();
+		
+		currentTool = new ToolDriver();
 	}
 
 	public void parse(String cmd)
@@ -112,6 +113,11 @@ public class Driver
 	public static Driver factory()
 	{
 		return new NullDriver();
+	}
+	
+	public void loadToolDrivers(Node n)
+	{
+		
 	}
 	
 	public ToolDriver currentTool()

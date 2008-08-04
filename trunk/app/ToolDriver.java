@@ -42,6 +42,11 @@ public class ToolDriver
 	/**
 	  * Creates the driver object.
 	  */
+	public ToolDriver()
+	{
+		
+	}
+	
 	public ToolDriver(Node n, Driver d)
 	{
 		driver = d;

@@ -25,11 +25,42 @@ package processing.app.drivers;
 
 import processing.app.*;
 import processing.core.*;
+import org.w3c.dom.*;
 
 
 public class NullDriver extends Driver
 {
+	private int delay;
+	
 	public NullDriver()
 	{
+		super();
+
+		delay = 100;
+	}
+	
+	public NullDriver(int d)
+	{
+		super();
+
+		delay = d;
+	}
+	
+	public NullDriver(Node node)
+	{
+		super();
+		delay = 100;
+	}
+	
+	public void execute()
+	{
+		super.execute();
+		
+		if (delay > 0)
+		{
+			try {
+				Thread.currentThread().sleep(delay);
+			} catch (InterruptedException e) {}
+		}
 	}
 }

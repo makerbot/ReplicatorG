@@ -188,7 +188,7 @@ public class Machine
 	private void loadDrivers()
 	{
 		//load our utility drivers
-		processor = new NullDriver();
+		processor = new NullDriver(0);
 		simulator = new SimulationDriver(0);
 		
 		//load our actual driver
@@ -203,10 +203,26 @@ public class Machine
 				return;
 			}
 		}
-		
+
+		//load our tool drivers
+		for (int j=0; j<kids.getLength(); j++)
+		{
+			Node kid = kids.item(j);
+
+			if (kid.getNodeName().equals("toolheads"))
+			{
+				driver.loadToolDrivers(kid);
+			}
+		}
+
 		System.out.println("No driver config found.");
 		
 		driver = Driver.factory();
+	}
+	
+	private void loadToolDrivers(Node n)
+	{
+		
 	}
 	
 	synchronized public void stop()
