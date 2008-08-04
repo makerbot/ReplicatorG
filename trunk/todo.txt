@@ -7,7 +7,6 @@ TODO:
 * change colors to RepRap green (bilton?)
 * test build process on windows
 * add gcode parsing for proper coordinates / machine status / etc.
-* add simple simulation window
 
 DONE:
 
@@ -30,6 +29,7 @@ DONE:
 * change message dialog to yes/no dialog that allows you to cancel the operation
 * test build process on linux
 * test serialpassthrough driver
+* add simple simulation window
 
 0002 ReplicatorG
 
