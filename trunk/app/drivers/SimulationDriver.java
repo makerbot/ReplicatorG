@@ -67,8 +67,12 @@ public class SimulationDriver extends Driver
 	
 	public void execute()
 	{
-		super.execute();
+		//suppress any errors
+		try {
+			super.execute();
+		} catch (GCodeException e) {}
 		
+		//do we want to delay?
 		if (delay > 0)
 		{
 			try {

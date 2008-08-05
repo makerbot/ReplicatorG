@@ -1,8 +1,8 @@
 /*
-  NullDriver.java
+  GCodeException.java
 
-  This driver does absolutely nothing.
-
+  Error handling gcode.
+  
   Part of the ReplicatorG project - http://www.replicat.org
   Copyright (c) 2008 Zach Smith
 
@@ -21,58 +21,12 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package processing.app.drivers;
+package processing.app;
 
-import processing.app.*;
-import processing.core.*;
-import org.w3c.dom.*;
-import javax.vecmath.*;
-
-
-public class NullDriver extends Driver
+public class GCodeException extends Exception
 {
-	private int delay;
-	
-	public NullDriver()
+	public GCodeException(String message)
 	{
-		super();
-
-		delay = 100;
+		super(message);
 	}
-	
-	public NullDriver(int d)
-	{
-		super();
-
-		delay = d;
-	}
-	
-	public NullDriver(Node node)
-	{
-		super();
-		delay = 100;
-	}
-	
-	public void execute()
-	{
-		//suppress errors.
-		try {
-			super.execute();
-		} catch (GCodeException e) {}
-		
-		String command = parser.getCommand();
-		
-		if (command.length() > 0 && delay > 0)
-		{
-			try {
-				Thread.currentThread().sleep(delay);
-			} catch (InterruptedException e) {}
-		}
-	}
-	
-	public void queuePoint(Point3d p)
-	{
-		current = p;
-	}
-	
 }

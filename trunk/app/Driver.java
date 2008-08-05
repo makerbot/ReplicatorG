@@ -46,6 +46,10 @@ public class Driver
 
 	//our current
 	protected Point3d current;
+	
+	//our versions
+	protected int versionMajor = 0;
+	protected int versionMinor = 0;
 
 	/**
 	  * Creates the driver object.
@@ -70,9 +74,14 @@ public class Driver
 		parser.handleStops();
 	}
 	
-	public void execute()
+	public void execute() throws GCodeException
 	{
 		parser.execute(this);
+	}
+	
+	public String getVersion()
+	{
+		return Integer.toString(versionMajor) + "." + Integer.toString(versionMinor);
 	}
 	
 	/**
@@ -116,15 +125,6 @@ public class Driver
 		return new NullDriver();
 	}
 	
-	public void loadToolDrivers(Node n)
-	{
-		
-	}
-	
-	public ToolDriver currentTool()
-	{
-		return currentTool;
-	}
 	
 	public void setCurrentPosition(Point3d p)
 	{
@@ -136,45 +136,67 @@ public class Driver
 		return current;
 	}
 	
-	public void queuePoint(Point3d p)
+	public void queuePoint(Point3d p) {}
+
+
+	/**
+	* Tool methods
+	*/
+	public void loadToolDrivers(Node n)
 	{
+		
+	}
+	
+	public void requestToolChange(int toolIndex)
+	{
+		
 	}
 	
 	public void selectTool(int toolIndex)
 	{
 		currentTool = tools[toolIndex];
 	}
+
+	public ToolDriver currentTool()
+	{
+		return currentTool;
+	}
 	
 	/**
 	* sets the feedrate in mm/minute
 	*/
-	public void setFeedrate(double feed)
-	{
-	}
+	public void setFeedrate(double feed) {}
 	
-	public void homeXYZ()
-	{
-	}
+	/**
+	* various homing functions
+	*/
+	public void homeXYZ() {}
+	public void homeXY() {}
+	public void homeX() {}
+	public void homeY() {}
+	public void homeZ() {}	
 	
-	public void homeXY()
-	{
-	}
+	/**
+	* delay / pause function
+	*/
+	public void delay(long millis) {}
 	
-	public void homeX()
-	{
-	}
-		
-	public void homeY()
-	{
-	}
+	/**
+	* functions for dealing with clamps
+	*/
+	public void openClamp(int clampIndex) {}
+	public void closeClamp(int clampIndex) {}
 	
-	public void homeZ()
-	{
-	}
+	/**
+	* enabling/disabling our drivers (steppers, servos, etc.)
+	*/
+	public void enableDrives() {}
+	public void disableDrives() {}
 	
-	public void delay(long millis)
-	{
-	}
+	/**
+	* change our gear ratio
+	*/
+	public void changeGearRatio(int ratioIndex) {}
 }
 
 class JobCancelledException extends Exception

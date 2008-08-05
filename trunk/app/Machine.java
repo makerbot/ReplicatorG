@@ -146,9 +146,16 @@ public class Machine
 				continue;
 			}
 			
-			//do the command
+			//simulate the command.
 			simulator.execute();
-			driver.execute();
+			
+			//execute the command and snag any errors.
+			try {
+				driver.execute();
+			} catch (GCodeException e) {
+				//TODO: prompt the user to continue.
+				System.out.println("Error: " + e.getMessage());
+			}
 			
 			//are we paused?
 			while (this.isPaused())

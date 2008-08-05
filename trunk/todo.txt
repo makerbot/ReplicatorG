@@ -11,7 +11,8 @@ TODO:
 * update serialpassthroughdriver to pull all config from XML file
 * update nulldriver to pull more config from XML file
 * update simulationdriver to pull more config from XML file
-* add support for rest of low-hanging g codes and m codes
+* add support for rest of low-hanging g codes
+* add support for rest of low-hanging m codes
 
 DONE:
 

@@ -237,28 +237,166 @@ public class GCodeParser
 	/**
 	 * Actually execute the GCode we just parsed.
 	 */
-	public void execute(Driver driver)
+	public void execute(Driver driver) throws GCodeException
 	{
-		Point3d temp = new Point3d();
-
 		// Select our tool?
 		if (hasCode("T"))
 			driver.selectTool((int)getCodeValue("T"));
-
+			
+		// Set spindle speed?
+		if (hasCode("S"))
+			driver.currentTool().setSpindleSpeed((int)getCodeValue("S"));
+			
+		//execute our other codes
+		executeMCodes(driver);
+		executeGCodes(driver);
+	}
+	
+	private void executeMCodes(Driver driver) throws GCodeException
+	{
 		//find us an m code.
 		if (hasCode("M"))
 		{
 			switch ((int)getCodeValue("M"))
 			{
+				//stop codes... handled by handleStops();
+				case 0:
+				case 1:
+				case 2:
+					break;
+					
+				//spindle on, CW
+				case 3:
+					driver.currentTool().setSpindleDirection(ToolDriver.MOTOR_CLOCKWISE);
+					driver.currentTool().enableSpindle();
+					break;
+					
+				//spindle on, CCW
+				case 4:
+					driver.currentTool().setSpindleDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
+					driver.currentTool().enableSpindle();
+					break;
+					
+				//spindle off
+				case 5:
+					driver.currentTool().disableSpindle();
+					break;
+					
+				//tool change
+				case 6:
+					if (hasCode("T"))
+						driver.requestToolChange((int)getCodeValue("T"));
+					else
+						throw new GCodeException("The T parameter is required for tool changes. (M6)");
+					break;
+
+				//coolant A on (flood coolant)
+				case 7:
+					driver.currentTool().enableFloodCoolant();
+					break;
+
+				//coolant B on (mist coolant)
+				case 8:
+					driver.currentTool().enableMistCoolant();
+					break;
+				
+				//all coolants off
+				case 9:
+					driver.currentTool().disableFloodCoolant();
+					driver.currentTool().disableMistCoolant();
+					break;
+					
+				//close clamp
+				case 10:
+					if (hasCode("Q"))
+						driver.closeClamp((int)getCodeValue("Q"));
+					else
+						throw new GCodeException("The Q parameter is required for clamp operations. (M10)");
+					break;
+
+				//open clamp
+				case 11:
+					if (hasCode("Q"))
+						driver.openClamp((int)getCodeValue("Q"));
+					else
+						throw new GCodeException("The Q parameter is required for clamp operations. (M10)");
+					break;
+
+				//spindle CW and coolant A on
+				case 13:
+					driver.currentTool().setSpindleDirection(ToolDriver.MOTOR_CLOCKWISE);
+					driver.currentTool().enableSpindle();
+					driver.currentTool().enableFloodCoolant();
+					break;
+
+				//spindle CW and coolant A on
+				case 14:
+					driver.currentTool().setSpindleDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
+					driver.currentTool().enableSpindle();
+					driver.currentTool().enableFloodCoolant();
+					break;
+					
+				//enable drives
+				case 17:
+					driver.enableDrives();
+					break;
+					
+				//disable drives
+				case 18:
+					driver.disableDrives();
+					break;
+					
+				//open collet
+				case 21:
+					driver.currentTool().openCollet();
+
+				//open collet
+				case 22:
+					driver.currentTool().closeCollet();
+
+				// M40-M46 = change gear ratios
+				case 40:
+					driver.changeGearRatio(0);
+					break;
+				case 41:
+					driver.changeGearRatio(1);
+					break;
+				case 42:
+					driver.changeGearRatio(2);
+					break;
+				case 43:
+					driver.changeGearRatio(3);
+					break;
+				case 44:
+					driver.changeGearRatio(4);
+					break;
+				case 45:
+					driver.changeGearRatio(5);
+					break;
+				case 46:
+					driver.changeGearRatio(6);
+					break;
+					
+				//M48, M49: i dont understand them yet.
+				
+				//read spindle speed
+				case 50:
+					driver.currentTool().readSpindleSpeed();
+					
+				//subroutine functions... will implement later
+				//case 97: jump
+				//case 98: jump to subroutine
+				//case 99: return from sub
+						
 				//turn extruder on, forward
 				case 101:
-					driver.currentTool().setMotorDirection(ToolDriver.MOTOR_FORWARD);
+					driver.currentTool().setMotorDirection(ToolDriver.MOTOR_CLOCKWISE);
 					driver.currentTool().enableMotor();
 					break;
 
 				//turn extruder on, reverse
 				case 102:
-					driver.currentTool().setMotorDirection(ToolDriver.MOTOR_REVERSE);
+					driver.currentTool().setMotorDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
 					driver.currentTool().enableMotor();
 					break;
 
@@ -307,9 +445,12 @@ public class GCodeParser
 					System.out.println("Unknown M code: M" + (int)getCodeValue("M"));
 			}
 		}
-
+	}
+	
+	private void executeGCodes(Driver driver) throws GCodeException
+	{
 		//start us off at our current position...
-		temp = current;
+		Point3d temp = new Point3d(current);
 		
 		//absolute just specifies the new position
 		if (absoluteMode)

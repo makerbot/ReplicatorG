@@ -30,14 +30,26 @@ import org.w3c.dom.*;
 
 public class ToolDriver
 {
-	public static int MOTOR_FORWARD = 1;
-	public static int MOTOR_REVERSE = 2;
+	public static int MOTOR_CLOCKWISE = 1;
+	public static int MOTOR_COUNTER_CLOCKWISE = 2;
 	
 	//our xml config info
 	protected Node xml;
 	
 	//our driver object
 	protected Driver driver;
+	
+	//temperature variables
+	protected double currentTemperature;
+	protected double targetTemperature;
+
+	//motor stuff
+	protected double currentMotorSpeed;
+	protected double targetMotorSpeed;
+
+	//spindle stuff
+	protected double currentSpindleSpeed;
+	protected double targetSpindleSpeed;
 
 	/**
 	  * Creates the driver object.
@@ -54,16 +66,35 @@ public class ToolDriver
 	}
 	
 	public void setMotorDirection(int dir) {}
-	public void setMotorSpeed(double speed) {}
+	public void setMotorSpeed(double rpm) {}
 	public void enableMotor() {}
 	public void disableMotor() {}
+	public void readMotorSpeed() {}
+	public double getMotorSpeed() { return currentMotorSpeed; }
+	
+	public void setSpindleDirection(int dir) {}
+	public void setSpindleSpeed(double rpm) {}
+	public void enableSpindle() {}
+	public void disableSpindle() {}
+	public void readSpindleSpeed() {}
+	public double getSpindleSpeed() { return currentSpindleSpeed; }
 	
 	public void setTemperature(double temperature) {}
 	public void readTemperature() {}
+	public double getTemperature() { return currentTemperature; }
+
+	public void enableFloodCoolant() {}
+	public void disableFloodCoolant() {}
+
+	public void enableMistCoolant() {}
+	public void disableMistCoolant() {}
 
 	public void enableFan() {}
 	public void disableFan() {}
 	
 	public void openValve() {}
 	public void closeValve() {}
+	
+	public void openCollet() {}
+	public void closeCollet() {}
 }
