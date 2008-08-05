@@ -231,7 +231,7 @@ public class GCodeParser
 	
 	public String getCommand()
 	{
-		return command;
+		return new String(command);
 	}
 	
 	/**
@@ -442,7 +442,7 @@ public class GCodeParser
 					break;
 
 				default:
-					System.out.println("Unknown M code: M" + (int)getCodeValue("M"));
+					throw new GCodeException("Unknown M code: M" + (int)getCodeValue("M"));
 			}
 		}
 	}
@@ -685,7 +685,7 @@ public class GCodeParser
 					break;
 
 				default:
-					System.out.println("Unknown G code: G" + (int)getCodeValue("G"));
+					throw new GCodeException("Unknown G code: G" + (int)getCodeValue("G"));
 			}
 		}
 	}

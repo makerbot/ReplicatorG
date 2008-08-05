@@ -37,7 +37,7 @@ public class NullDriver extends Driver
 	{
 		super();
 
-		delay = 100;
+		delay = 25;
 	}
 	
 	public NullDriver(int d)
@@ -50,7 +50,7 @@ public class NullDriver extends Driver
 	public NullDriver(Node node)
 	{
 		super();
-		delay = 100;
+		delay = 25;
 	}
 	
 	public void execute()
@@ -69,10 +69,4 @@ public class NullDriver extends Driver
 			} catch (InterruptedException e) {}
 		}
 	}
-	
-	public void queuePoint(Point3d p)
-	{
-		current = p;
-	}
-	
 }

@@ -113,7 +113,7 @@ public class SerialPassthroughDriver extends Driver
 		// we'll simply pass it along.
 		//super.execute();
 
-		sendCommand(command);
+		sendCommand(parser.getCommand());
 	}
 	
 	protected void sendCommand(String next)

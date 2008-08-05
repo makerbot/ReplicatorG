@@ -49,6 +49,9 @@ public class Machine
 	//our pause variable
 	protected boolean paused = false;
 	protected boolean stopped = false;
+	
+	//estimated build time in millis
+	protected long estimatedBuildTime = 0;
 
 /*	
 	Color currentLineBackground;
@@ -102,23 +105,42 @@ public class Machine
 
 	public void run()
 	{
-		System.out.println("running");
-		
 		simulator.createWindow();
 		
-		System.out.println("window created");
-				
 		editor.setVisible(true);
 		editor.textarea.selectNone();
 		editor.textarea.disable();
 		editor.textarea.scrollTo(0, 0);
+
+		//estimate build time.
+		estimate();
 		
+		//do that build!
 		System.out.println("Running GCode...");
 		build();
 		
 		//simulator.hideWindow();
 		editor.textarea.enable();
 	}
+	
+	private void estimate()
+	{
+		EstimationDriver estimator = new EstimationDriver();
+		
+		//run each line through the estimator
+		int total = editor.textarea.getLineCount();
+		for (int i=0; i<total; i++)
+		{
+			String line = editor.textarea.getLineText(i);
+			
+			//use our parser to handle the stuff.
+			estimator.parse(line);
+			estimator.execute();
+		}
+
+		System.out.println("Estimated build time is: " + estimator.getBuildTimeString());
+	}
+	
 	
 	private void build()
 	{

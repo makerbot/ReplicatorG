@@ -34,22 +34,23 @@ import org.w3c.dom.*;
 
 public class Driver
 {
-	// command to parse
-	protected String command;
-
 	// our gcode parser
 	protected GCodeParser parser;
-	
-	//our tool drivers
-	protected ToolDriver[] tools;
-	protected ToolDriver currentTool;
 
-	//our current
-	protected Point3d current;
+	// command to parse
+	private String command;
+
+	//our tool drivers
+	private ToolDriver[] tools;
+	private ToolDriver currentTool;
+
+	//our current position
+	private Point3d currentPosition;
+	private double currentFeedrate;
 	
 	//our versions
-	protected int versionMajor = 0;
-	protected int versionMinor = 0;
+	private int versionMajor = 0;
+	private int versionMinor = 0;
 
 	/**
 	  * Creates the driver object.
@@ -57,9 +58,11 @@ public class Driver
 	public Driver()
 	{
 		parser = new GCodeParser();
-		current = new Point3d();
 		
-		//TODO: remove this.
+		currentPosition = new Point3d();
+		currentFeedrate = 0.0;
+
+		//todo: change to loadToolDrivers();
 		currentTool = new ToolDriver();
 	}
 
@@ -128,15 +131,18 @@ public class Driver
 	
 	public void setCurrentPosition(Point3d p)
 	{
-		current = p;
+		currentPosition = new Point3d(p);
 	}
 	
 	public Point3d getCurrentPosition()
 	{
-		return current;
+		return new Point3d(currentPosition);
 	}
 	
-	public void queuePoint(Point3d p) {}
+	public void queuePoint(Point3d p)
+	{
+		currentPosition = new Point3d(p);
+	}
 
 
 	/**
@@ -165,7 +171,19 @@ public class Driver
 	/**
 	* sets the feedrate in mm/minute
 	*/
-	public void setFeedrate(double feed) {}
+	public void setFeedrate(double feed)
+	{
+		currentFeedrate = feed;
+	}
+	
+	/**
+	* sets the feedrate in mm/minute
+	*/
+	public double getCurrentFeedrate()
+	{
+		return currentFeedrate;
+	}
+	
 	
 	/**
 	* various homing functions

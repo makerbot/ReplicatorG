@@ -218,6 +218,7 @@
 		91A5A5AA0E3F9C5D00D3BB80 /* Machine.java in Sources */ = {isa = PBXBuildFile; fileRef = 91A5A5A90E3F9C5D00D3BB80 /* Machine.java */; };
 		91C444440E3F6704005F055C /* Driver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91C444430E3F6704005F055C /* Driver.java */; };
 		91D5A85B0E48CA3B003BE250 /* GCodeException.java in Sources */ = {isa = PBXBuildFile; fileRef = 91D5A85A0E48CA3B003BE250 /* GCodeException.java */; };
+		91DF2EFF0E48EE3E00EAF891 /* EstimationDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91DF2EFE0E48EE3E00EAF891 /* EstimationDriver.java */; };
 		91F5D2D30E4747DD008F954A /* GCodeParser.java in Sources */ = {isa = PBXBuildFile; fileRef = 91F5D2D20E4747DD008F954A /* GCodeParser.java */; };
 		91F5D2D50E4747E9008F954A /* NullDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91F5D2D40E4747E9008F954A /* NullDriver.java */; };
 		91F5D2D80E4747F8008F954A /* ToolDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91F5D2D70E4747F8008F954A /* ToolDriver.java */; };
@@ -388,8 +389,9 @@
 		91A5A5A90E3F9C5D00D3BB80 /* Machine.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Machine.java; sourceTree = "<group>"; };
 		91C444430E3F6704005F055C /* Driver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Driver.java; sourceTree = "<group>"; };
 		91D5A85A0E48CA3B003BE250 /* GCodeException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = GCodeException.java; sourceTree = "<group>"; };
+		91DF2EFE0E48EE3E00EAF891 /* EstimationDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EstimationDriver.java; sourceTree = "<group>"; };
 		91F5D2D20E4747DD008F954A /* GCodeParser.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = GCodeParser.java; sourceTree = "<group>"; };
-		91F5D2D40E4747E9008F954A /* NullDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; name = NullDriver.java; path = drivers/NullDriver.java; sourceTree = "<group>"; };
+		91F5D2D40E4747E9008F954A /* NullDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = NullDriver.java; sourceTree = "<group>"; };
 		91F5D2D70E4747F8008F954A /* ToolDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ToolDriver.java; sourceTree = "<group>"; };
 		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; path = librxtxSerial.jnilib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -514,7 +516,6 @@
 			children = (
 				91D5A85A0E48CA3B003BE250 /* GCodeException.java */,
 				91F5D2D70E4747F8008F954A /* ToolDriver.java */,
-				91F5D2D40E4747E9008F954A /* NullDriver.java */,
 				91F5D2D20E4747DD008F954A /* GCodeParser.java */,
 				36078EA50E4362A600BB48BB /* SimulationWindow3D.java */,
 				36078EA30E43629B00BB48BB /* SimulationWindow2D.java */,
@@ -631,6 +632,8 @@
 		915701410E3F8E2A0033A586 /* drivers */ = {
 			isa = PBXGroup;
 			children = (
+				91DF2EFE0E48EE3E00EAF891 /* EstimationDriver.java */,
+				91F5D2D40E4747E9008F954A /* NullDriver.java */,
 				917F02550E41111400CA05D0 /* SimulationDriver.java */,
 				915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */,
 			);
@@ -779,6 +782,7 @@
 				91F5D2D50E4747E9008F954A /* NullDriver.java in Sources */,
 				91F5D2D80E4747F8008F954A /* ToolDriver.java in Sources */,
 				91D5A85B0E48CA3B003BE250 /* GCodeException.java in Sources */,
+				91DF2EFF0E48EE3E00EAF891 /* EstimationDriver.java in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

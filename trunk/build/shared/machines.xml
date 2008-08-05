@@ -5,7 +5,7 @@
 		<geometry>cartesian</geometry>
 		<driver>
 			<name>null</name> <!-- use a fake driver -->
-			<wait>100</wait> <!-- in milliseconds -->
+			<wait>25</wait> <!-- in milliseconds -->
 		</driver>
 	</machine>
 	<!-- end protected configuration -->
