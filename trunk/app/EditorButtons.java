@@ -104,11 +104,12 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 
     //which[buttonCount++] = NOTHING;
     which[buttonCount++] = SIMULATE;
+    which[buttonCount++] = PAUSE;
     which[buttonCount++] = STOP;
+    which[buttonCount++] = BUILD;
     which[buttonCount++] = NEW;
     which[buttonCount++] = OPEN;
     which[buttonCount++] = SAVE;
-    which[buttonCount++] = BUILD;
 
     currentRollover = -1;
 
@@ -184,6 +185,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
         
 		//save the offset for the next button
         offsetX = x1[i] + BUTTON_WIDTH;
+		x2[i] = offsetX;
       }
 	
     }
