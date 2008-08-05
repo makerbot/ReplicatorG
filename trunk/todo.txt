@@ -3,11 +3,15 @@
 TODO:
 * create and add 'pause' button
 * update 'build' button graphic to be rotated 90 deg.
-* reformat GUI with different button ordering
 * change colors to RepRap green (bilton?)
 * test build process on windows
 * finish gcode parsing for proper coordinates / machine status / etc.
-* add a processing drive to calculate build time, look for errors, etc.
+* add a processing driver to calculate build time, look for errors, etc.
+* finish implementation of ToolDrivers
+* update serialpassthroughdriver to pull all config from XML file
+* update nulldriver to pull more config from XML file
+* update simulationdriver to pull more config from XML file
+* add support for rest of low-hanging g codes and m codes
 
 DONE:
 
@@ -31,6 +35,7 @@ DONE:
 * test build process on linux
 * test serialpassthrough driver
 * add simple simulation window
+* reformat GUI with different button ordering
 
 0002 ReplicatorG
 
@@ -38,11 +43,10 @@ DONE:
 * enhance simulation window
 * experiment with SNAP driver?
 * add simple exerciser / status window
-* start working on queuePoint(), setPosition(), etc. driver functions
 
 0003 ReplicatorG
 
 * add support for adding STL to sketch (for slicing)
 * add STL 3D preview
-* add simluation 3D preview (with 2D option as well)
+* add simulation 3D preview (with 2D option as well)
 * add support for slice/dice plugins (skeinforge?  reprap?)

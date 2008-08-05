@@ -39,24 +39,28 @@ import javax.swing.event.*;
 public class EditorButtons extends JComponent implements MouseInputListener {
 
   static final String title[] = {
-    "Simulate", "Stop", "New", "Open", "Save", "Build"
+    "Simulate", "Pause", "Stop", "Build", "New", "Open", "Save"
   };
 
   static final int BUTTON_COUNT  = title.length;
+
   /// height, width of the toolbar buttons
   static final int BUTTON_WIDTH  = 27;
   static final int BUTTON_HEIGHT = 32;
+
   /// amount of space between groups of buttons on the toolbar
-  static final int BUTTON_GAP = 15; 
+  static final int BUTTON_GAP = 15;
 
   static final int SIMULATE = 0;
-  static final int STOP     = 1;
+  static final int PAUSE    = 1;
+  static final int STOP     = 2;
+  static final int BUILD    = 3;
 
-  static final int NEW      = 2;
-  static final int OPEN     = 3;
-  static final int SAVE     = 4;
-  static final int BUILD      = 5;
+  static final int NEW      = 4;
+  static final int OPEN     = 5;
+  static final int SAVE     = 6;
 
+  //button state 
   static final int INACTIVE = 0;
   static final int ROLLOVER = 1;
   static final int ACTIVE   = 2;
@@ -166,13 +170,22 @@ public class EditorButtons extends JComponent implements MouseInputListener {
       x1 = new int[buttonCount];
       x2 = new int[buttonCount];
 
+	  //start them off 3 pixels from the left
       int offsetX = 3;
-      for (int i = 0; i < buttonCount; i++) {
+
+      for (int i = 0; i < buttonCount; i++)
+	  {
+		//start with our offset
         x1[i] = offsetX;
-        if (i == 2) x1[i] += BUTTON_GAP;
-        x2[i] = x1[i] + BUTTON_WIDTH;
-        offsetX = x2[i];
+
+		//5th button has a gap between it and the other buttons
+        if (i == 4)
+			x1[i] += BUTTON_GAP;
+        
+		//save the offset for the next button
+        offsetX = x1[i] + BUTTON_WIDTH;
       }
+	
     }
     Graphics g = offscreen.getGraphics();
     g.setColor(bgcolor); //getBackground());
@@ -306,42 +319,40 @@ public class EditorButtons extends JComponent implements MouseInputListener {
     ///if (sel == -1) return false;
     if (sel == -1) return;
     currentRollover = -1;
-    //int currentSelection = sel;
-    //if (!(disableRun && ((sel == RUN) || (sel == STOP)))) {
-    // moving the handling of this over into the editor
-    //setState(sel, ACTIVE, true);
-    //}
 
-    //if (currentSelection == OPEN) {
-    //switch (currentSelection) {
-    switch (sel) {
-    case SIMULATE:
-      editor.handleSimulate();
-      break;
+    switch (sel)
+	{
+	    case SIMULATE:
+	      editor.handleSimulate();
+	      break;
 
-    case STOP:
-      editor.handleStop();
-      break;
+	    case PAUSE:
+	      editor.handlePause();
+	      break;
 
-    case OPEN:
-      if (popup == null) {
-        popup = editor.sketchbook.getPopupMenu();
-        add(popup);
-      }
-      popup.show(EditorButtons.this, x, y);
-      break;
+	    case STOP:
+	      editor.handleStop();
+	      break;
 
-    case NEW:
-      editor.handleNew(e.isShiftDown());
-      break;
+	    case BUILD:
+	      editor.handleBuild();
+	      break;
 
-    case SAVE:
-      editor.handleSave(false);
-      break;
+	    case OPEN:
+	      if (popup == null) {
+	        popup = editor.sketchbook.getPopupMenu();
+	        add(popup);
+	      }
+	      popup.show(EditorButtons.this, x, y);
+	      break;
 
-    case BUILD:
-      editor.handleBuild();
-      break;
+	    case NEW:
+	      editor.handleNew(e.isShiftDown());
+	      break;
+
+	    case SAVE:
+	      editor.handleSave(false);
+	      break;
     }    
   }
 
