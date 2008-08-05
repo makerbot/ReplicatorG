@@ -1,18 +1,15 @@
 0001 ReplicatorG
 
 TODO:
-* create and add 'pause' button
-* update 'build' button graphic to be rotated 90 deg.
+* tweak play / pause button behavior
 * change colors to RepRap green (bilton?)
 * test build process on windows
 * finish gcode parsing for proper coordinates / machine status / etc.
 * add a processing driver to calculate build time, look for errors, etc.
-* finish implementation of ToolDrivers
 * update serialpassthroughdriver to pull all config from XML file
 * update nulldriver to pull more config from XML file
 * update simulationdriver to pull more config from XML file
 * add support for rest of low-hanging g codes
-* add support for rest of low-hanging m codes
 
 DONE:
 
@@ -37,6 +34,10 @@ DONE:
 * test serialpassthrough driver
 * add simple simulation window
 * reformat GUI with different button ordering
+* create and add 'pause' button
+* update 'build' button graphic to be rotated 90 deg.
+* add support for rest of low-hanging m codes
+* finish implementation of ToolDrivers
 
 0002 ReplicatorG
 
