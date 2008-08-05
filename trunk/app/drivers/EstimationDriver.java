@@ -117,7 +117,8 @@ public class EstimationDriver extends Driver
 		}
 		
 		//figure out minutes
-		int minutes = (int)Math.floor(tempTime / 60000.0);
+		int minutes = (int)Math.floor(tempTime / 60000.0);		
+		minutes++; //lets just round up the remainder...
 		if (minutes > 0)
 		{
 			tempTime = tempTime - (minutes * 60000);
