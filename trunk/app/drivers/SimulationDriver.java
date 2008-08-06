@@ -62,14 +62,6 @@ public class SimulationDriver extends Driver
 		try {
 			super.execute();
 		} catch (GCodeException e) {}
-		
-		//do we want to delay?
-		if (delay > 0)
-		{
-			try {
-				Thread.currentThread().sleep(delay);
-			} catch (InterruptedException e) {}
-		}
 	}
 	
 	public void queuePoint(Point3d p)

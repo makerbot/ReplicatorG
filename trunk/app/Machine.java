@@ -241,7 +241,7 @@ public class Machine
 	private void loadDriver()
 	{
 		//load our utility drivers
-		simulator = new SimulationDriver(0);
+		simulator = new SimulationDriver();
 		
 		//load our actual driver
 		NodeList kids = machineNode.getChildNodes();
