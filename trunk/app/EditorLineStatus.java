@@ -58,7 +58,7 @@ public class EditorLineStatus extends JComponent {
 	// hardcoding new blue color scheme for consistency with images,
 	// see EditorStatus.java for details.
     //background = Preferences.getColor("linestatus.bgcolor");
-	background = new Color(0x04, 0x4F, 0x6F);
+	background = new Color(0x5F, 0x73, 0x25);
     font = Preferences.getFont("linestatus.font");
     foreground = Preferences.getColor("linestatus.color");
     high = Preferences.getInteger("linestatus.height");

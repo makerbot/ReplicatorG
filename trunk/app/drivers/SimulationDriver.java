@@ -84,5 +84,7 @@ public class SimulationDriver extends Driver
 	public void queuePoint(Point3d p)
 	{
 		simulation.queuePoint(p);
+		
+		super.queuePoint(p);
 	}
 }

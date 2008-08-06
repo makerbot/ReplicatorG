@@ -82,11 +82,11 @@ public class EditorStatus extends JPanel implements ActionListener {
     if (bgcolor == null)
 	{
       bgcolor = new Color[5];
-      bgcolor[0] = new Color(0x33, 0xFF, 0x99);
+      bgcolor[0] = new Color(0x92, 0xA0, 0x6B);
       bgcolor[1] = Preferences.getColor("status.error.bgcolor");
       bgcolor[2] = Preferences.getColor("status.prompt.bgcolor");
       bgcolor[3] = Preferences.getColor("status.prompt.bgcolor");
-      bgcolor[4] = new Color(0x33, 0xFF, 0x99);
+      bgcolor[4] = new Color(0x92, 0xA0, 0x6B);
 
       fgcolor = new Color[5];
       fgcolor[0] = Preferences.getColor("status.notice.fgcolor");

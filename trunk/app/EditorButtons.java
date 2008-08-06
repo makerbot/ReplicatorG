@@ -116,7 +116,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 	// hardcoding new blue color scheme for consistency with images,
 	// see EditorStatus.java for details.		
     //bgcolor = Preferences.getColor("buttons.bgcolor");
-	bgcolor = new Color(0x00, 0x92, 0x00);
+	bgcolor = new Color(0x5F, 0x73, 0x25);
 
     status = "";
 

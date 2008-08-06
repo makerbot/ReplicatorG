@@ -450,7 +450,7 @@ public class GCodeParser
 	private void executeGCodes(Driver driver) throws GCodeException
 	{
 		//start us off at our current position...
-		Point3d temp = new Point3d(current);
+		Point3d temp = driver.getCurrentPosition();
 		
 		//absolute just specifies the new position
 		if (absoluteMode)
