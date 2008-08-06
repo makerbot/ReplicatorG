@@ -1173,7 +1173,6 @@ public class Editor extends JFrame
 		//fire off our thread.
 		simulationThread = new SimulationThread(this);
 		simulationThread.start();
-		//SwingUtilities.invokeLater(simulationThread);
 	}
 	
 	synchronized public void simulationOver()
@@ -1253,16 +1252,19 @@ public class Editor extends JFrame
 
 	public void handleStop()
 	{
-		// called by menu or buttons
-		doStop();
+		if (building || simulating)
+		{
+			// called by menu or buttons
+			doStop();
 
-		if (machine != null)
-			machine.stop();
-		
-		stopItem.disable();
-		pauseItem.disable();
-		
-		buttons.clear();
+			if (machine != null)
+				machine.stop();
+
+			stopItem.disable();
+			pauseItem.disable();
+
+			buttons.clear();
+		}
 	}
 
 	/**
@@ -1281,7 +1283,8 @@ public class Editor extends JFrame
 	public void handlePause()
 	{
 		// called by menu or buttons
-		doPause();
+		if (building || simulating)
+			doPause();
 	}
 
 	/**
@@ -1294,17 +1297,25 @@ public class Editor extends JFrame
 			machine.unpause();
 			
 			if (simulating)
+			{
+				buttons.activate(EditorButtons.SIMULATE);
 				message("Simulating...");
+			}
 			else if (building)
+			{
+				buttons.activate(EditorButtons.BUILD);
 				message("Building...");
+			}
 				
-//			buttons.inactive(EditorButtons.PAUSE);
+			buttons.inactivate(EditorButtons.PAUSE);
 		}
 		else
 		{
-			message("Paused");
+			message("Paused.");
 			machine.pause();
-//			buttons.activate(EditorButtons.PAUSE);
+			
+			buttons.clear();
+			buttons.activate(EditorButtons.PAUSE);
 		}
 	}
 

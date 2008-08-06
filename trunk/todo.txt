@@ -1,11 +1,11 @@
 0001 ReplicatorG
 
 TODO:
-* tweak play / pause button behavior
 * test build process on windows
 * add support for rest of low-hanging g codes
 * fix random freezing bug
 * get multi-print working solidly
+* get inch support working
 
 DONE:
 
@@ -42,6 +42,8 @@ DONE:
 * add dispose after print finish
 * update serialpassthroughdriver to pull all config from XML file
 * update nulldriver to pull more config from XML file
+* tweak play / pause button behavior
+
 
 0002 ReplicatorG
 

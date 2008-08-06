@@ -109,9 +109,11 @@ public class Machine
 	{
 		//record the time.
 		Date started = new Date();
-		
+
+		//start simulator
 		simulator.createWindow();
 		
+		//initialize stuff
 		editor.setVisible(true);
 		editor.textarea.selectNone();
 		editor.textarea.disable();
