@@ -27,6 +27,8 @@ import javax.xml.parsers.*;
 import javax.vecmath.*;
 import org.xml.sax.*;
 import java.lang.Math.*;
+import java.util.*;
+import javax.swing.JOptionPane;
 
 public class Machine
 {
@@ -105,6 +107,9 @@ public class Machine
 
 	public void run()
 	{
+		//record the time.
+		Date started = new Date();
+		
 		simulator.createWindow();
 		
 		editor.setVisible(true);
@@ -117,9 +122,22 @@ public class Machine
 		
 		//do that build!
 		System.out.println("Running GCode...");
-		build();
+		if (build())
+		{
+			//record the time.
+			Date finished = new Date();
 		
-		//simulator.hideWindow();
+			//let them know.
+			notifyBuildComplete(started, finished);
+		}
+		
+		//clean things up.
+		driver.dispose();
+		simulator.dispose();
+		simulator = null;
+		driver = null;
+
+		//re-enable the gui and shit.
 		editor.textarea.enable();
 	}
 	
@@ -138,11 +156,11 @@ public class Machine
 			estimator.execute();
 		}
 
-		System.out.println("Estimated build time is: " + estimator.getBuildTimeString());
+		System.out.println("Estimated build time is: " + EstimationDriver.getBuildTimeString(estimator.getBuildTime()));
 	}
 	
 	
-	private void build()
+	private boolean build()
 	{
 		int total = editor.textarea.getLineCount();
 		for (int i=0; i<total; i++)
@@ -160,9 +178,9 @@ public class Machine
 			try {
 				driver.handleStops();
 			} catch (JobEndException e) {
-				break;
+				return false;
 			} catch (JobCancelledException e) {
-				break;
+				return false;
 			} catch (JobRewindException e) {
 				i = -1;
 				continue;
@@ -191,11 +209,33 @@ public class Machine
 			
 			//bail if we got interrupted.
 			if (this.isStopped())
-			{
-				System.out.println("stopped.");
-				break;
+				return false;
+		}
+		
+		//wait for driver to finish up.
+		while (!driver.isFinished())
+		{
+			try {
+				thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-		}		
+		}
+		
+		return true;
+	}
+	
+	/**
+	* give a prompt and stuff about the build being done with elapsed time, etc.
+	*/
+	private void notifyBuildComplete(Date started, Date finished)
+	{
+		long elapsed = finished.getTime() - started.getTime();
+		
+		String message = "Build finished.\n\n";
+		message += "Completed in " + EstimationDriver.getBuildTimeString(elapsed);
+		
+		JOptionPane.showMessageDialog(null, message);
 	}
 	
 	private void loadDriver()

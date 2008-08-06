@@ -71,6 +71,16 @@ public class Driver
 		command = cmd;
 		parser.parse(cmd);
 	}
+	
+	public boolean isFinished()
+	{
+		return true;
+	}
+	
+	public void dispose()
+	{
+		parser = null;
+	}
 
 	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
 	{

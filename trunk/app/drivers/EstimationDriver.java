@@ -83,12 +83,11 @@ public class EstimationDriver extends Driver
 		return buildTime;
 	}
 	
-	public String getBuildTimeString()
+	static public String getBuildTimeString(long tempTime)
 	{
-		//System.out.println("build millis = " + getBuildTime());
+		System.out.println("build millis = " + tempTime);
 		
 		String val = new String();
-		long tempTime = getBuildTime();
 		
 		//figure out days
 		int days = (int)Math.floor(tempTime / 86400000.0);

@@ -231,4 +231,20 @@ public class SerialPassthroughDriver extends Driver
 			}
 		}	
 	}
+	
+	public boolean isFinished()
+	{
+		readResponse();
+		
+		return (bufferSize == 0);
+	}
+	
+	public void dispose()
+	{
+		super.dispose();
+		
+		serial.dispose();
+		serial = null;
+		commands = null;
+	}
 }

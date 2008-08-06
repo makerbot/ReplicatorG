@@ -60,9 +60,17 @@ public class SimulationDriver extends Driver
 		simulation.setVisible(true);
 	}
 	
+	public void dispose()
+	{
+		super.dispose();
+		hideWindow();
+	}
+	
 	public void hideWindow()
 	{
 		simulation.setVisible(false);
+		simulation.dispose();
+		simulation = null;
 	}
 	
 	public void execute()

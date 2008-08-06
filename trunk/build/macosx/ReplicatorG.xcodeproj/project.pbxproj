@@ -380,7 +380,7 @@
 		33FFFE940965BD110016AC38 /* ReplicatorG.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = ReplicatorG.xcodeproj; sourceTree = "<group>"; };
 		36078EA30E43629B00BB48BB /* SimulationWindow2D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow2D.java; sourceTree = "<group>"; };
 		36078EA50E4362A600BB48BB /* SimulationWindow3D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow3D.java; sourceTree = "<group>"; };
-		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
 		912A74760E42659F00BB58C7 /* SimulationWindow.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow.java; sourceTree = "<group>"; };
 		915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SerialPassthroughDriver.java; sourceTree = "<group>"; };
