@@ -2,12 +2,14 @@
 
 TODO:
 * tweak play / pause button behavior
-* change colors to RepRap green (bilton?)
 * test build process on windows
 * update serialpassthroughdriver to pull all config from XML file
 * update nulldriver to pull more config from XML file
 * update simulationdriver to pull more config from XML file
 * add support for rest of low-hanging g codes
+* fix random freezing bug
+* get multi-print working solidly
+* add dispose after print finish
 
 DONE:
 
@@ -38,6 +40,8 @@ DONE:
 * finish implementation of ToolDrivers
 * add a processing driver to calculate build time, look for errors, etc.
 * finish gcode parsing for proper coordinates / machine status / etc.
+* change colors to RepRap green (thanks nick bilton!)
+
 
 0002 ReplicatorG
 
