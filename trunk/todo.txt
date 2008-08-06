@@ -7,9 +7,10 @@ TODO:
 * update nulldriver to pull more config from XML file
 * update simulationdriver to pull more config from XML file
 * add support for rest of low-hanging g codes
+* add confirmation alert after print finishes (then dispose of driver, etc.)
 * fix random freezing bug
-* get multi-print working solidly
 * add dispose after print finish
+* get multi-print working solidly
 
 DONE:
 
