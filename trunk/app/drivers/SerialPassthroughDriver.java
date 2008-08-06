@@ -38,6 +38,11 @@ public class SerialPassthroughDriver extends Driver
 	private Serial serial;
 
 	/**
+	* are we initialized yet?
+	*/
+	private boolean initialized = false;
+	
+	/**
 	* our array of gcode commands
 	*/
 	private Vector commands;
@@ -76,6 +81,7 @@ public class SerialPassthroughDriver extends Driver
 		bufferSize = 0;
 		bufferLength = 0;
 		currentCommand = 0;
+		initialized = false;
 		
 		//some decent default prefs.
 		String name = Serial.list()[0];
@@ -98,9 +104,6 @@ public class SerialPassthroughDriver extends Driver
 		}
 		
 		System.out.println("Initializing Arduino.");
-		try {
-			Thread.currentThread().sleep(10000);
-		} catch (InterruptedException e) { }
 	}
 	
 	/**
@@ -112,6 +115,10 @@ public class SerialPassthroughDriver extends Driver
 		// as that will call all sorts of misc functions.
 		// we'll simply pass it along.
 		//super.execute();
+		
+		//wait til we're initialized
+		while (!initialized)
+			readResponse();
 
 		sendCommand(parser.getCommand());
 	}
@@ -205,6 +212,12 @@ public class SerialPassthroughDriver extends Driver
 						}
 						else if (result.startsWith("T:"))
 							System.out.println(result.substring(0, result.length()-2));
+						//old arduino firmware sends "start"
+						else if (result.startsWith("start"))
+						{
+							//todo: set version
+							initialized = true;
+						}
 						else
 							System.out.println(result.substring(0, result.length()-2));
 							
