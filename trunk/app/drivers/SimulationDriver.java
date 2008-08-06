@@ -32,26 +32,9 @@ public class SimulationDriver extends Driver
 {
 	private SimulationWindow simulation;
 	
-	private int delay;
-	
 	public SimulationDriver()
 	{
 		super();
-		
-		delay = 100;
-	}
-	
-	public SimulationDriver(int d)
-	{
-		super();
-
-		delay = d;
-	}
-	
-	public SimulationDriver(Node node)
-	{
-		super();
-		delay = 100;
 	}
 	
 	public void createWindow()

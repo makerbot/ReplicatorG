@@ -42,6 +42,8 @@ import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.undo.*;
 
+import org.w3c.dom.*;
+
 import com.apple.mrj.*;
 import com.ice.jni.registry.*;
 
@@ -1102,4 +1104,41 @@ public class Base
       }
     }
   }
+	static public boolean hasChildNode(Node node, String name)
+	{
+		//look through the kids
+		NodeList kids = node.getChildNodes();
+		for (int j=0; j<kids.getLength(); j++)
+		{
+			Node kid = kids.item(j);
+
+			//did we find it?
+			if (kid.getNodeName().equals(name))
+				return true;
+		}
+
+		return false;
+	}
+
+	static public String getChildNodeValue(Node node, String name)
+	{
+		//return null if we have nothing.
+		if (hasChildNode(node, name))
+		{
+			//look through the kids.
+			NodeList kids = node.getChildNodes();
+			for (int j=0; j<kids.getLength(); j++)
+			{
+				Node kid = kids.item(j);
+			
+				//did we find it?
+				if (kid.getNodeName().equals(name))
+					return kid.getFirstChild().getNodeValue().trim();
+			}
+
+			return new String();
+		}
+		else
+			return null;
+	}
 }

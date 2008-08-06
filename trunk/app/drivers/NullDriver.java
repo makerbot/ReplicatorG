@@ -47,10 +47,16 @@ public class NullDriver extends Driver
 		delay = d;
 	}
 	
-	public NullDriver(Node node)
+	public NullDriver(Node xml)
 	{
 		super();
+
+		//initial value.
 		delay = 25;
+		
+		//try and load a different one from config.
+		if (Base.hasChildNode(xml, "wait"))
+			delay = Integer.parseInt(Base.getChildNodeValue(xml, "wait"));
 	}
 	
 	public void execute()

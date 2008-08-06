@@ -104,30 +104,56 @@ public class Driver
 	 */
 	public static Driver factory(Node xml)
 	{
-		NodeList kids = xml.getChildNodes();
-
-		for (int j=0; j<kids.getLength(); j++)
+		//find the "name" attribute first
+		if (xml.hasAttributes())
 		{
-			Node kid = kids.item(j);
-
-			if (kid.getNodeName().equals("name"))
+			NamedNodeMap map = xml.getAttributes();
+			Node attribute = map.getNamedItem("name");
+			if (attribute != null)
 			{
-				String driverName = kid.getFirstChild().getNodeValue().trim();
+				String driverName = attribute.getNodeValue().trim();
 
-				System.out.println("Loading driver: " + driverName);
-
-				//create our driver and give it the config so it can self-configure.
-				if (driverName.equals("serialpassthrough"))
-					return new SerialPassthroughDriver(xml);
-				else
-					return new NullDriver();
+				//use our common factory
+				return factory(driverName, xml);
 			}
 		}
-		
+
+		//fail over to "name" element
+		if (xml.hasChildNodes())
+		{
+			NodeList kids = xml.getChildNodes();
+			for (int j=0; j<kids.getLength(); j++)
+			{
+				Node kid = kids.item(j);
+
+				if (kid.getNodeName().equals("name"))
+				{
+					String driverName = kid.getFirstChild().getNodeValue().trim();
+
+					//use our common factory
+					return factory(driverName, xml);
+				}
+			}
+		}
+
 		System.out.println("Failing over to null driver.");
 		
-		//bail with a simulation driver.
+		//bail with a fake driver.
 		return new NullDriver();
+	}
+	
+	//common driver factory.
+	public static Driver factory (String driverName, Node xml)
+	{
+		System.out.println("Loading driver: " + driverName);
+		
+		if (driverName.equals("serialpassthrough"))
+			return new SerialPassthroughDriver(xml);
+		else
+		{
+			System.out.println("Driver not found, failing over to 'null'.");
+			return new NullDriver(xml);
+		}
 	}
 	
 	/**

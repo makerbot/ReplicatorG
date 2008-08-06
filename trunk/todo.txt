@@ -3,9 +3,6 @@
 TODO:
 * tweak play / pause button behavior
 * test build process on windows
-* update serialpassthroughdriver to pull all config from XML file
-* update nulldriver to pull more config from XML file
-* update simulationdriver to pull more config from XML file
 * add support for rest of low-hanging g codes
 * fix random freezing bug
 * get multi-print working solidly
@@ -43,6 +40,8 @@ DONE:
 * add elapsed time to build process
 * add confirmation alert after print finishes
 * add dispose after print finish
+* update serialpassthroughdriver to pull all config from XML file
+* update nulldriver to pull more config from XML file
 
 0002 ReplicatorG
 

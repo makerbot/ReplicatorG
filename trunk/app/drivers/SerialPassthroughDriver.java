@@ -91,12 +91,20 @@ public class SerialPassthroughDriver extends Driver
 		float  stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
 
 		//load from our XML config, if we have it.
-		//TODO: actually load up from XML.
-
-		System.out.println("Connecting to " + name + " at " + rate);
+		if (Base.hasChildNode(xml, "portname"))
+			name = Base.getChildNodeValue(xml, "portname");
+		if (Base.hasChildNode(xml, "rate"))
+			rate = Integer.parseInt(Base.getChildNodeValue(xml, "rate"));
+		if (Base.hasChildNode(xml, "parity"))
+			parity = Base.getChildNodeValue(xml, "parity").charAt(0);
+		if (Base.hasChildNode(xml, "databits"))
+			databits = Integer.parseInt(Base.getChildNodeValue(xml, "databits"));
+		if (Base.hasChildNode(xml, "stopbits"))
+			stopbits = Integer.parseInt(Base.getChildNodeValue(xml, "stopbits"));
 		
 		//declare our serial guy.
 		try {
+			System.out.println("Connecting to " + name + " at " + rate);
 			serial = new Serial(name, rate, parity, databits, stopbits);
 		} catch (SerialException e) {
 			//TODO: report the error here.

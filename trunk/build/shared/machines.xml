@@ -3,8 +3,7 @@
 	<machine>
 		<name>3-Axis Simulator</name>
 		<geometry>cartesian</geometry>
-		<driver>
-			<name>null</name> <!-- use a fake driver -->
+		<driver name="null"> <!-- use a fake driver -->
 			<wait>25</wait> <!-- in milliseconds -->
 		</driver>
 	</machine>
@@ -12,13 +11,12 @@
 	<machine>
 		<name>Darwin</name>
 		<geometry>cartesian</geometry>
-		<driver>
-			<name>serialpassthrough</name>
-			<portname>COM1</portname>
-			<speed>19200</speed>
-			<parity>8</parity>
-			<databits>1</databits>
-			<stopbits>N</stopbits>
+		<driver name="serialpassthrough">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- optional, defaults to 19200.                      <rate>19200</rate> -->
+			<!-- optional, defaults to 8.                          <parity>8</parity> -->
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
 		</driver>
 	</machine>
 </machines>
