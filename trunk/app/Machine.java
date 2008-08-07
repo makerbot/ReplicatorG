@@ -110,17 +110,27 @@ public class Machine
 		//record the time.
 		Date started = new Date();
 
+		System.out.println("foo1");
+		
 		//start simulator
 		simulator.createWindow();
+
+		System.out.println("foo2");
 		
 		//initialize stuff
 		editor.setVisible(true);
+		System.out.println("foo3");
 		editor.textarea.selectNone();
+		System.out.println("foo4");
 		editor.textarea.disable();
+		System.out.println("foo5");
 		editor.textarea.scrollTo(0, 0);
+		System.out.println("foo6");
 
 		//estimate build time.
 		estimate();
+		
+		System.out.println("foo7");
 		
 		//do that build!
 		System.out.println("Running GCode...");
@@ -130,17 +140,25 @@ public class Machine
 			Date finished = new Date();
 		
 			//let them know.
+			System.out.println("bar1");
 			notifyBuildComplete(started, finished);
+			System.out.println("bar2");
 		}
 		
 		//clean things up.
+		System.out.println("bar3");
 		driver.dispose();
+		System.out.println("bar4");	
 		simulator.dispose();
+		System.out.println("bar5");	
 		simulator = null;
+		System.out.println("bar6");	
 		driver = null;
+		System.out.println("bar7");	
 
 		//re-enable the gui and shit.
 		editor.textarea.enable();
+		System.out.println("bar8");	
 	}
 	
 	private void estimate()

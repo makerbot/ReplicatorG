@@ -4,7 +4,6 @@ TODO:
 * test build process on windows
 * add support for rest of low-hanging g codes
 * fix random freezing bug
-* get multi-print working solidly
 * get inch support working
 
 DONE:
@@ -43,6 +42,7 @@ DONE:
 * update serialpassthroughdriver to pull all config from XML file
 * update nulldriver to pull more config from XML file
 * tweak play / pause button behavior
+* get multi-print working solidly
 
 
 0002 ReplicatorG
