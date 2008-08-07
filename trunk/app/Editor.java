@@ -1162,13 +1162,13 @@ public class Editor extends JFrame
 		stopItem.enable();
 		pauseItem.enable();
 		
-		//load our simulator machine
-		loadSimulator();
-
 		// clear the console on each build, unless the user doesn't want to
 		if (Preferences.getBoolean("console.auto_clear")) {
 			console.clear();
 		}
+
+		//load our simulator machine
+		loadSimulator();
 
 		//fire off our thread.
 		simulationThread = new SimulationThread(this);
@@ -1199,6 +1199,11 @@ public class Editor extends JFrame
 		buttons.activate(EditorButtons.BUILD);
 		stopItem.enable();
 		pauseItem.enable();
+		
+		// clear the console on each build, unless the user doesn't want to
+		if (Preferences.getBoolean("console.auto_clear")) {
+			console.clear();
+		}
 		
 		//load our actual machine
 		loadMachine();
