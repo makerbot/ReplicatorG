@@ -451,26 +451,52 @@ public class GCodeParser
 	{
 		//start us off at our current position...
 		Point3d temp = driver.getCurrentPosition();
-		
+
+		//initialize our points, etc.
+		double iVal, jVal, kVal, qVal, rVal, xVal, yVal, zVal;
+		if (units == UNITS_INCHES)
+		{
+			//convert everything to inches!!!
+			iVal = getCodeValue("I") * 25.4;
+			jVal = getCodeValue("J") * 25.4;
+			kVal = getCodeValue("K") * 25.4;
+			qVal = getCodeValue("Q") * 25.4;
+			rVal = getCodeValue("R") * 25.4;
+			xVal = getCodeValue("X") * 25.4;
+			yVal = getCodeValue("Y") * 25.4;
+			zVal = getCodeValue("Z") * 25.4;
+		}
+		else
+		{
+			iVal = getCodeValue("I");
+			jVal = getCodeValue("J");
+			kVal = getCodeValue("K");
+			qVal = getCodeValue("Q");
+			rVal = getCodeValue("R");
+			xVal = getCodeValue("X");
+			yVal = getCodeValue("Y");
+			zVal = getCodeValue("Z");
+		}
+
 		//absolute just specifies the new position
 		if (absoluteMode)
 		{
 			if (hasCode("X"))
-				temp.x = getCodeValue("X");
+				temp.x = xVal;
 			if (hasCode("Y"))
-				temp.y = getCodeValue("Y");
+				temp.y = yVal;
 			if (hasCode("Z"))
-				temp.z = getCodeValue("Z");
+				temp.z = zVal;
 		}
 		//relative specifies a delta
 		else
 		{
 			if (hasCode("X"))
-				temp.x += getCodeValue("X");
+				temp.x += xVal;
 			if (hasCode("Y"))
-				temp.y += getCodeValue("Y");
+				temp.y += yVal;
 			if (hasCode("Z"))
-				temp.z += getCodeValue("Z");
+				temp.z += zVal;
 		}
 
 		// Get feedrate if supplied
@@ -508,12 +534,12 @@ public class GCodeParser
 
 					// Centre coordinates are always relative
 					if (hasCode("I"))
-						center.x = current.x + getCodeValue("I");
+						center.x = current.x + iVal;
 					else
 						center.x = current.x;
 					
 					if (hasCode("J"))
-						center.y = current.y + getCodeValue("J");
+						center.y = current.y + jVal;
 					else
 						center.y = current.y;
 
@@ -615,7 +641,7 @@ public class GCodeParser
 				case 82: // With dwell
 				case 83: // Peck drilling
 				
-					double retract = getCodeValue("R");
+					double retract = rVal;
 
 					if (!absoluteMode)
 						retract += current.z;
@@ -638,7 +664,7 @@ public class GCodeParser
 					// For G83 move in increments specified by Q code
 					// otherwise do in one pass
 					if ((int)getCodeValue("G") == 83)
-						delta_z = getCodeValue("Q");
+						delta_z = qVal;
 					else
 						delta_z = retract - temp.z;
 

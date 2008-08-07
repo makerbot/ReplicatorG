@@ -228,8 +228,9 @@ public class EditorConsole extends JScrollPane {
 
 
   // added sync for 0091.. not sure if it helps or hinders
-  synchronized public void message(String what, boolean err, boolean advance) {
-    if (err) {
+  //synchronized public void message(String what, boolean err, boolean advance) {
+  public void message(String what, boolean err, boolean advance) {
+   if (err) {
       systemErr.print(what);
     } else {
       systemOut.print(what);

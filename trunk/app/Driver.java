@@ -149,6 +149,8 @@ public class Driver
 		
 		if (driverName.equals("serialpassthrough"))
 			return new SerialPassthroughDriver(xml);
+		if (driverName.equals("null"))
+			return new NullDriver(xml);
 		else
 		{
 			System.out.println("Driver not found, failing over to 'null'.");

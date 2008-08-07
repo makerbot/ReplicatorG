@@ -1175,7 +1175,8 @@ public class Editor extends JFrame
 		simulationThread.start();
 	}
 	
-	synchronized public void simulationOver()
+	//synchronized public void simulationOver()
+	public void simulationOver()
 	{
 		message("Done simulating.");
 		simulating = false;
@@ -1184,7 +1185,8 @@ public class Editor extends JFrame
 		buttons.clear();
 	}
 
-	synchronized public void handleBuild()
+	//synchronized public void handleBuild()
+	public void handleBuild()
 	{
 		if (building)
 			return;
@@ -1223,7 +1225,8 @@ public class Editor extends JFrame
 		}
 	}
 	
-	synchronized public void buildingOver()
+	//synchronized public void buildingOver()
+	public void buildingOver()
 	{
 		message("Done building.");
 		building = false;
@@ -1924,7 +1927,8 @@ public class Editor extends JFrame
     e.printStackTrace();
   }
 
-  synchronized public void message(String msg) {
+  //synchronized public void message(String msg) {
+  public void message(String msg) {
     status.notice(msg);
 	//System.out.println(msg);
   }

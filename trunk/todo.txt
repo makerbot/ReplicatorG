@@ -3,8 +3,6 @@
 TODO:
 * test build process on windows
 * add support for rest of low-hanging g codes
-* fix random freezing bug
-* get inch support working
 
 DONE:
 
@@ -43,7 +41,8 @@ DONE:
 * update nulldriver to pull more config from XML file
 * tweak play / pause button behavior
 * get multi-print working solidly
-
+* fix random freezing bug (it seems to be working)
+* get inch support working
 
 0002 ReplicatorG
 
