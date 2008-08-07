@@ -46,6 +46,15 @@ public class GCodeParser
 	public static double curveSectionMM = 0.5;
 	protected double curveSection = 0.0;
 	
+	//our plane selection variables
+	protected static int XY_PLANE = 0;
+	protected static int ZX_PLANE = 1;
+	protected static int ZY_PLANE = 2;
+	protected int currentPlane = 0;
+	
+	//our offset variables 0 = master, 1-6 = offsets 1-6
+	protected Point3d currentOffset;
+	
 	// machine state varibles
 	protected Point3d current;
 	protected Point3d target;
@@ -101,6 +110,18 @@ public class GCodeParser
 		//init our value tables.
 		codeValues = new Hashtable(codes.length, 1);
 		seenCodes = new Hashtable(codes.length, 1);
+		
+		//init our offset
+		currentOffset = new Point3d();
+	}
+	
+	/**
+	* initialize parser with values from the driver
+	*/
+	public void init(Driver driver)
+	{
+		//init our offset variables
+		currentOffset = driver.getOffset(0);
 	}
 	
 	/**
@@ -477,6 +498,11 @@ public class GCodeParser
 			yVal = getCodeValue("Y");
 			zVal = getCodeValue("Z");
 		}
+		
+		//adjust for our offsets
+		xVal += currentOffset.x;
+		yVal += currentOffset.y;
+		zVal += currentOffset.z;
 
 		//absolute just specifies the new position
 		if (absoluteMode)
@@ -521,7 +547,6 @@ public class GCodeParser
 				//Rapid Positioning
 				case 1:
 					//set our target.
-					driver.setFeedrate(feedrate);
 					setTarget(temp, driver);
 					break;
 
@@ -601,15 +626,33 @@ public class GCodeParser
 					}
 				}
 				break;
+				
+				//dwell
+				case 4:
+					driver.delay((long)getCodeValue("P") * 1000);
+					break;
+					
+				//plane selection codes
+				case 17:
+					currentPlane = XY_PLANE;
+					break;
+				case 18:
+					currentPlane = ZX_PLANE;
+					break;
+				case 19:
+					currentPlane = ZY_PLANE;
+					break;
 
 				//Inches for Units
 				case 20:
+				case 70:
 					units = UNITS_INCHES;
 					curveSection = curveSectionInches;
 					break;
 
 				//mm for Units
 				case 21:
+				case 71:
 					units = UNITS_MM;
 					curveSection = curveSectionMM;
 					break;
@@ -635,11 +678,69 @@ public class GCodeParser
 							driver.homeZ();
 					}
 					break;
+					
+				// single probe
+				case 31:
+					//set our target.
+					setTarget(temp, driver);
+					//eventually add code to support reading value
+					break;
+					
+				// probe area
+				case 32:
+					double minX = current.x;
+					double minY = current.y;
+					double maxX = xVal;
+					double maxY = yVal;
+					double increment = iVal;
+					
+					driver.probeArea(minX, minY, maxX, maxY, increment);
+					break;
+					
+				//master offset
+				case 53:
+					currentOffset = driver.getOffset(0);
+					break;
+				//fixture offset 1
+				case 54:
+					currentOffset = driver.getOffset(1);
+					break;
+				//fixture offset 2
+				case 55:
+					currentOffset = driver.getOffset(2);
+					break;
+				//fixture offset 3
+				case 56:
+					currentOffset = driver.getOffset(3);
+					break;
+				//fixture offset 4
+				case 57:
+					currentOffset = driver.getOffset(4);
+					break;
+				//fixture offset 5
+				case 58:
+					currentOffset = driver.getOffset(5);
+					break;
+				//fixture offset 6
+				case 59:
+					currentOffset = driver.getOffset(6);
+					break;
+
+				// Peck Motion Cycle
+				//case 178: //speed peck motion
+				//case 78:
+				// TODO: make this
+				
+				// Cancel drill cycle
+				case 80:
+					//nothing to do, we dont store the data
+					break;
 
 				// Drilling canned cycles
 				case 81: // Without dwell
 				case 82: // With dwell
 				case 83: // Peck drilling
+				//case 183: //speed peck drilling
 				
 					double retract = rVal;
 
@@ -695,21 +796,33 @@ public class GCodeParser
 					} while (target_z > temp.z);
 					break;
 
-				case 90: //Absolute Positioning
+				//Absolute Positioning
+				case 90:
 					absoluteMode = true;
 					break;
 
-
-				case 91: //Incremental Positioning
+				//Incremental Positioning
+				case 91:
 					absoluteMode = false;
 					break;
 
-
-				case 92: //Set as home
-					current = new Point3d();
-					driver.setCurrentPosition(new Point3d());
+				//Set position
+				case 92:
+					//TODO: make this
 					break;
 
+				//feed rate mode
+				//case 93: //inverse time feed rate
+				//case 94: //IPM feed rate
+				//case 95: //IPR feed rate
+				//TODO: make this work.
+				
+				//spindle speed rate
+				case 97:
+					driver.currentTool().setSpindleSpeed((int)getCodeValue("S"));
+					break;
+				
+				//error, error!
 				default:
 					throw new GCodeException("Unknown G code: G" + (int)getCodeValue("G"));
 			}
@@ -721,7 +834,7 @@ public class GCodeParser
 		driver.queuePoint(p);
 		current = p;
 	}
-
+	
 	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
 	{
 		String message = "";

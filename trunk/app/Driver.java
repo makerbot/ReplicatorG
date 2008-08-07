@@ -51,6 +51,9 @@ public class Driver
 	//our versions
 	private int versionMajor = 0;
 	private int versionMinor = 0;
+	
+	//our offsets
+	protected Point3d[] offsets;
 
 	/**
 	  * Creates the driver object.
@@ -64,6 +67,14 @@ public class Driver
 
 		//todo: change to loadToolDrivers();
 		currentTool = new ToolDriver();
+		
+		//initialize our offsets
+		offsets = new Point3d[7];
+		for (int i=0; i<7; i++)
+			offsets[i] = new Point3d();
+			
+		//initialize our driver
+		parser.init(this);
 	}
 
 	public void parse(String cmd)
@@ -95,6 +106,11 @@ public class Driver
 	public String getVersion()
 	{
 		return Integer.toString(versionMajor) + "." + Integer.toString(versionMinor);
+	}
+	
+	public Point3d getOffset(int i)
+	{
+		return offsets[i];
 	}
 	
 	/**
@@ -253,6 +269,15 @@ public class Driver
 	* change our gear ratio
 	*/
 	public void changeGearRatio(int ratioIndex) {}
+	
+	/**
+	* probe the area specified
+	*/
+	public void probeArea(double minX, double minY, double maxX, double maxY, double increment)
+	{
+		
+	}
+	
 }
 
 class JobCancelledException extends Exception
