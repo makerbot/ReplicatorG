@@ -32,6 +32,9 @@ public class GCodeParser
 {
 	// command to parse
 	protected String command;
+	
+	//our driver we use.
+	protected Driver driver;
 
 	//our code data storage guys.
 	protected Hashtable codeValues;
@@ -43,7 +46,7 @@ public class GCodeParser
 	
 	//our curve section variables.
 	public static double curveSectionInches = 0.019685;
-	public static double curveSectionMM = 0.5;
+	public static double curveSectionMM = 0.005;
 	protected double curveSection = 0.0;
 	
 	//our plane selection variables
@@ -87,6 +90,13 @@ public class GCodeParser
 	public static int UNITS_MM = 0;
 	public static int UNITS_INCHES = 1;
 	protected int units;
+	
+	//canned drilling cycle variables
+	protected Point3d drillTarget;
+	protected double  drillRetract = 0.0;
+	protected double  drillFeedrate = 0.0;
+	protected int     drillDwell = 0;
+	protected double  drillPecksize = 0.0;
 
 	/**
 	  * Creates the driver object.
@@ -106,6 +116,7 @@ public class GCodeParser
 		current = new Point3d();
 		target = new Point3d();
 		delta = new Point3d();
+		drillTarget = new Point3d();
 		
 		//init our value tables.
 		codeValues = new Hashtable(codes.length, 1);
@@ -113,13 +124,17 @@ public class GCodeParser
 		
 		//init our offset
 		currentOffset = new Point3d();
+		
 	}
 	
 	/**
 	* initialize parser with values from the driver
 	*/
-	public void init(Driver driver)
+	public void init(Driver drv)
 	{
+		//our driver class
+		driver = drv;
+		
 		//init our offset variables
 		currentOffset = driver.getOffset(0);
 	}
@@ -173,7 +188,7 @@ public class GCodeParser
 		if (d != null)
 			return d.doubleValue();
 		else
-			return -1.0;
+			return 0.0;
 	}
 	
 	/**
@@ -214,11 +229,11 @@ public class GCodeParser
 			}
 			//send a 0 to that its noted somewhere.
 			else
-				return 0;
+				return 0.0;
 		}
 		
-		//bail/fail with a -1
-		return -1;
+		//bail with something relatively harmless	
+		return 0.0;
 	}
 	
 	private void parseComments()
@@ -258,7 +273,7 @@ public class GCodeParser
 	/**
 	 * Actually execute the GCode we just parsed.
 	 */
-	public void execute(Driver driver) throws GCodeException
+	public void execute() throws GCodeException
 	{
 		// Select our tool?
 		if (hasCode("T"))
@@ -269,11 +284,11 @@ public class GCodeParser
 			driver.currentTool().setSpindleSpeed((int)getCodeValue("S"));
 			
 		//execute our other codes
-		executeMCodes(driver);
-		executeGCodes(driver);
+		executeMCodes();
+		executeGCodes();
 	}
 	
-	private void executeMCodes(Driver driver) throws GCodeException
+	private void executeMCodes() throws GCodeException
 	{
 		//find us an m code.
 		if (hasCode("M"))
@@ -468,7 +483,7 @@ public class GCodeParser
 		}
 	}
 	
-	private void executeGCodes(Driver driver) throws GCodeException
+	private void executeGCodes() throws GCodeException
 	{
 		//start us off at our current position...
 		Point3d temp = driver.getCurrentPosition();
@@ -477,7 +492,7 @@ public class GCodeParser
 		double iVal, jVal, kVal, qVal, rVal, xVal, yVal, zVal;
 		if (units == UNITS_INCHES)
 		{
-			//convert everything to inches!!!
+			//convert everything to millimeters. Metric FTW.
 			iVal = getCodeValue("I") * 25.4;
 			jVal = getCodeValue("J") * 25.4;
 			kVal = getCodeValue("K") * 25.4;
@@ -535,19 +550,21 @@ public class GCodeParser
 		//did we get a gcode?
 		if (hasCode("G"))
 		{
-			switch ((int)getCodeValue("G"))
+			int gCode = (int)getCodeValue("G");
+			
+			switch (gCode)
 			{
 				//Linear Interpolation
 				//these are basically the same thing.
 				case 0:
 					driver.setFeedrate(maximumFeedrate);
-					setTarget(temp, driver);
+					setTarget(temp);
 					break;
 
 				//Rapid Positioning
 				case 1:
 					//set our target.
-					setTarget(temp, driver);
+					setTarget(temp);
 					break;
 
 				//Clockwise arc
@@ -555,74 +572,29 @@ public class GCodeParser
 				//Counterclockwise arc
 				case 3:
 				{
-					Point3d center = new Point3d();
-
-					// Centre coordinates are always relative
-					if (hasCode("I"))
+					//call our arc drawing function.
+					if (hasCode("I") || hasCode("J"))
+					{
+						//our centerpoint
+						Point3d center = new Point3d();
 						center.x = current.x + iVal;
-					else
-						center.x = current.x;
-					
-					if (hasCode("J"))
 						center.y = current.y + jVal;
-					else
-						center.y = current.y;
-
-					double angleA, angleB, angle, radius, length, aX, aY, bX, bY;
-
-					aX = current.x - center.x;
-					aY = current.y - center.y;
-					bX = temp.x - center.x;
-					bY = temp.y - center.y;
-
-					// Clockwise
-					if ((int)getCodeValue("G") == 2)
-					{
-						angleA = Math.atan2(bY, bX);
-						angleB = Math.atan2(aY, aX);
-					}
-					// Counterclockwise
-					else
-					{
-						angleA = Math.atan2(aY, aX);
-						angleB = Math.atan2(bY, bX);
-					}
-
-					// Make sure angleB is always greater than angleA
-					// and if not add 2PI so that it is (this also takes
-					// care of the special case of angleA == angleB,
-					// ie we want a complete circle)
-					if (angleB <= angleA)
-						angleB += 2 * Math.PI;
-					angle = angleB - angleA;
-
-					radius = Math.sqrt(aX * aX + aY * aY);
-					length = radius * angle;
-				
-					int steps, s, step;
-
-					// Maximum of either 2.4 times the angle in radians
-					// or the length of the curve divided by the constant
-					// specified in _init.pde
-					steps = (int) Math.ceil(Math.max(angle * 2.4, length / curveSection));
-
-					Point3d newPoint = new Point3d();
-					double arc_start_z = current.z;
-					for (s = 1; s <= steps; s++)
-					{
-						if (getCodeValue("G") == 3)
-							step = s;
-						// Work backwards for CW
+						
+						//draw the arc itself.
+						if (gCode == 2)
+							drawArc(center, temp, true);
 						else
-							step = steps - s;
-
-						//calculate our waypoint.
-						newPoint.x = center.x + radius * Math.cos(angleA + angle * ((double) step / steps));
-						newPoint.y = center.y + radius * Math.sin(angleA + angle * ((double) step / steps));
-						newPoint.z = arc_start_z + (temp.z - arc_start_z) * s / steps;
-
-						//start the move
-						setTarget(newPoint, driver);
+							drawArc(center, temp, false);
+					}
+					//or we want a radius based one
+					else if (hasCode("R"))
+					{
+						System.out.println("G02/G03 arcs with (R)adius parameter are not supported yet.");
+						
+						if (gCode == 2)
+							drawRadius(temp, rVal, true);
+						else
+							drawRadius(temp, rVal, false);
 					}
 				}
 				break;
@@ -637,9 +609,11 @@ public class GCodeParser
 					currentPlane = XY_PLANE;
 					break;
 				case 18:
+					System.out.println("ZX Plane moves are not supported yet.");
 					currentPlane = ZX_PLANE;
 					break;
 				case 19:
+					System.out.println("ZY Plane moves are not supported yet.");
 					currentPlane = ZY_PLANE;
 					break;
 
@@ -681,20 +655,25 @@ public class GCodeParser
 					
 				// single probe
 				case 31:
+					System.out.println("Single point probes not yet supported.");
+
 					//set our target.
-					setTarget(temp, driver);
+					setTarget(temp);
 					//eventually add code to support reading value
 					break;
 					
 				// probe area
 				case 32:
+
+					System.out.println("Area probes not yet supported.");
+
 					double minX = current.x;
 					double minY = current.y;
 					double maxX = xVal;
 					double maxY = yVal;
 					double increment = iVal;
 					
-					driver.probeArea(minX, minY, maxX, maxY, increment);
+					probeArea(minX, minY, maxX, maxY, increment);
 					break;
 					
 				//master offset
@@ -733,67 +712,61 @@ public class GCodeParser
 				
 				// Cancel drill cycle
 				case 80:
-					//nothing to do, we dont store the data
+					drillTarget = new Point3d();
+					drillRetract = 0.0;
+					drillFeedrate = 0.0;
+					drillDwell = 0;
+					drillPecksize = 0.0;
 					break;
 
 				// Drilling canned cycles
-				case 81: // Without dwell
-				case 82: // With dwell
-				case 83: // Peck drilling
-				//case 183: //speed peck drilling
-				
-					double retract = rVal;
-
-					if (!absoluteMode)
-						retract += current.z;
-
-					// Retract to R position if Z is currently below this
-					if (current.z < retract)
+				case 81:  // Without dwell
+				case 82:  // With dwell
+				case 83:  // Peck drilling (w/ optional dwell)
+				case 183: // Speed peck drilling (w/ optional dwell)
+					
+					//we dont want no stinkin speedpeck
+					boolean speedPeck = false;
+					
+					//setup our parameters
+					if (hasCode("X"))
+						drillTarget.x = temp.x;
+					if (hasCode("Y"))
+						drillTarget.y = temp.y;
+					if (hasCode("Z"))
+						drillTarget.z = temp.z;
+					if (hasCode("F"))
+						drillFeedrate = getCodeValue("F");
+					if (hasCode("R"))
+						drillRetract = rVal;
+					
+					//set our vars for normal drilling
+					if (gCode == 81)
 					{
-						driver.setFeedrate(maximumFeedrate);
-						setTarget(new Point3d(current.x, current.y, retract), driver);
+						drillDwell = 0;
+						drillPecksize = 0.0;
+					}
+					//they want a dwell
+					else if (gCode == 82)
+					{
+						if (hasCode("P"))
+							drillDwell = (int)getCodeValue("P");
+						drillPecksize = 0.0;
+					}
+					//fancy schmancy 'pecking' motion.
+					else if (gCode == 83 || gCode == 183)
+					{
+						if (hasCode("P"))
+							drillDwell = (int)getCodeValue("P");
+						if (hasCode("Q"))
+							drillPecksize = Math.abs(getCodeValue("Q"));
+						
+						//oooh... do it fast!
+						if (gCode == 183)
+							speedPeck = true;
 					}
 					
-					// Move to start XY
-					driver.setFeedrate(maximumFeedrate);
-					setTarget(new Point3d(temp.x, temp.y, current.z), driver);
-
-					// Do the actual drilling
-					double target_z = retract;
-					double delta_z;
-
-					// For G83 move in increments specified by Q code
-					// otherwise do in one pass
-					if ((int)getCodeValue("G") == 83)
-						delta_z = qVal;
-					else
-						delta_z = retract - temp.z;
-
-					do
-					{
-						// Move rapidly to bottom of hole drilled so far
-						// (target Z if starting hole)
-						driver.setFeedrate(maximumFeedrate);
-						setTarget(new Point3d(temp.x, temp.y, target_z), driver);
-
-						// Move with controlled feed rate by delta z
-						// (or to bottom of hole if less)
-						target_z -= delta_z;
-						if (target_z < temp.z)
-							target_z = temp.z;
-						
-						driver.setFeedrate(feedrate);
-						setTarget(new Point3d(temp.x, temp.y, target_z), driver);
-
-						// Dwell if doing a G82
-						if ((int)getCodeValue("G") == 82)
-							driver.delay((int)getCodeValue("P"));
-
-						// Retract
-						driver.setFeedrate(maximumFeedrate);
-						
-						setTarget(new Point3d(temp.x, temp.y, retract), driver);
-					} while (target_z > temp.z);
+					drillingCycle(speedPeck);
 					break;
 
 				//Absolute Positioning
@@ -813,10 +786,11 @@ public class GCodeParser
 
 				//feed rate mode
 				//case 93: //inverse time feed rate
-				//case 94: //IPM feed rate
+				case 94: //IPM feed rate (our default)
 				//case 95: //IPR feed rate
 				//TODO: make this work.
-				
+					break;
+
 				//spindle speed rate
 				case 97:
 					driver.currentTool().setSpindleSpeed((int)getCodeValue("S"));
@@ -829,63 +803,242 @@ public class GCodeParser
 		}
 	}
 	
-	private void setTarget(Point3d p, Driver driver)
+	/*
+	drillTarget = new Point3d();
+	drillRetract = 0.0;
+	drillFeedrate = 0.0;
+	drillDwell = 0.0;
+	drillPecksize = 0.0;
+	*/
+	private void drillingCycle(boolean speedPeck)
 	{
+		// Retract to R position if Z is currently below this
+		if (current.z < drillRetract)
+		{
+			driver.setFeedrate(maximumFeedrate);
+			setTarget(new Point3d(current.x, current.y, drillRetract));
+		}
+		
+		// Move to start XY
+		driver.setFeedrate(maximumFeedrate);
+		setTarget(new Point3d(drillTarget.x, drillTarget.y, current.z));
+
+		// Do the actual drilling
+		double targetZ = drillRetract;
+		double deltaZ;
+		
+		// For G83/G183 move in increments specified by Q code
+		if (drillPecksize > 0)
+			deltaZ = drillPecksize;
+		// otherwise do in one pass
+		else
+			deltaZ = drillRetract - drillTarget.z;
+
+		do // the drilling
+		{
+			//only move there if we're not at top
+			if (targetZ != drillRetract && !speedPeck)
+			{
+				//TODO: move this to 10% of the bottom.
+				driver.setFeedrate(maximumFeedrate);
+				setTarget(new Point3d(drillTarget.x, drillTarget.y, targetZ));
+			}
+
+			//set our plunge depth
+			targetZ -= deltaZ;
+			//make sure we dont go too deep.
+			if (targetZ < drillTarget.z)
+				targetZ = drillTarget.z;
+			
+			// Move with controlled feed rate
+			driver.setFeedrate(drillFeedrate);
+			
+			//do it!
+			setTarget(new Point3d(drillTarget.x, drillTarget.y, targetZ));
+
+			// Dwell if doing a G82
+			if (drillDwell > 0)
+				driver.delay(drillDwell);
+
+			// Retract unless we're speed pecking.
+			if (!speedPeck)
+			{
+				driver.setFeedrate(maximumFeedrate);
+				setTarget(new Point3d(drillTarget.x, drillTarget.y, drillRetract));
+			}
+			
+		} while (targetZ > drillTarget.z);
+		
+		//double check for final speedpeck retract
+		if (current.z < drillRetract)
+		{
+			driver.setFeedrate(maximumFeedrate);
+			setTarget(new Point3d(drillTarget.x, drillTarget.y, drillRetract));
+		}
+	}
+	
+	private void drawArc(Point3d center, Point3d endpoint, boolean clockwise)
+	{
+//		System.out.println("Arc from " + current.toString() + " to " + endpoint.toString() + " with center " + center);
+		
+		//angle variables.
+		double angleA;
+		double angleB;
+		double angle;
+		double radius;
+		double length;
+		
+		//delta variables.
+		double aX;
+		double aY;
+		double bX;
+		double bY;
+		
+		//figure out our deltas
+		aX = current.x - center.x;
+		aY = current.y - center.y;
+		bX = endpoint.x - center.x;
+		bY = endpoint.y - center.y;
+
+		// Clockwise
+		if (clockwise)
+		{
+			angleA = Math.atan2(bY, bX);
+			angleB = Math.atan2(aY, aX);
+		}
+		// Counterclockwise
+		else
+		{
+			angleA = Math.atan2(aY, aX);
+			angleB = Math.atan2(bY, bX);
+		}
+
+		// Make sure angleB is always greater than angleA
+		// and if not add 2PI so that it is (this also takes
+		// care of the special case of angleA == angleB,
+		// ie we want a complete circle)
+		if (angleB <= angleA)
+			angleB += 2 * Math.PI;
+		angle = angleB - angleA;
+
+		//calculate a couple useful things.
+		radius = Math.sqrt(aX * aX + aY * aY);
+		length = radius * angle;
+	
+		//for doing the actual move.
+		int steps;
+		int s;
+		int step;
+
+		// Maximum of either 2.4 times the angle in radians
+		// or the length of the curve divided by the curve section constant
+		steps = (int) Math.ceil(Math.max(angle * 2.4, length / curveSection));
+
+		//this is the real draw action.
+		Point3d newPoint = new Point3d();
+		double arcStartZ = current.z;
+		for (s = 1; s <= steps; s++)
+		{
+			// Forwards for CCW, backwards for CW
+			if (!clockwise)
+				step = s;
+			else
+				step = steps - s;
+
+			//calculate our waypoint.
+			newPoint.x = center.x + radius * Math.cos(angleA + angle * ((double) step / steps));
+			newPoint.y = center.y + radius * Math.sin(angleA + angle * ((double) step / steps));
+			newPoint.z = arcStartZ + (endpoint.z - arcStartZ) * s / steps;
+
+			//start the move
+			setTarget(newPoint);
+		}
+	}
+	
+	private void drawRadius(Point3d endpoint, double r, boolean clockwise)
+	{
+		//not supported!
+	}
+	
+	private void setTarget(Point3d p)
+	{
+		//System.out.println("move: " + p.toString());
 		driver.queuePoint(p);
-		current = p;
+		current = new Point3d(p);
 	}
 	
 	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
 	{
 		String message = "";
 		int result = 0;
-		int mCode = (int)getCodeValue("M");
+		int mCode;
 		
-		if (mCode == 0)
+		if (hasCode("M"))
 		{
-			if (comment.length() > 0)
-				message = "Automatic Halt: " + comment;
-			else
-				message = "Automatic Halt";
-				
-			if (!showContinueDialog(message))
-				throw new JobCancelledException();
-		}
-		else if (mCode == 1 && Preferences.getBoolean("machine.optionalstops"))
-		{
-			if (comment.length() > 0)
-				message = "Optional Halt: " + comment;
-			else
-				message = "Optional Halt";
+			mCode = (int)getCodeValue("M");
+			if (mCode == 0)
+			{
+				if (comment.length() > 0)
+					message = "Automatic Halt: " + comment;
+				else
+					message = "Automatic Halt";
 
-			if (!showContinueDialog(message))
-				throw new JobCancelledException();
-		}
-		else if (mCode == 2)
-		{
-			if (comment.length() > 0)
-				message = "Program End: " + comment;
-			else
-				message = "Program End";
-		
-			JOptionPane.showMessageDialog(null, message);
-			
-			throw new JobEndException();
-		}
-		else if (mCode == 30)
-		{
-			if (comment.length() > 0)
-				message = "Program Rewind: " + comment;
-			else
-				message = "Program Rewind";
-		
-			if (!showContinueDialog(message))
-				throw new JobCancelledException();
-			
-			cleanup();
-			throw new JobRewindException();
+				if (!showContinueDialog(message))
+					throw new JobCancelledException();
+			}
+			else if (mCode == 1 && Preferences.getBoolean("machine.optionalstops"))
+			{
+				if (comment.length() > 0)
+					message = "Optional Halt: " + comment;
+				else
+					message = "Optional Halt";
+
+				if (!showContinueDialog(message))
+					throw new JobCancelledException();
+			}
+			else if (mCode == 2)
+			{
+				if (comment.length() > 0)
+					message = "Program End: " + comment;
+				else
+					message = "Program End";
+
+				JOptionPane.showMessageDialog(null, message);
+
+				throw new JobEndException();
+			}
+			else if (mCode == 30)
+			{
+				if (comment.length() > 0)
+					message = "Program Rewind: " + comment;
+				else
+					message = "Program Rewind";
+
+				if (!showContinueDialog(message))
+					throw new JobCancelledException();
+
+				cleanup();
+				throw new JobRewindException();
+			}
 		}
 	}
+
+	/**
+	* probe the Z depth of the point
+	*/
+	public void probePoint(Point3d point)
+	{
+		
+	}
+	
+	/**
+	* probe the area specified
+	*/
+	public void probeArea(double minX, double minY, double maxX, double maxY, double increment)
+	{
+		
+	}
+	
 	
 	protected boolean showContinueDialog(String message)
 	{
@@ -903,7 +1056,6 @@ public class GCodeParser
 	public void cleanup()
 	{
 		//move us to our target.
-		current = target;
 		delta = new Point3d();
 		
 		//save our gcode

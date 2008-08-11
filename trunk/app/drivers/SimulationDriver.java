@@ -70,4 +70,42 @@ public class SimulationDriver extends Driver
 		
 		super.queuePoint(p);
 	}
+	
+	public void homeXYZ()
+	{
+		queuePoint(new Point3d());
+	}
+	
+	public void homeXY()
+	{
+		Point3d pos = getCurrentPosition();
+		pos.x = 0;
+		pos.y = 0;
+		
+		queuePoint(pos);
+	}
+	
+	public void homeX()
+	{
+		Point3d pos = getCurrentPosition();
+		pos.x = 0;
+		
+		queuePoint(pos);
+	}
+
+	public void homeY()
+	{
+		Point3d pos = getCurrentPosition();
+		pos.y = 0;
+		
+		queuePoint(pos);
+	}
+	
+	public void homeZ()
+	{
+		Point3d pos = getCurrentPosition();
+		pos.z = 0;
+		
+		queuePoint(pos);
+	}
 }

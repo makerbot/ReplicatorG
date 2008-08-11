@@ -100,7 +100,7 @@ public class Driver
 	
 	public void execute() throws GCodeException
 	{
-		parser.execute(this);
+		parser.execute();
 	}
 	
 	public String getVersion()
@@ -251,7 +251,10 @@ public class Driver
 	/**
 	* delay / pause function
 	*/
-	public void delay(long millis) {}
+	public void delay(long millis)
+	{
+		//System.out.println("Delay: " + millis);
+	}
 	
 	/**
 	* functions for dealing with clamps
@@ -269,14 +272,6 @@ public class Driver
 	* change our gear ratio
 	*/
 	public void changeGearRatio(int ratioIndex) {}
-	
-	/**
-	* probe the area specified
-	*/
-	public void probeArea(double minX, double minY, double maxX, double maxY, double increment)
-	{
-		
-	}
 	
 }
 
