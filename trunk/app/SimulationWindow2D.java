@@ -74,6 +74,9 @@ class SimulationCanvas2D extends Canvas
 		//initialize our vector
 		points = new Vector();
 		
+		//start us off at 0,0,0
+		queuePoint(new Point3d());
+		
 		setBackground(Color.white);
 		setForeground(Color.white);
 	}

@@ -2,7 +2,7 @@
 
 TODO:
 * test build process on windows
-* add support for rest of low-hanging g codes
+* test various gcodes that were implemented
 
 DONE:
 
@@ -43,6 +43,7 @@ DONE:
 * get multi-print working solidly
 * fix random freezing bug (it seems to be working)
 * get inch support working
+* add support for rest of low-hanging g codes
 
 0002 ReplicatorG
 

@@ -84,7 +84,7 @@ public class GCodeParser
 	Pattern deleteBlockPattern;
 	
 	//unit variables.
-	public static int UNITS_MM = 1;
+	public static int UNITS_MM = 0;
 	public static int UNITS_INCHES = 1;
 	protected int units;
 

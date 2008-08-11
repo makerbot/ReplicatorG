@@ -1154,22 +1154,20 @@ public class Editor extends JFrame
 			return;
 		if (simulating)
 			return;
-
+			
+		//close stuff.
 		doClose();
 
+		//buttons/status.
 		simulating = true;
 		buttons.activate(EditorButtons.SIMULATE);
-		stopItem.enable();
-		pauseItem.enable();
-		
-		// clear the console on each build, unless the user doesn't want to
-		if (Preferences.getBoolean("console.auto_clear")) {
-			console.clear();
-		}
 
 		//load our simulator machine
 		loadSimulator();
-
+		
+		//initialize our editor
+		initEditor();
+		
 		//fire off our thread.
 		simulationThread = new SimulationThread(this);
 		simulationThread.start();
@@ -1193,10 +1191,27 @@ public class Editor extends JFrame
 		if (simulating)
 			return;
 
+		//close stuff.
 		doClose();
 
+		//build specific stuff
 		building = true;
 		buttons.activate(EditorButtons.BUILD);
+		
+		//load our actual machine
+		loadMachine();
+		
+		//initialize our editor
+		initEditor();
+
+		//start our building thread.
+		buildingThread = new BuildingThread(this);
+		buildingThread.start();
+	}
+
+	public void initEditor()
+	{
+		//variables and stuff.
 		stopItem.enable();
 		pauseItem.enable();
 		
@@ -1205,11 +1220,11 @@ public class Editor extends JFrame
 			console.clear();
 		}
 		
-		//load our actual machine
-		loadMachine();
-
-		buildingThread = new BuildingThread(this);
-		buildingThread.start();
+		//prepare editor window.
+		setVisible(true);
+		textarea.selectNone();
+		textarea.disable();
+		textarea.scrollTo(0, 0);
 	}
 
 	class BuildingThread extends Thread
