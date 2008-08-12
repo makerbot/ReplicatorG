@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PATH=lib:$PATH
-CLASSPATH=\"java\\lib\\rt.jar\;lib\\RXTXcomm.jar\;lib\;lib\\build\;lib\\pde.jar\;lib\\mrj.jar\;lib\\antlr.jar\;lib\\oro.jar\;lib\\registry.jar\"
+CLASSPATH=\"java\\lib\\rt.jar\;lib\\vecmath.jar\;lib\\j3dcore.jar\;lib\\j3dutils.jar\;lib\\RXTXcomm.jar\;lib\;lib\\build\;lib\\pde.jar\;lib\\mrj.jar\;lib\\antlr.jar\;lib\\oro.jar\;lib\\registry.jar\"
 export PATH
 export CLASSPATH
 
