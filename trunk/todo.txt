@@ -1,8 +1,7 @@
 0001 ReplicatorG
 
 TODO:
-* test build process on windows
-* test various gcodes that were implemented
+* make windows icons
 
 DONE:
 

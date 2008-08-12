@@ -1,9 +1,8 @@
-ReplicatorG is an open-source physical computing platform based on a simple i/o
-board and a development environment that implements the Processing/Wiring
-language. Arduino can be used to develop stand-alone interactive objects or
-can be connected to software on your computer (e.g. Flash, Processing, MaxMSP).
-The boards can be assembled by hand or purchased preassembled; the open-source
-IDE can be downloaded for free.
+ReplicatorG is an open-source GCode based controller for RepRap / CNC machines.  It has 3 main goals:
+
+1. Be as simple to use, and as easy to install as possible.
+2. Be driver oriented and abstract the GCode away, allowing users to easily create drivers for their own machine.
+3. Support as much of the GCode specification as possible.
 
 For more information, see the website at: http://www.replicat.org
 
@@ -17,11 +16,13 @@ CREDITS
 
 ReplicatorG is an open source project, owned by nobody and supported by many.
 
-The project is based upon the wonderful Arduino / Processing application and
-was forked by Zach Smith (http://www.zachhoeken.com)
+The project is descended from the wonderful Arduino host software (http://www.arduino.cc)
+Arduino is descended from the also wonderful Processing environment (http://www.processing.org)
+
+ReplicatorG was forked from Arduino in August 2008.
 
 UPDATES
 
-0001 - ????
+0001 - 08/14/2008
 
 * The first release of the IDE.  It will run your GCode files.  It's ugly, but it works.
