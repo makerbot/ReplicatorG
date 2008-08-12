@@ -22,7 +22,7 @@ rm -rf ReplicatorG-*
 
 # use 'shared' files as starting point
 cp -r ../shared ReplicatorG
-mkdir ReplicatorG
+#mkdir ReplicatorG
 #cp -r work/lib/targets ReplicatorG/lib
 
 # new style examples thing ala reas
@@ -108,19 +108,19 @@ zip -rq $P5.zip $P5
 #rm -rf $P5
 
 # zip up another for experts
-echo Packaging expert release...
-echo
+#echo Packaging expert release...
+#echo
 
-cp -a $P5 $P5-expert
+#cp -a $P5 $P5-expert
 
 # can't use the run.bat that's tied to a local jre
-rm $P5-expert/run.bat
-cp dist/run-expert.bat $P5-expert/run.bat
-chmod +x $P5-expert/run.bat
+#rm $P5-expert/run.bat
+#cp dist/run-expert.bat $P5-expert/run.bat
+#chmod +x $P5-expert/run.bat
 
 # remove enormous java runtime
-rm -rf $P5-expert/java
-zip -rq $P5-expert.zip $P5-expert
+#rm -rf $P5-expert/java
+#zip -rq $P5-expert.zip $P5-expert
 
 echo Done.
 
