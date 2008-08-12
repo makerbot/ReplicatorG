@@ -7,7 +7,7 @@ if test -d work
 then
   BUILD_PREPROC=false
 else
-  echo Setting up directories to build arduino...
+  echo Setting up directories to build ReplicatorG...
   BUILD_PREPROC=true
   cp -r ../shared work
   rm -f work/.DS_Store 
@@ -19,20 +19,21 @@ else
   unix2dos work/readme.txt
   
   # needs to make the dir because of packaging goofiness
+  mkdir -p work/classes/arduino/app/drivers
   mkdir -p work/classes/arduino/app/syntax
   mkdir -p work/classes/arduino/app/tools
 
-  echo Extracting reference...
-  cd work
-  unzip reference.zip
+  #echo Extracting reference...
+  #cd work
+  #unzip reference.zip
   # necessary for launching reference from shell/command prompt
   # which is done internally to view reference
   #chmod +x reference/*.html
   # needed by 'help' menu
   #chmod +x reference/environment/*.html
   # chmod -R +x *.html doesn't seem to work
-  rm reference.zip
-  cd ..
+  #rm reference.zip
+  #cd ..
 
   echo Extracting enormous JRE...
   unzip -q  -d work jre.zip
@@ -46,9 +47,9 @@ else
   mkdir work/lib/build
   #mkdir work/classes
 
-  echo Compiling arduino.exe
+  echo Compiling ReplicatorG.exe
   cd launcher
-  make && cp arduino.exe ../work/
+  make && cp ReplicatorG.exe ../work/
   cd ..
 
   # get jikes and depedencies
@@ -57,18 +58,8 @@ else
 
   cp dist/ICE_JNIRegistry.dll work/
 
-  cp -r ../../hardware work/
-  cp dist/bootloader/*.* work/hardware/bootloaders/atmega8
   mkdir work/drivers
   cp -r dist/drivers/* work/drivers/
-
-  cp dist/avr_tools.zip .
-  echo Extracting avr tools ...
-  unzip -q  -d work/hardware avr_tools.zip
-  rm -f avr_tools.zip
-
-  # take care of the examples
-  cp -r ../shared/dist/examples work/
 
   # chmod +x the crew
   find work -name "*.dll" -exec chmod +x {} ';'
@@ -88,8 +79,8 @@ CLASSPATH="..\\build\\windows\\work\\lib\\RXTXcomm.jar;..\\build\\windows\\work\
 # show the user an error, rather than crapping out with some strange
 # "class not found" crap
 # need to do this twice because otherwise dependencies aren't resolved right.
-../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java preproc/*.java syntax/*.java tools/*.java *.java
-../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java preproc/*.java syntax/*.java tools/*.java *.java
+../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java drivers/*.java syntax/*.java tools/*.java *.java
+../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java drivers/*.java syntax/*.java tools/*.java *.java
 
 cd ../build/windows/work/classes
 rm -f ../lib/pde.jar

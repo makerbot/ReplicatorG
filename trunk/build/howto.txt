@@ -40,8 +40,9 @@ installer every few months to keep things fresh.
 
 1b. On Mac OS X, install Apple's Developer Tools and subversion.
 
-1c. On Linux, you're pretty much on your own.. You need jikes (or
-    edit make.sh to use a different compiler), java, avr-gcc, make,
+1c. On Linux, its pretty easy.  Here are the instructions for Ubuntu,
+	so if you use a different version you're pretty much on your own.
+	You need jikes (or edit make.sh to use a different compiler), java, avr-gcc, make,
     and subversion.  You'll also have to set some environment
     variables (see make.sh for details).
 

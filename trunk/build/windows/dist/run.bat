@@ -21,13 +21,13 @@ set PATH=%SAVEDPATH%
 GOTO End
 
 :Error
-echo *** Error: cannot execute Arduino
+echo *** Error: cannot execute ReplicatorG
 echo *** Reason: lacking the directory where to find Java in your computer
 echo ***
 echo *** Fix: Edit run.bat and add the JAVA_HOME directory 
 echo ***      at the 'set JAVA_HOME=""' line
 echo ***
-echo *** then call the batch file run.bat in order to execute Arduino
+echo *** then call the batch file run.bat in order to execute ReplicatorG
 
 :End
 Pause

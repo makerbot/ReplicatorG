@@ -13,98 +13,96 @@ fi
 
 ./make.sh
 
-echo Creating P5 distribution for revision $REVISION...
+echo Creating ReplicatorG distribution for revision $REVISION...
 echo
 
 # remove any old boogers
-rm -rf arduino
-rm -rf arduino-*
+rm -rf ReplicatorG
+rm -rf ReplicatorG-*
 
 # use 'shared' files as starting point
-cp -r ../shared arduino
-mkdir arduino
-#cp -r work/lib/targets arduino/lib
+cp -r ../shared ReplicatorG
+mkdir ReplicatorG
+#cp -r work/lib/targets ReplicatorG/lib
 
 # new style examples thing ala reas
-#cd arduino
+#cd ReplicatorG
 #mkdir examples
 #unzip -d examples -q dist/examples.zip
 #rm dist/examples.zip
 #rm -rf dist
 #cd ..
 
-mv arduino/dist/examples arduino/examples
-rm -rf arduino/dist
+rm -rf ReplicatorG/dist
 
 # extract reference
-cd arduino
-unzip reference.zip
-rm reference.zip
-cd ..
+#cd ReplicatorG
+#unzip reference.zip
+#rm reference.zip
+#cd ..
 
 # add java (jre) files
-unzip -q -d arduino jre.zip
+unzip -q -d ReplicatorG jre.zip
 
 # copy stuff from work/
-cp work/readme.txt arduino
-cp -r work/hardware arduino
-cp -r work/drivers arduino
-#cp -r work/examples arduino
+cp work/readme.txt ReplicatorG
+cp -r work/drivers ReplicatorG
+#cp -r work/examples ReplicatorG
 
 # directories used by the app
-#mkdir arduino/lib/build
+#mkdir ReplicatorG/lib/build
 
 # grab pde.jar and export from the working dir
-cp work/lib/pde.jar arduino/lib/
-cp work/java/lib/rt.jar arduino/lib/
-#cp work/lib/core.jar arduino/lib/
-#cp -r work/lib/export arduino/lib/
-#rm -rf arduino/lib/export/CVS
+cp work/lib/pde.jar ReplicatorG/lib/
+cp work/java/lib/rt.jar ReplicatorG/lib/
+#cp work/lib/core.jar ReplicatorG/lib/
+#cp -r work/lib/export ReplicatorG/lib/
+#rm -rf ReplicatorG/lib/export/CVS
 
 # get jikes and depedencies
-#gunzip < dist/jikes.gz > arduino/jikes.exe
-cp dist/jikes.exe arduino/
-chmod +x arduino/jikes.exe
+#gunzip < dist/jikes.gz > ReplicatorG/jikes.exe
+cp dist/jikes.exe ReplicatorG/
+chmod +x ReplicatorG/jikes.exe
 
-#cp dist/ICE_JNIRegistry.dll arduino/
-#chmod +x arduino/ICE_JNIRegistry.dll
-#cp work/rxtxSerial.dll arduino/
-#chmod +x arduino/rxtxSerial.dll
-cp work/*.dll arduino
-chmod +x arduino/*.dll
+#cp dist/ICE_JNIRegistry.dll ReplicatorG/
+#chmod +x ReplicatorG/ICE_JNIRegistry.dll
+#cp work/rxtxSerial.dll ReplicatorG/
+#chmod +x ReplicatorG/rxtxSerial.dll
+cp work/*.dll ReplicatorG
+chmod +x ReplicatorG/*.dll
 
 # get platform-specific goodies from the dist dir
-cp launcher/arduino.exe arduino/
-cp dist/run.bat arduino/
-chmod +x arduino/run.bat
+cp launcher/ReplicatorG.exe ReplicatorG/
+cp dist/run.bat ReplicatorG/
+chmod +x ReplicatorG/run.bat
 
 # convert notes.txt to windows LFs
 # the 2> is because the app is a little chatty
-unix2dos arduino/revisions.txt 2> /dev/null
-unix2dos arduino/lib/preferences.txt 2> /dev/null
-unix2dos arduino/lib/keywords.txt 2> /dev/null
-rm -f arduino/*.bak
-rm -f arduino/lib/*.bak
+unix2dos ReplicatorG/revisions.txt 2> /dev/null
+unix2dos ReplicatorG/lib/preferences.txt 2> /dev/null
+unix2dos ReplicatorG/lib/keywords.txt 2> /dev/null
+rm -f ReplicatorG/*.bak
+rm -f ReplicatorG/lib/*.bak
 
 # remove boogers
-find arduino -name "*~" -exec rm -f {} ';'
-find arduino -name ".DS_Store" -exec rm -f {} ';'
-find arduino -name "._*" -exec rm -f {} ';'
-find arduino -name "Thumbs.db" -exec rm -f {} ';'
+find ReplicatorG -name "*~" -exec rm -f {} ';'
+find ReplicatorG -name ".DS_Store" -exec rm -f {} ';'
+find ReplicatorG -name "._*" -exec rm -f {} ';'
+find ReplicatorG -name "Thumbs.db" -exec rm -f {} ';'
 
 # chmod +x the crew
-find arduino -name "*.dll" -exec chmod +x {} ';'
-find arduino -name "*.exe" -exec chmod +x {} ';'
-find arduino -name "*.html" -exec chmod +x {} ';'
+find ReplicatorG -name "*.dll" -exec chmod +x {} ';'
+find ReplicatorG -name "*.exe" -exec chmod +x {} ';'
+find ReplicatorG -name "*.html" -exec chmod +x {} ';'
 
 # clean out the svn entries
-find arduino -name ".svn" -exec rm -rf {} ';' 2> /dev/null
+find ReplicatorG -name ".svn" -exec rm -rf {} ';' 2> /dev/null
 
 # zip it all up for release
 echo Packaging standard release...
 echo
-P5=arduino-$REVISION
-mv arduino $P5
+P5=ReplicatorG-$REVISION
+mv ReplicatorG $P5
 zip -rq $P5.zip $P5
 # nah, keep the new directory around
 #rm -rf $P5
