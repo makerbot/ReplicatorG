@@ -1,5 +1,4 @@
-HOW TO BUILD ARDUINO ON YOUR FAVORITE PLATFORM
-
+HOW TO BUILD REPLICATORG ON YOUR FAVORITE PLATFORM
 
 ////////////////////////////////////////////////////////////////////
 
@@ -13,21 +12,21 @@ HOW TO BUILD ARDUINO ON YOUR FAVORITE PLATFORM
 
 ** of the packages, begin with the defaults, and add:
 
-+ svn - used for version control
++ devel/subversion - used for version control
 
-+ make, gcc-mingw, and g++ - used to build arduino.exe
++ devel/make, devel/gcc-mingw, and devel/gcc-g++ - used to build ReplicatorG.exe
   (this will also pull in gcc-core)
 
-+ perl - use this version, activestate or other distros have trouble
++ perl/perl - use this version, activestate or other distros have trouble
   
-+ unzip, zip - for dealing with archives
++ archive/unzip, archive/zip - for dealing with archives
 
 + included in the defaults, but make sure:
   coreutils (or textutils), gzip, tar
 
 + not required but useful: 
-  openssh - command line ssh client
-  nano - handy/simple text editor
+  net/openssh - command line ssh client
+  editors/nano - handy/simple text editor
 
 ** and be sure to leave the option selected for 'unix line endings' 
 
@@ -46,29 +45,32 @@ installer every few months to keep things fresh.
     and subversion.  You'll also have to set some environment
     variables (see make.sh for details).
 
+** From the command line, type:
 
-2. GRAB THE CODE FROM BERLIOS
+# sudo apt-get install 
+
+2. GRAB THE CODE FROM GOOGLE
 
 * this grabs the code as an anonymous user. 
 
 # grab the code, it'll take a while
-svn co svn://svn.berlios.de/arduino/trunk
+svn co http://replicatorg.googlecode.com/svn/trunk/
 # (maybe even a long while for you dialup and international folks)
 
 
 3. BUILD IT
 
-3a. On the Mac, use the Xcode project to build the Arduino software.
-    Set the active target to App to run Arduino, or to Distribute to
+3a. On the Mac, use the Xcode project to build the ReplicatorG software.
+    Set the active target to App to run ReplicatorG, or to Distribute to
     create a .zip file.
 
 3b. On Windows or Linux, use the command line.
 
 # on Windows
-cd /path/to/arduino/build/windows
+cd /path/to/ReplicatorG/build/windows
 
 # or if you're on linux
-cd /path/to/arduino/build/linux
+cd /path/to/ReplicatorG/build/linux
 
 # and then..
 ./make.sh
@@ -90,7 +92,7 @@ cd /path/to/arduino/build/linux
 
 4a. Each time you want to update to latest version from svn:
 
-cd /path/to/arduino
+cd /path/to/ReplicatorG
 svn update
 
 
@@ -98,5 +100,3 @@ svn update
 
 # remove the work directory
 rm -rf work
-
-$Id: howto.txt 383 2008-02-23 21:52:53Z mellis $
