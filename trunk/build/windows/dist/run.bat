@@ -9,7 +9,7 @@ set JAVA_HOME="java\bin"
 
 if %JAVA_HOME% == "" GOTO Error
 
-set CLASSPATH=java\lib\rt.jar;lib;lib\build;lib\pde.jar;lib\antlr.jar;lib\RXTXcomm.jar;lib\oro.jar;lib\registry.jar;lib\mrj.jar
+set CLASSPATH=java\lib\rt.jar;lib;lib\build;lib\vecmath.jar;lib\j3dcore.jar;lib\j3dutils.jar;lib\pde.jar;lib\antlr.jar;lib\RXTXcomm.jar;lib\oro.jar;lib\registry.jar;lib\mrj.jar
 set PATH=java\bin;lib;%PATH%
 
 REM start javaw -ms128m -mx128m processing.app.Base
