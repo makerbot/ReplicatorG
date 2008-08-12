@@ -170,7 +170,7 @@ END WE DUNNO NEED QUICKTIME JAVA FOR ARDUINO*/
           //local_jre_installed ? "java\\lib\\rt.jar;java\\lib\\jaws.jar;" : "", 
           local_jre_installed ? "java\\lib\\rt.jar;" : "", 
           //qtjava_path,
-          loaddir, loaddir, loaddir, loaddir, 
+          loaddir, loaddir, loaddir, loaddir, loaddir, loaddir, loaddir, 
           loaddir, loaddir, loaddir, loaddir, 
           env_classpath);
 
