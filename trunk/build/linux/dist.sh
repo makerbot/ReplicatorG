@@ -30,7 +30,7 @@ echo Creating tarball and finishing...
 P5=replicatorg-$REVISION
 mv replicatorg $P5
 
-tar cfz $P5.tgz $P5
+tar cfz $P5-linux.tgz $P5
 # nah, keep the new directory around
 #rm -rf $P5
 
