@@ -1027,9 +1027,9 @@ public class Editor extends JFrame
           g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                               RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
 
-          g.setFont(new Font("SansSerif", Font.PLAIN, 11));
-          g.setColor(Color.white);
-          g.drawString(Base.VERSION_NAME, 50, 30);
+          g.setFont(new Font("SansSerif", Font.PLAIN, 13));
+          g.setColor(Color.black);
+          g.drawString(Base.VERSION_NAME, 166, 85);
         }
       };
     window.addMouseListener(new MouseAdapter() {
