@@ -1,19 +1,17 @@
 0001 ReplicatorG
 
 TODO:
-* fix about image
-* add todos to the release notes
 * fix any bugs that pop up
-* finish linux dev instructions
-* move trunk/trunk to trunk
-
 
 0002 ReplicatorG
 
+* have simulation move to a proportional wait time
 * get auto-formatting working
-* enhance simulation window
-* experiment with SNAP driver?
+* enhance simulation window (colors, thickness, etc)
+* add machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
 * add simple exerciser / status window
+* experiment with SNAP driver?
+* start work on next generation driver for arduino / sanguino w/ point queueing, etc.
 
 0003 ReplicatorG
 
