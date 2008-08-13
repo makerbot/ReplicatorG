@@ -41,17 +41,15 @@ installer every few months to keep things fresh.
 
 1c. On Linux, its pretty easy.  Here are the instructions for Ubuntu,
 	so if you use a different version you're pretty much on your own.
-	You need jikes (or edit make.sh to use a different compiler), java, avr-gcc, make,
-    and subversion.  You'll also have to set some environment
-    variables (see make.sh for details).
+	You need Sun's Java SDK, zip, and subversion.
 
 ** From the command line, type:
 
-# sudo apt-get install 
+# sudo apt-get install sun-java6-jdk subversion zip 
 
 2. GRAB THE CODE FROM GOOGLE
 
-* this grabs the code as an anonymous user. 
+* this grabs the code as an anonymous user. (change to https:// for write access) 
 
 # grab the code, it'll take a while
 svn co http://replicatorg.googlecode.com/svn/trunk/
