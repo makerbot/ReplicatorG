@@ -40,6 +40,7 @@ public class NullDriver extends DriverBaseImplementation
 		delay = 25;
 	}
 	
+/*
 	public NullDriver(int d)
 	{
 		super();
@@ -56,6 +57,7 @@ public class NullDriver extends DriverBaseImplementation
 
 		loadXML(xml);		
 	}
+*/
 	
 	public void loadXML(Node xml)
 	{

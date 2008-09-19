@@ -85,8 +85,6 @@ public class DriverFactory
 	//common driver factory.
 	public static Driver factory (String driverName, Node xml)
 	{
-		System.out.println("Loading driver: " + driverName);
-		
 		if (driverName.equals("serialpassthrough"))
 			return loadClass("SerialPassthroughDriver", xml);
 		if (driverName.equals("null"))
@@ -120,8 +118,12 @@ public class DriverFactory
 	/**
 	* this class handles creation of the actual class objects.
 	*/
-	private static Driver loadClass(String className)
+	private static Driver loadClass(String driverName)
 	{
+		System.out.println("Loading driver: " + driverName);
+		
+		String className = "processing.app.drivers." + driverName;
+
 		// thanks to Peter Edworthy for his help with reflection.
 		// lets try to load the class in a nice, dynamic fashion!
 		try
@@ -136,10 +138,12 @@ public class DriverFactory
 		catch (ClassNotFoundException e)
 		{
 			//the class being loaded cannot be found
+			System.out.println("The class " + className + " cannot be found.");
 		}
 		catch (IllegalAccessException e)
 		{
 			//The class or its nullary constructor is not accessible.
+			System.out.println("The null constructor for " + className + " is not accessible.");
 		}
 		catch (InstantiationException e)
 		{
@@ -147,14 +151,17 @@ public class DriverFactory
 			//an interface, an array class, a primitive type, or void;
 			//or if the class has no nullary constructor;
 			//or if the instantiation fails for some other reason.
+			System.out.println("Initialization of " + className + " failed.");
 		}
 		catch (ExceptionInInitializerError e)
 		{
 			//The static initialization of the class failed.
+			System.out.println("Initialization of " + className + " failed.");
 		}
 		catch (SecurityException e)
 		{
 			//if there is no permission to create a new instance.
+			System.out.println("Permission to create " + className + " denied.");
 		}
 		
 		return null;

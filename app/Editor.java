@@ -27,6 +27,8 @@
 
 package processing.app;
 
+import processing.app.drivers.*;
+import processing.app.exceptions.*;
 import processing.app.syntax.*;
 import processing.app.tools.*;
 import processing.core.*;
