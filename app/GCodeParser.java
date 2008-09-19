@@ -22,6 +22,7 @@
 */
 
 package processing.app;
+import processing.app.exceptions.*;
 
 import java.util.*;
 import java.util.regex.*;

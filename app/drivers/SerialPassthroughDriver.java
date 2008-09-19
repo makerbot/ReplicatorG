@@ -30,7 +30,7 @@ import gnu.io.*;
 import java.util.*;
 import org.w3c.dom.*;
 
-public class SerialPassthroughDriver extends Driver
+public class SerialPassthroughDriver extends DriverBaseImplementation
 {
 	/**
 	* this is if we need to talk over serial
@@ -71,8 +71,17 @@ public class SerialPassthroughDriver extends Driver
 	* What did we get back from serial?
 	*/
 	private String result = "";
-		
-	public SerialPassthroughDriver(Node xml)
+	
+	/**
+	* Serial connection parameters
+	**/
+	String name;
+	int    rate;
+	char   parity;
+	int    databits;
+	float  stopbits;
+	
+	public SerialPassthroughDriver()
 	{
 		super();
 		
@@ -84,12 +93,27 @@ public class SerialPassthroughDriver extends Driver
 		initialized = false;
 		
 		//some decent default prefs.
-		String name = Serial.list()[0];
-		int    rate = Preferences.getInteger("serial.debug_rate");
-		char   parity = Preferences.get("serial.parity").charAt(0);
-		int    databits = Preferences.getInteger("serial.databits");
-		float  stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
+		name = Serial.list()[0];
+		rate = Preferences.getInteger("serial.debug_rate");
+		parity = Preferences.get("serial.parity").charAt(0);
+		databits = Preferences.getInteger("serial.databits");
+		stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
 
+		//TODO: move this to initialization area.
+		//declare our serial guy.
+		try {
+			System.out.println("Connecting to " + name + " at " + rate);
+			serial = new Serial(name, rate, parity, databits, stopbits);
+		} catch (SerialException e) {
+			//TODO: report the error here.
+			e.printStackTrace();
+		}
+		
+		System.out.println("Initializing Arduino.");
+	}
+	
+	public void loadXML(Node xml)
+	{
 		//load from our XML config, if we have it.
 		if (Base.hasChildNode(xml, "portname"))
 			name = Base.getChildNodeValue(xml, "portname");
@@ -101,17 +125,6 @@ public class SerialPassthroughDriver extends Driver
 			databits = Integer.parseInt(Base.getChildNodeValue(xml, "databits"));
 		if (Base.hasChildNode(xml, "stopbits"))
 			stopbits = Integer.parseInt(Base.getChildNodeValue(xml, "stopbits"));
-		
-		//declare our serial guy.
-		try {
-			System.out.println("Connecting to " + name + " at " + rate);
-			serial = new Serial(name, rate, parity, databits, stopbits);
-		} catch (SerialException e) {
-			//TODO: report the error here.
-			e.printStackTrace();
-		}
-		
-		System.out.println("Initializing Arduino.");
 	}
 	
 	/**

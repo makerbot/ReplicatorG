@@ -23,6 +23,7 @@
 
 package processing.app;
 import processing.app.drivers.*;
+import processing.app.exceptions.*;
 
 import java.util.regex.*;
 import javax.vecmath.*;
@@ -32,257 +33,104 @@ import org.w3c.dom.*;
 //import org.xml.sax.*;
 //import org.xml.sax.helpers.XMLReaderFactory;
 
-public class Driver
+public interface Driver
 {
-	// our gcode parser
-	protected GCodeParser parser;
-
-	// command to parse
-	private String command;
-
-	//our tool drivers
-	private ToolDriver[] tools;
-	private ToolDriver currentTool;
-
-	//our current position
-	private Point3d currentPosition;
-	private double currentFeedrate;
-	
-	//our versions
-	private int versionMajor = 0;
-	private int versionMinor = 0;
-	
-	//our offsets
-	protected Point3d[] offsets;
-
 	/**
-	  * Creates the driver object.
-	  */
-	public Driver()
-	{
-		parser = new GCodeParser();
-		
-		currentPosition = new Point3d();
-		currentFeedrate = 0.0;
-
-		//todo: change to loadToolDrivers();
-		currentTool = new ToolDriver();
-		
-		//initialize our offsets
-		offsets = new Point3d[7];
-		for (int i=0; i<7; i++)
-			offsets[i] = new Point3d();
-			
-		//initialize our driver
-		parser.init(this);
-	}
-
-	public void parse(String cmd)
-	{
-		command = cmd;
-		parser.parse(cmd);
-	}
-	
-	public boolean isFinished()
-	{
-		return true;
-	}
-	
-	public void dispose()
-	{
-		parser = null;
-	}
-
-	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
-	{
-		parser.handleStops();
-	}
-	
-	public void execute() throws GCodeException
-	{
-		parser.execute();
-	}
-	
-	public String getVersion()
-	{
-		return Integer.toString(versionMajor) + "." + Integer.toString(versionMinor);
-	}
-	
-	public Point3d getOffset(int i)
-	{
-		return offsets[i];
-	}
-	
-	/**
-	 * Create and instantiate the driver class for our particular machine
-	 * @param String name the name of the driver to instantiate
-	 * @return Driver a driver object ready for parsing / running gcode
-	 */
-	public static Driver factory(Node xml)
-	{
-		//find the "name" attribute first
-		if (xml.hasAttributes())
-		{
-			NamedNodeMap map = xml.getAttributes();
-			Node attribute = map.getNamedItem("name");
-			if (attribute != null)
-			{
-				String driverName = attribute.getNodeValue().trim();
-
-				//use our common factory
-				return factory(driverName, xml);
-			}
-		}
-
-		//fail over to "name" element
-		if (xml.hasChildNodes())
-		{
-			NodeList kids = xml.getChildNodes();
-			for (int j=0; j<kids.getLength(); j++)
-			{
-				Node kid = kids.item(j);
-
-				if (kid.getNodeName().equals("name"))
-				{
-					String driverName = kid.getFirstChild().getNodeValue().trim();
-
-					//use our common factory
-					return factory(driverName, xml);
-				}
-			}
-		}
-
-		System.out.println("Failing over to null driver.");
-		
-		//bail with a fake driver.
-		return new NullDriver();
-	}
-	
-	//common driver factory.
-	public static Driver factory (String driverName, Node xml)
-	{
-		System.out.println("Loading driver: " + driverName);
-		
-		if (driverName.equals("serialpassthrough"))
-			return new SerialPassthroughDriver(xml);
-		if (driverName.equals("null"))
-			return new NullDriver(xml);
-		else
-		{
-			System.out.println("Driver not found, failing over to 'null'.");
-			return new NullDriver(xml);
-		}
-	}
-	
-	/**
-	* empty parameters?  give up a null driver.
+	* High level functions
 	*/
-	public static Driver factory()
-	{
-		return new NullDriver();
-	}
 	
+	/**
+	* parse and load configuration data from XML
+	*/
+	public void loadXML(Node xml);
 	
-	public void setCurrentPosition(Point3d p)
-	{
-		currentPosition = new Point3d(p);
-	}
+	/**
+	* parse a command.  usually passes it through to the parser.
+	*/
+	public void parse(String cmd);
 	
-	public Point3d getCurrentPosition()
-	{
-		return new Point3d(currentPosition);
-	}
+	/**
+	* are we finished with the last command?
+	*/
+	public boolean isFinished();
+
+	/**
+	* clean up the driver
+	*/
+	public void dispose();
+
+	/**
+	* called to deal with any stop codes
+	*/
+	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException;
+
+	/**
+	* execute the recently parsed GCode
+	*/
+	public void execute() throws GCodeException;
+
+	/**
+	* get version information from the driver
+	*/
+	public String getVersion();
 	
-	public void queuePoint(Point3d p)
-	{
-		currentPosition = new Point3d(p);
-	}
+	/**
+	* Positioning Methods
+	**/
+	public void setCurrentPosition(Point3d p);
+	public Point3d getCurrentPosition();
+	public void queuePoint(Point3d p);
+	public Point3d getOffset(int i);
 
 
 	/**
 	* Tool methods
 	*/
-	public void loadToolDrivers(Node n)
-	{
-		
-	}
-	
-	public void requestToolChange(int toolIndex)
-	{
-		
-	}
-	
-	public void selectTool(int toolIndex)
-	{
-		currentTool = tools[toolIndex];
-	}
-
-	public ToolDriver currentTool()
-	{
-		return currentTool;
-	}
+	public void loadToolDrivers(Node n);
+	public void requestToolChange(int toolIndex);
+	public void selectTool(int toolIndex);
+	public ToolDriver currentTool();
 	
 	/**
 	* sets the feedrate in mm/minute
 	*/
-	public void setFeedrate(double feed)
-	{
-		currentFeedrate = feed;
-	}
+	public void setFeedrate(double feed);
 	
 	/**
 	* sets the feedrate in mm/minute
 	*/
-	public double getCurrentFeedrate()
-	{
-		return currentFeedrate;
-	}
+	public double getCurrentFeedrate();
 	
 	
 	/**
 	* various homing functions
 	*/
-	public void homeXYZ() {}
-	public void homeXY() {}
-	public void homeX() {}
-	public void homeY() {}
-	public void homeZ() {}	
+	public void homeXYZ();
+	public void homeXY();
+	public void homeX();
+	public void homeY();
+	public void homeZ();	
 	
 	/**
 	* delay / pause function
 	*/
-	public void delay(long millis)
-	{
-		//System.out.println("Delay: " + millis);
-	}
+	public void delay(long millis);
 	
 	/**
 	* functions for dealing with clamps
 	*/
-	public void openClamp(int clampIndex) {}
-	public void closeClamp(int clampIndex) {}
+	public void openClamp(int clampIndex);
+	public void closeClamp(int clampIndex);
 	
 	/**
 	* enabling/disabling our drivers (steppers, servos, etc.)
 	*/
-	public void enableDrives() {}
-	public void disableDrives() {}
+	public void enableDrives();
+	public void disableDrives();
 	
 	/**
 	* change our gear ratio
 	*/
-	public void changeGearRatio(int ratioIndex) {}
+	public void changeGearRatio(int ratioIndex);
 	
-}
-
-class JobCancelledException extends Exception
-{
-}
-
-class JobEndException extends Exception
-{
-}
-
-class JobRewindException extends Exception
-{
 }

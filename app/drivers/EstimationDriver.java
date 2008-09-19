@@ -29,7 +29,7 @@ import org.w3c.dom.*;
 import javax.vecmath.*;
 
 
-public class EstimationDriver extends Driver
+public class EstimationDriver extends DriverBaseImplementation
 {
 	//build time in milliseconds
 	private long buildTime;

@@ -28,7 +28,7 @@ import processing.core.*;
 import org.w3c.dom.*;
 import javax.vecmath.*;
 
-public class SimulationDriver extends Driver
+public class SimulationDriver extends DriverBaseImplementation
 {
 	private SimulationWindow simulation;
 	

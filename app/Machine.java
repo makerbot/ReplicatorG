@@ -20,6 +20,7 @@
 package processing.app;
 
 import processing.app.drivers.*;
+import processing.app.exceptions.*;
 
 import java.io.*;
 import org.w3c.dom.*;
@@ -261,14 +262,14 @@ public class Machine
 
 			if (kid.getNodeName().equals("driver"))
 			{
-				driver = Driver.factory(kid);
+				driver = DriverFactory.factory(kid);
 				return;
 			}
 		}
 
 		System.out.println("No driver config found.");
 		
-		driver = Driver.factory();
+		driver = DriverFactory.factory();
 	}
 	
 	private void loadToolDrivers()

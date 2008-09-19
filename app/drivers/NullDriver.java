@@ -29,7 +29,7 @@ import org.w3c.dom.*;
 import javax.vecmath.*;
 
 
-public class NullDriver extends Driver
+public class NullDriver extends DriverBaseImplementation
 {
 	private int delay;
 	
@@ -53,7 +53,12 @@ public class NullDriver extends Driver
 
 		//initial value.
 		delay = 25;
-		
+
+		loadXML(xml);		
+	}
+	
+	public void loadXML(Node xml)
+	{
 		//try and load a different one from config.
 		if (Base.hasChildNode(xml, "wait"))
 			delay = Integer.parseInt(Base.getChildNodeValue(xml, "wait"));
