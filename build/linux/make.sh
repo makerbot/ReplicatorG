@@ -12,47 +12,38 @@
 # your standard Java classpath, and DIRAVR to the root of your
 # avr-gcc installation.
 
+#JAVA_OPTIONS="-Xlint:deprecation"
+JAVA_OPTIONS="" 
 
 ### -- SETUP WORK DIR -------------------------------------------
 
+#always start fresh
 if test -d work 
 then
-  BUILD_PREPROC=false
-else
-  BUILD_PREPROC=true
+  rm -rf work
+fi  
 
-  # needs to make the dir because of packaging goofiness
-  echo Setting up directories to build under Linux
-  mkdir -p work/classes/processing/app/syntax
-  mkdir -p work/classes/processing/app/tools
-  mkdir -p work/lib/build
+# needs to make the dir because of packaging goofiness
+echo "Setting up work folder."
+mkdir work
+mkdir work/classes
 
-  cp dist/replicatorg work/
-fi
-
-echo Copying shared and core files...
-cp -r ../shared/* work
-rm -rf work/dist
-
-echo Copying dist files...
-cp -r dist/lib work/
+#export stuff from svn.
+svn --quiet export dist/replicatorg work/replicatorg 
+svn --quiet export ../shared/lib work/lib
+svn --quiet export ../shared/machines.xml work/machines.xml
+svn --quiet export dist/lib/librxtxSerial.so work/lib/librxtxSerial.so
 
 ### -- START BUILDING -------------------------------------------
 
 # move to root 'arduino' directory
-cd ../..
+cd ../../app
 
 ### -- BUILD PDE ------------------------------------------------
 
-cd app
-
 echo Building the PDE...
 
-# compile the code as java 1.3, so that the application will run and
-# show the user an error, rather than crapping out with some strange
-# "class not found" crap
-#jikes -classpath ../build/linux/work/classes:../build/linux/work/lib/antlr.jar:../build/linux/work/lib/oro.jar:../build/linux/work/lib/registry.jar:../build/linux/work/lib/RXTXcomm.jar:../build/linux/work/lib/mrj.jar:$CLASSPATH -d ../build/linux/work/classes tools/*.java preproc/*.java syntax/*.java *.java 
-javac -source 1.4 -target 1.4 -classpath ../build/linux/work/class:../build/linux/work/lib/antlr.jar:../build/linux/work/lib/oro.jar:../build/linux/work/lib/registry.jar:../build/linux/work/lib/RXTXcomm.jar:../build/linux/work/lib/mrj.jar:../build/linux/work/lib/vecmath.jar:../build/linux/work/lib/j3dcore.jar:../build/linux/work/lib/j3dutils.jar:$CLASSPATH -d ../build/linux/work/classes drivers/*.java ../core/*.java tools/*.java syntax/*java *.java
+javac -source 1.4 -target 1.4 $JAVA_OPTIONS -classpath ../build/linux/work/class:../build/linux/work/lib/antlr.jar:../build/linux/work/lib/oro.jar:../build/linux/work/lib/registry.jar:../build/linux/work/lib/RXTXcomm.jar:../build/linux/work/lib/mrj.jar:../build/linux/work/lib/vecmath.jar:../build/linux/work/lib/j3dcore.jar:../build/linux/work/lib/j3dutils.jar:$CLASSPATH -d ../build/linux/work/classes drivers/*.java exceptions/*.java ../core/*.java tools/*.java syntax/*java *.java
 
 cd ../build/linux/work/classes
 rm -f ../lib/pde.jar
