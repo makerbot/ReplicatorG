@@ -53,6 +53,11 @@ public interface Driver
 	* are we finished with the last command?
 	*/
 	public boolean isFinished();
+	
+	/**
+	* setup our driver for use.
+	**/
+	public void initialize();
 
 	/**
 	* clean up the driver

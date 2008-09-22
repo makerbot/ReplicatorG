@@ -53,6 +53,9 @@ public class DriverBaseImplementation implements Driver
 	//our offsets
 	protected Point3d[] offsets;
 
+	//are we initialized?
+	protected boolean isInitialized = false;
+
 	/**
 	  * Creates the driver object.
 	  */
@@ -79,6 +82,16 @@ public class DriverBaseImplementation implements Driver
 	{
 		//TODO: load standard driver configs.
 	}
+	
+	public void initialize()
+	{
+		isInitialized = true;
+	}
+	
+	public boolean isInitialized()
+	{
+		return isInitialized;
+	} 
 
 	public void parse(String cmd)
 	{

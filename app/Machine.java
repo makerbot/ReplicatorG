@@ -121,12 +121,12 @@ public class Machine
 		Date started = new Date();
 
 		//start simulator
-//		System.out.println("a");
+		System.out.println("a");
 		simulator.createWindow();
-//		System.out.println("b");
+		System.out.println("b");
 		editor.setVisible(true);
-//		System.out.println("c");
-		
+		System.out.println("c");
+	
 		//estimate build time.
 		System.out.println("Estimating build time...");
 		estimate();
@@ -181,9 +181,13 @@ public class Machine
 			
 			String line = editor.textarea.getLineText(i);
 			
+			//System.out.println("running: " + line);
+			
 			//use our parser to handle the stuff.
 			simulator.parse(line);
 			driver.parse(line);
+			
+			//System.out.println("parsed");
 			
 			//for handling job flow.
 			try {
@@ -200,6 +204,8 @@ public class Machine
 			//simulate the command.
 			simulator.execute();
 			
+			//System.out.println("simulated");
+			
 			//execute the command and snag any errors.
 			try {
 				driver.execute();
@@ -207,6 +213,8 @@ public class Machine
 				//TODO: prompt the user to continue.
 				System.out.println("Error: " + e.getMessage());
 			}
+			
+			//System.out.println("executed");
 			
 			//are we paused?
 			while (this.isPaused())
@@ -263,6 +271,7 @@ public class Machine
 			if (kid.getNodeName().equals("driver"))
 			{
 				driver = DriverFactory.factory(kid);
+				driver.initialize();
 				return;
 			}
 		}
@@ -270,6 +279,7 @@ public class Machine
 		System.out.println("No driver config found.");
 		
 		driver = DriverFactory.factory();
+		driver.initialize();
 	}
 	
 	private void loadToolDrivers()

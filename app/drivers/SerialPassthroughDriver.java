@@ -38,11 +38,6 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	private Serial serial;
 
 	/**
-	* are we initialized yet?
-	*/
-	private boolean initialized = false;
-	
-	/**
 	* our array of gcode commands
 	*/
 	private Vector commands;
@@ -90,7 +85,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		bufferSize = 0;
 		bufferLength = 0;
 		currentCommand = 0;
-		initialized = false;
+		isInitialized = false;
 		
 		//some decent default prefs.
 		name = Serial.list()[0];
@@ -98,18 +93,6 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		parity = Preferences.get("serial.parity").charAt(0);
 		databits = Preferences.getInteger("serial.databits");
 		stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
-
-		//TODO: move this to initialization area.
-		//declare our serial guy.
-		try {
-			System.out.println("Connecting to " + name + " at " + rate);
-			serial = new Serial(name, rate, parity, databits, stopbits);
-		} catch (SerialException e) {
-			//TODO: report the error here.
-			e.printStackTrace();
-		}
-		
-		System.out.println("Initializing Arduino.");
 	}
 	
 	public void loadXML(Node xml)
@@ -127,6 +110,25 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 			stopbits = Integer.parseInt(Base.getChildNodeValue(xml, "stopbits"));
 	}
 	
+	public void initialize()
+	{
+		//declare our serial guy.
+		try {
+			System.out.println("Connecting to " + name + " at " + rate);
+			serial = new Serial(name, rate, parity, databits, stopbits);
+		} catch (SerialException e) {
+			//TODO: report the error here.
+			e.printStackTrace();
+		}
+		
+		//wait til we're initialized
+		System.out.println("Initializing Serial.");
+		while (!isInitialized)
+			readResponse();
+			
+		System.out.println("Ready to rock.");
+	}
+	
 	/**
 	 * Actually execute the GCode we just parsed.
 	 */
@@ -137,10 +139,6 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		// we'll simply pass it along.
 		//super.execute();
 		
-		//wait til we're initialized
-		while (!initialized)
-			readResponse();
-
 		sendCommand(parser.getCommand());
 	}
 	
@@ -155,7 +153,9 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		//check to see if we got a response.
 		do {
 			readResponse();
-		} while (bufferSize + next.length() > maxBufferSize);
+		}
+		//while (bufferSize + next.length() > maxBufferSize);
+		while (bufferSize > 0);
 		
 		//will it fit into our buffer?
 		if (bufferSize + next.length() < maxBufferSize)
@@ -169,7 +169,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 			bufferLength++;
 			
 			//debug... let us know whts up!
-			//System.out.println("Sent: " + next);
+			System.out.println("Sent: " + next);
 			//System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
 		}
 	}
@@ -204,10 +204,13 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 					result += c;
 				
 					//System.out.println("got: " + c);
-				
+					//System.out.println("current: " + result);
+					
 					//is it a done command?
 					if (c == '\n')
 					{
+						//System.out.println("command: " + result);
+						
 						if (result.startsWith("ok"))
 						{
 							cmd = (String)commands.get(currentCommand);
@@ -237,7 +240,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 						else if (result.startsWith("start"))
 						{
 							//todo: set version
-							initialized = true;
+							isInitialized = true;
 						}
 						else
 							System.out.println(result.substring(0, result.length()-2));

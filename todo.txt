@@ -1,10 +1,6 @@
-0001 ReplicatorG
-
-TODO:
-* fix any bugs that pop up
-
 0002 ReplicatorG
 
+TODO:
 * have simulation move to a proportional wait time
 * get auto-formatting working
 * enhance simulation window (colors, thickness, etc)
@@ -13,9 +9,16 @@ TODO:
 * experiment with SNAP driver?
 * start work on next generation driver for arduino / sanguino w/ point queueing, etc.
 
+DONE:
+* add color to simulation window
+* implement Peter Edworthy ideas on driver instantiation
+
+
 0003 ReplicatorG
 
 * add support for adding STL to sketch (for slicing)
 * add STL 3D preview
 * add simulation 3D preview (with 2D option as well)
 * add support for slice/dice plugins (skeinforge?  reprap?)
+
+
