@@ -3,11 +3,16 @@
 TODO:
 * have simulation move to a proportional wait time
 * get auto-formatting working
-* enhance simulation window (colors, thickness, etc)
 * add machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
 * add simple exerciser / status window
 * experiment with SNAP driver?
 * start work on next generation driver for arduino / sanguino w/ point queueing, etc.
+* fix windows icons
+* add proper bounds to simulation window
+* add units to simulation window
+* add grid to simulation window
+* add lines to simulation lines
+* fix simulation on mac/windows
 
 DONE:
 * add color to simulation window
