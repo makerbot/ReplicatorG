@@ -121,11 +121,11 @@ public class Machine
 		Date started = new Date();
 
 		//start simulator
-		System.out.println("a");
+//		System.out.println("a");
 		simulator.createWindow();
-		System.out.println("b");
+//		System.out.println("b");
 		editor.setVisible(true);
-		System.out.println("c");
+//		System.out.println("c");
 	
 		//estimate build time.
 		System.out.println("Estimating build time...");

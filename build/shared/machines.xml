@@ -4,7 +4,7 @@
 		<name>3-Axis Simulator</name>
 		<geometry>cartesian</geometry>
 		<driver name="null"> <!-- use a fake driver -->
-			<wait>25</wait> <!-- in milliseconds -->
+			<speedup>20</speedup> <!-- amount to speed up print process:  1 = realtime, 2 = 2x, 10 = 10x, etc. -->
 		</driver>
 	</machine>
 	<!-- end protected configuration -->

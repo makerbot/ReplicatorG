@@ -1,7 +1,6 @@
 0002 ReplicatorG
 
 TODO:
-* have simulation move to a proportional wait time
 * get auto-formatting working
 * add machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
 * add simple exerciser / status window
@@ -17,7 +16,7 @@ TODO:
 DONE:
 * add color to simulation window
 * implement Peter Edworthy ideas on driver instantiation
-
+* have simulation move to a proportional wait time
 
 0003 ReplicatorG
 

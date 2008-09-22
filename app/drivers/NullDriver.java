@@ -31,39 +31,22 @@ import javax.vecmath.*;
 
 public class NullDriver extends DriverBaseImplementation
 {
-	private int delay;
+	private double speedup;
 	
 	public NullDriver()
 	{
 		super();
 
-		delay = 25;
+		speedup = 10;
+		System.out.println("speedup:" + speedup);
 	}
-	
-/*
-	public NullDriver(int d)
-	{
-		super();
-
-		delay = d;
-	}
-	
-	public NullDriver(Node xml)
-	{
-		super();
-
-		//initial value.
-		delay = 25;
-
-		loadXML(xml);		
-	}
-*/
 	
 	public void loadXML(Node xml)
 	{
-		//try and load a different one from config.
-		if (Base.hasChildNode(xml, "wait"))
-			delay = Integer.parseInt(Base.getChildNodeValue(xml, "wait"));
+		if (Base.hasChildNode(xml, "speedup"))
+			speedup = Double.parseDouble(Base.getChildNodeValue(xml, "speedup"));
+	
+		System.out.println("speedup:" + speedup);
 	}
 	
 	public void execute()
@@ -75,11 +58,17 @@ public class NullDriver extends DriverBaseImplementation
 		
 		String command = parser.getCommand();
 		
-		if (command.length() > 0 && delay > 0)
+		if (command.length() > 0 && speedup > 0)
 		{
-			try {
-				Thread.currentThread().sleep(delay);
-			} catch (InterruptedException e) {}
+			//calculate our delay speed.
+			int millis = (int)Math.round(getMoveLength() / getCurrentFeedrate() * 60000.0 / speedup);
+
+			if (millis > 0)
+			{
+				try {
+					Thread.currentThread().sleep(millis);
+				} catch (InterruptedException e) {}
+			}
 		}
 	}
 }

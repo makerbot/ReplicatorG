@@ -32,7 +32,7 @@ import javax.vecmath.*;
 public class EstimationDriver extends DriverBaseImplementation
 {
 	//build time in milliseconds
-	private long buildTime;
+	private double buildTime;
 	
 	public EstimationDriver()
 	{
@@ -50,40 +50,22 @@ public class EstimationDriver extends DriverBaseImplementation
 		try {
 			super.execute();
 		} catch (GCodeException e) {}
-	}
 	
-	public void queuePoint(Point3d p)
-	{
-		Point3d current = getCurrentPosition();
-		
-		//calculate the length of each axis move
-		double xFactor = Math.pow(p.x - current.x, 2);
-		double yFactor = Math.pow(p.y - current.y, 2);
-		double zFactor = Math.pow(p.z - current.z, 2);
-
-		//get the total length
-		double length = Math.sqrt(xFactor + yFactor + zFactor);
-
 		// our speed is feedrate * distance * 60000 (milliseconds in 1 minute)
 		// feedrate is mm per minute
-		double millis = length / getCurrentFeedrate() * 60000.0;
-
-		//debug.
-		//System.out.println(getCurrentPosition().toString() + " to " + p.toString() + " (" + length + "mm) at " + getCurrentFeedrate() + " takes " + Math.round(millis) + " millis.");
+		double millis = getMoveLength() / getCurrentFeedrate() * 60000.0;
+		//System.out.println(getMoveLength() + "mm at " + getCurrentFeedrate() + " takes " + Math.round(millis) + " millis.");
 		
 		//add it in!
 		buildTime += millis;
-		
-		//send it off!
-		super.queuePoint(p);
 	}
 	
-	public long getBuildTime()
+	public double getBuildTime()
 	{
 		return buildTime;
 	}
 	
-	static public String getBuildTimeString(long tempTime)
+	static public String getBuildTimeString(double tempTime)
 	{
 		System.out.println("build millis = " + tempTime);
 		

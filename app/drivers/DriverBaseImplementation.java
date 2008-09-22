@@ -55,6 +55,9 @@ public class DriverBaseImplementation implements Driver
 
 	//are we initialized?
 	protected boolean isInitialized = false;
+	
+	//the length of our last move.
+	private double moveLength = 0.0;
 
 	/**
 	  * Creates the driver object.
@@ -95,6 +98,9 @@ public class DriverBaseImplementation implements Driver
 
 	public void parse(String cmd)
 	{
+		//reset our values.
+		moveLength = 0.0;
+		
 		command = cmd;
 		parser.parse(cmd);
 	}
@@ -141,7 +147,21 @@ public class DriverBaseImplementation implements Driver
 	
 	public void queuePoint(Point3d p)
 	{
+		//calculate the length of each axis move
+		double xFactor = Math.pow(p.x - currentPosition.x, 2);
+		double yFactor = Math.pow(p.y - currentPosition.y, 2);
+		double zFactor = Math.pow(p.z - currentPosition.z, 2);
+
+		//add to the total length
+		moveLength += Math.sqrt(xFactor + yFactor + zFactor);
+
+		//save it as our current position now.
 		currentPosition = new Point3d(p);
+	}
+	
+	public double getMoveLength()
+	{
+		return moveLength;
 	}
 
 
