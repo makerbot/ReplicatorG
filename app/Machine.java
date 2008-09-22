@@ -191,7 +191,7 @@ public class Machine
 			
 			//for handling job flow.
 			try {
-				driver.handleStops();
+				driver.getParser().handleStops();
 			} catch (JobEndException e) {
 				return false;
 			} catch (JobCancelledException e) {

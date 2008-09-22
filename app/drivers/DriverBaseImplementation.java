@@ -99,6 +99,11 @@ public class DriverBaseImplementation implements Driver
 		parser.parse(cmd);
 	}
 	
+	public GCodeParser getParser()
+	{
+		return parser;
+	}
+	
 	public boolean isFinished()
 	{
 		return true;
@@ -109,11 +114,6 @@ public class DriverBaseImplementation implements Driver
 		parser = null;
 	}
 
-	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
-	{
-		parser.handleStops();
-	}
-	
 	public void execute() throws GCodeException
 	{
 		parser.execute();

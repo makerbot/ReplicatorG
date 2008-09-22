@@ -50,6 +50,11 @@ public interface Driver
 	public void parse(String cmd);
 	
 	/**
+	* get our parser object
+	*/
+	public GCodeParser getParser();
+	
+	/**
 	* are we finished with the last command?
 	*/
 	public boolean isFinished();
@@ -63,11 +68,6 @@ public interface Driver
 	* clean up the driver
 	*/
 	public void dispose();
-
-	/**
-	* called to deal with any stop codes
-	*/
-	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException;
 
 	/**
 	* execute the recently parsed GCode
