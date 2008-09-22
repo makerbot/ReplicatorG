@@ -118,6 +118,7 @@ public class Editor extends JFrame
 
   public BuildingThread buildingThread;
   public SimulationThread simulationThread;
+  public EstimationThread estimationThread;
 
   JMenuItem saveMenuItem;
   JMenuItem saveAsMenuItem;
@@ -586,6 +587,14 @@ public class Editor extends JFrame
   protected JMenu buildSketchMenu() {
     JMenuItem item;
     JMenu menu = new JMenu("GCode");
+
+    item = newJMenuItem("Estimate", 'E');
+    item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          handleEstimate();
+        }
+      });
+    menu.add(item);
 
     item = newJMenuItem("Simulate", 'L');
     item.addActionListener(new ActionListener() {
@@ -1150,6 +1159,22 @@ public class Editor extends JFrame
 
   // ...................................................................
 
+	public void handleEstimate()
+	{
+		if (building)
+			return;
+		if (simulating)
+			return;
+			
+		//load our simulator machine
+		loadSimulator();
+			
+		//fire off our thread.
+		estimationThread = new EstimationThread(this);
+		estimationThread.start();
+	}
+
+
 	public void handleSimulate()
 	{
 		if (building)
@@ -1290,6 +1315,31 @@ public class Editor extends JFrame
 
 			buttons.clear();
 		}
+	}
+
+	class EstimationThread extends Thread
+	{
+		Editor editor;
+		
+		public EstimationThread(Editor edit)
+		{
+			editor = edit;
+		}
+		
+		public void run()
+		{
+			message("Estimating...");
+			machine.setThread(this);
+			machine.estimate();
+			editor.estimationOver();
+		}
+	}
+	
+	public void estimationOver()
+	{
+		//stopItem.disable();
+		//pauseItem.disable();
+		buttons.clear();
 	}
 
 	/**

@@ -12,7 +12,6 @@ TODO:
 * add grid to simulation window
 * add direction lines to simulation lines
 * re-add 'gcode' console.
-* add estimate menu item
 
 DONE:
 * add color to simulation window
@@ -20,6 +19,7 @@ DONE:
 * implement Peter Edworthy ideas on driver instantiation
 * have simulation move to a proportional wait time
 * fix build time estimation
+* add estimate menu item
 
 0003 ReplicatorG
 

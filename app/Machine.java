@@ -155,7 +155,7 @@ public class Machine
 		editor.textarea.enable();
 	}
 	
-	private void estimate()
+	public void estimate()
 	{
 		EstimationDriver estimator = new EstimationDriver();
 		
