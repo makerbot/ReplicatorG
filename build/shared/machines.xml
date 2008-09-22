@@ -2,7 +2,15 @@
 	<!-- do not remove this machine configuration!!! -->
 	<machine>
 		<name>3-Axis Simulator</name>
-		<geometry>cartesian</geometry>
+		<geometry type="cartesian">
+			<axis id="x" length="300" maxfeedrate="1000" scale="11.4485"/>
+			<axis id="y" length="300" maxfeedrate="1000" scale="11.4485"/>
+			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
+		</geometry>
+		<tools>
+			<tool type="extruder" material="abs" />
+		</tools>
+		<clamps></clamps>
 		<driver name="null"> <!-- use a fake driver -->
 			<speedup>20</speedup> <!-- amount to speed up print process:  1 = realtime, 2 = 2x, 10 = 10x, etc. -->
 		</driver>
