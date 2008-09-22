@@ -29,6 +29,7 @@ import processing.core.*;
 import gnu.io.*;
 import java.util.*;
 import org.w3c.dom.*;
+import javax.vecmath.*;
 
 public class SerialPassthroughDriver extends DriverBaseImplementation
 {
@@ -270,5 +271,78 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		serial.dispose();
 		serial = null;
 		commands = null;
+	}
+	
+	/****************************************************
+	*  commands for interfacing with the driver directly
+	****************************************************/
+	
+	public void queuePoint(Point3d p)
+	{
+		String cmd = "G1 X" + p.x + " Y" + p.y + " Z" + p.z + " F" + getCurrentFeedrate();
+		
+		sendCommand(cmd);
+	}
+	
+	public void homeXYZ()
+	{
+		sendCommand("G28 XYZ");
+	}
+
+	public void homeXY()
+	{
+		sendCommand("G28 XY");
+	}
+
+	public void homeX()
+	{
+		sendCommand("G28 X");
+	}
+
+	public void homeY()
+	{
+		sendCommand("G28 Y");
+	}
+
+	public void homeZ()
+	{
+		sendCommand("G28 Z");
+	}
+	
+	public void delay(long millis)
+	{
+		int seconds = Math.round(millis/1000);
+
+		sendCommand("G4 P" + seconds);
+	}
+	
+	public void openClamp(int clampIndex)
+	{
+		sendCommand("M11 Q" + clampIndex);
+	}
+	
+	public void closeClamp(int clampIndex)
+	{
+		sendCommand("M10 Q" + clampIndex);
+	}
+	
+	public void enableDrives()
+	{
+		sendCommand("M17");
+	}
+	
+	public void disableDrives()
+	{
+		sendCommand("M18");
+	}
+	
+	public void changeGearRatio(int ratioIndex)
+	{
+		//gear ratio codes are M40-M46
+		int code = 40 + ratioIndex;
+		code = Math.max(40, code);
+		code = Math.min(46, code);
+		
+		sendCommand("M" + code);
 	}
 }

@@ -38,15 +38,12 @@ public class NullDriver extends DriverBaseImplementation
 		super();
 
 		speedup = 10;
-		System.out.println("speedup:" + speedup);
 	}
 	
 	public void loadXML(Node xml)
 	{
 		if (Base.hasChildNode(xml, "speedup"))
 			speedup = Double.parseDouble(Base.getChildNodeValue(xml, "speedup"));
-	
-		System.out.println("speedup:" + speedup);
 	}
 	
 	public void execute()

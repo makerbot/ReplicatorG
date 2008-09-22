@@ -2,7 +2,7 @@
 
 TODO:
 * get auto-formatting working
-* add machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
+* add basic machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
 * add simple exerciser / status window
 * experiment with SNAP driver?
 * start work on next generation driver for arduino / sanguino w/ point queueing, etc.
@@ -10,13 +10,16 @@ TODO:
 * add proper bounds to simulation window
 * add units to simulation window
 * add grid to simulation window
-* add lines to simulation lines
-* fix simulation on mac/windows
+* add direction lines to simulation lines
+* re-add 'gcode' console.
+* add estimate menu item
 
 DONE:
 * add color to simulation window
+* add up/down arrows to simulation windows
 * implement Peter Edworthy ideas on driver instantiation
 * have simulation move to a proportional wait time
+* fix build time estimation
 
 0003 ReplicatorG
 

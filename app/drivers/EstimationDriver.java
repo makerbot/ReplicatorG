@@ -32,16 +32,18 @@ import javax.vecmath.*;
 public class EstimationDriver extends DriverBaseImplementation
 {
 	//build time in milliseconds
-	private double buildTime;
+	private double buildTime = 0.0;
 	
 	public EstimationDriver()
 	{
 		super();
+
+		buildTime = 0.0;
 	}
 	
 	public void delay(long millis)
 	{
-		buildTime += millis;
+		buildTime += (double)millis/1000;
 	}
 	
 	public void execute()
@@ -54,10 +56,13 @@ public class EstimationDriver extends DriverBaseImplementation
 		// our speed is feedrate * distance * 60000 (milliseconds in 1 minute)
 		// feedrate is mm per minute
 		double millis = getMoveLength() / getCurrentFeedrate() * 60000.0;
-		//System.out.println(getMoveLength() + "mm at " + getCurrentFeedrate() + " takes " + Math.round(millis) + " millis.");
 		
 		//add it in!
-		buildTime += millis;
+		if (millis > 0)
+		{
+			buildTime = buildTime + millis;
+			//System.out.println(getMoveLength() + "mm at " + getCurrentFeedrate() + " takes " + Math.round(millis) + " millis (" + buildTime + " total).");
+		}
 	}
 	
 	public double getBuildTime()
@@ -67,7 +72,7 @@ public class EstimationDriver extends DriverBaseImplementation
 	
 	static public String getBuildTimeString(double tempTime)
 	{
-		System.out.println("build millis = " + tempTime);
+		//System.out.println("build millis = " + tempTime);
 		
 		String val = new String();
 		

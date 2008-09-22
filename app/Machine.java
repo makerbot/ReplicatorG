@@ -55,6 +55,9 @@ public class Machine
 	
 	//estimated build time in millis
 	protected long estimatedBuildTime = 0;
+	
+	//our linear axes configs
+	protected Vector axes;
 
 /*	
 	Color currentLineBackground;
@@ -71,14 +74,14 @@ public class Machine
 		editor = edit;
 		machineNode = mNode;
 
-		parseName();
-
 		paused = false;
 		stopped = false;
 		
+		parseName();
 		System.out.println("Loading machine: " + name);
 		
 		//load our drivers
+		loadConfiguration();
 		loadDriver();
 		loadToolDrivers();
 	}
@@ -255,6 +258,11 @@ public class Machine
 		message += "Completed in " + EstimationDriver.getBuildTimeString(elapsed);
 		
 		JOptionPane.showMessageDialog(null, message);
+	}
+	
+	private void loadConfiguration()
+	{
+		
 	}
 	
 	private void loadDriver()
