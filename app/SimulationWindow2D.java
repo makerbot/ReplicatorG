@@ -28,16 +28,20 @@
 package processing.app;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.*;
 import javax.swing.*;
 import java.util.*;
 import javax.vecmath.*;
 
-public class SimulationWindow2D extends SimulationWindow
+public class SimulationWindow2D extends SimulationWindow implements MouseMotionListener
 {	
 	private Point3d minimum;
 	private Point3d maximum;
 	private double currentZ;
+	
+	private int mouseX = 0;
+	private int mouseY = 0;
 	
 	private double ratio = 1.0;
 
@@ -56,6 +60,8 @@ public class SimulationWindow2D extends SimulationWindow
 		
 		setTitle("2D Build Simulation");
 		
+		addMouseMotionListener(this);
+
 		//init our bounds.
 		minimum = new Point3d();
 		maximum = new Point3d();
@@ -117,12 +123,6 @@ public class SimulationWindow2D extends SimulationWindow
 		ratio = Math.min(yRatio, xRatio);
 	}
 	
-/*
-	public void repaint(Graphics g)
-	{
-		super
-*/
-	
 	public void doRender()
 	{
 		BufferStrategy myStrategy = getBufferStrategy();
@@ -143,28 +143,55 @@ public class SimulationWindow2D extends SimulationWindow
 	    g.setColor(Color.black);
 		g.drawString("Layer at z: " + currentZ, 20, 20);
 
-		//TODO: add/fix scale indicators
-		//drawScaleIndicators(g);
-		//drawToolpaths(g);
+		//draw our main stuff
 		drawLastPoints(g);
+		drawRulers(g);
 
+		//this shows our buffer!
 		myStrategy.show();
 	}
 	
-	private void drawScaleIndicators(Graphics g)
+	private void drawRulers(Graphics g)
 	{
-		int xIncrements = 9;
-		int yIncrements = 9;
-		int xSpacing = 2;
-		int ySpacing = 3;
+	    Graphics2D g2 = (Graphics2D) g;
+	    Insets insets = getInsets();
+	    
+	    //ruler config variables
+	    int rulerSpacing = 2;
+		int rulerWidth = 25;
 		
-		double xIncrement = (maximum.x - minimum.x - xSpacing) / xIncrements;
-		double yIncrement = (maximum.y - minimum.y - ySpacing) / yIncrements;
+		g2.setPaint(Color.gray);
+
+		//how long are our rulers?
+		int xRulerX = rulerSpacing + rulerWidth + insets.left;
+		int xRulerY = rulerSpacing + insets.top;
+		int xRulerLength = getRealWidth() - rulerSpacing*2 - rulerWidth - 1;
+
+		int yRulerX = rulerSpacing + insets.left;
+		int yRulerY = rulerSpacing + rulerWidth + insets.top;
+		int yRulerLength = getRealHeight() - rulerSpacing*2 - rulerWidth - 1;
 		
-		//draw the main bars.
-		g.drawLine(xSpacing, ySpacing, xSpacing, getHeight()-ySpacing);
-		g.drawLine(xSpacing, getHeight()-ySpacing, getWidth()-xSpacing, getHeight()-ySpacing);
+		//draw the base bars
+		g2.draw(new Rectangle(xRulerX, xRulerY, xRulerLength, rulerWidth));
+		g2.draw(new Rectangle(yRulerX, yRulerY, rulerWidth, yRulerLength));
+
+		g2.setPaint(Color.black);
+
+		//draw our x indicator
+		Polygon xTriangle = new Polygon();
+		xTriangle.addPoint(mouseX, xRulerY + rulerWidth);
+		xTriangle.addPoint(mouseX - rulerWidth/4, xRulerY + rulerWidth - rulerWidth/4);
+		xTriangle.addPoint(mouseX + rulerWidth/4, xRulerY + rulerWidth - rulerWidth/4);
+		g2.fill(xTriangle);
 		
+		//draw our y indicator
+		Polygon yTriangle = new Polygon();
+		yTriangle.addPoint(yRulerX + rulerWidth, mouseY);
+		yTriangle.addPoint(yRulerX + rulerWidth - rulerWidth/4, mouseY - rulerWidth/4);
+		yTriangle.addPoint(yRulerX + rulerWidth - rulerWidth/4, mouseY + rulerWidth/4);
+		g2.fill(yTriangle);
+
+/*		
 		//draw our x ticks
 		for (int i=1; i<=xIncrements+1; i++)
 		{
@@ -182,7 +209,17 @@ public class SimulationWindow2D extends SimulationWindow
 			
 			g.drawLine(ySpacing, getHeight()-ySpacing-yPoint, ySpacing+10, getHeight()-ySpacing-yPoint);
 		}
-		
+*/		
+	}
+
+	public void mouseMoved(MouseEvent e) {
+		mouseX = e.getX();
+		mouseY = e.getY();
+	}
+
+	public void mouseDragged(MouseEvent e) {
+		mouseX = e.getX();
+		mouseY = e.getY();
 	}
 
 	private void drawLastPoints(Graphics g)

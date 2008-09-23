@@ -59,6 +59,20 @@ public class SimulationWindow extends JFrame
 		this.setMenuBar(null);
 	}
 	
+	protected int getRealWidth()
+	{
+		Insets i = getInsets();
+		
+		return (getWidth() - i.left - i.right);
+	}
+	
+	protected int getRealHeight()
+	{
+		Insets i = getInsets();
+		
+		return (getHeight() - i.top - i.bottom);
+	}
+	
 	synchronized public void queuePoint(Point3d p)
 	{
 	}
