@@ -39,8 +39,8 @@ public class DriverBaseImplementation implements Driver
 	private String command;
 
 	//our tool drivers
-	private ToolDriver[] tools;
-	private ToolDriver currentTool;
+	private Vector tools;
+	private Tool currentTool;
 
 	//our current position
 	private Point3d currentPosition;
@@ -58,7 +58,7 @@ public class DriverBaseImplementation implements Driver
 	
 	//the length of our last move.
 	private double moveLength = 0.0;
-
+	
 	/**
 	  * Creates the driver object.
 	  */
@@ -168,7 +168,7 @@ public class DriverBaseImplementation implements Driver
 	/**
 	* Tool methods
 	*/
-	public void loadToolDrivers(Node n)
+	protected void loadTools(Node n)
 	{
 		
 	}
@@ -239,4 +239,158 @@ public class DriverBaseImplementation implements Driver
 	*/
 	public void changeGearRatio(int ratioIndex) {}
 	
+	/*****************************************************************************
+	*  toolhead interface commands
+	*****************************************************************************/
+
+	/*************************************
+	*  Motor interface functions
+	*************************************/
+ 	public void setMotorDirection(int dir)
+	{
+		currentTool().setMotorDirection(dir);
+	}
+	
+	public void setMotorSpeed(double rpm)
+	{
+		currentTool().setMotorSpeed(rpm);
+	}
+	
+	public void enableMotor()
+	{
+		currentTool().enableMotor();
+	}
+	
+	public void disableMotor()
+	{
+		currentTool().disableMotor();
+	}
+	
+	public void readMotorSpeed()
+	{
+		
+	}
+	
+	public double getMotorSpeed()
+	{
+		return currentTool().getMotorSpeed();
+	}
+
+	/*************************************
+	*  Spindle interface functions
+	*************************************/
+	public void setSpindleDirection(int dir)
+	{
+		currentTool().setSpindleDirection(dir);
+	}
+
+	public void setSpindleSpeed(double rpm)
+	{
+		currentTool().setSpindleSpeed(rpm);
+	}
+	
+	public void enableSpindle()
+	{
+		currentTool().enableSpindle();
+	}
+	
+	public void disableSpindle()
+	{
+		currentTool.disableSpindle();
+	}
+	
+	public void readSpindleSpeed()
+	{
+		
+	}
+	
+	public double getSpindleSpeed()
+	{ 
+		return currentTool.getSpindleSpeed();
+	}
+	
+	/*************************************
+	*  Temperature interface functions
+	*************************************/
+	public void setTemperature(double temperature)
+	{
+		currentTool().setTargetTemperature(temperature);
+	}
+
+	public void readTemperature()
+	{
+		
+	}
+
+	public double getTemperature()
+	{
+		readTemperature();
+		
+		return currentTool.getGetCurrentTemperature();
+	}
+
+	/*************************************
+	*  Flood Coolant interface functions
+	*************************************/
+	public void enableFloodCoolant()
+	{
+		currentTool().enableFloodCoolant();
+	}
+	
+	public void disableFloodCoolant()
+	{
+		currentTool().disableFloodCoolant();
+	}
+
+	/*************************************
+	*  Mist Coolant interface functions
+	*************************************/
+	public void enableMistCoolant()
+	{
+		currentTool().enableMistCoolant();
+	}
+	
+	public void disableMistCoolant()
+	{
+		currentTool().disableMistCoolant();
+	}
+
+	/*************************************
+	*  Fan interface functions
+	*************************************/
+	public void enableFan()
+	{
+		currentTool().enableFan();
+	}
+	
+	public void disableFan()
+	{
+		currentTool().disableFan();
+	}
+	
+	/*************************************
+	*  Valve interface functions
+	*************************************/
+	public void openValve()
+	{
+		currentTool().openValve();
+	}
+	
+	public void closeValve()
+	{
+		currentTool().closeValve();
+	}
+	
+	/*************************************
+	*  Collet interface functions
+	*************************************/
+	public void openCollet()
+	{
+		currentTool().openCollet();
+	}
+	
+	public void closeCollet()
+	{
+		currentTool().closeCollet()
+	}
 }

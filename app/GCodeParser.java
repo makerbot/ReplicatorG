@@ -282,7 +282,7 @@ public class GCodeParser
 			
 		// Set spindle speed?
 		if (hasCode("S"))
-			driver.currentTool().setSpindleSpeed((int)getCodeValue("S"));
+			driver.setSpindleSpeed((int)getCodeValue("S"));
 			
 		//execute our other codes
 		executeMCodes();
@@ -304,19 +304,19 @@ public class GCodeParser
 					
 				//spindle on, CW
 				case 3:
-					driver.currentTool().setSpindleDirection(ToolDriver.MOTOR_CLOCKWISE);
-					driver.currentTool().enableSpindle();
+					driver.setSpindleDirection(ToolDriver.MOTOR_CLOCKWISE);
+					driver.enableSpindle();
 					break;
 					
 				//spindle on, CCW
 				case 4:
-					driver.currentTool().setSpindleDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
-					driver.currentTool().enableSpindle();
+					driver.setSpindleDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
+					driver.enableSpindle();
 					break;
 					
 				//spindle off
 				case 5:
-					driver.currentTool().disableSpindle();
+					driver.disableSpindle();
 					break;
 					
 				//tool change
@@ -329,18 +329,18 @@ public class GCodeParser
 
 				//coolant A on (flood coolant)
 				case 7:
-					driver.currentTool().enableFloodCoolant();
+					driver.enableFloodCoolant();
 					break;
 
 				//coolant B on (mist coolant)
 				case 8:
-					driver.currentTool().enableMistCoolant();
+					driver.enableMistCoolant();
 					break;
 				
 				//all coolants off
 				case 9:
-					driver.currentTool().disableFloodCoolant();
-					driver.currentTool().disableMistCoolant();
+					driver.disableFloodCoolant();
+					driver.disableMistCoolant();
 					break;
 					
 				//close clamp
@@ -361,16 +361,16 @@ public class GCodeParser
 
 				//spindle CW and coolant A on
 				case 13:
-					driver.currentTool().setSpindleDirection(ToolDriver.MOTOR_CLOCKWISE);
-					driver.currentTool().enableSpindle();
-					driver.currentTool().enableFloodCoolant();
+					driver.setSpindleDirection(ToolDriver.MOTOR_CLOCKWISE);
+					driver.enableSpindle();
+					driver.enableFloodCoolant();
 					break;
 
 				//spindle CW and coolant A on
 				case 14:
-					driver.currentTool().setSpindleDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
-					driver.currentTool().enableSpindle();
-					driver.currentTool().enableFloodCoolant();
+					driver.setSpindleDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
+					driver.enableSpindle();
+					driver.enableFloodCoolant();
 					break;
 					
 				//enable drives
@@ -385,11 +385,11 @@ public class GCodeParser
 					
 				//open collet
 				case 21:
-					driver.currentTool().openCollet();
+					driver.openCollet();
 
 				//open collet
 				case 22:
-					driver.currentTool().closeCollet();
+					driver.closeCollet();
 
 				// M40-M46 = change gear ratios
 				case 40:
@@ -418,7 +418,7 @@ public class GCodeParser
 				
 				//read spindle speed
 				case 50:
-					driver.currentTool().readSpindleSpeed();
+					driver.readSpindleSpeed();
 					
 				//subroutine functions... will implement later
 				//case 97: jump
@@ -427,55 +427,55 @@ public class GCodeParser
 						
 				//turn extruder on, forward
 				case 101:
-					driver.currentTool().setMotorDirection(ToolDriver.MOTOR_CLOCKWISE);
-					driver.currentTool().enableMotor();
+					driver.setMotorDirection(ToolDriver.MOTOR_CLOCKWISE);
+					driver.enableMotor();
 					break;
 
 				//turn extruder on, reverse
 				case 102:
-					driver.currentTool().setMotorDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
-					driver.currentTool().enableMotor();
+					driver.setMotorDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
+					driver.enableMotor();
 					break;
 
 				//turn extruder off
 				case 103:
-					driver.currentTool().disableMotor();
+					driver.disableMotor();
 					break;
 
 				//custom code for temperature control
 				case 104:
 					if (hasCode("S"))
-						driver.currentTool().setTemperature(getCodeValue("S"));
+						driver.setTemperature(getCodeValue("S"));
 					break;
 
 				//custom code for temperature reading
 				case 105:
-					driver.currentTool().readTemperature();
+					driver.readTemperature();
 					break;
 
 				//turn fan on
 				case 106:
-					driver.currentTool().enableFan();					
+					driver.enableFan();					
 					break;
 
 					//turn fan off
 				case 107:
-					driver.currentTool().disableFan();					
+					driver.disableFan();					
 					break;
 
 				//set max extruder speed, RPM
 				case 108:
-					driver.currentTool().setMotorSpeed(getCodeValue("S"));
+					driver.setMotorSpeed(getCodeValue("S"));
 					break;
 				
 				//valve open
 				case 126:
-					driver.currentTool().openValve();
+					driver.openValve();
 					break;
 
 				//valve close
 				case 127:
-					driver.currentTool().closeValve();
+					driver.closeValve();
 					break;
 
 				default:
@@ -794,7 +794,7 @@ public class GCodeParser
 
 				//spindle speed rate
 				case 97:
-					driver.currentTool().setSpindleSpeed((int)getCodeValue("S"));
+					driver.setSpindleSpeed((int)getCodeValue("S"));
 					break;
 				
 				//error, error!

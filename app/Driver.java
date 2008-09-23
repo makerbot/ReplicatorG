@@ -137,5 +137,60 @@ public interface Driver
 	* change our gear ratio
 	*/
 	public void changeGearRatio(int ratioIndex);
+
+
+	/*************************************
+	*  Motor interface functions
+	*************************************/
+ 	public void setMotorDirection(int dir);
+	public void setMotorSpeed(double rpm);
+	public void enableMotor();
+	public void disableMotor();
+	public double getMotorSpeed();
+
+	/*************************************
+	*  Spindle interface functions
+	*************************************/
+	public void setSpindleDirection(int dir);
+	public void setSpindleSpeed(double rpm);
+	public void enableSpindle();
+	public void disableSpindle();
+	public double getSpindleSpeed();
 	
+	/*************************************
+	*  Temperature interface functions
+	*************************************/
+	public void setTemperature(double temperature);
+	public void readTemperature();
+	public double getTemperature();
+
+	/*************************************
+	*  Flood Coolant interface functions
+	*************************************/
+	public void enableFloodCoolant();
+	public void disableFloodCoolant();
+
+	/*************************************
+	*  Mist Coolant interface functions
+	*************************************/
+	public void enableMistCoolant();
+	public void disableMistCoolant();
+
+	/*************************************
+	*  Fan interface functions
+	*************************************/
+	public void enableFan();
+	public void disableFan();
+	
+	/*************************************
+	*  Valve interface functions
+	*************************************/
+	public void openValve();
+	public void closeValve();
+	
+	/*************************************
+	*  Collet interface functions
+	*************************************/
+	public void openCollet();
+	public void closeCollet();
 }
