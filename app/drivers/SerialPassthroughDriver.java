@@ -155,7 +155,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		do {
 			readResponse();
 		}
-		//while (bufferSize + next.length() > maxBufferSize);
+		//while (bufferSize + next.length() + 1 > maxBufferSize);
 		while (bufferSize > 0);
 		
 		//will it fit into our buffer?
