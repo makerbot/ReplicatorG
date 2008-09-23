@@ -1,7 +1,7 @@
 /*
-  Driver.java
+  ToolModel.java
 
-  Provides an interface for driving various machines.
+  A class to store and model a toolhead.
 
   Part of the ReplicatorG project - http://www.replicat.org
   Copyright (c) 2008 Zach Smith
