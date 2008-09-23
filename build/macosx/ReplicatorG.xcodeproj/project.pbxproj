@@ -209,6 +209,8 @@
 		33FF07330965C1E30016AC38 /* tab-unsel-right.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02880965BD160016AC38 /* tab-unsel-right.gif */; };
 		36078EA40E43629B00BB48BB /* SimulationWindow2D.java in Sources */ = {isa = PBXBuildFile; fileRef = 36078EA30E43629B00BB48BB /* SimulationWindow2D.java */; };
 		36078EA60E4362A600BB48BB /* SimulationWindow3D.java in Sources */ = {isa = PBXBuildFile; fileRef = 36078EA50E4362A600BB48BB /* SimulationWindow3D.java */; };
+		363A96D90E8988DC00241F8C /* ToolModel.java in Sources */ = {isa = PBXBuildFile; fileRef = 363A96D80E8988DC00241F8C /* ToolModel.java */; };
+		363A96DB0E8988E900241F8C /* MachineModel.java in Sources */ = {isa = PBXBuildFile; fileRef = 363A96DA0E8988E900241F8C /* MachineModel.java */; };
 		36983BF40E86DC52006CD881 /* DriverFactory.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BF30E86DC52006CD881 /* DriverFactory.java */; };
 		36983BF90E86DC5E006CD881 /* JobCancelledException.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BF60E86DC5E006CD881 /* JobCancelledException.java */; };
 		36983BFA0E86DC5E006CD881 /* JobEndException.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BF70E86DC5E006CD881 /* JobEndException.java */; };
@@ -227,7 +229,6 @@
 		91DF2EFF0E48EE3E00EAF891 /* EstimationDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91DF2EFE0E48EE3E00EAF891 /* EstimationDriver.java */; };
 		91F5D2D30E4747DD008F954A /* GCodeParser.java in Sources */ = {isa = PBXBuildFile; fileRef = 91F5D2D20E4747DD008F954A /* GCodeParser.java */; };
 		91F5D2D50E4747E9008F954A /* NullDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91F5D2D40E4747E9008F954A /* NullDriver.java */; };
-		91F5D2D80E4747F8008F954A /* ToolDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91F5D2D70E4747F8008F954A /* ToolDriver.java */; };
 		A337296F0D22505C00E82412 /* librxtxSerial.jnilib in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = A33729630D224FA700E82412 /* librxtxSerial.jnilib */; };
 		A3688DF40D284554003CBAA1 /* applet.html in Resources */ = {isa = PBXBuildFile; fileRef = 33AF620B0965D67900B514A9 /* applet.html */; };
 /* End PBXBuildFile section */
@@ -386,6 +387,8 @@
 		33FFFE940965BD110016AC38 /* ReplicatorG.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = ReplicatorG.xcodeproj; sourceTree = "<group>"; };
 		36078EA30E43629B00BB48BB /* SimulationWindow2D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow2D.java; sourceTree = "<group>"; };
 		36078EA50E4362A600BB48BB /* SimulationWindow3D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow3D.java; sourceTree = "<group>"; };
+		363A96D80E8988DC00241F8C /* ToolModel.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ToolModel.java; sourceTree = "<group>"; };
+		363A96DA0E8988E900241F8C /* MachineModel.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = MachineModel.java; sourceTree = "<group>"; };
 		36983BF30E86DC52006CD881 /* DriverFactory.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = DriverFactory.java; sourceTree = "<group>"; };
 		36983BF60E86DC5E006CD881 /* JobCancelledException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = JobCancelledException.java; sourceTree = "<group>"; };
 		36983BF70E86DC5E006CD881 /* JobEndException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = JobEndException.java; sourceTree = "<group>"; };
@@ -404,7 +407,6 @@
 		91DF2EFE0E48EE3E00EAF891 /* EstimationDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EstimationDriver.java; sourceTree = "<group>"; };
 		91F5D2D20E4747DD008F954A /* GCodeParser.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = GCodeParser.java; sourceTree = "<group>"; };
 		91F5D2D40E4747E9008F954A /* NullDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = NullDriver.java; sourceTree = "<group>"; };
-		91F5D2D70E4747F8008F954A /* ToolDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ToolDriver.java; sourceTree = "<group>"; };
 		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; path = librxtxSerial.jnilib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -526,8 +528,9 @@
 		33FFFE220965BD100016AC38 /* app */ = {
 			isa = PBXGroup;
 			children = (
+				363A96DA0E8988E900241F8C /* MachineModel.java */,
+				363A96D80E8988DC00241F8C /* ToolModel.java */,
 				91D5A85A0E48CA3B003BE250 /* GCodeException.java */,
-				91F5D2D70E4747F8008F954A /* ToolDriver.java */,
 				91F5D2D20E4747DD008F954A /* GCodeParser.java */,
 				36078EA50E4362A600BB48BB /* SimulationWindow3D.java */,
 				36078EA30E43629B00BB48BB /* SimulationWindow2D.java */,
@@ -806,7 +809,6 @@
 				36078EA60E4362A600BB48BB /* SimulationWindow3D.java in Sources */,
 				91F5D2D30E4747DD008F954A /* GCodeParser.java in Sources */,
 				91F5D2D50E4747E9008F954A /* NullDriver.java in Sources */,
-				91F5D2D80E4747F8008F954A /* ToolDriver.java in Sources */,
 				91D5A85B0E48CA3B003BE250 /* GCodeException.java in Sources */,
 				91DF2EFF0E48EE3E00EAF891 /* EstimationDriver.java in Sources */,
 				36983BF40E86DC52006CD881 /* DriverFactory.java in Sources */,
@@ -815,6 +817,8 @@
 				36983BFB0E86DC5E006CD881 /* JobRewindException.java in Sources */,
 				36983BFD0E86DC6C006CD881 /* ToolPath.java in Sources */,
 				36983C050E86DC87006CD881 /* DriverBaseImplementation.java in Sources */,
+				363A96D90E8988DC00241F8C /* ToolModel.java in Sources */,
+				363A96DB0E8988E900241F8C /* MachineModel.java in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

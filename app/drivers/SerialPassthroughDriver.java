@@ -345,4 +345,180 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		
 		sendCommand("M" + code);
 	}
+	
+	private String _getToolCode()
+	{
+		return "T" + currentTool().getIndex() + " ";
+	}
+
+	/*************************************
+	*  Motor interface functions
+	*************************************/
+	public void setMotorSpeed(double rpm)
+	{
+		sendCommand(_getToolCode() + "M108 R" + rpm);
+
+		super.setMotorSpeed(rpm);
+	}
+	
+	public void enableMotor()
+	{
+		String command = _getToolCode();
+
+		if (currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
+			command += "M101";
+		else
+			command += "M102";
+
+		sendCommand(command);
+
+		super.enableMotor();
+	}
+	
+	public void disableMotor()
+	{
+		sendCommand(_getToolCode() + "M103");
+
+		super.disableMotor();
+	}
+
+	/*************************************
+	*  Spindle interface functions
+	*************************************/
+	public void setSpindleSpeed(double rpm)
+	{
+		sendCommand(_getToolCode() + "S" + rpm);
+
+		super.setSpindleSpeed(rpm);
+	}
+	
+	public void enableSpindle()
+	{
+		String command = _getToolCode();
+
+		if (currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+			command += "M3";
+		else
+			command += "M4";
+
+		sendCommand(command);
+		
+		super.enableSpindle();
+	}
+	
+	public void disableSpindle()
+	{
+		sendCommand(_getToolCode() + "M5");
+
+		super.disableSpindle();
+	}
+	
+	public void readSpindleSpeed()
+	{
+		sendCommand(_getToolCode() + "M50");
+		
+		super.readSpindleSpeed();
+	}
+	
+	/*************************************
+	*  Temperature interface functions
+	*************************************/
+	public void setTemperature(double temperature)
+	{
+		sendCommand(_getToolCode() + "M104 S" + temperature);
+		
+		super.setTemperature(temperature);
+	}
+
+	public void readTemperature()
+	{
+		sendCommand(_getToolCode() + "M105");
+		
+		super.readTemperature();
+	}
+
+	/*************************************
+	*  Flood Coolant interface functions
+	*************************************/
+	public void enableFloodCoolant()
+	{
+		sendCommand(_getToolCode() + "M7");
+		
+		super.enableFloodCoolant();
+	}
+	
+	public void disableFloodCoolant()
+	{
+		sendCommand(_getToolCode() + "M9");
+		
+		super.disableFloodCoolant();
+	}
+
+	/*************************************
+	*  Mist Coolant interface functions
+	*************************************/
+	public void enableMistCoolant()
+	{
+		sendCommand(_getToolCode() + "M8");
+		
+		super.enableMistCoolant();
+	}
+	
+	public void disableMistCoolant()
+	{
+		sendCommand(_getToolCode() + "M9");
+
+		super.disableMistCoolant();
+	}
+
+	/*************************************
+	*  Fan interface functions
+	*************************************/
+	public void enableFan()
+	{
+		sendCommand(_getToolCode() + "M106");
+		
+		super.enableFan();
+	}
+	
+	public void disableFan()
+	{
+		sendCommand(_getToolCode() + "M107");
+		
+		super.disableFan();
+	}
+	
+	/*************************************
+	*  Valve interface functions
+	*************************************/
+	public void openValve()
+	{
+		sendCommand(_getToolCode() + "M126");
+		
+		super.openValve();
+	}
+	
+	public void closeValve()
+	{
+		sendCommand(_getToolCode() + "M127");
+		
+		super.closeValve();
+	}
+	
+	/*************************************
+	*  Collet interface functions
+	*************************************/
+	public void openCollet()
+	{
+		sendCommand(_getToolCode() + "M21");
+		
+		super.openCollet();
+	}
+	
+	public void closeCollet()
+	{
+		sendCommand(_getToolCode() + "M22");
+		
+		currentTool().closeCollet();
+	}
 }

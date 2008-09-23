@@ -77,7 +77,10 @@ public interface Driver
 	/**
 	* get version information from the driver
 	*/
+	public String getFirmwareInfo();
 	public String getVersion();
+	public int getMajorVersion();
+	public int getMinorVersion();
 	
 	/**
 	* Positioning Methods
@@ -91,10 +94,9 @@ public interface Driver
 	/**
 	* Tool methods
 	*/
-	public void loadToolDrivers(Node n);
 	public void requestToolChange(int toolIndex);
 	public void selectTool(int toolIndex);
-	public ToolDriver currentTool();
+	public ToolModel currentTool();
 	
 	/**
 	* sets the feedrate in mm/minute
@@ -146,6 +148,7 @@ public interface Driver
 	public void setMotorSpeed(double rpm);
 	public void enableMotor();
 	public void disableMotor();
+	public void readMotorSpeed();
 	public double getMotorSpeed();
 
 	/*************************************
@@ -155,6 +158,7 @@ public interface Driver
 	public void setSpindleSpeed(double rpm);
 	public void enableSpindle();
 	public void disableSpindle();
+	public void readSpindleSpeed();
 	public double getSpindleSpeed();
 	
 	/*************************************

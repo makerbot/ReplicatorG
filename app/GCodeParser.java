@@ -304,13 +304,13 @@ public class GCodeParser
 					
 				//spindle on, CW
 				case 3:
-					driver.setSpindleDirection(ToolDriver.MOTOR_CLOCKWISE);
+					driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
 					driver.enableSpindle();
 					break;
 					
 				//spindle on, CCW
 				case 4:
-					driver.setSpindleDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
+					driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 					driver.enableSpindle();
 					break;
 					
@@ -361,14 +361,14 @@ public class GCodeParser
 
 				//spindle CW and coolant A on
 				case 13:
-					driver.setSpindleDirection(ToolDriver.MOTOR_CLOCKWISE);
+					driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
 					driver.enableSpindle();
 					driver.enableFloodCoolant();
 					break;
 
 				//spindle CW and coolant A on
 				case 14:
-					driver.setSpindleDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
+					driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 					driver.enableSpindle();
 					driver.enableFloodCoolant();
 					break;
@@ -427,13 +427,13 @@ public class GCodeParser
 						
 				//turn extruder on, forward
 				case 101:
-					driver.setMotorDirection(ToolDriver.MOTOR_CLOCKWISE);
+					driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
 					driver.enableMotor();
 					break;
 
 				//turn extruder on, reverse
 				case 102:
-					driver.setMotorDirection(ToolDriver.MOTOR_COUNTER_CLOCKWISE);
+					driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 					driver.enableMotor();
 					break;
 

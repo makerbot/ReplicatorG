@@ -39,14 +39,16 @@ public class DriverBaseImplementation implements Driver
 	private String command;
 
 	//our tool drivers
-	private Vector tools;
-	private Tool currentTool;
+	protected ToolModel[] tools;
+	protected ToolModel currentTool;
 
 	//our current position
+	//todo: move these to MachineModel
 	private Point3d currentPosition;
 	private double currentFeedrate;
 	
 	//our versions
+	String firmwareName = "Unknown";
 	private int versionMajor = 0;
 	private int versionMinor = 0;
 	
@@ -69,8 +71,8 @@ public class DriverBaseImplementation implements Driver
 		currentPosition = new Point3d();
 		currentFeedrate = 0.0;
 
-		//todo: change to loadToolDrivers();
-		currentTool = new ToolDriver();
+		//todo: change to loadTools()
+		currentTool = new ToolModel();
 		
 		//initialize our offsets
 		offsets = new Point3d[7];
@@ -84,6 +86,13 @@ public class DriverBaseImplementation implements Driver
 	public void loadXML(Node xml)
 	{
 		//TODO: load standard driver configs.
+
+		loadTools(xml);
+	}
+	
+	protected void loadTools(Node xml)
+	{
+		//todo: load from XML
 	}
 	
 	public void initialize()
@@ -125,9 +134,24 @@ public class DriverBaseImplementation implements Driver
 		parser.execute();
 	}
 	
+	public String getFirmwareInfo()
+	{
+		return firmwareName + " v" + getVersion(); 
+	}
+	
 	public String getVersion()
 	{
 		return Integer.toString(versionMajor) + "." + Integer.toString(versionMinor);
+	}
+	
+	public int getMajorVersion()
+	{
+		return versionMajor;
+	}
+	
+	public int getMinorVersion()
+	{
+		return versionMinor;
 	}
 	
 	public Point3d getOffset(int i)
@@ -168,14 +192,9 @@ public class DriverBaseImplementation implements Driver
 	/**
 	* Tool methods
 	*/
-	protected void loadTools(Node n)
-	{
-		
-	}
-	
 	public void requestToolChange(int toolIndex)
 	{
-		
+		selectTool(toolIndex);
 	}
 	
 	public void selectTool(int toolIndex)
@@ -183,7 +202,7 @@ public class DriverBaseImplementation implements Driver
 		currentTool = tools[toolIndex];
 	}
 
-	public ToolDriver currentTool()
+	public ToolModel currentTool()
 	{
 		return currentTool;
 	}
@@ -326,7 +345,7 @@ public class DriverBaseImplementation implements Driver
 	{
 		readTemperature();
 		
-		return currentTool.getGetCurrentTemperature();
+		return currentTool.getCurrentTemperature();
 	}
 
 	/*************************************
@@ -391,6 +410,6 @@ public class DriverBaseImplementation implements Driver
 	
 	public void closeCollet()
 	{
-		currentTool().closeCollet()
+		currentTool().closeCollet();
 	}
 }
