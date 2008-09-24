@@ -210,14 +210,27 @@ public class Machine
 			//System.out.println("simulated");
 			
 			//execute the command and snag any errors.
-			try {
+			try
+			{
 				driver.execute();
-			} catch (GCodeException e) {
+			}
+			catch (GCodeException e)
+			{
 				//TODO: prompt the user to continue.
 				System.out.println("Error: " + e.getMessage());
 			}
 			
-			//System.out.println("executed");
+			//did we get any errors?
+			try
+			{
+				driver.checkErrors();
+			}
+			catch (BuildFailureException e)
+			{
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Build Failure", JOptionPane.ERROR_MESSAGE);
+				
+				return false;
+			}
 			
 			//are we paused?
 			while (this.isPaused())

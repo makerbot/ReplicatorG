@@ -24,6 +24,7 @@
 package processing.app.drivers;
 
 import processing.app.*;
+import processing.app.exceptions.*;
 import processing.core.*;
 
 import gnu.io.*;
@@ -123,10 +124,14 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		}
 		
 		//wait til we're initialized
-		System.out.println("Initializing Serial.");
-		while (!isInitialized)
-			readResponse();
-			
+		try {
+			System.out.println("Initializing Serial.");
+			while (!isInitialized)
+				readResponse();
+		} catch (Exception e) {
+			//todo: handle init exceptions here
+		}
+		
 		System.out.println("Ready to rock.");
 	}
 	
@@ -155,8 +160,8 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		do {
 			readResponse();
 		}
-		//while (bufferSize + next.length() + 1 > maxBufferSize);
-		while (bufferSize > 0);
+		while (bufferSize + next.length() + 1 > maxBufferSize);
+		//while (bufferSize > 0);
 		
 		//will it fit into our buffer?
 		if (bufferSize + next.length() < maxBufferSize)
@@ -170,9 +175,12 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 			bufferLength++;
 			
 			//debug... let us know whts up!
-			System.out.println("Sent: " + next);
+			//System.out.println("Sent: " + next);
 			//System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
 		}
+		
+		//check for quick errors or something.
+		readResponse();
 	}
 	
 	public String clean(String str)
@@ -210,7 +218,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 					//is it a done command?
 					if (c == '\n')
 					{
-						//System.out.println("command: " + result);
+						//System.out.println("received: " + result);
 						
 						if (result.startsWith("ok"))
 						{
@@ -243,6 +251,13 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 							//todo: set version
 							isInitialized = true;
 						}
+						else if (result.startsWith("Extruder Fail"))
+						{
+							setError("Extruder failed:  cannot extrude as this rate.");
+							result = "";
+							
+							break;
+						}
 						else
 							System.out.println(result.substring(0, result.length()-2));
 							
@@ -259,8 +274,10 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	public boolean isFinished()
 	{
-		readResponse();
-		
+		try {
+			readResponse();
+		} catch (Exception e) {
+		}
 		return (bufferSize == 0);
 	}
 	

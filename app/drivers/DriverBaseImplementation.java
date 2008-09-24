@@ -61,6 +61,9 @@ public class DriverBaseImplementation implements Driver
 	//the length of our last move.
 	private double moveLength = 0.0;
 	
+	//our error variable.
+	private String error = "";
+	
 	/**
 	  * Creates the driver object.
 	  */
@@ -103,7 +106,18 @@ public class DriverBaseImplementation implements Driver
 	public boolean isInitialized()
 	{
 		return isInitialized;
-	} 
+	}
+	
+	protected void setError(String e)
+	{
+		error = e;
+	}
+	
+	public void checkErrors() throws BuildFailureException
+	{
+		if (error.length() > 0)
+			throw new BuildFailureException(error);
+	}
 
 	public void parse(String cmd)
 	{

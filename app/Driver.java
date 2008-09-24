@@ -60,6 +60,11 @@ public interface Driver
 	public boolean isFinished();
 	
 	/**
+	* do we have any errors?  this method handles them.
+	*/
+	public void checkErrors() throws BuildFailureException; 
+	
+	/**
 	* setup our driver for use.
 	**/
 	public void initialize();
