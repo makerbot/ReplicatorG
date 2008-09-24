@@ -176,64 +176,72 @@ public class Machine
 	
 	private boolean build()
 	{
-		int total = editor.textarea.getLineCount();
-		for (int i=0; i<total; i++)
+		try
 		{
-			editor.textarea.scrollTo(i, 0);
-			editor.highlightLine(i);
-			
-			String line = editor.textarea.getLineText(i);
-			
-			//System.out.println("running: " + line);
-			
-			//use our parser to handle the stuff.
-			simulator.parse(line);
-			driver.parse(line);
-			
-			//System.out.println("parsed");
-			
-			//for handling job flow.
-			try {
-				driver.getParser().handleStops();
-			} catch (JobEndException e) {
-				return false;
-			} catch (JobCancelledException e) {
-				return false;
-			} catch (JobRewindException e) {
-				i = -1;
-				continue;
-			}
-			
-			//simulate the command.
-			simulator.execute();
-			
-			//System.out.println("simulated");
-			
-			//execute the command and snag any errors.
-			try
+			int total = editor.textarea.getLineCount();
+			for (int i=0; i<total; i++)
 			{
-				driver.execute();
-			}
-			catch (GCodeException e)
-			{
-				//TODO: prompt the user to continue.
-				System.out.println("Error: " + e.getMessage());
-			}
-			
-			//did we get any errors?
-			try
-			{
-				driver.checkErrors();
-			}
-			catch (BuildFailureException e)
-			{
-				JOptionPane.showMessageDialog(null, e.getMessage(), "Build Failure", JOptionPane.ERROR_MESSAGE);
+				editor.textarea.scrollTo(i, 0);
+				editor.highlightLine(i);
 				
-				return false;
+				String line = editor.textarea.getLineText(i);
+				
+				//System.out.println("running: " + line);
+				
+				//use our parser to handle the stuff.
+				simulator.parse(line);
+				driver.parse(line);
+				
+				//System.out.println("parsed");
+				
+				//for handling job flow.
+				try {
+					driver.getParser().handleStops();
+				} catch (JobEndException e) {
+					return false;
+				} catch (JobCancelledException e) {
+					return false;
+				} catch (JobRewindException e) {
+					i = -1;
+					continue;
+				}
+				
+				//simulate the command.
+				simulator.execute();
+				
+				//System.out.println("simulated");
+				
+				//execute the command and snag any errors.
+				try
+				{
+					driver.execute();
+				}
+				catch (GCodeException e)
+				{
+					//TODO: prompt the user to continue.
+					System.out.println("Error: " + e.getMessage());
+				}
+				
+				//did we get any errors?
+				driver.checkErrors();
+				
+				//are we paused?
+				while (this.isPaused())
+				{
+					try {
+						thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				//bail if we got interrupted.
+				if (this.isStopped())
+					return false;
 			}
 			
-			//are we paused?
-			while (this.isPaused())
+			//wait for driver to finish up.
+			while (!driver.isFinished())
 			{
 				try {
 					thread.sleep(100);
@@ -241,20 +249,12 @@ public class Machine
 					e.printStackTrace();
 				}
 			}
-			
-			//bail if we got interrupted.
-			if (this.isStopped())
-				return false;
 		}
-		
-		//wait for driver to finish up.
-		while (!driver.isFinished())
+		catch (BuildFailureException e)
 		{
-			try {
-				thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Build Failure", JOptionPane.ERROR_MESSAGE);
+			
+			return false;
 		}
 		
 		return true;
