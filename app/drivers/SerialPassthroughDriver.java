@@ -87,7 +87,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		bufferSize = 0;
 		bufferLength = 0;
 		currentCommand = 0;
-		isInitialized = false;
+		setInitialized(false);
 		
 		//some decent default prefs.
 		name = Serial.list()[0];
@@ -99,6 +99,8 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	public void loadXML(Node xml)
 	{
+		super.loadXML(xml);
+		
 		//load from our XML config, if we have it.
 		if (Base.hasChildNode(xml, "portname"))
 			name = Base.getChildNodeValue(xml, "portname");
@@ -126,7 +128,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		//wait til we're initialized
 		try {
 			System.out.println("Initializing Serial.");
-			while (!isInitialized)
+			while (!isInitialized())
 				readResponse();
 		} catch (Exception e) {
 			//todo: handle init exceptions here
@@ -145,7 +147,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		// we'll simply pass it along.
 		//super.execute();
 		
-		sendCommand(parser.getCommand());
+		sendCommand(getParser().getCommand());
 	}
 	
 	protected void sendCommand(String next)
@@ -249,7 +251,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 						else if (result.startsWith("start"))
 						{
 							//todo: set version
-							isInitialized = true;
+							setInitialized(true);
 						}
 						else if (result.startsWith("Extruder Fail"))
 						{

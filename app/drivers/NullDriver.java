@@ -42,6 +42,8 @@ public class NullDriver extends DriverBaseImplementation
 	
 	public void loadXML(Node xml)
 	{
+		super.loadXML(xml);
+		
 		if (Base.hasChildNode(xml, "speedup"))
 			speedup = Double.parseDouble(Base.getChildNodeValue(xml, "speedup"));
 	}
@@ -53,7 +55,7 @@ public class NullDriver extends DriverBaseImplementation
 			super.execute();
 		} catch (GCodeException e) {}
 		
-		String command = parser.getCommand();
+		String command = getParser().getCommand();
 		
 		if (command.length() > 0 && speedup > 0)
 		{

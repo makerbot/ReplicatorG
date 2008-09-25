@@ -33,30 +33,27 @@ import org.w3c.dom.*;
 public class DriverBaseImplementation implements Driver
 {
 	// our gcode parser
-	protected GCodeParser parser;
+	private GCodeParser parser;
 
 	// command to parse
 	private String command;
 
-	//our tool drivers
+	//models for our machine
+	protected MachineModel machine;
 	protected ToolModel[] tools;
 	protected ToolModel currentTool;
+	protected int toolCount;
 
-	//our current position
-	//todo: move these to MachineModel
-	private Point3d currentPosition;
-	private double currentFeedrate;
-	
-	//our versions
-	String firmwareName = "Unknown";
+	//our firmware version info
+	private String firmwareName = "Unknown";
 	private int versionMajor = 0;
 	private int versionMinor = 0;
 	
-	//our offsets
-	protected Point3d[] offsets;
+	//our point offsets
+	private Point3d[] offsets;
 
 	//are we initialized?
-	protected boolean isInitialized = false;
+	private boolean isInitialized = false;
 	
 	//the length of our last move.
 	private double moveLength = 0.0;
@@ -64,18 +61,16 @@ public class DriverBaseImplementation implements Driver
 	//our error variable.
 	private String error = "";
 	
+	//how fast are we moving in mm/minute
+	private double currentFeedrate;
+	
 	/**
 	  * Creates the driver object.
 	  */
 	public DriverBaseImplementation()
 	{
+		//create our parser object
 		parser = new GCodeParser();
-		
-		currentPosition = new Point3d();
-		currentFeedrate = 0.0;
-
-		//todo: change to loadTools()
-		currentTool = new ToolModel();
 		
 		//initialize our offsets
 		offsets = new Point3d[7];
@@ -84,29 +79,48 @@ public class DriverBaseImplementation implements Driver
 			
 		//initialize our driver
 		parser.init(this);
+		
+		//TODO: do this properly.
+		machine = new MachineModel();
+		currentTool = new ToolModel();
+		toolCount = 0;
 	}
 	
 	public void loadXML(Node xml)
 	{
 		//TODO: load standard driver configs.
+	}
 
-		loadTools(xml);
-	}
-	
-	protected void loadTools(Node xml)
+	public void dispose()
 	{
-		//todo: load from XML
+		parser = null;
 	}
+
+
+	
+	/*************************************************
+	*  Initialization handling functions
+	*************************************************/
 	
 	public void initialize()
 	{
-		isInitialized = true;
+		setInitialized(true);
+	}
+	
+	public void setInitialized(boolean status)
+	{
+		isInitialized = status;
 	}
 	
 	public boolean isInitialized()
 	{
 		return isInitialized;
 	}
+	
+
+	/*************************************************
+	*  Error handling functions
+	*************************************************/
 	
 	protected void setError(String e)
 	{
@@ -119,6 +133,10 @@ public class DriverBaseImplementation implements Driver
 			throw new BuildFailureException(error);
 	}
 
+	/*************************************************
+	*  Parser handling functions
+	*************************************************/
+	
 	public void parse(String cmd)
 	{
 		//reset our values.
@@ -132,21 +150,20 @@ public class DriverBaseImplementation implements Driver
 	{
 		return parser;
 	}
-	
-	public boolean isFinished()
-	{
-		return true;
-	}
-	
-	public void dispose()
-	{
-		parser = null;
-	}
 
 	public void execute() throws GCodeException
 	{
 		parser.execute();
 	}
+	
+	public boolean isFinished()
+	{
+		return true;
+	}
+
+	/*************************************************
+	*  Firmware information functions
+	*************************************************/
 	
 	public String getFirmwareInfo()
 	{
@@ -168,6 +185,10 @@ public class DriverBaseImplementation implements Driver
 		return versionMinor;
 	}
 	
+	/*************************************************
+	*  Machine positioning functions
+	*************************************************/
+	
 	public Point3d getOffset(int i)
 	{
 		return offsets[i];
@@ -175,16 +196,18 @@ public class DriverBaseImplementation implements Driver
 	
 	public void setCurrentPosition(Point3d p)
 	{
-		currentPosition = new Point3d(p);
+		machine.setCurrentPosition(p);
 	}
 	
 	public Point3d getCurrentPosition()
 	{
-		return new Point3d(currentPosition);
+		return new Point3d(machine.getCurrentPosition());
 	}
 	
 	public void queuePoint(Point3d p)
 	{
+		Point3d currentPosition = machine.getCurrentPosition();
+		
 		//calculate the length of each axis move
 		double xFactor = Math.pow(p.x - currentPosition.x, 2);
 		double yFactor = Math.pow(p.y - currentPosition.y, 2);
@@ -194,31 +217,12 @@ public class DriverBaseImplementation implements Driver
 		moveLength += Math.sqrt(xFactor + yFactor + zFactor);
 
 		//save it as our current position now.
-		currentPosition = new Point3d(p);
+		machine.setCurrentPosition(p);
 	}
 	
 	public double getMoveLength()
 	{
 		return moveLength;
-	}
-
-
-	/**
-	* Tool methods
-	*/
-	public void requestToolChange(int toolIndex)
-	{
-		selectTool(toolIndex);
-	}
-	
-	public void selectTool(int toolIndex)
-	{
-		currentTool = tools[toolIndex];
-	}
-
-	public ToolModel currentTool()
-	{
-		return currentTool;
 	}
 	
 	/**
@@ -241,11 +245,99 @@ public class DriverBaseImplementation implements Driver
 	/**
 	* various homing functions
 	*/
-	public void homeXYZ() {}
-	public void homeXY() {}
-	public void homeX() {}
-	public void homeY() {}
-	public void homeZ() {}	
+	public void homeXYZ()
+	{
+		machine.setCurrentPosition(new Point3d());
+	}
+	
+	public void homeXY()
+	{
+		Point3d temp = machine.getCurrentPosition();
+		
+		temp.x = 0;
+		temp.y = 0;
+		
+		machine.setCurrentPosition(temp);
+	}
+	
+	public void homeX()
+	{
+		Point3d temp = machine.getCurrentPosition();
+		
+		temp.x = 0;
+		
+		machine.setCurrentPosition(temp);
+	}
+	
+	public void homeY()
+	{
+		Point3d temp = machine.getCurrentPosition();
+		
+		temp.y = 0;
+		
+		machine.setCurrentPosition(temp);
+	}
+	
+	public void homeZ()
+	{
+		Point3d temp = machine.getCurrentPosition();
+		
+		temp.z = 0;
+		
+		machine.setCurrentPosition(temp);
+	}	
+
+	/*************************************************
+	*  Machine interface functions
+	*************************************************/
+
+	public MachineModel getMachine()
+	{
+		return machine;
+	}
+	
+	public void setMachine(MachineModel m)
+	{
+		machine = m;
+	}
+
+	/*************************************************
+	*  Tool interface functions
+	*************************************************/
+	public void requestToolChange(int toolIndex)
+	{
+		selectTool(toolIndex);
+	}
+	
+	public void selectTool(int toolIndex)
+	{
+		currentTool = tools[toolIndex];
+	}
+
+	public ToolModel currentTool()
+	{
+		return currentTool;
+	}
+	
+	public void addTool(ToolModel t)
+	{
+		tools[toolCount] = t;
+		toolCount++;
+	}
+	
+	public ToolModel getTool(int index)
+	{
+		if (index < toolCount)
+			return tools[index];
+		
+		return null;
+	}
+	
+	public void setTool(int index, ToolModel t)
+	{
+		if (index < toolCount)
+			tools[index] = t;
+	}
 	
 	/**
 	* delay / pause function
