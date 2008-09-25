@@ -193,7 +193,8 @@ public class Editor extends JFrame
     JMenuBar menubar = new JMenuBar();
     menubar.add(buildFileMenu());
     menubar.add(buildEditMenu());
-    menubar.add(buildSketchMenu());
+    menubar.add(buildGCodeMenu());
+    menubar.add(buildMachineMenu());
     menubar.add(buildToolsMenu());
     menubar.add(buildHelpMenu());
 
@@ -584,7 +585,7 @@ public class Editor extends JFrame
   }
 
 
-  protected JMenu buildSketchMenu() {
+  protected JMenu buildGCodeMenu() {
     JMenuItem item;
     JMenu menu = new JMenu("GCode");
 
@@ -649,6 +650,33 @@ public class Editor extends JFrame
     return menu;
   }
 
+  protected JMenu buildMachineMenu() {
+    JMenuItem item;
+    JMenu menu = new JMenu("Machine");
+    
+    machineMenu = new JMenu("Driver");
+    populateMachineMenu();
+    menu.add(machineMenu);
+	  
+    menu.addMenuListener(new MenuListener() {
+      public void menuCanceled(MenuEvent e) {}
+      public void menuDeselected(MenuEvent e) {}
+      public void menuSelected(MenuEvent e) {
+        populateMachineMenu();
+      }
+    });
+
+    item = newJMenuItem("Control Panel", 'J');
+    item.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          handleControlPanel();
+        }
+      });
+    menu.add(item);
+
+    return menu;
+  }
+
 
   protected JMenu buildToolsMenu() {
     JMenuItem item;
@@ -674,21 +702,6 @@ public class Editor extends JFrame
         }
       });
     menu.add(item);
-
-    menu.addSeparator();
-    
-    machineMenu = new JMenu("Machine");
-    populateMachineMenu();
-    menu.add(machineMenu);
-	  
-    menu.addMenuListener(new MenuListener() {
-      public void menuCanceled(MenuEvent e) {}
-      public void menuDeselected(MenuEvent e) {}
-      public void menuSelected(MenuEvent e) {
-        populateMachineMenu();
-      }
-    });
-
 
     return menu;
   }
@@ -1053,6 +1066,11 @@ public class Editor extends JFrame
     window.show();
   }
 
+  public void handleControlPanel()
+  {
+	ControlPanelWindow window = new ControlPanelWindow();
+	window.show();
+  }
 
   /**
    * Show the preferences window.
