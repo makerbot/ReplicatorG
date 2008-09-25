@@ -42,6 +42,7 @@ public class ControlPanelWindow extends JFrame
 	protected JButton yMinusButton;
 	protected JButton zPlusButton;
 	protected JButton zMinusButton;
+	protected JButton zeroButton;
 
 	protected JPanel extruderPanel;
 		
@@ -97,6 +98,14 @@ public class ControlPanelWindow extends JFrame
 		yPlusButton.setMaximumSize(new Dimension(75, 75));
 		yPlusButton.setPreferredSize(new Dimension(75, 75));
 		yPlusButton.setMinimumSize(new Dimension(75, 75));
+
+		//create our Zero button
+		zeroButton = new JButton("Zero");
+		//zero.setMnemonic(KeyEvent.VK_ZERO);
+		zeroButton.setToolTipText("Mark Current Position as Zero (0,0,0)");
+		zeroButton.setMaximumSize(new Dimension(75, 75));
+		zeroButton.setPreferredSize(new Dimension(75, 75));
+		zeroButton.setMinimumSize(new Dimension(75, 75));
 		
 		//create our Y- button
 		yMinusButton = new JButton("Y-");
@@ -125,25 +134,22 @@ public class ControlPanelWindow extends JFrame
 		JPanel xyPanel = new JPanel();
 		xyPanel.setLayout(new BoxLayout(xyPanel, BoxLayout.LINE_AXIS));
 		xyPanel.add(xPlusButton);
-		xyPanel.add(Box.createHorizontalGlue());
 		
 		//another panel to hold the vertical stuff
 		JPanel yPanel = new JPanel();
 		yPanel.setLayout(new BoxLayout(yPanel, BoxLayout.PAGE_AXIS));
 		yPanel.add(yPlusButton);
-		yPanel.add(Box.createVerticalGlue());
+		yPanel.add(zeroButton);
 		yPanel.add(yMinusButton);
 		xyPanel.add(yPanel);
 		
 		//finally our last button.
-		xyPanel.add(Box.createHorizontalGlue());
 		xyPanel.add(xMinusButton);
 		
 		//our z panel too
 		JPanel zPanel = new JPanel();
 		zPanel.setLayout(new BoxLayout(zPanel, BoxLayout.PAGE_AXIS));
 		zPanel.add(zPlusButton);
-		zPanel.add(Box.createVerticalGlue());
 		zPanel.add(zMinusButton);
 
 		//add them both to our xyz panel
@@ -153,15 +159,40 @@ public class ControlPanelWindow extends JFrame
 		xyzPanel.add(Box.createHorizontalGlue());
 		xyzPanel.add(zPanel);
 		
-		//create our feedrate sliders
+		//create our xy slider
 		//TODO: pull these values from our machine config!
 		JSlider xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 5000, 1000);
 		xyFeedrateSlider.setMajorTickSpacing(1000);
 		xyFeedrateSlider.setMinorTickSpacing(100);
 
+		//our label
+		JLabel xyFeedrateLabel = new JLabel("XY Feedrate (mm/min.)");
+		xyFeedrateLabel.setVerticalAlignment(JLabel.BOTTOM);
+		
+		//create the xyfeedrate panel
+		JPanel xyFeedratePanel = new JPanel();
+		xyFeedratePanel.setLayout(new BoxLayout(xyFeedratePanel, BoxLayout.LINE_AXIS));
+		
+		//add our components
+		xyFeedratePanel.add(xyFeedrateLabel);
+		xyFeedratePanel.add(xyFeedrateSlider);
+
+		//create our z slider
 		JSlider zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 100, 50);
 		zFeedrateSlider.setMajorTickSpacing(10);
 		zFeedrateSlider.setMinorTickSpacing(1);
+
+		//our label
+		JLabel zFeedrateLabel = new JLabel("Z Feedrate (mm/min.)");
+		zFeedrateLabel.setVerticalAlignment(JLabel.BOTTOM);
+		
+		//create the xyfeedrate panel
+		JPanel zFeedratePanel = new JPanel();
+		zFeedratePanel.setLayout(new BoxLayout(zFeedratePanel, BoxLayout.LINE_AXIS));
+		
+		//add our components
+		zFeedratePanel.add(zFeedrateLabel);
+		zFeedratePanel.add(zFeedrateSlider);
 
 		//create our jog panel
 		jogPanel = new JPanel();
@@ -174,9 +205,12 @@ public class ControlPanelWindow extends JFrame
 
 		//add it all to our jog panel
 		jogPanel.add(xyzPanel);
-		jogPanel.add(xyFeedrateSlider);
-		jogPanel.add(zFeedrateSlider);		
-
+		jogPanel.add(xyFeedratePanel);
+		jogPanel.add(zFeedratePanel);
+		
+		//add jog panel border and stuff.
+		jogPanel.setBorder(BorderFactory.createTitledBorder("Jog Controls"));		
+		
 		//add the whole deal to our window.
 		add(jogPanel);
 	}
