@@ -54,7 +54,7 @@ public class ControlPanelWindow extends JFrame
  		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		//int myWidth = screen.width-40;
 		//int myHeight = screen.height-40;
-		int myWidth = 420;
+		int myWidth = 450;
 		int myHeight = 600;
 		
 	 	this.setBounds(40, 40, myWidth, myHeight);
@@ -75,61 +75,124 @@ public class ControlPanelWindow extends JFrame
 	
 	protected void createJogPanel()
 	{
+		//how big you want 'em boss?
+		int buttonSize = 60;
+		int textBoxWidth = 160;
+		
 		//create our X+ button
 		xPlusButton = new JButton("X+");
 		//xPlusButton.setMnemonic(KeyEvent.VK_KP_RIGHT);
 		xPlusButton.setToolTipText("Jog X axis in positive direction");
-		xPlusButton.setMaximumSize(new Dimension(75, 75));
-		xPlusButton.setPreferredSize(new Dimension(75, 75));
-		xPlusButton.setMinimumSize(new Dimension(75, 75));
+		xPlusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
+		xPlusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
+		xPlusButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
 		
 		//create our X- button
 		xMinusButton = new JButton("X-");
 		//xMinusButton.setMnemonic(KeyEvent.VK_KP_LEFT);
 		xMinusButton.setToolTipText("Jog X axis in negative direction");
-		xMinusButton.setMaximumSize(new Dimension(75, 75));
-		xMinusButton.setPreferredSize(new Dimension(75, 75));
-		xMinusButton.setMaximumSize(new Dimension(75, 75));
+		xMinusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
+		xMinusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
+		xMinusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
 
 		//create our Y+ button
 		yPlusButton = new JButton("Y+");
 		//yPlusButton.setMnemonic(KeyEvent.VK_KP_UP);
 		yPlusButton.setToolTipText("Jog Y axis in positive direction");
-		yPlusButton.setMaximumSize(new Dimension(75, 75));
-		yPlusButton.setPreferredSize(new Dimension(75, 75));
-		yPlusButton.setMinimumSize(new Dimension(75, 75));
+		yPlusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
+		yPlusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
+		yPlusButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
 
 		//create our Zero button
 		zeroButton = new JButton("Zero");
 		//zero.setMnemonic(KeyEvent.VK_ZERO);
 		zeroButton.setToolTipText("Mark Current Position as Zero (0,0,0)");
-		zeroButton.setMaximumSize(new Dimension(75, 75));
-		zeroButton.setPreferredSize(new Dimension(75, 75));
-		zeroButton.setMinimumSize(new Dimension(75, 75));
+		zeroButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
+		zeroButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
+		zeroButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
 		
 		//create our Y- button
 		yMinusButton = new JButton("Y-");
 		//yMinusButton.setMnemonic(KeyEvent.VK_KP_DOWN);
 		yMinusButton.setToolTipText("Jog Y axis in negative direction");
-		yMinusButton.setMaximumSize(new Dimension(75, 75));
-		yMinusButton.setPreferredSize(new Dimension(75, 75));
-		yMinusButton.setMinimumSize(new Dimension(75, 75));
+		yMinusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
+		yMinusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
+		yMinusButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
 
 		//create our Z+ button
 		zPlusButton = new JButton("Z+");
 		//zPlusButton.setMnemonic(KeyEvent.VK_PLUS);
 		zPlusButton.setToolTipText("Jog Z axis in positive direction");
-		zPlusButton.setMaximumSize(new Dimension(75, 75));
-		zPlusButton.setPreferredSize(new Dimension(75, 75));
-		zPlusButton.setMinimumSize(new Dimension(75, 75));
+		zPlusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
+		zPlusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
+		zPlusButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
 		
 		//create our Z- button
 		zMinusButton = new JButton("Z-");
 		//zMinusButton.setMnemonic(KeyEvent.VK_MINUS);
 		zMinusButton.setToolTipText("Jog Z axis in negative direction");
-		zMinusButton.setMaximumSize(new Dimension(75, 75));
-		zMinusButton.setPreferredSize(new Dimension(75, 75));
+		zMinusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
+		zMinusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
 
+		//create our position panel
+		JPanel positionPanel = new JPanel();
+		positionPanel.setLayout(new BoxLayout(positionPanel, BoxLayout.PAGE_AXIS));
+		//positionPanel.setLayout(new GroupLayout(positionPanel));
+		
+		//our label
+		JLabel jogLabel = new JLabel("Jog Size");
+		jogLabel.setHorizontalAlignment(JLabel.LEFT);
+
+		//create our jog size dropdown
+		String[] jogStrings = {"1 Step", "0.01mm", "0.05mm", "0.1mm", "0.5mm", "1mm", "5mm", "10mm", "20mm", "50mm"};
+		JComboBox jogList = new JComboBox(jogStrings);
+		jogList.setSelectedIndex(6);
+		jogList.setMaximumSize(new Dimension(textBoxWidth, 25));
+		jogList.setMinimumSize(new Dimension(textBoxWidth, 25));
+		jogList.setPreferredSize(new Dimension(textBoxWidth, 25));
+
+		//our labels
+		JLabel xPosLabel = new JLabel("X Position");
+		xPosLabel.setHorizontalAlignment(JLabel.LEFT);
+		JLabel yPosLabel = new JLabel("Y Position");
+		yPosLabel.setHorizontalAlignment(JLabel.LEFT);
+		JLabel zPosLabel = new JLabel("Z Position");
+		zPosLabel.setHorizontalAlignment(JLabel.LEFT);
+
+		//our position text boxes
+		JTextField xPosField = new JTextField();
+		xPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
+		xPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
+		xPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
+
+		JTextField yPosField = new JTextField();
+		yPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
+		yPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
+		yPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
+
+		JTextField zPosField = new JTextField();
+		zPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
+		zPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
+		zPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
+
+		//our 'go' button
+		JButton goButton = new JButton("Go.");
+		goButton.setToolTipText("Jog Z axis in positive direction");
+		//goButton.setMaximumSize(new Dimension(textBoxWidth, 25));
+		//goButton.setMinimumSize(new Dimension(textBoxWidth, 25));
+		//goButton.setPreferredSize(new Dimension(textBoxWidth, 25));
+
+		//add them all to position panel		
+		positionPanel.add(jogLabel);
+		positionPanel.add(jogList);
+		positionPanel.add(xPosLabel);
+		positionPanel.add(xPosField);
+		positionPanel.add(yPosLabel);
+		positionPanel.add(yPosField);
+		positionPanel.add(zPosLabel);
+		positionPanel.add(zPosField);
+		positionPanel.add(goButton);
+		
 		//create our XY panel
 		JPanel xyPanel = new JPanel();
 		xyPanel.setLayout(new BoxLayout(xyPanel, BoxLayout.LINE_AXIS));
@@ -150,6 +213,7 @@ public class ControlPanelWindow extends JFrame
 		JPanel zPanel = new JPanel();
 		zPanel.setLayout(new BoxLayout(zPanel, BoxLayout.PAGE_AXIS));
 		zPanel.add(zPlusButton);
+		//zPanel.add(Box.createVerticalGlue());
 		zPanel.add(zMinusButton);
 
 		//add them both to our xyz panel
@@ -158,7 +222,9 @@ public class ControlPanelWindow extends JFrame
 		xyzPanel.add(xyPanel);
 		xyzPanel.add(Box.createHorizontalGlue());
 		xyzPanel.add(zPanel);
-		
+		xyzPanel.add(Box.createHorizontalGlue());
+		xyzPanel.add(positionPanel);
+				
 		//create our xy slider
 		//TODO: pull these values from our machine config!
 		JSlider xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 5000, 1000);
