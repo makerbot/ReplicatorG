@@ -135,6 +135,9 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		}
 		
 		System.out.println("Ready to rock.");
+		
+		//default us to absolute positioning
+		sendCommand("G90");
 	}
 	
 	/**
@@ -152,7 +155,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	protected void sendCommand(String next)
 	{
-		System.out.println("sending: " + next);
+//		System.out.println("sending: " + next);
 		
 		next = clean(next);
 		
@@ -303,31 +306,50 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		String cmd = "G1 X" + p.x + " Y" + p.y + " Z" + p.z + " F" + getCurrentFeedrate();
 		
 		sendCommand(cmd);
+		
+		super.queuePoint(p);
+	}
+	
+	public void setCurrentPosition(Point3d p)
+	{
+		sendCommand("G92 X" + p.x + " Y" + p.y + " Z" + p.z);
+
+		super.setCurrentPosition(p);
 	}
 	
 	public void homeXYZ()
 	{
 		sendCommand("G28 XYZ");
+		
+		super.homeXYZ();
 	}
 
 	public void homeXY()
 	{
 		sendCommand("G28 XY");
+
+		super.homeXY();
 	}
 
 	public void homeX()
 	{
 		sendCommand("G28 X");
+
+		super.homeX();
 	}
 
 	public void homeY()
 	{
 		sendCommand("G28 Y");
+	
+		super.homeY();
 	}
 
 	public void homeZ()
 	{
 		sendCommand("G28 Z");
+		
+		super.homeZ();
 	}
 	
 	public void delay(long millis)
@@ -335,26 +357,36 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		int seconds = Math.round(millis/1000);
 
 		sendCommand("G4 P" + seconds);
+		
+		//no super call requried.
 	}
 	
 	public void openClamp(int clampIndex)
 	{
 		sendCommand("M11 Q" + clampIndex);
+		
+		super.openClamp(clampIndex);
 	}
 	
 	public void closeClamp(int clampIndex)
 	{
 		sendCommand("M10 Q" + clampIndex);
+		
+		super.closeClamp(clampIndex);
 	}
 	
 	public void enableDrives()
 	{
 		sendCommand("M17");
+		
+		super.enableDrives();
 	}
 	
 	public void disableDrives()
 	{
 		sendCommand("M18");
+
+		super.disableDrives();
 	}
 	
 	public void changeGearRatio(int ratioIndex)
@@ -365,6 +397,8 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		code = Math.min(46, code);
 		
 		sendCommand("M" + code);
+		
+		super.changeGearRatio(ratioIndex);
 	}
 	
 	private String _getToolCode()
@@ -540,6 +574,6 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	{
 		sendCommand(_getToolCode() + "M22");
 		
-		currentTool().closeCollet();
+		super.closeCollet();
 	}
 }

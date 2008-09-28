@@ -57,6 +57,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	protected JSlider xyFeedrateSlider;
 	protected JSlider zFeedrateSlider;
 	
+	protected JTextField xPosField;
+	protected JTextField yPosField;
+	protected JTextField zPosField;
+	
 	protected Machine machine;
 	protected Driver driver;
 	
@@ -94,6 +98,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//create all our GUI interfaces
 		createJogPanel();
 		//createExtruderPanel();
+
+		//where are we?
+		updatePosition();
 	}
 	
 	protected void createJogPanel()
@@ -192,17 +199,17 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		zPosLabel.setHorizontalAlignment(JLabel.LEFT);
 
 		//our position text boxes
-		JTextField xPosField = new JTextField();
+		xPosField = new JTextField();
 		xPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
 		xPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
 		xPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
 
-		JTextField yPosField = new JTextField();
+		yPosField = new JTextField();
 		yPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
 		yPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
 		yPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
 
-		JTextField zPosField = new JTextField();
+		zPosField = new JTextField();
 		zPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
 		zPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
 		zPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
@@ -320,6 +327,15 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		add(jogPanel);
 	}
 	
+	protected void updatePosition()
+	{
+		Point3d current = driver.getCurrentPosition();
+		
+		xPosField.setText(Double.toString(current.x));
+		yPosField.setText(Double.toString(current.y));
+		zPosField.setText(Double.toString(current.z));
+	}
+	
 	protected void createExtruderPanel()
 	{
 		extruderPanel = new JPanel();
@@ -399,6 +415,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		}
 		else
 			System.out.println("Unknown Action Event: " + s);
+			
+		updatePosition();
 	}
 
   public void stateChanged(ChangeEvent e)
@@ -419,6 +437,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
       }
     }
     */
+
+	updatePosition();
   }
 }
     

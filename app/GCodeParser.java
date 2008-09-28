@@ -782,6 +782,18 @@ public class GCodeParser
 
 				//Set position
 				case 92:
+					
+					Point3d current = driver.getCurrentPosition();
+					
+					if (hasCode("X"))
+						current.x = xVal;
+					if (hasCode("Y"))
+						current.y = yVal;
+					if (hasCode("Z"))
+						current.z = zVal;
+					
+					driver.setCurrentPosition(current);
+					
 					//TODO: make this
 					break;
 
