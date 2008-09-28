@@ -1,19 +1,16 @@
 0002 ReplicatorG
 
 TODO:
-* get auto-formatting working
 * add basic machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
-* add simple exerciser / status window
-* experiment with SNAP driver?
-* start work on next generation driver for arduino / sanguino w/ point queueing, etc.
 * fix windows icons
 * add proper bounds to simulation window
 * add units to simulation window
 * add grid to simulation window
-* add direction lines to simulation lines
-* re-add 'gcode' console.
+* On Mac, the feedrate slider values don't show. Works fine on Linux.
+* Add an extruder section (temp, start/stop extruder, extruder direction, extruder speed)
 
 DONE:
+* add simple exerciser / status window
 * add color to simulation window
 * add up/down arrows to simulation windows
 * implement Peter Edworthy ideas on driver instantiation
@@ -23,9 +20,18 @@ DONE:
 
 0003 ReplicatorG
 
+* get auto-formatting working
 * add support for adding STL to sketch (for slicing)
 * add STL 3D preview
 * add simulation 3D preview (with 2D option as well)
 * add support for slice/dice plugins (skeinforge?  reprap?)
-
+* Have two buttons for each axis (fast and slow movement)
+* re-add 'gcode' console.
+* start work on next generation driver for arduino / sanguino w/ point queueing, etc.
+* experiment with SNAP driver?
+* add direction lines to simulation lines
+* While holding a button -> continuous movement (a bit cumbersome to implement perhaps)
+* Add a "Reference" button (home to reference position)
+* For reference and home functions; have an option for ignoring the Z axis
+* Support for cancelling a temperature or goto home job (this is also a bit hard since these are blocking on the Arduino; would be cool to have a way of doing this in the firmware)
 
