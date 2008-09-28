@@ -35,6 +35,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.vecmath.*;
 import java.util.*;
+import java.util.regex.*;
 
 public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener
 {
@@ -49,7 +50,12 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 
 	protected JPanel extruderPanel;
 	
-  protected double jogRate = 0.0;
+	protected double jogRate;
+	protected Pattern jogPattern;
+	protected String[] jogStrings = {"0.01mm", "0.05mm", "0.1mm", "0.5mm", "1mm", "5mm", "10mm", "20mm", "50mm"};
+	
+	protected JSlider xyFeedrateSlider;
+	protected JSlider zFeedrateSlider;
 	
 	protected Machine machine;
 	protected Driver driver;
@@ -68,6 +74,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//int myHeight = screen.height-40;
 		int myWidth = 450;
 		int myHeight = 600;
+		
+		//compile our regexes
+		jogRate = 10.0;
+		jogPattern = Pattern.compile("([.0-9]+)");
+		//jogStrings = ;
 		
 	 	this.setBounds(40, 40, myWidth, myHeight);
 	
@@ -125,7 +136,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		zeroButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
 		zeroButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
 		zeroButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
-  	zeroButton.addActionListener(this);
+		zeroButton.addActionListener(this);
 
 		//create our Y- button
 		yMinusButton = new JButton("Y-");
@@ -163,8 +174,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		jogLabel.setHorizontalAlignment(JLabel.LEFT);
 
 		//create our jog size dropdown
-		String[] jogStrings = {"1 Step", "0.01mm", "0.05mm", "0.1mm", "0.5mm", "1mm", "5mm", "10mm", "20mm", "50mm"};
 		JComboBox jogList = new JComboBox(jogStrings);
+		//TODO: pull this from prefs
 		jogList.setSelectedIndex(6);
 		jogList.setMaximumSize(new Dimension(textBoxWidth, 25));
 		jogList.setMinimumSize(new Dimension(textBoxWidth, 25));
@@ -203,8 +214,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//goButton.setMaximumSize(new Dimension(textBoxWidth, 25));
 		//goButton.setMinimumSize(new Dimension(textBoxWidth, 25));
 		//goButton.setPreferredSize(new Dimension(textBoxWidth, 25));
-    goButton.addActionListener(this);
-    goButton.setEnabled(false);
+		goButton.addActionListener(this);
+		goButton.setEnabled(false);
 
 		//add them all to position panel		
 		positionPanel.add(jogLabel);
@@ -251,12 +262,12 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 				
 		//create our xy slider
 		//TODO: pull these values from our machine config!
-		JSlider xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 5000, 1000);
+		xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 5000, 1000);
 		xyFeedrateSlider.setMajorTickSpacing(1000);
 		xyFeedrateSlider.setMinorTickSpacing(100);
-    xyFeedrateSlider.addChangeListener(this);
-    xyFeedrateSlider.setName("xy-feedrate-slider");
-
+		xyFeedrateSlider.setName("xy-feedrate-slider");
+		//xyFeedrateSlider.addChangeListener(this);
+		
 		//our label
 		JLabel xyFeedrateLabel = new JLabel("XY Feedrate (mm/min.)");
 		xyFeedrateLabel.setVerticalAlignment(JLabel.BOTTOM);
@@ -270,11 +281,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		xyFeedratePanel.add(xyFeedrateSlider);
 
 		//create our z slider
-		JSlider zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 100, 50);
+		zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 100, 50);
 		zFeedrateSlider.setMajorTickSpacing(10);
 		zFeedrateSlider.setMinorTickSpacing(1);
-    zFeedrateSlider.addChangeListener(this);
-    zFeedrateSlider.setName("z-feedrate-slider");
+		//zFeedrateSlider.addChangeListener(this);
+		zFeedrateSlider.setName("z-feedrate-slider");
 
 		//our label
 		JLabel zFeedrateLabel = new JLabel("Z Feedrate (mm/min.)");
@@ -317,59 +328,82 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		add(extruderPanel);
 	}
 
-  public void actionPerformed(ActionEvent e)
-  {
-    String s = e.getActionCommand();
+	public void actionPerformed(ActionEvent e)
+	{
+		String s = e.getActionCommand();
 
-    System.out.println(s);
+		Point3d current = driver.getCurrentPosition();
+		double xyFeedrate = xyFeedrateSlider.getValue();
+		double zFeedrate = zFeedrateSlider.getValue();
 
-    Point3d current = driver.getCurrentPosition();
-        
-    if (s.equals("X+"))
-    {
-      current.x += jogRate;
-      driver.queuePoint(current);
-    }
-    else if (s.equals("X-"))
-    {
-      current.x -= jogRate;
-      driver.queuePoint(current);
-    }
-    else if (s.equals("Y+"))
-    {
-      current.y += jogRate;
-      driver.queuePoint(current);
-    }
-    else if (s.equals("Y-"))
-    {
-      current.y -= jogRate;
-      driver.queuePoint(current);
-    }
-    else if (s.equals("Z+"))
-    {
-      current.z += jogRate;
-      driver.queuePoint(current);
+		if (s.equals("X+"))
+		{
+			current.x += jogRate;
 
-    }
-    else if (s.equals("Z-"))
-    {
-      current.z -= jogRate;
-      driver.queuePoint(current);
-    }
-    else if (s.equals("Zero"))
-    {
-      driver.setCurrentPosition(new Point3d());
-    }
-    else if (s.equals("jog size"))
-    {
-      //todo: load jog size.
-    }
-    else
-      System.out.println("Unknown Action Event: " + s);
-  }
+			driver.setFeedrate(xyFeedrate);
+			driver.queuePoint(current);
+		}
+		else if (s.equals("X-"))
+		{
+			current.x -= jogRate;
+
+			driver.setFeedrate(xyFeedrate);
+			driver.queuePoint(current);
+		}
+		else if (s.equals("Y+"))
+		{
+			current.y += jogRate;
+
+			driver.setFeedrate(xyFeedrate);
+			driver.queuePoint(current);
+		}
+		else if (s.equals("Y-"))
+		{
+			current.y -= jogRate;
+
+			driver.setFeedrate(xyFeedrate);
+			driver.queuePoint(current);
+		}
+		else if (s.equals("Z+"))
+		{
+			current.z += jogRate;
+
+			driver.setFeedrate(zFeedrate);
+			driver.queuePoint(current);
+		}
+		else if (s.equals("Z-"))
+		{
+			current.z -= jogRate;
+
+			driver.setFeedrate(zFeedrate);
+			driver.queuePoint(current);
+		}
+		else if (s.equals("Zero"))
+		{
+			driver.setCurrentPosition(new Point3d());
+		}
+		//get our new jog rate
+		else if (s.equals("jog size"))
+		{
+			JComboBox cb = (JComboBox)e.getSource();
+			String jogText = (String)cb.getSelectedItem();
+			
+			//look for a decimal number
+			Matcher jogMatcher = jogPattern.matcher(jogText);
+			if (jogMatcher.find())
+				jogRate = Double.parseDouble(jogMatcher.group(1));
+
+			//TODO: save this back to our preferences file.
+
+			//System.out.println("jog rate: " + jogRate);
+		}
+		else
+			System.out.println("Unknown Action Event: " + s);
+	}
 
   public void stateChanged(ChangeEvent e)
   {
+  	/*
     JSlider source = (JSlider)e.getSource();
     if (!source.getValueIsAdjusting())
     {
@@ -384,6 +418,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
         System.out.println("Z Feedrate: " + feedrate);
       }
     }
+    */
   }
 }
     

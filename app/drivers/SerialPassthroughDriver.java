@@ -152,6 +152,8 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	protected void sendCommand(String next)
 	{
+		System.out.println("sending: " + next);
+		
 		next = clean(next);
 		
 		//skip empty commands.

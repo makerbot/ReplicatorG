@@ -1068,6 +1068,7 @@ public class Editor extends JFrame
     Machine m = MachineFactory.loadSelectedMachine(machineMenu);
     
   	ControlPanelWindow window = new ControlPanelWindow(m);
+	window.setVisible(true);
   }
 
   /**
