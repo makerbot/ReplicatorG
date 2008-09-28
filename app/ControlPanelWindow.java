@@ -27,13 +27,16 @@
 
 package processing.app;
 
-import javax.swing.*;
+import processing.app.drivers.*;
+
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.*;
 import javax.vecmath.*;
 import java.util.*;
 
-public class ControlPanelWindow extends JFrame
+public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener
 {
 	protected JPanel jogPanel;
 	protected JButton xPlusButton;
@@ -45,10 +48,19 @@ public class ControlPanelWindow extends JFrame
 	protected JButton zeroButton;
 
 	protected JPanel extruderPanel;
-		
-	public ControlPanelWindow ()
+	
+  protected double jogRate = 0.0;
+	
+	protected Machine machine;
+	protected Driver driver;
+	
+	public ControlPanelWindow (Machine m)
 	{
 		super("Control Panel");
+		
+		//save our machine!
+		machine = m;
+		driver = machine.getDriver();
 		
 		//make it a reasonable size
  		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -86,6 +98,7 @@ public class ControlPanelWindow extends JFrame
 		xPlusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
 		xPlusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
 		xPlusButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
+		xPlusButton.addActionListener(this);
 		
 		//create our X- button
 		xMinusButton = new JButton("X-");
@@ -94,6 +107,7 @@ public class ControlPanelWindow extends JFrame
 		xMinusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
 		xMinusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
 		xMinusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
+		xMinusButton.addActionListener(this);
 
 		//create our Y+ button
 		yPlusButton = new JButton("Y+");
@@ -102,6 +116,7 @@ public class ControlPanelWindow extends JFrame
 		yPlusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
 		yPlusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
 		yPlusButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
+		yPlusButton.addActionListener(this);
 
 		//create our Zero button
 		zeroButton = new JButton("Zero");
@@ -110,7 +125,8 @@ public class ControlPanelWindow extends JFrame
 		zeroButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
 		zeroButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
 		zeroButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
-		
+  	zeroButton.addActionListener(this);
+
 		//create our Y- button
 		yMinusButton = new JButton("Y-");
 		//yMinusButton.setMnemonic(KeyEvent.VK_KP_DOWN);
@@ -118,6 +134,7 @@ public class ControlPanelWindow extends JFrame
 		yMinusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
 		yMinusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
 		yMinusButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
+		yMinusButton.addActionListener(this);
 
 		//create our Z+ button
 		zPlusButton = new JButton("Z+");
@@ -126,6 +143,7 @@ public class ControlPanelWindow extends JFrame
 		zPlusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
 		zPlusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
 		zPlusButton.setMinimumSize(new Dimension(buttonSize, buttonSize));
+		zPlusButton.addActionListener(this);
 		
 		//create our Z- button
 		zMinusButton = new JButton("Z-");
@@ -133,6 +151,7 @@ public class ControlPanelWindow extends JFrame
 		zMinusButton.setToolTipText("Jog Z axis in negative direction");
 		zMinusButton.setMaximumSize(new Dimension(buttonSize, buttonSize));
 		zMinusButton.setPreferredSize(new Dimension(buttonSize, buttonSize));
+		zMinusButton.addActionListener(this);
 
 		//create our position panel
 		JPanel positionPanel = new JPanel();
@@ -150,6 +169,8 @@ public class ControlPanelWindow extends JFrame
 		jogList.setMaximumSize(new Dimension(textBoxWidth, 25));
 		jogList.setMinimumSize(new Dimension(textBoxWidth, 25));
 		jogList.setPreferredSize(new Dimension(textBoxWidth, 25));
+		jogList.setActionCommand("jog size");
+		jogList.addActionListener(this);
 
 		//our labels
 		JLabel xPosLabel = new JLabel("X Position");
@@ -177,10 +198,13 @@ public class ControlPanelWindow extends JFrame
 
 		//our 'go' button
 		JButton goButton = new JButton("Go.");
-		goButton.setToolTipText("Jog Z axis in positive direction");
+
+		goButton.setToolTipText("Go to selected coordinates.");
 		//goButton.setMaximumSize(new Dimension(textBoxWidth, 25));
 		//goButton.setMinimumSize(new Dimension(textBoxWidth, 25));
 		//goButton.setPreferredSize(new Dimension(textBoxWidth, 25));
+    goButton.addActionListener(this);
+    goButton.setEnabled(false);
 
 		//add them all to position panel		
 		positionPanel.add(jogLabel);
@@ -196,7 +220,7 @@ public class ControlPanelWindow extends JFrame
 		//create our XY panel
 		JPanel xyPanel = new JPanel();
 		xyPanel.setLayout(new BoxLayout(xyPanel, BoxLayout.LINE_AXIS));
-		xyPanel.add(xPlusButton);
+		xyPanel.add(xMinusButton);
 		
 		//another panel to hold the vertical stuff
 		JPanel yPanel = new JPanel();
@@ -207,7 +231,7 @@ public class ControlPanelWindow extends JFrame
 		xyPanel.add(yPanel);
 		
 		//finally our last button.
-		xyPanel.add(xMinusButton);
+		xyPanel.add(xPlusButton);
 		
 		//our z panel too
 		JPanel zPanel = new JPanel();
@@ -230,6 +254,8 @@ public class ControlPanelWindow extends JFrame
 		JSlider xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 5000, 1000);
 		xyFeedrateSlider.setMajorTickSpacing(1000);
 		xyFeedrateSlider.setMinorTickSpacing(100);
+    xyFeedrateSlider.addChangeListener(this);
+    xyFeedrateSlider.setName("xy-feedrate-slider");
 
 		//our label
 		JLabel xyFeedrateLabel = new JLabel("XY Feedrate (mm/min.)");
@@ -247,6 +273,8 @@ public class ControlPanelWindow extends JFrame
 		JSlider zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 100, 50);
 		zFeedrateSlider.setMajorTickSpacing(10);
 		zFeedrateSlider.setMinorTickSpacing(1);
+    zFeedrateSlider.addChangeListener(this);
+    zFeedrateSlider.setName("z-feedrate-slider");
 
 		//our label
 		JLabel zFeedrateLabel = new JLabel("Z Feedrate (mm/min.)");
@@ -288,4 +316,74 @@ public class ControlPanelWindow extends JFrame
 		
 		add(extruderPanel);
 	}
+
+  public void actionPerformed(ActionEvent e)
+  {
+    String s = e.getActionCommand();
+
+    System.out.println(s);
+
+    Point3d current = driver.getCurrentPosition();
+        
+    if (s.equals("X+"))
+    {
+      current.x += jogRate;
+      driver.queuePoint(current);
+    }
+    else if (s.equals("X-"))
+    {
+      current.x -= jogRate;
+      driver.queuePoint(current);
+    }
+    else if (s.equals("Y+"))
+    {
+      current.y += jogRate;
+      driver.queuePoint(current);
+    }
+    else if (s.equals("Y-"))
+    {
+      current.y -= jogRate;
+      driver.queuePoint(current);
+    }
+    else if (s.equals("Z+"))
+    {
+      current.z += jogRate;
+      driver.queuePoint(current);
+
+    }
+    else if (s.equals("Z-"))
+    {
+      current.z -= jogRate;
+      driver.queuePoint(current);
+    }
+    else if (s.equals("Zero"))
+    {
+      driver.setCurrentPosition(new Point3d());
+    }
+    else if (s.equals("jog size"))
+    {
+      //todo: load jog size.
+    }
+    else
+      System.out.println("Unknown Action Event: " + s);
+  }
+
+  public void stateChanged(ChangeEvent e)
+  {
+    JSlider source = (JSlider)e.getSource();
+    if (!source.getValueIsAdjusting())
+    {
+      int feedrate = (int)source.getValue();
+      
+      if (source.getName().equals("xy-feedrate-slider"))
+      {
+        System.out.println("XY Feedrate: " + feedrate);
+      }
+      else if (source.getName().equals("z-feedrate-slider"))
+      {
+        System.out.println("Z Feedrate: " + feedrate);
+      }
+    }
+  }
 }
+    

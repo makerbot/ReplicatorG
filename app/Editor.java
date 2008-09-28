@@ -184,9 +184,6 @@ public class Editor extends JFrame
     // http://dev.processing.org/bugs/show_bug.cgi?id=440
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-	//load our XML
-	loadMachinesConfig();
-
     PdeKeywords keywords = new PdeKeywords();
     sketchbook = new Sketchbook(this);
 
@@ -741,7 +738,7 @@ public class Editor extends JFrame
 		try
 		{
 			//get each machines
-			NodeList nl = dom.getElementsByTagName("machine");
+			NodeList nl = MachineFactory.loadMachinesConfig().getElementsByTagName("machine");
 
 			for (int i=0; i<nl.getLength(); i++)
 			{
@@ -1068,8 +1065,9 @@ public class Editor extends JFrame
 
   public void handleControlPanel()
   {
-	ControlPanelWindow window = new ControlPanelWindow();
-	window.show();
+    Machine m = MachineFactory.loadSelectedMachine(machineMenu);
+    
+  	ControlPanelWindow window = new ControlPanelWindow(m);
   }
 
   /**
@@ -2109,84 +2107,15 @@ public class Editor extends JFrame
 
 	private void loadMachine()
 	{
-		for (int i=0; i<machineMenu.getItemCount(); i++)
-		{
-			JMenuItem jmi = machineMenu.getItem(i);
-			
-			if (jmi.isSelected())
-			{
-				machine = new Machine(getMachineNode(jmi.getText()), this);
-				return;
-			}
-		}
-
-		//fail to the simulator
-		error("No machine found, loading simulator instead.");
-		loadSimulator();
+	  machine = MachineFactory.loadSelectedMachine(machineMenu);
+	  machine.setEditor(this);
 	}
 	
-	private Node getMachineNode(String name)
-	{
-		//get each machines
-		NodeList nl = dom.getElementsByTagName("machine");
-
-		for (int i=0; i<nl.getLength(); i++)
-		{
-			//look up each machines set of kids
-			Node n = nl.item(i);
-			NodeList kids = n.getChildNodes();
-
-			for (int j=0; j<kids.getLength(); j++)
-			{
-				Node kid = kids.item(j);
-
-				if (kid.getNodeName().equals("name"))
-				{
-					String machineName = kid.getFirstChild().getNodeValue().trim();
-
-					if (machineName.equals(name))
-						return n;
-				}
-			}
-		}
-		
-		//fail with our dom.
-		return dom.getFirstChild();
-	}
 	
 	private void loadSimulator()
 	{
-		machine = new Machine(getMachineNode("3-Axis Simulator"), this);
-	}
-
-	private void loadMachinesConfig()
-	{
-		//attempt to load our xml document.
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		try
-		{
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			try
-			{
-				File f = new File("machines.xml");
-				try
-				{
-					dom = db.parse(f);
-				}
-				catch (SAXException e)
-				{ 
-					e.printStackTrace();
-				}
-			}
-			catch (IOException e)
-			{ 
-				e.printStackTrace();
-			}
-		}
-		catch (ParserConfigurationException e)
-		{
-			e.printStackTrace();
-		}
+		machine = MachineFactory.loadSimulator();
+	  machine.setEditor(this);
 	}
 }
 

@@ -68,10 +68,9 @@ public class Machine
 	/**
 	  * Creates the machine object.
 	  */
-	public Machine(Node mNode, Editor edit)
+	public Machine(Node mNode)
 	{
 		//save our XML
-		editor = edit;
 		machineNode = mNode;
 
 		paused = false;
@@ -84,6 +83,16 @@ public class Machine
 		loadConfiguration();
 		loadDriver();
 		loadToolDrivers();
+	}
+	
+	public void setEditor(Editor e)
+	{
+	  editor = e;
+	}
+	
+	public Editor getEditor()
+	{
+	  return editor;
 	}
 	
 	public void setThread(Thread iThread)
@@ -305,6 +314,11 @@ public class Machine
 	
 	private void loadToolDrivers()
 	{
+	}
+	
+	public Driver getDriver()
+	{
+	  return driver;
 	}
 	
 	synchronized public void stop()
