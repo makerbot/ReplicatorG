@@ -31,6 +31,7 @@ import gnu.io.*;
 import java.util.*;
 import org.w3c.dom.*;
 import javax.vecmath.*;
+import java.util.*;
 
 public class SerialPassthroughDriver extends DriverBaseImplementation
 {
@@ -126,16 +127,34 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		}
 		
 		//wait til we're initialized
-		try {
+		try
+		{
+			//record our start time.
+			Date date = new Date();
+			long end = date.getTime() + 10000;
+
 			System.out.println("Initializing Serial.");
 			while (!isInitialized())
+			{
 				readResponse();
+				
+				//record our current time
+				date = new Date();
+				long now = date.getTime();
+
+				//only give them 10 seconds
+				if (now > end)
+				{
+					System.out.println("Serial link non-responsive.");
+					return;
+				}
+			}
 		} catch (Exception e) {
 			//todo: handle init exceptions here
 		}
 		
 		System.out.println("Ready to rock.");
-		
+
 		//default us to absolute positioning
 		sendCommand("G90");
 	}
@@ -155,39 +174,42 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	protected void sendCommand(String next)
 	{
-//		System.out.println("sending: " + next);
-		
-		next = clean(next);
-		
-		//skip empty commands.
-		if (next.length() == 0)
-			return;
-
-		//check to see if we got a response.
-		do {
-			readResponse();
-		}
-		while (bufferSize + next.length() + 1 > maxBufferSize);
-		//while (bufferSize > 0);
-		
-		//will it fit into our buffer?
-		if (bufferSize + next.length() < maxBufferSize)
+		if (isInitialized())
 		{
-			//do the actual send.
-			serial.write(next + "\n");
-			
-			//record it in our buffer tracker.
-			commands.add(next);
-			bufferSize += next.length() + 1;
-			bufferLength++;
-			
-			//debug... let us know whts up!
-			//System.out.println("Sent: " + next);
-			//System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
+			//System.out.println("sending: " + next);
+
+			next = clean(next);
+
+			//skip empty commands.
+			if (next.length() == 0)
+				return;
+
+			//check to see if we got a response.
+			do {
+				readResponse();
+			}
+			while (bufferSize + next.length() + 1 > maxBufferSize);
+			//while (bufferSize > 0);
+
+			//will it fit into our buffer?
+			if (bufferSize + next.length() < maxBufferSize)
+			{
+				//do the actual send.
+				serial.write(next + "\n");
+
+				//record it in our buffer tracker.
+				commands.add(next);
+				bufferSize += next.length() + 1;
+				bufferLength++;
+
+				//debug... let us know whts up!
+				//System.out.println("Sent: " + next);
+				//System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
+			}
+
+			//check for quick errors or something.
+			readResponse();			
 		}
-		
-		//check for quick errors or something.
-		readResponse();
 	}
 	
 	public String clean(String str)

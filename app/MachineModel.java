@@ -79,9 +79,18 @@ public class MachineModel
 				
 				//parse our information.
 				String id = Base.getAttributeValue(axis, "id");
-			 	double length = Double.parseDouble(Base.getAttributeValue(axis, "length"));
-			 	double maxFeedrate = Double.parseDouble(Base.getAttributeValue(axis, "maxfeedrate"));
-			 	double scale = Double.parseDouble(Base.getAttributeValue(axis, "scale"));
+
+				//initialize values
+			 	double length = 0.0;
+			 	double maxFeedrate = 0.0;
+			 	double scale = 1.0;
+				
+				//if values are missing, ignore them.
+				try {
+				 	length = Double.parseDouble(Base.getAttributeValue(axis, "length"));
+				 	maxFeedrate = Double.parseDouble(Base.getAttributeValue(axis, "maxfeedrate"));
+				 	scale = Double.parseDouble(Base.getAttributeValue(axis, "scale"));
+				} catch (Exception e) {}
 				
 				//create the right variables.
 				if (id.toLowerCase().equals("x"))
