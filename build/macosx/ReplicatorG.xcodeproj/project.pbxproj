@@ -217,6 +217,10 @@
 		36983BFB0E86DC5E006CD881 /* JobRewindException.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BF80E86DC5E006CD881 /* JobRewindException.java */; };
 		36983BFD0E86DC6C006CD881 /* ToolPath.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BFC0E86DC6C006CD881 /* ToolPath.java */; };
 		36983C050E86DC87006CD881 /* DriverBaseImplementation.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983C040E86DC87006CD881 /* DriverBaseImplementation.java */; };
+		36F165ED0E9151C700448D34 /* ClampModel.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F165EC0E9151C700448D34 /* ClampModel.java */; };
+		36F165EF0E9151D800448D34 /* ControlPanelWindow.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F165EE0E9151D800448D34 /* ControlPanelWindow.java */; };
+		36F165F10E9151E400448D34 /* MachineFactory.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F165F00E9151E400448D34 /* MachineFactory.java */; };
+		36F165F30E9151F300448D34 /* BuildFailureException.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F165F20E9151F300448D34 /* BuildFailureException.java */; };
 		910908BD0E3E260400B0389E /* todo.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908B60E3E25B400B0389E /* todo.txt */; };
 		912A74770E42659F00BB58C7 /* SimulationWindow.java in Sources */ = {isa = PBXBuildFile; fileRef = 912A74760E42659F00BB58C7 /* SimulationWindow.java */; };
 		915701430E3F8E2A0033A586 /* SerialPassthroughDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */; };
@@ -395,6 +399,10 @@
 		36983BF80E86DC5E006CD881 /* JobRewindException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = JobRewindException.java; sourceTree = "<group>"; };
 		36983BFC0E86DC6C006CD881 /* ToolPath.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ToolPath.java; sourceTree = "<group>"; };
 		36983C040E86DC87006CD881 /* DriverBaseImplementation.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = DriverBaseImplementation.java; sourceTree = "<group>"; };
+		36F165EC0E9151C700448D34 /* ClampModel.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ClampModel.java; sourceTree = "<group>"; };
+		36F165EE0E9151D800448D34 /* ControlPanelWindow.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ControlPanelWindow.java; sourceTree = "<group>"; };
+		36F165F00E9151E400448D34 /* MachineFactory.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = MachineFactory.java; sourceTree = "<group>"; };
+		36F165F20E9151F300448D34 /* BuildFailureException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = BuildFailureException.java; sourceTree = "<group>"; };
 		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
 		912A74760E42659F00BB58C7 /* SimulationWindow.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow.java; sourceTree = "<group>"; };
@@ -528,6 +536,9 @@
 		33FFFE220965BD100016AC38 /* app */ = {
 			isa = PBXGroup;
 			children = (
+				36F165F00E9151E400448D34 /* MachineFactory.java */,
+				36F165EE0E9151D800448D34 /* ControlPanelWindow.java */,
+				36F165EC0E9151C700448D34 /* ClampModel.java */,
 				363A96DA0E8988E900241F8C /* MachineModel.java */,
 				363A96D80E8988DC00241F8C /* ToolModel.java */,
 				91D5A85A0E48CA3B003BE250 /* GCodeException.java */,
@@ -650,6 +661,7 @@
 		36983BF50E86DC5E006CD881 /* exceptions */ = {
 			isa = PBXGroup;
 			children = (
+				36F165F20E9151F300448D34 /* BuildFailureException.java */,
 				36983BF60E86DC5E006CD881 /* JobCancelledException.java */,
 				36983BF70E86DC5E006CD881 /* JobEndException.java */,
 				36983BF80E86DC5E006CD881 /* JobRewindException.java */,
@@ -819,6 +831,10 @@
 				36983C050E86DC87006CD881 /* DriverBaseImplementation.java in Sources */,
 				363A96D90E8988DC00241F8C /* ToolModel.java in Sources */,
 				363A96DB0E8988E900241F8C /* MachineModel.java in Sources */,
+				36F165ED0E9151C700448D34 /* ClampModel.java in Sources */,
+				36F165EF0E9151D800448D34 /* ControlPanelWindow.java in Sources */,
+				36F165F10E9151E400448D34 /* MachineFactory.java in Sources */,
+				36F165F30E9151F300448D34 /* BuildFailureException.java in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

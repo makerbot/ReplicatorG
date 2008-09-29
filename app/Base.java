@@ -61,6 +61,9 @@ public class Base
 {
 	static final int VERSION = 1;
 	static final String VERSION_NAME = "0002";
+	
+	//our machine object.
+	private static Machine machine;
 
 	/**
 	* Path of filename opened on the command line,
@@ -111,8 +114,10 @@ public class Base
   }
 
 
-  public Base() {
-
+  public Base()
+  {
+	machine = null;
+	
     // set the look and feel before opening the window
 
     try {
@@ -1140,5 +1145,59 @@ public class Base
 		}
 		else
 			return null;
+	}
+	
+	static public Node getChildNodeByName(Node node, String name)
+	{
+		//return null if we have nothing.
+		if (hasChildNode(node, name))
+		{
+			//look through the kids.
+			NodeList kids = node.getChildNodes();
+			for (int j=0; j<kids.getLength(); j++)
+			{
+				Node kid = kids.item(j);
+			
+				//did we find it?
+				if (kid.getNodeName().equals(name))
+					return kid;
+			}
+		}
+
+		//fail.
+		return null;
+	}
+	
+	static public String getAttributeValue(Node node, String name)
+	{
+		if (node.hasAttributes())
+		{
+			NamedNodeMap map = node.getAttributes();
+			Node attribute = map.getNamedItem(name);
+
+			if (attribute != null)
+				return attribute.getNodeValue().trim();
+		}
+
+		return "";
+	}
+	
+	/**
+	* our singleton interface to get our machine.
+	*/
+	static public Machine getMachine()
+	{
+		if (machine == null)
+			machine = MachineFactory.load(Preferences.get("machine.name"));
+		
+		return machine;
+	}
+	
+	/**
+	* sometimes we might want to change machines
+	*/
+	static public void setMachine(Machine m)
+	{
+		machine = m;
 	}
 }

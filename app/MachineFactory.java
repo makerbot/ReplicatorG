@@ -41,34 +41,21 @@ public class MachineFactory
 		throw new AssertionError();
 	}
 	
-  public static Machine loadSelectedMachine(JMenu machineMenu)
+	public static Machine load(String name)
 	{
-		for (int i=0; i<machineMenu.getItemCount(); i++)
-		{
-			JMenuItem jmi = machineMenu.getItem(i);
-			
-			if (jmi.isSelected())
-			{
-				return new Machine(getMachineNode(jmi.getText()));
-			}
-		}
-
-		//fail to the simulator
-	  //TODO: figure out a good place for this:
-	  //error("No machine found, loading simulator instead.");
-		return loadSimulator();
+		return new Machine(getMachineNode(name));
 	}
 	
 	public static Machine loadSimulator()
 	{
-		return new Machine(getMachineNode("3-Axis Simulator"));
+		return load("3-Axis Simulator");
 	}
 	
 	//look for machine configuration node.
 	private static Node getMachineNode(String name)
 	{
-	  //load config...
-	  Document dom = loadMachinesConfig();
+		//load config...
+		Document dom = loadMachinesConfig();
 	  
 		//get each machines
 		NodeList nl = dom.getElementsByTagName("machine");

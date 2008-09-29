@@ -25,6 +25,7 @@ package processing.app;
 
 import org.w3c.dom.*;
 import javax.vecmath.*;
+import java.util.*;
 
 public class MachineModel
 {
@@ -39,12 +40,16 @@ public class MachineModel
 	//feedrate information
 	private Point3d maximumFeedrates;
 	private Point3d stepsPerMM;
+	
+	protected Vector clamps;
 
 	/*************************************
 	*  Creates the model object.
 	*************************************/
 	public MachineModel()
 	{
+		clamps = new Vector();
+		
 		currentPosition = new Point3d();
 		minimum = new Point3d();
 		maximum = new Point3d();
@@ -56,6 +61,68 @@ public class MachineModel
 	public void loadXML(Node node)
 	{
 		xml = node;
+		
+		_parseAxes();
+	}
+	
+	private void _parseAxes()
+	{
+		if(Base.hasChildNode(xml, "geometry"))
+		{
+			Node geometry = Base.getChildNodeByName(xml, "geometry");
+			
+			//look through the axes.
+			NodeList axes = geometry.getChildNodes();
+			for (int i=0; i<axes.getLength(); i++)
+			{
+				Node axis = axes.item(i);
+				
+				//parse our information.
+				String id = Base.getAttributeValue(axis, "id");
+			 	double length = Double.parseDouble(Base.getAttributeValue(axis, "length"));
+			 	double maxFeedrate = Double.parseDouble(Base.getAttributeValue(axis, "maxfeedrate"));
+			 	double scale = Double.parseDouble(Base.getAttributeValue(axis, "scale"));
+				
+				//create the right variables.
+				if (id.toLowerCase().equals("x"))
+				{
+					maximum.x = length;
+					maximumFeedrates.x = maxFeedrate;
+					stepsPerMM.x = scale;
+				}
+				else if (id.toLowerCase().equals("y"))
+				{
+					maximum.y = length;
+					maximumFeedrates.y = maxFeedrate;
+					stepsPerMM.y = scale;
+				}
+				else if (id.toLowerCase().equals("z"))
+				{
+					maximum.z = length;
+					maximumFeedrates.z = maxFeedrate;
+					stepsPerMM.z = scale;
+				}
+			}
+		}
+	}
+	
+	
+	private void _parseClamps()
+	{
+		if(Base.hasChildNode(xml, "clamps"))
+		{
+			Node clampsNode = Base.getChildNodeByName(xml, "clamps");
+			
+			//look through the axes.
+			NodeList clampKids = clampsNode.getChildNodes();
+			for (int i=0; i<clampKids.getLength(); i++)
+			{
+				Node clampNode = clampKids.item(i);
+				
+				ClampModel clamp = new ClampModel(clampNode);
+				clamps.add(clamp);
+			}
+		}
 	}
 
 	/*************************************

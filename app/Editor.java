@@ -324,7 +324,9 @@ public class Editor extends JFrame
           return true;
         }
       });
-  }
+
+		loadMachine();
+	}
 
 
   /**
@@ -723,6 +725,10 @@ public class Editor extends JFrame
 			item.setState(true);
 			String name = item.getText();
 			Preferences.set("machine.name", name);
+			
+			//load it and set it.
+			machine = MachineFactory.load(name);
+			Base.setMachine(machine);
 		}
 	}
   
@@ -774,9 +780,7 @@ public class Editor extends JFrame
 		}
 	
 		if (machineMenu.getItemCount() == 0)
-		{
 			machineMenu.setEnabled(false);
-		}
 	}
 
   protected JMenu buildHelpMenu() {
@@ -1065,9 +1069,7 @@ public class Editor extends JFrame
 
   public void handleControlPanel()
   {
-    Machine m = MachineFactory.loadSelectedMachine(machineMenu);
-    
-  	ControlPanelWindow window = new ControlPanelWindow(m);
+  	ControlPanelWindow window = new ControlPanelWindow(machine);
 	window.setVisible(true);
   }
 
@@ -1241,9 +1243,6 @@ public class Editor extends JFrame
 		//build specific stuff
 		building = true;
 		buttons.activate(EditorButtons.BUILD);
-		
-		//load our actual machine
-		loadMachine();
 		
 		//initialize our editor
 		initEditor();
@@ -2108,15 +2107,15 @@ public class Editor extends JFrame
 
 	private void loadMachine()
 	{
-	  machine = MachineFactory.loadSelectedMachine(machineMenu);
-	  machine.setEditor(this);
+		machine = Base.getMachine();
+		machine.setEditor(this);
 	}
 	
 	
 	private void loadSimulator()
 	{
 		machine = MachineFactory.loadSimulator();
-	  machine.setEditor(this);
+	  	machine.setEditor(this);
 	}
 }
 

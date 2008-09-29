@@ -356,7 +356,7 @@ public class GCodeParser
 					if (hasCode("Q"))
 						driver.openClamp((int)getCodeValue("Q"));
 					else
-						throw new GCodeException("The Q parameter is required for clamp operations. (M10)");
+						throw new GCodeException("The Q parameter is required for clamp operations. (M11)");
 					break;
 
 				//spindle CW and coolant A on

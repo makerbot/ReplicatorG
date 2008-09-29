@@ -48,7 +48,10 @@ public class Machine
 	// our driver object
 	protected Driver driver;
 	protected SimulationDriver simulator;
-		
+	
+	// our machine model objects
+	protected MachineModel model;
+	
 	//our pause variable
 	protected boolean paused = false;
 	protected boolean stopped = false;
@@ -56,9 +59,6 @@ public class Machine
 	//estimated build time in millis
 	protected long estimatedBuildTime = 0;
 	
-	//our linear axes configs
-	protected Vector axes;
-
 /*	
 	Color currentLineBackground;
 	Color successfulLineBackground;
@@ -78,11 +78,15 @@ public class Machine
 		
 		parseName();
 		System.out.println("Loading machine: " + name);
+
+		//load our configs
+		model = new MachineModel();
+		model.loadXML(mNode);
 		
 		//load our drivers
-		loadConfiguration();
 		loadDriver();
 		loadToolDrivers();
+		
 	}
 	
 	public void setEditor(Editor e)
@@ -280,11 +284,6 @@ public class Machine
 		message += "Completed in " + EstimationDriver.getBuildTimeString(elapsed);
 		
 		JOptionPane.showMessageDialog(null, message);
-	}
-	
-	private void loadConfiguration()
-	{
-		
 	}
 	
 	private void loadDriver()
