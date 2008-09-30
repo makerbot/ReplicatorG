@@ -51,7 +51,7 @@ public class MachineController
 	protected SimulationDriver simulator;
 	
 	// our machine model objects
-	protected MachineModel machine;
+	protected MachineModel model;
 	
 	//our pause variable
 	protected boolean paused = false;
@@ -278,15 +278,15 @@ public class MachineController
 	
 	private void loadModel()
 	{
-		machine = new MachineModel();
-		machine.loadXML(machineNode);
+		model = new MachineModel();
+		model.loadXML(machineNode);
 	}
 	
 	private void loadDriver()
 	{
 		//load our utility drivers
 		simulator = new SimulationDriver();
-		simulator.setMachine(machine);
+		simulator.setMachine(model);
 			
 		//load our actual driver
 		NodeList kids = machineNode.getChildNodes();
@@ -297,7 +297,7 @@ public class MachineController
 			if (kid.getNodeName().equals("driver"))
 			{
 				driver = DriverFactory.factory(kid);
-				driver.setMachine(machine);
+				driver.setMachine(model);
 				driver.initialize();
 				return;
 			}
@@ -306,13 +306,18 @@ public class MachineController
 		System.out.println("No driver config found.");
 		
 		driver = DriverFactory.factory();
-		driver.setMachine(machine);
+		driver.setMachine(model);
 		driver.initialize();
 	}
 	
 	public Driver getDriver()
 	{
 	  return driver;
+	}
+	
+	public MachineModel getModel()
+	{
+		return model;
 	}
 	
 	synchronized public void stop()

@@ -322,6 +322,11 @@ public class MachineModel
 		
 		return null;
 	}
+	
+	public Vector getTools()
+	{
+		return tools;
+	}
 
 	public void addTool(ToolModel t)
 	{

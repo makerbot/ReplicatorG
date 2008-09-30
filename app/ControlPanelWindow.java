@@ -28,6 +28,7 @@
 package processing.app;
 
 import processing.app.drivers.*;
+import processing.app.models.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -60,6 +61,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	protected JTextField xPosField;
 	protected JTextField yPosField;
 	protected JTextField zPosField;
+	
+	JTabbedPane toolsPane;
 	
 	protected MachineController machine;
 	protected Driver driver;
@@ -325,6 +328,35 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		
 		//add the whole deal to our window.
 		add(jogPanel);
+		
+		//add our tools panel as well
+		//createToolsPanel();
+	}
+	
+	protected void createToolsPanel()
+	{
+		toolsPane = new JTabbedPane();
+		
+		for (Enumeration e = machine.getModel().getTools().elements(); e.hasMoreElements();)
+		{
+			ToolModel t = (ToolModel)e.nextElement();
+			
+			if (t.getType().equals("extruder"))
+				createExtruderTab(t);
+			else
+			{
+				System.out.println("Unsupported tool for control panel.");
+			}
+		}
+		
+		add(toolsPane);
+	}
+	
+	protected void createExtruderTab(ToolModel t)
+	{
+		JPanel panel = new JPanel();
+		
+		toolsPane.addTab(panel.getName(), panel);
 	}
 	
 	protected void updatePosition()
