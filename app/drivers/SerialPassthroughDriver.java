@@ -25,6 +25,7 @@ package processing.app.drivers;
 
 import processing.app.*;
 import processing.app.exceptions.*;
+import processing.app.models.*;
 import processing.core.*;
 
 import gnu.io.*;
@@ -425,7 +426,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	private String _getToolCode()
 	{
-		return "T" + currentTool().getIndex() + " ";
+		return "T" + machine.currentTool().getIndex() + " ";
 	}
 
 	/*************************************
@@ -442,7 +443,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	{
 		String command = _getToolCode();
 
-		if (currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
 			command += "M101";
 		else
 			command += "M102";
@@ -473,7 +474,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	{
 		String command = _getToolCode();
 
-		if (currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
 			command += "M3";
 		else
 			command += "M4";

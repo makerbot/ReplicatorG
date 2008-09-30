@@ -29,8 +29,10 @@ package processing.app;
 
 import processing.app.drivers.*;
 import processing.app.exceptions.*;
+import processing.app.models.*;
 import processing.app.syntax.*;
 import processing.app.tools.*;
+
 import processing.core.*;
 
 import java.awt.*;
@@ -73,7 +75,7 @@ public class Editor extends JFrame
   // our machines.xml document.
   public org.w3c.dom.Document dom;
 
-  Machine machine;
+  MachineController machine;
 
   // otherwise, if the window is resized with the message label
   // set to blank, it's preferredSize() will be fukered
@@ -324,8 +326,6 @@ public class Editor extends JFrame
           return true;
         }
       });
-
-		loadMachine();
 	}
 
 
@@ -2105,14 +2105,14 @@ public class Editor extends JFrame
     }
   }
 
-	private void loadMachine()
+	public void loadMachine()
 	{
 		machine = Base.getMachine();
 		machine.setEditor(this);
 	}
 	
 	
-	private void loadSimulator()
+	public void loadSimulator()
 	{
 		machine = MachineFactory.loadSimulator();
 	  	machine.setEditor(this);

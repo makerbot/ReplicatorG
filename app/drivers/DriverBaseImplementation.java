@@ -23,8 +23,9 @@
 
 package processing.app.drivers;
 
-import processing.app.exceptions.*;
 import processing.app.*;
+import processing.app.exceptions.*;
+import processing.app.models.*;
 
 import java.util.regex.*;
 import javax.vecmath.*;
@@ -40,9 +41,6 @@ public class DriverBaseImplementation implements Driver
 
 	//models for our machine
 	protected MachineModel machine;
-	protected ToolModel[] tools;
-	protected ToolModel currentTool;
-	protected int toolCount;
 
 	//our firmware version info
 	private String firmwareName = "Unknown";
@@ -82,13 +80,10 @@ public class DriverBaseImplementation implements Driver
 		
 		//TODO: do this properly.
 		machine = new MachineModel();
-		currentTool = new ToolModel();
-		toolCount = 0;
 	}
 	
 	public void loadXML(Node xml)
 	{
-		//TODO: load standard driver configs.
 	}
 
 	public void dispose()
@@ -242,9 +237,9 @@ public class DriverBaseImplementation implements Driver
 	}
 	
 	
-	/**
-	* various homing functions
-	*/
+	/*************************************************
+	*  various homing functions
+	*************************************************/
 	public void homeXYZ()
 	{
 		machine.setCurrentPosition(new Point3d());
@@ -290,7 +285,6 @@ public class DriverBaseImplementation implements Driver
 	/*************************************************
 	*  Machine interface functions
 	*************************************************/
-
 	public MachineModel getMachine()
 	{
 		return machine;
@@ -306,63 +300,56 @@ public class DriverBaseImplementation implements Driver
 	*************************************************/
 	public void requestToolChange(int toolIndex)
 	{
-		selectTool(toolIndex);
+		machine.selectTool(toolIndex);
 	}
 	
 	public void selectTool(int toolIndex)
 	{
-		currentTool = tools[toolIndex];
-	}
-
-	public ToolModel currentTool()
-	{
-		return currentTool;
+		machine.selectTool(toolIndex);
 	}
 	
-	public void addTool(ToolModel t)
-	{
-		tools[toolCount] = t;
-		toolCount++;
-	}
-	
-	public ToolModel getTool(int index)
-	{
-		if (index < toolCount)
-			return tools[index];
-		
-		return null;
-	}
-	
-	public void setTool(int index, ToolModel t)
-	{
-		if (index < toolCount)
-			tools[index] = t;
-	}
-	
-	/**
-	* delay / pause function
-	*/
+	/*************************************
+	*  pause function
+	*************************************/
 	public void delay(long millis)
 	{
 		//System.out.println("Delay: " + millis);
 	}
 	
-	/**
-	* functions for dealing with clamps
-	*/
-	public void openClamp(int clampIndex) {}
-	public void closeClamp(int clampIndex) {}
+	/*************************************
+	*  functions for dealing with clamps
+	*************************************/
+	public void openClamp(int index)
+	{
+		machine.getClamp(index).open();
+	}
 	
-	/**
-	* enabling/disabling our drivers (steppers, servos, etc.)
-	*/
-	public void enableDrives() {}
-	public void disableDrives() {}
+	public void closeClamp(int index)
+	{
+		machine.getClamp(index).close();
+	}
 	
-	/**
-	* change our gear ratio
-	*/
-	public void changeGearRatio(int ratioIndex) {}
+	/*************************************
+	*  enabling/disabling our drivers (steppers, servos, etc.)
+	*************************************/
+	public void enableDrives()
+	{
+		machine.enableDrives();
+	}
+	
+	public void disableDrives()
+	{
+		machine.disableDrives();
+	}
+	
+	/*************************************
+	*  Change our gear ratio.
+	*************************************/
+
+	public void changeGearRatio(int ratioIndex)
+	{
+		machine.changeGearRatio(ratioIndex);
+	}
 	
 	/*****************************************************************************
 	*  toolhead interface commands
@@ -373,22 +360,22 @@ public class DriverBaseImplementation implements Driver
 	*************************************/
  	public void setMotorDirection(int dir)
 	{
-		currentTool().setMotorDirection(dir);
+		machine.currentTool().setMotorDirection(dir);
 	}
 	
 	public void setMotorSpeed(double rpm)
 	{
-		currentTool().setMotorSpeed(rpm);
+		machine.currentTool().setMotorSpeed(rpm);
 	}
 	
 	public void enableMotor()
 	{
-		currentTool().enableMotor();
+		machine.currentTool().enableMotor();
 	}
 	
 	public void disableMotor()
 	{
-		currentTool().disableMotor();
+		machine.currentTool().disableMotor();
 	}
 	
 	public void readMotorSpeed()
@@ -398,7 +385,7 @@ public class DriverBaseImplementation implements Driver
 	
 	public double getMotorSpeed()
 	{
-		return currentTool().getMotorSpeed();
+		return machine.currentTool().getMotorSpeed();
 	}
 
 	/*************************************
@@ -406,22 +393,22 @@ public class DriverBaseImplementation implements Driver
 	*************************************/
 	public void setSpindleDirection(int dir)
 	{
-		currentTool().setSpindleDirection(dir);
+		machine.currentTool().setSpindleDirection(dir);
 	}
 
 	public void setSpindleSpeed(double rpm)
 	{
-		currentTool().setSpindleSpeed(rpm);
+		machine.currentTool().setSpindleSpeed(rpm);
 	}
 	
 	public void enableSpindle()
 	{
-		currentTool().enableSpindle();
+		machine.currentTool().enableSpindle();
 	}
 	
 	public void disableSpindle()
 	{
-		currentTool.disableSpindle();
+		machine.currentTool().disableSpindle();
 	}
 	
 	public void readSpindleSpeed()
@@ -431,7 +418,7 @@ public class DriverBaseImplementation implements Driver
 	
 	public double getSpindleSpeed()
 	{ 
-		return currentTool.getSpindleSpeed();
+		return machine.currentTool().getSpindleSpeed();
 	}
 	
 	/*************************************
@@ -439,7 +426,7 @@ public class DriverBaseImplementation implements Driver
 	*************************************/
 	public void setTemperature(double temperature)
 	{
-		currentTool().setTargetTemperature(temperature);
+		machine.currentTool().setTargetTemperature(temperature);
 	}
 
 	public void readTemperature()
@@ -451,7 +438,7 @@ public class DriverBaseImplementation implements Driver
 	{
 		readTemperature();
 		
-		return currentTool.getCurrentTemperature();
+		return machine.currentTool().getCurrentTemperature();
 	}
 
 	/*************************************
@@ -459,12 +446,12 @@ public class DriverBaseImplementation implements Driver
 	*************************************/
 	public void enableFloodCoolant()
 	{
-		currentTool().enableFloodCoolant();
+		machine.currentTool().enableFloodCoolant();
 	}
 	
 	public void disableFloodCoolant()
 	{
-		currentTool().disableFloodCoolant();
+		machine.currentTool().disableFloodCoolant();
 	}
 
 	/*************************************
@@ -472,12 +459,12 @@ public class DriverBaseImplementation implements Driver
 	*************************************/
 	public void enableMistCoolant()
 	{
-		currentTool().enableMistCoolant();
+		machine.currentTool().enableMistCoolant();
 	}
 	
 	public void disableMistCoolant()
 	{
-		currentTool().disableMistCoolant();
+		machine.currentTool().disableMistCoolant();
 	}
 
 	/*************************************
@@ -485,12 +472,12 @@ public class DriverBaseImplementation implements Driver
 	*************************************/
 	public void enableFan()
 	{
-		currentTool().enableFan();
+		machine.currentTool().enableFan();
 	}
 	
 	public void disableFan()
 	{
-		currentTool().disableFan();
+		machine.currentTool().disableFan();
 	}
 	
 	/*************************************
@@ -498,12 +485,12 @@ public class DriverBaseImplementation implements Driver
 	*************************************/
 	public void openValve()
 	{
-		currentTool().openValve();
+		machine.currentTool().openValve();
 	}
 	
 	public void closeValve()
 	{
-		currentTool().closeValve();
+		machine.currentTool().closeValve();
 	}
 	
 	/*************************************
@@ -511,11 +498,11 @@ public class DriverBaseImplementation implements Driver
 	*************************************/
 	public void openCollet()
 	{
-		currentTool().openCollet();
+		machine.currentTool().openCollet();
 	}
 	
 	public void closeCollet()
 	{
-		currentTool().closeCollet();
+		machine.currentTool().closeCollet();
 	}
 }

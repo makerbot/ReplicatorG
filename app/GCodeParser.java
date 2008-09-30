@@ -23,6 +23,7 @@
 
 package processing.app;
 import processing.app.exceptions.*;
+import processing.app.models.*;
 
 import java.util.*;
 import java.util.regex.*;

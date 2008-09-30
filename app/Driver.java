@@ -22,8 +22,10 @@
 */
 
 package processing.app;
+
 import processing.app.drivers.*;
 import processing.app.exceptions.*;
+import processing.app.models.*;
 
 import java.util.regex.*;
 import javax.vecmath.*;
@@ -73,6 +75,13 @@ public interface Driver
 	* clean up the driver
 	*/
 	public void dispose();
+	
+	/*************************************************
+	*  Machine interface functions
+	*************************************************/
+	public MachineModel getMachine();
+	public void setMachine(MachineModel m);
+
 
 	/**
 	* execute the recently parsed GCode
@@ -101,7 +110,6 @@ public interface Driver
 	*/
 	public void requestToolChange(int toolIndex);
 	public void selectTool(int toolIndex);
-	public ToolModel currentTool();
 	
 	/**
 	* sets the feedrate in mm/minute

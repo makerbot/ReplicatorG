@@ -63,7 +63,7 @@ public class Base
 	static final String VERSION_NAME = "0002";
 	
 	//our machine object.
-	private static Machine machine;
+	private static MachineController machine;
 
 	/**
 	* Path of filename opened on the command line,
@@ -157,6 +157,9 @@ public class Base
     // show the window
     editor.show();
 
+	//load up our machine controller =)
+	editor.loadMachine();
+	
     // check for updates
     if (Preferences.getBoolean("update.check")) {
       new UpdateCheck(editor);
@@ -1185,7 +1188,7 @@ public class Base
 	/**
 	* our singleton interface to get our machine.
 	*/
-	static public Machine getMachine()
+	static public MachineController getMachine()
 	{
 		if (machine == null)
 			machine = MachineFactory.load(Preferences.get("machine.name"));
@@ -1196,7 +1199,7 @@ public class Base
 	/**
 	* sometimes we might want to change machines
 	*/
-	static public void setMachine(Machine m)
+	static public void setMachine(MachineController m)
 	{
 		machine = m;
 	}

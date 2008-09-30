@@ -8,7 +8,7 @@
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
-			<tool type="extruder" material="abs" />
+			<tool type="extruder" material="abs" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="null"> <!-- use a fake driver -->
@@ -18,7 +18,15 @@
 	<!-- end protected configuration -->
 	<machine>
 		<name>Darwin</name>
-		<geometry>cartesian</geometry>
+		<geometry type="cartesian">
+			<axis id="x" length="300" maxfeedrate="1000" scale="11.4485"/>
+			<axis id="y" length="300" maxfeedrate="1000" scale="11.4485"/>
+			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
+		</geometry>
+		<tools>
+			<tool type="extruder" material="abs" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false"/>
+		</tools>
+		<clamps></clamps>
 		<driver name="serialpassthrough">
 			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
 			<!-- optional, defaults to 19200.                      <rate>19200</rate> -->

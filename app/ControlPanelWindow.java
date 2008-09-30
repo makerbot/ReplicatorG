@@ -61,10 +61,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	protected JTextField yPosField;
 	protected JTextField zPosField;
 	
-	protected Machine machine;
+	protected MachineController machine;
 	protected Driver driver;
 	
-	public ControlPanelWindow (Machine m)
+	public ControlPanelWindow (MachineController m)
 	{
 		super("Control Panel");
 		

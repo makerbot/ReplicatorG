@@ -1,7 +1,7 @@
 /*
   ToolModel.java
 
-  A class to store and model a toolhead.
+  A class to model a toolhead.
 
   Part of the ReplicatorG project - http://www.replicat.org
   Copyright (c) 2008 Zach Smith
@@ -21,7 +21,7 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package processing.app;
+package processing.app.models;
 
 import org.w3c.dom.*;
 
@@ -62,7 +62,7 @@ public class ToolModel
 	/*************************************
 	*  Creates the model object.
 	*************************************/
-	public ToolModel()
+	public ToolModel(Node n)
 	{
 		//default information
 		index = 0;
@@ -80,6 +80,15 @@ public class ToolModel
 		disableFan();
 		closeValve();
 		closeCollet();
+
+		//load our XML config
+		loadXML(n);
+	}
+	
+	//load data from xml config
+	public void loadXML(Node node)
+	{
+		xml = node;
 	}
 	
 	/*************************************

@@ -41,12 +41,12 @@ public class MachineFactory
 		throw new AssertionError();
 	}
 	
-	public static Machine load(String name)
+	public static MachineController load(String name)
 	{
-		return new Machine(getMachineNode(name));
+		return new MachineController(getMachineNode(name));
 	}
 	
-	public static Machine loadSimulator()
+	public static MachineController loadSimulator()
 	{
 		return load("3-Axis Simulator");
 	}

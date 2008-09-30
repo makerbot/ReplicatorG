@@ -1,7 +1,7 @@
 /*
   MachineModel.java
 
-  A class to store and model a 3-axis machine.
+  A class to model a 3-axis machine.
 
   Part of the ReplicatorG project - http://www.replicat.org
   Copyright (c) 2008 Zach Smith
@@ -21,7 +21,9 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package processing.app;
+package processing.app.models;
+
+import processing.app.*;
 
 import org.w3c.dom.*;
 import javax.vecmath.*;
@@ -41,6 +43,15 @@ public class MachineModel
 	private Point3d maximumFeedrates;
 	private Point3d stepsPerMM;
 	
+	//our drive status
+	protected boolean drivesEnabled = true;
+	protected int gearRatio = 0;
+	
+	//our tool models
+	protected Vector tools;
+	protected ToolModel currentTool;
+
+	//our clamp models	
 	protected Vector clamps;
 
 	/*************************************
@@ -49,6 +60,7 @@ public class MachineModel
 	public MachineModel()
 	{
 		clamps = new Vector();
+		tools = new Vector();
 		
 		currentPosition = new Point3d();
 		minimum = new Point3d();
@@ -62,10 +74,13 @@ public class MachineModel
 	{
 		xml = node;
 		
-		_parseAxes();
+		parseAxes();
+		parseClamps();
+		parseTools();
 	}
 	
-	private void _parseAxes()
+	//load axes configuration
+	private void parseAxes()
 	{
 		if(Base.hasChildNode(xml, "geometry"))
 		{
@@ -77,46 +92,51 @@ public class MachineModel
 			{
 				Node axis = axes.item(i);
 				
-				//parse our information.
-				String id = Base.getAttributeValue(axis, "id");
+				if (axis.getNodeName().equals("axis"))
+				{
+					//parse our information.
+					String id = Base.getAttributeValue(axis, "id");
 
-				//initialize values
-			 	double length = 0.0;
-			 	double maxFeedrate = 0.0;
-			 	double scale = 1.0;
-				
-				//if values are missing, ignore them.
-				try {
-				 	length = Double.parseDouble(Base.getAttributeValue(axis, "length"));
-				 	maxFeedrate = Double.parseDouble(Base.getAttributeValue(axis, "maxfeedrate"));
-				 	scale = Double.parseDouble(Base.getAttributeValue(axis, "scale"));
-				} catch (Exception e) {}
-				
-				//create the right variables.
-				if (id.toLowerCase().equals("x"))
-				{
-					maximum.x = length;
-					maximumFeedrates.x = maxFeedrate;
-					stepsPerMM.x = scale;
-				}
-				else if (id.toLowerCase().equals("y"))
-				{
-					maximum.y = length;
-					maximumFeedrates.y = maxFeedrate;
-					stepsPerMM.y = scale;
-				}
-				else if (id.toLowerCase().equals("z"))
-				{
-					maximum.z = length;
-					maximumFeedrates.z = maxFeedrate;
-					stepsPerMM.z = scale;
+					//initialize values
+				 	double length = 0.0;
+				 	double maxFeedrate = 0.0;
+				 	double scale = 1.0;
+					
+					//if values are missing, ignore them.
+					try {
+					 	length = Double.parseDouble(Base.getAttributeValue(axis, "length"));
+					 	maxFeedrate = Double.parseDouble(Base.getAttributeValue(axis, "maxfeedrate"));
+					 	scale = Double.parseDouble(Base.getAttributeValue(axis, "scale"));
+					} catch (Exception e) {}
+					
+					//create the right variables.
+					if (id.toLowerCase().equals("x"))
+					{
+						maximum.x = length;
+						maximumFeedrates.x = maxFeedrate;
+						stepsPerMM.x = scale;
+					}
+					else if (id.toLowerCase().equals("y"))
+					{
+						maximum.y = length;
+						maximumFeedrates.y = maxFeedrate;
+						stepsPerMM.y = scale;
+					}
+					else if (id.toLowerCase().equals("z"))
+					{
+						maximum.z = length;
+						maximumFeedrates.z = maxFeedrate;
+						stepsPerMM.z = scale;
+					}
+
+					System.out.println("Loading axis " + id + ": (Length: " + length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + scale + " steps/mm)");
 				}
 			}
 		}
 	}
 	
-	
-	private void _parseClamps()
+	//load clamp configuration
+	private void parseClamps()
 	{
 		if(Base.hasChildNode(xml, "clamps"))
 		{
@@ -130,6 +150,27 @@ public class MachineModel
 				
 				ClampModel clamp = new ClampModel(clampNode);
 				clamps.add(clamp);
+				
+				System.out.println("adding clamp #" + clamps.size());
+			}
+		}
+	}
+	
+	//load tool configuration
+	private void parseTools()
+	{
+		if(Base.hasChildNode(xml, "tools"))
+		{
+			Node toolsNode = Base.getChildNodeByName(xml, "tools");
+			
+			//look through the axes.
+			NodeList toolKids = toolsNode.getChildNodes();
+			for (int i=0; i<toolKids.getLength(); i++)
+			{
+				Node toolNode = toolKids.item(i);
+				
+				ToolModel tool = new ToolModel(toolNode);
+				tools.add(tool);
 			}
 		}
 	}
@@ -204,4 +245,93 @@ public class MachineModel
 		
 		return temp;
 	}
+
+	/*************************************
+	* Drive interface functions
+	*************************************/
+	public void enableDrives()
+	{
+		drivesEnabled = true;
+	}
+	
+	public void disableDrives()
+	{
+		drivesEnabled = false;
+	}
+	
+	public boolean areDrivesEnabled()
+	{
+		return drivesEnabled;
+	}
+	
+	/*************************************
+	* Gear Ratio functions
+	*************************************/
+	public void changeGearRatio(int ratioIndex)
+	{
+		gearRatio = ratioIndex;
+	}
+	
+	/*************************************
+	* Clamp interface functions
+	*************************************/
+	public ClampModel getClamp(int index)
+	{
+		try {
+			ClampModel c = (ClampModel)clamps.get(index);
+			return c;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("Cannot get non-existant clamp (#" + index + ".");
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	/*************************************
+	*  Tool interface functions
+	*************************************/
+	public void selectTool(int index)
+	{
+		try {
+			currentTool = (ToolModel)tools.get(index);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("Cannot select non-existant tool (#" + index + ".");
+			e.printStackTrace();
+		}
+	}
+
+	public ToolModel currentTool()
+	{
+		return currentTool;
+	}
+	
+	public ToolModel getTool(int index)
+	{
+		try {
+			ToolModel t = (ToolModel)tools.get(index);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("Cannot get non-existant tool (#" + index + ".");
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+
+	public void addTool(ToolModel t)
+	{
+		tools.add(t);
+	}
+	
+	
+	public void setTool(int index, ToolModel t)
+	{
+		try {
+			tools.set(index, t);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("Cannot set non-existant tool (#" + index + ".");
+			e.printStackTrace();
+		}
+	}
+
 }

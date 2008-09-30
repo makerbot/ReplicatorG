@@ -1,7 +1,7 @@
 /*
-  MachineModel.java
+  ClampModel.java
 
-  A class to store and model a 3-axis machine.
+  A class to model a clamp on a 3-axis machine.
 
   Part of the ReplicatorG project - http://www.replicat.org
   Copyright (c) 2008 Zach Smith
@@ -21,7 +21,7 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package processing.app;
+package processing.app.models;
 
 import org.w3c.dom.*;
 

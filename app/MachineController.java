@@ -20,6 +20,7 @@
 package processing.app;
 
 import processing.app.drivers.*;
+import processing.app.models.*;
 import processing.app.exceptions.*;
 
 import java.io.*;
@@ -31,7 +32,7 @@ import java.lang.Math.*;
 import java.util.*;
 import javax.swing.JOptionPane;
 
-public class Machine
+public class MachineController
 {
 	// our editor object.
 	protected Editor editor;
@@ -50,7 +51,7 @@ public class Machine
 	protected SimulationDriver simulator;
 	
 	// our machine model objects
-	protected MachineModel model;
+	protected MachineModel machine;
 	
 	//our pause variable
 	protected boolean paused = false;
@@ -59,16 +60,10 @@ public class Machine
 	//estimated build time in millis
 	protected long estimatedBuildTime = 0;
 	
-/*	
-	Color currentLineBackground;
-	Color successfulLineBackground;
-	Color failedLineBackground;
-*/
-	
 	/**
 	  * Creates the machine object.
 	  */
-	public Machine(Node mNode)
+	public MachineController(Node mNode)
 	{
 		//save our XML
 		machineNode = mNode;
@@ -79,14 +74,9 @@ public class Machine
 		parseName();
 		System.out.println("Loading machine: " + name);
 
-		//load our configs
-		model = new MachineModel();
-		model.loadXML(mNode);
-		
-		//load our drivers
+		//load our various objects
+		loadModel();
 		loadDriver();
-		loadToolDrivers();
-		
 	}
 	
 	public void setEditor(Editor e)
@@ -159,11 +149,11 @@ public class Machine
 		}
 		
 		//clean things up.
-		driver.dispose();
+		//driver.dispose();
+		//driver = null;
 		simulator.dispose();
 		simulator = null;
-		driver = null;
-
+		
 		//re-enable the gui and shit.
 		editor.textarea.enable();
 	}
@@ -286,11 +276,18 @@ public class Machine
 		JOptionPane.showMessageDialog(null, message);
 	}
 	
+	private void loadModel()
+	{
+		machine = new MachineModel();
+		machine.loadXML(machineNode);
+	}
+	
 	private void loadDriver()
 	{
 		//load our utility drivers
 		simulator = new SimulationDriver();
-		
+		simulator.setMachine(machine);
+			
 		//load our actual driver
 		NodeList kids = machineNode.getChildNodes();
 		for (int j=0; j<kids.getLength(); j++)
@@ -300,6 +297,7 @@ public class Machine
 			if (kid.getNodeName().equals("driver"))
 			{
 				driver = DriverFactory.factory(kid);
+				driver.setMachine(machine);
 				driver.initialize();
 				return;
 			}
@@ -308,11 +306,8 @@ public class Machine
 		System.out.println("No driver config found.");
 		
 		driver = DriverFactory.factory();
+		driver.setMachine(machine);
 		driver.initialize();
-	}
-	
-	private void loadToolDrivers()
-	{
 	}
 	
 	public Driver getDriver()
