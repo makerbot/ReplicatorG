@@ -24,6 +24,7 @@
 package processing.app.drivers;
 
 import processing.app.*;
+import processing.app.tools.*;
 import processing.core.*;
 import org.w3c.dom.*;
 import javax.vecmath.*;
@@ -44,8 +45,8 @@ public class NullDriver extends DriverBaseImplementation
 	{
 		super.loadXML(xml);
 		
-		if (Base.hasChildNode(xml, "speedup"))
-			speedup = Double.parseDouble(Base.getChildNodeValue(xml, "speedup"));
+		if (XML.hasChildNode(xml, "speedup"))
+			speedup = Double.parseDouble(XML.getChildNodeValue(xml, "speedup"));
 	}
 	
 	public void execute()

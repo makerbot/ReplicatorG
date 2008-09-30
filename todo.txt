@@ -1,7 +1,6 @@
 0002 ReplicatorG
 
 TODO:
-* add basic machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
 * fix windows icons
 * add proper bounds to simulation window
 * add units to simulation window
@@ -17,6 +16,8 @@ DONE:
 * have simulation move to a proportional wait time
 * fix build time estimation
 * add estimate menu item
+* add basic machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
+* move to a controller/model/driver system.
 
 0003 ReplicatorG
 

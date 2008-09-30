@@ -23,8 +23,9 @@
 
 package processing.app.models;
 
-import org.w3c.dom.*;
+import processing.app.tools.*;
 
+import org.w3c.dom.*;
 
 public class ToolModel
 {
@@ -35,8 +36,10 @@ public class ToolModel
 	protected Node xml;
 	
 	//descriptive stuff
-	int index;
-	String name;
+	protected String name;
+	protected String type;
+	protected String material;
+	protected int index;
 
 	//motor stuff
 	protected boolean motorEnabled;
@@ -58,6 +61,14 @@ public class ToolModel
 	protected boolean fanEnabled;
 	protected boolean valveOpen;
 	protected boolean colletOpen;
+	
+	//capabilities
+	protected boolean hasFloodCoolant = false;
+	protected boolean hasMistCoolant = false;
+	protected boolean hasFan = false;
+	protected boolean hasValve = false;
+	protected boolean hasCollet = false;
+	protected boolean hasHeater = false;
 
 	/*************************************
 	*  Creates the model object.
@@ -65,8 +76,10 @@ public class ToolModel
 	public ToolModel(Node n)
 	{
 		//default information
-		index = 0;
 		name = "Generic Tool";
+		type = "tool";
+		material = "unknown";
+		index = 0;
 		
 		//default our spindles/motors
 		setMotorDirection(MOTOR_CLOCKWISE);
@@ -89,29 +102,104 @@ public class ToolModel
 	public void loadXML(Node node)
 	{
 		xml = node;
+		
+		//load our name.
+		String n = XML.getAttributeValue(xml, "name");
+		if (n != null)
+			name = n;
+			
+		//load our type.
+		n = XML.getAttributeValue(xml, "type");
+		if (n != null)
+			type = n;
+		
+		//load our material
+		n = XML.getAttributeValue(xml, "material");
+		if (n != null)
+			material = n;
+		
+		//our various capabilities
+		//flood coolant
+		n = XML.getAttributeValue(xml, "floodcoolant");
+		try {
+			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+				hasFloodCoolant = true;
+		} catch (Exception e) {} //ignore boolean/integer parse errors
+
+		n = XML.getAttributeValue(xml, "mistcoolant");
+		try {
+			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+				hasMistCoolant = true;
+		} catch (Exception e) {} //ignore boolean/integer parse errors
+
+		n = XML.getAttributeValue(xml, "fan");
+		try {
+			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+				hasFan = true;
+		} catch (Exception e) {} //ignore boolean/integer parse errors
+
+		n = XML.getAttributeValue(xml, "valve");
+		try {
+			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+				hasValve = true;
+		} catch (Exception e) {} //ignore boolean/integer parse errors
+
+		n = XML.getAttributeValue(xml, "collet");
+		try {
+			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+				hasCollet = true;
+		} catch (Exception e) {} //ignore boolean/integer parse errors
+
+		n = XML.getAttributeValue(xml, "heater");
+		try {
+			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+				hasHeater = true;
+		} catch (Exception e) {} //ignore boolean/integer parse errors
+
+		//hah, all this for a debug string... lol.
+		String result = "Loading " + type + " '" + name + "': ";
+		result += "material: " + material + ", ";
+		result += "with these capabilities: ";
+		if (hasFloodCoolant)
+			result += "flood coolant, ";
+		if (hasMistCoolant)
+			result += "mist coolant, ";
+		if (hasFan)
+			result += "fan, ";
+		if (hasValve)
+			result += "valve, ";
+		if (hasCollet)
+			result += "collet, ";
+		if (hasHeater)
+			result += "heater, ";
+		result += "etc.";
+		System.out.println(result);
 	}
 	
 	/*************************************
 	*  Generic tool information
 	*************************************/
-	public int getIndex()
-	{
-		return index;
-	}
-	public void setIndex(int i)
-	{
-		index = i;
-	}
 	
 	public String getName()
 	{
 		return name;
 	}
-	public void setName(String n)
+
+	public void setIndex(int i)
 	{
-		name = n;
+		index = i;
 	}
 	
+	public int getIndex()
+	{
+		return index;
+	}
+	
+	public String getType()
+	{
+		return type;
+	}
+
 	/*************************************
 	*  Motor interface functions
 	*************************************/

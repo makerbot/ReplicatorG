@@ -24,6 +24,7 @@
 package processing.app.models;
 
 import processing.app.*;
+import processing.app.tools.*;
 
 import org.w3c.dom.*;
 import javax.vecmath.*;
@@ -82,9 +83,9 @@ public class MachineModel
 	//load axes configuration
 	private void parseAxes()
 	{
-		if(Base.hasChildNode(xml, "geometry"))
+		if(XML.hasChildNode(xml, "geometry"))
 		{
-			Node geometry = Base.getChildNodeByName(xml, "geometry");
+			Node geometry = XML.getChildNodeByName(xml, "geometry");
 			
 			//look through the axes.
 			NodeList axes = geometry.getChildNodes();
@@ -95,7 +96,7 @@ public class MachineModel
 				if (axis.getNodeName().equals("axis"))
 				{
 					//parse our information.
-					String id = Base.getAttributeValue(axis, "id");
+					String id = XML.getAttributeValue(axis, "id");
 
 					//initialize values
 				 	double length = 0.0;
@@ -104,9 +105,9 @@ public class MachineModel
 					
 					//if values are missing, ignore them.
 					try {
-					 	length = Double.parseDouble(Base.getAttributeValue(axis, "length"));
-					 	maxFeedrate = Double.parseDouble(Base.getAttributeValue(axis, "maxfeedrate"));
-					 	scale = Double.parseDouble(Base.getAttributeValue(axis, "scale"));
+					 	length = Double.parseDouble(XML.getAttributeValue(axis, "length"));
+					 	maxFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "maxfeedrate"));
+					 	scale = Double.parseDouble(XML.getAttributeValue(axis, "scale"));
 					} catch (Exception e) {}
 					
 					//create the right variables.
@@ -138,9 +139,9 @@ public class MachineModel
 	//load clamp configuration
 	private void parseClamps()
 	{
-		if(Base.hasChildNode(xml, "clamps"))
+		if(XML.hasChildNode(xml, "clamps"))
 		{
-			Node clampsNode = Base.getChildNodeByName(xml, "clamps");
+			Node clampsNode = XML.getChildNodeByName(xml, "clamps");
 			
 			//look through the axes.
 			NodeList clampKids = clampsNode.getChildNodes();
@@ -159,9 +160,9 @@ public class MachineModel
 	//load tool configuration
 	private void parseTools()
 	{
-		if(Base.hasChildNode(xml, "tools"))
+		if(XML.hasChildNode(xml, "tools"))
 		{
-			Node toolsNode = Base.getChildNodeByName(xml, "tools");
+			Node toolsNode = XML.getChildNodeByName(xml, "tools");
 			
 			//look through the axes.
 			NodeList toolKids = toolsNode.getChildNodes();
@@ -169,8 +170,12 @@ public class MachineModel
 			{
 				Node toolNode = toolKids.item(i);
 				
-				ToolModel tool = new ToolModel(toolNode);
-				tools.add(tool);
+				if (toolNode.getNodeName().equals("tool"))
+				{
+					ToolModel tool = new ToolModel(toolNode);
+					tool.setIndex(tools.size());
+					tools.add(tool);
+				}
 			}
 		}
 	}

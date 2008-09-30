@@ -26,6 +26,8 @@ package processing.app.drivers;
 import processing.app.*;
 import processing.app.exceptions.*;
 import processing.app.models.*;
+import processing.app.tools.*;
+
 import processing.core.*;
 
 import gnu.io.*;
@@ -104,16 +106,16 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		super.loadXML(xml);
 		
 		//load from our XML config, if we have it.
-		if (Base.hasChildNode(xml, "portname"))
-			name = Base.getChildNodeValue(xml, "portname");
-		if (Base.hasChildNode(xml, "rate"))
-			rate = Integer.parseInt(Base.getChildNodeValue(xml, "rate"));
-		if (Base.hasChildNode(xml, "parity"))
-			parity = Base.getChildNodeValue(xml, "parity").charAt(0);
-		if (Base.hasChildNode(xml, "databits"))
-			databits = Integer.parseInt(Base.getChildNodeValue(xml, "databits"));
-		if (Base.hasChildNode(xml, "stopbits"))
-			stopbits = Integer.parseInt(Base.getChildNodeValue(xml, "stopbits"));
+		if (XML.hasChildNode(xml, "portname"))
+			name = XML.getChildNodeValue(xml, "portname");
+		if (XML.hasChildNode(xml, "rate"))
+			rate = Integer.parseInt(XML.getChildNodeValue(xml, "rate"));
+		if (XML.hasChildNode(xml, "parity"))
+			parity = XML.getChildNodeValue(xml, "parity").charAt(0);
+		if (XML.hasChildNode(xml, "databits"))
+			databits = Integer.parseInt(XML.getChildNodeValue(xml, "databits"));
+		if (XML.hasChildNode(xml, "stopbits"))
+			stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
 	}
 	
 	public void initialize()

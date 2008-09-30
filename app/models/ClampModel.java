@@ -23,6 +23,8 @@
 
 package processing.app.models;
 
+import processing.app.tools.*;
+
 import org.w3c.dom.*;
 
 public class ClampModel
