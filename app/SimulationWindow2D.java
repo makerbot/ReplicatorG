@@ -49,6 +49,11 @@ public class SimulationWindow2D extends SimulationWindow implements MouseMotionL
 	
 	private long lastRepaint = 0;
 	
+	// these guys are our extra components.
+	private BuildArea buildArea;
+	private HorizontalRuler hRuler;
+	private VerticalRuler vRuler;
+	
 	public SimulationWindow2D ()
 	{
 		super();
@@ -467,5 +472,33 @@ public class SimulationWindow2D extends SimulationWindow implements MouseMotionL
 	{
 		// subtract from getheight to get a normal origin.
 		return (getHeight() - (int)((y - minimum.y) * ratio));
+	}
+}
+
+class HorizontalRuler extends JFrame
+{
+	public HorizontalRuler(int width, int height)
+	{
+		super();
+		
+		setSize(width, height);
+	}
+}
+
+class VerticalRuler extends JFrame
+{
+	public VerticalRuler(int width, int height)
+	{
+		super();
+
+		setSize(width, height);
+	}
+}
+
+class BuildArea extends JFrame
+{
+	public BuildArea()
+	{
+		super();
 	}
 }
