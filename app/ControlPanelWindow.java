@@ -104,6 +104,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		BoxLayout bl = new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS);
 		mainPanel.setLayout(bl);
 		createJogPanel();
+		mainPanel.add(Box.createRigidArea(new Dimension(0,10)));
+		//mainPanel.add(Box.createVerticalGlue());
 		createToolsPanel();
 		add(mainPanel);
 
@@ -354,7 +356,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			}
 		}
 		
-		//add it all in.
+		//add it all in.		//zPanel.add(Box.createVerticalGlue());
+
 		//JPanel toolsPanel = new JPanel();
 		//toolsPanel.add(toolsPane);
 		mainPanel.add(toolsPane);
@@ -363,13 +366,14 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	protected void createExtruderPanel(ToolModel t)
 	{
 		int textBoxWidth = 150;
-		Dimension labelMinimumSize = new Dimension(100, 25);
+		Dimension labelMinimumSize = new Dimension(150, 25);
+		Dimension panelSize = new Dimension(420, 30);
 		
 		//create our initial panel
 		JPanel panel = new JPanel();
 		BoxLayout layout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
 		panel.setLayout(layout);
-		//GridLayout extruderGrid = new GridLayout(0, 2);
+		//GridLayout extruderGrid = new GridLayout(0, 1);
 		//panel.setLayout(extruderGrid);
 		
 		//create our motor options
@@ -388,24 +392,31 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			
 			//create our motor options
-			JLabel motorEnabledLabel = new JLabel("Motor");
+			JLabel motorEnabledLabel = new JLabel("Motor Control");
 			motorEnabledLabel.setMinimumSize(labelMinimumSize);
-			motorEnabledLabel.setHorizontalAlignment(SwingConstants.LEFT);
-
+			motorEnabledLabel.setMaximumSize(labelMinimumSize);
+			motorEnabledLabel.setPreferredSize(labelMinimumSize);
+			motorEnabledLabel.setHorizontalAlignment(JLabel.LEFT);
+			
 			JCheckBox motorEnabledCheck = new JCheckBox("enable");
 
-			//add it to the panel(s)
+			//create our panels
 			JPanel motorSpeedPanel = new JPanel();
-			motorSpeedPanel.setMinimumSize(new Dimension(420, 30));
-			motorSpeedPanel.setPreferredSize(new Dimension(420, 30));
-			motorSpeedPanel.setMaximumSize(new Dimension(420, 30));
-			motorSpeedPanel.setAlignmentY((float)0.0);
+			motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel, BoxLayout.LINE_AXIS));
+			motorSpeedPanel.setMaximumSize(panelSize);
+			motorSpeedPanel.setMinimumSize(panelSize);
+			motorSpeedPanel.setPreferredSize(panelSize);
+			
+			JPanel motorControlPanel = new JPanel();
+			motorControlPanel.setLayout(new BoxLayout(motorControlPanel, BoxLayout.LINE_AXIS));
+			motorControlPanel.setMaximumSize(panelSize);
+			motorControlPanel.setMinimumSize(panelSize);
+			motorControlPanel.setPreferredSize(panelSize);
+
+			//add components in.
 			motorSpeedPanel.add(motorSpeedLabel);
 			motorSpeedPanel.add(motorSpeedField);
 			panel.add(motorSpeedPanel);
-
-			JPanel motorControlPanel = new JPanel();
-			motorControlPanel.setMaximumSize(new Dimension(420, 30));
 			motorControlPanel.add(motorEnabledLabel);
 			motorControlPanel.add(motorEnabledCheck);
 			panel.add(motorControlPanel);
@@ -415,25 +426,44 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		if (t.hasHeater())
 		{
 			JLabel targetTempLabel = new JLabel("Target Temperature");
+			targetTempLabel.setMinimumSize(labelMinimumSize);
+			targetTempLabel.setMaximumSize(labelMinimumSize);
+			targetTempLabel.setPreferredSize(labelMinimumSize);
+			targetTempLabel.setHorizontalAlignment(JLabel.LEFT);
+
+			
 			JTextField targetTempField = new JTextField();
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 
 			JLabel currentTempLabel = new JLabel("Current Temperature");
+			currentTempLabel.setMinimumSize(labelMinimumSize);
+			currentTempLabel.setMaximumSize(labelMinimumSize);
+			currentTempLabel.setPreferredSize(labelMinimumSize);
+			currentTempLabel.setHorizontalAlignment(JLabel.LEFT);
+
+			
 			JTextField currentTempField = new JTextField();
 			currentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			currentTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			currentTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 
 			JPanel targetTempPanel = new JPanel();
-			targetTempPanel.setMaximumSize(new Dimension(420, 30));
+			targetTempPanel.setLayout(new BoxLayout(targetTempPanel, BoxLayout.LINE_AXIS));
+			targetTempPanel.setMaximumSize(panelSize);
+			targetTempPanel.setMinimumSize(panelSize);
+			targetTempPanel.setPreferredSize(panelSize);
+			
+			JPanel currentTempPanel = new JPanel();
+			currentTempPanel.setLayout(new BoxLayout(currentTempPanel, BoxLayout.LINE_AXIS));
+			currentTempPanel.setMaximumSize(panelSize);
+			currentTempPanel.setMinimumSize(panelSize);
+			currentTempPanel.setPreferredSize(panelSize);
+
 			targetTempPanel.add(targetTempLabel);
 			targetTempPanel.add(targetTempField);
 			panel.add(targetTempPanel);
-			
-			JPanel currentTempPanel = new JPanel();	
-			currentTempPanel.setMaximumSize(new Dimension(420, 30));
 			currentTempPanel.add(currentTempLabel);
 			currentTempPanel.add(currentTempField);
 			panel.add(currentTempPanel);
@@ -443,10 +473,19 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		if (t.hasFloodCoolant())
 		{
 			JLabel floodCoolantLabel = new JLabel("Flood Coolant");
+			floodCoolantLabel.setMinimumSize(labelMinimumSize);
+			floodCoolantLabel.setMaximumSize(labelMinimumSize);
+			floodCoolantLabel.setPreferredSize(labelMinimumSize);
+			floodCoolantLabel.setHorizontalAlignment(JLabel.LEFT);
+
 			JCheckBox floodCoolantCheck = new JCheckBox("enable");
 			
-			JPanel floodCoolantPanel = new JPanel();	
-			floodCoolantPanel.setMaximumSize(new Dimension(420, 30));
+			JPanel floodCoolantPanel = new JPanel();
+			floodCoolantPanel.setLayout(new BoxLayout(floodCoolantPanel, BoxLayout.LINE_AXIS));
+			floodCoolantPanel.setMaximumSize(panelSize);
+			floodCoolantPanel.setMinimumSize(panelSize);
+			floodCoolantPanel.setPreferredSize(panelSize);
+	
 			floodCoolantPanel.add(floodCoolantLabel);
 			floodCoolantPanel.add(floodCoolantCheck);
 			panel.add(floodCoolantPanel);
@@ -456,10 +495,19 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		if (t.hasMistCoolant())
 		{
 			JLabel mistCoolantLabel = new JLabel("Mist Coolant");
+			mistCoolantLabel.setMinimumSize(labelMinimumSize);
+			mistCoolantLabel.setMaximumSize(labelMinimumSize);
+			mistCoolantLabel.setPreferredSize(labelMinimumSize);
+			mistCoolantLabel.setHorizontalAlignment(JLabel.LEFT);
+
 			JCheckBox mistCoolantCheck = new JCheckBox("enable");
 			
 			JPanel mistCoolantPanel = new JPanel();
-			mistCoolantPanel.setMaximumSize(new Dimension(420, 30));
+			mistCoolantPanel.setLayout(new BoxLayout(mistCoolantPanel, BoxLayout.LINE_AXIS));
+			mistCoolantPanel.setMaximumSize(panelSize);
+			mistCoolantPanel.setMinimumSize(panelSize);
+			mistCoolantPanel.setPreferredSize(panelSize);
+
 			mistCoolantPanel.add(mistCoolantLabel);
 			mistCoolantPanel.add(mistCoolantCheck);
 			panel.add(mistCoolantPanel);
@@ -469,10 +517,19 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		if (t.hasFan())
 		{
 			JLabel fanLabel = new JLabel("Cooling Fan");
+			fanLabel.setMinimumSize(labelMinimumSize);
+			fanLabel.setMaximumSize(labelMinimumSize);
+			fanLabel.setPreferredSize(labelMinimumSize);
+			fanLabel.setHorizontalAlignment(JLabel.LEFT);
+
 			JCheckBox fanCheck = new JCheckBox("enable");
 			
 			JPanel fanPanel = new JPanel();	
-			fanPanel.setMaximumSize(new Dimension(420, 30));
+			fanPanel.setLayout(new BoxLayout(fanPanel, BoxLayout.LINE_AXIS));
+			fanPanel.setMaximumSize(panelSize);
+			fanPanel.setMinimumSize(panelSize);
+			fanPanel.setPreferredSize(panelSize);
+
 			fanPanel.add(fanLabel);
 			fanPanel.add(fanCheck);
 			panel.add(fanPanel);
@@ -482,10 +539,19 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		if (t.hasValve())
 		{
 			JLabel valveLabel = new JLabel("Valve");
+			valveLabel.setMinimumSize(labelMinimumSize);
+			valveLabel.setMaximumSize(labelMinimumSize);
+			valveLabel.setPreferredSize(labelMinimumSize);
+			valveLabel.setHorizontalAlignment(JLabel.LEFT);
+
 			JCheckBox valveCheck = new JCheckBox("open");
 			
 			JPanel valvePanel = new JPanel();	
-			valvePanel.setMaximumSize(new Dimension(420, 30));
+			valvePanel.setLayout(new BoxLayout(valvePanel, BoxLayout.LINE_AXIS));
+			valvePanel.setMaximumSize(panelSize);
+			valvePanel.setMinimumSize(panelSize);
+			valvePanel.setPreferredSize(panelSize);
+
 			valvePanel.add(valveLabel);
 			valvePanel.add(valveCheck);
 			panel.add(valvePanel);
@@ -495,16 +561,23 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		if (t.hasCollet())
 		{
 			JLabel colletLabel = new JLabel("Collet");
+			colletLabel.setMinimumSize(labelMinimumSize);
+			colletLabel.setMaximumSize(labelMinimumSize);
+			colletLabel.setPreferredSize(labelMinimumSize);
+			colletLabel.setHorizontalAlignment(JLabel.LEFT);
+
 			JCheckBox colletCheck = new JCheckBox("open");
 			
 			JPanel colletPanel = new JPanel();	
-			colletPanel.setMaximumSize(new Dimension(420, 30));
+			colletPanel.setLayout(new BoxLayout(colletPanel, BoxLayout.LINE_AXIS));
+			colletPanel.setMaximumSize(panelSize);
+			colletPanel.setMinimumSize(panelSize);
+			colletPanel.setPreferredSize(panelSize);
+
 			colletPanel.add(colletLabel);
 			colletPanel.add(colletCheck);
 			panel.add(colletPanel);
 		}
-
-		//add it to our tab panel
 		toolsPane.addTab(t.getName(), panel);
 	}
 	
@@ -517,14 +590,6 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		zPosField.setText(Double.toString(current.z));
 	}
 	
-	protected void createExtruderPanel()
-	{
-		extruderPanel = new JPanel();
-		extruderPanel.setLayout(new BoxLayout(extruderPanel, BoxLayout.PAGE_AXIS));
-		
-		add(extruderPanel);
-	}
-
 	public void actionPerformed(ActionEvent e)
 	{
 		String s = e.getActionCommand();
