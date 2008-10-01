@@ -196,7 +196,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		
 		//our label
 		JLabel jogLabel = new JLabel("Jog Size");
-		jogLabel.setHorizontalAlignment(JLabel.LEFT);
+		//jogLabel.setHorizontalAlignment(JLabel.LEADING);
 
 		//create our jog size dropdown
 		JComboBox jogList = new JComboBox(jogStrings);
@@ -210,11 +210,13 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 
 		//our labels
 		JLabel xPosLabel = new JLabel("X Position");
-		xPosLabel.setHorizontalAlignment(JLabel.LEFT);
+		//xPosLabel.setHorizontalAlignment(JLabel.LEFT);
+
 		JLabel yPosLabel = new JLabel("Y Position");
-		yPosLabel.setHorizontalAlignment(JLabel.LEFT);
+		//yPosLabel.setHorizontalAlignment(JLabel.LEFT);
+
 		JLabel zPosLabel = new JLabel("Z Position");
-		zPosLabel.setHorizontalAlignment(JLabel.LEFT);
+		//zPosLabel.setHorizontalAlignment(JLabel.LEFT);
 
 		//our position text boxes
 		xPosField = new JTextField();

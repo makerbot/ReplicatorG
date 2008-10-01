@@ -75,7 +75,20 @@ public class ToolModel
 	/*************************************
 	*  Creates the model object.
 	*************************************/
+	public ToolModel()
+	{
+		_initialize();
+	}
+	
 	public ToolModel(Node n)
+	{
+		_initialize();
+
+		//load our XML config
+		loadXML(n);
+	}
+	
+	private void _initialize()
 	{
 		//default information
 		name = "Generic Tool";
@@ -95,9 +108,6 @@ public class ToolModel
 		disableFan();
 		closeValve();
 		closeCollet();
-
-		//load our XML config
-		loadXML(n);
 	}
 	
 	//load data from xml config

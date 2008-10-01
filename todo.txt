@@ -8,6 +8,8 @@ TODO:
 * On Mac, the feedrate slider values don't show. Works fine on Linux.
 * add variable line width to 2D simulation based on extruder on/off state.
 * refactor ControlPanel to not be so gigantic when creating control panel
+* add time elapsed / total time to build window
+* add current temp to build window
 
 DONE:
 * add simple exerciser / status window
@@ -21,7 +23,7 @@ DONE:
 * move to a controller/model/driver system.
 * Add an extruder section (temp, start/stop extruder, extruder direction, extruder speed)
 
-0003 ReplicatorG
+0003 ReplicatorG and beyond
 
 * get auto-formatting working
 * add support for adding STL to sketch (for slicing)

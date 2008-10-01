@@ -68,6 +68,8 @@ public class MachineModel
 		maximum = new Point3d();
 		maximumFeedrates = new Point3d();
 		stepsPerMM = new Point3d(1, 1, 1); //use ones, because we divide by this!
+		
+		currentTool = new ToolModel();
 	}
 	
 	//load data from xml config
