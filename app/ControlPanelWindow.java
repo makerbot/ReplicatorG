@@ -38,7 +38,7 @@ import javax.vecmath.*;
 import java.util.*;
 import java.util.regex.*;
 
-public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener
+public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener, ItemListener
 {
 	protected JPanel mainPanel;
 	protected JPanel jogPanel;
@@ -380,7 +380,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		if (t.hasMotor())
 		{
 			//our motor speed vars
-			JLabel motorSpeedLabel = new JLabel("Motor Speed");
+			JLabel motorSpeedLabel = new JLabel("Motor Speed (RPM)");
 			motorSpeedLabel.setMinimumSize(labelMinimumSize);
 			motorSpeedLabel.setMaximumSize(labelMinimumSize);
 			motorSpeedLabel.setPreferredSize(labelMinimumSize);
@@ -390,6 +390,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			motorSpeedField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			motorSpeedField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			motorSpeedField.addActionListener(this);
 			
 			//create our motor options
 			JLabel motorEnabledLabel = new JLabel("Motor Control");
@@ -399,7 +400,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			motorEnabledLabel.setHorizontalAlignment(JLabel.LEFT);
 			
 			JCheckBox motorEnabledCheck = new JCheckBox("enable");
-
+			motorEnabledCheck.addItemListener(this);
+			
 			//create our panels
 			JPanel motorSpeedPanel = new JPanel();
 			motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel, BoxLayout.LINE_AXIS));
@@ -425,29 +427,29 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//our temperature fields
 		if (t.hasHeater())
 		{
-			JLabel targetTempLabel = new JLabel("Target Temperature");
+			JLabel targetTempLabel = new JLabel("Target Temperature (C)");
 			targetTempLabel.setMinimumSize(labelMinimumSize);
 			targetTempLabel.setMaximumSize(labelMinimumSize);
 			targetTempLabel.setPreferredSize(labelMinimumSize);
 			targetTempLabel.setHorizontalAlignment(JLabel.LEFT);
-
 			
 			JTextField targetTempField = new JTextField();
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			targetTempField.addActionListener(this);
 
-			JLabel currentTempLabel = new JLabel("Current Temperature");
+			JLabel currentTempLabel = new JLabel("Current Temperature (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
 			currentTempLabel.setMaximumSize(labelMinimumSize);
 			currentTempLabel.setPreferredSize(labelMinimumSize);
 			currentTempLabel.setHorizontalAlignment(JLabel.LEFT);
 
-			
 			JTextField currentTempField = new JTextField();
 			currentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			currentTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			currentTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			currentTempField.setEnabled(false);
 
 			JPanel targetTempPanel = new JPanel();
 			targetTempPanel.setLayout(new BoxLayout(targetTempPanel, BoxLayout.LINE_AXIS));
@@ -479,6 +481,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			floodCoolantLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox floodCoolantCheck = new JCheckBox("enable");
+			floodCoolantCheck.addItemListener(this);
 			
 			JPanel floodCoolantPanel = new JPanel();
 			floodCoolantPanel.setLayout(new BoxLayout(floodCoolantPanel, BoxLayout.LINE_AXIS));
@@ -501,7 +504,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			mistCoolantLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox mistCoolantCheck = new JCheckBox("enable");
-			
+			mistCoolantCheck.addItemListener(this);
+
 			JPanel mistCoolantPanel = new JPanel();
 			mistCoolantPanel.setLayout(new BoxLayout(mistCoolantPanel, BoxLayout.LINE_AXIS));
 			mistCoolantPanel.setMaximumSize(panelSize);
@@ -523,7 +527,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			fanLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox fanCheck = new JCheckBox("enable");
-			
+			fanCheck.addItemListener(this);
+
 			JPanel fanPanel = new JPanel();	
 			fanPanel.setLayout(new BoxLayout(fanPanel, BoxLayout.LINE_AXIS));
 			fanPanel.setMaximumSize(panelSize);
@@ -545,7 +550,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			valveLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox valveCheck = new JCheckBox("open");
-			
+			valveCheck.addItemListener(this);
+			 
 			JPanel valvePanel = new JPanel();	
 			valvePanel.setLayout(new BoxLayout(valvePanel, BoxLayout.LINE_AXIS));
 			valvePanel.setMaximumSize(panelSize);
@@ -567,6 +573,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			colletLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox colletCheck = new JCheckBox("open");
+			colletCheck.addItemListener(this);
 			
 			JPanel colletPanel = new JPanel();	
 			colletPanel.setLayout(new BoxLayout(colletPanel, BoxLayout.LINE_AXIS));
@@ -665,26 +672,30 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		updatePosition();
 	}
 
-  public void stateChanged(ChangeEvent e)
-  {
-  	/*
-    JSlider source = (JSlider)e.getSource();
-    if (!source.getValueIsAdjusting())
-    {
-      int feedrate = (int)source.getValue();
-      
-      if (source.getName().equals("xy-feedrate-slider"))
-      {
-        System.out.println("XY Feedrate: " + feedrate);
-      }
-      else if (source.getName().equals("z-feedrate-slider"))
-      {
-        System.out.println("Z Feedrate: " + feedrate);
-      }
-    }
-    */
+	public void stateChanged(ChangeEvent e)
+	{
+		JSlider source = (JSlider)e.getSource();
+		if (!source.getValueIsAdjusting())
+		{
+			int feedrate = (int)source.getValue();
 
-	updatePosition();
-  }
+			if (source.getName().equals("xy-feedrate-slider"))
+			{
+				System.out.println("XY Feedrate: " + feedrate);
+			}
+			else if (source.getName().equals("z-feedrate-slider"))
+			{
+				System.out.println("Z Feedrate: " + feedrate);
+			}
+		}
+
+		updatePosition();
+	}
+	
+	public void itemStateChanged(ItemEvent e)
+	{
+		Object source = e.getItemSelectable();
+	}
+
 }
     
