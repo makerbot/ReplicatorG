@@ -365,8 +365,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	
 	protected void createExtruderPanel(ToolModel t)
 	{
-		int textBoxWidth = 150;
-		Dimension labelMinimumSize = new Dimension(150, 25);
+		int textBoxWidth = 75;
+		Dimension labelMinimumSize = new Dimension(175, 25);
 		Dimension panelSize = new Dimension(420, 30);
 		
 		//create our initial panel
@@ -390,6 +390,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			motorSpeedField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			motorSpeedField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			motorSpeedField.setActionCommand("motor-speed");
 			motorSpeedField.addActionListener(this);
 			
 			//create our motor options
@@ -400,6 +401,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			motorEnabledLabel.setHorizontalAlignment(JLabel.LEFT);
 			
 			JCheckBox motorEnabledCheck = new JCheckBox("enable");
+			motorEnabledCheck.setName("motor-enabled");
 			motorEnabledCheck.addItemListener(this);
 			
 			//create our panels
@@ -437,6 +439,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			targetTempField.setActionCommand("target-temp");
 			targetTempField.addActionListener(this);
 
 			JLabel currentTempLabel = new JLabel("Current Temperature (C)");
@@ -481,6 +484,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			floodCoolantLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox floodCoolantCheck = new JCheckBox("enable");
+			floodCoolantCheck.setName("flood-coolant");
 			floodCoolantCheck.addItemListener(this);
 			
 			JPanel floodCoolantPanel = new JPanel();
@@ -504,6 +508,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			mistCoolantLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox mistCoolantCheck = new JCheckBox("enable");
+			mistCoolantCheck.setName("mist-coolant");
 			mistCoolantCheck.addItemListener(this);
 
 			JPanel mistCoolantPanel = new JPanel();
@@ -527,6 +532,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			fanLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox fanCheck = new JCheckBox("enable");
+ 			fanCheck.setName("fan-check");
 			fanCheck.addItemListener(this);
 
 			JPanel fanPanel = new JPanel();	
@@ -550,6 +556,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			valveLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox valveCheck = new JCheckBox("open");
+			valveCheck.setName("valve-check");
 			valveCheck.addItemListener(this);
 			 
 			JPanel valvePanel = new JPanel();	
@@ -573,6 +580,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			colletLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JCheckBox colletCheck = new JCheckBox("open");
+			colletCheck.setName("collet-check");
 			colletCheck.addItemListener(this);
 			
 			JPanel colletPanel = new JPanel();	
@@ -674,6 +682,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 
 	public void stateChanged(ChangeEvent e)
 	{
+		/*
 		JSlider source = (JSlider)e.getSource();
 		if (!source.getValueIsAdjusting())
 		{
@@ -690,12 +699,52 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		}
 
 		updatePosition();
+		*/
 	}
 	
 	public void itemStateChanged(ItemEvent e)
 	{
-		Object source = e.getItemSelectable();
+		JCheckBox source = (JCheckBox)e.getItemSelectable();
+		String name = source.getName();
+		
+		if (e.getStateChange() == ItemEvent.SELECTED)
+		{
+			if (name.equals("motor-enabled"))
+				driver.enableMotor();
+			else if (name.equals("spindle-enabled"))
+				driver.enableSpindle();
+			else if (name.equals("flood-coolant"))
+				driver.enableFloodCoolant();
+			else if (name.equals("mist-coolant"))
+				driver.enableMistCoolant();
+			else if (name.equals("fan-check"))
+				driver.enableFan();
+			else if (name.equals("valve-check"))
+				driver.openValve();
+			else if (name.equals("collet-check"))
+				driver.openCollet();
+			else
+				System.out.println("checkbox selected: " + source.getName());
+		}
+		else
+		{
+			if (name.equals("motor-enabled"))
+				driver.disableMotor();
+			else if (name.equals("spindle-enabled"))
+				driver.disableSpindle();
+			else if (name.equals("flood-coolant"))
+				driver.disableFloodCoolant();
+			else if (name.equals("mist-coolant"))
+				driver.disableMistCoolant();
+			else if (name.equals("fan-check"))
+				driver.disableFan();
+			else if (name.equals("valve-check"))
+				driver.closeValve();
+			else if (name.equals("collet-check"))
+				driver.closeCollet();
+			else
+				System.out.println("checkbox deselected: " + source.getName());
+		}
 	}
-
 }
     

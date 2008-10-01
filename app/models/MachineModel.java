@@ -177,6 +177,8 @@ public class MachineModel
 					tools.add(tool);
 				}
 			}
+			
+			selectTool(0);
 		}
 	}
 
