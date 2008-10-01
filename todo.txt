@@ -6,7 +6,6 @@ TODO:
 * add units to simulation window
 * add grid to simulation window
 * On Mac, the feedrate slider values don't show. Works fine on Linux.
-* Add an extruder section (temp, start/stop extruder, extruder direction, extruder speed)
 * add variable line width to 2D simulation based on extruder on/off state.
 * refactor ControlPanel to not be so gigantic when creating control panel
 
@@ -20,6 +19,7 @@ DONE:
 * add estimate menu item
 * add basic machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
 * move to a controller/model/driver system.
+* Add an extruder section (temp, start/stop extruder, extruder direction, extruder speed)
 
 0003 ReplicatorG
 
