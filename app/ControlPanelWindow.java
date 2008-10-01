@@ -221,16 +221,19 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		xPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
 		xPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
 		xPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
+		xPosField.setEnabled(false);
 
 		yPosField = new JTextField();
 		yPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
 		yPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
 		yPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
+		yPosField.setEnabled(false);
 
 		zPosField = new JTextField();
 		zPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
 		zPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
 		zPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
+		zPosField.setEnabled(false);
 
 		//our 'go' button
 		JButton goButton = new JButton("Go.");
@@ -251,7 +254,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		positionPanel.add(yPosField);
 		positionPanel.add(zPosLabel);
 		positionPanel.add(zPosField);
-		positionPanel.add(goButton);
+		//positionPanel.add(goButton);
 		
 		//create our XY panel
 		JPanel xyPanel = new JPanel();

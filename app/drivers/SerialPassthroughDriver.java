@@ -444,7 +444,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	*************************************/
 	public void setMotorSpeed(double rpm)
 	{
-		sendCommand(_getToolCode() + "M108 R" + rpm);
+		sendCommand(_getToolCode() + "M108 S" + rpm);
 
 		super.setMotorSpeed(rpm);
 	}
