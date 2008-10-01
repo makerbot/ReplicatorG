@@ -38,7 +38,7 @@ import javax.vecmath.*;
 import java.util.*;
 import java.util.regex.*;
 
-public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener, ItemListener
+public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener, ItemListener, FocusListener
 {
 	protected JPanel mainPanel;
 	protected JPanel jogPanel;
@@ -398,8 +398,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			motorSpeedField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			motorSpeedField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
-			motorSpeedField.setActionCommand("motor-speed");
-			motorSpeedField.addActionListener(this);
+			motorSpeedField.setName("motor-speed");
+			motorSpeedField.addFocusListener(this);
 			
 			//create our motor options
 			JLabel motorEnabledLabel = new JLabel("Motor Control");
@@ -447,8 +447,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
-			targetTempField.setActionCommand("target-temp");
-			targetTempField.addActionListener(this);
+			targetTempField.setName("target-temp");
+			targetTempField.addFocusListener(this);
 
 			JLabel currentTempLabel = new JLabel("Current Temperature (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
@@ -752,6 +752,27 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			else
 				System.out.println("checkbox deselected: " + source.getName());
 		}
+	}
+	
+	public void focusGained(FocusEvent e)
+	{
+	}
+	
+	public void focusLost(FocusEvent e)
+	{
+		JTextField source = (JTextField)e.getSource();
+		String name = source.getName();
+		
+		if (name.equals("target-temp"))
+		{
+			driver.setTemperature(Double.parseDouble(source.getText()));
+		}
+		else if (name.equals("motor-speed"))
+		{
+			driver.setMotorSpeed(Double.parseDouble(source.getText()));
+		}
+		else
+			System.out.println(name + " lost focus.");
 	}
 	
 	class UpdateThread extends Thread

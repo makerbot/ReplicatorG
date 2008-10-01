@@ -184,7 +184,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	{
 		if (isInitialized())
 		{
-			System.out.println("sending: " + next);
+			//System.out.println("sending: " + next);
 
 			next = clean(next);
 
