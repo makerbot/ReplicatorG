@@ -40,6 +40,7 @@ import java.util.regex.*;
 
 public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener
 {
+	protected JPanel mainPanel;
 	protected JPanel jogPanel;
 	protected JButton xPlusButton;
 	protected JButton xMinusButton;
@@ -80,27 +81,31 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//int myWidth = screen.width-40;
 		//int myHeight = screen.height-40;
 		int myWidth = 450;
-		int myHeight = 600;
+		int myHeight = 700;
 		
 		//compile our regexes
 		jogRate = 10.0;
 		jogPattern = Pattern.compile("([.0-9]+)");
 		//jogStrings = ;
 		
-	 	this.setBounds(40, 40, myWidth, myHeight);
+	 	setBounds(40, 40, myWidth, myHeight);
 	
 		//default behavior
-		this.setDefaultCloseOperation(HIDE_ON_CLOSE);
+		setDefaultCloseOperation(HIDE_ON_CLOSE);
 	
 		//no resizing... yet
-		this.setResizable(false);
+		setResizable(false);
 		
 		//no menu bar.
-		this.setMenuBar(null);
+		setMenuBar(null);
 		
 		//create all our GUI interfaces
+		mainPanel = new JPanel();
+		BoxLayout bl = new BoxLayout(mainPanel, BoxLayout.PAGE_AXIS);
+		mainPanel.setLayout(bl);
 		createJogPanel();
-		//createExtruderPanel();
+		createToolsPanel();
+		add(mainPanel);
 
 		//where are we?
 		updatePosition();
@@ -314,9 +319,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		jogPanel.setLayout(new BoxLayout(jogPanel, BoxLayout.PAGE_AXIS));
 		
 		//proper size!
-		jogPanel.setMinimumSize(new Dimension(420, 200));
-		jogPanel.setMaximumSize(new Dimension(420, 200));
-		jogPanel.setPreferredSize(new Dimension(420, 200));
+		//jogPanel.setMinimumSize(new Dimension(420, 300));
+		//jogPanel.setMaximumSize(new Dimension(420, 300));
+		//jogPanel.setPreferredSize(new Dimension(420, 300));
 
 		//add it all to our jog panel
 		jogPanel.add(xyzPanel);
@@ -327,10 +332,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		jogPanel.setBorder(BorderFactory.createTitledBorder("Jog Controls"));		
 		
 		//add the whole deal to our window.
-		add(jogPanel);
-		
-		//add our tools panel as well
-		//createToolsPanel();
+		mainPanel.add(jogPanel);
 	}
 	
 	protected void createToolsPanel()
@@ -342,21 +344,168 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			ToolModel t = (ToolModel)e.nextElement();
 			
 			if (t.getType().equals("extruder"))
-				createExtruderTab(t);
+			{
+				System.out.println("Creating panel for " + t.getName());
+				createExtruderPanel(t);
+			}
 			else
 			{
 				System.out.println("Unsupported tool for control panel.");
 			}
 		}
 		
-		add(toolsPane);
+		//add it all in.
+		//JPanel toolsPanel = new JPanel();
+		//toolsPanel.add(toolsPane);
+		mainPanel.add(toolsPane);
 	}
 	
-	protected void createExtruderTab(ToolModel t)
+	protected void createExtruderPanel(ToolModel t)
 	{
-		JPanel panel = new JPanel();
+		int textBoxWidth = 150;
+		Dimension labelMinimumSize = new Dimension(100, 25);
 		
-		toolsPane.addTab(panel.getName(), panel);
+		//create our initial panel
+		JPanel panel = new JPanel();
+		BoxLayout layout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
+		panel.setLayout(layout);
+		//GridLayout extruderGrid = new GridLayout(0, 2);
+		//panel.setLayout(extruderGrid);
+		
+		//create our motor options
+		if (t.hasMotor())
+		{
+			//our motor speed vars
+			JLabel motorSpeedLabel = new JLabel("Motor Speed");
+			motorSpeedLabel.setMinimumSize(labelMinimumSize);
+			motorSpeedLabel.setMaximumSize(labelMinimumSize);
+			motorSpeedLabel.setPreferredSize(labelMinimumSize);
+			motorSpeedLabel.setHorizontalAlignment(JLabel.LEFT);
+			
+			JTextField motorSpeedField = new JTextField();
+			motorSpeedField.setMaximumSize(new Dimension(textBoxWidth, 25));
+			motorSpeedField.setMinimumSize(new Dimension(textBoxWidth, 25));
+			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			
+			//create our motor options
+			JLabel motorEnabledLabel = new JLabel("Motor");
+			motorEnabledLabel.setMinimumSize(labelMinimumSize);
+			motorEnabledLabel.setHorizontalAlignment(SwingConstants.LEFT);
+
+			JCheckBox motorEnabledCheck = new JCheckBox("enable");
+
+			//add it to the panel(s)
+			JPanel motorSpeedPanel = new JPanel();
+			motorSpeedPanel.setMinimumSize(new Dimension(420, 30));
+			motorSpeedPanel.setPreferredSize(new Dimension(420, 30));
+			motorSpeedPanel.setMaximumSize(new Dimension(420, 30));
+			motorSpeedPanel.setAlignmentY((float)0.0);
+			motorSpeedPanel.add(motorSpeedLabel);
+			motorSpeedPanel.add(motorSpeedField);
+			panel.add(motorSpeedPanel);
+
+			JPanel motorControlPanel = new JPanel();
+			motorControlPanel.setMaximumSize(new Dimension(420, 30));
+			motorControlPanel.add(motorEnabledLabel);
+			motorControlPanel.add(motorEnabledCheck);
+			panel.add(motorControlPanel);
+		}
+		
+		//our temperature fields
+		if (t.hasHeater())
+		{
+			JLabel targetTempLabel = new JLabel("Target Temperature");
+			JTextField targetTempField = new JTextField();
+			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
+			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
+			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
+
+			JLabel currentTempLabel = new JLabel("Current Temperature");
+			JTextField currentTempField = new JTextField();
+			currentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
+			currentTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
+			currentTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
+
+			JPanel targetTempPanel = new JPanel();
+			targetTempPanel.setMaximumSize(new Dimension(420, 30));
+			targetTempPanel.add(targetTempLabel);
+			targetTempPanel.add(targetTempField);
+			panel.add(targetTempPanel);
+			
+			JPanel currentTempPanel = new JPanel();	
+			currentTempPanel.setMaximumSize(new Dimension(420, 30));
+			currentTempPanel.add(currentTempLabel);
+			currentTempPanel.add(currentTempField);
+			panel.add(currentTempPanel);
+		}
+		
+		//flood coolant controls
+		if (t.hasFloodCoolant())
+		{
+			JLabel floodCoolantLabel = new JLabel("Flood Coolant");
+			JCheckBox floodCoolantCheck = new JCheckBox("enable");
+			
+			JPanel floodCoolantPanel = new JPanel();	
+			floodCoolantPanel.setMaximumSize(new Dimension(420, 30));
+			floodCoolantPanel.add(floodCoolantLabel);
+			floodCoolantPanel.add(floodCoolantCheck);
+			panel.add(floodCoolantPanel);
+		}
+		
+		//mist coolant controls
+		if (t.hasMistCoolant())
+		{
+			JLabel mistCoolantLabel = new JLabel("Mist Coolant");
+			JCheckBox mistCoolantCheck = new JCheckBox("enable");
+			
+			JPanel mistCoolantPanel = new JPanel();
+			mistCoolantPanel.setMaximumSize(new Dimension(420, 30));
+			mistCoolantPanel.add(mistCoolantLabel);
+			mistCoolantPanel.add(mistCoolantCheck);
+			panel.add(mistCoolantPanel);
+		}
+		
+		//cooling fan controls
+		if (t.hasFan())
+		{
+			JLabel fanLabel = new JLabel("Cooling Fan");
+			JCheckBox fanCheck = new JCheckBox("enable");
+			
+			JPanel fanPanel = new JPanel();	
+			fanPanel.setMaximumSize(new Dimension(420, 30));
+			fanPanel.add(fanLabel);
+			fanPanel.add(fanCheck);
+			panel.add(fanPanel);
+		}
+		
+		//valve controls
+		if (t.hasValve())
+		{
+			JLabel valveLabel = new JLabel("Valve");
+			JCheckBox valveCheck = new JCheckBox("open");
+			
+			JPanel valvePanel = new JPanel();	
+			valvePanel.setMaximumSize(new Dimension(420, 30));
+			valvePanel.add(valveLabel);
+			valvePanel.add(valveCheck);
+			panel.add(valvePanel);
+		}
+
+		//valve controls
+		if (t.hasCollet())
+		{
+			JLabel colletLabel = new JLabel("Collet");
+			JCheckBox colletCheck = new JCheckBox("open");
+			
+			JPanel colletPanel = new JPanel();	
+			colletPanel.setMaximumSize(new Dimension(420, 30));
+			colletPanel.add(colletLabel);
+			colletPanel.add(colletCheck);
+			panel.add(colletPanel);
+		}
+
+		//add it to our tab panel
+		toolsPane.addTab(t.getName(), panel);
 	}
 	
 	protected void updatePosition()

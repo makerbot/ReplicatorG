@@ -63,12 +63,14 @@ public class ToolModel
 	protected boolean colletOpen;
 	
 	//capabilities
+	protected boolean hasMotor = false;
+	protected boolean hasSpindle = false;
+	protected boolean hasHeater = false;
 	protected boolean hasFloodCoolant = false;
 	protected boolean hasMistCoolant = false;
 	protected boolean hasFan = false;
 	protected boolean hasValve = false;
 	protected boolean hasCollet = false;
-	protected boolean hasHeater = false;
 
 	/*************************************
 	*  Creates the model object.
@@ -119,6 +121,18 @@ public class ToolModel
 			material = n;
 		
 		//our various capabilities
+		n = XML.getAttributeValue(xml, "motor");
+		try {
+			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+				hasMotor = true;
+		} catch (Exception e) {} //ignore boolean/integer parse errors
+
+		n = XML.getAttributeValue(xml, "spindle");
+		try {
+			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+				hasSpindle = true;
+		} catch (Exception e) {} //ignore boolean/integer parse errors
+
 		//flood coolant
 		n = XML.getAttributeValue(xml, "floodcoolant");
 		try {
@@ -162,6 +176,10 @@ public class ToolModel
 		result += "with these capabilities: ";
 		if (hasFloodCoolant)
 			result += "flood coolant, ";
+		if (hasMotor)
+			result += "motor, ";
+		if (hasSpindle)
+			result += "spindle, ";
 		if (hasMistCoolant)
 			result += "mist coolant, ";
 		if (hasFan)
@@ -238,6 +256,11 @@ public class ToolModel
 		return motorEnabled;
 	}
 	
+	public boolean hasMotor()
+	{
+		return hasMotor;
+	}
+	
 	/*************************************
 	*  Spindle interface functions
 	*************************************/
@@ -276,6 +299,10 @@ public class ToolModel
 		return spindleEnabled;
 	}
 	
+	public boolean hasSpindle()
+	{
+		return hasSpindle;
+	}
 
 	/*************************************
 	*  Spindle interface functions
@@ -293,6 +320,11 @@ public class ToolModel
 	public double getCurrentTemperature()
 	{
 		return currentTemperature;
+	}
+	
+	public boolean hasHeater()
+	{
+		return hasHeater;
 	}
 
 	/*************************************
@@ -312,6 +344,11 @@ public class ToolModel
 	{
 		return floodCoolantEnabled;
 	}
+	
+	public boolean hasFloodCoolant()
+	{
+		return hasFloodCoolant;
+	}
 
 	/*************************************
 	*  Mist Coolant interface functions
@@ -329,6 +366,11 @@ public class ToolModel
 	public boolean isMistCoolantEnabled()
 	{
 		return mistCoolantEnabled;
+	}
+	
+	public boolean hasMistCoolant()
+	{
+		return hasMistCoolant;
 	}
 
 	/*************************************
@@ -349,6 +391,11 @@ public class ToolModel
 		return fanEnabled;
 	}
 	
+	public boolean hasFan()
+	{
+		return hasFan;
+	}
+	
 	/*************************************
 	*  Valve interface functions
 	*************************************/
@@ -367,6 +414,11 @@ public class ToolModel
 		return valveOpen;
 	}
 	
+	public boolean hasValve()
+	{
+		return hasValve;
+	}
+	
 	/*************************************
 	*  Collet interface functions
 	*************************************/
@@ -383,5 +435,10 @@ public class ToolModel
 	public boolean isColletOpen()
 	{
 		return colletOpen;
+	}
+	
+	public boolean hasCollet()
+	{
+		return hasCollet;
 	}
 }

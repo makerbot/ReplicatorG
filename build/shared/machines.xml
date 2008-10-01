@@ -8,7 +8,7 @@
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
-			<tool name="Generic Extruder" type="extruder" material="abs" floodcoolant="true" mistcoolant="true" fan="true" valve="true" collet="true" heater="true"/>
+			<tool name="Generic Extruder" type="extruder" material="abs" motor="true" floodcoolant="true" mistcoolant="true" fan="true" valve="true" collet="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="null"> <!-- use a fake driver -->
@@ -24,7 +24,7 @@
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
-			<tool name="Lasercut Extruder v1.0" type="extruder" material="abs" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+			<tool name="Lasercut Extruder v1.0" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="serialpassthrough">
