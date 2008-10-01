@@ -104,7 +104,6 @@ public interface Driver
 	public void queuePoint(Point3d p);
 	public Point3d getOffset(int i);
 
-
 	/**
 	* Tool methods
 	*/

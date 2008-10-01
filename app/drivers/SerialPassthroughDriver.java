@@ -121,43 +121,48 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	public void initialize()
 	{
 		//declare our serial guy.
-		try {
-			System.out.println("Connecting to " + name + " at " + rate);
-			serial = new Serial(name, rate, parity, databits, stopbits);
-		} catch (SerialException e) {
-			//TODO: report the error here.
-			e.printStackTrace();
+		if (serial == null)
+		{
+			try {
+				System.out.println("Connecting to " + name + " at " + rate);
+				serial = new Serial(name, rate, parity, databits, stopbits);
+			} catch (SerialException e) {
+				//TODO: report the error here.
+				e.printStackTrace();
+			}
 		}
 		
 		//wait til we're initialized
-		try
+		if (!isInitialized())
 		{
-			//record our start time.
-			Date date = new Date();
-			long end = date.getTime() + 10000;
-
-			System.out.println("Initializing Serial.");
-			while (!isInitialized())
+			try
 			{
-				readResponse();
-				
-				//record our current time
-				date = new Date();
-				long now = date.getTime();
+				//record our start time.
+				Date date = new Date();
+				long end = date.getTime() + 10000;
 
-				//only give them 10 seconds
-				if (now > end)
+				System.out.println("Initializing Serial.");
+				while (!isInitialized())
 				{
-					System.out.println("Serial link non-responsive.");
-					return;
+					readResponse();
+					
+					//record our current time
+					date = new Date();
+					long now = date.getTime();
+
+					//only give them 10 seconds
+					if (now > end)
+					{
+						System.out.println("Serial link non-responsive.");
+						return;
+					}
 				}
+			} catch (Exception e) {
+				//todo: handle init exceptions here
 			}
-		} catch (Exception e) {
-			//todo: handle init exceptions here
+			System.out.println("Ready to rock.");
 		}
 		
-		System.out.println("Ready to rock.");
-
 		//default us to absolute positioning
 		sendCommand("G90");
 	}
@@ -179,7 +184,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	{
 		if (isInitialized())
 		{
-			//System.out.println("sending: " + next);
+			System.out.println("sending: " + next);
 
 			next = clean(next);
 
@@ -276,7 +281,10 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 							//	Debug.d("Empty buffer!! :(");
 						}
 						else if (result.startsWith("T:"))
-							System.out.println(result.substring(0, result.length()-2));
+						{
+							String temp = result.substring(2, result.length()-2);
+							machine.currentTool().setCurrentTemperature(Double.parseDouble(temp));
+						}
 						//old arduino firmware sends "start"
 						else if (result.startsWith("start"))
 						{

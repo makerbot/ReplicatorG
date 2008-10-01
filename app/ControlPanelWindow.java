@@ -63,10 +63,13 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	protected JTextField yPosField;
 	protected JTextField zPosField;
 	
-	JTabbedPane toolsPane;
+	protected JTextField currentTempField;
+	protected JTabbedPane toolsPane;
 	
 	protected MachineController machine;
 	protected Driver driver;
+	
+	protected UpdateThread updateThread;
 	
 	public ControlPanelWindow (MachineController m)
 	{
@@ -75,6 +78,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//save our machine!
 		machine = m;
 		driver = machine.getDriver();
+		driver.initialize();
 		
 		//make it a reasonable size
  		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -110,7 +114,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		add(mainPanel);
 
 		//where are we?
-		updatePosition();
+		updateStatus();
+		
+		//start our building thread.
+		updateThread = new UpdateThread(this, driver);
+		updateThread.start();
 	}
 	
 	protected void createJogPanel()
@@ -448,7 +456,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			currentTempLabel.setPreferredSize(labelMinimumSize);
 			currentTempLabel.setHorizontalAlignment(JLabel.LEFT);
 
-			JTextField currentTempField = new JTextField();
+			currentTempField = new JTextField();
 			currentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			currentTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
 			currentTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
@@ -596,13 +604,16 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		toolsPane.addTab(t.getName(), panel);
 	}
 	
-	protected void updatePosition()
+	synchronized public void updateStatus()
 	{
 		Point3d current = driver.getCurrentPosition();
 		
 		xPosField.setText(Double.toString(current.x));
 		yPosField.setText(Double.toString(current.y));
 		zPosField.setText(Double.toString(current.z));
+
+		double temperature = driver.getTemperature();
+		currentTempField.setText(Double.toString(temperature));
 	}
 	
 	public void actionPerformed(ActionEvent e)
@@ -676,8 +687,6 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		}
 		else
 			System.out.println("Unknown Action Event: " + s);
-			
-		updatePosition();
 	}
 
 	public void stateChanged(ChangeEvent e)
@@ -697,8 +706,6 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 				System.out.println("Z Feedrate: " + feedrate);
 			}
 		}
-
-		updatePosition();
 		*/
 	}
 	
@@ -746,5 +753,31 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 				System.out.println("checkbox deselected: " + source.getName());
 		}
 	}
+	
+	class UpdateThread extends Thread
+	{
+		ControlPanelWindow window;
+		Driver driver;
+		
+		public UpdateThread(ControlPanelWindow w, Driver d)
+		{
+			window = w;
+			driver = d;
+		}
+		
+		public void run()
+		{
+			//we'll break on interrupts
+			try {
+				while(true)
+				{
+					driver.readTemperature();
+					this.sleep(10);
+
+					window.updateStatus();
+					this.sleep(1000);
+				}
+			} catch (InterruptedException e) {}
+		}
+	}
 }
-    

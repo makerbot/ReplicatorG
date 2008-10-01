@@ -62,6 +62,11 @@ public class DriverBaseImplementation implements Driver
 	//how fast are we moving in mm/minute
 	private double currentFeedrate;
 	
+	//what is our mode of positioning?
+	private int positioningMode = 0;
+	static public int ABSOLUTE = 0;
+	static public int INCREMENTAL = 1;
+	
 	/**
 	  * Creates the driver object.
 	  */
@@ -235,7 +240,6 @@ public class DriverBaseImplementation implements Driver
 	{
 		return currentFeedrate;
 	}
-	
 	
 	/*************************************************
 	*  various homing functions
