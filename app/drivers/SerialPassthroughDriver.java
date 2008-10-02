@@ -208,9 +208,6 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 					serial.write(next + "\n");
 				}
 
-				//so we can get updates during massive writes.
-				readResponse();			
-				
 				//record it in our buffer tracker.
 				commands.add(next);
 				bufferSize += next.length() + 1;
