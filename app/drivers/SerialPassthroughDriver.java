@@ -202,9 +202,15 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 			//will it fit into our buffer?
 			if (bufferSize + next.length() < maxBufferSize)
 			{
-				//do the actual send.
-				serial.write(next + "\n");
+				synchronized(serial)
+				{
+					//do the actual send.
+					serial.write(next + "\n");
+				}
 
+				//so we can get updates during massive writes.
+				readResponse();			
+				
 				//record it in our buffer tracker.
 				commands.add(next);
 				bufferSize += next.length() + 1;
@@ -235,81 +241,86 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	public void readResponse()
 	{
-		String cmd = "";
-		
-		//read for any results.
-		for (;;)
+		synchronized(serial)
 		{
-			try
+			String cmd = "";
+			
+			//read for any results.
+			for (;;)
 			{
-				//no serial? bail!
-				if (serial.available() > 0)
+				try
 				{
-					//get it as ascii.
-					char c = serial.readChar();
-					result += c;
-				
-					//System.out.println("got: " + c);
-					//System.out.println("current: " + result);
-					
-					//is it a done command?
-					if (c == '\n')
+					//no serial? bail!
+					if (serial.available() > 0)
 					{
-						//System.out.println("received: " + result);
+						//get it as ascii.
+						char c = serial.readChar();
+						result += c;
+					
+						//System.out.println("got: " + c);
+						//System.out.println("current: " + result);
 						
-						if (result.startsWith("ok"))
+						//is it a done command?
+						if (c == '\n')
 						{
-							cmd = (String)commands.get(currentCommand);
-
-							//if (result.length() > 2)
-							//	System.out.println("got: " + result.substring(0, result.length()-2) + "(" + bufferSize + " - " + (cmd.length() + 1) + " = " + (bufferSize - (cmd.length() + 1)) + ")");
-
-							bufferSize -= cmd.length() + 1;
-							bufferLength--;
+							//System.out.println("received: " + result.substring(0, result.length()-2));
 							
-							currentCommand++;
-							result = "";
-							
-							//Debug.d("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
+							if (result.startsWith("ok"))
+							{
+								cmd = (String)commands.get(currentCommand);
 
-							//bail, buffer is almost empty.  fill it!
-							if (bufferLength < 2)
+								//if (result.length() > 2)
+								//System.out.println("got: " + result.substring(0, result.length()-2));
+								// + "(" + bufferSize + " - " + (cmd.length() + 1) + " = " + (bufferSize - (cmd.length() + 1)) + ")");
+
+								bufferSize -= cmd.length() + 1;
+								bufferLength--;
+								
+								currentCommand++;
+								result = "";
+								
+								//Debug.d("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
+
+								//bail, buffer is almost empty.  fill it!
+								if (bufferLength < 2)
+									break;
+								
+								//we'll never get here.. for testing.
+								//if (bufferLength == 0)
+								//	Debug.d("Empty buffer!! :(");
+							}
+							else if (result.indexOf("T:") > -1)
+							{
+								String temp = result.substring(2, result.length()-2);
+								machine.currentTool().setCurrentTemperature(Double.parseDouble(temp));
+							}
+							//old arduino firmware sends "start"
+							else if (result.startsWith("start"))
+							{
+								//todo: set version
+								setInitialized(true);
+							}
+							else if (result.startsWith("Extruder Fail"))
+							{
+								setError("Extruder failed:  cannot extrude as this rate.");
+								result = "";
+								
 								break;
-							
-							//we'll never get here.. for testing.
-							//if (bufferLength == 0)
-							//	Debug.d("Empty buffer!! :(");
-						}
-						else if (result.startsWith("T:"))
-						{
-							String temp = result.substring(2, result.length()-2);
-							machine.currentTool().setCurrentTemperature(Double.parseDouble(temp));
-						}
-						//old arduino firmware sends "start"
-						else if (result.startsWith("start"))
-						{
-							//todo: set version
-							setInitialized(true);
-						}
-						else if (result.startsWith("Extruder Fail"))
-						{
-							setError("Extruder failed:  cannot extrude as this rate.");
+							}
+							else
+								System.out.println("Unknown: " + result.substring(0, result.length()-2));
+								
 							result = "";
-							
 							break;
 						}
-						else
-							System.out.println(result.substring(0, result.length()-2));
-							
-						result = "";
 					}
-				}
-				else
+					else
+						break;
+				} catch (Exception e) {
 					break;
-			} catch (Exception e) {
-				break;
-			}
-		}	
+				}
+			}	
+		}
 	}
 	
 	public boolean isFinished()

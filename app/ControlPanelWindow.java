@@ -70,6 +70,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	protected Driver driver;
 	
 	protected UpdateThread updateThread;
+	protected PollThread pollThread;
 	
 	public ControlPanelWindow (MachineController m)
 	{
@@ -113,12 +114,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		createToolsPanel();
 		add(mainPanel);
 
-		//where are we?
-		updateStatus();
-		
-		//start our building thread.
-		updateThread = new UpdateThread(this, driver);
+		//start our various threads.
+		updateThread = new UpdateThread(this);
 		updateThread.start();
+		pollThread = new PollThread(driver);
+		pollThread.start();
 	}
 	
 	protected void createJogPanel()
@@ -417,8 +417,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			motorReverseButton.setName("motor-reverse");
 			motorReverseButton.addItemListener(this);
 
-			JRadioButton motorStoppedButton = new JRadioButton("stopped");
-			motorStoppedButton.setName("motor-stopped");
+			JRadioButton motorStoppedButton = new JRadioButton("stop");
+			motorStoppedButton.setName("motor-stop");
 			motorStoppedButton.addItemListener(this);
 
 			JRadioButton motorForwardButton = new JRadioButton("forward");
@@ -737,7 +737,17 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		if (e.getStateChange() == ItemEvent.SELECTED)
 		{
 			if (name.equals("motor-forward"))
+			{
+				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
 				driver.enableMotor();
+			}
+			else if (name.equals("motor-reverse"))
+			{
+				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
+				driver.enableMotor();
+			}
+			else if (name.equals("motor-stop"))
+				driver.disableMotor();
 			else if (name.equals("spindle-enabled"))
 				driver.enableSpindle();
 			else if (name.equals("flood-coolant"))
@@ -769,8 +779,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 				driver.closeValve();
 			else if (name.equals("collet-check"))
 				driver.closeCollet();
-			else
-				System.out.println("checkbox deselected: " + source.getName());
+//			else
+//				System.out.println("checkbox deselected: " + source.getName());
 		}
 	}
 	
@@ -783,26 +793,27 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		JTextField source = (JTextField)e.getSource();
 		String name = source.getName();
 		
-		if (name.equals("target-temp"))
+		if (source.getText().length() > 0)
 		{
-			driver.setTemperature(Double.parseDouble(source.getText()));
+			if (name.equals("target-temp"))
+			{
+				driver.setTemperature(Double.parseDouble(source.getText()));
+			}
+			else if (name.equals("motor-speed"))
+			{
+				driver.setMotorSpeed(Double.parseDouble(source.getText()));
+			}
+			else
+				System.out.println(name + " lost focus.");
 		}
-		else if (name.equals("motor-speed"))
-		{
-			driver.setMotorSpeed(Double.parseDouble(source.getText()));
-		}
-		else
-			System.out.println(name + " lost focus.");
 	}
 	
-	class UpdateThread extends Thread
+	class PollThread extends Thread
 	{
-		ControlPanelWindow window;
 		Driver driver;
-		
-		public UpdateThread(ControlPanelWindow w, Driver d)
+
+		public PollThread(Driver d)
 		{
-			window = w;
 			driver = d;
 		}
 		
@@ -813,8 +824,27 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 				while(true)
 				{
 					driver.readTemperature();
-					this.sleep(10);
-
+					this.sleep(1000);
+				}
+			} catch (InterruptedException e) {}
+		}
+	}
+	
+	class UpdateThread extends Thread
+	{
+		ControlPanelWindow window;
+		
+		public UpdateThread(ControlPanelWindow w)
+		{
+			window = w;
+		}
+		
+		public void run()
+		{
+			//we'll break on interrupts
+			try {
+				while(true)
+				{
 					window.updateStatus();
 					this.sleep(1000);
 				}
