@@ -413,9 +413,22 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			motorEnabledLabel.setPreferredSize(labelMinimumSize);
 			motorEnabledLabel.setHorizontalAlignment(JLabel.LEFT);
 			
-			JCheckBox motorEnabledCheck = new JCheckBox("enable");
-			motorEnabledCheck.setName("motor-enabled");
-			motorEnabledCheck.addItemListener(this);
+			JRadioButton motorReverseButton = new JRadioButton("reverse");
+			motorReverseButton.setName("motor-reverse");
+			motorReverseButton.addItemListener(this);
+
+			JRadioButton motorStoppedButton = new JRadioButton("stopped");
+			motorStoppedButton.setName("motor-stopped");
+			motorStoppedButton.addItemListener(this);
+
+			JRadioButton motorForwardButton = new JRadioButton("forward");
+			motorForwardButton.setName("motor-forward");
+			motorForwardButton.addItemListener(this);
+
+			ButtonGroup motorControl = new ButtonGroup();
+			motorControl.add(motorReverseButton);
+			motorControl.add(motorStoppedButton);
+			motorControl.add(motorForwardButton);
 			
 			//create our panels
 			JPanel motorSpeedPanel = new JPanel();
@@ -435,7 +448,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			motorSpeedPanel.add(motorSpeedField);
 			panel.add(motorSpeedPanel);
 			motorControlPanel.add(motorEnabledLabel);
-			motorControlPanel.add(motorEnabledCheck);
+			motorControlPanel.add(motorReverseButton);
+			motorControlPanel.add(motorStoppedButton);
+			motorControlPanel.add(motorForwardButton);
 			panel.add(motorControlPanel);
 		}
 		
@@ -716,12 +731,12 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	
 	public void itemStateChanged(ItemEvent e)
 	{
-		JCheckBox source = (JCheckBox)e.getItemSelectable();
+		Component source = (Component)e.getItemSelectable();
 		String name = source.getName();
 		
 		if (e.getStateChange() == ItemEvent.SELECTED)
 		{
-			if (name.equals("motor-enabled"))
+			if (name.equals("motor-forward"))
 				driver.enableMotor();
 			else if (name.equals("spindle-enabled"))
 				driver.enableSpindle();
