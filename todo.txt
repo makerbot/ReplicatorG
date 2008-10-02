@@ -12,6 +12,7 @@ TODO:
 * add current temp to build window
 
 DONE:
+* add warmup/cooldown to machine config
 * add simple exerciser / status window
 * add color to simulation window
 * add up/down arrows to simulation windows

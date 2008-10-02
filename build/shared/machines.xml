@@ -34,5 +34,27 @@
 			<!-- optional, defaults to 1.                          <databits>1</databits> -->
 			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
 		</driver>
+		<warmup>
+			(homing routing)
+			G91
+			G1 Z10 F75
+			G1 X-999 Y-999 F2000
+			G92 X0 Y0 (set xy as home)
+			M104 S200
+			M108 S20
+			M101
+			G04 P10000
+			M103
+			G04 P5000
+			G1 X130 Y130
+			G1 Z-10 F75
+			G92 X0 Y0 Z0
+			(ready to print)
+		</warmup>
+		<cooldown>
+			M104 S20
+			G91
+			G1 Z10 F50
+		</cooldown>
 	</machine>
 </machines>

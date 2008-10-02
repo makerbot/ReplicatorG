@@ -20,8 +20,9 @@
 package processing.app;
 
 import processing.app.drivers.*;
-import processing.app.models.*;
 import processing.app.exceptions.*;
+import processing.app.models.*;
+import processing.app.tools.*;
 
 import java.io.*;
 import org.w3c.dom.*;
@@ -60,6 +61,10 @@ public class MachineController
 	//estimated build time in millis
 	protected long estimatedBuildTime = 0;
 	
+	//our warmup/cooldown commands
+	protected Vector warmupCommands;
+	protected Vector cooldownCommands;
+	
 	/**
 	  * Creates the machine object.
 	  */
@@ -77,6 +82,7 @@ public class MachineController
 		//load our various objects
 		loadModel();
 		loadDriver();
+		loadExtraPrefs();
 	}
 	
 	public void setEditor(Editor e)
@@ -176,11 +182,86 @@ public class MachineController
 		System.out.println("Estimated build time is: " + EstimationDriver.getBuildTimeString(estimator.getBuildTime()));
 	}
 	
+	private void runWarmupCommands() throws BuildFailureException
+	{
+		if (warmupCommands.size() > 0)
+		{
+			System.out.println("Running warmup commands.");
+			Iterator itr = warmupCommands.iterator();
+			while (itr.hasNext())
+			{
+				String command = (String)itr.next();
+				
+				driver.parse(command);
+				
+				//execute the command and snag any errors.
+				try
+				{
+					driver.execute();
+				}
+				catch (GCodeException e)
+				{
+					//TODO: prompt the user to continue.
+					System.out.println("Error: " + e.getMessage());
+				}
+			}
+			
+			//wait for driver to finish up.
+			while (!driver.isFinished())
+			{
+				try {
+					thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void runCooldownCommands() throws BuildFailureException
+	{
+		if (cooldownCommands.size() > 0)
+		{
+			System.out.println("Running cooldown commands.");
+			Iterator itr = cooldownCommands.iterator();
+			while (itr.hasNext())
+			{
+				String command = (String)itr.next();
+				
+				driver.parse(command);
+				
+				//execute the command and snag any errors.
+				try
+				{
+					driver.execute();
+				}
+				catch (GCodeException e)
+				{
+					//TODO: prompt the user to continue.
+					System.out.println("Error: " + e.getMessage());
+				}
+			}
+			
+			//wait for driver to finish up.
+			while (!driver.isFinished())
+			{
+				try {
+					thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	
 	private boolean build()
 	{
 		try
 		{
+			runWarmupCommands();
+			
+			System.out.println("Running build.");
+
 			int total = editor.textarea.getLineCount();
 			for (int i=0; i<total; i++)
 			{
@@ -252,6 +333,9 @@ public class MachineController
 					e.printStackTrace();
 				}
 			}
+			
+			//chill out.
+			runCooldownCommands();
 		}
 		catch (BuildFailureException e)
 		{
@@ -308,6 +392,40 @@ public class MachineController
 		driver = DriverFactory.factory();
 		driver.setMachine(model);
 		driver.initialize();
+	}
+	
+	private void loadExtraPrefs()
+	{
+		String[] commands = null;
+		String command = null;
+		
+		warmupCommands = new Vector();
+		if (XML.hasChildNode(machineNode, "warmup"))
+		{
+			String warmup = XML.getChildNodeValue(machineNode, "warmup");
+			commands = warmup.split("\n");
+			
+			for (int i=0; i<commands.length; i++)
+			{
+				command = commands[i].trim();
+				warmupCommands.add(new String(command));
+				//System.out.println("Added warmup: " + command);
+			}
+		}
+		
+		cooldownCommands = new Vector();
+		if (XML.hasChildNode(machineNode, "cooldown"))
+		{
+			String cooldown = XML.getChildNodeValue(machineNode, "cooldown");
+			commands = cooldown.split("\n");
+			
+			for (int i=0; i<commands.length; i++)
+			{
+				command = commands[i].trim();
+				cooldownCommands.add(new String(command));
+				//System.out.println("Added cooldown: " + command);
+			}
+		}
 	}
 	
 	public Driver getDriver()
