@@ -127,8 +127,8 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 				System.out.println("Connecting to " + name + " at " + rate);
 				serial = new Serial(name, rate, parity, databits, stopbits);
 			} catch (SerialException e) {
-				//TODO: report the error here.
-				e.printStackTrace();
+				System.out.println("Unable to open port " + name + "\n");
+				return;
 			}
 		}
 		
