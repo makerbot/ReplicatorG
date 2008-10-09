@@ -197,18 +197,15 @@ class HorizontalRuler extends GenericRuler
 		xTriangle.addPoint(mousePosition + rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4 - 1);
 		g2.fill(xTriangle);
 		
-/*		
-		//draw our x ticks
-		for (int i=1; i<=xIncrements+1; i++)
-		{
-			double xReal = i * xIncrement;
-			int xPoint = convertRealXToPointX(xReal);
-			
-			g.drawLine(xPoint, getHeight()-ySpacing, xPoint, getHeight()-ySpacing-10);
-		}
-*/		
+		//draw our tick marks
+		drawTicks(g);
+
 		//this shows our buffer!
 		myStrategy.show();
+	}
+	
+	private void drawTicks(Graphics g)
+	{
 	}
 }
 
@@ -274,6 +271,7 @@ class BuildView extends MyComponent implements MouseMotionListener
 {
 	private Point3d minimum;
 	private Point3d maximum;
+	private Point3d current;
 	private double currentZ;
 	
 	private int mouseX = 0;
@@ -306,6 +304,8 @@ class BuildView extends MyComponent implements MouseMotionListener
 		
 		SimulationWindow2D.hRuler.setMousePosition(mouseX);
 		SimulationWindow2D.vRuler.setMousePosition(mouseY);
+		
+		doRender();
 	}
 
 	public void mouseDragged(MouseEvent e)
@@ -315,10 +315,24 @@ class BuildView extends MyComponent implements MouseMotionListener
 		
 		SimulationWindow2D.hRuler.setMousePosition(mouseX);
 		SimulationWindow2D.vRuler.setMousePosition(mouseY);
+
+		doRender();
+	}
+	
+	public Point3d getMinimum()
+	{
+		return minimum;
+	}
+	
+	public Point3d getMaximum()
+	{
+		return maximum;
 	}
 	
 	public void queuePoint(Point3d point)
 	{
+		current = new Point3d(point);
+		
 		//System.out.println("queued: " + point.toString());
 
 		if (points.size() == 0)
@@ -357,16 +371,6 @@ class BuildView extends MyComponent implements MouseMotionListener
 		doRender();
 	}
 	
-	private void calculateRatio()
-	{
-		//calculate the ratios that will keep us inside our box
-		double yRatio = (getWidth() - 40) / (maximum.y - minimum.y);
-		double xRatio = (getHeight() - 20) / (maximum.x - minimum.x);
-		
-		//which one is smallest?
-		ratio = Math.min(yRatio, xRatio);
-	}
-	
 	public void doRender()
 	{
 		//setup our graphics objects
@@ -378,6 +382,18 @@ class BuildView extends MyComponent implements MouseMotionListener
 		Rectangle bounds = g.getClipBounds();
 		g.fillRect(0, 0, getWidth(), getHeight());
 
+		//dra our text
+		drawHelperText(g);
+
+		//draw our main stuff
+		drawLastPoints(g);
+		
+		//this shows our buffer!
+		myStrategy.show();
+	}
+	
+	private void drawHelperText(Graphics g)
+	{
 		//init some prefs
 	    Graphics2D g2 = (Graphics2D) g;
 	    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -386,13 +402,17 @@ class BuildView extends MyComponent implements MouseMotionListener
 		//draw some helper text.
 	    g.setFont(new Font("SansSerif", Font.BOLD, 14));
 	    g.setColor(Color.black);
-		g.drawString("Layer at z: " + currentZ, 20, 20);
+		g.drawString("Layer at z: " + currentZ, 10, 20);
 
-		//draw our main stuff
-		drawLastPoints(g);
-		
-		//this shows our buffer!
-		myStrategy.show();
+		//draw our mouse position
+		double mouseRealX = convertPointXToRealX(mouseX);
+		double mouseRealY = convertPointYToRealY(mouseY);
+		//g.drawString("Mouse: " + mouseRealX + ", " + mouseRealY + " (" + mouseX + ", " + mouseY + " ratio: " + ratio + ")", 10, 40);
+		g.drawString("Mouse: " + mouseRealX + ", " + mouseRealY, 10, 40);
+
+		//draw our mouse position
+	    g.setColor(Color.green);
+	    g.drawString("Machine: " + current.x + ", " + current.y, 10, 60);
 	}
 	
 	private void drawLastPoints(Graphics g)
@@ -631,14 +651,34 @@ class BuildView extends MyComponent implements MouseMotionListener
 		return paths;
 	}
 	
+	private void calculateRatio()
+	{
+		//calculate the ratios that will keep us inside our box
+		double yRatio = (getWidth()) / (maximum.y - minimum.y);
+		double xRatio = (getHeight()) / (maximum.x - minimum.x);
+		
+		//which one is smallest?
+		ratio = Math.min(yRatio, xRatio);
+	}
+	
 	public int convertRealXToPointX(double x)
 	{
 		return (int)((x - minimum.x) * ratio);
 	}
 	
+	public double convertPointXToRealX(int x)
+	{
+		return (Math.round(((x / ratio) - minimum.x) * 100) / 100);
+	}
+
 	public int convertRealYToPointY(double y)
 	{
 		// subtract from getheight to get a normal origin.
 		return (getHeight() - (int)((y - minimum.y) * ratio));
+	}
+
+	public double convertPointYToRealY(int y)
+	{
+		return (Math.round((maximum.y - (y / ratio)) * 100) / 100);
 	}
 }
