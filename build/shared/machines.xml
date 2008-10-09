@@ -46,7 +46,7 @@
 			G04 P10000
 			M103
 			G04 P5000
-			G1 X120 Y120
+			G1 X150 Y150
 			G1 Z-10 F75
 			G92 X0 Y0 Z0
 			(ready to print)

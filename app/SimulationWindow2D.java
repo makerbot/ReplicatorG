@@ -34,8 +34,207 @@ import javax.swing.*;
 import java.util.*;
 import javax.vecmath.*;
 
-public class SimulationWindow2D extends SimulationWindow implements MouseMotionListener
+public class SimulationWindow2D extends SimulationWindow
 {	
+	private long lastRepaint = 0;
+	
+	// these guys are our extra components.
+	private BuildView buildView;
+	protected static HorizontalRuler hRuler;
+	protected static VerticalRuler vRuler;
+	
+	private int rulerWidth = 30;
+	
+	public SimulationWindow2D ()
+	{
+		super();
+
+		//some inits to our build simulation
+		setTitle("2D Build Simulation");
+		setBackground(Color.white);
+		setForeground(Color.white);
+		
+		createComponents();
+
+		this.setVisible(true);
+
+		//setup our rendering/buffer strategy
+		//createBufferStrategy(2);
+		buildView.createBufferStrategy(2);
+		hRuler.createBufferStrategy(2);
+		vRuler.createBufferStrategy(2);
+	}
+	
+	private void createComponents()
+	{
+		//figure out our content pane size.
+		Container pane = getContentPane();
+		int width = pane.getWidth();
+		int height = pane.getHeight();
+		
+		//make our components with those sizes.
+		hRuler = new HorizontalRuler(width-rulerWidth, rulerWidth, rulerWidth);
+		vRuler = new VerticalRuler(rulerWidth, height-rulerWidth, rulerWidth);
+		buildView = new BuildView(width-rulerWidth, height-rulerWidth);
+
+		//lay them out in their proper places.
+		pane.add(hRuler, BorderLayout.PAGE_START);
+		pane.add(vRuler, BorderLayout.LINE_START);
+		pane.add(buildView, BorderLayout.CENTER);
+	}
+	
+	synchronized public void queuePoint(Point3d point)
+	{
+		buildView.queuePoint(point);
+
+		doRender();
+	}
+
+	public void doRender()
+	{
+		//repaint all our areas.
+		hRuler.doRender();
+		vRuler.doRender();
+		buildView.doRender();
+
+		//this shows our buffer!
+		//BufferStrategy myStrategy = getBufferStrategy();
+		//myStrategy.show();
+	}
+}
+
+class MyComponent extends Canvas
+{
+	public MyComponent(int width, int height)
+	{
+		//try and configure size.
+		setPreferredSize(new Dimension(width, height));
+		setMinimumSize(new Dimension(width, height));
+		setMaximumSize(new Dimension(width, height));
+		setSize(width, height);
+		
+		//set our colors and stuff
+		setBackground(Color.white);
+		setForeground(Color.white);
+		this.setVisible(true);
+	}
+}
+
+class GenericRuler extends MyComponent
+{
+	protected double machinePosition = 0.0;
+	protected int mousePosition = 0;
+	protected int rulerWidth = 30;
+
+	public GenericRuler(int width, int height, int rWidth)
+	{
+		super(width, height);
+		
+		rulerWidth = rWidth;
+		
+		//getContentPane().setBorder(BorderFactory.createLineBorder(Color.gray));
+	}
+	
+	public void setMousePosition(int i)
+	{
+		mousePosition = i;
+	}
+	
+	public void setMachinePosition(double d)
+	{
+		machinePosition = d;
+	}
+}
+
+class HorizontalRuler extends GenericRuler
+{
+	public HorizontalRuler(int width, int height, int rWidth)
+	{
+		super(width, height, rWidth);
+	}
+
+	public void doRender()
+	{
+		//setup our graphics objects
+		BufferStrategy myStrategy = getBufferStrategy();
+		Graphics g = myStrategy.getDrawGraphics();
+
+		//clear it
+		g.setColor(Color.white);
+		Rectangle bounds = g.getClipBounds();
+		g.fillRect(0, 0, getWidth(), getHeight());
+
+		//init our graphics object
+	    Graphics2D g2 = (Graphics2D) g;
+		g2.setPaint(Color.black);
+
+		//draw our x indicator
+		Polygon xTriangle = new Polygon();
+		xTriangle.addPoint(mousePosition + rulerWidth, rulerWidth);
+		xTriangle.addPoint(mousePosition - rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4);
+		xTriangle.addPoint(mousePosition + rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4);
+		g2.fill(xTriangle);
+		
+/*		
+		//draw our x ticks
+		for (int i=1; i<=xIncrements+1; i++)
+		{
+			double xReal = i * xIncrement;
+			int xPoint = convertRealXToPointX(xReal);
+			
+			g.drawLine(xPoint, getHeight()-ySpacing, xPoint, getHeight()-ySpacing-10);
+		}
+*/		
+		//this shows our buffer!
+		myStrategy.show();
+	}
+}
+
+class VerticalRuler extends GenericRuler
+{
+	public VerticalRuler(int width, int height, int rWidth)
+	{
+		super(width, height, rWidth);
+	}
+
+	public void doRender()
+	{
+		//setup our graphics objects
+		BufferStrategy myStrategy = getBufferStrategy();
+		Graphics g = myStrategy.getDrawGraphics();
+
+		//clear it
+		g.setColor(Color.white);
+		Rectangle bounds = g.getClipBounds();
+		g.fillRect(0, 0, getWidth(), getHeight());
+
+	    Graphics2D g2 = (Graphics2D) g;
+		g2.setPaint(Color.black);
+
+		//draw our y indicator
+		Polygon yTriangle = new Polygon();
+		yTriangle.addPoint(rulerWidth, mousePosition);
+		yTriangle.addPoint(rulerWidth - rulerWidth/4, mousePosition - rulerWidth/4);
+		yTriangle.addPoint(rulerWidth - rulerWidth/4, mousePosition + rulerWidth/4);
+		g2.fill(yTriangle);
+
+/*		
+		//draw our y ticks
+		for (int i=1; i<yIncrements; i++)
+		{
+			double yReal = i * yIncrement;
+			int yPoint = convertRealYToPointY(yReal);
+			
+			g.drawLine(ySpacing, getHeight()-ySpacing-yPoint, ySpacing+10, getHeight()-ySpacing-yPoint);
+		}
+*/
+		//this shows our buffer!
+		myStrategy.show();
+	}
+}
+
+class BuildView extends MyComponent implements MouseMotionListener
+{
 	private Point3d minimum;
 	private Point3d maximum;
 	private double currentZ;
@@ -46,25 +245,12 @@ public class SimulationWindow2D extends SimulationWindow implements MouseMotionL
 	private double ratio = 1.0;
 
 	private Vector points;
-	
-	private long lastRepaint = 0;
-	
-	// these guys are our extra components.
-	private BuildArea buildArea;
-	private HorizontalRuler hRuler;
-	private VerticalRuler vRuler;
-	
-	public SimulationWindow2D ()
+
+	public BuildView(int width, int height)
 	{
-		super();
+		super(width, height);
 
-		this.setVisible(true);
-
-		//setup our rendering/buffer strategy
-		createBufferStrategy(2);
-		
-		setTitle("2D Build Simulation");
-		
+		//setup our listeners.
 		addMouseMotionListener(this);
 
 		//init our bounds.
@@ -77,12 +263,28 @@ public class SimulationWindow2D extends SimulationWindow implements MouseMotionL
 		
 		//start us off at 0,0,0
 		queuePoint(new Point3d());
-		
-		setBackground(Color.white);
-		setForeground(Color.white);
+
 	}
 	
-	synchronized public void queuePoint(Point3d point)
+	public void mouseMoved(MouseEvent e)
+	{
+		mouseX = e.getX();
+		mouseY = e.getY();
+		
+		SimulationWindow2D.hRuler.setMousePosition(mouseX);
+		SimulationWindow2D.vRuler.setMousePosition(mouseY);
+	}
+
+	public void mouseDragged(MouseEvent e)
+	{
+		mouseX = e.getX();
+		mouseY = e.getY();
+		
+		SimulationWindow2D.hRuler.setMousePosition(mouseX);
+		SimulationWindow2D.vRuler.setMousePosition(mouseY);
+	}
+	
+	public void queuePoint(Point3d point)
 	{
 		//System.out.println("queued: " + point.toString());
 
@@ -115,10 +317,10 @@ public class SimulationWindow2D extends SimulationWindow implements MouseMotionL
 
 		calculateRatio();
 	
-		doRender();
+		repaint();
 	}
-
-	public void calculateRatio()
+	
+	private void calculateRatio()
 	{
 		//calculate the ratios that will keep us inside our box
 		double yRatio = (getWidth() - 40) / (maximum.y - minimum.y);
@@ -130,9 +332,10 @@ public class SimulationWindow2D extends SimulationWindow implements MouseMotionL
 	
 	public void doRender()
 	{
+		//setup our graphics objects
 		BufferStrategy myStrategy = getBufferStrategy();
 		Graphics g = myStrategy.getDrawGraphics();
-		
+
 		//clear it
 		g.setColor(Color.white);
 		Rectangle bounds = g.getClipBounds();
@@ -150,83 +353,11 @@ public class SimulationWindow2D extends SimulationWindow implements MouseMotionL
 
 		//draw our main stuff
 		drawLastPoints(g);
-		drawRulers(g);
-
+		
 		//this shows our buffer!
 		myStrategy.show();
 	}
 	
-	private void drawRulers(Graphics g)
-	{
-	    Graphics2D g2 = (Graphics2D) g;
-	    Insets insets = getInsets();
-	    
-	    //ruler config variables
-	    int rulerSpacing = 2;
-		int rulerWidth = 25;
-		
-		g2.setPaint(Color.gray);
-
-		//how long are our rulers?
-		int xRulerX = rulerSpacing + rulerWidth + insets.left;
-		int xRulerY = rulerSpacing + insets.top;
-		int xRulerLength = getRealWidth() - rulerSpacing*2 - rulerWidth - 1;
-
-		int yRulerX = rulerSpacing + insets.left;
-		int yRulerY = rulerSpacing + rulerWidth + insets.top;
-		int yRulerLength = getRealHeight() - rulerSpacing*2 - rulerWidth - 1;
-		
-		//draw the base bars
-		g2.draw(new Rectangle(xRulerX, xRulerY, xRulerLength, rulerWidth));
-		g2.draw(new Rectangle(yRulerX, yRulerY, rulerWidth, yRulerLength));
-
-		g2.setPaint(Color.black);
-
-		//draw our x indicator
-		Polygon xTriangle = new Polygon();
-		xTriangle.addPoint(mouseX, xRulerY + rulerWidth);
-		xTriangle.addPoint(mouseX - rulerWidth/4, xRulerY + rulerWidth - rulerWidth/4);
-		xTriangle.addPoint(mouseX + rulerWidth/4, xRulerY + rulerWidth - rulerWidth/4);
-		g2.fill(xTriangle);
-		
-		//draw our y indicator
-		Polygon yTriangle = new Polygon();
-		yTriangle.addPoint(yRulerX + rulerWidth, mouseY);
-		yTriangle.addPoint(yRulerX + rulerWidth - rulerWidth/4, mouseY - rulerWidth/4);
-		yTriangle.addPoint(yRulerX + rulerWidth - rulerWidth/4, mouseY + rulerWidth/4);
-		g2.fill(yTriangle);
-
-/*		
-		//draw our x ticks
-		for (int i=1; i<=xIncrements+1; i++)
-		{
-			double xReal = i * xIncrement;
-			int xPoint = convertRealXToPointX(xReal);
-			
-			g.drawLine(xPoint, getHeight()-ySpacing, xPoint, getHeight()-ySpacing-10);
-		}
-		
-		//draw our y ticks
-		for (int i=1; i<yIncrements; i++)
-		{
-			double yReal = i * yIncrement;
-			int yPoint = convertRealYToPointY(yReal);
-			
-			g.drawLine(ySpacing, getHeight()-ySpacing-yPoint, ySpacing+10, getHeight()-ySpacing-yPoint);
-		}
-*/		
-	}
-
-	public void mouseMoved(MouseEvent e) {
-		mouseX = e.getX();
-		mouseY = e.getY();
-	}
-
-	public void mouseDragged(MouseEvent e) {
-		mouseX = e.getX();
-		mouseY = e.getY();
-	}
-
 	private void drawLastPoints(Graphics g)
 	{
 		Color aboveColor = new Color(255, 0, 0);
@@ -463,42 +594,14 @@ public class SimulationWindow2D extends SimulationWindow implements MouseMotionL
 		return paths;
 	}
 	
-	public int convertRealXToPointX(double x)
+	private int convertRealXToPointX(double x)
 	{
 		return (int)((x - minimum.x) * ratio) + 10;
 	}
 	
-	public int convertRealYToPointY(double y)
+	private int convertRealYToPointY(double y)
 	{
 		// subtract from getheight to get a normal origin.
 		return (getHeight() - (int)((y - minimum.y) * ratio));
-	}
-}
-
-class HorizontalRuler extends JFrame
-{
-	public HorizontalRuler(int width, int height)
-	{
-		super();
-		
-		setSize(width, height);
-	}
-}
-
-class VerticalRuler extends JFrame
-{
-	public VerticalRuler(int width, int height)
-	{
-		super();
-
-		setSize(width, height);
-	}
-}
-
-class BuildArea extends JFrame
-{
-	public BuildArea()
-	{
-		super();
 	}
 }
