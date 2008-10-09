@@ -39,7 +39,7 @@ public class SimulationWindow2D extends SimulationWindow
 	private long lastRepaint = 0;
 	
 	// these guys are our extra components.
-	private BuildView buildView;
+	protected static BuildView buildView;
 	protected static HorizontalRuler hRuler;
 	protected static VerticalRuler vRuler;
 	
@@ -59,10 +59,12 @@ public class SimulationWindow2D extends SimulationWindow
 		this.setVisible(true);
 
 		//setup our rendering/buffer strategy
-		//createBufferStrategy(2);
 		buildView.createBufferStrategy(2);
 		hRuler.createBufferStrategy(2);
 		vRuler.createBufferStrategy(2);
+		
+		//start us off at 0,0,0
+		buildView.queuePoint(new Point3d());
 	}
 	
 	private void createComponents()
@@ -96,10 +98,6 @@ public class SimulationWindow2D extends SimulationWindow
 		hRuler.doRender();
 		vRuler.doRender();
 		buildView.doRender();
-
-		//this shows our buffer!
-		//BufferStrategy myStrategy = getBufferStrategy();
-		//myStrategy.show();
 	}
 }
 
@@ -122,7 +120,7 @@ class MyComponent extends Canvas
 
 class GenericRuler extends MyComponent
 {
-	protected double machinePosition = 0.0;
+	protected int machinePosition = 0;
 	protected int mousePosition = 0;
 	protected int rulerWidth = 30;
 
@@ -131,18 +129,30 @@ class GenericRuler extends MyComponent
 		super(width, height);
 		
 		rulerWidth = rWidth;
-		
-		//getContentPane().setBorder(BorderFactory.createLineBorder(Color.gray));
 	}
 	
 	public void setMousePosition(int i)
 	{
-		mousePosition = i;
+		//only do work if needed!
+		if (mousePosition != i)
+		{
+			mousePosition = i;
+			doRender();
+		}
 	}
 	
-	public void setMachinePosition(double d)
+	public void setMachinePosition(int i)
 	{
-		machinePosition = d;
+		//only do work if needed!
+		if (mousePosition != i)
+		{
+			machinePosition = i;
+			doRender();
+		}
+	}
+	
+	public void doRender()
+	{
 	}
 }
 
@@ -164,15 +174,27 @@ class HorizontalRuler extends GenericRuler
 		Rectangle bounds = g.getClipBounds();
 		g.fillRect(0, 0, getWidth(), getHeight());
 
+		//draw our border.
+		g.setColor(Color.gray);
+		g.drawRect(rulerWidth-1, 0, getWidth()-1-rulerWidth, getHeight()-1);
+
 		//init our graphics object
 	    Graphics2D g2 = (Graphics2D) g;
-		g2.setPaint(Color.black);
 
-		//draw our x indicator
+		//draw our machine indicator
+		g2.setPaint(Color.green);
 		Polygon xTriangle = new Polygon();
-		xTriangle.addPoint(mousePosition + rulerWidth, rulerWidth);
-		xTriangle.addPoint(mousePosition - rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4);
-		xTriangle.addPoint(mousePosition + rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4);
+		xTriangle.addPoint(machinePosition + rulerWidth, rulerWidth - 1);
+		xTriangle.addPoint(machinePosition - rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4 - 1);
+		xTriangle.addPoint(machinePosition + rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4 - 1);
+		g2.fill(xTriangle);
+
+		//draw our mouse indicator
+		g2.setPaint(Color.black);
+		xTriangle = new Polygon();
+		xTriangle.addPoint(mousePosition + rulerWidth, rulerWidth - 1);
+		xTriangle.addPoint(mousePosition - rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4 - 1);
+		xTriangle.addPoint(mousePosition + rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4 - 1);
 		g2.fill(xTriangle);
 		
 /*		
@@ -208,15 +230,30 @@ class VerticalRuler extends GenericRuler
 		Rectangle bounds = g.getClipBounds();
 		g.fillRect(0, 0, getWidth(), getHeight());
 
+		//draw our border.
+		g.setColor(Color.gray);
+		g.drawRect(0, 0, getWidth()-1, getHeight()-1);
+
+		//setup graphics objecs.
 	    Graphics2D g2 = (Graphics2D) g;
 		g2.setPaint(Color.black);
 
-		//draw our y indicator
+		//draw our machine indicator
+		g2.setPaint(Color.black);
 		Polygon yTriangle = new Polygon();
-		yTriangle.addPoint(rulerWidth, mousePosition);
-		yTriangle.addPoint(rulerWidth - rulerWidth/4, mousePosition - rulerWidth/4);
-		yTriangle.addPoint(rulerWidth - rulerWidth/4, mousePosition + rulerWidth/4);
+		yTriangle.addPoint(rulerWidth - 1, mousePosition);
+		yTriangle.addPoint(rulerWidth - rulerWidth/4 - 1, mousePosition - rulerWidth/4);
+		yTriangle.addPoint(rulerWidth - rulerWidth/4 - 1, mousePosition + rulerWidth/4);
 		g2.fill(yTriangle);
+
+		//draw our mouse indicator
+		g2.setPaint(Color.green);
+		yTriangle = new Polygon();
+		yTriangle.addPoint(rulerWidth - 1, machinePosition);
+		yTriangle.addPoint(rulerWidth - rulerWidth/4 - 1, machinePosition - rulerWidth/4);
+		yTriangle.addPoint(rulerWidth - rulerWidth/4 - 1, machinePosition + rulerWidth/4);
+		g2.fill(yTriangle);
+
 
 /*		
 		//draw our y ticks
@@ -260,10 +297,6 @@ class BuildView extends MyComponent implements MouseMotionListener
 		
 		//initialize our vector
 		points = new Vector();
-		
-		//start us off at 0,0,0
-		queuePoint(new Point3d());
-
 	}
 	
 	public void mouseMoved(MouseEvent e)
@@ -316,8 +349,12 @@ class BuildView extends MyComponent implements MouseMotionListener
 		currentZ = point.z;
 
 		calculateRatio();
-	
-		repaint();
+
+		//set our machine position
+		SimulationWindow2D.hRuler.setMachinePosition(convertRealXToPointX(point.x));
+		SimulationWindow2D.vRuler.setMachinePosition(convertRealYToPointY(point.y));
+
+		doRender();
 	}
 	
 	private void calculateRatio()
@@ -594,12 +631,12 @@ class BuildView extends MyComponent implements MouseMotionListener
 		return paths;
 	}
 	
-	private int convertRealXToPointX(double x)
+	public int convertRealXToPointX(double x)
 	{
-		return (int)((x - minimum.x) * ratio) + 10;
+		return (int)((x - minimum.x) * ratio);
 	}
 	
-	private int convertRealYToPointY(double y)
+	public int convertRealYToPointY(double y)
 	{
 		// subtract from getheight to get a normal origin.
 		return (getHeight() - (int)((y - minimum.y) * ratio));
