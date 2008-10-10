@@ -2,7 +2,6 @@
 
 TODO:
 * fix windows icons
-* fix startup/shutdown of driver
 
 DONE:
 * add units to simulation window
@@ -19,6 +18,7 @@ DONE:
 * move to a controller/model/driver system.
 * Add an extruder section (temp, start/stop extruder, extruder direction, extruder speed)
 * added text boxes to control/display feedrate data
+* fix shutdown of driver
 
 0003 ReplicatorG and beyond
 

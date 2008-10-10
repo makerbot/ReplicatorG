@@ -93,6 +93,7 @@ public class DriverBaseImplementation implements Driver
 
 	public void dispose()
 	{
+		System.out.println("Disposing of driver.");
 		parser = null;
 	}
 

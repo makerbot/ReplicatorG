@@ -1872,6 +1872,15 @@ public class Editor extends JFrame
     // doStop() isn't sufficient with external vm & quit
     // instead use doClose() which will kill the external vm
     doClose();
+    
+    //cleanup our machine/driver.
+    if (machine != null)
+    {
+    	if (machine.getDriver() != null)
+    	{
+    		machine.getDriver().dispose();
+		}
+    }
 
     checkModified(HANDLE_QUIT);
   }
