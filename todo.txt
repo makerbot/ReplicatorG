@@ -2,16 +2,11 @@
 
 TODO:
 * fix windows icons
-* add proper bounds to simulation window
-* add units to simulation window
-* add grid to simulation window
 * On Mac, the feedrate slider values don't show. Works fine on Linux.
-* add variable line width to 2D simulation based on extruder on/off state.
-* refactor ControlPanel to not be so gigantic when creating control panel
-* add time elapsed / total time to build window
-* add current temp to build window
 
 DONE:
+* add units to simulation window
+* add proper bounds to simulation window
 * add warmup/cooldown to machine config
 * add simple exerciser / status window
 * add color to simulation window
@@ -40,4 +35,7 @@ DONE:
 * Add a "Reference" button (home to reference position)
 * For reference and home functions; have an option for ignoring the Z axis
 * Support for cancelling a temperature or goto home job (this is also a bit hard since these are blocking on the Arduino; would be cool to have a way of doing this in the firmware)
-
+* add variable line width to 2D simulation based on extruder on/off state.
+* refactor ControlPanel to not be so gigantic when creating control panel
+* add time elapsed / total time to build window
+* add temperature, etc. to build window.

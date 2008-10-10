@@ -43,7 +43,7 @@ public class SimulationWindow2D extends SimulationWindow
 	protected static HorizontalRuler hRuler;
 	protected static VerticalRuler vRuler;
 	
-	private int rulerWidth = 30;
+	private int rulerWidth = 25;
 	
 	public SimulationWindow2D ()
 	{
@@ -122,7 +122,7 @@ class GenericRuler extends MyComponent
 {
 	protected int machinePosition = 0;
 	protected int mousePosition = 0;
-	protected int rulerWidth = 30;
+	protected int rulerWidth = 25;
 	
 	protected double increments[];
 
@@ -172,9 +172,12 @@ class GenericRuler extends MyComponent
 	
 	protected double getIncrement(int length, double range)
 	{
-		double scale = length / range / 100;
+		//how many can we fit on the length?
+		int numIncrements = length / 10;
+		double scale = length / range / numIncrements;
+
+		//find the one right above that... the smaller one would be too small
 		double increment = increments[0];
-		
 		for (int i=0; i<increments.length; i++)
 		{
 			increment = increments[i];
@@ -183,6 +186,18 @@ class GenericRuler extends MyComponent
 		}
 		
 		return increment;
+	}
+	
+	protected void drawTicks(Graphics g)
+	{
+		//setup font rendering stuff.
+	    Graphics2D g2 = (Graphics2D) g;
+	    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g2.setPaint(Color.black);
+
+		//draw some helper text.
+	    g.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		g.setColor(Color.black);
 	}
 }
 
@@ -234,45 +249,61 @@ class HorizontalRuler extends GenericRuler
 		myStrategy.show();
 	}
 	
-	private void drawTicks(Graphics g)
+	protected void drawTicks(Graphics g)
 	{
-		//setup font rendering stuff.
-	    Graphics2D g2 = (Graphics2D) g;
-	    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g2.setPaint(Color.black);
-
-		//draw some helper text.
-	    g.setFont(new Font("SansSerif", Font.PLAIN, 12));
-		g.setColor(Color.black);
-			
+		super.drawTicks(g);
+		
 		double range = SimulationWindow2D.buildView.getXRange();
-		int width = getWidth() - 30;
+		int width = getWidth() - rulerWidth;
 		double increment = getIncrement(width, range);
 		
-		//loop thru all positive increments while we're in bounds
+		//setup our variables.
 		int i = 0;
-		double realX;
-		int pointX;
+		double real;
+		int point;
 		int length;
 		
+		//loop thru all positive increments while we're in bounds
 		do {
-			realX = i * increment;
-			pointX = SimulationWindow2D.buildView.convertRealXToPointX(realX) + 30;
+			real = i * increment;
+			point = SimulationWindow2D.buildView.convertRealXToPointX(real) + rulerWidth - 1;
 			
 			if (i % 5 == 0)
 			{
-				length = 15;
-				g.drawString(Double.toString(realX), pointX, 15);
+				length = rulerWidth / 2;
+				g.drawString(Double.toString(real), point + 1, length - 1);
 			}
 			else
 			{
-				length = 10;
+				length = rulerWidth / 3;
 			}
 			
-			g.drawLine(pointX, rulerWidth, pointX, rulerWidth - length);
+			g.drawLine(point, rulerWidth, point, rulerWidth - length);
 			
 			i++;
-		} while (pointX < getWidth());
+		} while (point < getWidth());
+		
+		//loop thru all negative increments while we're in bounds
+		i = 0;
+		do {
+			real = i * increment;
+			point = SimulationWindow2D.buildView.convertRealXToPointX(real) + rulerWidth - 1;
+			
+			if (i % 5 == 0)
+			{
+				length = rulerWidth / 2 ;
+				g.drawString(Double.toString(real), point + 1, length - 1);
+			}
+			else
+			{
+				length = rulerWidth / 3;
+			}
+			
+			g.drawLine(point, rulerWidth, point, rulerWidth - length);
+			
+			i--;
+		} while (point > rulerWidth);
+
 	}
 }
 
@@ -318,20 +349,70 @@ class VerticalRuler extends GenericRuler
 		yTriangle.addPoint(rulerWidth - rulerWidth/4 - 1, machinePosition + rulerWidth/4);
 		g2.fill(yTriangle);
 
+		//draw our ticks.
+		drawTicks(g);
 
-/*		
-		//draw our y ticks
-		for (int i=1; i<yIncrements; i++)
-		{
-			double yReal = i * yIncrement;
-			int yPoint = convertRealYToPointY(yReal);
-			
-			g.drawLine(ySpacing, getHeight()-ySpacing-yPoint, ySpacing+10, getHeight()-ySpacing-yPoint);
-		}
-*/
 		//this shows our buffer!
 		myStrategy.show();
 	}
+	
+	protected void drawTicks(Graphics g)
+	{
+		super.drawTicks(g);
+		
+		double range = SimulationWindow2D.buildView.getYRange();
+		int height = getHeight();
+		double increment = getIncrement(height, range);
+		
+		//setup our variables.
+		int i = 0;
+		double real;
+		int point;
+		int length;
+		
+		//loop thru all positive increments while we're in bounds
+		do {
+			real = i * increment;
+			point = SimulationWindow2D.buildView.convertRealYToPointY(real) - 1;
+			
+			if (i % 5 == 0)
+			{
+				length = rulerWidth / 2;
+				g.drawString(Double.toString(real), 2, point - 1);
+			}
+			else
+			{
+				length = rulerWidth / 3;
+			}
+			
+			g.drawLine(rulerWidth, point, rulerWidth - length, point);
+			
+			i++;
+		} while (point > 0 && point < getHeight());
+		
+		//loop thru all negative increments while we're in bounds
+		i = 0;
+		do {
+			real = i * increment;
+			point = SimulationWindow2D.buildView.convertRealYToPointY(real) + rulerWidth - 1;
+			
+			if (i % 5 == 0)
+			{
+				length = rulerWidth / 2 ;
+				g.drawString(Double.toString(real), 2, point - 1);
+			}
+			else
+			{
+				length = rulerWidth / 3;
+			}
+			
+			g.drawLine(rulerWidth, point, rulerWidth - length, point);
+			
+			i--;
+		} while (point < getHeight() && point > 0);
+
+	}
+
 }
 
 class BuildView extends MyComponent implements MouseMotionListener
@@ -372,7 +453,10 @@ class BuildView extends MyComponent implements MouseMotionListener
 		SimulationWindow2D.hRuler.setMousePosition(mouseX);
 		SimulationWindow2D.vRuler.setMousePosition(mouseY);
 		
-		doRender();
+		//this will generate exceptions, but we dont care. we're only reading
+		try {
+			doRender();
+		} catch (ConcurrentModificationException ex) {}
 	}
 
 	public void mouseDragged(MouseEvent e)
@@ -383,7 +467,10 @@ class BuildView extends MyComponent implements MouseMotionListener
 		SimulationWindow2D.hRuler.setMousePosition(mouseX);
 		SimulationWindow2D.vRuler.setMousePosition(mouseY);
 
-		doRender();
+		//this will generate exceptions, but we dont care. we're only reading
+		try {
+			doRender();
+		} catch (ConcurrentModificationException ex) {}
 	}
 	
 	public Point3d getMinimum()
@@ -467,19 +554,15 @@ class BuildView extends MyComponent implements MouseMotionListener
 		g2.setPaint(Color.black);
 
 		//draw some helper text.
-	    g.setFont(new Font("SansSerif", Font.BOLD, 14));
+	    g.setFont(new Font("SansSerif", Font.PLAIN, 14));
 	    g.setColor(Color.black);
-		g.drawString("Layer at z: " + currentZ, 10, 20);
+		g.drawString("Layer at z: " + currentZ + "mm", 10, 20);
 
 		//draw our mouse position
 		double mouseRealX = convertPointXToRealX(mouseX);
 		double mouseRealY = convertPointYToRealY(mouseY);
-		//g.drawString("Mouse: " + mouseRealX + ", " + mouseRealY + " (" + mouseX + ", " + mouseY + " ratio: " + ratio + ")", 10, 40);
-		g.drawString("Mouse: " + mouseRealX + ", " + mouseRealY, 10, 40);
-
-		//draw our mouse position
-	    g.setColor(Color.green);
-	    g.drawString("Machine: " + current.x + ", " + current.y, 10, 60);
+		g.drawString("Mouse: " + mouseRealX + "mm, " + mouseRealY + "mm", 10, 40);
+	    g.drawString("Machine: " + current.x + "mm, " + current.y + "mm", 10, 60);
 	}
 	
 	private void drawLastPoints(Graphics g)
