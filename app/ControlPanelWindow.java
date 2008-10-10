@@ -57,7 +57,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	protected String[] jogStrings = {"0.01mm", "0.05mm", "0.1mm", "0.5mm", "1mm", "5mm", "10mm", "20mm", "50mm"};
 	
 	protected JSlider xyFeedrateSlider;
+	protected JTextField xyFeedrateValue;
+	
 	protected JSlider zFeedrateSlider;
+	protected JTextField zFeedrateValue;
 	
 	protected JTextField xPosField;
 	protected JTextField yPosField;
@@ -296,12 +299,22 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		xyFeedrateSlider.setMajorTickSpacing(1000);
 		xyFeedrateSlider.setMinorTickSpacing(100);
 		xyFeedrateSlider.setName("xy-feedrate-slider");
-		//xyFeedrateSlider.addChangeListener(this);
+		xyFeedrateSlider.addChangeListener(this);
 		
 		//our label
 		JLabel xyFeedrateLabel = new JLabel("XY Feedrate (mm/min.)");
 		xyFeedrateLabel.setVerticalAlignment(JLabel.BOTTOM);
 		
+		//our display box
+		xyFeedrateValue = new JTextField();
+		xyFeedrateValue.setMaximumSize(new Dimension(50, 25));
+		xyFeedrateValue.setMinimumSize(new Dimension(50, 25));
+		xyFeedrateValue.setPreferredSize(new Dimension(50, 25));
+		xyFeedrateValue.setEnabled(true);
+		xyFeedrateValue.setName("xy-feedrate-value");
+		xyFeedrateValue.setText(Integer.toString(xyFeedrateSlider.getValue()));
+		xyFeedrateValue.addFocusListener(this);
+
 		//create the xyfeedrate panel
 		JPanel xyFeedratePanel = new JPanel();
 		xyFeedratePanel.setLayout(new BoxLayout(xyFeedratePanel, BoxLayout.LINE_AXIS));
@@ -309,17 +322,28 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//add our components
 		xyFeedratePanel.add(xyFeedrateLabel);
 		xyFeedratePanel.add(xyFeedrateSlider);
+		xyFeedratePanel.add(xyFeedrateValue);
 
 		//create our z slider
 		zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, 100, 50);
 		zFeedrateSlider.setMajorTickSpacing(10);
 		zFeedrateSlider.setMinorTickSpacing(1);
-		//zFeedrateSlider.addChangeListener(this);
 		zFeedrateSlider.setName("z-feedrate-slider");
-
+		zFeedrateSlider.addChangeListener(this);
+		
 		//our label
 		JLabel zFeedrateLabel = new JLabel("Z Feedrate (mm/min.)");
 		zFeedrateLabel.setVerticalAlignment(JLabel.BOTTOM);
+
+		//our display box
+		zFeedrateValue = new JTextField();
+		zFeedrateValue.setMaximumSize(new Dimension(50, 25));
+		zFeedrateValue.setMinimumSize(new Dimension(50, 25));
+		zFeedrateValue.setPreferredSize(new Dimension(50, 25));
+		zFeedrateValue.setEnabled(true);
+		zFeedrateValue.setName("z-feedrate-value");
+		zFeedrateValue.setText(Integer.toString(zFeedrateSlider.getValue()));
+		zFeedrateValue.addFocusListener(this);
 		
 		//create the xyfeedrate panel
 		JPanel zFeedratePanel = new JPanel();
@@ -328,6 +352,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//add our components
 		zFeedratePanel.add(zFeedrateLabel);
 		zFeedratePanel.add(zFeedrateSlider);
+		zFeedratePanel.add(zFeedrateValue);
 
 		//create our jog panel
 		jogPanel = new JPanel();
@@ -358,7 +383,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		{
 			ToolModel t = (ToolModel)e.nextElement();
 			
-			if (t.getType().equals("extruder"))
+			xyFeedrateValue.setText(Integer.toString(xyFeedrateSlider.getValue()));
+		if (t.getType().equals("extruder"))
 			{
 				System.out.println("Creating panel for " + t.getName());
 				createExtruderPanel(t);
@@ -711,22 +737,17 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 
 	public void stateChanged(ChangeEvent e)
 	{
-		/*
 		JSlider source = (JSlider)e.getSource();
-		if (!source.getValueIsAdjusting())
-		{
-			int feedrate = (int)source.getValue();
+		int feedrate = (int)source.getValue();
 
-			if (source.getName().equals("xy-feedrate-slider"))
-			{
-				System.out.println("XY Feedrate: " + feedrate);
-			}
-			else if (source.getName().equals("z-feedrate-slider"))
-			{
-				System.out.println("Z Feedrate: " + feedrate);
-			}
+		if (source.getName().equals("xy-feedrate-slider"))
+		{
+			xyFeedrateValue.setText(Integer.toString(feedrate));
 		}
-		*/
+		else if (source.getName().equals("z-feedrate-slider"))
+		{
+			zFeedrateValue.setText(Integer.toString(feedrate));
+		}
 	}
 	
 	public void itemStateChanged(ItemEvent e)
@@ -802,6 +823,14 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			else if (name.equals("motor-speed"))
 			{
 				driver.setMotorSpeed(Double.parseDouble(source.getText()));
+			}
+			else if (name.equals("xy-feedrate-value"))
+			{
+				xyFeedrateSlider.setValue(Integer.parseInt(source.getText()));
+			}
+			else if (name.equals("z-feedrate-value"))
+			{
+				zFeedrateSlider.setValue(Integer.parseInt(source.getText()));
 			}
 			else
 				System.out.println(name + " lost focus.");
