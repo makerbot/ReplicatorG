@@ -35,15 +35,6 @@ else
   #rm reference.zip
   #cd ..
 
-  echo Extracting enormous JRE...
-  unzip -q  -d work jre.zip
-  # cygwin requires this because of unknown weirdness
-  # it was not formerly this anal retentive
-  cd work/java/bin/
-  #chmod +x *.exe *.dll 
-  #chmod +x client/*.dll
-  cd ../../..
-
   mkdir work/lib/build
   #mkdir work/classes
 

@@ -23,9 +23,6 @@ DONE:
 0003 ReplicatorG and beyond
 
 * get auto-formatting working
-* add support for adding STL to sketch (for slicing)
-* add STL 3D preview
-* add simulation 3D preview (with 2D option as well)
 * add support for slice/dice plugins (skeinforge?  reprap?)
 * Have two buttons for each axis (fast and slow movement)
 * re-add 'gcode' console.
@@ -40,3 +37,10 @@ DONE:
 * refactor ControlPanel to not be so gigantic when creating control panel
 * add time elapsed / total time to build window
 * add temperature, etc. to build window.
+
+0004 ReplicatorG
+
+* add support for adding STL to sketch (for slicing)
+* add STL 3D preview
+* add simulation 3D preview (with 2D option as well)
+

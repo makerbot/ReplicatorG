@@ -41,9 +41,6 @@ rm -rf replicatorg/dist
 #rm reference.zip
 #cd ..
 
-# add java (jre) files
-unzip -q -d replicatorg jre.zip
-
 # copy stuff from work/
 cp work/readme.txt replicatorg
 cp -r work/drivers replicatorg
