@@ -123,12 +123,27 @@ class GenericRuler extends MyComponent
 	protected int machinePosition = 0;
 	protected int mousePosition = 0;
 	protected int rulerWidth = 30;
+	
+	protected double increments[];
 
 	public GenericRuler(int width, int height, int rWidth)
 	{
 		super(width, height);
 		
 		rulerWidth = rWidth;
+		
+		//these are for drawing increments on our ruler
+		increments = new double[] {
+			0.0001, 0.0002, 0.0005,
+			0.001, 0.002, 0.005,
+			0.01, 0.02, 0.05,
+			0.1, 0.2, 0.5,
+			1, 2, 5,
+			10, 20, 50,
+			100, 200, 500,
+			1000, 2000, 5000,
+			10000, 20000, 50000
+		};
 	}
 	
 	public void setMousePosition(int i)
@@ -153,6 +168,21 @@ class GenericRuler extends MyComponent
 	
 	public void doRender()
 	{
+	}
+	
+	protected double getIncrement(int length, double range)
+	{
+		double scale = length / range / 100;
+		double increment = increments[0];
+		
+		for (int i=0; i<increments.length; i++)
+		{
+			increment = increments[i];
+			if (increment > scale)
+				break;
+		}
+		
+		return increment;
 	}
 }
 
@@ -206,6 +236,43 @@ class HorizontalRuler extends GenericRuler
 	
 	private void drawTicks(Graphics g)
 	{
+		//setup font rendering stuff.
+	    Graphics2D g2 = (Graphics2D) g;
+	    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g2.setPaint(Color.black);
+
+		//draw some helper text.
+	    g.setFont(new Font("SansSerif", Font.PLAIN, 12));
+		g.setColor(Color.black);
+			
+		double range = SimulationWindow2D.buildView.getXRange();
+		int width = getWidth() - 30;
+		double increment = getIncrement(width, range);
+		
+		//loop thru all positive increments while we're in bounds
+		int i = 0;
+		double realX;
+		int pointX;
+		int length;
+		
+		do {
+			realX = i * increment;
+			pointX = SimulationWindow2D.buildView.convertRealXToPointX(realX) + 30;
+			
+			if (i % 5 == 0)
+			{
+				length = 15;
+				g.drawString(Double.toString(realX), pointX, 15);
+			}
+			else
+			{
+				length = 10;
+			}
+			
+			g.drawLine(pointX, rulerWidth, pointX, rulerWidth - length);
+			
+			i++;
+		} while (pointX < getWidth());
 	}
 }
 
@@ -659,6 +726,16 @@ class BuildView extends MyComponent implements MouseMotionListener
 		
 		//which one is smallest?
 		ratio = Math.min(yRatio, xRatio);
+	}
+	
+	public double getXRange()
+	{
+		return maximum.x - minimum.x;
+	}
+	
+	public double getYRange()
+	{
+		return maximum.y - minimum.y;
 	}
 	
 	public int convertRealXToPointX(double x)
