@@ -20,6 +20,8 @@ else
   
   # needs to make the dir because of packaging goofiness
   mkdir -p work/classes/arduino/app/drivers
+  mkdir -p work/classes/arduino/app/exceptions
+  mkdir -p work/classes/arduino/app/models
   mkdir -p work/classes/arduino/app/syntax
   mkdir -p work/classes/arduino/app/tools
 
@@ -70,8 +72,8 @@ CLASSPATH="..\\build\\windows\\work\\lib\\vecmath.jar;..\\build\\windows\\work\\
 # show the user an error, rather than crapping out with some strange
 # "class not found" crap
 # need to do this twice because otherwise dependencies aren't resolved right.
-../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java drivers/*.java syntax/*.java tools/*.java *.java
-../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java drivers/*.java syntax/*.java tools/*.java *.java
+../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java drivers/*.java syntax/*.java exceptions/*.java models/*.java tools/*.java *.java
+../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java drivers/*.java syntax/*.java exceptions/*.java models/*.java tools/*.java *.java
 
 cd ../build/windows/work/classes
 rm -f ../lib/pde.jar
