@@ -70,7 +70,6 @@ cd app
 
 JAVA_BIN="/cygdrive/f/Program Files/Java/jdk1.6.0_10/bin";
 PATH="$PATH:$JAVA_BIN"
-echo $PATH;
 
 #CLASSPATH=dirname `which javaw.exe`
 CLASSPATH="..\\build\\windows\\work\\lib\\vecmath.jar;..\\build\\windows\\work\\lib\\j3dcore.jar;..\\build\\windows\\work\\lib\\j3dutils.jar;..\\build\\windows\\work\\lib\\RXTXcomm.jar;..\\build\\windows\\work\\lib\\mrj.jar;..\\build\\windows\\work\\lib\antlr.jar;..\\build\\windows\\work\\lib\\oro.jar;..\\build\\windows\\work\\lib\\registry.jar;..\\build\\windows\\work\\classes"
@@ -82,7 +81,7 @@ CLASSPATH="..\\build\\windows\\work\\lib\\vecmath.jar;..\\build\\windows\\work\\
 #../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java drivers/*.java syntax/*.java exceptions/*.java models/*.java tools/*.java *.java
 #../build/windows/work/jikes -target 1.3 +D -classpath "$CLASSPATH;..\\build\\windows\\work\\classes" -d ..\\build\\windows\\work\\classes ../core/*.java drivers/*.java syntax/*.java exceptions/*.java models/*.java tools/*.java *.java
 #javac -classpath "$CLASSPATH" -d ..\\build\\windows\\work\\classes ../core/*.java drivers/*.java syntax/*.java exceptions/*.java models/*.java tools/*.java *.java
-javac -source 1.4 -target 1.4 $JAVA_OPTIONS -classpath $CLASSPATH -d ../build/windows/work/classes drivers/*.java models/*.java exceptions/*.java ../core/*.java tools/*.java syntax/*java *.java
+javac -source 1.6 -target 1.6 $JAVA_OPTIONS -classpath $CLASSPATH -d ../build/windows/work/classes drivers/*.java models/*.java exceptions/*.java ../core/*.java tools/*.java syntax/*java *.java
 
 cd ../build/windows/work/classes
 rm -f ../lib/pde.jar

@@ -1,9 +1,5 @@
 0002 ReplicatorG
 
-TODO:
-* fix windows icons
-
-DONE:
 * add units to simulation window
 * add proper bounds to simulation window
 * add warmup/cooldown to machine config
@@ -19,6 +15,7 @@ DONE:
 * Add an extruder section (temp, start/stop extruder, extruder direction, extruder speed)
 * added text boxes to control/display feedrate data
 * fix shutdown of driver
+* fix windows icons
 
 0003 ReplicatorG and beyond
 
