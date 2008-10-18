@@ -57,6 +57,11 @@ public class MachineFactory
 		//load config...
 		Document dom = loadMachinesConfig();
 	  
+		if (dom == null)
+		{
+			Base.showError(null, "Error parsing machines.xml", null);
+		}
+		
 		//get each machines
 		NodeList nl = dom.getElementsByTagName("machine");
 
