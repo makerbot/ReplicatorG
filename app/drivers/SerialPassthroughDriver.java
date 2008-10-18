@@ -339,7 +339,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	{
 		super.dispose();
 		
-		serial.dispose();
+		if (serial != null) serial.dispose();
 		serial = null;
 		commands = null;
 	}
