@@ -112,6 +112,8 @@ public class MachineFactory
 			catch (IOException e)
 			{ 
 				e.printStackTrace();
+			    Base.showError(null, "Could not read machines.xml.\n" +
+			                         "You'll need to reinstall ReplicatorG.", e);
 			}
 		}
 		catch (ParserConfigurationException e)
