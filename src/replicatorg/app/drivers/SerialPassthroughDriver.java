@@ -91,7 +91,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		bufferSize = 0;
 		bufferLength = 0;
 		currentCommand = 0;
-		setInitialized(true);
+		setInitialized(false);
 		
 		//some decent default prefs.
 		name = Serial.list()[0];
