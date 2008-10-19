@@ -415,7 +415,7 @@
 		33FFFE940965BD110016AC38 /* ReplicatorG.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = ReplicatorG.xcodeproj; sourceTree = "<group>"; };
 		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
-		916CA3370E3FBC8500146F38 /* machines.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = machines.xml; path = ../shared/machines.xml; sourceTree = SOURCE_ROOT; };
+		916CA3370E3FBC8500146F38 /* machines.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = machines.xml; path = ../../machines.xml; sourceTree = SOURCE_ROOT; };
 		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; path = librxtxSerial.jnilib; sourceTree = "<group>"; };
 		E0D91D510EAA8D9A0075B183 /* Base.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Base.java; sourceTree = "<group>"; };
 		E0D91D520EAA8D9A0075B183 /* Base.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Base.java-e"; sourceTree = "<group>"; };

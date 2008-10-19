@@ -12,6 +12,7 @@ else
   echo Setting up directories to build ReplicatorG...
   BUILD_PREPROC=true
   cp -r ../shared work
+  cp  ../../machines.xml work
   rm -f work/.DS_Store 
   #cp ../../lib/*.dll work
   cp dist/*.dll work
