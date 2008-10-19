@@ -24,7 +24,8 @@
 
 package replicatorg.app.syntax;
 
-import replicatorg.app.*;
+import replicatorg.app.Base;
+import replicatorg.app.Preferences;
 
 
 public class PdeTextAreaDefaults extends TextAreaDefaults {

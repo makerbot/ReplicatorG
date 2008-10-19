@@ -23,7 +23,6 @@
 
 package replicatorg.app;
 
-import javax.vecmath.*;
 
 public class ToolPath
 {

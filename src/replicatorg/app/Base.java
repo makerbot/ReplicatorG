@@ -29,25 +29,50 @@
 
 package replicatorg.app;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import java.util.zip.*;
+import java.awt.Component;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.MediaTracker;
+import java.awt.Toolkit;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.util.Vector;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.swing.undo.*;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 
-import org.w3c.dom.*;
+import replicatorg.core.PApplet;
+import replicatorg.core.PConstants;
 
-import com.apple.mrj.*;
-import com.ice.jni.registry.*;
-
-import replicatorg.core.*;
+import com.apple.mrj.MRJApplicationUtils;
+import com.apple.mrj.MRJFileUtils;
+import com.apple.mrj.MRJOSType;
+import com.apple.mrj.MRJOpenDocumentHandler;
+import com.ice.jni.registry.Registry;
+import com.ice.jni.registry.RegistryKey;
 
 
 /**

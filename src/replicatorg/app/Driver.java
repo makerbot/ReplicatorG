@@ -23,14 +23,12 @@
 
 package replicatorg.app;
 
-import replicatorg.app.drivers.*;
-import replicatorg.app.exceptions.*;
-import replicatorg.app.models.*;
+import javax.vecmath.Point3d;
 
-import java.util.regex.*;
-import javax.vecmath.*;
+import org.w3c.dom.Node;
 
-import org.w3c.dom.*;
+import replicatorg.app.exceptions.BuildFailureException;
+import replicatorg.app.models.MachineModel;
 
 //import org.xml.sax.*;
 //import org.xml.sax.helpers.XMLReaderFactory;

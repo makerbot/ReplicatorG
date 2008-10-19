@@ -27,12 +27,26 @@
 
 package replicatorg.app;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
-import javax.swing.*;
-import java.util.*;
-import javax.vecmath.*;
+import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferStrategy;
+import java.util.ConcurrentModificationException;
+import java.util.Enumeration;
+import java.util.ListIterator;
+import java.util.Vector;
+
+import javax.vecmath.Point3d;
 
 public class SimulationWindow2D extends SimulationWindow
 {	

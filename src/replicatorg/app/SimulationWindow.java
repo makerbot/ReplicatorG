@@ -27,10 +27,12 @@
 
 package replicatorg.app;
 
-import javax.swing.*;
-import java.awt.*;
-import javax.vecmath.*;
-import java.util.*;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Toolkit;
+
+import javax.swing.JFrame;
+import javax.vecmath.Point3d;
 
 public class SimulationWindow extends JFrame
 {

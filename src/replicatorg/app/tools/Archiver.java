@@ -27,13 +27,18 @@
 
 package replicatorg.app.tools;
 
-import replicatorg.app.*;
-
 import java.awt.FileDialog;
-import java.io.*;
-import java.text.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import replicatorg.app.Base;
+import replicatorg.app.Editor;
 
 
 public class Archiver {

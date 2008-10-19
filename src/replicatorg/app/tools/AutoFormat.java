@@ -25,11 +25,12 @@
 
 package replicatorg.app.tools;
 
-import replicatorg.app.*;
-import replicatorg.core.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
-import java.io.*;
-import java.util.StringTokenizer;
+import replicatorg.app.Editor;
+import replicatorg.app.Preferences;
 
 
 /**

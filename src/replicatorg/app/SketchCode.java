@@ -24,11 +24,12 @@
 */
 
 package replicatorg.app;
-import replicatorg.app.syntax.*;
+import java.io.File;
+import java.io.IOException;
 
-import java.io.*;
-import javax.swing.text.*;
-import javax.swing.undo.*;
+import javax.swing.undo.UndoManager;
+
+import replicatorg.app.syntax.SyntaxDocument;
 
 
 public class SketchCode {

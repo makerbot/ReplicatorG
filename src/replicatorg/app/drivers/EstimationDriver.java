@@ -23,10 +23,7 @@
 
 package replicatorg.app.drivers;
 
-import replicatorg.app.*;
-import replicatorg.core.*;
-import org.w3c.dom.*;
-import javax.vecmath.*;
+import replicatorg.app.GCodeException;
 
 
 public class EstimationDriver extends DriverBaseImplementation

@@ -27,40 +27,79 @@
 
 package replicatorg.app;
 
-import replicatorg.app.drivers.*;
-import replicatorg.app.exceptions.*;
-import replicatorg.app.models.*;
-import replicatorg.app.syntax.*;
-import replicatorg.app.tools.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.print.PageFormat;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+import java.io.File;
+import java.io.IOException;
 
-import replicatorg.core.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Box;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.CompoundEdit;
+import javax.swing.undo.UndoManager;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.dnd.*;
-import java.awt.event.*;
-import java.awt.print.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.*;
-import java.util.*;
-import java.util.zip.*;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import org.w3c.dom.*;
-import javax.xml.parsers.*;
-import org.xml.sax.*;
+import replicatorg.app.syntax.JEditTextArea;
+import replicatorg.app.syntax.PdeKeywords;
+import replicatorg.app.syntax.PdeTextAreaDefaults;
+import replicatorg.app.syntax.SyntaxDocument;
+import replicatorg.app.syntax.TextAreaPainter;
+import replicatorg.app.tools.Archiver;
+import replicatorg.app.tools.AutoFormat;
+import replicatorg.core.PApplet;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
-import javax.swing.undo.*;
-
-import com.apple.mrj.*;
-import com.oroinc.text.regex.*;
-
-import com.apple.mrj.*;
-import gnu.io.*;
+import com.apple.mrj.MRJAboutHandler;
+import com.apple.mrj.MRJApplicationUtils;
+import com.apple.mrj.MRJOpenDocumentHandler;
+import com.apple.mrj.MRJPrefsHandler;
+import com.apple.mrj.MRJQuitHandler;
 
 public class Editor extends JFrame
   implements MRJAboutHandler, MRJQuitHandler, MRJPrefsHandler,

@@ -24,8 +24,13 @@
 
 package replicatorg.core;
 
-import java.awt.*;
-import java.awt.image.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.DirectColorModel;
+import java.awt.image.MemoryImageSource;
 
 
 /**

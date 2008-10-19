@@ -25,12 +25,16 @@
 
 package replicatorg.app;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.font.*;
-import java.awt.geom.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+import javax.swing.event.MouseInputListener;
 
 
 /**

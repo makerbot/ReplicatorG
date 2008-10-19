@@ -23,9 +23,9 @@
 
 package replicatorg.app.models;
 
-import replicatorg.app.tools.*;
+import org.w3c.dom.Node;
 
-import org.w3c.dom.*;
+import replicatorg.app.tools.XML;
 
 public class ToolModel
 {

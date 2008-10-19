@@ -22,13 +22,17 @@
 */
 
 package replicatorg.app;
-import replicatorg.app.exceptions.*;
-import replicatorg.app.models.*;
+import java.util.Hashtable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import java.util.*;
-import java.util.regex.*;
-import javax.vecmath.*;
 import javax.swing.JOptionPane;
+import javax.vecmath.Point3d;
+
+import replicatorg.app.exceptions.JobCancelledException;
+import replicatorg.app.exceptions.JobEndException;
+import replicatorg.app.exceptions.JobRewindException;
+import replicatorg.app.models.ToolModel;
 
 public class GCodeParser
 {

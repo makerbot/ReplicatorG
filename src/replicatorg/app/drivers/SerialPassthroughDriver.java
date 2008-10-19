@@ -23,18 +23,18 @@
 
 package replicatorg.app.drivers;
 
-import replicatorg.app.*;
-import replicatorg.app.exceptions.*;
-import replicatorg.app.models.*;
-import replicatorg.app.tools.*;
+import java.util.Date;
+import java.util.Vector;
 
-import replicatorg.core.*;
+import javax.vecmath.Point3d;
 
-import gnu.io.*;
-import java.util.*;
-import org.w3c.dom.*;
-import javax.vecmath.*;
-import java.util.*;
+import org.w3c.dom.Node;
+
+import replicatorg.app.Preferences;
+import replicatorg.app.Serial;
+import replicatorg.app.SerialException;
+import replicatorg.app.models.ToolModel;
+import replicatorg.app.tools.XML;
 
 public class SerialPassthroughDriver extends DriverBaseImplementation
 {

@@ -9,8 +9,8 @@
 
 package replicatorg.app.syntax;
 
-import java.awt.*;
-//import javax.swing.JPopupMenu;
+import java.awt.Color;
+import java.awt.Font;
 
 /**
  * Encapsulates default settings for a text area. This can be passed

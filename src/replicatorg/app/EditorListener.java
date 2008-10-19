@@ -25,14 +25,11 @@
 
 package replicatorg.app;
 
-import replicatorg.app.syntax.*;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.event.*;
+import replicatorg.app.syntax.JEditTextArea;
 
 
 /**

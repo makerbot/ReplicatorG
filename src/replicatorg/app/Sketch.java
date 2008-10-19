@@ -25,16 +25,13 @@
 
 package replicatorg.app;
 
-import replicatorg.core.*;
-
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import java.awt.FileDialog;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.IOException;
+import java.util.Hashtable;
 
 import javax.swing.JOptionPane;
-
-import com.oroinc.text.regex.*;
 
 
 /**

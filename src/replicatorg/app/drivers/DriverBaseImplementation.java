@@ -23,13 +23,15 @@
 
 package replicatorg.app.drivers;
 
-import replicatorg.app.*;
-import replicatorg.app.exceptions.*;
-import replicatorg.app.models.*;
+import javax.vecmath.Point3d;
 
-import java.util.regex.*;
-import javax.vecmath.*;
-import org.w3c.dom.*;
+import org.w3c.dom.Node;
+
+import replicatorg.app.Driver;
+import replicatorg.app.GCodeException;
+import replicatorg.app.GCodeParser;
+import replicatorg.app.exceptions.BuildFailureException;
+import replicatorg.app.models.MachineModel;
 
 public class DriverBaseImplementation implements Driver
 {

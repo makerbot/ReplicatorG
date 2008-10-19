@@ -23,10 +23,11 @@
 
 package replicatorg.app.drivers;
 
-import replicatorg.app.*;
-import replicatorg.core.*;
-import org.w3c.dom.*;
-import javax.vecmath.*;
+import javax.vecmath.Point3d;
+
+import replicatorg.app.GCodeException;
+import replicatorg.app.SimulationWindow;
+import replicatorg.app.SimulationWindow2D;
 
 public class SimulationDriver extends DriverBaseImplementation
 {

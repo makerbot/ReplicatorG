@@ -23,11 +23,10 @@
 
 package replicatorg.app.drivers;
 
-import replicatorg.app.*;
-import replicatorg.app.tools.*;
-import replicatorg.core.*;
-import org.w3c.dom.*;
-import javax.vecmath.*;
+import org.w3c.dom.Node;
+
+import replicatorg.app.GCodeException;
+import replicatorg.app.tools.XML;
 
 
 public class NullDriver extends DriverBaseImplementation

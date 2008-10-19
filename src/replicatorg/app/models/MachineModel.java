@@ -23,12 +23,14 @@
 
 package replicatorg.app.models;
 
-import replicatorg.app.*;
-import replicatorg.app.tools.*;
+import java.util.Vector;
 
-import org.w3c.dom.*;
-import javax.vecmath.*;
-import java.util.*;
+import javax.vecmath.Point3d;
+
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import replicatorg.app.tools.XML;
 
 public class MachineModel
 {
