@@ -37,7 +37,7 @@ svn --quiet export dist/lib/librxtxSerial.so work/lib/librxtxSerial.so
 ### -- START BUILDING -------------------------------------------
 
 # move to root 'arduino' directory
-cd ../../app
+cd ../../src/replicatorg/app
 
 ### -- BUILD PDE ------------------------------------------------
 

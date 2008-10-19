@@ -53,7 +53,7 @@
 			productName = App;
 			productReference = 91045E300E3E4D5800BE08F5 /* ReplicatorG.app */;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
 <plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
@@ -133,59 +133,12 @@
 /* End PBXApplicationTarget section */
 
 /* Begin PBXBuildFile section */
-		33055EFF0CB8187700824CD9 /* SerialException.java in Sources */ = {isa = PBXBuildFile; fileRef = 33055EFE0CB8187600824CD9 /* SerialException.java */; };
 		335A28F50C8CCB0A00D8A7F4 /* quaqua.jar in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = 335A28F30C8CCAF700D8A7F4 /* quaqua.jar */; };
 		335A28FE0C8CCB4000D8A7F4 /* libquaqua.jnilib in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = 335A28F20C8CCAF700D8A7F4 /* libquaqua.jnilib */; };
-		335A29140C8CCC0900D8A7F4 /* PApplet.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29070C8CCC0900D8A7F4 /* PApplet.java */; };
-		335A29150C8CCC0900D8A7F4 /* PConstants.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29080C8CCC0900D8A7F4 /* PConstants.java */; };
-		335A29160C8CCC0900D8A7F4 /* PFont.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29090C8CCC0900D8A7F4 /* PFont.java */; };
-		335A29170C8CCC0900D8A7F4 /* PGraphics.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A290A0C8CCC0900D8A7F4 /* PGraphics.java */; };
-		335A29180C8CCC0900D8A7F4 /* PGraphics2D.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A290B0C8CCC0900D8A7F4 /* PGraphics2D.java */; };
-		335A29190C8CCC0900D8A7F4 /* PGraphics3D.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A290C0C8CCC0900D8A7F4 /* PGraphics3D.java */; };
-		335A291A0C8CCC0900D8A7F4 /* PGraphicsJava2D.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A290D0C8CCC0900D8A7F4 /* PGraphicsJava2D.java */; };
-		335A291B0C8CCC0900D8A7F4 /* PImage.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A290E0C8CCC0900D8A7F4 /* PImage.java */; };
-		335A291C0C8CCC0900D8A7F4 /* PLine.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A290F0C8CCC0900D8A7F4 /* PLine.java */; };
-		335A291D0C8CCC0900D8A7F4 /* PMatrix.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29100C8CCC0900D8A7F4 /* PMatrix.java */; };
-		335A291E0C8CCC0900D8A7F4 /* PPolygon.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29110C8CCC0900D8A7F4 /* PPolygon.java */; };
-		335A291F0C8CCC0900D8A7F4 /* PShape.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29120C8CCC0900D8A7F4 /* PShape.java */; };
-		335A29200C8CCC0900D8A7F4 /* PTriangle.java in Sources */ = {isa = PBXBuildFile; fileRef = 335A29130C8CCC0900D8A7F4 /* PTriangle.java */; };
 		3378B7620D82FDEF00FE72F7 /* FTDIUSBSerialDriver_v2_1_9.dmg in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3378B75E0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_1_9.dmg */; };
 		3378B7630D82FDEF00FE72F7 /* FTDIUSBSerialDriver_v2_2_9_Intel.dmg in CopyFiles */ = {isa = PBXBuildFile; fileRef = 3378B75F0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_2_9_Intel.dmg */; };
 		339514FA097AEB8000193C89 /* license.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 33FF02B60965BD170016AC38 /* license.txt */; };
 		339514FB097AEB8000193C89 /* readme.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 33FF02B70965BD170016AC38 /* readme.txt */; };
-		33AF61770965C54B00B514A9 /* EditorListener.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2C0965BD110016AC38 /* EditorListener.java */; };
-		33AF61790965C54B00B514A9 /* Serial.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE590965BD110016AC38 /* Serial.java */; };
-		33AF617A0965C54B00B514A9 /* TextUtilities.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6D0965BD110016AC38 /* TextUtilities.java */; };
-		33AF617B0965C54B00B514A9 /* EditorConsole.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE290965BD110016AC38 /* EditorConsole.java */; };
-		33AF617C0965C54B00B514A9 /* TokenMarker.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6F0965BD110016AC38 /* TokenMarker.java */; };
-		33AF617E0965C54B00B514A9 /* FindReplace.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2E0965BD110016AC38 /* FindReplace.java */; };
-		33AF617F0965C54B00B514A9 /* SketchCode.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE5C0965BD110016AC38 /* SketchCode.java */; };
-		33AF61800965C54B00B514A9 /* EditorLineStatus.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2B0965BD110016AC38 /* EditorLineStatus.java */; };
-		33AF61810965C54B00B514A9 /* EditorHeader.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2A0965BD110016AC38 /* EditorHeader.java */; };
-		33AF61820965C54B00B514A9 /* EditorButtons.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE280965BD100016AC38 /* EditorButtons.java */; };
-		33AF61830965C54B00B514A9 /* SyntaxStyle.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE690965BD110016AC38 /* SyntaxStyle.java */; };
-		33AF61870965C54B00B514A9 /* TextAreaPainter.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6C0965BD110016AC38 /* TextAreaPainter.java */; };
-		33AF61880965C54B00B514A9 /* Sketchbook.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE5B0965BD110016AC38 /* Sketchbook.java */; };
-		33AF61890965C54B00B514A9 /* EditorStatus.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE2D0965BD110016AC38 /* EditorStatus.java */; };
-		33AF618B0965C54B00B514A9 /* TextAreaDefaults.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6B0965BD110016AC38 /* TextAreaDefaults.java */; };
-		33AF61910965C54B00B514A9 /* SyntaxUtilities.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6A0965BD110016AC38 /* SyntaxUtilities.java */; };
-		33AF61950965C54B00B514A9 /* CTokenMarker.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE600965BD110016AC38 /* CTokenMarker.java */; };
-		33AF619B0965C54B00B514A9 /* KeywordMap.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE640965BD110016AC38 /* KeywordMap.java */; };
-		33AF619D0965C54B00B514A9 /* Sketch.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE5A0965BD110016AC38 /* Sketch.java */; };
-		33AF61A10965C54B00B514A9 /* UpdateCheck.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE730965BD110016AC38 /* UpdateCheck.java */; };
-		33AF61A20965C54B00B514A9 /* InputHandler.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE620965BD110016AC38 /* InputHandler.java */; };
-		33AF61A60965C54B00B514A9 /* AutoFormat.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE720965BD110016AC38 /* AutoFormat.java */; };
-		33AF61A90965C54B00B514A9 /* PdeKeywords.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE650965BD110016AC38 /* PdeKeywords.java */; };
-		33AF61AA0965C54B00B514A9 /* Editor.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE270965BD100016AC38 /* Editor.java */; };
-		33AF61AC0965C54B00B514A9 /* SwingWorker.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE5E0965BD110016AC38 /* SwingWorker.java */; };
-		33AF61AD0965C54B00B514A9 /* DefaultInputHandler.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE610965BD110016AC38 /* DefaultInputHandler.java */; };
-		33AF61AE0965C54B00B514A9 /* SyntaxDocument.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE680965BD110016AC38 /* SyntaxDocument.java */; };
-		33AF61B00965C54B00B514A9 /* Token.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE6E0965BD110016AC38 /* Token.java */; };
-		33AF61B10965C54B00B514A9 /* Preferences.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE330965BD110016AC38 /* Preferences.java */; };
-		33AF61B20965C54B00B514A9 /* PdeTextAreaDefaults.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE660965BD110016AC38 /* PdeTextAreaDefaults.java */; };
-		33AF61B40965C54B00B514A9 /* JEditTextArea.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE630965BD110016AC38 /* JEditTextArea.java */; };
-		33AF61B50965C54B00B514A9 /* Base.java in Sources */ = {isa = PBXBuildFile; fileRef = 33FFFE240965BD100016AC38 /* Base.java */; };
-		33BEDDD509D6E8D800430D5B /* Archiver.java in Sources */ = {isa = PBXBuildFile; fileRef = 33BEDDD309D6E8D800430D5B /* Archiver.java */; };
 		33CF03B209662CB700F2C9A9 /* replicatorg.icns in Resources */ = {isa = PBXBuildFile; fileRef = 33CF03B009662CA800F2C9A9 /* replicatorg.icns */; };
 		33CF03CC09662DC000F2C9A9 /* mrj.jar in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = 33AF620C0965D67900B514A9 /* mrj.jar */; settings = {JAVA_ARCHIVE_SUBDIR = ../shared/lib; }; };
 		33CF03CD09662DC000F2C9A9 /* RXTXcomm.jar in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = 33AF620F0965D67A00B514A9 /* RXTXcomm.jar */; settings = {JAVA_ARCHIVE_SUBDIR = ../shared/lib; }; };
@@ -207,35 +160,153 @@
 		33FF07310965C1E30016AC38 /* tab-unsel-menu.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02860965BD160016AC38 /* tab-unsel-menu.gif */; };
 		33FF07320965C1E30016AC38 /* tab-unsel-mid.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02870965BD160016AC38 /* tab-unsel-mid.gif */; };
 		33FF07330965C1E30016AC38 /* tab-unsel-right.gif in Resources */ = {isa = PBXBuildFile; fileRef = 33FF02880965BD160016AC38 /* tab-unsel-right.gif */; };
-		36078EA40E43629B00BB48BB /* SimulationWindow2D.java in Sources */ = {isa = PBXBuildFile; fileRef = 36078EA30E43629B00BB48BB /* SimulationWindow2D.java */; };
-		36078EA60E4362A600BB48BB /* SimulationWindow3D.java in Sources */ = {isa = PBXBuildFile; fileRef = 36078EA50E4362A600BB48BB /* SimulationWindow3D.java */; };
-		36983BF40E86DC52006CD881 /* DriverFactory.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BF30E86DC52006CD881 /* DriverFactory.java */; };
-		36983BF90E86DC5E006CD881 /* JobCancelledException.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BF60E86DC5E006CD881 /* JobCancelledException.java */; };
-		36983BFA0E86DC5E006CD881 /* JobEndException.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BF70E86DC5E006CD881 /* JobEndException.java */; };
-		36983BFB0E86DC5E006CD881 /* JobRewindException.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BF80E86DC5E006CD881 /* JobRewindException.java */; };
-		36983BFD0E86DC6C006CD881 /* ToolPath.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983BFC0E86DC6C006CD881 /* ToolPath.java */; };
-		36983C050E86DC87006CD881 /* DriverBaseImplementation.java in Sources */ = {isa = PBXBuildFile; fileRef = 36983C040E86DC87006CD881 /* DriverBaseImplementation.java */; };
-		36F068A30E928CC300744632 /* MachineController.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F068A20E928CC300744632 /* MachineController.java */; };
-		36F068A80E928CD200744632 /* ClampModel.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F068A50E928CD200744632 /* ClampModel.java */; };
-		36F068A90E928CD200744632 /* MachineModel.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F068A60E928CD200744632 /* MachineModel.java */; };
-		36F068AA0E928CD200744632 /* ToolModel.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F068A70E928CD200744632 /* ToolModel.java */; };
-		36F068B00E928D3900744632 /* XML.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F068AF0E928D3900744632 /* XML.java */; };
-		36F165EF0E9151D800448D34 /* ControlPanelWindow.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F165EE0E9151D800448D34 /* ControlPanelWindow.java */; };
-		36F165F10E9151E400448D34 /* MachineFactory.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F165F00E9151E400448D34 /* MachineFactory.java */; };
-		36F165F30E9151F300448D34 /* BuildFailureException.java in Sources */ = {isa = PBXBuildFile; fileRef = 36F165F20E9151F300448D34 /* BuildFailureException.java */; };
 		910908BD0E3E260400B0389E /* todo.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 910908B60E3E25B400B0389E /* todo.txt */; };
-		912A74770E42659F00BB58C7 /* SimulationWindow.java in Sources */ = {isa = PBXBuildFile; fileRef = 912A74760E42659F00BB58C7 /* SimulationWindow.java */; };
-		915701430E3F8E2A0033A586 /* SerialPassthroughDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */; };
-		916CA3380E3FBC8500146F38 /* machines.xml in Resources */ = {isa = PBXBuildFile; fileRef = 916CA3370E3FBC8500146F38 /* machines.xml */; };
 		916CA3390E3FBC9800146F38 /* machines.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 916CA3370E3FBC8500146F38 /* machines.xml */; };
-		917F02560E41111400CA05D0 /* SimulationDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 917F02550E41111400CA05D0 /* SimulationDriver.java */; };
-		91C444440E3F6704005F055C /* Driver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91C444430E3F6704005F055C /* Driver.java */; };
-		91D5A85B0E48CA3B003BE250 /* GCodeException.java in Sources */ = {isa = PBXBuildFile; fileRef = 91D5A85A0E48CA3B003BE250 /* GCodeException.java */; };
-		91DF2EFF0E48EE3E00EAF891 /* EstimationDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91DF2EFE0E48EE3E00EAF891 /* EstimationDriver.java */; };
-		91F5D2D30E4747DD008F954A /* GCodeParser.java in Sources */ = {isa = PBXBuildFile; fileRef = 91F5D2D20E4747DD008F954A /* GCodeParser.java */; };
-		91F5D2D50E4747E9008F954A /* NullDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = 91F5D2D40E4747E9008F954A /* NullDriver.java */; };
 		A337296F0D22505C00E82412 /* librxtxSerial.jnilib in Copy Java Resources */ = {isa = PBXBuildFile; fileRef = A33729630D224FA700E82412 /* librxtxSerial.jnilib */; };
 		A3688DF40D284554003CBAA1 /* applet.html in Resources */ = {isa = PBXBuildFile; fileRef = 33AF620B0965D67900B514A9 /* applet.html */; };
+		E0D91DE60EAA8D9C0075B183 /* Base.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D510EAA8D9A0075B183 /* Base.java */; };
+		E0D91DE70EAA8D9C0075B183 /* Base.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D520EAA8D9A0075B183 /* Base.java-e */; };
+		E0D91DE80EAA8D9C0075B183 /* ControlPanelWindow.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D530EAA8D9A0075B183 /* ControlPanelWindow.java */; };
+		E0D91DE90EAA8D9C0075B183 /* ControlPanelWindow.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D540EAA8D9A0075B183 /* ControlPanelWindow.java-e */; };
+		E0D91DEA0EAA8D9C0075B183 /* Driver.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D550EAA8D9A0075B183 /* Driver.java */; };
+		E0D91DEB0EAA8D9C0075B183 /* Driver.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D560EAA8D9A0075B183 /* Driver.java-e */; };
+		E0D91DEC0EAA8D9C0075B183 /* DriverFactory.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D570EAA8D9A0075B183 /* DriverFactory.java */; };
+		E0D91DED0EAA8D9C0075B183 /* DriverFactory.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D580EAA8D9A0075B183 /* DriverFactory.java-e */; };
+		E0D91DEE0EAA8D9C0075B183 /* DriverBaseImplementation.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D5A0EAA8D9A0075B183 /* DriverBaseImplementation.java */; };
+		E0D91DEF0EAA8D9C0075B183 /* DriverBaseImplementation.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D5B0EAA8D9A0075B183 /* DriverBaseImplementation.java-e */; };
+		E0D91DF00EAA8D9C0075B183 /* EstimationDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D5C0EAA8D9A0075B183 /* EstimationDriver.java */; };
+		E0D91DF10EAA8D9C0075B183 /* EstimationDriver.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D5D0EAA8D9A0075B183 /* EstimationDriver.java-e */; };
+		E0D91DF20EAA8D9C0075B183 /* NullDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D5E0EAA8D9A0075B183 /* NullDriver.java */; };
+		E0D91DF30EAA8D9C0075B183 /* NullDriver.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D5F0EAA8D9A0075B183 /* NullDriver.java-e */; };
+		E0D91DF40EAA8D9C0075B183 /* SerialPassthroughDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D600EAA8D9A0075B183 /* SerialPassthroughDriver.java */; };
+		E0D91DF50EAA8D9C0075B183 /* SerialPassthroughDriver.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D610EAA8D9A0075B183 /* SerialPassthroughDriver.java-e */; };
+		E0D91DF60EAA8D9C0075B183 /* SimulationDriver.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D620EAA8D9A0075B183 /* SimulationDriver.java */; };
+		E0D91DF70EAA8D9C0075B183 /* SimulationDriver.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D630EAA8D9A0075B183 /* SimulationDriver.java-e */; };
+		E0D91DF80EAA8D9C0075B183 /* Editor.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D640EAA8D9A0075B183 /* Editor.java */; };
+		E0D91DF90EAA8D9C0075B183 /* Editor.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D650EAA8D9A0075B183 /* Editor.java-e */; };
+		E0D91DFA0EAA8D9C0075B183 /* EditorButtons.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D660EAA8D9A0075B183 /* EditorButtons.java */; };
+		E0D91DFB0EAA8D9C0075B183 /* EditorButtons.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D670EAA8D9A0075B183 /* EditorButtons.java-e */; };
+		E0D91DFC0EAA8D9C0075B183 /* EditorConsole.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D680EAA8D9A0075B183 /* EditorConsole.java */; };
+		E0D91DFD0EAA8D9C0075B183 /* EditorConsole.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D690EAA8D9A0075B183 /* EditorConsole.java-e */; };
+		E0D91DFE0EAA8D9C0075B183 /* EditorHeader.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D6A0EAA8D9A0075B183 /* EditorHeader.java */; };
+		E0D91DFF0EAA8D9C0075B183 /* EditorHeader.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D6B0EAA8D9A0075B183 /* EditorHeader.java-e */; };
+		E0D91E000EAA8D9C0075B183 /* EditorLineStatus.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D6C0EAA8D9A0075B183 /* EditorLineStatus.java */; };
+		E0D91E010EAA8D9C0075B183 /* EditorLineStatus.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D6D0EAA8D9A0075B183 /* EditorLineStatus.java-e */; };
+		E0D91E020EAA8D9C0075B183 /* EditorListener.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D6E0EAA8D9A0075B183 /* EditorListener.java */; };
+		E0D91E030EAA8D9C0075B183 /* EditorListener.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D6F0EAA8D9A0075B183 /* EditorListener.java-e */; };
+		E0D91E040EAA8D9C0075B183 /* EditorStatus.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D700EAA8D9A0075B183 /* EditorStatus.java */; };
+		E0D91E050EAA8D9C0075B183 /* EditorStatus.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D710EAA8D9A0075B183 /* EditorStatus.java-e */; };
+		E0D91E060EAA8D9C0075B183 /* BuildFailureException.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D730EAA8D9A0075B183 /* BuildFailureException.java */; };
+		E0D91E070EAA8D9C0075B183 /* BuildFailureException.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D740EAA8D9A0075B183 /* BuildFailureException.java-e */; };
+		E0D91E080EAA8D9C0075B183 /* JobCancelledException.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D750EAA8D9A0075B183 /* JobCancelledException.java */; };
+		E0D91E090EAA8D9C0075B183 /* JobCancelledException.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D760EAA8D9A0075B183 /* JobCancelledException.java-e */; };
+		E0D91E0A0EAA8D9C0075B183 /* JobEndException.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D770EAA8D9A0075B183 /* JobEndException.java */; };
+		E0D91E0B0EAA8D9C0075B183 /* JobEndException.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D780EAA8D9A0075B183 /* JobEndException.java-e */; };
+		E0D91E0C0EAA8D9C0075B183 /* JobRewindException.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D790EAA8D9A0075B183 /* JobRewindException.java */; };
+		E0D91E0D0EAA8D9C0075B183 /* JobRewindException.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D7A0EAA8D9A0075B183 /* JobRewindException.java-e */; };
+		E0D91E0E0EAA8D9C0075B183 /* FindReplace.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D7B0EAA8D9A0075B183 /* FindReplace.java */; };
+		E0D91E0F0EAA8D9C0075B183 /* FindReplace.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D7C0EAA8D9A0075B183 /* FindReplace.java-e */; };
+		E0D91E100EAA8D9C0075B183 /* GCodeException.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D7D0EAA8D9A0075B183 /* GCodeException.java */; };
+		E0D91E110EAA8D9C0075B183 /* GCodeException.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D7E0EAA8D9A0075B183 /* GCodeException.java-e */; };
+		E0D91E120EAA8D9C0075B183 /* GCodeParser.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D7F0EAA8D9A0075B183 /* GCodeParser.java */; };
+		E0D91E130EAA8D9C0075B183 /* GCodeParser.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D800EAA8D9A0075B183 /* GCodeParser.java-e */; };
+		E0D91E140EAA8D9C0075B183 /* MachineController.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D810EAA8D9A0075B183 /* MachineController.java */; };
+		E0D91E150EAA8D9C0075B183 /* MachineController.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D820EAA8D9B0075B183 /* MachineController.java-e */; };
+		E0D91E160EAA8D9C0075B183 /* MachineFactory.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D830EAA8D9B0075B183 /* MachineFactory.java */; };
+		E0D91E170EAA8D9C0075B183 /* MachineFactory.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D840EAA8D9B0075B183 /* MachineFactory.java-e */; };
+		E0D91E180EAA8D9C0075B183 /* ClampModel.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D860EAA8D9B0075B183 /* ClampModel.java */; };
+		E0D91E190EAA8D9C0075B183 /* ClampModel.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D870EAA8D9B0075B183 /* ClampModel.java-e */; };
+		E0D91E1A0EAA8D9C0075B183 /* MachineModel.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D880EAA8D9B0075B183 /* MachineModel.java */; };
+		E0D91E1B0EAA8D9C0075B183 /* MachineModel.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D890EAA8D9B0075B183 /* MachineModel.java-e */; };
+		E0D91E1C0EAA8D9C0075B183 /* ToolModel.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D8A0EAA8D9B0075B183 /* ToolModel.java */; };
+		E0D91E1D0EAA8D9C0075B183 /* ToolModel.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D8B0EAA8D9B0075B183 /* ToolModel.java-e */; };
+		E0D91E1E0EAA8D9C0075B183 /* Preferences.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D8C0EAA8D9B0075B183 /* Preferences.java */; };
+		E0D91E1F0EAA8D9C0075B183 /* Preferences.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D8D0EAA8D9B0075B183 /* Preferences.java-e */; };
+		E0D91E200EAA8D9C0075B183 /* Serial.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D8E0EAA8D9B0075B183 /* Serial.java */; };
+		E0D91E210EAA8D9C0075B183 /* Serial.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D8F0EAA8D9B0075B183 /* Serial.java-e */; };
+		E0D91E220EAA8D9C0075B183 /* SerialException.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D900EAA8D9B0075B183 /* SerialException.java */; };
+		E0D91E230EAA8D9C0075B183 /* SerialException.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D910EAA8D9B0075B183 /* SerialException.java-e */; };
+		E0D91E240EAA8D9C0075B183 /* SimulationWindow.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D920EAA8D9B0075B183 /* SimulationWindow.java */; };
+		E0D91E250EAA8D9C0075B183 /* SimulationWindow.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D930EAA8D9B0075B183 /* SimulationWindow.java-e */; };
+		E0D91E260EAA8D9C0075B183 /* SimulationWindow2D.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D940EAA8D9B0075B183 /* SimulationWindow2D.java */; };
+		E0D91E270EAA8D9C0075B183 /* SimulationWindow2D.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D950EAA8D9B0075B183 /* SimulationWindow2D.java-e */; };
+		E0D91E280EAA8D9C0075B183 /* SimulationWindow3D.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D960EAA8D9B0075B183 /* SimulationWindow3D.java */; };
+		E0D91E290EAA8D9C0075B183 /* SimulationWindow3D.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D970EAA8D9B0075B183 /* SimulationWindow3D.java-e */; };
+		E0D91E2A0EAA8D9C0075B183 /* Sketch.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D980EAA8D9B0075B183 /* Sketch.java */; };
+		E0D91E2B0EAA8D9C0075B183 /* Sketch.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D990EAA8D9B0075B183 /* Sketch.java-e */; };
+		E0D91E2C0EAA8D9C0075B183 /* Sketchbook.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D9A0EAA8D9B0075B183 /* Sketchbook.java */; };
+		E0D91E2D0EAA8D9C0075B183 /* Sketchbook.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D9B0EAA8D9B0075B183 /* Sketchbook.java-e */; };
+		E0D91E2E0EAA8D9C0075B183 /* SketchCode.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D9C0EAA8D9B0075B183 /* SketchCode.java */; };
+		E0D91E2F0EAA8D9C0075B183 /* SketchCode.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D9D0EAA8D9B0075B183 /* SketchCode.java-e */; };
+		E0D91E300EAA8D9C0075B183 /* SwingWorker.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91D9E0EAA8D9B0075B183 /* SwingWorker.java */; };
+		E0D91E310EAA8D9C0075B183 /* SwingWorker.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91D9F0EAA8D9B0075B183 /* SwingWorker.java-e */; };
+		E0D91E320EAA8D9C0075B183 /* CTokenMarker.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DA10EAA8D9B0075B183 /* CTokenMarker.java */; };
+		E0D91E330EAA8D9C0075B183 /* CTokenMarker.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DA20EAA8D9B0075B183 /* CTokenMarker.java-e */; };
+		E0D91E340EAA8D9C0075B183 /* DefaultInputHandler.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DA30EAA8D9B0075B183 /* DefaultInputHandler.java */; };
+		E0D91E350EAA8D9C0075B183 /* DefaultInputHandler.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DA40EAA8D9B0075B183 /* DefaultInputHandler.java-e */; };
+		E0D91E360EAA8D9C0075B183 /* InputHandler.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DA50EAA8D9B0075B183 /* InputHandler.java */; };
+		E0D91E370EAA8D9C0075B183 /* InputHandler.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DA60EAA8D9B0075B183 /* InputHandler.java-e */; };
+		E0D91E380EAA8D9C0075B183 /* JEditTextArea.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DA70EAA8D9B0075B183 /* JEditTextArea.java */; };
+		E0D91E390EAA8D9C0075B183 /* JEditTextArea.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DA80EAA8D9B0075B183 /* JEditTextArea.java-e */; };
+		E0D91E3A0EAA8D9C0075B183 /* KeywordMap.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DA90EAA8D9B0075B183 /* KeywordMap.java */; };
+		E0D91E3B0EAA8D9C0075B183 /* KeywordMap.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DAA0EAA8D9B0075B183 /* KeywordMap.java-e */; };
+		E0D91E3C0EAA8D9C0075B183 /* PdeKeywords.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DAB0EAA8D9B0075B183 /* PdeKeywords.java */; };
+		E0D91E3D0EAA8D9C0075B183 /* PdeKeywords.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DAC0EAA8D9B0075B183 /* PdeKeywords.java-e */; };
+		E0D91E3E0EAA8D9C0075B183 /* PdeTextAreaDefaults.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DAD0EAA8D9B0075B183 /* PdeTextAreaDefaults.java */; };
+		E0D91E3F0EAA8D9C0075B183 /* PdeTextAreaDefaults.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DAE0EAA8D9B0075B183 /* PdeTextAreaDefaults.java-e */; };
+		E0D91E400EAA8D9C0075B183 /* readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DAF0EAA8D9B0075B183 /* readme.txt */; };
+		E0D91E410EAA8D9C0075B183 /* SyntaxDocument.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DB00EAA8D9B0075B183 /* SyntaxDocument.java */; };
+		E0D91E420EAA8D9C0075B183 /* SyntaxDocument.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DB10EAA8D9B0075B183 /* SyntaxDocument.java-e */; };
+		E0D91E430EAA8D9C0075B183 /* SyntaxStyle.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DB20EAA8D9B0075B183 /* SyntaxStyle.java */; };
+		E0D91E440EAA8D9C0075B183 /* SyntaxStyle.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DB30EAA8D9B0075B183 /* SyntaxStyle.java-e */; };
+		E0D91E450EAA8D9C0075B183 /* SyntaxUtilities.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DB40EAA8D9B0075B183 /* SyntaxUtilities.java */; };
+		E0D91E460EAA8D9C0075B183 /* SyntaxUtilities.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DB50EAA8D9B0075B183 /* SyntaxUtilities.java-e */; };
+		E0D91E470EAA8D9C0075B183 /* TextAreaDefaults.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DB60EAA8D9B0075B183 /* TextAreaDefaults.java */; };
+		E0D91E480EAA8D9C0075B183 /* TextAreaDefaults.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DB70EAA8D9B0075B183 /* TextAreaDefaults.java-e */; };
+		E0D91E490EAA8D9C0075B183 /* TextAreaPainter.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DB80EAA8D9B0075B183 /* TextAreaPainter.java */; };
+		E0D91E4A0EAA8D9C0075B183 /* TextAreaPainter.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DB90EAA8D9B0075B183 /* TextAreaPainter.java-e */; };
+		E0D91E4B0EAA8D9C0075B183 /* TextUtilities.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DBA0EAA8D9B0075B183 /* TextUtilities.java */; };
+		E0D91E4C0EAA8D9C0075B183 /* TextUtilities.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DBB0EAA8D9B0075B183 /* TextUtilities.java-e */; };
+		E0D91E4D0EAA8D9C0075B183 /* Token.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DBC0EAA8D9B0075B183 /* Token.java */; };
+		E0D91E4E0EAA8D9C0075B183 /* Token.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DBD0EAA8D9B0075B183 /* Token.java-e */; };
+		E0D91E4F0EAA8D9C0075B183 /* TokenMarker.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DBE0EAA8D9B0075B183 /* TokenMarker.java */; };
+		E0D91E500EAA8D9C0075B183 /* TokenMarker.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DBF0EAA8D9B0075B183 /* TokenMarker.java-e */; };
+		E0D91E510EAA8D9C0075B183 /* ToolPath.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DC00EAA8D9B0075B183 /* ToolPath.java */; };
+		E0D91E520EAA8D9C0075B183 /* ToolPath.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DC10EAA8D9B0075B183 /* ToolPath.java-e */; };
+		E0D91E530EAA8D9C0075B183 /* Archiver.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DC30EAA8D9B0075B183 /* Archiver.java */; };
+		E0D91E540EAA8D9C0075B183 /* Archiver.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DC40EAA8D9B0075B183 /* Archiver.java-e */; };
+		E0D91E550EAA8D9C0075B183 /* AutoFormat.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DC50EAA8D9B0075B183 /* AutoFormat.java */; };
+		E0D91E560EAA8D9C0075B183 /* AutoFormat.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DC60EAA8D9B0075B183 /* AutoFormat.java-e */; };
+		E0D91E570EAA8D9C0075B183 /* XML.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DC70EAA8D9B0075B183 /* XML.java */; };
+		E0D91E580EAA8D9C0075B183 /* XML.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DC80EAA8D9B0075B183 /* XML.java-e */; };
+		E0D91E590EAA8D9C0075B183 /* UpdateCheck.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DC90EAA8D9B0075B183 /* UpdateCheck.java */; };
+		E0D91E5A0EAA8D9C0075B183 /* UpdateCheck.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DCA0EAA8D9B0075B183 /* UpdateCheck.java-e */; };
+		E0D91E5B0EAA8D9C0075B183 /* PApplet.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DCC0EAA8D9B0075B183 /* PApplet.java */; };
+		E0D91E5C0EAA8D9C0075B183 /* PApplet.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DCD0EAA8D9B0075B183 /* PApplet.java-e */; };
+		E0D91E5D0EAA8D9C0075B183 /* PConstants.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DCE0EAA8D9B0075B183 /* PConstants.java */; };
+		E0D91E5E0EAA8D9C0075B183 /* PConstants.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DCF0EAA8D9B0075B183 /* PConstants.java-e */; };
+		E0D91E5F0EAA8D9C0075B183 /* PFont.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DD00EAA8D9B0075B183 /* PFont.java */; };
+		E0D91E600EAA8D9C0075B183 /* PFont.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DD10EAA8D9B0075B183 /* PFont.java-e */; };
+		E0D91E610EAA8D9C0075B183 /* PGraphics.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DD20EAA8D9B0075B183 /* PGraphics.java */; };
+		E0D91E620EAA8D9C0075B183 /* PGraphics.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DD30EAA8D9B0075B183 /* PGraphics.java-e */; };
+		E0D91E630EAA8D9C0075B183 /* PGraphics2D.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DD40EAA8D9B0075B183 /* PGraphics2D.java */; };
+		E0D91E640EAA8D9C0075B183 /* PGraphics2D.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DD50EAA8D9B0075B183 /* PGraphics2D.java-e */; };
+		E0D91E650EAA8D9C0075B183 /* PGraphics3D.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DD60EAA8D9B0075B183 /* PGraphics3D.java */; };
+		E0D91E660EAA8D9C0075B183 /* PGraphics3D.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DD70EAA8D9C0075B183 /* PGraphics3D.java-e */; };
+		E0D91E670EAA8D9C0075B183 /* PGraphicsJava2D.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DD80EAA8D9C0075B183 /* PGraphicsJava2D.java */; };
+		E0D91E680EAA8D9C0075B183 /* PGraphicsJava2D.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DD90EAA8D9C0075B183 /* PGraphicsJava2D.java-e */; };
+		E0D91E690EAA8D9C0075B183 /* PImage.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DDA0EAA8D9C0075B183 /* PImage.java */; };
+		E0D91E6A0EAA8D9C0075B183 /* PImage.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DDB0EAA8D9C0075B183 /* PImage.java-e */; };
+		E0D91E6B0EAA8D9C0075B183 /* PLine.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DDC0EAA8D9C0075B183 /* PLine.java */; };
+		E0D91E6C0EAA8D9C0075B183 /* PLine.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DDD0EAA8D9C0075B183 /* PLine.java-e */; };
+		E0D91E6D0EAA8D9C0075B183 /* PMatrix.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DDE0EAA8D9C0075B183 /* PMatrix.java */; };
+		E0D91E6E0EAA8D9C0075B183 /* PMatrix.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DDF0EAA8D9C0075B183 /* PMatrix.java-e */; };
+		E0D91E6F0EAA8D9C0075B183 /* PPolygon.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DE00EAA8D9C0075B183 /* PPolygon.java */; };
+		E0D91E700EAA8D9C0075B183 /* PPolygon.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DE10EAA8D9C0075B183 /* PPolygon.java-e */; };
+		E0D91E710EAA8D9C0075B183 /* PShape.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DE20EAA8D9C0075B183 /* PShape.java */; };
+		E0D91E720EAA8D9C0075B183 /* PShape.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DE30EAA8D9C0075B183 /* PShape.java-e */; };
+		E0D91E730EAA8D9C0075B183 /* PTriangle.java in Sources */ = {isa = PBXBuildFile; fileRef = E0D91DE40EAA8D9C0075B183 /* PTriangle.java */; };
+		E0D91E740EAA8D9C0075B183 /* PTriangle.java-e in Resources */ = {isa = PBXBuildFile; fileRef = E0D91DE50EAA8D9C0075B183 /* PTriangle.java-e */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -310,22 +381,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		33055EFE0CB8187600824CD9 /* SerialException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SerialException.java; sourceTree = "<group>"; };
 		335A28F20C8CCAF700D8A7F4 /* libquaqua.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libquaqua.jnilib; sourceTree = "<group>"; };
 		335A28F30C8CCAF700D8A7F4 /* quaqua.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = quaqua.jar; sourceTree = "<group>"; };
-		335A29070C8CCC0900D8A7F4 /* PApplet.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PApplet.java; sourceTree = "<group>"; };
-		335A29080C8CCC0900D8A7F4 /* PConstants.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PConstants.java; sourceTree = "<group>"; };
-		335A29090C8CCC0900D8A7F4 /* PFont.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PFont.java; sourceTree = "<group>"; };
-		335A290A0C8CCC0900D8A7F4 /* PGraphics.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PGraphics.java; sourceTree = "<group>"; };
-		335A290B0C8CCC0900D8A7F4 /* PGraphics2D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PGraphics2D.java; sourceTree = "<group>"; };
-		335A290C0C8CCC0900D8A7F4 /* PGraphics3D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PGraphics3D.java; sourceTree = "<group>"; };
-		335A290D0C8CCC0900D8A7F4 /* PGraphicsJava2D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PGraphicsJava2D.java; sourceTree = "<group>"; };
-		335A290E0C8CCC0900D8A7F4 /* PImage.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PImage.java; sourceTree = "<group>"; };
-		335A290F0C8CCC0900D8A7F4 /* PLine.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PLine.java; sourceTree = "<group>"; };
-		335A29100C8CCC0900D8A7F4 /* PMatrix.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PMatrix.java; sourceTree = "<group>"; };
-		335A29110C8CCC0900D8A7F4 /* PPolygon.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PPolygon.java; sourceTree = "<group>"; };
-		335A29120C8CCC0900D8A7F4 /* PShape.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PShape.java; sourceTree = "<group>"; };
-		335A29130C8CCC0900D8A7F4 /* PTriangle.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PTriangle.java; sourceTree = "<group>"; };
 		3378B75E0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_1_9.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = FTDIUSBSerialDriver_v2_1_9.dmg; sourceTree = "<group>"; };
 		3378B75F0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_2_9_Intel.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = FTDIUSBSerialDriver_v2_2_9_Intel.dmg; sourceTree = "<group>"; };
 		337CD3F309EFC183002B890C /* fetch.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; path = fetch.sh; sourceTree = "<group>"; };
@@ -335,7 +392,6 @@
 		33AF620D0965D67900B514A9 /* oro.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = oro.jar; sourceTree = "<group>"; };
 		33AF620E0965D67A00B514A9 /* registry.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = registry.jar; sourceTree = "<group>"; };
 		33AF620F0965D67A00B514A9 /* RXTXcomm.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = RXTXcomm.jar; sourceTree = "<group>"; };
-		33BEDDD309D6E8D800430D5B /* Archiver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Archiver.java; sourceTree = "<group>"; };
 		33CF03B009662CA800F2C9A9 /* replicatorg.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = replicatorg.icns; path = dist/replicatorg.icns; sourceTree = "<group>"; };
 		33FF01DE0965BD160016AC38 /* about.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = about.jpg; sourceTree = "<group>"; };
 		33FF02770965BD160016AC38 /* buttons.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = buttons.gif; sourceTree = "<group>"; };
@@ -354,70 +410,156 @@
 		33FF02880965BD160016AC38 /* tab-unsel-right.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "tab-unsel-right.gif"; sourceTree = "<group>"; };
 		33FF02B60965BD170016AC38 /* license.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = license.txt; path = ../../license.txt; sourceTree = SOURCE_ROOT; };
 		33FF02B70965BD170016AC38 /* readme.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = readme.txt; path = ../../readme.txt; sourceTree = SOURCE_ROOT; };
-		33FFFE240965BD100016AC38 /* Base.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Base.java; sourceTree = "<group>"; };
-		33FFFE270965BD100016AC38 /* Editor.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Editor.java; sourceTree = "<group>"; };
-		33FFFE280965BD100016AC38 /* EditorButtons.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EditorButtons.java; sourceTree = "<group>"; };
-		33FFFE290965BD110016AC38 /* EditorConsole.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EditorConsole.java; sourceTree = "<group>"; };
-		33FFFE2A0965BD110016AC38 /* EditorHeader.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EditorHeader.java; sourceTree = "<group>"; };
-		33FFFE2B0965BD110016AC38 /* EditorLineStatus.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EditorLineStatus.java; sourceTree = "<group>"; };
-		33FFFE2C0965BD110016AC38 /* EditorListener.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EditorListener.java; sourceTree = "<group>"; };
-		33FFFE2D0965BD110016AC38 /* EditorStatus.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EditorStatus.java; sourceTree = "<group>"; };
-		33FFFE2E0965BD110016AC38 /* FindReplace.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = FindReplace.java; sourceTree = "<group>"; };
-		33FFFE330965BD110016AC38 /* Preferences.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Preferences.java; sourceTree = "<group>"; };
-		33FFFE590965BD110016AC38 /* Serial.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Serial.java; sourceTree = "<group>"; };
-		33FFFE5A0965BD110016AC38 /* Sketch.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Sketch.java; sourceTree = "<group>"; };
-		33FFFE5B0965BD110016AC38 /* Sketchbook.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Sketchbook.java; sourceTree = "<group>"; };
-		33FFFE5C0965BD110016AC38 /* SketchCode.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SketchCode.java; sourceTree = "<group>"; };
-		33FFFE5E0965BD110016AC38 /* SwingWorker.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SwingWorker.java; sourceTree = "<group>"; };
-		33FFFE600965BD110016AC38 /* CTokenMarker.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = CTokenMarker.java; sourceTree = "<group>"; };
-		33FFFE610965BD110016AC38 /* DefaultInputHandler.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = DefaultInputHandler.java; sourceTree = "<group>"; };
-		33FFFE620965BD110016AC38 /* InputHandler.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = InputHandler.java; sourceTree = "<group>"; };
-		33FFFE630965BD110016AC38 /* JEditTextArea.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = JEditTextArea.java; sourceTree = "<group>"; };
-		33FFFE640965BD110016AC38 /* KeywordMap.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = KeywordMap.java; sourceTree = "<group>"; };
-		33FFFE650965BD110016AC38 /* PdeKeywords.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PdeKeywords.java; sourceTree = "<group>"; };
-		33FFFE660965BD110016AC38 /* PdeTextAreaDefaults.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = PdeTextAreaDefaults.java; sourceTree = "<group>"; };
-		33FFFE670965BD110016AC38 /* readme.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = readme.txt; sourceTree = "<group>"; };
-		33FFFE680965BD110016AC38 /* SyntaxDocument.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SyntaxDocument.java; sourceTree = "<group>"; };
-		33FFFE690965BD110016AC38 /* SyntaxStyle.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SyntaxStyle.java; sourceTree = "<group>"; };
-		33FFFE6A0965BD110016AC38 /* SyntaxUtilities.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SyntaxUtilities.java; sourceTree = "<group>"; };
-		33FFFE6B0965BD110016AC38 /* TextAreaDefaults.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = TextAreaDefaults.java; sourceTree = "<group>"; };
-		33FFFE6C0965BD110016AC38 /* TextAreaPainter.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = TextAreaPainter.java; sourceTree = "<group>"; };
-		33FFFE6D0965BD110016AC38 /* TextUtilities.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = TextUtilities.java; sourceTree = "<group>"; };
-		33FFFE6E0965BD110016AC38 /* Token.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Token.java; sourceTree = "<group>"; };
-		33FFFE6F0965BD110016AC38 /* TokenMarker.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = TokenMarker.java; sourceTree = "<group>"; };
-		33FFFE720965BD110016AC38 /* AutoFormat.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = AutoFormat.java; sourceTree = "<group>"; };
-		33FFFE730965BD110016AC38 /* UpdateCheck.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = UpdateCheck.java; sourceTree = "<group>"; };
 		33FFFE810965BD110016AC38 /* howto.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = howto.txt; sourceTree = "<group>"; };
 		33FFFE930965BD110016AC38 /* .cvsignore */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = .cvsignore; sourceTree = "<group>"; };
 		33FFFE940965BD110016AC38 /* ReplicatorG.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = ReplicatorG.xcodeproj; sourceTree = "<group>"; };
-		36078EA30E43629B00BB48BB /* SimulationWindow2D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow2D.java; sourceTree = "<group>"; };
-		36078EA50E4362A600BB48BB /* SimulationWindow3D.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow3D.java; sourceTree = "<group>"; };
-		36983BF30E86DC52006CD881 /* DriverFactory.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = DriverFactory.java; sourceTree = "<group>"; };
-		36983BF60E86DC5E006CD881 /* JobCancelledException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = JobCancelledException.java; sourceTree = "<group>"; };
-		36983BF70E86DC5E006CD881 /* JobEndException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = JobEndException.java; sourceTree = "<group>"; };
-		36983BF80E86DC5E006CD881 /* JobRewindException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = JobRewindException.java; sourceTree = "<group>"; };
-		36983BFC0E86DC6C006CD881 /* ToolPath.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ToolPath.java; sourceTree = "<group>"; };
-		36983C040E86DC87006CD881 /* DriverBaseImplementation.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = DriverBaseImplementation.java; sourceTree = "<group>"; };
-		36F068A20E928CC300744632 /* MachineController.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = MachineController.java; sourceTree = "<group>"; };
-		36F068A50E928CD200744632 /* ClampModel.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ClampModel.java; sourceTree = "<group>"; };
-		36F068A60E928CD200744632 /* MachineModel.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = MachineModel.java; sourceTree = "<group>"; };
-		36F068A70E928CD200744632 /* ToolModel.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ToolModel.java; sourceTree = "<group>"; };
-		36F068AF0E928D3900744632 /* XML.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = XML.java; sourceTree = "<group>"; };
-		36F165EE0E9151D800448D34 /* ControlPanelWindow.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = ControlPanelWindow.java; sourceTree = "<group>"; };
-		36F165F00E9151E400448D34 /* MachineFactory.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = MachineFactory.java; sourceTree = "<group>"; };
-		36F165F20E9151F300448D34 /* BuildFailureException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = BuildFailureException.java; sourceTree = "<group>"; };
 		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
-		912A74760E42659F00BB58C7 /* SimulationWindow.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationWindow.java; sourceTree = "<group>"; };
-		915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SerialPassthroughDriver.java; sourceTree = "<group>"; };
 		916CA3370E3FBC8500146F38 /* machines.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = machines.xml; path = ../shared/machines.xml; sourceTree = SOURCE_ROOT; };
-		917F02550E41111400CA05D0 /* SimulationDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = SimulationDriver.java; sourceTree = "<group>"; };
-		91C444430E3F6704005F055C /* Driver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = Driver.java; sourceTree = "<group>"; };
-		91D5A85A0E48CA3B003BE250 /* GCodeException.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = GCodeException.java; sourceTree = "<group>"; };
-		91DF2EFE0E48EE3E00EAF891 /* EstimationDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = EstimationDriver.java; sourceTree = "<group>"; };
-		91F5D2D20E4747DD008F954A /* GCodeParser.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = GCodeParser.java; sourceTree = "<group>"; };
-		91F5D2D40E4747E9008F954A /* NullDriver.java */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.java; path = NullDriver.java; sourceTree = "<group>"; };
 		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; path = librxtxSerial.jnilib; sourceTree = "<group>"; };
+		E0D91D510EAA8D9A0075B183 /* Base.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Base.java; sourceTree = "<group>"; };
+		E0D91D520EAA8D9A0075B183 /* Base.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Base.java-e"; sourceTree = "<group>"; };
+		E0D91D530EAA8D9A0075B183 /* ControlPanelWindow.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = ControlPanelWindow.java; sourceTree = "<group>"; };
+		E0D91D540EAA8D9A0075B183 /* ControlPanelWindow.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "ControlPanelWindow.java-e"; sourceTree = "<group>"; };
+		E0D91D550EAA8D9A0075B183 /* Driver.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Driver.java; sourceTree = "<group>"; };
+		E0D91D560EAA8D9A0075B183 /* Driver.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Driver.java-e"; sourceTree = "<group>"; };
+		E0D91D570EAA8D9A0075B183 /* DriverFactory.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = DriverFactory.java; sourceTree = "<group>"; };
+		E0D91D580EAA8D9A0075B183 /* DriverFactory.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "DriverFactory.java-e"; sourceTree = "<group>"; };
+		E0D91D5A0EAA8D9A0075B183 /* DriverBaseImplementation.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = DriverBaseImplementation.java; sourceTree = "<group>"; };
+		E0D91D5B0EAA8D9A0075B183 /* DriverBaseImplementation.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "DriverBaseImplementation.java-e"; sourceTree = "<group>"; };
+		E0D91D5C0EAA8D9A0075B183 /* EstimationDriver.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = EstimationDriver.java; sourceTree = "<group>"; };
+		E0D91D5D0EAA8D9A0075B183 /* EstimationDriver.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "EstimationDriver.java-e"; sourceTree = "<group>"; };
+		E0D91D5E0EAA8D9A0075B183 /* NullDriver.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = NullDriver.java; sourceTree = "<group>"; };
+		E0D91D5F0EAA8D9A0075B183 /* NullDriver.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "NullDriver.java-e"; sourceTree = "<group>"; };
+		E0D91D600EAA8D9A0075B183 /* SerialPassthroughDriver.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SerialPassthroughDriver.java; sourceTree = "<group>"; };
+		E0D91D610EAA8D9A0075B183 /* SerialPassthroughDriver.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SerialPassthroughDriver.java-e"; sourceTree = "<group>"; };
+		E0D91D620EAA8D9A0075B183 /* SimulationDriver.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SimulationDriver.java; sourceTree = "<group>"; };
+		E0D91D630EAA8D9A0075B183 /* SimulationDriver.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SimulationDriver.java-e"; sourceTree = "<group>"; };
+		E0D91D640EAA8D9A0075B183 /* Editor.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Editor.java; sourceTree = "<group>"; };
+		E0D91D650EAA8D9A0075B183 /* Editor.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Editor.java-e"; sourceTree = "<group>"; };
+		E0D91D660EAA8D9A0075B183 /* EditorButtons.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = EditorButtons.java; sourceTree = "<group>"; };
+		E0D91D670EAA8D9A0075B183 /* EditorButtons.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "EditorButtons.java-e"; sourceTree = "<group>"; };
+		E0D91D680EAA8D9A0075B183 /* EditorConsole.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = EditorConsole.java; sourceTree = "<group>"; };
+		E0D91D690EAA8D9A0075B183 /* EditorConsole.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "EditorConsole.java-e"; sourceTree = "<group>"; };
+		E0D91D6A0EAA8D9A0075B183 /* EditorHeader.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = EditorHeader.java; sourceTree = "<group>"; };
+		E0D91D6B0EAA8D9A0075B183 /* EditorHeader.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "EditorHeader.java-e"; sourceTree = "<group>"; };
+		E0D91D6C0EAA8D9A0075B183 /* EditorLineStatus.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = EditorLineStatus.java; sourceTree = "<group>"; };
+		E0D91D6D0EAA8D9A0075B183 /* EditorLineStatus.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "EditorLineStatus.java-e"; sourceTree = "<group>"; };
+		E0D91D6E0EAA8D9A0075B183 /* EditorListener.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = EditorListener.java; sourceTree = "<group>"; };
+		E0D91D6F0EAA8D9A0075B183 /* EditorListener.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "EditorListener.java-e"; sourceTree = "<group>"; };
+		E0D91D700EAA8D9A0075B183 /* EditorStatus.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = EditorStatus.java; sourceTree = "<group>"; };
+		E0D91D710EAA8D9A0075B183 /* EditorStatus.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "EditorStatus.java-e"; sourceTree = "<group>"; };
+		E0D91D730EAA8D9A0075B183 /* BuildFailureException.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = BuildFailureException.java; sourceTree = "<group>"; };
+		E0D91D740EAA8D9A0075B183 /* BuildFailureException.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "BuildFailureException.java-e"; sourceTree = "<group>"; };
+		E0D91D750EAA8D9A0075B183 /* JobCancelledException.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = JobCancelledException.java; sourceTree = "<group>"; };
+		E0D91D760EAA8D9A0075B183 /* JobCancelledException.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "JobCancelledException.java-e"; sourceTree = "<group>"; };
+		E0D91D770EAA8D9A0075B183 /* JobEndException.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = JobEndException.java; sourceTree = "<group>"; };
+		E0D91D780EAA8D9A0075B183 /* JobEndException.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "JobEndException.java-e"; sourceTree = "<group>"; };
+		E0D91D790EAA8D9A0075B183 /* JobRewindException.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = JobRewindException.java; sourceTree = "<group>"; };
+		E0D91D7A0EAA8D9A0075B183 /* JobRewindException.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "JobRewindException.java-e"; sourceTree = "<group>"; };
+		E0D91D7B0EAA8D9A0075B183 /* FindReplace.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = FindReplace.java; sourceTree = "<group>"; };
+		E0D91D7C0EAA8D9A0075B183 /* FindReplace.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "FindReplace.java-e"; sourceTree = "<group>"; };
+		E0D91D7D0EAA8D9A0075B183 /* GCodeException.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = GCodeException.java; sourceTree = "<group>"; };
+		E0D91D7E0EAA8D9A0075B183 /* GCodeException.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "GCodeException.java-e"; sourceTree = "<group>"; };
+		E0D91D7F0EAA8D9A0075B183 /* GCodeParser.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = GCodeParser.java; sourceTree = "<group>"; };
+		E0D91D800EAA8D9A0075B183 /* GCodeParser.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "GCodeParser.java-e"; sourceTree = "<group>"; };
+		E0D91D810EAA8D9A0075B183 /* MachineController.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = MachineController.java; sourceTree = "<group>"; };
+		E0D91D820EAA8D9B0075B183 /* MachineController.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "MachineController.java-e"; sourceTree = "<group>"; };
+		E0D91D830EAA8D9B0075B183 /* MachineFactory.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = MachineFactory.java; sourceTree = "<group>"; };
+		E0D91D840EAA8D9B0075B183 /* MachineFactory.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "MachineFactory.java-e"; sourceTree = "<group>"; };
+		E0D91D860EAA8D9B0075B183 /* ClampModel.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = ClampModel.java; sourceTree = "<group>"; };
+		E0D91D870EAA8D9B0075B183 /* ClampModel.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "ClampModel.java-e"; sourceTree = "<group>"; };
+		E0D91D880EAA8D9B0075B183 /* MachineModel.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = MachineModel.java; sourceTree = "<group>"; };
+		E0D91D890EAA8D9B0075B183 /* MachineModel.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "MachineModel.java-e"; sourceTree = "<group>"; };
+		E0D91D8A0EAA8D9B0075B183 /* ToolModel.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = ToolModel.java; sourceTree = "<group>"; };
+		E0D91D8B0EAA8D9B0075B183 /* ToolModel.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "ToolModel.java-e"; sourceTree = "<group>"; };
+		E0D91D8C0EAA8D9B0075B183 /* Preferences.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Preferences.java; sourceTree = "<group>"; };
+		E0D91D8D0EAA8D9B0075B183 /* Preferences.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Preferences.java-e"; sourceTree = "<group>"; };
+		E0D91D8E0EAA8D9B0075B183 /* Serial.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Serial.java; sourceTree = "<group>"; };
+		E0D91D8F0EAA8D9B0075B183 /* Serial.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Serial.java-e"; sourceTree = "<group>"; };
+		E0D91D900EAA8D9B0075B183 /* SerialException.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SerialException.java; sourceTree = "<group>"; };
+		E0D91D910EAA8D9B0075B183 /* SerialException.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SerialException.java-e"; sourceTree = "<group>"; };
+		E0D91D920EAA8D9B0075B183 /* SimulationWindow.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SimulationWindow.java; sourceTree = "<group>"; };
+		E0D91D930EAA8D9B0075B183 /* SimulationWindow.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SimulationWindow.java-e"; sourceTree = "<group>"; };
+		E0D91D940EAA8D9B0075B183 /* SimulationWindow2D.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SimulationWindow2D.java; sourceTree = "<group>"; };
+		E0D91D950EAA8D9B0075B183 /* SimulationWindow2D.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SimulationWindow2D.java-e"; sourceTree = "<group>"; };
+		E0D91D960EAA8D9B0075B183 /* SimulationWindow3D.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SimulationWindow3D.java; sourceTree = "<group>"; };
+		E0D91D970EAA8D9B0075B183 /* SimulationWindow3D.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SimulationWindow3D.java-e"; sourceTree = "<group>"; };
+		E0D91D980EAA8D9B0075B183 /* Sketch.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Sketch.java; sourceTree = "<group>"; };
+		E0D91D990EAA8D9B0075B183 /* Sketch.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Sketch.java-e"; sourceTree = "<group>"; };
+		E0D91D9A0EAA8D9B0075B183 /* Sketchbook.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Sketchbook.java; sourceTree = "<group>"; };
+		E0D91D9B0EAA8D9B0075B183 /* Sketchbook.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Sketchbook.java-e"; sourceTree = "<group>"; };
+		E0D91D9C0EAA8D9B0075B183 /* SketchCode.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SketchCode.java; sourceTree = "<group>"; };
+		E0D91D9D0EAA8D9B0075B183 /* SketchCode.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SketchCode.java-e"; sourceTree = "<group>"; };
+		E0D91D9E0EAA8D9B0075B183 /* SwingWorker.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SwingWorker.java; sourceTree = "<group>"; };
+		E0D91D9F0EAA8D9B0075B183 /* SwingWorker.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SwingWorker.java-e"; sourceTree = "<group>"; };
+		E0D91DA10EAA8D9B0075B183 /* CTokenMarker.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = CTokenMarker.java; sourceTree = "<group>"; };
+		E0D91DA20EAA8D9B0075B183 /* CTokenMarker.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "CTokenMarker.java-e"; sourceTree = "<group>"; };
+		E0D91DA30EAA8D9B0075B183 /* DefaultInputHandler.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = DefaultInputHandler.java; sourceTree = "<group>"; };
+		E0D91DA40EAA8D9B0075B183 /* DefaultInputHandler.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "DefaultInputHandler.java-e"; sourceTree = "<group>"; };
+		E0D91DA50EAA8D9B0075B183 /* InputHandler.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = InputHandler.java; sourceTree = "<group>"; };
+		E0D91DA60EAA8D9B0075B183 /* InputHandler.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "InputHandler.java-e"; sourceTree = "<group>"; };
+		E0D91DA70EAA8D9B0075B183 /* JEditTextArea.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = JEditTextArea.java; sourceTree = "<group>"; };
+		E0D91DA80EAA8D9B0075B183 /* JEditTextArea.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "JEditTextArea.java-e"; sourceTree = "<group>"; };
+		E0D91DA90EAA8D9B0075B183 /* KeywordMap.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = KeywordMap.java; sourceTree = "<group>"; };
+		E0D91DAA0EAA8D9B0075B183 /* KeywordMap.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "KeywordMap.java-e"; sourceTree = "<group>"; };
+		E0D91DAB0EAA8D9B0075B183 /* PdeKeywords.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PdeKeywords.java; sourceTree = "<group>"; };
+		E0D91DAC0EAA8D9B0075B183 /* PdeKeywords.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PdeKeywords.java-e"; sourceTree = "<group>"; };
+		E0D91DAD0EAA8D9B0075B183 /* PdeTextAreaDefaults.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PdeTextAreaDefaults.java; sourceTree = "<group>"; };
+		E0D91DAE0EAA8D9B0075B183 /* PdeTextAreaDefaults.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PdeTextAreaDefaults.java-e"; sourceTree = "<group>"; };
+		E0D91DAF0EAA8D9B0075B183 /* readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = readme.txt; sourceTree = "<group>"; };
+		E0D91DB00EAA8D9B0075B183 /* SyntaxDocument.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SyntaxDocument.java; sourceTree = "<group>"; };
+		E0D91DB10EAA8D9B0075B183 /* SyntaxDocument.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SyntaxDocument.java-e"; sourceTree = "<group>"; };
+		E0D91DB20EAA8D9B0075B183 /* SyntaxStyle.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SyntaxStyle.java; sourceTree = "<group>"; };
+		E0D91DB30EAA8D9B0075B183 /* SyntaxStyle.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SyntaxStyle.java-e"; sourceTree = "<group>"; };
+		E0D91DB40EAA8D9B0075B183 /* SyntaxUtilities.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = SyntaxUtilities.java; sourceTree = "<group>"; };
+		E0D91DB50EAA8D9B0075B183 /* SyntaxUtilities.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "SyntaxUtilities.java-e"; sourceTree = "<group>"; };
+		E0D91DB60EAA8D9B0075B183 /* TextAreaDefaults.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = TextAreaDefaults.java; sourceTree = "<group>"; };
+		E0D91DB70EAA8D9B0075B183 /* TextAreaDefaults.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "TextAreaDefaults.java-e"; sourceTree = "<group>"; };
+		E0D91DB80EAA8D9B0075B183 /* TextAreaPainter.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = TextAreaPainter.java; sourceTree = "<group>"; };
+		E0D91DB90EAA8D9B0075B183 /* TextAreaPainter.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "TextAreaPainter.java-e"; sourceTree = "<group>"; };
+		E0D91DBA0EAA8D9B0075B183 /* TextUtilities.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = TextUtilities.java; sourceTree = "<group>"; };
+		E0D91DBB0EAA8D9B0075B183 /* TextUtilities.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "TextUtilities.java-e"; sourceTree = "<group>"; };
+		E0D91DBC0EAA8D9B0075B183 /* Token.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Token.java; sourceTree = "<group>"; };
+		E0D91DBD0EAA8D9B0075B183 /* Token.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Token.java-e"; sourceTree = "<group>"; };
+		E0D91DBE0EAA8D9B0075B183 /* TokenMarker.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = TokenMarker.java; sourceTree = "<group>"; };
+		E0D91DBF0EAA8D9B0075B183 /* TokenMarker.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "TokenMarker.java-e"; sourceTree = "<group>"; };
+		E0D91DC00EAA8D9B0075B183 /* ToolPath.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = ToolPath.java; sourceTree = "<group>"; };
+		E0D91DC10EAA8D9B0075B183 /* ToolPath.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "ToolPath.java-e"; sourceTree = "<group>"; };
+		E0D91DC30EAA8D9B0075B183 /* Archiver.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Archiver.java; sourceTree = "<group>"; };
+		E0D91DC40EAA8D9B0075B183 /* Archiver.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Archiver.java-e"; sourceTree = "<group>"; };
+		E0D91DC50EAA8D9B0075B183 /* AutoFormat.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = AutoFormat.java; sourceTree = "<group>"; };
+		E0D91DC60EAA8D9B0075B183 /* AutoFormat.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "AutoFormat.java-e"; sourceTree = "<group>"; };
+		E0D91DC70EAA8D9B0075B183 /* XML.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = XML.java; sourceTree = "<group>"; };
+		E0D91DC80EAA8D9B0075B183 /* XML.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "XML.java-e"; sourceTree = "<group>"; };
+		E0D91DC90EAA8D9B0075B183 /* UpdateCheck.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = UpdateCheck.java; sourceTree = "<group>"; };
+		E0D91DCA0EAA8D9B0075B183 /* UpdateCheck.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "UpdateCheck.java-e"; sourceTree = "<group>"; };
+		E0D91DCC0EAA8D9B0075B183 /* PApplet.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PApplet.java; sourceTree = "<group>"; };
+		E0D91DCD0EAA8D9B0075B183 /* PApplet.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PApplet.java-e"; sourceTree = "<group>"; };
+		E0D91DCE0EAA8D9B0075B183 /* PConstants.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PConstants.java; sourceTree = "<group>"; };
+		E0D91DCF0EAA8D9B0075B183 /* PConstants.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PConstants.java-e"; sourceTree = "<group>"; };
+		E0D91DD00EAA8D9B0075B183 /* PFont.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PFont.java; sourceTree = "<group>"; };
+		E0D91DD10EAA8D9B0075B183 /* PFont.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PFont.java-e"; sourceTree = "<group>"; };
+		E0D91DD20EAA8D9B0075B183 /* PGraphics.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PGraphics.java; sourceTree = "<group>"; };
+		E0D91DD30EAA8D9B0075B183 /* PGraphics.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PGraphics.java-e"; sourceTree = "<group>"; };
+		E0D91DD40EAA8D9B0075B183 /* PGraphics2D.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PGraphics2D.java; sourceTree = "<group>"; };
+		E0D91DD50EAA8D9B0075B183 /* PGraphics2D.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PGraphics2D.java-e"; sourceTree = "<group>"; };
+		E0D91DD60EAA8D9B0075B183 /* PGraphics3D.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PGraphics3D.java; sourceTree = "<group>"; };
+		E0D91DD70EAA8D9C0075B183 /* PGraphics3D.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PGraphics3D.java-e"; sourceTree = "<group>"; };
+		E0D91DD80EAA8D9C0075B183 /* PGraphicsJava2D.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PGraphicsJava2D.java; sourceTree = "<group>"; };
+		E0D91DD90EAA8D9C0075B183 /* PGraphicsJava2D.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PGraphicsJava2D.java-e"; sourceTree = "<group>"; };
+		E0D91DDA0EAA8D9C0075B183 /* PImage.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PImage.java; sourceTree = "<group>"; };
+		E0D91DDB0EAA8D9C0075B183 /* PImage.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PImage.java-e"; sourceTree = "<group>"; };
+		E0D91DDC0EAA8D9C0075B183 /* PLine.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PLine.java; sourceTree = "<group>"; };
+		E0D91DDD0EAA8D9C0075B183 /* PLine.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PLine.java-e"; sourceTree = "<group>"; };
+		E0D91DDE0EAA8D9C0075B183 /* PMatrix.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PMatrix.java; sourceTree = "<group>"; };
+		E0D91DDF0EAA8D9C0075B183 /* PMatrix.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PMatrix.java-e"; sourceTree = "<group>"; };
+		E0D91DE00EAA8D9C0075B183 /* PPolygon.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PPolygon.java; sourceTree = "<group>"; };
+		E0D91DE10EAA8D9C0075B183 /* PPolygon.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PPolygon.java-e"; sourceTree = "<group>"; };
+		E0D91DE20EAA8D9C0075B183 /* PShape.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PShape.java; sourceTree = "<group>"; };
+		E0D91DE30EAA8D9C0075B183 /* PShape.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PShape.java-e"; sourceTree = "<group>"; };
+		E0D91DE40EAA8D9C0075B183 /* PTriangle.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = PTriangle.java; sourceTree = "<group>"; };
+		E0D91DE50EAA8D9C0075B183 /* PTriangle.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PTriangle.java-e"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -431,27 +573,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		335A29060C8CCC0800D8A7F4 /* core */ = {
-			isa = PBXGroup;
-			children = (
-				335A29070C8CCC0900D8A7F4 /* PApplet.java */,
-				335A29080C8CCC0900D8A7F4 /* PConstants.java */,
-				335A29090C8CCC0900D8A7F4 /* PFont.java */,
-				335A290A0C8CCC0900D8A7F4 /* PGraphics.java */,
-				335A290B0C8CCC0900D8A7F4 /* PGraphics2D.java */,
-				335A290C0C8CCC0900D8A7F4 /* PGraphics3D.java */,
-				335A290D0C8CCC0900D8A7F4 /* PGraphicsJava2D.java */,
-				335A290E0C8CCC0900D8A7F4 /* PImage.java */,
-				335A290F0C8CCC0900D8A7F4 /* PLine.java */,
-				335A29100C8CCC0900D8A7F4 /* PMatrix.java */,
-				335A29110C8CCC0900D8A7F4 /* PPolygon.java */,
-				335A29120C8CCC0900D8A7F4 /* PShape.java */,
-				335A29130C8CCC0900D8A7F4 /* PTriangle.java */,
-			);
-			name = core;
-			path = ../../core;
-			sourceTree = SOURCE_ROOT;
-		};
 		33FF01DA0965BD160016AC38 /* shared */ = {
 			isa = PBXGroup;
 			children = (
@@ -523,91 +644,15 @@
 		33FFFD3D0965B1E40016AC38 = {
 			isa = PBXGroup;
 			children = (
+				E0D91D4E0EAA8D9A0075B183 /* src */,
 				916CA3370E3FBC8500146F38 /* machines.xml */,
 				910908B60E3E25B400B0389E /* todo.txt */,
 				33CF03B009662CA800F2C9A9 /* replicatorg.icns */,
-				33FFFE220965BD100016AC38 /* app */,
-				335A29060C8CCC0800D8A7F4 /* core */,
 				33FFFE800965BD110016AC38 /* build */,
 				33FF02B60965BD170016AC38 /* license.txt */,
 				33FF02B70965BD170016AC38 /* readme.txt */,
 				91045E300E3E4D5800BE08F5 /* ReplicatorG.app */,
 			);
-			sourceTree = "<group>";
-		};
-		33FFFE220965BD100016AC38 /* app */ = {
-			isa = PBXGroup;
-			children = (
-				36F068A20E928CC300744632 /* MachineController.java */,
-				36F165F00E9151E400448D34 /* MachineFactory.java */,
-				36F068A40E928CD200744632 /* models */,
-				36F165EE0E9151D800448D34 /* ControlPanelWindow.java */,
-				91D5A85A0E48CA3B003BE250 /* GCodeException.java */,
-				91F5D2D20E4747DD008F954A /* GCodeParser.java */,
-				36078EA50E4362A600BB48BB /* SimulationWindow3D.java */,
-				36078EA30E43629B00BB48BB /* SimulationWindow2D.java */,
-				912A74760E42659F00BB58C7 /* SimulationWindow.java */,
-				915701410E3F8E2A0033A586 /* drivers */,
-				91C444430E3F6704005F055C /* Driver.java */,
-				36983BF30E86DC52006CD881 /* DriverFactory.java */,
-				36983BF50E86DC5E006CD881 /* exceptions */,
-				33055EFE0CB8187600824CD9 /* SerialException.java */,
-				33FFFE240965BD100016AC38 /* Base.java */,
-				33FFFE270965BD100016AC38 /* Editor.java */,
-				36983BFC0E86DC6C006CD881 /* ToolPath.java */,
-				33FFFE280965BD100016AC38 /* EditorButtons.java */,
-				33FFFE290965BD110016AC38 /* EditorConsole.java */,
-				33FFFE2A0965BD110016AC38 /* EditorHeader.java */,
-				33FFFE2B0965BD110016AC38 /* EditorLineStatus.java */,
-				33FFFE2C0965BD110016AC38 /* EditorListener.java */,
-				33FFFE2D0965BD110016AC38 /* EditorStatus.java */,
-				33FFFE2E0965BD110016AC38 /* FindReplace.java */,
-				33FFFE330965BD110016AC38 /* Preferences.java */,
-				33FFFE590965BD110016AC38 /* Serial.java */,
-				33FFFE5A0965BD110016AC38 /* Sketch.java */,
-				33FFFE5B0965BD110016AC38 /* Sketchbook.java */,
-				33FFFE5C0965BD110016AC38 /* SketchCode.java */,
-				33FFFE5E0965BD110016AC38 /* SwingWorker.java */,
-				33FFFE5F0965BD110016AC38 /* syntax */,
-				33FFFE710965BD110016AC38 /* tools */,
-				33FFFE730965BD110016AC38 /* UpdateCheck.java */,
-			);
-			includeInIndex = 0;
-			name = app;
-			path = ../../app;
-			sourceTree = SOURCE_ROOT;
-		};
-		33FFFE5F0965BD110016AC38 /* syntax */ = {
-			isa = PBXGroup;
-			children = (
-				33FFFE600965BD110016AC38 /* CTokenMarker.java */,
-				33FFFE610965BD110016AC38 /* DefaultInputHandler.java */,
-				33FFFE620965BD110016AC38 /* InputHandler.java */,
-				33FFFE630965BD110016AC38 /* JEditTextArea.java */,
-				33FFFE640965BD110016AC38 /* KeywordMap.java */,
-				33FFFE650965BD110016AC38 /* PdeKeywords.java */,
-				33FFFE660965BD110016AC38 /* PdeTextAreaDefaults.java */,
-				33FFFE670965BD110016AC38 /* readme.txt */,
-				33FFFE680965BD110016AC38 /* SyntaxDocument.java */,
-				33FFFE690965BD110016AC38 /* SyntaxStyle.java */,
-				33FFFE6A0965BD110016AC38 /* SyntaxUtilities.java */,
-				33FFFE6B0965BD110016AC38 /* TextAreaDefaults.java */,
-				33FFFE6C0965BD110016AC38 /* TextAreaPainter.java */,
-				33FFFE6D0965BD110016AC38 /* TextUtilities.java */,
-				33FFFE6E0965BD110016AC38 /* Token.java */,
-				33FFFE6F0965BD110016AC38 /* TokenMarker.java */,
-			);
-			path = syntax;
-			sourceTree = "<group>";
-		};
-		33FFFE710965BD110016AC38 /* tools */ = {
-			isa = PBXGroup;
-			children = (
-				33BEDDD309D6E8D800430D5B /* Archiver.java */,
-				36F068AF0E928D3900744632 /* XML.java */,
-				33FFFE720965BD110016AC38 /* AutoFormat.java */,
-			);
-			path = tools;
 			sourceTree = "<group>";
 		};
 		33FFFE800965BD110016AC38 /* build */ = {
@@ -659,37 +704,219 @@
 			path = drivers;
 			sourceTree = "<group>";
 		};
-		36983BF50E86DC5E006CD881 /* exceptions */ = {
+		E0D91D4E0EAA8D9A0075B183 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				36F165F20E9151F300448D34 /* BuildFailureException.java */,
-				36983BF60E86DC5E006CD881 /* JobCancelledException.java */,
-				36983BF70E86DC5E006CD881 /* JobEndException.java */,
-				36983BF80E86DC5E006CD881 /* JobRewindException.java */,
+				E0D91D4F0EAA8D9A0075B183 /* replicatorg */,
+			);
+			name = src;
+			path = ../../src;
+			sourceTree = SOURCE_ROOT;
+		};
+		E0D91D4F0EAA8D9A0075B183 /* replicatorg */ = {
+			isa = PBXGroup;
+			children = (
+				E0D91D500EAA8D9A0075B183 /* app */,
+				E0D91DCB0EAA8D9B0075B183 /* core */,
+			);
+			path = replicatorg;
+			sourceTree = "<group>";
+		};
+		E0D91D500EAA8D9A0075B183 /* app */ = {
+			isa = PBXGroup;
+			children = (
+				E0D91D510EAA8D9A0075B183 /* Base.java */,
+				E0D91D520EAA8D9A0075B183 /* Base.java-e */,
+				E0D91D530EAA8D9A0075B183 /* ControlPanelWindow.java */,
+				E0D91D540EAA8D9A0075B183 /* ControlPanelWindow.java-e */,
+				E0D91D550EAA8D9A0075B183 /* Driver.java */,
+				E0D91D560EAA8D9A0075B183 /* Driver.java-e */,
+				E0D91D570EAA8D9A0075B183 /* DriverFactory.java */,
+				E0D91D580EAA8D9A0075B183 /* DriverFactory.java-e */,
+				E0D91D590EAA8D9A0075B183 /* drivers */,
+				E0D91D640EAA8D9A0075B183 /* Editor.java */,
+				E0D91D650EAA8D9A0075B183 /* Editor.java-e */,
+				E0D91D660EAA8D9A0075B183 /* EditorButtons.java */,
+				E0D91D670EAA8D9A0075B183 /* EditorButtons.java-e */,
+				E0D91D680EAA8D9A0075B183 /* EditorConsole.java */,
+				E0D91D690EAA8D9A0075B183 /* EditorConsole.java-e */,
+				E0D91D6A0EAA8D9A0075B183 /* EditorHeader.java */,
+				E0D91D6B0EAA8D9A0075B183 /* EditorHeader.java-e */,
+				E0D91D6C0EAA8D9A0075B183 /* EditorLineStatus.java */,
+				E0D91D6D0EAA8D9A0075B183 /* EditorLineStatus.java-e */,
+				E0D91D6E0EAA8D9A0075B183 /* EditorListener.java */,
+				E0D91D6F0EAA8D9A0075B183 /* EditorListener.java-e */,
+				E0D91D700EAA8D9A0075B183 /* EditorStatus.java */,
+				E0D91D710EAA8D9A0075B183 /* EditorStatus.java-e */,
+				E0D91D720EAA8D9A0075B183 /* exceptions */,
+				E0D91D7B0EAA8D9A0075B183 /* FindReplace.java */,
+				E0D91D7C0EAA8D9A0075B183 /* FindReplace.java-e */,
+				E0D91D7D0EAA8D9A0075B183 /* GCodeException.java */,
+				E0D91D7E0EAA8D9A0075B183 /* GCodeException.java-e */,
+				E0D91D7F0EAA8D9A0075B183 /* GCodeParser.java */,
+				E0D91D800EAA8D9A0075B183 /* GCodeParser.java-e */,
+				E0D91D810EAA8D9A0075B183 /* MachineController.java */,
+				E0D91D820EAA8D9B0075B183 /* MachineController.java-e */,
+				E0D91D830EAA8D9B0075B183 /* MachineFactory.java */,
+				E0D91D840EAA8D9B0075B183 /* MachineFactory.java-e */,
+				E0D91D850EAA8D9B0075B183 /* models */,
+				E0D91D8C0EAA8D9B0075B183 /* Preferences.java */,
+				E0D91D8D0EAA8D9B0075B183 /* Preferences.java-e */,
+				E0D91D8E0EAA8D9B0075B183 /* Serial.java */,
+				E0D91D8F0EAA8D9B0075B183 /* Serial.java-e */,
+				E0D91D900EAA8D9B0075B183 /* SerialException.java */,
+				E0D91D910EAA8D9B0075B183 /* SerialException.java-e */,
+				E0D91D920EAA8D9B0075B183 /* SimulationWindow.java */,
+				E0D91D930EAA8D9B0075B183 /* SimulationWindow.java-e */,
+				E0D91D940EAA8D9B0075B183 /* SimulationWindow2D.java */,
+				E0D91D950EAA8D9B0075B183 /* SimulationWindow2D.java-e */,
+				E0D91D960EAA8D9B0075B183 /* SimulationWindow3D.java */,
+				E0D91D970EAA8D9B0075B183 /* SimulationWindow3D.java-e */,
+				E0D91D980EAA8D9B0075B183 /* Sketch.java */,
+				E0D91D990EAA8D9B0075B183 /* Sketch.java-e */,
+				E0D91D9A0EAA8D9B0075B183 /* Sketchbook.java */,
+				E0D91D9B0EAA8D9B0075B183 /* Sketchbook.java-e */,
+				E0D91D9C0EAA8D9B0075B183 /* SketchCode.java */,
+				E0D91D9D0EAA8D9B0075B183 /* SketchCode.java-e */,
+				E0D91D9E0EAA8D9B0075B183 /* SwingWorker.java */,
+				E0D91D9F0EAA8D9B0075B183 /* SwingWorker.java-e */,
+				E0D91DA00EAA8D9B0075B183 /* syntax */,
+				E0D91DC00EAA8D9B0075B183 /* ToolPath.java */,
+				E0D91DC10EAA8D9B0075B183 /* ToolPath.java-e */,
+				E0D91DC20EAA8D9B0075B183 /* tools */,
+				E0D91DC90EAA8D9B0075B183 /* UpdateCheck.java */,
+				E0D91DCA0EAA8D9B0075B183 /* UpdateCheck.java-e */,
+			);
+			path = app;
+			sourceTree = "<group>";
+		};
+		E0D91D590EAA8D9A0075B183 /* drivers */ = {
+			isa = PBXGroup;
+			children = (
+				E0D91D5A0EAA8D9A0075B183 /* DriverBaseImplementation.java */,
+				E0D91D5B0EAA8D9A0075B183 /* DriverBaseImplementation.java-e */,
+				E0D91D5C0EAA8D9A0075B183 /* EstimationDriver.java */,
+				E0D91D5D0EAA8D9A0075B183 /* EstimationDriver.java-e */,
+				E0D91D5E0EAA8D9A0075B183 /* NullDriver.java */,
+				E0D91D5F0EAA8D9A0075B183 /* NullDriver.java-e */,
+				E0D91D600EAA8D9A0075B183 /* SerialPassthroughDriver.java */,
+				E0D91D610EAA8D9A0075B183 /* SerialPassthroughDriver.java-e */,
+				E0D91D620EAA8D9A0075B183 /* SimulationDriver.java */,
+				E0D91D630EAA8D9A0075B183 /* SimulationDriver.java-e */,
+			);
+			path = drivers;
+			sourceTree = "<group>";
+		};
+		E0D91D720EAA8D9A0075B183 /* exceptions */ = {
+			isa = PBXGroup;
+			children = (
+				E0D91D730EAA8D9A0075B183 /* BuildFailureException.java */,
+				E0D91D740EAA8D9A0075B183 /* BuildFailureException.java-e */,
+				E0D91D750EAA8D9A0075B183 /* JobCancelledException.java */,
+				E0D91D760EAA8D9A0075B183 /* JobCancelledException.java-e */,
+				E0D91D770EAA8D9A0075B183 /* JobEndException.java */,
+				E0D91D780EAA8D9A0075B183 /* JobEndException.java-e */,
+				E0D91D790EAA8D9A0075B183 /* JobRewindException.java */,
+				E0D91D7A0EAA8D9A0075B183 /* JobRewindException.java-e */,
 			);
 			path = exceptions;
 			sourceTree = "<group>";
 		};
-		36F068A40E928CD200744632 /* models */ = {
+		E0D91D850EAA8D9B0075B183 /* models */ = {
 			isa = PBXGroup;
 			children = (
-				36F068A50E928CD200744632 /* ClampModel.java */,
-				36F068A60E928CD200744632 /* MachineModel.java */,
-				36F068A70E928CD200744632 /* ToolModel.java */,
+				E0D91D860EAA8D9B0075B183 /* ClampModel.java */,
+				E0D91D870EAA8D9B0075B183 /* ClampModel.java-e */,
+				E0D91D880EAA8D9B0075B183 /* MachineModel.java */,
+				E0D91D890EAA8D9B0075B183 /* MachineModel.java-e */,
+				E0D91D8A0EAA8D9B0075B183 /* ToolModel.java */,
+				E0D91D8B0EAA8D9B0075B183 /* ToolModel.java-e */,
 			);
 			path = models;
 			sourceTree = "<group>";
 		};
-		915701410E3F8E2A0033A586 /* drivers */ = {
+		E0D91DA00EAA8D9B0075B183 /* syntax */ = {
 			isa = PBXGroup;
 			children = (
-				91DF2EFE0E48EE3E00EAF891 /* EstimationDriver.java */,
-				91F5D2D40E4747E9008F954A /* NullDriver.java */,
-				36983C040E86DC87006CD881 /* DriverBaseImplementation.java */,
-				917F02550E41111400CA05D0 /* SimulationDriver.java */,
-				915701420E3F8E2A0033A586 /* SerialPassthroughDriver.java */,
+				E0D91DA10EAA8D9B0075B183 /* CTokenMarker.java */,
+				E0D91DA20EAA8D9B0075B183 /* CTokenMarker.java-e */,
+				E0D91DA30EAA8D9B0075B183 /* DefaultInputHandler.java */,
+				E0D91DA40EAA8D9B0075B183 /* DefaultInputHandler.java-e */,
+				E0D91DA50EAA8D9B0075B183 /* InputHandler.java */,
+				E0D91DA60EAA8D9B0075B183 /* InputHandler.java-e */,
+				E0D91DA70EAA8D9B0075B183 /* JEditTextArea.java */,
+				E0D91DA80EAA8D9B0075B183 /* JEditTextArea.java-e */,
+				E0D91DA90EAA8D9B0075B183 /* KeywordMap.java */,
+				E0D91DAA0EAA8D9B0075B183 /* KeywordMap.java-e */,
+				E0D91DAB0EAA8D9B0075B183 /* PdeKeywords.java */,
+				E0D91DAC0EAA8D9B0075B183 /* PdeKeywords.java-e */,
+				E0D91DAD0EAA8D9B0075B183 /* PdeTextAreaDefaults.java */,
+				E0D91DAE0EAA8D9B0075B183 /* PdeTextAreaDefaults.java-e */,
+				E0D91DAF0EAA8D9B0075B183 /* readme.txt */,
+				E0D91DB00EAA8D9B0075B183 /* SyntaxDocument.java */,
+				E0D91DB10EAA8D9B0075B183 /* SyntaxDocument.java-e */,
+				E0D91DB20EAA8D9B0075B183 /* SyntaxStyle.java */,
+				E0D91DB30EAA8D9B0075B183 /* SyntaxStyle.java-e */,
+				E0D91DB40EAA8D9B0075B183 /* SyntaxUtilities.java */,
+				E0D91DB50EAA8D9B0075B183 /* SyntaxUtilities.java-e */,
+				E0D91DB60EAA8D9B0075B183 /* TextAreaDefaults.java */,
+				E0D91DB70EAA8D9B0075B183 /* TextAreaDefaults.java-e */,
+				E0D91DB80EAA8D9B0075B183 /* TextAreaPainter.java */,
+				E0D91DB90EAA8D9B0075B183 /* TextAreaPainter.java-e */,
+				E0D91DBA0EAA8D9B0075B183 /* TextUtilities.java */,
+				E0D91DBB0EAA8D9B0075B183 /* TextUtilities.java-e */,
+				E0D91DBC0EAA8D9B0075B183 /* Token.java */,
+				E0D91DBD0EAA8D9B0075B183 /* Token.java-e */,
+				E0D91DBE0EAA8D9B0075B183 /* TokenMarker.java */,
+				E0D91DBF0EAA8D9B0075B183 /* TokenMarker.java-e */,
 			);
-			path = drivers;
+			path = syntax;
+			sourceTree = "<group>";
+		};
+		E0D91DC20EAA8D9B0075B183 /* tools */ = {
+			isa = PBXGroup;
+			children = (
+				E0D91DC30EAA8D9B0075B183 /* Archiver.java */,
+				E0D91DC40EAA8D9B0075B183 /* Archiver.java-e */,
+				E0D91DC50EAA8D9B0075B183 /* AutoFormat.java */,
+				E0D91DC60EAA8D9B0075B183 /* AutoFormat.java-e */,
+				E0D91DC70EAA8D9B0075B183 /* XML.java */,
+				E0D91DC80EAA8D9B0075B183 /* XML.java-e */,
+			);
+			path = tools;
+			sourceTree = "<group>";
+		};
+		E0D91DCB0EAA8D9B0075B183 /* core */ = {
+			isa = PBXGroup;
+			children = (
+				E0D91DCC0EAA8D9B0075B183 /* PApplet.java */,
+				E0D91DCD0EAA8D9B0075B183 /* PApplet.java-e */,
+				E0D91DCE0EAA8D9B0075B183 /* PConstants.java */,
+				E0D91DCF0EAA8D9B0075B183 /* PConstants.java-e */,
+				E0D91DD00EAA8D9B0075B183 /* PFont.java */,
+				E0D91DD10EAA8D9B0075B183 /* PFont.java-e */,
+				E0D91DD20EAA8D9B0075B183 /* PGraphics.java */,
+				E0D91DD30EAA8D9B0075B183 /* PGraphics.java-e */,
+				E0D91DD40EAA8D9B0075B183 /* PGraphics2D.java */,
+				E0D91DD50EAA8D9B0075B183 /* PGraphics2D.java-e */,
+				E0D91DD60EAA8D9B0075B183 /* PGraphics3D.java */,
+				E0D91DD70EAA8D9C0075B183 /* PGraphics3D.java-e */,
+				E0D91DD80EAA8D9C0075B183 /* PGraphicsJava2D.java */,
+				E0D91DD90EAA8D9C0075B183 /* PGraphicsJava2D.java-e */,
+				E0D91DDA0EAA8D9C0075B183 /* PImage.java */,
+				E0D91DDB0EAA8D9C0075B183 /* PImage.java-e */,
+				E0D91DDC0EAA8D9C0075B183 /* PLine.java */,
+				E0D91DDD0EAA8D9C0075B183 /* PLine.java-e */,
+				E0D91DDE0EAA8D9C0075B183 /* PMatrix.java */,
+				E0D91DDF0EAA8D9C0075B183 /* PMatrix.java-e */,
+				E0D91DE00EAA8D9C0075B183 /* PPolygon.java */,
+				E0D91DE10EAA8D9C0075B183 /* PPolygon.java-e */,
+				E0D91DE20EAA8D9C0075B183 /* PShape.java */,
+				E0D91DE30EAA8D9C0075B183 /* PShape.java-e */,
+				E0D91DE40EAA8D9C0075B183 /* PTriangle.java */,
+				E0D91DE50EAA8D9C0075B183 /* PTriangle.java-e */,
+			);
+			path = core;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -708,6 +935,7 @@
 		33FFFD3F0965B1E40016AC38 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 33FFFD400965B1E40016AC38 /* Build configuration list for PBXProject "ReplicatorG" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 0;
 			mainGroup = 33FFFD3D0965B1E40016AC38;
 			productRefGroup = 33FFFD3D0965B1E40016AC38;
@@ -749,7 +977,78 @@
 				33FF07310965C1E30016AC38 /* tab-unsel-menu.gif in Resources */,
 				33FF07320965C1E30016AC38 /* tab-unsel-mid.gif in Resources */,
 				33FF07330965C1E30016AC38 /* tab-unsel-right.gif in Resources */,
-				916CA3380E3FBC8500146F38 /* machines.xml in Resources */,
+				E0D91DE70EAA8D9C0075B183 /* Base.java-e in Resources */,
+				E0D91DE90EAA8D9C0075B183 /* ControlPanelWindow.java-e in Resources */,
+				E0D91DEB0EAA8D9C0075B183 /* Driver.java-e in Resources */,
+				E0D91DED0EAA8D9C0075B183 /* DriverFactory.java-e in Resources */,
+				E0D91DEF0EAA8D9C0075B183 /* DriverBaseImplementation.java-e in Resources */,
+				E0D91DF10EAA8D9C0075B183 /* EstimationDriver.java-e in Resources */,
+				E0D91DF30EAA8D9C0075B183 /* NullDriver.java-e in Resources */,
+				E0D91DF50EAA8D9C0075B183 /* SerialPassthroughDriver.java-e in Resources */,
+				E0D91DF70EAA8D9C0075B183 /* SimulationDriver.java-e in Resources */,
+				E0D91DF90EAA8D9C0075B183 /* Editor.java-e in Resources */,
+				E0D91DFB0EAA8D9C0075B183 /* EditorButtons.java-e in Resources */,
+				E0D91DFD0EAA8D9C0075B183 /* EditorConsole.java-e in Resources */,
+				E0D91DFF0EAA8D9C0075B183 /* EditorHeader.java-e in Resources */,
+				E0D91E010EAA8D9C0075B183 /* EditorLineStatus.java-e in Resources */,
+				E0D91E030EAA8D9C0075B183 /* EditorListener.java-e in Resources */,
+				E0D91E050EAA8D9C0075B183 /* EditorStatus.java-e in Resources */,
+				E0D91E070EAA8D9C0075B183 /* BuildFailureException.java-e in Resources */,
+				E0D91E090EAA8D9C0075B183 /* JobCancelledException.java-e in Resources */,
+				E0D91E0B0EAA8D9C0075B183 /* JobEndException.java-e in Resources */,
+				E0D91E0D0EAA8D9C0075B183 /* JobRewindException.java-e in Resources */,
+				E0D91E0F0EAA8D9C0075B183 /* FindReplace.java-e in Resources */,
+				E0D91E110EAA8D9C0075B183 /* GCodeException.java-e in Resources */,
+				E0D91E130EAA8D9C0075B183 /* GCodeParser.java-e in Resources */,
+				E0D91E150EAA8D9C0075B183 /* MachineController.java-e in Resources */,
+				E0D91E170EAA8D9C0075B183 /* MachineFactory.java-e in Resources */,
+				E0D91E190EAA8D9C0075B183 /* ClampModel.java-e in Resources */,
+				E0D91E1B0EAA8D9C0075B183 /* MachineModel.java-e in Resources */,
+				E0D91E1D0EAA8D9C0075B183 /* ToolModel.java-e in Resources */,
+				E0D91E1F0EAA8D9C0075B183 /* Preferences.java-e in Resources */,
+				E0D91E210EAA8D9C0075B183 /* Serial.java-e in Resources */,
+				E0D91E230EAA8D9C0075B183 /* SerialException.java-e in Resources */,
+				E0D91E250EAA8D9C0075B183 /* SimulationWindow.java-e in Resources */,
+				E0D91E270EAA8D9C0075B183 /* SimulationWindow2D.java-e in Resources */,
+				E0D91E290EAA8D9C0075B183 /* SimulationWindow3D.java-e in Resources */,
+				E0D91E2B0EAA8D9C0075B183 /* Sketch.java-e in Resources */,
+				E0D91E2D0EAA8D9C0075B183 /* Sketchbook.java-e in Resources */,
+				E0D91E2F0EAA8D9C0075B183 /* SketchCode.java-e in Resources */,
+				E0D91E310EAA8D9C0075B183 /* SwingWorker.java-e in Resources */,
+				E0D91E330EAA8D9C0075B183 /* CTokenMarker.java-e in Resources */,
+				E0D91E350EAA8D9C0075B183 /* DefaultInputHandler.java-e in Resources */,
+				E0D91E370EAA8D9C0075B183 /* InputHandler.java-e in Resources */,
+				E0D91E390EAA8D9C0075B183 /* JEditTextArea.java-e in Resources */,
+				E0D91E3B0EAA8D9C0075B183 /* KeywordMap.java-e in Resources */,
+				E0D91E3D0EAA8D9C0075B183 /* PdeKeywords.java-e in Resources */,
+				E0D91E3F0EAA8D9C0075B183 /* PdeTextAreaDefaults.java-e in Resources */,
+				E0D91E400EAA8D9C0075B183 /* readme.txt in Resources */,
+				E0D91E420EAA8D9C0075B183 /* SyntaxDocument.java-e in Resources */,
+				E0D91E440EAA8D9C0075B183 /* SyntaxStyle.java-e in Resources */,
+				E0D91E460EAA8D9C0075B183 /* SyntaxUtilities.java-e in Resources */,
+				E0D91E480EAA8D9C0075B183 /* TextAreaDefaults.java-e in Resources */,
+				E0D91E4A0EAA8D9C0075B183 /* TextAreaPainter.java-e in Resources */,
+				E0D91E4C0EAA8D9C0075B183 /* TextUtilities.java-e in Resources */,
+				E0D91E4E0EAA8D9C0075B183 /* Token.java-e in Resources */,
+				E0D91E500EAA8D9C0075B183 /* TokenMarker.java-e in Resources */,
+				E0D91E520EAA8D9C0075B183 /* ToolPath.java-e in Resources */,
+				E0D91E540EAA8D9C0075B183 /* Archiver.java-e in Resources */,
+				E0D91E560EAA8D9C0075B183 /* AutoFormat.java-e in Resources */,
+				E0D91E580EAA8D9C0075B183 /* XML.java-e in Resources */,
+				E0D91E5A0EAA8D9C0075B183 /* UpdateCheck.java-e in Resources */,
+				E0D91E5C0EAA8D9C0075B183 /* PApplet.java-e in Resources */,
+				E0D91E5E0EAA8D9C0075B183 /* PConstants.java-e in Resources */,
+				E0D91E600EAA8D9C0075B183 /* PFont.java-e in Resources */,
+				E0D91E620EAA8D9C0075B183 /* PGraphics.java-e in Resources */,
+				E0D91E640EAA8D9C0075B183 /* PGraphics2D.java-e in Resources */,
+				E0D91E660EAA8D9C0075B183 /* PGraphics3D.java-e in Resources */,
+				E0D91E680EAA8D9C0075B183 /* PGraphicsJava2D.java-e in Resources */,
+				E0D91E6A0EAA8D9C0075B183 /* PImage.java-e in Resources */,
+				E0D91E6C0EAA8D9C0075B183 /* PLine.java-e in Resources */,
+				E0D91E6E0EAA8D9C0075B183 /* PMatrix.java-e in Resources */,
+				E0D91E700EAA8D9C0075B183 /* PPolygon.java-e in Resources */,
+				E0D91E720EAA8D9C0075B183 /* PShape.java-e in Resources */,
+				E0D91E740EAA8D9C0075B183 /* PTriangle.java-e in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -776,77 +1075,77 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				33AF61770965C54B00B514A9 /* EditorListener.java in Sources */,
-				33AF61790965C54B00B514A9 /* Serial.java in Sources */,
-				33AF617A0965C54B00B514A9 /* TextUtilities.java in Sources */,
-				33AF617B0965C54B00B514A9 /* EditorConsole.java in Sources */,
-				33AF617C0965C54B00B514A9 /* TokenMarker.java in Sources */,
-				33AF617E0965C54B00B514A9 /* FindReplace.java in Sources */,
-				33AF617F0965C54B00B514A9 /* SketchCode.java in Sources */,
-				33AF61800965C54B00B514A9 /* EditorLineStatus.java in Sources */,
-				33AF61810965C54B00B514A9 /* EditorHeader.java in Sources */,
-				33AF61820965C54B00B514A9 /* EditorButtons.java in Sources */,
-				33AF61830965C54B00B514A9 /* SyntaxStyle.java in Sources */,
-				33AF61870965C54B00B514A9 /* TextAreaPainter.java in Sources */,
-				33AF61880965C54B00B514A9 /* Sketchbook.java in Sources */,
-				33AF61890965C54B00B514A9 /* EditorStatus.java in Sources */,
-				33AF618B0965C54B00B514A9 /* TextAreaDefaults.java in Sources */,
-				33AF61910965C54B00B514A9 /* SyntaxUtilities.java in Sources */,
-				33AF61950965C54B00B514A9 /* CTokenMarker.java in Sources */,
-				33AF619B0965C54B00B514A9 /* KeywordMap.java in Sources */,
-				33AF619D0965C54B00B514A9 /* Sketch.java in Sources */,
-				33AF61A10965C54B00B514A9 /* UpdateCheck.java in Sources */,
-				33AF61A20965C54B00B514A9 /* InputHandler.java in Sources */,
-				33AF61A60965C54B00B514A9 /* AutoFormat.java in Sources */,
-				33AF61A90965C54B00B514A9 /* PdeKeywords.java in Sources */,
-				33AF61AA0965C54B00B514A9 /* Editor.java in Sources */,
-				33AF61AC0965C54B00B514A9 /* SwingWorker.java in Sources */,
-				33AF61AD0965C54B00B514A9 /* DefaultInputHandler.java in Sources */,
-				33AF61AE0965C54B00B514A9 /* SyntaxDocument.java in Sources */,
-				33AF61B00965C54B00B514A9 /* Token.java in Sources */,
-				33AF61B10965C54B00B514A9 /* Preferences.java in Sources */,
-				33AF61B20965C54B00B514A9 /* PdeTextAreaDefaults.java in Sources */,
-				33AF61B40965C54B00B514A9 /* JEditTextArea.java in Sources */,
-				33AF61B50965C54B00B514A9 /* Base.java in Sources */,
-				33BEDDD509D6E8D800430D5B /* Archiver.java in Sources */,
-				335A29140C8CCC0900D8A7F4 /* PApplet.java in Sources */,
-				335A29150C8CCC0900D8A7F4 /* PConstants.java in Sources */,
-				335A29160C8CCC0900D8A7F4 /* PFont.java in Sources */,
-				335A29170C8CCC0900D8A7F4 /* PGraphics.java in Sources */,
-				335A29180C8CCC0900D8A7F4 /* PGraphics2D.java in Sources */,
-				335A29190C8CCC0900D8A7F4 /* PGraphics3D.java in Sources */,
-				335A291A0C8CCC0900D8A7F4 /* PGraphicsJava2D.java in Sources */,
-				335A291B0C8CCC0900D8A7F4 /* PImage.java in Sources */,
-				335A291C0C8CCC0900D8A7F4 /* PLine.java in Sources */,
-				335A291D0C8CCC0900D8A7F4 /* PMatrix.java in Sources */,
-				335A291E0C8CCC0900D8A7F4 /* PPolygon.java in Sources */,
-				335A291F0C8CCC0900D8A7F4 /* PShape.java in Sources */,
-				335A29200C8CCC0900D8A7F4 /* PTriangle.java in Sources */,
-				33055EFF0CB8187700824CD9 /* SerialException.java in Sources */,
-				91C444440E3F6704005F055C /* Driver.java in Sources */,
-				915701430E3F8E2A0033A586 /* SerialPassthroughDriver.java in Sources */,
-				917F02560E41111400CA05D0 /* SimulationDriver.java in Sources */,
-				912A74770E42659F00BB58C7 /* SimulationWindow.java in Sources */,
-				36078EA40E43629B00BB48BB /* SimulationWindow2D.java in Sources */,
-				36078EA60E4362A600BB48BB /* SimulationWindow3D.java in Sources */,
-				91F5D2D30E4747DD008F954A /* GCodeParser.java in Sources */,
-				91F5D2D50E4747E9008F954A /* NullDriver.java in Sources */,
-				91D5A85B0E48CA3B003BE250 /* GCodeException.java in Sources */,
-				91DF2EFF0E48EE3E00EAF891 /* EstimationDriver.java in Sources */,
-				36983BF40E86DC52006CD881 /* DriverFactory.java in Sources */,
-				36983BF90E86DC5E006CD881 /* JobCancelledException.java in Sources */,
-				36983BFA0E86DC5E006CD881 /* JobEndException.java in Sources */,
-				36983BFB0E86DC5E006CD881 /* JobRewindException.java in Sources */,
-				36983BFD0E86DC6C006CD881 /* ToolPath.java in Sources */,
-				36983C050E86DC87006CD881 /* DriverBaseImplementation.java in Sources */,
-				36F165EF0E9151D800448D34 /* ControlPanelWindow.java in Sources */,
-				36F165F10E9151E400448D34 /* MachineFactory.java in Sources */,
-				36F165F30E9151F300448D34 /* BuildFailureException.java in Sources */,
-				36F068A30E928CC300744632 /* MachineController.java in Sources */,
-				36F068A80E928CD200744632 /* ClampModel.java in Sources */,
-				36F068A90E928CD200744632 /* MachineModel.java in Sources */,
-				36F068AA0E928CD200744632 /* ToolModel.java in Sources */,
-				36F068B00E928D3900744632 /* XML.java in Sources */,
+				E0D91DE60EAA8D9C0075B183 /* Base.java in Sources */,
+				E0D91DE80EAA8D9C0075B183 /* ControlPanelWindow.java in Sources */,
+				E0D91DEA0EAA8D9C0075B183 /* Driver.java in Sources */,
+				E0D91DEC0EAA8D9C0075B183 /* DriverFactory.java in Sources */,
+				E0D91DEE0EAA8D9C0075B183 /* DriverBaseImplementation.java in Sources */,
+				E0D91DF00EAA8D9C0075B183 /* EstimationDriver.java in Sources */,
+				E0D91DF20EAA8D9C0075B183 /* NullDriver.java in Sources */,
+				E0D91DF40EAA8D9C0075B183 /* SerialPassthroughDriver.java in Sources */,
+				E0D91DF60EAA8D9C0075B183 /* SimulationDriver.java in Sources */,
+				E0D91DF80EAA8D9C0075B183 /* Editor.java in Sources */,
+				E0D91DFA0EAA8D9C0075B183 /* EditorButtons.java in Sources */,
+				E0D91DFC0EAA8D9C0075B183 /* EditorConsole.java in Sources */,
+				E0D91DFE0EAA8D9C0075B183 /* EditorHeader.java in Sources */,
+				E0D91E000EAA8D9C0075B183 /* EditorLineStatus.java in Sources */,
+				E0D91E020EAA8D9C0075B183 /* EditorListener.java in Sources */,
+				E0D91E040EAA8D9C0075B183 /* EditorStatus.java in Sources */,
+				E0D91E060EAA8D9C0075B183 /* BuildFailureException.java in Sources */,
+				E0D91E080EAA8D9C0075B183 /* JobCancelledException.java in Sources */,
+				E0D91E0A0EAA8D9C0075B183 /* JobEndException.java in Sources */,
+				E0D91E0C0EAA8D9C0075B183 /* JobRewindException.java in Sources */,
+				E0D91E0E0EAA8D9C0075B183 /* FindReplace.java in Sources */,
+				E0D91E100EAA8D9C0075B183 /* GCodeException.java in Sources */,
+				E0D91E120EAA8D9C0075B183 /* GCodeParser.java in Sources */,
+				E0D91E140EAA8D9C0075B183 /* MachineController.java in Sources */,
+				E0D91E160EAA8D9C0075B183 /* MachineFactory.java in Sources */,
+				E0D91E180EAA8D9C0075B183 /* ClampModel.java in Sources */,
+				E0D91E1A0EAA8D9C0075B183 /* MachineModel.java in Sources */,
+				E0D91E1C0EAA8D9C0075B183 /* ToolModel.java in Sources */,
+				E0D91E1E0EAA8D9C0075B183 /* Preferences.java in Sources */,
+				E0D91E200EAA8D9C0075B183 /* Serial.java in Sources */,
+				E0D91E220EAA8D9C0075B183 /* SerialException.java in Sources */,
+				E0D91E240EAA8D9C0075B183 /* SimulationWindow.java in Sources */,
+				E0D91E260EAA8D9C0075B183 /* SimulationWindow2D.java in Sources */,
+				E0D91E280EAA8D9C0075B183 /* SimulationWindow3D.java in Sources */,
+				E0D91E2A0EAA8D9C0075B183 /* Sketch.java in Sources */,
+				E0D91E2C0EAA8D9C0075B183 /* Sketchbook.java in Sources */,
+				E0D91E2E0EAA8D9C0075B183 /* SketchCode.java in Sources */,
+				E0D91E300EAA8D9C0075B183 /* SwingWorker.java in Sources */,
+				E0D91E320EAA8D9C0075B183 /* CTokenMarker.java in Sources */,
+				E0D91E340EAA8D9C0075B183 /* DefaultInputHandler.java in Sources */,
+				E0D91E360EAA8D9C0075B183 /* InputHandler.java in Sources */,
+				E0D91E380EAA8D9C0075B183 /* JEditTextArea.java in Sources */,
+				E0D91E3A0EAA8D9C0075B183 /* KeywordMap.java in Sources */,
+				E0D91E3C0EAA8D9C0075B183 /* PdeKeywords.java in Sources */,
+				E0D91E3E0EAA8D9C0075B183 /* PdeTextAreaDefaults.java in Sources */,
+				E0D91E410EAA8D9C0075B183 /* SyntaxDocument.java in Sources */,
+				E0D91E430EAA8D9C0075B183 /* SyntaxStyle.java in Sources */,
+				E0D91E450EAA8D9C0075B183 /* SyntaxUtilities.java in Sources */,
+				E0D91E470EAA8D9C0075B183 /* TextAreaDefaults.java in Sources */,
+				E0D91E490EAA8D9C0075B183 /* TextAreaPainter.java in Sources */,
+				E0D91E4B0EAA8D9C0075B183 /* TextUtilities.java in Sources */,
+				E0D91E4D0EAA8D9C0075B183 /* Token.java in Sources */,
+				E0D91E4F0EAA8D9C0075B183 /* TokenMarker.java in Sources */,
+				E0D91E510EAA8D9C0075B183 /* ToolPath.java in Sources */,
+				E0D91E530EAA8D9C0075B183 /* Archiver.java in Sources */,
+				E0D91E550EAA8D9C0075B183 /* AutoFormat.java in Sources */,
+				E0D91E570EAA8D9C0075B183 /* XML.java in Sources */,
+				E0D91E590EAA8D9C0075B183 /* UpdateCheck.java in Sources */,
+				E0D91E5B0EAA8D9C0075B183 /* PApplet.java in Sources */,
+				E0D91E5D0EAA8D9C0075B183 /* PConstants.java in Sources */,
+				E0D91E5F0EAA8D9C0075B183 /* PFont.java in Sources */,
+				E0D91E610EAA8D9C0075B183 /* PGraphics.java in Sources */,
+				E0D91E630EAA8D9C0075B183 /* PGraphics2D.java in Sources */,
+				E0D91E650EAA8D9C0075B183 /* PGraphics3D.java in Sources */,
+				E0D91E670EAA8D9C0075B183 /* PGraphicsJava2D.java in Sources */,
+				E0D91E690EAA8D9C0075B183 /* PImage.java in Sources */,
+				E0D91E6B0EAA8D9C0075B183 /* PLine.java in Sources */,
+				E0D91E6D0EAA8D9C0075B183 /* PMatrix.java in Sources */,
+				E0D91E6F0EAA8D9C0075B183 /* PPolygon.java in Sources */,
+				E0D91E710EAA8D9C0075B183 /* PShape.java in Sources */,
+				E0D91E730EAA8D9C0075B183 /* PTriangle.java in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

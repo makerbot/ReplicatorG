@@ -66,7 +66,7 @@ cd ../..
 
 ### -- BUILD PDE ------------------------------------------------
 
-cd app
+cd src/replicatorg/app
 
 JAVA_BIN="/cygdrive/f/Program Files/Java/jdk1.6.0_10/bin";
 PATH="$PATH:$JAVA_BIN"
