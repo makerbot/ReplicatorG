@@ -2,7 +2,7 @@
 
 /*
   PdeKeywords - handles text coloring and links to html reference
-  Part of the Processing project - http://replicatorg.org
+  Part of the Processing project - http://processing.org
 
   Copyright (c) 2004-06 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology

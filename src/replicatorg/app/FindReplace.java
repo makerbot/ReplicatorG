@@ -4,7 +4,7 @@
 
   Forked from Arduino: http://www.arduino.cc
 
-  Based on Processing http://www.replicatorg.org
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 
@@ -42,7 +42,7 @@ import javax.swing.*;
  * Most likely this is some annoyance buried deep in one of Apple's docs,
  * or in the doc for the focus stuff (I tend to think the former because
  * Windows doesn't seem to be quite so beligerent). Filed as
- * <A HREF="http://dev.replicatorg.org/bugs/show_bug.cgi?id=244"> Bug 244</A>
+ * <A HREF="http://dev.processing.org/bugs/show_bug.cgi?id=244"> Bug 244</A>
  * should anyone have clues about how to fix.
  */
 public class FindReplace extends JFrame implements ActionListener {

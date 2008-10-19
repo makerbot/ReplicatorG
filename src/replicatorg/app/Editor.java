@@ -4,7 +4,7 @@
 
   Forked from Arduino: http://www.arduino.cc
 
-  Based on Processing http://www.replicatorg.org
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 
@@ -183,7 +183,7 @@ public class Editor extends JFrame
 
     // don't close the window when clicked, the app will take care
     // of that via the handleQuitInternal() methods
-    // http://dev.replicatorg.org/bugs/show_bug.cgi?id=440
+    // http://dev.processing.org/bugs/show_bug.cgi?id=440
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
     PdeKeywords keywords = new PdeKeywords();
@@ -1748,7 +1748,7 @@ public class Editor extends JFrame
    * save is happening. If 'force' is true, then it will happen
    * immediately. This is used during a quit, because invokeLater()
    * won't run properly while a quit is happening. This fixes
-   * <A HREF="http://dev.replicatorg.org/bugs/show_bug.cgi?id=276">Bug 276</A>.
+   * <A HREF="http://dev.processing.org/bugs/show_bug.cgi?id=276">Bug 276</A>.
    */
   public void handleSave(boolean force) {
     doStop();

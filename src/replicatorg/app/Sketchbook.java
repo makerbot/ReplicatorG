@@ -4,7 +4,7 @@
 
   Forked from Arduino: http://www.arduino.cc
 
-  Based on Processing http://www.replicatorg.org
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 

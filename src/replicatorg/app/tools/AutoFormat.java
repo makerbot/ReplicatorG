@@ -4,7 +4,7 @@
 
   Forked from Arduino: http://www.arduino.cc
 
-  Based on Processing http://www.replicatorg.org
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 
@@ -192,7 +192,7 @@ public class AutoFormat {
   }
 
 
-  /* special edition of put string for comment replicatorg.*/
+  /* special edition of put string for comment processing */
   public void putcoms()
   {
     int i = 0;
@@ -324,7 +324,7 @@ public class AutoFormat {
     return last_char;
   }
 
-  /* else replicatorg.*/
+  /* else processing */
   public void gotelse()
   {
     tabs = s_tabs[c_level][if_lev];

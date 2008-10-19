@@ -1,7 +1,7 @@
 /* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
 
 /*
-  Part of the Processing project - http://replicatorg.org
+  Part of the Processing project - http://processing.org
 
   Copyright (c) 2004-06 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
@@ -578,7 +578,7 @@ public class PGraphics3D extends PGraphics {
     // only do this if we're using an irregular (POLYGON) shape that
     // will go through the triangulator. otherwise it'll do thinks like
     // disappear in mathematically odd ways
-    // http://dev.replicatorg.org/bugs/show_bug.cgi?id=444
+    // http://dev.processing.org/bugs/show_bug.cgi?id=444
     if (shape == POLYGON) {
       if (vertexCount > 0) {
         float pvertex[] = vertices[vertexCount-1];
@@ -1478,7 +1478,7 @@ public class PGraphics3D extends PGraphics {
 
       // 2D hack added by ewjordan 6/13/07
       // Offset coordinates by a little bit if drawing 2D graphics.
-      // http://dev.replicatorg.org/bugs/show_bug.cgi?id=95
+      // http://dev.processing.org/bugs/show_bug.cgi?id=95
 
       // This hack fixes a bug caused by numerical precision issues when
       // applying the 3D transformations to coordinates in the screen plane
@@ -1566,7 +1566,7 @@ public class PGraphics3D extends PGraphics {
     // and triangulation will fail. as such, when the area calculates to
     // zero, figure out whether x or y is empty, and calculate based on the
     // two dimensions that actually contain information.
-    // http://dev.replicatorg.org/bugs/show_bug.cgi?id=111
+    // http://dev.processing.org/bugs/show_bug.cgi?id=111
     int d1 = MX;
     int d2 = MY;
     // this brings up the nastier point that there may be cases where
@@ -1618,7 +1618,7 @@ public class PGraphics3D extends PGraphics {
 
     // don't allow polygons to come back and meet themselves,
     // otherwise it will anger the triangulator
-    // http://dev.replicatorg.org/bugs/show_bug.cgi?id=97
+    // http://dev.processing.org/bugs/show_bug.cgi?id=97
     float vfirst[] = vertices[vertex_start];
     float vlast[] = vertices[vertex_end-1];
     if ((abs(vfirst[MX] - vlast[MX]) < EPSILON) &&

@@ -2,7 +2,7 @@
 
 /*
   PSerial - class for serial port goodness
-  Part of the Processing project - http://replicatorg.org
+  Part of the Processing project - http://processing.org
 
   Copyright (c) 2004 Ben Fry & Casey Reas
 

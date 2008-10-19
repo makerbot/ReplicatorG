@@ -1,7 +1,7 @@
 /* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
 
 /*
-  Part of the Processing project - http://replicatorg.org
+  Part of the Processing project - http://processing.org
 
   Copyright (c) 2004-06 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
@@ -972,14 +972,14 @@ public class PApplet extends Applet
    * ensures that internal variables are set up properly that tie the
    * new graphics context back to its parent PApplet.
    * <LI>The basic way to create bitmap images is to use the <A
-   * HREF="http://replicatorg.org/reference/saveFrame_.html">saveFrame()</A>
+   * HREF="http://processing.org/reference/saveFrame_.html">saveFrame()</A>
    * function.
    * <LI>If you want to create a really large scene and write that,
    * first make sure that you've allocated a lot of memory in the Preferences.
    * <LI>If you want to create images that are larger than the screen,
    * you should create your own PGraphics object, draw to that, and use
-   * <A HREF="http://replicatorg.org/reference/save_.html">save()</A>.
-   * For now, it's best to use <A HREF="http://dev.replicatorg.org/reference/everything/javadoc/replicatorg.core/PGraphics3D.html">P3D</A> in this scenario.
+   * <A HREF="http://processing.org/reference/save_.html">save()</A>.
+   * For now, it's best to use <A HREF="http://dev.processing.org/reference/everything/javadoc/processing.core/PGraphics3D.html">P3D</A> in this scenario.
    * P2D is currently disabled, and the JAVA2D default will give mixed
    * results. An example of using P3D:
    * <PRE>
@@ -1011,7 +1011,7 @@ public class PApplet extends Applet
    * <LI>With Processing 0115 and later, it's possible to write images in
    * formats other than the default .tga and .tiff. The exact formats and
    * background information can be found in the developer's reference for
-   * <A HREF="http://dev.replicatorg.org/reference/core/javadoc/replicatorg.core/PImage.html#save(java.lang.String)">PImage.save()</A>.
+   * <A HREF="http://dev.processing.org/reference/core/javadoc/processing.core/PImage.html#save(java.lang.String)">PImage.save()</A>.
    * </UL>
    */
   public PGraphics createGraphics(int iwidth, int iheight,
@@ -1056,7 +1056,7 @@ public class PApplet extends Applet
         if (s != null) {
           if (s.equals("1.5.0_10")) {
             System.err.println("OpenGL support is broken with Java 1.5.0_10");
-            System.err.println("See http://dev.replicatorg.org" +
+            System.err.println("See http://dev.processing.org" +
                                "/bugs/show_bug.cgi?id=513 for more info.");
             throw new RuntimeException("Please update your Java " +
                                        "installation (see bug #513)");
@@ -1710,7 +1710,7 @@ public class PApplet extends Applet
   protected void handleMouseEvent(MouseEvent event) {
     int id = event.getID();
 
-    // http://dev.replicatorg.org/bugs/show_bug.cgi?id=170
+    // http://dev.processing.org/bugs/show_bug.cgi?id=170
     // also prevents mouseExited() on the mac from hosing the mouse
     // position, because x/y are bizarre values on the exit event.
     // see also the id check below.. both of these go together
@@ -3435,12 +3435,12 @@ public class PApplet extends Applet
    * because it takes a URL argument, which would be a pain in the a--
    * to make work consistently for online and local sketches.
    * Sometimes this causes problems, resulting in issues like
-   * <A HREF="http://dev.replicatorg.org/bugs/show_bug.cgi?id=279">Bug 279</A>
+   * <A HREF="http://dev.processing.org/bugs/show_bug.cgi?id=279">Bug 279</A>
    * and
-   * <A HREF="http://dev.replicatorg.org/bugs/show_bug.cgi?id=305">Bug 305</A>.
+   * <A HREF="http://dev.processing.org/bugs/show_bug.cgi?id=305">Bug 305</A>.
    * In release 0115, everything was instead run through javax.imageio,
    * but that turned out to be very slow, see
-   * <A HREF="http://dev.replicatorg.org/bugs/show_bug.cgi?id=392">Bug 392</A>.
+   * <A HREF="http://dev.processing.org/bugs/show_bug.cgi?id=392">Bug 392</A>.
    * As a result, starting with 0116, the following happens:
    * <UL>
    * <LI>TGA and TIFF images are loaded using the internal load methods.
@@ -3520,7 +3520,7 @@ public class PApplet extends Applet
 
     // For jpeg, gif, and png, load them using createImage(),
     // because the javax.imageio code was found to be much slower, see
-    // <A HREF="http://dev.replicatorg.org/bugs/show_bug.cgi?id=392">Bug 392</A>.
+    // <A HREF="http://dev.processing.org/bugs/show_bug.cgi?id=392">Bug 392</A>.
     try {
       //if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") ||
       //  lower.endsWith(".gif") || lower.endsWith(".png")) {
@@ -4272,7 +4272,7 @@ public class PApplet extends Applet
    * <P>
    * The filename passed in can be:
    * <UL>
-   * <LI>A URL, for instance openStream("http://replicatorg.org/");
+   * <LI>A URL, for instance openStream("http://processing.org/");
    * <LI>A file in the sketch's data folder
    * <LI>Another file to be opened locally (when running as an application)
    * </UL>
@@ -4300,7 +4300,7 @@ public class PApplet extends Applet
 
     } catch (FileNotFoundException fnfe) {
       // Java 1.5 likes to throw this when URL not available. (fix for 0119)
-      // http://dev.replicatorg.org/bugs/show_bug.cgi?id=403
+      // http://dev.processing.org/bugs/show_bug.cgi?id=403
 
     } catch (IOException e) {
       // changed for 0117, shouldn't be throwing exception
@@ -4324,7 +4324,7 @@ public class PApplet extends Applet
       // this is an irritation of sun's java plug-in, which will return
       // a non-null stream for an object that doesn't exist. like all good
       // things, this is probably introduced in java 1.5. awesome!
-      // http://dev.replicatorg.org/bugs/show_bug.cgi?id=359
+      // http://dev.processing.org/bugs/show_bug.cgi?id=359
       if (!cn.equals("sun.plugin.cache.EmptyInputStream")) {
         return stream;
       }
@@ -4332,7 +4332,7 @@ public class PApplet extends Applet
 
     // when used with an online script, also need to check without the
     // data folder, in case it's not in a subfolder called 'data'
-    // http://dev.replicatorg.org/bugs/show_bug.cgi?id=389
+    // http://dev.processing.org/bugs/show_bug.cgi?id=389
     stream = cl.getResourceAsStream(filename);
     if (stream != null) {
       String cn = stream.getClass().getName();
@@ -6750,9 +6750,9 @@ public class PApplet extends Applet
 
         public void componentResized(ComponentEvent e) {
           // Ignore bad resize events fired during setup to fix
-          // http://dev.replicatorg.org/bugs/show_bug.cgi?id=341
+          // http://dev.processing.org/bugs/show_bug.cgi?id=341
           // This should also fix the blank screen on Linux bug
-          // http://dev.replicatorg.org/bugs/show_bug.cgi?id=282
+          // http://dev.processing.org/bugs/show_bug.cgi?id=282
           if (frame.isResizable()) {
             // might be multiple resize calls before visible (i.e. first
             // when pack() is called, then when it's resized for use).
@@ -6850,7 +6850,7 @@ public class PApplet extends Applet
 
       // try to get the user folder. if running under java web start,
       // this may cause a security exception if the code is not signed.
-      // http://replicatorg.org/discourse/yabb_beta/YaBB.cgi?board=Integrate;action=display;num=1159386274
+      // http://processing.org/discourse/yabb_beta/YaBB.cgi?board=Integrate;action=display;num=1159386274
       String folder = null;
       try {
         folder = System.getProperty("user.dir");

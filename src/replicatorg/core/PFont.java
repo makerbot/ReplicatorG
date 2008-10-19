@@ -1,7 +1,7 @@
 /* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
 
 /*
-  Part of the Processing project - http://replicatorg.org
+  Part of the Processing project - http://processing.org
 
   Copyright (c) 2004-06 Ben Fry & Casey Reas
   Portions Copyright (c) 2001-04 Massachusetts Institute of Technology
@@ -679,7 +679,7 @@ public class PFont implements PConstants {
       // fix regression from sorting (bug #564)
       if (charset != null) {
         // charset needs to be sorted to make index lookup run more quickly
-        // http://dev.replicatorg.org/bugs/show_bug.cgi?id=494
+        // http://dev.processing.org/bugs/show_bug.cgi?id=494
         //Arrays.sort(charset);
         Class arraysClass = Class.forName("java.util.Arrays");
         Method sortMethod =

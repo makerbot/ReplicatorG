@@ -2,7 +2,7 @@
 
 /*
   PdeTextAreaDefaults - grabs font/color settings for the editor
-  Part of the Processing project - http://replicatorg.org
+  Part of the Processing project - http://processing.org
 
   Copyright (c) 2004-06 Ben Fry and Casey Reas
   Copyright (c) 2001-03 Massachusetts Institute of Technology

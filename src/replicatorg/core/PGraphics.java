@@ -1,7 +1,7 @@
 /* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
 
 /*
-  Part of the Processing project - http://replicatorg.org
+  Part of the Processing project - http://processing.org
 
   Copyright (c) 2004-06 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
@@ -30,7 +30,7 @@ import java.awt.image.*;
 
 /**
  * Main graphics and rendering context, as well as
- * the base API implementation for replicatorg."core".
+ * the base API implementation for replicatorg "core".
  * <P>
  * As of beta, this class is semi-disabled.
  */
@@ -1146,7 +1146,7 @@ public abstract class PGraphics extends PImage implements PConstants {
    * @param bezier true if it's a bezier instead of catmull-rom
    */
   protected void splineVertex(float x, float y, float z, boolean bezier) {
-    // to improve replicatorg.applet load times, don't allocate
+    // to improve replicatorg applet load times, don't allocate
     // space for the vertex data until actual use
     if (splineVertices == null) {
       splineVertices = new float[DEFAULT_SPLINE_VERTICES][VERTEX_FIELD_COUNT];
@@ -1731,7 +1731,7 @@ public abstract class PGraphics extends PImage implements PConstants {
    * curveto(x2, y2, x3, y3, x4, y4);</PRE>
    * If you were to try and continue that curve like so:
    * <PRE>curveto(x5, y5, x6, y6, x7, y7);</PRE>
-   * This would be done in replicatorg.by adding these statements:
+   * This would be done in replicatorg by adding these statements:
    * <PRE>bezierVertex(x5, y5, x6, y6, x7, y7)
    * </PRE>
    * To draw a quadratic (instead of cubic) curve,

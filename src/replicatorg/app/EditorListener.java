@@ -4,7 +4,7 @@
 
   Forked from Arduino: http://www.arduino.cc
 
-  Based on Processing http://www.replicatorg.org
+  Based on Processing http://www.processing.org
   Copyright (c) 2004-05 Ben Fry and Casey Reas
   Copyright (c) 2001-04 Massachusetts Institute of Technology
 
@@ -384,7 +384,7 @@ public class EditorListener {
         if (braceCount > 0) {
           int sel = textarea.getSelectionStart();
           // sel - tabSize will be -1 if start/end parens on the same line
-          // http://dev.replicatorg.org/bugs/show_bug.cgi?id=484
+          // http://dev.processing.org/bugs/show_bug.cgi?id=484
           if (sel - tabSize >= 0) {
             textarea.select(sel - tabSize, sel);
             String s = Editor.EMPTY.substring(0, tabSize);
