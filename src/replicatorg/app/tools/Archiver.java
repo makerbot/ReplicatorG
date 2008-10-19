@@ -111,7 +111,7 @@ public class Archiver {
       new FileDialog(editor, "Archive sketch as:", FileDialog.SAVE);
     fd.setDirectory(parent.getAbsolutePath());
     fd.setFile(newbie.getName());
-    fd.show();
+    fd.setVisible(true);
 
     String directory = fd.getDirectory();
     String filename = fd.getFile();

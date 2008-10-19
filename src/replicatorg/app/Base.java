@@ -180,7 +180,7 @@ public class Base
     editor.restorePreferences();
 
     // show the window
-    editor.show();
+    editor.setVisible(true);
 
 	//load up our machine controller =)
 	editor.loadMachine();
@@ -559,7 +559,7 @@ public class Base
         //fd.setFile(folder.getName());
       }
       System.setProperty("apple.awt.fileDialogForDirectories", "true");
-      fd.show();
+      fd.setVisible(true);
       System.setProperty("apple.awt.fileDialogForDirectories", "false");
       if (fd.getFile() == null) {
         return null;

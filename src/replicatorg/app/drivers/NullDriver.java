@@ -65,7 +65,7 @@ public class NullDriver extends DriverBaseImplementation
 			if (millis > 0)
 			{
 				try {
-					Thread.currentThread().sleep(millis);
+					Thread.sleep(millis);
 				} catch (InterruptedException e) {}
 			}
 		}

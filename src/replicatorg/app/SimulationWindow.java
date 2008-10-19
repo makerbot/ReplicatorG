@@ -36,7 +36,7 @@ import javax.vecmath.Point3d;
 
 public class SimulationWindow extends JFrame
 {
-	public SimulationWindow ()
+  public SimulationWindow ()
 	{
 		super("Build Simulation");
 		

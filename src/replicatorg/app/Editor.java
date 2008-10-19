@@ -657,7 +657,7 @@ public class Editor extends JFrame
           handlePause();
         }
       });
-	pauseItem.disable();
+	pauseItem.setEnabled(false);
     menu.add(pauseItem);
 
     stopItem = newJMenuItem("Stop", '.');
@@ -666,7 +666,7 @@ public class Editor extends JFrame
           handleStop();
         }
       });
-	stopItem.disable();
+	stopItem.setEnabled(false);
     menu.add(stopItem);
 
     menu.addSeparator();
@@ -950,8 +950,8 @@ public class Editor extends JFrame
           if (find == null) {
             find = new FindReplace(Editor.this);
           }
-          //new FindReplace(Editor.this).show();
-          find.show();
+          //new FindReplace(Editor.this).setVisible(true);
+          find.setVisible(true);
           //find.setVisible(true);
         }
       });
@@ -964,7 +964,7 @@ public class Editor extends JFrame
         public void actionPerformed(ActionEvent e) {
           if (find != null) {
           //find.find(true);
-            //FindReplace find = new FindReplace(Editor.this); //.show();
+            //FindReplace find = new FindReplace(Editor.this); //.setVisible(true);
           find.find(true);
         }
         }
@@ -1103,7 +1103,7 @@ public class Editor extends JFrame
       });
     Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
     window.setBounds((screen.width-w)/2, (screen.height-h)/2, w, h);
-    window.show();
+    window.setVisible(true);
   }
 
   public void handleControlPanel()
@@ -1263,8 +1263,8 @@ public class Editor extends JFrame
 	{
 		message("Done simulating.");
 		simulating = false;
-		stopItem.disable();
-		pauseItem.disable();
+		stopItem.setEnabled(false);
+		pauseItem.setEnabled(false);
 		buttons.clear();
 	}
 
@@ -1294,8 +1294,8 @@ public class Editor extends JFrame
 	public void initEditor()
 	{
 		//variables and stuff.
-		stopItem.enable();
-		pauseItem.enable();
+		stopItem.setEnabled(true);
+		pauseItem.setEnabled(true);
 		
 		// clear the console on each build, unless the user doesn't want to
 		if (Preferences.getBoolean("console.auto_clear")) {
@@ -1305,7 +1305,7 @@ public class Editor extends JFrame
 		//prepare editor window.
 		setVisible(true);
 		textarea.selectNone();
-		textarea.disable();
+		textarea.setEnabled(false);
 		textarea.scrollTo(0, 0);
 	}
 
@@ -1332,8 +1332,8 @@ public class Editor extends JFrame
 	{
 		message("Done building.");
 		building = false;
-		stopItem.disable();
-		pauseItem.disable();
+		stopItem.setEnabled(false);
+		pauseItem.setEnabled(false);
 		buttons.clear();
 	}
 
@@ -1365,8 +1365,8 @@ public class Editor extends JFrame
 			if (machine != null)
 				machine.stop();
 
-			stopItem.disable();
-			pauseItem.disable();
+			stopItem.setEnabled(false);
+			pauseItem.setEnabled(false);
 
 			buttons.clear();
 		}
@@ -1392,8 +1392,8 @@ public class Editor extends JFrame
 	
 	public void estimationOver()
 	{
-		//stopItem.disable();
-		//pauseItem.disable();
+		//stopItem.setEnabled(false);
+		//pauseItem.setEnabled(false);
 		buttons.clear();
 	}
 
@@ -1535,7 +1535,7 @@ public class Editor extends JFrame
                                new Integer(2));
 
         JDialog dialog = pane.createDialog(this, null);
-        dialog.show();
+        dialog.setVisible(true);
 
         Object result = pane.getValue();
         if (result == options[0]) {  // save (and quit)

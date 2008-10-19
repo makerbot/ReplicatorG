@@ -875,7 +875,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 				while(true)
 				{
 					driver.readTemperature();
-					this.sleep(1000);
+					Thread.sleep(1000);
 				}
 			} catch (InterruptedException e) {}
 		}
@@ -897,7 +897,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 				while(true)
 				{
 					window.updateStatus();
-					this.sleep(1000);
+					Thread.sleep(1000);
 				}
 			} catch (InterruptedException e) {}
 		}

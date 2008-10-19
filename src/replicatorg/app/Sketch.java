@@ -716,7 +716,7 @@ public class Sketch {
     }
     fd.setFile(folder.getName());
 
-    fd.show();
+    fd.setVisible(true);
     String newParentDir = fd.getDirectory();
     String newName = fd.getFile();
 
@@ -854,7 +854,7 @@ public class Sketch {
       "Select an image or other data file to copy to your sketch";
     //FileDialog fd = new FileDialog(new Frame(), prompt, FileDialog.LOAD);
     FileDialog fd = new FileDialog(editor, prompt, FileDialog.LOAD);
-    fd.show();
+    fd.setVisible(true);
 
     String directory = fd.getDirectory();
     String filename = fd.getFile();

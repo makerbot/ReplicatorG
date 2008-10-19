@@ -128,7 +128,7 @@ public class MachineController
 
 		//some sort of race condition.  this hack seems to help.
 		try {
-			thread.sleep(100);
+			Thread.sleep(100);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -165,7 +165,7 @@ public class MachineController
 		simulator = null;
 		
 		//re-enable the gui and shit.
-		editor.textarea.enable();
+		editor.textarea.setEnabled(true);
 	}
 	
 	public void estimate()
@@ -214,7 +214,7 @@ public class MachineController
 			while (!driver.isFinished())
 			{
 				try {
-					thread.sleep(100);
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -250,7 +250,7 @@ public class MachineController
 			while (!driver.isFinished())
 			{
 				try {
-					thread.sleep(100);
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -317,7 +317,7 @@ public class MachineController
 				while (this.isPaused())
 				{
 					try {
-						thread.sleep(100);
+						Thread.sleep(100);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -332,7 +332,7 @@ public class MachineController
 			while (!driver.isFinished())
 			{
 				try {
-					thread.sleep(100);
+					Thread.sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

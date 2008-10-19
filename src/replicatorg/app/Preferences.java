@@ -543,7 +543,7 @@ public class Preferences {
     externalEditorBox.setSelected(getBoolean("editor.external"));
     checkUpdatesBox.setSelected(getBoolean("update.check"));
 
-    dialog.show();
+    dialog.setVisible(true);
   }
 
 

@@ -225,14 +225,14 @@ public class FindReplace extends JFrame implements ActionListener {
     replaceString = replaceField.getText();
 
     // this object should eventually become dereferenced
-    hide();
+    setVisible(false);
   }
 
 
   /*
   public void show() {
     findField.requestFocusInWindow();
-    super.show();
+    super.setVisible(true);
     //findField.selectAll();
     //findField.requestFocus();
   }

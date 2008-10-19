@@ -166,7 +166,7 @@ public class Sketchbook {
                                      "Create sketch folder named:",
                                      FileDialog.SAVE);
       fd.setDirectory(getSketchbookPath());
-      fd.show();
+      fd.setVisible(true);
 
       String newbieParentDir = fd.getDirectory();
       newbieName = fd.getFile();
@@ -310,7 +310,7 @@ public class Sketchbook {
       });
 
     // gimme some money
-    fd.show();
+    fd.setVisible(true);
 
     // what in the hell yu want, boy?
     String directory = fd.getDirectory();
