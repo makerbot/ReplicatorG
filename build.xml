@@ -16,6 +16,7 @@
     <path id="classpath">
         <fileset dir="${macosx.lib.dir}" includes="*.jar"/>
         <fileset dir="${lib.dir}" includes="*.jar"/>
+	<pathelement path="/System/Library/Java"/>
     </path>
 
     <target name="test">
@@ -46,6 +47,7 @@
                 <pathelement location="${jar.dir}/${ant.project.name}.jar"/>
             </classpath>
 	    <sysproperty key="java.library.path" path="${macosx.lib.dir}"/>
+	    <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
         </java>
     </target>
 
