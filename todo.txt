@@ -1,24 +1,7 @@
-0002 ReplicatorG
+0003 ReplicatorG
 
-* add units to simulation window
-* add proper bounds to simulation window
-* add warmup/cooldown to machine config
-* add simple exerciser / status window
-* add color to simulation window
-* add up/down arrows to simulation windows
-* implement Peter Edworthy ideas on driver instantiation
-* have simulation move to a proportional wait time
-* fix build time estimation
-* add estimate menu item
-* add basic machine configuration stuff to XML (axes, resolution, extruders, toolheads, clamps, etc.)
-* move to a controller/model/driver system.
-* Add an extruder section (temp, start/stop extruder, extruder direction, extruder speed)
-* added text boxes to control/display feedrate data
-* fix shutdown of driver
-* fix windows icons
-
-0003 ReplicatorG and beyond
-
+* maximum feedrate values in control panel based on prefs
+* windows not using proper com## port from preferences.
 * get auto-formatting working
 * add support for slice/dice plugins (skeinforge?  reprap?)
 * Have two buttons for each axis (fast and slow movement)
