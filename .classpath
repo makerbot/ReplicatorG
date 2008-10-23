@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="build/jar/ReplicatorG.jar"/>
 	<classpathentry kind="lib" path="build/macosx/dist/quaqua.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/antlr.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/j3dcore.jar"/>
