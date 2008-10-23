@@ -271,7 +271,8 @@ public class Sketchbook {
     for (int i = 0; i < c.length; i++) {
       if (((c[i] >= '0') && (c[i] <= '9')) ||
           ((c[i] >= 'a') && (c[i] <= 'z')) ||
-          ((c[i] >= 'A') && (c[i] <= 'Z'))) {
+          ((c[i] >= 'A') && (c[i] <= 'Z')) ||
+          ((c[i] == '-') || (c[i] == '_'))) {
         buffer.append(c[i]);
 
       } else {

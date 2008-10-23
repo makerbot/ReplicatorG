@@ -94,7 +94,12 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		setInitialized(false);
 		
 		//some decent default prefs.
-		name = Serial.list()[0];
+		String[] serialPortNames = Serial.list();
+		if (serialPortNames.length != 0)
+			name = serialPortNames[0];
+		else
+			name = null;
+		
 		rate = Preferences.getInteger("serial.debug_rate");
 		parity = Preferences.get("serial.parity").charAt(0);
 		databits = Preferences.getInteger("serial.databits");
@@ -123,16 +128,24 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		//declare our serial guy.
 		if (serial == null)
 		{
-			try {
-				System.out.println("Connecting to " + name + " at " + rate);
-				serial = new Serial(name, rate, parity, databits, stopbits);
-			} catch (SerialException e) {
-				System.out.println("Unable to open port " + name + "\n");
+			if (name != null)
+			{
+				try {
+					System.out.println("Connecting to " + name + " at " + rate);
+					serial = new Serial(name, rate, parity, databits, stopbits);
+				} catch (SerialException e) {
+					System.out.println("Unable to open port " + name + "\n");
+					return;
+				}
+			}
+			else
+			{
+				System.out.println("No Serial Port found.\n");
 				return;
 			}
 		}
 		
-		//wait til we're initialized
+		//wait till we're initialized
 		if (!isInitialized())
 		{
 			try
