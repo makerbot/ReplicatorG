@@ -28,3 +28,4 @@
 
 * Highlight the currently executing line in addition to the currently queued line
 * Don't busy-loop waiting for serial in SerialPassthroughDriver (CPU usage)
+* Look into using log4j for debug and output logging
