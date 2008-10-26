@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="build/macosx/dist/quaqua.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/antlr.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/j3dcore.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/j3dutils.jar"/>
@@ -11,5 +10,6 @@
 	<classpathentry kind="lib" path="build/shared/lib/RXTXcomm.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/vecmath.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="build/shared/lib/quaqua.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
