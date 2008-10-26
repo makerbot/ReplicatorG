@@ -23,6 +23,8 @@
 
 package replicatorg.app.drivers;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Vector;
 
@@ -81,6 +83,8 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	char   parity;
 	int    databits;
 	float  stopbits;
+
+    private DecimalFormat df;
 	
 	public SerialPassthroughDriver()
 	{
@@ -104,6 +108,9 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		parity = Preferences.get("serial.parity").charAt(0);
 		databits = Preferences.getInteger("serial.databits");
 		stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
+
+	
+	    df = new DecimalFormat("#.######");
 	}
 	
 	public void loadXML(Node xml)
@@ -363,7 +370,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	public void queuePoint(Point3d p)
 	{
-		String cmd = "G1 X" + p.x + " Y" + p.y + " Z" + p.z + " F" + getCurrentFeedrate();
+	    String cmd = "Test: G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z" + df.format(p.z) + " F" + df.format(getCurrentFeedrate());
 		
 		sendCommand(cmd);
 		
@@ -372,7 +379,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	public void setCurrentPosition(Point3d p)
 	{
-		sendCommand("G92 X" + p.x + " Y" + p.y + " Z" + p.z);
+		sendCommand("G92 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z" + df.format(p.z));
 
 		super.setCurrentPosition(p);
 	}
@@ -471,7 +478,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	*************************************/
 	public void setMotorSpeed(double rpm)
 	{
-		sendCommand(_getToolCode() + "M108 S" + rpm);
+		sendCommand(_getToolCode() + "M108 S" + df.format(rpm));
 
 		super.setMotorSpeed(rpm);
 	}
@@ -502,7 +509,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	*************************************/
 	public void setSpindleSpeed(double rpm)
 	{
-		sendCommand(_getToolCode() + "S" + rpm);
+		sendCommand(_getToolCode() + "S" + df.format(rpm));
 
 		super.setSpindleSpeed(rpm);
 	}
@@ -540,7 +547,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	*************************************/
 	public void setTemperature(double temperature)
 	{
-		sendCommand(_getToolCode() + "M104 S" + temperature);
+		sendCommand(_getToolCode() + "M104 S" + df.format(temperature));
 		
 		super.setTemperature(temperature);
 	}
