@@ -5,6 +5,7 @@
     <property name="jar.dir"       value="${build.dir}/jar"/>
     <property name="shared.dir"       value="${build.dir}/shared"/>
     <property name="lib.dir"       value="${shared.dir}/lib"/>
+    <property name="native.lib.dir"   value="${build.dir}/nativelibs"/>
     <property name="macosx.lib.dir"   value="${build.dir}/macosx/dist"/>
     <property name="linux.lib.dir" value="${build.dir}/linux/dist"/>
     <property name="windows.lib.dir" value="${build.dir}/windows"/>
@@ -46,7 +47,7 @@
                 <path refid="classpath"/>
                 <pathelement location="${jar.dir}/${ant.project.name}.jar"/>
             </classpath>
-	    <sysproperty key="java.library.path" path="${macosx.lib.dir}"/>
+	    <sysproperty key="java.library.path" path="${native.lib.dir}"/>
 	    <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
         </java>
     </target>
@@ -63,15 +64,14 @@
             <jarfileset dir="${lib.dir}" includes="*.jar"/>
             <jarfileset dir="${macosx.lib.dir}" includes="*.jar"/>
 	    <jarfileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
-	    <jarfileset dir="${macosx.lib.dir}" includes="*.jnilib"/>
+	    <jarfileset dir="${native.lib.dir}" includes="*.jnilib"/>
 	    <resourcefileset dir="${lib.dir}" includes="*.gif"/>
 	    <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
 	    <resourcefilelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
 	    <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
         </jarbundler>
 	<copy todir="${macosx.dist.dir}">
-	    <filelist dir="." files="license.txt,readme.txt,todo.txt"/>
-	    <filelist dir="${shared.dir}" files="machines.xml"/>
+	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
 	    <fileset dir="${macosx.lib.dir}" includes="drivers/*.dmg"/>
 	</copy>
     </target>
@@ -79,13 +79,12 @@
     <target name="dist-linux" depends="jar">
         <mkdir dir="${linux.dist.dir}"/>
 	<copy todir="${linux.dist.dir}">
-	    <filelist dir="${shared.dir}" files="machines.xml"/>
-	    <filelist dir="." files="license.txt,readme.txt,todo.txt"/>
+	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
             <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
 	    <filelist dir="${linux.lib.dir}" files="replicatorg"/>
 	</copy>
 	<copy todir="${linux.dist.dir}/lib">
-	    <fileset dir="${linux.lib.dir}" includes="*.so"/>
+	    <fileset dir="${native.lib.dir}" includes="*.so"/>
 	    <fileset dir="${lib.dir}" includes="*.gif"/>
 	    <fileset dir="${lib.dir}" includes="*.jpg"/>
 	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
@@ -95,10 +94,10 @@
     <target name="dist-windows" depends="jar">
         <mkdir dir="${windows.dist.dir}"/>
 	<copy todir="${windows.dist.dir}">
-	    <filelist dir="${shared.dir}" files="machines.xml"/>
-	    <filelist dir="." files="license.txt,readme.txt,todo.txt"/>
+	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
             <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
 	    <fileset dir="${windows.lib.dir}/dist" includes="*.dll"/>
+	    <fileset dir="${native.lib.dir}" includes="*.dll"/>
 	    <filelist dir="${windows.lib.dir}/launcher" files="ReplicatorG.exe"/>
 	    <filelist dir="${windows.lib.dir}/dist" files="run.bat,jikes.exe"/>
 	    <fileset dir="${windows.lib.dir}/dist" includes="drivers/**/*"/>
