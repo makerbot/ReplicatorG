@@ -381,8 +381,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		335A28F20C8CCAF700D8A7F4 /* libquaqua.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libquaqua.jnilib; sourceTree = "<group>"; };
-		335A28F30C8CCAF700D8A7F4 /* quaqua.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; path = quaqua.jar; sourceTree = "<group>"; };
+		335A28F20C8CCAF700D8A7F4 /* libquaqua.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libquaqua.jnilib; path = ../../nativelibs/libquaqua.jnilib; sourceTree = "<group>"; };
+		335A28F30C8CCAF700D8A7F4 /* quaqua.jar */ = {isa = PBXFileReference; lastKnownFileType = archive.jar; name = quaqua.jar; path = ../../shared/lib/quaqua.jar; sourceTree = "<group>"; };
 		3378B75E0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_1_9.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = FTDIUSBSerialDriver_v2_1_9.dmg; sourceTree = "<group>"; };
 		3378B75F0D82FDE900FE72F7 /* FTDIUSBSerialDriver_v2_2_9_Intel.dmg */ = {isa = PBXFileReference; lastKnownFileType = file; path = FTDIUSBSerialDriver_v2_2_9_Intel.dmg; sourceTree = "<group>"; };
 		337CD3F309EFC183002B890C /* fetch.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; path = fetch.sh; sourceTree = "<group>"; };
@@ -416,7 +416,7 @@
 		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
 		916CA3370E3FBC8500146F38 /* machines.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = machines.xml; path = ../../machines.xml; sourceTree = SOURCE_ROOT; };
-		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; path = librxtxSerial.jnilib; sourceTree = "<group>"; };
+		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; name = librxtxSerial.jnilib; path = ../../nativelibs/librxtxSerial.jnilib; sourceTree = "<group>"; };
 		E0D91D510EAA8D9A0075B183 /* Base.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = Base.java; sourceTree = "<group>"; };
 		E0D91D520EAA8D9A0075B183 /* Base.java-e */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "Base.java-e"; sourceTree = "<group>"; };
 		E0D91D530EAA8D9A0075B183 /* ControlPanelWindow.java */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.java; path = ControlPanelWindow.java; sourceTree = "<group>"; };

@@ -32,7 +32,7 @@ mkdir work/classes
 svn --quiet export dist/replicatorg work/replicatorg 
 svn --quiet export ../shared/lib work/lib
 svn --quiet export ../../machines.xml work/machines.xml
-svn --quiet export dist/lib/librxtxSerial.so work/lib/librxtxSerial.so
+svn --quiet export ../shared/nativelibs/librxtxSerial.so work/lib/librxtxSerial.so
 
 ### -- START BUILDING -------------------------------------------
 

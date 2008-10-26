@@ -15,6 +15,7 @@ else
   cp  ../../machines.xml work
   rm -f work/.DS_Store 
   #cp ../../lib/*.dll work
+  cp ../shared/nativelibs/*.dll work
   cp dist/*.dll work
   cp dist/run.bat work
   chmod 755 work/run.bat
