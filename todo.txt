@@ -31,3 +31,4 @@
 * Look into using log4j for debug and output logging
 * The control panel window creates a few threads which are not shut down on exit.
   This causes serial communication to keep going on after the port has closed.
+* The control panel's jog dialog should always operate in relative mode.
