@@ -1312,6 +1312,8 @@ public class Editor extends JFrame
 		
 		public BuildingThread(Editor edit)
 		{
+			super("Building Thread");
+			
 			editor = edit;
 		}
 		
@@ -1340,6 +1342,8 @@ public class Editor extends JFrame
 		
 		public SimulationThread(Editor edit)
 		{
+			super("Simulation Thread");
+			
 			editor = edit;
 		}
 		
@@ -1375,6 +1379,8 @@ public class Editor extends JFrame
 		
 		public EstimationThread(Editor edit)
 		{
+			super("Estimation Thread");
+			
 			editor = edit;
 		}
 		

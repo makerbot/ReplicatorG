@@ -336,7 +336,11 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 							}
 						}
 						else
+						{
+							//ease up on our CPU.
+							Thread.sleep(1);
 							break;
+						}
 					} catch (Exception e) {
 						break;
 					}

@@ -59,7 +59,7 @@ public class UpdateCheck implements Runnable {
 
   public UpdateCheck(Editor editor) {
     this.editor = editor;
-    Thread thread = new Thread(this);
+    Thread thread = new Thread(this, "update-check");
     thread.start();
   }
 
@@ -102,7 +102,7 @@ public class UpdateCheck implements Runnable {
 
       String prompt =
         "A new version of ReplicatorG is available,\n" +
-        "would you like to visit the Processing download page?";
+        "would you like to visit the download page?";
 
       if (latest > Base.VERSION) {
         Object[] options = { "Yes", "No" };

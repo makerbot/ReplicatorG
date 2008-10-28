@@ -865,6 +865,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 
 		public PollThread(Driver d)
 		{
+			super("Control Panel Poll Thread");
+			
 			driver = d;
 		}
 		
@@ -887,6 +889,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		
 		public UpdateThread(ControlPanelWindow w)
 		{
+			super("Control Panel Update Thread");
+			
 			window = w;
 		}
 		

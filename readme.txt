@@ -24,4 +24,4 @@ ReplicatorG was forked from Arduino in August 2008.
 People who have worked on ReplicatorG include:
 
 Zach 'Hoeken' Smith (http://www.zachhoeken.com)
-Marius Kintel
+Marius Kintel (http://reprap.soup.io)
