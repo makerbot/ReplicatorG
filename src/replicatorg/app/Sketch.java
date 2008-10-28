@@ -990,7 +990,6 @@ public class Sketch {
    * based on a name (used by codeNew and codeRename).
    */
   protected void setCurrent(String findName) {
-    SketchCode unhideCode = null;
     String name = findName.substring(0,
       (findName.indexOf(".") == -1 ? findName.length() : findName.indexOf(".")));
     String extension = findName.indexOf(".") == -1 ? "" :
@@ -1141,7 +1140,6 @@ public class Sketch {
    * volumes or folders without appropriate permissions.
    */
   public boolean isReadOnly() {
-    String apath = folder.getAbsolutePath();
       // check to see if each modified code file can be written to
       for (int i = 0; i < codeCount; i++) {
         if (code[i].modified &&

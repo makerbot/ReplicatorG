@@ -84,7 +84,7 @@ import com.ice.jni.registry.RegistryKey;
  */
 public class Base
 {
-	static final int VERSION = 1;
+	static final int VERSION = 2;
 	static final String VERSION_NAME = "0002";
 	
 	//our machine object.
@@ -102,9 +102,7 @@ public class Base
   static public void main(String args[]) {
 
     // make sure that this is running on java 1.4
-
     if (PApplet.javaVersion < 1.4f) {
-      //System.err.println("no way man");
       Base.showError("Need to install Java 1.4",
                      "This version of Processing requires    \n" +
                      "Java 1.4 or later to run properly.\n" +
@@ -135,7 +133,7 @@ public class Base
       };
     MRJApplicationUtils.registerOpenDocumentHandler(startupOpen);
 
-    Base app = new Base();
+    new Base();
   }
 
 
@@ -797,7 +795,7 @@ public class Base
       // Attempt to use gnome-open
       try {
         Process p = Runtime.getRuntime().exec(new String[] { "gnome-open" });
-        int result = p.waitFor();
+        p.waitFor();
         // Not installed will throw an IOException (JDK 1.4.2, Ubuntu 7.04)
         Preferences.set("launcher.linux", "gnome-open");
         return true;
@@ -806,7 +804,7 @@ public class Base
       // Attempt with kde-open
       try {
         Process p = Runtime.getRuntime().exec(new String[] { "kde-open" });
-        int result = p.waitFor();
+        p.waitFor();
         Preferences.set("launcher.linux", "kde-open");
         return true;
       } catch (Exception e) { }

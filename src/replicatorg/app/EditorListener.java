@@ -534,7 +534,6 @@ public class EditorListener {
   protected int calcLineStart(int index, char contents[]) {
     // backup from the current caret position to the last newline,
     // so that we can figure out how far this line was indented
-    int spaceCount = 0;
     boolean finished = false;
     while ((index != -1) && (!finished)) {
       if ((contents[index] == 10) ||

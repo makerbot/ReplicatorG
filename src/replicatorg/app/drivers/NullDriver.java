@@ -25,7 +25,7 @@ package replicatorg.app.drivers;
 
 import org.w3c.dom.Node;
 
-import replicatorg.app.GCodeException;
+import replicatorg.app.exceptions.GCodeException;
 import replicatorg.app.tools.XML;
 
 

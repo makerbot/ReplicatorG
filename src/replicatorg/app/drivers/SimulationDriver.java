@@ -25,9 +25,9 @@ package replicatorg.app.drivers;
 
 import javax.vecmath.Point3d;
 
-import replicatorg.app.GCodeException;
 import replicatorg.app.SimulationWindow;
 import replicatorg.app.SimulationWindow2D;
+import replicatorg.app.exceptions.GCodeException;
 
 public class SimulationDriver extends DriverBaseImplementation
 {

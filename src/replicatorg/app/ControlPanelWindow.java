@@ -29,7 +29,6 @@ package replicatorg.app;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -58,6 +57,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 
+import replicatorg.app.drivers.Driver;
 import replicatorg.app.models.ToolModel;
 
 public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener, ItemListener, FocusListener
@@ -107,7 +107,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		driver.initialize();
 		
 		//make it a reasonable size
- 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+ 		//Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		//int myWidth = screen.width-40;
 		//int myHeight = screen.height-40;
 		int myWidth = 450;

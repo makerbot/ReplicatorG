@@ -37,6 +37,8 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import replicatorg.app.exceptions.SerialException;
+
 
 public class Serial implements SerialPortEventListener {
 

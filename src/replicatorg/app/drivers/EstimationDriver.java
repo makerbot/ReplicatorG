@@ -23,7 +23,7 @@
 
 package replicatorg.app.drivers;
 
-import replicatorg.app.GCodeException;
+import replicatorg.app.exceptions.GCodeException;
 
 
 public class EstimationDriver extends DriverBaseImplementation

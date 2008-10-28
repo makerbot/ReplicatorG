@@ -24,7 +24,6 @@
 package replicatorg.app.drivers;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Vector;
 
@@ -34,7 +33,7 @@ import org.w3c.dom.Node;
 
 import replicatorg.app.Preferences;
 import replicatorg.app.Serial;
-import replicatorg.app.SerialException;
+import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.models.ToolModel;
 import replicatorg.app.tools.XML;
 

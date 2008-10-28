@@ -67,12 +67,12 @@ public class MachineFactory
 			Base.showError(null, "Error parsing machines.xml", null);
 		}
 		
-		//get each machines
+		//get each machine
 		NodeList nl = dom.getElementsByTagName("machine");
 
 		for (int i=0; i<nl.getLength(); i++)
 		{
-			//look up each machines set of kids
+			//look up each machine's set of kids
 			Node n = nl.item(i);
 			NodeList kids = n.getChildNodes();
 
@@ -95,7 +95,7 @@ public class MachineFactory
 	}
 	
 	//why not load it everytime!  no stale configs...
-	public static org.w3c.dom.Document loadMachinesConfig()
+	public static Document loadMachinesConfig()
 	{
 		//attempt to load our xml document.
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

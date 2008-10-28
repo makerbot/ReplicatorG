@@ -21,11 +21,12 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package replicatorg.app;
+package replicatorg.app.drivers;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 
 public class DriverFactory
 {

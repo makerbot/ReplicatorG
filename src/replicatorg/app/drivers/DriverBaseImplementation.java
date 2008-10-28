@@ -27,10 +27,9 @@ import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
-import replicatorg.app.Driver;
-import replicatorg.app.GCodeException;
 import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
+import replicatorg.app.exceptions.GCodeException;
 import replicatorg.app.models.MachineModel;
 
 public class DriverBaseImplementation implements Driver

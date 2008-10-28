@@ -207,11 +207,8 @@ public class Editor extends JFrame
     Preferences.init();
 
     // set the window icon
-    try {
-      icon = Base.getImage("icon.gif", this);
-      setIconImage(icon);
-    } catch (Exception e) { } // fail silently, no big whup
-
+    icon = Base.getImage("icon.gif", this);
+    setIconImage(icon);
 
     // add listener to handle window close box hit event
     addWindowListener(new WindowAdapter() {

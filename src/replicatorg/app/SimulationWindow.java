@@ -34,7 +34,7 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.vecmath.Point3d;
 
-public class SimulationWindow extends JFrame
+public abstract class SimulationWindow extends JFrame
 {
   public SimulationWindow ()
 	{
@@ -75,7 +75,6 @@ public class SimulationWindow extends JFrame
 		return (getHeight() - i.top - i.bottom);
 	}
 	
-	synchronized public void queuePoint(Point3d p)
-	{
+	synchronized public void queuePoint(Point3d p) { 
 	}
 }

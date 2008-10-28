@@ -1,7 +1,10 @@
-/* -*- mode: jde; c-basic-offset: 2; indent-tabs-mode: nil -*- */
-
 /*
-  Copyright (c) 2007 David A. Mellis
+  GCodeException.java
+
+  Error handling gcode.
+  
+  Part of the ReplicatorG project - http://www.replicat.org
+  Copyright (c) 2008 Zach Smith
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,22 +21,12 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package replicatorg.app;
+package replicatorg.app.exceptions;
 
-public class SerialException extends Exception {
-  public SerialException() {
-    super();
-  }
-
-  public SerialException(String message) {
-    super(message);
-  }
-  
-  public SerialException(String message, Throwable cause) {
-    super(message, cause);
-  }
-  
-  public SerialException(Throwable cause) {
-    super(cause);
-  }
+public class GCodeException extends Exception
+{
+	public GCodeException(String message)
+	{
+		super(message);
+	}
 }
