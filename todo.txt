@@ -1,6 +1,6 @@
 0003 ReplicatorG
 
-* maximum feedrate values in control panel based on prefs
+* maximum and default feedrate values in control panel based on prefs
 * windows not using proper com## port from preferences.
 * get auto-formatting working
 * add support for slice/dice plugins (skeinforge?  reprap?)
@@ -32,3 +32,5 @@
 * The control panel window creates a few threads which are not shut down on exit.
   This causes serial communication to keep going on after the port has closed.
 * The control panel's jog dialog should always operate in relative mode.
+* Look into syncing core with Processing.
+* SerialPassthroughDriver: Option for setInitialized(true vs. false)
