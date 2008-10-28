@@ -32,7 +32,7 @@
 
     <target name="compile">
         <mkdir dir="${classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source"/>
     </target>
 
     <target name="jar" depends="compile">
@@ -52,12 +52,12 @@
         </java>
     </target>
     
-    <target name="debug" depends="jar">
+    <target name="debug" depends="compile">
 		<java fork="true" classname="replicatorg.app.Base">
 			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
             <classpath>
                 <path refid="classpath"/>
-                <pathelement location="${jar.dir}/${ant.project.name}.jar"/>
+                <pathelement location="${classes.dir}"/>
             </classpath>
 	    <sysproperty key="java.library.path" path="${native.lib.dir}"/>
 	    <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>

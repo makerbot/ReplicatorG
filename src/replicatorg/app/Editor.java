@@ -1273,19 +1273,26 @@ public class Editor extends JFrame
 		if (simulating)
 			return;
 
-		//close stuff.
-		doClose();
+		if (machine == null)
+		{
+			status.error("Not ready to build yet.");
+		}
+		else
+		{
+			//close stuff.
+			doClose();
 
-		//build specific stuff
-		building = true;
-		buttons.activate(EditorButtons.BUILD);
-		
-		//initialize our editor
-		initEditor();
+			//build specific stuff
+			building = true;
+			buttons.activate(EditorButtons.BUILD);
+			
+			//initialize our editor
+			initEditor();
 
-		//start our building thread.
-		buildingThread = new BuildingThread(this);
-		buildingThread.start();
+			//start our building thread.
+			buildingThread = new BuildingThread(this);
+			buildingThread.start();
+		}
 	}
 
 	public void initEditor()
