@@ -33,4 +33,6 @@
   This causes serial communication to keep going on after the port has closed.
 * The control panel's jog dialog should always operate in relative mode.
 * Look into syncing core with Processing.
-* SerialPassthroughDriver: Option for setInitialized(true vs. false)
+* SerialPassthroughDriver: Option for setInitialized(true vs. false) -> machines.xml?
+* Look into making serial response handled asynchronously/event driven (check Processing and Arduino for ideas or updates to core code).
+
