@@ -35,4 +35,5 @@
 * Look into syncing core with Processing.
 * SerialPassthroughDriver: Option for setInitialized(true vs. false) -> machines.xml?
 * Look into making serial response handled asynchronously/event driven (check Processing and Arduino for ideas or updates to core code).
+* Batch jobs (print the same object multiple times, or multiple objects in one go)
 
