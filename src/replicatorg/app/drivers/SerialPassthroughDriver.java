@@ -23,6 +23,7 @@
 
 package replicatorg.app.drivers;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Vector;
@@ -84,6 +85,8 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	float  stopbits;
 
     private DecimalFormat df;
+
+    private byte[] buffer = new byte[256];
 	
 	public SerialPassthroughDriver()
 	{
@@ -199,50 +202,41 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		sendCommand(getParser().getCommand());
 	}
 	
+	
+	/**
+	 * Actually sends command over serial.
+	 * If the Arduino buffer is full, this method will block until the command has been sent.
+	 */
 	protected void sendCommand(String next)
 	{
-		if (isInitialized())
-		{
-			//System.out.println("sending: " + next);
+	  assert (isInitialized());
+	  assert (serial != null);
+	  //System.out.println("sending: " + next);
 
-			next = clean(next);
+	  next = clean(next);
 
-			//skip empty commands.
-			if (next.length() == 0)
-				return;
+	  //skip empty commands.
+	  if (next.length() == 0) return;
 
-			//check to see if we got a response.
-			do {
-				readResponse();
-			}
-			while (bufferSize + next.length() + 1 > maxBufferSize);
-			//while (bufferSize > 0);
+	  // Block until we can fit the command on the Arduino
+	  while (bufferSize + next.length() + 1 > maxBufferSize) {
+	    readResponse();
+	  }
 
-			//will it fit into our buffer?
-			if (bufferSize + next.length() < maxBufferSize)
-			{
-				if (serial != null)
-				{
-					synchronized(serial)
-					{
-						//do the actual send.
-						serial.write(next + "\n");
-					}
+	  synchronized(serial)
+	  {
+	    //do the actual send.
+	    serial.write(next + "\n");
+	  }
 
-					//record it in our buffer tracker.
-					commands.add(next);
-					bufferSize += next.length() + 1;
-					bufferLength++;
-				}
-				
-				//debug... let us know whts up!
-				//System.out.println("Sent: " + next);
-				//System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
-			}
+	  //record it in our buffer tracker.
+	  commands.add(next);
+	  bufferSize += next.length() + 1;
+	  bufferLength++;
 
-			//check for quick errors or something.
-			readResponse();			
-		}
+	  //debug... let us know whts up!
+	  //System.out.println("Sent: " + next);
+	  //System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
 	}
 	
 	public String clean(String str)
@@ -260,93 +254,50 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	public void readResponse()
 	{
-		if (serial != null)
-		{
-			synchronized(serial)
-			{
-				String cmd = "";
-				
-				//read for any results.
-				for (;;)
-				{
-					try
-					{
-						//no serial? bail!
-						if (serial.available() > 0)
-						{
-							//get it as ascii.
-							char c = serial.readChar();
-							result += c;
-						
-							//System.out.println("got: " + c);
-							//System.out.println("current: " + result);
-							
-							//is it a done command?
-							if (c == '\n')
-							{
-								//System.out.println("received: " + result.substring(0, result.length()-2));
-								
-								if (result.startsWith("ok"))
-								{
-									cmd = (String)commands.get(currentCommand);
+	  assert (serial != null);
+	  synchronized(serial)
+	  {
+	    String cmd = "";
 
-									//if (result.length() > 2)
-									//System.out.println("got: " + result.substring(0, result.length()-2));
-									// + "(" + bufferSize + " - " + (cmd.length() + 1) + " = " + (bufferSize - (cmd.length() + 1)) + ")");
+	    try {
+	      int numread = serial.input.read(buffer);
+	      if (numread > 0) {
+	        result += new String(buffer , 0, numread, "US-ASCII");
 
-									bufferSize -= cmd.length() + 1;
-									bufferLength--;
-									
-									currentCommand++;
-									result = "";
-									
-									//Debug.d("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
-
-									//bail, buffer is almost empty.  fill it!
-									if (bufferLength < 2)
-										break;
-									
-									//we'll never get here.. for testing.
-									//if (bufferLength == 0)
-									//	Debug.d("Empty buffer!! :(");
-								}
-								else if (result.indexOf("T:") > -1)
-								{
-									String temp = result.substring(2, result.length()-2);
-									machine.currentTool().setCurrentTemperature(Double.parseDouble(temp));
-								}
-								//old arduino firmware sends "start"
-								else if (result.startsWith("start"))
-								{
-									//todo: set version
-									setInitialized(true);
-								}
-								else if (result.startsWith("Extruder Fail"))
-								{
-									setError("Extruder failed:  cannot extrude as this rate.");
-									result = "";
-									
-									break;
-								}
-								else
-									System.out.println("Unknown: " + result.substring(0, result.length()-2));
-									
-								result = "";
-								break;
-							}
-						}
-						else
-						{
-							//ease up on our CPU.
-							Thread.sleep(1);
-							break;
-						}
-					} catch (Exception e) {
-						break;
-					}
-				}	
-			}
-		}
+	        //System.out.println("got: " + c);
+	        //System.out.println("current: " + result);
+	        int index;
+	        while ((index = result.indexOf('\n')) >= 0) {
+	          String line = result.substring(0, index);
+	          result = result.substring(index+1);
+	          if (line.startsWith("ok")) {
+	            cmd = (String)commands.get(currentCommand);
+	            bufferSize -= cmd.length() + 1;
+	            bufferLength--;
+	            currentCommand++;
+	          }
+	          else if (line.indexOf("T:") > -1) {
+	            String temp = line.substring(2, line.length()-2);
+	            machine.currentTool().setCurrentTemperature(Double.parseDouble(temp));
+	          }
+	          //old arduino firmware sends "start"
+	          else if (line.startsWith("start")) {
+	            //todo: set version
+	            setInitialized(true);
+	          }
+	          else if (line.startsWith("Extruder Fail")) {
+	            setError("Extruder failed:  cannot extrude as this rate.");
+	          }
+	          else {
+	            System.out.println("Unknown: " + line.substring(0, line.length()-2));
+	          }
+	        }
+	      }
+	    }
+	    catch (IOException e) {
+	      System.out.println("inputstream.read() failed: " + e.toString());
+	    }
+	  }
 	}
 	
 	public boolean isFinished()
@@ -373,7 +324,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	
 	public void queuePoint(Point3d p)
 	{
-	    String cmd = "Test: G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z" + df.format(p.z) + " F" + df.format(getCurrentFeedrate());
+	    String cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z" + df.format(p.z) + " F" + df.format(getCurrentFeedrate());
 		
 		sendCommand(cmd);
 		
