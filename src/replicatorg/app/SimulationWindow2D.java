@@ -268,6 +268,7 @@ class HorizontalRuler extends GenericRuler
 		super.drawTicks(g);
 		
 		double range = SimulationWindow2D.buildView.getXRange();
+		if (range < 0.01) return;
 		int width = getWidth() - rulerWidth;
 		double increment = getIncrement(width, range);
 		
@@ -375,6 +376,7 @@ class VerticalRuler extends GenericRuler
 		super.drawTicks(g);
 		
 		double range = SimulationWindow2D.buildView.getYRange();
+        if (range < 0.01) return;
 		int height = getHeight();
 		double increment = getIncrement(height, range);
 		
