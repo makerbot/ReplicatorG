@@ -27,10 +27,16 @@
 
 package replicatorg.app;
 
+import javax.vecmath.Point3d;
+
 public class SimulationWindow3D extends SimulationWindow
 {	
 	public SimulationWindow3D ()
 	{
 		super();
 	}
+
+  public void queuePoint(Point3d p) {
+    
+  }
 }
