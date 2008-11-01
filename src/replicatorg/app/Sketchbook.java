@@ -387,7 +387,7 @@ public class Sketchbook {
       e.printStackTrace();
     }
   
-    ActionListener listener = new ActionListener() {
+    new ActionListener() {
         public void actionPerformed(ActionEvent e) {
           editor.handleOpen(e.getActionCommand());
         }

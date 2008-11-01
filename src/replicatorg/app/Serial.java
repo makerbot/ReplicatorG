@@ -81,7 +81,7 @@ public class Serial {
     if (istopbits == 2) stopbits = SerialPort.STOPBITS_2;
 
     try {
-      Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
+      Enumeration portList = CommPortIdentifier.getPortIdentifiers();
       while (portList.hasMoreElements()) {
         CommPortIdentifier portId =
           (CommPortIdentifier) portList.nextElement();
@@ -173,10 +173,10 @@ public class Serial {
    * Why the hell that'd be the case, who knows.
    */
   static public String[] list() {
-    Vector<String> list = new Vector<String>();
+    Vector list = new Vector();
     try {
       //System.err.println("trying");
-      Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
+      Enumeration portList = CommPortIdentifier.getPortIdentifiers();
       //System.err.println("got port list");
       while (portList.hasMoreElements()) {
         CommPortIdentifier portId =

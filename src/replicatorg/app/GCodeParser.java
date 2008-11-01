@@ -990,7 +990,6 @@ public class GCodeParser
 	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
 	{
 		String message = "";
-		int result = 0;
 		int mCode;
 		
 		if (hasCode("M"))

@@ -57,7 +57,6 @@ import java.util.StringTokenizer;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -250,10 +249,9 @@ public class Preferences {
     int right = 0;
 
     JLabel label;
-    JButton button, button2;
-    JComboBox combo;
-    Dimension d, d2, d3;
-    int h, v, vmax;
+    JButton button;
+    Dimension d, d2;
+    int h, vmax;
 
 
     // [ ] Prompt for name and folder when creating new sketch
