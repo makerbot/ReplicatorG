@@ -27,13 +27,7 @@
 000X ReplicatorG
 
 * Highlight the currently executing line in addition to the currently queued line
-* Don't busy-loop waiting for serial in SerialPassthroughDriver (CPU usage)
 * Look into using log4j for debug and output logging
-* The control panel window creates a few threads which are not shut down on exit.
-  This causes serial communication to keep going on after the port has closed.
 * The control panel's jog dialog should always operate in relative mode.
-* Look into syncing core with Processing.
 * SerialPassthroughDriver: Option for setInitialized(true vs. false) -> machines.xml?
-* Look into making serial response handled asynchronously/event driven (check Processing and Arduino for ideas or updates to core code).
 * Batch jobs (print the same object multiple times, or multiple objects in one go)
-
