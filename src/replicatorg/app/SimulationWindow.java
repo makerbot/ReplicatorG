@@ -28,7 +28,6 @@
 package replicatorg.app;
 
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
@@ -61,20 +60,5 @@ public abstract class SimulationWindow extends JFrame
 		this.setMenuBar(null);
 	}
 	
-	protected int getRealWidth()
-	{
-		Insets i = getInsets();
-		
-		return (getWidth() - i.left - i.right);
-	}
-	
-	protected int getRealHeight()
-	{
-		Insets i = getInsets();
-		
-		return (getHeight() - i.top - i.bottom);
-	}
-	
-	synchronized public void queuePoint(Point3d p) { 
-	}
+	public abstract void queuePoint(Point3d p);
 }
