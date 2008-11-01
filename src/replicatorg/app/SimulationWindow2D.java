@@ -36,13 +36,11 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferStrategy;
-import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Vector;
 
@@ -108,16 +106,13 @@ public class SimulationWindow2D extends SimulationWindow
 
 	public void doRender()
 	{
-		//repaint all our areas.
-		hRuler.doRender();
-		vRuler.doRender();
-		buildView.doRender();
+      repaint();
 	}
 }
 
 class MyComponent extends Canvas
 {
-	public MyComponent(int width, int height)
+  public MyComponent(int width, int height)
 	{
 		//try and configure size.
 		setPreferredSize(new Dimension(width, height));
@@ -166,7 +161,7 @@ class GenericRuler extends MyComponent
 		if (mousePosition != i)
 		{
 			mousePosition = i;
-			doRender();
+			repaint();
 		}
 	}
 	
@@ -176,12 +171,8 @@ class GenericRuler extends MyComponent
 		if (mousePosition != i)
 		{
 			machinePosition = i;
-			doRender();
+			repaint();
 		}
-	}
-	
-	public void doRender()
-	{
 	}
 	
 	protected double getIncrement(int length, double range)
@@ -222,15 +213,10 @@ class HorizontalRuler extends GenericRuler
 		super(width, height, rWidth);
 	}
 
-	public void doRender()
+	public void paint(Graphics g)
 	{
-		//setup our graphics objects
-		BufferStrategy myStrategy = getBufferStrategy();
-		Graphics g = myStrategy.getDrawGraphics();
-
 		//clear it
 		g.setColor(Color.white);
-		Rectangle bounds = g.getClipBounds();
 		g.fillRect(0, 0, getWidth(), getHeight());
 
 		//draw our border.
@@ -258,9 +244,6 @@ class HorizontalRuler extends GenericRuler
 		
 		//draw our tick marks
 		drawTicks(g);
-
-		//this shows our buffer!
-		myStrategy.show();
 	}
 	
 	protected void drawTicks(Graphics g)
@@ -329,22 +312,17 @@ class VerticalRuler extends GenericRuler
 		super(width, height, rWidth);
 	}
 
-	public void doRender()
+	public void paint(Graphics g)
 	{
-		//setup our graphics objects
-		BufferStrategy myStrategy = getBufferStrategy();
-		Graphics g = myStrategy.getDrawGraphics();
-
 		//clear it
 		g.setColor(Color.white);
-		Rectangle bounds = g.getClipBounds();
 		g.fillRect(0, 0, getWidth(), getHeight());
 
 		//draw our border.
 		g.setColor(Color.gray);
 		g.drawRect(0, 0, getWidth()-1, getHeight()-1);
 
-		//setup graphics objecs.
+		//setup graphics objects.
 	    Graphics2D g2 = (Graphics2D) g;
 		g2.setPaint(Color.black);
 
@@ -366,9 +344,6 @@ class VerticalRuler extends GenericRuler
 
 		//draw our ticks.
 		drawTicks(g);
-
-		//this shows our buffer!
-		myStrategy.show();
 	}
 	
 	protected void drawTicks(Graphics g)
@@ -469,10 +444,7 @@ class BuildView extends MyComponent implements MouseMotionListener
 		SimulationWindow2D.hRuler.setMousePosition(mouseX);
 		SimulationWindow2D.vRuler.setMousePosition(mouseY);
 		
-		//this will generate exceptions, but we dont care. we're only reading
-		try {
-			doRender();
-		} catch (ConcurrentModificationException ex) {}
+		repaint();
 	}
 
 	public void mouseDragged(MouseEvent e)
@@ -483,10 +455,7 @@ class BuildView extends MyComponent implements MouseMotionListener
 		SimulationWindow2D.hRuler.setMousePosition(mouseX);
 		SimulationWindow2D.vRuler.setMousePosition(mouseY);
 
-		//this will generate exceptions, but we dont care. we're only reading
-		try {
-			doRender();
-		} catch (ConcurrentModificationException ex) {}
+		repaint();
 	}
 	
 	public Point3d getMinimum()
@@ -503,32 +472,26 @@ class BuildView extends MyComponent implements MouseMotionListener
 	{
 		current = new Point3d(point);
 		
-		//System.out.println("queued: " + point.toString());
+//		System.out.println("queued: " + point.toString());
 
-		if (points.size() == 0)
-		{
-			minimum = new Point3d(point);
-			maximum = new Point3d(point);
-		}
-		else
-		{
-			if (point.x < minimum.x)
-				minimum.x = point.x;
-			if (point.y < minimum.y)
-				minimum.y = point.y;
-			if (point.z < minimum.z)
-				minimum.z = point.z;
+		if (point.x < minimum.x)
+		  minimum.x = point.x;
+		if (point.y < minimum.y)
+		  minimum.y = point.y;
+		if (point.z < minimum.z)
+		  minimum.z = point.z;
 
-			if (point.x > maximum.x)
-				maximum.x = point.x;
-			if (point.y > maximum.y)
-				maximum.y = point.y;
-			if (point.z > maximum.z)
-				maximum.z = point.z;
-		}
+		if (point.x > maximum.x)
+		  maximum.x = point.x;
+		if (point.y > maximum.y)
+		  maximum.y = point.y;
+		if (point.z > maximum.z)
+		  maximum.z = point.z;
 			
 		Point3d myPoint = new Point3d(point);
-		points.addElement(myPoint);
+		synchronized (points) {
+		  points.addElement(myPoint);
+		}
 		
 		currentZ = point.z;
 
@@ -538,28 +501,21 @@ class BuildView extends MyComponent implements MouseMotionListener
 		SimulationWindow2D.hRuler.setMachinePosition(convertRealXToPointX(point.x));
 		SimulationWindow2D.vRuler.setMachinePosition(convertRealYToPointY(point.y));
 
-		doRender();
+		repaint();
 	}
 	
-	public void doRender()
+	public void paint(Graphics g)
 	{
-		//setup our graphics objects
-		BufferStrategy myStrategy = getBufferStrategy();
-		Graphics g = myStrategy.getDrawGraphics();
-
 		//clear it
 		g.setColor(Color.white);
-		Rectangle bounds = g.getClipBounds();
 		g.fillRect(0, 0, getWidth(), getHeight());
+//        g.clearRect(0, 0, width, height);
 
-		//dra our text
+		//draw our text
 		drawHelperText(g);
 
 		//draw our main stuff
 		drawLastPoints(g);
-		
-		//this shows our buffer!
-		myStrategy.show();
 	}
 	
 	private void drawHelperText(Graphics g)
@@ -587,161 +543,164 @@ class BuildView extends MyComponent implements MouseMotionListener
 		Color currentColor = new Color(0, 255, 0);
 		Color belowColor = new Color(0, 0, 255);
 
-		java.util.List lastPoints = getLastPoints(1000);
-		
-		Point3d start;
-		Point3d end;
-		
-		double belowZ = currentZ;
-		double aboveZ = currentZ;
+        synchronized (points) {
+          List lastPoints = getLastPoints(1000);
+          Point3d start;
+          Point3d end;
 
-		//color coding.
-		int aboveTotal = 0;
-		int belowTotal = 0;
-		int currentTotal = 0;
-		int aboveCount = 0;
-		int belowCount = 0;
-		int currentCount = 0;
-		
-		//draw our toolpaths.
-		if (lastPoints.size() > 0)
-		{
-			start = (Point3d)lastPoints.get(0);
+          double belowZ = currentZ;
+          double aboveZ = currentZ;
 
-			//start from the most recent line backwards to find the above/below layers.
-			for (int i=lastPoints.size()-1; i>=0; i--)
-			{
-				end = (Point3d)lastPoints.get(i);
-				
-				if (!start.equals(end))
-				{
-					//line below current plane
-					if (end.z < currentZ)
-					{
-						//we only want one layer up/down
-						if (end.z < belowZ && belowZ != currentZ)
-							continue;
-							
-						belowZ = end.z;
-						belowTotal++;
-					}				
-					//line above current plane
-					else if (end.z > currentZ)
-					{
-						//we only want one layer up/down
-						if (end.z > aboveZ && aboveZ != currentZ)
-							continue;
-						
-						aboveZ = end.z;
-						aboveTotal++;
-					}
-					//current line.
-					else if (end.z == currentZ)
-					{
-						currentTotal++;
-					}
-					else
-						continue;
+          //color coding.
+          int aboveTotal = 0;
+          int belowTotal = 0;
+          int currentTotal = 0;
+          int aboveCount = 0;
+          int belowCount = 0;
+          int currentCount = 0;
 
-					start = new Point3d(end);
-				}
-			}
-			
-			//draw all our lines now!
-			for (ListIterator li = lastPoints.listIterator(); li.hasNext();)
-			{
-				end = (Point3d)li.next();
+          //draw our toolpaths.
+          if (lastPoints.size() > 0)
+          {
+            start = (Point3d)lastPoints.get(0);
 
-				//we have to move somewhere!
-				if (!start.equals(end))
-				{
-					int startX = convertRealXToPointX(start.x);
-					int startY = convertRealYToPointY(start.y);
-					int endX = convertRealXToPointX(end.x);
-					int endY = convertRealYToPointY(end.y);
-					int colorValue;
-					
-					//line below current plane
-					if (end.z < currentZ && end.z >= belowZ)
-					{
-						belowCount++;
-						
-						colorValue = 255-3*(belowTotal-belowCount);
-						colorValue = Math.max(0, colorValue);
-						colorValue = Math.min(255, colorValue);
+            //start from the most recent line backwards to find the above/below layers.
+            for (int i=lastPoints.size()-1; i>=0; i--)
+            {
+              end = (Point3d)lastPoints.get(i);
 
-						belowColor = new Color(0, 0, colorValue);
-						g.setColor(belowColor);
-					}
-					//line above current plane
-					if (end.z > currentZ && end.z <= aboveZ)
-					{
-						aboveCount++;
+              if (!start.equals(end))
+              {
+                //line below current plane
+                if (end.z < currentZ)
+                {
+                  //we only want one layer up/down
+                  if (end.z < belowZ && belowZ != currentZ)
+                    continue;
 
-						colorValue = 255-3*(aboveTotal-aboveCount);
-						colorValue = Math.max(0, colorValue);
-						colorValue = Math.min(255, colorValue);
+                  belowZ = end.z;
+                  belowTotal++;
+                }				
+                //line above current plane
+                else if (end.z > currentZ)
+                {
+                  //we only want one layer up/down
+                  if (end.z > aboveZ && aboveZ != currentZ)
+                    continue;
 
-						aboveColor = new Color(colorValue, 0, 0);
-						g.setColor(aboveColor);
-					}
-					//line in current plane
-					else if (end.z == currentZ)
-					{
-						currentCount++;
+                  aboveZ = end.z;
+                  aboveTotal++;
+                }
+                //current line.
+                else if (end.z == currentZ)
+                {
+                  currentTotal++;
+                }
+                else
+                  continue;
 
-						colorValue = 255-3*(currentTotal-currentCount);
-						colorValue = Math.max(0, colorValue);
-						colorValue = Math.min(255, colorValue);
+                start = new Point3d(end);
+              }
+            }
 
-						currentColor = new Color(0, colorValue, 0);
-						g.setColor(currentColor);
-					}
-					//bail, your'e not on our plane.
-					else
-						continue;
+            //draw all our lines now!
+            for (ListIterator li = lastPoints.listIterator(); li.hasNext();)
+            {
+              end = (Point3d)li.next();
 
-					//draw up arrow
-					if (end.z > start.z)
-					{
-						g.setColor(Color.red);
-						g.drawOval(startX-5, startY-5, 10, 10);
-						g.drawLine(startX-5, startY, startX+5, startY);
-						g.drawLine(startX, startY-5, startX, startY+5);
-					}
-					//draw down arrow
-					else if (end.z < start.z)
-					{
-						g.setColor(Color.blue);
-						g.drawOval(startX-5, startY-5, 10, 10);
-						g.drawOval(startX-1, startY-1, 2, 2);
-					}
-					//normal XY line - only draw lines on current layer or above.
-					else if (end.z >= currentZ)
-					{
-						g.drawLine(startX, startY, endX, endY);
-					}
+              //we have to move somewhere!
+              if (!start.equals(end))
+              {
+                int startX = convertRealXToPointX(start.x);
+                int startY = convertRealYToPointY(start.y);
+                int endX = convertRealXToPointX(end.x);
+                int endY = convertRealYToPointY(end.y);
+                int colorValue;
 
-					start = new Point3d(end);
-				}
-			}
-			
-			/*
+                //line below current plane
+                if (end.z < currentZ && end.z >= belowZ)
+                {
+                  belowCount++;
+
+                  colorValue = 255-3*(belowTotal-belowCount);
+                  colorValue = Math.max(0, colorValue);
+                  colorValue = Math.min(255, colorValue);
+
+                  belowColor = new Color(0, 0, colorValue);
+                  g.setColor(belowColor);
+                }
+                //line above current plane
+                if (end.z > currentZ && end.z <= aboveZ)
+                {
+                  aboveCount++;
+
+                  colorValue = 255-3*(aboveTotal-aboveCount);
+                  colorValue = Math.max(0, colorValue);
+                  colorValue = Math.min(255, colorValue);
+
+                  aboveColor = new Color(colorValue, 0, 0);
+                  g.setColor(aboveColor);
+                }
+                //line in current plane
+                else if (end.z == currentZ)
+                {
+                  currentCount++;
+
+                  colorValue = 255-3*(currentTotal-currentCount);
+                  colorValue = Math.max(0, colorValue);
+                  colorValue = Math.min(255, colorValue);
+
+                  currentColor = new Color(0, colorValue, 0);
+                  g.setColor(currentColor);
+                }
+                //bail, your'e not on our plane.
+                else
+                  continue;
+
+                //draw up arrow
+                if (end.z > start.z)
+                {
+                  g.setColor(Color.red);
+                  g.drawOval(startX-5, startY-5, 10, 10);
+                  g.drawLine(startX-5, startY, startX+5, startY);
+                  g.drawLine(startX, startY-5, startX, startY+5);
+                }
+                //draw down arrow
+                else if (end.z < start.z)
+                {
+                  g.setColor(Color.blue);
+                  g.drawOval(startX-5, startY-5, 10, 10);
+                  g.drawOval(startX-1, startY-1, 2, 2);
+                }
+                //normal XY line - only draw lines on current layer or above.
+                else if (end.z >= currentZ)
+                {
+                  g.drawLine(startX, startY, endX, endY);
+                }
+
+                start = new Point3d(end);
+              }
+            }
+
+            /*
 			System.out.println("counts:");
 			System.out.println(belowCount + " / " + belowTotal);
 			System.out.println(aboveCount + " / " + aboveTotal);
 			System.out.println(currentCount + " / " + currentTotal);
-			*/
-		}
+             */
+          }
+        }
 	}
 
-	private java.util.List getLastPoints(int count)
+	private List getLastPoints(int count)
 	{
+	  synchronized (points) {
 		int index = Math.max(0, points.size()-count);		
 
-		java.util.List mypoints = points.subList(index, points.size());
+		List mypoints = points.subList(index, points.size());
 		
 		return mypoints;
+	  }
 	}
 	
 	private void drawToolpaths(Graphics g)
@@ -789,25 +748,26 @@ class BuildView extends MyComponent implements MouseMotionListener
 		Vector paths = new Vector();
 		Vector path = new Vector();
 		Point3d p;
-		int i;
-		
-		for (Enumeration e = points.elements(); e.hasMoreElements();)
-		{
-			p = (Point3d)e.nextElement();
-			
-			//is this on our current layer?
-			if (p.z == layerZ)
-			{
-				path.addElement(p);
-				//System.out.println("added: " + p.toString());
-			}
-			//okay, not on layer... did we find a path?
-			else if (path.size() > 0)
-			{
-				//System.out.println("added path of size " + path.size());
-				paths.addElement(path);
-				path = new Vector();
-			}
+
+		synchronized (points) {
+		  for (Enumeration e = points.elements(); e.hasMoreElements();)
+		  {
+		    p = (Point3d)e.nextElement();
+
+		    //is this on our current layer?
+		    if (p.z == layerZ)
+		    {
+		      path.addElement(p);
+		      //System.out.println("added: " + p.toString());
+		    }
+		    //okay, not on layer... did we find a path?
+		    else if (path.size() > 0)
+		    {
+		      //System.out.println("added path of size " + path.size());
+		      paths.addElement(path);
+		      path = new Vector();
+		    }
+		  }
 		}
 		
 		//did we end on our current path?

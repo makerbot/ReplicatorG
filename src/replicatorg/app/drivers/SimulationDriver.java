@@ -47,17 +47,12 @@ public class SimulationDriver extends DriverBaseImplementation
 	public void dispose()
 	{
 		super.dispose();
-		hideWindow();
-	}
-	
-	public void hideWindow()
-	{
 		simulation.setVisible(false);
 		simulation.dispose();
 		simulation = null;
 	}
 	
-	public void execute()
+	public void execute() throws InterruptedException
 	{
 		//suppress any errors
 		try {

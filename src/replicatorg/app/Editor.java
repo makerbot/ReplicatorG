@@ -32,6 +32,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -54,6 +55,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -86,6 +88,7 @@ import javax.swing.undo.UndoManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import replicatorg.app.drivers.EstimationDriver;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
@@ -1316,6 +1319,7 @@ public class Editor extends JFrame
 	class BuildingThread extends Thread
 	{
 		Editor editor;
+		Date started, finished;
 		
 		public BuildingThread(Editor edit)
 		{
@@ -1328,15 +1332,43 @@ public class Editor extends JFrame
 		{
 			message("Building...");
 			machine.setThread(this);
-			machine.run();
-			editor.buildingOver();
+	        started = new Date();
+
+			if (machine.execute())  {
+	            finished = new Date();
+	        }
+			
+			EventQueue.invokeLater(new Runnable() { 
+			  public void run() { 
+                if (finished != null) notifyBuildComplete(started, finished);
+                editor.buildingOver();
+			  }
+			});
 		}
 	}
 	
-	//synchronized public void buildingOver()
+	/**
+	 * give a prompt and stuff about the build being done with elapsed time, etc.
+	 */
+	private void notifyBuildComplete(Date started, Date finished)
+	{
+	  long elapsed = finished.getTime() - started.getTime();
+
+	  String message = "Build finished.\n\n";
+	  message += "Completed in " + EstimationDriver.getBuildTimeString(elapsed);
+
+	  Base.showMessage("Build finished", message);
+	}
+	    
+
+	    //synchronized public void buildingOver()
 	public void buildingOver()
 	{
 		message("Done building.");
+        
+        //re-enable the gui and shit.
+        textarea.setEnabled(true);
+		
 		building = false;
 		stopItem.setEnabled(false);
 		pauseItem.setEnabled(false);
@@ -1358,8 +1390,12 @@ public class Editor extends JFrame
 		{
 			message("Simulating...");
 			machine.setThread(this);
-			machine.run();
-			editor.simulationOver();
+			machine.execute();
+            EventQueue.invokeLater(new Runnable() { 
+              public void run() { 
+                editor.simulationOver();
+              }
+            });
 		}
 	}
 
@@ -1918,6 +1954,24 @@ public class Editor extends JFrame
    * in Editor since it has the callback from EditorStatus.
    */
   public void handleQuitInternal() {
+
+    try {
+      if (buildingThread != null) {
+        buildingThread.interrupt();
+        buildingThread.join();
+      }
+      if (simulationThread != null) {
+        simulationThread.interrupt();
+        simulationThread.join();
+      }
+      if (estimationThread != null) {
+        estimationThread.interrupt();
+        estimationThread.join();
+      }
+    } catch (InterruptedException e) { 
+      assert(false);
+    } 
+    
     // doStop() isn't sufficient with external vm & quit
     // instead use doClose() which will kill the external vm
     doClose();
@@ -1925,10 +1979,8 @@ public class Editor extends JFrame
     //cleanup our machine/driver.
     if (machine != null)
     {
-    	if (machine.getDriver() != null)
-    	{
-    		machine.getDriver().dispose();
-		}
+    	if (machine.getDriver() != null) machine.getDriver().dispose();
+        if (machine.getSimulatorDriver() != null) machine.getSimulatorDriver().dispose();
     }
 
     checkModified(HANDLE_QUIT);
@@ -1960,6 +2012,7 @@ public class Editor extends JFrame
    * Actually do the quit action.
    */
   protected void handleQuit2() {
+    
     storePreferences();
     Preferences.save();
 

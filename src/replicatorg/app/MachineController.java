@@ -125,23 +125,15 @@ public class MachineController
 		name = "Unknown";
 	}
 
-	public void run()
+	/**
+	 * Executes the job. Is run from the Build Thread.
+	 * Returns true on success, false on failure or interruption
+	 */
+	public boolean execute()
 	{
-//		System.out.println("Running...");
-
-		//some sort of race condition.  this hack seems to help.
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		//record the time.
-		Date started = new Date();
-
 		//start simulator
 //		System.out.println("a");
-		simulator.createWindow();
+		if (simulator != null) simulator.createWindow();
 //		System.out.println("b");
 		editor.setVisible(true);
 //		System.out.println("c");
@@ -152,27 +144,12 @@ public class MachineController
 		
 		//do that build!
 		System.out.println("Running GCode...");
-		if (build())
-		{
-			//record the time.
-			Date finished = new Date();
-		
-			//let them know.
-			notifyBuildComplete(started, finished);
-		}
-		
-		//clean things up.
-		//driver.dispose();
-		//driver = null;
-		simulator.dispose();
-		simulator = null;
-		
-		//re-enable the gui and shit.
-		editor.textarea.setEnabled(true);
+		return build();
 	}
 	
 	public void estimate()
 	{
+	  try {
 		EstimationDriver estimator = new EstimationDriver();
 		
 		//run each line through the estimator
@@ -187,9 +164,14 @@ public class MachineController
 		}
 
 		System.out.println("Estimated build time is: " + EstimationDriver.getBuildTimeString(estimator.getBuildTime()));
+	  }
+	  catch (InterruptedException e) {
+	    assert(false);
+	    // Should never happen
+	  }
 	}
 	
-	private void runWarmupCommands() throws BuildFailureException
+	private void runWarmupCommands() throws BuildFailureException, InterruptedException
 	{
 		if (warmupCommands.size() > 0)
 		{
@@ -216,16 +198,12 @@ public class MachineController
 			//wait for driver to finish up.
 			while (!driver.isFinished())
 			{
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+			    Thread.sleep(100);
 			}
 		}
 	}
 
-	private void runCooldownCommands() throws BuildFailureException
+	private void runCooldownCommands() throws BuildFailureException, InterruptedException
 	{
 		if (cooldownCommands.size() > 0)
 		{
@@ -252,11 +230,7 @@ public class MachineController
 			//wait for driver to finish up.
 			while (!driver.isFinished())
 			{
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				Thread.sleep(100);
 			}
 		}
 	}
@@ -272,6 +246,7 @@ public class MachineController
 			int total = editor.textarea.getLineCount();
 			for (int i=0; i<total; i++)
 			{
+			    if (Thread.interrupted()) return false;
 				editor.textarea.scrollTo(i, 0);
 				editor.highlightLine(i);
 				
@@ -280,7 +255,7 @@ public class MachineController
 				//System.out.println("running: " + line);
 				
 				//use our parser to handle the stuff.
-				simulator.parse(line);
+				if (simulator != null) simulator.parse(line);
 				driver.parse(line);
 				
 				//System.out.println("parsed");
@@ -298,7 +273,7 @@ public class MachineController
 				}
 				
 				//simulate the command.
-				simulator.execute();
+				if (simulator != null) simulator.execute();
 				
 				//System.out.println("simulated");
 				
@@ -334,11 +309,7 @@ public class MachineController
 			//wait for driver to finish up.
 			while (!driver.isFinished())
 			{
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				Thread.sleep(100);
 			}
 			
 			//chill out.
@@ -350,21 +321,11 @@ public class MachineController
 			
 			return false;
 		}
-		
+        catch (InterruptedException e)
+        {
+          System.out.println("MachineController interrupted");
+        }
 		return true;
-	}
-	
-	/**
-	* give a prompt and stuff about the build being done with elapsed time, etc.
-	*/
-	private void notifyBuildComplete(Date started, Date finished)
-	{
-		long elapsed = finished.getTime() - started.getTime();
-		
-		String message = "Build finished.\n\n";
-		message += "Completed in " + EstimationDriver.getBuildTimeString(elapsed);
-		
-		JOptionPane.showMessageDialog(null, message);
 	}
 	
 	private void loadModel()
@@ -376,9 +337,10 @@ public class MachineController
 	private void loadDriver()
 	{
 		//load our utility drivers
-		simulator = new SimulationDriver();
-		simulator.setMachine(model);
-			
+        if (Preferences.getBoolean("machinecontroller.simulator")) {
+		    simulator = new SimulationDriver();
+		    simulator.setMachine(model);
+        }
 		//load our actual driver
 		NodeList kids = machineNode.getChildNodes();
 		for (int j=0; j<kids.getLength(); j++)
@@ -440,7 +402,12 @@ public class MachineController
 	  return driver;
 	}
 	
-	public MachineModel getModel()
+    public Driver getSimulatorDriver()
+    {
+      return simulator;
+    }
+
+    public MachineModel getModel()
 	{
 		return model;
 	}

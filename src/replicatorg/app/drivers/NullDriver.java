@@ -48,7 +48,7 @@ public class NullDriver extends DriverBaseImplementation
 			speedup = Double.parseDouble(XML.getChildNodeValue(xml, "speedup"));
 	}
 	
-	public void execute()
+	public void execute() throws InterruptedException
 	{
 		//suppress errors.
 		try {
@@ -62,12 +62,7 @@ public class NullDriver extends DriverBaseImplementation
 			//calculate our delay speed.
 			int millis = (int)Math.round(getMoveLength() / getCurrentFeedrate() * 60000.0 / speedup);
 
-			if (millis > 0)
-			{
-				try {
-					Thread.sleep(millis);
-				} catch (InterruptedException e) {}
-			}
+			if (millis > 0) Thread.sleep(millis);
 		}
 	}
 }

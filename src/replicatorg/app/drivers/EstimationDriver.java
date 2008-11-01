@@ -43,7 +43,7 @@ public class EstimationDriver extends DriverBaseImplementation
 		buildTime += (double)millis/1000;
 	}
 	
-	public void execute()
+	public void execute() throws InterruptedException
 	{
 		//suppress errors.
 		try {

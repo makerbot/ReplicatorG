@@ -85,8 +85,9 @@ public interface Driver
 
 	/**
 	* execute the recently parsed GCode
+	 * @throws InterruptedException 
 	*/
-	public void execute() throws GCodeException;
+	public void execute() throws GCodeException, InterruptedException;
 
 	/**
 	* get version information from the driver
