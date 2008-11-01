@@ -47,8 +47,10 @@ public class SimulationDriver extends DriverBaseImplementation
 	public void dispose()
 	{
 		super.dispose();
-		simulation.setVisible(false);
-		simulation.dispose();
+		if (simulation != null) {
+		  simulation.setVisible(false);
+		  simulation.dispose();
+		}
 		simulation = null;
 	}
 	
