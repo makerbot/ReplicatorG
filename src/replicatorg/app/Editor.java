@@ -85,6 +85,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -115,7 +116,7 @@ public class Editor extends JFrame
   Image icon;
 
   // our machines.xml document.
-  public org.w3c.dom.Document dom;
+  public Document dom;
 
   MachineController machine;
 
