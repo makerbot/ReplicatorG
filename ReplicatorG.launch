@@ -14,5 +14,5 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="replicatorg.app.Base"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="ReplicatorG"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.library.path=${project_loc}/build/nativelibs -Dreplicatorg.app-resources=${project_loc}/build/shared/lib"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea -Djava.library.path=${project_loc}/build/nativelibs -Dreplicatorg.app-resources=${project_loc}/build/shared/lib"/>
 </launchConfiguration>
