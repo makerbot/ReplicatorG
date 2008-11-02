@@ -347,7 +347,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		xyFeedratePanel.add(xyFeedrateValue);
 
 		//create our z slider
-		zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, (int)machine.getModel().maximumFeedrates.z, Preferences.getInteger("controlpanel.feedrate.z"));
+		zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, (int)machine.getModel().getMaximumFeedrates().z, Preferences.getInteger("controlpanel.feedrate.z"));
 		zFeedrateSlider.setMajorTickSpacing(10);
 		zFeedrateSlider.setMinorTickSpacing(1);
 		zFeedrateSlider.setName("z-feedrate-slider");
