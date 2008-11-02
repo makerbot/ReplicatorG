@@ -181,7 +181,7 @@ public class Base
     editor.setVisible(true);
 
 	//load up our machine controller =)
-	editor.loadMachine();
+	editor.loadMachine(Preferences.get("machine.name"));
 	
     // check for updates
     if (Preferences.getBoolean("update.check")) {
@@ -1139,12 +1139,13 @@ public class Base
 	/**
 	* our singleton interface to get our machine.
 	*/
-	static public MachineController getMachine()
+	static public MachineController getMachine(String name)
 	{
-		if (machine == null)
-			machine = MachineFactory.load(Preferences.get("machine.name"));
-		
-		return machine;
+	  if (machine == null ||
+	      (machine != null && machine.name != name)) {
+	    machine = MachineFactory.load(name);
+	  }
+	  return machine;
 	}
 	
 	/**

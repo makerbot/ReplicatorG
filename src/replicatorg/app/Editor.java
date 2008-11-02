@@ -767,8 +767,8 @@ public class Editor extends JFrame
 			Preferences.set("machine.name", name);
 			
 			//load it and set it.
-			machine = MachineFactory.load(name);
-			Base.setMachine(machine);
+		    
+			loadMachine(name);
 		}
 	}
   
@@ -1371,6 +1371,7 @@ public class Editor extends JFrame
         textarea.setEnabled(true);
 		
 		building = false;
+        machine.getSimulatorDriver().destroyWindow();
 		stopItem.setEnabled(false);
 		pauseItem.setEnabled(false);
 		buttons.clear();
@@ -2217,9 +2218,9 @@ public class Editor extends JFrame
     }
   }
 
-	public void loadMachine()
+	public void loadMachine(String name)
 	{
-		machine = Base.getMachine();
+		machine = Base.getMachine(name);
 		machine.setEditor(this);
 	}
 	

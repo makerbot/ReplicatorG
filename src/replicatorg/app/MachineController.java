@@ -132,11 +132,8 @@ public class MachineController
 	public boolean execute()
 	{
 		//start simulator
-//		System.out.println("a");
 		if (simulator != null) simulator.createWindow();
-//		System.out.println("b");
 		editor.setVisible(true);
-//		System.out.println("c");
 	
 		//estimate build time.
 		System.out.println("Estimating build time...");
@@ -402,7 +399,7 @@ public class MachineController
 	  return driver;
 	}
 	
-    public Driver getSimulatorDriver()
+    public SimulationDriver getSimulatorDriver()
     {
       return simulator;
     }

@@ -44,14 +44,19 @@ public class SimulationDriver extends DriverBaseImplementation
 		simulation.setVisible(true);
 	}
 	
+    public void destroyWindow()
+    {
+        if (simulation != null) {
+          simulation.setVisible(false);
+          simulation.dispose();
+        }
+        simulation = null;
+    }
+    
 	public void dispose()
 	{
+        destroyWindow();
 		super.dispose();
-		if (simulation != null) {
-		  simulation.setVisible(false);
-		  simulation.dispose();
-		}
-		simulation = null;
 	}
 	
 	public void execute() throws InterruptedException
