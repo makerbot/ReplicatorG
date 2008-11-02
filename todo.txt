@@ -1,6 +1,5 @@
 0003 ReplicatorG
 
-* maximum and default feedrate values in control panel based on prefs
 * windows not using proper com## port from preferences.
 * get auto-formatting working
 * add support for slice/dice plugins (skeinforge?  reprap?)
@@ -32,3 +31,5 @@
 * SerialPassthroughDriver: Option for setInitialized(true vs. false) -> machines.xml?
 * Batch jobs (print the same object multiple times, or multiple objects in one go)
 * Support pause (stop extruder, move head away) and continue
+* Calibration mode (especially to find zero z and write it back to machines.xml)
+* Simulator windows for previous jobs is still visible.
