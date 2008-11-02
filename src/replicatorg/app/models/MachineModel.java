@@ -350,4 +350,8 @@ public class MachineModel
 		}
 	}
 
+  public Point3d getMaximumFeedrates() {
+    return maximumFeedrates;
+  }
+
 }

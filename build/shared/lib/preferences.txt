@@ -277,3 +277,7 @@ serial.debug_rate=19200
 machine.name=Default
 machine.optionalstops=true
 machinecontroller.simulator=true
+
+controlpanel.feedrate.z=480
+controlpanel.feedrate.xy=480
+
