@@ -103,6 +103,7 @@
 	    <fileset dir="${lib.dir}" includes="*.gif"/>
 	    <fileset dir="${lib.dir}" includes="*.jpg"/>
 	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+	    <fileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
 	</copy>
     </target>
 
