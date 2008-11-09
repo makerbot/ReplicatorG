@@ -5,15 +5,15 @@ REM --- (which means 128 megabytes) to something higher.
 
 set SAVEDCP=%CLASSPATH%
 set SAVEDPATH=%PATH%
-set JAVA_HOME="java\bin"
+set JAVA_HOME="C:\Program Files\Java\jre6\bin"
 
 if %JAVA_HOME% == "" GOTO Error
 
-set CLASSPATH=java\lib\rt.jar;lib;lib\build;lib\vecmath.jar;lib\j3dcore.jar;lib\j3dutils.jar;lib\pde.jar;lib\antlr.jar;lib\RXTXcomm.jar;lib\oro.jar;lib\registry.jar;lib\mrj.jar
+set CLASSPATH=java\lib\rt.jar;lib;lib\build;lib\vecmath.jar;lib\j3dcore.jar;lib\j3dutils.jar;lib\replicatorg.jar;lib\antlr.jar;lib\RXTXcomm.jar;lib\oro.jar;lib\registry.jar;lib\mrj.jar
 set PATH=java\bin;lib;%PATH%
 
-REM start javaw -ms128m -mx128m processing.app.Base
-%JAVA_HOME%\java processing.app.Base
+REM start javaw -ms128m -mx128m replicatorg.app.Base
+%JAVA_HOME%\java replicatorg.app.Base
 
 set CLASSPATH=%SAVEDCP%
 set PATH=%SAVEDPATH%
