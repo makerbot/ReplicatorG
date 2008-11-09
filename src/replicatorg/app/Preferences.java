@@ -177,7 +177,7 @@ public class Preferences {
     // important was deleted from the user prefs
 
     try {
-      load(Base.getStream("preferences.txt"));
+      load(Base.getStream(PREFS_FILE));
 
     } catch (Exception e) {
       Base.showError(null, "Could not read default settings.\n" +
