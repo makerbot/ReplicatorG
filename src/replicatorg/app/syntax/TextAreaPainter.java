@@ -417,6 +417,7 @@ implements TabExpander, Printable
         repaint(0,h,getWidth(),getHeight() - h);
       }
     } catch (Exception e) {
+      // FIXME: This has triggered once printing the metalab-motor-adapter. kintel 20081104.
       System.err.println("Error repainting line"
                          + " range {" + firstInvalid + ","
                          + lastInvalid + "}:");
