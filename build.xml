@@ -32,7 +32,7 @@
 
     <target name="compile">
         <mkdir dir="${classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.4"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5"/>
     </target>
 
     <target name="jar" depends="compile">
@@ -122,6 +122,7 @@
 	    <fileset dir="${lib.dir}" includes="*.gif"/>
 	    <fileset dir="${lib.dir}" includes="*.jpg"/>
 	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+	    <fileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
 	</copy>
     </target>
 
