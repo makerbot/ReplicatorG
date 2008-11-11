@@ -1371,7 +1371,7 @@ public class Editor extends JFrame
         textarea.setEnabled(true);
 		
 		building = false;
-        machine.getSimulatorDriver().destroyWindow();
+        if (machine.getSimulatorDriver() != null) machine.getSimulatorDriver().destroyWindow();
 		stopItem.setEnabled(false);
 		pauseItem.setEnabled(false);
 		buttons.clear();
