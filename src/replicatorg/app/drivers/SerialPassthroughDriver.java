@@ -26,7 +26,8 @@ package replicatorg.app.drivers;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.Vector;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.vecmath.Point3d;
 
@@ -46,14 +47,9 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	private Serial serial;
 
 	/**
-	* our array of gcode commands
+	* To keep track of outstanding commands
 	*/
-	private Vector commands;
-	
-	/**
-	* our pointer to the currently executing command
-	*/
-	private int currentCommand = 0;
+	private Queue<Integer> commands;
 	
 	/**
 	* the size of the buffer on the GCode host
@@ -64,11 +60,6 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	* the amount of data we've sent and is in the buffer.
 	*/
 	private int bufferSize = 0;
-	
-	/**
-	* how many commands do we have in the buffer?
-	*/
-	private int bufferLength = 0;
 	
 	/**
 	* What did we get back from serial?
@@ -86,17 +77,15 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 
     private DecimalFormat df;
 
-    private byte[] buffer = new byte[256];
+    private byte[] responsebuffer = new byte[512];
 	
 	public SerialPassthroughDriver()
 	{
 		super();
 		
 		//init our variables.
-		commands = new Vector();
+		commands = new LinkedList<Integer>();
 		bufferSize = 0;
-		bufferLength = 0;
-		currentCommand = 0;
 		setInitialized(false);
 		
 		//some decent default prefs.
@@ -211,7 +200,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	{
 	  assert (isInitialized());
 	  assert (serial != null);
-	  //System.out.println("sending: " + next);
+//	  System.out.println("sending: " + next);
 
 	  next = clean(next);
 
@@ -230,9 +219,9 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	  }
 
 	  //record it in our buffer tracker.
-	  commands.add(next);
-	  bufferSize += next.length() + 1;
-	  bufferLength++;
+	  int cmdlen = next.length() + 1;
+	  commands.add(cmdlen);
+	  bufferSize += cmdlen;
 
 	  //debug... let us know whts up!
 	  //System.out.println("Sent: " + next);
@@ -260,42 +249,51 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	    String cmd = "";
 
 	    try {
-	      int numread = serial.input.read(buffer);
-	      if (numread > 0) {
-	        result += new String(buffer , 0, numread, "US-ASCII");
+	      int numread = serial.input.read(responsebuffer);
+	      assert (numread != 0); // This should never happen since we know we have a buffer
+	      if (numread < 0) {
+	        // This signifies EOF. FIXME: How do we handle this?
+	         System.out.println("SerialPassthroughDriver.readResponse(): EOF occured");
+	        return;
+	      }
+	      else {
+	        result += new String(responsebuffer , 0, numread, "US-ASCII");
 
 	        //System.out.println("got: " + c);
 	        //System.out.println("current: " + result);
 	        int index;
 	        while ((index = result.indexOf('\n')) >= 0) {
-	          String line = result.substring(0, index);
+	          String line = result.substring(0, index).trim(); // trim to remove any trailing \r
 	          result = result.substring(index+1);
+	          if (line.length() == 0) continue;
 	          if (line.startsWith("ok")) {
-	            cmd = (String)commands.get(currentCommand);
-	            bufferSize -= cmd.length() + 1;
-	            bufferLength--;
-	            currentCommand++;
+	            bufferSize -= commands.remove();
+                System.out.println(line + " (" + getAvailableBuffer() + ")");
 	          }
-	          else if (line.indexOf("T:") > -1) {
-	            String temp = line.substring(2, line.length()-2);
+	          else if (line.startsWith("T:")) {
+	            String temp = line.substring(2);
 	            machine.currentTool().setCurrentTemperature(Double.parseDouble(temp));
+                System.out.println(line);
 	          }
 	          //old arduino firmware sends "start"
 	          else if (line.startsWith("start")) {
 	            //todo: set version
 	            setInitialized(true);
+                System.out.println(line);
 	          }
 	          else if (line.startsWith("Extruder Fail")) {
 	            setError("Extruder failed:  cannot extrude as this rate.");
+                System.out.println(line);
 	          }
 	          else {
-	            System.out.println("Unknown: " + line.substring(0, line.length()-2));
+	            System.out.println("Unknown: " + line);
 	          }
 	        }
 	      }
 	    }
 	    catch (IOException e) {
 	      System.out.println("inputstream.read() failed: " + e.toString());
+	      // FIXME: Shut down communication somehow.
 	    }
 	  }
 	}
@@ -597,4 +595,5 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		
 		super.closeCollet();
 	}
+	
 }
