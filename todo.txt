@@ -33,3 +33,6 @@
 * Support pause (stop extruder, move head away) and continue
 * Calibration mode (especially to find zero z and write it back to machines.xml)
 * Simulator windows for previous jobs is still visible.
+* Look into how we can give the JVM process more priority
+* Add Application logo on Mac, also when launching from Eclipse?
+* Ignore the simluator preference setting when operating in pure simulator mode
