@@ -268,7 +268,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	          if (line.length() == 0) continue;
 	          if (line.startsWith("ok")) {
 	            bufferSize -= commands.remove();
-                System.out.println(line + " (" + getAvailableBuffer() + ")");
+                System.out.println(line);
 	          }
 	          else if (line.startsWith("T:")) {
 	            String temp = line.substring(2);
