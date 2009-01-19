@@ -41,45 +41,86 @@ import replicatorg.app.tools.XML;
 
 public class Sanguino3GDriver extends DriverBaseImplementation
 {
-	/**
-	* this is if we need to talk over serial
-	*/
-	private Serial serial;
-
-	/**
-	* To keep track of outstanding commands
-	*/
-	private Queue<Integer> commands;
+    /**
+     * this is if we need to talk over serial
+     */
+    private Serial serial;
+    
+    /**
+     * To keep track of outstanding commands
+     */
+    private Queue<Integer> commands;
+    
+    /**
+     * the size of the buffer on the GCode host
+     */
+    private int maxBufferSize = 128;
+    
+    /**
+     * the amount of data we've sent and is in the buffer.
+     */
+    private int bufferSize = 0;
 	
-	/**
-	* the size of the buffer on the GCode host
-	*/
-	private int maxBufferSize = 128;
-	
-	/**
-	* the amount of data we've sent and is in the buffer.
-	*/
-	private int bufferSize = 0;
-	
-	/**
-	* What did we get back from serial?
-	*/
-	private String result = "";
-	
-	/**
-	* Serial connection parameters
-	**/
-	String name;
-	int    rate;
-	char   parity;
-	int    databits;
-	float  stopbits;
-
+    /**
+     * What did we get back from serial?
+     */
+    private String result = "";
+    
+    /**
+     * Serial connection parameters
+     **/
+    String name;
+    int    rate;
+    char   parity;
+    int    databits;
+    float  stopbits;
+    
     private DecimalFormat df;
+    
+    /**
+     * Java implementation of the IButton/Maxim 8-bit CRC.
+     * Code ported from the AVR-libc implementation, which is used
+     * on the RR3G end.
+     */
+    protected class IButtonCrc {
 
+	private byte crc = 0;
+
+	/**
+	 * Construct a new, initialized object for keeping track of a CRC.
+	 */
+	public IButtonCrc() {
+	}
+
+	/**
+	 * Update the internal stat of the CRC with a new byte of sequential
+	 * data.  See include/util/crc16.h in the avr-libc project for a 
+	 * full explanation of the algorithm.
+	 * @param data a byte of new data to be added to the crc.
+	 */
+	public void update(byte data) {
+	    crc = (byte)(crc ^ data);
+	    for (int i=0; i<8; i++) {
+		if ((crc & 0x01) != 0) {
+		    crc = (byte)((crc >>> 1) ^ 0x8c);
+		} else {
+		    crc = (byte)(crc >>> 1);
+		}
+	    }
+	}
+
+	/**
+	 * Get the 8-bit crc value.
+	 */
+	public byte getCrc() {
+	    return crc;
+	}
+    }
+
+    /** Buffer for responses from RR3G. */
     private byte[] responsebuffer = new byte[512];
 	
-	public SerialPassthroughDriver()
+	public Sanguino3GDriver()
 	{
 		super();
 		
