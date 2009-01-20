@@ -28,6 +28,7 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Vector;
 
 import javax.vecmath.Point3d;
 
@@ -93,13 +94,13 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	}
 
 	/**
-	 * Update the internal stat of the CRC with a new byte of sequential
-	 * data.  See include/util/crc16.h in the avr-libc project for a 
+	 * Update the  CRC with a new byte of sequential data.
+	 * See include/util/crc16.h in the avr-libc project for a 
 	 * full explanation of the algorithm.
 	 * @param data a byte of new data to be added to the crc.
 	 */
 	public void update(byte data) {
-	    crc = (byte)(crc ^ data);
+	    crc = (byte)(crc ^ data); // i loathe java's promotion rules
 	    for (int i=0; i<8; i++) {
 		if ((crc & 0x01) != 0) {
 		    crc = (byte)((crc >>> 1) ^ 0x8c);
@@ -115,10 +116,98 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	public byte getCrc() {
 	    return crc;
 	}
+
+	/**
+	 * Reset the crc.
+	 */
+	public void reset() {
+	    crc = 0;
+	}
     }
 
     /** Buffer for responses from RR3G. */
     private byte[] responsebuffer = new byte[512];
+
+
+    private final byte START_BYTE = (byte)0xD5;
+
+    public byte[] buildPacket(byte[] payload) {
+	if (payload.length > 255) {
+	    throw new java.lang.RuntimeException("Attempted to build overlong packet");
+	}
+	IButtonCrc crc = new IButtonCrc();
+	byte[] packet_data = new byte[payload.length + 3];
+	packet_data[0] = START_BYTE;
+	packet_data[1] = (byte)payload.length;
+	for (int i=0; i<payload.length; i++) {
+	    packet_data[i+2] = payload[i];
+	    crc.update(payload[i]);
+	}
+	packet_data[2] = crc.getCrc();
+	return packet_data;
+    }
+
+    class ResponseCode {
+	final static int GENERIC_ERROR   =0;
+	final static int OK              =1;
+	final static int BUFFER_OVERFLOW =2;
+	final static int CRC_MISMATCH    =1;
+    };
+
+    class PacketProcessor {
+	// not on java 5 yet.
+	final static byte PS_START = 0;
+	final static byte PS_LEN = 1;
+	final static byte PS_CRC = 2;
+	final static byte PS_PAYLOAD = 3;
+	final static byte PS_LAST = 4;
+
+	byte packetState = PS_START;
+	int payloadLength = -1;
+	int payloadIdx = 0;
+	byte[] payload;
+	byte targetCrc = 0;
+	IButtonCrc crc;
+
+	public void reset() {
+	    packetState = PS_START;
+	}
+
+	public byte[] processByte(byte b) {
+	    switch (packetState) {
+	    case PS_START:
+		if (b == START_BYTE) {
+		    packetState = PS_LEN;
+		} else {
+		    // throw exception?
+		}
+		break;
+	    case PS_LEN:
+		payloadLength = ((int)b) & 0xFF;
+		payload = new byte[payloadLength];
+		packetState = PS_CRC;
+		break;
+	    case PS_CRC:
+		targetCrc = b;
+		crc = new IButtonCrc();
+		packetState = PS_PAYLOAD;
+	    case PS_PAYLOAD:
+		// sanity check
+		if (payloadIdx < payloadLength) {
+		    payload[payloadIdx++] = b;
+		    crc.update(b);
+		}
+		if (payloadIdx >= payloadLength) {
+		    if (crc.getCrc() != targetCrc) {
+			throw new java.lang.RuntimeException("CRC mismatch on reply");
+		    }
+		    reset();
+		    return payload;
+		}
+	    }
+	    return null;
+	}
+    }
 	
 	public Sanguino3GDriver()
 	{
