@@ -137,13 +137,14 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	}
 	IButtonCrc crc = new IButtonCrc();
 	byte[] packet_data = new byte[payload.length + 3];
-	packet_data[0] = START_BYTE;
-	packet_data[1] = (byte)payload.length;
-	for (int i=0; i<payload.length; i++) {
-	    packet_data[i+2] = payload[i];
-	    crc.update(payload[i]);
+	int i = 0;
+	packet_data[i++] = START_BYTE;
+	packet_data[i++] = (byte)payload.length;
+	for (int j=0; j<payload.length; j++) {
+	    packet_data[i++] = payload[j];
+	    crc.update(payload[j]);
 	}
-	packet_data[2] = crc.getCrc();
+	packet_data[i++] = crc.getCrc();
 	return packet_data;
     }
 
@@ -158,8 +159,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	// not on java 5 yet.
 	final static byte PS_START = 0;
 	final static byte PS_LEN = 1;
-	final static byte PS_CRC = 2;
-	final static byte PS_PAYLOAD = 3;
+	final static byte PS_PAYLOAD = 2;
+	final static byte PS_CRC = 3;
 	final static byte PS_LAST = 4;
 
 	byte packetState = PS_START;
@@ -185,12 +186,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	    case PS_LEN:
 		payloadLength = ((int)b) & 0xFF;
 		payload = new byte[payloadLength];
-		packetState = PS_CRC;
-		break;
-	    case PS_CRC:
-		targetCrc = b;
 		crc = new IButtonCrc();
 		packetState = PS_PAYLOAD;
+		break;
 	    case PS_PAYLOAD:
 		// sanity check
 		if (payloadIdx < payloadLength) {
@@ -198,12 +196,16 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		    crc.update(b);
 		}
 		if (payloadIdx >= payloadLength) {
-		    if (crc.getCrc() != targetCrc) {
-			throw new java.lang.RuntimeException("CRC mismatch on reply");
-		    }
-		    reset();
-		    return payload;
+		    packetState = PS_CRC;
 		}
+		break;
+	    case PS_CRC:
+		targetCrc = b;
+		if (crc.getCrc() != targetCrc) {
+		    throw new java.lang.RuntimeException("CRC mismatch on reply");
+		}
+		reset();
+		return payload;
 	    }
 	    return null;
 	}
