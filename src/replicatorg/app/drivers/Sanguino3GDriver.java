@@ -43,11 +43,19 @@ import replicatorg.app.tools.XML;
 public class Sanguino3GDriver extends DriverBaseImplementation
 {
 
+    /**
+     * An enumeration describing the various command targets addressable by
+     * the 3g protocol.
+     */
     class Target {
 	public final static int THREE_AXIS  =0;
 	public final static int EXTRUDER    =1;
     };
 
+    /**
+     * An enumeration of the available command codes for the three-axis
+     * CNC stage.
+     */
     class CommandCodes3Axis {
 	public final static int GET_VERSION     =   0;
 	public final static int INIT            =   1;
@@ -70,7 +78,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     };
 
     /**
-     * this is if we need to talk over serial
+     * An object representing the serial connection.
      */
     private Serial serial;
     
@@ -84,7 +92,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     float  stopbits;
     
     /**
-     * Java implementation of the IButton/Maxim 8-bit CRC.
+     * This is a Java implementation of the IButton/Maxim 8-bit CRC.
      * Code ported from the AVR-libc implementation, which is used
      * on the RR3G end.
      */
@@ -130,9 +138,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	}
     }
 
+    /** The start byte that opens every packet. */
     private final byte START_BYTE = (byte)0xD5;
 
-
+    /** The response codes at the start of every response packet. */
     class ResponseCode {
 	final static int GENERIC_ERROR   =0;
 	final static int OK              =1;
@@ -141,31 +150,60 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	final static int QUERY_OVERFLOW  =4;
     };
 
-    /// Build a new packet, with target and command information.
+    /**
+     * A class for building a new packet to send down the wire to the
+     * Sanguino3G.
+     */
     class PacketBuilder {
 	// yay magic numbers.
-	byte[] data = new byte[512];
-	int idx = 2;
+	byte[] data = new byte[256];
+	// current end of packet.  Bytes 0 and 1 are reserved for start byte
+	// and packet payload length.
+	int idx = 2; 
 	IButtonCrc crc = new IButtonCrc();
 
+	/**
+	 * Start building a new command packet.
+	 * @param target the target identifier for this packet.
+	 * @param command the command identifier for this packet.
+	 */
 	PacketBuilder( int target, int command ) {
 	    data[0] = START_BYTE;
 	    add8((byte)target);
 	    add8((byte)command);
 	}
 
+	/**
+	 * Add an 8-bit value to the end of the packet payload.
+	 * @param v the value to append.
+	 */
 	void add8( byte v ) {
 	    data[idx++] =  v;
 	    crc.update(v);
 	}
+
+	/**
+	 * Add a 16-bit value to the end of the packet payload.
+	 * @param v the value to append.
+	 */
 	void add16( int v ) {
 	    add8((byte)(v&0xff));
 	    add8((byte)((v>>8)&0xff));
 	}
+
+	/**
+	 * Add a 32-bit value to the end of the packet payload.
+	 * @param v the value to append.
+	 */
 	void add32( int v ) {
 	    add16(v&0xffff);
 	    add16((v>>16)&0xffff);
 	}
+
+	/**
+	 * Complete the packet.
+	 * @return a byte array representing the completed packet.
+	 */
 	byte[] getPacket() {
 	    data[idx] = crc.getCrc();
 	    data[1] = (byte)(idx-2); // len does not count packet header
@@ -175,8 +213,11 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	}
     };
 
+    /**
+     * A class for keeping track of the state of an incoming packet and
+     * storing its payload.
+     */
     class PacketProcessor {
-	// not on java 5 yet.
 	final static byte PS_START = 0;
 	final static byte PS_LEN = 1;
 	final static byte PS_PAYLOAD = 2;
@@ -190,12 +231,24 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	byte targetCrc = 0;
 	IButtonCrc crc;
 
+	/**
+	 * Reset the packet's state.  (The crc is (re-)generated on the length byte
+	 * and thus doesn't need to be reset.(
+	 */
 	public void reset() {
 	    packetState = PS_START;
 	}
 
+	/**
+	 * Create a PacketResponse object that contains this packet's payload.
+	 * @return A valid PacketResponse object
+	 */
 	public PacketResponse getResponse() { return new PacketResponse(payload); }
 
+	/**
+	 * Process the next byte in an incoming packet.
+	 * @return true if the packet is complete and valid; false otherwise.
+	 */
 	public boolean processByte(byte b) {
 	    System.err.println("IN: Processing byte " + Integer.toHexString(b));
 	    switch (packetState) {
@@ -233,13 +286,22 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	}
     }
 
+    /**
+     * Packet response wrapper, with convenience functions for 
+     * reading off values in sequence and retrieving the response
+     * code.
+     */
     class PacketResponse {
 	byte[] payload;
 	int readPoint = 1;
 	public PacketResponse(byte[] p) {
 	    payload = p;
 	}
-	void printDebug() {
+	/**
+	 * Prints a debug message with the packet response code decoded, along wiith the
+	 * packet's contents in hex.
+	 */
+	public void printDebug() {
 	    String msg = "Unknown";
 	    switch(payload[0]) {
 	    case ResponseCode.GENERIC_ERROR:
@@ -266,16 +328,36 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	    System.err.print("\n");
 	}
 
-	int get8() {
-	    return payload[readPoint++];
+	/**
+	 * Retrieve the packet payload.
+	 * @return an array of bytes representing the payload.
+	 */
+	public byte[] getPayload() {
+	    return payload;
 	}
+
+	/**
+	 * Get the next 8-bit value from the packet payload.
+	 */
+	int get8() {
+	    return ((int)payload[readPoint++])&0xff;
+	}
+	/**
+	 * Get the next 16-bit value from the packet payload.
+	 */
 	int get16() {
 	    return get8() + (get8()<<8);
 	}
+	/**
+	 * Get the next 32-bit value from the packet payload.
+	 */
 	int get32() {
 	    return get16() + (get16()<<16);
 	}
 
+	/**
+	 * Does the response code indicate that the command was successful?
+	 */
 	public boolean isOK() { 
 	    return payload[0] == ResponseCode.OK;
 	}
