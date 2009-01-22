@@ -58,4 +58,46 @@
 			G1 Z10 F50
 		</cooldown>
 	</machine>
+
+	<machine>
+		<name>S3G</name>
+		<geometry type="cartesian">
+			<axis id="x" length="300" maxfeedrate="1000" scale="11.4485"/>
+			<axis id="y" length="300" maxfeedrate="1000" scale="11.4485"/>
+			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
+		</geometry>
+		<tools>
+			<tool name="Lasercut Extruder v1.0" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="sanguino3g">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- optional, defaults to 19200.                      <rate>19200</rate> -->
+			<!-- optional, defaults to 8.                          <parity>8</parity> -->
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+		</driver>
+		<warmup>
+			(homing routing)
+			G91
+			G1 Z10 F75
+			G1 X-999 Y-999 F2000
+			G92 X0 Y0 (set xy as home)
+			M104 S200
+			M108 S20
+			M101
+			G04 P10000
+			M103
+			G04 P5000
+			G1 X150 Y150
+			G1 Z-10 F75
+			G92 X0 Y0 Z0
+			(ready to print)
+		</warmup>
+		<cooldown>
+			M104 S20
+			G91
+			G1 Z10 F50
+		</cooldown>
+	</machine>
 </machines>
