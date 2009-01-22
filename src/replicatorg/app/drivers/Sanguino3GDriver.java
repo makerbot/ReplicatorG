@@ -250,7 +250,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	 * @return true if the packet is complete and valid; false otherwise.
 	 */
 	public boolean processByte(byte b) {
-	    System.err.println("IN: Processing byte " + Integer.toHexString(b));
+	    System.out.println("IN: Processing byte " + Integer.toHexString(b));
 	    switch (packetState) {
 	    case PS_START:
 		if (b == START_BYTE) {
@@ -320,12 +320,12 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		msg = "Query overflow";
 		break;
 	    }
-	    System.err.println("Packet response code: "+msg);
-	    System.err.print("Packet payload: ");
+	    System.out.println("Packet response code: "+msg);
+	    System.out.print("Packet payload: ");
 	    for (int i = 1; i < payload.length; i++) {
-		System.err.print(Integer.toHexString(payload[i]) + " ");
+		System.out.print(Integer.toHexString(payload[i]) + " ");
 	    }
-	    System.err.print("\n");
+	    System.out.print("\n");
 	}
 
 	/**
@@ -426,7 +426,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	    // attempt to send version command and retrieve reply.
 	    try {
 
-		
+		System.out.println("Running getversion.");
+		getVersion(1);
 	    } catch (Exception e) {
 		    //todo: handle init exceptions here
 	    }
@@ -442,7 +443,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      */
     protected PacketResponse runCommand(byte[] packet)
     {
-	assert (isInitialized());
 	assert (serial != null);
 
 	if (packet == null || packet.length < 4) return null; // skip empty commands or broken commands
@@ -458,10 +458,16 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	System.out.println("OUT:  Target " + Integer.toHexString(packet[2])+ " cmd " + Integer.toHexString(packet[3]) );
 	PacketProcessor pp = new PacketProcessor();
 	try {
-	    while (!pp.processByte((byte)serial.input.read())) {}
+	    boolean c = false;
+	    while(!c){
+		System.out.println("getting byte " );
+		int b = serial.input.read();
+		System.out.println("got "+Integer.toHexString(b) );
+		c = pp.processByte((byte)b);
+	    }
 	} catch (java.io.IOException ioe) {
-	    System.err.println(ioe.toString());
-	}
+	    System.out.println(ioe.toString());
+	} 
 	return pp.getResponse();
     }
 	
