@@ -42,30 +42,37 @@ import replicatorg.app.tools.XML;
 
 public class Sanguino3GDriver extends DriverBaseImplementation
 {
+
+    class Target {
+	public final static int THREE_AXIS  =0;
+	public final static int EXTRUDER    =1;
+    };
+
+    class CommandCodes3Axis {
+	public final static int GET_VERSION     =   0;
+	public final static int INIT            =   1;
+	public final static int GET_AVAIL_BUF   =   2;
+	public final static int CLEAR_BUF       =   3;
+	public final static int GET_POS         =   4;
+	public final static int GET_RANGE       =   5;
+	public final static int SET_RANGE       =   6;
+	public final static int ABORT           =   7;
+	public final static int PAUSE           =   8;
+	public final static int PROBE           =   9;
+	public final static int QUEUE_POINT_INC = 128;
+	public final static int QUEUE_POINT_ABS = 129;
+	public final static int SET_POS         = 130;
+	public final static int FIND_MINS       = 131;
+	public final static int FIND_MAXS       = 132;
+	public final static int DELAY           = 133;
+	public final static int CHANGE_TOOL     = 135;
+	public final static int WAIT_FOR_TOOL   = 136;
+    };
+
     /**
      * this is if we need to talk over serial
      */
     private Serial serial;
-    
-    /**
-     * To keep track of outstanding commands
-     */
-    private Queue<Integer> commands;
-    
-    /**
-     * the size of the buffer on the GCode host
-     */
-    private int maxBufferSize = 128;
-    
-    /**
-     * the amount of data we've sent and is in the buffer.
-     */
-    private int bufferSize = 0;
-	
-    /**
-     * What did we get back from serial?
-     */
-    private String result = "";
     
     /**
      * Serial connection parameters
@@ -75,8 +82,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     char   parity;
     int    databits;
     float  stopbits;
-    
-    private DecimalFormat df;
     
     /**
      * Java implementation of the IButton/Maxim 8-bit CRC.
@@ -125,34 +130,49 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	}
     }
 
-    /** Buffer for responses from RR3G. */
-    private byte[] responsebuffer = new byte[512];
-
-
     private final byte START_BYTE = (byte)0xD5;
 
-    public byte[] buildPacket(byte[] payload) {
-	if (payload.length > 255) {
-	    throw new java.lang.RuntimeException("Attempted to build overlong packet");
-	}
-	IButtonCrc crc = new IButtonCrc();
-	byte[] packet_data = new byte[payload.length + 3];
-	int i = 0;
-	packet_data[i++] = START_BYTE;
-	packet_data[i++] = (byte)payload.length;
-	for (int j=0; j<payload.length; j++) {
-	    packet_data[i++] = payload[j];
-	    crc.update(payload[j]);
-	}
-	packet_data[i++] = crc.getCrc();
-	return packet_data;
-    }
 
     class ResponseCode {
 	final static int GENERIC_ERROR   =0;
 	final static int OK              =1;
 	final static int BUFFER_OVERFLOW =2;
-	final static int CRC_MISMATCH    =1;
+	final static int CRC_MISMATCH    =3;
+	final static int QUERY_OVERFLOW  =4;
+    };
+
+    /// Build a new packet, with target and command information.
+    class PacketBuilder {
+	// yay magic numbers.
+	byte[] data = new byte[512];
+	int idx = 2;
+	IButtonCrc crc = new IButtonCrc();
+
+	PacketBuilder( int target, int command ) {
+	    data[0] = START_BYTE;
+	    add8((byte)target);
+	    add8((byte)command);
+	}
+
+	void add8( byte v ) {
+	    data[idx++] =  v;
+	    crc.update(v);
+	}
+	void add16( int v ) {
+	    add8((byte)(v&0xff));
+	    add8((byte)((v>>8)&0xff));
+	}
+	void add32( int v ) {
+	    add16(v&0xffff);
+	    add16((v>>16)&0xffff);
+	}
+	byte[] getPacket() {
+	    data[idx] = crc.getCrc();
+	    data[1] = (byte)(idx-2); // len does not count packet header
+	    byte[] rv = new byte[idx+1];
+	    System.arraycopy(data,0,rv,0,idx+1);
+	    return rv;
+	}
     };
 
     class PacketProcessor {
@@ -174,7 +194,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	    packetState = PS_START;
 	}
 
-	public byte[] processByte(byte b) {
+	public PacketResponse getResponse() { return new PacketResponse(payload); }
+
+	public boolean processByte(byte b) {
+	    System.err.println("IN: Processing byte " + Integer.toHexString(b));
 	    switch (packetState) {
 	    case PS_START:
 		if (b == START_BYTE) {
@@ -204,528 +227,465 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		if (crc.getCrc() != targetCrc) {
 		    throw new java.lang.RuntimeException("CRC mismatch on reply");
 		}
-		reset();
-		return payload;
+		return true;
 	    }
-	    return null;
+	    return false;
 	}
     }
-	
-	public Sanguino3GDriver()
-	{
-		super();
-		
-		//init our variables.
-		commands = new LinkedList<Integer>();
-		bufferSize = 0;
-		setInitialized(false);
-		
-		//some decent default prefs.
-		String[] serialPortNames = Serial.list();
-		if (serialPortNames.length != 0)
-			name = serialPortNames[0];
-		else
-			name = null;
-		
-		rate = Preferences.getInteger("serial.debug_rate");
-		parity = Preferences.get("serial.parity").charAt(0);
-		databits = Preferences.getInteger("serial.databits");
-		stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
 
-	
-	    df = new DecimalFormat("#.######");
+    class PacketResponse {
+	byte[] payload;
+	int readPoint = 1;
+	public PacketResponse(byte[] p) {
+	    payload = p;
 	}
-	
-	public void loadXML(Node xml)
-	{
-		super.loadXML(xml);
-		
-		//load from our XML config, if we have it.
-		if (XML.hasChildNode(xml, "portname"))
-			name = XML.getChildNodeValue(xml, "portname");
-		if (XML.hasChildNode(xml, "rate"))
-			rate = Integer.parseInt(XML.getChildNodeValue(xml, "rate"));
-		if (XML.hasChildNode(xml, "parity"))
-			parity = XML.getChildNodeValue(xml, "parity").charAt(0);
-		if (XML.hasChildNode(xml, "databits"))
-			databits = Integer.parseInt(XML.getChildNodeValue(xml, "databits"));
-		if (XML.hasChildNode(xml, "stopbits"))
-			stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
-	}
-	
-	public void initialize()
-	{
-		//declare our serial guy.
-		if (serial == null)
-		{
-			if (name != null)
-			{
-				try {
-					System.out.println("Connecting to " + name + " at " + rate);
-					serial = new Serial(name, rate, parity, databits, stopbits);
-				} catch (SerialException e) {
-					System.out.println("Unable to open port " + name + "\n");
-					return;
-				}
-			}
-			else
-			{
-				System.out.println("No Serial Port found.\n");
-				return;
-			}
-		}
-		
-		//wait till we're initialized
-		if (!isInitialized())
-		{
-			try
-			{
-				//record our start time.
-				Date date = new Date();
-				long end = date.getTime() + 10000;
-
-				System.out.println("Initializing Serial.");
-				while (!isInitialized())
-				{
-					readResponse();
-					
-					//record our current time
-					date = new Date();
-					long now = date.getTime();
-
-					//only give them 10 seconds
-					if (now > end)
-					{
-						System.out.println("Serial link non-responsive.");
-						return;
-					}
-				}
-			} catch (Exception e) {
-				//todo: handle init exceptions here
-			}
-			System.out.println("Ready to rock.");
-		}
-		
-		//default us to absolute positioning
-		sendCommand("G90");
-	}
-	
-	/**
-	 * Actually execute the GCode we just parsed.
-	 */
-	public void execute()
-	{
-		// we *DONT* want to use the parents one, 
-		// as that will call all sorts of misc functions.
-		// we'll simply pass it along.
-		//super.execute();
-		
-		sendCommand(getParser().getCommand());
-	}
-	
-	
-	/**
-	 * Actually sends command over serial.
-	 * If the Arduino buffer is full, this method will block until the command has been sent.
-	 */
-	protected void sendCommand(String next)
-	{
-	  assert (isInitialized());
-	  assert (serial != null);
-//	  System.out.println("sending: " + next);
-
-	  next = clean(next);
-
-	  //skip empty commands.
-	  if (next.length() == 0) return;
-
-	  // Block until we can fit the command on the Arduino
-	  while (bufferSize + next.length() + 1 > maxBufferSize) {
-	    readResponse();
-	  }
-
-	  synchronized(serial)
-	  {
-	    //do the actual send.
-	    serial.write(next + "\n");
-	  }
-
-	  //record it in our buffer tracker.
-	  int cmdlen = next.length() + 1;
-	  commands.add(cmdlen);
-	  bufferSize += cmdlen;
-
-	  //debug... let us know whts up!
-	  //System.out.println("Sent: " + next);
-	  //System.out.println("Buffer: " + bufferSize + " (" + bufferLength + " commands)");
-	}
-	
-	public String clean(String str)
-	{
-		String clean = str;
-		
-		//trim whitespace
-		clean = clean.trim();	
-		
-		//remove spaces
-		clean = clean.replaceAll(" ", "");
-		
-		return clean;
-	}
-	
-	public void readResponse()
-	{
-	  assert (serial != null);
-	  synchronized(serial)
-	  {
-	    String cmd = "";
-
-	    try {
-	      int numread = serial.input.read(responsebuffer);
-	      assert (numread != 0); // This should never happen since we know we have a buffer
-	      if (numread < 0) {
-	        // This signifies EOF. FIXME: How do we handle this?
-	         System.out.println("SerialPassthroughDriver.readResponse(): EOF occured");
-	        return;
-	      }
-	      else {
-	        result += new String(responsebuffer , 0, numread, "US-ASCII");
-
-	        //System.out.println("got: " + c);
-	        //System.out.println("current: " + result);
-	        int index;
-	        while ((index = result.indexOf('\n')) >= 0) {
-	          String line = result.substring(0, index).trim(); // trim to remove any trailing \r
-	          result = result.substring(index+1);
-	          if (line.length() == 0) continue;
-	          if (line.startsWith("ok")) {
-	            bufferSize -= commands.remove();
-                System.out.println(line);
-	          }
-	          else if (line.startsWith("T:")) {
-	            String temp = line.substring(2);
-	            machine.currentTool().setCurrentTemperature(Double.parseDouble(temp));
-                System.out.println(line);
-	          }
-	          //old arduino firmware sends "start"
-	          else if (line.startsWith("start")) {
-	            //todo: set version
-	            setInitialized(true);
-                System.out.println(line);
-	          }
-	          else if (line.startsWith("Extruder Fail")) {
-	            setError("Extruder failed:  cannot extrude as this rate.");
-                System.out.println(line);
-	          }
-	          else {
-	            System.out.println("Unknown: " + line);
-	          }
-	        }
-	      }
+	void printDebug() {
+	    String msg = "Unknown";
+	    switch(payload[0]) {
+	    case ResponseCode.GENERIC_ERROR:
+		msg = "Generic Error";
+		break;
+	    case ResponseCode.OK:
+		msg = "OK";
+		break;
+	    case ResponseCode.BUFFER_OVERFLOW:
+		msg = "Buffer overflow";
+		break;
+	    case ResponseCode.CRC_MISMATCH:
+		msg = "CRC mismatch";
+		break;
+	    case ResponseCode.QUERY_OVERFLOW:
+		msg = "Query overflow";
+		break;
 	    }
-	    catch (IOException e) {
-	      System.out.println("inputstream.read() failed: " + e.toString());
-	      // FIXME: Shut down communication somehow.
+	    System.err.println("Packet response code: "+msg);
+	    System.err.print("Packet payload: ");
+	    for (int i = 1; i < payload.length; i++) {
+		System.err.print(Integer.toHexString(payload[i]) + " ");
 	    }
-	  }
+	    System.err.print("\n");
 	}
+
+	int get8() {
+	    return payload[readPoint++];
+	}
+	int get16() {
+	    return get8() + (get8()<<8);
+	}
+	int get32() {
+	    return get16() + (get16()<<16);
+	}
+
+	public boolean isOK() { 
+	    return payload[0] == ResponseCode.OK;
+	}
+    };
+
+
+    public Sanguino3GDriver()
+    {
+	super();
 	
-	public boolean isFinished()
-	{
+	//init our variables.
+	setInitialized(false);
+		
+	//some decent default prefs.
+	String[] serialPortNames = Serial.list();
+	if (serialPortNames.length != 0)
+	    name = serialPortNames[0];
+	else
+	    name = null;
+		
+	rate = Preferences.getInteger("serial.debug_rate");
+	parity = Preferences.get("serial.parity").charAt(0);
+	databits = Preferences.getInteger("serial.databits");
+	stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
+    }
+	
+    public void loadXML(Node xml)
+    {
+	super.loadXML(xml);
+		
+	//load from our XML config, if we have it.
+	if (XML.hasChildNode(xml, "portname"))
+	    name = XML.getChildNodeValue(xml, "portname");
+	if (XML.hasChildNode(xml, "rate"))
+	    rate = Integer.parseInt(XML.getChildNodeValue(xml, "rate"));
+	if (XML.hasChildNode(xml, "parity"))
+	    parity = XML.getChildNodeValue(xml, "parity").charAt(0);
+	if (XML.hasChildNode(xml, "databits"))
+	    databits = Integer.parseInt(XML.getChildNodeValue(xml, "databits"));
+	if (databits != 8) {
+	    throw new java.lang.RuntimeException("Sanguino3G driver requires 8 serial data bits.");
+	}
+	if (XML.hasChildNode(xml, "stopbits"))
+	    stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
+    }
+	
+    public void initialize()
+    {
+	// Create our serial object
+	if (serial == null) {
+	    if (name != null) {
 		try {
-			readResponse();
-		} catch (Exception e) {
+		    System.out.println("Connecting to " + name + " at " + rate);
+		    serial = new Serial(name, rate, parity, databits, stopbits);
+		} catch (SerialException e) {
+		    System.out.println("Unable to open port " + name + "\n");
+		    return;
 		}
-		return (bufferSize == 0);
+	    } else {
+		System.out.println("No Serial Port found.\n");
+		return;
+	    }
 	}
-	
-	public void dispose()
-	{
-		super.dispose();
+	//wait till we're initialized
+	if (!isInitialized()) {
+	    // attempt to send version command and retrieve reply.
+	    try {
+
 		
-		if (serial != null) serial.dispose();
-		serial = null;
-		commands = null;
+	    } catch (Exception e) {
+		    //todo: handle init exceptions here
+	    }
+	    System.out.println("Ready to rock.");
 	}
 	
-	/****************************************************
-	*  commands for interfacing with the driver directly
-	****************************************************/
-	
-	public void queuePoint(Point3d p)
-	{
-	    String cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z" + df.format(p.z) + " F" + df.format(getCurrentFeedrate());
+	//default us to absolute positioning
+	// todo agm sendCommand("G90");
+    }
 		
-		sendCommand(cmd);
+    /**
+     * Sends the command over the serial connection and retrieves a result.
+     */
+    protected PacketResponse runCommand(byte[] packet)
+    {
+	assert (isInitialized());
+	assert (serial != null);
+
+	if (packet == null || packet.length < 4) return null; // skip empty commands or broken commands
+	boolean checkQueue = false;
+	if (packet[2] == 0x0 && (packet[3]&0x80) != 0x0) {
+	    checkQueue = true;
+	}
+
+	synchronized(serial) {
+	    //do the actual send.
+	    serial.write(packet);
+	}
+	System.out.println("OUT:  Target " + Integer.toHexString(packet[2])+ " cmd " + Integer.toHexString(packet[3]) );
+	PacketProcessor pp = new PacketProcessor();
+	try {
+	    while (!pp.processByte((byte)serial.input.read())) {}
+	} catch (java.io.IOException ioe) {
+	    System.err.println(ioe.toString());
+	}
+	return pp.getResponse();
+    }
+	
+	
+    public boolean isFinished()
+    {
+	// todo agm
+	return true;
+    }
+	
+    public void dispose()
+    {
+	super.dispose();
 		
-		super.queuePoint(p);
-	}
+	if (serial != null) serial.dispose();
+	serial = null;
+    }
 	
-	public void setCurrentPosition(Point3d p)
-	{
-		sendCommand("G92 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z" + df.format(p.z));
+    /****************************************************
+     *  commands for interfacing with the driver directly
+     ****************************************************/
+    public int getVersion(int ourVersion) {
+	PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS,CommandCodes3Axis.GET_VERSION);
+	pb.add16(0xbeef);
+	PacketResponse pr = runCommand(pb.getPacket());
+	int version = pr.get16();
+	pr.printDebug();
+	System.out.println("Reported version: " + Integer.toHexString(version));
+	return version;
+    }
 
-		super.setCurrentPosition(p);
-	}
 	
-	public void homeXYZ()
-	{
-		sendCommand("G28 XYZ");
+    public void queuePoint(Point3d p)
+    {
+	//String cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z" + df.format(p.z) + " F" + df.format(getCurrentFeedrate());
 		
-		super.homeXYZ();
-	}
-
-	public void homeXY()
-	{
-		sendCommand("G28 XY");
-
-		super.homeXY();
-	}
-
-	public void homeX()
-	{
-		sendCommand("G28 X");
-
-		super.homeX();
-	}
-
-	public void homeY()
-	{
-		sendCommand("G28 Y");
-	
-		super.homeY();
-	}
-
-	public void homeZ()
-	{
-		sendCommand("G28 Z");
+	//sendCommand(cmd);
 		
-		super.homeZ();
-	}
+	super.queuePoint(p);
+    }
 	
-	public void delay(long millis)
-	{
-		int seconds = Math.round(millis/1000);
+    public void setCurrentPosition(Point3d p)
+    {
+	//sendCommand("G92 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z" + df.format(p.z));
 
-		sendCommand("G4 P" + seconds);
-		
-		//no super call requried.
-	}
+	super.setCurrentPosition(p);
+    }
 	
-	public void openClamp(int clampIndex)
-	{
-		sendCommand("M11 Q" + clampIndex);
+    public void homeXYZ()
+    {
+	//sendCommand("G28 XYZ");
 		
-		super.openClamp(clampIndex);
-	}
-	
-	public void closeClamp(int clampIndex)
-	{
-		sendCommand("M10 Q" + clampIndex);
-		
-		super.closeClamp(clampIndex);
-	}
-	
-	public void enableDrives()
-	{
-		sendCommand("M17");
-		
-		super.enableDrives();
-	}
-	
-	public void disableDrives()
-	{
-		sendCommand("M18");
+	super.homeXYZ();
+    }
 
-		super.disableDrives();
-	}
+    public void homeXY()
+    {
+	//sendCommand("G28 XY");
+
+	super.homeXY();
+    }
+
+    public void homeX()
+    {
+	//sendCommand("G28 X");
+
+	super.homeX();
+    }
+
+    public void homeY()
+    {
+	//sendCommand("G28 Y");
 	
-	public void changeGearRatio(int ratioIndex)
-	{
-		//gear ratio codes are M40-M46
-		int code = 40 + ratioIndex;
-		code = Math.max(40, code);
-		code = Math.min(46, code);
+	super.homeY();
+    }
+
+    public void homeZ()
+    {
+	//sendCommand("G28 Z");
 		
-		sendCommand("M" + code);
-		
-		super.changeGearRatio(ratioIndex);
-	}
+	super.homeZ();
+    }
 	
-	private String _getToolCode()
-	{
-		return "T" + machine.currentTool().getIndex() + " ";
-	}
+    public void delay(long millis)
+    {
+	int seconds = Math.round(millis/1000);
 
-	/*************************************
-	*  Motor interface functions
-	*************************************/
-	public void setMotorSpeed(double rpm)
-	{
-		sendCommand(_getToolCode() + "M108 S" + df.format(rpm));
-
-		super.setMotorSpeed(rpm);
-	}
-	
-	public void enableMotor()
-	{
-		String command = _getToolCode();
-
-		if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
-			command += "M101";
-		else
-			command += "M102";
-
-		sendCommand(command);
-
-		super.enableMotor();
-	}
-	
-	public void disableMotor()
-	{
-		sendCommand(_getToolCode() + "M103");
-
-		super.disableMotor();
-	}
-
-	/*************************************
-	*  Spindle interface functions
-	*************************************/
-	public void setSpindleSpeed(double rpm)
-	{
-		sendCommand(_getToolCode() + "S" + df.format(rpm));
-
-		super.setSpindleSpeed(rpm);
-	}
-	
-	public void enableSpindle()
-	{
-		String command = _getToolCode();
-
-		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
-			command += "M3";
-		else
-			command += "M4";
-
-		sendCommand(command);
+	//sendCommand("G4 P" + seconds);
 		
-		super.enableSpindle();
-	}
+	//no super call requried.
+    }
 	
-	public void disableSpindle()
-	{
-		sendCommand(_getToolCode() + "M5");
+    public void openClamp(int clampIndex)
+    {
+	//sendCommand("M11 Q" + clampIndex);
+		
+	super.openClamp(clampIndex);
+    }
+	
+    public void closeClamp(int clampIndex)
+    {
+	//sendCommand("M10 Q" + clampIndex);
+		
+	super.closeClamp(clampIndex);
+    }
+	
+    public void enableDrives()
+    {
+	//sendCommand("M17");
+		
+	super.enableDrives();
+    }
+	
+    public void disableDrives()
+    {
+	//sendCommand("M18");
 
-		super.disableSpindle();
-	}
+	super.disableDrives();
+    }
 	
-	public void readSpindleSpeed()
-	{
-		sendCommand(_getToolCode() + "M50");
+    public void changeGearRatio(int ratioIndex)
+    {
+	//gear ratio codes are M40-M46
+	int code = 40 + ratioIndex;
+	code = Math.max(40, code);
+	code = Math.min(46, code);
 		
-		super.readSpindleSpeed();
-	}
+	//sendCommand("M" + code);
+		
+	super.changeGearRatio(ratioIndex);
+    }
 	
-	/*************************************
-	*  Temperature interface functions
-	*************************************/
-	public void setTemperature(double temperature)
-	{
-		sendCommand(_getToolCode() + "M104 S" + df.format(temperature));
-		
-		super.setTemperature(temperature);
-	}
+    private String _getToolCode()
+    {
+	return "T" + machine.currentTool().getIndex() + " ";
+    }
 
-	public void readTemperature()
-	{
-		sendCommand(_getToolCode() + "M105");
-		
-		super.readTemperature();
-	}
+    /*************************************
+     *  Motor interface functions
+     *************************************/
+    public void setMotorSpeed(double rpm)
+    {
+	//sendCommand(_getToolCode() + "M108 S" + df.format(rpm));
 
-	/*************************************
-	*  Flood Coolant interface functions
-	*************************************/
-	public void enableFloodCoolant()
-	{
-		sendCommand(_getToolCode() + "M7");
-		
-		super.enableFloodCoolant();
-	}
+	super.setMotorSpeed(rpm);
+    }
 	
-	public void disableFloodCoolant()
-	{
-		sendCommand(_getToolCode() + "M9");
-		
-		super.disableFloodCoolant();
-	}
+    public void enableMotor()
+    {
+	String command = _getToolCode();
 
-	/*************************************
-	*  Mist Coolant interface functions
-	*************************************/
-	public void enableMistCoolant()
-	{
-		sendCommand(_getToolCode() + "M8");
-		
-		super.enableMistCoolant();
-	}
-	
-	public void disableMistCoolant()
-	{
-		sendCommand(_getToolCode() + "M9");
+	if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
+	    command += "M101";
+	else
+	    command += "M102";
 
-		super.disableMistCoolant();
-	}
+	//sendCommand(command);
 
-	/*************************************
-	*  Fan interface functions
-	*************************************/
-	public void enableFan()
-	{
-		sendCommand(_getToolCode() + "M106");
-		
-		super.enableFan();
-	}
+	super.enableMotor();
+    }
 	
-	public void disableFan()
-	{
-		sendCommand(_getToolCode() + "M107");
-		
-		super.disableFan();
-	}
+    public void disableMotor()
+    {
+	//sendCommand(_getToolCode() + "M103");
+
+	super.disableMotor();
+    }
+
+    /*************************************
+     *  Spindle interface functions
+     *************************************/
+    public void setSpindleSpeed(double rpm)
+    {
+	//sendCommand(_getToolCode() + "S" + df.format(rpm));
+
+	super.setSpindleSpeed(rpm);
+    }
 	
-	/*************************************
-	*  Valve interface functions
-	*************************************/
-	public void openValve()
-	{
-		sendCommand(_getToolCode() + "M126");
+    public void enableSpindle()
+    {
+	String command = _getToolCode();
+
+	if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+	    command += "M3";
+	else
+	    command += "M4";
+
+	//sendCommand(command);
 		
-		super.openValve();
-	}
+	super.enableSpindle();
+    }
 	
-	public void closeValve()
-	{
-		sendCommand(_getToolCode() + "M127");
-		
-		super.closeValve();
-	}
+    public void disableSpindle()
+    {
+	//sendCommand(_getToolCode() + "M5");
+
+	super.disableSpindle();
+    }
 	
-	/*************************************
-	*  Collet interface functions
-	*************************************/
-	public void openCollet()
-	{
-		sendCommand(_getToolCode() + "M21");
+    public void readSpindleSpeed()
+    {
+	//sendCommand(_getToolCode() + "M50");
 		
-		super.openCollet();
-	}
+	super.readSpindleSpeed();
+    }
 	
-	public void closeCollet()
-	{
-		sendCommand(_getToolCode() + "M22");
+    /*************************************
+     *  Temperature interface functions
+     *************************************/
+    public void setTemperature(double temperature)
+    {
+	//sendCommand(_getToolCode() + "M104 S" + df.format(temperature));
 		
-		super.closeCollet();
-	}
+	super.setTemperature(temperature);
+    }
+
+    public void readTemperature()
+    {
+	//sendCommand(_getToolCode() + "M105");
+		
+	super.readTemperature();
+    }
+
+    /*************************************
+     *  Flood Coolant interface functions
+     *************************************/
+    public void enableFloodCoolant()
+    {
+	//sendCommand(_getToolCode() + "M7");
+		
+	super.enableFloodCoolant();
+    }
+	
+    public void disableFloodCoolant()
+    {
+	//sendCommand(_getToolCode() + "M9");
+		
+	super.disableFloodCoolant();
+    }
+
+    /*************************************
+     *  Mist Coolant interface functions
+     *************************************/
+    public void enableMistCoolant()
+    {
+	//sendCommand(_getToolCode() + "M8");
+		
+	super.enableMistCoolant();
+    }
+	
+    public void disableMistCoolant()
+    {
+	//sendCommand(_getToolCode() + "M9");
+
+	super.disableMistCoolant();
+    }
+
+    /*************************************
+     *  Fan interface functions
+     *************************************/
+    public void enableFan()
+    {
+	//sendCommand(_getToolCode() + "M106");
+		
+	super.enableFan();
+    }
+	
+    public void disableFan()
+    {
+	//sendCommand(_getToolCode() + "M107");
+		
+	super.disableFan();
+    }
+	
+    /*************************************
+     *  Valve interface functions
+     *************************************/
+    public void openValve()
+    {
+	//sendCommand(_getToolCode() + "M126");
+		
+	super.openValve();
+    }
+	
+    public void closeValve()
+    {
+	//sendCommand(_getToolCode() + "M127");
+		
+	super.closeValve();
+    }
+	
+    /*************************************
+     *  Collet interface functions
+     *************************************/
+    public void openCollet()
+    {
+	//sendCommand(_getToolCode() + "M21");
+		
+	super.openCollet();
+    }
+	
+    public void closeCollet()
+    {
+	//sendCommand(_getToolCode() + "M22");
+		
+	super.closeCollet();
+    }
 	
 }
