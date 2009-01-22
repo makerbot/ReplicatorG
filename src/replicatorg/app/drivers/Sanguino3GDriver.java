@@ -431,6 +431,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
 		System.out.println("Running getversion.");
 		getVersion(1);
+		sendInit();
+		super.initialize();
 	    } catch (Exception e) {
 		    //todo: handle init exceptions here
 	    }
@@ -493,13 +495,13 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	if (serial != null) serial.dispose();
 	serial = null;
     }
-	
+
     /****************************************************
-     *  commands for interfacing with the driver directly
+     *  commands used internally to driver
      ****************************************************/
     public int getVersion(int ourVersion) {
 	PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS,CommandCodes3Axis.GET_VERSION);
-	pb.add16(0xbeef);
+	pb.add16(0x01);
 	PacketResponse pr = runCommand(pb.getPacket());
 	int version = pr.get16();
 	pr.printDebug();
@@ -507,12 +509,27 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	return version;
     }
 
-	
+    public void sendInit() {
+	PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS,CommandCodes3Axis.INIT);
+	PacketResponse pr = runCommand(pb.getPacket());
+	pr.printDebug();
+    }
+    
+    /****************************************************
+     *  commands for interfacing with the driver directly
+     ****************************************************/
+
     public void queuePoint(Point3d p)
     {
 	//String cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z" + df.format(p.z) + " F" + df.format(getCurrentFeedrate());
 		
 	//sendCommand(cmd);
+	PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS,CommandCodes3Axis.GET_VERSION);
+	pb.add16(0x01);
+	PacketResponse pr = runCommand(pb.getPacket());
+	int version = pr.get16();
+	pr.printDebug();
+	System.out.println("Reported version: " + Integer.toHexString(version));
 		
 	super.queuePoint(p);
     }
