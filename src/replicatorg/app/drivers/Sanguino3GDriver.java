@@ -98,12 +98,13 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      */
     protected class IButtonCrc {
 
-	private byte crc = 0;
+	private int crc = 0;
 
 	/**
 	 * Construct a new, initialized object for keeping track of a CRC.
 	 */
 	public IButtonCrc() {
+	    crc = 0;
 	}
 
 	/**
@@ -113,12 +114,12 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	 * @param data a byte of new data to be added to the crc.
 	 */
 	public void update(byte data) {
-	    crc = (byte)(crc ^ data); // i loathe java's promotion rules
+	    crc = (crc ^ data)&0xff; // i loathe java's promotion rules
 	    for (int i=0; i<8; i++) {
 		if ((crc & 0x01) != 0) {
-		    crc = (byte)((crc >>> 1) ^ 0x8c);
+		    crc = ((crc >>> 1) ^ 0x8c)&0xff;
 		} else {
-		    crc = (byte)(crc >>> 1);
+		    crc = (crc >>> 1)&0xff;
 		}
 	    }
 	}
@@ -127,7 +128,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	 * Get the 8-bit crc value.
 	 */
 	public byte getCrc() {
-	    return crc;
+	    return (byte)crc;
 	}
 
 	/**
@@ -250,7 +251,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	 * @return true if the packet is complete and valid; false otherwise.
 	 */
 	public boolean processByte(byte b) {
-	    System.out.println("IN: Processing byte " + Integer.toHexString(b));
+	    System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff));
 	    switch (packetState) {
 	    case PS_START:
 		if (b == START_BYTE) {
@@ -277,6 +278,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		break;
 	    case PS_CRC:
 		targetCrc = b;
+		System.out.println("Target CRC: " + Integer.toHexString( (int)targetCrc&0xff ) +
+				   " - expected CRC: " + Integer.toHexString( (int)crc.getCrc()&0xff ));
 		if (crc.getCrc() != targetCrc) {
 		    throw new java.lang.RuntimeException("CRC mismatch on reply");
 		}
@@ -323,7 +326,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	    System.out.println("Packet response code: "+msg);
 	    System.out.print("Packet payload: ");
 	    for (int i = 1; i < payload.length; i++) {
-		System.out.print(Integer.toHexString(payload[i]) + " ");
+		System.out.print(Integer.toHexString(payload[i]&0xff) + " ");
 	    }
 	    System.out.print("\n");
 	}
@@ -455,14 +458,19 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	    //do the actual send.
 	    serial.write(packet);
 	}
-	System.out.println("OUT:  Target " + Integer.toHexString(packet[2])+ " cmd " + Integer.toHexString(packet[3]) );
+	{ // debug
+	    System.out.print("OUT: ");
+	    for (int i =0; i<packet.length;i++) {
+		System.out.print( Integer.toHexString( (int)packet[i] & 0xff ) );
+		System.out.print( " " );
+	    }
+	    System.out.print( "\n" );
+	}
 	PacketProcessor pp = new PacketProcessor();
 	try {
 	    boolean c = false;
 	    while(!c){
-		System.out.println("getting byte " );
 		int b = serial.input.read();
-		System.out.println("got "+Integer.toHexString(b) );
 		c = pp.processByte((byte)b);
 	    }
 	} catch (java.io.IOException ioe) {
