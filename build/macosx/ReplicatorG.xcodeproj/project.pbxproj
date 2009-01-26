@@ -413,7 +413,7 @@
 		33FFFE810965BD110016AC38 /* howto.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = howto.txt; sourceTree = "<group>"; };
 		33FFFE930965BD110016AC38 /* .cvsignore */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = .cvsignore; sourceTree = "<group>"; };
 		33FFFE940965BD110016AC38 /* ReplicatorG.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = ReplicatorG.xcodeproj; sourceTree = "<group>"; };
-		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		91045E300E3E4D5800BE08F5 /* ReplicatorG.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ReplicatorG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		910908B60E3E25B400B0389E /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = todo.txt; path = ../../todo.txt; sourceTree = SOURCE_ROOT; };
 		916CA3370E3FBC8500146F38 /* machines.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = machines.xml; path = ../../machines.xml; sourceTree = SOURCE_ROOT; };
 		A33729630D224FA700E82412 /* librxtxSerial.jnilib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; name = librxtxSerial.jnilib; path = ../../nativelibs/librxtxSerial.jnilib; sourceTree = "<group>"; };

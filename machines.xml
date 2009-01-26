@@ -18,7 +18,7 @@
 	</machine>
 	<!-- end protected configuration -->
 	<machine>
-		<name>Darwin</name>
+		<name>GCode Interpreter</name>
 		<geometry type="cartesian">
 			<axis id="x" length="300" maxfeedrate="1000" scale="11.4485"/>
 			<axis id="y" length="300" maxfeedrate="1000" scale="11.4485"/>
@@ -60,7 +60,7 @@
 	</machine>
 
 	<machine>
-		<name>S3G</name>
+		<name>Sanguino 3G</name>
 		<geometry type="cartesian">
 			<axis id="x" length="300" maxfeedrate="1000" scale="11.4485"/>
 			<axis id="y" length="300" maxfeedrate="1000" scale="11.4485"/>
