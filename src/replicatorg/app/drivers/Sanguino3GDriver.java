@@ -66,6 +66,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		public final static int ABORT           =   7;
 		public final static int PAUSE           =   8;
 		public final static int PROBE           =   9;
+		public final static int TOOL_QUERY      =  10;
+		
 		public final static int QUEUE_POINT_INC = 128;
 		public final static int QUEUE_POINT_ABS = 129;
 		public final static int SET_POS         = 130;
@@ -74,7 +76,36 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		public final static int DELAY           = 133;
 		public final static int CHANGE_TOOL     = 135;
 		public final static int WAIT_FOR_TOOL   = 136;
+		public final static int TOOL_COMMAND    = 137;
     };
+
+    /**
+     * An enumeration of the available command codes for a tool.
+     */
+    class CommandCodesTool {
+		public final static int GET_VERSION     =   0;
+		public final static int INIT            =   1;
+		public final static int GET_AVAIL_BUF   =   2;
+		public final static int CLEAR_BUF       =   3;
+		public final static int GET_POS         =   4;
+		public final static int GET_RANGE       =   5;
+		public final static int SET_RANGE       =   6;
+		public final static int ABORT           =   7;
+		public final static int PAUSE           =   8;
+		public final static int PROBE           =   9;
+		public final static int TOOL_QUERY      =  10;
+		
+		public final static int QUEUE_POINT_INC = 128;
+		public final static int QUEUE_POINT_ABS = 129;
+		public final static int SET_POS         = 130;
+		public final static int FIND_MINS       = 131;
+		public final static int FIND_MAXS       = 132;
+		public final static int DELAY           = 133;
+		public final static int CHANGE_TOOL     = 135;
+		public final static int WAIT_FOR_TOOL   = 136;
+		public final static int TOOL_COMMAND    = 137;
+    };
+
 
     /** The start byte that opens every packet. */
     private final byte START_BYTE = (byte)0xD5;
@@ -169,7 +200,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		 */
 		PacketBuilder( int target, int command ) {
 		    data[0] = START_BYTE;
-		    add8((byte)target);
+		    //add8((byte)target);  // we do not need to send the target of the command.
 		    add8((byte)command);
 		}
 
@@ -512,7 +543,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     /****************************************************
      *  commands used internally to driver
      ****************************************************/
-    public int getVersion(int ourVersion) {
+    public int getVersion(int ourVersion)
+	{
 		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.GET_VERSION);
 		pb.add16(ourVersion);
 
@@ -590,9 +622,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		int counter = convertTicksToCounter(ticks);
 
 		Point3d steps = machine.mmToSteps(p);
-		pb.add32((int)steps.x);
-		pb.add32((int)steps.y);
-		pb.add32((int)steps.z);
+		pb.add16((int)steps.x);
+		pb.add16((int)steps.y);
+		pb.add16((int)steps.z);
 		pb.add8(prescaler);
 		pb.add16(counter);
 
@@ -647,79 +679,107 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	{
 		byte flags = 0x00;
 		
+		//figure out our fastest feedrate.
+		Point3d maxFeedrates = machine.getMaximumFeedrates();
+		double feedrate = Math.max(maxFeedrates.x, maxFeedrates.y);
+		feedrate = Math.max(maxFeedrates.z, feedrate);
+		
+		Point3d target;
+		
 		if (x)
+		{
 			flags += 1;
+			feedrate = Math.min(feedrate, maxFeedrates.x);
+			target.x = 1; //just to give us feedrate info.
+		}
 		if (y)
+		{
 			flags += 2;
+			feedrate = Math.min(feedrate, maxFeedrates.y);
+			target.y = 1; //just to give us feedrate info.
+		}
 		if (z)
+		{
 			flags += 4;
+			feedrate = Math.min(feedrate, maxFeedrates.z);
+			target.z = 1; //just to give us feedrate info.
+		}
 
-		//calculate max feedrate
 		//calculate ticks
+		long ticks = convertFeedrateToTicks(new Point3d(), target, feedrate);
+
 		//calculate prescaler/counter values
+		int prescaler = convertTicksToPrescaler(ticks);
+		int counter = convertTicksToCounter(ticks);
 		
 		//send it!
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.FIND_MINS);
+		pb.add8(prescaler);
+		pb.add16(counter);
+		pb.add16(0); //TODO: load timeout from prefs.
+		pb.add8(flags);
+
+		PacketResponse pr = runCommand(pb.getPacket());
 	}
 	
     public void delay(long millis)
     {
-		int seconds = Math.round(millis/1000);
-
-		//sendCommand("G4 P" + seconds);
-		
-		//no super call requried.
+		//send it!
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.DELAY);
+		pb.add32(millis);
+		PacketResponse pr = runCommand(pb.getPacket());
     }
 	
     public void openClamp(int clampIndex)
     {
-		//sendCommand("M11 Q" + clampIndex);
-		
+		//TODO: throw some sort of unsupported exception.
 		super.openClamp(clampIndex);
     }
 	
     public void closeClamp(int clampIndex)
     {
-		//sendCommand("M10 Q" + clampIndex);
-		
+		//TODO: throw some sort of unsupported exception.
 		super.closeClamp(clampIndex);
     }
 	
     public void enableDrives()
     {
-		//sendCommand("M17");
-		
+		//TODO: throw some sort of unsupported exception.
 		super.enableDrives();
     }
 	
     public void disableDrives()
     {
-		//sendCommand("M18");
-
+		//TODO: throw some sort of unsupported exception.
 		super.disableDrives();
     }
 	
     public void changeGearRatio(int ratioIndex)
     {
-		//gear ratio codes are M40-M46
-		int code = 40 + ratioIndex;
-		code = Math.max(40, code);
-		code = Math.min(46, code);
-		
-		//sendCommand("M" + code);
-		
+		//TODO: throw some sort of unsupported exception.
 		super.changeGearRatio(ratioIndex);
     }
 	
-    private String _getToolCode()
-    {
-		return "T" + machine.currentTool().getIndex() + " ";
-    }
+	public void selectTool(int toolIndex)
+	{
+		//send it!
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.CHANGE_TOOL);
+		pb.add8(toolIndex);
+		PacketResponse pr = runCommand(pb.getPacket());
+		
+		super.selectTool(toolIndex);
+	}
 
     /*************************************
      *  Motor interface functions
      *************************************/
     public void setMotorSpeed(double rpm)
     {
+		//send it!
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.CHANGE_TOOL);
+		pb.add8(machine.currentTool().getIndex());
+		PacketResponse pr = runCommand(pb.getPacket());
+
 		//sendCommand(_getToolCode() + "M108 S" + df.format(rpm));
 
 		super.setMotorSpeed(rpm);
@@ -896,6 +956,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		
 		return machine.mmToSteps(delta);
 	}
+	
+	/*************************************
+     *  Various timer math functions.
+     *************************************/
 
 	private long convertFeedrateToTicks(Point3d current, Point3d target, double feedrate)
 	{
