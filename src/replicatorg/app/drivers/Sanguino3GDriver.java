@@ -34,6 +34,7 @@ import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
+import replicatorg.app.Base;
 import replicatorg.app.Preferences;
 import replicatorg.app.Serial;
 import replicatorg.app.exceptions.SerialException;
@@ -47,8 +48,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      * the 3g protocol.
      */
     class Target {
-		public final static int THREE_AXIS  = 0;
-		public final static int EXTRUDER    = 1;
+		public final static byte THREE_AXIS  = 0;
+		public final static byte EXTRUDER    = 1;
     };
 
     /**
@@ -82,28 +83,30 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     /**
      * An enumeration of the available command codes for a tool.
      */
-    class CommandCodesTool {
+    class CommandCodesExtruder {
 		public final static int GET_VERSION     =   0;
 		public final static int INIT            =   1;
-		public final static int GET_AVAIL_BUF   =   2;
-		public final static int CLEAR_BUF       =   3;
-		public final static int GET_POS         =   4;
-		public final static int GET_RANGE       =   5;
-		public final static int SET_RANGE       =   6;
-		public final static int ABORT           =   7;
-		public final static int PAUSE           =   8;
-		public final static int PROBE           =   9;
-		public final static int TOOL_QUERY      =  10;
-		
-		public final static int QUEUE_POINT_INC = 128;
-		public final static int QUEUE_POINT_ABS = 129;
-		public final static int SET_POS         = 130;
-		public final static int FIND_MINS       = 131;
-		public final static int FIND_MAXS       = 132;
-		public final static int DELAY           = 133;
-		public final static int CHANGE_TOOL     = 135;
-		public final static int WAIT_FOR_TOOL   = 136;
-		public final static int TOOL_COMMAND    = 137;
+		public final static int GET_TEMPERATURE =   2;
+		public final static int SET_TEMPERATURE =   3;
+		public final static int SET_MOTOR_1_PWM =   4;
+		public final static int SET_MOTOR_2_PWM =   5;
+		public final static int SET_MOTOR_1_RPM =   6;
+		public final static int SET_MOTOR_2_RPM =   7;
+		public final static int SET_MOTOR_1_DIR =   8;
+		public final static int SET_MOTOR_2_DIR =   9;
+		public final static int TOGGLE_MOTOR_1  =  10;
+		public final static int TOGGLE_MOTOR_2  =  11;
+		public final static int TOGGLE_FAN      =  12;
+		public final static int TOGGLE_VALVE    =  13;
+		public final static int SET_SERVO_1_POS =  14;
+		public final static int SET_SERVO_2_POS =  15;
+		public final static int FILAMENT_STATUS =  16;
+		public final static int GET_MOTOR_1_RPM =  17;
+		public final static int GET_MOTOR_2_RPM =  18;
+		public final static int GET_MOTOR_1_PWM =  19;
+		public final static int GET_MOTOR_2_PWM =  20;
+		public final static int ABORT           =  21;
+		public final static int PAUSE           =  22;
     };
 
 
@@ -208,9 +211,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		 * Add an 8-bit value to the end of the packet payload.
 		 * @param v the value to append.
 		 */
-		void add8( byte v ) {
-		    data[idx++] =  v;
-		    crc.update(v);
+		void add8( int v ) {
+		    data[idx++] =  (byte)v;
+		    crc.update((byte)v);
 		}
 
 		/**
@@ -577,8 +580,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		long ticks = convertFeedrateToTicks(getCurrentPosition(), p, getCurrentFeedrate());
 
 		//figure out the axis with the most steps.
+		Point3d steps = getDeltaSteps(getCurrentPosition(), p);
 		int max = Math.max((int)steps.x, (int)steps.y);
-		max = Math.max(max, steps.z);
+		max = Math.max(max, (int)steps.z);
 		
 		//get the ratio of steps to take each segment
 		double xRatio = steps.x / max;
@@ -586,16 +590,16 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		double zRatio = steps.z / max;
 		
 		//how many segments will there be?
-		int segmentCount = Math.ceil(max / 65535);
+		int segmentCount = (int)Math.ceil(max / 65535.0);
 		
 		//within our range?  just do it.
 		if (segmentCount == 1)
-			queueIncrementalPoint(steps, ticks);
+			queueIncrementalPoint(pb, steps, ticks);
 		else
 		{
 			for (int i=0; i<segmentCount; i++)
 			{
-				Point3d segmentSteps;
+				Point3d segmentSteps = new Point3d();
 
 				//TODO: is this accurate?
 				//calculate our line segments
@@ -609,19 +613,20 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				steps.z -= segmentSteps.z;
 
 				//send this segment
-				queueIncrementalPoint(segmentSteps, ticks);
+				queueIncrementalPoint(pb, segmentSteps, ticks);
 			}
 		}
 		
 		super.queuePoint(p);
     }
 
-	private void queueIncrementalPoint(Point3d steps, long ticks)
+	private void queueIncrementalPoint(PacketBuilder pb, Point3d steps, long ticks)
 	{
-		int prescaler = convertTicksToPrescaler(ticks);
+		//figure out our timer values.
+		byte prescaler = convertTicksToPrescaler(ticks);
 		int counter = convertTicksToCounter(ticks);
 
-		Point3d steps = machine.mmToSteps(p);
+		//just add them in now.
 		pb.add16((int)steps.x);
 		pb.add16((int)steps.y);
 		pb.add16((int)steps.z);
@@ -684,7 +689,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		double feedrate = Math.max(maxFeedrates.x, maxFeedrates.y);
 		feedrate = Math.max(maxFeedrates.z, feedrate);
 		
-		Point3d target;
+		Point3d target = new Point3d();
 		
 		if (x)
 		{
@@ -709,7 +714,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		long ticks = convertFeedrateToTicks(new Point3d(), target, feedrate);
 
 		//calculate prescaler/counter values
-		int prescaler = convertTicksToPrescaler(ticks);
+		byte prescaler = convertTicksToPrescaler(ticks);
 		int counter = convertTicksToCounter(ticks);
 		
 		//send it!
@@ -726,7 +731,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     {
 		//send it!
 		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.DELAY);
-		pb.add32(millis);
+		pb.add32((int)millis);
 		PacketResponse pr = runCommand(pb.getPacket());
     }
 	
@@ -764,7 +769,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	{
 		//send it!
 		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.CHANGE_TOOL);
-		pb.add8(toolIndex);
+		pb.add8((byte)toolIndex);
 		PacketResponse pr = runCommand(pb.getPacket());
 		
 		super.selectTool(toolIndex);
@@ -776,32 +781,45 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     public void setMotorSpeed(double rpm)
     {
 		//send it!
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.CHANGE_TOOL);
-		pb.add8(machine.currentTool().getIndex());
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.SET_MOTOR_1_RPM);
+		
+		//TODO: convert RPM into microseconds and then send.
+		
 		PacketResponse pr = runCommand(pb.getPacket());
-
-		//sendCommand(_getToolCode() + "M108 S" + df.format(rpm));
 
 		super.setMotorSpeed(rpm);
     }
 	
     public void enableMotor()
     {
-		String command = _getToolCode();
-
+		//our flag variable starts with motors enabled.
+		byte flags = 1;
+		
+		//bit 1 determines direction...
 		if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
-		    command += "M101";
-		else
-		    command += "M102";
+			flags += 2;
 
-		//sendCommand(command);
-
+		//send it!
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.TOGGLE_MOTOR_1);
+		pb.add8(flags);
+		PacketResponse pr = runCommand(pb.getPacket());
+		
 		super.enableMotor();
     }
 	
     public void disableMotor()
     {
-		//sendCommand(_getToolCode() + "M103");
+		byte flags = 0;
+		
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.TOGGLE_MOTOR_1);
+		pb.add8(flags);
+		PacketResponse pr = runCommand(pb.getPacket());
 
 		super.disableMotor();
     }
@@ -811,35 +829,51 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void setSpindleSpeed(double rpm)
     {
-		//sendCommand(_getToolCode() + "S" + df.format(rpm));
+		//TODO: borrow code from setMotorSpeed()
 
 		super.setSpindleSpeed(rpm);
     }
 	
     public void enableSpindle()
     {
-		String command = _getToolCode();
+		//our flag variable starts with spindles enabled.
+		byte flags = 1;
+		
+		//bit 1 determines direction...
+		if (machine.currentTool().getSpindleSpeed() == ToolModel.MOTOR_CLOCKWISE)
+			flags += 2;
 
-		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
-		    command += "M3";
-		else
-		    command += "M4";
-
-		//sendCommand(command);
+		//send it!
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.TOGGLE_MOTOR_2);
+		pb.add8(flags);
+		PacketResponse pr = runCommand(pb.getPacket());
 		
 		super.enableSpindle();
     }
 	
     public void disableSpindle()
     {
-		//sendCommand(_getToolCode() + "M5");
+		byte flags = 0;
+		
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.TOGGLE_MOTOR_1);
+		pb.add8(flags);
+		PacketResponse pr = runCommand(pb.getPacket());
 
 		super.disableSpindle();
     }
 	
     public void readSpindleSpeed()
     {
-		//sendCommand(_getToolCode() + "M50");
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_QUERY);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.GET_MOTOR_2_RPM);
+		PacketResponse pr = runCommand(pb.getPacket());
+		
+		//TODO: get microsecond value and convert to RPM.
 		
 		super.readSpindleSpeed();
     }
@@ -849,14 +883,27 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void setTemperature(double temperature)
     {
-		//sendCommand(_getToolCode() + "M104 S" + df.format(temperature));
+		//constrain our temperature.
+		int temp = (int)Math.round(temperature);
+		temp = Math.min(temp, 65535);
+		
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.SET_TEMPERATURE);
+		pb.add16(temp);
+		PacketResponse pr = runCommand(pb.getPacket());		
 		
 		super.setTemperature(temperature);
     }
 
     public void readTemperature()
     {
-		//sendCommand(_getToolCode() + "M105");
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_QUERY);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.GET_TEMPERATURE);
+		PacketResponse pr = runCommand(pb.getPacket());		
+
+		//TODO: get value and update our model with it, etc.
 		
 		super.readTemperature();
     }
@@ -866,14 +913,14 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void enableFloodCoolant()
     {
-		//sendCommand(_getToolCode() + "M7");
+		//TODO: throw unsupported exception
 		
 		super.enableFloodCoolant();
     }
 	
     public void disableFloodCoolant()
     {
-		//sendCommand(_getToolCode() + "M9");
+		//TODO: throw unsupported exception
 		
 		super.disableFloodCoolant();
     }
@@ -883,14 +930,14 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void enableMistCoolant()
     {
-		//sendCommand(_getToolCode() + "M8");
+		//TODO: throw unsupported exception
 		
 		super.enableMistCoolant();
     }
 	
     public void disableMistCoolant()
     {
-		//sendCommand(_getToolCode() + "M9");
+		//TODO: throw unsupported exception
 
 		super.disableMistCoolant();
     }
@@ -900,14 +947,22 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void enableFan()
     {
-		//sendCommand(_getToolCode() + "M106");
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.TOGGLE_FAN);
+		pb.add16(1);
+		PacketResponse pr = runCommand(pb.getPacket());		
 		
 		super.enableFan();
     }
 	
     public void disableFan()
     {
-		//sendCommand(_getToolCode() + "M107");
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.TOGGLE_FAN);
+		pb.add16(0);
+		PacketResponse pr = runCommand(pb.getPacket());		
 		
 		super.disableFan();
     }
@@ -917,14 +972,22 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void openValve()
     {
-		//sendCommand(_getToolCode() + "M126");
-		
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.TOGGLE_VALVE);
+		pb.add16(1);
+		PacketResponse pr = runCommand(pb.getPacket());		
+
 		super.openValve();
     }
 	
     public void closeValve()
     {
-		//sendCommand(_getToolCode() + "M127");
+		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesExtruder.TOGGLE_VALVE);
+		pb.add16(0);
+		PacketResponse pr = runCommand(pb.getPacket());		
 		
 		super.closeValve();
     }
@@ -934,19 +997,23 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void openCollet()
     {
-		//sendCommand(_getToolCode() + "M21");
+		//TODO: throw unsupported exception.
 		
 		super.openCollet();
     }
 	
     public void closeCollet()
     {
-		//sendCommand(_getToolCode() + "M22");
+		//TODO: throw unsupported exception.
 		
 		super.closeCollet();
     }
 
-	private long getDeltaSteps(Point3d current, Point3d target)
+	/*************************************
+     *  Various timer and math functions.
+     *************************************/
+
+	private Point3d getDeltaSteps(Point3d current, Point3d target)
 	{
 		//calculate our deltas.
 		Point3d delta = new Point3d();
@@ -957,10 +1024,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		return machine.mmToSteps(delta);
 	}
 	
-	/*************************************
-     *  Various timer math functions.
-     *************************************/
-
 	private long convertFeedrateToTicks(Point3d current, Point3d target, double feedrate)
 	{
 		Point3d deltaSteps = getDeltaSteps(current, target);
@@ -997,7 +1060,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		// distance / feedrate * 960,000,000.0 = move duration in ticks
 		// move duration / master_steps = time between steps for master axis.
 
-		return Math.floor(((distance * 960000000.0) / feedrate) / master_steps);
+		return (long)Math.floor(((distance * 960000000.0) / feedrate) / master_steps);
 	}
 	
 	private byte convertTicksToPrescaler(long ticks)

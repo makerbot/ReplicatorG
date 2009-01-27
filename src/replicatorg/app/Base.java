@@ -84,8 +84,8 @@ import com.ice.jni.registry.RegistryKey;
  */
 public class Base
 {
-	static final int VERSION = 2;
-	static final String VERSION_NAME = "0002";
+	public static final int VERSION = 2;
+	public static final String VERSION_NAME = "0002";
 	
 	//our machine object.
 	private static MachineController machine;
