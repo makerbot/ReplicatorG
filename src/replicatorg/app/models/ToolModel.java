@@ -45,11 +45,17 @@ public class ToolModel
 	protected boolean motorEnabled;
 	protected int motorDirection;
 	protected double motorSpeed;
+	protected double motorSpeedReading;
+	protected boolean motorEncoder;
+	protected int motorEncoderPPR;
 
 	//spindle stuff
 	protected boolean spindleEnabled;
 	protected int spindleDirection;
 	protected double spindleSpeed;
+	protected double spindleSpeedReading;
+	protected boolean spindleEncoder;
+	protected int spindleEncoderPPR;
 
 	//temperature variables
 	protected double currentTemperature;
@@ -134,13 +140,35 @@ public class ToolModel
 		n = XML.getAttributeValue(xml, "motor");
 		try {
 			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+			{
 				hasMotor = true;
+				
+				n = XML.getAttributeValue(xml, "motor_encoder_ppr");
+				try{
+					if (Integer.parseInt(n) > 0)
+					{
+						motorEncoder = true;
+						motorEncoderPPR = Integer.parseInt(n);
+					}
+				} catch (Exception e) {} // ignore parse errors.
+			}
 		} catch (Exception e) {} //ignore boolean/integer parse errors
 
 		n = XML.getAttributeValue(xml, "spindle");
 		try {
 			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+			{
 				hasSpindle = true;
+				
+				n = XML.getAttributeValue(xml, "motor_encoder_ppr");
+				try{
+					if (Integer.parseInt(n) > 0)
+					{
+						motorEncoder = true;
+						motorEncoderPPR = Integer.parseInt(n);
+					}
+				} catch (Exception e) {} // ignore parse errors.
+			}
 		} catch (Exception e) {} //ignore boolean/integer parse errors
 
 		//flood coolant
@@ -251,6 +279,16 @@ public class ToolModel
 		return motorSpeed;
 	}
 	
+	public void setMotorSpeedReading(double rpm)
+	{
+		motorSpeedReading = rpm;
+	}
+	
+	public double getMotorSpeedReading()
+	{
+		return motorSpeedReading;
+	}
+	
 	public void enableMotor()
 	{
 		motorEnabled = true;
@@ -292,6 +330,16 @@ public class ToolModel
 	public double getSpindleSpeed()
 	{
 		return spindleSpeed;
+	}
+	
+	public void setSpindleSpeedReading(double rpm)
+	{
+		motorSpeedReading = rpm;
+	}
+	
+	public double getSpindleSpeedReading()
+	{
+		return motorSpeedReading;
 	}
 	
 	public void enableSpindle()

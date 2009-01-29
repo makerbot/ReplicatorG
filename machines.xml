@@ -9,7 +9,7 @@
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
-			<tool name="Generic Extruder" type="extruder" material="abs" motor="true" floodcoolant="true" mistcoolant="true" fan="true" valve="true" collet="true" heater="true"/>
+			<tool name="Generic Extruder" type="extruder" material="abs" motor="true" floodcoolant="true" mistcoolant="true" fan="true" valve="true" collet="true" heater="true" motor_encoder_ppr="512" spindle_encoder_ppr="512"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="null"> <!-- use a fake driver -->

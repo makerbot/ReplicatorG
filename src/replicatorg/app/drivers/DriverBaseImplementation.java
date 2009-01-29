@@ -392,9 +392,11 @@ public class DriverBaseImplementation implements Driver
 	
 	public double getMotorSpeed()
 	{
-		return machine.currentTool().getMotorSpeed();
+		readMotorSpeed();
+		
+		return machine.currentTool().getMotorSpeedReading();
 	}
-
+	
 	/*************************************
 	*  Spindle interface functions
 	*************************************/
@@ -424,8 +426,10 @@ public class DriverBaseImplementation implements Driver
 	}
 	
 	public double getSpindleSpeed()
-	{ 
-		return machine.currentTool().getSpindleSpeed();
+	{
+		readMotorSpeed();
+		
+		return machine.currentTool().getSpindleSpeedReading();
 	}
 	
 	/*************************************
