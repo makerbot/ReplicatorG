@@ -44,15 +44,6 @@ import replicatorg.app.tools.XML;
 public class Sanguino3GDriver extends DriverBaseImplementation
 {
     /**
-     * An enumeration describing the various command targets addressable by
-     * the 3g protocol.
-     */
-    class Target {
-		public final static byte THREE_AXIS  = 0;
-		public final static byte EXTRUDER    = 1;
-    };
-
-    /**
      * An enumeration of the available command codes for the three-axis
      * CNC stage.
      */
@@ -201,9 +192,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		 * @param target the target identifier for this packet.
 		 * @param command the command identifier for this packet.
 		 */
-		PacketBuilder( int target, int command ) {
+		PacketBuilder(int command)
+		{
 		    data[0] = START_BYTE;
-		    //add8((byte)target);  // we do not need to send the target of the command.
 		    add8((byte)command);
 		}
 
@@ -548,7 +539,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      ****************************************************/
     public int getVersion(int ourVersion)
 	{
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.GET_VERSION);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.GET_VERSION);
 		pb.add16(ourVersion);
 
 		PacketResponse pr = runCommand(pb.getPacket());
@@ -562,7 +553,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
     public void sendInit()
 	{
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.INIT);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.INIT);
 		PacketResponse pr = runCommand(pb.getPacket());
 		pr.printDebug();
     }
@@ -574,7 +565,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     public void queuePoint(Point3d p)
     {
 		//sendCommand(cmd);
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.QUEUE_POINT_INC);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.QUEUE_POINT_INC);
 
 		//figure out our feedrate variables.
 		long ticks = convertFeedrateToTicks(getCurrentPosition(), p, getCurrentFeedrate());
@@ -638,7 +629,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void setCurrentPosition(Point3d p)
     {
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.SET_POS);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.SET_POS);
 
 		Point3d steps = machine.mmToSteps(p);
 		pb.add32((int)steps.x);
@@ -718,7 +709,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		int counter = convertTicksToCounter(ticks);
 		
 		//send it!
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.FIND_MINS);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.FIND_MINS);
 		pb.add8(prescaler);
 		pb.add16(counter);
 		pb.add16(0); //TODO: load timeout from prefs.
@@ -730,7 +721,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     public void delay(long millis)
     {
 		//send it!
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.DELAY);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.DELAY);
 		pb.add32((int)millis);
 		PacketResponse pr = runCommand(pb.getPacket());
     }
@@ -768,7 +759,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	public void selectTool(int toolIndex)
 	{
 		//send it!
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.CHANGE_TOOL);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.CHANGE_TOOL);
 		pb.add8((byte)toolIndex);
 		PacketResponse pr = runCommand(pb.getPacket());
 		
@@ -781,7 +772,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     public void setMotorSpeed(double rpm)
     {
 		//send it!
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.SET_MOTOR_1_RPM);
 		
@@ -802,7 +793,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 			flags += 2;
 
 		//send it!
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.TOGGLE_MOTOR_1);
 		pb.add8(flags);
@@ -815,7 +806,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     {
 		byte flags = 0;
 		
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.TOGGLE_MOTOR_1);
 		pb.add8(flags);
@@ -844,7 +835,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 			flags += 2;
 
 		//send it!
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.TOGGLE_MOTOR_2);
 		pb.add8(flags);
@@ -857,7 +848,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     {
 		byte flags = 0;
 		
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.TOGGLE_MOTOR_1);
 		pb.add8(flags);
@@ -868,7 +859,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void readSpindleSpeed()
     {
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_QUERY);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_QUERY);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.GET_MOTOR_2_RPM);
 		PacketResponse pr = runCommand(pb.getPacket());
@@ -887,7 +878,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		int temp = (int)Math.round(temperature);
 		temp = Math.min(temp, 65535);
 		
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.SET_TEMPERATURE);
 		pb.add16(temp);
@@ -898,7 +889,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
     public void readTemperature()
     {
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_QUERY);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_QUERY);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.GET_TEMPERATURE);
 		PacketResponse pr = runCommand(pb.getPacket());		
@@ -947,7 +938,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void enableFan()
     {
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.TOGGLE_FAN);
 		pb.add16(1);
@@ -958,7 +949,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void disableFan()
     {
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.TOGGLE_FAN);
 		pb.add16(0);
@@ -972,7 +963,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void openValve()
     {
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.TOGGLE_VALVE);
 		pb.add16(1);
@@ -983,7 +974,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void closeValve()
     {
-		PacketBuilder pb = new PacketBuilder(Target.THREE_AXIS, CommandCodes3Axis.TOOL_COMMAND);
+		PacketBuilder pb = new PacketBuilder(CommandCodes3Axis.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesExtruder.TOGGLE_VALVE);
 		pb.add16(0);
