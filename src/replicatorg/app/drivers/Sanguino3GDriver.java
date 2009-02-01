@@ -66,9 +66,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		public final static int FIND_MINS       = 131;
 		public final static int FIND_MAXS       = 132;
 		public final static int DELAY           = 133;
-		public final static int CHANGE_TOOL     = 135;
-		public final static int WAIT_FOR_TOOL   = 136;
-		public final static int TOOL_COMMAND    = 137;
+		public final static int CHANGE_TOOL     = 134;
+		public final static int WAIT_FOR_TOOL   = 135;
+		public final static int TOOL_COMMAND    = 136;
     };
 
     /**
@@ -106,11 +106,12 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
     /** The response codes at the start of every response packet. */
     class ResponseCode {
-		final static int GENERIC_ERROR   =0;
-		final static int OK              =1;
-		final static int BUFFER_OVERFLOW =2;
-		final static int CRC_MISMATCH    =3;
-		final static int QUERY_OVERFLOW  =4;
+		final static int GENERIC_ERROR   = 0;
+		final static int OK              = 1;
+		final static int BUFFER_OVERFLOW = 2;
+		final static int CRC_MISMATCH    = 3;
+		final static int QUERY_OVERFLOW  = 4;
+		final static int UNSUPPORTED     = 5;
     };
 
     /**
@@ -194,7 +195,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		 */
 		PacketBuilder(int command)
 		{
+			idx = 2;
 		    data[0] = START_BYTE;
+			//data[1] = length;  // just to avoid confusion
 		    add8((byte)command);
 		}
 
@@ -356,8 +359,12 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				case ResponseCode.QUERY_OVERFLOW:
 					msg = "Query overflow";
 					break;
+					
+				case ResponseCode.UNSUPPORTED:
+					msg = "Unsupported command";
+					break;
 		    }
-		    System.out.println("Packet response code: "+msg);
+		    System.out.println("Packet response code: " + msg);
 		    System.out.print("Packet payload: ");
 		    for (int i = 1; i < payload.length; i++) {
 				System.out.print(Integer.toHexString(payload[i]&0xff) + " ");
@@ -779,6 +786,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.SET_MOTOR_1_RPM);
+		pb.add8((byte)4); //length of payload.
 		pb.add32(microseconds);
 		PacketResponse pr = runCommand(pb.getPacket());
 
@@ -798,6 +806,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_MOTOR_1);
+		pb.add8((byte)1); //payload length
 		pb.add8(flags);
 		PacketResponse pr = runCommand(pb.getPacket());
 		
@@ -811,6 +820,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_MOTOR_1);
+		pb.add8((byte)1); //payload length
 		pb.add8(flags);
 		PacketResponse pr = runCommand(pb.getPacket());
 
@@ -830,6 +840,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.SET_MOTOR_2_RPM);
+		pb.add8((byte)4); //payload length
 		pb.add32(microseconds);
 		PacketResponse pr = runCommand(pb.getPacket());
 
@@ -849,6 +860,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_MOTOR_2);
+		pb.add8((byte)1); //payload length
 		pb.add8(flags);
 		PacketResponse pr = runCommand(pb.getPacket());
 		
@@ -862,6 +874,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_MOTOR_1);
+		pb.add8((byte)1); //payload length
 		pb.add8(flags);
 		PacketResponse pr = runCommand(pb.getPacket());
 
@@ -892,6 +905,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.SET_TEMPERATURE);
+		pb.add8((byte)2); //payload length
 		pb.add16(temp);
 		PacketResponse pr = runCommand(pb.getPacket());		
 		
@@ -952,7 +966,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_FAN);
-		pb.add16(1);
+		pb.add8((byte)1); //payload length
+		pb.add8((byte)1); //enable
 		PacketResponse pr = runCommand(pb.getPacket());		
 		
 		super.enableFan();
@@ -963,7 +978,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_FAN);
-		pb.add16(0);
+		pb.add8((byte)1); //payload length
+		pb.add8((byte)0); //disable
 		PacketResponse pr = runCommand(pb.getPacket());		
 		
 		super.disableFan();
@@ -977,7 +993,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_VALVE);
-		pb.add16(1);
+		pb.add8((byte)1); //payload length
+		pb.add8((byte)1); //enable
 		PacketResponse pr = runCommand(pb.getPacket());		
 
 		super.openValve();
@@ -988,7 +1005,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_VALVE);
-		pb.add16(0);
+		pb.add8((byte)1); //payload length
+		pb.add8((byte)0); //disable
 		PacketResponse pr = runCommand(pb.getPacket());		
 		
 		super.closeValve();
