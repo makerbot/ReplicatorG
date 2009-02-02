@@ -1,3 +1,10 @@
+0003 ReplicatorG
+
+* fixed various bugs with serial port handling
+* fixed various bugs with threading, etc.
+* created RepRap3GDriver
+* added support for PWM/RPM motor speeds
+
 0002 ReplicatorG
 
 * add units to simulation window

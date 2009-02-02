@@ -44,17 +44,21 @@ public class ToolModel
 	//motor stuff
 	protected boolean motorEnabled;
 	protected int motorDirection;
-	protected double motorSpeed;
-	protected double motorSpeedReading;
-	protected boolean motorEncoder;
+	protected double motorSpeedRPM;
+	protected int motorSpeedPWM;
+	protected double motorSpeedReadingRPM;
+	protected int motorSpeedReadingPWM;
+	protected boolean motorHasEncoder;
 	protected int motorEncoderPPR;
 
 	//spindle stuff
 	protected boolean spindleEnabled;
 	protected int spindleDirection;
-	protected double spindleSpeed;
-	protected double spindleSpeedReading;
-	protected boolean spindleEncoder;
+	protected double spindleSpeedRPM;
+	protected int spindleSpeedPWM;
+	protected double spindleSpeedReadingRPM;
+	protected int spindleSpeedReadingPWM;
+	protected boolean spindleHasEncoder;
 	protected int spindleEncoderPPR;
 
 	//temperature variables
@@ -147,7 +151,7 @@ public class ToolModel
 				try{
 					if (Integer.parseInt(n) > 0)
 					{
-						motorEncoder = true;
+						motorHasEncoder = true;
 						motorEncoderPPR = Integer.parseInt(n);
 					}
 				} catch (Exception e) {} // ignore parse errors.
@@ -164,7 +168,7 @@ public class ToolModel
 				try{
 					if (Integer.parseInt(n) > 0)
 					{
-						motorEncoder = true;
+						motorHasEncoder = true;
 						motorEncoderPPR = Integer.parseInt(n);
 					}
 				} catch (Exception e) {} // ignore parse errors.
@@ -269,24 +273,44 @@ public class ToolModel
 		return motorDirection;
 	}
 	
-	public void setMotorSpeed(double rpm)
+	public void setMotorSpeedRPM(double rpm)
 	{
-		motorSpeed = rpm;
+		motorSpeedRPM = rpm;
+	}
+
+	public void setMotorSpeedPWM(int pwm)
+	{
+		motorSpeedPWM = pwm;
 	}
 	
-	public double getMotorSpeed()
+	public double getMotorSpeedRPM()
 	{
-		return motorSpeed;
+		return motorSpeedRPM;
+	}
+
+	public int getMotorSpeedPWM()
+	{
+		return motorSpeedPWM;
 	}
 	
-	public void setMotorSpeedReading(double rpm)
+	public void setMotorSpeedReadingRPM(double rpm)
 	{
-		motorSpeedReading = rpm;
+		motorSpeedReadingRPM = rpm;
 	}
 	
-	public double getMotorSpeedReading()
+	public void setMotorSpeedReadingPWM(int pwm)
 	{
-		return motorSpeedReading;
+		motorSpeedReadingPWM = pwm;
+	}
+	
+	public double getMotorSpeedReadingRPM()
+	{
+		return motorSpeedReadingRPM;
+	}
+
+	public int getMotorSpeedReadingPWM()
+	{
+		return motorSpeedReadingPWM;
 	}
 	
 	public void enableMotor()
@@ -322,24 +346,44 @@ public class ToolModel
 		return spindleDirection;
 	}
 	
-	public void setSpindleSpeed(double rpm)
+	public void setSpindleSpeedRPM(double rpm)
 	{
-		spindleSpeed = rpm;
+		spindleSpeedRPM = rpm;
+	}
+
+	public void setSpindleSpeedPWM(int pwm)
+	{
+		spindleSpeedPWM = pwm;
 	}
 	
-	public double getSpindleSpeed()
+	public double getSpindleSpeedRPM()
 	{
-		return spindleSpeed;
+		return spindleSpeedRPM;
+	}
+
+	public int getSpindleSpeedPWM()
+	{
+		return spindleSpeedPWM;
 	}
 	
-	public void setSpindleSpeedReading(double rpm)
+	public void setSpindleSpeedReadingRPM(double rpm)
 	{
-		motorSpeedReading = rpm;
+		spindleSpeedReadingRPM = rpm;
 	}
 	
-	public double getSpindleSpeedReading()
+	public void setSpindleSpeedReadingPWM(int pwm)
 	{
-		return motorSpeedReading;
+		spindleSpeedReadingPWM = pwm;
+	}
+	
+	public double getSpindleSpeedReadingRPM()
+	{
+		return spindleSpeedReadingRPM;
+	}
+
+	public int getSpindleSpeedReadingPWM()
+	{
+		return spindleSpeedReadingPWM;
 	}
 	
 	public void enableSpindle()

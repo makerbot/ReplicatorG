@@ -370,9 +370,14 @@ public class DriverBaseImplementation implements Driver
 		machine.currentTool().setMotorDirection(dir);
 	}
 	
-	public void setMotorSpeed(double rpm)
+	public void setMotorRPM(double rpm)
 	{
-		machine.currentTool().setMotorSpeed(rpm);
+		machine.currentTool().setMotorSpeedRPM(rpm);
+	}
+
+	public void setMotorSpeedPWM(int pwm)
+	{
+		machine.currentTool().setMotorSpeedPWM(pwm);
 	}
 	
 	public void enableMotor()
@@ -385,17 +390,16 @@ public class DriverBaseImplementation implements Driver
 		machine.currentTool().disableMotor();
 	}
 	
-	public void readMotorSpeed()
+	public double getMotorRPM()
 	{
-		
+		return machine.currentTool().getMotorSpeedReadingRPM();
 	}
-	
-	public double getMotorSpeed()
+
+	public int getMotorSpeedPWM()
 	{
-		readMotorSpeed();
-		
-		return machine.currentTool().getMotorSpeedReading();
+		return machine.currentTool().getMotorSpeedReadingPWM();
 	}
+
 	
 	/*************************************
 	*  Spindle interface functions
@@ -405,9 +409,14 @@ public class DriverBaseImplementation implements Driver
 		machine.currentTool().setSpindleDirection(dir);
 	}
 
-	public void setSpindleSpeed(double rpm)
+	public void setSpindleRPM(double rpm)
 	{
-		machine.currentTool().setSpindleSpeed(rpm);
+		machine.currentTool().setSpindleSpeedRPM(rpm);
+	}
+
+	public void setSpindleSpeedPWM(int pwm)
+	{
+		machine.currentTool().setSpindleSpeedPWM(pwm);
 	}
 	
 	public void enableSpindle()
@@ -420,16 +429,14 @@ public class DriverBaseImplementation implements Driver
 		machine.currentTool().disableSpindle();
 	}
 	
-	public void readSpindleSpeed()
+	public double getSpindleRPM()
 	{
-		
+		return machine.currentTool().getSpindleSpeedReadingRPM();
 	}
-	
-	public double getSpindleSpeed()
+
+	public int getSpindleSpeedPWM()
 	{
-		readMotorSpeed();
-		
-		return machine.currentTool().getSpindleSpeedReading();
+		return machine.currentTool().getSpindleSpeedReadingPWM();
 	}
 	
 	/*************************************

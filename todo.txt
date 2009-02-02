@@ -1,24 +1,23 @@
 0003 ReplicatorG
 
+* fix tick lines in simulator window.
 * windows not using proper com## port from preferences.
-* get auto-formatting working
-* add support for slice/dice plugins (skeinforge?  reprap?)
 * Have two buttons for each axis (fast and slow movement)
-* re-add 'gcode' console.
-* start work on next generation driver for arduino / sanguino w/ point queueing, etc.
-* experiment with SNAP driver?
 * add direction lines to simulation lines
 * While holding a button -> continuous movement (a bit cumbersome to implement perhaps)
 * Add a "Reference" button (home to reference position)
 * For reference and home functions; have an option for ignoring the Z axis
 * Support for cancelling a temperature or goto home job (this is also a bit hard since these are blocking on the Arduino; would be cool to have a way of doing this in the firmware)
 * add variable line width to 2D simulation based on extruder on/off state.
-* refactor ControlPanel to not be so gigantic when creating control panel
 * add time elapsed / total time to build window
 * add temperature, etc. to build window, especially important while heating.
 
 0004 ReplicatorG
 
+* get auto-formatting working
+* re-add 'gcode' console.
+* refactor ControlPanel to not be so gigantic when creating control panel
+* add support for slice/dice plugins (skeinforge?  reprap?)
 * add support for adding STL to sketch (for slicing)
 * add STL 3D preview
 * add simulation 3D preview (with 2D option as well)

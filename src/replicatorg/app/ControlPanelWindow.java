@@ -844,7 +844,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			}
 			else if (name.equals("motor-speed"))
 			{
-				driver.setMotorSpeed(Double.parseDouble(source.getText()));
+				driver.setMotorRPM(Double.parseDouble(source.getText()));
 			}
 			else if (name.equals("xy-feedrate-value"))
 			{

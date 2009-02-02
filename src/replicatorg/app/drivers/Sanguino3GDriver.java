@@ -776,7 +776,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     /*************************************
      *  Motor interface functions
      *************************************/
-    public void setMotorSpeed(double rpm)
+    public void setMotorRPM(double rpm)
     {
 		//convert RPM into microseconds and then send.
 		long microseconds = (int)Math.round(60 * 1000000 / rpm); //no unsigned ints?!?
@@ -790,7 +790,20 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add32(microseconds);
 		PacketResponse pr = runCommand(pb.getPacket());
 
-		super.setMotorSpeed(rpm);
+		super.setMotorRPM(rpm);
+    }
+
+    public void setMotorSpeedPWM(int pwm)
+    {
+		//send it!
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesSlave.SET_MOTOR_1_PWM);
+		pb.add8((byte)1); //length of payload.
+		pb.add8((byte)pwm);
+		PacketResponse pr = runCommand(pb.getPacket());
+
+		super.setMotorSpeedPWM(pwm);
     }
 	
     public void enableMotor()
@@ -827,10 +840,42 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		super.disableMotor();
     }
 
+	public int getMotorSpeedPWM()
+	{
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_QUERY);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesSlave.GET_MOTOR_1_PWM);
+		PacketResponse pr = runCommand(pb.getPacket());
+
+		//get it
+		int pwm = pr.get8();
+		
+		//set it.
+		machine.currentTool().setMotorSpeedReadingPWM(pwm);
+		
+		return pwm;
+	}
+
+    public double getMotorSpeedRPM()
+    {
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_QUERY);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesSlave.GET_MOTOR_1_RPM);
+		PacketResponse pr = runCommand(pb.getPacket());
+		
+		//convert back to RPM
+		double rpm = (60.0 * 1000000 / (double)pr.get32());
+		
+		//set it.
+		machine.currentTool().setMotorSpeedReadingRPM(rpm);
+		
+		return rpm;
+    }
+
     /*************************************
      *  Spindle interface functions
      *************************************/
-    public void setSpindleSpeed(double rpm)
+    public void setSpindleRPM(double rpm)
     {
 		//convert RPM into microseconds and then send.
 		long microseconds = (int)Math.round(60 * 1000000 / rpm); //no unsigned ints?!?
@@ -844,7 +889,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add32(microseconds);
 		PacketResponse pr = runCommand(pb.getPacket());
 
-		super.setSpindleSpeed(rpm);
+		super.setSpindleRPM(rpm);
     }
 	
     public void enableSpindle()
@@ -853,7 +898,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		byte flags = 1;
 		
 		//bit 1 determines direction...
-		if (machine.currentTool().getSpindleSpeed() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
 			flags += 2;
 
 		//send it!
@@ -881,17 +926,38 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		super.disableSpindle();
     }
 	
-    public void readSpindleSpeed()
+    public double getSpindleSpeedRPM()
     {
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_QUERY);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.GET_MOTOR_2_RPM);
 		PacketResponse pr = runCommand(pb.getPacket());
 		
-		//TODO: get microsecond value and convert to RPM.
+		//convert back to RPM
+		double rpm = (60.0 * 1000000 / (double)pr.get32());
 		
-		super.readSpindleSpeed();
+		//set it.
+		machine.currentTool().setSpindleSpeedReadingRPM(rpm);
+		
+		return rpm;
     }
+
+	public int getSpindleSpeedPWM()
+	{
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_QUERY);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesSlave.GET_MOTOR_2_PWM);
+		PacketResponse pr = runCommand(pb.getPacket());
+
+		//get it
+		int pwm = pr.get8();
+		
+		//set it.
+		machine.currentTool().setSpindleSpeedReadingPWM(pwm);
+		
+		return pwm;
+	}
+
 	
     /*************************************
      *  Temperature interface functions

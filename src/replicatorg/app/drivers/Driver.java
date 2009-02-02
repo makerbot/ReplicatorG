@@ -158,21 +158,23 @@ public interface Driver
 	*  Motor interface functions
 	*************************************/
  	public void setMotorDirection(int dir);
-	public void setMotorSpeed(double rpm);
+	public void setMotorRPM(double rpm);
+	public void setMotorSpeedPWM(int pwm);
+	public double getMotorRPM();
+	public int getMotorSpeedPWM();
 	public void enableMotor();
 	public void disableMotor();
-	public void readMotorSpeed();
-	public double getMotorSpeed();
 
 	/*************************************
 	*  Spindle interface functions
 	*************************************/
+	public void setSpindleRPM(double rpm);
+	public void setSpindleSpeedPWM(int pwm);
 	public void setSpindleDirection(int dir);
-	public void setSpindleSpeed(double rpm);
+	public double getSpindleRPM();
+	public int getSpindleSpeedPWM();
 	public void enableSpindle();
 	public void disableSpindle();
-	public void readSpindleSpeed();
-	public double getSpindleSpeed();
 	
 	/*************************************
 	*  Temperature interface functions

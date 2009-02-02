@@ -428,11 +428,18 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	/*************************************
 	*  Motor interface functions
 	*************************************/
-	public void setMotorSpeed(double rpm)
+	public void setMotorRPM(double rpm)
 	{
-		sendCommand(_getToolCode() + "M108 S" + df.format(rpm));
+		sendCommand(_getToolCode() + "M108 R" + df.format(rpm));
 
-		super.setMotorSpeed(rpm);
+		super.setMotorRPM(rpm);
+	}
+
+	public void setMotorSpeedPWM(int pwm)
+	{
+		sendCommand(_getToolCode() + "M108 S" + df.format(pwm));
+
+		super.setMotorSpeedPWM(pwm);
 	}
 	
 	public void enableMotor()
@@ -459,11 +466,11 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	/*************************************
 	*  Spindle interface functions
 	*************************************/
-	public void setSpindleSpeed(double rpm)
+	public void setSpindleRPM(double rpm)
 	{
 		sendCommand(_getToolCode() + "S" + df.format(rpm));
 
-		super.setSpindleSpeed(rpm);
+		super.setSpindleRPM(rpm);
 	}
 	
 	public void enableSpindle()
@@ -485,13 +492,6 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 		sendCommand(_getToolCode() + "M5");
 
 		super.disableSpindle();
-	}
-	
-	public void readSpindleSpeed()
-	{
-		sendCommand(_getToolCode() + "M50");
-		
-		super.readSpindleSpeed();
 	}
 	
 	/*************************************

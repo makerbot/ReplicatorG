@@ -132,7 +132,6 @@ public class GCodeParser
 		
 		//init our offset
 		currentOffset = new Point3d();
-		
 	}
 	
 	/**
@@ -286,10 +285,11 @@ public class GCodeParser
 		// Select our tool?
 		if (hasCode("T"))
 			driver.selectTool((int)getCodeValue("T"));
-			
+		
+		//TODO: is this the proper way?	
 		// Set spindle speed?
-		if (hasCode("S"))
-			driver.setSpindleSpeed((int)getCodeValue("S"));
+		//if (hasCode("S"))
+		//	driver.setSpindleRPM(getCodeValue("S"));
 			
 		//execute our other codes
 		executeMCodes();
@@ -425,7 +425,7 @@ public class GCodeParser
 				
 				//read spindle speed
 				case 50:
-					driver.readSpindleSpeed();
+					driver.getSpindleRPM();
 					
 				//subroutine functions... will implement later
 				//case 97: jump
@@ -472,7 +472,10 @@ public class GCodeParser
 
 				//set max extruder speed, RPM
 				case 108:
-					driver.setMotorSpeed(getCodeValue("S"));
+					if (hasCode("S"))
+						driver.setMotorSpeedPWM((int)Math.round(getCodeValue("S")));
+					else if (hasCode("R"))
+						driver.setMotorRPM(getCodeValue("R"));
 					break;
 				
 				//valve open
@@ -813,7 +816,7 @@ public class GCodeParser
 
 				//spindle speed rate
 				case 97:
-					driver.setSpindleSpeed((int)getCodeValue("S"));
+					driver.setSpindleRPM((int)getCodeValue("S"));
 					break;
 				
 				//error, error!
