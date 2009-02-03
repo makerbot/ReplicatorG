@@ -644,6 +644,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
     public void queuePoint(Point3d p)
     {
+		if (debugLevel >= 1)
+			System.out.println("Queued point " + p);
+
 		//sendCommand(cmd);
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.QUEUE_POINT_INC);
 
@@ -661,7 +664,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		double zRatio = steps.z / max;
 		
 		//how many segments will there be?
-		int segmentCount = (int)Math.ceil(max / 65535.0);
+		int segmentCount = (int)Math.ceil(max / 32767.0);
 		
 		//within our range?  just do it.
 		if (segmentCount == 1)
@@ -674,9 +677,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
 				//TODO: is this accurate?
 				//calculate our line segments
-				segmentSteps.x = Math.round(65535 * xRatio);
-				segmentSteps.y = Math.round(65535 * yRatio);
-				segmentSteps.z = Math.round(65535 * zRatio);
+				segmentSteps.x = Math.round(32767 * xRatio);
+				segmentSteps.y = Math.round(32767 * yRatio);
+				segmentSteps.z = Math.round(32767 * zRatio);
 
 				//keep track of them.
 				steps.x -= segmentSteps.x;
