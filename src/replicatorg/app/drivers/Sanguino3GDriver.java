@@ -278,8 +278,12 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		 * @return true if the packet is complete and valid; false otherwise.
 		 */
 		public boolean processByte(byte b) {
-		    System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff));
-		    switch (packetState) {
+			if (b >= 32 && b <= 127)
+	    		System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff) + " (" + (char)b + ")");
+		    else
+	    		System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff));
+		
+			switch (packetState) {
 		    case PS_START:
 				if (b == START_BYTE) {
 				    packetState = PS_LEN;
