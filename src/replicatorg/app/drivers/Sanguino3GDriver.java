@@ -475,6 +475,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		if (!isInitialized()) {
 		    // attempt to send version command and retrieve reply.
 		    try {
+				//read our string that means we're started up.
+				waitForStartup();
 				System.out.println("Running getversion.");
 				getVersion(Base.VERSION);
 				sendInit();
@@ -489,6 +491,51 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		//default us to absolute positioning
 		// todo agm sendCommand("G90");
     }
+
+	protected void waitForStartup()
+	{
+	  assert (serial != null);
+	  synchronized(serial)
+	  {
+	    String cmd = "";
+     	byte[] responsebuffer = new byte[512];
+		String result = "";
+
+		while (!isInitialized())
+		{
+		    try {
+		      int numread = serial.input.read(responsebuffer);
+		      assert (numread != 0); // This should never happen since we know we have a buffer
+		      if (numread < 0) {
+		        // This signifies EOF. FIXME: How do we handle this?
+		         System.out.println("SerialPassthroughDriver.readResponse(): EOF occured");
+		        return;
+		      }
+		      else {
+		        result += new String(responsebuffer , 0, numread, "US-ASCII");
+
+		        int index;
+		        while ((index = result.indexOf('\n')) >= 0) {
+		          String line = result.substring(0, index).trim(); // trim to remove any trailing \r
+		          result = result.substring(index+1);
+		          if (line.length() == 0) continue;
+
+		          //old arduino firmware sends "start"
+		          if (line.startsWith("R3G Master v")) {
+		            //todo: set version
+		            setInitialized(true);
+	                System.out.println(line);
+		          }
+		        }
+		      }
+		    }
+		    catch (IOException e) {
+		      System.out.println("inputstream.read() failed: " + e.toString());
+		      // FIXME: Shut down communication somehow.
+		    }
+		  }			
+		}
+	}
 		
     /**
      * Sends the command over the serial connection and retrieves a result.
