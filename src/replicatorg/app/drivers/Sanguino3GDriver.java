@@ -127,6 +127,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     char   parity;
     int    databits;
     float  stopbits;
+
+	private int debugLevel = 0;
     
     /**
      * This is a Java implementation of the IButton/Maxim 8-bit CRC.
@@ -271,17 +273,29 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		 * Create a PacketResponse object that contains this packet's payload.
 		 * @return A valid PacketResponse object
 		 */
-		public PacketResponse getResponse() { return new PacketResponse(payload); }
+		public PacketResponse getResponse()
+		{
+			PacketResponse pr = new PacketResponse(payload);
+			
+			if (debugLevel >= 2)
+				pr.printDebug();
+				
+			return pr;
+		}
 
 		/**
 		 * Process the next byte in an incoming packet.
 		 * @return true if the packet is complete and valid; false otherwise.
 		 */
 		public boolean processByte(byte b) {
-			if (b >= 32 && b <= 127)
-	    		System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff) + " (" + (char)b + ")");
-		    else
-	    		System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff));
+			
+			if (debugLevel >= 2)
+			{
+				if (b >= 32 && b <= 127)
+		    		System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff) + " (" + (char)b + ")");
+			    else
+		    		System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff));
+			}
 		
 			switch (packetState) {
 		    case PS_START:
@@ -312,8 +326,12 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		
 		    case PS_CRC:
 				targetCrc = b;
-				System.out.println("Target CRC: " + Integer.toHexString( (int)targetCrc&0xff ) +
-						   " - expected CRC: " + Integer.toHexString( (int)crc.getCrc()&0xff ));
+
+				if (debugLevel >= 2)
+				{
+					System.out.println("Target CRC: " + Integer.toHexString( (int)targetCrc&0xff ) +
+						" - expected CRC: " + Integer.toHexString( (int)crc.getCrc()&0xff ));
+				}
 				if (crc.getCrc() != targetCrc) {
 				    throw new java.lang.RuntimeException("CRC mismatch on reply");
 				}
@@ -429,8 +447,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		parity = Preferences.get("serial.parity").charAt(0);
 		databits = Preferences.getInteger("serial.databits");
 		stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
-
-		System.out.println("hello");
     }
 	
     public void loadXML(Node xml)
@@ -451,6 +467,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		}
 		if (XML.hasChildNode(xml, "stopbits"))
 		    stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
+		
+		//we doing debug?
+		if (XML.hasChildNode(xml, "debuglevel"))
+			debugLevel = Integer.parseInt(XML.getChildNodeValue(xml, "debuglevel"));
     }
 	
     public void initialize()
@@ -459,7 +479,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		if (serial == null) {
 		    if (name != null) {
 			try {
-			    System.out.println("Connecting to " + name + " at " + rate);
+				if (debugLevel >= 0)
+			    	System.out.println("Connecting to " + name + " at " + rate);
 			    serial = new Serial(name, rate, parity, databits, stopbits);
 			} catch (SerialException e) {
 			    System.out.println("Unable to open port " + name + "\n");
@@ -477,7 +498,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		    try {
 				//read our string that means we're started up.
 				waitForStartup();
-				System.out.println("Running getversion.");
+
+				//okay, take care of version info /etc.
 				getVersion(Base.VERSION);
 				sendInit();
 				super.initialize();
@@ -487,9 +509,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		    }
 		    System.out.println("Ready to rock.");
 		}
-	
-		//default us to absolute positioning
-		// todo agm sendCommand("G90");
     }
 
 	protected void waitForStartup()
@@ -508,7 +527,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		      assert (numread != 0); // This should never happen since we know we have a buffer
 		      if (numread < 0) {
 		        // This signifies EOF. FIXME: How do we handle this?
-		         System.out.println("SerialPassthroughDriver.readResponse(): EOF occured");
+		         System.out.println("RepRap3GDriver.readResponse(): EOF occured");
 		        return;
 		      }
 		      else {
@@ -556,20 +575,24 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		    //do the actual send.
 		    serial.write(packet);
 		}
-		{ // debug
+
+		if (debugLevel >= 2)
+		{
 		    System.out.print("OUT: ");
-		    for (int i =0; i<packet.length;i++) {
-			System.out.print( Integer.toHexString( (int)packet[i] & 0xff ) );
-			System.out.print( " " );
+		    for (int i =0; i<packet.length;i++)
+			{
+				System.out.print(Integer.toHexString((int)packet[i] & 0xff ));
+				System.out.print(" ");
 		    }
-		    System.out.print( "\n" );
+		    System.out.print("\n");
 		}
+
 		PacketProcessor pp = new PacketProcessor();
 		try {
 		    boolean c = false;
 		    while(!c){
-			int b = serial.input.read();
-			c = pp.processByte((byte)b);
+				int b = serial.input.read();
+				c = pp.processByte((byte)b);
 		    }
 		} catch (java.io.IOException ioe) {
 		    System.out.println(ioe.toString());
@@ -602,9 +625,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
 		PacketResponse pr = runCommand(pb.getPacket());
 		int version = pr.get16();
-		pr.printDebug();
 
-		System.out.println("Reported version: " + Integer.toHexString(version));
+		if (debugLevel >= 1)
+			System.out.println("Reported version: " + Integer.toHexString(version));
 
 		return version;
     }
@@ -613,7 +636,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	{
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.INIT);
 		PacketResponse pr = runCommand(pb.getPacket());
-		pr.printDebug();
     }
     
     /****************************************************
@@ -675,6 +697,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		byte prescaler = convertTicksToPrescaler(ticks);
 		int counter = convertTicksToCounter(ticks);
 
+		if (debugLevel >= 1)
+			System.out.println("Queued incremental point " + steps + " at " + counter + "/" + prescaler + " (" + ticks + ")");
+
 		//just add them in now.
 		pb.add16((int)steps.x);
 		pb.add16((int)steps.y);
@@ -693,6 +718,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add32((long)steps.x);
 		pb.add32((long)steps.y);
 		pb.add32((long)steps.z);
+		
+		if (debugLevel >= 1)
+			System.out.println("Set current position to " + p + " (" + steps + ")");
 
 		PacketResponse pr = runCommand(pb.getPacket());
 
@@ -701,30 +729,45 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void homeXYZ()
     {
+		if (debugLevel >= 1)
+			System.out.println("Home XYZ");
+		
 		homeAxes(true, true, true);
 		super.homeXYZ();
     }
 
     public void homeXY()
     {
+		if (debugLevel >= 1)
+			System.out.println("Home XY");
+		
 		homeAxes(true, true, false);
 		super.homeXY();
     }
 
     public void homeX()
     {
+		if (debugLevel >= 1)
+			System.out.println("Home X");
+		
 		homeAxes(true, false, false);
 		super.homeX();
     }
 
     public void homeY()
     {
+		if (debugLevel >= 1)
+			System.out.println("Home Y");
+		
 		homeAxes(false, true, false);
 		super.homeY();
     }
 
     public void homeZ()
     {
+		if (debugLevel >= 1)
+			System.out.println("Home Z");
+		
 		homeAxes(false, false, false);
 		super.homeZ();
     }
@@ -766,6 +809,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		byte prescaler = convertTicksToPrescaler(ticks);
 		int counter = convertTicksToCounter(ticks);
 		
+		if (debugLevel >= 2)
+			System.out.println("Homing w/ flags " + Integer.toBinaryString(flags) + " at " + counter + "/" + prescaler);
+		
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.FIND_MINS);
 		pb.add8(prescaler);
@@ -778,6 +824,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void delay(long millis)
     {
+		if (debugLevel >= 1)
+			System.out.println("Delaying " + millis + " millis.");
+
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.DELAY);
 		pb.add32(millis);
@@ -816,6 +865,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
 	public void selectTool(int toolIndex)
 	{
+		if (debugLevel >= 1)
+			System.out.println("Selecting tool #" + toolIndex);
+		
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.CHANGE_TOOL);
 		pb.add8((byte)toolIndex);
@@ -833,6 +885,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		long microseconds = (int)Math.round(60 * 1000000 / rpm); //no unsigned ints?!?
 		microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
 		
+		if (debugLevel >= 1)
+			System.out.println("Setting motor 1 speed to " + rpm + " RPM (" + microseconds + " microseconds)");
+		
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
@@ -846,6 +901,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
     public void setMotorSpeedPWM(int pwm)
     {
+		if (debugLevel >= 1)
+			System.out.println("Setting motor 1 speed to " + pwm + " PWM");
+
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
@@ -866,6 +924,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
 			flags += 2;
 
+		if (debugLevel >= 1)
+			System.out.println("Toggling motor 1 w/ flags: " + Integer.toBinaryString(flags));
+
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
@@ -879,7 +940,13 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void disableMotor()
     {
+		//bit 1 determines direction...
 		byte flags = 0;
+		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+			flags += 2;
+					
+		if (debugLevel >= 1)
+			System.out.println("Disabling motor 1");
 		
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
@@ -901,6 +968,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		//get it
 		int pwm = pr.get8();
 		
+		if (debugLevel >= 1)
+			System.out.println("Current motor 1 PWM: " + pwm);
+		
 		//set it.
 		machine.currentTool().setMotorSpeedReadingPWM(pwm);
 		
@@ -915,7 +985,11 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketResponse pr = runCommand(pb.getPacket());
 		
 		//convert back to RPM
-		double rpm = (60.0 * 1000000 / (double)pr.get32());
+		long micros = pr.get32();
+		double rpm = (60.0 * 1000000.0 / micros);
+
+		if (debugLevel >= 1)
+			System.out.println("Current motor 1 RPM: " + rpm + " (" + micros + ")");
 		
 		//set it.
 		machine.currentTool().setMotorSpeedReadingRPM(rpm);
@@ -932,6 +1006,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		long microseconds = (int)Math.round(60 * 1000000 / rpm); //no unsigned ints?!?
 		microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
 		
+		if (debugLevel >= 1)
+			System.out.println("Setting motor 2 speed to " + rpm + " RPM (" + microseconds + " microseconds)");
+
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
@@ -942,6 +1019,22 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
 		super.setSpindleRPM(rpm);
     }
+
+    public void setSpindleSpeedPWM(int pwm)
+    {
+		if (debugLevel >= 1)
+			System.out.println("Setting motor 2 speed to " + pwm + " PWM");
+
+		//send it!
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
+		pb.add8((byte)machine.currentTool().getIndex());
+		pb.add8(CommandCodesSlave.SET_MOTOR_2_PWM);
+		pb.add8((byte)1); //length of payload.
+		pb.add8((byte)pwm);
+		PacketResponse pr = runCommand(pb.getPacket());
+
+		super.setMotorSpeedPWM(pwm);
+    }
 	
     public void enableSpindle()
     {
@@ -951,6 +1044,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		//bit 1 determines direction...
 		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
 			flags += 2;
+
+		if (debugLevel >= 1)
+			System.out.println("Toggling motor 2 w/ flags: " + Integer.toBinaryString(flags));
 
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
@@ -965,7 +1061,13 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void disableSpindle()
     {
+		//bit 1 determines direction...
 		byte flags = 0;
+		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+			flags += 2;
+		
+		if (debugLevel >= 1)
+			System.out.println("Disabling motor 2");
 		
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
@@ -985,7 +1087,11 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketResponse pr = runCommand(pb.getPacket());
 		
 		//convert back to RPM
-		double rpm = (60.0 * 1000000 / (double)pr.get32());
+		long micros = pr.get32();
+		double rpm = (60.0 * 1000000.0 / micros);
+
+		if (debugLevel >= 1)
+			System.out.println("Current motor 2 RPM: " + rpm + " (" + micros + ")");
 		
 		//set it.
 		machine.currentTool().setSpindleSpeedReadingRPM(rpm);
@@ -1003,6 +1109,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		//get it
 		int pwm = pr.get8();
 		
+		if (debugLevel >= 1)
+			System.out.println("Current motor 1 PWM: " + pwm);
+		
 		//set it.
 		machine.currentTool().setSpindleSpeedReadingPWM(pwm);
 		
@@ -1018,6 +1127,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		//constrain our temperature.
 		int temp = (int)Math.round(temperature);
 		temp = Math.min(temp, 65535);
+		
+		if (debugLevel >= 1)
+			System.out.println("Setting temperature to " + temp + "C");
 		
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
@@ -1036,7 +1148,11 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.GET_TEMPERATURE);
 		PacketResponse pr = runCommand(pb.getPacket());		
 
-		//TODO: get value and update our model with it, etc.
+		int temp = pr.get16();
+		machine.currentTool().setCurrentTemperature(temp);
+		
+		if (debugLevel >= 1)
+			System.out.println("Current temperature: " + temp + "C");
 		
 		super.readTemperature();
     }
@@ -1080,6 +1196,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void enableFan()
     {
+		if (debugLevel >= 1)
+			System.out.println("Enabling fan");
+		
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_FAN);
@@ -1092,6 +1211,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void disableFan()
     {
+		if (debugLevel >= 1)
+			System.out.println("Disabling fan");
+		
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_FAN);
@@ -1107,6 +1229,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *************************************/
     public void openValve()
     {
+		if (debugLevel >= 1)
+			System.out.println("Opening valve");
+		
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_VALVE);
@@ -1119,6 +1244,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void closeValve()
     {
+		if (debugLevel >= 1)
+			System.out.println("Closing valve");
+		
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.TOGGLE_VALVE);
