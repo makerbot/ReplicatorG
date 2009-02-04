@@ -60,14 +60,14 @@
 	</machine>
 
 	<machine>
-		<name>Sanguino 3G</name>
+		<name>RepRap 3G</name>
 		<geometry type="cartesian">
 			<axis id="x" length="300" maxfeedrate="1000" scale="11.4485"/>
 			<axis id="y" length="300" maxfeedrate="1000" scale="11.4485"/>
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
-			<tool name="Lasercut Extruder v1.0" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+			<tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
@@ -77,7 +77,7 @@
 			<parity>8</parity>
 			<!-- optional, defaults to 1.                          <databits>1</databits> -->
 			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
-			<debuglevel>1</debuglevel>
+			<debuglevel>3</debuglevel>
 		</driver>
 		<warmup>
 			(homing routing)

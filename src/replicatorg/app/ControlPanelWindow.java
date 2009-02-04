@@ -316,8 +316,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		xyzPanel.add(positionPanel);
 				
 		//create our xy slider
-		//TODO: pull these values from our machine config!
-		xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, (int)machine.getModel().getMaximumFeedrates().x, Preferences.getInteger("controlpanel.feedrate.xy"));
+		int maxXYFeedrate = (int)Math.min(machine.getModel().getMaximumFeedrates().x, machine.getModel().getMaximumFeedrates().y);
+		int currentXYFeedrate = Math.min(maxXYFeedrate, Preferences.getInteger("controlpanel.feedrate.xy"));
+		xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, maxXYFeedrate, currentXYFeedrate);
 		xyFeedrateSlider.setMajorTickSpacing(1000);
 		xyFeedrateSlider.setMinorTickSpacing(100);
 		xyFeedrateSlider.setName("xy-feedrate-slider");
@@ -347,7 +348,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		xyFeedratePanel.add(xyFeedrateValue);
 
 		//create our z slider
-		zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, (int)machine.getModel().getMaximumFeedrates().z, Preferences.getInteger("controlpanel.feedrate.z"));
+		int maxZFeedrate = (int)machine.getModel().getMaximumFeedrates().z;
+		int currentZFeedrate = Math.min(maxZFeedrate, Preferences.getInteger("controlpanel.feedrate.z"));
+		zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, maxZFeedrate, currentZFeedrate);
 		zFeedrateSlider.setMajorTickSpacing(10);
 		zFeedrateSlider.setMinorTickSpacing(1);
 		zFeedrateSlider.setName("z-feedrate-slider");

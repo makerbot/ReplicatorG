@@ -294,11 +294,15 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				if (b >= 32 && b <= 127)
 		    		System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff) + " (" + (char)b + ")");
 			    else
-		    		System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff));
+		   			System.out.println("IN: Processing byte " + Integer.toHexString((int)b&0xff));
 			}
+			
 		
 			switch (packetState) {
 		    case PS_START:
+				if (debugLevel >= 3)
+					System.out.println("Start byte?");
+
 				if (b == START_BYTE) {
 				    packetState = PS_LEN;
 				} else {
@@ -307,6 +311,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				break;
 		
 		    case PS_LEN:
+				if (debugLevel >= 3)
+					System.out.println("Length: " + (int)b);
+
 				payloadLength = ((int)b) & 0xFF;
 				payload = new byte[payloadLength];
 				crc = new IButtonCrc();
@@ -314,6 +321,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				break;
 		
 		    case PS_PAYLOAD:
+				if (debugLevel >= 3)
+					System.out.println("payload.");
+					
 				// sanity check
 				if (payloadIdx < payloadLength) {
 				    payload[payloadIdx++] = b;
@@ -406,7 +416,13 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		 * Get the next 8-bit value from the packet payload.
 		 */
 		int get8() {
-		    return ((int)payload[readPoint++])&0xff;
+			if (payload.length > readPoint)
+		    	return ((int)payload[readPoint++])&0xff;
+			else
+			{
+				System.out.println("Error: payload not big enough.");
+				return 0;
+			}
 		}
 		/**
 		 * Get the next 16-bit value from the packet payload.
@@ -1149,8 +1165,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_QUERY);
 		pb.add8((byte)machine.currentTool().getIndex());
 		pb.add8(CommandCodesSlave.GET_TEMPERATURE);
-		PacketResponse pr = runCommand(pb.getPacket());		
-
+		PacketResponse pr = runCommand(pb.getPacket());
+		
 		int temp = pr.get16();
 		machine.currentTool().setCurrentTemperature(temp);
 		
