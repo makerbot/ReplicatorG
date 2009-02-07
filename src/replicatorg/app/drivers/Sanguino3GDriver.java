@@ -24,11 +24,6 @@
 package replicatorg.app.drivers;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Vector;
 
 import javax.vecmath.Point3d;
 
@@ -48,37 +43,37 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      * CNC stage.
      */
     class CommandCodesMaster {
-		public final static int GET_VERSION     =   0;
-		public final static int INIT            =   1;
-		public final static int GET_AVAIL_BUF   =   2;
-		public final static int CLEAR_BUF       =   3;
-		public final static int GET_POS         =   4;
-		public final static int GET_RANGE       =   5;
-		public final static int SET_RANGE       =   6;
-		public final static int ABORT           =   7;
-		public final static int PAUSE           =   8;
-		public final static int PROBE           =   9;
-		public final static int TOOL_QUERY      =  10;
+		public final static int VERSION           =   0;
+		public final static int INIT              =   1;
+		public final static int GET_BUFFER_SIZE   =   2;
+		public final static int CLEAR_BUFFER      =   3;
+		public final static int GET_POSITION      =   4;
+		public final static int GET_RANGE         =   5;
+		public final static int SET_RANGE         =   6;
+		public final static int ABORT             =   7;
+		public final static int PAUSE             =   8;
+		public final static int PROBE             =   9;
+		public final static int TOOL_QUERY        =  10;
 		
-		public final static int QUEUE_POINT_INC = 128;
-		public final static int QUEUE_POINT_ABS = 129;
-		public final static int SET_POS         = 130;
-		public final static int FIND_MINS       = 131;
-		public final static int FIND_MAXS       = 132;
-		public final static int DELAY           = 133;
-		public final static int CHANGE_TOOL     = 134;
-		public final static int WAIT_FOR_TOOL   = 135;
-		public final static int TOOL_COMMAND    = 136;
+		public final static int QUEUE_POINT_INC   = 128;
+		public final static int QUEUE_POINT_ABS   = 129;
+		public final static int SET_POSITION      = 130;
+		public final static int FIND_AXES_MINIMUM = 131;
+		public final static int FIND_AXES_MAXIMUM = 132;
+		public final static int DELAY             = 133;
+		public final static int CHANGE_TOOL       = 134;
+		public final static int WAIT_FOR_TOOL     = 135;
+		public final static int TOOL_COMMAND      = 136;
     };
 
     /**
      * An enumeration of the available command codes for a tool.
      */
     class CommandCodesSlave {
-		public final static int GET_VERSION     =   0;
+		public final static int VERSION         =   0;
 		public final static int INIT            =   1;
-		public final static int GET_TEMPERATURE =   2;
-		public final static int SET_TEMPERATURE =   3;
+		public final static int GET_TEMP        =   2;
+		public final static int SET_TEMP        =   3;
 		public final static int SET_MOTOR_1_PWM =   4;
 		public final static int SET_MOTOR_2_PWM =   5;
 		public final static int SET_MOTOR_1_RPM =   6;
@@ -96,8 +91,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		public final static int GET_MOTOR_2_RPM =  18;
 		public final static int GET_MOTOR_1_PWM =  19;
 		public final static int GET_MOTOR_2_PWM =  20;
-		public final static int ABORT           =  21;
-		public final static int PAUSE           =  22;
+		public final static int SELECT_TOOL     =  21;
+		public final static int IS_TOOL_READY   =  22;
     };
 
 
@@ -636,7 +631,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      ****************************************************/
     public int getVersion(int ourVersion)
 	{
-		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.GET_VERSION);
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.VERSION);
 		pb.add16(ourVersion);
 
 		PacketResponse pr = runCommand(pb.getPacket());
@@ -731,7 +726,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void setCurrentPosition(Point3d p)
     {
-		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.SET_POS);
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.SET_POSITION);
 
 		Point3d steps = machine.mmToSteps(p);
 		pb.add32((long)steps.x);
@@ -832,7 +827,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 			System.out.println("Homing w/ flags " + Integer.toBinaryString(flags) + " at " + counter + "/" + prescaler);
 		
 		//send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.FIND_MINS);
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.FIND_AXES_MINIMUM);
 		pb.add8(prescaler);
 		pb.add16(counter);
 		pb.add16(300); //default to 5 minutes
@@ -1152,7 +1147,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_COMMAND);
 		pb.add8((byte)machine.currentTool().getIndex());
-		pb.add8(CommandCodesSlave.SET_TEMPERATURE);
+		pb.add8(CommandCodesSlave.SET_TEMP);
 		pb.add8((byte)2); //payload length
 		pb.add16(temp);
 		PacketResponse pr = runCommand(pb.getPacket());		
@@ -1164,7 +1159,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     {
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.TOOL_QUERY);
 		pb.add8((byte)machine.currentTool().getIndex());
-		pb.add8(CommandCodesSlave.GET_TEMPERATURE);
+		pb.add8(CommandCodesSlave.GET_TEMP);
 		PacketResponse pr = runCommand(pb.getPacket());
 		
 		int temp = pr.get16();
