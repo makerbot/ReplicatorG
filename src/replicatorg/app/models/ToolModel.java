@@ -333,6 +333,11 @@ public class ToolModel
 		return hasMotor;
 	}
 	
+	public boolean motorHasEncoder()
+	{
+	  return motorHasEncoder;
+	}
+	
 	/*************************************
 	*  Spindle interface functions
 	*************************************/
@@ -404,6 +409,11 @@ public class ToolModel
 	public boolean hasSpindle()
 	{
 		return hasSpindle;
+	}
+	
+	public boolean spindleHasEncoder()
+	{
+	  return spindleHasEncoder;
 	}
 
 	/*************************************

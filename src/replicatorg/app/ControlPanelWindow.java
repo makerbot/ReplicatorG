@@ -443,19 +443,39 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//create our motor options
 		if (t.hasMotor())
 		{
-			//our motor speed vars
-			JLabel motorSpeedLabel = new JLabel("Motor Speed (RPM)");
-			motorSpeedLabel.setMinimumSize(labelMinimumSize);
-			motorSpeedLabel.setMaximumSize(labelMinimumSize);
-			motorSpeedLabel.setPreferredSize(labelMinimumSize);
-			motorSpeedLabel.setHorizontalAlignment(JLabel.LEFT);
-			
+			JLabel motorSpeedLabel = new JLabel();
 			JTextField motorSpeedField = new JTextField();
-			motorSpeedField.setMaximumSize(new Dimension(textBoxWidth, 25));
-			motorSpeedField.setMinimumSize(new Dimension(textBoxWidth, 25));
-			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
-			motorSpeedField.setName("motor-speed");
-			motorSpeedField.addFocusListener(this);
+
+      if (t.motorHasEncoder())
+      {
+  			//our motor speed vars
+        motorSpeedLabel.setText("Motor Speed (RPM)");
+  			motorSpeedLabel.setMinimumSize(labelMinimumSize);
+  			motorSpeedLabel.setMaximumSize(labelMinimumSize);
+  			motorSpeedLabel.setPreferredSize(labelMinimumSize);
+  			motorSpeedLabel.setHorizontalAlignment(JLabel.LEFT);
+
+  			motorSpeedField.setMaximumSize(new Dimension(textBoxWidth, 25));
+  			motorSpeedField.setMinimumSize(new Dimension(textBoxWidth, 25));
+  			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
+  			motorSpeedField.setName("motor-speed");
+  			motorSpeedField.addFocusListener(this);
+      }
+      else
+      {
+  			//our motor speed vars
+        motorSpeedLabel.setText("Motor Speed (PWM)");
+  			motorSpeedLabel.setMinimumSize(labelMinimumSize);
+  			motorSpeedLabel.setMaximumSize(labelMinimumSize);
+  			motorSpeedLabel.setPreferredSize(labelMinimumSize);
+  			motorSpeedLabel.setHorizontalAlignment(JLabel.LEFT);
+
+  			motorSpeedField.setMaximumSize(new Dimension(textBoxWidth, 25));
+  			motorSpeedField.setMinimumSize(new Dimension(textBoxWidth, 25));
+  			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
+  			motorSpeedField.setName("motor-speed-pwm");
+  			motorSpeedField.addFocusListener(this);
+      }
 			
 			//create our motor options
 			JLabel motorEnabledLabel = new JLabel("Motor Control");
@@ -849,6 +869,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			else if (name.equals("motor-speed"))
 			{
 				driver.setMotorRPM(Double.parseDouble(source.getText()));
+			}
+			else if (name.equals("motor-speed-pwm"))
+			{
+				driver.setMotorSpeedPWM(Integer.parseInt(source.getText()));
 			}
 			else if (name.equals("xy-feedrate-value"))
 			{
