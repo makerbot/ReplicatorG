@@ -306,7 +306,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				break;
 		
 		    case PS_LEN:
-				if (debugLevel >= 3)
+				if (debugLevel >= 2)
 					System.out.println("Length: " + (int)b);
 
 				payloadLength = ((int)b) & 0xFF;
@@ -582,32 +582,34 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		    checkQueue = true;
 		}
 
-		synchronized(serial) {
+		PacketProcessor pp = new PacketProcessor();
+
+		synchronized(serial){
 		    //do the actual send.
 		    serial.write(packet);
+
+    		if (debugLevel >= 2)
+    		{
+    		    System.out.print("OUT: ");
+    		    for (int i =0; i<packet.length;i++)
+    			{
+    				System.out.print(Integer.toHexString((int)packet[i] & 0xff ));
+    				System.out.print(" ");
+    		    }
+    		    System.out.print("\n");
+    		}
+
+    		try {
+    		    boolean c = false;
+    		    while(!c){
+    				int b = serial.input.read();
+    				c = pp.processByte((byte)b);
+    		    }
+    		} catch (java.io.IOException ioe) {
+    		    System.out.println(ioe.toString());
+    		} 
 		}
 
-		if (debugLevel >= 2)
-		{
-		    System.out.print("OUT: ");
-		    for (int i =0; i<packet.length;i++)
-			{
-				System.out.print(Integer.toHexString((int)packet[i] & 0xff ));
-				System.out.print(" ");
-		    }
-		    System.out.print("\n");
-		}
-
-		PacketProcessor pp = new PacketProcessor();
-		try {
-		    boolean c = false;
-		    while(!c){
-				int b = serial.input.read();
-				c = pp.processByte((byte)b);
-		    }
-		} catch (java.io.IOException ioe) {
-		    System.out.println(ioe.toString());
-		} 
 		return pp.getResponse();
     }
 	
@@ -1166,7 +1168,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		machine.currentTool().setCurrentTemperature(temp);
 		
 		if (debugLevel >= 1)
-			System.out.println("Current temperature: " + temp + "C");
+			System.out.println("Current temperature: " + machine.currentTool().getCurrentTemperature() + "C");
 		
 		super.readTemperature();
     }

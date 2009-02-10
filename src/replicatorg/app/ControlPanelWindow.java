@@ -684,6 +684,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		zPosField.setText(Double.toString(current.z));
 
 		double temperature = driver.getTemperature();
+		System.out.println("temp: " + temperature);
 		currentTempField.setText(Double.toString(temperature));
 	}
 	
@@ -879,7 +880,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 			try {
 				while(true)
 				{
-					driver.readTemperature();
+					//driver.readTemperature();
 					Thread.sleep(1000);
 				}
 			} catch (InterruptedException e) {}
