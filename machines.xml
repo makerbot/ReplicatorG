@@ -20,8 +20,8 @@
 	<machine>
 		<name>GCode Interpreter</name>
 		<geometry type="cartesian">
-			<axis id="x" length="300" maxfeedrate="1000" scale="11.7892"/>
-			<axis id="y" length="300" maxfeedrate="1000" scale="11.0716"/>
+			<axis id="x" length="300" maxfeedrate="1000" scale="11.4485"/>
+			<axis id="y" length="300" maxfeedrate="1000" scale="11.4485"/>
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
@@ -62,8 +62,8 @@
 	<machine>
 		<name>RepRap 3G</name>
 		<geometry type="cartesian">
-			<axis id="x" length="300" maxfeedrate="1000" scale="11.4485"/>
-			<axis id="y" length="300" maxfeedrate="1000" scale="11.4485"/>
+			<axis id="x" length="300" maxfeedrate="1000" scale="11.7892"/>
+			<axis id="y" length="300" maxfeedrate="1000" scale="11.0716"/>
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
@@ -77,22 +77,20 @@
 			<parity>8</parity>
 			<!-- optional, defaults to 1.                          <databits>1</databits> -->
 			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
-			<debuglevel>2</debuglevel>
+			<debuglevel>1</debuglevel>
 		</driver>
 		<warmup>
 			(homing routing)
 			G91
-			G1 Z10 F75
-			G1 X-999 Y-999 F2000
+			G1 Z10 F100
 			G92 X0 Y0 (set xy as home)
-			M104 S200
-			M108 S20
+			M104 S210
+			M108 S255
 			M101
 			G04 P10000
 			M103
 			G04 P5000
-			G1 X150 Y150
-			G1 Z-10 F75
+			G1 Z-10 F100
 			G92 X0 Y0 Z0
 			(ready to print)
 		</warmup>
