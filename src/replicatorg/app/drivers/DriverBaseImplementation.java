@@ -207,6 +207,11 @@ public class DriverBaseImplementation implements Driver
 		return new Point3d(machine.getCurrentPosition());
 	}
 	
+	public Point3d getPosition()
+	{
+	  return getCurrentPosition();
+	}
+	
 	public void queuePoint(Point3d p)
 	{
 		Point3d currentPosition = machine.getCurrentPosition();

@@ -77,13 +77,13 @@
 			<parity>8</parity>
 			<!-- optional, defaults to 1.                          <databits>1</databits> -->
 			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
-			<debuglevel>1</debuglevel>
+			<debuglevel>2</debuglevel>
 		</driver>
-		<warmup>
+		<!--
 			(homing routing)
 			G91
 			G1 Z10 F100
-			G92 X0 Y0 (set xy as home)
+			#G92 X0 Y0 (set xy as home)
 			M104 S210
 			M108 S255
 			M101
@@ -93,6 +93,8 @@
 			G1 Z-10 F100
 			G92 X0 Y0 Z0
 			(ready to print)
+		-->
+		<warmup>
 		</warmup>
 		<cooldown>
 			M104 S20

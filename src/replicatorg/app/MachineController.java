@@ -335,8 +335,9 @@ public class MachineController
 	{
 		//load our utility drivers
         if (Preferences.getBoolean("machinecontroller.simulator")) {
-		    simulator = new SimulationDriver();
-		    simulator.setMachine(model);
+		    //TODO: simulator needs its own machine model!!!
+		    //simulator = new SimulationDriver();
+		    //simulator.setMachine(model);
         }
 		//load our actual driver
 		NodeList kids = machineNode.getChildNodes();

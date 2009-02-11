@@ -104,6 +104,7 @@ public interface Driver
 	public Point3d getCurrentPosition();
 	public void queuePoint(Point3d p);
 	public Point3d getOffset(int i);
+	public Point3d getPosition();
 
 	/**
 	* Tool methods

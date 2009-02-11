@@ -487,7 +487,48 @@ public class GCodeParser
 				case 127:
 					driver.closeValve();
 					break;
-
+					
+				//where are we?
+				case 128:
+				  driver.getPosition();
+				  break;
+				  
+				//how far can we go?
+				case 129:
+				  //driver.getRange();
+				  break;
+				
+				//you must know your limits
+				case 130:
+				  //driver.setRange();
+				  break;
+				  
+				//initialize to default state.
+				case 200:
+				  driver.initialize();
+          break;
+        
+        //buffer info  
+        case 201:
+          //driver.getBufferSize();
+          break;
+        
+        //buffer management
+        case 202:
+          //driver.clearBuffer();
+          break;
+          
+        //for killing jobs
+        case 203:
+          //driver.abort();
+          break;
+        
+        //temporarily stop printing.
+        case 204:
+          //driver.pause();
+          break;
+        
+          
 				default:
 					throw new GCodeException("Unknown M code: M" + (int)getCodeValue("M"));
 			}
@@ -985,8 +1026,10 @@ public class GCodeParser
 	
 	private void setTarget(Point3d p)
 	{
-		//System.out.println("move: " + p.toString());
-		driver.queuePoint(p);
+    //move z first
+    if (p.z != current.z)
+      driver.queuePoint(new Point3d(current.x, current.y, p.z));
+		driver.queuePoint(new Point3d(p));
 		current = new Point3d(p);
 	}
 	

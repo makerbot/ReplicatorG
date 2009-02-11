@@ -356,6 +356,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		byte[] payload;
 		int readPoint = 1;
 		
+		public PacketResponse() {}
+		
 		public PacketResponse(byte[] p) {
 		    payload = p;
 		}
@@ -438,6 +440,11 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		public boolean isOK() { 
 		    return payload[0] == ResponseCode.OK;
 		}
+		
+		public byte getResponseCode()
+		{
+		  return payload[0];
+		}
     };
 
     public Sanguino3GDriver()
@@ -516,11 +523,11 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				super.initialize();
 		    } catch (Exception e) {
 			    //todo: handle init exceptions here
-				System.out.println("yarg!" + e.getMessage());
+				  System.out.println("yarg!");
+				  e.printStackTrace();
 		    }
-		    System.out.println("Ready to rock.");
 		}
-    }
+  }
 
 	protected void waitForStartup()
 	{
@@ -554,7 +561,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		          if (line.startsWith("R3G Master v")) {
 		            //todo: set version
 		            setInitialized(true);
-	                System.out.println(line);
+	              System.out.println("Found Firmware: " + line);
 		          }
 		        }
 		      }
@@ -582,38 +589,68 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		    checkQueue = true;
 		}
 
-		PacketProcessor pp = new PacketProcessor();
+    boolean packetSent = false;
+    PacketProcessor pp = new PacketProcessor();
+    PacketResponse pr = new PacketResponse();
+    
+    while (!packetSent)
+    {
+  		pp = new PacketProcessor();
 
-		synchronized(serial){
-		    //do the actual send.
-		    serial.write(packet);
+  		synchronized(serial)
+  		{
+  		  //make things play nice.
+  		  try {
+  		    Thread.sleep(0, 50000);
+  		  } catch (Exception e) {
+  		    
+  		  }
+  	    //do the actual send.
+  	    serial.write(packet);
 
     		if (debugLevel >= 2)
     		{
     		    System.out.print("OUT: ");
-    		    for (int i =0; i<packet.length;i++)
-    			{
-    				System.out.print(Integer.toHexString((int)packet[i] & 0xff ));
-    				System.out.print(" ");
+    		    for (int i=0; i<packet.length;  i++)
+      			{
+      				System.out.print(Integer.toHexString((int)packet[i] & 0xff ));
+      				System.out.print(" ");
     		    }
     		    System.out.print("\n");
     		}
 
     		try {
     		    boolean c = false;
-    		    while(!c){
-    				int b = serial.input.read();
-    				c = pp.processByte((byte)b);
+    		    while(!c)
+    		    {
+      				int b = serial.input.read();
+      				c = pp.processByte((byte)b);
     		    }
+
+    		    pr = pp.getResponse();
+
+            if (pr.isOK())
+              packetSent = true;
+    		    else if (pr.getResponseCode() == ResponseCode.BUFFER_OVERFLOW)
+    		    {
+    		      try {
+    		        Thread.sleep(25);
+    		      } catch (Exception e) {}
+
+    		    }
+    		    //TODO: implement other error things.
+    		    else
+    		      break;
+
     		} catch (java.io.IOException ioe) {
     		    System.out.println(ioe.toString());
-    		} 
-		}
-
-		return pp.getResponse();
+    		}
+  		}      
     }
-	
-	
+
+      return pr;
+    }
+		
     public boolean isFinished()
     {
 		// todo agm
@@ -646,7 +683,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     }
 
     public void sendInit()
-	{
+	  {
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.INIT);
 		PacketResponse pr = runCommand(pb.getPacket());
     }
@@ -657,16 +694,31 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
     public void queuePoint(Point3d p)
     {
-		if (debugLevel >= 1)
-			System.out.println("Queued point " + p);
+  		System.out.println("current1: " + machine.getCurrentPosition());
+  		System.out.println("target1: " + p);
 
-		//sendCommand(cmd);
-		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.QUEUE_POINT_INC);
+  		if (debugLevel >= 1)
+  			System.out.println("Queued point " + p);
 
-		//figure out our feedrate variables.
-		long ticks = convertFeedrateToTicks(getCurrentPosition(), p, getCurrentFeedrate());
+      //where we going?
+      Point3d steps = machine.mmToSteps(p);
 
-		//figure out the axis with the most steps.
+      //how fast are we doing it?
+  		long ticks = convertFeedrateToTicks(machine.getCurrentPosition(), p, getCurrentFeedrate());
+
+		  //okay, send it off!
+		  queueAbsolutePoint(steps, ticks);
+		  
+    	super.queuePoint(p);
+    }
+    
+    public Point3d getPosition()
+    {
+      return new Point3d();
+    }
+
+  /*
+  	//figure out the axis with the most steps.
 		Point3d steps = getAbsDeltaSteps(getCurrentPosition(), p);
 		Point3d delta_steps = getDeltaSteps(getCurrentPosition(), p);
 		int max = Math.max((int)steps.x, (int)steps.y);
@@ -705,12 +757,33 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				queueIncrementalPoint(pb, segmentSteps, ticks);
 			}
 		}
-		
-		super.queuePoint(p);
-    }
+	*/
 
-	private void queueIncrementalPoint(PacketBuilder pb, Point3d steps, long ticks)
+  private void queueAbsolutePoint(Point3d steps, long ticks)
+  {
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.QUEUE_POINT_ABS);
+
+		//figure out our timer values.
+		byte prescaler = convertTicksToPrescaler(ticks);
+		int counter = convertTicksToCounter(ticks);
+
+		if (debugLevel >= 1)
+			System.out.println("Queued absolute point " + steps + " at " + counter + "/" + prescaler + " (" + ticks + ")");
+
+		//just add them in now.
+		pb.add32((int)steps.x);
+		pb.add32((int)steps.y);
+		pb.add32((int)steps.z);
+		pb.add8(prescaler);
+		pb.add16(counter);
+
+		PacketResponse pr = runCommand(pb.getPacket());    
+  }
+
+	private void queueIncrementalPoint(Point3d steps, long ticks)
 	{
+		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.QUEUE_POINT_INC);
+
 		//figure out our timer values.
 		byte prescaler = convertTicksToPrescaler(ticks);
 		int counter = convertTicksToCounter(ticks);
@@ -730,19 +803,21 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void setCurrentPosition(Point3d p)
     {
-		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.SET_POSITION);
+  		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.SET_POSITION);
 
-		Point3d steps = machine.mmToSteps(p);
-		pb.add32((long)steps.x);
-		pb.add32((long)steps.y);
-		pb.add32((long)steps.z);
+  		Point3d steps = machine.mmToSteps(p);
+  		pb.add32((long)steps.x);
+  		pb.add32((long)steps.y);
+  		pb.add32((long)steps.z);
 		
-		if (debugLevel >= 1)
-			System.out.println("Set current position to " + p + " (" + steps + ")");
+  		if (debugLevel >= 1)
+  			System.out.println("Set current position to " + p + " (" + steps + ")");
 
-		PacketResponse pr = runCommand(pb.getPacket());
+  		PacketResponse pr = runCommand(pb.getPacket());
 
-		super.setCurrentPosition(p);
+  		super.setCurrentPosition(p);
+
+      System.out.println("Current: " + machine.getCurrentPosition());
     }
 	
     public void homeXYZ()
@@ -1330,8 +1405,17 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
 	private long convertFeedrateToTicks(Point3d current, Point3d target, double feedrate)
 	{
+	  
 		Point3d deltaDistance = getAbsDeltaDistance(current, target);
 		Point3d deltaSteps = getAbsDeltaSteps(current, target);
+		
+		System.out.println("current: " + current);
+		System.out.println("target: " + target);
+		System.out.println("deltas:" + deltaDistance);
+		
+		try {
+		  Thread.sleep(10000);
+		} catch (Exception e) {}
 		
 		//how long is our line length?
 		double distance = Math.sqrt(

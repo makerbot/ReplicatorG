@@ -92,7 +92,6 @@ public class Serial {
             input = port.getInputStream();
             output = port.getOutputStream();
             port.setSerialPortParams(rate, databits, stopbits, parity);
-            System.out.println("opening, ready to roll");
           }
         }
       }
