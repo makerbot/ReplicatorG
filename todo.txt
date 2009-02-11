@@ -1,14 +1,17 @@
 0003 ReplicatorG
 
-* fix tick lines in simulator window.
+* simulator
+  * fix tick lines in simulator window.
+  * add direction lines to simulation lines
+  * add variable line width to 2D simulation based on extruder on/off state.
+* control panel
+  * The control panel's jog dialog should always operate in relative mode.
+  * Have two buttons for each axis (fast and slow movement)
+  * While holding a button -> continuous movement (a bit cumbersome to implement perhaps)
+  * Add a "Reference" button (home to reference position)
+  * For reference and home functions; have an option for ignoring the Z axis
+  * Support for cancelling a temperature or goto home job (this is also a bit hard since these are blocking on the Arduino; would be cool to have a way of doing this in the firmware)
 * windows not using proper com## port from preferences.
-* Have two buttons for each axis (fast and slow movement)
-* add direction lines to simulation lines
-* While holding a button -> continuous movement (a bit cumbersome to implement perhaps)
-* Add a "Reference" button (home to reference position)
-* For reference and home functions; have an option for ignoring the Z axis
-* Support for cancelling a temperature or goto home job (this is also a bit hard since these are blocking on the Arduino; would be cool to have a way of doing this in the firmware)
-* add variable line width to 2D simulation based on extruder on/off state.
 * add time elapsed / total time to build window
 * add temperature, etc. to build window, especially important while heating.
 
@@ -26,7 +29,6 @@
 
 * Highlight the currently executing line in addition to the currently queued line
 * Look into using log4j for debug and output logging
-* The control panel's jog dialog should always operate in relative mode.
 * SerialPassthroughDriver: Option for setInitialized(true vs. false) -> machines.xml?
 * Batch jobs (print the same object multiple times, or multiple objects in one go)
 * Support pause (stop extruder, move head away) and continue
