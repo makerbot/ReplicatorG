@@ -667,7 +667,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		long ticks = convertFeedrateToTicks(getCurrentPosition(), p, getCurrentFeedrate());
 
 		//figure out the axis with the most steps.
-		Point3d steps = getDeltaSteps(getCurrentPosition(), p);
+		Point3d steps = getAbsDeltaSteps(getCurrentPosition(), p);
+		Point3d delta_steps = getDeltaSteps(getCurrentPosition(), p);
 		int max = Math.max((int)steps.x, (int)steps.y);
 		max = Math.max(max, (int)steps.z);
 		
@@ -681,7 +682,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		
 		//within our range?  just do it.
 		if (segmentCount == 1)
-			queueIncrementalPoint(pb, steps, ticks);
+			queueIncrementalPoint(pb, delta_steps, ticks);
 		else
 		{
 			for (int i=0; i<segmentCount; i++)
@@ -689,6 +690,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				Point3d segmentSteps = new Point3d();
 
 				//TODO: is this accurate?
+				//TODO: factor in negative deltas!
 				//calculate our line segments
 				segmentSteps.x = Math.round(32767 * xRatio);
 				segmentSteps.y = Math.round(32767 * yRatio);
@@ -1291,10 +1293,26 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     }
 
 	/*************************************
-     *  Various timer and math functions.
-     *************************************/
+  *  Various timer and math functions.
+  *************************************/
 
-	private Point3d getDeltaSteps(Point3d current, Point3d target)
+  private Point3d getDeltaDistance(Point3d current, Point3d target)
+ 	{
+ 		//calculate our deltas.
+ 		Point3d delta = new Point3d();
+ 		delta.x = target.x - current.x;
+ 		delta.y = target.y - current.y;
+ 		delta.z = target.z - current.z;
+
+ 		return delta;
+ 	}
+
+ 	private Point3d getDeltaSteps(Point3d current, Point3d target)
+ 	{
+ 		return machine.mmToSteps(getDeltaDistance(current, target));
+ 	}
+
+  private Point3d getAbsDeltaDistance(Point3d current, Point3d target)
 	{
 		//calculate our deltas.
 		Point3d delta = new Point3d();
@@ -1302,46 +1320,63 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		delta.y = Math.abs(target.y - current.y);
 		delta.z = Math.abs(target.z - current.z);
 		
-		return machine.mmToSteps(delta);
+		return delta;
+	}
+
+	private Point3d getAbsDeltaSteps(Point3d current, Point3d target)
+	{
+		return machine.mmToSteps(getAbsDeltaDistance(current, target));
 	}
 	
 	private long convertFeedrateToTicks(Point3d current, Point3d target, double feedrate)
 	{
-		Point3d deltaSteps = getDeltaSteps(current, target);
+		Point3d deltaDistance = getAbsDeltaDistance(current, target);
+		Point3d deltaSteps = getAbsDeltaSteps(current, target);
 		
 		//how long is our line length?
 		double distance = Math.sqrt(
-			deltaSteps.x * deltaSteps.x + 
-			deltaSteps.y * deltaSteps.y + 
-			deltaSteps.z * deltaSteps.z
+			deltaDistance.x * deltaDistance.x + 
+			deltaDistance.y * deltaDistance.y + 
+			deltaDistance.z * deltaDistance.z
 		);
 		
-		long master_steps = 0;
+		double masterSteps = 0;
 
 		//find the dominant axis.
 		if (deltaSteps.x > deltaSteps.y)
 		{
 			if (deltaSteps.z > deltaSteps.x)
-				master_steps = (long)deltaSteps.z;
+				masterSteps = deltaSteps.z;
 			else
-				master_steps = (long)deltaSteps.x;
+				masterSteps = deltaSteps.x;
 		}
 		else
 		{
 			if (deltaSteps.z > deltaSteps.y)
-				master_steps = (long)deltaSteps.z;
+				masterSteps = deltaSteps.z;
 			else
-				master_steps = (long)deltaSteps.y;
+				masterSteps = deltaSteps.y;
 		}
 
-		//calculate delay between steps in ticks.  this is sort of tricky, but not too bad.
-		// 960,000,000 = number of ticks in a second at 16Mhz, the speed of an Arduino/Sanguino.
-		//the formula has been condensed to save space.  here it is in english:
-	        // (feedrate is in mm/minute)
-		// distance / feedrate * 960,000,000.0 = move duration in ticks
-		// move duration / master_steps = time between steps for master axis.
+		// distance is in steps
+		// feedrate is in steps/
+    // distance / feedrate * 60,000,000 = move duration in microseconds
+		double micros = distance / feedrate * 60000000.0;
 
-		return (long)Math.floor(((distance * 960000000.0) / feedrate) / master_steps);
+    //micros / masterSteps = time between steps for master axis.
+    double step_delay = micros / masterSteps;
+
+    //arduino/sanguino does 16 ticks/microsecond.
+    long ticks = (long)Math.floor(step_delay * 16.0);
+
+    System.out.println("Distance: " + distance);
+    System.out.println("Feedrate: " + feedrate);
+    System.out.println("Micros: " + micros);
+    System.out.println("Master steps:" + masterSteps);
+    System.out.println("Step Delay (micros): " + step_delay);
+    System.out.println("Ticks: " + ticks);
+		
+		return ticks;
 	}
 	
 	private byte convertTicksToPrescaler(long ticks)
