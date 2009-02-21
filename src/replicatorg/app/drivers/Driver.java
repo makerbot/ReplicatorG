@@ -62,6 +62,16 @@ public interface Driver
 	public boolean isFinished();
 	
 	/**
+	* Is our buffer empty?  If don't have a buffer, its always true.
+	*/
+	public boolean isBufferEmpty();
+	
+	/**
+	* Wait until we've finished all commands.
+	*/
+	public void waitUntilBufferEmpty();
+	
+	/**
 	* do we have any errors?  this method handles them.
 	*/
 	public void checkErrors() throws BuildFailureException; 

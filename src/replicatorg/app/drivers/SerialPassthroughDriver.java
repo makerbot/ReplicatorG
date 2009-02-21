@@ -75,9 +75,9 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	int    databits;
 	float  stopbits;
 
-    private DecimalFormat df;
+  private DecimalFormat df;
 
-    private byte[] responsebuffer = new byte[512];
+  private byte[] responsebuffer = new byte[512];
 	
 	public SerialPassthroughDriver()
 	{
@@ -299,6 +299,14 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	}
 	
 	public boolean isFinished()
+	{
+    return isBufferEmpty();
+	}
+	
+  /**
+	* Is our buffer empty?  If don't have a buffer, its always true.
+	*/
+	public boolean isBufferEmpty()
 	{
 		try {
 			readResponse();

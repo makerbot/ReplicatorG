@@ -243,7 +243,8 @@ public class MachineController
 			int total = editor.textarea.getLineCount();
 			for (int i=0; i<total; i++)
 			{
-			    if (Thread.interrupted()) return false;
+		    if (Thread.interrupted()) return false;
+		    
 				editor.textarea.scrollTo(i, 0);
 				editor.highlightLine(i);
 				

@@ -1040,7 +1040,14 @@ public class GCodeParser
 		
 		if (hasCode("M"))
 		{
+      //System.out.println("has stop");
+      
+  		//we wanna do this after its finished whatever was before.
+  		driver.waitUntilBufferEmpty();
+
 			mCode = (int)getCodeValue("M");
+      //System.out.println("M" + mCode + ": " + comment);
+
 			if (mCode == 0)
 			{
 				if (comment.length() > 0)

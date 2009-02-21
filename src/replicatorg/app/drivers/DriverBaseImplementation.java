@@ -167,6 +167,33 @@ public class DriverBaseImplementation implements Driver
 	/*************************************************
 	*  Firmware information functions
 	*************************************************/
+
+  /**
+	* Is our buffer empty?  If don't have a buffer, its always true.
+	*/
+	public boolean isBufferEmpty()
+	{
+	  return true;
+	}
+	
+	/**
+	* Wait until we've finished all commands.
+	*/
+	public void waitUntilBufferEmpty()
+	{
+	  //sleep until we're empty.
+	  while (!isBufferEmpty())
+	  {
+	    try {
+	      Thread.sleep(50);
+	    }
+	    catch (Exception e){}
+	  }
+	}
+	
+	/*************************************************
+	*  Firmware information functions
+	*************************************************/
 	
 	public String getFirmwareInfo()
 	{
