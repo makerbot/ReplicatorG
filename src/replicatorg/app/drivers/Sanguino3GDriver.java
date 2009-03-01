@@ -600,11 +600,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation
   		synchronized(serial)
   		{
   		  //make things play nice.
-  		  try {
-  		    Thread.sleep(0, 50000);
-  		  } catch (Exception e) {
-  		    
-  		  }
+  		  //try {
+  		  //  Thread.sleep(0, 50000);
+  		  //} catch (Exception e) {}
+
   	    //do the actual send.
   	    serial.write(packet);
 
@@ -633,10 +632,11 @@ public class Sanguino3GDriver extends DriverBaseImplementation
               packetSent = true;
     		    else if (pr.getResponseCode() == ResponseCode.BUFFER_OVERFLOW)
     		    {
+    		      System.out.println("Hmm.");
     		      try {
+      		      System.out.println("Command Buffer full.");
     		        Thread.sleep(25);
     		      } catch (Exception e) {}
-
     		    }
     		    //TODO: implement other error things.
     		    else
