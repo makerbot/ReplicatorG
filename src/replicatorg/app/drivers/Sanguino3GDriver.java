@@ -694,22 +694,27 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
     public void queuePoint(Point3d p)
     {
-  		System.out.println("current1: " + machine.getCurrentPosition());
-  		System.out.println("target1: " + p);
-
   		if (debugLevel >= 1)
   			System.out.println("Queued point " + p);
 
-      //where we going?
-      Point3d steps = machine.mmToSteps(p);
+      //is this point even step-worthy?
+      Point3d deltaSteps = getAbsDeltaSteps(machine.getCurrentPosition(), p);
+      double masterSteps = getLongestLength(deltaSteps);
 
-      //how fast are we doing it?
-  		long ticks = convertFeedrateToTicks(machine.getCurrentPosition(), p, getCurrentFeedrate());
+      //okay, we need at least one step.
+      if (masterSteps > 0.0)
+      {
+        //where we going?
+        Point3d steps = machine.mmToSteps(p);
 
-		  //okay, send it off!
-		  queueAbsolutePoint(steps, ticks);
-		  
-    	super.queuePoint(p);
+        //how fast are we doing it?
+    		long ticks = convertFeedrateToTicks(machine.getCurrentPosition(), p, getCurrentFeedrate());
+
+  		  //okay, send it off!
+  		  queueAbsolutePoint(steps, ticks);
+
+      	super.queuePoint(p);
+      }
     }
     
     public Point3d getPosition()
@@ -1409,13 +1414,13 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		Point3d deltaDistance = getAbsDeltaDistance(current, target);
 		Point3d deltaSteps = getAbsDeltaSteps(current, target);
 		
-		System.out.println("current: " + current);
-		System.out.println("target: " + target);
-		System.out.println("deltas:" + deltaDistance);
+//		System.out.println("current: " + current);
+//		System.out.println("target: " + target);
+//		System.out.println("deltas:" + deltaDistance);
 		
-		try {
-		  Thread.sleep(10000);
-		} catch (Exception e) {}
+//		try {
+//		  Thread.sleep(10000);
+//		} catch (Exception e) {}
 		
 		//how long is our line length?
 		double distance = Math.sqrt(
@@ -1424,23 +1429,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 			deltaDistance.z * deltaDistance.z
 		);
 		
-		double masterSteps = 0;
-
-		//find the dominant axis.
-		if (deltaSteps.x > deltaSteps.y)
-		{
-			if (deltaSteps.z > deltaSteps.x)
-				masterSteps = deltaSteps.z;
-			else
-				masterSteps = deltaSteps.x;
-		}
-		else
-		{
-			if (deltaSteps.z > deltaSteps.y)
-				masterSteps = deltaSteps.z;
-			else
-				masterSteps = deltaSteps.y;
-		}
+		double masterSteps = getLongestLength(deltaSteps);
 
 		// distance is in steps
 		// feedrate is in steps/
@@ -1453,14 +1442,33 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     //arduino/sanguino does 16 ticks/microsecond.
     long ticks = (long)Math.floor(step_delay * 16.0);
 
-    System.out.println("Distance: " + distance);
-    System.out.println("Feedrate: " + feedrate);
-    System.out.println("Micros: " + micros);
-    System.out.println("Master steps:" + masterSteps);
-    System.out.println("Step Delay (micros): " + step_delay);
-    System.out.println("Ticks: " + ticks);
+//    System.out.println("Distance: " + distance);
+//    System.out.println("Feedrate: " + feedrate);
+//    System.out.println("Micros: " + micros);
+//    System.out.println("Master steps:" + masterSteps);
+//    System.out.println("Step Delay (micros): " + step_delay);
+//    System.out.println("Ticks: " + ticks);
 		
 		return ticks;
+	}
+	
+	private double getLongestLength(Point3d p)
+	{
+	  //find the dominant axis.
+		if (p.x > p.y)
+		{
+			if (p.z > p.x)
+				return p.z;
+			else
+				return p.x;
+		}
+		else
+		{
+			if (p.z > p.y)
+				return p.z;
+			else
+				return p.y;
+		}
 	}
 	
 	private byte convertTicksToPrescaler(long ticks)
