@@ -82,7 +82,7 @@
 			<parity>8</parity>
 			<!-- optional, defaults to 1.                          <databits>1</databits> -->
 			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
-			<debuglevel>0</debuglevel>
+			<debuglevel>2</debuglevel>
 		</driver>
 		<!--
 			(homing routing)

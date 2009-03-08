@@ -980,8 +980,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     public void setMotorRPM(double rpm)
     {
 		//convert RPM into microseconds and then send.
-		long microseconds = (int)Math.round(60 * 1000000 / rpm); //no unsigned ints?!?
-		microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
+		long microseconds = (int)Math.round(60.0 * 1000000.0 / rpm); //no unsigned ints?!?
+//		microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
 		
 		if (debugLevel >= 1)
 			System.out.println("Setting motor 1 speed to " + rpm + " RPM (" + microseconds + " microseconds)");

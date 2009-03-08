@@ -50,6 +50,8 @@ public class ToolModel
 	protected int motorSpeedReadingPWM;
 	protected boolean motorHasEncoder;
 	protected int motorEncoderPPR;
+	protected boolean motorIsStepper;
+	protected int motorSteps;
 
 	//spindle stuff
 	protected boolean spindleEnabled;
@@ -155,6 +157,16 @@ public class ToolModel
 						motorEncoderPPR = Integer.parseInt(n);
 					}
 				} catch (Exception e) {} // ignore parse errors.
+
+				n = XML.getAttributeValue(xml, "motor_steps");
+				try{
+					if (Integer.parseInt(n) > 0)
+					{
+						motorIsStepper = true;
+						motorSteps = Integer.parseInt(n);
+					}
+				} catch (Exception e) {} // ignore parse errors.
+
 			}
 		} catch (Exception e) {} //ignore boolean/integer parse errors
 
