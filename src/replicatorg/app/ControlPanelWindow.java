@@ -443,86 +443,97 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//create our motor options
 		if (t.hasMotor())
 		{
-			JLabel motorSpeedLabel = new JLabel();
-			JTextField motorSpeedField = new JTextField();
+		    // Due to current implementation issues, we need to send the PWM before the RPM
+		    // for a stepper motor.  Thus we display both controls in these cases.
+		    {
+			//our motor speed vars
+			JLabel label = new JLabel();
+			JTextField field = new JTextField();
+			label.setText("Motor Speed (PWM)");
+			label.setMinimumSize(labelMinimumSize);
+			label.setMaximumSize(labelMinimumSize);
+			label.setPreferredSize(labelMinimumSize);
+			label.setHorizontalAlignment(JLabel.LEFT);
+			    
+			field.setMaximumSize(new Dimension(textBoxWidth, 25));
+			field.setMinimumSize(new Dimension(textBoxWidth, 25));
+			field.setPreferredSize(new Dimension(textBoxWidth, 25));
+			field.setName("motor-speed-pwm");
+			field.addFocusListener(this);
 
-      if (t.motorHasEncoder())
-      {
-  			//our motor speed vars
-        motorSpeedLabel.setText("Motor Speed (RPM)");
-  			motorSpeedLabel.setMinimumSize(labelMinimumSize);
-  			motorSpeedLabel.setMaximumSize(labelMinimumSize);
-  			motorSpeedLabel.setPreferredSize(labelMinimumSize);
-  			motorSpeedLabel.setHorizontalAlignment(JLabel.LEFT);
-
-  			motorSpeedField.setMaximumSize(new Dimension(textBoxWidth, 25));
-  			motorSpeedField.setMinimumSize(new Dimension(textBoxWidth, 25));
-  			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
-  			motorSpeedField.setName("motor-speed");
-  			motorSpeedField.addFocusListener(this);
-      }
-      else
-      {
-  			//our motor speed vars
-        motorSpeedLabel.setText("Motor Speed (PWM)");
-  			motorSpeedLabel.setMinimumSize(labelMinimumSize);
-  			motorSpeedLabel.setMaximumSize(labelMinimumSize);
-  			motorSpeedLabel.setPreferredSize(labelMinimumSize);
-  			motorSpeedLabel.setHorizontalAlignment(JLabel.LEFT);
-
-  			motorSpeedField.setMaximumSize(new Dimension(textBoxWidth, 25));
-  			motorSpeedField.setMinimumSize(new Dimension(textBoxWidth, 25));
-  			motorSpeedField.setPreferredSize(new Dimension(textBoxWidth, 25));
-  			motorSpeedField.setName("motor-speed-pwm");
-  			motorSpeedField.addFocusListener(this);
-      }
-			
-			//create our motor options
-			JLabel motorEnabledLabel = new JLabel("Motor Control");
-			motorEnabledLabel.setMinimumSize(labelMinimumSize);
-			motorEnabledLabel.setMaximumSize(labelMinimumSize);
-			motorEnabledLabel.setPreferredSize(labelMinimumSize);
-			motorEnabledLabel.setHorizontalAlignment(JLabel.LEFT);
-			
-			JRadioButton motorReverseButton = new JRadioButton("reverse");
-			motorReverseButton.setName("motor-reverse");
-			motorReverseButton.addItemListener(this);
-
-			JRadioButton motorStoppedButton = new JRadioButton("stop");
-			motorStoppedButton.setName("motor-stop");
-			motorStoppedButton.addItemListener(this);
-
-			JRadioButton motorForwardButton = new JRadioButton("forward");
-			motorForwardButton.setName("motor-forward");
-			motorForwardButton.addItemListener(this);
-
-			ButtonGroup motorControl = new ButtonGroup();
-			motorControl.add(motorReverseButton);
-			motorControl.add(motorStoppedButton);
-			motorControl.add(motorForwardButton);
-			
-			//create our panels
 			JPanel motorSpeedPanel = new JPanel();
 			motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel, BoxLayout.LINE_AXIS));
 			motorSpeedPanel.setMaximumSize(panelSize);
 			motorSpeedPanel.setMinimumSize(panelSize);
 			motorSpeedPanel.setPreferredSize(panelSize);
-			
-			JPanel motorControlPanel = new JPanel();
-			motorControlPanel.setLayout(new BoxLayout(motorControlPanel, BoxLayout.LINE_AXIS));
-			motorControlPanel.setMaximumSize(panelSize);
-			motorControlPanel.setMinimumSize(panelSize);
-			motorControlPanel.setPreferredSize(panelSize);
-
-			//add components in.
-			motorSpeedPanel.add(motorSpeedLabel);
-			motorSpeedPanel.add(motorSpeedField);
+			motorSpeedPanel.add(label);
+			motorSpeedPanel.add(field);
 			panel.add(motorSpeedPanel);
-			motorControlPanel.add(motorEnabledLabel);
-			motorControlPanel.add(motorReverseButton);
-			motorControlPanel.add(motorStoppedButton);
-			motorControlPanel.add(motorForwardButton);
-			panel.add(motorControlPanel);
+		    }
+
+		    if (t.motorHasEncoder() || t.motorIsStepper())
+		    {
+			JLabel label = new JLabel();
+			JTextField field = new JTextField();
+			//our motor speed vars
+			label.setText("Motor Speed (RPM)");
+			label.setMinimumSize(labelMinimumSize);
+			label.setMaximumSize(labelMinimumSize);
+			label.setPreferredSize(labelMinimumSize);
+			label.setHorizontalAlignment(JLabel.LEFT);
+			    
+			field.setMaximumSize(new Dimension(textBoxWidth, 25));
+			field.setMinimumSize(new Dimension(textBoxWidth, 25));
+			field.setPreferredSize(new Dimension(textBoxWidth, 25));
+			field.setName("motor-speed");
+			field.addFocusListener(this);
+
+			JPanel motorSpeedPanel = new JPanel();
+			motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel, BoxLayout.LINE_AXIS));
+			motorSpeedPanel.setMaximumSize(panelSize);
+			motorSpeedPanel.setMinimumSize(panelSize);
+			motorSpeedPanel.setPreferredSize(panelSize);
+			motorSpeedPanel.add(label);
+			motorSpeedPanel.add(field);
+			panel.add(motorSpeedPanel);
+		    }
+		    //create our motor options
+		    JLabel motorEnabledLabel = new JLabel("Motor Control");
+		    motorEnabledLabel.setMinimumSize(labelMinimumSize);
+		    motorEnabledLabel.setMaximumSize(labelMinimumSize);
+		    motorEnabledLabel.setPreferredSize(labelMinimumSize);
+		    motorEnabledLabel.setHorizontalAlignment(JLabel.LEFT);
+		    
+		    JRadioButton motorReverseButton = new JRadioButton("reverse");
+		    motorReverseButton.setName("motor-reverse");
+		    motorReverseButton.addItemListener(this);
+		    
+		    JRadioButton motorStoppedButton = new JRadioButton("stop");
+		    motorStoppedButton.setName("motor-stop");
+		    motorStoppedButton.addItemListener(this);
+		    
+		    JRadioButton motorForwardButton = new JRadioButton("forward");
+		    motorForwardButton.setName("motor-forward");
+		    motorForwardButton.addItemListener(this);
+		    
+		    ButtonGroup motorControl = new ButtonGroup();
+		    motorControl.add(motorReverseButton);
+		    motorControl.add(motorStoppedButton);
+		    motorControl.add(motorForwardButton);
+		    
+		    
+		    JPanel motorControlPanel = new JPanel();
+		    motorControlPanel.setLayout(new BoxLayout(motorControlPanel, BoxLayout.LINE_AXIS));
+		    motorControlPanel.setMaximumSize(panelSize);
+		    motorControlPanel.setMinimumSize(panelSize);
+		    motorControlPanel.setPreferredSize(panelSize);
+		    
+		    //add components in.
+		    motorControlPanel.add(motorEnabledLabel);
+		    motorControlPanel.add(motorReverseButton);
+		    motorControlPanel.add(motorStoppedButton);
+		    motorControlPanel.add(motorForwardButton);
+		    panel.add(motorControlPanel);
 		}
 		
 		//our temperature fields

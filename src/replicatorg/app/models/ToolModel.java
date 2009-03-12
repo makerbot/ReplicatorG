@@ -350,6 +350,11 @@ public class ToolModel
 	  return motorHasEncoder;
 	}
 	
+	public boolean motorIsStepper()
+	{
+		return motorIsStepper;
+	}
+
 	/*************************************
 	*  Spindle interface functions
 	*************************************/

@@ -72,7 +72,7 @@
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
-			<tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+			<tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" motor_steps="10" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
