@@ -112,8 +112,8 @@
 		<name>Cupcake v0</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="300" maxfeedrate="1000" scale="5"/>
-			<axis id="y" length="300" maxfeedrate="1000" scale="14.29"/> 
+			<axis id="x" length="300" maxfeedrate="1000" scale="14.29"/> 
+			<axis id="y" length="300" maxfeedrate="1000" scale="5"/>
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
@@ -129,27 +129,9 @@
 			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
 			<debuglevel>2</debuglevel>
 		</driver>
-		<!--
-			(homing routing)
-			G91
-			G1 Z10 F100
-			#G92 X0 Y0 (set xy as home)
-			M104 S210
-			M108 S255
-			M101
-			G04 P10000
-			M103
-			G04 P5000
-			G1 Z-10 F100
-			G92 X0 Y0 Z0
-			(ready to print)
-		-->
 		<warmup>
 		</warmup>
 		<cooldown>
-			M104 S20
-			G91
-			G1 Z10 F50
 		</cooldown>
 	</machine>
 </machines>
