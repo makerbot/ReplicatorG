@@ -75,7 +75,6 @@ public class GCodeParser
 	boolean absoluteMode = false;
 	
 	//our feedrate variables.
-	double maximumFeedrate = 0.0;
 	double feedrate = 0.0;
 
 	/* keep track of the last G code - this is the command mode to use
@@ -133,7 +132,19 @@ public class GCodeParser
 		//init our offset
 		currentOffset = new Point3d();
 	}
-	
+
+    /**
+     * Get the maximum feed rate from the driver's model.
+     */
+    protected double getMaxFeedrate()
+    {
+	// TODO: right now this is defaulting to the x feedrate.  We should
+	// eventually check for z-axis motions and use that feedrate.  We should
+	// also either alter the model, or post a warning when the x and y
+	// feedrates differ.
+	return driver.getMachine().getMaximumFeedrates().x;
+    }
+
 	/**
 	* initialize parser with values from the driver
 	*/
@@ -609,13 +620,14 @@ public class GCodeParser
 				//Linear Interpolation
 				//these are basically the same thing.
 				case 0:
-					driver.setFeedrate(maximumFeedrate);
+					driver.setFeedrate(getMaxFeedrate());
 					setTarget(temp);
 					break;
 
 				//Rapid Positioning
 				case 1:
 					//set our target.
+					driver.setFeedrate(feedrate);
 					setTarget(temp);
 					break;
 
@@ -686,8 +698,11 @@ public class GCodeParser
 				//go home to your limit switches
 				case 28:
 					//home all axes?
-					if (hasCode("X") && hasCode("Y") && hasCode("Z"))
+					if (hasCode("X") && hasCode("Y") && hasCode("Z")) 
+					{
 						driver.homeXYZ();
+						System.err.println("Sent XYZ home.");
+					}
 					else
 					{
 						//x and y?
@@ -879,12 +894,12 @@ public class GCodeParser
 		// Retract to R position if Z is currently below this
 		if (current.z < drillRetract)
 		{
-			driver.setFeedrate(maximumFeedrate);
+			driver.setFeedrate(getMaxFeedrate());
 			setTarget(new Point3d(current.x, current.y, drillRetract));
 		}
 		
 		// Move to start XY
-		driver.setFeedrate(maximumFeedrate);
+		driver.setFeedrate(getMaxFeedrate());
 		setTarget(new Point3d(drillTarget.x, drillTarget.y, current.z));
 
 		// Do the actual drilling
@@ -904,7 +919,7 @@ public class GCodeParser
 			if (targetZ != drillRetract && !speedPeck)
 			{
 				//TODO: move this to 10% of the bottom.
-				driver.setFeedrate(maximumFeedrate);
+				driver.setFeedrate(getMaxFeedrate());
 				setTarget(new Point3d(drillTarget.x, drillTarget.y, targetZ));
 			}
 
@@ -927,7 +942,7 @@ public class GCodeParser
 			// Retract unless we're speed pecking.
 			if (!speedPeck)
 			{
-				driver.setFeedrate(maximumFeedrate);
+				driver.setFeedrate(getMaxFeedrate());
 				setTarget(new Point3d(drillTarget.x, drillTarget.y, drillRetract));
 			}
 			
@@ -936,7 +951,7 @@ public class GCodeParser
 		//double check for final speedpeck retract
 		if (current.z < drillRetract)
 		{
-			driver.setFeedrate(maximumFeedrate);
+			driver.setFeedrate(getMaxFeedrate());
 			setTarget(new Point3d(drillTarget.x, drillTarget.y, drillRetract));
 		}
 	}

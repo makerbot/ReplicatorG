@@ -912,10 +912,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.FIND_AXES_MINIMUM);
-		pb.add8(prescaler);
-		pb.add16(counter);
-		pb.add16(300); //default to 5 minutes
 		pb.add8(flags);
+		pb.add32(counter);
+		pb.add16(300); //default to 5 minutes
 
 		PacketResponse pr = runCommand(pb.getPacket());
 	}
