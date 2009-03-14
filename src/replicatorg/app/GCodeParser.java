@@ -671,7 +671,7 @@ public class GCodeParser
 				
 				//dwell
 				case 4:
-					driver.delay((long)getCodeValue("P") * 1000);
+					driver.delay((long)getCodeValue("P"));
 					break;
 					
 				//plane selection codes
