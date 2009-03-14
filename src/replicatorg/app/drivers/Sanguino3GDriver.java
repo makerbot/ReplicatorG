@@ -708,7 +708,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
         Point3d steps = machine.mmToSteps(p);
 
         //how fast are we doing it?
-    		long ticks = convertFeedrateToTicks(machine.getCurrentPosition(), p, getCurrentFeedrate());
+    		long ticks = convertFeedrateToTicks(machine.getCurrentPosition(), p, getSafeFeedrate(deltaSteps));
 
   		  //okay, send it off!
   		  queueAbsolutePoint(steps, ticks);

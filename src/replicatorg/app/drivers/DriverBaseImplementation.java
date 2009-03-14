@@ -276,6 +276,22 @@ public class DriverBaseImplementation implements Driver
 		return currentFeedrate;
 	}
 	
+	public double getSafeFeedrate(Point3d delta)
+	{
+	  double feedrate = getCurrentFeedrate();
+	  
+	  Point3d maxFeedrates = machine.getMaximumFeedrates();
+	  
+	  if (delta.x != 0)
+	    feedrate = Math.min(feedrate, maxFeedrates.x);
+	  if (delta.y != 0)
+	    feedrate = Math.min(feedrate, maxFeedrates.y);
+	  if (delta.z != 0)
+	    feedrate = Math.min(feedrate, maxFeedrates.z);
+	    
+	  return feedrate;
+	}
+	
 	/*************************************************
 	*  various homing functions
 	*************************************************/
