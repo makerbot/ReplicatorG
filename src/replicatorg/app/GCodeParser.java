@@ -294,9 +294,15 @@ public class GCodeParser
 	public void execute() throws GCodeException
 	{
 		// Select our tool?
+	  int tempTool = (int)getCodeValue("T");
 		if (hasCode("T"))
-			driver.selectTool((int)getCodeValue("T"));
-		
+		{
+		  if (tempTool != tool)
+  			driver.selectTool(tempTool);
+		 
+		  tool = tempTool;
+		}
+		  
 		//TODO: is this the proper way?	
 		// Set spindle speed?
 		//if (hasCode("S"))
