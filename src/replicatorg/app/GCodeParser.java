@@ -293,6 +293,15 @@ public class GCodeParser
 	 */
 	public void execute() throws GCodeException
 	{
+		//TODO: is this the proper way?	
+		// Set spindle speed?
+		//if (hasCode("S"))
+		//	driver.setSpindleRPM(getCodeValue("S"));
+			
+		//execute our other codes
+		executeMCodes();
+		executeGCodes();
+
 		// Select our tool?
 	  int tempTool = (int)getCodeValue("T");
 		if (hasCode("T"))
@@ -302,15 +311,6 @@ public class GCodeParser
 		 
 		  tool = tempTool;
 		}
-		  
-		//TODO: is this the proper way?	
-		// Set spindle speed?
-		//if (hasCode("S"))
-		//	driver.setSpindleRPM(getCodeValue("S"));
-			
-		//execute our other codes
-		executeMCodes();
-		executeGCodes();
 	}
 	
 	private void executeMCodes() throws GCodeException
