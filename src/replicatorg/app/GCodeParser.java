@@ -83,7 +83,7 @@ public class GCodeParser
 	int lastGCode = -1;
 	
 	// current selected tool
-	protected int tool = 0;
+	protected int tool = -1;
 	
 	// a comment passed in
 	protected String comment = "";
