@@ -245,8 +245,9 @@ public class MachineController
 			{
 		    if (Thread.interrupted()) return false;
 		    
-				editor.textarea.scrollTo(i, 0);
-				editor.highlightLine(i);
+		    //TODO: does this make it slow?
+				//editor.textarea.scrollTo(i, 0);
+				//editor.highlightLine(i);
 				
 				String line = editor.textarea.getLineText(i);
 				

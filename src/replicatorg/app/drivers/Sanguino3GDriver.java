@@ -272,8 +272,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		{
 			PacketResponse pr = new PacketResponse(payload);
 			
-			if (debugLevel >= 2)
-				pr.printDebug();
+			pr.printDebug();
 				
 			return pr;
 		}
@@ -367,7 +366,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		 * packet's contents in hex.
 		 */
 		public void printDebug() {
-		    String msg = "Unknown";
+
+			  String msg = "Unknown";
 		    switch(payload[0]) {
 			    case ResponseCode.GENERIC_ERROR:
 					msg = "Generic Error";
@@ -378,7 +378,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 					break;
 			    
 				case ResponseCode.BUFFER_OVERFLOW:
-					msg = "Buffer overflow";
+					msg = "Buffer full";
 					break;
 			    
 				case ResponseCode.CRC_MISMATCH:
@@ -393,12 +393,17 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 					msg = "Unsupported command";
 					break;
 		    }
-		    System.out.println("Packet response code: " + msg);
-		    System.out.print("Packet payload: ");
-		    for (int i = 1; i < payload.length; i++) {
-				System.out.print(Integer.toHexString(payload[i]&0xff) + " ");
+		    
+		    //only print certain messages
+		    if (debugLevel >= 2 || (debugLevel >= 1 && payload[0] != ResponseCode.OK && payload[0] != ResponseCode.BUFFER_OVERFLOW))
+		    {
+  		    System.out.println("Packet response code: " + msg);
+  		    System.out.print("Packet payload: ");
+  		    for (int i = 1; i < payload.length; i++) {
+    				System.out.print(Integer.toHexString(payload[i]&0xff) + " ");
+  		    }
+  		    System.out.print("\n");
 		    }
-		    System.out.print("\n");
 		}
 
 		/**
@@ -632,9 +637,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
               packetSent = true;
     		    else if (pr.getResponseCode() == ResponseCode.BUFFER_OVERFLOW)
     		    {
-    		      System.out.println("Hmm.");
     		      try {
-      		      System.out.println("Command Buffer full.");
     		        Thread.sleep(25);
     		      } catch (Exception e) {}
     		    }
@@ -959,6 +962,21 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		//TODO: throw some sort of unsupported exception.
 		super.changeGearRatio(ratioIndex);
     }
+
+  	public void requestToolChange(int toolIndex)
+  	{
+  	  selectTool(toolIndex);
+
+  		if (debugLevel >= 1)
+  			System.out.println("Waiting for tool #" + toolIndex);
+
+  		//send it!
+  		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.WAIT_FOR_TOOL);
+  		pb.add8((byte)toolIndex);
+  		pb.add16(100); //delay between master -> slave pings (millis)
+  		pb.add16(120); //timeout before continuing (seconds)
+  		PacketResponse pr = runCommand(pb.getPacket());
+  	}
 	
 	public void selectTool(int toolIndex)
 	{
