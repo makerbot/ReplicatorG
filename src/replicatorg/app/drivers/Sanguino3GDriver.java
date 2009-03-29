@@ -55,7 +55,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		public final static int PROBE             =   9;
 		public final static int TOOL_QUERY        =  10;
 		
-		public final static int QUEUE_POINT_INC   = 128;
+		//public final static int QUEUE_POINT_INC   = 128;  //this command has been eliminated.
 		public final static int QUEUE_POINT_ABS   = 129;
 		public final static int SET_POSITION      = 130;
 		public final static int FIND_AXES_MINIMUM = 131;
@@ -711,10 +711,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation
         Point3d steps = machine.mmToSteps(p);
 
         //how fast are we doing it?
-    		long ticks = convertFeedrateToTicks(machine.getCurrentPosition(), p, getSafeFeedrate(deltaSteps));
+    		long micros = convertFeedrateToMicros(machine.getCurrentPosition(), p, getSafeFeedrate(deltaSteps));
 
   		  //okay, send it off!
-  		  queueAbsolutePoint(steps, ticks);
+  		  queueAbsolutePoint(steps, micros);
 
       	super.queuePoint(p);
       }
@@ -767,48 +767,23 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		}
 	*/
 
-  private void queueAbsolutePoint(Point3d steps, long ticks)
+  private void queueAbsolutePoint(Point3d steps, long micros)
   {
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.QUEUE_POINT_ABS);
 
-		//figure out our timer values.
-		byte prescaler = convertTicksToPrescaler(ticks);
-		int counter = convertTicksToCounter(ticks);
-
 		if (debugLevel >= 1)
-			System.out.println("Queued absolute point " + steps + " at " + counter + "/" + prescaler + " (" + ticks + ")");
+			System.out.println("Queued absolute point " + steps + " at " + micros + " usec.");
 
 		//just add them in now.
 		pb.add32((int)steps.x);
 		pb.add32((int)steps.y);
 		pb.add32((int)steps.z);
-		pb.add8(prescaler);
-		pb.add16(counter);
+		pb.add32((int)micros);
 
 		PacketResponse pr = runCommand(pb.getPacket());    
   }
 
-	private void queueIncrementalPoint(Point3d steps, long ticks)
-	{
-		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.QUEUE_POINT_INC);
 
-		//figure out our timer values.
-		byte prescaler = convertTicksToPrescaler(ticks);
-		int counter = convertTicksToCounter(ticks);
-
-		if (debugLevel >= 1)
-			System.out.println("Queued incremental point " + steps + " at " + counter + "/" + prescaler + " (" + ticks + ")");
-
-		//just add them in now.
-		pb.add16((int)steps.x);
-		pb.add16((int)steps.y);
-		pb.add16((int)steps.z);
-		pb.add8(prescaler);
-		pb.add16(counter);
-
-		PacketResponse pr = runCommand(pb.getPacket());
-	}
-	
     public void setCurrentPosition(Point3d p)
     {
   		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.SET_POSITION);
@@ -904,19 +879,15 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		}
 
 		//calculate ticks
-		long ticks = convertFeedrateToTicks(new Point3d(), target, feedrate);
-
-		//calculate prescaler/counter values
-		byte prescaler = convertTicksToPrescaler(ticks);
-		int counter = convertTicksToCounter(ticks);
+		long micros = convertFeedrateToMicros(new Point3d(), target, feedrate);
 		
 		if (debugLevel >= 2)
-			System.out.println("Homing w/ flags " + Integer.toBinaryString(flags) + " at " + counter + "/" + prescaler);
+			System.out.println("Homing w/ flags " + Integer.toBinaryString(flags) + " at " + micros + " usec.");
 		
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.FIND_AXES_MINIMUM);
 		pb.add8(flags);
-		pb.add32(counter);
+		pb.add32((int)micros);
 		pb.add16(300); //default to 5 minutes
 
 		PacketResponse pr = runCommand(pb.getPacket());
@@ -1425,7 +1396,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		return machine.mmToSteps(getAbsDeltaDistance(current, target));
 	}
 	
-	private long convertFeedrateToTicks(Point3d current, Point3d target, double feedrate)
+	private long convertFeedrateToMicros(Point3d current, Point3d target, double feedrate)
 	{
 	  
 		Point3d deltaDistance = getAbsDeltaDistance(current, target);
@@ -1456,17 +1427,13 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     //micros / masterSteps = time between steps for master axis.
     double step_delay = micros / masterSteps;
 
-    //arduino/sanguino does 16 ticks/microsecond.
-    long ticks = (long)Math.floor(step_delay * 16.0);
-
 //    System.out.println("Distance: " + distance);
 //    System.out.println("Feedrate: " + feedrate);
 //    System.out.println("Micros: " + micros);
 //    System.out.println("Master steps:" + masterSteps);
 //    System.out.println("Step Delay (micros): " + step_delay);
-//    System.out.println("Ticks: " + ticks);
 		
-		return ticks;
+		return (long)Math.round(step_delay);
 	}
 	
 	private double getLongestLength(Point3d p)

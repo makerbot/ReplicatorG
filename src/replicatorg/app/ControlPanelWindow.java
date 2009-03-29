@@ -121,7 +121,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	 	setBounds(40, 40, myWidth, myHeight);
 	
 		//default behavior
-		setDefaultCloseOperation(HIDE_ON_CLOSE);
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	
 		//no resizing... yet
 		setResizable(false);
@@ -138,6 +138,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//mainPanel.add(Box.createVerticalGlue());
 		createToolsPanel();
 		add(mainPanel);
+
+    //add our listener hooks.
+    //addWindowListener(this);
+    //addWindowFocusListener(this);
+    //addWindowStateListener(this);
 
 		//start our various threads.
 		updateThread = new UpdateThread(this);
