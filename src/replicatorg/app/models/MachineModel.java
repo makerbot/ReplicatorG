@@ -307,8 +307,7 @@ public class MachineModel
 		try {
 			currentTool = (ToolModel)tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println("Cannot select non-existant tool (#" + index + ".");
-			e.printStackTrace();
+			System.out.println("Cannot select non-existant tool (#" + index + ").");
 		}
 	}
 

@@ -48,7 +48,9 @@ public class EstimationDriver extends DriverBaseImplementation
 		//suppress errors.
 		try {
 			super.execute();
-		} catch (GCodeException e) {}
+		}
+		catch (GCodeException e) {}
+		catch (ArrayIndexOutOfBoundsException e) {}
 	
 		// our speed is feedrate * distance * 60000 (milliseconds in 1 minute)
 		// feedrate is mm per minute
