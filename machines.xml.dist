@@ -9,112 +9,21 @@
 			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
 		</geometry>
 		<tools>
-			<tool name="Generic Extruder" type="extruder" material="abs" motor="true" floodcoolant="true" mistcoolant="true" fan="true" valve="true" collet="true" heater="true" motor_encoder_ppr="512" spindle_encoder_ppr="512"/>
+			<tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="null"> <!-- use a fake driver -->
 			<speedup>20</speedup> <!-- amount to speed up print process:  1 = realtime, 2 = 2x, 10 = 10x, etc. -->
 		</driver>
 	</machine>
-	<!-- end protected configuration -->
-	<machine>
-		<name>GCode Interpreter</name>
-		<geometry type="cartesian">
-			<axis id="x" length="300" maxfeedrate="1000" scale="11.4485"/>
-			<axis id="y" length="300" maxfeedrate="1000" scale="11.4485"/>
-			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
-		</geometry>
-		<tools>
-			<tool name="Lasercut Extruder v1.0" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
-		</tools>
-		<clamps></clamps>
-		<driver name="serialpassthrough">
-			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
-			<!-- optional, defaults to 19200.                      <rate>19200</rate> -->
-			<!-- optional, defaults to 8.                          <parity>8</parity> -->
-			<!-- optional, defaults to 1.                          <databits>1</databits> -->
-			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
-		</driver>
-			<!--
-			(homing routing)
-			G91
-			G1 Z10 F75
-			G1 X-999 Y-999 F2000
-			G92 X0 Y0 (set xy as home)
-			M104 S200
-			M108 S20
-			M101
-			G04 P10000
-			M103
-			G04 P5000
-			G1 X150 Y150
-			G1 Z-10 F75
-			G92 X0 Y0 Z0
-			(ready to print)
-		-->
-		<warmup>
-		</warmup>
-<!--
-	M104 S20
-	G91
-	G1 Z10 F50	
--->
-		<cooldown>
-
-		</cooldown>
-	</machine>
-	<machine>
-		<name>RepRap 3G</name>
-		<geometry type="cartesian">
-			<axis id="x" length="300" maxfeedrate="1000" scale="3.858"/>
-			<axis id="y" length="300" maxfeedrate="1000" scale="3.858"/>
-			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
-		</geometry>
-		<tools>
-			<tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" motor_steps="10" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
-		</tools>
-		<clamps></clamps>
-		<driver name="sanguino3g">
-			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
-			<!-- required: we need 8 bit and 38400 baud. -->
-			<rate>38400</rate>
-			<parity>8</parity>
-			<!-- optional, defaults to 1.                          <databits>1</databits> -->
-			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
-			<debuglevel>2</debuglevel>
-		</driver>
-		<!--
-			(homing routing)
-			G91
-			G1 Z10 F100
-			#G92 X0 Y0 (set xy as home)
-			M104 S210
-			M108 S255
-			M101
-			G04 P10000
-			M103
-			G04 P5000
-			G1 Z-10 F100
-			G92 X0 Y0 Z0
-			(ready to print)
-		-->
-		<warmup>
-		</warmup>
-		<cooldown>
-			M104 S20
-			G91
-			G1 Z10 F50
-		</cooldown>
-	</machine>
-
 	<!-- Cupcake prototype description -->
 	<machine>
 		<name>Cupcake v0</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="300" maxfeedrate="1000" scale="14.29"/> 
-			<axis id="y" length="300" maxfeedrate="1000" scale="5"/>
-			<axis id="z" length="300" maxfeedrate="100" scale="320"/>
+			<axis id="x" length="300" maxfeedrate="5000" scale="11.767463"/> 
+			<axis id="y" length="300" maxfeedrate="5000" scale="11.767463"/>
+			<axis id="z" length="300" maxfeedrate="150" scale="320"/>
 		</geometry>
 		<tools>
 			<tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
@@ -127,7 +36,7 @@
 			<parity>8</parity>
 			<!-- optional, defaults to 1.                          <databits>1</databits> -->
 			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
-			<debuglevel>2</debuglevel>
+			<debuglevel>1</debuglevel>
 		</driver>
 		<warmup>
 		</warmup>

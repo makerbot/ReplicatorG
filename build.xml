@@ -126,7 +126,7 @@
 	</copy>
     </target>
 
-    <target name="dist" depends="dist-macosx,dist-linux,dist-windows">
+    <target name="dist" depends="dist-linux,dist-macosx,dist-windows">
     </target>
 
 </project>
