@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="build/shared/lib/antlr.jar"/>
+	<classpathentry kind="lib" path="build/shared/lib/jarbundler.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/j3dcore.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/j3dutils.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/mrj.jar"/>

@@ -17,7 +17,7 @@
     <path id="classpath">
         <fileset dir="${macosx.lib.dir}" includes="*.jar"/>
         <fileset dir="${lib.dir}" includes="*.jar"/>
-	<pathelement path="/System/Library/Java"/>
+      	<pathelement path="/System/Library/Java"/>
     </path>
 
     <target name="test">
@@ -68,62 +68,73 @@
 
 
     <target name="dist-macosx" depends="jar">
+        <fail message="The disk image (DMG-file) for easy distribution on Mac OS X can only be built on Mac OS X currently">
+          <condition>
+            <not>
+              <os family="mac" />
+            </not>
+          </condition>
+        </fail> 
         <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
         <mkdir dir="${macosx.dist.dir}"/>
-	<jarbundler dir="${macosx.dist.dir}" name="ReplicatorG" 
-		    mainclass="replicatorg.app.Base" 
-		    icon="${macosx.lib.dir}/replicatorg.icns"
-		    stubfile="ReplicatorG"
-		    extraclasspath="/System/Library/Java"
+	      <jarbundler
+            dir="${macosx.dist.dir}"
+            name="ReplicatorG" 
+    	      mainclass="replicatorg.app.Base" 
+    	      icon="${macosx.lib.dir}/replicatorg.icns"
+    	      stubfile="ReplicatorG"
+    	      extraclasspath="/System/Library/Java"
+  	        infostring="ReplicatorG ${replicatorg.version}, Copyright © 2008-${current.year} MakerBot Industries" 
+  	        version="${replicatorg.version}" 
 		     >
             <jarfileset dir="${lib.dir}" includes="*.jar"/>
             <jarfileset dir="${macosx.lib.dir}" includes="*.jar"/>
-	    <jarfileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
-	    <jarfileset dir="${native.lib.dir}" includes="*.jnilib"/>
-	    <resourcefileset dir="${lib.dir}" includes="*.gif"/>
-	    <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
-	    <resourcefilelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-	    <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
+	          <jarfileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
+      	    <jarfileset dir="${native.lib.dir}" includes="*.jnilib"/>
+      	    <resourcefileset dir="${lib.dir}" includes="*.gif"/>
+      	    <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
+      	    <resourcefilelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+      	    <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
         </jarbundler>
-	<copy todir="${macosx.dist.dir}">
-	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-	    <fileset dir="${macosx.lib.dir}" includes="drivers/*.dmg"/>
-	</copy>
+      	<copy todir="${macosx.dist.dir}">
+      	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+      	    <fileset dir="${macosx.lib.dir}" includes="drivers/*.dmg"/>
+      	</copy>
     </target>
 
     <target name="dist-linux" depends="jar">
         <mkdir dir="${linux.dist.dir}"/>
-	<copy todir="${linux.dist.dir}">
-	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-            <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-	    <filelist dir="${linux.lib.dir}" files="replicatorg"/>
-	</copy>
-	<copy todir="${linux.dist.dir}/lib">
-	    <fileset dir="${native.lib.dir}" includes="*.so"/>
-	    <fileset dir="${lib.dir}" includes="*.gif"/>
-	    <fileset dir="${lib.dir}" includes="*.jpg"/>
-	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-	    <fileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
-	</copy>
+      	<copy todir="${linux.dist.dir}">
+      	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+                  <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+      	    <filelist dir="${linux.lib.dir}" files="replicatorg"/>
+      	</copy>
+      	<copy todir="${linux.dist.dir}/lib">
+      	    <fileset dir="${native.lib.dir}" includes="*.so"/>
+      	    <fileset dir="${lib.dir}" includes="*.gif"/>
+      	    <fileset dir="${lib.dir}" includes="*.jpg"/>
+      	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+      	    <fileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
+      	</copy>
     </target>
 
     <target name="dist-windows" depends="jar">
         <mkdir dir="${windows.dist.dir}"/>
-	<copy todir="${windows.dist.dir}">
-	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-            <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-	    <fileset dir="${windows.lib.dir}/dist" includes="*.dll"/>
-	    <fileset dir="${native.lib.dir}" includes="*.dll"/>
-	    <filelist dir="${windows.lib.dir}/launcher" files="ReplicatorG.exe"/>
-	    <filelist dir="${windows.lib.dir}/dist" files="run.bat,jikes.exe"/>
-	    <fileset dir="${windows.lib.dir}/dist" includes="drivers/**/*"/>
-	</copy>
-	<copy todir="${windows.dist.dir}/lib">
-	    <fileset dir="${lib.dir}" includes="*.gif"/>
-	    <fileset dir="${lib.dir}" includes="*.jpg"/>
-	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-	    <fileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
-	</copy>
+      	<copy todir="${windows.dist.dir}">
+      	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+                  <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+      	    <fileset dir="${windows.lib.dir}/dist" includes="*.dll"/>
+      	    <fileset dir="${native.lib.dir}" includes="*.dll"/>
+      	    <filelist dir="${windows.lib.dir}/launcher" files="ReplicatorG.exe"/>
+      	    <filelist dir="${windows.lib.dir}/dist" files="run.bat,jikes.exe"/>
+      	    <fileset dir="${windows.lib.dir}/dist" includes="drivers/**/*"/>
+      	</copy>
+      	<copy todir="${windows.dist.dir}/lib">
+      	    <fileset dir="${lib.dir}" includes="*.gif"/>
+      	    <fileset dir="${lib.dir}" includes="*.jpg"/>
+      	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+      	    <fileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
+      	</copy>
     </target>
 
     <target name="dist" depends="dist-linux,dist-macosx,dist-windows">
