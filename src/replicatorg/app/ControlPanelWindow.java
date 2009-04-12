@@ -35,6 +35,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.WindowListener;
+import java.awt.event.WindowEvent;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,7 +62,7 @@ import javax.vecmath.Point3d;
 import replicatorg.app.drivers.Driver;
 import replicatorg.app.models.ToolModel;
 
-public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener, ItemListener, FocusListener
+public class ControlPanelWindow extends JFrame implements ActionListener, ChangeListener, ItemListener, FocusListener, WindowListener
 {
 	protected JPanel mainPanel;
 	protected JPanel jogPanel;
@@ -140,7 +142,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		add(mainPanel);
 
     //add our listener hooks.
-    //addWindowListener(this);
+    addWindowListener(this);
     //addWindowFocusListener(this);
     //addWindowStateListener(this);
 
@@ -901,6 +903,32 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 				System.out.println(name + " lost focus.");
 		}
 	}
+	
+  public void windowClosing(WindowEvent e)
+  {
+    System.out.println("window closing");
+		updateThread.interrupt();
+		pollThread.interrupt();
+  }
+
+  public void windowClosed(WindowEvent e)
+  {
+  }
+
+  public void windowOpened(WindowEvent e) {
+  }
+
+  public void windowIconified(WindowEvent e) {
+  }
+
+  public void windowDeiconified(WindowEvent e) {
+  }
+
+  public void windowActivated(WindowEvent e) {
+  }
+
+  public void windowDeactivated(WindowEvent e) {
+  }
 	
 	class PollThread extends Thread
 	{
