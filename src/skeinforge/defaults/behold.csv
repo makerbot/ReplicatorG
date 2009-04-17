@@ -1,0 +1,11 @@
+Format is tab separated preferences.
+Activate Behold	False
+Draw Arrows	True
+Open File to Behold	
+Go Around Extruder Off Travel	False
+Pixels over Extrusion Width (ratio):	10.0
+Screen Horizontal Inset (pixels):	100
+Screen Vertical Inset (pixels):	50
+Viewpoint Latitude (degrees):	45.0
+Viewpoint Longtitude (degrees):	20.0
+View X Axis Longtitude (degrees):	60.0

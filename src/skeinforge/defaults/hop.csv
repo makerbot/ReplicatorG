@@ -1,0 +1,5 @@
+Format is tab separated preferences.
+Activate Hop	False
+Open File to be Hopped	
+Hop Over Extrusion Height (ratio):	1.0
+Minimum Hop Angle (degrees):	20.0

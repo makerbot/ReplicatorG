@@ -1,0 +1,5 @@
+Format is tab separated preferences.
+Activate Skeinview	True
+Open File to Skeinview	
+Go Around Extruder Off Travel	False
+Pixels over Extrusion Width (ratio):	10.0
