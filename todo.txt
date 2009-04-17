@@ -1,7 +1,6 @@
 0003 ReplicatorG
 
 * add time elapsed / total time to build window
-* add temperature, etc. to build window, especially important while heating.
 * fix build time estimator
 * test distro script on mac.
 
@@ -19,7 +18,7 @@
   * For reference and home functions; have an option for ignoring the Z axis
   * Support for cancelling a temperature or goto home job (this is also a bit hard since these are blocking on the Arduino; would be cool to have a way of doing this in the firmware)
 * windows not using proper com## port from preferences.
-
+* add temperature, etc. to build window, especially important while heating.
 * get auto-formatting working
 * re-add 'gcode' console.
 * refactor ControlPanel to not be so gigantic when creating control panel

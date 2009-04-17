@@ -6,3 +6,4 @@ REVISION=`head -n 1 todo.txt | sed 's/[^0-9]//g'`
 rm -rf dist
 ant clean
 ant -Dreplicatorg.version=$REVISION dist-linux
+ant -Dreplicatorg.version=$REVISION dist-linux64

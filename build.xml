@@ -178,7 +178,7 @@
 				</copy>
       	<zip
       	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-windows.zip"
-      	    basedir="${linux.dist.dir}">
+      	    basedir="${windows.dist.dir}">
       	</zip>
     </target>
 
