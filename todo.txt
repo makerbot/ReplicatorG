@@ -3,7 +3,7 @@
 * add time elapsed / total time to build window
 * add temperature, etc. to build window, especially important while heating.
 * fix build time estimator
-* fix distribution script
+* test distro script on mac.
 
 0004 ReplicatorG
 

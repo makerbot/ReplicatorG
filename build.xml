@@ -8,10 +8,12 @@
     <property name="native.lib.dir"   value="${build.dir}/nativelibs"/>
     <property name="macosx.lib.dir"   value="${build.dir}/macosx/dist"/>
     <property name="linux.lib.dir" value="${build.dir}/linux/dist"/>
+    <property name="linux64.lib.dir" value="${build.dir}/linux64/dist"/>
     <property name="windows.lib.dir" value="${build.dir}/windows"/>
     <property name="dist.dir"   value="dist"/>
     <property name="macosx.dist.dir"   value="${dist.dir}/macosx/${ant.project.name}-${replicatorg.version}"/>
     <property name="linux.dist.dir"   value="${dist.dir}/linux/${ant.project.name}-${replicatorg.version}"/>
+    <property name="linux64.dist.dir"   value="${dist.dir}/linux64/${ant.project.name}-${replicatorg.version}"/>
     <property name="windows.dist.dir"   value="${dist.dir}/windows/${ant.project.name}-${replicatorg.version}"/>
 
     <path id="classpath">
@@ -54,16 +56,16 @@
     </target>
     
     <target name="debug" depends="compile">
-	<java fork="true" classname="replicatorg.app.Base">
-	    <jvmarg value="-ea"/>
-	    <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
-            <classpath>
-                <path refid="classpath"/>
-                <pathelement location="${classes.dir}"/>
-            </classpath>
-	    <sysproperty key="java.library.path" path="${native.lib.dir}"/>
-	    <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
-        </java>
+    	<java fork="true" classname="replicatorg.app.Base">
+    	    <jvmarg value="-ea"/>
+    	    <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
+                <classpath>
+                    <path refid="classpath"/>
+                    <pathelement location="${classes.dir}"/>
+                </classpath>
+    	    <sysproperty key="java.library.path" path="${native.lib.dir}"/>
+    	    <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
+      </java>
     </target>
 
 
@@ -100,6 +102,10 @@
       	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
       	    <fileset dir="${macosx.lib.dir}" includes="drivers/*.dmg"/>
       	</copy>
+        <mkdir dir="${macosx.dist.dir}/skeinforge"/>
+      	<copy todir="${macosx.dist.dir}/skeinforge">
+      	    <fileset dir="src/skeinforge"/>
+				</copy>
     </target>
 
     <target name="dist-linux" depends="jar">
@@ -109,20 +115,51 @@
                   <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
       	    <filelist dir="${linux.lib.dir}" files="replicatorg"/>
       	</copy>
+        <mkdir dir="${linux.dist.dir}/skeinforge"/>
+      	<copy todir="${linux.dist.dir}/skeinforge">
+      	    <fileset dir="src/skeinforge"/>
+				</copy>
       	<copy todir="${linux.dist.dir}/lib">
       	    <fileset dir="${native.lib.dir}" includes="*.so"/>
       	    <fileset dir="${lib.dir}" includes="*.gif"/>
       	    <fileset dir="${lib.dir}" includes="*.jpg"/>
       	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-      	    <fileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
       	</copy>
+      	<zip
+      	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-linux.zip"
+      	    basedir="${linux.dist.dir}">
+      	</zip>
     </target>
+
+    <target name="dist-linux64" depends="jar">
+        <mkdir dir="${linux64.dist.dir}"/>
+      	<copy todir="${linux64.dist.dir}">
+      	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+                  <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+      	    <filelist dir="${linux64.lib.dir}" files="replicatorg"/>
+      	</copy>
+        <mkdir dir="${linux64.dist.dir}/skeinforge"/>
+      	<copy todir="${linux64.dist.dir}/skeinforge">
+      	    <fileset dir="src/skeinforge"/>
+				</copy>
+      	<copy todir="${linux64.dist.dir}/lib">
+      	    <fileset dir="${native.lib.dir}" includes="*.so"/>
+      	    <fileset dir="${lib.dir}" includes="*.gif"/>
+      	    <fileset dir="${lib.dir}" includes="*.jpg"/>
+      	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+      	</copy>
+      	<zip
+      	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-linux64.zip"
+      	    basedir="${linux64.dist.dir}">
+      	</zip>
+    </target>
+
 
     <target name="dist-windows" depends="jar">
         <mkdir dir="${windows.dist.dir}"/>
       	<copy todir="${windows.dist.dir}">
       	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-                  <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+            <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
       	    <fileset dir="${windows.lib.dir}/dist" includes="*.dll"/>
       	    <fileset dir="${native.lib.dir}" includes="*.dll"/>
       	    <filelist dir="${windows.lib.dir}/launcher" files="ReplicatorG.exe"/>
@@ -135,6 +172,14 @@
       	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
       	    <fileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
       	</copy>
+        <mkdir dir="${windows.dist.dir}/skeinforge"/>
+      	<copy todir="${windows.dist.dir}/skeinforge">
+      	    <fileset dir="src/skeinforge"/>
+				</copy>
+      	<zip
+      	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-windows.zip"
+      	    basedir="${linux.dist.dir}">
+      	</zip>
     </target>
 
     <target name="dist" depends="dist-linux,dist-macosx,dist-windows">
