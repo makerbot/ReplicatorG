@@ -24,7 +24,7 @@
 package replicatorg.app.drivers;
 
 import replicatorg.app.exceptions.GCodeException;
-
+import javax.vecmath.Point3d;
 
 public class EstimationDriver extends DriverBaseImplementation
 {
@@ -51,16 +51,19 @@ public class EstimationDriver extends DriverBaseImplementation
 		}
 		catch (GCodeException e) {}
 		catch (ArrayIndexOutOfBoundsException e) {}
+	}
 	
+	protected void queuePoint(Point3d p, Double feedrate)
+	{
 		// our speed is feedrate * distance * 60000 (milliseconds in 1 minute)
 		// feedrate is mm per minute
-		double millis = getMoveLength() / getCurrentFeedrate() * 60000.0;
+		double millis = getMoveLength() / feedrate * 60000.0;
 		
 		//add it in!
 		if (millis > 0)
 		{
 			buildTime = buildTime + millis;
-			//System.out.println(getMoveLength() + "mm at " + getCurrentFeedrate() + " takes " + Math.round(millis) + " millis (" + buildTime + " total).");
+			//System.out.println(getMoveLength() + "mm at " + feedrate + " takes " + Math.round(millis) + " millis (" + buildTime + " total).");
 		}
 	}
 	
@@ -68,8 +71,13 @@ public class EstimationDriver extends DriverBaseImplementation
 	{
 		return buildTime;
 	}
-	
+
 	static public String getBuildTimeString(double tempTime)
+	{
+	  return getBuildTimeString(tempTime, false);
+	}	
+
+	static public String getBuildTimeString(double tempTime, boolean useSeconds)
 	{
 		//System.out.println("build millis = " + tempTime);
 		
@@ -103,7 +111,7 @@ public class EstimationDriver extends DriverBaseImplementation
 		
 		//figure out minutes
 		int minutes = (int)Math.floor(tempTime / 60000.0);		
-		minutes++; //lets just round up the remainder...
+		if (!useSeconds) minutes++; //lets just round up the remainder...
 		if (minutes > 0)
 		{
 			tempTime = tempTime - (minutes * 60000);
@@ -115,6 +123,23 @@ public class EstimationDriver extends DriverBaseImplementation
 			if (minutes > 1)
 				val += "s";
 		}
+
+		//figure out minutes
+    if (useSeconds)
+    {
+  		int seconds = (int)Math.floor(tempTime / 1000.0);		
+  		if (seconds > 0)
+  		{
+  			tempTime = tempTime - (seconds * 1000);
+
+  			//string formatting
+  			if (days > 0 || hours > 0 || minutes > 0)
+  				val += ", ";
+  			val += seconds + " second";
+  			if (seconds > 1)
+  				val += "s";
+  		}
+    }
 		
 		return val;
 	}

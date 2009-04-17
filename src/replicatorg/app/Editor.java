@@ -2043,8 +2043,14 @@ public class Editor extends JFrame
       }
     }
   }
+  
+  public void updateStatus(int lineNumber, double elapsedTime, double timeRemaining)
+  {
+    lineStatus.set(lineNumber, elapsedTime, timeRemaining);  
+  }
 
-  public void highlightLine(int lnum) {
+  public void highlightLine(int lnum)
+  {
     if (lnum < 0) {
       textarea.select(0, 0);
       return;

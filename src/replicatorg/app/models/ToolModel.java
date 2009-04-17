@@ -244,8 +244,7 @@ public class ToolModel
 			result += "collet, ";
 		if (hasHeater)
 			result += "heater, ";
-		result += "etc.";
-		System.out.println(result);
+		//System.out.println(result);
 	}
 	
 	/*************************************

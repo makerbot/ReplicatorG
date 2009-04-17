@@ -134,7 +134,7 @@ public class MachineModel
 						stepsPerMM.z = scale;
 					}
 
-					System.out.println("Loading axis " + id + ": (Length: " + length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + scale + " steps/mm)");
+					//System.out.println("Loading axis " + id + ": (Length: " + length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + scale + " steps/mm)");
 				}
 			}
 		}

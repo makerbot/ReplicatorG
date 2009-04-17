@@ -94,7 +94,7 @@ public class DriverBaseImplementation implements Driver
 
 	public void dispose()
 	{
-		System.out.println("Disposing of driver.");
+		//System.out.println("Disposing of driver.");
 		parser = null;
 	}
 
@@ -241,18 +241,29 @@ public class DriverBaseImplementation implements Driver
 	
 	public void queuePoint(Point3d p)
 	{
-		Point3d currentPosition = machine.getCurrentPosition();
+    Point3d delta = getDelta(p);
 		
 		//calculate the length of each axis move
-		double xFactor = Math.pow(p.x - currentPosition.x, 2);
-		double yFactor = Math.pow(p.y - currentPosition.y, 2);
-		double zFactor = Math.pow(p.z - currentPosition.z, 2);
+		double xFactor = Math.pow(delta.x, 2);
+		double yFactor = Math.pow(delta.y, 2);
+		double zFactor = Math.pow(delta.z, 2);
 
 		//add to the total length
 		moveLength += Math.sqrt(xFactor + yFactor + zFactor);
 
+    //what is our feedrate?
+    double feedrate = getSafeFeedrate(delta);
+
+    //mostly for estimation driver.
+    queuePoint(p, feedrate);
+
 		//save it as our current position now.
 		machine.setCurrentPosition(p);
+	}
+	
+	protected void queuePoint(Point3d p, Double feedrate)
+	{
+	  //do nothing here.
 	}
 	
 	public double getMoveLength()
@@ -269,7 +280,7 @@ public class DriverBaseImplementation implements Driver
 	}
 	
 	/**
-	* sets the feedrate in mm/minute
+	* gets the feedrate in mm/minute
 	*/
 	public double getCurrentFeedrate()
 	{
@@ -282,6 +293,17 @@ public class DriverBaseImplementation implements Driver
 	  
 	  Point3d maxFeedrates = machine.getMaximumFeedrates();
 	  
+	  //System.out.println("max feedrates: " + maxFeedrates);
+	  
+	  //no zero feedrates!
+	  if (feedrate == 0)
+	  {
+	    feedrate = Math.max(maxFeedrates.x, maxFeedrates.y);
+	    feedrate = Math.max(feedrate, maxFeedrates.z);
+	    feedrate = Math.max(feedrate, 1);
+	    //System.out.println("Zero feedrate!! " + feedrate);
+	  }
+	  
 	  if (delta.x != 0)
 	    feedrate = Math.min(feedrate, maxFeedrates.x);
 	  if (delta.y != 0)
@@ -290,6 +312,18 @@ public class DriverBaseImplementation implements Driver
 	    feedrate = Math.min(feedrate, maxFeedrates.z);
 	    
 	  return feedrate;
+	}
+	
+	public Point3d getDelta(Point3d p)
+	{
+	  Point3d delta = new Point3d();
+	  Point3d current = getCurrentPosition();
+	  
+	  delta.x = Math.abs(p.x - current.x);
+	  delta.y = Math.abs(p.y - current.y);
+	  delta.z = Math.abs(p.z - current.z);
+	  
+	  return delta;
 	}
 	
 	/*************************************************

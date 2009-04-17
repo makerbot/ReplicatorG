@@ -116,8 +116,8 @@
         <mkdir dir="${linux.dist.dir}"/>
       	<copy todir="${linux.dist.dir}">
       	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-                  <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-      	    <filelist dir="${linux.lib.dir}" files="replicatorg"/>
+            <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+       	    <filelist dir="${linux.lib.dir}" files="replicatorg"/>
       	</copy>
         <mkdir dir="${linux.dist.dir}/skeinforge"/>
       	<copy todir="${linux.dist.dir}/skeinforge">
@@ -128,6 +128,7 @@
       	    <fileset dir="${lib.dir}" includes="*.gif"/>
       	    <fileset dir="${lib.dir}" includes="*.jpg"/>
       	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+            <fileset dir="${jar.dir}" includes="*.jar"/>
       	</copy>
       	<zip
       	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-linux.zip"
@@ -139,7 +140,7 @@
         <mkdir dir="${linux64.dist.dir}"/>
       	<copy todir="${linux64.dist.dir}">
       	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-                  <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+            <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
       	    <filelist dir="${linux64.lib.dir}" files="replicatorg"/>
       	</copy>
         <mkdir dir="${linux64.dist.dir}/skeinforge"/>
@@ -151,6 +152,7 @@
       	    <fileset dir="${lib.dir}" includes="*.gif"/>
       	    <fileset dir="${lib.dir}" includes="*.jpg"/>
       	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+            <fileset dir="${jar.dir}" includes="*.jar"/>
       	</copy>
       	<zip
       	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-linux64.zip"

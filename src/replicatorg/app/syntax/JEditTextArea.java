@@ -1250,7 +1250,7 @@ public class JEditTextArea extends JComponent
 
     // notify the line number feller
     if (editorLineStatus != null) {
-      editorLineStatus.set(selectionStartLine, selectionEndLine);
+      //editorLineStatus.set(selectionStartLine, selectionEndLine);
       //System.out.println("why " + selectionStartLine + " " + selectionEndLine);
       //System.out.println(getLineOfOffset(start) + " " +
       //                 getLineOfOffset(end));

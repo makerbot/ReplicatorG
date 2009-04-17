@@ -35,6 +35,8 @@ import javax.swing.JComponent;
 
 import replicatorg.app.syntax.JEditTextArea;
 
+import replicatorg.app.drivers.EstimationDriver;
+
 
 /**
  * Li'l status bar fella that shows the line number.
@@ -74,30 +76,18 @@ public class EditorLineStatus extends JComponent {
   }
 
 
-  public void set(int newStart, int newStop) {
-    if ((newStart == start) && (newStop == stop)) return;
-
-    start = newStart;
-    stop = newStop;
-
-    /*
-    if (start == stop) {
-      text = "Line " + (start + 1);
-    } else {
-      text = "Lines " + (start + 1) + " to " + (stop + 1);
-    }
-    */
-	
-	if (start == stop)
-	{
+  public void set(int currentLine, double elapsedTime, double timeRemaining)
+  {
 		long total = textarea.getLineCount() - 1;
-		double percentage = Math.round(((double)newStart / (double)total) * 10000.0) / 100.0;
-		text = newStart + " / " + total + "     |     " + percentage + "%";
-    }
-	else
-	{
-      text = (start+1) + " - " + (stop+1);
-    }
+		double percentage = Math.round(((double)currentLine / (double)total) * 10000.0) / 100.0;
+		text = "Commands: ";
+		text += String.format("%1$7d / %2$7d", currentLine, total);
+		text += "     |     ";
+		text += String.format("%1$3.2f", percentage) + "%";
+		text += "     |     ";
+		text += "Elapsed time: " + EstimationDriver.getBuildTimeString(elapsedTime, true);
+		text += "     |     ";
+		text += "Time remaining: " + EstimationDriver.getBuildTimeString(timeRemaining, true);
 
     repaint();
   }

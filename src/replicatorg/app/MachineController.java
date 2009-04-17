@@ -58,15 +58,12 @@ public class MachineController
 	protected Driver driver;
 	protected SimulationDriver simulator;
 	
-	// our machine model objects
-	protected MachineModel model;
-	
 	//our pause variable
 	protected boolean paused = false;
 	protected boolean stopped = false;
 	
 	//estimated build time in millis
-	protected long estimatedBuildTime = 0;
+	protected double estimatedBuildTime = 0;
 	
 	//our warmup/cooldown commands
 	protected Vector warmupCommands;
@@ -87,7 +84,6 @@ public class MachineController
 		System.out.println("Loading machine: " + name);
 
 		//load our various objects
-		loadModel();
 		loadDriver();
 		loadExtraPrefs();
 	}
@@ -147,20 +143,22 @@ public class MachineController
 	public void estimate()
 	{
 	  try {
-		EstimationDriver estimator = new EstimationDriver();
-		
-		//run each line through the estimator
-		int total = editor.textarea.getLineCount();
-		for (int i=0; i<total; i++)
-		{
-			String line = editor.textarea.getLineText(i);
-			
-			//use our parser to handle the stuff.
-			estimator.parse(line);
-			estimator.execute();
-		}
+  		EstimationDriver estimator = new EstimationDriver();
+  		estimator.setMachine(loadModel());
+  		
+  		//run each line through the estimator
+  		int total = editor.textarea.getLineCount();
+  		for (int i=0; i<total; i++)
+  		{
+  			String line = editor.textarea.getLineText(i);
+  			
+  			//use our parser to handle the stuff.
+  			estimator.parse(line);
+  			estimator.execute();
+  		}
 
-		System.out.println("Estimated build time is: " + EstimationDriver.getBuildTimeString(estimator.getBuildTime()));
+      estimatedBuildTime = estimator.getBuildTime();
+  		System.out.println("Estimated build time is: " + EstimationDriver.getBuildTimeString(estimatedBuildTime));
 	  }
 	  catch (InterruptedException e) {
 	    assert(false);
@@ -236,6 +234,9 @@ public class MachineController
 	{
 		try
 		{
+		  double startTime = System.currentTimeMillis();
+		  double elapsedTime = 0;
+		  
 			runWarmupCommands();
 			
 			System.out.println("Running build.");
@@ -245,16 +246,20 @@ public class MachineController
 			{
 		    if (Thread.interrupted()) return false;
 		    
-		    //TODO: does this make it slow?
+		    elapsedTime = System.currentTimeMillis() - startTime;
+		    
+		    //TODO: re-add without slowing down software.
 				//editor.textarea.scrollTo(i, 0);
 				//editor.highlightLine(i);
+				editor.updateStatus(i, elapsedTime, estimatedBuildTime - elapsedTime);
 				
 				String line = editor.textarea.getLineText(i);
 				
 				//System.out.println("running: " + line);
 				
 				//use our parser to handle the stuff.
-				if (simulator != null) simulator.parse(line);
+				if (simulator != null)
+				  simulator.parse(line);
 				driver.parse(line);
 				
 				//System.out.println("parsed");
@@ -327,20 +332,21 @@ public class MachineController
 		return true;
 	}
 	
-	private void loadModel()
+	private MachineModel loadModel()
 	{
-		model = new MachineModel();
+		MachineModel model = new MachineModel();
 		model.loadXML(machineNode);
+		
+		return model;
 	}
 	
 	private void loadDriver()
 	{
 		//load our utility drivers
-        if (Preferences.getBoolean("machinecontroller.simulator")) {
-		    //TODO: simulator needs its own machine model!!!
-		    //simulator = new SimulationDriver();
-		    //simulator.setMachine(model);
-        }
+    if (Preferences.getBoolean("machinecontroller.simulator")) {
+      simulator = new SimulationDriver();
+      simulator.setMachine(loadModel());
+    }
 		//load our actual driver
 		NodeList kids = machineNode.getChildNodes();
 		for (int j=0; j<kids.getLength(); j++)
@@ -350,7 +356,7 @@ public class MachineController
 			if (kid.getNodeName().equals("driver"))
 			{
 				driver = DriverFactory.factory(kid);
-				driver.setMachine(model);
+				driver.setMachine(loadModel());
 				driver.initialize();
 				return;
 			}
@@ -359,7 +365,7 @@ public class MachineController
 		System.out.println("No driver config found.");
 		
 		driver = DriverFactory.factory();
-		driver.setMachine(model);
+		driver.setMachine(loadModel());
 		driver.initialize();
 	}
 	
@@ -402,14 +408,14 @@ public class MachineController
 	  return driver;
 	}
 	
-    public SimulationDriver getSimulatorDriver()
-    {
-      return simulator;
-    }
+  public SimulationDriver getSimulatorDriver()
+  {
+    return simulator;
+  }
 
-    public MachineModel getModel()
+  public MachineModel getModel()
 	{
-		return model;
+		return loadModel();
 	}
 	
 	synchronized public void stop()

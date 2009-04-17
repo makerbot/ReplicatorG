@@ -682,13 +682,13 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		if (debugLevel >= 1)
 			System.out.println("Reported version: " + Integer.toHexString(version));
 
-		return version;
+  		return version;
     }
 
     public void sendInit()
 	  {
-		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.INIT);
-		PacketResponse pr = runCommand(pb.getPacket());
+  		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.INIT);
+  		PacketResponse pr = runCommand(pb.getPacket());
     }
     
     /****************************************************

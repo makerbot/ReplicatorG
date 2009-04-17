@@ -1,9 +1,3 @@
-0003 ReplicatorG
-
-* add time elapsed / total time to build window
-* fix build time estimator
-* test distro script on mac.
-
 0004 ReplicatorG
 
 * simulator
