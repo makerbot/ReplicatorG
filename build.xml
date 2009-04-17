@@ -105,7 +105,11 @@
         <mkdir dir="${macosx.dist.dir}/skeinforge"/>
       	<copy todir="${macosx.dist.dir}/skeinforge">
       	    <fileset dir="src/skeinforge"/>
-				</copy>
+		</copy>
+      	<zip
+      	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-mac.zip"
+      	    basedir="${macosx.dist.dir}">
+      	</zip>
     </target>
 
     <target name="dist-linux" depends="jar">
