@@ -1,3 +1,7 @@
+0003 ReplicatorG
+
+* figure out how to make skeinforge use my default start.txt and end.txt
+
 0004 ReplicatorG
 
 * simulator
