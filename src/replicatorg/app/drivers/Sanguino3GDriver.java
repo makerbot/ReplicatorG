@@ -771,7 +771,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
   {
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.QUEUE_POINT_ABS);
 
-		if (debugLevel >= 2)
+		if (debugLevel >= 1)
 			System.out.println("Queued absolute point " + steps + " at " + micros + " usec.");
 
 		//just add them in now.
