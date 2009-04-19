@@ -1,5 +1,5 @@
 <project name="ReplicatorG" basedir="." default="test">
-		<property name="project.lowercase" value="replicatorg"/>
+	<property name="project.lowercase" value="replicatorg"/>
     <property name="src.dir"       value="src"/>
     <property name="build.dir"     value="build"/>
     <property name="classes.dir"   value="${build.dir}/classes"/> 
@@ -45,14 +45,14 @@
     </target>
 
     <target name="run" depends="jar">
-	<java fork="true" classname="replicatorg.app.Base">
-	    <jvmarg value="-ea"/>
-            <classpath>
-                <path refid="classpath"/>
-                <pathelement location="${jar.dir}/${ant.project.name}.jar"/>
-            </classpath>
-	    <sysproperty key="java.library.path" path="${native.lib.dir}"/>
-	    <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
+		<java fork="true" classname="replicatorg.app.Base">
+		    <jvmarg value="-ea"/>
+	            <classpath>
+	                <path refid="classpath"/>
+	                <pathelement location="${jar.dir}/${ant.project.name}.jar"/>
+	            </classpath>
+		    <sysproperty key="java.library.path" path="${native.lib.dir}"/>
+		    <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
         </java>
     </target>
     
@@ -69,7 +69,6 @@
       </java>
     </target>
 
-
     <target name="dist-macosx" depends="jar">
         <fail message="The disk image (DMG-file) for easy distribution on Mac OS X can only be built on Mac OS X currently">
           <condition>
@@ -80,19 +79,19 @@
         </fail> 
         <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
         <mkdir dir="${macosx.dist.dir}"/>
-	      <jarbundler
+	    <jarbundler
             dir="${macosx.dist.dir}"
             name="ReplicatorG" 
-    	      mainclass="replicatorg.app.Base" 
-    	      icon="${macosx.lib.dir}/replicatorg.icns"
-    	      stubfile="ReplicatorG"
-    	      extraclasspath="/System/Library/Java"
-  	        infostring="ReplicatorG ${replicatorg.version}, Copyright © 2008-${current.year} MakerBot Industries" 
-  	        version="${replicatorg.version}" 
-		     >
+  	    	mainclass="replicatorg.app.Base" 
+    	    icon="${macosx.lib.dir}/replicatorg.icns"
+    	    extraclasspath="/System/Library/Java"
+  	        infostring="ReplicatorG ${replicatorg.version}, © 2008-${current.year} MakerBot Industries" 
+  	        version="${replicatorg.version}"
+			jvmversion="1.4+"
+			stubfile="ReplicatorG"
+			>
+            <jarfileset dir="${jar.dir}" includes="ReplicatorG.jar"/>
             <jarfileset dir="${lib.dir}" includes="*.jar"/>
-            <jarfileset dir="${macosx.lib.dir}" includes="*.jar"/>
-	          <jarfileset dir="${jar.dir}" includes="*.jar"/>
       	    <jarfileset dir="${native.lib.dir}" includes="*.jnilib"/>
       	    <resourcefileset dir="${lib.dir}" includes="*.gif"/>
       	    <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
@@ -108,10 +107,11 @@
       	<copy todir="${macosx.dist.dir}/skeinforge">
       	    <fileset dir="skeinforge"/>
 		</copy>
-      	<zip
-      	    destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-mac.zip"
-      	    basedir="${macosx.dist.dir}">
-      	</zip>
+		<exec dir="." os="Mac OS X" executable="/bin/sh">
+			<arg value="-c"/>
+			<arg value="${macosx.lib.dir}/mkdmg.sh ${dist.dir} ./macosx image ${project.lowercase}-${replicatorg.version}-mac"/>
+		</exec>
+<!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
     </target>
 
     <target name="dist-linux" depends="jar">
