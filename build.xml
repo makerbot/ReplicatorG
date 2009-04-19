@@ -1,4 +1,4 @@
-<project name="ReplicatorG" basedir="." default="test">
+<project name="replicatorg" basedir="." default="test">
     <property name="src.dir"       value="src"/>
     <property name="build.dir"     value="build"/>
     <property name="classes.dir"   value="${build.dir}/classes"/> 
@@ -102,9 +102,10 @@
       	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
       	    <fileset dir="${macosx.lib.dir}" includes="drivers/*.dmg"/>
       	</copy>
+      	<copy file="machines.xml.dist" tofile="${macosx.dist.dir}/machines.xml"/>
         <mkdir dir="${macosx.dist.dir}/skeinforge"/>
       	<copy todir="${macosx.dist.dir}/skeinforge">
-      	    <fileset dir="src/skeinforge"/>
+      	    <fileset dir="skeinforge"/>
 		</copy>
       	<zip
       	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-mac.zip"
@@ -121,7 +122,7 @@
       	</copy>
         <mkdir dir="${linux.dist.dir}/skeinforge"/>
       	<copy todir="${linux.dist.dir}/skeinforge">
-      	    <fileset dir="src/skeinforge"/>
+      	    <fileset dir="skeinforge"/>
 				</copy>
       	<copy todir="${linux.dist.dir}/lib">
       	    <fileset dir="${native.lib.dir}" includes="*.so"/>
@@ -130,6 +131,7 @@
       	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
             <fileset dir="${jar.dir}" includes="*.jar"/>
       	</copy>
+      	<copy file="machines.xml.dist" tofile="${linux.dist.dir}/machines.xml"/>
       	<zip
       	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-linux.zip"
       	    basedir="${linux.dist.dir}">
@@ -145,7 +147,7 @@
       	</copy>
         <mkdir dir="${linux64.dist.dir}/skeinforge"/>
       	<copy todir="${linux64.dist.dir}/skeinforge">
-      	    <fileset dir="src/skeinforge"/>
+      	    <fileset dir="skeinforge"/>
 				</copy>
       	<copy todir="${linux64.dist.dir}/lib">
       	    <fileset dir="${native.lib.dir}" includes="*.so"/>
@@ -154,6 +156,7 @@
       	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
             <fileset dir="${jar.dir}" includes="*.jar"/>
       	</copy>
+      	<copy file="machines.xml.dist" tofile="${linux64.dist.dir}/machines.xml"/>
       	<zip
       	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-linux64.zip"
       	    basedir="${linux64.dist.dir}">
@@ -180,8 +183,9 @@
       	</copy>
         <mkdir dir="${windows.dist.dir}/skeinforge"/>
       	<copy todir="${windows.dist.dir}/skeinforge">
-      	    <fileset dir="src/skeinforge"/>
+      	    <fileset dir="skeinforge"/>
 				</copy>
+      	<copy file="machines.xml.dist" tofile="{$windows.dist.dir}/machines.xml"/>
       	<zip
       	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-windows.zip"
       	    basedir="${windows.dist.dir}">

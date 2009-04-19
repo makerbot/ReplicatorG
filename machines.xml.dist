@@ -18,7 +18,7 @@
 	</machine>
 	<!-- Cupcake prototype description -->
 	<machine>
-		<name>Cupcake v0</name>
+		<name>Cupcake CNC</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="300" maxfeedrate="5000" scale="11.767463"/> 
@@ -36,7 +36,7 @@
 			<parity>8</parity>
 			<!-- optional, defaults to 1.                          <databits>1</databits> -->
 			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
-			<debuglevel>1</debuglevel>
+			<debuglevel>0</debuglevel>
 		</driver>
 		<warmup>
 		</warmup>
