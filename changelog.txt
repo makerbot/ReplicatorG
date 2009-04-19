@@ -7,6 +7,7 @@
 * tweaked the build process quite a bit for mac / linux / windows.
 * added more build status information
 * created a modular configuration for various toolheads
+* bundled skeinforge for toolpath generation.
 
 0002 ReplicatorG
 
