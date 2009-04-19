@@ -1,4 +1,5 @@
-<project name="replicatorg" basedir="." default="test">
+<project name="ReplicatorG" basedir="." default="test">
+		<property name="project.lowercase" value="replicatorg"/>
     <property name="src.dir"       value="src"/>
     <property name="build.dir"     value="build"/>
     <property name="classes.dir"   value="${build.dir}/classes"/> 
@@ -11,10 +12,10 @@
     <property name="linux64.lib.dir" value="${build.dir}/linux64/dist"/>
     <property name="windows.lib.dir" value="${build.dir}/windows"/>
     <property name="dist.dir"   value="dist"/>
-    <property name="macosx.dist.dir"   value="${dist.dir}/macosx/${ant.project.name}-${replicatorg.version}"/>
-    <property name="linux.dist.dir"   value="${dist.dir}/linux/${ant.project.name}-${replicatorg.version}"/>
-    <property name="linux64.dist.dir"   value="${dist.dir}/linux64/${ant.project.name}-${replicatorg.version}"/>
-    <property name="windows.dist.dir"   value="${dist.dir}/windows/${ant.project.name}-${replicatorg.version}"/>
+    <property name="macosx.dist.dir"   value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}"/>
+    <property name="linux.dist.dir"   value="${dist.dir}/linux/${project.lowercase}-${replicatorg.version}"/>
+    <property name="linux64.dist.dir"   value="${dist.dir}/linux64/${project.lowercase}-${replicatorg.version}"/>
+    <property name="windows.dist.dir"   value="${dist.dir}/windows/${project.lowercase}-${replicatorg.version}"/>
 
     <path id="classpath">
         <fileset dir="${macosx.lib.dir}" includes="*.jar"/>
@@ -91,7 +92,7 @@
 		     >
             <jarfileset dir="${lib.dir}" includes="*.jar"/>
             <jarfileset dir="${macosx.lib.dir}" includes="*.jar"/>
-	          <jarfileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
+	          <jarfileset dir="${jar.dir}" includes="*.jar"/>
       	    <jarfileset dir="${native.lib.dir}" includes="*.jnilib"/>
       	    <resourcefileset dir="${lib.dir}" includes="*.gif"/>
       	    <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
@@ -108,7 +109,7 @@
       	    <fileset dir="skeinforge"/>
 		</copy>
       	<zip
-      	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-mac.zip"
+      	    destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-mac.zip"
       	    basedir="${macosx.dist.dir}">
       	</zip>
     </target>
@@ -133,7 +134,7 @@
       	</copy>
       	<copy file="machines.xml.dist" tofile="${linux.dist.dir}/machines.xml"/>
       	<zip
-      	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-linux.zip"
+      	    destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-linux.zip"
       	    basedir="${linux.dist.dir}">
       	</zip>
     </target>
@@ -158,7 +159,7 @@
       	</copy>
       	<copy file="machines.xml.dist" tofile="${linux64.dist.dir}/machines.xml"/>
       	<zip
-      	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-linux64.zip"
+      	    destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-linux64.zip"
       	    basedir="${linux64.dist.dir}">
       	</zip>
     </target>
@@ -179,15 +180,15 @@
       	    <fileset dir="${lib.dir}" includes="*.gif"/>
       	    <fileset dir="${lib.dir}" includes="*.jpg"/>
       	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-      	    <fileset dir="${jar.dir}" includes="${ant.project.name}.jar"/>
+      	    <fileset dir="${jar.dir}" includes="*.jar"/>
       	</copy>
         <mkdir dir="${windows.dist.dir}/skeinforge"/>
       	<copy todir="${windows.dist.dir}/skeinforge">
       	    <fileset dir="skeinforge"/>
 				</copy>
-      	<copy file="machines.xml.dist" tofile="{$windows.dist.dir}/machines.xml"/>
+      	<copy file="machines.xml.dist" tofile="${windows.dist.dir}/machines.xml"/>
       	<zip
-      	    destfile="${dist.dir}/${ant.project.name}-${replicatorg.version}-windows.zip"
+      	    destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-windows.zip"
       	    basedir="${windows.dist.dir}">
       	</zip>
     </target>

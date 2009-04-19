@@ -37,7 +37,7 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "CompanyName", "\0"
+            VALUE "CompanyName", "MakerBot Industries\0"
             VALUE "FileDescription", "Launcher MFC Application\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
             VALUE "InternalName", "Launcher\0"

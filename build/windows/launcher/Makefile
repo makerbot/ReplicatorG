@@ -3,7 +3,6 @@ OBJS = launcher.o launcher-rc.o
 
 ReplicatorG.exe: $(OBJS)
 	$(LINK.cc) $(CXXFLAGS) -o $@ $(OBJS)
-	cp ReplicatorG.exe ../work/
 
 $(OBJS): Makefile
 

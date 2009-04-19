@@ -8,8 +8,8 @@
 // 2) if the user has a long path, and it gets copied five times over for the
 // classpath, the program runs the risk of crashing. Bad bad.
 
-#define JAVA_ARGS "-Xms128m -Xmx128m "
-#define JAVA_MAIN_CLASS "processing.app.Base"
+#define JAVA_ARGS "-Xms256m -Xmx256m "
+#define JAVA_MAIN_CLASS "replicatorg.app.Base"
 
 #include <windows.h>
 #include <stdio.h>
@@ -146,6 +146,7 @@ END WE DUNNO NEED QUICKTIME JAVA FOR ARDUINO*/
           "%s\\lib;"
           "%s\\lib\\build;"
           "%s\\lib\\pde.jar;"
+          "%s\\lib\\ReplicatorG.jar;"
           //"%s\\lib\\core.jar;"
           "%s\\lib\\mrj.jar;"
           "%s\\lib\\vecmath.jar;"
