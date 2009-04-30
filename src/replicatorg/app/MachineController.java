@@ -430,11 +430,13 @@ public class MachineController
 	
 	synchronized public void pause()
 	{
+		driver.pause(); // immediately send a pause command for asynchronous machines
 		paused = true;
 	}
 	
 	synchronized public void unpause()
 	{
+		driver.unpause(); // send a resume command for asynchronous machines
 		paused = false;
 	}
 	

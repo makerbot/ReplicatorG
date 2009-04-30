@@ -223,4 +223,11 @@ public interface Driver
 	*************************************/
 	public void openCollet();
 	public void closeCollet();
+
+	/*************************************
+	*  Pause/unpause functionality for asynchronous devices
+	*************************************/
+	public void pause();
+	public void unpause();
+
 }

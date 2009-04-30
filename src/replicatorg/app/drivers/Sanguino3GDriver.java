@@ -844,7 +844,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		if (debugLevel >= 1)
 			System.out.println("Home Z");
 		
-		homeAxes(false, false, false);
+		homeAxes(false, false, true);
 		super.homeZ();
     }
 
@@ -1358,6 +1358,27 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		//TODO: throw unsupported exception.
 		
 		super.closeCollet();
+    }
+
+    /*************************************
+     *  Pause/unpause functionality for asynchronous devices
+     *************************************/
+    public void pause()
+    {
+	if (debugLevel >= 1)
+	    System.out.println("Sending asynch pause command");
+	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.PAUSE);
+	PacketResponse pr = runCommand(pb.getPacket());
+    }
+
+    public void unpause()
+    {
+	if (debugLevel >= 1)
+	    System.out.println("Sending asynch unpause command");
+	// There is no explicit unpause command on the Sanguino3G; instead we use
+	// the pause command to toggle the pause state.
+	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.PAUSE);
+	PacketResponse pr = runCommand(pb.getPacket());
     }
 
 	/*************************************

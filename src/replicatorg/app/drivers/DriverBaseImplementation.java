@@ -605,4 +605,17 @@ public class DriverBaseImplementation implements Driver
 	{
 		machine.currentTool().closeCollet();
 	}
+
+    /*************************************
+     *  Pause/unpause functionality for asynchronous devices
+     *************************************/
+    public void pause()
+    {
+	// No implementation needed for synchronous machines.
+    }
+
+    public void unpause()
+    {
+	// No implementation needed for synchronous machines.
+    }
 }

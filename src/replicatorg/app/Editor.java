@@ -1109,8 +1109,15 @@ public class Editor extends JFrame
 
   public void handleControlPanel()
   {
-  	ControlPanelWindow window = new ControlPanelWindow(machine);
-	window.setVisible(true);
+      if ( machine == null ) {
+	  JOptionPane.showMessageDialog(this,
+					"ReplicatorG can't connect to your machine.\nTry checking your settings and resetting your machine.",
+					"Can't find machine",
+					JOptionPane.ERROR_MESSAGE);
+      } else {
+	  ControlPanelWindow window = new ControlPanelWindow(machine);
+	  window.setVisible(true);
+      }
   }
 
   /**
