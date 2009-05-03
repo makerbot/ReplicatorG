@@ -618,4 +618,20 @@ public class DriverBaseImplementation implements Driver
     {
 	// No implementation needed for synchronous machines.
     }
+
+    /*************************************
+     *  Stop and system state reset
+     *************************************/
+    public void stop()
+    {
+	// No implementation needed for synchronous machines.
+	System.err.println("Machine stop called.");
+    }
+
+    public void reset()
+    {
+	// No implementation needed for synchronous machines.
+	System.err.println("Machine reset called.");
+    }
+   
 }

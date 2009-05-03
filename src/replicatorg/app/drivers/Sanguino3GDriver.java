@@ -519,8 +519,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		if (!isInitialized()) {
 		    // attempt to send version command and retrieve reply.
 		    try {
-				//read our string that means we're started up.
-				waitForStartup();
+			//read our string that means we're started up.
+			// after ten seconds, explicitly reset the device.
+			waitForStartup( 10000 );
 
 				//okay, take care of version info /etc.
 				getVersion(Base.VERSION);
@@ -534,51 +535,58 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		}
   }
 
-	protected void waitForStartup()
-	{
-	  assert (serial != null);
-	  synchronized(serial)
-	  {
-	    String cmd = "";
-     	byte[] responsebuffer = new byte[512];
+    /** Wait for a startup message.  After the specified timeout, replicatorG will attempt to
+     * remotely reset the device.
+     * @timeoutMillis the time, in milliseconds, that we should wait for a handshake.
+     * @return true if we recieved a handshake; false if we timed out.
+     */
+    protected void waitForStartup( int timeoutMillis )
+    {
+	assert (serial != null);
+	synchronized(serial)
+	    {
+		String cmd = "";
+		byte[] responsebuffer = new byte[512];
 		String result = "";
-
+		
 		while (!isInitialized())
 		{
 		    try {
-		      int numread = serial.input.read(responsebuffer);
-		      assert (numread != 0); // This should never happen since we know we have a buffer
-		      if (numread < 0) {
-		        // This signifies EOF. FIXME: How do we handle this?
-		         System.out.println("RepRap3GDriver.readResponse(): EOF occured");
-		        return;
-		      }
-		      else {
-		        result += new String(responsebuffer , 0, numread, "US-ASCII");
-
-		        int index;
-		        while ((index = result.indexOf('\n')) >= 0) {
-		          String line = result.substring(0, index).trim(); // trim to remove any trailing \r
-		          result = result.substring(index+1);
-		          if (line.length() == 0) continue;
-
-		          //old arduino firmware sends "start"
-		          if (line.startsWith("R3G Master v")) {
-		            //todo: set version
-		            setInitialized(true);
-	              System.out.println("Found Firmware: " + line);
-		          }
-		        }
-		      }
+			int numread = serial.read(responsebuffer,timeoutMillis);
+			if (numread < 0) {
+			    // This signifies EOF. FIXME: How do we handle this?
+			    System.out.println("RepRap3GDriver.readResponse(): EOF occured");
+			    return;
+			} else if (numread == 0) {
+			    // Attempt a hard reset.
+			    System.out.println("Pulsing RTS to reset device.");
+			    serial.pulseRTSLow();
+			} else {
+			    result += new String(responsebuffer , 0, numread, "US-ASCII");
+			    
+			    int index;
+			    while ((index = result.indexOf('\n')) >= 0) {
+				String line = result.substring(0, index).trim(); // trim to remove any trailing \r
+				result = result.substring(index+1);
+				if (line.length() == 0) continue;
+				
+				//old arduino firmware sends "start"
+				if (line.startsWith("R3G Master v")) {
+				    //todo: set version
+				    setInitialized(true);
+				    System.out.println("Found Firmware: " + line);
+				}
+			    }
+			}
 		    }
 		    catch (IOException e) {
-		      System.out.println("inputstream.read() failed: " + e.toString());
+			System.out.println("inputstream.read() failed: " + e.toString());
 		      // FIXME: Shut down communication somehow.
 		    }
-		  }			
-		}
-	}
-		
+		}			
+	    }
+    }
+    
     /**
      * Sends the command over the serial connection and retrieves a result.
      */

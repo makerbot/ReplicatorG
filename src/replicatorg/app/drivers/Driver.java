@@ -229,5 +229,10 @@ public interface Driver
 	*************************************/
 	public void pause();
 	public void unpause();
-
+    
+    /*************************************
+     *  Stop and system state reset
+     *************************************/
+    public void stop();
+    public void reset();
 }

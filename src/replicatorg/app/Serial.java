@@ -136,6 +136,15 @@ public class Serial {
     port = null;
   }
 
+  public void pulseRTSLow() {
+    port.setRTS(true);
+    port.setRTS(false);
+    try {
+      Thread.sleep(1);
+    } catch (java.lang.InterruptedException ie) {
+    }
+    port.setRTS(true);
+  }
 
   public void write(byte bytes[]) {
     try {
@@ -148,6 +157,25 @@ public class Serial {
     }
   }
 
+  /**
+   * Read as many bytes as are available into the given buffer.  Terminate after
+   * the timeout has passed.  If the timeout is -1, never timeout.
+   * @param buffer the buffer to read data into
+   * @param timeout the time in milliseconds to wait for data (-1 means wait forever)
+   * @return the number of bytes read
+   */
+  public int read(byte buffer[], int timeoutMillis) throws java.io.IOException {
+    while ((timeoutMillis > -1) && (input.available() == 0)) {
+      try {
+        Thread.sleep(Math.min(timeoutMillis,10));
+      } catch (java.lang.InterruptedException ie) {
+        // That's fine, continue.
+      }
+      timeoutMillis -= 10;
+    }
+    if (input.available() == 0) { return 0; }
+    return input.read(buffer);
+  }
 
   /**
    * Write a String to the output. Note that this doesn't account
@@ -172,7 +200,7 @@ public class Serial {
    * Why the hell that'd be the case, who knows.
    */
   static public String[] list() {
-    Vector list = new Vector();
+    Vector<String> list = new Vector<String>();
     try {
       //System.err.println("trying");
       Enumeration portList = CommPortIdentifier.getPortIdentifiers();

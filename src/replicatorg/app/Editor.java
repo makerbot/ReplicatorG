@@ -1410,19 +1410,14 @@ public class Editor extends JFrame
 
 	public void handleStop()
 	{
-		if (building || simulating)
-		{
-			// called by menu or buttons
-			doStop();
-
-			if (machine != null)
-				machine.stop();
-
-			stopItem.setEnabled(false);
-			pauseItem.setEnabled(false);
-
-			buttons.clear();
-		}
+	    //if (building || simulating) // can also be called during panel ops
+	    // called by menu or buttons
+	    doStop();
+	    
+	    stopItem.setEnabled(false);
+	    pauseItem.setEnabled(false);
+	    
+	    buttons.clear();
 	}
 
 	class EstimationThread extends Thread
@@ -1457,19 +1452,22 @@ public class Editor extends JFrame
 	*/
 	public void doStop()
 	{
-		message(EMPTY);
-
-		buttons.clear();
-
-		building = false;
-		simulating = false;
+	    if (machine != null)
+		machine.stop();
+	    
+	    message(EMPTY);
+	    
+	    buttons.clear();
+	    
+	    building = false;
+	    simulating = false;
 	}
 
 	public void handlePause()
 	{
-		// called by menu or buttons
-		if (building || simulating)
-			doPause();
+	    // called by menu or buttons
+	    //if (building || simulating)  // can also be used during control panel ops
+	    doPause();
 	}
 
 	/**
