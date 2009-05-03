@@ -420,7 +420,8 @@ public class MachineController
 	
 	synchronized public void stop()
 	{
-		stopped = true;
+	    driver.stop();
+	    stopped = true;
 	}
 	
 	synchronized public boolean isStopped()
