@@ -795,20 +795,20 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
     public void setCurrentPosition(Point3d p)
     {
-  		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.SET_POSITION);
-
-  		Point3d steps = machine.mmToSteps(p);
-  		pb.add32((long)steps.x);
-  		pb.add32((long)steps.y);
-  		pb.add32((long)steps.z);
-		
-  		if (debugLevel >= 1)
-  			System.out.println("Set current position to " + p + " (" + steps + ")");
-
-  		PacketResponse pr = runCommand(pb.getPacket());
-
-  		super.setCurrentPosition(p);
-
+	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.SET_POSITION);
+	
+	Point3d steps = machine.mmToSteps(p);
+	pb.add32((long)steps.x);
+	pb.add32((long)steps.y);
+	pb.add32((long)steps.z);
+	
+	if (debugLevel >= 1)
+	    System.out.println("Set current position to " + p + " (" + steps + ")");
+	
+	PacketResponse pr = runCommand(pb.getPacket());
+	
+	super.setCurrentPosition(p);
+	
       System.out.println("Current: " + machine.getCurrentPosition());
     }
 	
