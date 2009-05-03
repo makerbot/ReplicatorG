@@ -64,6 +64,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		public final static int CHANGE_TOOL       = 134;
 		public final static int WAIT_FOR_TOOL     = 135;
 		public final static int TOOL_COMMAND      = 136;
+		public final static int ENABLE_AXES       = 137;
     };
 
     /**
@@ -926,14 +927,22 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void enableDrives()
     {
-		//TODO: throw some sort of unsupported exception.
-		super.enableDrives();
+	// Command RMB to enable its steppers.  Note that they are
+	// already automagically enabled by most commands and need
+	// not be explicitly enabled.
+	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.ENABLE_AXES);
+	pb.add8(0x87); // enable x,y,z
+	PacketResponse pr = runCommand(pb.getPacket());
+	super.enableDrives();
     }
 	
     public void disableDrives()
     {
-		//TODO: throw some sort of unsupported exception.
-		super.disableDrives();
+	// Command RMB to disable its steppers.
+	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.ENABLE_AXES);
+	pb.add8(0x07); // disable x,y,z
+	PacketResponse pr = runCommand(pb.getPacket());
+	super.disableDrives();
     }
 	
     public void changeGearRatio(int ratioIndex)
