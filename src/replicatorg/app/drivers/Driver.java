@@ -110,6 +110,11 @@ public interface Driver
 	/**
 	* Positioning Methods
 	**/
+    /**
+     * Tell the machine to consider its current position as being at p.  Should
+     * not move the machine position.
+     * @param p the point to map the current position to
+     */
 	public void setCurrentPosition(Point3d p);
 	public Point3d getCurrentPosition();
 	public void queuePoint(Point3d p);

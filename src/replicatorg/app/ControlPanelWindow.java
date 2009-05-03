@@ -792,7 +792,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		}
 		else if (s.equals("Zero"))
 		{
-			driver.setCurrentPosition(new Point3d());
+		    // "Zero" tells the machine to calibrate its
+		    // current position as zero, not to move to its
+		    // currently-set zero position.
+		    driver.setCurrentPosition(new Point3d());
 		}
 		//get our new jog rate
 		else if (s.equals("jog size"))
