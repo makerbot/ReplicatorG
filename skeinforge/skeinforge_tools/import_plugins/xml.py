@@ -436,7 +436,8 @@ class XMLCarving:
 		"Parse XML text and store the layers."
 		if xmlText == '':
 			return None
-		xmlParser = XMLSimpleParser( xmlText )
+		xmlParser = XMLSimpleParser()
+		xmlParser.parseXMLText( xmlText )
 		artOfIllusionElement = xmlParser.rootElement.getFirstChildWithClassName( 'ArtOfIllusion' )
 		sceneElement = artOfIllusionElement.getFirstChildWithClassName( 'Scene' )
 		rootElement = sceneElement.getFirstChildWithClassName( 'objects' )

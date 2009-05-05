@@ -183,7 +183,6 @@ def getCircleIntersectionLoops( circleIntersections ):
 
 def getCircleNodesFromLoop( loop, radius ):
 	"Get the circle nodes from every point on a loop and between points."
-	radius = abs( radius )
 	pointComplexes = []
 	for pointComplexIndex in xrange( len( loop ) ):
 		pointComplex = loop[ pointComplexIndex ]
@@ -229,28 +228,20 @@ def getInsetFromClockwiseLoop( loop, radius ):
 
 def getInsetLoops( inset, loops ):
 	"Get the inset loops."
-	insetLoops = []
-	for loop in loops:
-		insetLoops += getInsetLoopsFromLoop( inset, loop )
-	return insetLoops
-
-def getInsetLoopsFromLoop( inset, loop ):
-	"Get the inset loops from a loop."
 	absoluteInset = abs( inset )
 	insetLoops = []
 	slightlyGreaterThanInset = 1.1 * absoluteInset
 	muchGreaterThanLayerInset = 2.5 * absoluteInset
-	isInInsetDirection = euclidean.isWiddershins( loop )
-	if inset < 0.0:
-		isInInsetDirection = not isInInsetDirection
-	centers = getCentersFromLoopDirection( not isInInsetDirection, loop, slightlyGreaterThanInset )
-	for center in centers:
-		insetLoop = getSimplifiedInsetFromClockwiseLoop( center, absoluteInset )
-		if euclidean.isLargeSameDirection( insetLoop, center, muchGreaterThanLayerInset ):
-			if euclidean.isPathInsideLoop( loop, insetLoop ) == isInInsetDirection:
-				if inset > 0.0:
-					insetLoop.reverse()
-				insetLoops.append( insetLoop )
+	for loop in loops:
+		isInInsetDirection = euclidean.isWiddershins( loop )
+		if inset < 0.0:
+			isInInsetDirection = not isInInsetDirection
+		centers = getCentersFromLoopDirection( not isInInsetDirection, loop, slightlyGreaterThanInset )
+		for center in centers:
+			insetLoop = getSimplifiedInsetFromClockwiseLoop( center, absoluteInset )
+			if euclidean.isLargeSameDirection( insetLoop, center, muchGreaterThanLayerInset ):
+				if euclidean.isPathInsideLoop( loop, insetLoop ) == isInInsetDirection:
+					insetLoops.append( insetLoop )
 	return insetLoops
 
 def getIntersectionAtInset( aheadComplex, behindComplex, inset ):

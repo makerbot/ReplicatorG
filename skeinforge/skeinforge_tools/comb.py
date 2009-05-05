@@ -174,8 +174,10 @@ class CombSkein:
 		self.beforeLoopLocation = None
 		self.betweenTable = {}
 		self.boundaryLoop = None
+		self.bridgeExtrusionWidthOverSolid = 1.0
 		self.fillInset = 0.18
 		self.isPerimeter = False
+		self.layerFillInset = self.fillInset
 		self.layer = None
 		self.layers = []
 		self.layerTable = {}
@@ -226,19 +228,19 @@ class CombSkein:
 
 	def addPathBeforeEnd( self, aroundBetweenPath, location, loop ):
 		"Add the path before the end of the loop."
-		halfFillInset = 0.5 * self.fillInset
+		halfFillInset = 0.5 * self.layerFillInset
 		if self.arrivalInsetFollowDistance < halfFillInset:
 			return
 		locationComplex = location.dropAxis( 2 )
 		closestInset = None
 		closestDistanceIndex = euclidean.DistanceIndex( 999999999999999999.0, - 1 )
 		loop = euclidean.getAwayPoints( loop, self.extrusionWidth )
-		circleNodes = intercircle.getCircleNodesFromLoop( loop, self.fillInset )
+		circleNodes = intercircle.getCircleNodesFromLoop( loop, self.layerFillInset )
 		centers = []
 		centers = intercircle.getCentersFromCircleNodes( circleNodes )
 		for center in centers:
 			inset = intercircle.getInsetFromClockwiseLoop( center, halfFillInset )
-			if euclidean.isLargeSameDirection( inset, center, self.fillInset ):
+			if euclidean.isLargeSameDirection( inset, center, self.layerFillInset ):
 				if euclidean.isPathInsideLoop( loop, inset ) == euclidean.isWiddershins( loop ):
 					distanceIndex = euclidean.getNearestDistanceIndex( locationComplex, inset )
 					if distanceIndex.distance < closestDistanceIndex.distance:
@@ -306,7 +308,7 @@ class CombSkein:
 			loop = euclidean.getLoopStartingNearest( extrusionHalfWidth, self.beforeLoopLocation, loop )
 		if jitterDistance != 0.0:
 			loop = self.getJitteredLoop( jitterDistance, loop )
-			loop = euclidean.getAwayPoints( loop, 0.2 * self.fillInset )
+			loop = euclidean.getAwayPoints( loop, 0.2 * self.layerFillInset )
 		self.loopPath.path = loop + [ loop[ 0 ] ]
 		self.addGcodeFromThreadZ( self.loopPath.path, self.loopPath.z )
 		self.loopPath = None
@@ -344,14 +346,14 @@ class CombSkein:
 			return self.betweenTable[ self.layerZ ]
 		if self.layerZ not in self.layerTable:
 			return []
-		halfFillInset = 0.5 * self.fillInset
+		halfFillInset = 0.5 * self.layerFillInset
 		betweens = []
 		for boundaryLoop in self.layerTable[ self.layerZ ]:
-			circleNodes = intercircle.getCircleNodesFromLoop( boundaryLoop, self.fillInset )
+			circleNodes = intercircle.getCircleNodesFromLoop( boundaryLoop, self.layerFillInset )
 			centers = intercircle.getCentersFromCircleNodes( circleNodes )
 			for center in centers:
 				inset = intercircle.getSimplifiedInsetFromClockwiseLoop( center, halfFillInset )
-				if euclidean.isLargeSameDirection( inset, center, self.fillInset ):
+				if euclidean.isLargeSameDirection( inset, center, self.layerFillInset ):
 					if euclidean.isPathInsideLoop( boundaryLoop, inset ) == euclidean.isWiddershins( boundaryLoop ):
 						betweens.append( inset )
 		self.betweenTable[ self.layerZ ] = betweens
@@ -527,7 +529,10 @@ class CombSkein:
 			self.extruderActive = True
 		elif firstWord == 'M103':
 			self.extruderActive = False
+		elif firstWord == '(<bridgeLayer>':
+			self.layerFillInset = self.fillInset * self.bridgeExtrusionWidthOverSolid
 		elif firstWord == '(<layer>':
+			self.layerFillInset = self.fillInset
 			self.nextLayerZ = float( splitLine[ 1 ] )
 			if self.layerZ == None:
 				self.layerZ = self.nextLayerZ
@@ -555,7 +560,9 @@ class CombSkein:
 			line = self.lines[ self.lineIndex ]
 			splitLine = line.split()
 			firstWord = gcodec.getFirstWord( splitLine )
-			if firstWord == '(<decimalPlacesCarried>':
+			if firstWord == '(<bridgeExtrusionWidthOverSolid>':
+				self.bridgeExtrusionWidthOverSolid = float( splitLine[ 1 ] )
+			elif firstWord == '(<decimalPlacesCarried>':
 				self.decimalPlacesCarried = int( splitLine[ 1 ] )
 			elif firstWord == '(</extruderInitialization>)':
 				self.addLine( '(<procedureDone> comb </procedureDone>)' )

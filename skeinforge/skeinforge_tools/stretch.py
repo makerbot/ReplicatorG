@@ -277,6 +277,7 @@ class StretchPreferences:
 class StretchSkein:
 	"A class to stretch a skein of extrusions."
 	def __init__( self ):
+		self.bridgeExtrusionWidthOverSolid = 1.0
 		self.decimalPlacesCarried = 3
 		self.extruderActive = False
 		self.extrusionWidth = 0.4
@@ -402,7 +403,9 @@ class StretchSkein:
 			line = self.lines[ self.lineIndex ]
 			splitLine = line.split()
 			firstWord = gcodec.getFirstWord( splitLine )
-			if firstWord == '(<decimalPlacesCarried>':
+			if firstWord == '(<bridgeExtrusionWidthOverSolid>':
+				self.bridgeExtrusionWidthOverSolid = float( splitLine[ 1 ] )
+			elif firstWord == '(<decimalPlacesCarried>':
 				self.decimalPlacesCarried = int( splitLine[ 1 ] )
 			elif firstWord == '(<extrusionWidth>':
 				extrusionWidth = float( splitLine[ 1 ] )
@@ -428,7 +431,15 @@ class StretchSkein:
 		elif firstWord == 'M103':
 			self.extruderActive = False
 			self.isLoop = False
-			self.threadMaximumAbsoluteStretch = self.pathAbsoluteStretch
+			self.threadMaximumAbsoluteStretch = self.layerMaximumAbsoluteStretch
+		elif firstWord == '(<bridgeLayer>':
+			self.layerMaximumAbsoluteStretch = self.pathAbsoluteStretch * self.bridgeExtrusionWidthOverSolid
+			self.layerStretchFromDistance= self.stretchFromDistance * self.bridgeExtrusionWidthOverSolid
+			self.threadMaximumAbsoluteStretch = self.layerMaximumAbsoluteStretch
+		elif firstWord == '(<layer>':
+			self.layerMaximumAbsoluteStretch = self.pathAbsoluteStretch
+			self.layerStretchFromDistance = self.stretchFromDistance
+			self.threadMaximumAbsoluteStretch = self.layerMaximumAbsoluteStretch
 		elif firstWord == '(<loop>)':
 			self.isLoop = True
 			self.threadMaximumAbsoluteStretch = self.loopMaximumAbsoluteStretch

@@ -201,10 +201,8 @@ class CarvePreferences:
 		self.archive.append( self.correctMesh )
 		self.unprovenMesh = preferences.Radio().getFromRadio( 'Unproven Mesh', importRadio, False )
 		self.archive.append( self.unprovenMesh )
-		self.infillBridgeThicknessOverLayerThickness = preferences.FloatPreference().getFromValue( 'Infill Bridge Thickness over Layer Thickness (ratio):', 1.0 )
-		self.archive.append( self.infillBridgeThicknessOverLayerThickness )
-		self.infillBridgeWidthOverExtrusionWidth = preferences.FloatPreference().getFromValue( 'Infill Bridge Width over Extrusion Width (ratio):', 1.0 )
-		self.archive.append( self.infillBridgeWidthOverExtrusionWidth )
+		self.infillBridgeWidthOverThickness = preferences.FloatPreference().getFromValue( 'Infill Bridge Width over Thickness (ratio):', 1.5 )
+		self.archive.append( self.infillBridgeWidthOverThickness )
 		self.infillDirectionBridge = preferences.BooleanPreference().getFromValue( 'Infill in Direction of Bridges', True )
 		self.archive.append( self.infillDirectionBridge )
 		self.layerThickness = preferences.FloatPreference().getFromValue( 'Layer Thickness (mm):', 0.4 )
@@ -238,7 +236,8 @@ class CarveSkein:
 		self.addLine( '\tdecimalPlacesCarried = ' + str( self.decimalPlacesCarried ) ) # Set decimal places carried.
 		self.addLine( '\tlayerThickness = ' + self.getRounded( self.layerThickness ) ) # Set layer thickness.
 		self.addLine( '\textrusionWidth = ' + self.getRounded( self.extrusionWidth ) ) # Set extrusion width.
-		self.addLine( '\tinfillBridgeWidthOverExtrusionWidth = ' + euclidean.getRoundedToThreePlaces( self.carvePreferences.infillBridgeWidthOverExtrusionWidth.value ) )
+		# Set bridge extrusion width over solid extrusion width.
+		self.addLine( '\tbridgeExtrusionWidthOverSolid = ' + euclidean.getRoundedToThreePlaces( self.bridgeExtrusionWidth / self.extrusionWidth ) )
 		self.addLine( '\tprocedureDone = "carve"' ) # The skein has been carved.
 		self.addLine( '\textrusionStart = 1' ) # Initialization is finished, extrusion is starting.
 		beginningOfPathSectionIndex = self.svgTemplateLines.index( '<!--Beginning of path section-->' )
@@ -362,13 +361,12 @@ class CarveSkein:
 
 	def parseCarving( self, carvePreferences, carving, fileName ):
 		"Parse gnu triangulated surface text and store the carved gcode."
-		self.carvePreferences = carvePreferences
 		self.layerThickness = carvePreferences.layerThickness.value
 		self.setExtrusionDiameterWidth( carvePreferences )
 		if carvePreferences.infillDirectionBridge.value:
 			carving.setCarveBridgeLayerThickness( self.bridgeLayerThickness )
 		carving.setCarveLayerThickness( self.layerThickness )
-		carving.setCarveImportRadius( 0.5 * carvePreferences.importCoarseness.value * abs( self.extrusionWidth ) )
+		carving.setCarveImportRadius( 0.5 * carvePreferences.importCoarseness.value * self.extrusionWidth )
 		carving.setCarveIsCorrectMesh( carvePreferences.correctMesh.value )
 		rotatedBoundaryLayers = carving.getCarveRotatedBoundaryLayers()
 		if len( rotatedBoundaryLayers ) < 1:
@@ -388,7 +386,8 @@ class CarveSkein:
 	def setExtrusionDiameterWidth( self, carvePreferences ):
 		"Set the extrusion diameter & width and the bridge thickness & width."
 		self.extrusionWidth = carvePreferences.extrusionWidthOverThickness.value * self.layerThickness
-		self.bridgeLayerThickness = self.layerThickness * carvePreferences.infillBridgeThicknessOverLayerThickness.value
+		self.bridgeExtrusionWidth = carvePreferences.infillBridgeWidthOverThickness.value * self.layerThickness
+		self.bridgeLayerThickness = self.layerThickness * self.extrusionWidth / self.bridgeExtrusionWidth
 
 
 def main():

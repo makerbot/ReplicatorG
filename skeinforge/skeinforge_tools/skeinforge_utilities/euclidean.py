@@ -795,15 +795,11 @@ def isInsideOtherLoops( loopIndex, loops ):
 	"Determine if a loop in a list is inside another loop in that list."
 	return isPathInsideLoops( loops[ : loopIndex ] + loops[ loopIndex + 1 : ], loops[ loopIndex ] )
 
-def isLarge( loop, requiredSize ):
-	"Determine if the loop is as large as the required size."
-	return getMaximumSpan( loop ) > abs( requiredSize )
-
 def isLargeSameDirection( inset, loop, requiredSize ):
 	"Determine if the inset is in the same direction as the loop and if the inset is as large as the required size."
 	if isWiddershins( inset ) != isWiddershins( loop ):
 		return False
-	return isLarge( inset, requiredSize )
+	return getMaximumSpan( inset ) > requiredSize
 
 def isLineIntersectingInsideXSegment( segmentFirstX, segmentSecondX, vector3First, vector3Second, y ):
 	"Determine if the line is crossing inside the x segment."

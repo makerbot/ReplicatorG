@@ -121,8 +121,8 @@ class XMLElement:
 		parents.append( self )
 
 
-class XMLSimpleParser:
-	"A simple xml parser."
+class XMLParser:
+	"An xml parser."
 	def __init__( self ):
 		"Add empty lists."
 		self.isInComment = False

@@ -236,7 +236,7 @@ class SkeinviewSkein:
 		self.isThereALayerStartWord = gcodec.isThereAFirstWord( '(<layer>', self.lines, 1 )
 		for line in self.lines:
 			self.parseCorner( line )
-		self.scale = skeinviewPreferences.pixelsWidthExtrusion.value / abs( self.extrusionWidth )
+		self.scale = skeinviewPreferences.pixelsWidthExtrusion.value / self.extrusionWidth
 		self.scaleCornerHigh = self.scale * self.cornerHigh.dropAxis( 2 )
 		self.scaleCornerLow = self.scale * self.cornerLow.dropAxis( 2 )
 		print( "The lower left corner of the skeinview window is at %s, %s" % ( self.cornerLow.x, self.cornerLow.y ) )

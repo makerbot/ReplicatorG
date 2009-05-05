@@ -115,7 +115,7 @@ __date__ = "$Date: 2008/21/04 $"
 __license__ = "GPL 3.0"
 
 
-#bring up the preferences window, maybe make dragging more intuitive
+#shorten axis, arrows on axis, bring up the preferences window, maybe make dragging more intuitive
 def displayBeholdFileGivenText( gcodeText, beholdPreferences = None ):
 	"Display a beholded gcode file for a gcode file."
 	if gcodeText == '':
@@ -125,7 +125,7 @@ def displayBeholdFileGivenText( gcodeText, beholdPreferences = None ):
 		preferences.readPreferences( beholdPreferences )
 	skein = BeholdSkein()
 	skein.parseGcode( gcodeText, beholdPreferences )
-#	beholdPreferences.displayImmediateUpdateDialog()
+	beholdPreferences.displayImmediateUpdateDialog()
 	skeinWindow = SkeinWindow( beholdPreferences, skein.screenSize, skein.skeinPanes )
 
 def beholdFile( fileName = '' ):
@@ -596,18 +596,15 @@ class SkeinWindow:
 		self.canvas[ 'yscrollcommand' ] = yScrollbar.set
 		self.exitButton = preferences.Tkinter.Button( self.root, text = 'Exit', activebackground = 'black', activeforeground = 'red', command = self.root.quit, fg = 'red' )
 		self.exitButton.grid( row = 99, column = 95, columnspan = 5, sticky = preferences.Tkinter.W )
-		self.showPreferencesButton = preferences.Tkinter.Button( self.root, activebackground = 'black', activeforeground = 'purple', command = self.showPreferences, text = 'Show Preferences' )
-		self.showPreferencesButton.grid( row = 99, column = 0, sticky = preferences.Tkinter.W )
-		self.canvas.bind( '<Button-1>', self.buttonOneClicked )
-		self.canvas.bind( '<ButtonRelease-1>', self.buttonOneReleased )
-		self.canvas.bind( '<Shift-ButtonRelease-1>', self.buttonOneReleasedShift )
-		self.canvas.bind( '<Leave>', self.leave )
-		self.canvas.bind( '<Motion>', self.motion )
-		self.canvas.bind( '<Shift-Motion>', self.motionShift )
-		halfCenter = 0.5 * self.center.real
-		self.xAxisLine = ColoredLine( Vector3(), 'darkorange', Vector3( halfCenter ), 'X Axis' )
-		self.yAxisLine = ColoredLine( Vector3(), 'gold', Vector3( 0.0, halfCenter ), 'Y Axis' )
-		self.zAxisLine = ColoredLine( Vector3(), 'skyblue', Vector3( 0.0, 0.0, halfCenter ), 'Z Axis' )
+		self.canvas.bind('<Button-1>', self.buttonOneClicked )
+		self.canvas.bind('<ButtonRelease-1>', self.buttonOneReleased )
+		self.canvas.bind('<Shift-ButtonRelease-1>', self.buttonOneReleasedShift )
+		self.canvas.bind('<Leave>', self.leave )
+		self.canvas.bind('<Motion>', self.motion )
+		self.canvas.bind('<Shift-Motion>', self.motionShift )
+		self.xAxisLine = ColoredLine( Vector3(), 'darkorange', Vector3( self.center.real ), 'X Axis' )
+		self.yAxisLine = ColoredLine( Vector3(), 'gold', Vector3( 0.0, self.center.real ), 'Y Axis' )
+		self.zAxisLine = ColoredLine( Vector3(), 'skyblue', Vector3( 0.0, 0.0, self.center.real ), 'Z Axis' )
 		self.canvas.xview( preferences.Tkinter.MOVETO, 0.5 * ( 1.0 - float( self.canvasWidth ) / float( size.real ) ) )
 		self.canvas.yview( preferences.Tkinter.MOVETO, 0.5 * ( 1.0 - float( self.canvasHeight ) / float( size.imag ) ) )
 		self.update()
@@ -621,7 +618,7 @@ class SkeinWindow:
 			geometryString = geometryString[ : lastPlusIndex + 1 ] + '5'
 			self.root.geometry( geometryString )
 			self.root.update_idletasks()
-		self.showPreferences()
+		beholdPreferences.setUpdateFunction(  self.update  )
 		if preferences.globalIsMainLoopRunning:
 			return
 		preferences.globalIsMainLoopRunning = True
@@ -665,7 +662,7 @@ class SkeinWindow:
 		"Move the viewpoint if the mouse was released and the shift key was pressed."
 		self.buttonOneReleased( event, True )
 
-	def drawColoredLine( self, arrowType, coloredLine, viewVectors, width ):
+	def drawColoredLine( self, coloredLine, viewVectors, width ):
 		"Draw colored line."
 		complexBegin = self.getViewComplex( coloredLine.begin, viewVectors )
 		complexEnd = self.getViewComplex( coloredLine.end, viewVectors )
@@ -675,7 +672,7 @@ class SkeinWindow:
 			complexEnd.real,
 			complexEnd.imag,
 			fill = coloredLine.colorName,
-			arrow = arrowType,
+			arrow = self.arrowType,
 			tags = coloredLine.tagString,
 			width = width )
 
@@ -700,7 +697,7 @@ class SkeinWindow:
 		if width <= 0:
 			return
 		for coloredLine in coloredLines:
-			self.drawColoredLine( self.arrowType, coloredLine, viewVectors, width )
+			self.drawColoredLine( coloredLine, viewVectors, width )
 
 	def drawSkeinPane( self, skeinPane, viewVectors ):
 		"Draw colored lines."
@@ -716,14 +713,14 @@ class SkeinWindow:
 	def drawXYAxisLines( self, viewVectors ):
 		"Draw the x and y axis lines."
 		if self.beholdPreferences.widthOfXAxis.value > 0:
-			self.drawColoredLine( 'last', self.xAxisLine, viewVectors, self.beholdPreferences.widthOfXAxis.value )
+			self.drawColoredLine( self.xAxisLine, viewVectors, self.beholdPreferences.widthOfXAxis.value )
 		if self.beholdPreferences.widthOfYAxis.value > 0:
-			self.drawColoredLine( 'last', self.yAxisLine, viewVectors, self.beholdPreferences.widthOfYAxis.value )
+			self.drawColoredLine( self.yAxisLine, viewVectors, self.beholdPreferences.widthOfYAxis.value )
 
 	def drawZAxisLine( self, viewVectors ):
 		"Draw the z axis line."
 		if self.beholdPreferences.widthOfZAxis.value > 0:
-			self.drawColoredLine( 'last', self.zAxisLine, viewVectors, self.beholdPreferences.widthOfZAxis.value )
+			self.drawColoredLine( self.zAxisLine, viewVectors, self.beholdPreferences.widthOfZAxis.value )
 
 	def getCentered( self, coordinate ):
 		"Get the centered coordinate."
@@ -811,21 +808,10 @@ class SkeinWindow:
 		"Move the viewpoint if the mouse was moved and the shift key was pressed."
 		self.motion( event, True )
 
-	def preferencesDestroyed( self, event ):
-		"Disable the show preferences button because the dynamic preferences were destroyed."
-		self.showPreferencesButton.config( state = preferences.Tkinter.NORMAL )
-
 	def printHexadecimalColorName( self, name ):
 		"Print the color name in hexadecimal."
 		colorTuple = self.canvas.winfo_rgb( name )
 		print( '#%s%s%s' % ( getTwoHex( colorTuple[ 0 ] ), getTwoHex( colorTuple[ 1 ] ), getTwoHex( colorTuple[ 2 ] ) ) )
-
-	def showPreferences( self ):
-		"Show the dynamic preferences."
-		self.beholdPreferences.displayImmediateUpdateDialog()
-		self.beholdPreferences.setUpdateFunction( self.update  )
-		self.beholdPreferences.drawArrows.checkbutton.bind( '<Destroy>', self.preferencesDestroyed )
-		self.showPreferencesButton.config( state = preferences.Tkinter.DISABLED )
 
 	def update( self ):
 		"Update the screen."
