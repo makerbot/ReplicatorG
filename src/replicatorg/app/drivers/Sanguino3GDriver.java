@@ -499,42 +499,50 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void initialize()
     {
-		// Create our serial object
-		if (serial == null) {
-		    if (name != null) {
-			try {
-				if (debugLevel >= 0)
-			    	System.out.println("Connecting to " + name + " at " + rate);
-			    serial = new Serial(name, rate, parity, databits, stopbits);
-			} catch (SerialException e) {
-			    System.out.println("Unable to open port " + name + "\n");
-			    return;
+			// Create our serial object
+			if (serial == null) {
+			    if (name != null) {
+				try {
+					if (debugLevel >= 0)
+				    	System.out.println("Connecting to " + name + " at " + rate);
+				    serial = new Serial(name, rate, parity, databits, stopbits);
+				} catch (SerialException e) {
+				    System.out.println("Unable to open port " + name + "\n");
+				    return;
+				}
+			    } else {
+					System.out.println("No Serial Port found.\n");
+					return;
+			    }
 			}
-		    } else {
-				System.out.println("No Serial Port found.\n");
-				return;
-		    }
-		}
 
-		//wait till we're initialized
-		if (!isInitialized()) {
+			//wait till we're initialized
+			if (!isInitialized()) {
 		    // attempt to send version command and retrieve reply.
 		    try {
-			//read our string that means we're started up.
-			// after ten seconds, explicitly reset the device.
-			waitForStartup( 10000 );
+					//read our string that means we're started up.
+					// after ten seconds, explicitly reset the device.
+					waitForStartup(10000);
 
-				//okay, take care of version info /etc.
-				getVersion(Base.VERSION);
-				sendInit();
-				super.initialize();
+					//did it actually work?
+					if (isInitialized())
+					{
+						//okay, take care of version info /etc.
+						getVersion(Base.VERSION);
+						sendInit();
+						super.initialize();
+						
+						System.out.println("Ready to print.");
+					}
 		    } catch (Exception e) {
 			    //todo: handle init exceptions here
 				  System.out.println("yarg!");
 				  e.printStackTrace();
 		    }
-		}
-  }
+			}
+			else
+				System.out.println("Unable to connect to firmware.");
+	  }
 
     /** Wait for a startup message.  After the specified timeout, replicatorG will attempt to
      * remotely reset the device.
@@ -543,48 +551,51 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      */
     protected void waitForStartup( int timeoutMillis )
     {
-	assert (serial != null);
-	synchronized(serial)
+			assert (serial != null);
+			synchronized(serial)
 	    {
-		String cmd = "";
-		byte[] responsebuffer = new byte[512];
-		String result = "";
-		
-		while (!isInitialized())
-		{
-		    try {
-			int numread = serial.read(responsebuffer,timeoutMillis);
-			if (numread < 0) {
-			    // This signifies EOF. FIXME: How do we handle this?
-			    System.out.println("RepRap3GDriver.readResponse(): EOF occured");
-			    return;
-			} else if (numread == 0) {
-			    // Attempt a hard reset.
-			    System.out.println("Pulsing RTS to reset device.");
-			    serial.pulseRTSLow();
-			} else {
-			    result += new String(responsebuffer , 0, numread, "US-ASCII");
-			    
-			    int index;
-			    while ((index = result.indexOf('\n')) >= 0) {
-				String line = result.substring(0, index).trim(); // trim to remove any trailing \r
-				result = result.substring(index+1);
-				if (line.length() == 0) continue;
+				String cmd = "";
+				byte[] responsebuffer = new byte[512];
+				String result = "";
 				
-				//old arduino firmware sends "start"
-				if (line.startsWith("R3G Master v")) {
-				    //todo: set version
-				    setInitialized(true);
-				    System.out.println("Found Firmware: " + line);
-				}
+				//try to connect to it straight up.
+				if (getVersion(Base.VERSION) > 0)
+					setInitialized(true);
+				
+				while (!isInitialized())
+				{
+			    try {
+						int numread = serial.read(responsebuffer,timeoutMillis);
+						if (numread < 0) {
+						    // This signifies EOF. FIXME: How do we handle this?
+						    System.out.println("RepRap3GDriver.readResponse(): EOF occured");
+						    return;
+						} else if (numread == 0) {
+						    // Attempt a hard reset.
+						    System.out.println("Pulsing RTS to reset device.");
+						    serial.pulseRTSLow();
+						} else {
+					    result += new String(responsebuffer , 0, numread, "US-ASCII");
+				    
+					    int index;
+					    while ((index = result.indexOf('\n')) >= 0) {
+								String line = result.substring(0, index).trim(); // trim to remove any trailing \r
+								result = result.substring(index+1);
+								if (line.length() == 0) continue;
+								
+								//wait to see if it sends its startup info.
+								if (line.startsWith("R3G Master v")) {
+								    //todo: set version
+								    setInitialized(true);
+								}
+					    }
+						}
 			    }
-			}
-		    }
-		    catch (IOException e) {
-			System.out.println("inputstream.read() failed: " + e.toString());
-		      // FIXME: Shut down communication somehow.
-		    }
-		}			
+			    catch (IOException e) {
+					System.out.println("inputstream.read() failed: " + e.toString());
+			      // FIXME: Shut down communication somehow.
+			    }
+				}			
 	    }
     }
     
@@ -665,8 +676,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		
     public boolean isFinished()
     {
-		// todo agm
-		return true;
+			// todo agm
+			return true;
     }
 	
     public void dispose()
@@ -681,15 +692,15 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      *  commands used internally to driver
      ****************************************************/
     public int getVersion(int ourVersion)
-	{
-		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.VERSION);
-		pb.add16(ourVersion);
+		{
+			PacketBuilder pb = new PacketBuilder(CommandCodesMaster.VERSION);
+			pb.add16(ourVersion);
 
-		PacketResponse pr = runCommand(pb.getPacket());
-		int version = pr.get16();
+			PacketResponse pr = runCommand(pb.getPacket());
+			int version = pr.get16();
 
-		if (debugLevel >= 1)
-			System.out.println("Reported version: " + Integer.toHexString(version));
+			if (debugLevel >= 1)
+				System.out.println("Reported version: " + Integer.toHexString(version));
 
   		return version;
     }
