@@ -174,10 +174,8 @@ class CombSkein:
 		self.beforeLoopLocation = None
 		self.betweenTable = {}
 		self.boundaryLoop = None
-		self.bridgeExtrusionWidthOverSolid = 1.0
 		self.fillInset = 0.18
 		self.isPerimeter = False
-		self.layerFillInset = self.fillInset
 		self.layer = None
 		self.layers = []
 		self.layerTable = {}
@@ -193,25 +191,24 @@ class CombSkein:
 	def addGcodeFromThreadZ( self, thread, z ):
 		"Add a gcode thread to the output."
 		if len( thread ) > 0:
-			self.addGcodeMovementZ( thread[ 0 ], z )
+			self.addGcodeMovementZ( self.travelFeedratePerMinute, thread[ 0 ], z )
 		else:
 			print( "zero length vertex positions array which was skipped over, this should never happen" )
 		if len( thread ) < 2:
 			return
 		self.addLine( 'M101' )
-		self.addGcodePathZ( thread[ 1 : ], z )
+		self.addGcodePathZ( self.feedrateMinute, thread[ 1 : ], z )
 
-	def addGcodeMovementZ( self, point, z ):
+	def addGcodeMovementZ( self, feedratePerMinute, point, z ):
 		"Add a movement to the output."
-		if self.feedrateMinute == None:
-			self.addLine( "G1 X%s Y%s Z%s" % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ) ) )
-		else:
-			self.addLine( "G1 X%s Y%s Z%s F%s" % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ), self.getRounded( self.feedrateMinute ) ) )
+		if feedratePerMinute == None:
+			feedratePerMinute = self.operatingFeedratePerMinute
+		self.addLine( "G1 X%s Y%s Z%s F%s" % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ), self.getRounded( feedratePerMinute ) ) )
 
-	def addGcodePathZ( self, path, z ):
+	def addGcodePathZ( self, feedratePerMinute, path, z ):
 		"Add a gcode path, without modifying the extruder, to the output."
 		for point in path:
-			self.addGcodeMovementZ( point, z )
+			self.addGcodeMovementZ( feedratePerMinute, point, z )
 
 	def addIfTravel( self, splitLine ):
 		"Add travel move around loops if the extruder is off."
@@ -219,7 +216,7 @@ class CombSkein:
 		if not self.extruderActive and self.oldLocation != None:
 			if len( self.getBetweens() ) > 0:
 				highestZ = max( location.z, self.oldLocation.z )
-				self.addGcodePathZ( self.getAroundBetweenPath( location ), highestZ )
+				self.addGcodePathZ( self.travelFeedratePerMinute, self.getAroundBetweenPath( location ), highestZ )
 		self.oldLocation = location
 
 	def addLine( self, line ):
@@ -228,19 +225,19 @@ class CombSkein:
 
 	def addPathBeforeEnd( self, aroundBetweenPath, location, loop ):
 		"Add the path before the end of the loop."
-		halfFillInset = 0.5 * self.layerFillInset
+		halfFillInset = 0.5 * self.fillInset
 		if self.arrivalInsetFollowDistance < halfFillInset:
 			return
 		locationComplex = location.dropAxis( 2 )
 		closestInset = None
 		closestDistanceIndex = euclidean.DistanceIndex( 999999999999999999.0, - 1 )
 		loop = euclidean.getAwayPoints( loop, self.extrusionWidth )
-		circleNodes = intercircle.getCircleNodesFromLoop( loop, self.layerFillInset )
+		circleNodes = intercircle.getCircleNodesFromLoop( loop, self.fillInset )
 		centers = []
 		centers = intercircle.getCentersFromCircleNodes( circleNodes )
 		for center in centers:
 			inset = intercircle.getInsetFromClockwiseLoop( center, halfFillInset )
-			if euclidean.isLargeSameDirection( inset, center, self.layerFillInset ):
+			if euclidean.isLargeSameDirection( inset, center, self.fillInset ):
 				if euclidean.isPathInsideLoop( loop, inset ) == euclidean.isWiddershins( loop ):
 					distanceIndex = euclidean.getNearestDistanceIndex( locationComplex, inset )
 					if distanceIndex.distance < closestDistanceIndex.distance:
@@ -308,7 +305,7 @@ class CombSkein:
 			loop = euclidean.getLoopStartingNearest( extrusionHalfWidth, self.beforeLoopLocation, loop )
 		if jitterDistance != 0.0:
 			loop = self.getJitteredLoop( jitterDistance, loop )
-			loop = euclidean.getAwayPoints( loop, 0.2 * self.layerFillInset )
+			loop = euclidean.getAwayPoints( loop, 0.2 * self.fillInset )
 		self.loopPath.path = loop + [ loop[ 0 ] ]
 		self.addGcodeFromThreadZ( self.loopPath.path, self.loopPath.z )
 		self.loopPath = None
@@ -346,14 +343,14 @@ class CombSkein:
 			return self.betweenTable[ self.layerZ ]
 		if self.layerZ not in self.layerTable:
 			return []
-		halfFillInset = 0.5 * self.layerFillInset
+		halfFillInset = 0.5 * self.fillInset
 		betweens = []
 		for boundaryLoop in self.layerTable[ self.layerZ ]:
-			circleNodes = intercircle.getCircleNodesFromLoop( boundaryLoop, self.layerFillInset )
+			circleNodes = intercircle.getCircleNodesFromLoop( boundaryLoop, self.fillInset )
 			centers = intercircle.getCentersFromCircleNodes( circleNodes )
 			for center in centers:
 				inset = intercircle.getSimplifiedInsetFromClockwiseLoop( center, halfFillInset )
-				if euclidean.isLargeSameDirection( inset, center, self.layerFillInset ):
+				if euclidean.isLargeSameDirection( inset, center, self.fillInset ):
 					if euclidean.isPathInsideLoop( boundaryLoop, inset ) == euclidean.isWiddershins( boundaryLoop ):
 						betweens.append( inset )
 		self.betweenTable[ self.layerZ ] = betweens
@@ -529,10 +526,7 @@ class CombSkein:
 			self.extruderActive = True
 		elif firstWord == 'M103':
 			self.extruderActive = False
-		elif firstWord == '(<bridgeLayer>':
-			self.layerFillInset = self.fillInset * self.bridgeExtrusionWidthOverSolid
 		elif firstWord == '(<layer>':
-			self.layerFillInset = self.fillInset
 			self.nextLayerZ = float( splitLine[ 1 ] )
 			if self.layerZ == None:
 				self.layerZ = self.nextLayerZ
@@ -560,9 +554,7 @@ class CombSkein:
 			line = self.lines[ self.lineIndex ]
 			splitLine = line.split()
 			firstWord = gcodec.getFirstWord( splitLine )
-			if firstWord == '(<bridgeExtrusionWidthOverSolid>':
-				self.bridgeExtrusionWidthOverSolid = float( splitLine[ 1 ] )
-			elif firstWord == '(<decimalPlacesCarried>':
+			if firstWord == '(<decimalPlacesCarried>':
 				self.decimalPlacesCarried = int( splitLine[ 1 ] )
 			elif firstWord == '(</extruderInitialization>)':
 				self.addLine( '(<procedureDone> comb </procedureDone>)' )
@@ -572,8 +564,12 @@ class CombSkein:
 				self.arrivalInsetFollowDistance = combPreferences.arrivalInsetFollowDistanceOverExtrusionWidth.value * self.extrusionWidth
 				self.jitter = combPreferences.jitterOverExtrusionWidth.value * self.extrusionWidth
 				self.minimumPerimeterDepartureDistance = combPreferences.minimumPerimeterDepartureDistanceOverExtrusionWidth.value * self.extrusionWidth
+			elif firstWord == '(<operatingFeedratePerSecond>':
+				self.operatingFeedratePerMinute = 60.0 * float( splitLine[ 1 ] )
 			elif firstWord == '(<fillInset>':
 				self.fillInset = float( splitLine[ 1 ] )
+			elif firstWord == '(<travelFeedratePerSecond>':
+				self.travelFeedratePerMinute = 60.0 * float( splitLine[ 1 ] )
 			self.addLine( line )
 
 	def parseLine( self, combPreferences, line ):

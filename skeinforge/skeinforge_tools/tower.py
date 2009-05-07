@@ -243,25 +243,23 @@ class TowerSkein:
 						truncatedLength = max( 0.5 * toPointLength, toPointLength - self.extrusionWidth )
 						complexToPointTruncated = complexToPoint * truncatedLength / toPointLength
 						highPoint = oldLocationComplex + complexToPointTruncated
-				self.addGcodeMovementZ( highPoint, z )
-			self.addGcodeMovementZ( firstPoint, z )
+				self.addGcodeMovementZ( self.travelFeedratePerMinute, highPoint, z )
+			self.addGcodeMovementZ( self.travelFeedratePerMinute, firstPoint, z )
 			self.oldZ = z
 		else:
 			print( "zero length vertex positions array which was skipped over, this should never happen" )
 		if len( thread ) < 2:
 			return
-		self.addLine( 'M101' )
+		self.addLine( 'M101' ) # Turn extruder on.
 		for point in thread[ 1 : ]:
-			self.addGcodeMovementZ( point, z )
+			self.addGcodeMovementZ( self.feedrateMinute, point, z )
 		self.addLine( "M103" ) # Turn extruder off.
 
-	def addGcodeMovementZ( self, point, z ):
+	def addGcodeMovementZ( self, feedrateMinute, point, z ):
 		"Add a movement to the output."
 		if point in self.feedrateTable:
 			feedrateMinute = self.feedrateTable[ point ]
-			self.addLine( 'G1 X%s Y%s Z%s F%s' % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ), self.getRounded( feedrateMinute ) ) )
-			return
-		self.addLine( 'G1 X%s Y%s Z%s' % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ) ) )
+		self.addLine( 'G1 X%s Y%s Z%s F%s' % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ), self.getRounded( feedrateMinute ) ) )
 
 	def addIfTravel( self, splitLine ):
 		"Add travel move around loops if this the extruder is off."
@@ -429,6 +427,8 @@ class TowerSkein:
 				self.halfLayerThickness = 0.5 * float( splitLine[ 1 ] )
 			elif firstWord == '(<outsideExtrudedFirst>':
 				self.outsideExtrudedFirst = bool( splitLine[ 1 ] )
+			elif firstWord == '(<travelFeedratePerSecond>':
+				self.travelFeedratePerMinute = 60.0 * float( splitLine[ 1 ] )
 			self.addLine( line )
 
 	def parseLine( self, lineIndex ):

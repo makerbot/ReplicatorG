@@ -254,10 +254,13 @@ class BooleanPreference( StringPreference ):
 
 	def setStateToValue( self ):
 		"Set the checkbox to the boolean."
-		if self.value:
-			self.checkbutton.select()
-		else:
-			self.checkbutton.deselect()
+		try:
+			if self.value:
+				self.checkbutton.select()
+			else:
+				self.checkbutton.deselect()
+		except:
+			pass
 
 	def setToDisplay( self ):
 		"Do nothing because toggleCheckbox is handling the value."
@@ -306,8 +309,13 @@ class DisplayToolButton:
 			capitalizedStrings.append( word.capitalize() )
 		capitalizedName = ' '.join( capitalizedStrings )
 		self.displayButton = Tkinter.Button( preferencesDialog.master, activebackground = 'black', activeforeground = 'violet', command = self.displayTool, text = capitalizedName )
-		self.displayButton.grid( row = preferencesDialog.row, column = 0 )
-		preferencesDialog.row += 1
+		if preferencesDialog.displayToolButtonStart:
+			self.displayButton.grid( row = preferencesDialog.row, column = 0 )
+			preferencesDialog.row += 1
+			preferencesDialog.displayToolButtonStart = False
+		else:
+			self.displayButton.grid( row = preferencesDialog.row - 1, column = 3 )
+			preferencesDialog.displayToolButtonStart = True
 
 	def addToPreferenceTable( self, preferenceTable ):
 		"Do nothing because the add listbox selection is not archivable."
@@ -414,9 +422,9 @@ class FloatPreference( StringPreference ):
 		"Add this to the dialog."
 		self.entry = Tkinter.Entry( preferencesDialog.master )
 		self.entry.insert( 0, str( self.value ) )
-		self.entry.grid( row = preferencesDialog.row, column = 2, columnspan = 2, sticky = Tkinter.W )
+		self.entry.grid( row = preferencesDialog.row, column = 3, sticky = Tkinter.W )
 		self.label = Tkinter.Label( preferencesDialog.master, text = self.name )
-		self.label.grid( row = preferencesDialog.row, column = 0, columnspan = 2, sticky = Tkinter.W )
+		self.label.grid( row = preferencesDialog.row, column = 0, columnspan = 3, sticky = Tkinter.W )
 		preferencesDialog.row += 1
 
 	def setUpdateFunction( self, updateFunction ):
@@ -472,6 +480,74 @@ class LabelDisplay:
 	def writeToArchiveWriter( self, archiveWriter ):
 		"Do nothing because the label display is not archivable."
 		pass
+
+
+class MenuButtonDisplay:
+	"A class to add a menu button."
+	def addToDialog( self, preferencesDialog ):
+		"Add this to the dialog."
+		self.menuButton = Tkinter.Menubutton( preferencesDialog.master, borderwidth = 5, text = self.name, relief = Tkinter.RIDGE )
+		self.menuButton.grid( row = preferencesDialog.row, column = 0, columnspan = 2, sticky = Tkinter.W )
+		self.menuButton.menu = Tkinter.Menu( self.menuButton, tearoff = 0 )
+		self.menuButton[ 'menu' ]  =  self.menuButton.menu
+		preferencesDialog.row += 1
+
+	def addToPreferenceTable( self, preferenceTable ):
+		"Do nothing because the label display is not archivable."
+		pass
+
+	def getFromName( self, name ):
+		"Initialize."
+		self.radioVar = None
+		self.name = name
+		return self
+
+	def getName( self ):
+		"Get name for key sorting."
+		return self.name
+
+	def setToDisplay( self ):
+		"Do nothing because the label display is not archivable."
+		pass
+
+	def writeToArchiveWriter( self, archiveWriter ):
+		"Do nothing because the label display is not archivable."
+		pass
+
+
+class MenuRadio( BooleanPreference ):
+	"A class to display, read & write a boolean with associated menu radio button."
+	def addToDialog( self, preferencesDialog ):
+		"Add this to the dialog."
+		self.menuLength = self.menuButtonDisplay.menuButton.menu.index( Tkinter.END )
+		if self.menuLength == None:
+			self.menuLength = 0
+		else:
+			self.menuLength += 1
+		self.menuButtonDisplay.menuButton.menu.add_radiobutton( label = self.name, value = self.menuLength, variable = self.getIntVar() )
+		self.setDisplayState()
+
+	def getFromMenuButtonDisplay( self, menuButtonDisplay, name, value ):
+		"Initialize."
+		self.getFromValue( name, value )
+		self.menuButtonDisplay = menuButtonDisplay
+		return self
+
+	def getIntVar( self ):
+		"Get the IntVar for this radio button group."
+		if self.menuButtonDisplay.radioVar == None:
+			self.menuButtonDisplay.radioVar = Tkinter.IntVar()
+		return self.menuButtonDisplay.radioVar
+
+	def setToDisplay( self ):
+		"Set the boolean to the checkbox."
+		self.value = ( self.getIntVar().get() == self.menuLength )
+
+	def setDisplayState( self ):
+		"Set the checkbox to the boolean."
+		if self.value:
+			self.getIntVar().set( self.menuLength )
+			self.menuButtonDisplay.menuButton.menu.invoke( self.menuLength )
 
 
 class ListPreference( StringPreference ):
@@ -564,7 +640,7 @@ class Radio( BooleanPreference ):
 		self.value = ( self.getIntVar().get() == self.radiobutton[ 'value' ] )
 
 	def setDisplayState( self, row ):
-		"Set the boolean to the checkbox."
+		"Set the checkbox to the boolean."
 		if self.value:
 			self.getIntVar().set( self.radiobutton[ 'value' ] )
 			self.radiobutton.select()
@@ -624,6 +700,7 @@ class PreferencesDialog:
 		"Add display preferences to the dialog."
 		self.column = 0
 		self.displayPreferences = displayPreferences
+		self.displayToolButtonStart = True
 		self.executables = []
 		self.master = master
 		self.row = 0
@@ -631,8 +708,8 @@ class PreferencesDialog:
 		frame = Tkinter.Frame( master )
 		for preference in displayPreferences.archive:
 			preference.addToDialog( self )
-		if self.row < 30:
-			Tkinter.Label( master ).grid( row = self.row, column = 0 )
+		if self.row < 20:
+			Tkinter.Label( master ).grid( row = self.row )
 			self.row += 1
 		cancelColor = 'red'
 		cancelTitle = 'Close'

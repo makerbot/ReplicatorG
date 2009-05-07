@@ -411,7 +411,7 @@ def isPathAdded( edges, faces, loops, remainingEdgeTable, vertices, z ):
 		del remainingEdgeTable[ nextEdgeIndexAroundZ ]
 		nextEdgeIndexAroundZ = getNextEdgeIndexAroundZ( edges[ nextEdgeIndexAroundZ ], faces, remainingEdgeTable )
 	if len( pathIndexes ) < 3:
-		print( "Dangling edges, will use intersecting circles to get import layer at height " + z.toString() )
+		print( "Dangling edges, will use intersecting circles to get import layer at height %s" % z )
 		del loops[ : ]
 		return False
 	loops.append( getPath( edges, pathIndexes, vertices, z ) )

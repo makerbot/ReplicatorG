@@ -216,7 +216,7 @@ class OozebaneSkein:
 		distanceBack = distanceAfterThreadBeginning - self.afterStartupDistances[ self.startupStepIndex ]
 		if segmentLength > 0.0:
 			locationBack = location + segment * distanceBack / segmentLength
-			feedrate = self.feedrateMinute * self.afterStartupFlowRates[ self.startupStepIndex ]
+			feedrate = self.operatingFeedrateMinute * self.afterStartupFlowRates[ self.startupStepIndex ]
 			if not self.isCloseToEither( locationBack, location, self.oldLocation ):
 				self.addLine( self.getLinearMoveWithFeedrate( feedrate, locationBack ) )
 		self.startupStepIndex += 1
@@ -253,8 +253,8 @@ class OozebaneSkein:
 			self.addAfterStartupLine( splitLine )
 		if self.startupStepIndex >= len( self.afterStartupDistances ):
 			self.startupStepIndex = len( self.afterStartupDistances ) + 999999999999
-			return line
-		feedrate = self.feedrateMinute * self.getStartupFlowRateMultiplier( self.getDistanceAfterThreadBeginning() / self.afterStartupDistance, len( self.afterStartupDistances ) )
+			return self.getLinearMoveWithFeedrateSplitLine( self.operatingFeedrateMinute, splitLine )
+		feedrate = self.operatingFeedrateMinute * self.getStartupFlowRateMultiplier( self.getDistanceAfterThreadBeginning() / self.afterStartupDistance, len( self.afterStartupDistances ) )
 		return self.getLinearMoveWithFeedrateSplitLine( feedrate, splitLine )
 
 	def getAddBeforeStartupLines( self, line ):
@@ -276,11 +276,11 @@ class OozebaneSkein:
 			self.isStartupEarly = False
 			return line
 		locationBack = location + segment * distanceBack / segmentLength
-		self.addLine( self.getLinearMoveWithFeedrate( self.feedrateMinute, locationBack ) )
+		self.addLine( self.getLinearMoveWithFeedrate( self.operatingFeedrateMinute, locationBack ) )
 		self.addLine( 'M101' )
 		if self.isCloseToEither( locationBack, location, self.oldLocation ):
 			return ''
-		return line
+		return self.getLinearMoveWithFeedrate( self.operatingFeedrateMinute, location )
 
 	def getAddShutSlowDownLine( self, line ):
 		"Add the shutdown and slowdown lines."
@@ -320,7 +320,6 @@ class OozebaneSkein:
 
 	def getAddShutSlowDownLines( self, line ):
 		"Get and / or add the shutdown and slowdown lines."
-#			print('fff')
 		while self.getAddShutSlowDownLine( line ):
 			self.shutdownStepIndex += 1
 		return ''
@@ -442,6 +441,8 @@ class OozebaneSkein:
 			return self.getAddBeforeStartupLines( line )
 		if self.shutdownStepIndex < len( self.earlyShutdownDistances ):
 			return self.getAddShutSlowDownLines( line )
+		if self.isStartupEarly:
+			return self.getLinearMoveWithFeedrateSplitLine( self.operatingFeedrateMinute, splitLine )
 		return line
 
 	def getRounded( self, number ):
@@ -546,7 +547,6 @@ class OozebaneSkein:
 		"Set the after startup flow rates."
 		afterStartupRatio = min( 1.0, afterStartupRatio )
 		afterStartupRatio = max( 0.0, afterStartupRatio )
-#		self.afterStartupDistance = afterStartupRatio * self.getActiveFeedrateRatio() * self.oozebanePreferences.afterStartupDistanceOverExtrusionWidth.value * self.extrusionWidth
 		self.afterStartupDistance = afterStartupRatio * self.getActiveFeedrateRatio() * self.oozebanePreferences.afterStartupDistance.value
 		self.afterStartupDistances = []
 		self.afterStartupFlowRate = 1.0
@@ -623,9 +623,10 @@ class OozebaneSkein:
 		earlyShutdownSteps = int( math.floor( earlyShutdownRatio * float( self.oozebanePreferences.slowdownStartupSteps.value ) ) )
 		if earlyShutdownSteps < 2:
 			earlyShutdownSteps = 0
+		earlyShutdownStepsMinusOne = float( earlyShutdownSteps ) - 1.0
 		for stepIndex in xrange( earlyShutdownSteps ):
-			downMiddleWay = self.getShutdownFlowRateMultiplier( stepIndex / float( earlyShutdownSteps ), earlyShutdownSteps )
-			downWay = 1.0 - stepIndex / float( earlyShutdownSteps - 1 )
+			downMiddleWay = self.getShutdownFlowRateMultiplier( stepIndex / earlyShutdownStepsMinusOne, earlyShutdownSteps )
+			downWay = 1.0 - stepIndex / earlyShutdownStepsMinusOne
 			self.earlyShutdownFlowRates.append( downMiddleWay )
 			self.earlyShutdownDistances.append( downWay * self.earlyShutdownDistance )
 

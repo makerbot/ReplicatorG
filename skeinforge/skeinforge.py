@@ -233,7 +233,7 @@ from skeinforge_tools.skeinforge_utilities import interpret
 from skeinforge_tools import polyfile
 import cStringIO
 import sys
-import os.path
+
 
 __author__ = "Enrique Perez (perez_enrique@yahoo.com)"
 __credits__ = """
@@ -311,6 +311,4 @@ def main():
 		preferences.displayDialog( SkeinforgePreferences() )
 
 if __name__ == "__main__":
-	pathname=os.path.dirname(sys.argv[0])
-	sys.path.append(pathname)
 	main()

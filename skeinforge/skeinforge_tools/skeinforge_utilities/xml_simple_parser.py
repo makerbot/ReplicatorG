@@ -1,26 +1,31 @@
 """
-The svg.py script is an import translator plugin to get a carving from an svg file.
+The xml_simple_parser.py script is an xml parser that can parse a line separated xml text.
 
-An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the
-interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin
-a lower case name.
+This xml parser will read a line seperated xml text and produce a tree of the xml with a root element.  Each element can
+have an attribute table, children, a class name, parents, text and a link to the root element.
 
-The getCarving function takes the file name of an svg file and returns the carving.
-
-This example gets a carving for the svg file Screw Holder Bottom.svg.  This example is run in a terminal in the folder which
-contains Screw Holder Bottom.svg and svg.py.
+This example gets an xml tree for the xml file boolean.xml.  This example is run in a terminal in the folder which contains
+boolean.xml and xml_simple_parser.py.
 
 
 > python
 Python 2.5.1 (r251:54863, Sep 22 2007, 01:43:31)
 [GCC 4.2.1 (SUSE Linux)] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
->>> import svg
->>> svg.getCarving()
-0.20000000298, 999999999.0, -999999999.0, [8.72782748851e-17, None
+>>> file = open( 'boolean.xml', 'r' )
+>>> xmlText = file.read()
+>>> file.close()
+>>> from xml_simple_parser import XMLSimpleParser
+>>> xmlParser = XMLSimpleParser( xmlText )
+>>> print( xmlParser )
+  ?xml, {'version': '1.0'}
+  ArtOfIllusion, {'xmlns:bf': '//babelfiche/codec', 'version': '2.0', 'fileversion': '3'}
+  Scene, {'bf:id': 'theScene'}
+  materials, {'bf:elem-type': 'java.lang.Object', 'bf:list': 'collection', 'bf:id': '1', 'bf:type': 'java.util.Vector'}
 ..
-many more lines of the carving
+many more lines of the xml tree
 ..
+
 """
 
 
@@ -123,11 +128,14 @@ class XMLElement:
 
 class XMLSimpleParser:
 	"A simple xml parser."
-	def __init__( self ):
+	def __init__( self, xmlText ):
 		"Add empty lists."
 		self.isInComment = False
 		self.parents = []
 		self.rootElement = None
+		self.lines = gcodec.getTextLines( xmlText )
+		for line in self.lines:
+			self.parseLine( line )
 	
 	def __repr__( self ):
 		"Get the string representation of this parser."
@@ -151,9 +159,3 @@ class XMLSimpleParser:
 		if self.rootElement == None:
 			self.rootElement = xmlElement
 		xmlElement.rootElement = self.rootElement
-
-	def parseXMLText( self, xmlText ):
-		"Parse XML text and store the layers."
-		self.lines = gcodec.getTextLines( xmlText )
-		for line in self.lines:
-			self.parseLine( line )

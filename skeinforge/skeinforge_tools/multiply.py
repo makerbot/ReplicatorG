@@ -10,11 +10,16 @@ The center of the shape will be moved to the "Center X" and "Center Y" coordinat
 The "Number of Columns" preference is the number of columns in the array table.  The "Number of Rows" is the number of rows
 in the table.  The "Separation over Extrusion Width" is the ratio of separation between the shape copies over the extrusion width.
 
-The following examples multiply the files Screw Holder Bottom.gcode & Screw Holder Bottom.stl.  The examples are run in a terminal in the
-folder which contains Screw Holder Bottom.gcode, Screw Holder Bottom.stl and multiply.py.  The multiply function will multiply if "Activate
-Multiply" is true, which can be set in the dialog or by changing the preferences file 'multiply.csv' with a text editor or a
-spreadsheet program set to separate tabs.  The functions writeOutput and getMultiplyChainGcode check to see if the text has
-been multiplied, if not they call getFillChainGcode in fill.py to get filled gcode; once they have the filled text, then they multiply.
+Besides using the multiply tool, another way of printing many copies of the model is to duplicate the model in Art of Illusion,
+however many times you want, with the appropriate offsets.  Then you can either use the Join Objects script in the scripts
+submenu to create a combined shape or you can export the whole scene as an xml file, which skeinforge can then slice.
+
+The following examples multiply the files Screw Holder Bottom.gcode & Screw Holder Bottom.stl.  The examples are run in a
+terminal in the folder which contains Screw Holder Bottom.gcode, Screw Holder Bottom.stl and multiply.py.  The multiply
+function will multiply if "Activate Multiply" is true, which can be set in the dialog or by changing the preferences file
+'multiply.csv' with a text editor or a spreadsheet program set to separate tabs.  The functions writeOutput and
+getMultiplyChainGcode check to see if the text has been multiplied, if not they call getFillChainGcode in fill.py to get filled
+gcode; once they have the filled text, then they multiply.
 
 
 > python multiply.py

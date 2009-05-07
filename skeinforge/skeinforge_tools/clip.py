@@ -165,21 +165,18 @@ class ClipSkein:
 	def addGcodeFromThreadZ( self, thread, z ):
 		"Add a gcode thread to the output."
 		if len( thread ) > 0:
-			self.addGcodeMovementZ( thread[ 0 ], z )
+			self.addGcodeMovementZ( self.travelFeedratePerMinute, thread[ 0 ], z )
 		else:
 			print( "zero length vertex positions array which was skipped over, this should never happen" )
 		if len( thread ) < 2:
 			return
 		self.addLine( 'M101' )
 		for point in thread[ 1 : ]:
-			self.addGcodeMovementZ( point, z )
+			self.addGcodeMovementZ( self.feedrateMinute, point, z )
 
-	def addGcodeMovementZ( self, point, z ):
+	def addGcodeMovementZ( self, feedrateMinute, point, z ):
 		"Add a movement to the output."
-		if self.feedrateMinute == None:
-			self.addLine( "G1 X%s Y%s Z%s" % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ) ) )
-		else:
-			self.addLine( "G1 X%s Y%s Z%s F%s" % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ), self.getRounded( self.feedrateMinute ) ) )
+		self.addLine( 'G1 X%s Y%s Z%s F%s' % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ), self.getRounded( feedrateMinute ) ) )
 
 	def addLine( self, line ):
 		"Add a line of text and a newline to the output."
@@ -244,6 +241,8 @@ class ClipSkein:
 			elif firstWord == '(</extruderInitialization>)':
 				self.addLine( '(<procedureDone> clip </procedureDone>)' )
 				return
+			elif firstWord == '(<travelFeedratePerSecond>':
+				self.travelFeedratePerMinute = 60.0 * float( splitLine[ 1 ] )
 			self.addLine( line )
 
 	def parseLine( self, line ):

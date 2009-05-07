@@ -246,7 +246,7 @@ class CoolSkein:
 			remainingOrbitTime = coolPreferences.minimumLayerTime.value - self.layerTime
 			if remainingOrbitTime > 0.0 and self.boundaryLayer != None:
 				intercircle.addOperatingOrbits( self.boundaryLayer.loops, euclidean.getXYComplexFromVector3( self.oldLocation ), self, remainingOrbitTime, self.highestZ )
-			z = euclidean.LoopLayer( float( splitLine[ 1 ] ) )
+			z = float( splitLine[ 1 ] )
 			self.boundaryLayer = euclidean.LoopLayer( z )
 			self.highestZ = z
 			self.layerTime = 0.0

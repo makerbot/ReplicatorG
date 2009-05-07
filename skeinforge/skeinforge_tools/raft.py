@@ -137,6 +137,7 @@ __date__ = "$Date: 2008/21/04 $"
 __license__ = "GPL 3.0"
 
 
+#inside and outside inset loops basically around loops
 #maybe later wide support
 def addXIntersectionsFromSegment( index, segment, xIntersectionIndexList ):
 	"Add the x intersections from the segment."
@@ -162,7 +163,7 @@ def getExtendedLineSegment( extensionDistance, lineSegment ):
 	pointEnd = lineSegment[ 1 ].point
 	segment = pointEnd - pointBegin
 	segmentLength = abs( segment )
-	if segmentLength <= 0.0 * extensionDistance:
+	if segmentLength <= 0.0:
 		print( "This should never happen in getExtendedLineSegment in raft, the segment should have a length greater than zero." )
 		print( lineSegment )
 		return None
@@ -402,10 +403,13 @@ class RaftSkein:
 		self.layerStarted = False
 		self.lineIndex = 0
 		self.lines = None
+		self.oldFlowrateString = None
 		self.oldLocation = None
+		self.operatingFlowrateString = None
 		self.operatingLayerEndLine = '(<operatingLayerEnd> </operatingLayerEnd>)'
 		self.operatingJump = None
 		self.output = cStringIO.StringIO()
+		self.supportFlowrateString = None
 		self.supportLoops = []
 		self.supportSegmentTables = []
 
@@ -430,10 +434,18 @@ class RaftSkein:
 			return
 		self.addLayerFromSegments( self.feedrateMinute / self.baseLayerThicknessOverLayerThickness / self.baseLayerThicknessOverLayerThickness, baseLayerThickness, segments, z )
 
+	def addFlowrateLineIfNecessary( self, flowrateString ):
+		"Add a line of flowrate if different."
+		if flowrateString == self.oldFlowrateString:
+			return
+		if flowrateString != None:
+			self.addLine( 'M108 S' + flowrateString ) # Set flowrate.
+		self.oldFlowrateString = flowrateString
+
 	def addGcodeFromFeedrateThreadZ( self, feedrateMinute, thread, z ):
 		"Add a thread to the output."
 		if len( thread ) > 0:
-			self.addGcodeFromFeedrateMovementZ( feedrateMinute, thread[ 0 ], z )
+			self.addGcodeFromFeedrateMovementZ( self.travelFeedratePerMinute, thread[ 0 ], z )
 		else:
 			print( "zero length vertex positions array which was skipped over, this should never happen" )
 		if len( thread ) < 2:
@@ -545,6 +557,7 @@ class RaftSkein:
 		if len( aboveLayer.loops ) < 1:
 			self.supportSegmentTables.append( {} )
 			return
+		aboveLoops = self.supportLoops[ layerIndex + 1 ]
 		horizontalSegmentTable = {}
 		rise = aboveLayer.z - self.boundaryLayers[ layerIndex ].z
 		outsetSupportLayer = intercircle.getInsetLoops( - self.minimumSupportRatio * rise, self.supportLoops[ layerIndex ] )
@@ -555,7 +568,7 @@ class RaftSkein:
 			for subStepIndex in xrange( 2 * numberOfSubSteps + 1 ):
 				ySubStep = y + ( subStepIndex - numberOfSubSteps ) * subStepSize
 				xIntersectionIndexList = []
-				euclidean.addXIntersectionIndexesFromLoops( aboveLayer.loops, - 1, xIntersectionIndexList, ySubStep )
+				euclidean.addXIntersectionIndexesFromLoops( aboveLoops, - 1, xIntersectionIndexList, ySubStep )
 				euclidean.addXIntersectionIndexesFromLoops( outsetSupportLayer, 0, xIntersectionIndexList, ySubStep )
 				xIntersections = euclidean.getXIntersectionsFromIntersections( xIntersectionIndexList )
 				for xIntersection in xIntersections:
@@ -574,11 +587,15 @@ class RaftSkein:
 		layerFillInset = 0.9 * self.extrusionWidth
 		aroundWidth = 0.12 * layerFillInset
 		boundaryLoops = self.boundaryLayers[ self.layerIndex ].loops
-		for boundaryLoop in boundaryLoops:
-			euclidean.addLoopToPixelTable( boundaryLoop, aroundPixelTable, aroundWidth )
+		halfSupportOutset = 0.5 * self.supportOutset
+		aroundBoundaryLoops = intercircle.getInsetLoops( halfSupportOutset, boundaryLoops ) + intercircle.getInsetLoops( - halfSupportOutset, boundaryLoops )
+		for aroundBoundaryLoop in aroundBoundaryLoops:
+			euclidean.addLoopToPixelTable( aroundBoundaryLoop, aroundPixelTable, aroundWidth )
 		paths = euclidean.getPathsFromEndpoints( endpoints, layerFillInset, aroundPixelTable, aroundWidth )
+		self.addFlowrateLineIfNecessary( self.supportFlowrateString )
 		for path in paths:
 			self.addGcodeFromFeedrateThreadZ( self.feedrateMinute, path, z )
+		self.addFlowrateLineIfNecessary( self.operatingFlowrateString )
 		self.addTemperatureOrbits( supportSegments, self.raftPreferences.temperatureShapeSupportedLayers, self.raftPreferences.temperatureChangeTimeBeforeSupportedLayers, z )
 
 	def addTemperature( self, temperature ):
@@ -727,10 +744,10 @@ class RaftSkein:
 			line = self.lines[ self.lineIndex ]
 			splitLine = line.split()
 			firstWord = gcodec.getFirstWord( splitLine )
-			if firstWord == '(<decimalPlacesCarried>':
+			if firstWord == 'M108':
+				self.setOperatingFlowString( splitLine )
+			elif firstWord == '(<decimalPlacesCarried>':
 				self.decimalPlacesCarried = int( splitLine[ 1 ] )
-			elif firstWord == '(<layerThickness>':
-				self.layerThickness = float( splitLine[ 1 ] )
 			elif firstWord == '(<extrusionPerimeterWidth>':
 				self.extrusionPerimeterWidth = float( splitLine[ 1 ] )
 				self.supportOutset = self.extrusionPerimeterWidth - self.extrusionPerimeterWidth * self.raftPreferences.supportInsetOverPerimeterExtrusionWidth.value
@@ -738,13 +755,18 @@ class RaftSkein:
 				self.extrusionWidth = float( splitLine[ 1 ] )
 			elif firstWord == '(</extruderInitialization>)':
 				self.addLine( '(<procedureDone> raft /<procedureDone>)' )
-				self.addLine( line )
-				self.lineIndex += 1
-				return
 			elif firstWord == '(<feedrateMinute>':
 				self.feedrateMinute = float( splitLine[ 1 ] )
+			elif firstWord == '(<layer>':
+				return
+			elif firstWord == '(<layerThickness>':
+				self.layerThickness = float( splitLine[ 1 ] )
 			elif firstWord == '(<orbitalFeedratePerSecond>':
 				self.orbitalFeedratePerSecond = float( splitLine[ 1 ] )
+			elif firstWord == '(<supportFlowrate>':
+				self.supportFlowrateString = splitLine[ 1 ]
+			elif firstWord == '(<travelFeedratePerSecond>':
+				self.travelFeedratePerMinute = 60.0 * float( splitLine[ 1 ] )
 			self.addLine( line )
 
 	def parseLine( self, line ):
@@ -760,6 +782,8 @@ class RaftSkein:
 			if self.isStartupEarly:
 				self.isStartupEarly = False
 				return
+		elif firstWord == 'M108':
+			self.setOperatingFlowString( splitLine )
 		elif firstWord == '(<boundaryPoint>':
 			line = self.getBoundaryLine( splitLine )
 		elif firstWord == '(</extrusion>)':
@@ -869,6 +893,10 @@ class RaftSkein:
 		self.interfaceOverhang = self.raftPreferences.infillOverhang.value * halfInterfaceExtrusionWidth - halfInterfaceExtrusionWidth
 		self.interfaceBeginX = stepBegin.real - self.interfaceOverhang
 		self.interfaceEndX = stepEnd.real + self.interfaceOverhang
+
+	def setOperatingFlowString( self, splitLine ):
+		"Set the operating flow string from the split line."
+		self.operatingFlowrateString = splitLine[ 1 ][ 1 : ]
 
 	def subtractJoinedFill( self, fillXIntersectionIndexTables, supportSegmentTableIndex ):
 		"Join the fill then subtract it from the support layer table."

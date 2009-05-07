@@ -288,12 +288,10 @@ def writeOutput( fileName = '' ):
 class BevelSkein:
 	"A class to bevel a skein of extrusions."
 	def __init__( self ):
-		self.bridgeExtrusionWidthOverSolid = 1.0
 		self.decimalPlacesCarried = 3
 		self.extruderActive = False
 		self.feedrateMinute = 960.0
 		self.filletRadius = 0.2
-		self.layerFilletRadius = self.filletRadius
 		self.lineIndex = 0
 		self.lines = None
 		self.oldFeedrateMinute = None
@@ -394,11 +392,9 @@ class BevelSkein:
 			splitLine = line.split()
 			firstWord = gcodec.getFirstWord( splitLine )
 			if firstWord == '(<extrusionWidth>':
-				extrusionWidth = float( splitLine[ 1 ] )
-				self.reversalSlowdownDistance = extrusionWidth * filletPreferences.reversalSlowdownDistanceOverExtrusionWidth.value
-				self.filletRadius = extrusionWidth * filletPreferences.filletRadiusOverExtrusionWidth.value
-			elif firstWord == '(<bridgeExtrusionWidthOverSolid>':
-				self.bridgeExtrusionWidthOverSolid = float( splitLine[ 1 ] )
+				absoluteExtrusionWidth = abs( float( splitLine[ 1 ] ) )
+				self.reversalSlowdownDistance = absoluteExtrusionWidth * filletPreferences.reversalSlowdownDistanceOverExtrusionWidth.value
+				self.filletRadius = absoluteExtrusionWidth * filletPreferences.filletRadiusOverExtrusionWidth.value
 			elif firstWord == '(<decimalPlacesCarried>':
 				self.decimalPlacesCarried = int( splitLine[ 1 ] )
 			elif firstWord == '(</extruderInitialization>)':
@@ -415,20 +411,16 @@ class BevelSkein:
 		firstWord = splitLine[ 0 ]
 		if firstWord == 'G1':
 			self.linearMove( splitLine )
-		if firstWord == 'M101':
+		elif firstWord == 'M101':
 			self.extruderActive = True
-		if firstWord == 'M103':
+		elif firstWord == 'M103':
 			self.extruderActive = False
-		elif firstWord == '(<layer>':
-			self.layerFilletRadius = self.filletRadius
-		elif firstWord == '(<bridgeLayer>':
-			self.layerFilletRadius = self.filletRadius * self.bridgeExtrusionWidthOverSolid
 		if self.shouldAddLine:
 			self.addLine( line )
 
 	def splitPointGetAfter( self, location, nextLocation ):
 		"Bevel a point and return the end of the bevel."
-		bevelLength = 0.5 * self.layerFilletRadius
+		bevelLength = 0.5 * self.filletRadius
 		beforeSegment = self.oldLocation - location
 		halfBeforeSegmentLength = 0.5 * beforeSegment.magnitude()
 		if halfBeforeSegmentLength <= 0.0:
@@ -477,11 +469,11 @@ class ArcSegmentSkein( BevelSkein ):
 		beforeSegmentLength = beforeSegment.magnitude()
 		if beforeSegmentLength == 0.0:
 			return location
-		radius = self.layerFilletRadius
+		radius = self.filletRadius
 		afterSegmentNormalized = afterSegment / afterSegmentLength
 		beforeSegmentNormalized = beforeSegment / beforeSegmentLength
 		betweenCenterDotNormalized = afterSegmentNormalized + beforeSegmentNormalized
-		if betweenCenterDotNormalized.magnitude() < 0.01 * self.layerFilletRadius:
+		if betweenCenterDotNormalized.magnitude() < 0.01 * self.filletRadius:
 			return location
 		extruderOffReversalPoint = self.getExtruderOffReversalPoint( afterSegment, beforeSegment, location )
 		if extruderOffReversalPoint != None:

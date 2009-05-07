@@ -101,20 +101,29 @@ __author__ = "Enrique Perez (perez_enrique@yahoo.com)"
 __date__ = "$Date: 2008/28/04 $"
 __license__ = "GPL 3.0"
 
-#skeinedge or viewpart or panorama or perspective
-#carve aoi xml testing
-#user replace documentation in export, xml_parser renamed xml_parser_simple
-#check xml gcode
-#check exterior paths which should be combed
-#cut negative inset
+#fix gearweaver bug
+#support feedrate in raft
+#pyramidal bridge feedrate documentation
+#speed support feedrate, travel feedrate documentation
+#tutorial wiki page
+#
+#menu in raft
+#fix support fill bug
+#cross hatch support
+#profiles
+#short continue in oozebane
+#
 #boundaries, center radius z bottom top, circular or rectangular
+#carve aoi xml testing
+#check xml gcode
+#straighten out the use of layer thickness
 #gang or concatenate or join, maybe from behold?
+#check exterior paths which should be combed when changing layers, sometimes in tower
 #hole sequence, probably made obsolete by CSGEvaluator
+#cut tool head
 #preferences in gcode or saved versions
-#pyramidal
-#change material
+#change material from raft?
 #email marius about bridge extrusion width http://reprap.org/bin/view/Main/ExtruderImprovementsAndAlternatives
-#bridge extrusion width, straighten out the use of layer thickness
 #maybe get a volume estimate in statistic from extrusionDiameter instead of width and thickness
 #oozebane reverse?
 #xml & svg more forgiving, svg make defaults for layerThickness, maxZ, minZ, add layer z to svg_template, make the slider on the template track even when mouse is outside
@@ -783,8 +792,12 @@ class FillPreferences:
 		self.archive.append( self.extraShellsSparseLayer )
 		self.gridExtraOverlap = preferences.FloatPreference().getFromValue( 'Grid Extra Overlap (ratio):', 0.1 )
 		self.archive.append( self.gridExtraOverlap )
-		self.gridJunctionSeparationOverInnerOctogonRadius = preferences.FloatPreference().getFromValue( 'Grid Junction Separation over Inner Octogon Radius (ratio):', 0.0 )
-		self.archive.append( self.gridJunctionSeparationOverInnerOctogonRadius )
+		self.gridJunctionSeparationBandHeight = preferences.IntPreference().getFromValue( 'Grid Junction Separation Band Height (layers):', 10 )
+		self.archive.append( self.gridJunctionSeparationBandHeight )
+		self.gridJunctionSeparationOverOctogonRadiusAtEnd = preferences.FloatPreference().getFromValue( 'Grid Junction Separation over Octogon Radius At End (ratio):', 0.0 )
+		self.archive.append( self.gridJunctionSeparationOverOctogonRadiusAtEnd )
+		self.gridJunctionSeparationOverOctogonRadiusAtMiddle = preferences.FloatPreference().getFromValue( 'Grid Junction Separation over Octogon Radius At Middle (ratio):', 0.0 )
+		self.archive.append( self.gridJunctionSeparationOverOctogonRadiusAtMiddle )
 		self.fileNameInput = preferences.Filename().getFromFilename( interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File to be Filled', '' )
 		self.archive.append( self.fileNameInput )
 		self.infillBeginRotation = preferences.FloatPreference().getFromValue( 'Infill Begin Rotation (degrees):', 45.0 )
@@ -828,6 +841,7 @@ class FillSkein:
 		self.decimalPlacesCarried = 3
 		self.extruderActive = False
 		self.fillInset = 0.18
+		self.infillBridgeWidthOverExtrusionWidth = 1.0
 		self.isPerimeter = False
 		self.lastExtraShells = - 1
 		self.lineIndex = 0
@@ -851,9 +865,9 @@ class FillSkein:
 		rotatedLayer = self.rotatedLayers[ layerIndex ]
 		self.addLine( '(<layer> %s )' % rotatedLayer.z ) # Indicate that a new layer is starting.
 		if rotatedLayer.rotation != None:
-			layerExtrusionWidth = self.extrusionWidth * self.bridgeExtrusionWidthOverSolid
-			layerFillInset = self.fillInset * self.bridgeExtrusionWidthOverSolid
-			self.addLine( '(<bridgeLayer> </bridgeLayer>)' ) # Indicate that this is a bridge layer.
+			layerExtrusionWidth = self.extrusionWidth * self.infillBridgeWidthOverExtrusionWidth
+			layerFillInset = self.fillInset * self.infillBridgeWidthOverExtrusionWidth
+			self.addLine( '(<bridgeLayer>)' ) # Indicate that this is a bridge layer.
 		gridPointInsetX = 0.5 * layerFillInset
 		doubleExtrusionWidth = 2.0 * layerExtrusionWidth
 		muchGreaterThanLayerFillInset = 2.5 * layerFillInset
@@ -872,7 +886,7 @@ class FillSkein:
 				self.isDoubleJunction = False
 			else:
 				self.isJunctionWide = False
-		reverseRotationAroundZAngle = complex( layerRotationAroundZAngle.real, - layerRotationAroundZAngle.imag )
+		reverseZRotationAngle = complex( layerRotationAroundZAngle.real, - layerRotationAroundZAngle.imag )
 		rotatedExtruderLoops = []
 		stretch = 0.5 * layerExtrusionWidth
 		loops = []
@@ -882,8 +896,8 @@ class FillSkein:
 		layerRemainder = layerIndex % int( round( self.fillPreferences.diaphragmPeriod.value ) )
 		if layerRemainder >= int( round( self.fillPreferences.diaphragmThickness.value ) ):
 			for surroundingIndex in xrange( 1, self.solidSurfaceThickness + 1 ):
-				self.addRotatedCarve( layerIndex - surroundingIndex, reverseRotationAroundZAngle, surroundingCarves )
-				self.addRotatedCarve( layerIndex + surroundingIndex, reverseRotationAroundZAngle, surroundingCarves )
+				self.addRotatedCarve( layerIndex - surroundingIndex, reverseZRotationAngle, surroundingCarves )
+				self.addRotatedCarve( layerIndex + surroundingIndex, reverseZRotationAngle, surroundingCarves )
 		extraShells = self.fillPreferences.extraShellsSparseLayer.value
 		if len( surroundingCarves ) < self.doubleSolidSurfaceThickness:
 			extraShells = self.fillPreferences.extraShellsAlternatingSolidLayer.value
@@ -905,7 +919,7 @@ class FillSkein:
 		for loop in fillLoops:
 			alreadyFilledLoop = []
 			alreadyFilledArounds.append( alreadyFilledLoop )
-			planeRotatedPerimeter = euclidean.getPointsRoundZAxis( reverseRotationAroundZAngle, loop )
+			planeRotatedPerimeter = euclidean.getPointsRoundZAxis( reverseZRotationAngle, loop )
 			rotatedExtruderLoops.append( planeRotatedPerimeter )
 			circleNodes = intercircle.getCircleNodesFromLoop( planeRotatedPerimeter, slightlyGreaterThanFill )
 			centers = intercircle.getCentersFromCircleNodes( circleNodes )
@@ -949,7 +963,7 @@ class FillSkein:
 			return
 		paths = euclidean.getPathsFromEndpoints( endpoints, layerFillInset, aroundPixelTable, aroundWidth )
 		if not self.fillPreferences.infillPatternLine.value:
-			self.addGrid( alreadyFilledArounds, arounds, fillLoops, gridPointInsetX, paths, aroundPixelTable, aroundWidth, reverseRotationAroundZAngle, rotatedExtruderLoops, surroundingCarves )
+			self.addGrid( alreadyFilledArounds, arounds, fillLoops, gridPointInsetX, layerIndex, paths, aroundPixelTable, aroundWidth, reverseZRotationAngle, rotatedExtruderLoops, surroundingCarves )
 		oldRemovedEndpointLength = len( removedEndpoints ) + 1
 		while oldRemovedEndpointLength - len( removedEndpoints ) > 0:
 			oldRemovedEndpointLength = len( removedEndpoints )
@@ -958,6 +972,8 @@ class FillSkein:
 			addPath( layerFillInset, fill, path, layerRotationAroundZAngle )
 		euclidean.transferPathsToSurroundingLoops( fill, surroundingLoops )
 		euclidean.addToThreadsRemoveFromSurroundings( self.oldOrderedLocation, surroundingLoops, self )
+		if rotatedLayer.rotation != None:
+			self.addLine( '(</bridgeLayer>)' ) # Indicate that this is a bridge layer.
 		self.addLine( '(</layer>)' )
 
 	def addGcodeFromThreadZ( self, thread, z ):
@@ -977,12 +993,21 @@ class FillSkein:
 		"Add a movement to the output."
 		self.addLine( "G1 X%s Y%s Z%s" % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ) ) )
 
-	def addGrid( self, alreadyFilledArounds, arounds, fillLoops, gridPointInsetX, paths, pixelTable, width, reverseRotationAroundZAngle, rotatedExtruderLoops, surroundingCarves ):
-		gridPoints = self.getGridPoints( alreadyFilledArounds, fillLoops, reverseRotationAroundZAngle, rotatedExtruderLoops, surroundingCarves )
+	def addGrid( self, alreadyFilledArounds, arounds, fillLoops, gridPointInsetX, layerIndex, paths, pixelTable, width, reverseZRotationAngle, rotatedExtruderLoops, surroundingCarves ):
+		"Add the grid to the infill layer."
+		gridPoints = self.getGridPoints( alreadyFilledArounds, fillLoops, reverseZRotationAngle, rotatedExtruderLoops, surroundingCarves )
 		gridPointInsetY = gridPointInsetX * ( 1.0 - self.fillPreferences.gridExtraOverlap.value )
 		if self.fillPreferences.infillPatternGridRectangular.value:
-			gridPointInsetX += self.gridJunctionSeparation
-			gridPointInsetY += self.gridJunctionSeparation
+			gridBandHeight = self.fillPreferences.gridJunctionSeparationBandHeight.value
+			gridLayerRemainder = ( layerIndex - self.solidSurfaceThickness ) % gridBandHeight
+			halfBandHeight = 0.5 * float( gridBandHeight )
+			halfBandHeightFloor = math.floor( halfBandHeight )
+			fromMiddle = math.floor( abs( gridLayerRemainder - halfBandHeight ) )
+			fromEnd = halfBandHeightFloor - fromMiddle
+			gridJunctionSeparation = self.gridJunctionSeparationAtEnd * fromMiddle + self.gridJunctionSeparationAtMiddle * fromEnd
+			gridJunctionSeparation /= halfBandHeightFloor
+			gridPointInsetX += gridJunctionSeparation
+			gridPointInsetY += gridJunctionSeparation
 		oldGridPointLength = len( gridPoints ) + 1
 		while oldGridPointLength - len( gridPoints ) > 0:
 			oldGridPointLength = len( gridPoints )
@@ -1021,14 +1046,14 @@ class FillSkein:
 			gridPoint = gridPoints[ gridPointIndex ]
 			addAroundGridPoint( arounds, gridPoint, gridPointInsetX, gridPointInsetY, gridPoints, self.gridRadius, isBothOrNone, self.isDoubleJunction, self.isJunctionWide, paths, pixelTable, width )
 
-	def addRotatedCarve( self, layerIndex, reverseRotationAroundZAngle, surroundingCarves ):
+	def addRotatedCarve( self, layerIndex, reverseZRotationAngle, surroundingCarves ):
 		"Add a rotated carve to the surrounding carves."
 		if layerIndex < 0 or layerIndex >= len( self.rotatedLayers ):
 			return
 		surroundingLoops = self.rotatedLayers[ layerIndex ].surroundingLoops
 		rotatedCarve = []
 		for surroundingLoop in surroundingLoops:
-			planeRotatedLoop = euclidean.getPointsRoundZAxis( reverseRotationAroundZAngle, surroundingLoop.boundary )
+			planeRotatedLoop = euclidean.getPointsRoundZAxis( reverseZRotationAngle, surroundingLoop.boundary )
 			rotatedCarve.append( planeRotatedLoop )
 		surroundingCarves.append( rotatedCarve )
 
@@ -1054,14 +1079,14 @@ class FillSkein:
 		layerArea = self.getCarveArea( layerIndex )
 		return min( area, layerArea ) / max( area, layerArea )
 
-	def getGridPoints( self, alreadyFilledArounds, fillLoops, reverseRotationAroundZAngle, rotatedExtruderLoops, surroundingCarves ):
+	def getGridPoints( self, alreadyFilledArounds, fillLoops, reverseZRotationAngle, rotatedExtruderLoops, surroundingCarves ):
 		"Add a grid to the infill."
 		if self.infillSolidity > 0.8:
 			return []
 		gridPoints = []
 		rotationBaseAngle = euclidean.getPolar( self.infillBeginRotation, 1.0 )
 		reverseRotationBaseAngle = complex( rotationBaseAngle.real, - rotationBaseAngle.imag )
-		gridRotationAngle = reverseRotationAroundZAngle * rotationBaseAngle
+		gridRotationAngle = reverseZRotationAngle * rotationBaseAngle
 		surroundingCarvesLength = len( surroundingCarves )
 		if surroundingCarvesLength < self.doubleSolidSurfaceThickness:
 			return []
@@ -1187,8 +1212,8 @@ class FillSkein:
 			firstWord = ''
 			if len( splitLine ) > 0:
 				firstWord = splitLine[ 0 ]
-			if firstWord == '(<bridgeExtrusionWidthOverSolid>':
-				self.bridgeExtrusionWidthOverSolid = float( splitLine[ 1 ] )
+			if firstWord == '(<infillBridgeWidthOverExtrusionWidth>':
+				self.infillBridgeWidthOverExtrusionWidth = float( splitLine[ 1 ] )
 			elif firstWord == '(<decimalPlacesCarried>':
 				self.decimalPlacesCarried = int( splitLine[ 1 ] )
 			elif firstWord == '(<extrusionPerimeterWidth>':
@@ -1249,7 +1274,9 @@ class FillSkein:
 			self.gridWidthMultiplier = 2.0 / math.sqrt( 3.0 )
 			self.offsetMultiplier = 2.0 / math.sqrt( 3.0 ) * 1.5
 		if self.fillPreferences.infillPatternGridRectangular.value:
-			self.gridJunctionSeparation = 0.5 * ( self.gridRadius - self.interiorExtrusionWidth ) * fillPreferences.gridJunctionSeparationOverInnerOctogonRadius.value
+			halfGridRadiusMinusInteriorExtrusionWidth = 0.5 * ( self.gridRadius - self.interiorExtrusionWidth )
+			self.gridJunctionSeparationAtEnd = halfGridRadiusMinusInteriorExtrusionWidth * fillPreferences.gridJunctionSeparationOverOctogonRadiusAtEnd.value
+			self.gridJunctionSeparationAtMiddle = halfGridRadiusMinusInteriorExtrusionWidth * fillPreferences.gridJunctionSeparationOverOctogonRadiusAtMiddle.value
 
 
 class RotatedLayer:

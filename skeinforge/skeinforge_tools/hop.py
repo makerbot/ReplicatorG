@@ -153,13 +153,11 @@ class HopPreferences:
 class HopSkein:
 	"A class to hop a skein of extrusions."
 	def __init__( self ):
-		self.bridgeExtrusionWidthOverSolid = 1.0
 		self.decimalPlacesCarried = 3
 		self.extruderActive = False
 		self.feedrateString = ''
 		self.hopHeight = 0.4
-		self.layerHopDistance = self.hopHeight
-		self.layerHopHeight = self.hopHeight
+		self.hopDistance = self.hopHeight
 		self.justDeactivated = False
 		self.lineIndex = 0
 		self.lines = None
@@ -190,7 +188,7 @@ class HopSkein:
 			if distance < self.minimumDistance:
 				if self.isNextTravel():
 					return self.getMovementLineWithHop( locationComplex, highestZ )
-			alongRatio = min( 0.41666666, self.layerHopDistance / distance )
+			alongRatio = min( 0.41666666, self.hopDistance / distance )
 			oneMinusAlong = 1.0 - alongRatio
 			closeLocation = oldLocationComplex * oneMinusAlong + locationComplex * alongRatio
 			self.addLine( self.getMovementLineWithHop( locationComplex, highestZ ) )
@@ -205,7 +203,7 @@ class HopSkein:
 
 	def getMovementLineWithHop( self, location, z ):
 		"Get linear movement line for a location."
-		movementLine = 'G1 X%s Y%s Z%s' % ( self.getRounded( location.real ), self.getRounded( location.imag ), self.getRounded( z + self.layerHopHeight ) )
+		movementLine = 'G1 X%s Y%s Z%s' % ( self.getRounded( location.real ), self.getRounded( location.imag ), self.getRounded( z + self.hopHeight ) )
 		if self.feedrateString != '':
 			movementLine += ' ' + self.feedrateString
 		return movementLine
@@ -248,9 +246,8 @@ class HopSkein:
 			if firstWord == '(<layerThickness>':
 				layerThickness = float( splitLine[ 1 ] )
 				self.hopHeight = hopPreferences.hopOverLayerThickness.value * layerThickness
+				self.hopDistance = self.hopHeight / self.minimumSlope
 				self.minimumDistance = 0.5 * layerThickness
-			elif firstWord == '(<bridgeExtrusionWidthOverSolid>':
-				self.bridgeExtrusionWidthOverSolid = float( splitLine[ 1 ] )
 			elif firstWord == '(<decimalPlacesCarried>':
 				self.decimalPlacesCarried = int( splitLine[ 1 ] )
 			elif firstWord == '(</extruderInitialization>)':
@@ -268,17 +265,11 @@ class HopSkein:
 			line = self.getHopLine( line )
 			self.oldLocation = gcodec.getLocationFromSplitLine( self.oldLocation, splitLine )
 			self.justDeactivated = False
-		if firstWord == 'M101':
+		elif firstWord == 'M101':
 			self.extruderActive = True
-		if firstWord == 'M103':
+		elif firstWord == 'M103':
 			self.extruderActive = False
 			self.justDeactivated = True
-		elif firstWord == '(<layer>':
-			self.layerHopHeight = self.hopHeight
-			self.layerHopDistance = self.layerHopHeight / self.minimumSlope
-		elif firstWord == '(<bridgeLayer>':
-			self.layerHopHeight = self.hopHeight * self.bridgeExtrusionWidthOverSolid
-			self.layerHopDistance = self.layerHopHeight / self.minimumSlope
 		self.addLine( line )
 
 

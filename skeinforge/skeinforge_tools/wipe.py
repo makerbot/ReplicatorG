@@ -184,7 +184,6 @@ class WipeSkein:
 	def __init__( self ):
 		self.decimalPlacesCarried = 3
 		self.extruderActive = False
-		self.feedrateMinute = 960.0
 		self.highestZ = None
 		self.layerIndex = - 1
 		self.lineIndex = 0
@@ -192,6 +191,7 @@ class WipeSkein:
 		self.oldLocation = None
 		self.output = cStringIO.StringIO()
 		self.shouldWipe = False
+		self.travelFeedratePerMinute = 957.0
 
 	def addHop( self, begin, end ):
 		"Add hop to highest point."
@@ -201,10 +201,10 @@ class WipeSkein:
 		alongWay = self.extrusionWidth / beginEndDistance
 		closeToOldLocation = euclidean.getIntermediateLocation( alongWay, begin, end )
 		closeToOldLocation.z = self.highestZ
-		self.addLine( self.getLinearMoveWithFeedrate( self.feedrateMinute, closeToOldLocation ) )
+		self.addLine( self.getLinearMoveWithFeedrate( self.travelFeedratePerMinute, closeToOldLocation ) )
 		closeToOldArrival = euclidean.getIntermediateLocation( alongWay, end, begin )
 		closeToOldArrival.z = self.highestZ
-		self.addLine( self.getLinearMoveWithFeedrate( self.feedrateMinute, closeToOldArrival ) )
+		self.addLine( self.getLinearMoveWithFeedrate( self.travelFeedratePerMinute, closeToOldArrival ) )
 
 	def addLine( self, line ):
 		"Add a line of text and a newline to the output."
@@ -212,7 +212,6 @@ class WipeSkein:
 
 	def addWipeTravel( self, splitLine ):
 		"Add the wipe travel gcode."
-		self.feedrateMinute = gcodec.getFeedrateMinute( self.feedrateMinute, splitLine )
 		location = gcodec.getLocationFromSplitLine( self.oldLocation, splitLine )
 		self.highestZ = max( self.highestZ, location.z )
 		if not self.shouldWipe:
@@ -222,9 +221,9 @@ class WipeSkein:
 			self.addLine( 'M103' )
 		if self.oldLocation != None:
 			self.addHop( self.oldLocation, self.locationArrival )
-		self.addLine( self.getLinearMoveWithFeedrate( self.feedrateMinute, self.locationArrival ) )
-		self.addLine( self.getLinearMoveWithFeedrate( self.feedrateMinute, self.locationWipe ) )
-		self.addLine( self.getLinearMoveWithFeedrate( self.feedrateMinute, self.locationDeparture ) )
+		self.addLine( self.getLinearMoveWithFeedrate( self.travelFeedratePerMinute, self.locationArrival ) )
+		self.addLine( self.getLinearMoveWithFeedrate( self.travelFeedratePerMinute, self.locationWipe ) )
+		self.addLine( self.getLinearMoveWithFeedrate( self.travelFeedratePerMinute, self.locationDeparture ) )
 		self.addHop( self.locationDeparture, location )
 		if self.extruderActive:
 			self.addLine( 'M101' )
@@ -262,6 +261,8 @@ class WipeSkein:
 				return
 			elif firstWord == '(<extrusionWidth>':
 				self.extrusionWidth = float( splitLine[ 1 ] )
+			elif firstWord == '(<travelFeedratePerSecond>':
+				self.travelFeedratePerMinute = 60.0 * float( splitLine[ 1 ] )
 			self.addLine( line )
 
 	def parseLine( self, line ):

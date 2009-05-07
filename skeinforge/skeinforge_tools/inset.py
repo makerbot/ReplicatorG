@@ -80,6 +80,7 @@ __license__ = "GPL 3.0"
 
 def addAlreadyFilledArounds( alreadyFilledArounds, loop, radius ):
 	"Add already filled loops around loop to alreadyFilledArounds."
+	radius = abs( radius )
 	alreadyFilledLoop = []
 	slightlyGreaterThanRadius = 1.01 * radius
 	muchGreaterThanRadius = 2.5 * radius
@@ -87,13 +88,14 @@ def addAlreadyFilledArounds( alreadyFilledArounds, loop, radius ):
 	centers = intercircle.getCentersFromCircleNodes( circleNodes )
 	for center in centers:
 		alreadyFilledInset = intercircle.getSimplifiedInsetFromClockwiseLoop( center, radius )
-		if euclidean.getMaximumSpan( alreadyFilledInset ) > muchGreaterThanRadius or euclidean.isWiddershins( alreadyFilledInset ):
+		if euclidean.isLarge( alreadyFilledInset, muchGreaterThanRadius ) or euclidean.isWiddershins( alreadyFilledInset ):
 			alreadyFilledLoop.append( alreadyFilledInset )
 	if len( alreadyFilledLoop ) > 0:
 		alreadyFilledArounds.append( alreadyFilledLoop )
 
 def addSegmentOutline( isThick, outlines, pointBegin, pointEnd, width ):
 	"Add a diamond or hexagonal outline for a line segment."
+	width = abs( width )
 	exclusionWidth = 0.6 * width
 	slope = 0.2
 	if isThick:
@@ -405,8 +407,8 @@ class InsetSkein:
 		self.addLine( '(<extrusionPerimeterWidth> ' + self.getRounded( self.extrusionPerimeterWidth ) + ' </extrusionPerimeterWidth>)' ) # Set extrusion perimeter width.
 		self.addLine( '(<extrusionWidth> ' + self.getRounded( self.extrusionWidth ) + ' </extrusionWidth>)' ) # Set extrusion width.
 		self.addLine( '(<fillInset> ' + str( self.fillInset ) + ' </fillInset>)' ) # Set fill inset.
-		# Set bridge extrusion width over solid extrusion width.
-		self.addLine( '(<bridgeExtrusionWidthOverSolid> ' + euclidean.getRoundedToThreePlaces( self.bridgeExtrusionWidthOverSolid ) + ' </bridgeExtrusionWidthOverSolid>)' )
+		# Set bridge extrusion width
+		self.addLine( '(<infillBridgeWidthOverExtrusionWidth> ' + euclidean.getRoundedToThreePlaces( self.infillBridgeWidthOverExtrusionWidth ) + ' </infillBridgeWidthOverExtrusionWidth>)' )
 		self.addLine( '(<procedureDone> carve </procedureDone>)' ) # The skein has been carved.
 		self.addLine( '(<procedureDone> inset </procedureDone>)' ) # The skein has been carved.
 		self.addLine( '(</extruderInitialization>)' ) # Initialization is finished, extrusion is starting.
@@ -418,10 +420,10 @@ class InsetSkein:
 		halfWidth = self.halfExtrusionPerimeterWidth
 		self.addLine( '(<layer> %s )' % rotatedBoundaryLayer.z ) # Indicate that a new layer is starting.
 		if rotatedBoundaryLayer.rotation != None:
-			halfWidth *= self.bridgeExtrusionWidthOverSolid
+			halfWidth *= self.infillBridgeWidthOverExtrusionWidth
 			self.addLine( '(<bridgeDirection> ' + str( rotatedBoundaryLayer.rotation ) + ' </bridgeDirection>)' ) # Indicate the bridge direction.
 		for loop in rotatedBoundaryLayer.loops:
-			extrudateLoops = self.getExtrudateLoops( halfWidth, loop )
+			extrudateLoops = intercircle.getInsetLoopsFromLoop( halfWidth, loop )
 			for extrudateLoop in extrudateLoops:
 				self.addGcodeFromRemainingLoop( extrudateLoop, alreadyFilledArounds, halfWidth, rotatedBoundaryLayer.z )
 				addAlreadyFilledArounds( alreadyFilledArounds, extrudateLoop, self.fillInset )
@@ -486,21 +488,6 @@ class InsetSkein:
 		zIndex = splitLine.index( 'z' )
 		self.addRotatedLoopLayer( float( splitLine[ zIndex + 1 ] ) )
 
-	def getExtrudateLoops( self, halfWidth, loop ):
-		"Get the inset extrudate loops from the loop."
-		slightlyGreaterThanHalfWidth = 1.1 * halfWidth
-		muchGreaterThanHalfWIdth = 2.5 * halfWidth
-		extrudateLoops = []
-		circleNodes = intercircle.getCircleNodesFromLoop( loop, slightlyGreaterThanHalfWidth )
-		centers = intercircle.getCentersFromCircleNodes( circleNodes )
-		for center in centers:
-			extrudateLoop = intercircle.getSimplifiedInsetFromClockwiseLoop( center, halfWidth )
-			if euclidean.isLargeSameDirection( extrudateLoop, center, muchGreaterThanHalfWIdth ):
-				if euclidean.isPathInsideLoop( loop, extrudateLoop ) == euclidean.isWiddershins( loop ):
-					extrudateLoop.reverse()
-					extrudateLoops.append( extrudateLoop )
-		return extrudateLoops
-
 	def getRounded( self, number ):
 		"Get number rounded to the number of carried decimal places as a string."
 		return euclidean.getRoundedToDecimalPlacesString( self.decimalPlacesCarried, number )
@@ -525,8 +512,8 @@ class InsetSkein:
 			line = self.lines[ self.lineIndex ].lstrip()
 			splitLine = gcodec.getWithoutBracketsEqualTab( line ).split()
 			firstWord = gcodec.getFirstWord( splitLine )
-			if firstWord == 'bridgeExtrusionWidthOverSolid':
-				self.bridgeExtrusionWidthOverSolid = float( splitLine[ 1 ] )
+			if firstWord == 'infillBridgeWidthOverExtrusionWidth':
+				self.infillBridgeWidthOverExtrusionWidth = float( splitLine[ 1 ] )
 			elif firstWord == 'decimalPlacesCarried':
 				self.decimalPlacesCarried = int( splitLine[ 1 ] )
 			elif firstWord == 'layerThickness':
