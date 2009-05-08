@@ -1452,8 +1452,9 @@ public class Editor extends JFrame
 	*/
 	public void doStop()
 	{
-	    if (machine != null)
-		machine.stop();
+	    if (machine != null) {
+		//machine.stop();
+	    }
 	    
 	    message(EMPTY);
 	    
