@@ -428,6 +428,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	JPanel activationPanel = new JPanel();
 	activationPanel.setBorder(BorderFactory.createTitledBorder("Activation Controls"));
 	activationPanel.setLayout(new BoxLayout(activationPanel, BoxLayout.LINE_AXIS));
+
+	/// Enable/disable steppers.
 	JButton enableButton = new JButton("Enable steppers");
 	enableButton.addActionListener( new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -442,7 +444,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		}
 	    } );
 	activationPanel.add(disableButton);
+
 	activationPanel.add(Box.createHorizontalGlue());
+
 	mainPanel.add(activationPanel);
     }
 	

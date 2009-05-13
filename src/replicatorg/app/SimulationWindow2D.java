@@ -61,13 +61,13 @@ public class SimulationWindow2D extends SimulationWindow
 	{
 		super();
 
+		createComponents();
+
 		//some inits to our build simulation
 		setTitle("2D Build Simulation");
 		setBackground(Color.white);
 		setForeground(Color.white);
 		
-		createComponents();
-
 		this.setVisible(true);
 
 		//setup our rendering/buffer strategy
