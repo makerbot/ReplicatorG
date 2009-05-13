@@ -144,6 +144,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		mainPanel.setLayout(bl);
 		createJogPanel();
 		mainPanel.add(Box.createRigidArea(new Dimension(0,10)));
+		createActivationPanel();
+		mainPanel.add(Box.createRigidArea(new Dimension(0,10)));
 		//mainPanel.add(Box.createVerticalGlue());
 		createToolsPanel();
 		add(mainPanel);
@@ -215,6 +217,17 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	return b;
     }
 
+    protected JTextField createDisplayField() {
+	int textBoxWidth = 160;
+
+	JTextField tf = new JTextField();
+	tf.setMaximumSize(new Dimension(textBoxWidth, 25));
+	tf.setMinimumSize(new Dimension(textBoxWidth, 25));
+	tf.setPreferredSize(new Dimension(textBoxWidth, 25));
+	tf.setEnabled(false);
+	return tf;
+    }
+
     protected void createJogPanel()
     {
 	//how big you want 'em boss?
@@ -266,23 +279,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 	    //zPosLabel.setHorizontalAlignment(JLabel.LEFT);
 	    
 	    //our position text boxes
-	    xPosField = new JTextField();
-	    xPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
-	    xPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
-	    xPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
-	    xPosField.setEnabled(false);
-	    
-	    yPosField = new JTextField();
-	    yPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
-	    yPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
-	    yPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
-	    yPosField.setEnabled(false);
-	    
-	    zPosField = new JTextField();
-	    zPosField.setMaximumSize(new Dimension(textBoxWidth, 25));
-	    zPosField.setMinimumSize(new Dimension(textBoxWidth, 25));
-	    zPosField.setPreferredSize(new Dimension(textBoxWidth, 25));
-	    zPosField.setEnabled(false);
+	    xPosField = createDisplayField();
+	    yPosField = createDisplayField();
+	    zPosField = createDisplayField();
 
 		//our 'go' button
 		JButton goButton = new JButton("Go.");
@@ -418,9 +417,34 @@ public class ControlPanelWindow extends JFrame implements ActionListener, Change
 		//add jog panel border and stuff.
 		jogPanel.setBorder(BorderFactory.createTitledBorder("Jog Controls"));		
 		
-		//add the whole deal to our window.
 		mainPanel.add(jogPanel);
 	}
+    
+    /** The activation panel contains functions related to pausing, starting, and powering the steppers
+     *  up or down.
+     */
+    protected void createActivationPanel()
+    {
+	JPanel activationPanel = new JPanel();
+	activationPanel.setBorder(BorderFactory.createTitledBorder("Activation Controls"));
+	activationPanel.setLayout(new BoxLayout(activationPanel, BoxLayout.LINE_AXIS));
+	JButton enableButton = new JButton("Enable steppers");
+	enableButton.addActionListener( new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    driver.enableDrives();
+		}
+	    } );
+	activationPanel.add(enableButton);
+	JButton disableButton = new JButton("Disable steppers");
+	disableButton.addActionListener( new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    driver.disableDrives();
+		}
+	    } );
+	activationPanel.add(disableButton);
+	activationPanel.add(Box.createHorizontalGlue());
+	mainPanel.add(activationPanel);
+    }
 	
 	protected void createToolsPanel()
 	{
