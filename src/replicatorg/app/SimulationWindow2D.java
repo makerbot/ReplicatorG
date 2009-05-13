@@ -106,7 +106,7 @@ public class SimulationWindow2D extends SimulationWindow
 
 	public void doRender()
 	{
-      repaint();
+	    repaint();
 	}
 
 	class MyComponent extends Canvas
@@ -509,7 +509,7 @@ public class SimulationWindow2D extends SimulationWindow
 			g.setColor(Color.white);
 			g.fillRect(0, 0, getWidth(), getHeight());
 	//        g.clearRect(0, 0, width, height);
-
+			
 			//draw our text
 			drawHelperText(g);
 
@@ -522,18 +522,19 @@ public class SimulationWindow2D extends SimulationWindow
 			//init some prefs
 		    Graphics2D g2 = (Graphics2D) g;
 		    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			g2.setPaint(Color.black);
-
+		    g2.setPaint(Color.black);
 			//draw some helper text.
 		    g.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		    g.setColor(Color.black);
-			g.drawString("Layer at z: " + currentZ + "mm", 10, 20);
+		    g.drawString("Layer at z: " + currentZ + "mm", 10, 20);
 
-			//draw our mouse position
-			double mouseRealX = convertPointXToRealX(mouseX);
-			double mouseRealY = convertPointYToRealY(mouseY);
-			g.drawString("Mouse: " + mouseRealX + "mm, " + mouseRealY + "mm", 10, 40);
-		    g.drawString("Machine: " + current.x + "mm, " + current.y + "mm", 10, 60);
+		    //draw our mouse position
+		    double mouseRealX = convertPointXToRealX(mouseX);
+		    double mouseRealY = convertPointYToRealY(mouseY);
+		    g.drawString("Mouse: " + mouseRealX + "mm, " + mouseRealY + "mm", 10, 40);
+		    if ( current != null ) {
+			g.drawString("Machine: " + current.x + "mm, " + current.y + "mm", 10, 60);
+		    }
 		}
 		
 		private void drawLastPoints(Graphics g)
