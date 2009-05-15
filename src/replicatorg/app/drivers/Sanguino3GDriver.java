@@ -680,17 +680,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
     public boolean isFinished()
     {
-	if (firmwareVersion < 0002) {
-	    if (!isNotifiedFinishedFeature) {
-		System.out.println("IsFinished not supported; update your firmware.");
-		isNotifiedFinishedFeature=true;
-		return true;
-	    }
-	}	    
 	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.IS_FINISHED);
 	PacketResponse pr = runCommand(pb.getPacket());
 	int v = pr.get8();
-	if ( pr.getResponseCode() != ResponseCode.OK ) {
+	if ( pr.getResponseCode() == ResponseCode.UNSUPPORTED ) {
 	    if (!isNotifiedFinishedFeature) {
 		System.out.println("IsFinished not supported; update your firmware.");
 		isNotifiedFinishedFeature=true;
