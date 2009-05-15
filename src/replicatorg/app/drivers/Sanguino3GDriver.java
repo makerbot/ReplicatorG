@@ -54,6 +54,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		public final static int PAUSE             =   8;
 		public final static int PROBE             =   9;
 		public final static int TOOL_QUERY        =  10;
+		public final static int IS_FINISHED       =  11;
+	  
 		
 		//public final static int QUEUE_POINT_INC   = 128;  //this command has been eliminated.
 		public final static int QUEUE_POINT_ABS   = 129;
@@ -673,11 +675,32 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
       return pr;
     }
-		
+
+    static boolean isNotifiedFinishedFeature = false;
+
     public boolean isFinished()
     {
-			// todo agm
-			return true;
+	if (firmwareVersion < 0002) {
+	    if (!isNotifiedFinishedFeature) {
+		System.out.println("IsFinished not supported; update your firmware.");
+		isNotifiedFinishedFeature=true;
+		return true;
+	    }
+	}	    
+	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.IS_FINISHED);
+	PacketResponse pr = runCommand(pb.getPacket());
+	int v = pr.get8();
+	if ( pr.getResponseCode() != ResponseCode.OK ) {
+	    if (!isNotifiedFinishedFeature) {
+		System.out.println("IsFinished not supported; update your firmware.");
+		isNotifiedFinishedFeature=true;
+	    }
+	    return true;
+	}
+	boolean finished = (v != 0);
+	if (debugLevel >= 1)
+	    System.out.println("Is finished: " + Boolean.toString(finished));
+	return finished;
     }
 	
     public void dispose()
@@ -691,6 +714,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     /****************************************************
      *  commands used internally to driver
      ****************************************************/
+    int firmwareVersion = -1;
     public int getVersion(int ourVersion)
 		{
 			PacketBuilder pb = new PacketBuilder(CommandCodesMaster.VERSION);
@@ -701,7 +725,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
 			if (debugLevel >= 1)
 				System.out.println("Reported version: " + Integer.toHexString(version));
-
+			firmwareVersion = version;
   		return version;
     }
 
@@ -1554,4 +1578,16 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		else
 			return 65535;
 	}
+
+    /*************************************
+     *  Stop and system state reset
+     *************************************/
+    public void stop() {
+	System.out.println("Stop.");
+    }
+    public void reset() {
+	System.out.println("Reset.");
+	setInitialized(false);
+	initialize();
+    }
 }
