@@ -54,10 +54,12 @@ public abstract class SimulationWindow extends JFrame
 		this.setDefaultCloseOperation(HIDE_ON_CLOSE);
 	
 		//no resizing... yet
-		this.setResizable(false);
+		//this.setResizable(false);
 		
 		//no menu bar.
 		this.setMenuBar(null);
+
+		invalidate();
 	}
 	
 	public abstract void queuePoint(Point3d p);

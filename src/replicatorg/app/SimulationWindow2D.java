@@ -27,7 +27,6 @@
 
 package replicatorg.app;
 
-import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Container;
@@ -36,6 +35,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -60,9 +60,8 @@ public class SimulationWindow2D extends SimulationWindow
 	public SimulationWindow2D ()
 	{
 		super();
-
+		setLayout(null);
 		createComponents();
-
 		//some inits to our build simulation
 		setTitle("2D Build Simulation");
 		setBackground(Color.white);
@@ -77,8 +76,9 @@ public class SimulationWindow2D extends SimulationWindow
 		
 		//start us off at 0,0,0
 		buildView.queuePoint(new Point3d());
+		getContentPane().setBackground(Color.white);
 	}
-	
+
 	private void createComponents()
 	{
 		//figure out our content pane size.
@@ -87,15 +87,31 @@ public class SimulationWindow2D extends SimulationWindow
 		int height = pane.getHeight();
 		
 		//make our components with those sizes.
-		hRuler = new HorizontalRuler(width-rulerWidth, rulerWidth, rulerWidth);
-		vRuler = new VerticalRuler(rulerWidth, height-rulerWidth, rulerWidth);
-		buildView = new BuildView(width-rulerWidth, height-rulerWidth);
-
-		//lay them out in their proper places.
-		pane.add(hRuler, BorderLayout.PAGE_START);
-		pane.add(vRuler, BorderLayout.LINE_START);
-		pane.add(buildView, BorderLayout.CENTER);
+		hRuler = new HorizontalRuler(rulerWidth);
+		pane.add(hRuler);
+		vRuler = new VerticalRuler(rulerWidth);
+		pane.add(vRuler);
+		buildView = new BuildView();
+		pane.add(buildView);
 	}
+
+    public void doLayout()
+    {
+		//figure out our content pane size.
+		Container pane = getContentPane();
+		int width = pane.getWidth();
+		int height = pane.getHeight();
+		
+		//make our components with those sizes.
+		Rectangle hRuleBounds = new Rectangle(rulerWidth,0,width-rulerWidth,rulerWidth+1);
+		hRuler.setBounds(hRuleBounds);
+		Rectangle vRuleBounds = new Rectangle(0,rulerWidth,rulerWidth+1,height-rulerWidth);
+		vRuler.setBounds(vRuleBounds);
+		Rectangle viewBounds = new Rectangle(rulerWidth+1,rulerWidth+1,(width-rulerWidth)-1, (height-rulerWidth)-1);
+		buildView.setBounds(viewBounds);
+		pane.repaint();
+	super.doLayout();
+    }
 	
 	synchronized public void queuePoint(Point3d point)
 	{
@@ -111,13 +127,13 @@ public class SimulationWindow2D extends SimulationWindow
 
 	class MyComponent extends Canvas
 	{
-	  public MyComponent(int width, int height)
+	    public MyComponent() //int width, int height)
 		{
 			//try and configure size.
-			setPreferredSize(new Dimension(width, height));
-			setMinimumSize(new Dimension(width, height));
-			setMaximumSize(new Dimension(width, height));
-			setSize(width, height);
+			//setPreferredSize(new Dimension(width, height));
+			//setMinimumSize(new Dimension(width, height));
+			//setMaximumSize(new Dimension(width, height));
+			//setSize(width, height);
 			
 			//set our colors and stuff
 			setBackground(Color.white);
@@ -126,32 +142,15 @@ public class SimulationWindow2D extends SimulationWindow
 		}
 	}
 
-	class GenericRuler extends MyComponent
+	abstract class GenericRuler extends MyComponent
 	{
 		protected int machinePosition = 0;
 		protected int mousePosition = 0;
 		protected int rulerWidth = 25;
 		
-		protected double increments[];
-
-		public GenericRuler(int width, int height, int rWidth)
+		public GenericRuler(int rulerWidth)
 		{
-			super(width, height);
-			
-			rulerWidth = rWidth;
-			
-			//these are for drawing increments on our ruler
-			increments = new double[] {
-				0.0001, 0.0002, 0.0005,
-				0.001, 0.002, 0.005,
-				0.01, 0.02, 0.05,
-				0.1, 0.2, 0.5,
-				1, 2, 5,
-				10, 20, 50,
-				100, 200, 500,
-				1000, 2000, 5000,
-				10000, 20000, 50000
-			};
+			this.rulerWidth = rulerWidth;
 		}
 		
 		public void setMousePosition(int i)
@@ -173,86 +172,114 @@ public class SimulationWindow2D extends SimulationWindow
 				repaint();
 			}
 		}
-		
-		protected double getIncrement(int length, double range)
-		{
-			//how many can we fit on the length?
-			int numIncrements = length / 10;
-			double scale = length / range / numIncrements;
-
-			//find the one right above that... the smaller one would be too small
-			double increment = increments[0];
-			for (int i=0; i<increments.length; i++)
-			{
-				increment = increments[i];
-				if (increment > scale)
-					break;
-			}
-			
-			return increment;
+	
+	    class IncrementInfo {
+		public IncrementInfo(double major, double minor) {
+		    this.major = major;
+		    this.minor = minor;
 		}
-		
-		protected void drawTicks(Graphics g)
+		public double major;
+		public double minor;
+	    }
+
+	    /** Return the major and minor increment between ticks on the ruler, in
+	     * range units.
+	     *
+	     * Strategy: in 1s, 1/2s, 1/4s.
+	     *
+	     */
+		protected IncrementInfo getIncrementInfo(int length, double range)
 		{
-			//setup font rendering stuff.
-		    Graphics2D g2 = (Graphics2D) g;
-		    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			g2.setPaint(Color.black);
+		    if (range == 0.0 || length < 10) return null;
+		    
+		    final int minPixelsBetweenMinors = 10;
+		    final int minorsPerMajor = 10;
 
-			//draw some helper text.
-		    g.setFont(new Font("SansSerif", Font.PLAIN, 11));
-			g.setColor(Color.black);
+		    //how many can we fit on the length?
+		    int numMinors = length / minPixelsBetweenMinors;
+		    double rangePerMinor = range / numMinors;
+
+		    double increment = 10.0;
+		    while (rangePerMinor < increment) { increment /= 10.0; }
+		    while (rangePerMinor > increment) { increment *= 10.0; }
+		    // increment is now greater than scale and a multiple of 10
+		    double factor = rangePerMinor/increment;
+		    if ( factor < 0.5 ) {
+			increment *= 0.5;
+		    } else if (factor < 0.25 ) {
+			increment *= 0.25;
+		    }
+		    return new IncrementInfo(increment*minorsPerMajor, increment);
 		}
-	}
-
-	class HorizontalRuler extends GenericRuler
-	{
-		public HorizontalRuler(int width, int height, int rWidth)
-		{
-			super(width, height, rWidth);
-		}
-
 		public void paint(Graphics g)
 		{
 			//clear it
-			g.setColor(Color.white);
+		    g.setColor(new Color(0xe0,0xe0,0xe0));
 			g.fillRect(0, 0, getWidth(), getHeight());
 
 			//draw our border.
 			g.setColor(Color.gray);
-			g.drawRect(rulerWidth-1, 0, getWidth()-1-rulerWidth, getHeight()-1);
+			Rectangle bounds = getBounds();
+			g.drawRect(0,0,bounds.width-1,bounds.height-1);
 
 			//init our graphics object
-		    Graphics2D g2 = (Graphics2D) g;
+			Graphics2D g2 = (Graphics2D) g;
 
+			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+			g2.setPaint(Color.black);
+
+			//draw some helper text.
+			g.setFont(new Font("SansSerif", Font.PLAIN, 11));
+			g.setColor(Color.black);
+
+			//draw triangles
+			drawTriangles(g2);
+			g.setColor(Color.black);
+			//draw our tick marks
+			drawTicks(g2);
+		}
+		
+	    protected abstract void drawTriangles(Graphics2D g);
+
+	    protected abstract void drawTicks(Graphics2D g);
+	    
+
+	}
+
+	class HorizontalRuler extends GenericRuler
+	{
+		public HorizontalRuler(int rWidth)
+		{
+			super(rWidth);
+		}
+
+
+	    protected void drawTriangles(Graphics2D g2)
+	    {
 			//draw our machine indicator
 			g2.setPaint(Color.green);
 			Polygon xTriangle = new Polygon();
-			xTriangle.addPoint(machinePosition + rulerWidth, rulerWidth - 1);
-			xTriangle.addPoint(machinePosition - rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4 - 1);
-			xTriangle.addPoint(machinePosition + rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4 - 1);
+			xTriangle.addPoint(machinePosition, rulerWidth - 1);
+			xTriangle.addPoint(machinePosition - rulerWidth/4, rulerWidth - rulerWidth/4 - 1);
+			xTriangle.addPoint(machinePosition + rulerWidth/4, rulerWidth - rulerWidth/4 - 1);
 			g2.fill(xTriangle);
 
 			//draw our mouse indicator
 			g2.setPaint(Color.black);
 			xTriangle = new Polygon();
-			xTriangle.addPoint(mousePosition + rulerWidth, rulerWidth - 1);
-			xTriangle.addPoint(mousePosition - rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4 - 1);
-			xTriangle.addPoint(mousePosition + rulerWidth/4 + rulerWidth, rulerWidth - rulerWidth/4 - 1);
+			xTriangle.addPoint(mousePosition, rulerWidth - 1);
+			xTriangle.addPoint(mousePosition - rulerWidth/4, rulerWidth - rulerWidth/4 - 1);
+			xTriangle.addPoint(mousePosition + rulerWidth/4, rulerWidth - rulerWidth/4 - 1);
 			g2.fill(xTriangle);
-			
-			//draw our tick marks
-			drawTicks(g);
 		}
 		
-		protected void drawTicks(Graphics g)
+		protected void drawTicks(Graphics2D g)
 		{
-			super.drawTicks(g);
-			
 			double range = SimulationWindow2D.buildView.getXRange();
 			if (range < 0.01) return;
-			int width = getWidth() - rulerWidth;
-			double increment = getIncrement(width, range);
+			int width = getWidth();
+			IncrementInfo ii = getIncrementInfo(width, range);
+			double increment = ii.minor;
 			
 			//setup our variables.
 			int i = 0;
@@ -260,15 +287,16 @@ public class SimulationWindow2D extends SimulationWindow
 			int point;
 			int length;
 			
+			int textBaseline = g.getFontMetrics().getAscent() + 2;
 			//loop thru all positive increments while we're in bounds
 			do {
 				real = i * increment;
-				point = SimulationWindow2D.buildView.convertRealXToPointX(real) + rulerWidth - 1;
+				point = SimulationWindow2D.buildView.convertRealXToPointX(real) - 1;
 				
-				if (i % 5 == 0)
+				if (i % 10 == 0)
 				{
-					length = rulerWidth / 2;
-					g.drawString(Double.toString(real), point + 1, length - 1);
+					length = rulerWidth;
+					g.drawString(Double.toString(real), point + 1, textBaseline);
 				}
 				else
 				{
@@ -284,12 +312,12 @@ public class SimulationWindow2D extends SimulationWindow
 			i = 0;
 			do {
 				real = i * increment;
-				point = SimulationWindow2D.buildView.convertRealXToPointX(real) + rulerWidth - 1;
+				point = SimulationWindow2D.buildView.convertRealXToPointX(real) - 1;
 				
-				if (i % 5 == 0)
+				if (i % 10 == 0)
 				{
-					length = rulerWidth / 2 ;
-					g.drawString(Double.toString(real), point + 1, length - 1);
+					length = rulerWidth;
+					g.drawString(Double.toString(real), point + 1, textBaseline);
 				}
 				else
 				{
@@ -306,25 +334,13 @@ public class SimulationWindow2D extends SimulationWindow
 
 	class VerticalRuler extends GenericRuler
 	{
-		public VerticalRuler(int width, int height, int rWidth)
+		public VerticalRuler(int rWidth)
 		{
-			super(width, height, rWidth);
+			super(rWidth);
 		}
 
-		public void paint(Graphics g)
-		{
-			//clear it
-			g.setColor(Color.white);
-			g.fillRect(0, 0, getWidth(), getHeight());
-
-			//draw our border.
-			g.setColor(Color.gray);
-			g.drawRect(0, 0, getWidth()-1, getHeight()-1);
-
-			//setup graphics objects.
-		    Graphics2D g2 = (Graphics2D) g;
-			g2.setPaint(Color.black);
-
+	    protected void drawTriangles(Graphics2D g2)
+	    {
 			//draw our machine indicator
 			g2.setPaint(Color.black);
 			Polygon yTriangle = new Polygon();
@@ -340,19 +356,15 @@ public class SimulationWindow2D extends SimulationWindow
 			yTriangle.addPoint(rulerWidth - rulerWidth/4 - 1, machinePosition - rulerWidth/4);
 			yTriangle.addPoint(rulerWidth - rulerWidth/4 - 1, machinePosition + rulerWidth/4);
 			g2.fill(yTriangle);
-
-			//draw our ticks.
-			drawTicks(g);
 		}
 		
-		protected void drawTicks(Graphics g)
+		protected void drawTicks(Graphics2D g)
 		{
-			super.drawTicks(g);
-			
 			double range = SimulationWindow2D.buildView.getYRange();
-	        if (range < 0.01) return;
+			if (range < 0.01) return;
 			int height = getHeight();
-			double increment = getIncrement(height, range);
+			IncrementInfo ii = getIncrementInfo(height, range);
+			double increment = ii.minor;
 			
 			//setup our variables.
 			int i = 0;
@@ -365,9 +377,9 @@ public class SimulationWindow2D extends SimulationWindow
 				real = i * increment;
 				point = SimulationWindow2D.buildView.convertRealYToPointY(real) - 1;
 				
-				if (i % 5 == 0)
+				if (i % 10 == 0)
 				{
-					length = rulerWidth / 2;
+					length = rulerWidth;
 					g.drawString(Double.toString(real), 2, point - 1);
 				}
 				else
@@ -384,11 +396,11 @@ public class SimulationWindow2D extends SimulationWindow
 			i = 0;
 			do {
 				real = i * increment;
-				point = SimulationWindow2D.buildView.convertRealYToPointY(real) + rulerWidth - 1;
+				point = SimulationWindow2D.buildView.convertRealYToPointY(real) - 1;
 				
-				if (i % 5 == 0)
+				if (i % 10 == 0)
 				{
-					length = rulerWidth / 2 ;
+					length = rulerWidth;
 					g.drawString(Double.toString(real), 2, point - 1);
 				}
 				else
@@ -419,10 +431,8 @@ public class SimulationWindow2D extends SimulationWindow
 
 		private Vector points;
 
-		public BuildView(int width, int height)
-		{
-			super(width, height);
-
+	    public BuildView()
+	    {
 			//setup our listeners.
 			addMouseMotionListener(this);
 
@@ -521,7 +531,7 @@ public class SimulationWindow2D extends SimulationWindow
 		{
 			//init some prefs
 		    Graphics2D g2 = (Graphics2D) g;
-		    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 		    g2.setPaint(Color.black);
 			//draw some helper text.
 		    g.setFont(new Font("SansSerif", Font.PLAIN, 14));
