@@ -30,6 +30,7 @@ package replicatorg.app;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -43,10 +44,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Vector;
+import java.awt.LayoutManager;
 
 import javax.vecmath.Point3d;
 
-public class SimulationWindow2D extends SimulationWindow
+public class SimulationWindow2D extends SimulationWindow implements LayoutManager
 {	
 	private long lastRepaint = 0;
 	
@@ -60,7 +62,7 @@ public class SimulationWindow2D extends SimulationWindow
 	public SimulationWindow2D ()
 	{
 		super();
-		setLayout(null);
+		setLayout(this);
 		createComponents();
 		//some inits to our build simulation
 		setTitle("2D Build Simulation");
@@ -93,25 +95,8 @@ public class SimulationWindow2D extends SimulationWindow
 		pane.add(vRuler);
 		buildView = new BuildView();
 		pane.add(buildView);
+		invalidate();
 	}
-
-    public void doLayout()
-    {
-		//figure out our content pane size.
-		Container pane = getContentPane();
-		int width = pane.getWidth();
-		int height = pane.getHeight();
-		
-		//make our components with those sizes.
-		Rectangle hRuleBounds = new Rectangle(rulerWidth,0,width-rulerWidth,rulerWidth+1);
-		hRuler.setBounds(hRuleBounds);
-		Rectangle vRuleBounds = new Rectangle(0,rulerWidth,rulerWidth+1,height-rulerWidth);
-		vRuler.setBounds(vRuleBounds);
-		Rectangle viewBounds = new Rectangle(rulerWidth+1,rulerWidth+1,(width-rulerWidth)-1, (height-rulerWidth)-1);
-		buildView.setBounds(viewBounds);
-		pane.repaint();
-	super.doLayout();
-    }
 	
 	synchronized public void queuePoint(Point3d point)
 	{
@@ -225,7 +210,7 @@ public class SimulationWindow2D extends SimulationWindow
 			//init our graphics object
 			Graphics2D g2 = (Graphics2D) g;
 
-			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
 			g2.setPaint(Color.black);
 
 			//draw some helper text.
@@ -327,7 +312,7 @@ public class SimulationWindow2D extends SimulationWindow
 				g.drawLine(point, rulerWidth, point, rulerWidth - length);
 				
 				i--;
-			} while (point > rulerWidth);
+			} while (point > 0);
 
 		}
 	}
@@ -531,7 +516,7 @@ public class SimulationWindow2D extends SimulationWindow
 		{
 			//init some prefs
 		    Graphics2D g2 = (Graphics2D) g;
-		    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+		    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
 		    g2.setPaint(Color.black);
 			//draw some helper text.
 		    g.setFont(new Font("SansSerif", Font.PLAIN, 14));
@@ -828,4 +813,33 @@ public class SimulationWindow2D extends SimulationWindow
 			return (Math.round((maximum.y - (y / ratio)) * 100) / 100);
 		}
 	}
+
+    /// LayoutManager implementation
+
+    public void addLayoutComponent(String name, Component comp) {}
+    public void layoutContainer(Container parent)
+    {
+		//figure out our content pane size.
+		Container pane = getContentPane();
+		int width = pane.getWidth();
+		int height = pane.getHeight();
+		
+		//make our components with those sizes.
+		Rectangle hRuleBounds = new Rectangle(rulerWidth,0,width-rulerWidth,rulerWidth+1);
+		hRuler.setBounds(hRuleBounds);
+		Rectangle vRuleBounds = new Rectangle(0,rulerWidth,rulerWidth+1,height-rulerWidth);
+		vRuler.setBounds(vRuleBounds);
+		Rectangle viewBounds = new Rectangle(rulerWidth+1,rulerWidth+1,(width-rulerWidth)-1, (height-rulerWidth)-1);
+		buildView.setBounds(viewBounds);
+		pane.repaint();
+    }
+
+    public Dimension minimumLayoutSize(Container parent) {
+	return new Dimension(0,0);
+    }
+    public Dimension preferredLayoutSize(Container parent) {
+	return new Dimension(0,0);
+    }
+    public void removeLayoutComponent(Component comp) {}
+
 }
