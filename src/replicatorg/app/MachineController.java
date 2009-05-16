@@ -48,15 +48,15 @@ public class MachineController
 	// this is the xml config for this machine.
 	protected Node machineNode;
 	
-	// our current thread.
-	protected Thread thread;
-	
 	// the name of our machine.
 	protected String name;
 	
 	// our driver object
 	protected Driver driver;
 	protected SimulationDriver simulator;
+	
+	// our current thread.
+	protected Thread thread;
 	
 	//our pause variable
 	protected boolean paused = false;
@@ -318,6 +318,13 @@ public class MachineController
 			
 			//chill out.
 			runCooldownCommands();
+			//wait for driver to finish up cooldown.
+			while (!driver.isFinished())
+			{
+				Thread.sleep(100);
+			}
+			//reset machine
+			reset();
 		}
 		catch (BuildFailureException e)
 		{
@@ -340,6 +347,13 @@ public class MachineController
 		return model;
 	}
 	
+    public void reset()
+    {
+	driver.reset();
+	paused = false;
+	stopped = false;
+    }
+
 	private void loadDriver()
 	{
 		//load our utility drivers
