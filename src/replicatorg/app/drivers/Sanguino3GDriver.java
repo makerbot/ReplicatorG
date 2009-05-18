@@ -535,6 +535,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 						super.initialize();
 						
 						System.out.println("Ready to print.");
+						
+						return;
 					}
 		    } catch (Exception e) {
 			    //todo: handle init exceptions here
@@ -542,7 +544,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 				  e.printStackTrace();
 		    }
 			}
-			else
+
+			//okay, so did it work?
+			if (!isInitialized())
 				System.out.println("Unable to connect to firmware.");
 	  }
 
