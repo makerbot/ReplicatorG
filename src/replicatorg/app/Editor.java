@@ -1315,6 +1315,7 @@ public class Editor extends JFrame
 		//prepare editor window.
 		setVisible(true);
 		textarea.setEnabled(!isBusy);
+		textarea.setEditable(!isBusy);
 		if (isBusy) {
 		    textarea.selectNone();
 		    textarea.scrollTo(0, 0);
