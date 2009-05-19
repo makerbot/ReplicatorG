@@ -1256,10 +1256,8 @@ public class Editor extends JFrame
 		buttons.activate(EditorButtons.SIMULATE);
 
 		//load our simulator machine
-		loadSimulator();
-		
-		//initialize our editor
-		initEditor();
+		loadSimulator();		
+		setEditorBusy(true);
 		
 		//fire off our thread.
 		simulationThread = new SimulationThread(this);
@@ -1271,9 +1269,7 @@ public class Editor extends JFrame
 	{
 		message("Done simulating.");
 		simulating = false;
-		stopItem.setEnabled(false);
-		pauseItem.setEnabled(false);
-		buttons.clear();
+		setEditorBusy(false);
 	}
 
 	//synchronized public void handleBuild()
@@ -1297,8 +1293,7 @@ public class Editor extends JFrame
 			building = true;
 			buttons.activate(EditorButtons.BUILD);
 			
-			//initialize our editor
-			initEditor();
+			setEditorBusy(true);
 
 			//start our building thread.
 			buildingThread = new BuildingThread(this);
@@ -1306,22 +1301,26 @@ public class Editor extends JFrame
 		}
 	}
 
-	public void initEditor()
+	public void setEditorBusy(boolean isBusy)
 	{
 		//variables and stuff.
-		stopItem.setEnabled(true);
-		pauseItem.setEnabled(true);
+		stopItem.setEnabled(isBusy);
+		pauseItem.setEnabled(isBusy);
 		
 		// clear the console on each build, unless the user doesn't want to
-		if (Preferences.getBoolean("console.auto_clear")) {
+		if (isBusy && Preferences.getBoolean("console.auto_clear")) {
 			console.clear();
 		}
 		
 		//prepare editor window.
 		setVisible(true);
-		textarea.selectNone();
-		textarea.setEnabled(false);
-		textarea.scrollTo(0, 0);
+		textarea.setEnabled(!isBusy);
+		if (isBusy) {
+		    textarea.selectNone();
+		    textarea.scrollTo(0, 0);
+		} else {
+		    buttons.clear();
+		}
 	}
 
 	class BuildingThread extends Thread
@@ -1374,14 +1373,12 @@ public class Editor extends JFrame
 	{
 		message("Done building.");
         
-        //re-enable the gui and shit.
-        textarea.setEnabled(true);
+		//re-enable the gui and shit.
+		textarea.setEnabled(true);
 		
 		building = false;
-        if (machine.getSimulatorDriver() != null) machine.getSimulatorDriver().destroyWindow();
-		stopItem.setEnabled(false);
-		pauseItem.setEnabled(false);
-		buttons.clear();
+		if (machine.getSimulatorDriver() != null) machine.getSimulatorDriver().destroyWindow();
+		setEditorBusy(false);
 	}
 
 	class SimulationThread extends Thread
@@ -1413,11 +1410,7 @@ public class Editor extends JFrame
 	    //if (building || simulating) // can also be called during panel ops
 	    // called by menu or buttons
 	    doStop();
-	    
-	    stopItem.setEnabled(false);
-	    pauseItem.setEnabled(false);
-	    
-	    buttons.clear();
+	    setEditorBusy(false);
 	}
 
 	class EstimationThread extends Thread

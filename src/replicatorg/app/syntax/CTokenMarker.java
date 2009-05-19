@@ -102,29 +102,14 @@ loop:           for(int i = offset; i < mlength; i++)
                                         else if(doKeyword(line,i,c))
                                                 break;
                                         break;
-                                case '/':
+				case '(':
                                         backslash = false;
                                         doKeyword(line,i,c);
-                                        if(mlength - i > 1)
-                                        {
-                                                switch(array[i1])
-                                                {
-                                                case '*':
-                                                        addToken(i - lastOffset,token);
-                                                        lastOffset = lastKeyword = i;
-                                                        if(mlength - i > 2 && array[i+2] == '*')
-                                                                token = Token.COMMENT2;
-                                                        else
-                                                                token = Token.COMMENT1;
-                                                        break;
-                                                case '/':
-                                                        addToken(i - lastOffset,token);
-                                                        addToken(mlength - i,Token.COMMENT1);
-                                                        lastOffset = lastKeyword = mlength;
-                                                        break loop;
-                                                }
-                                        }
-                                        break;
+					addToken(i - lastOffset,token);
+					lastOffset = lastKeyword = i;
+					token = Token.COMMENT2;
+					break;
+				    
                                 default:
                                         backslash = false;
                                         if(!Character.isLetterOrDigit(c)
@@ -136,15 +121,11 @@ loop:           for(int i = offset; i < mlength; i++)
                         case Token.COMMENT1:
                         case Token.COMMENT2:
                                 backslash = false;
-                                if(c == '*' && mlength - i > 1)
+                                if(c == ')')
                                 {
-                                        if(array[i1] == '/')
-                                        {
-                                                i++;
-                                                addToken((i+1) - lastOffset,token);
-                                                token = Token.NULL;
-                                                lastOffset = lastKeyword = i+1;
-                                        }
+				    addToken(i+1 - lastOffset,token);
+				    token = Token.NULL;
+				    lastOffset = lastKeyword = i;
                                 }
                                 break;
                         case Token.LITERAL1:
