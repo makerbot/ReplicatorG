@@ -361,7 +361,7 @@ class EditorConsoleStream extends OutputStream {
  * swing event thread, so they need to be synchronized
  */
 class BufferedStyledDocument extends DefaultStyledDocument {
-  ArrayList elements = new ArrayList();
+ArrayList elements = new ArrayList();
   int maxLineLength, maxLineCount;
   int currentLineLength = 0;
   boolean needLineBreak = false;

@@ -50,8 +50,6 @@ import javax.vecmath.Point3d;
 
 public class SimulationWindow2D extends SimulationWindow implements LayoutManager
 {	
-	private long lastRepaint = 0;
-	
 	// these guys are our extra components.
 	protected static BuildView buildView;
 	protected static HorizontalRuler hRuler;
@@ -84,10 +82,7 @@ public class SimulationWindow2D extends SimulationWindow implements LayoutManage
 	private void createComponents()
 	{
 		//figure out our content pane size.
-		Container pane = getContentPane();
-		int width = pane.getWidth();
-		int height = pane.getHeight();
-		
+		Container pane = getContentPane();		
 		//make our components with those sizes.
 		hRuler = new HorizontalRuler(rulerWidth);
 		pane.add(hRuler);
@@ -698,6 +693,7 @@ public class SimulationWindow2D extends SimulationWindow implements LayoutManage
 		  }
 		}
 		
+		@SuppressWarnings("unused")
 		private void drawToolpaths(Graphics g)
 		{
 			Vector toolpaths = getLayerPaths(currentZ);

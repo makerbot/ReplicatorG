@@ -210,9 +210,7 @@ public class FindReplace extends JFrame implements ActionListener {
     // hack to to get first field to focus properly on osx
     addWindowListener(new WindowAdapter() {
         public void windowActivated(WindowEvent e) {
-          //System.out.println("activating");
-          boolean ok = findField.requestFocusInWindow();
-          //System.out.println("got " + ok);
+          findField.requestFocusInWindow();
           findField.selectAll();
         }
       });

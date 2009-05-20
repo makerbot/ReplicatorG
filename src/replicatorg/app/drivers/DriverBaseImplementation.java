@@ -37,9 +37,6 @@ public class DriverBaseImplementation implements Driver
 	// our gcode parser
 	private GCodeParser parser;
 
-	// command to parse
-	private String command;
-
 	//models for our machine
 	protected MachineModel machine;
 
@@ -64,7 +61,7 @@ public class DriverBaseImplementation implements Driver
 	private double currentFeedrate;
 	
 	//what is our mode of positioning?
-	private int positioningMode = 0;
+	protected int positioningMode = 0;
 	static public int ABSOLUTE = 0;
 	static public int INCREMENTAL = 1;
 	
@@ -144,7 +141,6 @@ public class DriverBaseImplementation implements Driver
 		//reset our values.
 		moveLength = 0.0;
 		
-		command = cmd;
 		parser.parse(cmd);
 	}
 	

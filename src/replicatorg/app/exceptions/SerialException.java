@@ -21,7 +21,8 @@
 package replicatorg.app.exceptions;
 
 public class SerialException extends Exception {
-  public SerialException() {
+
+public SerialException() {
     super();
   }
 

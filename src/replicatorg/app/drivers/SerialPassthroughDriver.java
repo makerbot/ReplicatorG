@@ -246,8 +246,6 @@ public class SerialPassthroughDriver extends DriverBaseImplementation
 	  assert (serial != null);
 	  synchronized(serial)
 	  {
-	    String cmd = "";
-
 	    try {
 	      int numread = serial.input.read(responsebuffer);
 	      assert (numread != 0); // This should never happen since we know we have a buffer

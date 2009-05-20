@@ -560,7 +560,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 			assert (serial != null);
 			synchronized(serial)
 	    {
-				String cmd = "";
 				byte[] responsebuffer = new byte[512];
 				String result = "";
 				
@@ -614,11 +613,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 
 		if (packet == null || packet.length < 4)
 			return null; // skip empty commands or broken commands
-
-		boolean checkQueue = false;
-		if (packet[2] == 0x0 && (packet[3]&0x80) != 0x0) {
-		    checkQueue = true;
-		}
 
     boolean packetSent = false;
     PacketProcessor pp = new PacketProcessor();
@@ -676,7 +670,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     		}
   		}      
     }
-
+    pr.printDebug();
       return pr;
     }
 
@@ -729,7 +723,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
     public void sendInit()
 	  {
   		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.INIT);
-  		PacketResponse pr = runCommand(pb.getPacket());
+  		runCommand(pb.getPacket());
     }
     
     /****************************************************
@@ -821,7 +815,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add32((int)steps.z);
 		pb.add32((int)micros);
 
-		PacketResponse pr = runCommand(pb.getPacket());    
+		runCommand(pb.getPacket());    
   }
 
 
@@ -837,7 +831,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	if (debugLevel >= 1)
 	    System.out.println("Set current position to " + p + " (" + steps + ")");
 	
-	PacketResponse pr = runCommand(pb.getPacket());
+	runCommand(pb.getPacket());
 	
 	super.setCurrentPosition(p);
 	
@@ -931,7 +925,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add32((int)micros);
 		pb.add16(300); //default to 5 minutes
 
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 	}
 	
     public void delay(long millis)
@@ -942,7 +936,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.DELAY);
 		pb.add32(millis);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
     }
 	
     public void openClamp(int clampIndex)
@@ -964,7 +958,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	// not be explicitly enabled.
 	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.ENABLE_AXES);
 	pb.add8(0x87); // enable x,y,z
-	PacketResponse pr = runCommand(pb.getPacket());
+	runCommand(pb.getPacket());
 	super.enableDrives();
     }
 	
@@ -973,7 +967,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	// Command RMB to disable its steppers.
 	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.ENABLE_AXES);
 	pb.add8(0x07); // disable x,y,z
-	PacketResponse pr = runCommand(pb.getPacket());
+	runCommand(pb.getPacket());
 	super.disableDrives();
     }
 	
@@ -995,7 +989,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
   		pb.add8((byte)toolIndex);
   		pb.add16(100); //delay between master -> slave pings (millis)
   		pb.add16(120); //timeout before continuing (seconds)
-  		PacketResponse pr = runCommand(pb.getPacket());
+  		runCommand(pb.getPacket());
   	}
 	
 	public void selectTool(int toolIndex)
@@ -1006,7 +1000,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		//send it!
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.CHANGE_TOOL);
 		pb.add8((byte)toolIndex);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 		
 		super.selectTool(toolIndex);
 	}
@@ -1029,7 +1023,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.SET_MOTOR_1_RPM);
 		pb.add8((byte)4); //length of payload.
 		pb.add32(microseconds);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 
 		super.setMotorRPM(rpm);
     }
@@ -1045,7 +1039,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.SET_MOTOR_1_PWM);
 		pb.add8((byte)1); //length of payload.
 		pb.add8((byte)pwm);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 
 		super.setMotorSpeedPWM(pwm);
     }
@@ -1068,7 +1062,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.TOGGLE_MOTOR_1);
 		pb.add8((byte)1); //payload length
 		pb.add8(flags);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 		
 		super.enableMotor();
     }
@@ -1088,7 +1082,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.TOGGLE_MOTOR_1);
 		pb.add8((byte)1); //payload length
 		pb.add8(flags);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 
 		super.disableMotor();
     }
@@ -1150,7 +1144,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.SET_MOTOR_2_RPM);
 		pb.add8((byte)4); //payload length
 		pb.add32(microseconds);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 
 		super.setSpindleRPM(rpm);
     }
@@ -1166,7 +1160,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.SET_MOTOR_2_PWM);
 		pb.add8((byte)1); //length of payload.
 		pb.add8((byte)pwm);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 
 		super.setMotorSpeedPWM(pwm);
     }
@@ -1189,7 +1183,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.TOGGLE_MOTOR_2);
 		pb.add8((byte)1); //payload length
 		pb.add8(flags);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 		
 		super.enableSpindle();
     }
@@ -1209,7 +1203,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.TOGGLE_MOTOR_1);
 		pb.add8((byte)1); //payload length
 		pb.add8(flags);
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 
 		super.disableSpindle();
     }
@@ -1271,7 +1265,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.SET_TEMP);
 		pb.add8((byte)2); //payload length
 		pb.add16(temp);
-		PacketResponse pr = runCommand(pb.getPacket());		
+		runCommand(pb.getPacket());		
 		
 		super.setTemperature(temperature);
     }
@@ -1339,7 +1333,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.TOGGLE_FAN);
 		pb.add8((byte)1); //payload length
 		pb.add8((byte)1); //enable
-		PacketResponse pr = runCommand(pb.getPacket());		
+		runCommand(pb.getPacket());		
 		
 		super.enableFan();
     }
@@ -1354,7 +1348,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.TOGGLE_FAN);
 		pb.add8((byte)1); //payload length
 		pb.add8((byte)0); //disable
-		PacketResponse pr = runCommand(pb.getPacket());		
+		runCommand(pb.getPacket());		
 		
 		super.disableFan();
     }
@@ -1372,7 +1366,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.TOGGLE_VALVE);
 		pb.add8((byte)1); //payload length
 		pb.add8((byte)1); //enable
-		PacketResponse pr = runCommand(pb.getPacket());		
+		runCommand(pb.getPacket());		
 
 		super.openValve();
     }
@@ -1387,7 +1381,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		pb.add8(CommandCodesSlave.TOGGLE_VALVE);
 		pb.add8((byte)1); //payload length
 		pb.add8((byte)0); //disable
-		PacketResponse pr = runCommand(pb.getPacket());		
+		runCommand(pb.getPacket());		
 		
 		super.closeValve();
     }
@@ -1417,7 +1411,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	if (debugLevel >= 1)
 	    System.out.println("Sending asynch pause command");
 	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.PAUSE);
-	PacketResponse pr = runCommand(pb.getPacket());
+	runCommand(pb.getPacket());
     }
 
     public void unpause()
@@ -1427,7 +1421,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	// There is no explicit unpause command on the Sanguino3G; instead we use
 	// the pause command to toggle the pause state.
 	PacketBuilder pb = new PacketBuilder(CommandCodesMaster.PAUSE);
-	PacketResponse pr = runCommand(pb.getPacket());
+	runCommand(pb.getPacket());
     }
 
 	/*************************************
@@ -1445,7 +1439,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation
  		return delta;
  	}
 
- 	private Point3d getDeltaSteps(Point3d current, Point3d target)
+ 	@SuppressWarnings("unused")
+	private Point3d getDeltaSteps(Point3d current, Point3d target)
  	{
  		return machine.mmToSteps(getDeltaDistance(current, target));
  	}
@@ -1525,6 +1520,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private byte convertTicksToPrescaler(long ticks)
 	{
 		// these also represent frequency: 1000000 / ticks / 2 = frequency in hz.
@@ -1554,6 +1550,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 			return 5;		
 	}
 	
+	@SuppressWarnings("unused")
 	private int convertTicksToCounter(long ticks)
 	{
 		// our slowest speed at our highest resolution ( (2^16-1) * 0.0625 usecs = 4095 usecs)

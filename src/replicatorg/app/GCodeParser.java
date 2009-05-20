@@ -199,6 +199,14 @@ public class GCodeParser
 			return false;
 	}
 	
+	public double convertToMM(double value, int units)
+	{
+			if (units == UNITS_INCHES) {
+				return value * 25.4;
+			}
+			return value;
+	}
+	
 	public double getCodeValue(String c)
 	{
 		Double d = (Double)codeValues.get(c);
@@ -558,30 +566,16 @@ public class GCodeParser
 		Point3d temp = driver.getCurrentPosition();
 
 		//initialize our points, etc.
-		double iVal, jVal, kVal, qVal, rVal, xVal, yVal, zVal;
-		if (units == UNITS_INCHES)
-		{
-			//convert everything to millimeters. Metric FTW.
-			iVal = getCodeValue("I") * 25.4;
-			jVal = getCodeValue("J") * 25.4;
-			kVal = getCodeValue("K") * 25.4;
-			qVal = getCodeValue("Q") * 25.4;
-			rVal = getCodeValue("R") * 25.4;
-			xVal = getCodeValue("X") * 25.4;
-			yVal = getCodeValue("Y") * 25.4;
-			zVal = getCodeValue("Z") * 25.4;
-		}
-		else
-		{
-			iVal = getCodeValue("I");
-			jVal = getCodeValue("J");
-			kVal = getCodeValue("K");
-			qVal = getCodeValue("Q");
-			rVal = getCodeValue("R");
-			xVal = getCodeValue("X");
-			yVal = getCodeValue("Y");
-			zVal = getCodeValue("Z");
-		}
+		double iVal = convertToMM(getCodeValue("I"),units); /// X offset for arcs
+		double jVal = convertToMM(getCodeValue("J"),units); /// Y offset for arcs
+		@SuppressWarnings("unused")
+		double kVal = convertToMM(getCodeValue("K"),units); /// Z offset for arcs
+		@SuppressWarnings("unused")
+		double qVal = convertToMM(getCodeValue("Q"),units); /// feed increment for G83
+		double rVal = convertToMM(getCodeValue("R"),units); /// arc radius
+		double xVal = convertToMM(getCodeValue("X"),units); /// X units
+		double yVal = convertToMM(getCodeValue("Y"),units); /// Y units
+		double zVal = convertToMM(getCodeValue("Z"),units); /// Z units
 		
 		//adjust for our offsets
 		xVal += currentOffset.x;

@@ -65,6 +65,7 @@ public class MachineFactory
 		if (dom == null)
 		{
 			Base.showError(null, "Error parsing machines.xml", null);
+			return null;
 		}
 		
 		//get each machine

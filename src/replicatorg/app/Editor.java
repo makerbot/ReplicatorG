@@ -109,7 +109,6 @@ public class Editor extends JFrame
   implements MRJAboutHandler, MRJQuitHandler, MRJPrefsHandler,
              MRJOpenDocumentHandler //, MRJOpenApplicationHandler
 {
-  // yeah
   static final String WINDOW_TITLE = "ReplicatorG" + " - " + Base.VERSION_NAME;
 
   // p5 icon for the window
@@ -195,9 +194,6 @@ public class Editor extends JFrame
   //Preferences preferences;
   FindReplace find;
 
-  //static Properties keywords; // keyword -> reference html lookup
-
-
   public Editor() {
     super(WINDOW_TITLE);
 
@@ -226,7 +222,6 @@ public class Editor extends JFrame
     // http://dev.processing.org/bugs/show_bug.cgi?id=440
     setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-    PdeKeywords keywords = new PdeKeywords();
     sketchbook = new Sketchbook(this);
 
     JMenuBar menubar = new JMenuBar();
@@ -719,8 +714,6 @@ public class Editor extends JFrame
 
   protected JMenu buildToolsMenu() {
     JMenuItem item;
-    JMenuItem rbMenuItem;
-    JMenuItem cbMenuItem;
     
     machineMenuListener  = new MachineMenuListener();
 

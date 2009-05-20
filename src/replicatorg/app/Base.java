@@ -316,7 +316,7 @@ public class Base
 
     // create the folder if it doesn't exist already
     boolean result = true;
-    if (!dataFolder.exists()) {
+    if (dataFolder != null && !dataFolder.exists()) {
       result = dataFolder.mkdirs();
     }
 
@@ -382,8 +382,8 @@ public class Base
 
     } catch (Exception e) {
       e.printStackTrace();
+      return null;
     }
-    return null;  // TODO could we *really* ever reach this?
   }
 
 
