@@ -46,6 +46,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -55,7 +56,10 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -111,6 +115,11 @@ public class Editor extends JFrame
 {
   static final String WINDOW_TITLE = "ReplicatorG" + " - " + Base.VERSION_NAME;
 
+  // List of most recently opened files names.
+  List<String> mruFiles;
+  // Preference key name
+  final static String MRU_LIST_KEY = "mru_list";
+  
   // p5 icon for the window
   Image icon;
 
@@ -206,6 +215,15 @@ public class Editor extends JFrame
     // run static initialization that grabs all the prefs
     Preferences.init();
 
+    // load up the most recently used files list
+    String mruString = Preferences.get(MRU_LIST_KEY);
+	mruFiles = new LinkedList<String>();
+    if (mruString != null && !mruString.isEmpty()) {
+    	for (String entry : mruString.split(",")) {
+    		addMRUEntry(entry);
+    	}
+    }
+    
     // set the window icon
     icon = Base.getImage("icon.gif", this);
     setIconImage(icon);
@@ -532,11 +550,45 @@ public class Editor extends JFrame
     // location for the console/editor area divider
     int location = splitPane.getDividerLocation();
     Preferences.setInteger("last.divider.location", location);
+    
+    // save mru list
+    StringBuffer sb = new StringBuffer();
+    for (String s : mruFiles ) {
+    	if (sb.length() != 0) sb.append(",");
+    	sb.append(s);
+    }
+    Preferences.set( MRU_LIST_KEY, sb.toString() );
   }
 
 
   // ...................................................................
 
+  private JMenu mruMenu;
+
+  private void reloadMruMenu() {
+	  mruMenu.removeAll();
+	  class FileOpenActionListener implements ActionListener {
+		  public String path;
+		  FileOpenActionListener(String path) { this.path = path; }
+		  public void actionPerformed(ActionEvent e) {
+			  handleOpen(path);
+		  }
+	  }
+	  if (!mruFiles.isEmpty()) {
+		  int index = 0;
+		  for (String fileName : mruFiles) {
+			  String entry = Integer.toString(index) + ". " + 
+		  		fileName.substring(fileName.lastIndexOf('/')+1);
+			  JMenuItem item = new JMenuItem(entry, KeyEvent.VK_0 + index);
+			  item.addActionListener(new FileOpenActionListener(fileName));
+			  mruMenu.add(item);
+			  index = index + 1;
+			  if (index >= 9) {
+			  	break;
+			  }
+		  }
+	  }
+  }
 
   protected JMenu buildFileMenu() {
     JMenuItem item;
@@ -606,7 +658,10 @@ public class Editor extends JFrame
       menu.add(item);
 
       menu.addSeparator();
-
+      mruMenu = new JMenu("Recent");
+      reloadMruMenu();
+      menu.add(mruMenu);
+	  menu.addSeparator();
       item = newJMenuItem("Quit", 'Q');
       item.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
@@ -1679,7 +1734,6 @@ public class Editor extends JFrame
     // haven't run across a case where i can verify that this works
     // because open is usually very fast.
     buttons.activate(EditorButtons.OPEN);
-
     SwingUtilities.invokeLater(new Runnable() {
         public void run() {
           String path = ipath;
@@ -1809,6 +1863,9 @@ public class Editor extends JFrame
       }
 
       sketch = new Sketch(this, path);
+      handleOpenPath = path;
+      addMRUEntry(path);
+      reloadMruMenu();
       header.rebuild();
       if (Preferences.getBoolean("console.auto_clear")) {
         console.clear();
@@ -1819,6 +1876,17 @@ public class Editor extends JFrame
     }
   }
 
+  /**
+   * Add a path to the MRU list
+   */
+  void addMRUEntry(String path)
+  {
+	  File f = new File(path);
+	  String absPath = f.getAbsolutePath();
+	  if (!mruFiles.contains(absPath)) {
+		  mruFiles.add(absPath);
+	  }
+  }
 
   // there is no handleSave1 since there's never a need to prompt
   /**
