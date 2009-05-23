@@ -218,7 +218,7 @@ public class Editor extends JFrame
     // load up the most recently used files list
     String mruString = Preferences.get(MRU_LIST_KEY);
 	mruFiles = new LinkedList<String>();
-    if (mruString != null && !mruString.isEmpty()) {
+    if (mruString != null && mruString.length() != 0) {
     	for (String entry : mruString.split(",")) {
     		addMRUEntry(entry);
     	}
