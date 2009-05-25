@@ -646,6 +646,11 @@ public class Editor extends JFrame
       });
     menu.add(item);
 
+    menu.addSeparator();
+    mruMenu = new JMenu("Recent");
+    reloadMruMenu();
+    menu.add(mruMenu);
+
     // macosx already has its own preferences and quit menu
     if (!Base.isMacOS()) {
       menu.addSeparator();
@@ -658,10 +663,6 @@ public class Editor extends JFrame
         });
       menu.add(item);
 
-      menu.addSeparator();
-      mruMenu = new JMenu("Recent");
-      reloadMruMenu();
-      menu.add(mruMenu);
 	  menu.addSeparator();
       item = newJMenuItem("Quit", 'Q');
       item.addActionListener(new ActionListener() {
@@ -1867,6 +1868,7 @@ public class Editor extends JFrame
       handleOpenPath = path;
       addMRUEntry(path);
       reloadMruMenu();
+      storePreferences(); // Updates MRU list, in case program aborts before quit
       header.rebuild();
       if (Preferences.getBoolean("console.auto_clear")) {
         console.clear();
