@@ -563,9 +563,10 @@ public class Editor extends JFrame
 
   // ...................................................................
 
-  private JMenu mruMenu;
+  private JMenu mruMenu = null;
 
   private void reloadMruMenu() {
+	  if (mruMenu == null) { return; }
 	  mruMenu.removeAll();
 	  class FileOpenActionListener implements ActionListener {
 		  public String path;
@@ -574,7 +575,7 @@ public class Editor extends JFrame
 			  handleOpen(path);
 		  }
 	  }
-	  if (!mruFiles.isEmpty()) {
+	  if (mruFiles != null && !mruFiles.isEmpty()) {
 		  int index = 0;
 		  for (String fileName : mruFiles) {
 			  String entry = Integer.toString(index) + ". " + 
