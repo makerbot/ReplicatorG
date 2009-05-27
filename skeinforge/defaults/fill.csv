@@ -5,7 +5,9 @@ Extra Shells on Alternating Solid Layer (layers):	1
 Extra Shells on Base (layers):	1
 Extra Shells on Sparse Layer (layers):	1
 Grid Extra Overlap (ratio):	0.001
-Grid Junction Separation over Inner Octogon Radius (ratio):	0.0
+Grid Junction Separation Band Height (layers):	10
+Grid Junction Separation over Octogon Radius At End (ratio):	0.0
+Grid Junction Separation over Octogon Radius At Middle (ratio):	0.0
 Open File to be Filled	
 Infill Begin Rotation (degrees):	45.0
 Infill Begin Rotation Repeat (layers):	1
@@ -16,5 +18,5 @@ Grid Rectangular	True
 Line	False
 Interior Infill Density over Exterior Density (ratio):	0.9
 Outside Extruded First	True
-Solid Surface Thickness (layers):	2
+Solid Surface Thickness (layers):	1
 windowPositionBehold Preferences	0+0
