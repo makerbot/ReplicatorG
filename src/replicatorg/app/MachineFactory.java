@@ -95,7 +95,8 @@ public class MachineFactory
 		return dom.getFirstChild();
 	}
 	
-	//why not load it everytime!  no stale configs...
+    //why not load it everytime!  no stale configs...
+    static boolean usingDistXmlWarned = false; /// Have we been warned that we're using machines.xml.dist?
 	public static Document loadMachinesConfig()
 	{
 		//attempt to load our xml document.
@@ -106,6 +107,23 @@ public class MachineFactory
 			try
 			{
 				File f = new File("machines.xml");
+				if (!f.exists()) {
+				    f = new File("machines.xml.dist");
+				    if (f.exists()) {
+					if (!usingDistXmlWarned) {
+					    Base.showMessage("Machines.xml Not Found",
+							     "The machine description file 'machines.xml' was not found.\n" +
+							     "Falling back to using 'machines.xml.dist' instead.");
+					    usingDistXmlWarned = true;
+					}
+				    } else {
+					    Base.showError("Machines.xml Not Found",
+							   "The machine description file 'machines.xml' was not found.\n" +
+							   "Make sure you're running ReplicatorG from the correct directory.",
+							   null);
+					return null;
+				    }
+				}
 				try
 				{
 					return db.parse(f);

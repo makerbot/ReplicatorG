@@ -205,7 +205,6 @@ public class Editor extends JFrame
 
   public Editor() {
     super(WINDOW_TITLE);
-
     // #@$*(@#$ apple.. always gotta think different
     MRJApplicationUtils.registerAboutHandler(this);
     MRJApplicationUtils.registerPrefsHandler(this);

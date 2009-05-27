@@ -101,10 +101,10 @@ public class Base
 
   static public void main(String args[]) {
 
-    // make sure that this is running on java 1.4
-    if (PApplet.javaVersion < 1.4f) {
-      Base.showError("Need to install Java 1.4",
-                     "This version of Processing requires    \n" +
+    // make sure that this is running on java 1.5
+    if (PApplet.javaVersion < 1.5f) {
+      Base.showError("Need to install Java 1.5",
+                     "This version of ReplicatorG requires\n" +
                      "Java 1.4 or later to run properly.\n" +
                      "Please visit java.com to upgrade.", null);
     }
@@ -132,7 +132,6 @@ public class Base
         }
       };
     MRJApplicationUtils.registerOpenDocumentHandler(startupOpen);
-
     new Base();
   }
 
