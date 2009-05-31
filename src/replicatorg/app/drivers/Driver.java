@@ -82,6 +82,12 @@ public interface Driver
 	public void initialize();
 
 	/**
+	 * See if the driver has been successfully initialized.
+	 * @return true if the driver is initialized
+	 */
+    public boolean isInitialized();
+
+	/**
 	* clean up the driver
 	*/
 	public void dispose();
@@ -102,6 +108,7 @@ public interface Driver
 	/**
 	* get version information from the driver
 	*/
+	public String getDriverName();  // A human-readable name for the machine type
 	public String getFirmwareInfo();
 	public String getVersion();
 	public int getMajorVersion();

@@ -65,8 +65,8 @@ public class MachineController
 	protected double estimatedBuildTime = 0;
 	
 	//our warmup/cooldown commands
-	protected Vector warmupCommands;
-	protected Vector cooldownCommands;
+	protected Vector<String> warmupCommands;
+	protected Vector<String> cooldownCommands;
 	
 	/**
 	  * Creates the machine object.
@@ -387,7 +387,7 @@ public class MachineController
 		String[] commands = null;
 		String command = null;
 		
-		warmupCommands = new Vector();
+		warmupCommands = new Vector<String>();
 		if (XML.hasChildNode(machineNode, "warmup"))
 		{
 			String warmup = XML.getChildNodeValue(machineNode, "warmup");
@@ -401,7 +401,7 @@ public class MachineController
 			}
 		}
 		
-		cooldownCommands = new Vector();
+		cooldownCommands = new Vector<String>();
 		if (XML.hasChildNode(machineNode, "cooldown"))
 		{
 			String cooldown = XML.getChildNodeValue(machineNode, "cooldown");
@@ -442,6 +442,11 @@ public class MachineController
 		return stopped;
 	}
 	
+	synchronized public boolean isInitialized()
+	{
+		return (driver != null && driver.isInitialized());
+	}
+	
 	synchronized public void pause()
 	{
 		driver.pause(); // immediately send a pause command for asynchronous machines
@@ -458,4 +463,26 @@ public class MachineController
 	{
 		return paused;
 	}	
+	
+	public String getStatusText()
+	{
+		StringBuffer status = new StringBuffer();
+		status.append(name);
+		status.append("(");
+		status.append(driver.getDriverName());
+		status.append(") ");
+		String state;
+		if (!driver.isInitialized()) {
+			state = "not initialized";
+		} else if (stopped) {
+			state = "ready";
+		} else if (paused) {
+			state = "paused";
+		} else {
+			state = "running";
+		}
+		status.append(state);
+		status.append(".");
+		return status.toString();
+	}
 }

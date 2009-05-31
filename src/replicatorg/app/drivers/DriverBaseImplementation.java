@@ -629,5 +629,8 @@ public class DriverBaseImplementation implements Driver
 	// No implementation needed for synchronous machines.
 	System.err.println("Machine reset called.");
     }
-   
+
+	public String getDriverName() {
+		return null;
+	}
 }

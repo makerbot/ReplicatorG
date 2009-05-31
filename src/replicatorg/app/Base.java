@@ -1107,15 +1107,14 @@ public class Base
 
   static public String[] listFiles(File folder, boolean relative) {
     String path = folder.getAbsolutePath();
-    Vector vector = new Vector();
-    listFiles(relative ? (path + File.separator) : "", path, vector);
+    Vector<String> vector = new Vector<String>();
+    addToFileList(relative ? (path + File.separator) : "", path, vector);
     String outgoing[] = new String[vector.size()];
     vector.copyInto(outgoing);
     return outgoing;
   }
 
-  static protected void listFiles(String basePath,
-                                  String path, Vector vector) {
+  static protected void addToFileList(String basePath, String path, Vector<String> fileList) {
     File folder = new File(path);
     String list[] = folder.list();
     if (list == null) return;
@@ -1128,9 +1127,9 @@ public class Base
       if (newPath.startsWith(basePath)) {
         newPath = newPath.substring(basePath.length());
       }
-      vector.add(newPath);
+      fileList.add(newPath);
       if (file.isDirectory()) {
-        listFiles(basePath, newPath, vector);
+        addToFileList(basePath, newPath, fileList);
       }
     }
   }

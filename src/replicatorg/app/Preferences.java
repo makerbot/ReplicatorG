@@ -166,8 +166,9 @@ public class Preferences {
   // and are saved back to the main file.  the preferences from the
   // subsidiary files are stored in prefixes (which maps a prefix string to
   // a Hashtable mapping unprefixed keys to values) and are not saved.
-  static Hashtable table = new Hashtable();
-  static Hashtable prefixes = new Hashtable();
+  static Hashtable<String,String> table = new Hashtable<String,String>();
+  static Hashtable<String,Hashtable<String,String> > prefixes = 
+	  new Hashtable<String,Hashtable<String,String> >();
   static File preferencesFile;
 
 
@@ -554,10 +555,10 @@ public class Preferences {
   static public void load(InputStream input, String prefix) throws IOException {
     BufferedReader reader =
       new BufferedReader(new InputStreamReader(input));
-    Hashtable table = Preferences.table;
+    Hashtable<String,String> table = Preferences.table;
       
     if (prefix != null) {
-      table = new Hashtable();
+      table = new Hashtable<String,String>();
       prefixes.put(prefix, table);
     }
 
@@ -636,11 +637,11 @@ public class Preferences {
    *  baz.count=3
    * this will return { "foo", "bar", "baz" }.
    */
-  static public Iterator getSubKeys(String prefix) {
+  static public Iterator<String> getSubKeys(String prefix) {
     if (!prefixes.containsKey(prefix))
       return null;
-    Set subkeys = new HashSet();
-    for (Enumeration e = ((Hashtable) prefixes.get(prefix)).keys(); e.hasMoreElements(); ) {
+    Set<String> subkeys = new HashSet<String>();
+    for (Enumeration e = (prefixes.get(prefix)).keys(); e.hasMoreElements(); ) {
       String subkey = (String) e.nextElement();
       if (subkey.indexOf('.') != -1)
         subkey = subkey.substring(0, subkey.indexOf('.'));

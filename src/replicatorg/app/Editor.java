@@ -56,7 +56,6 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -113,7 +112,12 @@ public class Editor extends JFrame
   implements MRJAboutHandler, MRJQuitHandler, MRJPrefsHandler,
              MRJOpenDocumentHandler //, MRJOpenApplicationHandler
 {
-  static final String WINDOW_TITLE = "ReplicatorG" + " - " + Base.VERSION_NAME;
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4144538738677712284L;
+
+static final String WINDOW_TITLE = "ReplicatorG" + " - " + Base.VERSION_NAME;
 
   // List of most recently opened files names.
   List<String> mruFiles;
@@ -152,6 +156,7 @@ public class Editor extends JFrame
   EditorButtons buttons;
   EditorHeader header;
   EditorStatus status;
+  MachineStatusPanel machineStatusPanel;
   EditorConsole console;
   JSplitPane splitPane;
   JPanel consolePanel;
@@ -252,27 +257,30 @@ public class Editor extends JFrame
     setJMenuBar(menubar);
 
     // for rev 0120, placing things inside a JPanel because
-    Container contentPain = getContentPane();
-    contentPain.setLayout(new BorderLayout());
-    JPanel pain = new JPanel();
-    pain.setLayout(new BorderLayout());
-    contentPain.add(pain, BorderLayout.CENTER);
+    Container contentPane = getContentPane();
+    contentPane.setLayout(new BorderLayout());
+    JPanel pane = new JPanel();
+    pane.setLayout(new BorderLayout());
+    contentPane.add(pane, BorderLayout.CENTER);
 
     Box box = Box.createVerticalBox();
     Box upper = Box.createVerticalBox();
 
+    Box boxButtonBar = Box.createHorizontalBox();
     buttons = new EditorButtons(this);
-    upper.add(buttons);
+    boxButtonBar.add(buttons);
+	machineStatusPanel = new MachineStatusPanel();
+	boxButtonBar.add(machineStatusPanel);
 
+	upper.add(boxButtonBar);
     header = new EditorHeader(this);
-    //header.setBorder(null);
     upper.add(header);
 
     textarea = new JEditTextArea(new PdeTextAreaDefaults());
     textarea.setRightClickPopup(new TextAreaPopup());
-    //textarea.setTokenMarker(new PdeKeywords());
     textarea.setHorizontalOffset(6);
-
+    upper.add(textarea);
+    
     // assemble console panel, consisting of status area and the console itself
     consolePanel = new JPanel();
     consolePanel.setLayout(new BorderLayout());
@@ -288,7 +296,6 @@ public class Editor extends JFrame
     lineStatus = new EditorLineStatus(textarea);
     consolePanel.add(lineStatus, BorderLayout.SOUTH);
 
-    upper.add(textarea);
     splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                                upper, consolePanel);
                                //textarea, consolePanel);
@@ -316,11 +323,10 @@ public class Editor extends JFrame
     // hopefully these are no longer needed w/ swing
     // (har har har.. that was wishful thinking)
     listener = new EditorListener(this, textarea);
-    pain.add(box);
+    pane.add(box);
 
-    pain.setTransferHandler(new TransferHandler() {
-
-        public boolean canImport(JComponent dest, DataFlavor[] flavors) {
+    pane.setTransferHandler(new TransferHandler() {
+		public boolean canImport(JComponent dest, DataFlavor[] flavors) {
           // claim that we can import everything
           return true;
         }
@@ -2287,17 +2293,22 @@ public class Editor extends JFrame
     }
   }
 
+  protected void setMachine(MachineController machine)
+  {
+	this.machine = machine;
+	machine.setEditor(this);
+	machineStatusPanel.setMachine(this.machine);
+  }
+  
 	public void loadMachine(String name)
 	{
-		machine = Base.getMachine(name);
-		machine.setEditor(this);
+		setMachine(Base.getMachine(name));
 	}
 	
 	
 	public void loadSimulator()
 	{
-		machine = MachineFactory.loadSimulator();
-	  	machine.setEditor(this);
+		setMachine(MachineFactory.loadSimulator());
 	}
 }
 

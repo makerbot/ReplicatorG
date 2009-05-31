@@ -1573,6 +1573,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 			return 65535;
 	}
 
+	public String getDriverName()
+	{
+		return "Sanguino3G";
+	}
     /*************************************
      *  Stop and system state reset
      *************************************/

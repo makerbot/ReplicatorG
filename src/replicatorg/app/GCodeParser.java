@@ -45,8 +45,8 @@ public class GCodeParser
 	protected Driver driver;
 
 	//our code data storage guys.
-	protected Hashtable codeValues;
-	protected Hashtable seenCodes;
+	protected Hashtable<String,Double> codeValues;
+	protected Hashtable<String,Boolean> seenCodes;
 	static protected String[] codes = {
 		"D", "F", "G", "H", "I", "J", "K", "L",
 		"M", "P", "Q", "R", "S", "T", "X", "Y", "Z"
@@ -126,8 +126,8 @@ public class GCodeParser
 		drillTarget = new Point3d();
 		
 		//init our value tables.
-		codeValues = new Hashtable(codes.length, 1);
-		seenCodes = new Hashtable(codes.length, 1);
+		codeValues = new Hashtable<String,Double>(codes.length, 1);
+		seenCodes = new Hashtable<String,Boolean>(codes.length, 1);
 		
 		//init our offset
 		currentOffset = new Point3d();

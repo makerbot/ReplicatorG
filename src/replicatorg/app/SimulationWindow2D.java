@@ -409,7 +409,7 @@ public class SimulationWindow2D extends SimulationWindow implements LayoutManage
 		
 		private double ratio = 1.0;
 
-		private Vector points;
+		private Vector<Point3d> points;
 
 	    public BuildView()
 	    {
@@ -422,7 +422,7 @@ public class SimulationWindow2D extends SimulationWindow implements LayoutManage
 			currentZ = 0.0;
 			
 			//initialize our vector
-			points = new Vector();
+			points = new Vector<Point3d>();
 		}
 		
 		public void mouseMoved(MouseEvent e)
@@ -736,14 +736,15 @@ public class SimulationWindow2D extends SimulationWindow implements LayoutManage
 		
 		private Vector getLayerPaths(double layerZ)
 		{
-			Vector paths = new Vector();
-			Vector path = new Vector();
+			Vector<Vector<Point3d>> paths = 
+				new Vector<Vector<Point3d>>();
+			Vector<Point3d> path = new Vector<Point3d>();
 			Point3d p;
 
 			synchronized (points) {
-			  for (Enumeration e = points.elements(); e.hasMoreElements();)
+			  for (Enumeration<Point3d> e = points.elements(); e.hasMoreElements();)
 			  {
-			    p = (Point3d)e.nextElement();
+			    p = e.nextElement();
 
 			    //is this on our current layer?
 			    if (p.z == layerZ)
@@ -756,7 +757,7 @@ public class SimulationWindow2D extends SimulationWindow implements LayoutManage
 			    {
 			      //System.out.println("added path of size " + path.size());
 			      paths.addElement(path);
-			      path = new Vector();
+			      path = new Vector<Point3d>();
 			    }
 			  }
 			}

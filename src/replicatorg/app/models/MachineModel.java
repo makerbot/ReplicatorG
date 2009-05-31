@@ -39,6 +39,7 @@ public class MachineModel
 	
 	//our machine space
 	private Point3d currentPosition;
+	@SuppressWarnings("unused")
 	private Point3d minimum;
 	private Point3d maximum;
 
@@ -51,19 +52,19 @@ public class MachineModel
 	protected int gearRatio = 0;
 	
 	//our tool models
-	protected Vector tools;
+	protected Vector<ToolModel> tools;
 	protected ToolModel currentTool;
 
 	//our clamp models	
-	protected Vector clamps;
+	protected Vector<ClampModel> clamps;
 
 	/*************************************
 	*  Creates the model object.
 	*************************************/
 	public MachineModel()
 	{
-		clamps = new Vector();
-		tools = new Vector();
+		clamps = new Vector<ClampModel>();
+		tools = new Vector<ToolModel>();
 		
 		currentPosition = new Point3d();
 		minimum = new Point3d();
@@ -319,7 +320,7 @@ public class MachineModel
 	public ToolModel getTool(int index)
 	{
 		try {
-			ToolModel t = (ToolModel)tools.get(index);
+			ToolModel t = tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			System.out.println("Cannot get non-existant tool (#" + index + ".");
 			e.printStackTrace();
