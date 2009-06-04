@@ -859,8 +859,8 @@ public class GCodeParser
 						current.z = zVal;
 					
 					driver.setCurrentPosition(current);
-					
-					//TODO: make this
+					this.current = current;
+					this.target = current;
 					break;
 
 				//feed rate mode
@@ -1041,11 +1041,15 @@ public class GCodeParser
 	
 	private void setTarget(Point3d p)
 	{
+		// TODO: wow.
+		// This is deeply broken, but I'll leave it be for now and fix with a flag later.
+		// If you really want two seperate moves, do it when you generate your toolpath.
     //move z first
-    if (p.z != current.z)
-      driver.queuePoint(new Point3d(current.x, current.y, p.z));
-		driver.queuePoint(new Point3d(p));
-		current = new Point3d(p);
+    if (p.z != current.z) {
+    	driver.queuePoint(new Point3d(current.x, current.y, p.z));
+    }
+    driver.queuePoint(new Point3d(p));
+    current = new Point3d(p);
 	}
 	
 	public void handleStops() throws JobRewindException, JobEndException, JobCancelledException
