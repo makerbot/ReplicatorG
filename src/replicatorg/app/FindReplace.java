@@ -1,27 +1,27 @@
 /*
-  Part of the ReplicatorG project - http://www.replicat.org
-  Copyright (c) 2008 Zach Smith
+ Part of the ReplicatorG project - http://www.replicat.org
+ Copyright (c) 2008 Zach Smith
 
-  Forked from Arduino: http://www.arduino.cc
+ Forked from Arduino: http://www.arduino.cc
 
-  Based on Processing http://www.processing.org
-  Copyright (c) 2004-05 Ben Fry and Casey Reas
-  Copyright (c) 2001-04 Massachusetts Institute of Technology
+ Based on Processing http://www.processing.org
+ Copyright (c) 2004-05 Ben Fry and Casey Reas
+ Copyright (c) 2001-04 Massachusetts Institute of Technology
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
-  (at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software Foundation,
+ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 package replicatorg.app;
 
@@ -43,305 +43,303 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-
 /**
- * Find & Replace window for the Processing editor.
- * <p/>
- * One major annoyance in this is that the window is re-created each time
- * that "Find" is called. This is because Mac OS X has a strange focus
- * issue with windows that are re-shown with setVisible() or show().
- * requestFocusInWindow() properly sets the focus to the find field,
- * however, just a short moment later, the focus is set to null. Even
- * trying to catch this scenario and request it again doesn't seem to work.
- * Most likely this is some annoyance buried deep in one of Apple's docs,
- * or in the doc for the focus stuff (I tend to think the former because
- * Windows doesn't seem to be quite so beligerent). Filed as
- * <A HREF="http://dev.processing.org/bugs/show_bug.cgi?id=244"> Bug 244</A>
+ * Find & Replace window for the Processing editor. <p/> One major annoyance in
+ * this is that the window is re-created each time that "Find" is called. This
+ * is because Mac OS X has a strange focus issue with windows that are re-shown
+ * with setVisible() or show(). requestFocusInWindow() properly sets the focus
+ * to the find field, however, just a short moment later, the focus is set to
+ * null. Even trying to catch this scenario and request it again doesn't seem to
+ * work. Most likely this is some annoyance buried deep in one of Apple's docs,
+ * or in the doc for the focus stuff (I tend to think the former because Windows
+ * doesn't seem to be quite so beligerent). Filed as <A
+ * HREF="http://dev.processing.org/bugs/show_bug.cgi?id=244"> Bug 244</A>
  * should anyone have clues about how to fix.
  */
 public class FindReplace extends JFrame implements ActionListener {
 
-  static final int BIG = 13;
-  static final int SMALL = 6;
+	static final int BIG = 13;
 
-  Editor editor;
+	static final int SMALL = 6;
 
-  JTextField findField;
-  JTextField replaceField;
-  static String findString;
-  static String replaceString;
+	Editor editor;
 
-  JButton replaceButton;
-  JButton replaceAllButton;
-  JButton replaceFindButton;
-  JButton findButton;
+	JTextField findField;
 
-  JCheckBox ignoreCaseBox;
-  static boolean ignoreCase = true;
+	JTextField replaceField;
 
-  /// true when there's something selected in the editor
-  boolean found;
+	static String findString;
 
+	static String replaceString;
 
-  public FindReplace(Editor editor) {
-    super("Find");
-    setResizable(false);
-    this.editor = editor;
+	JButton replaceButton;
 
-    Container pain = getContentPane();
-    pain.setLayout(null);
+	JButton replaceAllButton;
 
-    JLabel findLabel = new JLabel("Find:");
-    Dimension d0 = findLabel.getPreferredSize();
-    JLabel replaceLabel = new JLabel("Replace with:");
-    Dimension d1 = replaceLabel.getPreferredSize();
+	JButton replaceFindButton;
 
-    pain.add(findLabel);
-    pain.add(replaceLabel);
+	JButton findButton;
 
-    pain.add(findField = new JTextField(20));
-    pain.add(replaceField = new JTextField(20));
-    Dimension d2 = findField.getPreferredSize();
+	JCheckBox ignoreCaseBox;
 
-    if (findString != null) findField.setText(findString);
-    if (replaceString != null) replaceField.setText(replaceString);
-    //System.out.println("setting find str to " + findString);
-    //findField.requestFocusInWindow();
+	static boolean ignoreCase = true;
 
-    // +1 since it's better to tend downwards
-    int yoff = (1 + d2.height - d1.height) / 2;
+	// / true when there's something selected in the editor
+	boolean found;
 
-    findLabel.setBounds(BIG + (d1.width-d0.width) + yoff, BIG,
-                        d1.width, d1.height);
-    replaceLabel.setBounds(BIG, BIG + d2.height + SMALL + yoff,
-                           d1.width, d1.height);
+	public FindReplace(Editor editor) {
+		super("Find");
+		setResizable(false);
+		this.editor = editor;
 
-    //ignoreCase = true;
-    ignoreCaseBox = new JCheckBox("Ignore Case");
-    ignoreCaseBox.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          ignoreCase = ignoreCaseBox.isSelected();
-        }
-      });
-    ignoreCaseBox.setSelected(ignoreCase);
-    pain.add(ignoreCaseBox);
+		Container pain = getContentPane();
+		pain.setLayout(null);
 
-    //
+		JLabel findLabel = new JLabel("Find:");
+		Dimension d0 = findLabel.getPreferredSize();
+		JLabel replaceLabel = new JLabel("Replace with:");
+		Dimension d1 = replaceLabel.getPreferredSize();
 
-    JPanel buttons = new JPanel();
-    buttons.setLayout(new FlowLayout());
+		pain.add(findLabel);
+		pain.add(replaceLabel);
 
-    // ordering is different on mac versus pc
-    if (Base.isMacOS()) {
-      buttons.add(replaceAllButton = new JButton("Replace All"));
-      buttons.add(replaceButton = new JButton("Replace"));
-      buttons.add(replaceFindButton = new JButton("Replace & Find"));
-      buttons.add(findButton = new JButton("Find"));
+		pain.add(findField = new JTextField(20));
+		pain.add(replaceField = new JTextField(20));
+		Dimension d2 = findField.getPreferredSize();
 
-    } else {
-      buttons.add(findButton = new JButton("Find"));
-      buttons.add(replaceFindButton = new JButton("Replace & Find"));
-      buttons.add(replaceButton = new JButton("Replace"));
-      buttons.add(replaceAllButton = new JButton("Replace All"));
-    }
-    pain.add(buttons);
+		if (findString != null)
+			findField.setText(findString);
+		if (replaceString != null)
+			replaceField.setText(replaceString);
+		// System.out.println("setting find str to " + findString);
+		// findField.requestFocusInWindow();
 
-    // to fix ugliness.. normally macosx java 1.3 puts an
-    // ugly white border around this object, so turn it off.
-    if (Base.isMacOS()) {
-      buttons.setBorder(null);
-    }
+		// +1 since it's better to tend downwards
+		int yoff = (1 + d2.height - d1.height) / 2;
 
-    Dimension d3 = buttons.getPreferredSize();
-    //buttons.setBounds(BIG, BIG + d2.height*2 + SMALL + BIG,
-    buttons.setBounds(BIG, BIG + d2.height*3 + SMALL*2 + BIG,
-                      d3.width, d3.height);
+		findLabel.setBounds(BIG + (d1.width - d0.width) + yoff, BIG, d1.width,
+				d1.height);
+		replaceLabel.setBounds(BIG, BIG + d2.height + SMALL + yoff, d1.width,
+				d1.height);
 
-    //
+		// ignoreCase = true;
+		ignoreCaseBox = new JCheckBox("Ignore Case");
+		ignoreCaseBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ignoreCase = ignoreCaseBox.isSelected();
+			}
+		});
+		ignoreCaseBox.setSelected(ignoreCase);
+		pain.add(ignoreCaseBox);
 
-    findField.setBounds(BIG + d1.width + SMALL, BIG,
-                        d3.width - (d1.width + SMALL), d2.height);
-    replaceField.setBounds(BIG + d1.width + SMALL, BIG + d2.height + SMALL,
-                           d3.width - (d1.width + SMALL), d2.height);
+		//
 
-    ignoreCaseBox.setBounds(BIG + d1.width + SMALL,
-                            BIG + d2.height*2 + SMALL*2,
-                            d3.width, d2.height);
+		JPanel buttons = new JPanel();
+		buttons.setLayout(new FlowLayout());
 
-    //
+		// ordering is different on mac versus pc
+		if (Base.isMacOS()) {
+			buttons.add(replaceAllButton = new JButton("Replace All"));
+			buttons.add(replaceButton = new JButton("Replace"));
+			buttons.add(replaceFindButton = new JButton("Replace & Find"));
+			buttons.add(findButton = new JButton("Find"));
 
-    replaceButton.addActionListener(this);
-    replaceAllButton.addActionListener(this);
-    replaceFindButton.addActionListener(this);
-    findButton.addActionListener(this);
+		} else {
+			buttons.add(findButton = new JButton("Find"));
+			buttons.add(replaceFindButton = new JButton("Replace & Find"));
+			buttons.add(replaceButton = new JButton("Replace"));
+			buttons.add(replaceAllButton = new JButton("Replace All"));
+		}
+		pain.add(buttons);
 
-    // you mustn't replace what you haven't found, my son
-    replaceButton.setEnabled(false);
-    replaceFindButton.setEnabled(false);
+		// to fix ugliness.. normally macosx java 1.3 puts an
+		// ugly white border around this object, so turn it off.
+		if (Base.isMacOS()) {
+			buttons.setBorder(null);
+		}
 
-    // so that typing will go straight to this field
-    //findField.requestFocus();
+		Dimension d3 = buttons.getPreferredSize();
+		// buttons.setBounds(BIG, BIG + d2.height*2 + SMALL + BIG,
+		buttons.setBounds(BIG, BIG + d2.height * 3 + SMALL * 2 + BIG, d3.width,
+				d3.height);
 
-    // make the find button the blinky default
-    getRootPane().setDefaultButton(findButton);
+		//
 
-    Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		findField.setBounds(BIG + d1.width + SMALL, BIG, d3.width
+				- (d1.width + SMALL), d2.height);
+		replaceField.setBounds(BIG + d1.width + SMALL, BIG + d2.height + SMALL,
+				d3.width - (d1.width + SMALL), d2.height);
 
-    int wide = d3.width + BIG*2;
-    Rectangle butt = buttons.getBounds();  // how big is your butt?
-    int high = butt.y + butt.height + BIG*2 + SMALL;
+		ignoreCaseBox.setBounds(BIG + d1.width + SMALL, BIG + d2.height * 2
+				+ SMALL * 2, d3.width, d2.height);
 
-    setBounds((screen.width - wide) / 2,
-              (screen.height - high) / 2, wide, high);
+		//
 
-    setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-    addWindowListener(new WindowAdapter() {
-        public void windowClosing(WindowEvent e) {
-          handleClose();
-        }
-      });
-    Base.registerWindowCloseKeys(getRootPane(), new ActionListener() {
-        public void actionPerformed(ActionEvent actionEvent) {
-          //hide();
-          handleClose();
-        }
-      });
+		replaceButton.addActionListener(this);
+		replaceAllButton.addActionListener(this);
+		replaceFindButton.addActionListener(this);
+		findButton.addActionListener(this);
 
-    // hack to to get first field to focus properly on osx
-    addWindowListener(new WindowAdapter() {
-        public void windowActivated(WindowEvent e) {
-          findField.requestFocusInWindow();
-          findField.selectAll();
-        }
-      });
-  }
+		// you mustn't replace what you haven't found, my son
+		replaceButton.setEnabled(false);
+		replaceFindButton.setEnabled(false);
 
+		// so that typing will go straight to this field
+		// findField.requestFocus();
 
-  public void handleClose() {
-    //System.out.println("handling close now");
-    findString = findField.getText();
-    replaceString = replaceField.getText();
+		// make the find button the blinky default
+		getRootPane().setDefaultButton(findButton);
 
-    // this object should eventually become dereferenced
-    setVisible(false);
-  }
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 
+		int wide = d3.width + BIG * 2;
+		Rectangle butt = buttons.getBounds(); // how big is your butt?
+		int high = butt.y + butt.height + BIG * 2 + SMALL;
 
-  /*
-  public void show() {
-    findField.requestFocusInWindow();
-    super.setVisible(true);
-    //findField.selectAll();
-    //findField.requestFocus();
-  }
-  */
+		setBounds((screen.width - wide) / 2, (screen.height - high) / 2, wide,
+				high);
 
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				handleClose();
+			}
+		});
+		Base.registerWindowCloseKeys(getRootPane(), new ActionListener() {
+			public void actionPerformed(ActionEvent actionEvent) {
+				// hide();
+				handleClose();
+			}
+		});
 
-  public void actionPerformed(ActionEvent e) {
-    Object source = e.getSource();
+		// hack to to get first field to focus properly on osx
+		addWindowListener(new WindowAdapter() {
+			public void windowActivated(WindowEvent e) {
+				findField.requestFocusInWindow();
+				findField.selectAll();
+			}
+		});
+	}
 
-    if (source == findButton) {
-      find(true);
+	public void handleClose() {
+		// System.out.println("handling close now");
+		findString = findField.getText();
+		replaceString = replaceField.getText();
 
-    } else if (source == replaceFindButton) {
-      replace();
-      find(true);
+		// this object should eventually become dereferenced
+		setVisible(false);
+	}
 
-    } else if (source == replaceButton) {
-      replace();
+	/*
+	 * public void show() { findField.requestFocusInWindow();
+	 * super.setVisible(true); //findField.selectAll();
+	 * //findField.requestFocus(); }
+	 */
 
-    } else if (source == replaceAllButton) {
-      replaceAll();
-    }
-  }
+	public void actionPerformed(ActionEvent e) {
+		Object source = e.getSource();
 
+		if (source == findButton) {
+			find(true);
 
-  // look for the next instance of the find string
-  // to be found later than the current caret selection
+		} else if (source == replaceFindButton) {
+			replace();
+			find(true);
 
-  // once found, select it (and go to that line)
+		} else if (source == replaceButton) {
+			replace();
 
-  public void find(boolean wrap) {
-    // in case search len is zero,
-    // otherwise replace all will go into an infinite loop
-    found = false;
+		} else if (source == replaceAllButton) {
+			replaceAll();
+		}
+	}
 
-    String search = findField.getText();
-    //System.out.println("finding for " + search + " " + findString);
-    // this will catch "find next" being called when no search yet
-    if (search.length() == 0) return;
+	// look for the next instance of the find string
+	// to be found later than the current caret selection
 
-    String text = editor.textarea.getText();
+	// once found, select it (and go to that line)
 
-    if (ignoreCase) {
-    search = search.toLowerCase();
-      text = text.toLowerCase();
-    }
+	public void find(boolean wrap) {
+		// in case search len is zero,
+		// otherwise replace all will go into an infinite loop
+		found = false;
 
-    //int selectionStart = editor.textarea.getSelectionStart();
-    int selectionEnd = editor.textarea.getSelectionEnd();
+		String search = findField.getText();
+		// System.out.println("finding for " + search + " " + findString);
+		// this will catch "find next" being called when no search yet
+		if (search.length() == 0)
+			return;
 
-    int nextIndex = text.indexOf(search, selectionEnd);
-    if (nextIndex == -1) {
-      if (wrap) {
-        // if wrapping, a second chance is ok, start from beginning
-        nextIndex = text.indexOf(search, 0);
-      }
+		String text = editor.textarea.getText();
 
-      if (nextIndex == -1) {
-        found = false;
-        replaceButton.setEnabled(false);
-        replaceFindButton.setEnabled(false);
-        //Toolkit.getDefaultToolkit().beep();
-        return;
-      }
-    }
-    found = true;
-    replaceButton.setEnabled(true);
-    replaceFindButton.setEnabled(true);
-    editor.textarea.select(nextIndex, nextIndex + search.length());
-  }
+		if (ignoreCase) {
+			search = search.toLowerCase();
+			text = text.toLowerCase();
+		}
 
+		// int selectionStart = editor.textarea.getSelectionStart();
+		int selectionEnd = editor.textarea.getSelectionEnd();
 
-  /**
-   * Replace the current selection with whatever's in the
-   * replacement text field.
-   */
-  public void replace() {
-    if (!found) return;  // don't replace if nothing found
+		int nextIndex = text.indexOf(search, selectionEnd);
+		if (nextIndex == -1) {
+			if (wrap) {
+				// if wrapping, a second chance is ok, start from beginning
+				nextIndex = text.indexOf(search, 0);
+			}
 
-    // check to see if the document has wrapped around
-    // otherwise this will cause an infinite loop
-    String sel = editor.textarea.getSelectedText();
-    if (sel.equals(replaceField.getText())) {
-      found = false;
-      replaceButton.setEnabled(false);
-      replaceFindButton.setEnabled(false);
-      return;
-    }
+			if (nextIndex == -1) {
+				found = false;
+				replaceButton.setEnabled(false);
+				replaceFindButton.setEnabled(false);
+				// Toolkit.getDefaultToolkit().beep();
+				return;
+			}
+		}
+		found = true;
+		replaceButton.setEnabled(true);
+		replaceFindButton.setEnabled(true);
+		editor.textarea.select(nextIndex, nextIndex + search.length());
+	}
 
-    editor.textarea.setSelectedText(replaceField.getText());
-    //editor.setSketchModified(true);
-    //editor.sketch.setCurrentModified(true);
-    editor.sketch.setModified(true);
+	/**
+	 * Replace the current selection with whatever's in the replacement text
+	 * field.
+	 */
+	public void replace() {
+		if (!found)
+			return; // don't replace if nothing found
 
-    // don't allow a double replace
-    replaceButton.setEnabled(false);
-    replaceFindButton.setEnabled(false);
-  }
+		// check to see if the document has wrapped around
+		// otherwise this will cause an infinite loop
+		String sel = editor.textarea.getSelectedText();
+		if (sel.equals(replaceField.getText())) {
+			found = false;
+			replaceButton.setEnabled(false);
+			replaceFindButton.setEnabled(false);
+			return;
+		}
 
+		editor.textarea.setSelectedText(replaceField.getText());
+		// editor.setSketchModified(true);
+		// editor.sketch.setCurrentModified(true);
+		editor.sketch.setModified(true);
 
-  /**
-   * Replace everything that matches by doing find and replace
-   * alternately until nothing more found.
-   */
-  public void replaceAll() {
-    // move to the beginning
-    editor.textarea.select(0, 0);
+		// don't allow a double replace
+		replaceButton.setEnabled(false);
+		replaceFindButton.setEnabled(false);
+	}
 
-    do {
-      find(false);
-      replace();
-    } while (found);
-  }
+	/**
+	 * Replace everything that matches by doing find and replace alternately
+	 * until nothing more found.
+	 */
+	public void replaceAll() {
+		// move to the beginning
+		editor.textarea.select(0, 0);
+
+		do {
+			find(false);
+			replace();
+		} while (found);
+	}
 }

@@ -1,25 +1,25 @@
 /*
-  MachineFactory.java
+ MachineFactory.java
 
-  Load and instantiate Machine objects.
+ Load and instantiate Machine objects.
 
-  Part of the ReplicatorG project - http://www.replicat.org
-  Copyright (c) 2008 Zach Smith
+ Part of the ReplicatorG project - http://www.replicat.org
+ Copyright (c) 2008 Zach Smith
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
-  (at your option) any later version.
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software Foundation,
-  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software Foundation,
+ Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 package replicatorg.app;
 
@@ -35,116 +35,104 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-
-public class MachineFactory
-{
-	//private constructor:  static access only!!!
-	private MachineFactory()
-	{
-		//this prevents even the native class from 
-		//calling this ctor as well :
+public class MachineFactory {
+	// private constructor: static access only!!!
+	private MachineFactory() {
+		// this prevents even the native class from
+		// calling this ctor as well :
 		throw new AssertionError();
 	}
-	
-	public static MachineController load(String name)
-	{
+
+	public static MachineController load(String name) {
 		return new MachineController(getMachineNode(name));
 	}
-	
-	public static MachineController loadSimulator()
-	{
+
+	public static MachineController loadSimulator() {
 		return load("3-Axis Simulator");
 	}
-	
-	//look for machine configuration node.
-	private static Node getMachineNode(String name)
-	{
-		//load config...
+
+	// look for machine configuration node.
+	private static Node getMachineNode(String name) {
+		// load config...
 		Document dom = loadMachinesConfig();
-	  
-		if (dom == null)
-		{
+
+		if (dom == null) {
 			Base.showError(null, "Error parsing machines.xml", null);
 			return null;
 		}
-		
-		//get each machine
+
+		// get each machine
 		NodeList nl = dom.getElementsByTagName("machine");
 
-		for (int i=0; i<nl.getLength(); i++)
-		{
-			//look up each machine's set of kids
+		for (int i = 0; i < nl.getLength(); i++) {
+			// look up each machine's set of kids
 			Node n = nl.item(i);
 			NodeList kids = n.getChildNodes();
 
-			for (int j=0; j<kids.getLength(); j++)
-			{
+			for (int j = 0; j < kids.getLength(); j++) {
 				Node kid = kids.item(j);
 
-				if (kid.getNodeName().equals("name"))
-				{
-					String machineName = kid.getFirstChild().getNodeValue().trim();
+				if (kid.getNodeName().equals("name")) {
+					String machineName = kid.getFirstChild().getNodeValue()
+							.trim();
 
 					if (machineName.equals(name))
 						return n;
 				}
 			}
 		}
-		
-		//fail with our dom.
+
+		// fail with our dom.
 		return dom.getFirstChild();
 	}
-	
-    //why not load it everytime!  no stale configs...
-    static boolean usingDistXmlWarned = false; /// Have we been warned that we're using machines.xml.dist?
-	public static Document loadMachinesConfig()
-	{
-		//attempt to load our xml document.
+
+	// why not load it everytime! no stale configs...
+	static boolean usingDistXmlWarned = false; // / Have we been warned that
+												// we're using
+												// machines.xml.dist?
+
+	public static Document loadMachinesConfig() {
+		// attempt to load our xml document.
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		try
-		{
+		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			try
-			{
+			try {
 				File f = new File("machines.xml");
 				if (!f.exists()) {
-				    f = new File("machines.xml.dist");
-				    if (f.exists()) {
-					if (!usingDistXmlWarned) {
-					    Base.showMessage("Machines.xml Not Found",
-							     "The machine description file 'machines.xml' was not found.\n" +
-							     "Falling back to using 'machines.xml.dist' instead.");
-					    usingDistXmlWarned = true;
+					f = new File("machines.xml.dist");
+					if (f.exists()) {
+						if (!usingDistXmlWarned) {
+							Base
+									.showMessage(
+											"Machines.xml Not Found",
+											"The machine description file 'machines.xml' was not found.\n"
+													+ "Falling back to using 'machines.xml.dist' instead.");
+							usingDistXmlWarned = true;
+						}
+					} else {
+						Base
+								.showError(
+										"Machines.xml Not Found",
+										"The machine description file 'machines.xml' was not found.\n"
+												+ "Make sure you're running ReplicatorG from the correct directory.",
+										null);
+						return null;
 					}
-				    } else {
-					    Base.showError("Machines.xml Not Found",
-							   "The machine description file 'machines.xml' was not found.\n" +
-							   "Make sure you're running ReplicatorG from the correct directory.",
-							   null);
-					return null;
-				    }
 				}
-				try
-				{
+				try {
 					return db.parse(f);
-				}
-				catch (SAXException e)
-				{ 
+				} catch (SAXException e) {
 					e.printStackTrace();
 				}
-			}
-			catch (IOException e)
-			{ 
+			} catch (IOException e) {
 				e.printStackTrace();
-			    Base.showError(null, "Could not read machines.xml.\n" +
-			                         "You'll need to reinstall ReplicatorG.", e);
+				Base.showError(null, "Could not read machines.xml.\n"
+						+ "You'll need to reinstall ReplicatorG.", e);
 			}
-		}
-		catch (ParserConfigurationException e)
-		{
+		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 
