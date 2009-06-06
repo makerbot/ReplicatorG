@@ -501,55 +501,55 @@ public class Sanguino3GDriver extends DriverBaseImplementation
 	
     public void initialize()
     {
-			// Create our serial object
-			if (serial == null) {
-			    if (name != null) {
-				try {
-					if (debugLevel >= 0)
-				    	System.out.println("Connecting to " + name + " at " + rate);
-				    serial = new Serial(name, rate, parity, databits, stopbits);
-				} catch (SerialException e) {
-				    System.out.println("Unable to open port " + name + "\n");
-				    return;
-				}
-			    } else {
-					System.out.println("No Serial Port found.\n");
-					return;
-			    }
-			}
-
-			//wait till we're initialized
-			if (!isInitialized()) {
-		    // attempt to send version command and retrieve reply.
-		    try {
-					//read our string that means we're started up.
-					// after ten seconds, explicitly reset the device.
-					waitForStartup(10000);
-
-					//did it actually work?
-					if (isInitialized())
-					{
-						//okay, take care of version info /etc.
-						getVersion(Base.VERSION);
-						sendInit();
-						super.initialize();
-						
-						System.out.println("Ready to print.");
-						
-						return;
-					}
-		    } catch (Exception e) {
-			    //todo: handle init exceptions here
-				  System.out.println("yarg!");
-				  e.printStackTrace();
-		    }
-			}
-
-			//okay, so did it work?
-			if (!isInitialized())
-				System.out.println("Unable to connect to firmware.");
-	  }
-
+	// Create our serial object
+	if (serial == null) {
+	    if (name != null) {
+		try {
+		    if (debugLevel >= 0)
+			System.out.println("Connecting to " + name + " at " + rate);
+		    serial = new Serial(name, rate, parity, databits, stopbits);
+		} catch (SerialException e) {
+		    System.out.println("Unable to open port " + name + "\n");
+		    return;
+		}
+	    } else {
+		System.out.println("No Serial Port found.\n");
+		return;
+	    }
+	}
+	
+	//wait till we're initialized
+	if (!isInitialized()) {
+	    // attempt to send version command and retrieve reply.
+	    try {
+		//read our string that means we're started up.
+		// after ten seconds, explicitly reset the device.
+		waitForStartup(10000);
+		
+		//did it actually work?
+		if (isInitialized())
+		{
+		    //okay, take care of version info /etc.
+		    getVersion(Base.VERSION);
+		    sendInit();
+		    super.initialize();
+		    
+		    System.out.println("Ready to print.");
+		    
+		    return;
+		}
+	    } catch (Exception e) {
+		//todo: handle init exceptions here
+		System.out.println("yarg!");
+		e.printStackTrace();
+	    }
+	}
+	
+	//okay, so did it work?
+	if (!isInitialized())
+	    System.out.println("Unable to connect to firmware.");
+    }
+    
     /** Wait for a startup message.  After the specified timeout, replicatorG will attempt to
      * remotely reset the device.
      * @timeoutMillis the time, in milliseconds, that we should wait for a handshake.
@@ -557,51 +557,53 @@ public class Sanguino3GDriver extends DriverBaseImplementation
      */
     protected void waitForStartup( int timeoutMillis )
     {
-			assert (serial != null);
-			synchronized(serial)
+	assert (serial != null);
+	synchronized(serial)
+	{
+	    serial.setTimeout(timeoutMillis);
+	    byte[] responsebuffer = new byte[512];
+	    String result = "";
+	    
+	    //try to connect to it straight up.
+	    if (getVersion(Base.VERSION) > 0)
+		setInitialized(true);
+	    
+	    while (!isInitialized())
 	    {
-				byte[] responsebuffer = new byte[512];
-				String result = "";
-				
-				//try to connect to it straight up.
-				if (getVersion(Base.VERSION) > 0)
-					setInitialized(true);
-				
-				while (!isInitialized())
-				{
-			    try {
-						int numread = serial.read(responsebuffer,timeoutMillis);
-						if (numread < 0) {
-						    // This signifies EOF. FIXME: How do we handle this?
-						    System.out.println("RepRap3GDriver.readResponse(): EOF occured");
-						    return;
-						} else if (numread == 0) {
-						    // Attempt a hard reset.
-						    System.out.println("Pulsing RTS to reset device.");
-						    serial.pulseRTSLow();
-						} else {
-					    result += new String(responsebuffer , 0, numread, "US-ASCII");
-				    
-					    int index;
-					    while ((index = result.indexOf('\n')) >= 0) {
-								String line = result.substring(0, index).trim(); // trim to remove any trailing \r
-								result = result.substring(index+1);
-								if (line.length() == 0) continue;
-								
-								//wait to see if it sends its startup info.
-								if (line.startsWith("R3G Master v")) {
-								    //todo: set version
-								    setInitialized(true);
-								}
-					    }
-						}
+		System.err.println("Attempting initialization.\n");
+		try {
+		    int numread = serial.input.read(responsebuffer);
+		    if (numread < 0) {
+			// This signifies EOF. FIXME: How do we handle this?
+			System.out.println("RepRap3GDriver.readResponse(): EOF occured");
+			return;
+		    } else if (numread == 0) {
+			// Timed out; attempt a hard reset.
+			System.out.println("Pulsing RTS to reset device.");
+			serial.pulseRTSLow();
+		    } else {
+			result += new String(responsebuffer , 0, numread, "US-ASCII");
+			
+			int index;
+			while ((index = result.indexOf('\n')) >= 0) {
+			    String line = result.substring(0, index).trim(); // trim to remove any trailing \r
+			    result = result.substring(index+1);
+			    if (line.length() == 0) continue;
+			    
+			    //wait to see if it sends its startup info.
+			    if (line.startsWith("R3G Master v")) {
+				//todo: set version
+				setInitialized(true);
 			    }
-			    catch (IOException e) {
-					System.out.println("inputstream.read() failed: " + e.toString());
-			      // FIXME: Shut down communication somehow.
-			    }
-				}			
-	    }
+			}
+		    }
+		}
+		catch (IOException e) {
+		    System.out.println("inputstream.read() failed: " + e.toString());
+		    // FIXME: Shut down communication somehow.
+		}
+	    }			
+	}
     }
     
     /**

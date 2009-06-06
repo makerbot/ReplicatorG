@@ -27,6 +27,7 @@ package replicatorg.app;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
+import gnu.io.UnsupportedCommOperationException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -157,25 +158,6 @@ public class Serial {
     }
   }
 
-  /**
-   * Read as many bytes as are available into the given buffer.  Terminate after
-   * the timeout has passed.  If the timeout is -1, never timeout.
-   * @param buffer the buffer to read data into
-   * @param timeout the time in milliseconds to wait for data (-1 means wait forever)
-   * @return the number of bytes read
-   */
-  public int read(byte buffer[], int timeoutMillis) throws java.io.IOException {
-    while ((timeoutMillis > -1) && (input.available() == 0)) {
-      try {
-        Thread.sleep(Math.min(timeoutMillis,10));
-      } catch (java.lang.InterruptedException ie) {
-        // That's fine, continue.
-      }
-      timeoutMillis -= 10;
-    }
-    if (input.available() == 0) { return 0; }
-    return input.read(buffer);
-  }
 
   /**
    * Write a String to the output. Note that this doesn't account
@@ -228,7 +210,17 @@ public class Serial {
     return outgoing;
   }
 
-
+  public void setTimeout(int timeoutMillis) {
+    try {
+      if (timeoutMillis <= 0) {
+        port.disableReceiveTimeout();
+      } else {
+        port.enableReceiveTimeout(timeoutMillis);
+      }
+    } catch (UnsupportedCommOperationException unsupEx) {
+      System.err.println(unsupEx.getMessage());
+    }
+  }
   /**
    * General error reporting, all corraled here just in case
    * I think of something slightly more intelligent to do.
