@@ -703,7 +703,6 @@ public class GCodeParser {
 				// home all axes?
 				if (hasCode("X") && hasCode("Y") && hasCode("Z")) {
 					driver.homeXYZ();
-					System.err.println("Sent XYZ home.");
 				} else {
 					// x and y?
 					if (hasCode("X") && hasCode("Y"))

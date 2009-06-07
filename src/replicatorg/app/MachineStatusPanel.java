@@ -34,7 +34,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 		add(Box.createHorizontalGlue());
 		add(Box.createHorizontalStrut(10));
 		statusThread = new Thread(this);
-		updateMachineStatus();
+		statusThread.start();
 	}
 
 	/**
@@ -44,6 +44,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 	 *            the machine's controller, or null if no machine is attached.
 	 */
 	public void setMachine(MachineController machine) {
+		System.err.println("Machine set to "+machine);
 		if (this.machine == machine)
 			return;
 		synchronized (machine) {
@@ -76,11 +77,14 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 
 	public void run() {
 
-		updateMachineStatus();
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		while (true) {
+			try {
+				updateMachineStatus();
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// We're probably being shut down.
+				break;
+			}
 		}
 	}
 }

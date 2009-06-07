@@ -130,7 +130,6 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		// save our machine!
 		machine = m;
 		driver = machine.getDriver();
-		driver.initialize();
 
 		// make it a reasonable size
 		// Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();

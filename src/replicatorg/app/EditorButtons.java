@@ -28,6 +28,7 @@ package replicatorg.app;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
@@ -55,30 +56,23 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 	static final int BUTTON_GAP = 15;
 
 	static final int SIMULATE = 0;
-
 	static final int PAUSE = 1;
-
 	static final int STOP = 2;
-
 	static final int BUILD = 3;
-
 	static final int NEW = 4;
-
 	static final int OPEN = 5;
-
 	static final int SAVE = 6;
 
 	// button state
 	static final int INACTIVE = 0;
-
 	static final int ROLLOVER = 1;
-
 	static final int ACTIVE = 2;
 
 	Editor editor;
 
 	Image offscreen;
 
+	int maxLabelWidth;
 	int width, height;
 
 	Color bgcolor;
@@ -144,7 +138,11 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 
 		statusFont = Preferences.getFont("buttons.status.font");
 		statusColor = Preferences.getColor("buttons.status.color");
-
+		maxLabelWidth = 0;
+		FontMetrics fm = getFontMetrics(statusFont);
+		for (String t : title) {
+			maxLabelWidth = Math.max(maxLabelWidth, fm.stringWidth(t));
+		}
 		// statusY = (BUTTON_COUNT + 1) * BUTTON_HEIGHT;
 
 		addMouseListener(this);
@@ -433,7 +431,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 	}
 
 	public Dimension getPreferredSize() {
-		return new Dimension((BUTTON_COUNT + 1) * BUTTON_WIDTH, BUTTON_HEIGHT);
+		return new Dimension(maxLabelWidth + ((BUTTON_COUNT + 1) * BUTTON_WIDTH), BUTTON_HEIGHT);
 		// return new Dimension(BUTTON_WIDTH, (BUTTON_COUNT + 1)*BUTTON_HEIGHT);
 	}
 

@@ -296,6 +296,9 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		boxButtonBar.add(buttons);
 		machineStatusPanel = new MachineStatusPanel();
 		boxButtonBar.add(machineStatusPanel);
+		// Set maximum height to that of the button bar.
+		boxButtonBar.setMaximumSize(new Dimension(Integer.MAX_VALUE,
+				buttons.getMaximumSize().height));
 
 		upper.add(boxButtonBar);
 		header = new EditorHeader(this);
