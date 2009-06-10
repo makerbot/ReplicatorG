@@ -32,6 +32,7 @@ import org.w3c.dom.Node;
 import replicatorg.app.Base;
 import replicatorg.app.Preferences;
 import replicatorg.app.Serial;
+import replicatorg.app.TimeoutException;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.models.ToolModel;
 import replicatorg.app.tools.XML;
@@ -43,47 +44,28 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	 */
 	class CommandCodesMaster {
 		public final static int VERSION = 0;
-
 		public final static int INIT = 1;
-
 		public final static int GET_BUFFER_SIZE = 2;
-
 		public final static int CLEAR_BUFFER = 3;
-
 		public final static int GET_POSITION = 4;
-
 		public final static int GET_RANGE = 5;
-
 		public final static int SET_RANGE = 6;
-
 		public final static int ABORT = 7;
-
 		public final static int PAUSE = 8;
-
 		public final static int PROBE = 9;
-
 		public final static int TOOL_QUERY = 10;
-
 		public final static int IS_FINISHED = 11;
 
 		// public final static int QUEUE_POINT_INC = 128; //this command has
 		// been eliminated.
 		public final static int QUEUE_POINT_ABS = 129;
-
 		public final static int SET_POSITION = 130;
-
 		public final static int FIND_AXES_MINIMUM = 131;
-
 		public final static int FIND_AXES_MAXIMUM = 132;
-
 		public final static int DELAY = 133;
-
 		public final static int CHANGE_TOOL = 134;
-
 		public final static int WAIT_FOR_TOOL = 135;
-
 		public final static int TOOL_COMMAND = 136;
-
 		public final static int ENABLE_AXES = 137;
 	};
 
@@ -92,49 +74,27 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	 */
 	class CommandCodesSlave {
 		public final static int VERSION = 0;
-
 		public final static int INIT = 1;
-
 		public final static int GET_TEMP = 2;
-
 		public final static int SET_TEMP = 3;
-
 		public final static int SET_MOTOR_1_PWM = 4;
-
 		public final static int SET_MOTOR_2_PWM = 5;
-
 		public final static int SET_MOTOR_1_RPM = 6;
-
 		public final static int SET_MOTOR_2_RPM = 7;
-
 		public final static int SET_MOTOR_1_DIR = 8;
-
 		public final static int SET_MOTOR_2_DIR = 9;
-
 		public final static int TOGGLE_MOTOR_1 = 10;
-
 		public final static int TOGGLE_MOTOR_2 = 11;
-
 		public final static int TOGGLE_FAN = 12;
-
 		public final static int TOGGLE_VALVE = 13;
-
 		public final static int SET_SERVO_1_POS = 14;
-
 		public final static int SET_SERVO_2_POS = 15;
-
 		public final static int FILAMENT_STATUS = 16;
-
 		public final static int GET_MOTOR_1_RPM = 17;
-
 		public final static int GET_MOTOR_2_RPM = 18;
-
 		public final static int GET_MOTOR_1_PWM = 19;
-
 		public final static int GET_MOTOR_2_PWM = 20;
-
 		public final static int SELECT_TOOL = 21;
-
 		public final static int IS_TOOL_READY = 22;
 	};
 
@@ -144,15 +104,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	/** The response codes at the start of every response packet. */
 	class ResponseCode {
 		final static int GENERIC_ERROR = 0;
-
 		final static int OK = 1;
-
 		final static int BUFFER_OVERFLOW = 2;
-
 		final static int CRC_MISMATCH = 3;
-
 		final static int QUERY_OVERFLOW = 4;
-
 		final static int UNSUPPORTED = 5;
 	};
 
@@ -165,13 +120,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	 * Serial connection parameters
 	 */
 	String name;
-
 	int rate;
-
 	char parity;
-
 	int databits;
-
 	float stopbits;
 
 	private int debugLevel = 0;
@@ -308,23 +259,15 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	 */
 	class PacketProcessor {
 		final static byte PS_START = 0;
-
 		final static byte PS_LEN = 1;
-
 		final static byte PS_PAYLOAD = 2;
-
 		final static byte PS_CRC = 3;
-
 		final static byte PS_LAST = 4;
 
 		byte packetState = PS_START;
-
 		int payloadLength = -1;
-
 		int payloadIdx = 0;
-
 		byte[] payload;
-
 		byte targetCrc = 0;
 
 		IButtonCrc crc;
@@ -578,7 +521,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 
 	public void initialize() {
 		// Create our serial object
-		if (serial == null) {
+		while (serial == null) {
 			if (name != null) {
 				try {
 					if (debugLevel >= 0)
@@ -587,11 +530,17 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 					serial = new Serial(name, rate, parity, databits, stopbits);
 				} catch (SerialException e) {
 					System.out.println("Unable to open port " + name + "\n");
-					return;
 				}
 			} else {
 				System.out.println("No Serial Port found.\n");
-				return;
+			}
+			if ( serial == null ) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// Probably shutting down.
+					return;
+				}
 			}
 		}
 
@@ -636,26 +585,33 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	 */
 	protected void waitForStartup(int timeoutMillis) {
 		assert (serial != null);
+		System.err.println("Wait for startup");
 		synchronized (serial) {
+			System.err.println("within the sync");
 			serial.setTimeout(timeoutMillis);
 			byte[] responsebuffer = new byte[512];
 			String result = "";
 
 			// try to connect to it straight up.
-			if (getVersion(Base.VERSION) > 0)
-				setInitialized(true);
+			try {
+				if (getVersion(Base.VERSION) > 0)
+					setInitialized(true);
+			} catch (TimeoutException e) {
+				// Timed out waiting; go ahead to explicit reset attempts.
+			}
 
 			while (!isInitialized()) {
-				System.err.println("Attempting initialization.\n");
+				System.err.println("Waiting for machine ID.\n");
 				try {
 					int numread = serial.input.read(responsebuffer);
-					if (numread < 0) {
-						// This signifies EOF. FIXME: How do we handle this?
-						System.out
-								.println("RepRap3GDriver.readResponse(): EOF occured");
-						return;
-					} else if (numread == 0) {
-						// Timed out; attempt a hard reset.
+					if (numread <= 0) {
+						// Timed out.  First, try to connect to an already-running machine.
+						if (getVersion(Base.VERSION) > 0) {
+							setInitialized(true);
+							continue;
+						}
+						// If not, let's try to reset the machine and, in the next iteration,
+						// look for the bootup string.
 						System.out.println("Pulsing RTS to reset device.");
 						serial.pulseRTSLow();
 					} else {
@@ -665,11 +621,11 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 						int index;
 						while ((index = result.indexOf('\n')) >= 0) {
 							String line = result.substring(0, index).trim(); // trim
-																				// to
-																				// remove
-																				// any
-																				// trailing
-																				// \r
+							// to
+							// remove
+							// any
+							// trailing
+							// \r
 							result = result.substring(index + 1);
 							if (line.length() == 0)
 								continue;
@@ -688,6 +644,10 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 				}
 			}
 		}
+		// Until we fix the firmware hangs, turn off timeout during
+		// builds.
+		// TODO: put the timeout back in
+		serial.setTimeout(0);
 	}
 
 	/**
@@ -729,6 +689,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 					boolean c = false;
 					while (!c) {
 						int b = serial.input.read();
+						if (b == -1) {
+							throw new TimeoutException(serial);
+						}
 						c = pp.processByte((byte) b);
 					}
 
@@ -763,8 +726,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 		int v = pr.get8();
 		if (pr.getResponseCode() == ResponseCode.UNSUPPORTED) {
 			if (!isNotifiedFinishedFeature) {
-				System.out
-						.println("IsFinished not supported; update your firmware.");
+				System.out.println("IsFinished not supported; update your firmware.");
 				isNotifiedFinishedFeature = true;
 			}
 			return true;
@@ -1060,8 +1022,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	public void setMotorRPM(double rpm) {
 		// convert RPM into microseconds and then send.
 		long microseconds = (int) Math.round(60.0 * 1000000.0 / rpm); // no
-																		// unsigned
-																		// ints?!?
+		// unsigned
+		// ints?!?
 		// microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
 
 		if (debugLevel >= 1)
@@ -1180,8 +1142,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	public void setSpindleRPM(double rpm) {
 		// convert RPM into microseconds and then send.
 		long microseconds = (int) Math.round(60 * 1000000 / rpm); // no
-																	// unsigned
-																	// ints?!?
+		// unsigned
+		// ints?!?
 		microseconds = Math.min(microseconds, 2 ^ 32 - 1); // limit to uint32.
 
 		if (debugLevel >= 1)

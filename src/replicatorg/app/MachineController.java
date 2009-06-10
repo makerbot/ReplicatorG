@@ -337,7 +337,18 @@ public class MachineController {
 			if (kid.getNodeName().equals("driver")) {
 				driver = DriverFactory.factory(kid);
 				driver.setMachine(loadModel());
-				driver.initialize();
+				// We begin the initialization process here in a seperate thread.
+				// The rest of the system should check that the machine is initialized
+				// before proceeding with prints, etc.
+				Thread initThread = new Thread() {
+					public void run() {
+						synchronized(driver) {
+							System.err.println("Attempting to initialize driver "+driver);
+							driver.initialize();
+						}
+					}
+				};
+				initThread.start();
 				return;
 			}
 		}
