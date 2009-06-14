@@ -479,8 +479,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 		super();
 
 		// This driver only covers v1.X firmware
-		minimumVersion = new Version(0,1);
-		preferredVersion = new Version(0,2);
+		minimumVersion = new Version(1,1);
+		preferredVersion = new Version(1,1);
 		// init our variables.
 		setInitialized(false);
 
