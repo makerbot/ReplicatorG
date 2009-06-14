@@ -1174,11 +1174,10 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 	public void handleControlPanel() {
 		if (machine == null) {
-			JOptionPane
-					.showMessageDialog(
-							this,
-							"ReplicatorG can't connect to your machine.\nTry checking your settings and resetting your machine.",
-							"Can't find machine", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(
+					this,
+					"ReplicatorG can't connect to your machine.\nTry checking your settings and resetting your machine.",
+					"Can't find machine", JOptionPane.ERROR_MESSAGE);
 		} else {
 			ControlPanelWindow window = new ControlPanelWindow(machine);
 			window.setVisible(true);

@@ -114,12 +114,12 @@ public interface Driver {
 
 	public String getFirmwareInfo();
 
-	public String getVersion();
+	public Version getVersion();
 
-	public int getMajorVersion();
-
-	public int getMinorVersion();
-
+	public Version getMinimumVersion();
+	
+	public Version getPreferredVersion();
+	
 	/**
 	 * Positioning Methods
 	 */
@@ -285,4 +285,10 @@ public interface Driver {
 	public void stop();
 
 	public void reset();
+
+	/***************************************************************************
+	 * Heartbeat
+	 **************************************************************************/
+	public boolean heartbeat();
+
 }

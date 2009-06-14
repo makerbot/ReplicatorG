@@ -50,6 +50,8 @@ import javax.vecmath.Point3d;
 
 public class SimulationWindow2D extends SimulationWindow implements
 		LayoutManager {
+	private static final long serialVersionUID = -1940284103536979587L;
+
 	// these guys are our extra components.
 	protected static BuildView buildView;
 
@@ -104,6 +106,8 @@ public class SimulationWindow2D extends SimulationWindow implements
 	}
 
 	class MyComponent extends Canvas {
+		private static final long serialVersionUID = 3222037949637415135L;
+
 		public MyComponent() // int width, int height)
 		{
 			// try and configure size.

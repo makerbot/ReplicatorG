@@ -1,7 +1,6 @@
-0004 ReplicatorG
+0005 ReplicatorG
 
 * simulator
-  * fix tick lines in simulator window.
   * add direction lines to simulation lines
   * add variable line width to 2D simulation based on extruder on/off state.
 * control panel

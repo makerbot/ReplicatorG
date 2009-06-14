@@ -1,3 +1,18 @@
+0004 ReplicatorG
+
+* more robust intialization
+* support for multiple sequential builds
+* added homing support, status checks, numerous small fixes to 3rd-gen driver
+* added home menus
+* added serial timeouts
+* added enable/disable stepper buttons to exerciser
+* number of small code refactor/cleanups
+* fixed rulers in simulator
+* new thread for initialization; new thread for machine status
+* added MRU cache and "recent" menu
+* adding prominent status bar to main window with driver/machine/connection information
+* adding check for v0002 firmware in 3rd-generation driver startup
+
 0003 ReplicatorG
 
 * created RepRap 3rd generation driver

@@ -42,10 +42,10 @@ public class DriverBaseImplementation implements Driver {
 	// our firmware version info
 	private String firmwareName = "Unknown";
 
-	private int versionMajor = 0;
-
-	private int versionMinor = 0;
-
+	protected Version version = null;
+	protected Version preferredVersion = new Version(0,0);
+	protected Version minimumVersion = new Version(0,0);
+	
 	// our point offsets
 	private Point3d[] offsets;
 
@@ -180,17 +180,16 @@ public class DriverBaseImplementation implements Driver {
 		return firmwareName + " v" + getVersion();
 	}
 
-	public String getVersion() {
-		return Integer.toString(versionMajor) + "."
-				+ Integer.toString(versionMinor);
+	public Version getVersion() {
+		return version;
 	}
-
-	public int getMajorVersion() {
-		return versionMajor;
+	
+	public Version getMinimumVersion() {
+		return minimumVersion;
 	}
-
-	public int getMinorVersion() {
-		return versionMinor;
+	
+	public Version getPreferredVersion() {
+		return preferredVersion;
 	}
 
 	/***************************************************************************
@@ -555,5 +554,9 @@ public class DriverBaseImplementation implements Driver {
 
 	public String getDriverName() {
 		return null;
+	}
+	
+	public boolean heartbeat() {
+		return true;
 	}
 }

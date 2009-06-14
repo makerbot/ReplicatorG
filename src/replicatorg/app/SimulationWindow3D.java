@@ -30,6 +30,8 @@ package replicatorg.app;
 import javax.vecmath.Point3d;
 
 public class SimulationWindow3D extends SimulationWindow {
+	private static final long serialVersionUID = -2480132778144204969L;
+
 	public SimulationWindow3D() {
 		super();
 	}

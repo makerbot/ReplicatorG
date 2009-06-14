@@ -5,7 +5,10 @@ import java.awt.Color;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import replicatorg.app.drivers.Version;
 
 /**
  * The MachineStatusPanel displays the current state of the connected machine,
@@ -15,6 +18,8 @@ import javax.swing.JPanel;
  * 
  */
 public class MachineStatusPanel extends JPanel implements Runnable {
+	private static final long serialVersionUID = -6944931245041870574L;
+
 	protected MachineController machine = null;
 
 	protected JLabel label = new JLabel();
@@ -53,6 +58,8 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 		updateMachineStatus();
 	}
 
+	private boolean firmwareWarningIssued = false;
+	
 	/**
 	 * Display the current status of this machine.
 	 */
@@ -68,7 +75,28 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 				bgColor = BG_NO_MACHINE;
 			} else {
 				bgColor = BG_READY;
+				// Check version
+				try {
+					Version v = machine.driver.getVersion();
+					if (v.compareTo(machine.driver.getPreferredVersion()) < 0) {
+						if (!firmwareWarningIssued) {
+							firmwareWarningIssued = true;
+							JOptionPane.showMessageDialog(
+									this,
+									"Firmware version "+v+" was detected on your machine.  Firmware version "+
+									machine.driver.getPreferredVersion() + " is recommended.\n" +
+									"Please update your firmware and restart ReplicatorG.",
+									"Old firmware detected", JOptionPane.WARNING_MESSAGE);
+							
+						}
+					}
+				} catch (TimeoutException te) {
+					bgColor = BG_NO_MACHINE;
+					// TODO: notify 
+					text = "Machine connection timed out";
+				}
 			}
+			
 			text = machine.getStatusText();
 		}
 		label.setText(text);

@@ -478,6 +478,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	public Sanguino3GDriver() {
 		super();
 
+		// This driver only covers v1.X firmware
+		minimumVersion = new Version(0,1);
+		preferredVersion = new Version(0,2);
 		// init our variables.
 		setInitialized(false);
 
@@ -550,19 +553,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 			try {
 				// read our string that means we're started up.
 				// after ten seconds, explicitly reset the device.
-				waitForStartup(10000);
-
-				// did it actually work?
-				if (isInitialized()) {
-					// okay, take care of version info /etc.
-					getVersion(Base.VERSION);
-					sendInit();
-					super.initialize();
-
-					System.out.println("Ready to print.");
-
-					return;
-				}
+				waitForStartup(8000);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
 				System.out.println("yarg!");
@@ -570,9 +561,21 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 			}
 		}
 
-		// okay, so did it work?
-		if (!isInitialized())
+		// did it actually work?
+		if (isInitialized()) {
+			// okay, take care of version info /etc.
+			if (version.compareTo(getMinimumVersion()) < 0) {
+				throw new BadFirmwareVersionException(version,getMinimumVersion());
+			}
+			sendInit();
+			super.initialize();
+
+			System.out.println("Ready to print.");
+
+			return;
+		} else {
 			System.out.println("Unable to connect to firmware.");
+		}
 	}
 
 	/**
@@ -587,60 +590,34 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 		assert (serial != null);
 		System.err.println("Wait for startup");
 		synchronized (serial) {
-			System.err.println("within the sync");
 			serial.setTimeout(timeoutMillis);
-			byte[] responsebuffer = new byte[512];
-			String result = "";
-
-			// try to connect to it straight up.
-			try {
-				if (getVersion(Base.VERSION) > 0)
-					setInitialized(true);
-			} catch (TimeoutException e) {
-				// Timed out waiting; go ahead to explicit reset attempts.
-			}
 
 			while (!isInitialized()) {
-				System.err.println("Waiting for machine ID.\n");
 				try {
-					int numread = serial.input.read(responsebuffer);
-					if (numread <= 0) {
-						// Timed out.  First, try to connect to an already-running machine.
-						if (getVersion(Base.VERSION) > 0) {
-							setInitialized(true);
-							continue;
-						}
-						// If not, let's try to reset the machine and, in the next iteration,
-						// look for the bootup string.
-						System.out.println("Pulsing RTS to reset device.");
-						serial.pulseRTSLow();
-					} else {
-						result += new String(responsebuffer, 0, numread,
-								"US-ASCII");
-
-						int index;
-						while ((index = result.indexOf('\n')) >= 0) {
-							String line = result.substring(0, index).trim(); // trim
-							// to
-							// remove
-							// any
-							// trailing
-							// \r
-							result = result.substring(index + 1);
-							if (line.length() == 0)
-								continue;
-
-							// wait to see if it sends its startup info.
-							if (line.startsWith("R3G Master v")) {
-								// todo: set version
-								setInitialized(true);
-							}
-						}
+					version = getVersionInternal();
+					if (getVersion() != null)
+						setInitialized(true);
+				} catch (TimeoutException e) {
+					// Timed out waiting; try an explicit reset.
+					System.out.println("No connection; trying to pulse RTS to reset device.");
+					serial.pulseRTSLow();
+					try {
+						Thread.sleep(3000); // wait for startup
+					} catch (InterruptedException ie) { 
+						serial.setTimeout(0);
+						return;
 					}
-				} catch (IOException e) {
-					System.out.println("inputstream.read() failed: "
-							+ e.toString());
-					// FIXME: Shut down communication somehow.
+					byte[] response = new byte[256];
+					StringBuffer respSB = new StringBuffer();
+					try {
+						while (serial.input.available() > 0) {
+							serial.input.read(response);
+							respSB.append(response);
+						}
+						System.err.println("Received "+ respSB.toString());
+					} catch (TimeoutException te) {						
+					} catch (IOException ioe) {
+					}
 				}
 			}
 		}
@@ -748,21 +725,26 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 	/***************************************************************************
 	 * commands used internally to driver
 	 **************************************************************************/
-	int firmwareVersion = -1;
-
-	public int getVersion(int ourVersion) {
+	public Version getVersionInternal() {
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.VERSION);
-		pb.add16(ourVersion);
+		pb.add16(Base.VERSION);
 
 		PacketResponse pr = runCommand(pb.getPacket());
-		int version = pr.get16();
+		int versionNum = pr.get16();
 
 		if (debugLevel >= 1)
 			System.out.println("Reported version: "
-					+ Integer.toHexString(version));
-		firmwareVersion = version;
-		return version;
+					+ Integer.toHexString(versionNum));
+		if (versionNum == 0) {
+			System.err.println("Null version reported!");
+			return null;
+		}
+		Version v = new Version(versionNum / 100, versionNum % 100);
+		System.out.println("Version loaded "+v);
+		return v;
 	}
+	
+	
 
 	public void sendInit() {
 		PacketBuilder pb = new PacketBuilder(CommandCodesMaster.INIT);
