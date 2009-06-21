@@ -667,6 +667,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 					while (!c) {
 						int b = serial.input.read();
 						if (b == -1) {
+							/// Windows has no timeout; busywait
+							if (Base.isWindows()) continue;
 							throw new TimeoutException(serial);
 						}
 						c = pp.processByte((byte) b);
