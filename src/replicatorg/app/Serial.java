@@ -229,14 +229,16 @@ public class Serial {
 	}
 
 	public void setTimeout(int timeoutMillis) {
-		try {
-			if (timeoutMillis <= 0) {
-				port.disableReceiveTimeout();
-			} else {
-				port.enableReceiveTimeout(timeoutMillis);
+		if (Base.isWindows()) {
+			try {
+				if (timeoutMillis <= 0) {
+					port.disableReceiveTimeout();
+				} else {
+					port.enableReceiveTimeout(timeoutMillis);
+				}
+			} catch (UnsupportedCommOperationException unsupEx) {
+				System.err.println(unsupEx.getMessage());
 			}
-		} catch (UnsupportedCommOperationException unsupEx) {
-			System.err.println(unsupEx.getMessage());
 		}
 	}
 
