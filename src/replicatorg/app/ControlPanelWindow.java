@@ -64,7 +64,7 @@ import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 
 import replicatorg.app.drivers.Driver;
-import replicatorg.app.models.ToolModel;
+import replicatorg.machine.model.ToolModel;
 
 public class ControlPanelWindow extends JFrame implements ActionListener,
 		ChangeListener, ItemListener, FocusListener, WindowListener {

@@ -36,8 +36,8 @@ import replicatorg.app.exceptions.GCodeException;
 import replicatorg.app.exceptions.JobCancelledException;
 import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobRewindException;
-import replicatorg.app.models.MachineModel;
 import replicatorg.app.tools.XML;
+import replicatorg.machine.model.MachineModel;
 
 public class MachineController {
 	// our editor object.

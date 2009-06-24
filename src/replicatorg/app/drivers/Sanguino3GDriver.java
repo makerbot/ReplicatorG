@@ -34,8 +34,8 @@ import replicatorg.app.Preferences;
 import replicatorg.app.Serial;
 import replicatorg.app.TimeoutException;
 import replicatorg.app.exceptions.SerialException;
-import replicatorg.app.models.ToolModel;
 import replicatorg.app.tools.XML;
+import replicatorg.machine.model.ToolModel;
 
 public class Sanguino3GDriver extends DriverBaseImplementation {
 	/**

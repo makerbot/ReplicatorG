@@ -36,8 +36,8 @@ import org.w3c.dom.Node;
 import replicatorg.app.Preferences;
 import replicatorg.app.Serial;
 import replicatorg.app.exceptions.SerialException;
-import replicatorg.app.models.ToolModel;
 import replicatorg.app.tools.XML;
+import replicatorg.machine.model.ToolModel;
 
 public class SerialPassthroughDriver extends DriverBaseImplementation {
 	/**

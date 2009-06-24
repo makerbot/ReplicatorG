@@ -30,7 +30,7 @@ import org.w3c.dom.Node;
 import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
-import replicatorg.app.models.MachineModel;
+import replicatorg.machine.model.MachineModel;
 
 // import org.xml.sax.*;
 // import org.xml.sax.helpers.XMLReaderFactory;

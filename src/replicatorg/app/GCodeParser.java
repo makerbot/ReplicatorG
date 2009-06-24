@@ -33,9 +33,9 @@ import javax.vecmath.Point3d;
 import replicatorg.app.exceptions.JobCancelledException;
 import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobRewindException;
-import replicatorg.app.models.ToolModel;
 import replicatorg.app.drivers.*;
 import replicatorg.app.exceptions.*;
+import replicatorg.machine.model.ToolModel;
 
 public class GCodeParser {
 	// command to parse
