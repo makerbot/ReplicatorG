@@ -27,16 +27,16 @@ import javax.swing.JOptionPane;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import replicatorg.app.drivers.Driver;
-import replicatorg.app.drivers.DriverFactory;
-import replicatorg.app.drivers.EstimationDriver;
-import replicatorg.app.drivers.SimulationDriver;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
 import replicatorg.app.exceptions.JobCancelledException;
 import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.app.tools.XML;
+import replicatorg.drivers.Driver;
+import replicatorg.drivers.DriverFactory;
+import replicatorg.drivers.EstimationDriver;
+import replicatorg.drivers.SimulationDriver;
 import replicatorg.machine.model.MachineModel;
 
 public class MachineController {

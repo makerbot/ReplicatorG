@@ -8,7 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import replicatorg.app.drivers.Version;
+import replicatorg.drivers.Version;
 
 /**
  * The MachineStatusPanel displays the current state of the connected machine,

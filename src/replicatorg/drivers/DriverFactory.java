@@ -21,7 +21,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app.drivers;
+package replicatorg.drivers;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -114,7 +114,7 @@ public class DriverFactory {
 	private static Driver loadClass(String driverName) {
 		System.out.println("Loading driver: " + driverName);
 
-		String className = "replicatorg.app.drivers." + driverName;
+		String className = "replicatorg.drivers." + driverName;
 
 		// thanks to Peter Edworthy for his help with reflection.
 		// lets try to load the class in a nice, dynamic fashion!

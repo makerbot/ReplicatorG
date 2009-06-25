@@ -35,7 +35,7 @@ import javax.swing.JComponent;
 
 import replicatorg.app.syntax.JEditTextArea;
 
-import replicatorg.app.drivers.EstimationDriver;
+import replicatorg.drivers.EstimationDriver;
 
 /**
  * Li'l status bar fella that shows the line number.

@@ -1,4 +1,4 @@
-package replicatorg.app.drivers;
+package replicatorg.drivers;
 
 public class Version implements Comparable<Version> {
 	private int minor;

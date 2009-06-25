@@ -1,7 +1,7 @@
 /**
  * 
  */
-package replicatorg.app.drivers;
+package replicatorg.drivers;
 
 /**
  * Indicate that initialization failed because the machine is using obsolete firmware.
