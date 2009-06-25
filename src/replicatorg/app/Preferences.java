@@ -63,7 +63,6 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 import replicatorg.app.syntax.SyntaxStyle;
-import replicatorg.core.PApplet;
 
 // TODO change this to use the Java Preferences API
 // http://www.onjava.com/pub/a/onjava/synd/2001/10/17/j2se.html
@@ -85,11 +84,6 @@ public class Preferences {
 	// what to call the feller
 
 	static final String PREFS_FILE = "preferences.txt";
-
-	// platform strings (used to get settings for specific platforms)
-
-	static final String platforms[] = { "other", "windows", "macos9", "macosx",
-			"linux" };
 
 	// prompt text stuff
 
@@ -193,7 +187,8 @@ public class Preferences {
 		// check for platform-specific properties in the defaults
 
 		String platformExtension = "."
-				+ platforms[replicatorg.core.PApplet.platform];
+				+ Base.platform.name().toLowerCase();
+		
 		int extensionLength = platformExtension.length();
 
 		Enumeration e = table.keys(); // properties.propertyNames();
@@ -501,9 +496,17 @@ public class Preferences {
 		String newSizeText = fontSizeField.getText();
 		try {
 			int newSize = Integer.parseInt(newSizeText.trim());
-			String pieces[] = PApplet.split(get("editor.font"), ',');
-			pieces[2] = String.valueOf(newSize);
-			set("editor.font", PApplet.join(pieces, ','));
+			String fontName = get("editor.font");
+			if (fontName != null) {
+				String pieces[] = fontName.split(",");
+				pieces[2] = String.valueOf(newSize);
+				StringBuffer buf = new StringBuffer();
+				for (String piece : pieces) {
+					if (buf.length() > 0) buf.append(",");
+					buf.append(piece);
+				}
+				set("editor.font", buf.toString());
+			}
 
 		} catch (Exception e) {
 			System.err.println("ignoring invalid font size " + newSizeText);

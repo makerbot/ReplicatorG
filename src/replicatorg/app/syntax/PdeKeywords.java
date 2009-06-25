@@ -78,7 +78,7 @@ public class PdeKeywords extends CTokenMarker {
             }
           }
 
-          String pieces[] = replicatorg.core.PApplet.split(line, '\t');
+          String pieces[] = line.split("\t");
           if (pieces.length >= 2) {
             //int tab = line.indexOf('\t');
             // any line with no tab is ignored

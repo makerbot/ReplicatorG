@@ -100,7 +100,6 @@ import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.app.tools.Archiver;
 import replicatorg.app.tools.AutoFormat;
-import replicatorg.core.PApplet;
 
 import com.apple.mrj.MRJAboutHandler;
 import com.apple.mrj.MRJApplicationUtils;
@@ -1562,7 +1561,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 			status.prompt(prompt);
 
 		} else {
-			if (!Base.isMacOS() || PApplet.javaVersion < 1.5f) {
+			if (!Base.isMacOS() || Base.javaVersion < 1.5f) {
 				int result = JOptionPane.showConfirmDialog(this, prompt,
 						"Quit", JOptionPane.YES_NO_CANCEL_OPTION,
 						JOptionPane.QUESTION_MESSAGE);

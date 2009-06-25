@@ -64,9 +64,6 @@ import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
-import replicatorg.core.PApplet;
-import replicatorg.core.PConstants;
-
 import com.apple.mrj.MRJApplicationUtils;
 import com.apple.mrj.MRJFileUtils;
 import com.apple.mrj.MRJOSType;
@@ -100,7 +97,7 @@ public class Base {
 	static public void main(String args[]) {
 
 		// make sure that this is running on java 1.5
-		if (PApplet.javaVersion < 1.5f) {
+		if (Base.javaVersion < 1.5f) {
 			Base.showError("Need to install Java 1.5",
 					"This version of ReplicatorG requires\n"
 							+ "Java 1.4 or later to run properly.\n"
@@ -188,6 +185,71 @@ public class Base {
 		}
 	}
 
+	public enum Platform {
+		WINDOWS, MACOS9, MACOSX, LINUX, OTHER
+	}
+
+	/**
+	 * Full name of the Java version (i.e. 1.5.0_11). Prior to 0125, this was
+	 * only the first three digits.
+	 */
+	public static final String javaVersionName = System
+			.getProperty("java.version");
+
+	/**
+	 * Version of Java that's in use, whether 1.1 or 1.3 or whatever, stored as
+	 * a float.
+	 * <P>
+	 * Note that because this is stored as a float, the values may not be <EM>exactly</EM>
+	 * 1.3 or 1.4. Instead, make sure you're comparing against 1.3f or 1.4f,
+	 * which will have the same amount of error (i.e. 1.40000001). This could
+	 * just be a double, but since Processing only uses floats, it's safer for
+	 * this to be a float because there's no good way to specify a double with
+	 * the preproc.
+	 */
+	public static final float javaVersion = new Float(javaVersionName
+			.substring(0, 3)).floatValue();
+
+	/**
+	 * Current platform in use
+	 */
+	static public Platform platform;
+
+	/**
+	 * Current platform in use.
+	 * <P>
+	 * Equivalent to System.getProperty("os.name"), just used internally.
+	 */
+	static public String platformName = System.getProperty("os.name");
+
+	static {
+		// figure out which operating system
+		// this has to be first, since editor needs to know
+
+		if (platformName.toLowerCase().indexOf("mac") != -1) {
+			// can only check this property if running on a mac
+			// on a pc it throws a security exception and kills the applet
+			// (but on the mac it does just fine)
+			if (System.getProperty("mrj.version") != null) { // running on a
+																// mac
+				platform = (platformName.equals("Mac OS X")) ? Platform.MACOSX : Platform.MACOS9;
+			}
+
+		} else {
+			String osname = System.getProperty("os.name");
+
+			if (osname.indexOf("Windows") != -1) {
+				platform = Platform.WINDOWS;
+
+			} else if (osname.equals("Linux")) { // true for the ibm vm
+				platform = Platform.LINUX;
+
+			} else {
+				platform = Platform.OTHER;
+			}
+		}
+	}
+
 	// .................................................................
 
 	/**
@@ -195,21 +257,21 @@ public class Base {
 	 * specifically a Mac OS X machine because it doesn't run on OS 9 anymore.
 	 */
 	static public boolean isMacOS() {
-		return PApplet.platform == PConstants.MACOSX;
+		return platform == Platform.MACOSX;
 	}
 
 	/**
 	 * returns true if running on windows.
 	 */
 	static public boolean isWindows() {
-		return PApplet.platform == PConstants.WINDOWS;
+		return platform == Platform.WINDOWS;
 	}
 
 	/**
 	 * true if running on linux.
 	 */
 	static public boolean isLinux() {
-		return PApplet.platform == PConstants.LINUX;
+		return platform == Platform.LINUX;
 	}
 
 	// .................................................................
