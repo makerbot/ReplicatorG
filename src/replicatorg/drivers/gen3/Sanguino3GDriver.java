@@ -21,7 +21,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.drivers;
+package replicatorg.drivers.gen3;
 
 import java.io.IOException;
 
@@ -35,6 +35,9 @@ import replicatorg.app.Serial;
 import replicatorg.app.TimeoutException;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.tools.XML;
+import replicatorg.drivers.BadFirmwareVersionException;
+import replicatorg.drivers.DriverBaseImplementation;
+import replicatorg.drivers.Version;
 import replicatorg.machine.model.ToolModel;
 
 public class Sanguino3GDriver extends DriverBaseImplementation {
@@ -109,19 +112,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 		int getCode() { return code; }
 	};
 
-	/** The start byte that opens every packet. */
-	private final byte START_BYTE = (byte) 0xD5;
-
-	/** The response codes at the start of every response packet. */
-	class ResponseCode {
-		final static int GENERIC_ERROR = 0;
-		final static int OK = 1;
-		final static int BUFFER_OVERFLOW = 2;
-		final static int CRC_MISMATCH = 3;
-		final static int QUERY_OVERFLOW = 4;
-		final static int UNSUPPORTED = 5;
-	};
-
 	/**
 	 * An object representing the serial connection.
 	 */
@@ -138,353 +128,8 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 
 	private int debugLevel = 0;
 
-	/**
-	 * This is a Java implementation of the IButton/Maxim 8-bit CRC. Code ported
-	 * from the AVR-libc implementation, which is used on the RR3G end.
-	 */
-	protected class IButtonCrc {
 
-		private int crc = 0;
 
-		/**
-		 * Construct a new, initialized object for keeping track of a CRC.
-		 */
-		public IButtonCrc() {
-			crc = 0;
-		}
-
-		/**
-		 * Update the CRC with a new byte of sequential data. See
-		 * include/util/crc16.h in the avr-libc project for a full explanation
-		 * of the algorithm.
-		 * 
-		 * @param data
-		 *            a byte of new data to be added to the crc.
-		 */
-		public void update(byte data) {
-			crc = (crc ^ data) & 0xff; // i loathe java's promotion rules
-			for (int i = 0; i < 8; i++) {
-				if ((crc & 0x01) != 0) {
-					crc = ((crc >>> 1) ^ 0x8c) & 0xff;
-				} else {
-					crc = (crc >>> 1) & 0xff;
-				}
-			}
-		}
-
-		/**
-		 * Get the 8-bit crc value.
-		 */
-		public byte getCrc() {
-			return (byte) crc;
-		}
-
-		/**
-		 * Reset the crc.
-		 */
-		public void reset() {
-			crc = 0;
-		}
-	}
-
-	/**
-	 * A class for building a new packet to send down the wire to the
-	 * Sanguino3G.
-	 */
-	class PacketBuilder {
-		// yay magic numbers.
-		byte[] data = new byte[256];
-
-		// current end of packet. Bytes 0 and 1 are reserved for start byte
-		// and packet payload length.
-		int idx = 2;
-
-		IButtonCrc crc = new IButtonCrc();
-
-		/**
-		 * Start building a new command packet.
-		 * 
-		 * @param target
-		 *            the target identifier for this packet.
-		 * @param command
-		 *            the command identifier for this packet.
-		 */
-		PacketBuilder(int command) {
-			idx = 2;
-			data[0] = START_BYTE;
-			// data[1] = length; // just to avoid confusion
-			add8((byte) command);
-		}
-
-		/**
-		 * Add an 8-bit value to the end of the packet payload.
-		 * 
-		 * @param v
-		 *            the value to append.
-		 */
-		void add8(int v) {
-			data[idx++] = (byte) v;
-			crc.update((byte) v);
-		}
-
-		/**
-		 * Add a 16-bit value to the end of the packet payload.
-		 * 
-		 * @param v
-		 *            the value to append.
-		 */
-		void add16(int v) {
-			add8((byte) (v & 0xff));
-			add8((byte) ((v >> 8) & 0xff));
-		}
-
-		/**
-		 * Add a 32-bit value to the end of the packet payload.
-		 * 
-		 * @param v
-		 *            the value to append. Must be long to support unsigned
-		 *            ints.
-		 */
-		void add32(long v) {
-			add16((int) (v & 0xffff));
-			add16((int) ((v >> 16) & 0xffff));
-		}
-
-		/**
-		 * Complete the packet.
-		 * 
-		 * @return a byte array representing the completed packet.
-		 */
-		byte[] getPacket() {
-			data[idx] = crc.getCrc();
-			data[1] = (byte) (idx - 2); // len does not count packet header
-			byte[] rv = new byte[idx + 1];
-			System.arraycopy(data, 0, rv, 0, idx + 1);
-			return rv;
-		}
-	};
-
-	/**
-	 * A class for keeping track of the state of an incoming packet and storing
-	 * its payload.
-	 */
-	class PacketProcessor {
-		final static byte PS_START = 0;
-		final static byte PS_LEN = 1;
-		final static byte PS_PAYLOAD = 2;
-		final static byte PS_CRC = 3;
-		final static byte PS_LAST = 4;
-
-		byte packetState = PS_START;
-		int payloadLength = -1;
-		int payloadIdx = 0;
-		byte[] payload;
-		byte targetCrc = 0;
-
-		IButtonCrc crc;
-
-		/**
-		 * Reset the packet's state. (The crc is (re-)generated on the length
-		 * byte and thus doesn't need to be reset.(
-		 */
-		public void reset() {
-			packetState = PS_START;
-		}
-
-		/**
-		 * Create a PacketResponse object that contains this packet's payload.
-		 * 
-		 * @return A valid PacketResponse object
-		 */
-		public PacketResponse getResponse() {
-			PacketResponse pr = new PacketResponse(payload);
-
-			pr.printDebug();
-
-			return pr;
-		}
-
-		/**
-		 * Process the next byte in an incoming packet.
-		 * 
-		 * @return true if the packet is complete and valid; false otherwise.
-		 */
-		public boolean processByte(byte b) {
-
-			if (debugLevel >= 2) {
-				if (b >= 32 && b <= 127)
-					System.out.println("IN: Processing byte "
-							+ Integer.toHexString((int) b & 0xff) + " ("
-							+ (char) b + ")");
-				else
-					System.out.println("IN: Processing byte "
-							+ Integer.toHexString((int) b & 0xff));
-			}
-
-			switch (packetState) {
-			case PS_START:
-				if (debugLevel >= 3)
-					System.out.println("Start byte?");
-
-				if (b == START_BYTE) {
-					packetState = PS_LEN;
-				} else {
-					// throw exception?
-				}
-				break;
-
-			case PS_LEN:
-				if (debugLevel >= 2)
-					System.out.println("Length: " + (int) b);
-
-				payloadLength = ((int) b) & 0xFF;
-				payload = new byte[payloadLength];
-				crc = new IButtonCrc();
-				packetState = PS_PAYLOAD;
-				break;
-
-			case PS_PAYLOAD:
-				if (debugLevel >= 3)
-					System.out.println("payload.");
-
-				// sanity check
-				if (payloadIdx < payloadLength) {
-					payload[payloadIdx++] = b;
-					crc.update(b);
-				}
-				if (payloadIdx >= payloadLength) {
-					packetState = PS_CRC;
-				}
-				break;
-
-			case PS_CRC:
-				targetCrc = b;
-
-				if (debugLevel >= 2) {
-					System.out.println("Target CRC: "
-							+ Integer.toHexString((int) targetCrc & 0xff)
-							+ " - expected CRC: "
-							+ Integer.toHexString((int) crc.getCrc() & 0xff));
-				}
-				if (crc.getCrc() != targetCrc) {
-					throw new java.lang.RuntimeException(
-							"CRC mismatch on reply");
-				}
-				return true;
-			}
-			return false;
-		}
-	}
-
-	/**
-	 * Packet response wrapper, with convenience functions for reading off
-	 * values in sequence and retrieving the response code.
-	 */
-	class PacketResponse {
-
-		byte[] payload;
-
-		int readPoint = 1;
-
-		public PacketResponse() {
-		}
-
-		public PacketResponse(byte[] p) {
-			payload = p;
-		}
-
-		/**
-		 * Prints a debug message with the packet response code decoded, along
-		 * wiith the packet's contents in hex.
-		 */
-		public void printDebug() {
-
-			String msg = "Unknown";
-			switch (payload[0]) {
-			case ResponseCode.GENERIC_ERROR:
-				msg = "Generic Error";
-				break;
-
-			case ResponseCode.OK:
-				msg = "OK";
-				break;
-
-			case ResponseCode.BUFFER_OVERFLOW:
-				msg = "Buffer full";
-				break;
-
-			case ResponseCode.CRC_MISMATCH:
-				msg = "CRC mismatch";
-				break;
-
-			case ResponseCode.QUERY_OVERFLOW:
-				msg = "Query overflow";
-				break;
-
-			case ResponseCode.UNSUPPORTED:
-				msg = "Unsupported command";
-				break;
-			}
-
-			// only print certain messages
-			if (debugLevel >= 2
-					|| (debugLevel >= 1 && payload[0] != ResponseCode.OK && payload[0] != ResponseCode.BUFFER_OVERFLOW)) {
-				System.out.println("Packet response code: " + msg);
-				System.out.print("Packet payload: ");
-				for (int i = 1; i < payload.length; i++) {
-					System.out.print(Integer.toHexString(payload[i] & 0xff)
-							+ " ");
-				}
-				System.out.print("\n");
-			}
-		}
-
-		/**
-		 * Retrieve the packet payload.
-		 * 
-		 * @return an array of bytes representing the payload.
-		 */
-		public byte[] getPayload() {
-			return payload;
-		}
-
-		/**
-		 * Get the next 8-bit value from the packet payload.
-		 */
-		int get8() {
-			if (payload.length > readPoint)
-				return ((int) payload[readPoint++]) & 0xff;
-			else {
-				System.out.println("Error: payload not big enough.");
-				return 0;
-			}
-		}
-
-		/**
-		 * Get the next 16-bit value from the packet payload.
-		 */
-		int get16() {
-			return get8() + (get8() << 8);
-		}
-
-		/**
-		 * Get the next 32-bit value from the packet payload.
-		 */
-		int get32() {
-			return get16() + (get16() << 16);
-		}
-
-		/**
-		 * Does the response code indicate that the command was successful?
-		 */
-		public boolean isOK() {
-			return payload[0] == ResponseCode.OK;
-		}
-
-		public byte getResponseCode() {
-			return payload[0];
-		}
-	};
 
 	public Sanguino3GDriver() {
 		super();
@@ -689,7 +334,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 
 					if (pr.isOK())
 						packetSent = true;
-					else if (pr.getResponseCode() == ResponseCode.BUFFER_OVERFLOW) {
+					else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
 						try {
 							Thread.sleep(25);
 						} catch (Exception e) {
@@ -714,7 +359,7 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.IS_FINISHED.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		int v = pr.get8();
-		if (pr.getResponseCode() == ResponseCode.UNSUPPORTED) {
+		if (pr.getResponseCode() == PacketResponse.ResponseCode.UNSUPPORTED) {
 			if (!isNotifiedFinishedFeature) {
 				System.out.println("IsFinished not supported; update your firmware.");
 				isNotifiedFinishedFeature = true;

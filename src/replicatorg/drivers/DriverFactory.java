@@ -82,7 +82,7 @@ public class DriverFactory {
 		if (driverName.equals("serialpassthrough"))
 			return loadClass("SerialPassthroughDriver", xml);
 		if (driverName.equals("sanguino3g"))
-			return loadClass("Sanguino3GDriver", xml);
+			return loadClass("gen3.Sanguino3GDriver", xml);
 		if (driverName.equals("null"))
 			return loadClass("NullDriver", xml);
 		else {

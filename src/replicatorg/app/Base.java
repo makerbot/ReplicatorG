@@ -54,6 +54,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -86,6 +87,7 @@ public class Base {
 	// our machine object.
 	private static MachineController machine;
 
+	public static Logger logger = Logger.getLogger("replicatorg.log");
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
 	 * handler.

@@ -4,7 +4,7 @@ public class Version implements Comparable<Version> {
 	private int minor;
 	private int major;
 
-	Version( int major, int minor ) {
+	public Version( int major, int minor ) {
 		this.major = major;
 		this.minor = minor;
 	}
