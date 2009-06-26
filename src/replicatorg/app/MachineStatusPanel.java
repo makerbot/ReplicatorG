@@ -61,7 +61,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 	/**
 	 * Display the current status of this machine.
 	 */
-	protected void updateMachineStatus() {
+	protected synchronized void updateMachineStatus() {
 		// update background to indicate high-level status
 		Color bgColor = Color.WHITE;
 		String text;
@@ -75,10 +75,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 				bgColor = BG_READY;
 				// Check version
 				try {
-					Version v;
-					synchronized(machine) {
-						v = machine.driver.getVersion();
-					}
+					Version v = machine.driver.getVersion();
 					if (v.compareTo(machine.driver.getPreferredVersion()) < 0) {
 						if (!firmwareWarningIssued) {
 							firmwareWarningIssued = true;
