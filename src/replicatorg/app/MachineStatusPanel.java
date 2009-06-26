@@ -52,9 +52,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 		System.err.println("Machine set to "+machine);
 		if (this.machine == machine)
 			return;
-		synchronized (machine) {
-			this.machine = machine;
-		}
+		this.machine = machine;
 		updateMachineStatus();
 	}
 
@@ -63,7 +61,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 	/**
 	 * Display the current status of this machine.
 	 */
-	protected void updateMachineStatus() {
+	protected synchronized void updateMachineStatus() {
 		// update background to indicate high-level status
 		Color bgColor = Color.WHITE;
 		String text;
