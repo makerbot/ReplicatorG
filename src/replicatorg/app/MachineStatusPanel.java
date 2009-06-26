@@ -52,9 +52,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 		System.err.println("Machine set to "+machine);
 		if (this.machine == machine)
 			return;
-		synchronized (machine) {
-			this.machine = machine;
-		}
+		this.machine = machine;
 		updateMachineStatus();
 	}
 
@@ -77,7 +75,10 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 				bgColor = BG_READY;
 				// Check version
 				try {
-					Version v = machine.driver.getVersion();
+					Version v;
+					synchronized(machine) {
+						v = machine.driver.getVersion();
+					}
 					if (v.compareTo(machine.driver.getPreferredVersion()) < 0) {
 						if (!firmwareWarningIssued) {
 							firmwareWarningIssued = true;
