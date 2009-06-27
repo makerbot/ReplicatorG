@@ -23,6 +23,8 @@
 
 package replicatorg.drivers;
 
+import java.util.EnumSet;
+
 import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
@@ -30,6 +32,7 @@ import org.w3c.dom.Node;
 import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
+import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.MachineModel;
 
 public class DriverBaseImplementation implements Driver {
@@ -294,41 +297,7 @@ public class DriverBaseImplementation implements Driver {
 	/***************************************************************************
 	 * various homing functions
 	 **************************************************************************/
-	public void homeXYZ() {
-		machine.setCurrentPosition(new Point3d());
-	}
-
-	public void homeXY() {
-		Point3d temp = machine.getCurrentPosition();
-
-		temp.x = 0;
-		temp.y = 0;
-
-		machine.setCurrentPosition(temp);
-	}
-
-	public void homeX() {
-		Point3d temp = machine.getCurrentPosition();
-
-		temp.x = 0;
-
-		machine.setCurrentPosition(temp);
-	}
-
-	public void homeY() {
-		Point3d temp = machine.getCurrentPosition();
-
-		temp.y = 0;
-
-		machine.setCurrentPosition(temp);
-	}
-
-	public void homeZ() {
-		Point3d temp = machine.getCurrentPosition();
-
-		temp.z = 0;
-
-		machine.setCurrentPosition(temp);
+	public void homeAxes(EnumSet<Axis> axes) {
 	}
 
 	/***************************************************************************

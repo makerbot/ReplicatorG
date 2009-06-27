@@ -23,6 +23,8 @@
 
 package replicatorg.drivers;
 
+import java.util.EnumSet;
+
 import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
@@ -30,6 +32,7 @@ import org.w3c.dom.Node;
 import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
+import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.MachineModel;
 
 // import org.xml.sax.*;
@@ -160,15 +163,7 @@ public interface Driver {
 	/**
 	 * various homing functions
 	 */
-	public void homeXYZ();
-
-	public void homeXY();
-
-	public void homeX();
-
-	public void homeY();
-
-	public void homeZ();
+	public void homeAxes(EnumSet<Axis> axes);
 
 	/**
 	 * delay / pause function

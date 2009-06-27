@@ -26,6 +26,7 @@ package replicatorg.drivers;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -37,6 +38,7 @@ import replicatorg.app.Preferences;
 import replicatorg.app.Serial;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.tools.XML;
+import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
 public class SerialPassthroughDriver extends DriverBaseImplementation {
@@ -331,34 +333,14 @@ public class SerialPassthroughDriver extends DriverBaseImplementation {
 		super.setCurrentPosition(p);
 	}
 
-	public void homeXYZ() {
-		sendCommand("G28 XYZ");
+	public void homeAxes(EnumSet<Axis> axes) {
+		StringBuffer buf = new StringBuffer("G28 ");
+		if (axes.contains(Axis.X)) buf.append("X");
+		if (axes.contains(Axis.Y)) buf.append("Y");
+		if (axes.contains(Axis.Z)) buf.append("Z");
+		sendCommand(buf.toString());
 
-		super.homeXYZ();
-	}
-
-	public void homeXY() {
-		sendCommand("G28 XY");
-
-		super.homeXY();
-	}
-
-	public void homeX() {
-		sendCommand("G28 X");
-
-		super.homeX();
-	}
-
-	public void homeY() {
-		sendCommand("G28 Y");
-
-		super.homeY();
-	}
-
-	public void homeZ() {
-		sendCommand("G28 Z");
-
-		super.homeZ();
+		super.homeAxes(axes);
 	}
 
 	public void delay(long millis) {

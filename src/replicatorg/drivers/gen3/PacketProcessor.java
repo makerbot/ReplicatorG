@@ -75,7 +75,7 @@ public class PacketProcessor implements PacketConstants {
 			break;
 
 		case LEN:
-			if (Base.logger.isLoggable(Level.FINE)) {
+			if (Base.logger.isLoggable(Level.FINER)) {
 				Base.logger.log(Level.FINER,"Length: " + (int) b);
 			}
 

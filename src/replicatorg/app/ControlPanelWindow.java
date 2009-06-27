@@ -37,6 +37,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowEvent;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,6 +65,7 @@ import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 
 import replicatorg.drivers.Driver;
+import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
 public class ControlPanelWindow extends JFrame implements ActionListener,
@@ -186,21 +188,21 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		item = new JMenuItem("Home X");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.homeX();
+				driver.homeAxes(EnumSet.of(Axis.X));
 			}
 		});
 		homeMenu.add(item);
 		item = new JMenuItem("Home Y");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.homeY();
+				driver.homeAxes(EnumSet.of(Axis.Y));
 			}
 		});
 		homeMenu.add(item);
 		item = new JMenuItem("Home Z");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.homeZ();
+				driver.homeAxes(EnumSet.of(Axis.Z));
 			}
 		});
 		homeMenu.add(item);
@@ -208,14 +210,14 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		item = new JMenuItem("Home XY");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.homeXY();
+				driver.homeAxes(EnumSet.of(Axis.X,Axis.Y));
 			}
 		});
 		homeMenu.add(item);
 		item = new JMenuItem("Home all");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.homeXYZ();
+				driver.homeAxes(EnumSet.allOf(Axis.class));
 			}
 		});
 		homeMenu.add(item);
