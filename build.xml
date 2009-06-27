@@ -4,7 +4,8 @@
     <property name="build.dir"     value="build"/>
     <property name="classes.dir"   value="${build.dir}/classes"/> 
     <property name="jar.dir"       value="${build.dir}/jar"/>
-    <property name="shared.dir"       value="${build.dir}/shared"/>
+    <property name="resources.dir" value="resources"/>
+    <property name="shared.dir"    value="${build.dir}/shared"/>
     <property name="lib.dir"       value="${shared.dir}/lib"/>
     <property name="native.lib.dir"   value="${build.dir}/nativelibs"/>
     <property name="macosx.lib.dir"   value="${build.dir}/macosx/dist"/>
@@ -12,10 +13,10 @@
     <property name="linux64.lib.dir" value="${build.dir}/linux64/dist"/>
     <property name="windows.lib.dir" value="${build.dir}/windows"/>
     <property name="dist.dir"   value="dist"/>
-    <property name="macosx.dist.dir"   value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}"/>
+    <property name="macosx.dist.dir"  value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}"/>
     <property name="linux.dist.dir"   value="${dist.dir}/linux/${project.lowercase}-${replicatorg.version}"/>
-    <property name="linux64.dist.dir"   value="${dist.dir}/linux64/${project.lowercase}-${replicatorg.version}"/>
-    <property name="windows.dist.dir"   value="${dist.dir}/windows/${project.lowercase}-${replicatorg.version}"/>
+    <property name="linux64.dist.dir" value="${dist.dir}/linux64/${project.lowercase}-${replicatorg.version}"/>
+    <property name="windows.dist.dir" value="${dist.dir}/windows/${project.lowercase}-${replicatorg.version}"/>
 
     <path id="classpath">
         <fileset dir="${macosx.lib.dir}" includes="*.jar"/>
@@ -40,12 +41,15 @@
 
     <target name="jar" depends="compile">
         <mkdir dir="${jar.dir}"/>
+      	<copy todir="${classes.dir}">
+      	    <fileset dir="${resources.dir}"/>
+      	</copy>
         <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
         </jar>
     </target>
 
     <target name="run" depends="jar">
-		<java fork="true" classname="replicatorg.app.Base">
+		<java fork="true" classname="replicatorg.app.Base"> <!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
 		    <jvmarg value="-ea"/>
 	            <classpath>
 	                <path refid="classpath"/>

@@ -253,7 +253,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		}
 
 		// set the window icon
-		icon = Base.getImage("icon.gif", this);
+		icon = Base.getImage("images/icon.gif", this);
 		setIconImage(icon);
 
 		// add listener to handle window close box hit event
@@ -1145,7 +1145,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 	// so used internally for everything else
 
 	public void handleAbout() {
-		final Image image = Base.getImage("about.jpg", this);
+		final Image image = Base.getImage("images/about.jpg", this);
 		int w = image.getWidth(this);
 		int h = image.getHeight(this);
 		final Window window = new Window(this) {
@@ -1442,7 +1442,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 			machine.execute();
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
-					editor.simulationOver();
+					simulationOver();
 				}
 			});
 		}

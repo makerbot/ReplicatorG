@@ -113,7 +113,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 
 	public EditorButtons(Editor editor) {
 		this.editor = editor;
-		buttons = Base.getImage("buttons.gif", this);
+		buttons = Base.getImage("images/buttons.gif", this);
 
 		buttonCount = 0;
 		which = new int[BUTTON_COUNT];

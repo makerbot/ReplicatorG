@@ -53,6 +53,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -947,7 +948,11 @@ public class Base {
 		Image image = null;
 		Toolkit tk = Toolkit.getDefaultToolkit();
 
-		image = tk.getImage(getLibContents(name));
+		// try to get the URL as a system resource
+	    URL url = ClassLoader.getSystemResource(name);
+		image = tk.getImage(url);
+
+		//image = tk.getImage(getLibContents(name));
 		MediaTracker tracker = new MediaTracker(who);
 		tracker.addImage(image, 0);
 		try {
