@@ -103,7 +103,7 @@ public class Base {
 		if (Base.javaVersion < 1.5f) {
 			Base.showError("Need to install Java 1.5",
 					"This version of ReplicatorG requires\n"
-							+ "Java 1.4 or later to run properly.\n"
+							+ "Java 1.5 or later to run properly.\n"
 							+ "Please visit java.com to upgrade.", null);
 		}
 
