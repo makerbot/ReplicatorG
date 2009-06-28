@@ -55,8 +55,8 @@ import javax.swing.text.StyleConstants;
  * over System.err, and debug while watching just System.out or just write
  * println() or whatever directly to systemOut or systemErr.
  */
-public class EditorConsole extends JScrollPane {
-	Editor editor;
+public class MessagePanel extends JScrollPane {
+	MainWindow editor;
 
 	JTextPane consoleTextPane;
 
@@ -89,7 +89,7 @@ public class EditorConsole extends JScrollPane {
 
 	static OutputStream stderrFile;
 
-	public EditorConsole(Editor editor) {
+	public MessagePanel(MainWindow editor) {
 		this.editor = editor;
 
 		maxLineCount = Preferences.getInteger("console.length");
@@ -274,7 +274,7 @@ public class EditorConsole extends JScrollPane {
 	 * Swing components are NOT thread-safe, and since the MessageSiphon
 	 * instantiates new threads, and in those callbacks, they often print output
 	 * to stdout and stderr, which are wrapped by EditorConsoleStream and
-	 * eventually leads to EditorConsole.appendText(), which directly updates
+	 * eventually leads to MessagePanel.appendText(), which directly updates
 	 * the Swing text components, causing deadlock.
 	 * <P>
 	 * Updates are buffered to the console and displayed at regular intervals on
@@ -295,7 +295,7 @@ public class EditorConsole extends JScrollPane {
 }
 
 class EditorConsoleStream extends OutputStream {
-	EditorConsole parent;
+	MessagePanel parent;
 
 	boolean err; // whether stderr or stdout
 
@@ -303,7 +303,7 @@ class EditorConsoleStream extends OutputStream {
 
 	OutputStream echo;
 
-	public EditorConsoleStream(EditorConsole parent, boolean err,
+	public EditorConsoleStream(MessagePanel parent, boolean err,
 			OutputStream echo) {
 		this.parent = parent;
 		this.err = err;

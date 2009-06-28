@@ -68,7 +68,7 @@ public class EditorStatus extends JPanel implements ActionListener {
 
 	static final String NO_MESSAGE = "";
 
-	Editor editor;
+	MainWindow editor;
 
 	int mode;
 
@@ -99,7 +99,7 @@ public class EditorStatus extends JPanel implements ActionListener {
 	// Thread promptThread;
 	int response;
 
-	public EditorStatus(Editor editor) {
+	public EditorStatus(MainWindow editor) {
 		this.editor = editor;
 		empty();
 

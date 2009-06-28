@@ -40,7 +40,7 @@ import javax.swing.event.MouseInputListener;
 /**
  * run/stop/etc buttons for the ide
  */
-public class EditorButtons extends JComponent implements MouseInputListener {
+public class MainButtonPanel extends JComponent implements MouseInputListener {
 
 	static final String title[] = { "Simulate", "Pause", "Stop", "Build",
 			"New", "Open", "Save" };
@@ -68,7 +68,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 	static final int ROLLOVER = 1;
 	static final int ACTIVE = 2;
 
-	Editor editor;
+	MainWindow editor;
 
 	Image offscreen;
 
@@ -111,7 +111,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 
 	// int statusY;
 
-	public EditorButtons(Editor editor) {
+	public MainButtonPanel(MainWindow editor) {
 		this.editor = editor;
 		buttons = Base.getImage("images/buttons.gif", this);
 
@@ -364,7 +364,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 				popup = editor.sketchbook.getPopupMenu();
 				add(popup);
 			}
-			popup.show(EditorButtons.this, x, y);
+			popup.show(MainButtonPanel.this, x, y);
 			break;
 
 		case NEW:
@@ -425,7 +425,7 @@ public class EditorButtons extends JComponent implements MouseInputListener {
 	}
 
 	public void messageClear(String msg) {
-		// if (status.getText().equals(msg + " ")) status.setText(Editor.EMPTY);
+		// if (status.getText().equals(msg + " ")) status.setText(MainWindow.EMPTY);
 		if (status.equals(msg))
 			status = "";
 	}

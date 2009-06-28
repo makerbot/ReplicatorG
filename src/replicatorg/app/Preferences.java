@@ -157,7 +157,7 @@ public class Preferences {
 	JTextField fontSizeField;
 
 	// the calling editor, so updates can be applied
-	Editor editor;
+	MainWindow editor;
 
 	// data model
 	// we have multiple preference files, one main one and a few subsidiary
@@ -322,10 +322,10 @@ public class Preferences {
 		right = Math.max(right, h + d2.width + GUI_BIG);
 		top += vmax + GUI_BETWEEN;
 
-		// Editor font size [ ]
+		// MainWindow font size [ ]
 
 		Container box = Box.createHorizontalBox();
-		label = new JLabel("Editor font size: ");
+		label = new JLabel("MainWindow font size: ");
 		box.add(label);
 		fontSizeField = new JTextField(4);
 		box.add(fontSizeField);
@@ -445,7 +445,7 @@ public class Preferences {
 
 		pain.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
-				KeyStroke wc = Editor.WINDOW_CLOSE_KEYSTROKE;
+				KeyStroke wc = MainWindow.WINDOW_CLOSE_KEYSTROKE;
 				if ((e.getKeyCode() == KeyEvent.VK_ESCAPE)
 						|| (KeyStroke.getKeyStrokeForEvent(e).equals(wc))) {
 					disposeFrame();
@@ -514,7 +514,7 @@ public class Preferences {
 		editor.applyPreferences();
 	}
 
-	public void showFrame(Editor editor) {
+	public void showFrame(MainWindow editor) {
 		this.editor = editor;
 
 		// set all settings entry boxes to their actual status

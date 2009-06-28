@@ -50,13 +50,13 @@ import javax.swing.JOptionPane;
  * of thing so that we can keep Processing free.
  */
 public class UpdateCheck implements Runnable {
-	Editor editor;
+	MainWindow editor;
 
 	String downloadURL = "http://update.replicat.org/latest.txt";
 
 	static final long ONE_DAY = 24 * 60 * 60 * 1000;
 
-	public UpdateCheck(Editor editor) {
+	public UpdateCheck(MainWindow editor) {
 		this.editor = editor;
 		Thread thread = new Thread(this, "update-check");
 		thread.start();

@@ -95,7 +95,7 @@ public class Base {
 	 */
 	static String openedAtStartup;
 
-	Editor editor;
+	MainWindow editor;
 
 	static public void main(String args[]) {
 
@@ -115,12 +115,12 @@ public class Base {
 
 		// register a temporary/early version of the mrj open document handler,
 		// because the event may be lost (sometimes, not always) by the time
-		// that Editor is properly constructed.
+		// that MainWindow is properly constructed.
 
 		MRJOpenDocumentHandler startupOpen = new MRJOpenDocumentHandler() {
 			public void handleOpenFile(File file) {
 				// this will only get set once.. later will be handled
-				// by the Editor version of this fella
+				// by the MainWindow version of this fella
 				if (Base.openedAtStartup == null) {
 					// System.out.println("handling outside open file: " +
 					// file);
@@ -168,7 +168,7 @@ public class Base {
 		JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
 		// build the editor object
-		editor = new Editor();
+		editor = new MainWindow();
 
 		// get things rawkin
 		editor.pack();

@@ -41,7 +41,7 @@ import replicatorg.machine.model.MachineModel;
 
 public class MachineController {
 	// our editor object.
-	protected Editor editor;
+	protected MainWindow editor;
 
 	// this is the xml config for this machine.
 	protected Node machineNode;
@@ -88,11 +88,11 @@ public class MachineController {
 		loadExtraPrefs();
 	}
 
-	public void setEditor(Editor e) {
+	public void setEditor(MainWindow e) {
 		editor = e;
 	}
 
-	public Editor getEditor() {
+	public MainWindow getEditor() {
 		return editor;
 	}
 

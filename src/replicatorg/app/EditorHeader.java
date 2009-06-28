@@ -53,7 +53,7 @@ public class EditorHeader extends JComponent {
 
 	static Color textColor[] = new Color[2];
 
-	Editor editor;
+	MainWindow editor;
 
 	int tabLeft[];
 
@@ -105,7 +105,7 @@ public class EditorHeader extends JComponent {
 
 	int imageW, imageH;
 
-	public EditorHeader(Editor eddie) {
+	public EditorHeader(MainWindow eddie) {
 		this.editor = eddie; // weird name for listener
 
 		pieces = new Image[STATUS.length][WHERE.length];
@@ -290,16 +290,16 @@ public class EditorHeader extends JComponent {
 
 		// maybe this shouldn't have a command key anyways..
 		// since we're not trying to make this a full ide..
-		// item = Editor.newJMenuItem("New", 'T');
+		// item = MainWindow.newJMenuItem("New", 'T');
 
 		/*
-		 * item = Editor.newJMenuItem("Previous", KeyEvent.VK_PAGE_UP);
+		 * item = MainWindow.newJMenuItem("Previous", KeyEvent.VK_PAGE_UP);
 		 * item.addActionListener(new ActionListener() { public void
 		 * actionPerformed(ActionEvent e) { System.out.println("prev"); } }); if
 		 * (editor.sketch != null) { item.setEnabled(editor.sketch.codeCount >
 		 * 1); } menu.add(item);
 		 * 
-		 * item = Editor.newJMenuItem("Next", KeyEvent.VK_PAGE_DOWN);
+		 * item = MainWindow.newJMenuItem("Next", KeyEvent.VK_PAGE_DOWN);
 		 * item.addActionListener(new ActionListener() { public void
 		 * actionPerformed(ActionEvent e) { System.out.println("ext"); } }); if
 		 * (editor.sketch != null) { item.setEnabled(editor.sketch.codeCount >
@@ -376,7 +376,7 @@ public class EditorHeader extends JComponent {
 		int ctrlAlt = ActionEvent.ALT_MASK
 				| Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
-		// item = Editor.newJMenuItem("Previous Tab", '[', true);
+		// item = MainWindow.newJMenuItem("Previous Tab", '[', true);
 		item = new JMenuItem("Previous Tab");
 		// int shortcut = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		KeyStroke ctrlAltLeft = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,
@@ -393,7 +393,7 @@ public class EditorHeader extends JComponent {
 		 */
 		menu.add(item);
 
-		// item = Editor.newJMenuItem("Next Tab", ']', true);
+		// item = MainWindow.newJMenuItem("Next Tab", ']', true);
 		item = new JMenuItem("Next Tab");
 		KeyStroke ctrlAltRight = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,
 				ctrlAlt);

@@ -48,7 +48,7 @@ import com.apple.mrj.MRJOSType;
  * Handles sketchbook mechanics for the sketch menu and file I/O.
  */
 public class Sketchbook {
-	Editor editor;
+	MainWindow editor;
 
 	JMenu openMenu;
 
@@ -74,7 +74,7 @@ public class Sketchbook {
 
 	static String examplesPath; // canonical path (for comparison)
 
-	public Sketchbook(Editor editor) {
+	public Sketchbook(MainWindow editor) {
 		this.editor = editor;
 
 		// this shouldn't change throughout.. it may as well be static
@@ -341,12 +341,12 @@ public class Sketchbook {
 	 * location.
 	 */
 	public void rebuildMenus() {
-		// EditorConsole.systemOut.println("rebuilding menus");
+		// MessagePanel.systemOut.println("rebuilding menus");
 		// rebuild file/open and the toolbar popup menus
 		buildMenu(openMenu);
 		builtOnce = true; // disable error messages while loading
 		buildMenu(popupMenu);
-		// EditorConsole.systemOut.println("done rebuilding menus");
+		// MessagePanel.systemOut.println("done rebuilding menus");
 	}
 
 	public void buildMenu(JMenu menu) {
@@ -356,7 +356,7 @@ public class Sketchbook {
 		menu.removeAll();
 
 		// item = new JMenuItem("Open...");
-		item = Editor.newJMenuItem("Open...", 'O', false);
+		item = MainWindow.newJMenuItem("Open...", 'O', false);
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				editor.handleOpen(null);

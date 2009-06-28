@@ -62,7 +62,7 @@ public class FindReplace extends JFrame implements ActionListener {
 
 	static final int SMALL = 6;
 
-	Editor editor;
+	MainWindow editor;
 
 	JTextField findField;
 
@@ -87,7 +87,7 @@ public class FindReplace extends JFrame implements ActionListener {
 	// / true when there's something selected in the editor
 	boolean found;
 
-	public FindReplace(Editor editor) {
+	public FindReplace(MainWindow editor) {
 		super("Find");
 		setResizable(false);
 		this.editor = editor;

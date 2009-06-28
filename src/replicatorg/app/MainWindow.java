@@ -22,7 +22,7 @@
  along with this program; if not, write to the Free Software Foundation,
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  
- $Id: Editor.java 370 2008-01-19 16:37:19Z mellis $
+ $Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
  */
 
 package replicatorg.app;
@@ -97,8 +97,6 @@ import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
 import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
-import replicatorg.app.tools.Archiver;
-import replicatorg.app.tools.AutoFormat;
 import replicatorg.drivers.EstimationDriver;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -107,7 +105,7 @@ import com.apple.mrj.MRJOpenDocumentHandler;
 import com.apple.mrj.MRJPrefsHandler;
 import com.apple.mrj.MRJQuitHandler;
 
-public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
+public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		MRJPrefsHandler, MRJOpenDocumentHandler // , MRJOpenApplicationHandler
 {
 	/**
@@ -158,7 +156,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 	PrinterJob printerJob;
 
-	EditorButtons buttons;
+	MainButtonPanel buttons;
 
 	EditorHeader header;
 
@@ -166,7 +164,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 	MachineStatusPanel machineStatusPanel;
 
-	EditorConsole console;
+	MessagePanel console;
 
 	JSplitPane splitPane;
 
@@ -230,7 +228,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 	// Preferences preferences;
 	FindReplace find;
 
-	public Editor() {
+	public MainWindow() {
 		super(WINDOW_TITLE);
 		// #@$*(@#$ apple.. always gotta think different
 		MRJApplicationUtils.registerAboutHandler(this);
@@ -289,7 +287,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		Box upper = Box.createVerticalBox();
 
 		Box boxButtonBar = Box.createHorizontalBox();
-		buttons = new EditorButtons(this);
+		buttons = new MainButtonPanel(this);
 		boxButtonBar.add(buttons);
 		machineStatusPanel = new MachineStatusPanel();
 		boxButtonBar.add(machineStatusPanel);
@@ -314,7 +312,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		status = new EditorStatus(this);
 		consolePanel.add(status, BorderLayout.NORTH);
 
-		console = new EditorConsole(this);
+		console = new MessagePanel(this);
 		// windows puts an ugly border on this guy
 		console.setBorder(null);
 		consolePanel.add(console, BorderLayout.CENTER);
@@ -424,7 +422,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 	/**
 	 * Post-constructor setup for the editor area. Loads the last sketch that
-	 * was used (if any), and restores other Editor settings. The complement to
+	 * was used (if any), and restores other MainWindow settings. The complement to
 	 * "storePreferences", this is called when the application is first
 	 * launched.
 	 */
@@ -796,22 +794,6 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 		JMenu menu = new JMenu("Tools");
 
-		item = newJMenuItem("Auto Format", 'T', false);
-		item.addActionListener(new ActionListener() {
-			synchronized public void actionPerformed(ActionEvent e) {
-				new AutoFormat(Editor.this).show();
-			}
-		});
-		menu.add(item);
-
-		item = new JMenuItem("Archive Sketch");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				new Archiver(Editor.this).show();
-			}
-		});
-		menu.add(item);
-
 		return menu;
 	}
 
@@ -1010,9 +992,9 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (find == null) {
-					find = new FindReplace(Editor.this);
+					find = new FindReplace(MainWindow.this);
 				}
-				// new FindReplace(Editor.this).setVisible(true);
+				// new FindReplace(MainWindow.this).setVisible(true);
 				find.setVisible(true);
 				// find.setVisible(true);
 			}
@@ -1026,7 +1008,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 			public void actionPerformed(ActionEvent e) {
 				if (find != null) {
 					// find.find(true);
-					// FindReplace find = new FindReplace(Editor.this);
+					// FindReplace find = new FindReplace(MainWindow.this);
 					// //.setVisible(true);
 					find.find(true);
 				}
@@ -1296,7 +1278,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 		// buttons/status.
 		simulating = true;
-		buttons.activate(EditorButtons.SIMULATE);
+		buttons.activate(MainButtonPanel.SIMULATE);
 
 		// load our simulator machine
 		loadSimulator();
@@ -1329,7 +1311,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 			// build specific stuff
 			building = true;
-			buttons.activate(EditorButtons.BUILD);
+			buttons.activate(MainButtonPanel.BUILD);
 
 			setEditorBusy(true);
 
@@ -1362,11 +1344,11 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 	}
 
 	class BuildingThread extends Thread {
-		Editor editor;
+		MainWindow editor;
 
 		Date started, finished;
 
-		public BuildingThread(Editor edit) {
+		public BuildingThread(MainWindow edit) {
 			super("Building Thread");
 
 			editor = edit;
@@ -1419,9 +1401,9 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 	}
 
 	class SimulationThread extends Thread {
-		Editor editor;
+		MainWindow editor;
 
-		public SimulationThread(Editor edit) {
+		public SimulationThread(MainWindow edit) {
 			super("Simulation Thread");
 
 			editor = edit;
@@ -1447,9 +1429,9 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 	}
 
 	class EstimationThread extends Thread {
-		Editor editor;
+		MainWindow editor;
 
-		public EstimationThread(Editor edit) {
+		public EstimationThread(MainWindow edit) {
 			super("Estimation Thread");
 
 			editor = edit;
@@ -1500,20 +1482,20 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 			machine.unpause();
 
 			if (simulating) {
-				buttons.activate(EditorButtons.SIMULATE);
+				buttons.activate(MainButtonPanel.SIMULATE);
 				message("Simulating...");
 			} else if (building) {
-				buttons.activate(EditorButtons.BUILD);
+				buttons.activate(MainButtonPanel.BUILD);
 				message("Building...");
 			}
 
-			buttons.inactivate(EditorButtons.PAUSE);
+			buttons.inactivate(MainButtonPanel.PAUSE);
 		} else {
 			message("Paused.");
 			machine.pause();
 
 			buttons.clear();
-			buttons.activate(EditorButtons.PAUSE);
+			buttons.activate(MainButtonPanel.PAUSE);
 		}
 	}
 
@@ -1642,7 +1624,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 	 * sketchbook.prompt's setting
 	 */
 	public void handleNew(final boolean shift) {
-		buttons.activate(EditorButtons.NEW);
+		buttons.activate(MainButtonPanel.NEW);
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -1705,7 +1687,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 	public void handleOpen(final String ipath) {
 		// haven't run across a case where i can verify that this works
 		// because open is usually very fast.
-		buttons.activate(EditorButtons.OPEN);
+		buttons.activate(MainButtonPanel.OPEN);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				String path = ipath;
@@ -1870,7 +1852,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 	 */
 	public void handleSave(boolean force) {
 		doStop();
-		buttons.activate(EditorButtons.SAVE);
+		buttons.activate(MainButtonPanel.SAVE);
 
 		if (force) {
 			handleSave2();
@@ -1912,7 +1894,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 	public void handleSaveAs() {
 		doStop();
-		buttons.activate(EditorButtons.SAVE);
+		buttons.activate(MainButtonPanel.SAVE);
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -1982,7 +1964,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 	/**
 	 * Quit, but first ask user if it's ok. Also store preferences to disk just
-	 * in case they want to quit. Final exit() happens in Editor since it has
+	 * in case they want to quit. Final exit() happens in MainWindow since it has
 	 * the callback from EditorStatus.
 	 */
 	public void handleQuitInternal() {
@@ -2139,7 +2121,7 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 	public void error(Exception e) {
 		if (e == null) {
-			System.err.println("Editor.error() was passed a null exception.");
+			System.err.println("MainWindow.error() was passed a null exception.");
 			return;
 		}
 

@@ -39,7 +39,7 @@ import javax.swing.JOptionPane;
 public class Sketch {
 	static File tempBuildFolder;
 
-	Editor editor;
+	MainWindow editor;
 
 	/**
 	 * Name of sketch, which is the name of main file (without .gcode extension)
@@ -93,7 +93,7 @@ public class Sketch {
 	 * path is location of the main .gcode file, because this is also simplest
 	 * to use when opening the file from the finder/explorer.
 	 */
-	public Sketch(Editor editor, String path) throws IOException {
+	public Sketch(MainWindow editor, String path) throws IOException {
 		this.editor = editor;
 
 		File mainFile = new File(path);
@@ -823,7 +823,7 @@ public class Sketch {
 		// Name changed, rebuild the sketch menus
 		editor.sketchbook.rebuildMenusAsync();
 
-		// let Editor know that the save was successful
+		// let MainWindow know that the save was successful
 		return true;
 	}
 
