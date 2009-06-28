@@ -181,8 +181,6 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 	public JEditTextArea textarea;
 
-	EditorListener listener;
-
 	// runtime information and window placement
 	Point appletLocation;
 
@@ -347,10 +345,6 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 
 		splitPane.setMinimumSize(new Dimension(600, 600));
 		box.add(splitPane);
-
-		// hopefully these are no longer needed w/ swing
-		// (har har har.. that was wishful thinking)
-		listener = new EditorListener(this, textarea);
 		pane.add(box);
 
 		pane.setTransferHandler(new TransferHandler() {
@@ -535,9 +529,6 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		painter.setFont(Preferences.getFont("editor.font"));
 		// Font font = painter.getFont();
 		// textarea.getPainter().setFont(new Font("Courier", Font.PLAIN, 36));
-
-		// in case tab expansion stuff has changed
-		listener.applyPreferences();
 
 		// in case moved to a new location
 		// For 0125, changing to async version (to be implemented later)
