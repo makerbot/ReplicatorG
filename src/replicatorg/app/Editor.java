@@ -93,6 +93,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.drivers.EstimationDriver;
+import replicatorg.app.drivers.NullDriver;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
@@ -1173,11 +1174,16 @@ public class Editor extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 	}
 
 	public void handleControlPanel() {
-		if (machine == null) {
+		if (machine == null ) { 
 			JOptionPane.showMessageDialog(
 					this,
 					"ReplicatorG can't connect to your machine.\nTry checking your settings and resetting your machine.",
 					"Can't find machine", JOptionPane.ERROR_MESSAGE);
+		} else if (machine.driver instanceof NullDriver) {
+			JOptionPane.showMessageDialog(
+					this,
+					"No machine has been selected from the menu.",
+					"No machine configured", JOptionPane.ERROR_MESSAGE);
 		} else {
 			ControlPanelWindow window = new ControlPanelWindow(machine);
 			window.setVisible(true);

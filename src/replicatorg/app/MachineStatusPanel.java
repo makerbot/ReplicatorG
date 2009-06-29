@@ -76,7 +76,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 				// Check version
 				try {
 					Version v = machine.driver.getVersion();
-					if (v.compareTo(machine.driver.getPreferredVersion()) < 0) {
+					if (v != null && v.compareTo(machine.driver.getPreferredVersion()) < 0) {
 						if (!firmwareWarningIssued) {
 							firmwareWarningIssued = true;
 							JOptionPane.showMessageDialog(
