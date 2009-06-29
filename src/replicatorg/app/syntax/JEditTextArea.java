@@ -60,7 +60,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
-import replicatorg.app.EditorLineStatus;
+import replicatorg.app.ui.EditorLineStatus;
 
 /**
  * jEdit's text area component. It is more suited for editing program

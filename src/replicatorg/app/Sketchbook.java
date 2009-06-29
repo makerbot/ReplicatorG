@@ -41,6 +41,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
+import replicatorg.app.ui.MainWindow;
+
 import com.apple.mrj.MRJFileUtils;
 import com.apple.mrj.MRJOSType;
 

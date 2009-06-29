@@ -66,6 +66,8 @@ import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
+import replicatorg.app.ui.MainWindow;
+
 import com.apple.mrj.MRJApplicationUtils;
 import com.apple.mrj.MRJFileUtils;
 import com.apple.mrj.MRJOSType;
@@ -93,7 +95,7 @@ public class Base {
 	 * Path of filename opened on the command line, or via the MRJ open document
 	 * handler.
 	 */
-	static String openedAtStartup;
+	static public String openedAtStartup;
 
 	MainWindow editor;
 
@@ -813,7 +815,7 @@ public class Base {
 		}
 	}
 
-	static boolean openFolderAvailable() {
+	static public boolean openFolderAvailable() {
 		if (Base.isWindows() || Base.isMacOS())
 			return true;
 

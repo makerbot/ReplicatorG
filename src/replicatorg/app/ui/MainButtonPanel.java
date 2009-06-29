@@ -23,7 +23,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app;
+package replicatorg.app.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -36,6 +36,9 @@ import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.event.MouseInputListener;
+
+import replicatorg.app.Base;
+import replicatorg.app.Preferences;
 
 /**
  * run/stop/etc buttons for the ide

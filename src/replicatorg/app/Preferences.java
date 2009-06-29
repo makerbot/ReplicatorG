@@ -63,6 +63,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 import replicatorg.app.syntax.SyntaxStyle;
+import replicatorg.app.ui.MainWindow;
 
 // TODO change this to use the Java Preferences API
 // http://www.onjava.com/pub/a/onjava/synd/2001/10/17/j2se.html
@@ -87,17 +88,17 @@ public class Preferences {
 
 	// prompt text stuff
 
-	static final String PROMPT_YES = "Yes";
+	static public final String PROMPT_YES = "Yes";
 
-	static final String PROMPT_NO = "No";
+	static public final String PROMPT_NO = "No";
 
-	static final String PROMPT_CANCEL = "Cancel";
+	static public final String PROMPT_CANCEL = "Cancel";
 
-	static final String PROMPT_OK = "OK";
+	static public final String PROMPT_OK = "OK";
 
-	static final String PROMPT_SEND = "Send";
+	static public final String PROMPT_SEND = "Send";
 
-	static final String PROMPT_BROWSE = "Browse";
+	static public final String PROMPT_BROWSE = "Browse";
 
 	/**
 	 * Standardized width for buttons. Mac OS X 10.3 wants 70 as its default,
@@ -119,17 +120,17 @@ public class Preferences {
 	 */
 
 	// value for the size bars, buttons, etc
-	static final int GRID_SIZE = 33;
+	static public final int GRID_SIZE = 33;
 
 	// indents and spacing standards. these probably need to be modified
 	// per platform as well, since macosx is so huge, windows is smaller,
 	// and linux is all over the map
 
-	static final int GUI_BIG = 13;
+	static public final int GUI_BIG = 13;
 
-	static final int GUI_BETWEEN = 10;
+	static public final int GUI_BETWEEN = 10;
 
-	static final int GUI_SMALL = 6;
+	static public final int GUI_SMALL = 6;
 
 	// gui elements
 

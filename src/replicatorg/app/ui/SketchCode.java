@@ -23,13 +23,14 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app;
+package replicatorg.app.ui;
 
 import java.io.File;
 import java.io.IOException;
 
 import javax.swing.undo.UndoManager;
 
+import replicatorg.app.Base;
 import replicatorg.app.syntax.SyntaxDocument;
 
 public class SketchCode {

@@ -34,6 +34,8 @@ import java.util.Random;
 
 import javax.swing.JOptionPane;
 
+import replicatorg.app.ui.MainWindow;
+
 // import replicatorg.core.*;
 
 /**

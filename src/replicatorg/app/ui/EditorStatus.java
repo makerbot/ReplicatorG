@@ -25,7 +25,7 @@
  $Id: EditorStatus.java 346 2007-10-06 20:26:45Z mellis $
  */
 
-package replicatorg.app;
+package replicatorg.app.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -41,6 +41,9 @@ import java.awt.event.KeyEvent;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import replicatorg.app.Base;
+import replicatorg.app.Preferences;
 
 /**
  * Panel just below the editing area that contains status messages.

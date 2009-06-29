@@ -23,7 +23,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app;
+package replicatorg.app.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -33,6 +33,8 @@ import java.awt.Image;
 
 import javax.swing.JComponent;
 
+import replicatorg.app.Base;
+import replicatorg.app.Preferences;
 import replicatorg.app.syntax.JEditTextArea;
 
 import replicatorg.drivers.EstimationDriver;

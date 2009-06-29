@@ -33,6 +33,7 @@ import replicatorg.app.exceptions.JobCancelledException;
 import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.app.tools.XML;
+import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.EstimationDriver;
@@ -50,7 +51,7 @@ public class MachineController {
 	protected String name;
 
 	// our driver object
-	protected Driver driver;
+	public Driver driver;
 
 	protected SimulationDriver simulator;
 

@@ -25,7 +25,7 @@
  $Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
  */
 
-package replicatorg.app;
+package replicatorg.app.ui;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -64,6 +64,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 
+import replicatorg.app.MachineController;
+import replicatorg.app.Preferences;
 import replicatorg.drivers.Driver;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;

@@ -23,7 +23,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app;
+package replicatorg.app.ui;
 
 import java.awt.FileDialog;
 import java.awt.Toolkit;
@@ -32,6 +32,10 @@ import java.io.IOException;
 import java.util.Hashtable;
 
 import javax.swing.JOptionPane;
+
+import replicatorg.app.Base;
+import replicatorg.app.Preferences;
+import replicatorg.app.Sketchbook;
 
 /**
  * Stores information about files in the current sketch
@@ -44,7 +48,7 @@ public class Sketch {
 	/**
 	 * Name of sketch, which is the name of main file (without .gcode extension)
 	 */
-	String name;
+	public String name;
 
 	/**
 	 * Name of 'main' file, used by load(), such as sketch_04040.gcode
@@ -54,7 +58,7 @@ public class Sketch {
 	/**
 	 * true if any of the files have been modified.
 	 */
-	boolean modified;
+	public boolean modified;
 
 	public File folder;
 
@@ -62,23 +66,23 @@ public class Sketch {
 
 	public File codeFolder;
 
-	static final int GCODE = 0;
+	static public final int GCODE = 0;
 
-	static final String flavorExtensionsReal[] = new String[] { ".gcode" };
+	static public final String flavorExtensionsReal[] = new String[] { ".gcode" };
 
-	static final String flavorExtensionsShown[] = new String[] { "", ".gcode" };
+	static public final String flavorExtensionsShown[] = new String[] { "", ".gcode" };
 
 	public SketchCode current;
 
 	int currentIndex;
 
-	int codeCount;
+	public int codeCount;
 
-	SketchCode code[];
+	public SketchCode code[];
 
-	int hiddenCount;
+	public int hiddenCount;
 
-	SketchCode hidden[];
+	public SketchCode hidden[];
 
 	Hashtable zipFileContents;
 
@@ -982,7 +986,7 @@ public class Sketch {
 	 * Internal helper function to set the current tab based on a name (used by
 	 * codeNew and codeRename).
 	 */
-	protected void setCurrent(String findName) {
+	public void setCurrent(String findName) {
 		String name = findName.substring(0,
 				(findName.indexOf(".") == -1 ? findName.length() : findName
 						.indexOf(".")));
@@ -1002,7 +1006,7 @@ public class Sketch {
 	/**
 	 * Cleanup temporary files used during a build/run.
 	 */
-	protected void cleanup() {
+	public void cleanup() {
 		// if the java runtime is holding onto any files in the build dir, we
 		// won't be able to delete them, so we need to force a gc here
 		System.gc();

@@ -23,7 +23,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app;
+package replicatorg.app.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -44,6 +44,9 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+
+import replicatorg.app.Base;
+import replicatorg.app.Preferences;
 
 /**
  * Sketch tabs at the top of the editor window.

@@ -25,7 +25,7 @@
  $Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
  */
 
-package replicatorg.app;
+package replicatorg.app.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -92,6 +92,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import replicatorg.app.Base;
+import replicatorg.app.MachineController;
+import replicatorg.app.MachineFactory;
+import replicatorg.app.Preferences;
+import replicatorg.app.Sketchbook;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;

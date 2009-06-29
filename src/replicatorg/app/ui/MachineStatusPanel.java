@@ -1,4 +1,4 @@
-package replicatorg.app;
+package replicatorg.app.ui;
 
 import java.awt.Color;
 
@@ -8,6 +8,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import replicatorg.app.MachineController;
+import replicatorg.app.TimeoutException;
 import replicatorg.drivers.Version;
 
 /**
