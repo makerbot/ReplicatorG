@@ -70,35 +70,13 @@ import replicatorg.app.ui.MainWindow;
 // http://www.particle.kth.se/~lindsey/JavaCourse/Book/Part1/Java/Chapter10/Preferences.html
 
 /**
- * Storage class for user preferences and environment settings.
- * <P>
- * This class no longer uses the Properties class, since properties files are
- * iso8859-1, which is highly likely to be a problem when trying to save sketch
- * folders and locations.
- * <p>
- * This is very poorly put together, that the prefs panel and the actual prefs
- * i/o is part of the same code. But there hasn't yet been a compelling reason
- * to bother with the separation.
+ * 
  */
 public class Preferences {
 
 	// what to call the feller
 
 	static final String PREFS_FILE = "preferences.txt";
-
-	// prompt text stuff
-
-	static public final String PROMPT_YES = "Yes";
-
-	static public final String PROMPT_NO = "No";
-
-	static public final String PROMPT_CANCEL = "Cancel";
-
-	static public final String PROMPT_OK = "OK";
-
-	static public final String PROMPT_SEND = "Send";
-
-	static public final String PROMPT_BROWSE = "Browse";
 
 	/**
 	 * Standardized width for buttons. Mac OS X 10.3 wants 70 as its default,
@@ -283,7 +261,7 @@ public class Preferences {
 		pain.add(sketchbookLocationField);
 		d = sketchbookLocationField.getPreferredSize();
 
-		button = new JButton(PROMPT_BROWSE);
+		button = new JButton("Browse");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				/*
@@ -375,7 +353,7 @@ public class Preferences {
 
 		// [ OK ] [ Cancel ] maybe these should be next to the message?
 
-		button = new JButton(PROMPT_OK);
+		button = new JButton("OK");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				applyFrame();
@@ -390,7 +368,7 @@ public class Preferences {
 		button.setBounds(h, top, BUTTON_WIDTH, BUTTON_HEIGHT);
 		h += BUTTON_WIDTH + GUI_SMALL;
 
-		button = new JButton(PROMPT_CANCEL);
+		button = new JButton("Cancel");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				disposeFrame();

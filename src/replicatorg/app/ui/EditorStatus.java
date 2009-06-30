@@ -247,10 +247,10 @@ public class EditorStatus extends JPanel implements ActionListener {
 
 	protected void setup() {
 		if (yesButton == null) {
-			yesButton = new JButton(Preferences.PROMPT_YES);
-			noButton = new JButton(Preferences.PROMPT_NO);
-			cancelButton = new JButton(Preferences.PROMPT_CANCEL);
-			okButton = new JButton(Preferences.PROMPT_OK);
+			yesButton = new JButton("Yes");
+			noButton = new JButton("No");
+			cancelButton = new JButton("Cancel");
+			okButton = new JButton("OK");
 
 			// !@#(* aqua ui #($*(( that turtle-neck wearing #(** (#$@)(
 			// os9 seems to work if bg of component is set, but x still a
