@@ -793,8 +793,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	protected JMenu buildToolsMenu() {
-		JMenuItem item;
-
 		machineMenuListener = new MachineMenuListener();
 
 		JMenu menu = new JMenu("Tools");
@@ -1165,7 +1163,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * Show the preferences window.
 	 */
 	public void handlePrefs() {
-		Preferences preferences = new Preferences();
+		PreferencesWindow preferences = new PreferencesWindow();
 		preferences.showFrame(this);
 	}
 
