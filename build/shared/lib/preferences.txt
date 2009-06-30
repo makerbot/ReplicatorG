@@ -1,28 +1,9 @@
-# DO NOT MODIFY THIS FILE, OR DELETE SETTINGS FROM THIS FILE
-
-# These are the default preferences. If you want to modify 
-# them directly, use the per-user local version of the file:
-
-# Documents and Settings -> Application Data -> 
-#    Arduino -> preferences.txt (on windows)
-
-# ~/Library -> Arduino -> preferences.txt (on macosx)
-
-# ~/.processing -> preferences.txt (on linux)
-
-# You'll have problems running Arduino if you incorrectly 
-# modify lines in this file.
-
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# Some colors have been hardcoded into the source in app/ in order to ensure
-# consistency with the images distributed and stored with the application.
-# They have been commented out below so that users who install an old
-# version of the software will not get incorrect colors left-over from this
-# config file.
+# Oh, go ahead and do what you want to this obsolete file.  Defaults are now defined when prefs are
+# accessed.
 
 # DEFAULT PATHS FOR SKETCHBOOK AND SETTINGS
+
+# Sketchbooks are going away eventually.
 
 # relative paths will be relative to processing.exe or procesing.app.
 # absolute paths may also be used.
@@ -43,18 +24,6 @@ sketchbook.path.fallback=sketchbook
 # and "library" on macosx, set this to the alternate location.
 #settings.path=data
 settings.path.fallback=data
-
-# temporary build path, normally this goes into the default
-# "temp" folder for that platform (as defined by java)
-# but this can be used to set a specific file in case of problems
-#build.path=build
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# by default, check the processing server for any updates
-# (please avoid disabling, this also helps us know basic numbers 
-# on how many people are using Arduino)
-update.check = true
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -222,44 +191,6 @@ history.recording = true
 # for advanced users, enable option to export a library
 export.library = false
 
-# may be useful when attempting to debug the preprocessor
-preproc.save_build_files=false
-
-# allows various preprocessor features to be toggled 
-# in case they are causing problems
-
-# preprocessor: pde.g
-preproc.color_datatype = true
-preproc.web_colors = true
-preproc.enhanced_casting = true
-
-# preprocessor: PdeEmitter.java
-preproc.substitute_floats = true
-#preproc.substitute_image = false
-#preproc.substitute_font = false
-
-# auto-convert non-ascii chars to unicode escape sequences
-preproc.substitute_unicode = true
-
-# PdePreproc.java
-# writes out the parse tree as parseTree.xml, which can be usefully
-# viewed in (at least) Mozilla or IE.  useful when debugging the preprocessor.
-preproc.output_parse_tree = false
-
-# jdk version to use.. 
-preproc.jdk_version = 1.1
-
-# base imports to include for java 1.1 (or higher)
-preproc.imports.jdk11 = java.applet,java.awt,java.awt.image,java.awt.event,java.io,java.net,java.text,java.util,java.util.zip
-
-# additional imports when exporting to java 1.3 or higher
-preproc.imports.jdk13 = javax.sound.midi,javax.sound.midi.spi,javax.sound.sampled,javax.sound.sampled.spi
-
-# additional imports when exporting to java 1.4 or higher
-preproc.imports.jdk14 = javax.xml.parsers,javax.xml.transform,javax.xml.transform.dom,javax.xml.transform.sax,javax.xml.transform.stream,org.xml.sax,org.xml.sax.ext,org.xml.sax.helpers
-
-# set the browser to be used on linux
-browser.linux = mozilla
 
 # coloring for the editor line number status bar at the bottom of the screen
 #linestatus.bgcolor = #044F6F

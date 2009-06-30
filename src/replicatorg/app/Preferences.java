@@ -153,8 +153,6 @@ public class Preferences {
 
 	JTextField memoryField;
 
-	JCheckBox checkUpdatesBox;
-
 	JTextField fontSizeField;
 
 	// the calling editor, so updates can be applied
@@ -210,7 +208,7 @@ public class Preferences {
 
 		// next load user preferences file
 
-		preferencesFile = Base.getSettingsFile(PREFS_FILE);
+		preferencesFile = LegacyPrefs.getSettingsFile(PREFS_FILE);
 
 		if (!preferencesFile.exists()) {
 			// create a new preferences file if none exists
@@ -345,15 +343,6 @@ public class Preferences {
 		pain.add(externalEditorBox);
 		d = externalEditorBox.getPreferredSize();
 		externalEditorBox.setBounds(left, top, d.width, d.height);
-		right = Math.max(right, left + d.width);
-		top += d.height + GUI_BETWEEN;
-
-		// [ ] Check for updates on startup
-
-		checkUpdatesBox = new JCheckBox("Check for updates on startup");
-		pain.add(checkUpdatesBox);
-		d = checkUpdatesBox.getPreferredSize();
-		checkUpdatesBox.setBounds(left, top, d.width, d.height);
 		right = Math.max(right, left + d.width);
 		top += d.height + GUI_BETWEEN;
 
@@ -492,7 +481,6 @@ public class Preferences {
 		setBoolean("sketchbook.auto_clean", sketchCleanBox.isSelected());
 		set("sketchbook.path", sketchbookLocationField.getText());
 		setBoolean("editor.external", externalEditorBox.isSelected());
-		setBoolean("update.check", checkUpdatesBox.isSelected());
 
 		String newSizeText = fontSizeField.getText();
 		try {
@@ -523,7 +511,6 @@ public class Preferences {
 		sketchCleanBox.setSelected(getBoolean("sketchbook.auto_clean"));
 		sketchbookLocationField.setText(get("sketchbook.path"));
 		externalEditorBox.setSelected(getBoolean("editor.external"));
-		checkUpdatesBox.setSelected(getBoolean("update.check"));
 
 		dialog.setVisible(true);
 	}

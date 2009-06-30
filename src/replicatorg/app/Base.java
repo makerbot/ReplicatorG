@@ -76,28 +76,40 @@ import com.ice.jni.registry.Registry;
 import com.ice.jni.registry.RegistryKey;
 
 /**
- * The base class for the main ReplicatorG application.
- * <P>
  * Primary role of this class is for platform identification and general
  * interaction with the system (launching URLs, loading files and images, etc)
  * that comes from that.
  */
 public class Base {
-	public static final int VERSION = 4;
-
+	/**
+	 * The version number of this edition of replicatorG.
+	 */
+	public static final int VERSION = 5;
+	/**
+	 * The textual representation of this version (4 digits, zero padded).
+	 */
 	public static final String VERSION_NAME = String.format("%04d",VERSION);
 
-	// our machine object.
+	/**
+	 * The machine controller in use.
+	 */
 	private static MachineController machine;
 
+	/**
+	 * The general-purpose logging object.
+	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
+	
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
 	 * handler.
 	 */
 	static public String openedAtStartup;
 
-	MainWindow editor;
+	/**
+	 * The main UI window.
+	 */
+	MainWindow editor = null;
 
 	static public void main(String args[]) {
 
@@ -184,10 +196,6 @@ public class Base {
 		// load up our machine controller =)
 		editor.loadMachine(Preferences.get("machine.name"));
 
-		// check for updates
-		if (Preferences.getBoolean("update.check")) {
-			new UpdateCheck(editor);
-		}
 	}
 
 	public enum Platform {
@@ -279,131 +287,6 @@ public class Base {
 		return platform == Platform.LINUX;
 	}
 
-	// .................................................................
-
-	static final int kDocumentsFolderType = ('d' << 24) | ('o' << 16)
-			| ('c' << 8) | 's';
-
-	static final int kPreferencesFolderType = ('p' << 24) | ('r' << 16)
-			| ('e' << 8) | 'f';
-
-	static final int kDomainLibraryFolderType = ('d' << 24) | ('l' << 16)
-			| ('i' << 8) | 'b';
-
-	static final short kUserDomain = -32763;
-
-	static public File getSettingsFolder() {
-		File dataFolder = null;
-
-		String pref = Preferences.get("settings.path");
-		if (pref != null) {
-			dataFolder = new File(pref);
-
-		} else if (Base.isMacOS()) {
-			// carbon folder constants
-			// http://developer.apple.com/documentation/Carbon/Reference
-			// /Folder_Manager/folder_manager_ref/constant_6.html#/
-			// /apple_ref/doc/uid/TP30000238/C006889
-
-			// additional information found int the local file:
-			// /System/Library/Frameworks/CoreServices.framework
-			// /Versions/Current/Frameworks/CarbonCore.framework/Headers/
-
-			// this is the 1.4 version.. but using 1.3 since i have the stubs
-			// import com.apple.eio.*
-			// println(FileManager.findFolder(kUserDomain,
-			// kDomainLibraryFolderType));
-
-			// not clear if i can write to this folder tho..
-			try {
-				// this method has to be dynamically loaded, because
-				MRJOSType domainLibrary = new MRJOSType("dlib");
-				Method findFolderMethod = MRJFileUtils.class.getMethod(
-						"findFolder",
-						new Class[] { Short.TYPE, MRJOSType.class });
-				File libraryFolder = (File) findFolderMethod.invoke(null,
-						new Object[] { new Short(kUserDomain), domainLibrary });
-
-				dataFolder = new File(libraryFolder, "ReplicatorG");
-
-			} catch (Exception e) {
-				// this could be FileNotFound or NoSuchMethod
-				// } catch (FileNotFoundException e) {
-				// e.printStackTrace();
-				// System.exit(1);
-				showError("Problem getting data folder",
-						"Error getting the ReplicatorG data folder.", e);
-			}
-
-		} else if (Base.isWindows()) {
-			// looking for Documents and Settings/blah/Application
-			// Data/ReplicatorG
-
-			// this is just based on the other documentation, and eyeballing
-			// that part of the registry.. not confirmed by any msft/msdn docs.
-			// HKEY_CURRENT_USER\Software\Microsoft
-			// \Windows\CurrentVersion\Explorer\Shell Folders
-			// Value Name: AppData
-			// Value Type: REG_SZ
-			// Value Data: path
-
-			try {
-				// RegistryKey topKey = Registry.getTopLevelKey("HKCU");
-				RegistryKey topKey = Registry.HKEY_CURRENT_USER;
-
-				String localKeyPath = "Software\\Microsoft\\Windows\\CurrentVersion"
-						+ "\\Explorer\\Shell Folders";
-				RegistryKey localKey = topKey.openSubKey(localKeyPath);
-				String appDataPath = cleanKey(localKey
-						.getStringValue("AppData"));
-				// System.out.println("app data path is " + appDataPath);
-				// System.exit(0);
-				// topKey.closeKey(); // necessary?
-				// localKey.closeKey();
-
-				dataFolder = new File(appDataPath, "ReplicatorG");
-
-			} catch (Exception e) {
-				showError("Problem getting data folder",
-						"Error getting the ReplicatorG data folder.", e);
-			}
-			// return null;
-
-		} else {
-			// otherwise make a .replicatorg directory int the user's home dir
-			File home = new File(System.getProperty("user.home"));
-			dataFolder = new File(home, ".replicatorg");
-		}
-
-		// create the folder if it doesn't exist already
-		boolean result = true;
-		if (dataFolder != null && !dataFolder.exists()) {
-			result = dataFolder.mkdirs();
-		}
-
-		if (!result) {
-			// try the fallback location
-			System.out.println("Using fallback path for settings.");
-			String fallback = Preferences.get("settings.path.fallback");
-			dataFolder = new File(fallback);
-			if (!dataFolder.exists()) {
-				result = dataFolder.mkdirs();
-			}
-		}
-
-		if (!result) {
-			showError("Settings issues",
-					"ReplicatorG cannot run because it could not\n"
-							+ "create a folder to store your settings.", null);
-		}
-
-		return dataFolder;
-	}
-
-	static public File getSettingsFile(String filename) {
-		return new File(getSettingsFolder(), filename);
-	}
-
 	static File buildFolder;
 
 	static public File getBuildFolder() {
@@ -482,7 +365,7 @@ public class Base {
 						"findFolder",
 						new Class[] { Short.TYPE, MRJOSType.class });
 				File documentsFolder = (File) findFolderMethod
-						.invoke(null, new Object[] { new Short(kUserDomain),
+						.invoke(null, new Object[] { new Short(LegacyPrefs.kUserDomain),
 								domainDocuments });
 				sketchbookFolder = new File(documentsFolder, "ReplicatorG");
 
