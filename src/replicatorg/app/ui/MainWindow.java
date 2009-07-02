@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -74,6 +75,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -96,6 +98,7 @@ import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.app.MachineFactory;
 import replicatorg.app.Preferences;
+import replicatorg.app.Serial;
 import replicatorg.app.Sketchbook;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
@@ -194,15 +197,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public EstimationThread estimationThread;
 
 	JMenuItem saveMenuItem;
-
 	JMenuItem saveAsMenuItem;
-
 	JMenuItem stopItem;
-
 	JMenuItem pauseItem;
 
 	JMenu machineMenu;
-
 	MachineMenuListener machineMenuListener;
 
 	public boolean building;
@@ -578,6 +577,32 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	// ...................................................................
 
+	private JMenu serialMenu = null;
+	
+	private void reloadSerialMenu() {
+		if (serialMenu == null) return;
+		serialMenu.removeAll();
+		Vector<Serial.Name> names = Serial.scanSerialNames();
+		for (Serial.Name name : names) {
+			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.getName());
+			item.setEnabled(name.isAvailable());
+			serialMenu.add(item);
+		}
+		if (names.isEmpty()) {
+			JMenuItem item = new JMenuItem("No serial ports detected");
+			item.setEnabled(false);
+			serialMenu.add(item);			
+		}
+		serialMenu.addSeparator();
+		JMenuItem item = new JMenuItem("Rescan serial ports");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				reloadSerialMenu();
+			}
+		});
+		serialMenu.add(item);
+	}
+	
 	private JMenu mruMenu = null;
 
 	private void reloadMruMenu() {
@@ -797,6 +822,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		JMenu menu = new JMenu("Tools");
 
+		serialMenu = new JMenu("Serial Port");
+		reloadSerialMenu();
+		menu.add(serialMenu);
+
 		return menu;
 	}
 
@@ -824,39 +853,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	protected void populateMachineMenu() {
-		JMenuItem rbMenuItem;
-
-		// System.out.println("Clearing machine menu.");
-
 		machineMenu.removeAll();
 		boolean empty = true;
 
 		try {
-			// get each machines
-			NodeList nl = MachineFactory.loadMachinesConfig()
-					.getElementsByTagName("machine");
-
-			for (int i = 0; i < nl.getLength(); i++) {
-				// look up each machines set of kids
-				Node n = nl.item(i);
-				NodeList kids = n.getChildNodes();
-
-				for (int j = 0; j < kids.getLength(); j++) {
-					Node kid = kids.item(j);
-
-					if (kid.getNodeName().equals("name")) {
-						String machineName = kid.getFirstChild().getNodeValue()
-								.trim();
-						rbMenuItem = new JCheckBoxMenuItem(machineName,
-								machineName.equals(Preferences
-										.get("machine.name")));
-						rbMenuItem.addActionListener(machineMenuListener);
-						machineMenu.add(rbMenuItem);
-						empty = false;
-					}
-				}
+			for (String name : MachineFactory.getMachineNames() ) {
+				JMenuItem rbMenuItem = new JCheckBoxMenuItem(name,
+						name.equals(Preferences
+								.get("machine.name")));
+				rbMenuItem.addActionListener(machineMenuListener);
+				machineMenu.add(rbMenuItem);
+				empty = false;
 			}
-
 			if (!empty) {
 				// System.out.println("enabling the machineMenu");
 				machineMenu.setEnabled(true);

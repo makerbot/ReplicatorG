@@ -25,6 +25,7 @@ package replicatorg.drivers.gen3;
 
 import java.io.IOException;
 import java.util.EnumSet;
+import java.util.Vector;
 import java.util.logging.Level;
 
 import javax.vecmath.Point3d;
@@ -139,9 +140,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 		setInitialized(false);
 
 		// some decent default prefs.
-		String[] serialPortNames = Serial.list();
-		if (serialPortNames.length != 0)
-			name = serialPortNames[0];
+		Vector<Serial.Name> serialPortNames = Serial.scanSerialNames();
+		if (serialPortNames.isEmpty())
+			name = serialPortNames.firstElement().getName();
 		else
 			name = null;
 
@@ -258,13 +259,12 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 					byte[] response = new byte[256];
 					StringBuffer respSB = new StringBuffer();
 					try {
-						while (serial.input.available() > 0) {
-							serial.input.read(response);
+						while (serial.available() > 0) {
+							serial.read(response);
 							respSB.append(response);
 						}
 						System.err.println("Received "+ respSB.toString());
-					} catch (TimeoutException te) {						
-					} catch (IOException ioe) {
+					} catch (TimeoutException te) {
 					}
 				}
 			}
@@ -310,10 +310,9 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 					Base.logger.log(Level.FINER,buf.toString());
 				}
 
-				try {
 					boolean c = false;
 					while (!c) {
-						int b = serial.input.read();
+						int b = serial.read();
 						if (b == -1) {
 							/// Windows has no timeout; busywait
 							if (Base.isWindows()) continue;
@@ -336,9 +335,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 					else
 						break;
 
-				} catch (java.io.IOException ioe) {
-					System.out.println(ioe.toString());
-				}
 			}
 		}
 		pr.printDebug();

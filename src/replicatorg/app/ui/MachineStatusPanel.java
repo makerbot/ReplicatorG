@@ -67,7 +67,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 		// update background to indicate high-level status
 		Color bgColor = Color.WHITE;
 		String text;
-		if (machine == null) {
+		if (machine == null || machine.driver == null) {
 			bgColor = BG_NO_MACHINE;
 			text = "No machine currently connected";
 		} else {
@@ -78,7 +78,7 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 				// Check version
 				try {
 					Version v = machine.driver.getVersion();
-					if (v.compareTo(machine.driver.getPreferredVersion()) < 0) {
+					if (v != null && v.compareTo(machine.driver.getPreferredVersion()) < 0) {
 						if (!firmwareWarningIssued) {
 							firmwareWarningIssued = true;
 							JOptionPane.showMessageDialog(

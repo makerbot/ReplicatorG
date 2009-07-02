@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Vector;
 
 import javax.vecmath.Point3d;
 
@@ -36,6 +37,7 @@ import org.w3c.dom.Node;
 
 import replicatorg.app.Preferences;
 import replicatorg.app.Serial;
+import replicatorg.app.Serial.Name;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.tools.XML;
 import replicatorg.machine.model.Axis;
@@ -93,9 +95,9 @@ public class SerialPassthroughDriver extends DriverBaseImplementation {
 		setInitialized(false);
 
 		// some decent default prefs.
-		String[] serialPortNames = Serial.list();
-		if (serialPortNames.length != 0)
-			name = serialPortNames[0];
+		Vector<Serial.Name> serialPortNames = Serial.scanSerialNames();
+		if (!serialPortNames.isEmpty())
+			name = serialPortNames.firstElement().getName();
 		else
 			name = null;
 
@@ -235,7 +237,7 @@ public class SerialPassthroughDriver extends DriverBaseImplementation {
 		assert (serial != null);
 		synchronized (serial) {
 			try {
-				int numread = serial.input.read(responsebuffer);
+				int numread = serial.read(responsebuffer);
 				assert (numread != 0); // This should never happen since we
 										// know we have a buffer
 				if (numread < 0) {
