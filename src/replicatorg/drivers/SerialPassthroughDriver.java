@@ -45,11 +45,6 @@ import replicatorg.machine.model.ToolModel;
 
 public class SerialPassthroughDriver extends DriverBaseImplementation {
 	/**
-	 * this is if we need to talk over serial
-	 */
-	private Serial serial;
-
-	/**
 	 * To keep track of outstanding commands
 	 */
 	private Queue<Integer> commands;
@@ -69,19 +64,6 @@ public class SerialPassthroughDriver extends DriverBaseImplementation {
 	 */
 	private String result = "";
 
-	/**
-	 * Serial connection parameters
-	 */
-	String name;
-
-	int rate;
-
-	char parity;
-
-	int databits;
-
-	float stopbits;
-
 	private DecimalFormat df;
 
 	private byte[] responsebuffer = new byte[512];
@@ -94,54 +76,20 @@ public class SerialPassthroughDriver extends DriverBaseImplementation {
 		bufferSize = 0;
 		setInitialized(false);
 
-		// some decent default prefs.
-		Vector<Serial.Name> serialPortNames = Serial.scanSerialNames();
-		if (!serialPortNames.isEmpty())
-			name = serialPortNames.firstElement().getName();
-		else
-			name = null;
-
-		rate = Preferences.getInteger("serial.debug_rate");
-		parity = Preferences.get("serial.parity").charAt(0);
-		databits = Preferences.getInteger("serial.databits");
-		stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
-
 		df = new DecimalFormat("#.######");
 	}
 
 	public void loadXML(Node xml) {
 		super.loadXML(xml);
-
-		// load from our XML config, if we have it.
-		if (XML.hasChildNode(xml, "portname"))
-			name = XML.getChildNodeValue(xml, "portname");
-		if (XML.hasChildNode(xml, "rate"))
-			rate = Integer.parseInt(XML.getChildNodeValue(xml, "rate"));
-		if (XML.hasChildNode(xml, "parity"))
-			parity = XML.getChildNodeValue(xml, "parity").charAt(0);
-		if (XML.hasChildNode(xml, "databits"))
-			databits = Integer.parseInt(XML.getChildNodeValue(xml, "databits"));
-		if (XML.hasChildNode(xml, "stopbits"))
-			stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
 	}
 
 	public void initialize() {
 		// declare our serial guy.
 		if (serial == null) {
-			if (name != null) {
-				try {
-					System.out.println("Connecting to " + name + " at " + rate);
-					serial = new Serial(name, rate, parity, databits, stopbits);
-				} catch (SerialException e) {
-					System.out.println("Unable to open port " + name + "\n");
-					return;
-				}
-			} else {
-				System.out.println("No Serial Port found.\n");
-				return;
-			}
+			System.out.println("No Serial Port found.\n");
+			return;
 		}
-
+		
 		// wait till we're initialized
 		if (!isInitialized()) {
 			try {

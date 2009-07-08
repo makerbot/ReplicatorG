@@ -9,8 +9,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import replicatorg.app.MachineController;
+import replicatorg.app.Serial;
 import replicatorg.app.TimeoutException;
 import replicatorg.drivers.Version;
+import replicatorg.machine.MachineListener;
+import replicatorg.machine.MachineState;
+import replicatorg.machine.MachineStateChangeEvent;
 
 /**
  * The MachineStatusPanel displays the current state of the connected machine,
@@ -19,14 +23,12 @@ import replicatorg.drivers.Version;
  * @author phooky
  * 
  */
-public class MachineStatusPanel extends JPanel implements Runnable {
+public class MachineStatusPanel extends JPanel implements MachineListener {
 	private static final long serialVersionUID = -6944931245041870574L;
 
 	protected MachineController machine = null;
 
 	protected JLabel label = new JLabel();
-
-	protected Thread statusThread = null;
 
 	static final private Color BG_NO_MACHINE = new Color(0xff, 0x80, 0x60);
 
@@ -40,8 +42,6 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 		add(label);
 		add(Box.createHorizontalGlue());
 		add(Box.createHorizontalStrut(10));
-		statusThread = new Thread(this);
-		statusThread.start();
 	}
 
 	/**
@@ -59,6 +59,33 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 	}
 
 	private boolean firmwareWarningIssued = false;
+
+	
+	protected String getMachineStateMessage() {
+		if (machine == null) { return "No machine selected"; }
+		MachineState state = machine.getState();
+		if (state == MachineState.NOT_ATTACHED) {
+			if (machine.getDriver() == null) {
+				return "No machine selected";
+			} else if (machine.getSerial() == null) {
+				if (Serial.scanSerialNames().size() == 0) {
+					return "No serial ports detected";
+				} else {
+					return "No serial port selected";
+				}
+			}
+		}
+		if (state == MachineState.CONNECTING) {
+			return "Connecting to "+machine.getName()+" on "+machine.getSerial().getName()+"...";
+		}
+		StringBuffer message = new StringBuffer("Machine "+machine.getName());
+		message.append(" ("+machine.getDriver().getDriverName()+") ");
+		if (state == MachineState.READY) { message.append("Ready"); }
+		else if (state == MachineState.READY) { message.append("ready"); }
+		else if (state == MachineState.BUILDING) { message.append("building"); }
+		else if (state == MachineState.PAUSED) { message.append("paused"); }
+		return message.toString();
+	}
 	
 	/**
 	 * Display the current status of this machine.
@@ -66,10 +93,9 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 	protected synchronized void updateMachineStatus() {
 		// update background to indicate high-level status
 		Color bgColor = Color.WHITE;
-		String text;
+		String text = getMachineStateMessage();
 		if (machine == null || machine.driver == null) {
 			bgColor = BG_NO_MACHINE;
-			text = "No machine currently connected";
 		} else {
 			if (!machine.isInitialized()) {
 				bgColor = BG_NO_MACHINE;
@@ -97,22 +123,12 @@ public class MachineStatusPanel extends JPanel implements Runnable {
 				}
 			}
 			
-			text = machine.getStatusText();
 		}
 		label.setText(text);
 		setBackground(bgColor);
 	}
 
-	public void run() {
-
-		while (true) {
-			try {
-				updateMachineStatus();
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// We're probably being shut down.
-				break;
-			}
-		}
+	public void machineStateChanged(MachineStateChangeEvent evt) {
+		updateMachineStatus();
 	}
 }

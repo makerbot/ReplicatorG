@@ -1,4 +1,4 @@
-#Wed Jul 01 11:49:37 GMT-04:00 2009
+#Sun Jul 05 22:37:24 GMT-07:00 2009
 org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownExceptionIncludeDocCommentReference=enabled
 org.eclipse.jdt.core.compiler.problem.unusedDeclaredThrownExceptionWhenOverriding=disabled
 org.eclipse.jdt.core.formatter.insert_space_after_at_in_annotation_type_declaration=do not insert
@@ -71,7 +71,7 @@ org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_for=do not in
 org.eclipse.jdt.core.compiler.problem.suppressWarnings=enabled
 org.eclipse.jdt.core.formatter.insert_space_before_comma_in_multiple_local_declarations=do not insert
 org.eclipse.jdt.core.formatter.insert_space_between_empty_braces_in_array_initializer=do not insert
-org.eclipse.jdt.core.formatter.alignment_for_superinterfaces_in_enum_declaration=16
+org.eclipse.jdt.core.formatter.alignment_for_superinterfaces_in_enum_declaration=48
 org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_catch=do not insert
 org.eclipse.jdt.core.formatter.insert_space_before_comma_in_array_initializer=do not insert
 org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_method_invocation=do not insert
@@ -165,7 +165,7 @@ org.eclipse.jdt.core.formatter.insert_space_before_colon_in_labeled_statement=do
 org.eclipse.jdt.core.formatter.keep_then_statement_on_same_line=false
 org.eclipse.jdt.core.compiler.problem.undocumentedEmptyBlock=ignore
 org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_switch=do not insert
-org.eclipse.jdt.core.formatter.alignment_for_arguments_in_enum_constant=16
+org.eclipse.jdt.core.formatter.alignment_for_arguments_in_enum_constant=48
 org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_switch=insert
 org.eclipse.jdt.core.formatter.brace_position_for_enum_constant=end_of_line
 org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_enum_constant=do not insert
@@ -173,7 +173,7 @@ org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_constructor_
 org.eclipse.jdt.core.formatter.insert_space_after_colon_in_labeled_statement=insert
 org.eclipse.jdt.core.formatter.insert_space_before_closing_bracket_in_array_allocation_expression=do not insert
 org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_declaration_parameters=insert
-org.eclipse.jdt.core.formatter.alignment_for_enum_constants=0
+org.eclipse.jdt.core.formatter.alignment_for_enum_constants=48
 org.eclipse.jdt.core.compiler.problem.unnecessaryTypeCheck=ignore
 org.eclipse.jdt.core.formatter.insert_space_after_unary_operator=do not insert
 org.eclipse.jdt.core.compiler.problem.nonExternalizedStringLiteral=ignore

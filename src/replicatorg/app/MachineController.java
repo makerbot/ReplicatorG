@@ -33,36 +33,42 @@ import replicatorg.app.exceptions.JobCancelledException;
 import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.app.tools.XML;
-import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.SimulationDriver;
+import replicatorg.machine.MachineState;
+import replicatorg.machine.MachineStateChangeEvent;
+import replicatorg.machine.MachineListener;
 import replicatorg.machine.model.MachineModel;
+import replicatorg.model.GCodeSource;
 
 public class MachineController {
-	// our editor object.
-	protected MainWindow editor;
 
+	// The GCode source of the current build source.
+	protected GCodeSource source;
+	
 	// this is the xml config for this machine.
 	protected Node machineNode;
 
-	// the name of our machine.
+	// The name of our machine.
 	protected String name;
 
-	// our driver object
-	public Driver driver;
-
+	public String getName() { return name; }
+	
+	// Our driver object.  Null when no driver is selected.
+	public Driver driver = null;
+	// Our serial port.  Null when no serial port is selected.
+	public Serial serial = null;
+	
+	// the simulator driver
 	protected SimulationDriver simulator;
 
 	// our current thread.
 	protected Thread thread;
 
-	// our pause variable
-	protected boolean paused = false;
-
-	protected boolean stopped = false;
-
+	MachineState state = MachineState.NOT_ATTACHED;
+	
 	// estimated build time in millis
 	protected double estimatedBuildTime = 0;
 
@@ -78,9 +84,6 @@ public class MachineController {
 		// save our XML
 		machineNode = mNode;
 
-		paused = false;
-		stopped = false;
-
 		parseName();
 		System.out.println("Loading machine: " + name);
 
@@ -89,16 +92,8 @@ public class MachineController {
 		loadExtraPrefs();
 	}
 
-	public void setEditor(MainWindow e) {
-		editor = e;
-	}
-
-	public MainWindow getEditor() {
-		return editor;
-	}
-
-	public void setThread(Thread iThread) {
-		thread = iThread;
+	public void setCodeSource(GCodeSource source) {
+		this.source = source;
 	}
 
 	private void parseName() {
@@ -124,7 +119,6 @@ public class MachineController {
 		// start simulator
 		if (simulator != null)
 			simulator.createWindow();
-		editor.setVisible(true);
 
 		// estimate build time.
 		System.out.println("Estimating build time...");
@@ -136,15 +130,13 @@ public class MachineController {
 	}
 
 	public void estimate() {
+		if (source == null) { return; }
 		try {
 			EstimationDriver estimator = new EstimationDriver();
 			estimator.setMachine(loadModel());
 
 			// run each line through the estimator
-			int total = editor.textarea.getLineCount();
-			for (int i = 0; i < total; i++) {
-				String line = editor.textarea.getLineText(i);
-
+			for (String line : source) {
 				// use our parser to handle the stuff.
 				estimator.parse(line);
 				estimator.execute();
@@ -220,8 +212,9 @@ public class MachineController {
 
 			System.out.println("Running build.");
 
-			int total = editor.textarea.getLineCount();
-			for (int i = 0; i < total; i++) {
+			Iterator<String> i = source.iterator();
+			while (i.hasNext()) {
+				String line = i.next();
 				if (Thread.interrupted())
 					return false;
 
@@ -230,10 +223,8 @@ public class MachineController {
 				// TODO: re-add without slowing down software.
 				// editor.textarea.scrollTo(i, 0);
 				// editor.highlightLine(i);
-				editor.updateStatus(i, elapsedTime, estimatedBuildTime
-						- elapsedTime);
-
-				String line = editor.textarea.getLineText(i);
+				//editor.updateStatus(i, elapsedTime, estimatedBuildTime
+				//		- elapsedTime);
 
 				// System.out.println("running: " + line);
 
@@ -252,7 +243,7 @@ public class MachineController {
 				} catch (JobCancelledException e) {
 					return false;
 				} catch (JobRewindException e) {
-					i = -1;
+					i = source.iterator();
 					continue;
 				}
 
@@ -283,7 +274,7 @@ public class MachineController {
 				}
 
 				// bail if we got interrupted.
-				if (this.isStopped())
+				if (state == MachineState.READY)
 					return false;
 			}
 
@@ -318,12 +309,28 @@ public class MachineController {
 		return model;
 	}
 
+	/**
+	 * Reset machine to its basic state.
+	 *
+	 */
 	public void reset() {
+		setState(MachineState.CONNECTING);
 		driver.reset();
-		paused = false;
-		stopped = false;
 	}
 
+	public void setSerial(Serial serial) {
+		if (this.serial != null) { this.serial.dispose(); }
+		this.serial = serial;
+		driver.setSerial(serial);
+	}
+	private void setState(MachineState state) {
+		MachineState prev = this.state;
+		this.state = state;
+		emitStateChange(prev, state);
+	}
+	
+	public MachineState getState() { return state; }
+	
 	private void loadDriver() {
 		// load our utility drivers
 		if (Preferences.getBoolean("machinecontroller.simulator")) {
@@ -394,6 +401,10 @@ public class MachineController {
 		return driver;
 	}
 
+	public Serial getSerial() {
+		return serial;
+	}
+	
 	public SimulationDriver getSimulatorDriver() {
 		return simulator;
 	}
@@ -404,11 +415,7 @@ public class MachineController {
 
 	synchronized public void stop() {
 		driver.stop();
-		stopped = true;
-	}
-
-	synchronized public boolean isStopped() {
-		return stopped;
+		setState(MachineState.READY);
 	}
 
 	synchronized public boolean isInitialized() {
@@ -416,38 +423,32 @@ public class MachineController {
 	}
 
 	synchronized public void pause() {
-		driver.pause(); // immediately send a pause command for asynchronous
-						// machines
-		paused = true;
+		if (state == MachineState.BUILDING)
+			driver.pause(); // immediately send a pause command for asynchronous machines
+			setState(MachineState.PAUSED);
 	}
 
 	synchronized public void unpause() {
-		driver.unpause(); // send a resume command for asynchronous machines
-		paused = false;
+		if (state == MachineState.PAUSED) {
+			driver.unpause(); // send a resume command for asynchronous machines
+			setState(MachineState.BUILDING);
+		}
 	}
 
 	synchronized public boolean isPaused() {
-		return paused;
+		return state == MachineState.PAUSED;
 	}
-
-	public String getStatusText() {
-		StringBuffer status = new StringBuffer();
-		status.append(name);
-		status.append("(");
-		status.append(driver.getDriverName());
-		status.append(") ");
-		String state;
-		if (!driver.isInitialized()) {
-			state = "not initialized";
-		} else if (stopped) {
-			state = "ready";
-		} else if (paused) {
-			state = "paused";
-		} else {
-			state = "running";
+	
+	private Vector<MachineListener> listeners = new Vector<MachineListener>();
+	
+	public void addMachineStateListener(MachineListener listener) {
+		listeners.add(listener);
+	}
+	
+	protected void emitStateChange(MachineState prev, MachineState current) {
+		MachineStateChangeEvent e = new MachineStateChangeEvent(this, prev, current);
+		for (MachineListener l : listeners) {
+			l.machineStateChanged(e);
 		}
-		status.append(state);
-		status.append(".");
-		return status.toString();
 	}
 }

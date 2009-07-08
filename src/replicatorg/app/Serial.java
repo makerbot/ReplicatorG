@@ -86,11 +86,14 @@ public class Serial {
 	// the static class would have an object that could be closed
 
 	private SerialPort port;
+	private String name;
 	private int rate;
 	private int parity;
 	private int data;
 	private int stop;
 
+	public String getName() { return name; }
+	
 	// read buffer and streams
 
 	private InputStream input;
@@ -118,6 +121,7 @@ public class Serial {
 
 	private void init(String name, int rate, char parity, int data, float stop) throws SerialException {
 		// Prepare parameters
+		this.name = name;
 		this.rate = rate;
 		this.parity = SerialPort.PARITY_NONE;
 		if (parity == 'E')

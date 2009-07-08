@@ -30,6 +30,7 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 
 import replicatorg.app.GCodeParser;
+import replicatorg.app.Serial;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
 import replicatorg.machine.model.Axis;
@@ -45,6 +46,12 @@ public class DriverBaseImplementation implements Driver {
 	// our firmware version info
 	private String firmwareName = "Unknown";
 
+	protected Serial serial;
+	
+	public void setSerial(Serial serial) {
+		this.serial = serial;
+	}
+	
 	protected Version version = new Version(0,0);
 	protected Version preferredVersion = new Version(0,0);
 	protected Version minimumVersion = new Version(0,0);

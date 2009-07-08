@@ -94,7 +94,7 @@ public class Base {
 	 * The machine controller in use.
 	 */
 	private static MachineController machine;
-
+	
 	/**
 	 * The general-purpose logging object.
 	 */
@@ -148,7 +148,7 @@ public class Base {
 
 	public Base() {
 		machine = null;
-
+		
 		// set the look and feel before opening the window
 
 		try {
@@ -222,7 +222,6 @@ public class Base {
 	 */
 	public static final float javaVersion = new Float(javaVersionName
 			.substring(0, 3)).floatValue();
-
 	/**
 	 * Current platform in use
 	 */
@@ -1059,17 +1058,15 @@ public class Base {
 	/**
 	 * our singleton interface to get our machine.
 	 */
-	static public MachineController getMachine(String name) {
-		if (machine == null || (machine != null && machine.name != name)) {
+	static public MachineController loadMachine(String name) {
+		if (machine == null || machine.name != name) {
 			machine = MachineFactory.load(name);
 		}
 		return machine;
 	}
 
-	/**
-	 * sometimes we might want to change machines
-	 */
-	static public void setMachine(MachineController m) {
-		machine = m;
+	static public MachineController getMachine() {
+		return machine;
 	}
+
 }

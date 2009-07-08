@@ -30,6 +30,7 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 
 import replicatorg.app.GCodeParser;
+import replicatorg.app.Serial;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
 import replicatorg.machine.model.Axis;
@@ -39,6 +40,8 @@ import replicatorg.machine.model.MachineModel;
 // import org.xml.sax.helpers.XMLReaderFactory;
 
 public interface Driver {
+	public void setSerial(Serial serial);
+	
 	/**
 	 * High level functions
 	 */

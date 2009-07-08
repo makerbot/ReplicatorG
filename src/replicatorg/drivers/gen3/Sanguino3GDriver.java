@@ -116,20 +116,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 		int getCode() { return code; }
 	};
 
-	/**
-	 * An object representing the serial connection.
-	 */
-	private Serial serial;
-
-	/**
-	 * Serial connection parameters
-	 */
-	String name;
-	int rate;
-	char parity;
-	int databits;
-	float stopbits;
-
 	public Sanguino3GDriver() {
 		super();
 
@@ -138,62 +124,18 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 		preferredVersion = new Version(1,1);
 		// init our variables.
 		setInitialized(false);
-
-		// some decent default prefs.
-		Vector<Serial.Name> serialPortNames = Serial.scanSerialNames();
-		if (serialPortNames.isEmpty())
-			name = serialPortNames.firstElement().getName();
-		else
-			name = null;
-
-		rate = Preferences.getInteger("serial.debug_rate");
-		parity = Preferences.get("serial.parity").charAt(0);
-		databits = Preferences.getInteger("serial.databits");
-		stopbits = new Float(Preferences.get("serial.stopbits")).floatValue();
 	}
 
 	public void loadXML(Node xml) {
 		super.loadXML(xml);
 
-		// load from our XML config, if we have it.
-		if (XML.hasChildNode(xml, "portname"))
-			name = XML.getChildNodeValue(xml, "portname");
-		if (XML.hasChildNode(xml, "rate"))
-			rate = Integer.parseInt(XML.getChildNodeValue(xml, "rate"));
-		if (XML.hasChildNode(xml, "parity"))
-			parity = XML.getChildNodeValue(xml, "parity").charAt(0);
-		if (XML.hasChildNode(xml, "databits"))
-			databits = Integer.parseInt(XML.getChildNodeValue(xml, "databits"));
-		if (databits != 8) {
-			throw new java.lang.RuntimeException(
-					"Sanguino3G driver requires 8 serial data bits.");
-		}
-		if (XML.hasChildNode(xml, "stopbits"))
-			stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
 	}
 
 	public void initialize() {
 		// Create our serial object
-		while (serial == null) {
-			if (name != null) {
-				try {
-					Base.logger.log(Level.INFO,"Connecting to " + name + " at "
-								+ rate);
-					serial = new Serial(name, rate, parity, databits, stopbits);
-				} catch (SerialException e) {
-					System.out.println("Unable to open port " + name + "\n");
-				}
-			} else {
-				System.out.println("No Serial Port found.\n");
-			}
-			if ( serial == null ) {
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					// Probably shutting down.
-					return;
-				}
-			}
+		if (serial == null) {
+			System.out.println("No Serial Port found.\n");
+			return;
 		}
 
 		// wait till we're initialized
@@ -205,7 +147,6 @@ public class Sanguino3GDriver extends DriverBaseImplementation {
 				waitForStartup(8000);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
-				System.out.println("yarg!");
 				e.printStackTrace();
 			}
 		}

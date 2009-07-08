@@ -91,8 +91,6 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
@@ -106,6 +104,7 @@ import replicatorg.app.syntax.PdeTextAreaDefaults;
 import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.drivers.EstimationDriver;
+import replicatorg.model.JEditTextAreaSource;
 
 import com.apple.mrj.MRJAboutHandler;
 import com.apple.mrj.MRJApplicationUtils;
@@ -1367,7 +1366,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		public void run() {
 			message("Building...");
-			machine.setThread(this);
 			started = new Date();
 
 			if (machine.execute()) {
@@ -1422,7 +1420,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		public void run() {
 			message("Simulating...");
-			machine.setThread(this);
 			machine.execute();
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
@@ -1450,7 +1447,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		public void run() {
 			message("Estimating...");
-			machine.setThread(this);
 			machine.estimate();
 			editor.estimationOver();
 		}
@@ -2242,12 +2238,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	protected void setMachine(MachineController machine) {
 		this.machine = machine;
-		machine.setEditor(this);
+		machine.setCodeSource(new JEditTextAreaSource(textarea));
 		machineStatusPanel.setMachine(this.machine);
 	}
 
 	public void loadMachine(String name) {
-		setMachine(Base.getMachine(name));
+		setMachine(Base.loadMachine(name));
 	}
 
 	public void loadSimulator() {
