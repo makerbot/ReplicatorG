@@ -55,7 +55,12 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Vector;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -99,7 +104,12 @@ public class Base {
 	 * The general-purpose logging object.
 	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
-	
+	{
+		logger.setLevel(Level.FINE);
+		Handler h = new ConsoleHandler();
+		h.setLevel(Level.FINE);
+		logger.addHandler(h);
+	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
 	 * handler.

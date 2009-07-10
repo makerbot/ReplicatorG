@@ -62,6 +62,8 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 
 	
 	protected String getMachineStateMessage() {
+		System.out.println("Getting state.");
+
 		if (machine == null) { return "No machine selected"; }
 		MachineState state = machine.getState();
 		if (state == MachineState.NOT_ATTACHED) {

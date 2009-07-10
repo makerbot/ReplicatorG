@@ -14,6 +14,10 @@ public class StringListSource implements GCodeSource {
 	
 	private Vector<String> gcode;
 	
+	public StringListSource(Vector<String> codes) {
+		gcode = codes;
+	}
+	
 	public Iterator<String> iterator() {
 		return gcode.iterator();
 	}

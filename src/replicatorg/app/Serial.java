@@ -64,8 +64,7 @@ public class Serial {
 		try {
 			Enumeration portList = CommPortIdentifier.getPortIdentifiers();
 			while (portList.hasMoreElements()) {
-				CommPortIdentifier portId = (CommPortIdentifier) portList
-						.nextElement();
+				CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
 				if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
 					if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
 						Name sn = new Name(portId.getName(),!portId.isCurrentlyOwned());
@@ -104,7 +103,7 @@ public class Serial {
 	}
 
 	public Serial(String name) throws SerialException {
-		init(name,9600,'N',8,1);
+		init(name,38400,'N',8,1);
 	}
 
 	private CommPortIdentifier findPortIdentifier(String name) {

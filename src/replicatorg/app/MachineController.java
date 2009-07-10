@@ -42,9 +42,175 @@ import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
+import replicatorg.model.StringListSource;
 
 public class MachineController {
 
+	// The machine thread is a seperate thread that performs all interactions with the machine, including
+	// initialization, building, pausing, halting, etc.
+	class MachineThread extends Thread {
+		private MachineState state = MachineState.NOT_ATTACHED;
+		public MachineState getMachineState() { return state; }
+		
+		private void runWarmupCommands() throws BuildFailureException, InterruptedException {
+			System.out.println("Running warmup commands.");
+			buildCodesInternal(new StringListSource(warmupCommands));
+		}			
+
+		private void runCooldownCommands() throws BuildFailureException, InterruptedException {
+			System.out.println("Running warmup commands.");
+			buildCodesInternal(new StringListSource(cooldownCommands));
+		}
+
+		private void setState(MachineState state) {
+			MachineState prev = this.state;
+			this.state = state;
+			emitStateChange(prev, state);
+		}
+
+		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
+			Iterator<String> i = source.iterator();
+			while (i.hasNext()) {
+				String line = i.next();
+				if (Thread.interrupted())
+					return false;
+				
+				// use our parser to handle the stuff.
+				if (simulator != null)
+					simulator.parse(line);
+				driver.parse(line);
+				
+				try {
+					driver.getParser().handleStops();
+				} catch (JobEndException e) {
+					return false;
+				} catch (JobCancelledException e) {
+					return false;
+				} catch (JobRewindException e) {
+					i = source.iterator();
+					continue;
+				}
+				
+				// simulate the command.
+				if (simulator != null)
+					simulator.execute();
+				
+				try {
+					driver.execute();
+				} catch (GCodeException e) {
+					// TODO: prompt the user to continue.
+					System.out.println("Error: " + e.getMessage());
+				}
+				
+				// did we get any errors?
+				driver.checkErrors();
+				
+				// are we paused?
+				while (state == MachineState.PAUSED) {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				// bail if we got interrupted.
+				if (state == MachineState.STOPPING)
+					return false;
+			}
+			
+			// wait for driver to finish up.
+			while (!driver.isFinished()) {
+				Thread.sleep(100);
+			}
+			return true;
+		}
+
+		/**
+		 * Reset machine to its basic state.
+		 *
+		 */
+		private synchronized void resetInternal() {
+			driver.reset();
+		}
+
+		public boolean isReady() { return state == MachineState.READY; }
+
+		public void forceReset() {
+			interrupt();
+			resetInternal();
+		}
+		
+		public void reset() {
+			setState(MachineState.CONNECTING);
+		}
+
+		GCodeSource currentSource;
+		
+		private void buildInternal(GCodeSource source) {
+			double startTime = System.currentTimeMillis();
+			double elapsedTime = 0;
+
+			try {
+				runWarmupCommands();
+				System.out.println("Running build.");
+				buildCodesInternal(source);
+				runCooldownCommands();
+				reset();
+			} catch (BuildFailureException e) {
+				JOptionPane.showMessageDialog(null, e.getMessage(),
+						"Build Failure", JOptionPane.ERROR_MESSAGE);
+
+			} catch (InterruptedException e) {
+				System.out.println("MachineController interrupted");
+			}
+		}
+		
+		public void build(GCodeSource source) {
+			currentSource = source;
+			setState(MachineState.BUILDING);
+		}
+		
+		public void pauseBuild() {
+			if (state == MachineState.BUILDING) {
+				setState(MachineState.PAUSED);
+			}
+		}
+		
+		public void resumeBuild() {
+			if (state == MachineState.PAUSED) {
+				setState(MachineState.BUILDING);
+			}
+		}
+		
+		public void stopBuild() {
+			if (state == MachineState.BUILDING ||
+					state == MachineState.PAUSED) {
+				setState(MachineState.STOPPING);
+			}
+		}
+		
+		public void run() {
+			while (true) {
+				try {
+					Thread.sleep(100);
+					if (state == MachineState.BUILDING) {
+						buildInternal(currentSource);
+					} else if (state == MachineState.CONNECTING) {
+						resetInternal();
+						if (driver.isInitialized()) {
+							setState(MachineState.READY);
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	MachineThread machineThread = new MachineThread();
+	
 	// The GCode source of the current build source.
 	protected GCodeSource source;
 	
@@ -66,8 +232,6 @@ public class MachineController {
 
 	// our current thread.
 	protected Thread thread;
-
-	MachineState state = MachineState.NOT_ATTACHED;
 	
 	// estimated build time in millis
 	protected double estimatedBuildTime = 0;
@@ -90,6 +254,8 @@ public class MachineController {
 		// load our various objects
 		loadDriver();
 		loadExtraPrefs();
+		machineThread = new MachineThread();
+		machineThread.start();
 	}
 
 	public void setCodeSource(GCodeSource source) {
@@ -126,7 +292,8 @@ public class MachineController {
 
 		// do that build!
 		System.out.println("Running GCode...");
-		return build();
+		machineThread.build(source);
+		return true;
 	}
 
 	public void estimate() {
@@ -151,157 +318,6 @@ public class MachineController {
 		}
 	}
 
-	private void runWarmupCommands() throws BuildFailureException,
-			InterruptedException {
-		if (warmupCommands.size() > 0) {
-			System.out.println("Running warmup commands.");
-			Iterator itr = warmupCommands.iterator();
-			while (itr.hasNext()) {
-				String command = (String) itr.next();
-
-				driver.parse(command);
-
-				// execute the command and snag any errors.
-				try {
-					driver.execute();
-				} catch (GCodeException e) {
-					// TODO: prompt the user to continue.
-					System.out.println("Error: " + e.getMessage());
-				}
-			}
-
-			// wait for driver to finish up.
-			while (!driver.isFinished()) {
-				Thread.sleep(100);
-			}
-		}
-	}
-
-	private void runCooldownCommands() throws BuildFailureException,
-			InterruptedException {
-		if (cooldownCommands.size() > 0) {
-			System.out.println("Running cooldown commands.");
-			Iterator itr = cooldownCommands.iterator();
-			while (itr.hasNext()) {
-				String command = (String) itr.next();
-
-				driver.parse(command);
-
-				// execute the command and snag any errors.
-				try {
-					driver.execute();
-				} catch (GCodeException e) {
-					// TODO: prompt the user to continue.
-					System.out.println("Error: " + e.getMessage());
-				}
-			}
-
-			// wait for driver to finish up.
-			while (!driver.isFinished()) {
-				Thread.sleep(100);
-			}
-		}
-	}
-
-	private boolean build() {
-		try {
-			double startTime = System.currentTimeMillis();
-			double elapsedTime = 0;
-
-			runWarmupCommands();
-
-			System.out.println("Running build.");
-
-			Iterator<String> i = source.iterator();
-			while (i.hasNext()) {
-				String line = i.next();
-				if (Thread.interrupted())
-					return false;
-
-				elapsedTime = System.currentTimeMillis() - startTime;
-
-				// TODO: re-add without slowing down software.
-				// editor.textarea.scrollTo(i, 0);
-				// editor.highlightLine(i);
-				//editor.updateStatus(i, elapsedTime, estimatedBuildTime
-				//		- elapsedTime);
-
-				// System.out.println("running: " + line);
-
-				// use our parser to handle the stuff.
-				if (simulator != null)
-					simulator.parse(line);
-				driver.parse(line);
-
-				// System.out.println("parsed");
-
-				// for handling job flow.
-				try {
-					driver.getParser().handleStops();
-				} catch (JobEndException e) {
-					return false;
-				} catch (JobCancelledException e) {
-					return false;
-				} catch (JobRewindException e) {
-					i = source.iterator();
-					continue;
-				}
-
-				// simulate the command.
-				if (simulator != null)
-					simulator.execute();
-
-				// System.out.println("simulated");
-
-				// execute the command and snag any errors.
-				try {
-					driver.execute();
-				} catch (GCodeException e) {
-					// TODO: prompt the user to continue.
-					System.out.println("Error: " + e.getMessage());
-				}
-
-				// did we get any errors?
-				driver.checkErrors();
-
-				// are we paused?
-				while (this.isPaused()) {
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-
-				// bail if we got interrupted.
-				if (state == MachineState.READY)
-					return false;
-			}
-
-			// wait for driver to finish up.
-			while (!driver.isFinished()) {
-				Thread.sleep(100);
-			}
-
-			// chill out.
-			runCooldownCommands();
-			// wait for driver to finish up cooldown.
-			while (!driver.isFinished()) {
-				Thread.sleep(100);
-			}
-			// reset machine
-			reset();
-		} catch (BuildFailureException e) {
-			JOptionPane.showMessageDialog(null, e.getMessage(),
-					"Build Failure", JOptionPane.ERROR_MESSAGE);
-
-			return false;
-		} catch (InterruptedException e) {
-			System.out.println("MachineController interrupted");
-		}
-		return true;
-	}
-
 	private MachineModel loadModel() {
 		MachineModel model = new MachineModel();
 		model.loadXML(machineNode);
@@ -309,27 +325,16 @@ public class MachineController {
 		return model;
 	}
 
-	/**
-	 * Reset machine to its basic state.
-	 *
-	 */
-	public void reset() {
-		setState(MachineState.CONNECTING);
-		driver.reset();
-	}
 
 	public void setSerial(Serial serial) {
 		if (this.serial != null) { this.serial.dispose(); }
 		this.serial = serial;
 		driver.setSerial(serial);
-	}
-	private void setState(MachineState state) {
-		MachineState prev = this.state;
-		this.state = state;
-		emitStateChange(prev, state);
+		System.err.println("serial port set state change");
+		machineThread.reset();
 	}
 	
-	public MachineState getState() { return state; }
+	public MachineState getState() { return machineThread.state; }
 	
 	private void loadDriver() {
 		// load our utility drivers
@@ -414,8 +419,7 @@ public class MachineController {
 	}
 
 	synchronized public void stop() {
-		driver.stop();
-		setState(MachineState.READY);
+		machineThread.stopBuild();
 	}
 
 	synchronized public boolean isInitialized() {
@@ -423,20 +427,15 @@ public class MachineController {
 	}
 
 	synchronized public void pause() {
-		if (state == MachineState.BUILDING)
-			driver.pause(); // immediately send a pause command for asynchronous machines
-			setState(MachineState.PAUSED);
+		machineThread.pauseBuild();
 	}
 
 	synchronized public void unpause() {
-		if (state == MachineState.PAUSED) {
-			driver.unpause(); // send a resume command for asynchronous machines
-			setState(MachineState.BUILDING);
-		}
+		machineThread.resumeBuild();
 	}
 
 	synchronized public boolean isPaused() {
-		return state == MachineState.PAUSED;
+		return getState() == MachineState.PAUSED;
 	}
 	
 	private Vector<MachineListener> listeners = new Vector<MachineListener>();

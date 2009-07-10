@@ -98,6 +98,7 @@ import replicatorg.app.MachineFactory;
 import replicatorg.app.Preferences;
 import replicatorg.app.Serial;
 import replicatorg.app.Sketchbook;
+import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
@@ -585,6 +586,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		for (Serial.Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.getName());
 			item.setEnabled(name.isAvailable());
+			final String portName = name.getName();
+			item.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						machine.setSerial(new Serial(portName));
+					} catch (SerialException se) {
+						se.printStackTrace();
+					}
+				}
+			});
 			serialMenu.add(item);
 		}
 		if (names.isEmpty()) {
@@ -2244,6 +2255,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public void loadMachine(String name) {
 		setMachine(Base.loadMachine(name));
+		machine.addMachineStateListener(machineStatusPanel);
 	}
 
 	public void loadSimulator() {

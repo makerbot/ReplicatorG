@@ -432,23 +432,6 @@ public class Sketchbook {
 			File entry = new File(subfolder, list[i] + ".gcode");
 			// if a .gcode file of the same prefix as the folder exists..
 			if (entry.exists()) {
-				// String sanityCheck = sanitizedName(list[i]);
-				// if (!sanityCheck.equals(list[i])) {
-				if (!Sketchbook.isSanitary(list[i])) {
-					if (!builtOnce) {
-						String complaining = "The sketch \""
-								+ list[i]
-								+ "\" cannot be used.\n"
-								+ "Sketch names must contain only basic letters and numbers\n"
-								+ "(ASCII-only with no spaces, "
-								+ "and it cannot start with a number).\n"
-								+ "To get rid of this message, remove the sketch from\n"
-								+ entry.getAbsolutePath();
-						Base.showMessage("Ignoring sketch with bad name",
-								complaining);
-					}
-					continue;
-				}
 
 				JMenuItem item = new JMenuItem(list[i]);
 				item.addActionListener(listener);
