@@ -123,16 +123,17 @@ public class MachineController {
 				driver.checkErrors();
 				
 				// are we paused?
-				while (state == MachineState.PAUSED) {
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
+				if (state == MachineState.PAUSED) {
+					driver.pause();
+					while (state == MachineState.PAUSED) {
+						synchronized(this) { wait(); }
 					}
+					driver.unpause();
 				}
 				
 				// bail if we got interrupted.
 				if (state == MachineState.STOPPING)
+					driver.stop();
 					return false;
 			}
 			
