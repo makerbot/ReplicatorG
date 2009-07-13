@@ -105,6 +105,9 @@ import replicatorg.app.syntax.PdeTextAreaDefaults;
 import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.drivers.EstimationDriver;
+import replicatorg.machine.MachineListener;
+import replicatorg.machine.MachineState;
+import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.model.JEditTextAreaSource;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -114,7 +117,8 @@ import com.apple.mrj.MRJPrefsHandler;
 import com.apple.mrj.MRJQuitHandler;
 
 public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandler,
-		MRJPrefsHandler, MRJOpenDocumentHandler // , MRJOpenApplicationHandler
+		MRJPrefsHandler, MRJOpenDocumentHandler,
+		MachineListener
 {
 	/**
 	 * 
@@ -190,8 +194,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// runtime information and window placement
 	Point appletLocation;
 
-	public BuildingThread buildingThread;
-
 	public SimulationThread simulationThread;
 
 	public EstimationThread estimationThread;
@@ -205,9 +207,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	MachineMenuListener machineMenuListener;
 
 	public boolean building;
-
 	public boolean simulating;
-
 	public boolean debugging;
 
 	// boolean presenting;
@@ -1337,8 +1337,32 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			setEditorBusy(true);
 
 			// start our building thread.
-			buildingThread = new BuildingThread(this);
-			buildingThread.start();
+
+			message("Building...");
+			machine.execute();
+
+		}
+	}
+
+	public void machineStateChanged(MachineStateChangeEvent evt) {
+		if (building) {
+			if (evt.getState() == MachineState.READY ||
+				evt.getState() == MachineState.STOPPING) {
+				final MachineState endState = evt.getState();
+				new Exception().printStackTrace();
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                    	if (endState == MachineState.READY) {
+                    		System.err.println("NBC!!!");
+                    		notifyBuildComplete(new Date(), new Date());
+                    	} else {
+                    		System.err.println("NBA!!!");
+                    		notifyBuildAborted(new Date(), new Date());
+                    	}
+                        buildingOver();
+                    }
+                });
+			}
 		}
 	}
 
@@ -1364,34 +1388,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 	}
 
-	class BuildingThread extends Thread {
-		MainWindow editor;
-
-		Date started, finished;
-
-		public BuildingThread(MainWindow edit) {
-			super("Building Thread");
-
-			editor = edit;
-		}
-
-		public void run() {
-			message("Building...");
-			started = new Date();
-
-			if (machine.execute()) {
-				finished = new Date();
-			}
-
-			EventQueue.invokeLater(new Runnable() {
-				public void run() {
-					if (finished != null)
-						notifyBuildComplete(started, finished);
-					editor.buildingOver();
-				}
-			});
-		}
-	}
 
 	/**
 	 * give a prompt and stuff about the build being done with elapsed time,
@@ -1405,6 +1401,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				+ EstimationDriver.getBuildTimeString(elapsed);
 
 		Base.showMessage("Build finished", message);
+	}
+
+	private void notifyBuildAborted(Date started, Date aborted) {
+		long elapsed = aborted.getTime() - started.getTime();
+
+		String message = "Build aborted.\n\n";
+		message += "Stopped after "
+				+ EstimationDriver.getBuildTimeString(elapsed);
+
+		Base.showMessage("Build aborted", message);
 	}
 
 	// synchronized public void buildingOver()
@@ -1474,7 +1480,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	public void doStop() {
 		if (machine != null) {
-			// machine.stop();
+			machine.stop();
 		}
 
 		message(EMPTY);
@@ -1988,10 +1994,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public void handleQuitInternal() {
 
 		try {
-			if (buildingThread != null) {
-				buildingThread.interrupt();
-				buildingThread.join();
-			}
 			if (simulationThread != null) {
 				simulationThread.interrupt();
 				simulationThread.join();
@@ -2255,7 +2257,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public void loadMachine(String name) {
 		setMachine(Base.loadMachine(name));
+		machine.addMachineStateListener(this);
 		machine.addMachineStateListener(machineStatusPanel);
+		machine.addMachineStateListener(buttons);
 	}
 
 	public void loadSimulator() {

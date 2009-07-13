@@ -39,11 +39,13 @@ import javax.swing.event.MouseInputListener;
 
 import replicatorg.app.Base;
 import replicatorg.app.Preferences;
+import replicatorg.machine.MachineListener;
+import replicatorg.machine.MachineStateChangeEvent;
 
 /**
  * run/stop/etc buttons for the ide
  */
-public class MainButtonPanel extends JComponent implements MouseInputListener {
+public class MainButtonPanel extends JComponent implements MouseInputListener, MachineListener {
 
 	static final String title[] = { "Simulate", "Pause", "Stop", "Build",
 			"New", "Open", "Save" };
@@ -444,5 +446,8 @@ public class MainButtonPanel extends JComponent implements MouseInputListener {
 
 	public Dimension getMaximumSize() {
 		return new Dimension(3000, BUTTON_HEIGHT);
+	}
+
+	public void machineStateChanged(MachineStateChangeEvent evt) {
 	}
 }

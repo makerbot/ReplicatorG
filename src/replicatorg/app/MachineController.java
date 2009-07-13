@@ -44,28 +44,45 @@ import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
 
+/**
+ * The MachineController object controls a single machine.  It contains a single machine driver object.
+ * All machine operations (building, stopping, pausing) are performed asynchronously by a thread
+ * maintained by the MachineController; calls to MachineController ordinarily trigger an operation and
+ * return immediately.
+ * @author phooky
+ *
+ */
 public class MachineController {
 
-	// The machine thread is a seperate thread that performs all interactions with the machine, including
-	// initialization, building, pausing, halting, etc.
+	/**
+	 * The MachineThread is responsible for communicating with the machine.
+	 * @author phooky
+	 *
+	 */
 	class MachineThread extends Thread {
 		private MachineState state = MachineState.NOT_ATTACHED;
 		public MachineState getMachineState() { return state; }
 		
+		/**
+		 * Run the warmup commands.
+		 * @throws BuildFailureException
+		 * @throws InterruptedException
+		 */
 		private void runWarmupCommands() throws BuildFailureException, InterruptedException {
 			System.out.println("Running warmup commands.");
 			buildCodesInternal(new StringListSource(warmupCommands));
 		}			
 
 		private void runCooldownCommands() throws BuildFailureException, InterruptedException {
-			System.out.println("Running warmup commands.");
+			System.out.println("Running cooldown commands.");
 			buildCodesInternal(new StringListSource(cooldownCommands));
 		}
 
-		private void setState(MachineState state) {
+		private synchronized void setState(MachineState state) {
 			MachineState prev = this.state;
 			this.state = state;
 			emitStateChange(prev, state);
+			notifyAll();
 		}
 
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
@@ -193,13 +210,19 @@ public class MachineController {
 		public void run() {
 			while (true) {
 				try {
-					Thread.sleep(100);
 					if (state == MachineState.BUILDING) {
 						buildInternal(currentSource);
 					} else if (state == MachineState.CONNECTING) {
 						resetInternal();
 						if (driver.isInitialized()) {
 							setState(MachineState.READY);
+						}
+					} else {
+						synchronized(this) {
+							if (state == MachineState.READY ||
+								state == MachineState.PAUSED) {
+								wait();
+							}
 						}
 					}
 				} catch (Exception e) {
@@ -442,10 +465,11 @@ public class MachineController {
 	
 	public void addMachineStateListener(MachineListener listener) {
 		listeners.add(listener);
+		listener.machineStateChanged(new MachineStateChangeEvent(this,getState()));
 	}
 	
 	protected void emitStateChange(MachineState prev, MachineState current) {
-		MachineStateChangeEvent e = new MachineStateChangeEvent(this, prev, current);
+		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current, prev);
 		for (MachineListener l : listeners) {
 			l.machineStateChanged(e);
 		}
