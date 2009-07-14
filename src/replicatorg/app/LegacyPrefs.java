@@ -22,7 +22,7 @@ public class LegacyPrefs {
 	static public File getSettingsFolder() {
 		File dataFolder = null;
 
-		String pref = Preferences.get("settings.path");
+		String pref = OldPreferences.get("settings.path");
 		System.err.println("****** S.P: " + pref);
 		if (pref != null) {
 			dataFolder = new File(pref);
@@ -112,7 +112,7 @@ public class LegacyPrefs {
 		if (!result) {
 			// try the fallback location
 			System.out.println("Using fallback path for settings.");
-			String fallback = Preferences.get("settings.path.fallback");
+			String fallback = OldPreferences.get("settings.path.fallback");
 			dataFolder = new File(fallback);
 			if (!dataFolder.exists()) {
 				result = dataFolder.mkdirs();

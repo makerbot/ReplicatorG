@@ -34,7 +34,6 @@ import java.util.Hashtable;
 import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
-import replicatorg.app.Preferences;
 import replicatorg.app.Sketchbook;
 
 /**
@@ -709,7 +708,7 @@ public class Sketch {
 				FileDialog.SAVE);
 		if (isReadOnly()) {
 			// default to the sketchbook folder
-			fd.setDirectory(Preferences.get("sketchbook.path"));
+			fd.setDirectory(Base.preferences.get("sketchbook.path",null));
 		} else {
 			// default to the parent folder of where this was
 			fd.setDirectory(folder.getParent());

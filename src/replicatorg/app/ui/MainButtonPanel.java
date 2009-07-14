@@ -38,7 +38,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.MouseInputListener;
 
 import replicatorg.app.Base;
-import replicatorg.app.Preferences;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineStateChangeEvent;
 
@@ -141,8 +140,8 @@ public class MainButtonPanel extends JComponent implements MouseInputListener, M
 
 		status = "";
 
-		statusFont = Preferences.getFont("buttons.status.font");
-		statusColor = Preferences.getColor("buttons.status.color");
+		statusFont = Base.getFontPref("buttons.status.font","SansSerif,plain,12");
+		statusColor = Base.getColorPref("buttons.status.color","#FFFFFF");
 		maxLabelWidth = 0;
 		FontMetrics fm = getFontMetrics(statusFont);
 		for (String t : title) {

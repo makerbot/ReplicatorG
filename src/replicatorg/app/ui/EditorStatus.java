@@ -43,12 +43,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import replicatorg.app.Base;
-import replicatorg.app.Preferences;
 
 /**
  * Panel just below the editing area that contains status messages.
  */
-public class EditorStatus extends JPanel implements ActionListener {
+public class EditorStatus extends JPanel implements ActionListener, GuiConstants {
 	static Color bgcolor[];
 
 	static Color fgcolor[];
@@ -109,18 +108,19 @@ public class EditorStatus extends JPanel implements ActionListener {
 		// TODO: update colors to be different.
 		if (bgcolor == null) {
 			bgcolor = new Color[5];
+			// agm: okay.  really.  you're shitting me.
 			bgcolor[0] = new Color(0x92, 0xA0, 0x6B);
-			bgcolor[1] = Preferences.getColor("status.error.bgcolor");
-			bgcolor[2] = Preferences.getColor("status.prompt.bgcolor");
-			bgcolor[3] = Preferences.getColor("status.prompt.bgcolor");
+			bgcolor[1] = Base.getColorPref("status.error.bgcolor","#662200");
+			bgcolor[2] = Base.getColorPref("status.prompt.bgcolor","#cc9900");
+			bgcolor[3] = Base.getColorPref("status.prompt.bgcolor","#cc9900");
 			bgcolor[4] = new Color(0x92, 0xA0, 0x6B);
 
 			fgcolor = new Color[5];
-			fgcolor[0] = Preferences.getColor("status.notice.fgcolor");
-			fgcolor[1] = Preferences.getColor("status.error.fgcolor");
-			fgcolor[2] = Preferences.getColor("status.prompt.fgcolor");
-			fgcolor[3] = Preferences.getColor("status.prompt.fgcolor");
-			fgcolor[4] = Preferences.getColor("status.notice.fgcolor");
+			fgcolor[0] = Base.getColorPref("status.notice.fgcolor","#ffffff");
+			fgcolor[1] = Base.getColorPref("status.error.fgcolor","#ffffff");
+			fgcolor[2] = Base.getColorPref("status.prompt.fgcolor","#000000");
+			fgcolor[3] = Base.getColorPref("status.prompt.fgcolor","#000000");
+			fgcolor[4] = Base.getColorPref("status.notice.fgcolor","#ffffff");
 		}
 	}
 
@@ -226,7 +226,7 @@ public class EditorStatus extends JPanel implements ActionListener {
 
 		Graphics g = offscreen.getGraphics();
 		if (font == null) {
-			font = Preferences.getFont("status.font");
+			font = Base.getFontPref("status.font","SansSerif,plain,10");
 			// new Font("SansSerif", Font.PLAIN, 12));
 			g.setFont(font);
 			metrics = g.getFontMetrics();
@@ -240,7 +240,7 @@ public class EditorStatus extends JPanel implements ActionListener {
 
 		g.setColor(fgcolor[mode]);
 		g.setFont(font); // needs to be set each time on osx
-		g.drawString(message, Preferences.GUI_SMALL, (sizeH + ascent) / 2);
+		g.drawString(message, GUI_SMALL, (sizeH + ascent) / 2);
 
 		screen.drawImage(offscreen, 0, 0, null);
 	}
@@ -389,10 +389,10 @@ public class EditorStatus extends JPanel implements ActionListener {
 			editField.setVisible(false);
 		}
 	}
-
+	
 	protected void setButtonBounds() {
-		int top = (sizeH - Preferences.BUTTON_HEIGHT) / 2;
-		int eachButton = Preferences.GUI_SMALL + Preferences.BUTTON_WIDTH;
+		int top = (sizeH - BUTTON_HEIGHT) / 2;
+		int eachButton = GUI_SMALL + BUTTON_WIDTH;
 
 		int cancelLeft = sizeW - eachButton;
 		int noLeft = cancelLeft - eachButton;
@@ -401,16 +401,14 @@ public class EditorStatus extends JPanel implements ActionListener {
 		yesButton.setLocation(yesLeft, top);
 		noButton.setLocation(noLeft, top);
 		cancelButton.setLocation(cancelLeft, top);
-		editField.setLocation(yesLeft - Preferences.BUTTON_WIDTH, top);
+		editField.setLocation(yesLeft - BUTTON_WIDTH, top);
 		okButton.setLocation(noLeft, top);
 
-		yesButton.setSize(Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
-		noButton.setSize(Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
-		cancelButton.setSize(Preferences.BUTTON_WIDTH,
-				Preferences.BUTTON_HEIGHT);
-		okButton.setSize(Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
-		editField.setSize(2 * Preferences.BUTTON_WIDTH,
-				Preferences.BUTTON_HEIGHT);
+		yesButton.setSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+		noButton.setSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+		cancelButton.setSize(BUTTON_WIDTH,BUTTON_HEIGHT);
+		okButton.setSize(BUTTON_WIDTH, BUTTON_HEIGHT);
+		editField.setSize(2 * BUTTON_WIDTH,BUTTON_HEIGHT);
 	}
 
 	public Dimension getPreferredSize() {
@@ -418,11 +416,11 @@ public class EditorStatus extends JPanel implements ActionListener {
 	}
 
 	public Dimension getMinimumSize() {
-		return new Dimension(300, Preferences.GRID_SIZE);
+		return new Dimension(300, GRID_SIZE);
 	}
 
 	public Dimension getMaximumSize() {
-		return new Dimension(3000, Preferences.GRID_SIZE);
+		return new Dimension(3000, GRID_SIZE);
 	}
 
 	public void actionPerformed(ActionEvent e) {

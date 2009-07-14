@@ -46,7 +46,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 
 import replicatorg.app.Base;
-import replicatorg.app.Preferences;
 
 /**
  * Sketch tabs at the top of the editor window.
@@ -125,10 +124,10 @@ public class EditorHeader extends JComponent {
 			// hardcoding new blue color scheme for consistency with images,
 			// see EditorStatus.java for details.
 			backgroundColor = new Color(0x92, 0xA0, 0x6B);
-			textColor[SELECTED] = Preferences
-					.getColor("header.text.selected.color");
-			textColor[UNSELECTED] = Preferences
-					.getColor("header.text.unselected.color");
+			textColor[SELECTED] = Base
+					.getColorPref("header.text.selected.color","#1A1A00");
+			textColor[UNSELECTED] = Base
+					.getColorPref("header.text.unselected.color","#ffffff");
 		}
 
 		addMouseListener(new MouseAdapter() {
@@ -185,7 +184,7 @@ public class EditorHeader extends JComponent {
 
 		Graphics g = offscreen.getGraphics();
 		if (font == null) {
-			font = Preferences.getFont("header.text.font");
+			font = Base.getFontPref("header.text.font","SansSerif,plain,12");
 		}
 		g.setFont(font); // need to set this each time through
 		metrics = g.getFontMetrics();
@@ -432,17 +431,19 @@ public class EditorHeader extends JComponent {
 		return getMinimumSize();
 	}
 
+	final static int GRID_SIZE = 33;
+	
 	public Dimension getMinimumSize() {
 		if (Base.isMacOS()) {
-			return new Dimension(300, Preferences.GRID_SIZE);
+			return new Dimension(300, GRID_SIZE);
 		}
-		return new Dimension(300, Preferences.GRID_SIZE - 1);
+		return new Dimension(300, GRID_SIZE - 1);
 	}
 
 	public Dimension getMaximumSize() {
 		if (Base.isMacOS()) {
-			return new Dimension(3000, Preferences.GRID_SIZE);
+			return new Dimension(3000, GRID_SIZE);
 		}
-		return new Dimension(3000, Preferences.GRID_SIZE - 1);
+		return new Dimension(3000, GRID_SIZE - 1);
 	}
 }

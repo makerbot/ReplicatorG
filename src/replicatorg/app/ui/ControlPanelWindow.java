@@ -35,8 +35,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.WindowListener;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
@@ -51,21 +51,21 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JSlider;
 import javax.swing.JSeparator;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 
+import replicatorg.app.Base;
 import replicatorg.app.MachineController;
-import replicatorg.app.Preferences;
 import replicatorg.drivers.Driver;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
@@ -361,8 +361,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		int maxXYFeedrate = (int) Math.min(machine.getModel()
 				.getMaximumFeedrates().x, machine.getModel()
 				.getMaximumFeedrates().y);
-		int currentXYFeedrate = Math.min(maxXYFeedrate, Preferences
-				.getInteger("controlpanel.feedrate.xy"));
+		int currentXYFeedrate = Math.min(maxXYFeedrate, Base.preferences
+				.getInt("controlpanel.feedrate.xy",480));
 		xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, maxXYFeedrate,
 				currentXYFeedrate);
 		xyFeedrateSlider.setMajorTickSpacing(1000);
@@ -396,8 +396,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 
 		// create our z slider
 		int maxZFeedrate = (int) machine.getModel().getMaximumFeedrates().z;
-		int currentZFeedrate = Math.min(maxZFeedrate, Preferences
-				.getInteger("controlpanel.feedrate.z"));
+		int currentZFeedrate = Math.min(maxZFeedrate, Base.preferences
+				.getInt("controlpanel.feedrate.z",480));
 		zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, maxZFeedrate,
 				currentZFeedrate);
 		zFeedrateSlider.setMajorTickSpacing(10);

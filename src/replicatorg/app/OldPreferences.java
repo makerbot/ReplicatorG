@@ -26,18 +26,8 @@
 package replicatorg.app;
 
 import java.awt.Color;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Insets;
 import java.awt.SystemColor;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,16 +44,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-
 import replicatorg.app.syntax.SyntaxStyle;
-import replicatorg.app.ui.MainWindow;
 
 // TODO change this to use the Java Preferences API
 // http://www.onjava.com/pub/a/onjava/synd/2001/10/17/j2se.html
@@ -72,25 +53,11 @@ import replicatorg.app.ui.MainWindow;
 /**
  * 
  */
-public class Preferences {
+public class OldPreferences {
 
 	// what to call the feller
 
 	static final String PREFS_FILE = "preferences.txt";
-
-	/**
-	 * Standardized width for buttons. Mac OS X 10.3 wants 70 as its default,
-	 * Windows XP needs 66, and Linux needs 76, so 76 seems proper.
-	 */
-	static public int BUTTON_WIDTH = 76;
-
-	/**
-	 * Standardized button height. Mac OS X 10.3 (Java 1.4) wants 29, presumably
-	 * because it now includes the blue border, where it didn't in Java 1.3.
-	 * Windows XP only wants 23 (not sure what default Linux would be). Because
-	 * of the disparity, on Mac OS X, it will be set inside a static block.
-	 */
-	static public int BUTTON_HEIGHT = 24;
 
 	/*
 	 * // remove this for 0121, because quaqua takes care of it static { if
@@ -100,15 +67,6 @@ public class Preferences {
 	// value for the size bars, buttons, etc
 	static public final int GRID_SIZE = 33;
 
-	// indents and spacing standards. these probably need to be modified
-	// per platform as well, since macosx is so huge, windows is smaller,
-	// and linux is all over the map
-
-	static public final int GUI_BIG = 13;
-
-	static public final int GUI_BETWEEN = 10;
-
-	static public final int GUI_SMALL = 6;
 
 
 	// data model
@@ -194,7 +152,7 @@ public class Preferences {
 	static public void load(InputStream input, String prefix)
 			throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-		Hashtable<String, String> table = Preferences.table;
+		Hashtable<String, String> table = OldPreferences.table;
 
 		if (prefix != null) {
 			table = new Hashtable<String, String>();
@@ -253,7 +211,7 @@ public class Preferences {
 		// preference files, look up the attribute in that file's Hashtable
 		// (don't override with or fallback to the main file). otherwise,
 		// look up the attribute in the main file's Hashtable.
-		Hashtable table = Preferences.table;
+		Hashtable table = OldPreferences.table;
 		if (attribute.indexOf('.') != -1) {
 			String prefix = attribute.substring(0, attribute.indexOf('.'));
 			if (prefixes.containsKey(prefix)) {

@@ -29,8 +29,10 @@
 
 package replicatorg.app;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Insets;
@@ -54,13 +56,13 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-import java.util.logging.StreamHandler;
+import java.util.prefs.Preferences;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -116,6 +118,34 @@ public class Base {
 	 */
 	static public String openedAtStartup;
 
+	
+	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
+
+	static public Font getFontPref(String name, String defaultValue) {
+		String s = preferences.get(name,defaultValue);
+		StringTokenizer st = new StringTokenizer(s, ",");
+		String fontname = st.nextToken();
+		String fontstyle = st.nextToken();
+		return new Font(fontname,
+				((fontstyle.indexOf("bold") != -1) ? Font.BOLD : 0)
+						| ((fontstyle.indexOf("italic") != -1) ? Font.ITALIC
+								: 0), Integer.parseInt(st.nextToken()));
+	}
+	
+	static public Color getColorPref(String name,String defaultValue) {
+		String s = preferences.get(name, defaultValue);
+		Color parsed = null;
+		if ((s != null) && (s.indexOf("#") == 0)) {
+			try {
+				int v = Integer.parseInt(s.substring(1), 16);
+				parsed = new Color(v);
+			} catch (Exception e) {
+			}
+		}
+		// if (parsed == null) return otherwise;
+		return parsed;
+	}
+
 	/**
 	 * The main UI window.
 	 */
@@ -137,6 +167,9 @@ public class Base {
 			Base.openedAtStartup = args[0];
 		}
 
+		// If legacy prefs need loading, load them into the prefs
+		// TODO: Legacy preference loading
+		
 		// register a temporary/early version of the mrj open document handler,
 		// because the event may be lost (sometimes, not always) by the time
 		// that MainWindow is properly constructed.
@@ -203,8 +236,11 @@ public class Base {
 		// show the window
 		editor.setVisible(true);
 
-		// load up our machine controller =)
-		editor.loadMachine(Preferences.get("machine.name"));
+		// load up our default machine
+		String machineName = preferences.get("machine.name",null); 
+		if (machineName != null) {
+			editor.loadMachine(machineName);
+		}
 
 	}
 
@@ -216,8 +252,7 @@ public class Base {
 	 * Full name of the Java version (i.e. 1.5.0_11). Prior to 0125, this was
 	 * only the first three digits.
 	 */
-	public static final String javaVersionName = System
-			.getProperty("java.version");
+	public static final String javaVersionName = System.getProperty("java.version");
 
 	/**
 	 * Version of Java that's in use, whether 1.1 or 1.3 or whatever, stored as
@@ -230,8 +265,7 @@ public class Base {
 	 * this to be a float because there's no good way to specify a double with
 	 * the preproc.
 	 */
-	public static final float javaVersion = new Float(javaVersionName
-			.substring(0, 3)).floatValue();
+	public static final float javaVersion = new Float(javaVersionName.substring(0, 3)).floatValue();
 	/**
 	 * Current platform in use
 	 */
@@ -300,7 +334,7 @@ public class Base {
 
 	static public File getBuildFolder() {
 		if (buildFolder == null) {
-			String buildPath = Preferences.get("build.path");
+			String buildPath = preferences.get("build.path",null);
 			if (buildPath != null) {
 				buildFolder = new File(buildPath);
 
@@ -445,7 +479,7 @@ public class Base {
 		if (!result) {
 			// try the fallback location
 			System.out.println("Using fallback path for sketchbook.");
-			String fallback = Preferences.get("sketchbook.path.fallback");
+			String fallback = preferences.get("sketchbook.path.fallback","sketchbook");
 			sketchbookFolder = new File(fallback);
 			if (!sketchbookFolder.exists()) {
 				result = sketchbookFolder.mkdirs();
@@ -683,21 +717,16 @@ public class Base {
 				com.apple.mrj.MRJFileUtils.openURL(url);
 
 			} else if (Base.isLinux()) {
-				// how's mozilla sound to ya, laddie?
-				// Runtime.getRuntime().exec(new String[] { "mozilla", url });
-				// String browser = Preferences.get("browser");
-				// Runtime.getRuntime().exec(new String[] { browser, url });
-				String launcher = Preferences.get("launcher.linux");
+				String launcher = preferences.get("launcher.linux",null);
 				if (launcher != null) {
 					Runtime.getRuntime().exec(new String[] { launcher, url });
 				}
 			} else {
-				String launcher = Preferences.get("launcher");
+				String launcher = preferences.get("launcher",null);
 				if (launcher != null) {
 					Runtime.getRuntime().exec(new String[] { launcher, url });
 				} else {
-					System.err
-							.println("Unspecified platform, no launcher available.");
+					System.err.println("Unspecified platform, no launcher available.");
 				}
 			}
 
@@ -713,7 +742,7 @@ public class Base {
 
 		if (Base.isLinux()) {
 			// Assume that this is set to something valid
-			if (Preferences.get("launcher.linux") != null) {
+			if (preferences.get("launcher.linux",null) != null) {
 				return true;
 			}
 
@@ -724,7 +753,7 @@ public class Base {
 				p.waitFor();
 				// Not installed will throw an IOException (JDK 1.4.2, Ubuntu
 				// 7.04)
-				Preferences.set("launcher.linux", "gnome-open");
+				preferences.put("launcher.linux", "gnome-open");
 				return true;
 			} catch (Exception e) {
 			}
@@ -734,7 +763,7 @@ public class Base {
 				Process p = Runtime.getRuntime().exec(
 						new String[] { "kde-open" });
 				p.waitFor();
-				Preferences.set("launcher.linux", "kde-open");
+				preferences.put("launcher.linux", "kde-open");
 				return true;
 			} catch (Exception e) {
 			}
@@ -765,7 +794,7 @@ public class Base {
 				openURL(folder); // handles char replacement, etc
 
 			} else if (Base.isLinux()) {
-				String launcher = Preferences.get("launcher.linux");
+				String launcher = preferences.get("launcher.linux",null);
 				if (launcher != null) {
 					Runtime.getRuntime()
 							.exec(new String[] { launcher, folder });
@@ -985,7 +1014,7 @@ public class Base {
 				continue;
 			File dead = new File(dir, files[i]);
 			if (!dead.isDirectory()) {
-				if (!Preferences.getBoolean("compiler.save_build_files")) {
+				if (!preferences.getBoolean("compiler.save_build_files",false)) {
 					if (!dead.delete()) {
 						// temporarily disabled
 						System.err.println("Could not delete " + dead);

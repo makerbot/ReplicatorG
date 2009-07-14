@@ -3,7 +3,6 @@
  */
 package replicatorg.app.ui;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -26,14 +25,13 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 import replicatorg.app.Base;
-import replicatorg.app.Preferences;
 
 /**
  * Edit the major preference settings.
  * @author phooky
  *
  */
-public class PreferencesWindow extends JFrame {
+public class PreferencesWindow extends JFrame implements GuiConstants {
 	// gui elements
 
 	// the calling editor, so updates can be applied
@@ -56,7 +54,7 @@ public class PreferencesWindow extends JFrame {
 	JTextField memoryField;
 
 	JTextField fontSizeField;
-
+		
 	public PreferencesWindow() {
 		super("Preferences");
 		setResizable(false);
@@ -64,8 +62,8 @@ public class PreferencesWindow extends JFrame {
 		Container content = getContentPane();
 		content.setLayout(null);
 
-		int top = Preferences.GUI_BIG;
-		int left = Preferences.GUI_BIG;
+		int top = GUI_BIG;
+		int left = GUI_BIG;
 		int right = 0;
 
 		JLabel label;
@@ -81,7 +79,7 @@ public class PreferencesWindow extends JFrame {
 		d = sketchPromptBox.getPreferredSize();
 		sketchPromptBox.setBounds(left, top, d.width, d.height);
 		right = Math.max(right, left + d.width);
-		top += d.height + Preferences.GUI_BETWEEN;
+		top += d.height + GUI_BETWEEN;
 
 		// [ ] Delete empty sketches on Quit
 
@@ -90,7 +88,7 @@ public class PreferencesWindow extends JFrame {
 		d = sketchCleanBox.getPreferredSize();
 		sketchCleanBox.setBounds(left, top, d.width, d.height);
 		right = Math.max(right, left + d.width);
-		top += d.height + Preferences.GUI_BETWEEN;
+		top += d.height + GUI_BETWEEN;
 
 		// Sketchbook location:
 		// [...............................] [ Browse ]
@@ -137,11 +135,11 @@ public class PreferencesWindow extends JFrame {
 		// h = left + d.width + GUI_BETWEEN;
 		sketchbookLocationField.setBounds(left, top + (vmax - d.height) / 2,
 				d.width, d.height);
-		h = left + d.width + Preferences.GUI_SMALL; // GUI_BETWEEN;
+		h = left + d.width + GUI_SMALL; // GUI_BETWEEN;
 		button.setBounds(h, top + (vmax - d2.height) / 2, d2.width, d2.height);
 
-		right = Math.max(right, h + d2.width + Preferences.GUI_BIG);
-		top += vmax + Preferences.GUI_BETWEEN;
+		right = Math.max(right, h + d2.width + GUI_BIG);
+		top += vmax + GUI_BETWEEN;
 
 		// MainWindow font size [ ]
 
@@ -155,9 +153,9 @@ public class PreferencesWindow extends JFrame {
 		content.add(box);
 		d = box.getPreferredSize();
 		box.setBounds(left, top, d.width, d.height);
-		Font editorFont = Preferences.getFont("editor.font");
+		Font editorFont = Base.getFontPref("editor.font","Monospaced,plain,12");
 		fontSizeField.setText(String.valueOf(editorFont.getSize()));
-		top += d.height + Preferences.GUI_BETWEEN;
+		top += d.height + GUI_BETWEEN;
 
 		// [ ] Use external editor
 
@@ -166,34 +164,7 @@ public class PreferencesWindow extends JFrame {
 		d = externalEditorBox.getPreferredSize();
 		externalEditorBox.setBounds(left, top, d.width, d.height);
 		right = Math.max(right, left + d.width);
-		top += d.height + Preferences.GUI_BETWEEN;
-
-		// More preferences are in the ...
-
-		label = new JLabel(
-				"More preferences can be edited directly in the file");
-
-		content.add(label);
-		d = label.getPreferredSize();
-		label.setForeground(Color.gray);
-		label.setBounds(left, top, d.width, d.height);
-		right = Math.max(right, left + d.width);
-		top += d.height; // + GUI_SMALL;
-
-		label = new JLabel(Preferences.preferencesFile.getAbsolutePath());
-		content.add(label);
-		d = label.getPreferredSize();
-		label.setBounds(left, top, d.width, d.height);
-		right = Math.max(right, left + d.width);
-		top += d.height;
-
-		label = new JLabel("(edit only when ReplicatorG is not running)");
-		content.add(label);
-		d = label.getPreferredSize();
-		label.setForeground(Color.gray);
-		label.setBounds(left, top, d.width, d.height);
-		right = Math.max(right, left + d.width);
-		top += d.height; // + GUI_SMALL;
+		top += d.height + GUI_BETWEEN;
 
 		// [ OK ] [ Cancel ] maybe these should be next to the message?
 
@@ -206,11 +177,11 @@ public class PreferencesWindow extends JFrame {
 		});
 		content.add(button);
 		d2 = button.getPreferredSize();
-		Preferences.BUTTON_HEIGHT = d2.height;
+		int buttonHeight= d2.height;
 
-		h = right - (Preferences.BUTTON_WIDTH + Preferences.GUI_SMALL + Preferences.BUTTON_WIDTH);
-		button.setBounds(h, top, Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
-		h += Preferences.BUTTON_WIDTH + Preferences.GUI_SMALL;
+		h = right - (BUTTON_WIDTH + GUI_SMALL + BUTTON_WIDTH);
+		button.setBounds(h, top, BUTTON_WIDTH, buttonHeight);
+		h += BUTTON_WIDTH + GUI_SMALL;
 
 		button = new JButton("Cancel");
 		button.addActionListener(new ActionListener() {
@@ -219,14 +190,14 @@ public class PreferencesWindow extends JFrame {
 			}
 		});
 		content.add(button);
-		button.setBounds(h, top, Preferences.BUTTON_WIDTH, Preferences.BUTTON_HEIGHT);
+		button.setBounds(h, top, BUTTON_WIDTH, buttonHeight);
 
-		top += Preferences.BUTTON_HEIGHT + Preferences.GUI_BETWEEN;
+		top += buttonHeight + GUI_BETWEEN;
 
 		// finish up
 
-		wide = right + Preferences.GUI_BIG;
-		high = top + Preferences.GUI_SMALL;
+		wide = right + GUI_BIG;
+		high = top + GUI_SMALL;
 		// setSize(wide, high);
 
 		// closing the window is same as hitting cancel button
@@ -290,15 +261,15 @@ public class PreferencesWindow extends JFrame {
 	 */
 	public void applyFrame() {
 		// put each of the settings into the table
-		Preferences.setBoolean("sketchbook.prompt", sketchPromptBox.isSelected());
-		Preferences.setBoolean("sketchbook.auto_clean", sketchCleanBox.isSelected());
-		Preferences.set("sketchbook.path", sketchbookLocationField.getText());
-		Preferences.setBoolean("editor.external", externalEditorBox.isSelected());
+		Base.preferences.putBoolean("sketchbook.prompt", sketchPromptBox.isSelected());
+		Base.preferences.putBoolean("sketchbook.auto_clean", sketchCleanBox.isSelected());
+		Base.preferences.put("sketchbook.path", sketchbookLocationField.getText());
+		Base.preferences.putBoolean("editor.external", externalEditorBox.isSelected());
 
 		String newSizeText = fontSizeField.getText();
 		try {
 			int newSize = Integer.parseInt(newSizeText.trim());
-			String fontName = Preferences.get("editor.font");
+			String fontName = Base.preferences.get("editor.font","Monospaced,plain,12");
 			if (fontName != null) {
 				String pieces[] = fontName.split(",");
 				pieces[2] = String.valueOf(newSize);
@@ -307,7 +278,7 @@ public class PreferencesWindow extends JFrame {
 					if (buf.length() > 0) buf.append(",");
 					buf.append(piece);
 				}
-				Preferences.set("editor.font", buf.toString());
+				Base.preferences.put("editor.font", buf.toString());
 			}
 
 		} catch (Exception e) {
@@ -320,10 +291,10 @@ public class PreferencesWindow extends JFrame {
 		this.editor = editor;
 
 		// set all settings entry boxes to their actual status
-		sketchPromptBox.setSelected(Preferences.getBoolean("sketchbook.prompt"));
-		sketchCleanBox.setSelected(Preferences.getBoolean("sketchbook.auto_clean"));
-		sketchbookLocationField.setText(Preferences.get("sketchbook.path"));
-		externalEditorBox.setSelected(Preferences.getBoolean("editor.external"));
+		sketchPromptBox.setSelected(Base.preferences.getBoolean("sketchbook.prompt",false));
+		sketchCleanBox.setSelected(Base.preferences.getBoolean("sketchbook.auto_clean",true));
+		sketchbookLocationField.setText(Base.preferences.get("sketchbook.path",null));
+		externalEditorBox.setSelected(Base.preferences.getBoolean("editor.external",false));
 
 		setVisible(true);
 	}

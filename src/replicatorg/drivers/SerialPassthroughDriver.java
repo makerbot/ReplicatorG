@@ -29,17 +29,11 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Vector;
 
 import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
-import replicatorg.app.Preferences;
-import replicatorg.app.Serial;
-import replicatorg.app.Serial.Name;
-import replicatorg.app.exceptions.SerialException;
-import replicatorg.app.tools.XML;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 

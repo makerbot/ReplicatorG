@@ -1053,7 +1053,7 @@ public class GCodeParser {
 				if (!showContinueDialog(message))
 					throw new JobCancelledException();
 			} else if (mCode == 1
-					&& Preferences.getBoolean("machine.optionalstops")) {
+					&& Base.preferences.getBoolean("machine.optionalstops",true)) {
 				if (comment.length() > 0)
 					message = "Optional Halt: " + comment;
 				else

@@ -34,9 +34,7 @@ import java.awt.Image;
 import javax.swing.JComponent;
 
 import replicatorg.app.Base;
-import replicatorg.app.Preferences;
 import replicatorg.app.syntax.JEditTextArea;
-
 import replicatorg.drivers.EstimationDriver;
 
 /**
@@ -67,9 +65,9 @@ public class EditorLineStatus extends JComponent {
 		// see EditorStatus.java for details.
 		// background = Preferences.getColor("linestatus.bgcolor");
 		background = new Color(0x5F, 0x73, 0x25);
-		font = Preferences.getFont("linestatus.font");
-		foreground = Preferences.getColor("linestatus.color");
-		high = Preferences.getInteger("linestatus.height");
+		font = Base.getFontPref("linestatus.font","SansSerif,plain,10");
+		foreground = Base.getColorPref("linestatus.color","#ffffff");
+		high = Base.preferences.getInt("linestatus.height",20);
 
 		if (Base.isMacOS()) {
 			resize = Base.getImage("images/resize.gif", this);

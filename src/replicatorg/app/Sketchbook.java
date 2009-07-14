@@ -84,7 +84,7 @@ public class Sketchbook {
 		examplesFolder = new File(System.getProperty("user.dir"), "examples");
 		examplesPath = examplesFolder.getAbsolutePath();
 
-		String sketchbookPath = Preferences.get("sketchbook.path");
+		String sketchbookPath = Base.preferences.get("sketchbook.path",null);
 
 		// if a value is at least set, first check to see if the
 		// folder exists. if it doesn't, warn the user that the
@@ -124,8 +124,7 @@ public class Sketchbook {
 			// System.out.println("resetting sketchbook path");
 			File sketchbookFolder = Base.getDefaultSketchbookFolder();
 			// System.out.println("default is " + sketchbookFolder);
-			Preferences.set("sketchbook.path", sketchbookFolder
-					.getAbsolutePath());
+			Base.preferences.put("sketchbook.path", sketchbookFolder.getAbsolutePath());
 
 			if (!sketchbookFolder.exists())
 				sketchbookFolder.mkdirs();
@@ -135,7 +134,7 @@ public class Sketchbook {
 	}
 
 	static public String getSketchbookPath() {
-		return Preferences.get("sketchbook.path");
+		return Base.preferences.get("sketchbook.path",null);
 	}
 
 	/**
@@ -146,7 +145,7 @@ public class Sketchbook {
 		File newbieDir = null;
 		String newbieName = null;
 
-		boolean prompt = Preferences.getBoolean("sketchbook.prompt");
+		boolean prompt = Base.preferences.getBoolean("sketchbook.prompt",false);
 		if (shift)
 			prompt = !prompt; // reverse behavior if shift is down
 
@@ -483,7 +482,7 @@ public class Sketchbook {
 				if (gcode.exists() && (Base.calcFolderSize(prey) == 0)) {
 					// System.out.println("i want to remove " + prey);
 
-					if (Preferences.getBoolean("sketchbook.auto_clean")) {
+					if (Base.preferences.getBoolean("sketchbook.auto_clean",true)) {
 						Base.removeDir(prey);
 
 					} else { // otherwise prompt the user

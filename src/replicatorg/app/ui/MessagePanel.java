@@ -49,7 +49,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
 import replicatorg.app.Base;
-import replicatorg.app.Preferences;
 
 /**
  * Message console that sits below the editing area.
@@ -95,7 +94,7 @@ public class MessagePanel extends JScrollPane {
 	public MessagePanel(MainWindow editor) {
 		this.editor = editor;
 
-		maxLineCount = Preferences.getInteger("console.length");
+		maxLineCount = Base.preferences.getInt("console.length",500);
 
 		consoleDoc = new BufferedStyledDocument(10000, maxLineCount);
 		consoleTextPane = new JTextPane(consoleDoc);
@@ -107,10 +106,10 @@ public class MessagePanel extends JScrollPane {
 		consoleDoc.setParagraphAttributes(0, 0, standard, true);
 
 		// build styles for different types of console output
-		Color bgColor = Preferences.getColor("console.color");
-		Color fgColorOut = Preferences.getColor("console.output.color");
-		Color fgColorErr = Preferences.getColor("console.error.color");
-		Font font = Preferences.getFont("console.font");
+		Color bgColor = Base.getColorPref("console.color","#000000");
+		Color fgColorOut = Base.getColorPref("console.output.color","#ccccbb");
+		Color fgColorErr = Base.getColorPref("console.error.color","#ff3000");
+		Font font = Base.getFontPref("console.font","Monospaced,plain,11");
 
 		stdStyle = new SimpleAttributeSet();
 		StyleConstants.setForeground(stdStyle, fgColorOut);
@@ -137,7 +136,7 @@ public class MessagePanel extends JScrollPane {
 		// and size window accordingly
 		FontMetrics metrics = this.getFontMetrics(font);
 		int height = metrics.getAscent() + metrics.getDescent();
-		int lines = Preferences.getInteger("console.lines"); // , 4);
+		int lines = Base.preferences.getInt("console.lines",4); // , 4);
 		int sizeFudge = 6; // 10; // unclear why this is necessary, but it is
 		setPreferredSize(new Dimension(1024, (height * lines) + sizeFudge));
 		setMinimumSize(new Dimension(1024, (height * 4) + sizeFudge));
@@ -148,14 +147,14 @@ public class MessagePanel extends JScrollPane {
 
 			tempFolder = Base.createTempFolder("console");
 			try {
-				String outFileName = Preferences.get("console.output.file");
+				String outFileName = Base.preferences.get("console.output.file","stdout.txt");
 				if (outFileName != null) {
 					outFile = new File(tempFolder, outFileName);
 					stdoutFile = new FileOutputStream(outFile);
 					// outFile.deleteOnExit();
 				}
 
-				String errFileName = Preferences.get("console.error.file");
+				String errFileName = Base.preferences.get("console.error.file","stderr.txt");
 				if (errFileName != null) {
 					errFile = new File(tempFolder, errFileName);
 					stderrFile = new FileOutputStream(errFile);
@@ -172,7 +171,7 @@ public class MessagePanel extends JScrollPane {
 			consoleErr = new PrintStream(new EditorConsoleStream(this, true,
 					stderrFile));
 
-			if (Preferences.getBoolean("console")) {
+			if (Base.preferences.getBoolean("console",true)) {
 				try {
 					System.setOut(consoleOut);
 					System.setErr(consoleErr);

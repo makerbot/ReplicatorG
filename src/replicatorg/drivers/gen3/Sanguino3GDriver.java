@@ -23,9 +23,7 @@
 
 package replicatorg.drivers.gen3;
 
-import java.io.IOException;
 import java.util.EnumSet;
-import java.util.Vector;
 import java.util.logging.Level;
 
 import javax.vecmath.Point3d;
@@ -33,13 +31,8 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.app.Preferences;
-import replicatorg.app.Serial;
 import replicatorg.app.TimeoutException;
-import replicatorg.app.exceptions.SerialException;
-import replicatorg.app.tools.XML;
 import replicatorg.drivers.BadFirmwareVersionException;
-import replicatorg.drivers.DriverBaseImplementation;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.Axis;

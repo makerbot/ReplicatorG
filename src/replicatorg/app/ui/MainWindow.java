@@ -95,7 +95,6 @@ import org.w3c.dom.Document;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.app.MachineFactory;
-import replicatorg.app.Preferences;
 import replicatorg.app.Serial;
 import replicatorg.app.Sketchbook;
 import replicatorg.app.exceptions.SerialException;
@@ -240,11 +239,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		MRJApplicationUtils.registerQuitHandler(this);
 		MRJApplicationUtils.registerOpenDocumentHandler(this);
 
-		// run static initialization that grabs all the prefs
-		Preferences.init();
-
 		// load up the most recently used files list
-		String mruString = Preferences.get(MRU_LIST_KEY);
+		String mruString = Base.preferences.get(MRU_LIST_KEY,null);
 		mruFiles = new LinkedList<String>();
 		if (mruString != null && mruString.length() != 0) {
 			for (String entry : mruString.split(",")) {
@@ -340,7 +336,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		splitPane.setBorder(null);
 
 		// the default size on windows is too small and kinda ugly
-		int dividerSize = Preferences.getInteger("editor.divider.size");
+		int dividerSize = Base.preferences.getInt("editor.divider.size",0);
 		if (dividerSize != 0) {
 			splitPane.setDividerSize(dividerSize);
 		}
@@ -436,17 +432,17 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		boolean windowPositionValid = true;
 
-		if (Preferences.get("last.screen.height") != null) {
+		if (Base.preferences.getInt("last.screen.height",-1) != -1) {
 			// if screen size has changed, the window coordinates no longer
 			// make sense, so don't use them unless they're identical
-			int screenW = Preferences.getInteger("last.screen.width");
-			int screenH = Preferences.getInteger("last.screen.height");
+			int screenW = Base.preferences.getInt("last.screen.width",600);
+			int screenH = Base.preferences.getInt("last.screen.height",600);
 
 			if ((screen.width != screenW) || (screen.height != screenH)) {
 				windowPositionValid = false;
 			}
-			int windowX = Preferences.getInteger("last.window.x");
-			int windowY = Preferences.getInteger("last.window.y");
+			int windowX = Base.preferences.getInt("last.window.x",200);
+			int windowY = Base.preferences.getInt("last.window.y",200);
 			if ((windowX < 0) || (windowY < 0) || (windowX > screenW)
 					|| (windowY > screenH)) {
 				windowPositionValid = false;
@@ -458,25 +454,25 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		if (!windowPositionValid) {
 			// System.out.println("using default size");
-			int windowH = Preferences.getInteger("default.window.height");
-			int windowW = Preferences.getInteger("default.window.width");
+			int windowH = Base.preferences.getInt("default.window.height",500);
+			int windowW = Base.preferences.getInt("default.window.width",600);
 			setBounds((screen.width - windowW) / 2,
 					(screen.height - windowH) / 2, windowW, windowH);
 			// this will be invalid as well, so grab the new value
-			Preferences.setInteger("last.divider.location", splitPane
+			Base.preferences.putInt("last.divider.location", splitPane
 					.getDividerLocation());
 		} else {
-			setBounds(Preferences.getInteger("last.window.x"), Preferences
-					.getInteger("last.window.y"), Preferences
-					.getInteger("last.window.width"), Preferences
-					.getInteger("last.window.height"));
+			setBounds(Base.preferences.getInt("last.window.x",200), 
+					Base.preferences.getInt("last.window.y",200), 
+					Base.preferences.getInt("last.window.width",500), 
+					Base.preferences.getInt("last.window.height",600));
 		}
 
 		// last sketch that was in use, or used to launch the app
 		if (Base.openedAtStartup != null) {
 			handleOpen2(Base.openedAtStartup);
 		} else {
-			String sketchPath = Preferences.get("last.sketch.path");
+			String sketchPath = Base.preferences.get("last.sketch.path",null);
 			// Sketch sketchTemp = new Sketch(sketchPath);
 
 			if ((sketchPath != null) && (new File(sketchPath)).exists()) {
@@ -488,9 +484,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 
 		// location for the console/editor area divider
-		int location = Preferences.getInteger("last.divider.location");
-		splitPane.setDividerLocation(location);
-
+		int location = Base.preferences.getInt("last.divider.location",-1);
+		if (location != -1) {
+			splitPane.setDividerLocation(location);
+		} else {
+			splitPane.setDividerLocation(0.7);
+		}
+		
 		// read the preferences that are settable in the preferences window
 		applyPreferences();
 	}
@@ -503,7 +503,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public void applyPreferences() {
 
 		// apply the setting for 'use external editor'
-		boolean external = Preferences.getBoolean("editor.external");
+		boolean external = Base.preferences.getBoolean("editor.external",false);
 
 		textarea.setEditable(!external);
 		saveMenuItem.setEnabled(!external);
@@ -513,22 +513,22 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		TextAreaPainter painter = textarea.getPainter();
 		if (external) {
 			// disable line highlight and turn off the caret when disabling
-			Color color = Preferences.getColor("editor.external.bgcolor");
+			Color color = Base.getColorPref("editor.external.bgcolor","#168299");
 			painter.setBackground(color);
 			painter.setLineHighlightEnabled(false);
 			textarea.setCaretVisible(false);
 
 		} else {
-			Color color = Preferences.getColor("editor.bgcolor");
+			Color color = Base.getColorPref("editor.bgcolor","#ffffff");
 			painter.setBackground(color);
-			boolean highlight = Preferences.getBoolean("editor.linehighlight");
+			boolean highlight = Base.preferences.getBoolean("editor.linehighlight",true);
 			painter.setLineHighlightEnabled(highlight);
 			textarea.setCaretVisible(true);
 		}
 
 		// apply changes to the font size for the editor
 		// TextAreaPainter painter = textarea.getPainter();
-		painter.setFont(Preferences.getFont("editor.font"));
+		painter.setFont(Base.getFontPref("editor.font","Monospaced,plain,12"));
 		// Font font = painter.getFont();
 		// textarea.getPainter().setFont(new Font("Courier", Font.PLAIN, 36));
 
@@ -547,23 +547,23 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		// window location information
 		Rectangle bounds = getBounds();
-		Preferences.setInteger("last.window.x", bounds.x);
-		Preferences.setInteger("last.window.y", bounds.y);
-		Preferences.setInteger("last.window.width", bounds.width);
-		Preferences.setInteger("last.window.height", bounds.height);
+		Base.preferences.putInt("last.window.x", bounds.x);
+		Base.preferences.putInt("last.window.y", bounds.y);
+		Base.preferences.putInt("last.window.width", bounds.width);
+		Base.preferences.putInt("last.window.height", bounds.height);
 
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		Preferences.setInteger("last.screen.width", screen.width);
-		Preferences.setInteger("last.screen.height", screen.height);
+		Base.preferences.putInt("last.screen.width", screen.width);
+		Base.preferences.putInt("last.screen.height", screen.height);
 
 		// last sketch that was in use
 		// Preferences.set("last.sketch.name", sketchName);
 		// Preferences.set("last.sketch.name", sketch.name);
-		Preferences.set("last.sketch.path", sketch.getMainFilePath());
+		Base.preferences.put("last.sketch.path", sketch.getMainFilePath());
 
 		// location for the console/editor area divider
 		int location = splitPane.getDividerLocation();
-		Preferences.setInteger("last.divider.location", location);
+		Base.preferences.putInt("last.divider.location", location);
 
 		// save mru list
 		StringBuffer sb = new StringBuffer();
@@ -572,7 +572,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				sb.append(",");
 			sb.append(s);
 		}
-		Preferences.set(MRU_LIST_KEY, sb.toString());
+		Base.preferences.put(MRU_LIST_KEY, sb.toString());
 	}
 
 	// ...................................................................
@@ -854,7 +854,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
 			item.setState(true);
 			String name = item.getText();
-			Preferences.set("machine.name", name);
+			Base.preferences.put("machine.name", name);
 
 			// load it and set it.
 
@@ -869,8 +869,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		try {
 			for (String name : MachineFactory.getMachineNames() ) {
 				JMenuItem rbMenuItem = new JCheckBoxMenuItem(name,
-						name.equals(Preferences
-								.get("machine.name")));
+						name.equals(Base.preferences
+								.get("machine.name",null)));
 				rbMenuItem.addActionListener(machineMenuListener);
 				machineMenu.add(rbMenuItem);
 				empty = false;
@@ -1372,7 +1372,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		pauseItem.setEnabled(isBusy);
 
 		// clear the console on each build, unless the user doesn't want to
-		if (isBusy && Preferences.getBoolean("console.auto_clear")) {
+		if (isBusy && Base.preferences.getBoolean("console.auto_clear",true)) {
 			console.clear();
 		}
 
@@ -1844,7 +1844,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			storePreferences(); // Updates MRU list, in case program aborts
 			// before quit
 			header.rebuild();
-			if (Preferences.getBoolean("console.auto_clear")) {
+			if (Base.preferences.getBoolean("console.auto_clear",true)) {
 				console.clear();
 			}
 
@@ -2047,7 +2047,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	protected void handleQuit2() {
 
 		storePreferences();
-		Preferences.save();
 
 		sketchbook.clean();
 		console.handleQuit();

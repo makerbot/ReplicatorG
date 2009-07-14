@@ -365,7 +365,7 @@ public class MachineController {
 	
 	private void loadDriver() {
 		// load our utility drivers
-		if (Preferences.getBoolean("machinecontroller.simulator")) {
+		if (Base.preferences.getBoolean("machinecontroller.simulator",true)) {
 			simulator = new SimulationDriver();
 			simulator.setMachine(loadModel());
 		}
