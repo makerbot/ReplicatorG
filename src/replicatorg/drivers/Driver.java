@@ -40,11 +40,6 @@ import replicatorg.machine.model.MachineModel;
 // import org.xml.sax.helpers.XMLReaderFactory;
 
 public interface Driver {
-	/**
-	 * The current serial connection for this machine.
-	 * @param serial
-	 */
-	public void setSerial(Serial serial);
 	
 	/**
 	 * High level functions

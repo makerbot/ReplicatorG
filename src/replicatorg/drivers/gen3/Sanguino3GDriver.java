@@ -44,7 +44,7 @@ import replicatorg.drivers.Version;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
-public class Sanguino3GDriver extends DriverBaseImplementation {
+public class Sanguino3GDriver extends SerialDriver {
 	/**
 	 * An enumeration of the available command codes for the three-axis CNC
 	 * stage.

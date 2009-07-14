@@ -43,7 +43,7 @@ import replicatorg.app.tools.XML;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
-public class SerialPassthroughDriver extends DriverBaseImplementation {
+public class SerialPassthroughDriver extends SerialDriver {
 	/**
 	 * To keep track of outstanding commands
 	 */

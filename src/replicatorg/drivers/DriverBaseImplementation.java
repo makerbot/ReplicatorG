@@ -46,12 +46,6 @@ public class DriverBaseImplementation implements Driver {
 	// our firmware version info
 	private String firmwareName = "Unknown";
 
-	protected Serial serial;
-	
-	public void setSerial(Serial serial) {
-		this.serial = serial;
-	}
-	
 	protected Version version = new Version(0,0);
 	protected Version preferredVersion = new Version(0,0);
 	protected Version minimumVersion = new Version(0,0);

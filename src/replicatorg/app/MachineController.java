@@ -37,6 +37,7 @@ import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.SimulationDriver;
+import replicatorg.drivers.UsesSerial;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineListener;
@@ -353,7 +354,9 @@ public class MachineController {
 	public void setSerial(Serial serial) {
 		if (this.serial != null) { this.serial.dispose(); }
 		this.serial = serial;
-		driver.setSerial(serial);
+		if (driver instanceof UsesSerial) {
+			((UsesSerial)driver).setSerial(serial);
+		}
 		System.err.println("serial port set state change");
 		machineThread.reset();
 	}
