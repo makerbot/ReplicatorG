@@ -40,6 +40,7 @@ import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.tools.XML;
 import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.DriverBaseImplementation;
+import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
