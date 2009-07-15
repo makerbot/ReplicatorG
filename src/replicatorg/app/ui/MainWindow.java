@@ -104,6 +104,7 @@ import replicatorg.app.syntax.PdeTextAreaDefaults;
 import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.drivers.EstimationDriver;
+import replicatorg.drivers.UsesSerial;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
@@ -271,7 +272,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		menubar.add(buildEditMenu());
 		menubar.add(buildGCodeMenu());
 		menubar.add(buildMachineMenu());
-		menubar.add(buildToolsMenu());
 		menubar.add(buildHelpMenu());
 
 		setJMenuBar(menubar);
@@ -582,6 +582,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	private void reloadSerialMenu() {
 		if (serialMenu == null) return;
 		serialMenu.removeAll();
+		if (machine == null || !(machine.driver instanceof UsesSerial))  {
+			JMenuItem item = new JMenuItem("Currently selected machine does not use a serial port.");
+			item.setEnabled(false);
+			serialMenu.add(item);
+			return;
+		}
 		Vector<Serial.Name> names = Serial.scanSerialNames();
 		for (Serial.Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.getName());
@@ -590,7 +596,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
-						machine.setSerial(new Serial(portName));
+						UsesSerial us = (UsesSerial)machine.driver;
+						if (us.getSerial() == null ||
+								us.getSerial().getName() != portName) {
+							us.setSerial(new Serial(portName));
+							machine.reset();
+						}
 					} catch (SerialException se) {
 						se.printStackTrace();
 					}
@@ -816,6 +827,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 		});
 
+		machineMenuListener = new MachineMenuListener();
+
+		serialMenu = new JMenu("Serial Port");
+		reloadSerialMenu();
+		menu.add(serialMenu);
+		
 		item = newJMenuItem("Control Panel", 'J');
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -823,18 +840,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 		});
 		menu.add(item);
-
-		return menu;
-	}
-
-	protected JMenu buildToolsMenu() {
-		machineMenuListener = new MachineMenuListener();
-
-		JMenu menu = new JMenu("Tools");
-
-		serialMenu = new JMenu("Serial Port");
-		reloadSerialMenu();
-		menu.add(serialMenu);
 
 		return menu;
 	}
@@ -1349,7 +1354,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			if (evt.getState() == MachineState.READY ||
 				evt.getState() == MachineState.STOPPING) {
 				final MachineState endState = evt.getState();
-				new Exception().printStackTrace();
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                     	if (endState == MachineState.READY) {
@@ -2249,6 +2253,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	protected void setMachine(MachineController machine) {
+		if (this.machine != null) {
+			this.machine.dispose();
+		}
 		this.machine = machine;
 		machine.setCodeSource(new JEditTextAreaSource(textarea));
 		machineStatusPanel.setMachine(this.machine);
@@ -2259,6 +2266,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machine.addMachineStateListener(this);
 		machine.addMachineStateListener(machineStatusPanel);
 		machine.addMachineStateListener(buttons);
+		reloadSerialMenu();
 	}
 
 	public void loadSimulator() {

@@ -88,10 +88,14 @@ public class MachineController {
 
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
 			Iterator<String> i = source.iterator();
+			System.err.println("BCI start");
 			while (i.hasNext()) {
 				String line = i.next();
-				if (Thread.interrupted())
+				System.err.println("BCI : "+line);
+				if (Thread.interrupted()) {
+					System.err.println("build thread interrupted");
 					return false;
+				}
 				
 				// use our parser to handle the stuff.
 				if (simulator != null)
@@ -133,9 +137,10 @@ public class MachineController {
 				}
 				
 				// bail if we got interrupted.
-				if (state == MachineState.STOPPING)
+				if (state == MachineState.STOPPING) {
 					driver.stop();
 					return false;
+				}
 			}
 			
 			// wait for driver to finish up.
@@ -249,8 +254,6 @@ public class MachineController {
 	
 	// Our driver object.  Null when no driver is selected.
 	public Driver driver = null;
-	// Our serial port.  Null when no serial port is selected.
-	public Serial serial = null;
 	
 	// the simulator driver
 	protected SimulationDriver simulator;
@@ -349,17 +352,6 @@ public class MachineController {
 
 		return model;
 	}
-
-
-	public void setSerial(Serial serial) {
-		if (this.serial != null) { this.serial.dispose(); }
-		this.serial = serial;
-		if (driver instanceof UsesSerial) {
-			((UsesSerial)driver).setSerial(serial);
-		}
-		System.err.println("serial port set state change");
-		machineThread.reset();
-	}
 	
 	public MachineState getState() { return machineThread.state; }
 	
@@ -433,10 +425,6 @@ public class MachineController {
 		return driver;
 	}
 
-	public Serial getSerial() {
-		return serial;
-	}
-	
 	public SimulationDriver getSimulatorDriver() {
 		return simulator;
 	}
@@ -461,8 +449,17 @@ public class MachineController {
 		machineThread.resumeBuild();
 	}
 
+	synchronized public void reset() {
+		machineThread.reset();
+	}
+	
 	synchronized public boolean isPaused() {
 		return getState() == MachineState.PAUSED;
+	}
+	
+	public void dispose() {
+		machineThread.stopBuild();
+		driver.dispose();
 	}
 	
 	private Vector<MachineListener> listeners = new Vector<MachineListener>();

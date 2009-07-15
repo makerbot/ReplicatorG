@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 import replicatorg.app.exceptions.SerialException;
@@ -54,6 +56,9 @@ public class Serial {
 			return available;
 		}
 	}
+	
+	private static Set<Serial> portsInUse = new HashSet<Serial>();
+	
 	/**
 	 * Scan the port ids for a list of potential serial ports that we can use.
 	 * @return A vector of serial port names.
@@ -153,6 +158,7 @@ public class Serial {
 			throw new SerialException("Error opening serial port '" + name
 					+ "'.", e);
 		}
+		portsInUse.add(this);
 	}
 
 	/**
@@ -179,6 +185,7 @@ public class Serial {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		portsInUse.remove(this);
 		port = null;
 	}
 

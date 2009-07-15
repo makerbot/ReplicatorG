@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import replicatorg.app.MachineController;
 import replicatorg.app.Serial;
 import replicatorg.app.TimeoutException;
+import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.Version;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineState;
@@ -69,7 +70,8 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 		if (state == MachineState.NOT_ATTACHED) {
 			if (machine.getDriver() == null) {
 				return "No machine selected";
-			} else if (machine.getSerial() == null) {
+			} else if (machine.driver instanceof UsesSerial && 
+					((UsesSerial)machine.driver).getSerial() == null) {
 				if (Serial.scanSerialNames().size() == 0) {
 					return "No serial ports detected";
 				} else {
@@ -78,7 +80,13 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 			}
 		}
 		if (state == MachineState.CONNECTING) {
-			return "Connecting to "+machine.getName()+" on "+machine.getSerial().getName()+"...";
+			StringBuffer buf = new StringBuffer("Connecting to "+machine.getName());
+			if (machine.driver instanceof UsesSerial) {
+				buf.append(" on ");
+				buf.append(((UsesSerial)machine.driver).getSerial().getName());
+			}
+			buf.append("...");
+			return buf.toString();
 		}
 		StringBuffer message = new StringBuffer("Machine "+machine.getName());
 		message.append(" ("+machine.getDriver().getDriverName()+") ");
