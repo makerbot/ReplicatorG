@@ -15,6 +15,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -165,6 +167,27 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		externalEditorBox.setBounds(left, top, d.width, d.height);
 		right = Math.max(right, left + d.width);
 		top += d.height + GUI_BETWEEN;
+
+
+		JButton delPrefs = new JButton("Delete all preferences");
+		content.add(delPrefs);
+		d = delPrefs.getPreferredSize();
+		delPrefs.setBounds(left, top, d.width, d.height);
+		right = Math.max(right, left + d.width);
+		top += d.height + GUI_BETWEEN;
+		delPrefs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				try {
+					Base.preferences.removeNode();
+					Base.preferences.flush();
+				} catch (BackingStoreException bse) {
+					bse.printStackTrace();
+				}
+				Base.preferences = Preferences.userNodeForPackage(Base.class);
+			}
+			
+			
+		});
 
 		// [ OK ] [ Cancel ] maybe these should be next to the message?
 

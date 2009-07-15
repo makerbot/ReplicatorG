@@ -60,6 +60,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import java.util.prefs.BackingStoreException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -229,7 +230,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// SketchHistory history; // TODO re-enable history
 	Sketchbook sketchbook;
 
-	// Preferences preferences;
 	FindReplace find;
 
 	public MainWindow() {
@@ -565,16 +565,26 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		int location = splitPane.getDividerLocation();
 		Base.preferences.putInt("last.divider.location", location);
 
-		// save mru list
+		saveMRUPrefs();
+		try {
+			Base.preferences.flush();
+		} catch (BackingStoreException bse) {
+			// Not much we can do about this, so let it go with a stack
+			// trace.
+			bse.printStackTrace();
+		}
+	}
+
+	private void saveMRUPrefs() {
 		StringBuffer sb = new StringBuffer();
 		for (String s : mruFiles) {
 			if (sb.length() != 0)
 				sb.append(",");
 			sb.append(s);
 		}
-		Base.preferences.put(MRU_LIST_KEY, sb.toString());
+		Base.preferences.put(MRU_LIST_KEY, sb.toString());		
 	}
-
+	
 	// ...................................................................
 
 	private JMenu serialMenu = null;
@@ -1869,9 +1879,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	void addMRUEntry(String path) {
 		File f = new File(path);
 		String absPath = f.getAbsolutePath();
-		if (!mruFiles.contains(absPath)) {
-			mruFiles.add(absPath);
-		}
+		mruFiles.remove(absPath);
+		mruFiles.add(0,absPath);
+		saveMRUPrefs();
 	}
 
 	// there is no handleSave1 since there's never a need to prompt
