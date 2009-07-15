@@ -88,10 +88,8 @@ public class MachineController {
 
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
 			Iterator<String> i = source.iterator();
-			System.err.println("BCI start");
 			while (i.hasNext()) {
 				String line = i.next();
-				System.err.println("BCI : "+line);
 				if (Thread.interrupted()) {
 					System.err.println("build thread interrupted");
 					return false;
