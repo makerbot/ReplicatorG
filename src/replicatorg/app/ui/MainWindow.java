@@ -599,7 +599,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						UsesSerial us = (UsesSerial)machine.driver;
 						if (us.getSerial() == null ||
 								us.getSerial().getName() != portName) {
-							us.setSerial(new Serial(portName));
+							us.setSerial(new Serial(portName, us));
 							machine.reset();
 						}
 					} catch (SerialException se) {
@@ -1344,11 +1344,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			// start our building thread.
 
 			message("Building...");
+			buildStart = new Date();
 			machine.execute();
-
 		}
 	}
 
+	private Date buildStart = null;
+	
 	public void machineStateChanged(MachineStateChangeEvent evt) {
 		if (building) {
 			if (evt.getState() == MachineState.READY ||
@@ -1357,11 +1359,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                     	if (endState == MachineState.READY) {
-                    		System.err.println("NBC!!!");
-                    		notifyBuildComplete(new Date(), new Date());
+                    		notifyBuildComplete(buildStart, new Date());
                     	} else {
-                    		System.err.println("NBA!!!");
-                    		notifyBuildAborted(new Date(), new Date());
+                    		notifyBuildAborted(buildStart, new Date());
                     	}
                         buildingOver();
                     }
@@ -1398,6 +1398,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * etc.
 	 */
 	private void notifyBuildComplete(Date started, Date finished) {
+		assert started != null;
+		assert finished != null;
+
 		long elapsed = finished.getTime() - started.getTime();
 
 		String message = "Build finished.\n\n";
@@ -1408,6 +1411,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	private void notifyBuildAborted(Date started, Date aborted) {
+		assert started != null;
+		assert aborted != null;
+
 		long elapsed = aborted.getTime() - started.getTime();
 
 		String message = "Build aborted.\n\n";

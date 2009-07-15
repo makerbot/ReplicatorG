@@ -304,8 +304,7 @@ public class MachineController {
 	}
 
 	/**
-	 * Executes the job. Is run from the Build Thread. Returns true on success,
-	 * false on failure or interruption
+	 * Begin running a job.
 	 */
 	public boolean execute() {
 		// start simulator

@@ -32,6 +32,7 @@ import gnu.io.UnsupportedCommOperationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,10 +40,11 @@ import java.util.Vector;
 
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.exceptions.UnknownSerialPortException;
+import replicatorg.drivers.UsesSerial;
 
 public class Serial {
 
-	public static class Name {
+	public static class Name implements Comparable<Name> {
 		private String name;
 		private boolean available;
 		public Name(String name, boolean available) {
@@ -54,6 +56,12 @@ public class Serial {
 		}
 		public boolean isAvailable() {
 			return available;
+		}
+		public int compareTo(Name other) {
+			// There should only be one entry per name, so we're going to presume
+			// that any two entries with identical names are effectively the same.
+			// This also simplifies sorting, etc.
+			return name.compareTo(other.name);
 		}
 	}
 	
@@ -79,6 +87,14 @@ public class Serial {
 			}
 		} catch (Exception e) {
 		}
+		// In-use ports may not end up in the enumeration (thanks, RXTX, you fabulous pile of shit!), so
+		// we'll scan for them, insert them if necessary, and sort the whole.
+		assert portsInUse.size() <= 1;
+		for (Serial port: portsInUse) {
+			Name n = new Name(port.getName(),false);
+			if (!v.contains(n)) { v.add(n); }
+		}
+		Collections.sort(v);
 		return v;
 	}
 	
@@ -107,6 +123,11 @@ public class Serial {
 		init(name, rate, parity, data, stop);
 	}
 
+	public Serial(String name, UsesSerial us) throws SerialException {
+		if (name == null) { name = us.getPortName(); }
+		init(name,us.getRate(),us.getParity(),us.getDataBits(),us.getStopBits());
+	}
+	
 	public Serial(String name) throws SerialException {
 		init(name,38400,'N',8,1);
 	}
