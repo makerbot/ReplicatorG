@@ -594,10 +594,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			serialMenu.add(item);
 			return;
 		}
+		String currentName = null;
+		UsesSerial us = (UsesSerial)machine.driver;
+		if (us.getSerial() != null) {
+			currentName = us.getSerial().getName();
+		}
 		Vector<Serial.Name> names = Serial.scanSerialNames();
 		for (Serial.Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.getName());
 			item.setEnabled(name.isAvailable());
+			item.setSelected(name.getName() == currentName);
 			final String portName = name.getName();
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -1373,6 +1379,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
                     }
                 });
 			}
+		}
+		if (evt.getState() == MachineState.READY) {
+			reloadSerialMenu();
 		}
 	}
 
