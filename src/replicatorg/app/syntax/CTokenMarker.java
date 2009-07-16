@@ -123,9 +123,9 @@ loop:           for(int i = offset; i < mlength; i++)
                                 backslash = false;
                                 if(c == ')')
                                 {
-				    addToken(i+1 - lastOffset,token);
-				    token = Token.NULL;
-				    lastOffset = lastKeyword = i;
+                                	addToken(i+1 - lastOffset,token);
+                                	token = Token.NULL;
+                                	lastOffset = lastKeyword = i+1;
                                 }
                                 break;
                         case Token.LITERAL1:

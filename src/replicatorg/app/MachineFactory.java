@@ -25,7 +25,9 @@ package replicatorg.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Vector;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -49,6 +51,27 @@ public class MachineFactory {
 
 	public static MachineController loadSimulator() {
 		return load("3-Axis Simulator");
+	}
+	
+	public static Vector<String> getMachineNames() {
+		Vector<String> v = new Vector<String>();
+		
+		NodeList nl = MachineFactory.loadMachinesConfig()
+				.getElementsByTagName("machine");
+		for (int i = 0; i < nl.getLength(); i++) {
+			// look up each machines set of kids
+			Node n = nl.item(i);
+			NodeList kids = n.getChildNodes();
+			for (int j = 0; j < kids.getLength(); j++) {
+				Node kid = kids.item(j);
+				if (kid.getNodeName().equals("name")) {
+					String machineName = kid.getFirstChild().getNodeValue()
+							.trim();
+					v.add(machineName);
+				}
+			}
+		}
+		return v;
 	}
 
 	// look for machine configuration node.
@@ -86,12 +109,14 @@ public class MachineFactory {
 		return dom.getFirstChild();
 	}
 
-	// why not load it everytime! no stale configs...
-	static boolean usingDistXmlWarned = false; // / Have we been warned that
-												// we're using
-												// machines.xml.dist?
+	/** We only need to warn the user if we're loading the machines.xml.dist file once. */
+	static boolean usingDistXmlWarned = false; 
 
-	public static Document loadMachinesConfig() {
+	/** Attempt to load the machines.xml file.  If it's not found, attempt to load the machines.xml.dist
+	 * file.
+	 * @return a Document object representing the config, or null if unable to load the document.
+	 */
+	private static Document loadMachinesConfig() {
 		// attempt to load our xml document.
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		try {
@@ -102,16 +127,14 @@ public class MachineFactory {
 					f = new File("machines.xml.dist");
 					if (f.exists()) {
 						if (!usingDistXmlWarned) {
-							Base
-									.showMessage(
+							Base.showMessage(
 											"Machines.xml Not Found",
 											"The machine description file 'machines.xml' was not found.\n"
 													+ "Falling back to using 'machines.xml.dist' instead.");
 							usingDistXmlWarned = true;
 						}
 					} else {
-						Base
-								.showError(
+						Base.showError(
 										"Machines.xml Not Found",
 										"The machine description file 'machines.xml' was not found.\n"
 												+ "Make sure you're running ReplicatorG from the correct directory.",

@@ -23,6 +23,7 @@
 
 package replicatorg.app;
 
+import java.util.EnumSet;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,12 +31,10 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.vecmath.Point3d;
 
-import replicatorg.app.exceptions.JobCancelledException;
-import replicatorg.app.exceptions.JobEndException;
-import replicatorg.app.exceptions.JobRewindException;
-import replicatorg.app.models.ToolModel;
-import replicatorg.app.drivers.*;
 import replicatorg.app.exceptions.*;
+import replicatorg.drivers.*;
+import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.ToolModel;
 
 public class GCodeParser {
 	// command to parse
@@ -701,22 +700,12 @@ public class GCodeParser {
 			// go home to your limit switches
 			case 28:
 				// home all axes?
-				if (hasCode("X") && hasCode("Y") && hasCode("Z")) {
-					driver.homeXYZ();
-				} else {
-					// x and y?
-					if (hasCode("X") && hasCode("Y"))
-						driver.homeXY();
-					// just x?
-					else if (hasCode("X"))
-						driver.homeX();
-					// just y?
-					else if (hasCode("Y"))
-						driver.homeY();
-					// just z?
-					else if (hasCode("Z"))
-						driver.homeZ();
-				}
+				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
+				
+				if (hasCode("X")) axes.add(Axis.X);
+				if (hasCode("Y")) axes.add(Axis.Y);
+				if (hasCode("Z")) axes.add(Axis.Z);
+				driver.homeAxes(axes);
 				break;
 
 			// single probe
@@ -1064,7 +1053,7 @@ public class GCodeParser {
 				if (!showContinueDialog(message))
 					throw new JobCancelledException();
 			} else if (mCode == 1
-					&& Preferences.getBoolean("machine.optionalstops")) {
+					&& Base.preferences.getBoolean("machine.optionalstops",true)) {
 				if (comment.length() > 0)
 					message = "Optional Halt: " + comment;
 				else

@@ -29,8 +29,10 @@
 
 package replicatorg.app;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Insets;
@@ -53,7 +55,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -64,8 +73,7 @@ import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
-import replicatorg.core.PApplet;
-import replicatorg.core.PConstants;
+import replicatorg.app.ui.MainWindow;
 
 import com.apple.mrj.MRJApplicationUtils;
 import com.apple.mrj.MRJFileUtils;
@@ -75,35 +83,81 @@ import com.ice.jni.registry.Registry;
 import com.ice.jni.registry.RegistryKey;
 
 /**
- * The base class for the main ReplicatorG application.
- * <P>
  * Primary role of this class is for platform identification and general
  * interaction with the system (launching URLs, loading files and images, etc)
  * that comes from that.
  */
 public class Base {
-	public static final int VERSION = 4;
+	/**
+	 * The version number of this edition of replicatorG.
+	 */
+	public static final int VERSION = 5;
+	/**
+	 * The textual representation of this version (4 digits, zero padded).
+	 */
+	public static final String VERSION_NAME = String.format("%04d",VERSION);
 
-	public static final String VERSION_NAME = "0004";
-
-	// our machine object.
+	/**
+	 * The machine controller in use.
+	 */
 	private static MachineController machine;
-
+	
+	/**
+	 * The general-purpose logging object.
+	 */
+	public static Logger logger = Logger.getLogger("replicatorg.log");
+	{
+		logger.setLevel(Level.FINE);
+		Handler h = new ConsoleHandler();
+		h.setLevel(Level.FINE);
+		logger.addHandler(h);
+	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
 	 * handler.
 	 */
-	static String openedAtStartup;
+	static public String openedAtStartup;
 
-	Editor editor;
+	
+	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
+
+	static public Font getFontPref(String name, String defaultValue) {
+		String s = preferences.get(name,defaultValue);
+		StringTokenizer st = new StringTokenizer(s, ",");
+		String fontname = st.nextToken();
+		String fontstyle = st.nextToken();
+		return new Font(fontname,
+				((fontstyle.indexOf("bold") != -1) ? Font.BOLD : 0)
+						| ((fontstyle.indexOf("italic") != -1) ? Font.ITALIC
+								: 0), Integer.parseInt(st.nextToken()));
+	}
+	
+	static public Color getColorPref(String name,String defaultValue) {
+		String s = preferences.get(name, defaultValue);
+		Color parsed = null;
+		if ((s != null) && (s.indexOf("#") == 0)) {
+			try {
+				int v = Integer.parseInt(s.substring(1), 16);
+				parsed = new Color(v);
+			} catch (Exception e) {
+			}
+		}
+		// if (parsed == null) return otherwise;
+		return parsed;
+	}
+
+	/**
+	 * The main UI window.
+	 */
+	MainWindow editor = null;
 
 	static public void main(String args[]) {
 
 		// make sure that this is running on java 1.5
-		if (PApplet.javaVersion < 1.5f) {
+		if (Base.javaVersion < 1.5f) {
 			Base.showError("Need to install Java 1.5",
 					"This version of ReplicatorG requires\n"
-							+ "Java 1.4 or later to run properly.\n"
+							+ "Java 1.5 or later to run properly.\n"
 							+ "Please visit java.com to upgrade.", null);
 		}
 
@@ -113,14 +167,17 @@ public class Base {
 			Base.openedAtStartup = args[0];
 		}
 
+		// If legacy prefs need loading, load them into the prefs
+		// TODO: Legacy preference loading
+		
 		// register a temporary/early version of the mrj open document handler,
 		// because the event may be lost (sometimes, not always) by the time
-		// that Editor is properly constructed.
+		// that MainWindow is properly constructed.
 
 		MRJOpenDocumentHandler startupOpen = new MRJOpenDocumentHandler() {
 			public void handleOpenFile(File file) {
 				// this will only get set once.. later will be handled
-				// by the Editor version of this fella
+				// by the MainWindow version of this fella
 				if (Base.openedAtStartup == null) {
 					// System.out.println("handling outside open file: " +
 					// file);
@@ -134,7 +191,7 @@ public class Base {
 
 	public Base() {
 		machine = null;
-
+		
 		// set the look and feel before opening the window
 
 		try {
@@ -168,7 +225,7 @@ public class Base {
 		JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
 		// build the editor object
-		editor = new Editor();
+		editor = new MainWindow();
 
 		// get things rawkin
 		editor.pack();
@@ -179,12 +236,73 @@ public class Base {
 		// show the window
 		editor.setVisible(true);
 
-		// load up our machine controller =)
-		editor.loadMachine(Preferences.get("machine.name"));
+		// load up our default machine
+		String machineName = preferences.get("machine.name",null); 
+		if (machineName != null) {
+			editor.loadMachine(machineName);
+		}
 
-		// check for updates
-		if (Preferences.getBoolean("update.check")) {
-			new UpdateCheck(editor);
+	}
+
+	public enum Platform {
+		WINDOWS, MACOS9, MACOSX, LINUX, OTHER
+	}
+
+	/**
+	 * Full name of the Java version (i.e. 1.5.0_11). Prior to 0125, this was
+	 * only the first three digits.
+	 */
+	public static final String javaVersionName = System.getProperty("java.version");
+
+	/**
+	 * Version of Java that's in use, whether 1.1 or 1.3 or whatever, stored as
+	 * a float.
+	 * <P>
+	 * Note that because this is stored as a float, the values may not be <EM>exactly</EM>
+	 * 1.3 or 1.4. Instead, make sure you're comparing against 1.3f or 1.4f,
+	 * which will have the same amount of error (i.e. 1.40000001). This could
+	 * just be a double, but since Processing only uses floats, it's safer for
+	 * this to be a float because there's no good way to specify a double with
+	 * the preproc.
+	 */
+	public static final float javaVersion = new Float(javaVersionName.substring(0, 3)).floatValue();
+	/**
+	 * Current platform in use
+	 */
+	static public Platform platform;
+
+	/**
+	 * Current platform in use.
+	 * <P>
+	 * Equivalent to System.getProperty("os.name"), just used internally.
+	 */
+	static public String platformName = System.getProperty("os.name");
+
+	static {
+		// figure out which operating system
+		// this has to be first, since editor needs to know
+
+		if (platformName.toLowerCase().indexOf("mac") != -1) {
+			// can only check this property if running on a mac
+			// on a pc it throws a security exception and kills the applet
+			// (but on the mac it does just fine)
+			if (System.getProperty("mrj.version") != null) { // running on a
+																// mac
+				platform = (platformName.equals("Mac OS X")) ? Platform.MACOSX : Platform.MACOS9;
+			}
+
+		} else {
+			String osname = System.getProperty("os.name");
+
+			if (osname.indexOf("Windows") != -1) {
+				platform = Platform.WINDOWS;
+
+			} else if (osname.equals("Linux")) { // true for the ibm vm
+				platform = Platform.LINUX;
+
+			} else {
+				platform = Platform.OTHER;
+			}
 		}
 	}
 
@@ -195,153 +313,28 @@ public class Base {
 	 * specifically a Mac OS X machine because it doesn't run on OS 9 anymore.
 	 */
 	static public boolean isMacOS() {
-		return PApplet.platform == PConstants.MACOSX;
+		return platform == Platform.MACOSX;
 	}
 
 	/**
 	 * returns true if running on windows.
 	 */
 	static public boolean isWindows() {
-		return PApplet.platform == PConstants.WINDOWS;
+		return platform == Platform.WINDOWS;
 	}
 
 	/**
 	 * true if running on linux.
 	 */
 	static public boolean isLinux() {
-		return PApplet.platform == PConstants.LINUX;
-	}
-
-	// .................................................................
-
-	static final int kDocumentsFolderType = ('d' << 24) | ('o' << 16)
-			| ('c' << 8) | 's';
-
-	static final int kPreferencesFolderType = ('p' << 24) | ('r' << 16)
-			| ('e' << 8) | 'f';
-
-	static final int kDomainLibraryFolderType = ('d' << 24) | ('l' << 16)
-			| ('i' << 8) | 'b';
-
-	static final short kUserDomain = -32763;
-
-	static public File getSettingsFolder() {
-		File dataFolder = null;
-
-		String pref = Preferences.get("settings.path");
-		if (pref != null) {
-			dataFolder = new File(pref);
-
-		} else if (Base.isMacOS()) {
-			// carbon folder constants
-			// http://developer.apple.com/documentation/Carbon/Reference
-			// /Folder_Manager/folder_manager_ref/constant_6.html#/
-			// /apple_ref/doc/uid/TP30000238/C006889
-
-			// additional information found int the local file:
-			// /System/Library/Frameworks/CoreServices.framework
-			// /Versions/Current/Frameworks/CarbonCore.framework/Headers/
-
-			// this is the 1.4 version.. but using 1.3 since i have the stubs
-			// import com.apple.eio.*
-			// println(FileManager.findFolder(kUserDomain,
-			// kDomainLibraryFolderType));
-
-			// not clear if i can write to this folder tho..
-			try {
-				// this method has to be dynamically loaded, because
-				MRJOSType domainLibrary = new MRJOSType("dlib");
-				Method findFolderMethod = MRJFileUtils.class.getMethod(
-						"findFolder",
-						new Class[] { Short.TYPE, MRJOSType.class });
-				File libraryFolder = (File) findFolderMethod.invoke(null,
-						new Object[] { new Short(kUserDomain), domainLibrary });
-
-				dataFolder = new File(libraryFolder, "ReplicatorG");
-
-			} catch (Exception e) {
-				// this could be FileNotFound or NoSuchMethod
-				// } catch (FileNotFoundException e) {
-				// e.printStackTrace();
-				// System.exit(1);
-				showError("Problem getting data folder",
-						"Error getting the ReplicatorG data folder.", e);
-			}
-
-		} else if (Base.isWindows()) {
-			// looking for Documents and Settings/blah/Application
-			// Data/ReplicatorG
-
-			// this is just based on the other documentation, and eyeballing
-			// that part of the registry.. not confirmed by any msft/msdn docs.
-			// HKEY_CURRENT_USER\Software\Microsoft
-			// \Windows\CurrentVersion\Explorer\Shell Folders
-			// Value Name: AppData
-			// Value Type: REG_SZ
-			// Value Data: path
-
-			try {
-				// RegistryKey topKey = Registry.getTopLevelKey("HKCU");
-				RegistryKey topKey = Registry.HKEY_CURRENT_USER;
-
-				String localKeyPath = "Software\\Microsoft\\Windows\\CurrentVersion"
-						+ "\\Explorer\\Shell Folders";
-				RegistryKey localKey = topKey.openSubKey(localKeyPath);
-				String appDataPath = cleanKey(localKey
-						.getStringValue("AppData"));
-				// System.out.println("app data path is " + appDataPath);
-				// System.exit(0);
-				// topKey.closeKey(); // necessary?
-				// localKey.closeKey();
-
-				dataFolder = new File(appDataPath, "ReplicatorG");
-
-			} catch (Exception e) {
-				showError("Problem getting data folder",
-						"Error getting the ReplicatorG data folder.", e);
-			}
-			// return null;
-
-		} else {
-			// otherwise make a .replicatorg directory int the user's home dir
-			File home = new File(System.getProperty("user.home"));
-			dataFolder = new File(home, ".replicatorg");
-		}
-
-		// create the folder if it doesn't exist already
-		boolean result = true;
-		if (dataFolder != null && !dataFolder.exists()) {
-			result = dataFolder.mkdirs();
-		}
-
-		if (!result) {
-			// try the fallback location
-			System.out.println("Using fallback path for settings.");
-			String fallback = Preferences.get("settings.path.fallback");
-			dataFolder = new File(fallback);
-			if (!dataFolder.exists()) {
-				result = dataFolder.mkdirs();
-			}
-		}
-
-		if (!result) {
-			showError("Settings issues",
-					"ReplicatorG cannot run because it could not\n"
-							+ "create a folder to store your settings.", null);
-		}
-
-		return dataFolder;
-	}
-
-	static public File getSettingsFile(String filename) {
-		return new File(getSettingsFolder(), filename);
+		return platform == Platform.LINUX;
 	}
 
 	static File buildFolder;
 
 	static public File getBuildFolder() {
 		if (buildFolder == null) {
-			String buildPath = Preferences.get("build.path");
+			String buildPath = preferences.get("build.path",null);
 			if (buildPath != null) {
 				buildFolder = new File(buildPath);
 
@@ -415,7 +408,7 @@ public class Base {
 						"findFolder",
 						new Class[] { Short.TYPE, MRJOSType.class });
 				File documentsFolder = (File) findFolderMethod
-						.invoke(null, new Object[] { new Short(kUserDomain),
+						.invoke(null, new Object[] { new Short(LegacyPrefs.kUserDomain),
 								domainDocuments });
 				sketchbookFolder = new File(documentsFolder, "ReplicatorG");
 
@@ -486,7 +479,7 @@ public class Base {
 		if (!result) {
 			// try the fallback location
 			System.out.println("Using fallback path for sketchbook.");
-			String fallback = Preferences.get("sketchbook.path.fallback");
+			String fallback = preferences.get("sketchbook.path.fallback","sketchbook");
 			sketchbookFolder = new File(fallback);
 			if (!sketchbookFolder.exists()) {
 				result = sketchbookFolder.mkdirs();
@@ -724,21 +717,16 @@ public class Base {
 				com.apple.mrj.MRJFileUtils.openURL(url);
 
 			} else if (Base.isLinux()) {
-				// how's mozilla sound to ya, laddie?
-				// Runtime.getRuntime().exec(new String[] { "mozilla", url });
-				// String browser = Preferences.get("browser");
-				// Runtime.getRuntime().exec(new String[] { browser, url });
-				String launcher = Preferences.get("launcher.linux");
+				String launcher = preferences.get("launcher.linux",null);
 				if (launcher != null) {
 					Runtime.getRuntime().exec(new String[] { launcher, url });
 				}
 			} else {
-				String launcher = Preferences.get("launcher");
+				String launcher = preferences.get("launcher",null);
 				if (launcher != null) {
 					Runtime.getRuntime().exec(new String[] { launcher, url });
 				} else {
-					System.err
-							.println("Unspecified platform, no launcher available.");
+					System.err.println("Unspecified platform, no launcher available.");
 				}
 			}
 
@@ -748,13 +736,13 @@ public class Base {
 		}
 	}
 
-	static boolean openFolderAvailable() {
+	static public boolean openFolderAvailable() {
 		if (Base.isWindows() || Base.isMacOS())
 			return true;
 
 		if (Base.isLinux()) {
 			// Assume that this is set to something valid
-			if (Preferences.get("launcher.linux") != null) {
+			if (preferences.get("launcher.linux",null) != null) {
 				return true;
 			}
 
@@ -765,7 +753,7 @@ public class Base {
 				p.waitFor();
 				// Not installed will throw an IOException (JDK 1.4.2, Ubuntu
 				// 7.04)
-				Preferences.set("launcher.linux", "gnome-open");
+				preferences.put("launcher.linux", "gnome-open");
 				return true;
 			} catch (Exception e) {
 			}
@@ -775,7 +763,7 @@ public class Base {
 				Process p = Runtime.getRuntime().exec(
 						new String[] { "kde-open" });
 				p.waitFor();
-				Preferences.set("launcher.linux", "kde-open");
+				preferences.put("launcher.linux", "kde-open");
 				return true;
 			} catch (Exception e) {
 			}
@@ -806,7 +794,7 @@ public class Base {
 				openURL(folder); // handles char replacement, etc
 
 			} else if (Base.isLinux()) {
-				String launcher = Preferences.get("launcher.linux");
+				String launcher = preferences.get("launcher.linux",null);
 				if (launcher != null) {
 					Runtime.getRuntime()
 							.exec(new String[] { launcher, folder });
@@ -883,7 +871,11 @@ public class Base {
 		Image image = null;
 		Toolkit tk = Toolkit.getDefaultToolkit();
 
-		image = tk.getImage(getLibContents(name));
+		// try to get the URL as a system resource
+	    URL url = ClassLoader.getSystemResource(name);
+		image = tk.getImage(url);
+
+		//image = tk.getImage(getLibContents(name));
 		MediaTracker tracker = new MediaTracker(who);
 		tracker.addImage(image, 0);
 		try {
@@ -1022,7 +1014,7 @@ public class Base {
 				continue;
 			File dead = new File(dir, files[i]);
 			if (!dead.isDirectory()) {
-				if (!Preferences.getBoolean("compiler.save_build_files")) {
+				if (!preferences.getBoolean("compiler.save_build_files",false)) {
 					if (!dead.delete()) {
 						// temporarily disabled
 						System.err.println("Could not delete " + dead);
@@ -1105,17 +1097,15 @@ public class Base {
 	/**
 	 * our singleton interface to get our machine.
 	 */
-	static public MachineController getMachine(String name) {
-		if (machine == null || (machine != null && machine.name != name)) {
+	static public MachineController loadMachine(String name) {
+		if (machine == null || machine.name != name) {
 			machine = MachineFactory.load(name);
 		}
 		return machine;
 	}
 
-	/**
-	 * sometimes we might want to change machines
-	 */
-	static public void setMachine(MachineController m) {
-		machine = m;
+	static public MachineController getMachine() {
+		return machine;
 	}
+
 }

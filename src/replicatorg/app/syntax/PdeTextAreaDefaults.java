@@ -24,12 +24,15 @@
 
 package replicatorg.app.syntax;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.util.StringTokenizer;
+
 import replicatorg.app.Base;
-import replicatorg.app.Preferences;
 
 
 public class PdeTextAreaDefaults extends TextAreaDefaults {
-
+	
   public PdeTextAreaDefaults() {
 
     inputHandler = new DefaultInputHandler();
@@ -167,30 +170,30 @@ public class PdeTextAreaDefaults extends TextAreaDefaults {
 
     // moved from TextAreaPainter
 
-    font = Preferences.getFont("editor.font");
+    font = Base.getFontPref("editor.font","Monospaced,plain,12");
 
-    fgcolor = Preferences.getColor("editor.fgcolor");
-    bgcolor = Preferences.getColor("editor.bgcolor");
+    fgcolor = Base.getColorPref("editor.fgcolor","#000000");
+    bgcolor = Base.getColorPref("editor.bgcolor","#ffffff");
 
     caretVisible = true;
-    caretBlinks = Preferences.getBoolean("editor.caret.blink");
-    caretColor = Preferences.getColor("editor.caret.color");
+    caretBlinks = Base.preferences.getBoolean("editor.caret.blink",true);
+    caretColor = Base.getColorPref("editor.caret.color","#333300");
 
-    selectionColor = Preferences.getColor("editor.selection.color");
+    selectionColor = Base.getColorPref("editor.selection.color","#ffcc00");
 
     lineHighlight =
-      Preferences.getBoolean("editor.linehighlight");
+      Base.preferences.getBoolean("editor.linehighlight",true);
     lineHighlightColor =
-      Preferences.getColor("editor.linehighlight.color");
+    	Base.getColorPref("editor.linehighlight.color","#ddddbb");
 
     bracketHighlight =
-      Preferences.getBoolean("editor.brackethighlight");
+      Base.preferences.getBoolean("editor.brackethighlight",true);
     bracketHighlightColor =
-      Preferences.getColor("editor.brackethighlight.color");
+    	Base.getColorPref("editor.brackethighlight.color","#000000");
 
-    eolMarkers = Preferences.getBoolean("editor.eolmarkers");
-    eolMarkerColor = Preferences.getColor("editor.eolmarkers.color");
+    eolMarkers = Base.preferences.getBoolean("editor.eolmarkers",false);
+    eolMarkerColor = Base.getColorPref("editor.eolmarkers.color","#99991A");
 
-    paintInvalid = Preferences.getBoolean("editor.invalid");
+    paintInvalid = Base.preferences.getBoolean("editor.invalid",false);
   }
 }

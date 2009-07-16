@@ -60,9 +60,6 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
-import replicatorg.app.EditorLineStatus;
-import replicatorg.app.EditorListener;
-
 /**
  * jEdit's text area component. It is more suited for editing program
  * source code than JEditorPane, because it drops the unnecessary features
@@ -1247,14 +1244,6 @@ public class JEditTextArea extends JComponent
     magicCaret = -1;
 
     scrollToCaret();
-
-    // notify the line number feller
-    if (editorLineStatus != null) {
-      //editorLineStatus.set(selectionStartLine, selectionEndLine);
-      //System.out.println("why " + selectionStartLine + " " + selectionEndLine);
-      //System.out.println(getLineOfOffset(start) + " " +
-      //                 getLineOfOffset(end));
-    }
   }
 
 
@@ -1657,19 +1646,6 @@ public class JEditTextArea extends JComponent
       focusedComponent = null;
   }
 
-  /**
-   * Forwards key events directly to the input handler.
-   * This is slightly faster than using a KeyListener
-   * because some Swing overhead is avoided.
-   */
-  public EditorListener editorListener;
-
-  /**
-   * The component that tracks the current line number.
-   */
-  public EditorLineStatus editorLineStatus;
-
-
   public void processKeyEvent(KeyEvent evt) {
     // this had to be added in Processing 007X, because the menu key
     // events weren't making it up to the frame.
@@ -1681,17 +1657,14 @@ public class JEditTextArea extends JComponent
 
     switch(evt.getID()) {
     case KeyEvent.KEY_TYPED:
-      //if ((editorListener != null) && !editorListener.keyTyped(evt)) {
-      inputHandler.keyTyped(evt);
-      break;
+    	inputHandler.keyTyped(evt);
+    	break;
     case KeyEvent.KEY_PRESSED:
-      if ((editorListener != null) && !editorListener.keyPressed(evt)) {
-        inputHandler.keyPressed(evt);
-      }
-      break;
+    	inputHandler.keyPressed(evt);
+    	break;
     case KeyEvent.KEY_RELEASED:
-      inputHandler.keyReleased(evt);
-      break;
+    	inputHandler.keyReleased(evt);
+    	break;
     }
   }
 

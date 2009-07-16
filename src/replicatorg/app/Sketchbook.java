@@ -41,6 +41,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
+import replicatorg.app.ui.MainWindow;
+
 import com.apple.mrj.MRJFileUtils;
 import com.apple.mrj.MRJOSType;
 
@@ -48,7 +50,7 @@ import com.apple.mrj.MRJOSType;
  * Handles sketchbook mechanics for the sketch menu and file I/O.
  */
 public class Sketchbook {
-	Editor editor;
+	MainWindow editor;
 
 	JMenu openMenu;
 
@@ -74,7 +76,7 @@ public class Sketchbook {
 
 	static String examplesPath; // canonical path (for comparison)
 
-	public Sketchbook(Editor editor) {
+	public Sketchbook(MainWindow editor) {
 		this.editor = editor;
 
 		// this shouldn't change throughout.. it may as well be static
@@ -82,7 +84,7 @@ public class Sketchbook {
 		examplesFolder = new File(System.getProperty("user.dir"), "examples");
 		examplesPath = examplesFolder.getAbsolutePath();
 
-		String sketchbookPath = Preferences.get("sketchbook.path");
+		String sketchbookPath = Base.preferences.get("sketchbook.path",null);
 
 		// if a value is at least set, first check to see if the
 		// folder exists. if it doesn't, warn the user that the
@@ -122,8 +124,7 @@ public class Sketchbook {
 			// System.out.println("resetting sketchbook path");
 			File sketchbookFolder = Base.getDefaultSketchbookFolder();
 			// System.out.println("default is " + sketchbookFolder);
-			Preferences.set("sketchbook.path", sketchbookFolder
-					.getAbsolutePath());
+			Base.preferences.put("sketchbook.path", sketchbookFolder.getAbsolutePath());
 
 			if (!sketchbookFolder.exists())
 				sketchbookFolder.mkdirs();
@@ -133,7 +134,7 @@ public class Sketchbook {
 	}
 
 	static public String getSketchbookPath() {
-		return Preferences.get("sketchbook.path");
+		return Base.preferences.get("sketchbook.path",null);
 	}
 
 	/**
@@ -144,7 +145,7 @@ public class Sketchbook {
 		File newbieDir = null;
 		String newbieName = null;
 
-		boolean prompt = Preferences.getBoolean("sketchbook.prompt");
+		boolean prompt = Base.preferences.getBoolean("sketchbook.prompt",false);
 		if (shift)
 			prompt = !prompt; // reverse behavior if shift is down
 
@@ -341,12 +342,12 @@ public class Sketchbook {
 	 * location.
 	 */
 	public void rebuildMenus() {
-		// EditorConsole.systemOut.println("rebuilding menus");
+		// MessagePanel.systemOut.println("rebuilding menus");
 		// rebuild file/open and the toolbar popup menus
 		buildMenu(openMenu);
 		builtOnce = true; // disable error messages while loading
 		buildMenu(popupMenu);
-		// EditorConsole.systemOut.println("done rebuilding menus");
+		// MessagePanel.systemOut.println("done rebuilding menus");
 	}
 
 	public void buildMenu(JMenu menu) {
@@ -356,7 +357,7 @@ public class Sketchbook {
 		menu.removeAll();
 
 		// item = new JMenuItem("Open...");
-		item = Editor.newJMenuItem("Open...", 'O', false);
+		item = MainWindow.newJMenuItem("Open...", 'O', false);
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				editor.handleOpen(null);
@@ -430,23 +431,6 @@ public class Sketchbook {
 			File entry = new File(subfolder, list[i] + ".gcode");
 			// if a .gcode file of the same prefix as the folder exists..
 			if (entry.exists()) {
-				// String sanityCheck = sanitizedName(list[i]);
-				// if (!sanityCheck.equals(list[i])) {
-				if (!Sketchbook.isSanitary(list[i])) {
-					if (!builtOnce) {
-						String complaining = "The sketch \""
-								+ list[i]
-								+ "\" cannot be used.\n"
-								+ "Sketch names must contain only basic letters and numbers\n"
-								+ "(ASCII-only with no spaces, "
-								+ "and it cannot start with a number).\n"
-								+ "To get rid of this message, remove the sketch from\n"
-								+ entry.getAbsolutePath();
-						Base.showMessage("Ignoring sketch with bad name",
-								complaining);
-					}
-					continue;
-				}
 
 				JMenuItem item = new JMenuItem(list[i]);
 				item.addActionListener(listener);
@@ -498,7 +482,7 @@ public class Sketchbook {
 				if (gcode.exists() && (Base.calcFolderSize(prey) == 0)) {
 					// System.out.println("i want to remove " + prey);
 
-					if (Preferences.getBoolean("sketchbook.auto_clean")) {
+					if (Base.preferences.getBoolean("sketchbook.auto_clean",true)) {
 						Base.removeDir(prey);
 
 					} else { // otherwise prompt the user
