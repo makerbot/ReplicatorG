@@ -1,6 +1,7 @@
 package replicatorg.app.ui;
 
 import java.awt.Color;
+import java.awt.Font;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -8,6 +9,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.app.Serial;
 import replicatorg.app.TimeoutException;
@@ -31,6 +33,7 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 	protected MachineController machine = null;
 
 	protected JLabel label = new JLabel();
+	protected JLabel smallLabel = new JLabel();
 
 	static final private Color BG_NO_MACHINE = new Color(0xff, 0x80, 0x60);
 
@@ -39,9 +42,14 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 	// static final private Color BG_WAIT = new Color(0xff,0xff,0x60);
 
 	MachineStatusPanel() {
+		Font smallFont = Base.getFontPref("status.font","SansSerif,plain,10");
+		smallLabel.setFont(smallFont);
 		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		add(Box.createHorizontalStrut(10));
-		add(label);
+		Box vbox = Box.createVerticalBox();
+		vbox.add(label);
+		vbox.add(smallLabel);
+		add(vbox);
 		add(Box.createHorizontalGlue());
 		add(Box.createHorizontalStrut(10));
 	}
@@ -64,8 +72,6 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 
 	
 	protected String getMachineStateMessage() {
-		System.out.println("Getting state.");
-
 		if (machine == null) { return "No machine selected"; }
 		MachineState state = machine.getState();
 		if (state == MachineState.NOT_ATTACHED) {
@@ -136,6 +142,7 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 			
 		}
 		label.setText(text);
+		smallLabel.setText(null);
 		setBackground(bgColor);
 	}
 
@@ -144,6 +151,6 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
-		label.setText(event.toString());
+		smallLabel.setText(event.toString());
 	}
 }

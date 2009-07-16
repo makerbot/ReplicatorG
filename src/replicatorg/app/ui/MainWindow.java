@@ -2260,7 +2260,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	protected void setMachine(MachineController machine) {
-		System.err.println("SETMACHINE");
 		if (this.machine != null) {
 			this.machine.dispose();
 		}
@@ -2270,7 +2269,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	public void loadMachine(String name) {
-		System.err.println("LOADMACHINE");
 		setMachine(Base.loadMachine(name));
 		machine.addMachineStateListener(this);
 		machine.addMachineStateListener(machineStatusPanel);
