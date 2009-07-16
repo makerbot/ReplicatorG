@@ -60,8 +60,6 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
-import replicatorg.app.ui.EditorLineStatus;
-
 /**
  * jEdit's text area component. It is more suited for editing program
  * source code than JEditorPane, because it drops the unnecessary features
@@ -1246,14 +1244,6 @@ public class JEditTextArea extends JComponent
     magicCaret = -1;
 
     scrollToCaret();
-
-    // notify the line number feller
-    if (editorLineStatus != null) {
-      //editorLineStatus.set(selectionStartLine, selectionEndLine);
-      //System.out.println("why " + selectionStartLine + " " + selectionEndLine);
-      //System.out.println(getLineOfOffset(start) + " " +
-      //                 getLineOfOffset(end));
-    }
   }
 
 
@@ -1655,12 +1645,6 @@ public class JEditTextArea extends JComponent
     if(focusedComponent == this)
       focusedComponent = null;
   }
-
-  /**
-   * The component that tracks the current line number.
-   */
-  public EditorLineStatus editorLineStatus;
-
 
   public void processKeyEvent(KeyEvent evt) {
     // this had to be added in Processing 007X, because the menu key

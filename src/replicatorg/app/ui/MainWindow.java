@@ -189,8 +189,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// currently opened program
 	public Sketch sketch;
 
-	EditorLineStatus lineStatus;
-
 	public JEditTextArea textarea;
 
 	// runtime information and window placement
@@ -317,9 +315,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// windows puts an ugly border on this guy
 		console.setBorder(null);
 		consolePanel.add(console, BorderLayout.CENTER);
-
-		lineStatus = new EditorLineStatus(textarea);
-		consolePanel.add(lineStatus, BorderLayout.SOUTH);
 
 		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upper,
 				consolePanel);
@@ -2091,11 +2086,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				Base.showReference(referenceFile + ".html");
 			}
 		}
-	}
-
-	public void updateStatus(int lineNumber, double elapsedTime,
-			double timeRemaining) {
-		lineStatus.set(lineNumber, elapsedTime, timeRemaining);
 	}
 
 	public void highlightLine(int lnum) {
