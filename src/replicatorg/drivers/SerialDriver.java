@@ -7,6 +7,7 @@ import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
 import replicatorg.app.Serial;
+import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.tools.XML;
 
 /**
@@ -77,4 +78,32 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 		return stopbits;
 	}
 	
+	/**
+	 * Autoscan manually scans available serial ports one by one. 
+	 *
+	 */
+	public boolean autoscan() {
+		assert !isInitialized();
+		assert serial == null;
+		
+		for (Serial.Name candidateName: Serial.scanSerialNames()) {
+			if (!candidateName.isAvailable()) continue;
+			// Open candidate and set it
+			Serial candidatePort = null;
+			try {
+				candidatePort = new Serial(candidateName.getName(),this); 
+			} catch (SerialException se) {
+				se.printStackTrace();
+			}
+			if (candidatePort != null) {
+				System.err.println("attempting candidate "+candidateName.getName());
+				setSerial(candidatePort);
+				initialize();
+				if (isInitialized()) break;
+				System.err.println("failed: "+candidateName.getName());
+				setSerial(null);
+			}
+		}
+		return isInitialized();
+	}
 }

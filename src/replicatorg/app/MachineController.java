@@ -37,11 +37,10 @@ import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.SimulationDriver;
-import replicatorg.drivers.UsesSerial;
+import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
-import replicatorg.machine.MachineListener;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
@@ -232,15 +231,31 @@ public class MachineController {
 			}
 		}
 		
+		public void autoscan() {
+			if (state == MachineState.CONNECTING ||
+					state == MachineState.NOT_ATTACHED) {
+				setState(MachineState.AUTO_SCAN);
+			}
+		}
+		
 		public void run() {
 			while (true) {
 				try {
 					if (state == MachineState.BUILDING) {
 						buildInternal(currentSource);
+					} else if (state == MachineState.AUTO_SCAN) {
+						driver.autoscan();
+						if (driver.isInitialized()) {
+							setState(MachineState.READY);
+						} else {
+							setState(MachineState.NOT_ATTACHED);
+						}
 					} else if (state == MachineState.CONNECTING) {
 						resetInternal();
 						if (driver.isInitialized()) {
 							setState(MachineState.READY);
+						} else {
+							setState(MachineState.NOT_ATTACHED);
 						}
 					} else {
 						synchronized(this) {
@@ -470,6 +485,11 @@ public class MachineController {
 
 	synchronized public void reset() {
 		machineThread.reset();
+	}
+	
+	public void autoscan() {
+		assert machineThread != null;
+		machineThread.autoscan();
 	}
 	
 	synchronized public boolean isPaused() {

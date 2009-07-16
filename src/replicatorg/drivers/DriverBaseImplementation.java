@@ -529,4 +529,8 @@ public class DriverBaseImplementation implements Driver {
 	public boolean heartbeat() {
 		return true;
 	}
+	
+	public boolean autoscan() {
+		return false;
+	}
 }

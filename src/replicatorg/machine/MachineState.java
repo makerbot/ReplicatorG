@@ -12,6 +12,7 @@ package replicatorg.machine;
 public enum MachineState {
 	NOT_ATTACHED,
 	CONNECTING,
+	AUTO_SCAN,
 	READY,
 	ESTIMATING,
 	BUILDING,

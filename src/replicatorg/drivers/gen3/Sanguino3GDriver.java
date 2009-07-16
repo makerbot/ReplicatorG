@@ -128,7 +128,7 @@ public class Sanguino3GDriver extends SerialDriver {
 	public void initialize() {
 		// Create our serial object
 		if (serial == null) {
-			System.out.println("No Serial Port found.\n");
+			System.out.println("No serial port found.\n");
 			return;
 		}
 
@@ -176,31 +176,29 @@ public class Sanguino3GDriver extends SerialDriver {
 		synchronized (serial) {
 			serial.setTimeout(timeoutMillis);
 
-			while (!isInitialized()) {
+			try {
+				version = getVersionInternal();
+				if (getVersion() != null)
+					setInitialized(true);
+			} catch (TimeoutException e) {
+				// Timed out waiting; try an explicit reset.
+				System.out.println("No connection; trying to pulse RTS to reset device.");
+				serial.pulseRTSLow();
 				try {
-					version = getVersionInternal();
-					if (getVersion() != null)
-						setInitialized(true);
-				} catch (TimeoutException e) {
-					// Timed out waiting; try an explicit reset.
-					System.out.println("No connection; trying to pulse RTS to reset device.");
-					serial.pulseRTSLow();
-					try {
-						Thread.sleep(3000); // wait for startup
-					} catch (InterruptedException ie) { 
-						serial.setTimeout(0);
-						return;
+					Thread.sleep(3000); // wait for startup
+				} catch (InterruptedException ie) { 
+					serial.setTimeout(0);
+					return;
+				}
+				byte[] response = new byte[256];
+				StringBuffer respSB = new StringBuffer();
+				try {
+					while (serial.available() > 0) {
+						serial.read(response);
+						respSB.append(response);
 					}
-					byte[] response = new byte[256];
-					StringBuffer respSB = new StringBuffer();
-					try {
-						while (serial.available() > 0) {
-							serial.read(response);
-							respSB.append(response);
-						}
-						System.err.println("Received "+ respSB.toString());
-					} catch (TimeoutException te) {
-					}
+					System.err.println("Received "+ respSB.toString());
+				} catch (TimeoutException te) {
 				}
 			}
 		}

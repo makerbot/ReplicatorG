@@ -84,7 +84,12 @@ public interface Driver {
 	 * setup our driver for use.
 	 */
 	public void initialize();
-
+	
+	/**
+	 * Autoscan for a working machine.
+	 */
+	public boolean autoscan();
+	
 	/**
 	 * See if the driver has been successfully initialized.
 	 * 

@@ -2274,6 +2274,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machine.addMachineStateListener(machineStatusPanel);
 		machine.addMachineStateListener(buttons);
 		reloadSerialMenu();
+		machine.autoscan();
 	}
 
 	public void loadSimulator() {
