@@ -29,4 +29,9 @@ public class JEditTextAreaSource implements GCodeSource {
 		};
 	}
 	
+	public int getLineCount() {
+		return textarea.getLineCount();
+	}
+
+	
 }

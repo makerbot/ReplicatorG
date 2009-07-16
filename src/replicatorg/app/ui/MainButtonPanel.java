@@ -39,6 +39,7 @@ import javax.swing.event.MouseInputListener;
 
 import replicatorg.app.Base;
 import replicatorg.machine.MachineListener;
+import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineStateChangeEvent;
 
 /**
@@ -448,5 +449,8 @@ public class MainButtonPanel extends JComponent implements MouseInputListener, M
 	}
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
+	}
+
+	public void machineProgress(MachineProgressEvent event) {
 	}
 }

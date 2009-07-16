@@ -107,6 +107,7 @@ import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.machine.MachineListener;
+import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.model.JEditTextAreaSource;
@@ -2269,6 +2270,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	protected void setMachine(MachineController machine) {
+		System.err.println("SETMACHINE");
 		if (this.machine != null) {
 			this.machine.dispose();
 		}
@@ -2278,6 +2280,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	public void loadMachine(String name) {
+		System.err.println("LOADMACHINE");
 		setMachine(Base.loadMachine(name));
 		machine.addMachineStateListener(this);
 		machine.addMachineStateListener(machineStatusPanel);
@@ -2287,5 +2290,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public void loadSimulator() {
 		setMachine(MachineFactory.loadSimulator());
+	}
+
+	public void machineProgress(MachineProgressEvent event) {
 	}
 }

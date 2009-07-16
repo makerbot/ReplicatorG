@@ -9,5 +9,7 @@ public interface GCodeSource extends Iterable<String> {
 	 * @return a string iterator over the gcode
 	 */
 	Iterator<String> iterator();
+	
+	int getLineCount();
 
 }

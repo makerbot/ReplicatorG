@@ -14,6 +14,7 @@ import replicatorg.app.TimeoutException;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.Version;
 import replicatorg.machine.MachineListener;
+import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 
@@ -140,5 +141,9 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
 		updateMachineStatus();
+	}
+
+	public void machineProgress(MachineProgressEvent event) {
+		label.setText(event.toString());
 	}
 }

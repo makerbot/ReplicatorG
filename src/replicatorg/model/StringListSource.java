@@ -21,5 +21,6 @@ public class StringListSource implements GCodeSource {
 	public Iterator<String> iterator() {
 		return gcode.iterator();
 	}
-	
+
+	public int getLineCount() { return gcode.size(); }
 }

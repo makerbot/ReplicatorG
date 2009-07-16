@@ -38,6 +38,7 @@ import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.UsesSerial;
+import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineListener;
@@ -46,26 +47,35 @@ import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
 
 /**
- * The MachineController object controls a single machine.  It contains a single machine driver object.
- * All machine operations (building, stopping, pausing) are performed asynchronously by a thread
- * maintained by the MachineController; calls to MachineController ordinarily trigger an operation and
- * return immediately.
+ * The MachineController object controls a single machine. It contains a single
+ * machine driver object. All machine operations (building, stopping, pausing)
+ * are performed asynchronously by a thread maintained by the MachineController;
+ * calls to MachineController ordinarily trigger an operation and return
+ * immediately.
+ * 
  * @author phooky
- *
+ * 
  */
 public class MachineController {
 
 	/**
 	 * The MachineThread is responsible for communicating with the machine.
+	 * 
 	 * @author phooky
-	 *
+	 * 
 	 */
 	class MachineThread extends Thread {
 		private MachineState state = MachineState.NOT_ATTACHED;
 		public MachineState getMachineState() { return state; }
 		
+		// Build statistics
+		int linesProcessed = -1;
+		int linesTotal = -1;
+		double startTimeMillis = -1;
+
 		/**
 		 * Run the warmup commands.
+		 * 
 		 * @throws BuildFailureException
 		 * @throws InterruptedException
 		 */
@@ -90,6 +100,7 @@ public class MachineController {
 			Iterator<String> i = source.iterator();
 			while (i.hasNext()) {
 				String line = i.next();
+				linesProcessed++;
 				if (Thread.interrupted()) {
 					System.err.println("build thread interrupted");
 					return false;
@@ -139,6 +150,13 @@ public class MachineController {
 					driver.stop();
 					return false;
 				}
+				// send out updates
+				MachineProgressEvent progress = 
+					new MachineProgressEvent((double)System.currentTimeMillis()-startTimeMillis,
+							estimatedBuildTime,
+							linesProcessed,
+							linesTotal);
+				emitProgress(progress);
 			}
 			
 			// wait for driver to finish up.
@@ -150,7 +168,7 @@ public class MachineController {
 
 		/**
 		 * Reset machine to its basic state.
-		 *
+		 * 
 		 */
 		private synchronized void resetInternal() {
 			driver.reset();
@@ -170,9 +188,11 @@ public class MachineController {
 		GCodeSource currentSource;
 		
 		private void buildInternal(GCodeSource source) {
-			double startTime = System.currentTimeMillis();
-			double elapsedTime = 0;
-
+			startTimeMillis = System.currentTimeMillis();
+			linesProcessed = 0;
+			linesTotal = warmupCommands.size() + 
+				cooldownCommands.size() +
+				source.getLineCount();
 			try {
 				runWarmupCommands();
 				System.out.println("Running build.");
@@ -250,7 +270,7 @@ public class MachineController {
 
 	public String getName() { return name; }
 	
-	// Our driver object.  Null when no driver is selected.
+	// Our driver object. Null when no driver is selected.
 	public Driver driver = null;
 	
 	// the simulator driver
@@ -366,8 +386,10 @@ public class MachineController {
 			if (kid.getNodeName().equals("driver")) {
 				driver = DriverFactory.factory(kid);
 				driver.setMachine(loadModel());
-				// We begin the initialization process here in a seperate thread.
-				// The rest of the system should check that the machine is initialized
+				// We begin the initialization process here in a seperate
+				// thread.
+				// The rest of the system should check that the machine is
+				// initialized
 				// before proceeding with prints, etc.
 				Thread initThread = new Thread() {
 					public void run() {
@@ -470,6 +492,12 @@ public class MachineController {
 		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current, prev);
 		for (MachineListener l : listeners) {
 			l.machineStateChanged(e);
+		}
+	}
+
+	protected void emitProgress(MachineProgressEvent progress) {
+		for (MachineListener l : listeners) {
+			l.machineProgress(progress);
 		}
 	}
 }
