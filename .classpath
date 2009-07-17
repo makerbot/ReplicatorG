@@ -2,15 +2,15 @@
 <classpath>
 	<classpathentry kind="src" output="classes" path="src"/>
 	<classpathentry kind="var" path="JRE_LIB" rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/branches/refactor2/build/shared/lib/RXTXcomm.jar" sourcepath="/home/phooky/rxtx/src-2.2-2"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/branches/refactor2/build/shared/lib/antlr.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/branches/refactor2/build/shared/lib/j3dcore.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/branches/refactor2/build/shared/lib/j3dutils.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/branches/refactor2/build/shared/lib/mrj.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/branches/refactor2/build/shared/lib/oro.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/branches/refactor2/build/shared/lib/quaqua.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/branches/refactor2/build/shared/lib/registry.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/branches/refactor2/build/shared/lib/vecmath.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/RXTXcomm.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/antlr.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/j3dcore.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/j3dutils.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/mrj.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/oro.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/quaqua.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/registry.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/vecmath.jar"/>
 	<classpathentry kind="con" path="/System/Library/Java"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

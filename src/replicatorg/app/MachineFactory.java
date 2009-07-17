@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 
-import javax.swing.JCheckBoxMenuItem;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;

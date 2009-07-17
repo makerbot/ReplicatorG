@@ -1,3 +1,16 @@
+0005 ReplicatorG
+
+* Large refactor; future maintenance should be simpler
+* Automatic scanning on serial ports for devices
+* Added dropdown for manual serial port selection
+* Multiple instances of ReplicatorG can now drive
+  several machines from a single computer
+* Consolidated some status bars
+* Implemented support for stopping, pausing
+* Moved to standard Java prefs; moving away from per-
+  platform messiness
+* Stripped out large swathes of old Processing code
+
 0004 ReplicatorG
 
 * more robust intialization

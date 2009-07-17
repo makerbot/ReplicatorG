@@ -24,10 +24,6 @@
 
 package replicatorg.app.syntax;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.util.StringTokenizer;
-
 import replicatorg.app.Base;
 
 

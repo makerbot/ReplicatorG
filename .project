@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>ReplicatorG</name>
+	<name>trunk</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -14,4 +14,16 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>classes</name>
+			<type>2</type>
+			<location>/home/phooky/makerbot/replicatorg/trunk/build/classes</location>
+		</link>
+		<link>
+			<name>Java</name>
+			<type>2</type>
+			<location>/System/Library/Java</location>
+		</link>
+	</linkedResources>
 </projectDescription>

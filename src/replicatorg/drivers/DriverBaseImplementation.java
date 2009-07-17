@@ -30,7 +30,6 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 
 import replicatorg.app.GCodeParser;
-import replicatorg.app.Serial;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
 import replicatorg.machine.model.Axis;
