@@ -92,7 +92,14 @@ public class Serial {
 		assert portsInUse.size() <= 1;
 		for (Serial port: portsInUse) {
 			Name n = new Name(port.getName(),false);
-			if (!v.contains(n)) { v.add(n); }
+			boolean contains = false;
+			for (Name vi : v) { // vector.contains doesn't use comparable.
+				if (vi.compareTo(n) == 0) {
+					contains = true; 
+					break; 
+				}
+			}
+			if (!contains) { v.add(n); }
 		}
 		Collections.sort(v);
 		return v;

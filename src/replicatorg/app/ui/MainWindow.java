@@ -603,7 +603,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		for (Serial.Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.getName());
 			item.setEnabled(name.isAvailable());
-			item.setSelected(name.getName() == currentName);
+			item.setSelected(name.getName().equals(currentName));
 			final String portName = name.getName();
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
