@@ -16,14 +16,14 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>classes</name>
-			<type>2</type>
-			<location>/home/phooky/makerbot/replicatorg/trunk/build/classes</location>
-		</link>
-		<link>
 			<name>Java</name>
 			<type>2</type>
 			<location>/System/Library/Java</location>
+		</link>
+		<link>
+			<name>classes</name>
+			<type>2</type>
+			<location>/home/phooky/makerbot/replicatorg/trunk/build/classes</location>
 		</link>
 	</linkedResources>
 </projectDescription>

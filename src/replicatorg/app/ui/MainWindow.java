@@ -845,7 +845,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		reloadSerialMenu();
 		menu.add(serialMenu);
 		
-		item = newJMenuItem("Control Panel", 'J');
+		item = new JCheckBoxMenuItem("Enable autoscan",
+					     Base.preferences.getBoolean("autoscan",true));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			    JCheckBoxMenuItem box = 
+				(JCheckBoxMenuItem)e.getSource();
+			    Base.preferences.putBoolean("autoscan",box.getState());
+			}
+		    });
+		menu.add(item);
+
+		item = new JMenuItem("Control Panel", 'J');
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleControlPanel();
@@ -2283,7 +2294,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machine.addMachineStateListener(machineStatusPanel);
 		machine.addMachineStateListener(buttons);
 		reloadSerialMenu();
-		machine.autoscan();
+		if (Base.preferences.getBoolean("autoscan",true)) {
+		    machine.autoscan();
+		}
 	}
 
 	public void loadSimulator() {
