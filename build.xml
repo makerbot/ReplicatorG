@@ -97,6 +97,10 @@
             <jarfileset dir="${jar.dir}" includes="ReplicatorG.jar"/>
             <jarfileset dir="${lib.dir}" includes="*.jar"/>
       	    <jarfileset dir="${native.lib.dir}" includes="*.jnilib"/>
+           <documenttype name="CNC GCode document" 
+                         extensions="gcode" 
+                         iconFile="${macosx.lib.dir}/replicatorg.icns"
+                         role="Editor"/>
       	    <resourcefileset dir="${lib.dir}" includes="*.gif"/>
       	    <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
       	    <resourcefilelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
@@ -111,6 +115,13 @@
       	<copy todir="${macosx.dist.dir}/skeinforge">
       	    <fileset dir="skeinforge"/>
 		</copy>
+       <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
+               <arg value="-remove"/>
+               <arg value="x86_64"/>
+               <arg value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
+               <arg value="-output"/>
+                <arg value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
+       </exec>
 		<exec dir="." os="Mac OS X" executable="/bin/sh">
 			<arg value="-c"/>
 			<arg value="${macosx.lib.dir}/mkdmg.sh ${dist.dir} ./macosx image ${project.lowercase}-${replicatorg.version}-mac"/>
