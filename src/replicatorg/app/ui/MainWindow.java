@@ -607,6 +607,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						if (us.getSerial() == null ||
 								us.getSerial().getName() != portName) {
 							us.setSerial(new Serial(portName, us));
+							Base.preferences.put("serial.last_selected", portName);
 							machine.reset();
 						}
 					} catch (SerialException se) {
@@ -2289,8 +2290,22 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machine.addMachineStateListener(machineStatusPanel);
 		machine.addMachineStateListener(buttons);
 		reloadSerialMenu();
-		if (Base.preferences.getBoolean("autoscan",true)) {
-		    machine.autoscan();
+		if (machine.driver instanceof UsesSerial) {
+			if (Base.preferences.getBoolean("autoscan",true)) {
+				machine.autoscan();
+			} else {
+				String lastPort = Base.preferences.get("serial.last_selected", null);
+				if (lastPort != null) {
+					UsesSerial us = (UsesSerial)machine.driver;
+					try {
+						us.setSerial(new Serial(lastPort,us));
+						machine.reset();
+					} catch (SerialException e) {
+						System.err.println("Could not use most recently selected serial port ("+lastPort+").");
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 	}
 
