@@ -320,7 +320,7 @@ public class MachineModel
 	public ToolModel getTool(int index)
 	{
 		try {
-			ToolModel t = tools.get(index);
+			//ToolModel t = tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			System.out.println("Cannot get non-existant tool (#" + index + ".");
 			e.printStackTrace();

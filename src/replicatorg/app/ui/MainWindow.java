@@ -285,16 +285,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		Box box = Box.createVerticalBox();
 		Box upper = Box.createVerticalBox();
 
-		Box boxButtonBar = Box.createHorizontalBox();
 		buttons = new MainButtonPanel(this);
-		boxButtonBar.add(buttons);
+		upper.add(buttons);
 		machineStatusPanel = new MachineStatusPanel();
-		boxButtonBar.add(machineStatusPanel);
-		// Set maximum height to that of the button bar.
-		boxButtonBar.setMaximumSize(new Dimension(Integer.MAX_VALUE,
-				buttons.getMaximumSize().height));
+		upper.add(machineStatusPanel);
 
-		upper.add(boxButtonBar);
 		header = new EditorHeader(this);
 		upper.add(header);
 

@@ -1,8 +1,10 @@
 package replicatorg.app.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -13,6 +15,7 @@ import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.app.Serial;
 import replicatorg.app.TimeoutException;
+import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.Version;
 import replicatorg.machine.MachineListener;
@@ -44,14 +47,20 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 	MachineStatusPanel() {
 		Font smallFont = Base.getFontPref("status.font","SansSerif,plain,10");
 		smallLabel.setFont(smallFont);
-		setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-		add(Box.createHorizontalStrut(10));
-		Box vbox = Box.createVerticalBox();
-		vbox.add(label);
-		vbox.add(smallLabel);
-		add(vbox);
-		add(Box.createHorizontalGlue());
-		add(Box.createHorizontalStrut(10));
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+		label.setAlignmentX(LEFT_ALIGNMENT);
+		add(label);
+		smallLabel.setAlignmentX(LEFT_ALIGNMENT);
+		add(smallLabel);
+		add(Box.createVerticalGlue());
+
+		int height = 40; // TODO: magic number
+		setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
+		setMinimumSize(new Dimension(Integer.MAX_VALUE, height));
+		setPreferredSize(new Dimension(Integer.MAX_VALUE, height));
+		setAlignmentX(LEFT_ALIGNMENT);
 	}
 
 	/**
@@ -151,6 +160,14 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
-		smallLabel.setText(event.toString());
+		double proportion = (double)event.getLines()/(double)event.getTotalLines();
+		double remaining = event.getEstimated() * (1.0 - proportion);
+		String s = String.format(
+				"Commands:  %1$7d / %2$7d  (%3$3.2f%%)   |   Elapsed:  %4$s  |  Estimated Remaining:  %5$s",
+				event.getLines(), event.getTotalLines(), 
+				Math.round(proportion*10000.0)/100.0,
+				EstimationDriver.getBuildTimeString(event.getElapsed(), true),
+				EstimationDriver.getBuildTimeString(remaining, true));
+		smallLabel.setText(s);
 	}
 }
