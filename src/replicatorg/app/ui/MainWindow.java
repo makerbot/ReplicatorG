@@ -852,7 +852,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		    });
 		menu.add(item);
 
-		item = new JMenuItem("Control Panel", 'J');
+		item = new JMenuItem("Control Panel", 'C');
+		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J,ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleControlPanel();
