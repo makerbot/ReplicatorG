@@ -27,14 +27,14 @@
 
 package replicatorg.app.ui;
 
-import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LayoutManager;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -45,7 +45,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Vector;
-import java.awt.LayoutManager;
 
 import javax.swing.JComponent;
 import javax.vecmath.Point3d;
@@ -252,8 +251,9 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 		protected void drawTicks(Graphics2D g) {
 			double range = SimulationWindow2D.buildView.getXRange();
-			if (range < 0.01)
+			if (range < 0.01) {
 				return;
+			}
 			int width = getWidth();
 			IncrementInfo ii = getIncrementInfo(width, range);
 			double increment = ii.minor;
@@ -301,7 +301,6 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 				i--;
 			} while (point > 0);
-
 		}
 	}
 
@@ -795,7 +794,6 @@ public class SimulationWindow2D extends SimulationWindow implements
 		Rectangle viewBounds = new Rectangle(rulerWidth + 1, rulerWidth + 1,
 				(width - rulerWidth) - 1, (height - rulerWidth) - 1);
 		buildView.setBounds(viewBounds);
-		pane.repaint();
 	}
 
 	public Dimension minimumLayoutSize(Container parent) {
@@ -811,12 +809,13 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 	public void setSimulationBounds(Rectangle2D.Double bounds) {
 		this.simulationBounds = bounds;
-		System.err.println("Bounds set at "+bounds.toString());
 		buildView.maximum.x = bounds.getMaxX();
 		buildView.minimum.x = bounds.getMinX();
 		buildView.maximum.y = bounds.getMaxY();
 		buildView.minimum.y = bounds.getMinY();
-		getContentPane().repaint();
+		buildView.calculateRatio();
+		hRuler.repaint();
+		vRuler.repaint();
 	}
 
 }
