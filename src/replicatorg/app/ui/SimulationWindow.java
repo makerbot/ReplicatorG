@@ -29,11 +29,14 @@ package replicatorg.app.ui;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.JFrame;
 import javax.vecmath.Point3d;
 
 public abstract class SimulationWindow extends JFrame {
+	protected Rectangle2D.Double simulationBounds;
+	
 	public SimulationWindow() {
 		super("Build Simulation");
 
@@ -60,5 +63,9 @@ public abstract class SimulationWindow extends JFrame {
 		invalidate();
 	}
 
+	public void setSimulationBounds(Rectangle2D.Double bounds) {
+		this.simulationBounds = bounds;
+	}
+	
 	public abstract void queuePoint(Point3d p);
 }

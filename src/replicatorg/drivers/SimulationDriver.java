@@ -23,6 +23,8 @@
 
 package replicatorg.drivers;
 
+import java.awt.geom.Rectangle2D;
+
 import javax.vecmath.Point3d;
 
 import replicatorg.app.exceptions.GCodeException;
@@ -36,6 +38,10 @@ public class SimulationDriver extends DriverBaseImplementation {
 		super();
 	}
 
+	public void setSimulationBounds(Rectangle2D.Double bounds) {
+		simulation.setSimulationBounds(bounds);
+	}
+	
 	public void createWindow() {
 		simulation = new SimulationWindow2D();
 		simulation.setVisible(true);

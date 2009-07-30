@@ -23,6 +23,8 @@
 
 package replicatorg.drivers;
 
+import java.awt.geom.Rectangle2D;
+
 import replicatorg.app.exceptions.GCodeException;
 import javax.vecmath.Point3d;
 
@@ -30,12 +32,16 @@ public class EstimationDriver extends DriverBaseImplementation {
 	// build time in milliseconds
 	private double buildTime = 0.0;
 
+	private Rectangle2D.Double bounds = new Rectangle2D.Double();
+	
 	public EstimationDriver() {
 		super();
 
 		buildTime = 0.0;
 	}
 
+	public Rectangle2D.Double getBounds() { return bounds; }
+	
 	public void delay(long millis) {
 		buildTime += (double) millis / 1000;
 	}
@@ -54,6 +60,8 @@ public class EstimationDriver extends DriverBaseImplementation {
 		// feedrate is mm per minute
 		double millis = getMoveLength() / feedrate * 60000.0;
 
+		bounds.add(p.x,p.y);
+		
 		// add it in!
 		if (millis > 0) {
 			buildTime = buildTime + millis;

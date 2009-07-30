@@ -369,6 +369,15 @@ public class MachineController {
 				estimator.execute();
 			}
 
+			if (simulator != null) {
+				System.err.println("setting sim bounds on simulator");
+				simulator.setSimulationBounds(estimator.getBounds());
+			}
+			// oh, how this needs to be cleaned up...
+			if (driver instanceof SimulationDriver) {
+				System.err.println("setting sim bounds on driver");
+				((SimulationDriver)driver).setSimulationBounds(estimator.getBounds());
+			}
 			estimatedBuildTime = estimator.getBuildTime();
 			System.out.println("Estimated build time is: "
 					+ EstimationDriver.getBuildTimeString(estimatedBuildTime));
@@ -390,6 +399,7 @@ public class MachineController {
 	private void loadDriver() {
 		// load our utility drivers
 		if (Base.preferences.getBoolean("machinecontroller.simulator",true)) {
+			System.err.println("loading simulator");
 			simulator = new SimulationDriver();
 			simulator.setMachine(loadModel());
 		}

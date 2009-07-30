@@ -40,12 +40,14 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Rectangle2D;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Vector;
 import java.awt.LayoutManager;
 
+import javax.swing.JComponent;
 import javax.vecmath.Point3d;
 
 public class SimulationWindow2D extends SimulationWindow implements
@@ -72,11 +74,6 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 		this.setVisible(true);
 
-		// setup our rendering/buffer strategy
-		buildView.createBufferStrategy(2);
-		hRuler.createBufferStrategy(2);
-		vRuler.createBufferStrategy(2);
-
 		// start us off at 0,0,0
 		buildView.queuePoint(new Point3d());
 		getContentPane().setBackground(Color.white);
@@ -97,15 +94,9 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 	synchronized public void queuePoint(Point3d point) {
 		buildView.queuePoint(point);
-
-		doRender();
 	}
 
-	public void doRender() {
-		repaint();
-	}
-
-	class MyComponent extends Canvas {
+	class MyComponent extends JComponent {
 		private static final long serialVersionUID = 3222037949637415135L;
 
 		public MyComponent() // int width, int height)
@@ -138,7 +129,8 @@ public class SimulationWindow2D extends SimulationWindow implements
 			// only do work if needed!
 			if (mousePosition != i) {
 				mousePosition = i;
-				repaint();
+				// Removing for now; optimizing a bit.
+				// repaint();
 			}
 		}
 
@@ -146,7 +138,8 @@ public class SimulationWindow2D extends SimulationWindow implements
 			// only do work if needed!
 			if (mousePosition != i) {
 				machinePosition = i;
-				repaint();
+				// Removing for now; optimizing a bit.
+				// repaint();
 			}
 		}
 
@@ -218,7 +211,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 			g.setColor(Color.black);
 
 			// draw triangles
-			drawTriangles(g2);
+			// drawTriangles(g2);
 			g.setColor(Color.black);
 			// draw our tick marks
 			drawTicks(g2);
@@ -279,8 +272,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 				if (i % 10 == 0) {
 					length = rulerWidth;
-					g
-							.drawString(Double.toString(real), point + 1,
+					g.drawString(Double.toString(real), point + 1,
 									textBaseline);
 				} else {
 					length = rulerWidth / 3;
@@ -299,8 +291,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 				if (i % 10 == 0) {
 					length = rulerWidth;
-					g
-							.drawString(Double.toString(real), point + 1,
+					g.drawString(Double.toString(real), point + 1,
 									textBaseline);
 				} else {
 					length = rulerWidth / 3;
@@ -431,7 +422,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 			SimulationWindow2D.hRuler.setMousePosition(mouseX);
 			SimulationWindow2D.vRuler.setMousePosition(mouseY);
 
-			repaint();
+			//repaint();
 		}
 
 		public void mouseDragged(MouseEvent e) {
@@ -441,7 +432,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 			SimulationWindow2D.hRuler.setMousePosition(mouseX);
 			SimulationWindow2D.vRuler.setMousePosition(mouseY);
 
-			repaint();
+			//repaint();
 		}
 
 		public Point3d getMinimum() {
@@ -486,7 +477,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 			SimulationWindow2D.vRuler
 					.setMachinePosition(convertRealYToPointY(point.y));
 
-			repaint();
+			buildView.repaint();
 		}
 
 		public void paint(Graphics g) {
@@ -775,7 +766,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 		public int convertRealYToPointY(double y) {
 			// subtract from getheight to get a normal origin.
-			return (getHeight() - (int) ((y - minimum.y) * ratio));
+			return ((int) ((y - minimum.y) * ratio));
 		}
 
 		public double convertPointYToRealY(int y) {
@@ -816,6 +807,16 @@ public class SimulationWindow2D extends SimulationWindow implements
 	}
 
 	public void removeLayoutComponent(Component comp) {
+	}
+
+	public void setSimulationBounds(Rectangle2D.Double bounds) {
+		this.simulationBounds = bounds;
+		System.err.println("Bounds set at "+bounds.toString());
+		buildView.maximum.x = bounds.getMaxX();
+		buildView.minimum.x = bounds.getMinX();
+		buildView.maximum.y = bounds.getMaxY();
+		buildView.minimum.y = bounds.getMinY();
+		getContentPane().repaint();
 	}
 
 }
