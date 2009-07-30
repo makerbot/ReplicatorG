@@ -96,6 +96,11 @@ public class MachineController {
 		}
 
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
+			if (!(state == MachineState.BUILDING || state == MachineState.PAUSED)) {
+				// Do not continue build if the machine is not building or paused
+				return false;
+			}
+
 			Iterator<String> i = source.iterator();
 			while (i.hasNext()) {
 				String line = i.next();

@@ -994,68 +994,6 @@ public class Sanguino3GDriver extends SerialDriver {
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private byte convertTicksToPrescaler(long ticks) {
-		// these also represent frequency: 1000000 / ticks / 2 = frequency in
-		// hz.
-
-		// our slowest speed at our highest resolution ( (2^16-1) * 0.0625 usecs
-		// = 4095 usecs (4 millisecond max))
-		// range: 8Mhz max - 122hz min
-		if (ticks <= 65535L)
-			return 1;
-		// our slowest speed at our next highest resolution ( (2^16-1) * 0.5
-		// usecs = 32767 usecs (32 millisecond max))
-		// range:1Mhz max - 15.26hz min
-		else if (ticks <= 524280L)
-			return 2;
-		// our slowest speed at our medium resolution ( (2^16-1) * 4 usecs =
-		// 262140 usecs (0.26 seconds max))
-		// range: 125Khz max - 1.9hz min
-		else if (ticks <= 4194240L)
-			return 3;
-		// our slowest speed at our medium-low resolution ( (2^16-1) * 16 usecs
-		// = 1048560 usecs (1.04 seconds max))
-		// range: 31.25Khz max - 0.475hz min
-		else if (ticks <= 16776960L)
-			return 4;
-		// our slowest speed at our lowest resolution ((2^16-1) * 64 usecs =
-		// 4194240 usecs (4.19 seconds max))
-		// range: 7.812Khz max - 0.119hz min
-		else if (ticks <= 67107840L)
-			return 5;
-		// its really slow... hopefully we can just get by with super slow.
-		else
-			return 5;
-	}
-
-	@SuppressWarnings("unused")
-	private int convertTicksToCounter(long ticks) {
-		// our slowest speed at our highest resolution ( (2^16-1) * 0.0625 usecs
-		// = 4095 usecs)
-		if (ticks <= 65535)
-			return ((int) (ticks & 0xffff));
-		// our slowest speed at our next highest resolution ( (2^16-1) * 0.5
-		// usecs = 32767 usecs)
-		else if (ticks <= 524280)
-			return ((int) ((ticks / 8) & 0xffff));
-		// our slowest speed at our medium resolution ( (2^16-1) * 4 usecs =
-		// 262140 usecs)
-		else if (ticks <= 4194240)
-			return ((int) ((ticks / 64) & 0xffff));
-		// our slowest speed at our medium-low resolution ( (2^16-1) * 16 usecs
-		// = 1048560 usecs)
-		else if (ticks <= 16776960)
-			return ((int) (ticks / 256));
-		// our slowest speed at our lowest resolution ((2^16-1) * 64 usecs =
-		// 4194240 usecs)
-		else if (ticks <= 67107840)
-			return ((int) (ticks / 1024));
-		// its really slow... hopefully we can just get by with super slow.
-		else
-			return 65535;
-	}
-
 	public String getDriverName() {
 		return "Sanguino3G";
 	}
@@ -1065,6 +1003,8 @@ public class Sanguino3GDriver extends SerialDriver {
 	 **************************************************************************/
 	public void stop() {
 		System.out.println("Stop.");
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.ABORT.getCode());
+		PacketResponse pr = runCommand(pb.getPacket());
 	}
 
 	public void reset() {
