@@ -8,12 +8,12 @@ Base Nozzle Lift over Half Base Layer Thickness (ratio):	0.5
 Bottom Altitude:	0.1
 Open File to be Rafted	/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap_v0.1/Hollow Square Bottom_comb_raft.gcode
 Infill Overhang (ratio):	0.1
-Interface Infill Density (ratio):	0.5
-Interface Layer Thickness over Layer Thickness:	0.9
+Interface Infill Density (ratio):	0.4
+Interface Layer Thickness over Layer Thickness:	0.8
 Interface Layers (integer):	1
-Interface Nozzle Lift over Half Interface Layer Thickness (ratio):	1.0
+Interface Nozzle Lift over Half Interface Layer Thickness (ratio):	1.1
 Operating Nozzle Lift over Half Layer Thickness (ratio):	1.0
-Raft Outset Radius over Extrusion Width (ratio):	15.0
+Raft Outset Radius over Extrusion Width (ratio):	8.0
 Support Cross Hatch:	False
 Support Flowrate over Operating Flowrate (ratio):	1.0
 Support Gap over Perimeter Extrusion Width (ratio):	1.0
