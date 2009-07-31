@@ -41,7 +41,9 @@ import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
+import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.machine.model.MachineModel;
+import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
 
@@ -71,7 +73,37 @@ public class MachineController {
 		int linesProcessed = -1;
 		int linesTotal = -1;
 		double startTimeMillis = -1;
+		boolean needsStatusPoll = false;
+	
+		class StatusPollThread extends Thread {
+			public void run() {
+				while (true) {
+					try {
+						Thread.sleep(1000);
+						needsStatusPoll = true;
+					} catch (InterruptedException e) {
+						break;
+					}
+				}
+			}
+		}
 
+		private StatusPollThread pollingThread;
+
+		synchronized void startStatusPolling() {
+			if (pollingThread == null) {
+				pollingThread = new StatusPollThread();
+				pollingThread.start();
+			}
+		}
+		
+		synchronized void stopStatusPolling() {
+			if (pollingThread != null) {
+				pollingThread.interrupt();
+				pollingThread = null;
+			}
+		}
+		
 		/**
 		 * Run the warmup commands.
 		 * 
@@ -87,7 +119,7 @@ public class MachineController {
 			System.out.println("Running cooldown commands.");
 			buildCodesInternal(new StringListSource(cooldownCommands));
 		}
-
+		
 		private synchronized void setState(MachineState state) {
 			MachineState prev = this.state;
 			this.state = state;
@@ -155,6 +187,9 @@ public class MachineController {
 					return false;
 				}
 				// send out updates
+				if (needsStatusPoll) {
+					pollStatus();
+				}
 				MachineProgressEvent progress = 
 					new MachineProgressEvent((double)System.currentTimeMillis()-startTimeMillis,
 							estimatedBuildTime,
@@ -180,6 +215,14 @@ public class MachineController {
 
 		public boolean isReady() { return state == MachineState.READY; }
 
+		public void pollStatus() {
+			needsStatusPoll = false;
+			if (state.isRunning()) {
+				driver.readTemperature();
+				emitToolStatus(driver.getMachine().currentTool());
+			}
+		}
+		
 		public void forceReset() {
 			interrupt();
 			resetInternal();
@@ -197,6 +240,7 @@ public class MachineController {
 			linesTotal = warmupCommands.size() + 
 				cooldownCommands.size() +
 				source.getLineCount();
+			startStatusPolling();
 			try {
 				runWarmupCommands();
 				System.out.println("Running build.");
@@ -209,6 +253,8 @@ public class MachineController {
 
 			} catch (InterruptedException e) {
 				System.out.println("MachineController interrupted");
+			} finally {
+				stopStatusPolling();
 			}
 		}
 		
@@ -395,7 +441,6 @@ public class MachineController {
 	private MachineModel loadModel() {
 		MachineModel model = new MachineModel();
 		model.loadXML(machineNode);
-
 		return model;
 	}
 	
@@ -533,6 +578,13 @@ public class MachineController {
 	protected void emitProgress(MachineProgressEvent progress) {
 		for (MachineListener l : listeners) {
 			l.machineProgress(progress);
+		}
+	}
+
+	protected void emitToolStatus(ToolModel tool) {
+		MachineToolStatusEvent e = new MachineToolStatusEvent(this, tool);
+		for (MachineListener l : listeners) {
+			l.toolStatusChanged(e);
 		}
 	}
 }

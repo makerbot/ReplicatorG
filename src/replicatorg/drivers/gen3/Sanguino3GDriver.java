@@ -389,8 +389,10 @@ public class Sanguino3GDriver extends SerialDriver {
 	private void queueAbsolutePoint(Point3d steps, long micros) {
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.QUEUE_POINT_ABS.getCode());
 
-		Base.logger.log(Level.FINE,"Queued absolute point " + steps + " at "
+		if (Base.logger.isLoggable(Level.FINE)) {
+			Base.logger.log(Level.FINE,"Queued absolute point " + steps + " at "
 					+ micros + " usec.");
+		}
 
 		// just add them in now.
 		pb.add32((int) steps.x);

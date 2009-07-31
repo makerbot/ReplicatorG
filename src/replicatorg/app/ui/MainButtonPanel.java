@@ -41,6 +41,7 @@ import replicatorg.app.Base;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineStateChangeEvent;
+import replicatorg.machine.MachineToolStatusEvent;
 
 /**
  * run/stop/etc buttons for the ide
@@ -452,5 +453,8 @@ public class MainButtonPanel extends JComponent implements MouseInputListener, M
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
+	}
+
+	public void toolStatusChanged(MachineToolStatusEvent event) {
 	}
 }

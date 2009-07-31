@@ -110,6 +110,7 @@ import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
+import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.model.JEditTextAreaSource;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -2315,5 +2316,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
+	}
+
+	public void toolStatusChanged(MachineToolStatusEvent event) {
 	}
 }

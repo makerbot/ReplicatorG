@@ -4,4 +4,6 @@ public interface MachineListener {
 	public void machineStateChanged(MachineStateChangeEvent evt);
 	
 	public void machineProgress(MachineProgressEvent event);
+	
+	public void toolStatusChanged(MachineToolStatusEvent event);
 }

@@ -17,5 +17,9 @@ public enum MachineState {
 	ESTIMATING,
 	BUILDING,
 	PAUSED,
-	STOPPING,
+	STOPPING;
+	
+	public boolean isRunning() {
+		return this == BUILDING || this == PAUSED;
+	}
 }

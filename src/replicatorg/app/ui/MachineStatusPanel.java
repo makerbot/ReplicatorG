@@ -22,6 +22,7 @@ import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
+import replicatorg.machine.MachineToolStatusEvent;
 
 /**
  * The MachineStatusPanel displays the current state of the connected machine,
@@ -38,6 +39,8 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 	protected JLabel label = new JLabel();
 	protected JLabel smallLabel = new JLabel();
 
+	protected double currentTemperature = -1;
+	
 	static final private Color BG_NO_MACHINE = new Color(0xff, 0x80, 0x60);
 
 	static final private Color BG_READY = new Color(0x80, 0xff, 0x60);
@@ -127,6 +130,7 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 				bgColor = BG_NO_MACHINE;
 			} else {
 				bgColor = BG_READY;
+				currentTemperature = -1;
 				// Check version
 				try {
 					Version v = machine.driver.getVersion();
@@ -168,6 +172,13 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 				Math.round(proportion*10000.0)/100.0,
 				EstimationDriver.getBuildTimeString(event.getElapsed(), true),
 				EstimationDriver.getBuildTimeString(remaining, true));
+		if (currentTemperature != -1) {
+			s = String.format("Temp: %1$3.1f\u00B0 C  |  ", currentTemperature) + s;
+		}
 		smallLabel.setText(s);
+	}
+
+	public void toolStatusChanged(MachineToolStatusEvent event) {
+		currentTemperature = event.getTool().getCurrentTemperature();
 	}
 }
