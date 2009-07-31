@@ -49,8 +49,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 
 	JCheckBox sketchCleanBox;
 
-	JCheckBox externalEditorBox;
-
 	JCheckBox memoryOverrideBox;
 
 	JTextField memoryField;
@@ -159,15 +157,21 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		fontSizeField.setText(String.valueOf(editorFont.getSize()));
 		top += d.height + GUI_BETWEEN;
 
-		// [ ] Use external editor
-
-		externalEditorBox = new JCheckBox("Use external editor");
-		content.add(externalEditorBox);
-		d = externalEditorBox.getPreferredSize();
-		externalEditorBox.setBounds(left, top, d.width, d.height);
-		right = Math.max(right, left + d.width);
-		top += d.height + GUI_BETWEEN;
-
+		{
+			JCheckBox checkBox = new JCheckBox("Monitor temperature during builds");
+			checkBox.setSelected(Base.preferences.getBoolean("build.monitor_temp",true));
+			content.add(checkBox);
+			checkBox.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+				    JCheckBox box = (JCheckBox)e.getSource();
+				    Base.preferences.putBoolean("build.monitor_temp",box.isSelected());
+				}
+			});
+			d = checkBox.getPreferredSize();
+			checkBox.setBounds(left, top, d.width, d.height);
+			right = Math.max(right, left + d.width);
+			top += d.height + GUI_BETWEEN;
+		}
 
 		JButton delPrefs = new JButton("Delete all preferences");
 		content.add(delPrefs);
@@ -287,7 +291,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		Base.preferences.putBoolean("sketchbook.prompt", sketchPromptBox.isSelected());
 		Base.preferences.putBoolean("sketchbook.auto_clean", sketchCleanBox.isSelected());
 		Base.preferences.put("sketchbook.path", sketchbookLocationField.getText());
-		Base.preferences.putBoolean("editor.external", externalEditorBox.isSelected());
 
 		String newSizeText = fontSizeField.getText();
 		try {
@@ -317,7 +320,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		sketchPromptBox.setSelected(Base.preferences.getBoolean("sketchbook.prompt",false));
 		sketchCleanBox.setSelected(Base.preferences.getBoolean("sketchbook.auto_clean",true));
 		sketchbookLocationField.setText(Base.preferences.get("sketchbook.path",null));
-		externalEditorBox.setSelected(Base.preferences.getBoolean("editor.external",false));
 
 		setVisible(true);
 	}

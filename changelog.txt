@@ -1,3 +1,19 @@
+0006 ReplicatorG
+
+* Removed editor status bar
+* 64-bit Mac OS X fix (courtesy Andreas Fuchs)
+* Pass a GCode file in as a command-line parameter (courtesy Andreas Fuchs)
+* Moved machine status below buttons and cleaned up display
+* Ensure abort signal is sent to S3G on stop
+* Imported new version of skeinforge from RR repository (-r3211)
+* New makerbot_ABS profile for skeinforge with reasonable settings
+  for .5mm nozzle
+* Display temperature of nozzle during builds
+* Add pref for temp display
+* Simulator2D optimizations, faster draws
+* Reenabled Ctrl-J shortcut for control panel
+* Allow autoscan disabling for machines with scan problems
+
 0005 ReplicatorG
 
 * Large refactor; future maintenance should be simpler

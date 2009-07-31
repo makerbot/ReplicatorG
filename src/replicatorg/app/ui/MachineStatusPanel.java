@@ -38,6 +38,7 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 
 	protected JLabel label = new JLabel();
 	protected JLabel smallLabel = new JLabel();
+	protected JLabel tempLabel = new JLabel();
 
 	protected double currentTemperature = -1;
 	
@@ -50,13 +51,22 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 	MachineStatusPanel() {
 		Font smallFont = Base.getFontPref("status.font","SansSerif,plain,10");
 		smallLabel.setFont(smallFont);
+		tempLabel.setFont(smallFont);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
 		label.setAlignmentX(LEFT_ALIGNMENT);
 		add(label);
 		smallLabel.setAlignmentX(LEFT_ALIGNMENT);
-		add(smallLabel);
+		{
+			Box b = Box.createHorizontalBox();
+			b.add(smallLabel);
+			b.add(Box.createHorizontalGlue());
+			b.add(tempLabel);
+			b.setAlignmentX(LEFT_ALIGNMENT);
+			tempLabel.setAlignmentX(RIGHT_ALIGNMENT);
+			add(b);
+		}
 		add(Box.createVerticalGlue());
 
 		int height = 40; // TODO: magic number
@@ -156,6 +166,7 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 		}
 		label.setText(text);
 		smallLabel.setText(null);
+		tempLabel.setText(null);
 		setBackground(bgColor);
 	}
 
@@ -172,13 +183,13 @@ public class MachineStatusPanel extends JPanel implements MachineListener {
 				Math.round(proportion*10000.0)/100.0,
 				EstimationDriver.getBuildTimeString(event.getElapsed(), true),
 				EstimationDriver.getBuildTimeString(remaining, true));
-		if (currentTemperature != -1) {
-			s = String.format("Temp: %1$3.1f\u00B0 C  |  ", currentTemperature) + s;
-		}
 		smallLabel.setText(s);
 	}
 
 	public void toolStatusChanged(MachineToolStatusEvent event) {
 		currentTemperature = event.getTool().getCurrentTemperature();
+		if (currentTemperature != -1) {
+			tempLabel.setText(String.format("Temp: %1$3.1f\u00B0C", currentTemperature));
+		}
 	}
 }
