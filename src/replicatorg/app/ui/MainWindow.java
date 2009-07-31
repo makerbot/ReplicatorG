@@ -175,7 +175,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	EditorHeader header;
 
-	EditorStatus status;
+	//EditorStatus status;
 
 	MachineStatusPanel machineStatusPanel;
 
@@ -304,8 +304,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		consolePanel = new JPanel();
 		consolePanel.setLayout(new BorderLayout());
 
-		status = new EditorStatus(this);
-		consolePanel.add(status, BorderLayout.NORTH);
+		//status = new EditorStatus(this);
+		//consolePanel.add(status, BorderLayout.NORTH);
 
 		console = new MessagePanel(this);
 		// windows puts an ugly border on this guy
@@ -1351,7 +1351,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			return;
 
 		if (machine == null) {
-			status.error("Not ready to build yet.");
+			System.err.println("Not ready to build yet.");
 		} else {
 			// close stuff.
 			doClose();
@@ -1586,72 +1586,65 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		String prompt = "Save changes to " + sketch.name + "?  ";
 
-		if (checkModifiedMode != HANDLE_QUIT) {
-			// if the user is not quitting, then use simpler nicer
-			// dialog that's actually inside the p5 window.
-			status.prompt(prompt);
+		if (!Base.isMacOS() || Base.javaVersion < 1.5f) {
+			int result = JOptionPane.showConfirmDialog(this, prompt,
+					"Quit", JOptionPane.YES_NO_CANCEL_OPTION,
+					JOptionPane.QUESTION_MESSAGE);
+
+			if (result == JOptionPane.YES_OPTION) {
+				handleSave(true);
+				checkModified2();
+
+			} else if (result == JOptionPane.NO_OPTION) {
+				checkModified2();
+			}
+			// cancel is ignored altogether
 
 		} else {
-			if (!Base.isMacOS() || Base.javaVersion < 1.5f) {
-				int result = JOptionPane.showConfirmDialog(this, prompt,
-						"Quit", JOptionPane.YES_NO_CANCEL_OPTION,
-						JOptionPane.QUESTION_MESSAGE);
+			// This code is disabled unless Java 1.5 is being used on Mac OS
+			// X
+			// because of a Java bug that prevents the initial value of the
+			// dialog from being set properly (at least on my MacBook Pro).
+			// The bug causes the "Don't Save" option to be the highlighted,
+			// blinking, default. This sucks. But I'll tell you what doesn't
+			// suck--workarounds for the Mac and Apple's snobby attitude
+			// about it!
 
-				if (result == JOptionPane.YES_OPTION) {
-					handleSave(true);
-					checkModified2();
+			// adapted from the quaqua guide
+			// http://www.randelshofer.ch/quaqua/guide/joptionpane.html
+			JOptionPane pane = new JOptionPane("<html> "
+					+ "<head> <style type=\"text/css\">"
+					+ "b { font: 13pt \"Lucida Grande\" }"
+					+ "p { font: 11pt \"Lucida Grande\"; margin-top: 8px }"
+					+ "</style> </head>"
+					+ "<b>Do you want to save changes to this sketch<BR>"
+					+ " before closing?</b>"
+					+ "<p>If you don't save, your changes will be lost.",
+					JOptionPane.QUESTION_MESSAGE);
 
-				} else if (result == JOptionPane.NO_OPTION) {
-					checkModified2();
-				}
-				// cancel is ignored altogether
+			String[] options = new String[] { "Save", "Cancel",
+			"Don't Save" };
+			pane.setOptions(options);
 
-			} else {
-				// This code is disabled unless Java 1.5 is being used on Mac OS
-				// X
-				// because of a Java bug that prevents the initial value of the
-				// dialog from being set properly (at least on my MacBook Pro).
-				// The bug causes the "Don't Save" option to be the highlighted,
-				// blinking, default. This sucks. But I'll tell you what doesn't
-				// suck--workarounds for the Mac and Apple's snobby attitude
-				// about it!
+			// highlight the safest option ala apple hig
+			pane.setInitialValue(options[0]);
 
-				// adapted from the quaqua guide
-				// http://www.randelshofer.ch/quaqua/guide/joptionpane.html
-				JOptionPane pane = new JOptionPane("<html> "
-						+ "<head> <style type=\"text/css\">"
-						+ "b { font: 13pt \"Lucida Grande\" }"
-						+ "p { font: 11pt \"Lucida Grande\"; margin-top: 8px }"
-						+ "</style> </head>"
-						+ "<b>Do you want to save changes to this sketch<BR>"
-						+ " before closing?</b>"
-						+ "<p>If you don't save, your changes will be lost.",
-						JOptionPane.QUESTION_MESSAGE);
+			// on macosx, setting the destructive property places this
+			// option
+			// away from the others at the lefthand side
+			pane.putClientProperty("Quaqua.OptionPane.destructiveOption",
+					new Integer(2));
 
-				String[] options = new String[] { "Save", "Cancel",
-						"Don't Save" };
-				pane.setOptions(options);
+			JDialog dialog = pane.createDialog(this, null);
+			dialog.setVisible(true);
 
-				// highlight the safest option ala apple hig
-				pane.setInitialValue(options[0]);
+			Object result = pane.getValue();
+			if (result == options[0]) { // save (and quit)
+				handleSave(true);
+				checkModified2();
 
-				// on macosx, setting the destructive property places this
-				// option
-				// away from the others at the lefthand side
-				pane.putClientProperty("Quaqua.OptionPane.destructiveOption",
-						new Integer(2));
-
-				JDialog dialog = pane.createDialog(this, null);
-				dialog.setVisible(true);
-
-				Object result = pane.getValue();
-				if (result == options[0]) { // save (and quit)
-					handleSave(true);
-					checkModified2();
-
-				} else if (result == options[2]) { // don't save (still quit)
-					checkModified2();
-				}
+			} else if (result == options[2]) { // don't save (still quit)
+				checkModified2();
 			}
 		}
 	}
@@ -2164,7 +2157,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * Show an error int the status bar.
 	 */
 	public void error(String what) {
-		status.error(what);
+		System.err.println(what);
 	}
 
 	public void error(Exception e) {
@@ -2192,7 +2185,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	// synchronized public void message(String msg) {
 	public void message(String msg) {
-		status.notice(msg);
+		System.out.println(msg);
 		// System.out.println(msg);
 	}
 

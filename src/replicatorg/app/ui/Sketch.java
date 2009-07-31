@@ -245,7 +245,7 @@ public class Sketch {
 		}
 
 		renamingCode = false;
-		editor.status.edit("Name for new file:", "");
+		//editor.status.edit("Name for new file:", "");
 	}
 
 	public void renameCode() {
@@ -270,7 +270,7 @@ public class Sketch {
 		String prompt = (currentIndex == 0) ? "New name for sketch:"
 				: "New name for file:";
 		String oldName = current.name + flavorExtensionsShown[current.flavor];
-		editor.status.edit(prompt, oldName);
+		//editor.status.edit(prompt, oldName);
 	}
 
 	/**
