@@ -1006,7 +1006,7 @@ public class Sanguino3GDriver extends SerialDriver {
 	public void stop() {
 		System.out.println("Stop.");
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.ABORT.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		runCommand(pb.getPacket());
 	}
 
 	public void reset() {
