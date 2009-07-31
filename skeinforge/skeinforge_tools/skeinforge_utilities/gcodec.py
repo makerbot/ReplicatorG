@@ -115,7 +115,7 @@ def getFileText( fileName, readMode = 'r' ):
 		file.close()
 		return fileText
 	except IOError:
-		print( 'The file ' + fileName + ' does not exist, an empty string will be returned.' )
+		print( 'The file ' + fileName + ' does not exist.' )
 		return ''
 
 def getFileTextInFileDirectory( fileInDirectory, fileName, readMode = 'r' ):

@@ -101,6 +101,8 @@ the skeinforge.py directory, then type:
 
 Then move all the generated html files to the documentation folder.
 
+There is a list of tutorials at:
+http://dev.www.reprap.org/bin/view/Main/SkeinforgeTutorials
 
 
 Fabrication

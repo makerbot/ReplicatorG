@@ -131,7 +131,7 @@ def getBridgeDirection( belowLoops, layerLoops, layerThickness ):
 		centers = intercircle.getCentersFromLoopDirection( True, loop, slightlyGreaterThanOverhang )
 		for center in centers:
 			outset = intercircle.getSimplifiedInsetFromClockwiseLoop( center, overhangInset )
-			if euclidean.isLargeSameDirection( outset, center, muchGreaterThanOverhang ):
+			if intercircle.isLargeSameDirection( outset, center, muchGreaterThanOverhang ):
 				belowOutsetLoops.append( outset )
 	bridgeDirection = complex()
 	for loop in layerLoops:
@@ -154,7 +154,7 @@ def getBridgeLoops( layerThickness, loop ):
 	centers = intercircle.getCentersFromCircleNodes( circleNodes )
 	for center in centers:
 		extrudateLoop = intercircle.getSimplifiedInsetFromClockwiseLoop( center, halfWidth )
-		if euclidean.isLargeSameDirection( extrudateLoop, center, muchGreaterThanHalfWIdth ):
+		if intercircle.isLargeSameDirection( extrudateLoop, center, muchGreaterThanHalfWIdth ):
 			if euclidean.isPathInsideLoop( loop, extrudateLoop ) == euclidean.isWiddershins( loop ):
 				extrudateLoop.reverse()
 				extrudateLoops.append( extrudateLoop )
@@ -612,12 +612,8 @@ class TriangleMesh:
 		for loopIndex in xrange( len( loops ) ):
 			loop = loops[ loopIndex ]
 			leftPoint = euclidean.getLeftPoint( loop )
-			totalNumberOfIntersectionsToLeft = 0
-			for otherLoop in loops[ : loopIndex ] + loops[ loopIndex + 1 : ]:
-				totalNumberOfIntersectionsToLeft += euclidean.getNumberOfIntersectionsToLeft( leftPoint, otherLoop )
-			loopIsWiddershins = euclidean.isWiddershins( loop )
-			isEven = totalNumberOfIntersectionsToLeft % 2 == 0
-			if isEven != loopIsWiddershins:
+			isInFilledRegion = euclidean.isInFilledRegion( leftPoint, loops[ : loopIndex ] + loops[ loopIndex + 1 : ] )
+			if isInFilledRegion == euclidean.isWiddershins( loop ):
 				loop.reverse()
 		return loops
 

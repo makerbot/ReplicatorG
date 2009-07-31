@@ -257,8 +257,9 @@ class TowerSkein:
 
 	def addGcodeMovementZ( self, feedrateMinute, point, z ):
 		"Add a movement to the output."
-		if point in self.feedrateTable:
-			feedrateMinute = self.feedrateTable[ point ]
+		pointVector3 = Vector3( point.real, point.imag, z )
+		if pointVector3 in self.feedrateTable:
+			feedrateMinute = self.feedrateTable[ pointVector3 ]
 		self.addLine( 'G1 X%s Y%s Z%s F%s' % ( self.getRounded( point.real ), self.getRounded( point.imag ), self.getRounded( z ), self.getRounded( feedrateMinute ) ) )
 
 	def addIfTravel( self, splitLine ):

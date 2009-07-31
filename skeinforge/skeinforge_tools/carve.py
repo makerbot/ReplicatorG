@@ -305,7 +305,7 @@ class CarveSkein:
 	def getReplacedSVGTemplateLines( self, fileName, rotatedBoundaryLayers ):
 		"Get the lines of text from the svg_template.txt file."
 #( layers.length + 1 ) * (margin + sliceDimY * unitScale + txtHeight) + margin + txtHeight + margin + 110
-		svgTemplateText = gcodec.getFileTextInFileDirectory( __file__, 'svg_template.svg' )
+		svgTemplateText = gcodec.getFileTextInFileDirectory( __file__, 'svg_template.tmpl' )
 		originalTextLines = gcodec.getTextLines( svgTemplateText )
 		self.margin = getParameterFromJavascript( originalTextLines, 'margin', self.margin )
 		self.textHeight = getParameterFromJavascript( originalTextLines, 'textHeight', self.textHeight )

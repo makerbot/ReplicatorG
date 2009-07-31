@@ -14,14 +14,19 @@ strong interleaved bond even if the perimeter loop shrinks.  The "Extra Shells o
 the sparse layers.  The solid layers are those at the top & bottom, and wherever the object has a plateau or overhang, the sparse layers are
 the layers in between.  Adding extra shells makes the object stronger & heavier.
 
-The "Grid Extra Overlap" preference is the amount of extra overlap added when extruding the grid to compensate for the fact that when the
-first thread going through a grid point is extruded, since there is nothing there yet for it to connect to it will shrink extra.  The "Grid Square
-Half Width over Extrusion Width" preference is the ratio of the amount the grid square is increased in each direction over the extrusion
-width, the default is zero.  With a value of one or so the grid pattern will have large squares to go with the octogons.  The "Infill Pattern"
-can be set to "Grid" or "Line".  The grid option makes a funky octogon square honeycomb like pattern which gives the object extra strength.
-However, the  grid pattern means extra turns for the extruder and therefore extra wear & tear, also it takes longer to generate, so the
-default is line.  The grid has extra diagonal lines, so when choosing the grid option, set the infill solidity to 0.2 or less so that there is not
-too much plastic and the grid generation time, which increases with the fourth power of solidity, will be reasonable.
+The "Infill Pattern" can be set to "Grid Hexagonal", "Grid Rectangular" or "Line".  The grid rectangular option makes a funky octogon square
+honeycomb like pattern which gives the object extra strength.  However, the  grid pattern means extra turns for the extruder and therefore
+extra wear & tear, also it takes longer to generate, so the default is line.  The grid has extra diagonal lines, so when choosing the grid
+option, set the infill solidity to 0.2 or less so that there is not too much plastic and the grid generation time, which increases with the fourth
+power of solidity, will be reasonable.  The grid hexagonal option makes a hexagonal grid, but because it is made with threads rather than
+with molding or milling, only a partial hexagon is possible, so the rectangular grid pattern is generally better.  The "Grid Extra Overlap"
+preference is the amount of extra overlap added when extruding the grid to compensate for the fact that when the first thread going through
+a grid point is extruded, since there is nothing there yet for it to connect to it will shrink extra.  The "Grid Junction Separation over Octogon
+Radius At End" preference is the ratio of the amount the grid square is increased in each direction over the extrusion width at the end, the
+default is zero.  With a value of one or so the grid pattern will have large squares to go with the octogons.  The "Grid Junction Separation
+over Octogon Radius At Middle" preference is the increase at the middle, the default is zero.  If this value is different than the value at the
+end, the grid would have an accordion pattern, which would give it a higher shear strength.  The "Grid Junction Separation Band Height" is
+the height of the bands of the accordion pattern.
 
 The "Infill Begin Rotation" preference is the amount the infill direction of the base and every second layer thereafter is rotated.  The default
 value of forty five degrees gives a diagonal infill.  The "Infill Odd Layer Extra Rotation" preference is the extra amount the infill direction of
@@ -101,28 +106,25 @@ __author__ = "Enrique Perez (perez_enrique@yahoo.com)"
 __date__ = "$Date: 2008/28/04 $"
 __license__ = "GPL 3.0"
 
-#fix gearweaver bug
-#support feedrate in raft
-#pyramidal bridge feedrate documentation
-#speed support feedrate, travel feedrate documentation
-#tutorial wiki page
-#
-#menu in raft
-#fix support fill bug
 #cross hatch support
-#profiles
 #short continue in oozebane
+#cooling modification from http://makerhahn.blogspot.com/2008/10/yay-minimug.html
+#add Edistance
 #
+#make fill optional by changing <bridgeLayer>
+#make interpret
+#incorporate scripts
 #boundaries, center radius z bottom top, circular or rectangular
+#update windowPosition in behold dynamic preferences when closing
 #carve aoi xml testing
 #check xml gcode
 #straighten out the use of layer thickness
 #gang or concatenate or join, maybe from behold?
 #check exterior paths which should be combed when changing layers, sometimes in tower
+#pick and place
 #hole sequence, probably made obsolete by CSGEvaluator
 #cut tool head
 #preferences in gcode or saved versions
-#change material from raft?
 #email marius about bridge extrusion width http://reprap.org/bin/view/Main/ExtruderImprovementsAndAlternatives
 #maybe get a volume estimate in statistic from extrusionDiameter instead of width and thickness
 #oozebane reverse?
@@ -136,7 +138,6 @@ __license__ = "GPL 3.0"
 #mill
 #transform
 #searchable help
-#pick and place
 #stack
 #infill first option
 #extrude loops I guess make circles? and/or run along sparse infill
@@ -210,13 +211,13 @@ def addAroundGridPoint( arounds, gridPoint, gridPointInsetX, gridPointInsetY, gr
 		setIsOutside( yCloseToCenterPath, yIntersectionPaths )
 	if len( yCloseToCenterPaths ) < 2:
 		yCloseToCenterPaths[ 0 ].gridPoint = gridPoint
-		insertGridPointPair( arounds, gridPoint, gridPointInsetX, gridPoints, isJunctionWide, paths, pixelTable, yCloseToCenterPaths[ 0 ], width )
+		insertGridPointPair( gridPoint, gridPointInsetX, gridPoints, isJunctionWide, paths, pixelTable, yCloseToCenterPaths[ 0 ], width )
 		return
 	plusMinusSign = getPlusMinusSign( yCloseToCenterPaths[ 1 ].y - yCloseToCenterPaths[ 0 ].y )
 	yCloseToCenterPaths[ 0 ].gridPoint = complex( gridPoint.real, gridPoint.imag - plusMinusSign * gridPointInsetY )
 	yCloseToCenterPaths[ 1 ].gridPoint = complex( gridPoint.real, gridPoint.imag + plusMinusSign * gridPointInsetY )
 	yCloseToCenterPaths.sort( comparePointIndexDescending )
-	insertGridPointPairs( arounds, gridPoint, gridPointInsetX, gridPoints, yCloseToCenterPaths[ 0 ], yCloseToCenterPaths[ 1 ], isBothOrNone, isJunctionWide, paths, pixelTable, width )
+	insertGridPointPairs( gridPoint, gridPointInsetX, gridPoints, yCloseToCenterPaths[ 0 ], yCloseToCenterPaths[ 1 ], isBothOrNone, isJunctionWide, paths, pixelTable, width )
 
 def addPath( extrusionWidth, fill, path, rotationPlaneAngle ):
 	"Add simplified path to fill."
@@ -319,11 +320,6 @@ def comparePointIndexDescending( self, other ):
 		return 1
 	return 0
 
-def createFillForSurroundings( radius, surroundingLoops ):
-	"Create extra fill loops for surrounding loops."
-	for surroundingLoop in surroundingLoops:
-		createExtraFillLoops( radius, surroundingLoop )
-
 def createExtraFillLoops( radius, surroundingLoop ):
 	"Create extra fill loops."
 	for innerSurrounding in surroundingLoop.innerSurroundings:
@@ -337,6 +333,11 @@ def createExtraFillLoops( radius, surroundingLoop ):
 	if len( allFillLoops ) > 0:
 		surroundingLoop.lastFillLoops = allFillLoops
 	surroundingLoop.extraLoops += allFillLoops
+
+def createFillForSurroundings( radius, surroundingLoops ):
+	"Create extra fill loops for surrounding loops."
+	for surroundingLoop in surroundingLoops:
+		createExtraFillLoops( radius, surroundingLoop )
 
 def getAdditionalLength( path, point, pointIndex ):
 	"Get the additional length added by inserting a point into a path."
@@ -370,7 +371,7 @@ def getExtraFillLoops( insideLoops, outsideLoop, radius ):
 	otherLoops = insideLoops + [ outsideLoop ]
 	for center in centers:
 		inset = intercircle.getSimplifiedInsetFromClockwiseLoop( center, radius )
-		if euclidean.isLargeSameDirection( inset, center, muchGreaterThanRadius ):
+		if intercircle.isLargeSameDirection( inset, center, muchGreaterThanRadius ):
 			if isPathAlwaysInsideLoop( outsideLoop, inset ):
 				if isPathAlwaysOutsideLoops( insideLoops, inset ):
 					if not euclidean.isLoopIntersectingLoops( inset, otherLoops ):
@@ -419,7 +420,7 @@ def getIntersectionOfXIntersectionIndexes( totalSolidSurfaceThickness, xIntersec
 			xIntersectionList.append( xIntersectionIndex.x )
 	return xIntersectionList
 
-def getNonIntersectingGridPointLine( arounds, gridPointInsetX, isJunctionWide, paths, pixelTable, yIntersectionPath, width ):
+def getNonIntersectingGridPointLine( gridPointInsetX, isJunctionWide, paths, pixelTable, yIntersectionPath, width ):
 	"Get the points around the grid point that is junction wide that do not intersect."
 	pointIndexPlusOne = yIntersectionPath.getPointIndexPlusOne()
 	path = yIntersectionPath.getPath( paths )
@@ -493,37 +494,37 @@ def getYIntersectionInsideYSegment( segmentFirstY, segmentSecondY, complexFirst,
 		return yIntersection
 	return None
 
-def insertGridPointPair( arounds, gridPoint, gridPointInsetX, gridPoints, isJunctionWide, paths, pixelTable, yIntersectionPath, width ):
+def insertGridPointPair( gridPoint, gridPointInsetX, gridPoints, isJunctionWide, paths, pixelTable, yIntersectionPath, width ):
 	"Insert a pair of points around the grid point is is junction wide, otherwise inset one point."
-	linePath = getNonIntersectingGridPointLine( arounds, gridPointInsetX, isJunctionWide, paths, pixelTable, yIntersectionPath, width )
-	insertGridPointPairWithLinePath( arounds, gridPoint, gridPointInsetX, gridPoints, isJunctionWide, linePath, paths, pixelTable, yIntersectionPath, width )
+	linePath = getNonIntersectingGridPointLine( gridPointInsetX, isJunctionWide, paths, pixelTable, yIntersectionPath, width )
+	insertGridPointPairWithLinePath( gridPoint, gridPointInsetX, gridPoints, isJunctionWide, linePath, paths, pixelTable, yIntersectionPath, width )
 
-def insertGridPointPairs( arounds, gridPoint, gridPointInsetX, gridPoints, intersectionPathFirst, intersectionPathSecond, isBothOrNone, isJunctionWide, paths, pixelTable, width ):
+def insertGridPointPairs( gridPoint, gridPointInsetX, gridPoints, intersectionPathFirst, intersectionPathSecond, isBothOrNone, isJunctionWide, paths, pixelTable, width ):
 	"Insert a pair of points around a pair of grid points."
-	gridPointLineFirst = getNonIntersectingGridPointLine( arounds, gridPointInsetX, isJunctionWide, paths, pixelTable, intersectionPathFirst, width )
+	gridPointLineFirst = getNonIntersectingGridPointLine( gridPointInsetX, isJunctionWide, paths, pixelTable, intersectionPathFirst, width )
 	if len( gridPointLineFirst ) < 1:
 		if isBothOrNone:
 			return
 		intersectionPathSecond.gridPoint = gridPoint
-		insertGridPointPair( arounds, gridPoint, gridPointInsetX, gridPoints, isJunctionWide, paths, pixelTable, intersectionPathSecond, width )
+		insertGridPointPair( gridPoint, gridPointInsetX, gridPoints, isJunctionWide, paths, pixelTable, intersectionPathSecond, width )
 		return
-	gridPointLineSecond = getNonIntersectingGridPointLine( arounds, gridPointInsetX, isJunctionWide, paths, pixelTable, intersectionPathSecond, width )
+	gridPointLineSecond = getNonIntersectingGridPointLine( gridPointInsetX, isJunctionWide, paths, pixelTable, intersectionPathSecond, width )
 	if len( gridPointLineSecond ) > 0:
-		insertGridPointPairWithLinePath( arounds, gridPoint, gridPointInsetX, gridPoints, isJunctionWide, gridPointLineFirst, paths, pixelTable, intersectionPathFirst, width )
-		insertGridPointPairWithLinePath( arounds, gridPoint, gridPointInsetX, gridPoints, isJunctionWide, gridPointLineSecond, paths, pixelTable, intersectionPathSecond, width )
+		insertGridPointPairWithLinePath( gridPoint, gridPointInsetX, gridPoints, isJunctionWide, gridPointLineFirst, paths, pixelTable, intersectionPathFirst, width )
+		insertGridPointPairWithLinePath( gridPoint, gridPointInsetX, gridPoints, isJunctionWide, gridPointLineSecond, paths, pixelTable, intersectionPathSecond, width )
 		return
 	if isBothOrNone:
 		return
 	originalGridPointFirst = intersectionPathFirst.gridPoint
 	intersectionPathFirst.gridPoint = gridPoint
-	gridPointLineFirstCenter = getNonIntersectingGridPointLine( arounds, gridPointInsetX, isJunctionWide, paths, pixelTable, intersectionPathFirst, width )
+	gridPointLineFirstCenter = getNonIntersectingGridPointLine( gridPointInsetX, isJunctionWide, paths, pixelTable, intersectionPathFirst, width )
 	if len( gridPointLineFirstCenter ) > 0:
-		insertGridPointPairWithLinePath( arounds, gridPoint, gridPointInsetX, gridPoints, isJunctionWide, gridPointLineFirstCenter, paths, pixelTable, intersectionPathFirst, width )
+		insertGridPointPairWithLinePath( gridPoint, gridPointInsetX, gridPoints, isJunctionWide, gridPointLineFirstCenter, paths, pixelTable, intersectionPathFirst, width )
 		return
 	intersectionPathFirst.gridPoint = originalGridPointFirst
-	insertGridPointPairWithLinePath( arounds, gridPoint, gridPointInsetX, gridPoints, isJunctionWide, gridPointLineFirst, paths, pixelTable, intersectionPathFirst, width )
+	insertGridPointPairWithLinePath( gridPoint, gridPointInsetX, gridPoints, isJunctionWide, gridPointLineFirst, paths, pixelTable, intersectionPathFirst, width )
 
-def insertGridPointPairWithLinePath( arounds, gridPoint, gridPointInsetX, gridPoints, isJunctionWide, linePath, paths, pixelTable, yIntersectionPath, width ):
+def insertGridPointPairWithLinePath( gridPoint, gridPointInsetX, gridPoints, isJunctionWide, linePath, paths, pixelTable, yIntersectionPath, width ):
 	"Insert a pair of points around the grid point is is junction wide, otherwise inset one point."
 	if len( linePath ) < 1:
 		return
@@ -921,8 +922,7 @@ class FillSkein:
 			alreadyFilledArounds.append( alreadyFilledLoop )
 			planeRotatedPerimeter = euclidean.getPointsRoundZAxis( reverseZRotationAngle, loop )
 			rotatedExtruderLoops.append( planeRotatedPerimeter )
-			circleNodes = intercircle.getCircleNodesFromLoop( planeRotatedPerimeter, slightlyGreaterThanFill )
-			centers = intercircle.getCentersFromCircleNodes( circleNodes )
+			centers = intercircle.getCentersFromLoop( planeRotatedPerimeter, slightlyGreaterThanFill )
 			euclidean.addLoopToPixelTable( planeRotatedPerimeter, aroundPixelTable, aroundWidth )
 			for center in centers:
 				alreadyFilledInset = intercircle.getSimplifiedInsetFromClockwiseLoop( center, layerFillInset )
@@ -932,7 +932,7 @@ class FillSkein:
 					if euclidean.isPathInsideLoop( planeRotatedPerimeter, around ) == euclidean.isWiddershins( planeRotatedPerimeter ):
 						arounds.append( around )
 		if len( arounds ) < 1:
-			euclidean.addToThreadsRemoveFromSurroundings( self.oldOrderedLocation, surroundingLoops, self )
+			self.addThreadsBridgeLayer( rotatedLayer, surroundingLoops )
 			return
 		back = euclidean.getBackOfLoops( arounds )
 		front = euclidean.getFrontOfLoops( arounds )
@@ -943,6 +943,8 @@ class FillSkein:
 				areaChange = min( areaChange, self.getAreaChange( area, layerIndex - surroundingIndex ) )
 				areaChange = min( areaChange, self.getAreaChange( area, layerIndex + surroundingIndex ) )
 			if areaChange > 0.5 or self.solidSurfaceThickness == 0:
+				if self.fillPreferences.interiorInfillDensityOverExteriorDensity.value <= 0.0:
+					self.addThreadsBridgeLayer( rotatedLayer, surroundingLoops )
 				layerExtrusionWidth /= self.fillPreferences.interiorInfillDensityOverExteriorDensity.value
 		front = math.ceil( front / layerExtrusionWidth ) * layerExtrusionWidth
 		fillWidth = back - front
@@ -959,10 +961,10 @@ class FillSkein:
 			surroundingXIntersections = getSurroundingXIntersections( self.doubleSolidSurfaceThickness, surroundingCarves, y )
 			addSparseEndpoints( doubleExtrusionWidth, endpoints, fillLine, horizontalSegments, layerInfillSolidity, removedEndpoints, self.solidSurfaceThickness, surroundingXIntersections )
 		if len( endpoints ) < 1:
-			euclidean.addToThreadsRemoveFromSurroundings( self.oldOrderedLocation, surroundingLoops, self )
+			self.addThreadsBridgeLayer( rotatedLayer, surroundingLoops )
 			return
 		paths = euclidean.getPathsFromEndpoints( endpoints, layerFillInset, aroundPixelTable, aroundWidth )
-		if not self.fillPreferences.infillPatternLine.value:
+		if self.isGridToBeExtruded():
 			self.addGrid( alreadyFilledArounds, arounds, fillLoops, gridPointInsetX, layerIndex, paths, aroundPixelTable, aroundWidth, reverseZRotationAngle, rotatedExtruderLoops, surroundingCarves )
 		oldRemovedEndpointLength = len( removedEndpoints ) + 1
 		while oldRemovedEndpointLength - len( removedEndpoints ) > 0:
@@ -971,10 +973,7 @@ class FillSkein:
 		for path in paths:
 			addPath( layerFillInset, fill, path, layerRotationAroundZAngle )
 		euclidean.transferPathsToSurroundingLoops( fill, surroundingLoops )
-		euclidean.addToThreadsRemoveFromSurroundings( self.oldOrderedLocation, surroundingLoops, self )
-		if rotatedLayer.rotation != None:
-			self.addLine( '(</bridgeLayer>)' ) # Indicate that this is a bridge layer.
-		self.addLine( '(</layer>)' )
+		self.addThreadsBridgeLayer( rotatedLayer, surroundingLoops )
 
 	def addGcodeFromThreadZ( self, thread, z ):
 		"Add a gcode thread to the output."
@@ -1061,6 +1060,13 @@ class FillSkein:
 		"Add shutdown gcode to the output."
 		for line in self.lines[ self.shutdownLineIndex : ]:
 			self.addLine( line )
+
+	def addThreadsBridgeLayer( self, rotatedLayer, surroundingLoops ):
+		"Add the threads, add the bridge end & the layer end tag."
+		euclidean.addToThreadsRemoveFromSurroundings( self.oldOrderedLocation, surroundingLoops, self )
+		if rotatedLayer.rotation != None:
+			self.addLine( '(</bridgeLayer>)' ) # Indicate that this is a bridge layer.
+		self.addLine( '(</layer>)' )
 
 	def addToThread( self, location ):
 		"Add a location to thread."
@@ -1165,6 +1171,10 @@ class FillSkein:
 			area += euclidean.getPolygonArea( surroundingLoop.boundary )
 		return area
 
+	def isGridToBeExtruded( self ):
+		"Determine if the grid is to be extruded."
+		return ( not self.fillPreferences.infillPatternLine.value ) and self.fillPreferences.interiorInfillDensityOverExteriorDensity.value > 0
+
 	def isPointInsideLineSegments( self, alreadyFilledArounds, gridPoint, rotatedExtruderLoops, surroundingCarves ):
 		"Is the point inside the line segments of the loops."
 		if self.solidSurfaceThickness <= 0:
@@ -1192,7 +1202,7 @@ class FillSkein:
 		self.lines = gcodec.getTextLines( gcodeText )
 		self.parseInitialization()
 		self.infillSolidity = fillPreferences.infillSolidity.value
-		if not fillPreferences.infillPatternLine.value:
+		if self.isGridToBeExtruded():
 			self.setGridVariables( fillPreferences )
 		self.infillBeginRotation = math.radians( fillPreferences.infillBeginRotation.value )
 		self.infillOddLayerExtraRotation = math.radians( fillPreferences.infillOddLayerExtraRotation.value )
@@ -1220,7 +1230,9 @@ class FillSkein:
 				self.extrusionPerimeterWidth = float( splitLine[ 1 ] )
 			elif firstWord == '(<extrusionWidth>':
 				self.extrusionWidth = float( splitLine[ 1 ] )
-				self.interiorExtrusionWidth = self.extrusionWidth / self.fillPreferences.interiorInfillDensityOverExteriorDensity.value
+				self.interiorExtrusionWidth = self.extrusionWidth
+				if self.fillPreferences.interiorInfillDensityOverExteriorDensity.value > 0:
+					self.interiorExtrusionWidth /= self.fillPreferences.interiorInfillDensityOverExteriorDensity.value
 				self.addLine( '(<outsideExtrudedFirst> %s </outsideExtrudedFirst>)' % self.fillPreferences.outsideExtrudedFirst.value )
 			elif firstWord == '(</extruderInitialization>)':
 				self.addLine( '(<procedureDone> fill </procedureDone>)' )

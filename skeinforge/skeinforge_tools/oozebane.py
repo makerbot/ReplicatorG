@@ -500,8 +500,8 @@ class OozebaneSkein:
 			elif firstWord == '(<extrusionWidth>':
 				self.extrusionWidth = float( splitLine[ 1 ] )
 				self.setExtrusionWidth( oozebanePreferences )
-			elif firstWord == '(<feedrateMinute>':
-				self.operatingFeedrateMinute = float( splitLine[ 1 ] )
+			elif firstWord == '(<operatingFeedratePerSecond>':
+				self.operatingFeedrateMinute = 60.0 * float( splitLine[ 1 ] )
 			self.addLine( line )
 
 	def parseLine( self, line ):

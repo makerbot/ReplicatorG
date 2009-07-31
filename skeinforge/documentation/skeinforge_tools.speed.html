@@ -22,9 +22,12 @@ filament&nbsp;will&nbsp;be&nbsp;packed&nbsp;tightly,&nbsp;and&nbsp;the&nbsp;obje
 little&nbsp;room&nbsp;for&nbsp;the&nbsp;filament,&nbsp;and&nbsp;the&nbsp;extruder&nbsp;will&nbsp;end&nbsp;up&nbsp;plowing&nbsp;through&nbsp;the&nbsp;extra&nbsp;filament.&nbsp;&nbsp;A&nbsp;low&nbsp;value&nbsp;means&nbsp;the&nbsp;filaments&nbsp;will<br>
 be&nbsp;far&nbsp;away&nbsp;from&nbsp;each&nbsp;other,&nbsp;the&nbsp;object&nbsp;will&nbsp;be&nbsp;leaky&nbsp;and&nbsp;light.&nbsp;&nbsp;The&nbsp;value&nbsp;with&nbsp;the&nbsp;default&nbsp;extrusion&nbsp;preferences&nbsp;is&nbsp;around&nbsp;0.82.<br>
 &nbsp;<br>
-The&nbsp;feedrate&nbsp;for&nbsp;the&nbsp;shape&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;the&nbsp;'Feedrate"&nbsp;preference.&nbsp;&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;orbit&nbsp;compared&nbsp;to&nbsp;the&nbsp;operating&nbsp;extruder<br>
-speed&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;the&nbsp;"Orbital&nbsp;Feedrate&nbsp;over&nbsp;Operating&nbsp;Feedrate"&nbsp;preference.&nbsp;&nbsp;If&nbsp;you&nbsp;want&nbsp;the&nbsp;orbit&nbsp;to&nbsp;be&nbsp;very&nbsp;short,&nbsp;set&nbsp;the<br>
-"Orbital&nbsp;Feedrate&nbsp;over&nbsp;Operating&nbsp;Feedrate"&nbsp;preference&nbsp;to&nbsp;a&nbsp;low&nbsp;value&nbsp;like&nbsp;0.1.<br>
+The&nbsp;feedrate&nbsp;for&nbsp;the&nbsp;shape&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;the&nbsp;'Feedrate"&nbsp;preference.&nbsp;&nbsp;The&nbsp;'Bridge&nbsp;Feedrate&nbsp;Multiplier'&nbsp;is&nbsp;the&nbsp;ratio&nbsp;of&nbsp;the&nbsp;feedrate&nbsp;on<br>
+the&nbsp;bridge&nbsp;layers&nbsp;over&nbsp;the&nbsp;feedrate&nbsp;of&nbsp;the&nbsp;typical&nbsp;non&nbsp;bridge&nbsp;layers,&nbsp;the&nbsp;default&nbsp;is&nbsp;1.0.&nbsp;&nbsp;The&nbsp;speed&nbsp;of&nbsp;the&nbsp;orbit&nbsp;compared&nbsp;to&nbsp;the<br>
+operating&nbsp;extruder&nbsp;speed&nbsp;will&nbsp;be&nbsp;set&nbsp;to&nbsp;the&nbsp;"Orbital&nbsp;Feedrate&nbsp;over&nbsp;Operating&nbsp;Feedrate"&nbsp;preference.&nbsp;&nbsp;If&nbsp;you&nbsp;want&nbsp;the&nbsp;orbit&nbsp;to&nbsp;be<br>
+very&nbsp;short,&nbsp;set&nbsp;the&nbsp;"Orbital&nbsp;Feedrate&nbsp;over&nbsp;Operating&nbsp;Feedrate"&nbsp;preference&nbsp;to&nbsp;a&nbsp;low&nbsp;value&nbsp;like&nbsp;0.1.&nbsp;&nbsp;The&nbsp;'Travel&nbsp;Feedrate'&nbsp;is&nbsp;the<br>
+feedrate&nbsp;when&nbsp;the&nbsp;extruder&nbsp;is&nbsp;off.&nbsp;&nbsp;The&nbsp;default&nbsp;is&nbsp;16&nbsp;mm&nbsp;/&nbsp;s&nbsp;and&nbsp;it&nbsp;could&nbsp;be&nbsp;set&nbsp;as&nbsp;high&nbsp;as&nbsp;the&nbsp;extruder&nbsp;can&nbsp;be&nbsp;moved,&nbsp;it&nbsp;does<br>
+not&nbsp;have&nbsp;to&nbsp;be&nbsp;limited&nbsp;by&nbsp;the&nbsp;maximum&nbsp;extrusion&nbsp;rate.<br>
 &nbsp;<br>
 In&nbsp;the&nbsp;"Flowrate&nbsp;Choice"&nbsp;radio&nbsp;button&nbsp;group,&nbsp;if&nbsp;"Do&nbsp;Not&nbsp;Add&nbsp;Flowrate"&nbsp;is&nbsp;selected&nbsp;then&nbsp;speed&nbsp;will&nbsp;not&nbsp;add&nbsp;a&nbsp;flowrate&nbsp;to&nbsp;the&nbsp;gcode<br>
 output.&nbsp;&nbsp;If&nbsp;"Metric"&nbsp;is&nbsp;selected,&nbsp;the&nbsp;flowrate&nbsp;in&nbsp;cubic&nbsp;millimeters&nbsp;per&nbsp;second&nbsp;will&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;output.&nbsp;&nbsp;If&nbsp;"PWM&nbsp;Setting"&nbsp;is<br>
@@ -145,7 +148,7 @@ many&nbsp;lines&nbsp;of&nbsp;gcode<br>
 <td width="100%">Methods defined here:<br>
 <dl><dt><a name="SpeedSkein-__init__"><strong>__init__</strong></a>(self)</dt></dl>
 
-<dl><dt><a name="SpeedSkein-addFlowrateLine"><strong>addFlowrateLine</strong></a>(self, flowrateString)</dt><dd><tt>Add&nbsp;flowrate&nbsp;line.</tt></dd></dl>
+<dl><dt><a name="SpeedSkein-addFlowrateLineIfNecessary"><strong>addFlowrateLineIfNecessary</strong></a>(self)</dt><dd><tt>Add&nbsp;flowrate&nbsp;line.</tt></dd></dl>
 
 <dl><dt><a name="SpeedSkein-addLine"><strong>addLine</strong></a>(self, line)</dt><dd><tt>Add&nbsp;a&nbsp;line&nbsp;of&nbsp;text&nbsp;and&nbsp;a&nbsp;newline&nbsp;to&nbsp;the&nbsp;output.</tt></dd></dl>
 
@@ -153,9 +156,11 @@ many&nbsp;lines&nbsp;of&nbsp;gcode<br>
 
 <dl><dt><a name="SpeedSkein-getGcodeFromFeedrateMovement"><strong>getGcodeFromFeedrateMovement</strong></a>(self, feedrateMinute, point)</dt><dd><tt>Get&nbsp;a&nbsp;gcode&nbsp;movement.</tt></dd></dl>
 
+<dl><dt><a name="SpeedSkein-getOperatingFlowrate"><strong>getOperatingFlowrate</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;operating&nbsp;flowrate.</tt></dd></dl>
+
 <dl><dt><a name="SpeedSkein-getRounded"><strong>getRounded</strong></a>(self, number)</dt><dd><tt>Get&nbsp;number&nbsp;rounded&nbsp;to&nbsp;the&nbsp;number&nbsp;of&nbsp;carried&nbsp;decimal&nbsp;places&nbsp;as&nbsp;a&nbsp;string.</tt></dd></dl>
 
-<dl><dt><a name="SpeedSkein-getSpeededLine"><strong>getSpeededLine</strong></a>(self, splitLine)</dt><dd><tt>Get&nbsp;elevated&nbsp;gcode&nbsp;line&nbsp;with&nbsp;operating&nbsp;feedrate.</tt></dd></dl>
+<dl><dt><a name="SpeedSkein-getSpeededLine"><strong>getSpeededLine</strong></a>(self, splitLine)</dt><dd><tt>Get&nbsp;gcode&nbsp;line&nbsp;with&nbsp;feedrate.</tt></dd></dl>
 
 <dl><dt><a name="SpeedSkein-parseGcode"><strong>parseGcode</strong></a>(self, gcodeText, speedPreferences)</dt><dd><tt>Parse&nbsp;gcode&nbsp;text&nbsp;and&nbsp;store&nbsp;the&nbsp;speed&nbsp;gcode.</tt></dd></dl>
 

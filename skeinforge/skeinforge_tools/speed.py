@@ -12,9 +12,12 @@ filament will be packed tightly, and the object will be almost as dense as the f
 little room for the filament, and the extruder will end up plowing through the extra filament.  A low value means the filaments will
 be far away from each other, the object will be leaky and light.  The value with the default extrusion preferences is around 0.82.
 
-The feedrate for the shape will be set to the 'Feedrate" preference.  The speed of the orbit compared to the operating extruder
-speed will be set to the "Orbital Feedrate over Operating Feedrate" preference.  If you want the orbit to be very short, set the
-"Orbital Feedrate over Operating Feedrate" preference to a low value like 0.1.
+The feedrate for the shape will be set to the 'Feedrate" preference.  The 'Bridge Feedrate Multiplier' is the ratio of the feedrate on
+the bridge layers over the feedrate of the typical non bridge layers, the default is 1.0.  The speed of the orbit compared to the
+operating extruder speed will be set to the "Orbital Feedrate over Operating Feedrate" preference.  If you want the orbit to be
+very short, set the "Orbital Feedrate over Operating Feedrate" preference to a low value like 0.1.  The 'Travel Feedrate' is the
+feedrate when the extruder is off.  The default is 16 mm / s and it could be set as high as the extruder can be moved, it does
+not have to be limited by the maximum extrusion rate.
 
 In the "Flowrate Choice" radio button group, if "Do Not Add Flowrate" is selected then speed will not add a flowrate to the gcode
 output.  If "Metric" is selected, the flowrate in cubic millimeters per second will be added to the output.  If "PWM Setting" is
@@ -90,7 +93,6 @@ from skeinforge_tools.skeinforge_utilities import intercircle
 from skeinforge_tools.skeinforge_utilities import preferences
 from skeinforge_tools import analyze
 from skeinforge_tools.skeinforge_utilities import interpret
-from skeinforge_tools import material
 from skeinforge_tools import multiply
 from skeinforge_tools import polyfile
 import cStringIO
@@ -182,9 +184,7 @@ class SpeedPreferences:
 		self.archive.append( self.perimeterFeedrateOverOperatingFeedrate )
 		self.perimeterFlowrateOverOperatingFlowrate = preferences.FloatPreference().getFromValue( 'Perimeter Flowrate over Operating Flowrate (ratio):', 1.0 )
 		self.archive.append( self.perimeterFlowrateOverOperatingFlowrate )
-		self.supportFlowrateOverOperatingFlowrate = preferences.FloatPreference().getFromValue( 'Support Flowrate over Operating Flowrate (ratio):', 1.0 )
-		self.archive.append( self.supportFlowrateOverOperatingFlowrate )
-		self.travelFeedratePerSecond = preferences.FloatPreference().getFromValue( 'Travel Feedrate (mm/s):', 30.0 )
+		self.travelFeedratePerSecond = preferences.FloatPreference().getFromValue( 'Travel Feedrate (mm/s):', 16.0 )
 		self.archive.append( self.travelFeedratePerSecond )
 		#Create the archive, title of the execute button, title of the dialog & preferences fileName.
 		self.executeTitle = 'Speed'
@@ -290,12 +290,8 @@ class SpeedSkein:
 				self.addLine( '(<flowrateCubicMillimetersPerSecond> ' + roundedFlowrate + ' </flowrateCubicMillimetersPerSecond>)' )
 			elif firstWord == '(<extrusionWidth>':
 				self.extrusionWidth = float( splitLine[ 1 ] )
-				self.addLine( '(<feedrateMinute> %s </feedrateMinute>)' % ( 60.0 * self.feedratePerSecond ) )
 				self.addLine( '(<operatingFeedratePerSecond> %s </operatingFeedratePerSecond>)' % self.feedratePerSecond )
 				self.addLine( '(<orbitalFeedratePerSecond> %s </orbitalFeedratePerSecond>)' % self.orbitalFeedratePerSecond )
-				if not self.speedPreferences.flowrateDoNotAddFlowratePreference.value:
-					supportFlowrate = self.speedPreferences.supportFlowrateOverOperatingFlowrate.value * self.getOperatingFlowrate()
-					self.addLine( '(<supportFlowrate> %s </supportFlowrate)' % euclidean.getRoundedToThreePlaces( supportFlowrate ) )
 				self.addLine( '(<travelFeedratePerSecond> %s </travelFeedratePerSecond>)' % self.speedPreferences.travelFeedratePerSecond.value )
 			elif firstWord == '(</extruderInitialization>)':
 				self.addLine( '(<procedureDone> speed </procedureDone>)' )

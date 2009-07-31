@@ -74,7 +74,6 @@ from skeinforge_tools.skeinforge_utilities import preferences
 from skeinforge_tools import analyze
 from skeinforge_tools import fill
 from skeinforge_tools.skeinforge_utilities import interpret
-from skeinforge_tools import material
 from skeinforge_tools import polyfile
 import cStringIO
 import math

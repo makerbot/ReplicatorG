@@ -237,7 +237,7 @@ class CombSkein:
 		centers = intercircle.getCentersFromCircleNodes( circleNodes )
 		for center in centers:
 			inset = intercircle.getInsetFromClockwiseLoop( center, halfFillInset )
-			if euclidean.isLargeSameDirection( inset, center, self.fillInset ):
+			if intercircle.isLargeSameDirection( inset, center, self.fillInset ):
 				if euclidean.isPathInsideLoop( loop, inset ) == euclidean.isWiddershins( loop ):
 					distanceIndex = euclidean.getNearestDistanceIndex( locationComplex, inset )
 					if distanceIndex.distance < closestDistanceIndex.distance:
@@ -350,7 +350,7 @@ class CombSkein:
 			centers = intercircle.getCentersFromCircleNodes( circleNodes )
 			for center in centers:
 				inset = intercircle.getSimplifiedInsetFromClockwiseLoop( center, halfFillInset )
-				if euclidean.isLargeSameDirection( inset, center, self.fillInset ):
+				if intercircle.isLargeSameDirection( inset, center, self.fillInset ):
 					if euclidean.isPathInsideLoop( boundaryLoop, inset ) == euclidean.isWiddershins( boundaryLoop ):
 						betweens.append( inset )
 		self.betweenTable[ self.layerZ ] = betweens

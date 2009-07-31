@@ -88,7 +88,7 @@ def addAlreadyFilledArounds( alreadyFilledArounds, loop, radius ):
 	centers = intercircle.getCentersFromCircleNodes( circleNodes )
 	for center in centers:
 		alreadyFilledInset = intercircle.getSimplifiedInsetFromClockwiseLoop( center, radius )
-		if euclidean.isLarge( alreadyFilledInset, muchGreaterThanRadius ) or euclidean.isWiddershins( alreadyFilledInset ):
+		if intercircle.isLarge( alreadyFilledInset, muchGreaterThanRadius ) or euclidean.isWiddershins( alreadyFilledInset ):
 			alreadyFilledLoop.append( alreadyFilledInset )
 	if len( alreadyFilledLoop ) > 0:
 		alreadyFilledArounds.append( alreadyFilledLoop )
@@ -422,11 +422,11 @@ class InsetSkein:
 		if rotatedBoundaryLayer.rotation != None:
 			halfWidth *= self.infillBridgeWidthOverExtrusionWidth
 			self.addLine( '(<bridgeDirection> ' + str( rotatedBoundaryLayer.rotation ) + ' </bridgeDirection>)' ) # Indicate the bridge direction.
-		for loop in rotatedBoundaryLayer.loops:
-			extrudateLoops = intercircle.getInsetLoopsFromLoop( halfWidth, loop )
-			for extrudateLoop in extrudateLoops:
-				self.addGcodeFromRemainingLoop( extrudateLoop, alreadyFilledArounds, halfWidth, rotatedBoundaryLayer.z )
-				addAlreadyFilledArounds( alreadyFilledArounds, extrudateLoop, self.fillInset )
+#		for loop in rotatedBoundaryLayer.loops:
+		extrudateLoops = intercircle.getInsetSeparateLoopsFromLoops( halfWidth, rotatedBoundaryLayer.loops )
+		for extrudateLoop in extrudateLoops:
+			self.addGcodeFromRemainingLoop( extrudateLoop, alreadyFilledArounds, halfWidth, rotatedBoundaryLayer.z )
+			addAlreadyFilledArounds( alreadyFilledArounds, extrudateLoop, self.fillInset )
 		self.addLine( '(</layer>)' )
 
 	def addLine( self, line ):

@@ -161,7 +161,7 @@ def addToThreadsRemoveFromSurroundings( oldOrderedLocation, surroundingLoops, sk
 		getTransferClosestSurroundingLoop( oldOrderedLocation, surroundingLoops, skein )
 
 def addXIntersectionIndexes( loop, solidIndex, xIntersectionIndexList, y ):
-	"Add the x intersections for a loop."
+	"Add the x intersection indexes for a loop."
 	for pointIndex in xrange( len( loop ) ):
 		pointFirst = loop[ pointIndex ]
 		pointSecond = loop[ ( pointIndex + 1 ) % len( loop ) ]
@@ -172,16 +172,31 @@ def addXIntersectionIndexes( loop, solidIndex, xIntersectionIndexList, y ):
 			xIntersectionIndexList.append( XIntersectionIndex( solidIndex, xIntersection ) )
 
 def addXIntersectionIndexesFromLoopLists( loopLists, xIntersectionIndexList, y ):
-	"Add the x intersections for the loop lists."
+	"Add the x intersection indexes for the loop lists."
 	for loopListIndex in xrange( len( loopLists ) ):
 		loopList = loopLists[ loopListIndex ]
 		for loop in loopList:
 			addXIntersectionIndexes( loop, loopListIndex, xIntersectionIndexList, y )
 
 def addXIntersectionIndexesFromLoops( loops, solidIndex, xIntersectionIndexList, y ):
-	"Add the x intersections for the loops."
+	"Add the x intersection indexes for the loops."
 	for loop in loops:
 		addXIntersectionIndexes( loop, solidIndex, xIntersectionIndexList, y )
+
+def addXIntersections( loop, xIntersections, y ):
+	"Add the x intersections for a loop."
+	for pointIndex in xrange( len( loop ) ):
+		pointFirst = loop[ pointIndex ]
+		pointSecond = loop[ ( pointIndex + 1 ) % len( loop ) ]
+		isYAboveFirst = y > pointFirst.imag
+		isYAboveSecond = y > pointSecond.imag
+		if isYAboveFirst != isYAboveSecond:
+			xIntersections.append( getXIntersection( pointFirst, pointSecond, y ) )
+
+def addXIntersectionsFromLoops( loops, xIntersections, y ):
+	"Add the x intersections for the loops."
+	for loop in loops:
+		addXIntersections( loop, xIntersections, y )
 
 def compareSegmentLength( endpoint, otherEndpoint ):
 	"Get comparison in order to sort endpoints in ascending order of segment length."
@@ -791,19 +806,16 @@ def isCloseXYPlane( overlapDistance, pixelTable, pointComplex, x, y ):
 			return True
 	return False
 
+def isInFilledRegion( leftPoint, loops ):
+	"Determine if the left point is in the filled region of the loops."
+	totalNumberOfIntersectionsToLeft = 0
+	for loop in loops:
+		totalNumberOfIntersectionsToLeft += getNumberOfIntersectionsToLeft( leftPoint, loop )
+	return totalNumberOfIntersectionsToLeft % 2 == 1
+
 def isInsideOtherLoops( loopIndex, loops ):
 	"Determine if a loop in a list is inside another loop in that list."
 	return isPathInsideLoops( loops[ : loopIndex ] + loops[ loopIndex + 1 : ], loops[ loopIndex ] )
-
-def isLarge( loop, requiredSize ):
-	"Determine if the loop is as large as the required size."
-	return getMaximumSpan( loop ) > abs( requiredSize )
-
-def isLargeSameDirection( inset, loop, requiredSize ):
-	"Determine if the inset is in the same direction as the loop and if the inset is as large as the required size."
-	if isWiddershins( inset ) != isWiddershins( loop ):
-		return False
-	return isLarge( inset, requiredSize )
 
 def isLineIntersectingInsideXSegment( segmentFirstX, segmentSecondX, vector3First, vector3Second, y ):
 	"Determine if the line is crossing inside the x segment."

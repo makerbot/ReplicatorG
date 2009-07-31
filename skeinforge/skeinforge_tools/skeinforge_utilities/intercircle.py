@@ -60,7 +60,7 @@ def addOperatingOrbits( boundaryLoops, pointComplex, skein, temperatureChangeTim
 		centers = getCentersFromLoopDirection( True, boundaryLoop, greaterThanPerimeterOutset )
 		for center in centers:
 			outset = getSimplifiedInsetFromClockwiseLoop( center, perimeterOutset )
-			if euclidean.isLargeSameDirection( outset, center, perimeterOutset ):
+			if isLargeSameDirection( outset, center, perimeterOutset ):
 				loopLength = euclidean.getPolygonLength( outset )
 				if loopLength > largestLength:
 					largestLength = loopLength
@@ -105,6 +105,21 @@ def addPointsFromSegment( pointComplexes, radius, pointBeginComplex, pointEndCom
 		pointComplexes.append( nextCircleCenterComplex )
 		nextCircleCenterComplex += segmentComplex
 
+def getArounds( loops, radius ):
+	"Get the complex centers of the circle intersection loops from circle nodes."
+	arounds = []
+	circleNodes = []
+	muchGreaterThanRadius = 2.5 * radius
+	slightlyGreaterThanRadius = 1.01 * radius
+	for loop in loops:
+		circleNodes += getCircleNodesFromLoop( loop, slightlyGreaterThanRadius )
+	centers = getCentersFromCircleNodes( circleNodes )
+	for center in centers:
+		inset = getSimplifiedInsetFromClockwiseLoop( center, radius )
+		if isLargeSameDirection( inset, center, muchGreaterThanRadius ):
+			arounds.append( inset )
+	return arounds
+
 def getCentersFromCircleNodes( circleNodesComplex ):
 	"Get the complex centers of the circle intersection loops from circle nodes."
 	if len( circleNodesComplex ) < 2:
@@ -127,10 +142,14 @@ def getCentersFromIntersectionLoops( circleIntersectionLoopComplexes ):
 		centers.append( getCentersFromIntersectionLoop( circleIntersectionLoopComplex ) )
 	return centers
 
-def getCentersFromLoopDirection( isWiddershins, loop, radius ):
-	"Get the centers of the circle intersection loops which go around in the given direction."
+def getCentersFromLoop( loop, radius ):
+	"Get the centers of the loop."
 	circleNodes = getCircleNodesFromLoop( loop, radius )
-	centers = getCentersFromCircleNodes( circleNodes )
+	return getCentersFromCircleNodes( circleNodes )
+
+def getCentersFromLoopDirection( isWiddershins, loop, radius ):
+	"Get the centers of the loop which go around in the given direction."
+	centers = getCentersFromLoop( loop, radius )
 	return getLoopsFromLoopsDirection( isWiddershins, centers )
 
 def getCircleIntersectionsFromCircleNodes( circleNodesComplex ):
@@ -227,31 +246,17 @@ def getInsetFromClockwiseLoop( loop, radius ):
 		insetLoopComplex.append( getInsetFromClockwiseTriple( aheadAbsoluteComplex, behindAbsoluteComplex, centerComplex, radius ) )
 	return insetLoopComplex
 
-def getInsetLoops( inset, loops ):
-	"Get the inset loops."
-	insetLoops = []
-	for loop in loops:
-		insetLoops += getInsetLoopsFromLoop( inset, loop )
-	return insetLoops
-
-def getInsetLoopsFromLoop( inset, loop ):
-	"Get the inset loops from a loop."
-	absoluteInset = abs( inset )
-	insetLoops = []
-	slightlyGreaterThanInset = 1.1 * absoluteInset
-	muchGreaterThanLayerInset = 2.5 * absoluteInset
-	isInInsetDirection = euclidean.isWiddershins( loop )
-	if inset < 0.0:
-		isInInsetDirection = not isInInsetDirection
-	centers = getCentersFromLoopDirection( not isInInsetDirection, loop, slightlyGreaterThanInset )
-	for center in centers:
-		insetLoop = getSimplifiedInsetFromClockwiseLoop( center, absoluteInset )
-		if euclidean.isLargeSameDirection( insetLoop, center, muchGreaterThanLayerInset ):
-			if euclidean.isPathInsideLoop( loop, insetLoop ) == isInInsetDirection:
-				if inset > 0.0:
-					insetLoop.reverse()
-				insetLoops.append( insetLoop )
-	return insetLoops
+def getInsetSeparateLoopsFromLoops( inset, loops ):
+	"Get the separate inset loops."
+	isInset = inset > 0
+	insetSeparateLoops = []
+	radius = abs( inset )
+	arounds = getArounds( loops, radius )
+	for around in arounds:
+		leftPoint = euclidean.getLeftPoint( around )
+		if isInset == euclidean.isInFilledRegion( leftPoint, loops ):
+			insetSeparateLoops.append( around )
+	return insetSeparateLoops
 
 def getIntersectionAtInset( aheadComplex, behindComplex, inset ):
 	"Get circle intersection loop at inset from segment."
@@ -281,6 +286,16 @@ def getWithoutIntersections( loop ):
 			return loop
 		lastLoopLength = len( loop )
 	return loop
+
+def isLarge( loop, requiredSize ):
+	"Determine if the loop is as large as the required size."
+	return euclidean.getMaximumSpan( loop ) > abs( requiredSize )
+
+def isLargeSameDirection( inset, loop, requiredSize ):
+	"Determine if the inset is in the same direction as the loop and if the inset is as large as the required size."
+	if euclidean.isWiddershins( inset ) != euclidean.isWiddershins( loop ):
+		return False
+	return isLarge( inset, requiredSize )
 
 def isLoopIntersectingLoop( anotherLoop, loop ):
 	"Determine if the a loop is intersecting another loop."

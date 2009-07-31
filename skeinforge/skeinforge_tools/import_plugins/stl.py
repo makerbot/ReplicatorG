@@ -103,13 +103,15 @@ def getCarving( fileName = '' ):
 		return None
 	triangleMesh = triangle_mesh.TriangleMesh()
 	vertexIndexTable = {}
-	binarySolidworksHeaderErrorString = 'solid binary STL from Solid Edge, Unigraphics Solutions Inc.'
-	binarySolidworksHeaderError = stlData[ : len( binarySolidworksHeaderErrorString ) ] == binarySolidworksHeaderErrorString
-	if binarySolidworksHeaderError:
-		print( 'The solidworks file has the incorrect header:' )
-		print( binarySolidworksHeaderErrorString )
-		print( 'A binary stl should never start with the word "solid".  Because this error is common the file is been parsed as binary regardless.' )
-	if ( stlData[ : 5 ] == 'solid' and not binarySolidworksHeaderError ):
+	numberOfVertexStrings = stlData.count( 'vertex' )
+	requiredVertexStringsForText = max( 2, len( stlData ) / 8000 )
+#	binarySolidworksHeaderErrorString = 'solid binary'
+#	binarySolidworksHeaderError = stlData[ : len( binarySolidworksHeaderErrorString ) ] == binarySolidworksHeaderErrorString
+#	if binarySolidworksHeaderError:
+#		print( 'The solidworks file has the incorrect header:' )
+#		print( binarySolidworksHeaderErrorString )
+#		print( 'A binary stl should never start with the word "solid".  Because this error is common the file is been parsed as binary regardless.' )
+	if numberOfVertexStrings > requiredVertexStringsForText:
 		addFacesGivenText( stlData, triangleMesh, vertexIndexTable )
 	else:
 		addFacesGivenBinary( stlData, triangleMesh, vertexIndexTable )
