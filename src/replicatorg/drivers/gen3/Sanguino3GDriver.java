@@ -23,6 +23,7 @@
 
 package replicatorg.drivers.gen3;
 
+import java.io.UnsupportedEncodingException;
 import java.util.EnumSet;
 import java.util.logging.Level;
 
@@ -33,12 +34,15 @@ import org.w3c.dom.Node;
 import replicatorg.app.Base;
 import replicatorg.app.TimeoutException;
 import replicatorg.drivers.BadFirmwareVersionException;
+import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
-public class Sanguino3GDriver extends SerialDriver {
+public class Sanguino3GDriver extends SerialDriver
+	implements OnboardParameters
+{
 	/**
 	 * An enumeration of the available command codes for the three-axis CNC
 	 * stage.
@@ -56,6 +60,8 @@ public class Sanguino3GDriver extends SerialDriver {
 		PROBE(9),
 		TOOL_QUERY(10),
 		IS_FINISHED(11),
+		READ_EEPROM(12),
+		WRITE_EEPROM(13),
 
 		// QUEUE_POINT_INC(128) obsolete
 		QUEUE_POINT_ABS(129),
@@ -1013,5 +1019,74 @@ public class Sanguino3GDriver extends SerialDriver {
 		System.out.println("Reset.");
 		setInitialized(false);
 		initialize();
+	}
+
+	private void writeToEEPROM(int offset, byte[] data) {
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.WRITE_EEPROM.getCode());
+		pb.add16(offset);
+		pb.add8(data.length);
+		for (byte b : data) {
+			pb.add8(b);
+		}
+		PacketResponse pr = runCommand(pb.getPacket());
+		assert pr.get8() == data.length; 
+	}
+	
+	private byte[] readFromEEPROM(int offset, int len) {
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.READ_EEPROM.getCode());
+		pb.add16(offset);
+		pb.add8(len);
+		PacketResponse pr = runCommand(pb.getPacket());
+		return pr.getPayload();
+	}
+	
+	/// EEPROM map:
+	/// 00-01 - EEPROM data version
+	/// 02    - Axis inversion byte
+	/// 32-47 - Machine name (max. 16 chars)
+	@SuppressWarnings("unused")
+	final private static int EEPROM_VERSION_OFFSET = 0;
+	final private static int EEPROM_MACHINE_NAME_OFFSET = 2;
+	final private static int EEPROM_AXIS_INVERSION_OFFSET = 18;
+	
+	final private static int MAX_MACHINE_NAME_LEN = 16;
+	public EnumSet<Axis> getInvertedParameters() {
+		byte[] b = readFromEEPROM(EEPROM_AXIS_INVERSION_OFFSET,1);
+		EnumSet<Axis> r = EnumSet.noneOf(Axis.class);
+		if ( (b[0] & (0x01 << 0)) != 0 ) r.add(Axis.X);
+		if ( (b[0] & (0x01 << 1)) != 0 ) r.add(Axis.Y);
+		if ( (b[0] & (0x01 << 2)) != 0 ) r.add(Axis.Z);
+		return r;
+	}
+
+	public void setInvertedParameters(EnumSet<Axis> axes) {
+		byte b[] = new byte[1];
+		if (axes.contains(Axis.X)) b[0] = (byte)(b[0] | (0x01 << 0));
+		if (axes.contains(Axis.Y)) b[0] = (byte)(b[0] | (0x01 << 1));
+		if (axes.contains(Axis.Z)) b[0] = (byte)(b[0] | (0x01 << 2));
+		writeToEEPROM(EEPROM_AXIS_INVERSION_OFFSET,b);
+	}
+
+	public String getMachineName() {
+		byte[] data = readFromEEPROM(EEPROM_MACHINE_NAME_OFFSET,MAX_MACHINE_NAME_LEN);
+		try {
+			return new String(data,"ISO-8859-1");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+
+	public void setMachineName(String machineName) {
+		if (machineName.length() > 16) { machineName = machineName.substring(0,16); }
+		byte b[] = new byte[16];
+		int idx = 0;
+		for (byte sb : machineName.getBytes()) {
+			b[idx++] = sb;
+			if (idx == 16) break;
+		}
+		if (idx < 16) b[idx] = 0;
+		writeToEEPROM(EEPROM_MACHINE_NAME_OFFSET,b);
 	}
 }
