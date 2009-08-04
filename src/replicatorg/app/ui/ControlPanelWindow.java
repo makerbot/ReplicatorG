@@ -792,8 +792,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		yPosField.setText(Double.toString(current.y));
 		zPosField.setText(Double.toString(current.z));
 
-		double temperature = driver.getTemperature();
-		currentTempField.setText(Double.toString(temperature));
+		if (driver.getMachine().currentTool() != null &&
+			driver.getMachine().currentTool().hasHeater()) {
+			double temperature = driver.getTemperature();
+			currentTempField.setText(Double.toString(temperature));
+		}
 	}
 
 	public void actionPerformed(ActionEvent e) {
