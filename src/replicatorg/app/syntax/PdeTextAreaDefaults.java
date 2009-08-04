@@ -32,7 +32,7 @@ public class PdeTextAreaDefaults extends TextAreaDefaults {
   public PdeTextAreaDefaults() {
 
     inputHandler = new DefaultInputHandler();
-    //inputHandler.addDefaultKeyBindings();  // 0122
+    inputHandler.addDefaultKeyBindings();
 
     // use option on mac for things that are ctrl on windows/linux
     String mod = Base.isMacOS() ? "A" : "C";
