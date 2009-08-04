@@ -3,6 +3,7 @@
  */
 package replicatorg.app.ui;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
@@ -14,7 +15,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import net.miginfocom.swing.MigLayout;
 
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.Axis;
@@ -27,16 +31,15 @@ import replicatorg.machine.model.Axis;
 public class MachineOnboardOptions extends JFrame {
 	private OnboardParameters target;
 	private JTextField machineNameField = new JTextField();
-	private JCheckBox xAxisInvertBox = new JCheckBox("Invert X axis");
-	private JCheckBox yAxisInvertBox = new JCheckBox("Invert Y axis");
-	private JCheckBox zAxisInvertBox = new JCheckBox("Invert Z axis");
+	private JCheckBox xAxisInvertBox = new JCheckBox();
+	private JCheckBox yAxisInvertBox = new JCheckBox();
+	private JCheckBox zAxisInvertBox = new JCheckBox();
 	
-	private JComponent addLabel(String label, JComponent needsLabel) {
-		Box hbox = Box.createHorizontalBox();
-		hbox.add(new JLabel(label));
-		hbox.add(needsLabel);
-		return hbox;
-	}
+	private static final String EXPLANATORY_TEXT =
+		"<html>These parameters are stored on the currently connected machine.  " +
+		"Changes you make here will effect only this machine, and will be remain " +
+		"in effect even when this machine is plugged into other computers.</html>";
+	private static final int MAX_NAME_LENGTH = 16;
 	
 	private void commit() {
 		target.setMachineName(machineNameField.getText());
@@ -46,10 +49,11 @@ public class MachineOnboardOptions extends JFrame {
 		if (zAxisInvertBox.isSelected()) axesInverted.add(Axis.Z);
 		target.setInvertedParameters(axesInverted);
 	}
-	private JComponent makeButtons() {
-		Box hbox = Box.createHorizontalBox();
+
+	private JPanel makeButtonPanel() {
+		JPanel panel = new JPanel(new MigLayout());
 		JButton commitButton = new JButton("Commit Changes");
-		hbox.add(commitButton);
+		panel.add(commitButton);
 		commitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				MachineOnboardOptions.this.commit();
@@ -61,22 +65,31 @@ public class MachineOnboardOptions extends JFrame {
 				MachineOnboardOptions.this.dispose();
 			}
 		});
-		hbox.add(cancelButton);
-		hbox.add(Box.createHorizontalGlue());
-		return hbox;
+		panel.add(cancelButton);
+		return panel;
 	}
+	
 	public MachineOnboardOptions(OnboardParameters target) {
+		super("Update onboard machine options");
 		this.target = target;
-		setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+		JPanel panel = new JPanel(new MigLayout());
 		machineNameField.setText(this.target.getMachineName());
-		add(addLabel("Machine Name:",machineNameField));
+		machineNameField.setColumns(MAX_NAME_LENGTH);
+		panel.add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
+		panel.add(machineNameField,"wrap");
 		EnumSet<Axis> invertedAxes = this.target.getInvertedParameters();
 		xAxisInvertBox.setSelected(invertedAxes.contains(Axis.X));
-		add(xAxisInvertBox);
+		panel.add(new JLabel("Invert X axis"));
+		panel.add(xAxisInvertBox,"wrap");
 		yAxisInvertBox.setSelected(invertedAxes.contains(Axis.Y));
-		add(yAxisInvertBox);
+		panel.add(new JLabel("Invert Y axis"));
+		panel.add(yAxisInvertBox,"wrap");
 		zAxisInvertBox.setSelected(invertedAxes.contains(Axis.Z));
-		add(zAxisInvertBox);
-		add(makeButtons());
+		panel.add(new JLabel("Invert Z axis"));
+		panel.add(zAxisInvertBox,"wrap");
+
+		panel.add(makeButtonPanel());
+		add(panel);
+		pack();
 	}
 }

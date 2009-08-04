@@ -24,6 +24,8 @@
 package replicatorg.drivers.gen3;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.logging.Level;
 
@@ -121,7 +123,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		// This driver only covers v1.X firmware
 		minimumVersion = new Version(1,1);
-		preferredVersion = new Version(1,1);
+		preferredVersion = new Version(1,2);
 		// init our variables.
 		setInitialized(false);
 	}
@@ -1021,6 +1023,14 @@ public class Sanguino3GDriver extends SerialDriver
 		initialize();
 	}
 
+	private Version EEPROMVersion = null;
+	
+	private void checkEEPROMVersion() {
+		if (EEPROMVersion == null) {
+			byte versionBytes[] = 
+			byte major = 
+		}
+	}
 	private void writeToEEPROM(int offset, byte[] data) {
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.WRITE_EEPROM.getCode());
 		pb.add16(offset);
@@ -1037,7 +1047,14 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add16(offset);
 		pb.add8(len);
 		PacketResponse pr = runCommand(pb.getPacket());
-		return pr.getPayload();
+		if (pr.isOK()) {
+			int rvlen = Math.min(pr.getPayload().length - 1,len);
+			byte[] rv = new byte[rvlen];
+			// Copy removes the first response byte from the packet payload.
+			System.arraycopy(pr.getPayload(),1,rv,0,rvlen);
+			return rv;
+		}
+		return null;
 	}
 	
 	/// EEPROM map:
@@ -1051,6 +1068,7 @@ public class Sanguino3GDriver extends SerialDriver
 	
 	final private static int MAX_MACHINE_NAME_LEN = 16;
 	public EnumSet<Axis> getInvertedParameters() {
+		checkEEPROMVersion();
 		byte[] b = readFromEEPROM(EEPROM_AXIS_INVERSION_OFFSET,1);
 		EnumSet<Axis> r = EnumSet.noneOf(Axis.class);
 		if ( (b[0] & (0x01 << 0)) != 0 ) r.add(Axis.X);
@@ -1068,6 +1086,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public String getMachineName() {
+		checkEEPROMVersion();
 		byte[] data = readFromEEPROM(EEPROM_MACHINE_NAME_OFFSET,MAX_MACHINE_NAME_LEN);
 		try {
 			return new String(data,"ISO-8859-1");
@@ -1076,7 +1095,6 @@ public class Sanguino3GDriver extends SerialDriver
 			return null;
 		}
 	}
-
 
 	public void setMachineName(String machineName) {
 		if (machineName.length() > 16) { machineName = machineName.substring(0,16); }
@@ -1088,5 +1106,9 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 		if (idx < 16) b[idx] = 0;
 		writeToEEPROM(EEPROM_MACHINE_NAME_OFFSET,b);
+	}
+	
+	public boolean hasFeatureOnboardParameters() {
+		return version.compareTo(new Version(1,2)) >= 0; 
 	}
 }

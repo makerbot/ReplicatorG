@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" output="classes" path="src"/>
-	<classpathentry kind="var" path="JRE_LIB" rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
+	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
 	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/RXTXcomm.jar"/>
 	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/antlr.jar"/>
 	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/j3dcore.jar"/>
@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/registry.jar"/>
 	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/vecmath.jar"/>
 	<classpathentry kind="con" path="/System/Library/Java"/>
+	<classpathentry kind="lib" path="build/shared/lib/miglayout-3.7.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

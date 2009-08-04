@@ -106,6 +106,7 @@ import replicatorg.app.syntax.PdeTextAreaDefaults;
 import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.drivers.EstimationDriver;
+import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -863,7 +864,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 		});
 		menu.add(item);
-
+		
+		item = new JMenuItem("Onboard Preferences");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				handleOnboardPrefs();
+			}
+		});
+		menu.add(item);
+		
 		return menu;
 	}
 
@@ -1205,6 +1214,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 	}
 
+	public void handleOnboardPrefs() {
+		if (machine == null || 
+				!(machine.driver instanceof OnboardParameters)) {
+			JOptionPane.showMessageDialog(
+					this,
+					"ReplicatorG can't connect to your machine or onboard preferences are not supported..\nTry checking your settings and resetting your machine.",
+					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
+		} else {
+			MachineOnboardOptions moo = new MachineOnboardOptions((OnboardParameters)machine.driver);
+			moo.setVisible(true);
+		}
+	}
+	
 	/**
 	 * Show the preferences window.
 	 */
