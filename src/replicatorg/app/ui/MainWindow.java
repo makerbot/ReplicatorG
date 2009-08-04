@@ -56,6 +56,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -596,6 +597,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			currentName = us.getSerial().getName();
 		}
 		Vector<Serial.Name> names = Serial.scanSerialNames();
+		Collections.sort(names);
 		for (Serial.Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.getName());
 			item.setEnabled(name.isAvailable());

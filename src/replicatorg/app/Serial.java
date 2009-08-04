@@ -88,7 +88,7 @@ public class Serial {
 		} catch (Exception e) {
 		}
 		// In-use ports may not end up in the enumeration (thanks, RXTX, you fabulous pile of shit!), so
-		// we'll scan for them, insert them if necessary, and sort the whole.
+		// we'll scan for them, insert them if necessary, and return the whole.
 		assert portsInUse.size() <= 1;
 		for (Serial port: portsInUse) {
 			Name n = new Name(port.getName(),false);
@@ -101,7 +101,6 @@ public class Serial {
 			}
 			if (!contains) { v.add(n); }
 		}
-		Collections.sort(v);
 		return v;
 	}
 	
