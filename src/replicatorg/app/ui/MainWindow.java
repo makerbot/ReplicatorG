@@ -709,22 +709,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		menu.addSeparator();
 
-		item = newJMenuItem("Page Setup", 'P', true);
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				handlePageSetup();
-			}
-		});
-		menu.add(item);
-
-		item = newJMenuItem("Print", 'P');
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				handlePrint();
-			}
-		});
-		menu.add(item);
-
 		menu.addSeparator();
 		mruMenu = new JMenu("Recent");
 		reloadMruMenu();
@@ -1993,48 +1977,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				buttons.clear();
 			}
 		});
-	}
-
-	public void handlePageSetup() {
-		// printerJob = null;
-		if (printerJob == null) {
-			printerJob = PrinterJob.getPrinterJob();
-		}
-		if (pageFormat == null) {
-			pageFormat = printerJob.defaultPage();
-		}
-		pageFormat = printerJob.pageDialog(pageFormat);
-		// System.out.println("page format is " + pageFormat);
-	}
-
-	public void handlePrint() {
-		message("Printing...");
-		// printerJob = null;
-		if (printerJob == null) {
-			printerJob = PrinterJob.getPrinterJob();
-		}
-		if (pageFormat != null) {
-			// System.out.println("setting page format " + pageFormat);
-			printerJob.setPrintable(textarea.getPainter(), pageFormat);
-		} else {
-			printerJob.setPrintable(textarea.getPainter());
-		}
-		// set the name of the job to the code name
-		printerJob.setJobName(sketch.current.name);
-
-		if (printerJob.printDialog()) {
-			try {
-				printerJob.print();
-				message("Done printing.");
-
-			} catch (PrinterException pe) {
-				error("Error while printing.");
-				pe.printStackTrace();
-			}
-		} else {
-			message("Printing canceled.");
-		}
-		// printerJob = null; // clear this out?
 	}
 
 	/**
