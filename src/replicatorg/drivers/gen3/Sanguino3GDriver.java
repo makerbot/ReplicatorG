@@ -24,7 +24,6 @@
 package replicatorg.drivers.gen3;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.logging.Level;
@@ -1023,14 +1022,31 @@ public class Sanguino3GDriver extends SerialDriver
 		initialize();
 	}
 
-	private Version EEPROMVersion = null;
+	private boolean eepromChecked = false;
+	private static final int EEPROM_CHECK_LOW = 0x5A;
+	private static final int EEPROM_CHECK_HIGH = 0x78;
 	
-	private void checkEEPROMVersion() {
-		if (EEPROMVersion == null) {
-			byte versionBytes[] = 
-			byte major = 
+	private void checkEEPROM() {
+		if (!eepromChecked) {
+			byte versionBytes[] = readFromEEPROM(EEPROM_CHECK_OFFSET,2);
+			if ((versionBytes[0] != EEPROM_CHECK_LOW) ||
+				(versionBytes[1] != EEPROM_CHECK_HIGH)) {
+				System.err.println("Cleaning EEPROM");
+				// Wipe EEPROM
+				byte eepromWipe[] = new byte[16];
+				Arrays.fill(eepromWipe,(byte)0x00);
+				eepromWipe[0] = EEPROM_CHECK_LOW;
+				eepromWipe[1] = EEPROM_CHECK_HIGH;
+				writeToEEPROM(0,eepromWipe);
+				Arrays.fill(eepromWipe,(byte)0x00);
+				for (int i = 16; i < 256; i+=16) {
+					writeToEEPROM(i,eepromWipe);
+				}
+			}
+			eepromChecked = true;
 		}
 	}
+	
 	private void writeToEEPROM(int offset, byte[] data) {
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.WRITE_EEPROM.getCode());
 		pb.add16(offset);
@@ -1062,13 +1078,13 @@ public class Sanguino3GDriver extends SerialDriver
 	/// 02    - Axis inversion byte
 	/// 32-47 - Machine name (max. 16 chars)
 	@SuppressWarnings("unused")
-	final private static int EEPROM_VERSION_OFFSET = 0;
-	final private static int EEPROM_MACHINE_NAME_OFFSET = 2;
-	final private static int EEPROM_AXIS_INVERSION_OFFSET = 18;
+	final private static int EEPROM_CHECK_OFFSET = 0;
+	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
+	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
 	
 	final private static int MAX_MACHINE_NAME_LEN = 16;
 	public EnumSet<Axis> getInvertedParameters() {
-		checkEEPROMVersion();
+		checkEEPROM();
 		byte[] b = readFromEEPROM(EEPROM_AXIS_INVERSION_OFFSET,1);
 		EnumSet<Axis> r = EnumSet.noneOf(Axis.class);
 		if ( (b[0] & (0x01 << 0)) != 0 ) r.add(Axis.X);
@@ -1086,10 +1102,12 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public String getMachineName() {
-		checkEEPROMVersion();
+		checkEEPROM();
 		byte[] data = readFromEEPROM(EEPROM_MACHINE_NAME_OFFSET,MAX_MACHINE_NAME_LEN);
 		try {
-			return new String(data,"ISO-8859-1");
+			int len = 0;
+			while (len < MAX_MACHINE_NAME_LEN && data[len] != 0) len++;
+			return new String(data,0,len,"ISO-8859-1");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 			return null;
@@ -1097,7 +1115,10 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void setMachineName(String machineName) {
-		if (machineName.length() > 16) { machineName = machineName.substring(0,16); }
+		machineName = new String(machineName);
+		if (machineName.length() > 16) { 
+			machineName = machineName.substring(0,16);
+		}
 		byte b[] = new byte[16];
 		int idx = 0;
 		for (byte sb : machineName.getBytes()) {

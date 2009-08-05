@@ -1222,7 +1222,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					"ReplicatorG can't connect to your machine or onboard preferences are not supported..\nTry checking your settings and resetting your machine.",
 					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
 		} else {
-			MachineOnboardOptions moo = new MachineOnboardOptions((OnboardParameters)machine.driver);
+			MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machine.driver);
 			moo.setVisible(true);
 		}
 	}

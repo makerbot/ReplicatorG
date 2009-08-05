@@ -3,23 +3,18 @@
  */
 package replicatorg.app.ui;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
-
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.Axis;
 
@@ -28,17 +23,13 @@ import replicatorg.machine.model.Axis;
  * @author phooky
  *
  */
-public class MachineOnboardOptions extends JFrame {
+public class MachineOnboardParameters extends JFrame {
 	private OnboardParameters target;
 	private JTextField machineNameField = new JTextField();
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
 	private JCheckBox zAxisInvertBox = new JCheckBox();
 	
-	private static final String EXPLANATORY_TEXT =
-		"<html>These parameters are stored on the currently connected machine.  " +
-		"Changes you make here will effect only this machine, and will be remain " +
-		"in effect even when this machine is plugged into other computers.</html>";
 	private static final int MAX_NAME_LENGTH = 16;
 	
 	private void commit() {
@@ -56,20 +47,21 @@ public class MachineOnboardOptions extends JFrame {
 		panel.add(commitButton);
 		commitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				MachineOnboardOptions.this.commit();
+				MachineOnboardParameters.this.commit();
+				MachineOnboardParameters.this.dispose();				
 			}
 		});
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				MachineOnboardOptions.this.dispose();
+				MachineOnboardParameters.this.dispose();
 			}
 		});
 		panel.add(cancelButton);
 		return panel;
 	}
 	
-	public MachineOnboardOptions(OnboardParameters target) {
+	public MachineOnboardParameters(OnboardParameters target) {
 		super("Update onboard machine options");
 		this.target = target;
 		JPanel panel = new JPanel(new MigLayout());

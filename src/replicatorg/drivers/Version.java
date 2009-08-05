@@ -26,5 +26,7 @@ public class Version implements Comparable<Version> {
 	public String toString() {
 		return Integer.toString(major) + "." + Integer.toString(minor);
 	}
-	
+
+	public int getMajor() { return major; }
+	public int getMinor() { return minor; }
 }
