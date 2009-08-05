@@ -803,6 +803,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		return menu;
 	}
 
+	JMenuItem onboardParamsItem = new JMenuItem("Onboard Preferences");
+	
 	protected JMenu buildMachineMenu() {
 		JMenuItem item;
 		JMenu menu = new JMenu("Machine");
@@ -849,13 +851,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		});
 		menu.add(item);
 		
-		item = new JMenuItem("Onboard Preferences");
-		item.addActionListener(new ActionListener() {
+		onboardParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				handleOnboardPrefs();
 			}
 		});
-		menu.add(item);
+		onboardParamsItem.setVisible(false);
+		menu.add(onboardParamsItem);
 		
 		return menu;
 	}
@@ -1400,6 +1402,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (evt.getState() == MachineState.READY) {
 			reloadSerialMenu();
 		}
+		onboardParamsItem.setVisible(machine.getDriver() instanceof OnboardParameters &&
+				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters());
 	}
 
 	public void setEditorBusy(boolean isBusy) {
