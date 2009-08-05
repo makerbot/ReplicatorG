@@ -107,9 +107,9 @@ public class Base {
 	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
 	{
-		logger.setLevel(Level.FINE);
+		logger.setLevel(Level.INFO);
 		Handler h = new ConsoleHandler();
-		h.setLevel(Level.FINE);
+		h.setLevel(Level.INFO);
 		logger.addHandler(h);
 	}
 	/**
