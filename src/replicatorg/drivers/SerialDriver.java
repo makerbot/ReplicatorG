@@ -24,6 +24,8 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
     private int databits;
     private float stopbits;
 
+    private boolean explicit = false;
+    
     protected SerialDriver() {
     	portName = Base.preferences.get("serial.portname",null);
     	rate = Base.preferences.getInt("serial.debug_rate",19200);
@@ -40,8 +42,10 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	public void loadXML(Node xml) {
 		super.loadXML(xml);
         // load from our XML config, if we have it.
-        if (XML.hasChildNode(xml, "portname"))
+        if (XML.hasChildNode(xml, "portname")) {
                 portName = XML.getChildNodeValue(xml, "portname");
+                explicit = true;
+        }
         if (XML.hasChildNode(xml, "rate"))
                 rate = Integer.parseInt(XML.getChildNodeValue(xml, "rate"));
         if (XML.hasChildNode(xml, "parity"))
@@ -86,6 +90,22 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 		assert !isInitialized();
 		assert serial == null;
 		
+		if (explicit &&
+			Base.preferences.getBoolean("serial.use_machines",true)) {
+			// Attempt explicitly set port first
+			try {
+				Serial candidatePort = new Serial(portName,this);
+				System.out.println("Connecting to port "+portName+" specified in machine definition");
+				setSerial(candidatePort);
+				initialize();
+				if (isInitialized()) return true;
+				System.err.println("failed: "+portName);
+				setSerial(null);
+			} catch (SerialException se) {
+				se.printStackTrace();
+			}
+		}
+		
 		for (Serial.Name candidateName: Serial.scanSerialNames()) {
 			if (!candidateName.isAvailable()) continue;
 			// Open candidate and set it
@@ -96,7 +116,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 				se.printStackTrace();
 			}
 			if (candidatePort != null) {
-				System.err.println("attempting candidate "+candidateName.getName());
+				System.out.println("attempting candidate "+candidateName.getName());
 				setSerial(candidatePort);
 				initialize();
 				if (isInitialized()) break;
@@ -106,4 +126,6 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 		}
 		return isInitialized();
 	}
+	
+	public boolean isExplicit() { return explicit; }
 }

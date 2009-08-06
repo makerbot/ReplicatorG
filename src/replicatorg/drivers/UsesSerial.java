@@ -17,4 +17,7 @@ public interface UsesSerial {
 	public int getDataBits();
 	
 	public float getStopBits();
+	
+	// Indicates that the serial port is explicitly specified in machines.xml
+	public boolean isExplicit();
 }

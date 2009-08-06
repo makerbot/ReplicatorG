@@ -52,7 +52,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.print.PageFormat;
-import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
@@ -2256,12 +2255,23 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machine.addMachineStateListener(buttons);
 		reloadSerialMenu();
 		if (machine.driver instanceof UsesSerial) {
-			if (Base.preferences.getBoolean("autoscan",true)) {
+			UsesSerial us = (UsesSerial)machine.driver;
+			if (Base.preferences.getBoolean("serial.use_machines",true)) System.err.println("SET");
+			if (Base.preferences.getBoolean("serial.use_machines",true) &&
+					us.isExplicit()) {
+				try {
+					us.setSerial(new Serial(us.getPortName(),us));
+					machine.reset();
+				} catch (SerialException e) {
+					System.err.println("Could not use serial port specified in machines.xml ("+us.getPortName()+").");
+					e.printStackTrace();
+				}
+			}
+			else if (Base.preferences.getBoolean("autoscan",true)) {
 				machine.autoscan();
 			} else {
 				String lastPort = Base.preferences.get("serial.last_selected", null);
 				if (lastPort != null) {
-					UsesSerial us = (UsesSerial)machine.driver;
 					try {
 						us.setSerial(new Serial(lastPort,us));
 						machine.reset();

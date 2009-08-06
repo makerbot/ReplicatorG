@@ -13,7 +13,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -79,7 +78,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 
 		honorMachinesBox = new JCheckBox("Honor serial port selection in machines.xml");
 		content.add(honorMachinesBox,"wrap");
-		tempMonitorBox.addActionListener(new ActionListener() {
+		honorMachinesBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JCheckBox box = (JCheckBox)e.getSource();
 				Base.preferences.putBoolean("serial.use_machines",box.isSelected());
