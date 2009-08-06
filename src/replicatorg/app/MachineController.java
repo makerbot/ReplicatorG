@@ -218,7 +218,7 @@ public class MachineController {
 		public void pollStatus() {
 			needsStatusPoll = false;
 			if (state.isRunning()) {
-				if (Base.preferences.getBoolean("build.monitor_temp",true)) {
+				if (Base.preferences.getBoolean("build.monitor_temp",false)) {
 					driver.readTemperature();
 					emitToolStatus(driver.getMachine().currentTool());
 				}

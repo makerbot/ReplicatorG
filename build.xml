@@ -89,9 +89,10 @@
   	    	mainclass="replicatorg.app.Base" 
     	    icon="${macosx.lib.dir}/replicatorg.icns"
     	    extraclasspath="/System/Library/Java"
+	    	arguments="-Xmx512m"
   	        infostring="ReplicatorG ${replicatorg.version}, © 2008-${current.year} MakerBot Industries" 
   	        version="${replicatorg.version}"
-			jvmversion="1.4+"
+			jvmversion="1.5+"
 			stubfile="ReplicatorG"
 			>
             <jarfileset dir="${jar.dir}" includes="ReplicatorG.jar"/>

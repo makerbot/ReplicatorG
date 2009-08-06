@@ -3,6 +3,8 @@
  */
 package replicatorg.app.ui;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
@@ -83,5 +85,8 @@ public class MachineOnboardParameters extends JFrame {
 		panel.add(makeButtonPanel());
 		add(panel);
 		pack();
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		setLocation((screen.width - getWidth()) / 2,
+				(screen.height - getHeight()) / 2);
 	}
 }
