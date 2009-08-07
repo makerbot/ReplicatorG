@@ -1575,7 +1575,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public void doClose() {
 
 		doStop(); // need to stop if runtime error
-		sketch.cleanup();
+		if (sketch != null) {
+			sketch.cleanup();
+		}
 
 		// focus the GCode again after quitting presentation mode
 		toFront();
@@ -1590,7 +1592,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	protected void checkModified(int checkModifiedMode) {
 		this.checkModifiedMode = checkModifiedMode;
 
-		if (!sketch.modified) {
+		if (sketch == null || !sketch.modified) {
 			checkModified2();
 			return;
 		}
@@ -2256,7 +2258,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		reloadSerialMenu();
 		if (machine.driver instanceof UsesSerial) {
 			UsesSerial us = (UsesSerial)machine.driver;
-			if (Base.preferences.getBoolean("serial.use_machines",true)) System.err.println("SET");
 			if (Base.preferences.getBoolean("serial.use_machines",true) &&
 					us.isExplicit()) {
 				try {
