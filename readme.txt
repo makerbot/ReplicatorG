@@ -21,7 +21,28 @@ Arduino is descended from the also wonderful Processing environment (http://www.
 
 ReplicatorG was forked from Arduino in August 2008.
 
+Changes in 0006:
+
+0006 ReplicatorG
+
+* Removed editor status bar
+* 64-bit Mac OS X fix (courtesy Andreas Fuchs)
+* Pass a GCode file in as a command-line parameter (courtesy Andreas Fuchs)
+* Moved machine status below buttons and cleaned up display
+* Ensure abort signal is sent to S3G on stop
+* Display temperature of nozzle during builds
+* Add pref for temperature display
+* Simulator2D optimizations, faster draws
+* Reenabled Ctrl-J shortcut for control panel
+* Use port names specified in XML by default, fall back to autoscan
+  if not present
+* Allow autoscan disabling for machines with scan problems
+* Added support for writing onboard configuration data to the machine EEPROM
+* Numerous small bug fixes
+
 People who have worked on ReplicatorG include:
 
 Zach 'Hoeken' Smith (http://www.zachhoeken.com)
 Marius Kintel (http://reprap.soup.io)
+Adam Mayer (http://makerbot.com)
+
