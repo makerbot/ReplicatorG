@@ -89,7 +89,7 @@
   	    	mainclass="replicatorg.app.Base" 
     	    icon="${macosx.lib.dir}/replicatorg.icns"
     	    extraclasspath="/System/Library/Java"
-	    	arguments="-Xmx768m"
+	    	arguments="-Xmx1G"
   	        infostring="ReplicatorG ${replicatorg.version}, © 2008-${current.year} MakerBot Industries" 
   	        version="${replicatorg.version}"
 			jvmversion="1.5+"
