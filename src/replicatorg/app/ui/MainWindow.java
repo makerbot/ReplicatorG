@@ -552,7 +552,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// last sketch that was in use
 		// Preferences.set("last.sketch.name", sketchName);
 		// Preferences.set("last.sketch.name", sketch.name);
-		Base.preferences.put("last.sketch.path", sketch.getMainFilePath());
+		if (sketch != null) {
+			Base.preferences.put("last.sketch.path", sketch.getMainFilePath());
+		}
 
 		// location for the console/editor area divider
 		int location = splitPane.getDividerLocation();
