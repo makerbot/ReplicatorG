@@ -366,7 +366,7 @@ public class MainButtonPanel extends JComponent implements MouseInputListener, M
 			break;
 
 		case OPEN:
-			// TODO: add something here.
+			editor.handleOpen(null);
 			break;
 
 		case NEW:
