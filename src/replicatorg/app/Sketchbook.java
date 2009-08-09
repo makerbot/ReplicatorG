@@ -39,7 +39,6 @@ import java.util.Date;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
 
 import replicatorg.app.ui.MainWindow;
 
@@ -52,12 +51,6 @@ import com.apple.mrj.MRJOSType;
 public class Sketchbook {
 	MainWindow editor;
 
-	JMenu openMenu;
-
-	JMenu popupMenu;
-
-	// JMenu examples;
-	JMenu importMenu;
 
 	// set to true after the first time it's built.
 	// so that the errors while building don't show up again.
@@ -122,15 +115,7 @@ public class Sketchbook {
 			// String folderName = Preferences.get("sketchbook.name.default");
 			// File sketchbookFolder = new File(home, folderName);
 			// System.out.println("resetting sketchbook path");
-			File sketchbookFolder = Base.getDefaultSketchbookFolder();
-			// System.out.println("default is " + sketchbookFolder);
-			Base.preferences.put("sketchbook.path", sketchbookFolder.getAbsolutePath());
-
-			if (!sketchbookFolder.exists())
-				sketchbookFolder.mkdirs();
 		}
-		openMenu = new JMenu("Sketchbook");
-		popupMenu = new JMenu("Sketchbook");
 	}
 
 	static public String getSketchbookPath() {
@@ -344,9 +329,7 @@ public class Sketchbook {
 	public void rebuildMenus() {
 		// MessagePanel.systemOut.println("rebuilding menus");
 		// rebuild file/open and the toolbar popup menus
-		buildMenu(openMenu);
 		builtOnce = true; // disable error messages while loading
-		buildMenu(popupMenu);
 		// MessagePanel.systemOut.println("done rebuilding menus");
 	}
 
@@ -382,21 +365,6 @@ public class Sketchbook {
 
 	}
 
-	public JMenu getOpenMenu() {
-		if (openMenu == null)
-			rebuildMenus();
-		return openMenu;
-	}
-
-	public JPopupMenu getPopupMenu() {
-		if (popupMenu == null)
-			rebuildMenus();
-		return popupMenu.getPopupMenu();
-	}
-
-	public JMenu getImportMenu() {
-		return importMenu;
-	}
 
 	protected boolean addSketches(JMenu menu, File folder) throws IOException {
 		// skip .DS_Store files, etc

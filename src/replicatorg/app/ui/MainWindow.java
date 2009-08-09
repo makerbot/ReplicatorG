@@ -682,7 +682,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 		});
 		menu.add(item);
-		menu.add(sketchbook.getOpenMenu());
 
 		item = newJMenuItem("Open...", 'O', false);
 		item.addActionListener(new ActionListener() {

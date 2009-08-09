@@ -54,7 +54,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -76,11 +75,7 @@ import javax.swing.UIManager;
 import replicatorg.app.ui.MainWindow;
 
 import com.apple.mrj.MRJApplicationUtils;
-import com.apple.mrj.MRJFileUtils;
-import com.apple.mrj.MRJOSType;
 import com.apple.mrj.MRJOpenDocumentHandler;
-import com.ice.jni.registry.Registry;
-import com.ice.jni.registry.RegistryKey;
 
 /**
  * Primary role of this class is for platform identification and general
@@ -367,131 +362,6 @@ public class Base {
 			e.printStackTrace();
 			return null;
 		}
-	}
-
-	/*
-	 * static public void addBuildFolderToClassPath() { String path =
-	 * getBuildFolder().getAbsolutePath(); String jcp =
-	 * System.getProperty("java.class.path"); if (jcp.indexOf(path) == -1) {
-	 * System.setProperty("java.class.path", path + File.pathSeparator + jcp);
-	 * //return new File(getProcessingDataFolder(), "build");
-	 * System.out.println("jcp is now " +
-	 * System.getProperty("java.class.path")); } }
-	 */
-
-	static public File getDefaultSketchbookFolder() {
-		File sketchbookFolder = null;
-
-		if (Base.isMacOS()) {
-			// looking for /Users/blah/Documents/ReplicatorG
-
-			// carbon folder constants
-			// http://developer.apple.com/documentation/Carbon/Reference/Folder_Manager/folder_manager_ref/constant_6.html#//apple_ref/doc/uid/TP30000238/C006889
-
-			// additional information found int the local file:
-			// /System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/CarbonCore.framework/Headers/
-
-			// this is the 1.4 version.. but using 1.3 since i have the stubs
-			// import com.apple.eio.*
-			// println(FileManager.findFolder(kUserDomain,
-			// kDomainLibraryFolderType));
-
-			// not clear if i can write to this folder tho..
-			try {
-				MRJOSType domainDocuments = new MRJOSType("docs");
-				// File libraryFolder =
-				// MRJFileUtils.findFolder(domainDocuments);
-
-				// for 77, try switching this to the user domain, just to be
-				// sure
-				Method findFolderMethod = MRJFileUtils.class.getMethod(
-						"findFolder",
-						new Class[] { Short.TYPE, MRJOSType.class });
-				File documentsFolder = (File) findFolderMethod
-						.invoke(null, new Object[] { new Short(LegacyPrefs.kUserDomain),
-								domainDocuments });
-				sketchbookFolder = new File(documentsFolder, "ReplicatorG");
-
-			} catch (Exception e) {
-				// showError("Could not find folder",
-				// "Could not locate the Documents folder.", e);
-				sketchbookFolder = promptSketchbookLocation();
-			}
-
-		} else if (isWindows()) {
-			// looking for Documents and Settings/blah/My Documents/ReplicatorG
-			// (though using a reg key since it's different on other platforms)
-
-			// http://support.microsoft.com/?kbid=221837&sd=RMVP
-			// The path to the My Documents folder is stored in the
-			// following registry key, where path is the complete path
-			// to your storage location:
-			// HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell
-			// Folders
-			// Value Name: Personal
-			// Value Type: REG_SZ
-			// Value Data: path
-
-			try {
-				RegistryKey topKey = Registry.HKEY_CURRENT_USER;
-
-				String localKeyPath = "Software\\Microsoft\\Windows\\CurrentVersion"
-						+ "\\Explorer\\Shell Folders";
-				RegistryKey localKey = topKey.openSubKey(localKeyPath);
-				String personalPath = cleanKey(localKey
-						.getStringValue("Personal"));
-				// topKey.closeKey(); // necessary?
-				// localKey.closeKey();
-				sketchbookFolder = new File(personalPath, "ReplicatorG");
-
-			} catch (Exception e) {
-				// showError("Problem getting folder",
-				// "Could not locate the Documents folder.", e);
-				sketchbookFolder = promptSketchbookLocation();
-			}
-
-		} else {
-			sketchbookFolder = promptSketchbookLocation();
-
-			/*
-			 * // on linux (or elsewhere?) prompt the user for the location
-			 * JFileChooser fc = new JFileChooser(); fc.setDialogTitle("Select
-			 * the folder where " + "ReplicatorG programs should be stored...");
-			 * //fc.setSelectedFile(new
-			 * File(sketchbookLocationField.getText()));
-			 * fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			 * 
-			 * int returned = fc.showOpenDialog(new JDialog()); if (returned ==
-			 * JFileChooser.APPROVE_OPTION) { //File file =
-			 * fc.getSelectedFile();
-			 * //sketchbookLocationField.setText(file.getAbsolutePath());
-			 * sketchbookFolder = fc.getSelectedFile();
-			 *  } else { System.exit(0); }
-			 */
-		}
-
-		// create the folder if it doesn't exist already
-		boolean result = true;
-		if (!sketchbookFolder.exists()) {
-			result = sketchbookFolder.mkdirs();
-		}
-
-		if (!result) {
-			// try the fallback location
-			System.out.println("Using fallback path for sketchbook.");
-			String fallback = preferences.get("sketchbook.path.fallback","sketchbook");
-			sketchbookFolder = new File(fallback);
-			if (!sketchbookFolder.exists()) {
-				result = sketchbookFolder.mkdirs();
-			}
-		}
-
-		if (!result) {
-			showError("error", "ReplicatorG cannot run because it could not\n"
-					+ "create a folder to store your sketchbook.", null);
-		}
-
-		return sketchbookFolder;
 	}
 
 	/**
