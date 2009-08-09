@@ -416,7 +416,7 @@ public class Sketch {
 
 				// get the changes into the sketchbook menu
 				// (re-enabled in 0115 to fix bug #332)
-				editor.sketchbook.rebuildMenus();
+				//editor.sketchbook.rebuildMenus();
 
 			} else { // else if something besides code[0]
 				if (!current.file.renameTo(newFile)) {
@@ -824,7 +824,7 @@ public class Sketch {
 								.getScrollPosition());
 
 		// Name changed, rebuild the sketch menus
-		editor.sketchbook.rebuildMenusAsync();
+		//editor.sketchbook.rebuildMenusAsync();
 
 		// let MainWindow know that the save was successful
 		return true;
