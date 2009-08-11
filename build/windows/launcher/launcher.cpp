@@ -8,6 +8,11 @@
 // 2) if the user has a long path, and it gets copied five times over for the
 // classpath, the program runs the risk of crashing. Bad bad.
 
+//
+// I would just like to state for the record that the fact that
+// this launcher even exists is absolutely fucking pathetic.
+//
+
 #define JAVA_ARGS "-Xms256m -Xmx256m "
 #define JAVA_MAIN_CLASS "replicatorg.app.Base"
 
@@ -156,6 +161,7 @@ END WE DUNNO NEED QUICKTIME JAVA FOR ARDUINO*/
           "%s\\lib\\oro.jar;"
           "%s\\lib\\registry.jar;"
           "%s\\lib\\antlr.jar;"
+          "%s\\lib\\miglayout-3.7.jar;"
           
           "%s",  // original CLASSPATH
           
