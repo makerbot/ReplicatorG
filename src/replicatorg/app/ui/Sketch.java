@@ -138,7 +138,7 @@ public class Sketch {
 		dataFolder = new File(folder, "data");
 
 		// get list of files in the sketch folder
-		String list[] = folder.list();
+		String list[] = { mainFilename }; //folder.list();
 
 		for (int i = 0; i < list.length; i++) {
 			if (list[i].endsWith(".gcode"))
