@@ -34,7 +34,6 @@ import java.util.Hashtable;
 import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
-import replicatorg.app.Sketchbook;
 
 /**
  * Stores information about files in the current sketch
@@ -267,9 +266,6 @@ public class Sketch {
 		// ask for new name of file (internal to window)
 		// TODO maybe just popup a text area?
 		renamingCode = true;
-		String prompt = (currentIndex == 0) ? "New name for sketch:"
-				: "New name for file:";
-		String oldName = current.name + flavorExtensionsShown[current.flavor];
 		//editor.status.edit(prompt, oldName);
 	}
 
@@ -322,7 +318,6 @@ public class Sketch {
 		// make sure the user didn't name things poo.time.gcode
 		// or something like that (nothing against poo time)
 		if (newName.indexOf('.') != -1) {
-			newName = Sketchbook.sanitizedName(newName);
 			newFilename = newName + ".gcode";
 		}
 
@@ -722,7 +717,6 @@ public class Sketch {
 		// user cancelled selection
 		if (newName == null)
 			return false;
-		newName = Sketchbook.sanitizeName(newName);
 
 		// make sure there doesn't exist a tab with that name already
 		// (but allow it if it's just the main tab resaving itself.. oops)

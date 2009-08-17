@@ -1590,7 +1590,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	protected void checkModified(int checkModifiedMode) {
 		this.checkModifiedMode = checkModifiedMode;
-
 		if (sketch == null || !sketch.modified) {
 			checkModified2();
 			return;
