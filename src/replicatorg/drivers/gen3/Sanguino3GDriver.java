@@ -63,6 +63,10 @@ public class Sanguino3GDriver extends SerialDriver
 		IS_FINISHED(11),
 		READ_EEPROM(12),
 		WRITE_EEPROM(13),
+		
+		CAPTURE_TO_FILE(14),
+		END_CAPTURE(15),
+		PLAYBACK_CAPTURE(16),
 
 		// QUEUE_POINT_INC(128) obsolete
 		QUEUE_POINT_ABS(129),
