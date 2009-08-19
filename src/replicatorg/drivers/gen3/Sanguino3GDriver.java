@@ -36,13 +36,14 @@ import replicatorg.app.Base;
 import replicatorg.app.TimeoutException;
 import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.OnboardParameters;
+import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
 public class Sanguino3GDriver extends SerialDriver
-	implements OnboardParameters
+	implements OnboardParameters, SDCardCapture
 {
 	/**
 	 * An enumeration of the available command codes for the three-axis CNC
@@ -1135,5 +1136,31 @@ public class Sanguino3GDriver extends SerialDriver
 	
 	public boolean hasFeatureOnboardParameters() {
 		return version.compareTo(new Version(1,2)) >= 0; 
+	}
+
+	public void beginCapture(String filename) {
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.CAPTURE_TO_FILE.getCode());
+		for (byte b : filename.getBytes()) {
+			pb.add8(b);
+		}
+		pb.add8(0); // null-terminate string
+		PacketResponse pr = runCommand(pb.getPacket());
+		System.err.println("Begin capture returns "+Integer.toString(pr.get8()));
+	}
+
+	public int endCapture() {
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.END_CAPTURE.getCode());
+		PacketResponse pr = runCommand(pb.getPacket());
+		return pr.get32();
+	}
+
+	public void playback(String filename) {
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.PLAYBACK_CAPTURE.getCode());
+		for (byte b : filename.getBytes()) {
+			pb.add8(b);
+		}
+		pb.add8(0); // null-terminate string
+		PacketResponse pr = runCommand(pb.getPacket());
+		System.err.println("Playback "+filename+" returns "+Integer.toString(pr.get8()));
 	}
 }

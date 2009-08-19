@@ -106,6 +106,7 @@ import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.OnboardParameters;
+import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -275,6 +276,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		menubar.add(buildMachineMenu());
 		menubar.add(buildHelpMenu());
 
+		// If in debug mode...
+		menubar.add(buildTestMenu());
+		
 		setJMenuBar(menubar);
 
 		// for rev 0120, placing things inside a JPanel because
@@ -975,6 +979,47 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		});
 		menu.add(aboutitem);
 
+		return menu;
+	}
+
+	protected JMenu buildTestMenu() {
+		JMenu menu = new JMenu("Test");
+		JMenuItem item;
+
+		item = new JMenuItem("Begin capture to test.s3g");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (machine.driver instanceof SDCardCapture) {
+					SDCardCapture sdcc = (SDCardCapture)machine.driver;
+					sdcc.beginCapture("test.s3g");
+				}
+			}
+		});	
+		menu.add(item);
+		
+		item = new JMenuItem("End capture");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (machine.driver instanceof SDCardCapture) {
+					SDCardCapture sdcc = (SDCardCapture)machine.driver;
+					System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
+					
+				}
+			}
+		});	
+		menu.add(item);
+
+		item = new JMenuItem("Playback test.s3g");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (machine.driver instanceof SDCardCapture) {
+					SDCardCapture sdcc = (SDCardCapture)machine.driver;
+					sdcc.playback("test.s3g");
+				}
+			}
+		});	
+		menu.add(item);
+		
 		return menu;
 	}
 
@@ -1821,16 +1866,22 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * modifications (if any) to the previous sketch need to be saved.
 	 */
 	protected void handleOpen2(String path) {
+		System.err.println("HO2");
 		if (sketch != null) {
 			// if leaving an empty sketch (i.e. the default) do an
 			// auto-clean right away
 			try {
 				// don't clean if we're re-opening the same file
+				System.err.println("HO2 x1");
 				String oldPath = sketch.code[0].file.getCanonicalPath();
+				System.err.println("HO2 x2");
 				String newPath = new File(path).getCanonicalPath();
+				System.err.println("HO2 x3");
 				if (!oldPath.equals(newPath)) {
 					if (Base.calcFolderSize(sketch.folder) == 0) {
+						System.err.println("HO2 x4");
 						Base.removeDir(sketch.folder);
+						System.err.println("HO2 x5");
 						// sketchbook.rebuildMenus();
 						//sketchbook.rebuildMenusAsync();
 					}
@@ -1914,10 +1965,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 			sketch = new Sketch(this, path);
 			handleOpenPath = path;
+			System.err.println("HO2-1");
 			addMRUEntry(path);
 			reloadMruMenu();
 			storePreferences(); // Updates MRU list, in case program aborts
 			// before quit
+			System.err.println("HO2-2");
 			header.rebuild();
 			if (Base.preferences.getBoolean("console.auto_clear",true)) {
 				console.clear();
@@ -1926,6 +1979,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} catch (Exception e) {
 			error(e);
 		}
+		System.err.println("HO2-3");
 	}
 
 	/**
