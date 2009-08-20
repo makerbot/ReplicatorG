@@ -1013,8 +1013,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (machine.driver instanceof SDCardCapture) {
-					SDCardCapture sdcc = (SDCardCapture)machine.driver;
-					sdcc.playback("test.s3g");
+					machine.buildRemote("test.s3g");
 				}
 			}
 		});	

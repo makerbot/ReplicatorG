@@ -36,6 +36,7 @@ import replicatorg.app.tools.XML;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.EstimationDriver;
+import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -67,7 +68,9 @@ public class MachineController {
 	 */
 	class MachineThread extends Thread {
 		private MachineState state = MachineState.NOT_ATTACHED;
+		private boolean paused = false;
 		public MachineState getMachineState() { return state; }
+		public boolean isPaused() { return paused; }
 		
 		// Build statistics
 		int linesProcessed = -1;
@@ -128,7 +131,7 @@ public class MachineController {
 		}
 
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
-			if (!(state == MachineState.BUILDING || state == MachineState.PAUSED)) {
+			if (!state.isRunning()) {
 				// Do not continue build if the machine is not building or paused
 				return false;
 			}
@@ -173,9 +176,9 @@ public class MachineController {
 				driver.checkErrors();
 				
 				// are we paused?
-				if (state == MachineState.PAUSED) {
+				if (state.isPaused()) {
 					driver.pause();
-					while (state == MachineState.PAUSED) {
+					while (state.isPaused()) {
 						synchronized(this) { wait(); }
 					}
 					driver.unpause();
@@ -259,28 +262,60 @@ public class MachineController {
 				stopStatusPolling();
 			}
 		}
+
+		String remoteName = null;
+		
+		private void buildRemoteInternal(String remoteName) {
+			if (remoteName == null || !(driver instanceof SDCardCapture)) return;
+			SDCardCapture sdcc = (SDCardCapture)driver;
+			sdcc.playback(remoteName);
+			while (!driver.isFinished()) {
+				try {
+					// are we paused?
+					if (state.isPaused()) {
+						driver.pause();
+						while (state.isPaused()) {
+							synchronized(this) { wait(); }
+						}
+						driver.unpause();
+					}
+					
+					// bail if we got interrupted.
+					if (state == MachineState.STOPPING) {
+						driver.stop();
+						return;
+					}
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+				}
+			}
+			reset();
+		}
 		
 		public void build(GCodeSource source) {
 			currentSource = source;
 			setState(MachineState.BUILDING);
 		}
+
+		public void buildRemote(String remoteName) {
+			this.remoteName = remoteName;
+			setState(MachineState.PLAYBACK_BUILDING);
+		}
 		
 		public void pauseBuild() {
-			if (state == MachineState.BUILDING) {
-				setState(MachineState.PAUSED);
-			}
+			if (state.isRunning() && !state.isPaused())
+				setState(state.getPausedState());
 		}
 		
 		public void resumeBuild() {
-			if (state == MachineState.PAUSED) {
-				setState(MachineState.BUILDING);
-			}
+			if (state.isRunning() && state.isPaused())
+				setState(state.getUnpausedState());
 		}
 		
 		public void stopBuild() {
-			if (state == MachineState.BUILDING ||
-					state == MachineState.PAUSED) {
-				setState(MachineState.STOPPING);
+			if (state.isRunning()) {
+				System.err.println("Stopping.");
+				setState(MachineState.STOPPING);				
 			}
 		}
 		
@@ -296,6 +331,8 @@ public class MachineController {
 				try {
 					if (state == MachineState.BUILDING) {
 						buildInternal(currentSource);
+					} else if (state == MachineState.PLAYBACK_BUILDING) {
+						buildRemoteInternal(remoteName);
 					} else if (state == MachineState.AUTO_SCAN) {
 						driver.autoscan();
 						if (driver.isInitialized()) {
@@ -313,7 +350,8 @@ public class MachineController {
 					} else {
 						synchronized(this) {
 							if (state == MachineState.READY ||
-								state == MachineState.PAUSED) {
+								state == MachineState.PLAYBACK_BUILDING ||
+								state.isPaused()) {
 								wait();
 							}
 						}
@@ -391,6 +429,11 @@ public class MachineController {
 		name = "Unknown";
 	}
 
+	public boolean buildRemote(String remoteName) {
+		machineThread.buildRemote(remoteName);
+		return true;
+	}
+	
 	/**
 	 * Begin running a job.
 	 */
