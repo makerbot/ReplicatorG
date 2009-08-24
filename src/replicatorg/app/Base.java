@@ -40,6 +40,7 @@ import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -63,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -737,20 +739,18 @@ public class Base {
 		}
 	}
 
-	static public Image getImage(String name, Component who) {
-		Image image = null;
-		Toolkit tk = Toolkit.getDefaultToolkit();
+	static public BufferedImage getImage(String name, Component who) {
+		BufferedImage image = null;
 
 		// try to get the URL as a system resource
 	    URL url = ClassLoader.getSystemResource(name);
-		image = tk.getImage(url);
-
-		//image = tk.getImage(getLibContents(name));
-		MediaTracker tracker = new MediaTracker(who);
-		tracker.addImage(image, 0);
-		try {
+	    try {
+	    	image = ImageIO.read(url);
+	    	MediaTracker tracker = new MediaTracker(who);
+	    	tracker.addImage(image, 0);
 			tracker.waitForAll();
 		} catch (InterruptedException e) {
+		} catch (IOException ioe) {
 		}
 		return image;
 	}

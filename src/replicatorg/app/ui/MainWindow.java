@@ -1377,7 +1377,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		// buttons/status.
 		simulating = true;
-		buttons.activate(MainButtonPanel.SIMULATE);
+		//buttons.activate(MainButtonPanel.SIMULATE);
 
 		// load our simulator machine
 		loadSimulator();
@@ -1410,7 +1410,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 			// build specific stuff
 			building = true;
-			buttons.activate(MainButtonPanel.BUILD);
+			//buttons.activate(MainButtonPanel.BUILD);
 
 			setEditorBusy(true);
 
@@ -1466,7 +1466,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			textarea.selectNone();
 			textarea.scrollTo(0, 0);
 		} else {
-			buttons.clear();
+			//buttons.clear();
 		}
 	}
 
@@ -1560,7 +1560,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public void estimationOver() {
 		// stopItem.setEnabled(false);
 		// pauseItem.setEnabled(false);
-		buttons.clear();
+		//buttons.clear();
 	}
 
 	/**
@@ -1573,7 +1573,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		message(EMPTY);
 
-		buttons.clear();
+		//buttons.clear();
 
 		building = false;
 		simulating = false;
@@ -1594,20 +1594,20 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			machine.unpause();
 
 			if (simulating) {
-				buttons.activate(MainButtonPanel.SIMULATE);
+				//buttons.activate(MainButtonPanel.SIMULATE);
 				message("Simulating...");
 			} else if (building) {
-				buttons.activate(MainButtonPanel.BUILD);
+				//buttons.activate(MainButtonPanel.BUILD);
 				message("Building...");
 			}
 
-			buttons.inactivate(MainButtonPanel.PAUSE);
+			//buttons.inactivate(MainButtonPanel.PAUSE);
 		} else {
 			message("Paused.");
 			machine.pause();
 
-			buttons.clear();
-			buttons.activate(MainButtonPanel.PAUSE);
+			//buttons.clear();
+			//buttons.activate(MainButtonPanel.PAUSE);
 		}
 	}
 
@@ -1730,7 +1730,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * sketchbook.prompt's setting
 	 */
 	public void handleNew(final boolean shift) {
-		buttons.activate(MainButtonPanel.NEW);
+		//buttons.activate(MainButtonPanel.NEW);
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -1775,7 +1775,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 //							+ "a new sketch. ReplicatorG must now quit.", e);
 //		}
 		handleOpen2("*Untitled");
-		buttons.clear();
+		//buttons.clear();
 	}
 
 	/**
@@ -1829,7 +1829,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public void handleOpen(final String ipath) {
 		// haven't run across a case where i can verify that this works
 		// because open is usually very fast.
-		buttons.activate(MainButtonPanel.OPEN);
+//		buttons.activate(MainButtonPanel.OPEN);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				String path = ipath;
@@ -2004,7 +2004,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	public void handleSave(boolean force) {
 		doStop();
-		buttons.activate(MainButtonPanel.SAVE);
+//		buttons.activate(MainButtonPanel.SAVE);
 
 		if (force) {
 			handleSave2();
@@ -2041,12 +2041,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			checkModifiedMode = 0;
 			// this is used when another operation calls a save
 		}
-		buttons.clear();
+//		buttons.clear();
 	}
 
 	public void handleSaveAs() {
 		doStop();
-		buttons.activate(MainButtonPanel.SAVE);
+//		buttons.activate(MainButtonPanel.SAVE);
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -2067,7 +2067,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					// show the error as a message in the window
 					error(e);
 				}
-				buttons.clear();
+//				buttons.clear();
 			}
 		});
 	}
