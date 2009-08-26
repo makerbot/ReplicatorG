@@ -33,6 +33,8 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
+import java.awt.image.RescaleOp;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -57,6 +59,10 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 	// / height, width of the toolbar buttons
 	static final int BUTTON_WIDTH = 27;
 	static final int BUTTON_HEIGHT = 32;
+	
+	static final float factors[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	static final float offsets[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	static private RescaleOp disabledOp = new RescaleOp(factors,offsets,null);
 
 	class MainButton extends JButton implements ChangeListener {
 		private String rolloverText; 
@@ -71,7 +77,7 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 			setDisabledIcon(new ImageIcon(disabled));
 			setRolloverEnabled(true);
 			setRolloverIcon(new ImageIcon(rollover));
-			setSize(new Dimension(BUTTON_WIDTH,BUTTON_HEIGHT));
+			setSize(new Dimension(active.getWidth(null),active.getHeight(null)));
 			setBorder(null);
 			getModel().addChangeListener(this);
 			addActionListener(MainButtonPanel.this);
@@ -123,7 +129,7 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 	MainButton uploadButton, playbackButton;
 	
 	public MainButtonPanel(MainWindow editor) {
-		super(new MigLayout("gap 0"));
+		super(new MigLayout("gap 5"));
 		this.editor = editor;
 
 		BufferedImage src = Base.getImage("images/buttons.png", this);
@@ -136,47 +142,40 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 		Font statusFont = Base.getFontPref("buttons.status.font","SansSerif,plain,12");
 		Color statusColor = Base.getColorPref("buttons.status.color","#FFFFFF");
 
-		simButton = makeButton("Simulate", src, 0);
+		simButton = makeButton("Simulate", "images/button-simulate.png");
 		add(simButton);
-		pauseButton = makeButton("Pause", src, 1);
-		add(pauseButton);
-		stopButton = makeButton("Stop", src, 2);
-		add(stopButton);
-		buildButton = makeButton("Build", src, 3);
+		buildButton = makeButton("Build", "images/button-build.png");
 		add(buildButton);
+		uploadButton = makeButton("Upload to SD card", "images/button-upload.png");
+		add(uploadButton);
+		playbackButton = makeButton("Build from SD card", "images/button-playback.png");
+		add(playbackButton);
 
-		newButton = makeButton("New", src, 4);
-		add(newButton, "gap unrelated");
-		openButton = makeButton("Open", src, 5);
-		add(openButton);
-		saveButton = makeButton("Save", src, 6);
-		add(saveButton);
-		
+		pauseButton = makeButton("Pause", "images/button-pause.png");
+		add(pauseButton,"gap unrelated");
+		stopButton = makeButton("Stop", "images/button-stop.png");
+		add(stopButton);
+
 		statusLabel = new JLabel();
 		statusLabel.setFont(statusFont);
 		statusLabel.setForeground(statusColor);
 		add(statusLabel, "gap unrelated");
 
-		setMaximumSize(new Dimension(3000,40));
-		setPreferredSize(new Dimension(300,40));
+		//setMaximumSize(new Dimension(3000,40));
+		//setPreferredSize(new Dimension(300,40));
 	}
 
-	public MainButton makeButton(String rolloverText, BufferedImage source, int offset) {
-		int IMAGE_SIZE = 33;
-
-		Image disabled = source.getSubimage((offset*IMAGE_SIZE)+3, 3*IMAGE_SIZE,
-				BUTTON_WIDTH,BUTTON_HEIGHT);
-		Image inactive = source.getSubimage((offset*IMAGE_SIZE)+3, 2*IMAGE_SIZE,
-				BUTTON_WIDTH,BUTTON_HEIGHT);
-		Image rollover = source.getSubimage((offset*IMAGE_SIZE)+3, 1*IMAGE_SIZE,
-				BUTTON_WIDTH,BUTTON_HEIGHT);
-		Image active = source.getSubimage((offset*IMAGE_SIZE)+3, 0*IMAGE_SIZE,
-				BUTTON_WIDTH,BUTTON_HEIGHT);
+	public MainButton makeButton(String rolloverText, String source) {
+		BufferedImage img = Base.getImage(source, this);
+		
+		BufferedImage disabled = disabledOp.filter(img,null);
+		Image inactive = img;
+		Image rollover = img;
+		Image active = img;
 		
 		MainButton mb = new MainButton(rolloverText, active, inactive, rollover, disabled);
 		return mb;
 	}
-
 
 
 	public void actionPerformed(ActionEvent e) {
@@ -211,9 +210,9 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 			s == MachineState.NOT_ATTACHED;
 		boolean noFileOps = building;
 
-		newButton.setEnabled(!noFileOps);
-		openButton.setEnabled(!noFileOps);
-		saveButton.setEnabled(!noFileOps);
+//		newButton.setEnabled(!noFileOps);
+//		openButton.setEnabled(!noFileOps);
+//		saveButton.setEnabled(!noFileOps);
 		
 		simButton.setEnabled(!building);
 		pauseButton.setEnabled(building);

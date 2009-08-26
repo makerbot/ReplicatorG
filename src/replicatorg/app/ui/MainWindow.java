@@ -66,6 +66,7 @@ import java.util.prefs.BackingStoreException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -91,6 +92,8 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.w3c.dom.Document;
 
@@ -282,27 +285,22 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		setJMenuBar(menubar);
 
 		// for rev 0120, placing things inside a JPanel because
-		Container contentPane = getContentPane();
-		contentPane.setLayout(new BorderLayout());
-		JPanel pane = new JPanel();
-		pane.setLayout(new BorderLayout());
-		contentPane.add(pane, BorderLayout.CENTER);
-
-		Box box = Box.createVerticalBox();
-		Box upper = Box.createVerticalBox();
+		Container pane = getContentPane();
+		BoxLayout layout = new BoxLayout(pane,BoxLayout.Y_AXIS);
+		pane.setLayout(layout);
 
 		buttons = new MainButtonPanel(this);
-		upper.add(buttons);
+		
+		pane.add(buttons);
 		machineStatusPanel = new MachineStatusPanel();
-		upper.add(machineStatusPanel);
+		pane.add(machineStatusPanel);
 
 		header = new EditorHeader(this);
-		upper.add(header);
+		pane.add(header);
 
 		textarea = new JEditTextArea(new PdeTextAreaDefaults());
 		textarea.setRightClickPopup(new TextAreaPopup());
 		textarea.setHorizontalOffset(6);
-		upper.add(textarea);
 
 		// assemble console panel, consisting of status area and the console
 		// itself
@@ -317,11 +315,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		console.setBorder(null);
 		consolePanel.add(console, BorderLayout.CENTER);
 
-		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upper,
+		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, textarea,
 				consolePanel);
 		// textarea, consolePanel);
 
-		splitPane.setOneTouchExpandable(true);
+		//splitPane.setOneTouchExpandable(true);
 		// repaint child panes while resizing
 		splitPane.setContinuousLayout(true);
 		// if window increases in size, give all of increase to
@@ -330,19 +328,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		// to fix ugliness.. normally macosx java 1.3 puts an
 		// ugly white border around this object, so turn it off.
-		splitPane.setBorder(null);
+		//splitPane.setBorder(null);
 
 		// the default size on windows is too small and kinda ugly
-		int dividerSize = Base.preferences.getInt("editor.divider.size",0);
+		int dividerSize = Base.preferences.getInt("editor.divider.size",8);
+		if (dividerSize < 5) dividerSize = 5;
 		if (dividerSize != 0) {
 			splitPane.setDividerSize(dividerSize);
 		}
 
 		splitPane.setMinimumSize(new Dimension(600, 600));
-		box.add(splitPane);
-		pane.add(box);
+		pane.add(splitPane);
 
-		pane.setTransferHandler(new TransferHandler() {
+		textarea.setTransferHandler(new TransferHandler() {
 			public boolean canImport(JComponent dest, DataFlavor[] flavors) {
 				// claim that we can import everything
 				return true;

@@ -749,6 +749,11 @@ public class Base {
 	    	MediaTracker tracker = new MediaTracker(who);
 	    	tracker.addImage(image, 0);
 			tracker.waitForAll();
+			BufferedImage img2 = new BufferedImage(image.getWidth(null),
+					image.getHeight(null),
+					BufferedImage.TYPE_INT_ARGB);
+			img2.getGraphics().drawImage(image,0,0,null);
+			image = img2;
 		} catch (InterruptedException e) {
 		} catch (IOException ioe) {
 		}
