@@ -18,12 +18,13 @@ public enum MachineState {
 	BUILDING,
 	STOPPING,
 	PAUSED,
-	CAPTURING,
+	UPLOADING,
 	PLAYBACK_BUILDING,
 	PLAYBACK_PAUSED;
 	
 	public boolean isRunning() {
 		return this == BUILDING || this == PAUSED ||
+			this == UPLOADING ||
 			this == PLAYBACK_BUILDING || this == PLAYBACK_PAUSED; 	
 	}
 

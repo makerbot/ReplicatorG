@@ -1420,6 +1420,60 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 	}
 
+	public void handleUpload() {
+		if (building)
+			return;
+		if (simulating)
+			return;
+
+		if (machine == null || machine.driver == null ||
+				!(machine.driver instanceof SDCardCapture)) {
+			System.err.println("Not ready to build yet.");
+		} else {
+			// close stuff.
+			doClose();
+
+			// build specific stuff
+			building = true;
+			//buttons.activate(MainButtonPanel.BUILD);
+
+			setEditorBusy(true);
+
+			// start our building thread.
+
+			message("Uploading...");
+			buildStart = new Date();
+			machine.upload("current.s3g");
+		}
+	}
+
+	public void handlePlayback() {
+		if (building)
+			return;
+		if (simulating)
+			return;
+
+		if (machine == null || machine.driver == null ||
+				!(machine.driver instanceof SDCardCapture)) {
+			System.err.println("Not ready to build yet.");
+		} else {
+			// close stuff.
+			doClose();
+
+			// build specific stuff
+			building = true;
+			//buttons.activate(MainButtonPanel.BUILD);
+
+			setEditorBusy(true);
+
+			// start our building thread.
+
+			message("Building...");
+			buildStart = new Date();
+			machine.buildRemote("current.s3g");
+		}
+	}
+	
 	private Date buildStart = null;
 	
 	public void machineStateChanged(MachineStateChangeEvent evt) {

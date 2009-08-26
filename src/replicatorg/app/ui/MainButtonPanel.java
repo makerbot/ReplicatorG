@@ -45,6 +45,7 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.drivers.SDCardCapture;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -181,12 +182,16 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == simButton) {
 			editor.handleSimulate();
+		} else if (e.getSource() == buildButton) {
+			editor.handleBuild();
+		} else if (e.getSource() == uploadButton) {
+			editor.handleUpload();
+		} else if (e.getSource() == playbackButton) {
+			editor.handlePlayback();
 		} else if (e.getSource() == pauseButton) {
 			editor.handlePause();
 		} else if (e.getSource() == stopButton) {
 			editor.handleStop();
-		} else if (e.getSource() == buildButton) {
-			editor.handleBuild();
 		} else if (e.getSource() == openButton) {
 			editor.handleOpen(null);
 		} else if (e.getSource() == newButton) {
@@ -200,7 +205,7 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 		MachineState s = evt.getState();
 		boolean building = s == MachineState.BUILDING ||
 			s == MachineState.PAUSED ||
-			s == MachineState.CAPTURING ||
+			s == MachineState.UPLOADING ||
 			s == MachineState.PLAYBACK_PAUSED ||
 			s == MachineState.PLAYBACK_BUILDING;
 		boolean paused = s == MachineState.PAUSED ||
@@ -209,16 +214,24 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 			s == MachineState.CONNECTING ||
 			s == MachineState.NOT_ATTACHED;
 		boolean noFileOps = building;
-
+		boolean hasPlayback = (editor != null) &&
+			(editor.machine != null) && 
+			(editor.machine.driver != null) &&
+			(editor.machine.driver instanceof SDCardCapture);
+		
 //		newButton.setEnabled(!noFileOps);
 //		openButton.setEnabled(!noFileOps);
 //		saveButton.setEnabled(!noFileOps);
 		
 		simButton.setEnabled(!building);
+		buildButton.setEnabled(!building);
+		uploadButton.setEnabled(!building);
+		playbackButton.setEnabled(!building);
+		uploadButton.setVisible(hasPlayback);
+		playbackButton.setVisible(hasPlayback);
 		pauseButton.setEnabled(building);
 		stopButton.setEnabled(building);
-		buildButton.setEnabled(!building);
-		buildButton.setSelected(building && !paused);
+		//buildButton.setSelected(building && !paused);
 		pauseButton.setSelected(paused);
 		
 	}

@@ -42,6 +42,10 @@ public class SimulationDriver extends DriverBaseImplementation {
 		simulation.setSimulationBounds(bounds);
 	}
 	
+	public boolean isSimulating() {
+		return simulation != null;
+	}
+	
 	public void createWindow() {
 		simulation = new SimulationWindow2D();
 		simulation.setVisible(true);

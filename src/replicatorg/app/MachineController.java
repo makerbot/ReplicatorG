@@ -146,7 +146,7 @@ public class MachineController {
 				}
 				
 				// use our parser to handle the stuff.
-				if (simulator != null)
+				if (simulator.isSimulating())
 					simulator.parse(line);
 				driver.parse(line);
 				
@@ -162,7 +162,7 @@ public class MachineController {
 				}
 				
 				// simulate the command.
-				if (simulator != null)
+				if (simulator.isSimulating())
 					simulator.execute();
 				
 				try {
@@ -296,6 +296,12 @@ public class MachineController {
 			currentSource = source;
 			setState(MachineState.BUILDING);
 		}
+		
+		public void upload(GCodeSource source, String remoteName) {
+			currentSource = source;
+			this.remoteName = remoteName;
+			setState(MachineState.UPLOADING);
+		}
 
 		public void buildRemote(String remoteName) {
 			this.remoteName = remoteName;
@@ -331,6 +337,13 @@ public class MachineController {
 				try {
 					if (state == MachineState.BUILDING) {
 						buildInternal(currentSource);
+					} else if (state == MachineState.UPLOADING) {
+						if (driver instanceof SDCardCapture) {
+							SDCardCapture sdcc = (SDCardCapture)driver;
+							sdcc.beginCapture(remoteName);
+							buildInternal(currentSource);
+							System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
+						}
 					} else if (state == MachineState.PLAYBACK_BUILDING) {
 						buildRemoteInternal(remoteName);
 					} else if (state == MachineState.AUTO_SCAN) {
@@ -584,6 +597,9 @@ public class MachineController {
 		machineThread.pauseBuild();
 	}
 
+	synchronized public void upload(String remoteName) {
+		machineThread.upload(source, remoteName);
+	}
 	synchronized public void unpause() {
 		machineThread.resumeBuild();
 	}
