@@ -41,17 +41,25 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 	MainWindow editor;
 
 	JTextField fontSizeField;
-	JCheckBox tempMonitorBox;
-	JCheckBox honorMachinesBox;
 	
-	private void showCurrentSettings() {
-		tempMonitorBox.setSelected(Base.preferences.getBoolean("build.monitor_temp",false));
-		honorMachinesBox.setSelected(Base.preferences.getBoolean("serial.use_machines",true));
-
+	private void showCurrentSettings() {		
 		Font editorFont = Base.getFontPref("editor.font","Monospaced,plain,12");
 		fontSizeField.setText(String.valueOf(editorFont.getSize()));
 	}
 	
+	private JCheckBox addCheckboxForPref(Container c, String text, final String pref, boolean defaultVal) {
+		JCheckBox cb = new JCheckBox(text);
+		cb.setSelected(Base.preferences.getBoolean(pref,defaultVal));
+		c.add(cb,"wrap");
+		cb.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JCheckBox box = (JCheckBox)e.getSource();
+				Base.preferences.putBoolean(pref,box.isSelected());
+			}
+		});
+		return cb;
+	}
+
 	public PreferencesWindow() {
 		super("Preferences");
 		setResizable(false);
@@ -67,24 +75,10 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		box.add(new JLabel("  (requires restart of ReplicatorG)"));
 		content.add(box,"wrap");
 
-		tempMonitorBox = new JCheckBox("Monitor temperature during builds");
-		content.add(tempMonitorBox,"wrap");
-		tempMonitorBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JCheckBox box = (JCheckBox)e.getSource();
-				Base.preferences.putBoolean("build.monitor_temp",box.isSelected());
-			}
-		});
-
-		honorMachinesBox = new JCheckBox("Honor serial port selection in machines.xml");
-		content.add(honorMachinesBox,"wrap");
-		honorMachinesBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JCheckBox box = (JCheckBox)e.getSource();
-				Base.preferences.putBoolean("serial.use_machines",box.isSelected());
-			}
-		});
-
+		addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp",false);
+		addCheckboxForPref(content,"Honor serial port selection in machines.xml","serial.use_machines",true);
+		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
+		
 		JButton delPrefs = new JButton("Restore all defaults (includes driver choice, etc.)");
 		content.add(delPrefs,"wrap");
 		delPrefs.addActionListener(new ActionListener() {
@@ -106,7 +100,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 
 		JButton button;
 		
-		button = new JButton("OK");
+		button = new JButton("Close");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				applyFrame();
@@ -114,14 +108,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			}
 		});
 		content.add(button, "tag ok");
-
-		button = new JButton("Cancel");
-		button.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
-		content.add(button, "tag cancel");
 
 		showCurrentSettings();
 
