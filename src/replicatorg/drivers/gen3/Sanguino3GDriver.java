@@ -127,7 +127,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		// This driver only covers v1.X firmware
 		minimumVersion = new Version(1,1);
-		preferredVersion = new Version(1,2);
+		preferredVersion = new Version(1,3);
 		// init our variables.
 		setInitialized(false);
 	}
@@ -1185,5 +1185,9 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8(0); // null-terminate string
 		PacketResponse pr = runCommand(pb.getPacket());
 		return convertSDCode(pr.get8());
+	}
+
+	public boolean hasFeatureSDCardCapture() {
+		return version.compareTo(new Version(1,3)) >= 0; 
 	}
 }

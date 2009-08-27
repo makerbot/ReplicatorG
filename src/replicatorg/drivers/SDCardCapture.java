@@ -21,4 +21,10 @@ public interface SDCardCapture {
 	public int endCapture();
 	
 	public ResponseCode playback(String filename);
+
+	/**
+	 * Returns whether SD card capture capabilities are supported by the current machine.
+	 * @return true if this version of the firmware supports SDCardCapture.
+	 */
+	boolean hasFeatureSDCardCapture();
 }
