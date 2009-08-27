@@ -30,10 +30,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorConvertOp;
 import java.awt.image.RescaleOp;
 
 import javax.swing.ImageIcon;
@@ -61,9 +61,12 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 	static final int BUTTON_WIDTH = 27;
 	static final int BUTTON_HEIGHT = 32;
 	
-	static final float factors[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-	static final float offsets[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	static private RescaleOp disabledOp = new RescaleOp(factors,offsets,null);
+	static final float disabledFactors[] = { 1.0f, 1.0f, 1.0f, 0.5f };
+	static final float disabledOffsets[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	static private RescaleOp disabledOp = new RescaleOp(disabledFactors,disabledOffsets,null);
+	static final float activeFactors[] = { -1.0f, -1.0f, -1.0f, 1.0f };
+	static final float activeOffsets[] = { 1.0f, 1.0f, 1.0f, 0.0f };
+	static private RescaleOp activeOp = new RescaleOp(activeFactors,activeOffsets,null);
 
 	class MainButton extends JButton implements ChangeListener {
 		private String rolloverText; 
@@ -85,12 +88,19 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 		}
 		public String getRolloverText() { return rolloverText; }
 		public void paint(Graphics g) {
+			final Rectangle b = getBounds(); 
 			if (getModel().isSelected()) {
+				g.setColor(new Color(1.0f,1.0f,0.5f,0.8f));
+				g.fillRect(0,0,b.width,b.height);
 				getSelectedIcon().paintIcon(this,g,0,0);
 			} else if (getModel().isEnabled()) {
 				if (getModel().isPressed()) {
+					g.setColor(new Color(1.0f,1.0f,0.5f,0.3f));
+					g.fillRect(0,0,b.width,b.height);
 					getSelectedIcon().paintIcon(this, g, 0, 0);
 				} else if (getModel().isRollover()) {
+					g.setColor(new Color(1.0f,1.0f,0.5f,0.3f));
+					g.fillRect(0,0,b.width,b.height);
 					getRolloverIcon().paintIcon(this, g, 0, 0);
 				} else {
 					getIcon().paintIcon(this,g,0,0);
@@ -133,8 +143,6 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 		super(new MigLayout("gap 5"));
 		this.editor = editor;
 
-		BufferedImage src = Base.getImage("images/buttons.png", this);
-
 		// hardcoding new blue color scheme for consistency with images,
 		// see EditorStatus.java for details.
 		// bgcolor = Preferences.getColor("buttons.bgcolor");
@@ -172,7 +180,7 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 		BufferedImage disabled = disabledOp.filter(img,null);
 		Image inactive = img;
 		Image rollover = img;
-		Image active = img;
+		Image active = activeOp.filter(img,null);
 		
 		MainButton mb = new MainButton(rolloverText, active, inactive, rollover, disabled);
 		return mb;
@@ -203,6 +211,8 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
 		MachineState s = evt.getState();
+		boolean ready = s == MachineState.READY;
+		@SuppressWarnings("unused")
 		boolean building = s == MachineState.BUILDING ||
 			s == MachineState.PAUSED ||
 			s == MachineState.UPLOADING ||
@@ -210,9 +220,11 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 			s == MachineState.PLAYBACK_BUILDING;
 		boolean paused = s == MachineState.PAUSED ||
 			s == MachineState.PLAYBACK_PAUSED;
+		@SuppressWarnings("unused")
 		boolean disconnected = s == MachineState.AUTO_SCAN ||
 			s == MachineState.CONNECTING ||
 			s == MachineState.NOT_ATTACHED;
+		@SuppressWarnings("unused")
 		boolean noFileOps = building;
 		boolean hasPlayback = (editor != null) &&
 			(editor.machine != null) && 
@@ -224,9 +236,9 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 //		saveButton.setEnabled(!noFileOps);
 		
 		simButton.setEnabled(!building);
-		buildButton.setEnabled(!building);
-		uploadButton.setEnabled(!building);
-		playbackButton.setEnabled(!building);
+		buildButton.setEnabled(ready);
+		uploadButton.setEnabled(ready);
+		playbackButton.setEnabled(ready);
 		uploadButton.setVisible(hasPlayback);
 		playbackButton.setVisible(hasPlayback);
 		pauseButton.setEnabled(building);
