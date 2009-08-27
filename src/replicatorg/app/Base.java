@@ -233,6 +233,13 @@ public class Base {
 		// show the window
 		editor.setVisible(true);
 
+		// add shutdown hook to store preferences
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			final private MainWindow w = editor; 
+			public void run() {
+				w.onShutdown();
+			}
+		});
 		// load up our default machine
 		String machineName = preferences.get("machine.name",null); 
 		if (machineName != null) {

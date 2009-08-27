@@ -416,12 +416,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		int w = Base.preferences.getInt("last.window.width",500); 
 		int h = Base.preferences.getInt("last.window.height",600);
 
+		//System.err.println("(pre)  using bounds: "+new Rectangle(x,y,w,h).toString());
+
 		// TODO: rely on underlying platform mechanism for window sizing and
 		// positioning
 		// * Validate w, h
 		// ** Minimum size 300x200
-		if (w < 300) { w = 300; } // TODO: magic numbers to constants
-		if (h < 200) { h = 200; }
+		if (w != -1 && w < 300) { w = 300; } // TODO: magic numbers to constants
+		if (h != -1 && h < 200) { h = 200; }
 		// ** Maximum size is screen size
 		if (w > screen.width) { w = screen.width; }
 		if (h > screen.height) { h = screen.height; }
@@ -431,6 +433,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// ** Validate invalid x, y
 		if (x == -1) { x = (screen.width-w)/2; }
 		if (y == -1) { y = (screen.height-h)/2; }
+
+		//System.err.println("(post) using bounds: "+new Rectangle(x,y,w,h).toString());
 		
 		setBounds(x,y,w,h); 
 
@@ -522,6 +526,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		Base.preferences.putInt("last.screen.width", screen.width);
 		Base.preferences.putInt("last.screen.height", screen.height);
 
+		new Exception().printStackTrace();
+		System.err.println("storing bounds: "+bounds.toString());
+		System.err.flush();
 		// last sketch that was in use
 		// Preferences.set("last.sketch.name", sketchName);
 		// Preferences.set("last.sketch.name", sketch.name);
@@ -1701,7 +1708,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			handleOpen2(handleOpenPath);
 			break;
 		case HANDLE_QUIT:
-			handleQuit2();
+			System.exit(0);
 			break;
 		}
 		checkModifiedMode = 0;
@@ -1849,22 +1856,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * modifications (if any) to the previous sketch need to be saved.
 	 */
 	protected void handleOpen2(String path) {
-		System.err.println("HO2");
 		if (sketch != null) {
 			// if leaving an empty sketch (i.e. the default) do an
 			// auto-clean right away
 			try {
 				// don't clean if we're re-opening the same file
-				System.err.println("HO2 x1");
 				String oldPath = sketch.code[0].file.getCanonicalPath();
-				System.err.println("HO2 x2");
 				String newPath = new File(path).getCanonicalPath();
-				System.err.println("HO2 x3");
 				if (!oldPath.equals(newPath)) {
 					if (Base.calcFolderSize(sketch.folder) == 0) {
-						System.err.println("HO2 x4");
 						Base.removeDir(sketch.folder);
-						System.err.println("HO2 x5");
 						// sketchbook.rebuildMenus();
 						//sketchbook.rebuildMenusAsync();
 					}
@@ -1874,86 +1875,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 
 		try {
-			// check to make sure that this .gcode file is
-			// in a folder of the same name
-			// BZZZT WRONG.
-//			File file = new File(path);
-//			File parentFile = new File(file.getParent());
-//			String parentName = parentFile.getName();
-//			String pdeName = parentName + ".gcode";
-//			File altFile = new File(file.getParent(), pdeName);
-
-			// System.out.println("path = " + file.getParent());
-			// System.out.println("name = " + file.getName());
-			// System.out.println("pname = " + parentName);
-
-//			if (pdeName.equals(file.getName())) {
-//				// no beef with this guy
-//
-//			} else if (altFile.exists()) {
-//				// but open the .gcode instead
-//				path = altFile.getAbsolutePath();
-//				// System.out.println("found alt file in same folder");
-//
-//			} else if (!path.endsWith(".gcode")) {
-//				Base.showWarning("Bad file selected",
-//						"ReplicatorG can only open its own sketches\n"
-//								+ "and other files ending in .gcode", null);
-//				throw new Exception();
-//				// return;
-//
-//			} else {
-//				String properParent = file.getName().substring(0,
-//						file.getName().length() - 6);
-//
-//				Object[] options = { "OK", "Cancel" };
-//				String prompt = "The file \"" + file.getName()
-//						+ "\" needs to be inside\n"
-//						+ "a sketch folder named \"" + properParent + "\".\n"
-//						+ "Create this folder, move the file, and continue?";
-//
-//				int result = JOptionPane
-//						.showOptionDialog(this, prompt, "Moving",
-//								JOptionPane.YES_NO_OPTION,
-//								JOptionPane.QUESTION_MESSAGE, null, options,
-//								options[0]);
-//
-//				if (result == JOptionPane.YES_OPTION) {
-//					// create properly named folder
-//					File properFolder = new File(file.getParent(), properParent);
-//					if (properFolder.exists()) {
-//						Base.showWarning("Error", "A folder named \""
-//								+ properParent + "\" "
-//								+ "already exists. Can't open sketch.", null);
-//						return;
-//					}
-//					if (!properFolder.mkdirs()) {
-//						throw new IOException("Couldn't create sketch folder");
-//					}
-//					// copy the sketch inside
-//					File properPdeFile = new File(properFolder, file.getName());
-//					File origPdeFile = new File(path);
-//					Base.copyFile(origPdeFile, properPdeFile);
-//
-//					// remove the original file, so user doesn't get confused
-//					origPdeFile.delete();
-//
-//					// update with the new path
-//					path = properPdeFile.getAbsolutePath();
-//
-//				} else if (result == JOptionPane.NO_OPTION) {
-//					return;
-//				}
-//			}
-
 			sketch = new Sketch(this, path);
 			handleOpenPath = path;
-			System.err.println("HO2-1");
 			addMRUEntry(path);
 			reloadMruMenu();
-			storePreferences(); // Updates MRU list, in case program aborts
-			// before quit
-			System.err.println("HO2-2");
 			header.rebuild();
 			if (Base.preferences.getBoolean("console.auto_clear",true)) {
 				console.clear();
@@ -1962,7 +1887,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} catch (Exception e) {
 			error(e);
 		}
-		System.err.println("HO2-3");
 	}
 
 	/**
@@ -2112,17 +2036,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	/**
-	 * Actually do the quit action.
+	 * Clean up files and store UI preferences on shutdown.  This is called by
+	 * the shutdown hook and will be run in virtually all shutdown scenarios.
+	 * Because it is used in a shutdown hook, there is no reason to call this
+	 * method explicit.y
 	 */
-	protected void handleQuit2() {
+	public void onShutdown() {
 
 		storePreferences();
-
-		//sketchbook.clean();
 		console.handleQuit();
-
-		// System.out.println("exiting here");
-		System.exit(0);
 	}
 
 	protected void handleReference() {
