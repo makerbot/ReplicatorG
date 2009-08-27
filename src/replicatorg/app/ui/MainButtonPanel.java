@@ -227,7 +227,8 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 		boolean hasPlayback = (editor != null) &&
 			(editor.machine != null) && 
 			(editor.machine.driver != null) &&
-			(editor.machine.driver instanceof SDCardCapture);
+			(editor.machine.driver instanceof SDCardCapture) &&
+			(((SDCardCapture)editor.machine.driver).hasFeatureSDCardCapture());
 		
 		uploadButton.setVisible(hasPlayback);
 		playbackButton.setVisible(hasPlayback);
