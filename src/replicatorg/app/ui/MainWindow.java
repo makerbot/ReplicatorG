@@ -2225,6 +2225,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 		this.machine = machine;
 		machine.setCodeSource(new JEditTextAreaSource(textarea));
+		machine.setMainWindow(this);
 		machineStatusPanel.setMachine(this.machine);
 	}
 
@@ -2262,10 +2263,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 		}
 	}
-
-//	public void loadSimulator() {
-//		setMachine(MachineFactory.loadSimulator());
-//	}
 
 	public void machineProgress(MachineProgressEvent event) {
 	}

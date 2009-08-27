@@ -1138,14 +1138,37 @@ public class Sanguino3GDriver extends SerialDriver
 		return version.compareTo(new Version(1,2)) >= 0; 
 	}
 
-	public void beginCapture(String filename) {
+	ResponseCode convertSDCode(int code) {
+		switch (code) {
+		case 0:
+			return ResponseCode.SUCCESS;
+		case 1:
+			return ResponseCode.FAIL_NO_CARD;
+		case 2:
+			return ResponseCode.FAIL_INIT;
+		case 3:
+			return ResponseCode.FAIL_PARTITION;
+		case 4:
+			return ResponseCode.FAIL_FS;
+		case 5:
+			return ResponseCode.FAIL_ROOT_DIR;
+		case 6:
+			return ResponseCode.FAIL_LOCKED;
+		case 7:
+			return ResponseCode.FAIL_NO_FILE;
+		default:
+		}
+		return ResponseCode.FAIL_GENERIC;
+	}
+
+	public ResponseCode beginCapture(String filename) {
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.CAPTURE_TO_FILE.getCode());
 		for (byte b : filename.getBytes()) {
 			pb.add8(b);
 		}
 		pb.add8(0); // null-terminate string
 		PacketResponse pr = runCommand(pb.getPacket());
-		System.err.println("Begin capture returns "+Integer.toString(pr.get8()));
+		return convertSDCode(pr.get8());
 	}
 
 	public int endCapture() {
@@ -1154,13 +1177,13 @@ public class Sanguino3GDriver extends SerialDriver
 		return pr.get32();
 	}
 
-	public void playback(String filename) {
+	public ResponseCode playback(String filename) {
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.PLAYBACK_CAPTURE.getCode());
 		for (byte b : filename.getBytes()) {
 			pb.add8(b);
 		}
 		pb.add8(0); // null-terminate string
 		PacketResponse pr = runCommand(pb.getPacket());
-		System.err.println("Playback "+filename+" returns "+Integer.toString(pr.get8()));
+		return convertSDCode(pr.get8());
 	}
 }

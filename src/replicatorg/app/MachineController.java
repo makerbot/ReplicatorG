@@ -19,7 +19,9 @@
 
 package replicatorg.app;
 
+import java.util.EnumMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
@@ -33,6 +35,7 @@ import replicatorg.app.exceptions.JobCancelledException;
 import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.app.tools.XML;
+import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.EstimationDriver;
@@ -272,7 +275,10 @@ public class MachineController {
 		private void buildRemoteInternal(String remoteName) {
 			if (remoteName == null || !(driver instanceof SDCardCapture)) return;
 			SDCardCapture sdcc = (SDCardCapture)driver;
-			sdcc.playback(remoteName);
+			if (!processSDResponse(sdcc.playback(remoteName))) {
+				state = MachineState.STOPPING;
+				return;
+			}
 			while (!driver.isFinished()) {
 				try {
 					// are we paused?
@@ -349,9 +355,10 @@ public class MachineController {
 					} else if (state == MachineState.UPLOADING) {
 						if (driver instanceof SDCardCapture) {
 							SDCardCapture sdcc = (SDCardCapture)driver;
-							sdcc.beginCapture(remoteName);
-							buildInternal(currentSource);
-							System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
+							if (processSDResponse(sdcc.beginCapture(remoteName))) { 
+								buildInternal(currentSource);
+								System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
+							} else { state = MachineState.STOPPING; }
 						}
 					} else if (state == MachineState.PLAYBACK_BUILDING) {
 						buildRemoteInternal(remoteName);
@@ -438,6 +445,53 @@ public class MachineController {
 		this.source = source;
 	}
 
+	// TODO: hide this behind an API
+	private MainWindow window; // for responses to errors, etc.
+	public void setMainWindow(MainWindow window) { this.window = window; }
+
+	static Map<SDCardCapture.ResponseCode,String> sdErrorMap =
+		new EnumMap<SDCardCapture.ResponseCode,String>(SDCardCapture.ResponseCode.class);
+	{
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_CARD,
+				"No SD card was detected.  Please make sure you have a working, formatted " +
+				"SD card in the motherboard's SD slot and try again.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_INIT,
+				"ReplicatorG was unable to initialize the SD card.  Please make sure that " +
+				"the SD card works properly.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_PARTITION,
+				"ReplicatorG was unable to read the SD card's partition table.  Please check " +
+				"that the card is partitioned properly.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_FS,
+				"ReplicatorG was unable to open the filesystem on the SD card.  Please make sure " +
+				"that the SD card has a single partition formatted with a FAT16 filesystem.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_ROOT_DIR,
+				"ReplicatorG was unable to read the root directory on the SD card.  Please "+
+				"check to see if the SD card was formatted properly.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_LOCKED,
+				"The SD card cannot be written to because it is locked.  Remove the card, " +
+				"switch the lock off, and try again.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_FILE,
+				"ReplicatorG could not find the build file on the SD card.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_GENERIC,"Unknown SD card error.");
+	}
+	
+	/**
+	 * Process an SD response code and throw up an appropriate dialog for the user.
+	 * @param code the response from the SD request
+	 * @return true if the code indicates success; false if the operation should be aborted
+	 */
+	public boolean processSDResponse(SDCardCapture.ResponseCode code) {
+		if (code == SDCardCapture.ResponseCode.SUCCESS) return true;
+		String message = sdErrorMap.get(code);
+		JOptionPane.showMessageDialog(
+				window,
+				message,
+				"SD card error",
+				JOptionPane.ERROR_MESSAGE);
+		return false;
+	}
+
+	
 	private void parseName() {
 		NodeList kids = machineNode.getChildNodes();
 

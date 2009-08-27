@@ -232,7 +232,6 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 		uploadButton.setVisible(hasPlayback);
 		playbackButton.setVisible(hasPlayback);
 
-		System.err.println(s.toString());
 		simButton.setEnabled(!building);
 		buildButton.setEnabled(ready);
 		uploadButton.setEnabled(ready);
