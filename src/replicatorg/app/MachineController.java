@@ -148,7 +148,7 @@ public class MachineController {
 				// use our parser to handle the stuff.
 				if (simulator.isSimulating())
 					simulator.parse(line);
-				driver.parse(line);
+				if (!state.isSimulating()) { driver.parse(line); }
 				
 				try {
 					driver.getParser().handleStops();
@@ -166,22 +166,26 @@ public class MachineController {
 					simulator.execute();
 				
 				try {
-					driver.execute();
+					if (!state.isSimulating()) {
+						driver.execute();
+					}
 				} catch (GCodeException e) {
 					// TODO: prompt the user to continue.
 					System.out.println("Error: " + e.getMessage());
 				}
 				
 				// did we get any errors?
-				driver.checkErrors();
+				if (!state.isSimulating()) {
+					driver.checkErrors();
+				}
 				
 				// are we paused?
 				if (state.isPaused()) {
-					driver.pause();
+					if (!state.isSimulating()) driver.pause();
 					while (state.isPaused()) {
 						synchronized(this) { wait(); }
 					}
-					driver.unpause();
+					if (!state.isSimulating()) driver.unpause();
 				}
 				
 				// bail if we got interrupted.
@@ -202,7 +206,7 @@ public class MachineController {
 			}
 			
 			// wait for driver to finish up.
-			while (!driver.isFinished()) {
+			if (!state.isSimulating()) while (!driver.isFinished()) {
 				Thread.sleep(100);
 			}
 			return true;
@@ -297,6 +301,11 @@ public class MachineController {
 			setState(MachineState.BUILDING);
 		}
 		
+		public void simulate(GCodeSource source) {
+			currentSource = source;
+			setState(MachineState.SIMULATING);
+		}
+
 		public void upload(GCodeSource source, String remoteName) {
 			currentSource = source;
 			this.remoteName = remoteName;
@@ -335,7 +344,7 @@ public class MachineController {
 		public void run() {
 			while (true) {
 				try {
-					if (state == MachineState.BUILDING) {
+					if (state == MachineState.BUILDING || state == MachineState.SIMULATING) {
 						buildInternal(currentSource);
 					} else if (state == MachineState.UPLOADING) {
 						if (driver instanceof SDCardCapture) {
@@ -360,6 +369,8 @@ public class MachineController {
 						} else {
 							setState(MachineState.NOT_ATTACHED);
 						}
+					} else if (state == MachineState.STOPPING) {
+						setState(MachineState.READY);						
 					} else {
 						synchronized(this) {
 							if (state == MachineState.READY ||
@@ -464,6 +475,22 @@ public class MachineController {
 		machineThread.build(source);
 		return true;
 	}
+
+	public boolean simulate() {
+		// start simulator
+		if (simulator != null)
+			simulator.createWindow();
+
+		// estimate build time.
+		System.out.println("Estimating build time...");
+		estimate();
+
+		// do that build!
+		System.out.println("Running GCode...");
+		machineThread.simulate(source);
+		return true;
+	}
+
 
 	public void estimate() {
 		if (source == null) { return; }
@@ -614,7 +641,7 @@ public class MachineController {
 	}
 	
 	synchronized public boolean isPaused() {
-		return getState() == MachineState.PAUSED;
+		return getState().isPaused();
 	}
 	
 	public void dispose() {

@@ -1294,7 +1294,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			return;
 
 		// load our simulator machine
-		loadSimulator();
+		// loadSimulator();
 
 		// fire off our thread.
 		estimationThread = new EstimationThread(this);
@@ -1315,7 +1315,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		//buttons.activate(MainButtonPanel.SIMULATE);
 
 		// load our simulator machine
-		loadSimulator();
+		// loadSimulator();
 		setEditorBusy(true);
 
 		// fire off our thread.
@@ -1514,7 +1514,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		public void run() {
 			message("Simulating...");
-			machine.execute();
+			machine.simulate();
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
 					simulationOver();
@@ -2263,9 +2263,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 	}
 
-	public void loadSimulator() {
-		setMachine(MachineFactory.loadSimulator());
-	}
+//	public void loadSimulator() {
+//		setMachine(MachineFactory.loadSimulator());
+//	}
 
 	public void machineProgress(MachineProgressEvent event) {
 	}

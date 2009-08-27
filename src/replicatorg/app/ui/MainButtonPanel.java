@@ -110,6 +110,8 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 			}
 		}
 		public void stateChanged(ChangeEvent ce) {
+			// It's possible to get a change event before the status label is initialized 
+			if (statusLabel == null) return;
 			if (getModel().isRollover()) {
 				statusLabel.setText(getRolloverText());
 			} else {
@@ -183,6 +185,7 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 		Image active = activeOp.filter(img,null);
 		
 		MainButton mb = new MainButton(rolloverText, active, inactive, rollover, disabled);
+		mb.setEnabled(false);
 		return mb;
 	}
 
@@ -215,37 +218,34 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 		@SuppressWarnings("unused")
 		boolean building = s == MachineState.BUILDING ||
 			s == MachineState.PAUSED ||
+			s == MachineState.SIMULATING ||
 			s == MachineState.UPLOADING ||
 			s == MachineState.PLAYBACK_PAUSED ||
 			s == MachineState.PLAYBACK_BUILDING;
 		boolean paused = s == MachineState.PAUSED ||
 			s == MachineState.PLAYBACK_PAUSED;
-		@SuppressWarnings("unused")
-		boolean disconnected = s == MachineState.AUTO_SCAN ||
-			s == MachineState.CONNECTING ||
-			s == MachineState.NOT_ATTACHED;
-		@SuppressWarnings("unused")
-		boolean noFileOps = building;
 		boolean hasPlayback = (editor != null) &&
 			(editor.machine != null) && 
 			(editor.machine.driver != null) &&
 			(editor.machine.driver instanceof SDCardCapture);
 		
-//		newButton.setEnabled(!noFileOps);
-//		openButton.setEnabled(!noFileOps);
-//		saveButton.setEnabled(!noFileOps);
-		
+		uploadButton.setVisible(hasPlayback);
+		playbackButton.setVisible(hasPlayback);
+
+		System.err.println(s.toString());
 		simButton.setEnabled(!building);
 		buildButton.setEnabled(ready);
 		uploadButton.setEnabled(ready);
 		playbackButton.setEnabled(ready);
-		uploadButton.setVisible(hasPlayback);
-		playbackButton.setVisible(hasPlayback);
 		pauseButton.setEnabled(building);
 		stopButton.setEnabled(building);
-		//buildButton.setSelected(building && !paused);
+
 		pauseButton.setSelected(paused);
-		
+
+		simButton.setSelected(s == MachineState.SIMULATING || s == MachineState.SIMULATING_PAUSED);
+		buildButton.setSelected(s == MachineState.BUILDING || s == MachineState.PAUSED);
+		uploadButton.setSelected(s == MachineState.UPLOADING);
+		playbackButton.setSelected(s == MachineState.PLAYBACK_BUILDING || s == MachineState.PLAYBACK_PAUSED);
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
