@@ -453,22 +453,25 @@ public class MachineController {
 		new EnumMap<SDCardCapture.ResponseCode,String>(SDCardCapture.ResponseCode.class);
 	{
 		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_CARD,
-				"No SD card was detected.  Please make sure you have a working, formatted " +
+				"No SD card was detected.  Please make sure you have a working, formatted\n" +
 				"SD card in the motherboard's SD slot and try again.");
 		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_INIT,
-				"ReplicatorG was unable to initialize the SD card.  Please make sure that " +
+				"ReplicatorG was unable to initialize the SD card.  Please make sure that\n" +
 				"the SD card works properly.");
 		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_PARTITION,
-				"ReplicatorG was unable to read the SD card's partition table.  Please check " +
-				"that the card is partitioned properly.");
+				"ReplicatorG was unable to read the SD card's partition table.  Please check\n" +
+				"that the card is partitioned properly.\n" +
+				"If you believe your SD card is OK, try resetting your device and restarting\n" +
+				"ReplicatorG."
+				);
 		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_FS,
-				"ReplicatorG was unable to open the filesystem on the SD card.  Please make sure " +
+				"ReplicatorG was unable to open the filesystem on the SD card.  Please make sure\n" +
 				"that the SD card has a single partition formatted with a FAT16 filesystem.");
 		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_ROOT_DIR,
-				"ReplicatorG was unable to read the root directory on the SD card.  Please "+
+				"ReplicatorG was unable to read the root directory on the SD card.  Please\n"+
 				"check to see if the SD card was formatted properly.");
 		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_LOCKED,
-				"The SD card cannot be written to because it is locked.  Remove the card, " +
+				"The SD card cannot be written to because it is locked.  Remove the card,\n" +
 				"switch the lock off, and try again.");
 		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_FILE,
 				"ReplicatorG could not find the build file on the SD card.");
