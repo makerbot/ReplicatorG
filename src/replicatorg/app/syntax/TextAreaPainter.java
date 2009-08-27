@@ -368,7 +368,8 @@ implements TabExpander, Printable
    * cached font metrics and to recalculate which lines are visible.
    * @param font The font
    */
-  public void setFont(Font font)
+  @SuppressWarnings("deprecation")
+public void setFont(Font font)
   {
     super.setFont(font);
     fm = Toolkit.getDefaultToolkit().getFontMetrics(font);
