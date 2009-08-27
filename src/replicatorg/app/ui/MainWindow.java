@@ -397,16 +397,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		});
 	}
 
-	/**
-	 * Hack for #@#)$(* Mac OS X 10.2. <p/> This appears to only be required on
-	 * OS X 10.2, and is not even being called on later versions of OS X or
-	 * Windows.
-	 */
-	public Dimension getMinimumSize() {
-		// System.out.println("getting minimum size");
-		return new Dimension(500, 550);
-	}
-
 	// ...................................................................
 
 	/**
@@ -417,45 +407,32 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	public void restorePreferences() {
 		// figure out window placement
+		Base.logger.fine("Restoring window preferences");
 
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		boolean windowPositionValid = true;
 
-		if (Base.preferences.getInt("last.screen.height",-1) != -1) {
-			// if screen size has changed, the window coordinates no longer
-			// make sense, so don't use them unless they're identical
-			int screenW = Base.preferences.getInt("last.screen.width",600);
-			int screenH = Base.preferences.getInt("last.screen.height",600);
+		int x = Base.preferences.getInt("last.window.x",-1); 
+		int y = Base.preferences.getInt("last.window.y",-1); 
+		int w = Base.preferences.getInt("last.window.width",500); 
+		int h = Base.preferences.getInt("last.window.height",600);
 
-			if ((screen.width != screenW) || (screen.height != screenH)) {
-				windowPositionValid = false;
-			}
-			int windowX = Base.preferences.getInt("last.window.x",200);
-			int windowY = Base.preferences.getInt("last.window.y",200);
-			if ((windowX < 0) || (windowY < 0) || (windowX > screenW)
-					|| (windowY > screenH)) {
-				windowPositionValid = false;
-			}
-
-		} else {
-			windowPositionValid = false;
-		}
-
-		if (!windowPositionValid) {
-			// System.out.println("using default size");
-			int windowH = Base.preferences.getInt("default.window.height",500);
-			int windowW = Base.preferences.getInt("default.window.width",600);
-			setBounds((screen.width - windowW) / 2,
-					(screen.height - windowH) / 2, windowW, windowH);
-			// this will be invalid as well, so grab the new value
-			Base.preferences.putInt("last.divider.location", splitPane
-					.getDividerLocation());
-		} else {
-			setBounds(Base.preferences.getInt("last.window.x",200), 
-					Base.preferences.getInt("last.window.y",200), 
-					Base.preferences.getInt("last.window.width",500), 
-					Base.preferences.getInt("last.window.height",600));
-		}
+		// TODO: rely on underlying platform mechanism for window sizing and
+		// positioning
+		// * Validate w, h
+		// ** Minimum size 300x200
+		if (w < 300) { w = 300; } // TODO: magic numbers to constants
+		if (h < 200) { h = 200; }
+		// ** Maximum size is screen size
+		if (w > screen.width) { w = screen.width; }
+		if (h > screen.height) { h = screen.height; }
+		// ** Make sure we don't overhang
+		if (x != -1 && x+w > screen.width) { x = -1; }
+		if (y != -1 && y+h > screen.height) { y = -1; }
+		// ** Validate invalid x, y
+		if (x == -1) { x = (screen.width-w)/2; }
+		if (y == -1) { y = (screen.height-h)/2; }
+		
+		setBounds(x,y,w,h); 
 
 		// last sketch that was in use, or used to launch the app
 		if (Base.openedAtStartup != null) {
