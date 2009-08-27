@@ -54,12 +54,21 @@ public class MachineFactory {
 	
 	public static Vector<String> getMachineNames() {
 		Vector<String> v = new Vector<String>();
-		
+		boolean showExperimental = 
+			Base.preferences.getBoolean("machine.showExperimental", false);
 		NodeList nl = MachineFactory.loadMachinesConfig()
 				.getElementsByTagName("machine");
 		for (int i = 0; i < nl.getLength(); i++) {
 			// look up each machines set of kids
 			Node n = nl.item(i);
+			// skip experimental drivers if showExperimental is false
+			if (!showExperimental) {
+				if (n.hasAttributes() &&
+						n.getAttributes().getNamedItem("experimental") != null) {
+					// skip this node
+					continue;
+				}
+			}
 			NodeList kids = n.getChildNodes();
 			for (int j = 0; j < kids.getLength(); j++) {
 				Node kid = kids.item(j);

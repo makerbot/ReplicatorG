@@ -526,9 +526,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		Base.preferences.putInt("last.screen.width", screen.width);
 		Base.preferences.putInt("last.screen.height", screen.height);
 
-		new Exception().printStackTrace();
-		System.err.println("storing bounds: "+bounds.toString());
-		System.err.flush();
 		// last sketch that was in use
 		// Preferences.set("last.sketch.name", sketchName);
 		// Preferences.set("last.sketch.name", sketch.name);
