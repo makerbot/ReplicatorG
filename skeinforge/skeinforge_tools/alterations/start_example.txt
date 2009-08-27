@@ -1,2 +1,0 @@
-(This is a sample gcode start file, it must be renamed start.txt for skeinforge to recognize it.  Also, to remove confusion this comment line should be deleted.)
-G28

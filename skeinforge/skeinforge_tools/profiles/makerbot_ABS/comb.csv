@@ -1,7 +1,0 @@
-Format is tab separated preferences.
-Activate Comb	True
-Arrival Inset Follow Distance over Extrusion Width (ratio):	3.0
-Jitter Over Extrusion Width (ratio):	2.0
-Minimum Perimeter Departure Distance over Extrusion Width (ratio):	30.0
-Open File to be Combed	
-windowPositionComb Preferences	0+0
