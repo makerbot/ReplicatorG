@@ -65,7 +65,6 @@ import java.util.prefs.BackingStoreException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -92,8 +91,6 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
-
-import net.miginfocom.swing.MigLayout;
 
 import org.w3c.dom.Document;
 
@@ -279,9 +276,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		menubar.add(buildMachineMenu());
 		menubar.add(buildHelpMenu());
 
-		// If in debug mode...
-		menubar.add(buildTestMenu());
-		
 		setJMenuBar(menubar);
 
 		// for rev 0120, placing things inside a JPanel because
@@ -980,45 +974,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		return menu;
 	}
 
-	protected JMenu buildTestMenu() {
-		JMenu menu = new JMenu("Test");
-		JMenuItem item;
-
-		item = new JMenuItem("Begin capture to test.s3g");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (machine.driver instanceof SDCardCapture) {
-					SDCardCapture sdcc = (SDCardCapture)machine.driver;
-					sdcc.beginCapture("test.s3g");
-				}
-			}
-		});	
-		menu.add(item);
-		
-		item = new JMenuItem("End capture");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (machine.driver instanceof SDCardCapture) {
-					SDCardCapture sdcc = (SDCardCapture)machine.driver;
-					System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
-					
-				}
-			}
-		});	
-		menu.add(item);
-
-		item = new JMenuItem("Playback test.s3g");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (machine.driver instanceof SDCardCapture) {
-					machine.buildRemote("test.s3g");
-				}
-			}
-		});	
-		menu.add(item);
-		
-		return menu;
-	}
 
 	public JMenu buildEditMenu() {
 		JMenu menu = new JMenu("Edit");
