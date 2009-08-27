@@ -31,6 +31,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FileDialog;
@@ -1853,25 +1854,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * modifications (if any) to the previous sketch need to be saved.
 	 */
 	protected void handleOpen2(String path) {
-		if (sketch != null) {
-			// if leaving an empty sketch (i.e. the default) do an
-			// auto-clean right away
-			try {
-				// don't clean if we're re-opening the same file
-				String oldPath = sketch.code[0].file.getCanonicalPath();
-				String newPath = new File(path).getCanonicalPath();
-				if (!oldPath.equals(newPath)) {
-					if (Base.calcFolderSize(sketch.folder) == 0) {
-						Base.removeDir(sketch.folder);
-						// sketchbook.rebuildMenus();
-						//sketchbook.rebuildMenusAsync();
-					}
-				}
-			} catch (Exception e) {
-			} // oh well
-		}
-
 		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			// loading may take a few moments for large files
+
 			sketch = new Sketch(this, path);
 			handleOpenPath = path;
 			addMRUEntry(path);
@@ -1880,9 +1866,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			if (Base.preferences.getBoolean("console.auto_clear",true)) {
 				console.clear();
 			}
-
 		} catch (Exception e) {
 			error(e);
+		} finally {
+			this.setCursor(Cursor.getDefaultCursor());
 		}
 	}
 
