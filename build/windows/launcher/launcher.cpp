@@ -19,6 +19,8 @@
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
+
 
 int STDCALL
 WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
@@ -44,171 +46,40 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
   *(strrchr(loaddir, '\\')) = '\0';
 
   char *cp = (char *)malloc(8 * strlen(loaddir) + 4096);
-
-
-  // if this code looks shitty, that's because it is. people are 
-  // likely to have the durndest things in their CLASSPATH and QTJAVA 
-  // environment variables. mostly because installers often mangle 
-  // them without the user knowing. so who knows where and when the
-  // quotes will show up. this is a guess at dealing with the things, 
-  // without spending a whole day to make it overly robust. [fry]
-
-  
-  
-
-  // test to see if running with a java runtime nearby or not
-  char *testpath = (char *)malloc(MAX_PATH * sizeof(char));
-  *testpath = 0;
-  strcpy(testpath, loaddir);
-  strcat(testpath, "\\java\\bin\\java.exe");
-  FILE *fp = fopen(testpath, "rb");
-  int local_jre_installed = (fp != NULL);
-  //char *rt_jar = (fp == NULL) ? "" : "java\\lib\\rt.jar;";
-  if (fp != NULL) fclose(fp); // argh! this was probably causing trouble
-  
-
-  //MessageBox(NULL, local_jre_installed ? 
-  //         "local jre installed" : "couldn't find jre", "p5", MB_OK);
-
-
-  //const char *envClasspath = getenv("CLASSPATH");
+
   char *env_classpath = (char *)malloc(16384 * sizeof(char));
 
   // ignoring CLASSPATH for now, because it's not needed
   // and causes more trouble than it's worth [0060]
   env_classpath[0] = 0;
 
-  /*
-  // keep this code around since may be re-enabled later
-  if (getenv("CLASSPATH") != NULL) {
-    strcpy(env_classpath, getenv("CLASSPATH"));
-    if (env_classpath[0] == '\"') {
-      // starting quote in classpath.. yech
-      env_classpath++;  // shitty.. i know..
+  // We really ought to be loading these dynamically.
+  std::vector<const char*> libs;
+  libs.push_back("ReplicatorG.jar");
+  libs.push_back("mrj.jar");
+  libs.push_back("vecmath.jar");
+  libs.push_back("j3dcore.jar");
+  libs.push_back("j3dutils.jar");
+  libs.push_back("RXTXcomm.jar");
+  libs.push_back("oro.jar");
+  libs.push_back("registry.jar");
+  libs.push_back("antlr.jar");
+  libs.push_back("miglayout-3.7.jar");
 
-      int len = strlen(env_classpath);
-      if (env_classpath[len-1] == '\"') {
-        env_classpath[len-1] = 0;
-      } else {
-        // a starting quote but no ending quote.. ugh
-        // maybe throw an error
-      }
-    }
-    int last = strlen(env_classpath);
-    env_classpath[last++] = ';';
-    env_classpath[last] = 0;
-  } else {
-    env_classpath[0] = 0;
+  std::stringstream cp;
+  cp << loaddir << "\\lib;"
+  cp << loaddir << "\\lib\\build;"
+  for (std::vector<const char*> i = libs.begin(); i != libs.end(); i++) {
+    cp << loaddir << "\\lib\\" << *i << ";"
   }
-  */
-/* WE DUNNO NEED QUICKTIME JAVA FOR ARDUINO
-  char *qtjava_path = (char *)malloc(16384 * sizeof(char));
-  qtjava_path[0] = 0;
 
-  if (getenv("WINDIR") == NULL) {
-    // uh-oh.. serious problem.. gonna have to report this
-    // but hopefully WINDIR is set on win98 too
-
-  } else {
-    strcpy(qtjava_path, getenv("WINDIR"));
-    strcat(qtjava_path, "\\SYSTEM32\\QTJava.zip");
-
-    FILE *fp = fopen(qtjava_path, "rb");
-    if (fp != NULL) {
-      fclose(fp);  // found it, all set
-      strcat(qtjava_path, ";"); // add path separator
-
-    } else {
-      strcpy(qtjava_path, getenv("WINDIR"));
-      strcat(qtjava_path, "\\SYSTEM\\QTJava.zip");
-
-      fp = fopen(qtjava_path, "rb");
-      if (fp != NULL) {
-        fclose(fp);  // found it, all set
-        strcat(qtjava_path, ";"); // add path separator
-
-      } else {
-        // doesn't seem to be installed, which is a problem.
-        // but the error will be reported by the pde
-        qtjava_path[0] = 0;
-      }
-    }
-  }
-END WE DUNNO NEED QUICKTIME JAVA FOR ARDUINO*/  
-  // NO! put quotes around contents of cp, because %s might have spaces in it.
-  // don't put quotes in it, because it's setting the environment variable
-  // for CLASSPATH, not being included on the command line. so setting the
-  // env var it's ok to have spaces, and the quotes prevent 
-  // javax.comm.properties from being found.
-  sprintf(cp,	
-          //"\""   // begin quote
-          //"'"
-
-          "%s"  // local jre or blank
-          //"%s"  // qtjava path
-          ""
-
-          "%s\\lib;"
-          "%s\\lib\\build;"
-          "%s\\lib\\pde.jar;"
-          "%s\\lib\\ReplicatorG.jar;"
-          //"%s\\lib\\core.jar;"
-          "%s\\lib\\mrj.jar;"
-          "%s\\lib\\vecmath.jar;"
-          "%s\\lib\\j3dcore.jar;"
-          "%s\\lib\\j3dutils.jar;"
-          "%s\\lib\\RXTXcomm.jar;"
-          "%s\\lib\\oro.jar;"
-          "%s\\lib\\registry.jar;"
-          "%s\\lib\\antlr.jar;"
-          "%s\\lib\\miglayout-3.7.jar;"
-          
-          "%s",  // original CLASSPATH
-          
-
-          //"C:\\WINNT\\system32\\QTJava.zip;"  // worthless
-          //"C:\\WINDOWS\\system32\\QTJava.zip;"
-
-          //"\"",   // end quote
-          //"'",
-          //,
-
-          // the first three %s args
-          //local_jre_installed ? "java\\lib\\rt.jar;java\\lib\\jaws.jar;" : "", 
-          local_jre_installed ? "java\\lib\\rt.jar;" : "", 
-          //qtjava_path,
-          loaddir, loaddir, loaddir, loaddir, loaddir, loaddir, loaddir, 
-          loaddir, loaddir, loaddir, loaddir, 
-          env_classpath);
-
-  //MessageBox(NULL, cp, "it's twoo! it's twoo!", MB_OK);
-
-  if (!SetEnvironmentVariable("CLASSPATH", cp)) {
+  if (!SetEnvironmentVariable("CLASSPATH", cp.str().c_str())) {
     MessageBox(NULL, "Could not set CLASSPATH environment variable",
                "ReplicatorG Error", MB_OK);
     return 0;
   }
   
   
-
-  // need to add the local jre to the path for 'java mode' in the env
-  if (local_jre_installed) {
-    
-    char *env_path = (char *)malloc(strlen(getenv("PATH")) * sizeof(char));
-    strcpy(env_path, getenv("PATH"));
-    char *paf = (char *)malloc((strlen(env_path) + strlen(loaddir) + 32) * sizeof(char));
-    sprintf(paf, "%s\\java\\bin;lib;%s", loaddir, env_path);
-
-    if (!SetEnvironmentVariable("PATH", paf)) {
-      MessageBox(NULL, "Could not set PATH environment variable",
-                 "ReplicatorG Error", MB_OK);
-      return 0;
-    }
-    
-	
-  }
-
-  //MessageBox(NULL, cp, "whaadddup", MB_OK);
 
   // add the name of the class to execute and a space before the next arg
   strcat(outgoing_cmdline, JAVA_MAIN_CLASS " ");
@@ -219,14 +90,7 @@ END WE DUNNO NEED QUICKTIME JAVA FOR ARDUINO*/
   char *executable = (char *)malloc((strlen(loaddir) + 256) * sizeof(char));
   // loaddir is the name path to the current application
 
-  //if (localJreInstalled) {
-  if (local_jre_installed) {
-    strcpy(executable, loaddir);
-    // copy in the path for javaw, relative to launcher.exe
-    strcat(executable, "\\java\\bin\\javaw.exe");
-  } else {
-    strcpy(executable, "javaw.exe");
-  }
+  strcpy(executable, "javaw.exe");
 
   SHELLEXECUTEINFO ShExecInfo;
 
