@@ -1,215 +1,199 @@
 <project name="ReplicatorG" basedir="." default="test">
-	<property name="project.lowercase" value="replicatorg"/>
-    <property name="src.dir"       value="src"/>
-    <property name="build.dir"     value="build"/>
-    <property name="classes.dir"   value="${build.dir}/classes"/> 
-    <property name="jar.dir"       value="${build.dir}/jar"/>
-    <property name="resources.dir" value="resources"/>
-    <property name="shared.dir"    value="${build.dir}/shared"/>
-    <property name="lib.dir"       value="${shared.dir}/lib"/>
-    <property name="native.lib.dir"   value="${build.dir}/nativelibs"/>
-    <property name="macosx.lib.dir"   value="${build.dir}/macosx/dist"/>
-    <property name="linux.lib.dir" value="${build.dir}/linux/dist"/>
-    <property name="linux64.lib.dir" value="${build.dir}/linux64/dist"/>
-    <property name="windows.lib.dir" value="${build.dir}/windows"/>
-    <property name="dist.dir"   value="dist"/>
-    <property name="macosx.dist.dir"  value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}"/>
-    <property name="linux.dist.dir"   value="${dist.dir}/linux/${project.lowercase}-${replicatorg.version}"/>
-    <property name="linux64.dist.dir" value="${dist.dir}/linux64/${project.lowercase}-${replicatorg.version}"/>
-    <property name="windows.dist.dir" value="${dist.dir}/windows/${project.lowercase}-${replicatorg.version}"/>
+  <property name="project.lowercase" value="replicatorg"/>
+  <property name="src.dir"       value="src"/>
+  <property name="build.dir"     value="build"/>
+  <property name="classes.dir"   value="${build.dir}/classes"/> 
+  <property name="jar.dir"       value="${build.dir}/jar"/>
+  <property name="resources.dir" value="resources"/>
+  <property name="shared.dir"    value="${build.dir}/shared"/>
+  <property name="lib.dir"       value="${shared.dir}/lib"/>
+  <property name="native.lib.dir"   value="${build.dir}/nativelibs"/>
+  <property name="macosx.lib.dir"   value="${build.dir}/macosx/dist"/>
+  <property name="linux.lib.dir" value="${build.dir}/linux/dist"/>
+  <property name="linux64.lib.dir" value="${build.dir}/linux64/dist"/>
+  <property name="windows.lib.dir" value="${build.dir}/windows"/>
+  <property name="dist.dir"   value="dist"/>
+  <property name="macosx.dist.dir"  value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}"/>
+  <property name="linux.dist.dir"   value="${dist.dir}/linux/${project.lowercase}-${replicatorg.version}"/>
+  <property name="linux64.dist.dir" value="${dist.dir}/linux64/${project.lowercase}-${replicatorg.version}"/>
+  <property name="windows.dist.dir" value="${dist.dir}/windows/${project.lowercase}-${replicatorg.version}"/>
 
-    <path id="classpath">
-        <fileset dir="${macosx.lib.dir}" includes="*.jar"/>
-        <fileset dir="${lib.dir}" includes="*.jar"/>
-      	<pathelement path="/System/Library/Java"/>
-    </path>
+  <path id="classpath">
+    <fileset dir="${macosx.lib.dir}" includes="*.jar"/>
+    <fileset dir="${lib.dir}" includes="*.jar"/>
+    <pathelement path="/System/Library/Java"/>
+  </path>
 
-    <target name="test">
-         <echo message="Version: ${replicatorg.version}"/>
-    </target>
+  <target name="test">
+    <echo message="Version: ${replicatorg.version}"/>
+  </target>
 
-    <target name="clean">
-        <delete dir="${classes.dir}"/>
-        <delete dir="${jar.dir}"/>
-        <delete dir="${dist.dir}"/>
-    </target>
+  <target name="clean">
+    <delete dir="${classes.dir}"/>
+    <delete dir="${jar.dir}"/>
+    <delete dir="${dist.dir}"/>
+  </target>
 
-    <target name="compile">
-        <mkdir dir="${classes.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5"/>
-    </target>
+  <target name="compile">
+    <mkdir dir="${classes.dir}"/>
+    <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5"/>
+  </target>
 
-    <target name="jar" depends="compile">
-        <mkdir dir="${jar.dir}"/>
-      	<copy todir="${classes.dir}">
-      	    <fileset dir="${resources.dir}"/>
-      	</copy>
-        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
-        </jar>
-    </target>
+  <target name="jar" depends="compile">
+    <mkdir dir="${jar.dir}"/>
+    <copy todir="${classes.dir}">
+      <fileset dir="${resources.dir}"/>
+    </copy>
+    <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+    </jar>
+  </target>
 
-    <target name="run" depends="jar">
-		<java fork="true" classname="replicatorg.app.Base"> <!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
-		    <jvmarg value="-ea"/>
-	            <classpath>
-	                <path refid="classpath"/>
-	                <pathelement location="${jar.dir}/${ant.project.name}.jar"/>
-	            </classpath>
-		    <sysproperty key="java.library.path" path="${native.lib.dir}"/>
-		    <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
-        </java>
-    </target>
-    
-    <target name="debug" depends="compile">
-    	<java fork="true" classname="replicatorg.app.Base">
-    	    <jvmarg value="-ea"/>
-    	    <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
-                <classpath>
-                    <path refid="classpath"/>
-                    <pathelement location="${classes.dir}"/>
-                </classpath>
-    	    <sysproperty key="java.library.path" path="${native.lib.dir}"/>
-    	    <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
-      </java>
-    </target>
+  <target name="run" depends="jar">
+    <java fork="true" classname="replicatorg.app.Base"> <!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
+      <jvmarg value="-ea"/>
+      <classpath>
+	<path refid="classpath"/>
+	<pathelement location="${jar.dir}/${ant.project.name}.jar"/>
+      </classpath>
+      <sysproperty key="java.library.path" path="${native.lib.dir}"/>
+      <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
+    </java>
+  </target>
+  
+  <target name="debug" depends="compile">
+    <java fork="true" classname="replicatorg.app.Base">
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
+      <classpath>
+        <path refid="classpath"/>
+        <pathelement location="${classes.dir}"/>
+      </classpath>
+      <sysproperty key="java.library.path" path="${native.lib.dir}"/>
+      <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
+    </java>
+  </target>
 
-    <target name="dist-macosx" depends="jar">
-        <fail message="The disk image (DMG-file) for easy distribution on Mac OS X can only be built on Mac OS X currently">
-          <condition>
-            <not>
-              <os family="mac" />
-            </not>
-          </condition>
-        </fail> 
-        <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
-        <mkdir dir="${macosx.dist.dir}"/>
-	    <jarbundler
-            dir="${macosx.dist.dir}"
-            name="ReplicatorG" 
-  	    	mainclass="replicatorg.app.Base" 
-    	    icon="${macosx.lib.dir}/replicatorg.icns"
-    	    extraclasspath="/System/Library/Java"
-	    	vmoptions="-Xmx1G"
-  	        infostring="ReplicatorG ${replicatorg.version}, © 2008-${current.year} MakerBot Industries" 
-  	        version="${replicatorg.version}"
-			jvmversion="1.5+"
-			stubfile="ReplicatorG"
-			>
-            <jarfileset dir="${jar.dir}" includes="ReplicatorG.jar"/>
-            <jarfileset dir="${lib.dir}" includes="*.jar"/>
-      	    <jarfileset dir="${native.lib.dir}" includes="*.jnilib"/>
-           <documenttype name="CNC GCode document" 
-                         extensions="gcode" 
-                         iconFile="${macosx.lib.dir}/replicatorg.icns"
-                         role="Editor"/>
-      	    <resourcefileset dir="${lib.dir}" includes="*.gif"/>
-      	    <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
-      	    <resourcefilelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-      	    <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
-        </jarbundler>
-      	<copy todir="${macosx.dist.dir}">
-      	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-      	    <fileset dir="${macosx.lib.dir}" includes="drivers/*.dmg"/>
-      	</copy>
-      	<copy file="machines.xml.dist" tofile="${macosx.dist.dir}/machines.xml"/>
-        <mkdir dir="${macosx.dist.dir}/skeinforge"/>
-      	<copy todir="${macosx.dist.dir}/skeinforge">
-      	    <fileset dir="skeinforge"/>
-		</copy>
-       <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
-               <arg value="-remove"/>
-               <arg value="x86_64"/>
-               <arg value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
-               <arg value="-output"/>
-                <arg value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
-       </exec>
-		<exec dir="." os="Mac OS X" executable="/bin/sh">
-			<arg value="-c"/>
-			<arg value="${macosx.lib.dir}/mkdmg.sh ${dist.dir} ./macosx image ${project.lowercase}-${replicatorg.version}-mac"/>
-		</exec>
-<!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
-    </target>
+  <target name="dist-macosx" depends="jar">
+    <fail message="The disk image (DMG-file) for easy distribution on Mac OS X can only be built on Mac OS X currently">
+      <condition>
+        <not>
+          <os family="mac" />
+        </not>
+      </condition>
+    </fail> 
+    <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
+    <mkdir dir="${macosx.dist.dir}"/>
+    <jarbundler
+       dir="${macosx.dist.dir}"
+       name="ReplicatorG" 
+       mainclass="replicatorg.app.Base" 
+       icon="${macosx.lib.dir}/replicatorg.icns"
+       extraclasspath="/System/Library/Java"
+       vmoptions="-Xmx1G"
+       infostring="ReplicatorG ${replicatorg.version}, © 2008-${current.year} MakerBot Industries" 
+       version="${replicatorg.version}"
+       jvmversion="1.5+"
+       stubfile="ReplicatorG"
+       >
+      <jarfileset dir="${jar.dir}" includes="ReplicatorG.jar"/>
+      <jarfileset dir="${lib.dir}" includes="*.jar"/>
+      <jarfileset dir="${native.lib.dir}" includes="*.jnilib"/>
+      <documenttype name="CNC GCode document" 
+                    extensions="gcode" 
+                    iconFile="${macosx.lib.dir}/replicatorg.icns"
+                    role="Editor"/>
+      <resourcefileset dir="${lib.dir}" includes="*.gif"/>
+      <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
+      <resourcefilelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+      <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
+    </jarbundler>
+    <copy todir="${macosx.dist.dir}">
+      <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+      <fileset dir="${macosx.lib.dir}" includes="drivers/*.dmg"/>
+    </copy>
+    <copy file="machines.xml.dist" tofile="${macosx.dist.dir}/machines.xml"/>
+    <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
+      <arg value="-remove"/>
+      <arg value="x86_64"/>
+      <arg value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
+      <arg value="-output"/>
+      <arg value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
+    </exec>
+    <exec dir="." os="Mac OS X" executable="/bin/sh">
+      <arg value="-c"/>
+      <arg value="${macosx.lib.dir}/mkdmg.sh ${dist.dir} ./macosx image ${project.lowercase}-${replicatorg.version}-mac"/>
+    </exec>
+    <!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
+  </target>
 
-    <target name="dist-linux" depends="jar">
-        <mkdir dir="${linux.dist.dir}"/>
-      	<copy todir="${linux.dist.dir}">
-      	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-            <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-       	    <filelist dir="${linux.lib.dir}" files="replicatorg"/>
-      	</copy>
-        <mkdir dir="${linux.dist.dir}/skeinforge"/>
-      	<copy todir="${linux.dist.dir}/skeinforge">
-      	    <fileset dir="skeinforge"/>
-				</copy>
-      	<copy todir="${linux.dist.dir}/lib">
-      	    <fileset dir="${native.lib.dir}" includes="*.so"/>
-      	    <fileset dir="${lib.dir}" includes="*.gif"/>
-      	    <fileset dir="${lib.dir}" includes="*.jpg"/>
-      	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-            <fileset dir="${jar.dir}" includes="*.jar"/>
-      	</copy>
-      	<copy file="machines.xml.dist" tofile="${linux.dist.dir}/machines.xml"/>
-      	<zip
-      	    destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-linux.zip"
-      	    basedir="${linux.dist.dir}">
-      	</zip>
-    </target>
+  <target name="dist-linux" depends="jar">
+    <mkdir dir="${linux.dist.dir}"/>
+    <copy todir="${linux.dist.dir}">
+      <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+      <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+      <filelist dir="${linux.lib.dir}" files="replicatorg"/>
+    </copy>
+    <copy todir="${linux.dist.dir}/lib">
+      <fileset dir="${native.lib.dir}" includes="*.so"/>
+      <fileset dir="${lib.dir}" includes="*.gif"/>
+      <fileset dir="${lib.dir}" includes="*.jpg"/>
+      <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+      <fileset dir="${jar.dir}" includes="*.jar"/>
+    </copy>
+    <copy file="machines.xml.dist" tofile="${linux.dist.dir}/machines.xml"/>
+    <zip
+       destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-linux.zip"
+       basedir="${linux.dist.dir}">
+    </zip>
+  </target>
 
-    <target name="dist-linux64" depends="jar">
-        <mkdir dir="${linux64.dist.dir}"/>
-      	<copy todir="${linux64.dist.dir}">
-      	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-            <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-      	    <filelist dir="${linux64.lib.dir}" files="replicatorg"/>
-      	</copy>
-        <mkdir dir="${linux64.dist.dir}/skeinforge"/>
-      	<copy todir="${linux64.dist.dir}/skeinforge">
-      	    <fileset dir="skeinforge"/>
-				</copy>
-      	<copy todir="${linux64.dist.dir}/lib">
-      	    <fileset dir="${native.lib.dir}" includes="*.so"/>
-      	    <fileset dir="${lib.dir}" includes="*.gif"/>
-      	    <fileset dir="${lib.dir}" includes="*.jpg"/>
-      	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-            <fileset dir="${jar.dir}" includes="*.jar"/>
-      	</copy>
-      	<copy file="machines.xml.dist" tofile="${linux64.dist.dir}/machines.xml"/>
-      	<zip
-      	    destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-linux64.zip"
-      	    basedir="${linux64.dist.dir}">
-      	</zip>
-    </target>
+  <target name="dist-linux64" depends="jar">
+    <mkdir dir="${linux64.dist.dir}"/>
+    <copy todir="${linux64.dist.dir}">
+      <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+      <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+      <filelist dir="${linux64.lib.dir}" files="replicatorg"/>
+    </copy>
+    <copy todir="${linux64.dist.dir}/lib">
+      <fileset dir="${native.lib.dir}" includes="*.so"/>
+      <fileset dir="${lib.dir}" includes="*.gif"/>
+      <fileset dir="${lib.dir}" includes="*.jpg"/>
+      <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+      <fileset dir="${jar.dir}" includes="*.jar"/>
+    </copy>
+    <copy file="machines.xml.dist" tofile="${linux64.dist.dir}/machines.xml"/>
+    <zip
+       destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-linux64.zip"
+       basedir="${linux64.dist.dir}">
+    </zip>
+  </target>
 
 
-    <target name="dist-windows" depends="jar">
-        <mkdir dir="${windows.dist.dir}"/>
-      	<copy todir="${windows.dist.dir}">
-      	    <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-            <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-      	    <fileset dir="${windows.lib.dir}/dist" includes="*.dll"/>
-      	    <fileset dir="${native.lib.dir}" includes="*.dll"/>
-      	    <filelist dir="${windows.lib.dir}/launcher" files="ReplicatorG.exe"/>
-      	    <filelist dir="${windows.lib.dir}/dist" files="run.bat,jikes.exe"/>
-      	    <fileset dir="${windows.lib.dir}/dist" includes="drivers/**/*"/>
-      	</copy>
-      	<copy todir="${windows.dist.dir}/lib">
-      	    <fileset dir="${lib.dir}" includes="*.gif"/>
-      	    <fileset dir="${lib.dir}" includes="*.jpg"/>
-      	    <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-      	    <fileset dir="${jar.dir}" includes="*.jar"/>
-      	</copy>
-        <mkdir dir="${windows.dist.dir}/skeinforge"/>
-      	<copy todir="${windows.dist.dir}/skeinforge">
-      	    <fileset dir="skeinforge"/>
-				</copy>
-      	<copy file="machines.xml.dist" tofile="${windows.dist.dir}/machines.xml"/>
-      	<zip
-      	    destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-windows.zip"
-      	    basedir="${windows.dist.dir}">
-      	</zip>
-    </target>
+  <target name="dist-windows" depends="jar">
+    <mkdir dir="${windows.dist.dir}"/>
+    <copy todir="${windows.dist.dir}">
+      <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+      <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+      <fileset dir="${windows.lib.dir}/dist" includes="*.dll"/>
+      <fileset dir="${native.lib.dir}" includes="*.dll"/>
+      <filelist dir="${windows.lib.dir}/launcher" files="ReplicatorG.exe"/>
+      <filelist dir="${windows.lib.dir}/dist" files="run.bat,jikes.exe"/>
+      <fileset dir="${windows.lib.dir}/dist" includes="drivers/**/*"/>
+    </copy>
+    <copy todir="${windows.dist.dir}/lib">
+      <fileset dir="${lib.dir}" includes="*.gif"/>
+      <fileset dir="${lib.dir}" includes="*.jpg"/>
+      <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+      <fileset dir="${jar.dir}" includes="*.jar"/>
+    </copy>
+    <copy file="machines.xml.dist" tofile="${windows.dist.dir}/machines.xml"/>
+    <zip
+       destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-windows.zip"
+       basedir="${windows.dist.dir}">
+    </zip>
+  </target>
 
-    <target name="dist" depends="dist-linux,dist-macosx,dist-windows">
-    </target>
+  <target name="dist" depends="dist-linux,dist-macosx,dist-windows">
+  </target>
 
 </project>

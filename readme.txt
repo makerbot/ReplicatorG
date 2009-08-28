@@ -21,24 +21,28 @@ Arduino is descended from the also wonderful Processing environment (http://www.
 
 ReplicatorG was forked from Arduino in August 2008.
 
-Changes in 0006:
+Changes in 0007:
 
-0006 ReplicatorG
+0007 ReplicatorG
 
-* Removed editor status bar
-* 64-bit Mac OS X fix (courtesy Andreas Fuchs)
-* Pass a GCode file in as a command-line parameter (courtesy Andreas Fuchs)
-* Moved machine status below buttons and cleaned up display
-* Ensure abort signal is sent to S3G on stop
-* Display temperature of nozzle during builds
-* Add pref for temperature display
-* Simulator2D optimizations, faster draws
-* Reenabled Ctrl-J shortcut for control panel
-* Use port names specified in XML by default, fall back to autoscan
-  if not present
-* Allow autoscan disabling for machines with scan problems
-* Added support for writing onboard configuration data to the machine EEPROM
-* Numerous small bug fixes
+* Fix for issue 15 (credit to Charles Pax)
+* Adding constants for SD card write/playback commands
+* Basic testing support for SD card builds
+* Adding card capture api
+* Adding pausability to remote builds
+* Switching out gif for png with transparency
+* Refactor/prep for SD uploading
+* Button bar revision, interface prep for SD card prints
+* Fixed up startup window positioning
+* Removed preferences store/load race condition that was screwing up window sizing
+* moved some shutdown code out of handleQuit2 into proper shutdown hook
+* hide drivers marked 'experimental'
+* added preference for viewing experimental machine profiles
+* busy cursor on long loads
+* reduced load time for files in large directory
+* proper error messages for SD operations
+* added feature check to buttons (only display for 1.3)
+* removing skeinforge from 0007, now distributed seperately
 
 People who have worked on ReplicatorG include:
 
