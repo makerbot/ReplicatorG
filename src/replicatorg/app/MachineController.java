@@ -348,7 +348,7 @@ public class MachineController {
 		}
 		
 		public void run() {
-			while (true) {
+			while (!interrupted()) {
 				try {
 					if (state == MachineState.BUILDING || state == MachineState.SIMULATING) {
 						buildInternal(currentSource);
@@ -387,6 +387,8 @@ public class MachineController {
 							}
 						}
 					}
+				} catch (InterruptedException ie) {
+					return;
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -702,7 +704,19 @@ public class MachineController {
 	}
 	
 	public void dispose() {
-		machineThread.stopBuild();
+		if (machineThread != null) {
+			machineThread.stopBuild();
+			machineThread.interrupt();
+			try {
+				machineThread.join();
+			} catch (Exception e) {}
+		}
+		if (driver != null) {
+			driver.dispose();
+		}
+		if (getSimulatorDriver() != null) {
+			getSimulatorDriver().dispose();
+		}
 		driver.dispose();
 	}
 	

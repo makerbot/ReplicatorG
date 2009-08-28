@@ -1990,10 +1990,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		// cleanup our machine/driver.
 		if (machine != null) {
-			if (machine.getDriver() != null)
-				machine.getDriver().dispose();
-			if (machine.getSimulatorDriver() != null)
-				machine.getSimulatorDriver().dispose();
+			machine.dispose();
+			machine = null;
 		}
 
 		checkModified(HANDLE_QUIT);
