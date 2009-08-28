@@ -60,10 +60,6 @@ public class Sketch {
 
 	public File folder;
 
-	public File dataFolder;
-
-	public File codeFolder;
-
 	static public final int GCODE = 0;
 
 	static public final String flavorExtensionsReal[] = new String[] { ".gcode" };
@@ -108,12 +104,19 @@ public class Sketch {
 		// off of the main file name
 		if (mainFilename.endsWith(".gcode")) {
 			name = mainFilename.substring(0, mainFilename.length() - 6);
+		} else {
+			name = mainFilename;
+			mainFilename = mainFilename + ".gcode";
 		}
 
 		tempBuildFolder = Base.getBuildFolder();
 		// Base.addBuildFolderToClassPath();
 
-		folder = new File(new File(path).getParent());
+		String parentPath = new File(path).getParent(); 
+		if (parentPath == null) {
+			parentPath = ".";
+		}
+		folder = new File(parentPath);
 		// System.out.println("sketch dir is " + folder);
 
 		load();
@@ -133,9 +136,6 @@ public class Sketch {
 	 * load happens each time "run" is hit.
 	 */
 	public void load() {
-		codeFolder = new File(folder, "code");
-		dataFolder = new File(folder, "data");
-
 		// get list of files in the sketch folder
 		String list[] = { mainFilename }; //folder.list();
 
@@ -699,7 +699,7 @@ public class Sketch {
 	 */
 	public boolean saveAs() throws IOException {
 		// get new name for folder
-		FileDialog fd = new FileDialog(editor, "Save sketch folder as...",
+		FileDialog fd = new FileDialog(editor, "Save file as...",
 				FileDialog.SAVE);
 		if (isReadOnly()) {
 			// default to the sketchbook folder
@@ -714,68 +714,12 @@ public class Sketch {
 		String newParentDir = fd.getDirectory();
 		String newName = fd.getFile();
 
+		File newFolder = new File(newParentDir);
 		// user cancelled selection
 		if (newName == null)
 			return false;
 
-		// make sure there doesn't exist a tab with that name already
-		// (but allow it if it's just the main tab resaving itself.. oops)
-		File codeAlready = new File(folder, newName + ".gcode");
-		if (codeAlready.exists() && (!newName.equals(name))) {
-			Base.showMessage("Nope", "You can't save the sketch as \""
-					+ newName + "\"\n"
-					+ "because the sketch already has a tab with that name.");
-			return false;
-		}
-
-		// make sure there doesn't exist a tab with that name already
-		File hiddenAlready = new File(folder, newName + ".gcode.x");
-		if (hiddenAlready.exists()) {
-			Base.showMessage("Nope", "You can't save the sketch as \""
-					+ newName + "\"\n" + "because the sketch already has a "
-					+ "hidden tab with that name.");
-			return false;
-		}
-
-		// new sketch folder
-		File newFolder = new File(newParentDir, newName);
-
-		// make sure the paths aren't the same
-		if (newFolder.equals(folder)) {
-			Base.showWarning("You can't fool me",
-					"The new sketch name and location are the same as\n"
-							+ "the old. I ain't not doin nuthin' not now.",
-					null);
-			return false;
-		}
-
-		// check to see if the user is trying to save this sketch
-		// inside the same sketch
-		try {
-			String newPath = newFolder.getCanonicalPath() + File.separator;
-			String oldPath = folder.getCanonicalPath() + File.separator;
-
-			if (newPath.indexOf(oldPath) == 0) {
-				Base.showWarning("How very Borges of you",
-						"You cannot save the sketch into a folder\n"
-								+ "inside itself. This would go on forever.",
-						null);
-				return false;
-			}
-		} catch (IOException e) {
-		}
-
-		// if the new folder already exists, then need to remove
-		// its contents before copying everything over
-		// (user will have already been warned)
-		if (newFolder.exists()) {
-			Base.removeDir(newFolder);
-		}
-		// in fact, you can't do this on windows because the file dialog
-		// will instead put you inside the folder, but it happens on osx a lot.
-
-		// now make a fresh copy of the folder
-		newFolder.mkdirs();
+		if (!newName.endsWith(".gcode")) newName = newName + ".gcode";
 
 		// grab the contents of the current tab before saving
 		// first get the contents of the editor text area
@@ -795,20 +739,8 @@ public class Sketch {
 			hidden[i].saveAs(newFile);
 		}
 
-		// re-copy the data folder (this may take a while.. add progress bar?)
-		if (dataFolder.exists()) {
-			File newDataFolder = new File(newFolder, "data");
-			Base.copyDir(dataFolder, newDataFolder);
-		}
-
-		// re-copy the code folder
-		if (codeFolder.exists()) {
-			File newCodeFolder = new File(newFolder, "code");
-			Base.copyDir(codeFolder, newCodeFolder);
-		}
-
 		// save the main tab with its new name
-		File newFile = new File(newFolder, newName + ".gcode");
+		File newFile = new File(newFolder, newName);
 		code[0].saveAs(newFile);
 
 		editor
@@ -829,40 +761,40 @@ public class Sketch {
 	 * .jar files for the code folder, .gcode files for the project, or .dll,
 	 * .jnilib, or .so files for the code folder
 	 */
-	public void addFile() {
-		// make sure the user didn't hide the sketch folder
-		ensureExistence();
-
-		// if read-only, give an error
-		if (isReadOnly()) {
-			// if the files are read-only, need to first do a "save as".
-			Base
-					.showMessage(
-							"Sketch is Read-Only",
-							"Some files are marked \"read-only\", so you'll\n"
-									+ "need to re-save the sketch in another location,\n"
-									+ "and try again.");
-			return;
-		}
-
-		// get a dialog, select a file to add to the sketch
-		String prompt = "Select an image or other data file to copy to your sketch";
-		// FileDialog fd = new FileDialog(new Frame(), prompt, FileDialog.LOAD);
-		FileDialog fd = new FileDialog(editor, prompt, FileDialog.LOAD);
-		fd.setVisible(true);
-
-		String directory = fd.getDirectory();
-		String filename = fd.getFile();
-		if (filename == null)
-			return;
-
-		// copy the file into the folder. if people would rather
-		// it move instead of copy, they can do it by hand
-		File sourceFile = new File(directory, filename);
-
-		// now do the work of adding the file
-		addFile(sourceFile);
-	}
+//	public void addFile() {
+//		// make sure the user didn't hide the sketch folder
+//		ensureExistence();
+//
+//		// if read-only, give an error
+//		if (isReadOnly()) {
+//			// if the files are read-only, need to first do a "save as".
+//			Base
+//					.showMessage(
+//							"Sketch is Read-Only",
+//							"Some files are marked \"read-only\", so you'll\n"
+//									+ "need to re-save the sketch in another location,\n"
+//									+ "and try again.");
+//			return;
+//		}
+//
+//		// get a dialog, select a file to add to the sketch
+//		String prompt = "Select an image or other data file to copy to your sketch";
+//		// FileDialog fd = new FileDialog(new Frame(), prompt, FileDialog.LOAD);
+//		FileDialog fd = new FileDialog(editor, prompt, FileDialog.LOAD);
+//		fd.setVisible(true);
+//
+//		String directory = fd.getDirectory();
+//		String filename = fd.getFile();
+//		if (filename == null)
+//			return;
+//
+//		// copy the file into the folder. if people would rather
+//		// it move instead of copy, they can do it by hand
+//		File sourceFile = new File(directory, filename);
+//
+//		// now do the work of adding the file
+//		addFile(sourceFile);
+//	}
 
 	/**
 	 * Add a file to the sketch. <p/> .gcode files will be added to the sketch
@@ -877,16 +809,8 @@ public class Sketch {
 		File destFile = null;
 		boolean addingCode = false;
 
-		if (filename.toLowerCase().endsWith(".gcode")) {
-			destFile = new File(this.folder, filename);
-			addingCode = true;
-
-		} else {
-			// File dataFolder = new File(this.folder, "data");
-			if (!dataFolder.exists())
-				dataFolder.mkdirs();
-			destFile = new File(dataFolder, filename);
-		}
+		destFile = new File(this.folder, filename);
+		addingCode = true;
 
 		// make sure they aren't the same file
 		if (!addingCode && sourceFile.equals(destFile)) {
