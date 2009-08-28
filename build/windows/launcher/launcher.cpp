@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
+#include <vector>
 
 
 int STDCALL
@@ -45,8 +47,6 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
   // remove the application name
   *(strrchr(loaddir, '\\')) = '\0';
 
-  char *cp = (char *)malloc(8 * strlen(loaddir) + 4096);
-
   char *env_classpath = (char *)malloc(16384 * sizeof(char));
 
   // ignoring CLASSPATH for now, because it's not needed
@@ -67,10 +67,10 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
   libs.push_back("miglayout-3.7.jar");
 
   std::stringstream cp;
-  cp << loaddir << "\\lib;"
-  cp << loaddir << "\\lib\\build;"
-  for (std::vector<const char*> i = libs.begin(); i != libs.end(); i++) {
-    cp << loaddir << "\\lib\\" << *i << ";"
+  cp << loaddir << "\\lib;";
+  cp << loaddir << "\\lib\\build;";
+  for (std::vector<const char*>::iterator i = libs.begin(); i != libs.end(); i++) {
+    cp << loaddir << "\\lib\\" << *i << ";";
   }
 
   if (!SetEnvironmentVariable("CLASSPATH", cp.str().c_str())) {
