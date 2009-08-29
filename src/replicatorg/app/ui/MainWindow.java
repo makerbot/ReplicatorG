@@ -523,10 +523,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		Base.preferences.putInt("last.window.width", bounds.width);
 		Base.preferences.putInt("last.window.height", bounds.height);
 
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		Base.preferences.putInt("last.screen.width", screen.width);
-		Base.preferences.putInt("last.screen.height", screen.height);
-
 		// last sketch that was in use
 		// Preferences.set("last.sketch.name", sketchName);
 		// Preferences.set("last.sketch.name", sketch.name);
