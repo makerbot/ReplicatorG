@@ -93,18 +93,15 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
   stringstream outgoing;
 
   // prepend the args for -mx and -ms
-  outgoing << "-Xms" << JAVA_MEMORY_SIZE << "m ";
-  outgoing << "-Xmx" << JAVA_MEMORY_SIZE << "m ";
+  outgoing << "-Xms" << memInMegs << "m ";
+  outgoing << "-Xmx" << memInMegs << "m ";
   // add the name of the class to execute and a space before the next arg
   outgoing << JAVA_MAIN_CLASS << " ";
   // append additional command line parameters
   outgoing << incomingParams;
 
 
-  char *executable = (char *)malloc((strlen(loaddir) + 256) * sizeof(char));
-  // loaddir is the name path to the current application
-
-  strcpy(executable, "javaw.exe");
+  char *executable = console?"java.exe":"javaw.exe";
 
   SHELLEXECUTEINFO ShExecInfo;
 
