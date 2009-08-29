@@ -3,17 +3,14 @@
 // launcher.cpp : Defines the class behaviors for the application.
 //
 
-// The size of all of the strings was made sort of ambiguously large, since
-// 1) nothing is hurt by allocating an extra few bytes temporarily and
-// 2) if the user has a long path, and it gets copied five times over for the
-// classpath, the program runs the risk of crashing. Bad bad.
-
-//
-// I would just like to state for the record that the fact that
-// this launcher even exists is absolutely fucking pathetic.
+// I have no idea what kind of staggering mental challenges the original
+// authors of this file had to overcome, but I've gutted it.
 //
 
-#define JAVA_ARGS "-Xms256m -Xmx256m "
+// TODO: The memory size should be set in a config file or something
+// similar.  Hardcoding is bad mkay?
+// Size in megs.
+#define JAVA_MEMORY_SIZE 256
 #define JAVA_MAIN_CLASS "replicatorg.app.Base"
 
 #include <windows.h>
@@ -23,38 +20,49 @@
 #include <sstream>
 #include <vector>
 
+using namespace std;
 
 int STDCALL
 WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
 {
-  // all these malloc statements... things may need to be larger.
+  // Parameters to be passed to the program.
+  string incomingParams(lpCmd);
 
-  // what was passed to this application
-  char *incoming_cmdline = (char *)malloc(strlen(lpCmd) * sizeof(char));
-  strcpy (incoming_cmdline, lpCmd);
-
-  // what gets put together to pass to jre
-  char *outgoing_cmdline = (char *)malloc(16384 * sizeof(char));
-        
-  // prepend the args for -mx and -ms
-  strcpy(outgoing_cmdline, JAVA_ARGS);
+  boolean console = false;
+  int memInMegs = JAVA_MEMORY_SIZE;
+  // Check for --console and --mem parameters
+  if (incomingParams.find("--console") != string::npos) {
+    console = true;
+  }
+  string::size_type memloc = incomingParams.find("--mem");
+  if (memloc != string::npos) {
+    // parse out mem size (--mem=512, --mem 512 should both work)
+    memloc += 5;
+    memInMegs = 0;
+    if (incomingParams[memloc] == ' ' ||
+        incomingParams[memloc] == '=') memloc++;
+    while (memloc < incomingParams.size()) {
+      char c = incomingParams[memloc++];
+      if (c < '0' || c > '9') break;
+      memInMegs *= 10;
+      memInMegs += c-'0';
+    }
+  }
 
   // append the classpath and launcher.Application
-  char *loaddir = (char *)malloc(MAX_PATH * sizeof(char));
-  *loaddir = 0;
-
+  char loadDir[MAX_PATH];
+  loaddir[0] = '\0';
   GetModuleFileName(NULL, loaddir, MAX_PATH);
   // remove the application name
-  *(strrchr(loaddir, '\\')) = '\0';
+  const char* lastBackslash = strrchr(loaddir, '\\');
+  if (lastBackslash != NULL) {
+    *lastBackslash = '\0';
+  }
 
-  char *env_classpath = (char *)malloc(16384 * sizeof(char));
-
-  // ignoring CLASSPATH for now, because it's not needed
-  // and causes more trouble than it's worth [0060]
-  env_classpath[0] = 0;
-
-  // We really ought to be loading these dynamically.
-  std::vector<const char*> libs;
+  // Enumerate the jars used by the application
+  // TODO: We really ought to be loading these dynamically by
+  // scanning the lib directory.
+  vector<const char*> libs;
   libs.push_back("ReplicatorG.jar");
   libs.push_back("mrj.jar");
   libs.push_back("vecmath.jar");
@@ -66,26 +74,32 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
   libs.push_back("antlr.jar");
   libs.push_back("miglayout-3.7.jar");
 
-  std::stringstream cp;
+  // Construct the classpath from the jar list
+  stringstream cp;
   cp << loaddir << "\\lib;";
   cp << loaddir << "\\lib\\build;";
-  for (std::vector<const char*>::iterator i = libs.begin(); i != libs.end(); i++) {
+  for (vector<const char*>::iterator i = libs.begin(); i != libs.end(); i++) {
     cp << loaddir << "\\lib\\" << *i << ";";
   }
 
+  // Set the environment's classpath to the one we constructed.
   if (!SetEnvironmentVariable("CLASSPATH", cp.str().c_str())) {
     MessageBox(NULL, "Could not set CLASSPATH environment variable",
                "ReplicatorG Error", MB_OK);
     return 0;
   }
   
-  
+  // what gets put together to pass to jre
+  stringstream outgoing;
 
+  // prepend the args for -mx and -ms
+  outgoing << "-Xms" << JAVA_MEMORY_SIZE << "m ";
+  outgoing << "-Xmx" << JAVA_MEMORY_SIZE << "m ";
   // add the name of the class to execute and a space before the next arg
-  strcat(outgoing_cmdline, JAVA_MAIN_CLASS " ");
+  outgoing << JAVA_MAIN_CLASS << " ";
+  // append additional command line parameters
+  outgoing << incomingParams;
 
-  // append additional incoming stuff (document names), if any
-  strcat(outgoing_cmdline, incoming_cmdline);
 
   char *executable = (char *)malloc((strlen(loaddir) + 256) * sizeof(char));
   // loaddir is the name path to the current application
