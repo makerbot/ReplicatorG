@@ -51,10 +51,10 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
 
   // append the classpath and launcher.Application
   char loadDir[MAX_PATH];
-  loaddir[0] = '\0';
-  GetModuleFileName(NULL, loaddir, MAX_PATH);
+  loadDir[0] = '\0';
+  GetModuleFileName(NULL, loadDir, MAX_PATH);
   // remove the application name
-  const char* lastBackslash = strrchr(loaddir, '\\');
+  char* lastBackslash = strrchr(loadDir, '\\');
   if (lastBackslash != NULL) {
     *lastBackslash = '\0';
   }
@@ -76,10 +76,10 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
 
   // Construct the classpath from the jar list
   stringstream cp;
-  cp << loaddir << "\\lib;";
-  cp << loaddir << "\\lib\\build;";
+  cp << loadDir << "\\lib;";
+  cp << loadDir << "\\lib\\build;";
   for (vector<const char*>::iterator i = libs.begin(); i != libs.end(); i++) {
-    cp << loaddir << "\\lib\\" << *i << ";";
+    cp << loadDir << "\\lib\\" << *i << ";";
   }
 
   // Set the environment's classpath to the one we constructed.
@@ -101,7 +101,7 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
   outgoing << incomingParams;
 
 
-  char *executable = console?"java.exe":"javaw.exe";
+  const char* executable = console?"java.exe":"javaw.exe";
 
   SHELLEXECUTEINFO ShExecInfo;
 
@@ -111,8 +111,8 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
   ShExecInfo.hwnd = 0;
   ShExecInfo.lpVerb = "open";
   ShExecInfo.lpFile = executable;
-  ShExecInfo.lpParameters = outgoing_cmdline;
-  ShExecInfo.lpDirectory = loaddir;
+  ShExecInfo.lpParameters = outgoing.str().c_str();
+  ShExecInfo.lpDirectory = loadDir;
   ShExecInfo.nShow = SW_SHOWNORMAL;
   ShExecInfo.hInstApp = NULL;
 
