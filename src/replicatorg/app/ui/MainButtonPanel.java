@@ -38,6 +38,7 @@ import java.awt.image.RescaleOp;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -55,7 +56,7 @@ import replicatorg.machine.MachineToolStatusEvent;
 /**
  * run/stop/etc buttons for the ide
  */
-public class MainButtonPanel extends JPanel implements MachineListener, ActionListener {
+public class MainButtonPanel extends JComponent implements MachineListener, ActionListener {
 
 	// / height, width of the toolbar buttons
 	static final int BUTTON_WIDTH = 27;
@@ -142,7 +143,7 @@ public class MainButtonPanel extends JPanel implements MachineListener, ActionLi
 	MainButton uploadButton, playbackButton;
 	
 	public MainButtonPanel(MainWindow editor) {
-		super(new MigLayout("gap 5"));
+		setLayout(new MigLayout("gap 5"));
 		this.editor = editor;
 
 		// hardcoding new blue color scheme for consistency with images,
