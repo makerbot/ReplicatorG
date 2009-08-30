@@ -9,7 +9,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
@@ -31,7 +30,7 @@ import replicatorg.machine.MachineToolStatusEvent;
  * @author phooky
  * 
  */
-public class MachineStatusPanel extends JPanel implements MachineListener {
+public class MachineStatusPanel extends BGPanel implements MachineListener {
 	private static final long serialVersionUID = -6944931245041870574L;
 
 	protected MachineController machine = null;
