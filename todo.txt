@@ -8,3 +8,4 @@ For 0009:
 * build from specific filename
 * list files on card (if v1.4)
 * ignore interactive commands on non-interactive builds
+* clean up launchers and dist for all platforms! (see latest arduino/processing revisions for tips)
