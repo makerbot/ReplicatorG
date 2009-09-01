@@ -1564,6 +1564,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		simulating = false;
 	}
 
+	public void handleReset() {
+		if (machine != null) {
+			machine.reset();
+		}
+	}
+	
 	public void handlePause() {
 		// called by menu or buttons
 		// if (building || simulating) // can also be used during control panel

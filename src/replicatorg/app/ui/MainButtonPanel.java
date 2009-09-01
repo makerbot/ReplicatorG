@@ -135,8 +135,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	JLabel statusLabel;
 
 	MainButton simButton, pauseButton, stopButton;
-	MainButton buildButton, newButton, openButton;
-	MainButton saveButton;
+	MainButton buildButton, resetButton;
 	
 	MainButton uploadButton, playbackButton;
 	
@@ -165,6 +164,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		add(pauseButton,"gap unrelated");
 		stopButton = makeButton("Stop", "images/button-stop.png");
 		add(stopButton);
+
+		resetButton = makeButton("Reset machine", "images/button-reset.png");
+		add(resetButton,"gap unrelated");
 
 		statusLabel = new JLabel();
 		statusLabel.setFont(statusFont);
@@ -202,12 +204,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			editor.handlePause();
 		} else if (e.getSource() == stopButton) {
 			editor.handleStop();
-		} else if (e.getSource() == openButton) {
-			editor.handleOpen(null);
-		} else if (e.getSource() == newButton) {
-			editor.handleNew(false);
-		} else if (e.getSource() == saveButton) {
-			editor.handleSave(false);
+		} else if (e.getSource() == resetButton) {
+			editor.handleReset();
 		}
 	}
 
@@ -245,6 +243,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		buildButton.setSelected(s == MachineState.BUILDING || s == MachineState.PAUSED);
 		uploadButton.setSelected(s == MachineState.UPLOADING);
 		playbackButton.setSelected(s == MachineState.PLAYBACK_BUILDING || s == MachineState.PLAYBACK_PAUSED);
+		
+		resetButton.setEnabled(s != MachineState.AUTO_SCAN && s != MachineState.NOT_ATTACHED &&
+				s != MachineState.CONNECTING );
 	}
 
 	public void machineProgress(MachineProgressEvent event) {

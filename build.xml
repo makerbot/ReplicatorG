@@ -1,5 +1,7 @@
 <project name="ReplicatorG" basedir="." default="test">
   <property name="project.lowercase" value="replicatorg"/>
+  <property file="ant.includes/${os.name}-${os.arch}.properties" />
+	<echo>${os.name}-${os.arch}</echo>
   <property name="src.dir"       value="src"/>
   <property name="build.dir"     value="build"/>
   <property name="classes.dir"   value="${build.dir}/classes"/> 
@@ -7,11 +9,10 @@
   <property name="resources.dir" value="resources"/>
   <property name="shared.dir"    value="${build.dir}/shared"/>
   <property name="lib.dir"       value="${shared.dir}/lib"/>
-  <property name="native.lib.dir"   value="${build.dir}/nativelibs"/>
   <property name="macosx.lib.dir"   value="${build.dir}/macosx/dist"/>
   <property name="linux.lib.dir" value="${build.dir}/linux/dist"/>
   <property name="linux64.lib.dir" value="${build.dir}/linux64/dist"/>
-  <property name="windows.lib.dir" value="${build.dir}/windows"/>
+  <property name="windows.lib.dir" value="${build.dir}/windows/dist"/>
   <property name="dist.dir"   value="dist"/>
   <property name="macosx.dist.dir"  value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}"/>
   <property name="linux.dist.dir"   value="${dist.dir}/linux/${project.lowercase}-${replicatorg.version}"/>
@@ -97,7 +98,7 @@
        >
       <jarfileset dir="${jar.dir}" includes="ReplicatorG.jar"/>
       <jarfileset dir="${lib.dir}" includes="*.jar"/>
-      <jarfileset dir="${native.lib.dir}" includes="*.jnilib"/>
+      <jarfileset dir="${macosx.lib.dir}" includes="*.jnilib"/>
       <documenttype name="CNC GCode document" 
                     extensions="gcode" 
                     iconFile="${macosx.lib.dir}/replicatorg.icns"
@@ -134,7 +135,6 @@
       <filelist dir="${linux.lib.dir}" files="replicatorg"/>
     </copy>
     <copy todir="${linux.dist.dir}/lib">
-      <fileset dir="${native.lib.dir}" includes="*.so"/>
       <fileset dir="${lib.dir}" includes="*.gif"/>
       <fileset dir="${lib.dir}" includes="*.jpg"/>
       <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
@@ -152,10 +152,10 @@
     <copy todir="${linux64.dist.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
       <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-      <filelist dir="${linux64.lib.dir}" files="replicatorg"/>
+      <filelist dir="${linux.lib.dir}" files="replicatorg"/>
     </copy>
     <copy todir="${linux64.dist.dir}/lib">
-      <fileset dir="${native.lib.dir}" includes="*.so"/>
+      <fileset dir="${linux64.lib.dir}" includes="*.so"/>
       <fileset dir="${lib.dir}" includes="*.gif"/>
       <fileset dir="${lib.dir}" includes="*.jpg"/>
       <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
@@ -174,11 +174,9 @@
     <copy todir="${windows.dist.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
       <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-      <fileset dir="${windows.lib.dir}/dist" includes="*.dll"/>
-      <fileset dir="${native.lib.dir}" includes="*.dll"/>
-      <filelist dir="${windows.lib.dir}/launcher" files="ReplicatorG.exe"/>
-      <filelist dir="${windows.lib.dir}/dist" files="run.bat,jikes.exe"/>
-      <fileset dir="${windows.lib.dir}/dist" includes="drivers/**/*"/>
+      <fileset dir="${windows.lib.dir}" includes="*.dll"/>
+      <filelist dir="${windows.lib.dir}" files="ReplicatorG.exe"/>
+      <fileset dir="${windows.lib.dir}" includes="drivers/**/*"/>
     </copy>
     <copy todir="${windows.dist.dir}/lib">
       <fileset dir="${lib.dir}" includes="*.gif"/>

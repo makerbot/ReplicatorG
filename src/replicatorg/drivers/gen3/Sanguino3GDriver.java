@@ -68,6 +68,8 @@ public class Sanguino3GDriver extends SerialDriver
 		CAPTURE_TO_FILE(14),
 		END_CAPTURE(15),
 		PLAYBACK_CAPTURE(16),
+		
+		RESET(17),
 
 		// QUEUE_POINT_INC(128) obsolete
 		QUEUE_POINT_ABS(129),
@@ -1024,6 +1026,11 @@ public class Sanguino3GDriver extends SerialDriver
 	public void reset() {
 		System.out.println("Reset.");
 		setInitialized(false);
+		if (version.compareTo(new Version(1,4)) >= 0) {
+			// WDT reset introduced in version 1.4 firmware
+			PacketBuilder pb = new PacketBuilder(CommandCodeMaster.RESET.getCode());
+			PacketResponse pr = runCommand(pb.getPacket());
+		}
 		initialize();
 	}
 
