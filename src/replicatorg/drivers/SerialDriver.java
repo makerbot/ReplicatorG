@@ -128,4 +128,11 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	}
 	
 	public boolean isExplicit() { return explicit; }
+	
+	public void dispose() {
+		super.dispose();
+		if (serial != null)
+			serial.dispose();
+		serial = null;
+	}
 }

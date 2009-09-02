@@ -317,4 +317,8 @@ public class FirmwareUploader extends Thread {
 			showPanel(panel);
 		}
 	}
+	
+	void upload() {
+		Base.getMachine().dispose();
+	}
 }

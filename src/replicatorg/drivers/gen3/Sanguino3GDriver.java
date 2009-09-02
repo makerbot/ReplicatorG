@@ -308,10 +308,6 @@ public class Sanguino3GDriver extends SerialDriver
 
 	public void dispose() {
 		super.dispose();
-
-		if (serial != null)
-			serial.dispose();
-		serial = null;
 	}
 
 	/***************************************************************************

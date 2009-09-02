@@ -8,6 +8,7 @@
     <programmer class="replicatorg.drivers.gen3.MBSerialUploader">
       <protocol>stk500v1</protocol>
       <speed>19200</speed>
+      <arch>m644</arch>
     </programmer>
     <firmware-source
        listurl="http://code.google.com/p/makerbot/downloads/list" 
@@ -26,6 +27,7 @@
     <programmer class="replicatorg.drivers.gen3.ExtruderSerialUploader">
       <protocol>stk500v1</protocol>
       <speed>19200</speed>
+      <arch>m168</arch>
     </programmer>
     <programmer>
       <serial protocol="stk500v1" speed="19200"/>
