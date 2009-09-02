@@ -1,0 +1,45 @@
+<boards>
+  <!--
+     Firmware for the RepRap Motherboard v1.1 and v1.2.
+    -->
+  <board name="RepRap Motherboard v1.X">
+    <version major="1" minor="1"/>
+    <version major="1" minor="2"/>
+    <programmer class="replicatorg.drivers.gen3.MBSerialUploader">
+      <protocol>stk500v1</protocol>
+      <speed>19200</speed>
+    </programmer>
+    <firmware-source
+       listurl="http://code.google.com/p/makerbot/downloads/list" 
+       pattern="http://makerbot.googlecode.com/files/SanguinoMaster-v([0-9]+).([0-9]+)^[0-9]*.hex"/>
+    <firmware
+       major="1"
+       minor="4"
+       relpath="firmware/SanguinoMaster-v1.4.hex"/>
+    <firmware
+       major="1"
+       minor="5"
+       relpath="firmware/SanguinoMaster-v1.5.hex"/>
+  </board>
+  <board name="Extruder Controller v2.2">
+    <version major="2" minor="2"/>
+    <programmer class="replicatorg.drivers.gen3.ExtruderSerialUploader">
+      <protocol>stk500v1</protocol>
+      <speed>19200</speed>
+    </programmer>
+    <programmer>
+      <serial protocol="stk500v1" speed="19200"/>
+    </programmer>
+    <firmware-source
+       listurl="http://code.google.com/p/makerbot/downloads/list" 
+       pattern="http://makerbot.googlecode.com/files/ArduinoSlaveExtruder-v([0-9]+).([0-9]+)^[0-9]*.hex"/>
+    <firmware
+       major="1"
+       minor="4"
+       relpath="firmware/ArduinoSlaveExtruder-v1.4.hex"/>
+    <firmware
+       major="1"
+       minor="5"
+       relpath="firmware/ArduinoSlaveExtruder-v1.5.hex"/>
+  </board>
+</boards>

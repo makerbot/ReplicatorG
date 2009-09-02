@@ -117,6 +117,11 @@ public class Base {
 	
 	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
 
+	static public String getAppPath() {
+	    String path = System.getProperty("user.dir");
+	    return path;
+	}
+	
 	static public Font getFontPref(String name, String defaultValue) {
 		String s = preferences.get(name,defaultValue);
 		StringTokenizer st = new StringTokenizer(s, ",");
