@@ -833,6 +833,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		onboardParamsItem.setVisible(false);
 		menu.add(onboardParamsItem);
 		
+		item = new JMenuItem("Upload new firmware...");
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				FirmwareUploader.startUploader(MainWindow.this);
+			}
+		});
+		menu.add(item);
+		
 		return menu;
 	}
 

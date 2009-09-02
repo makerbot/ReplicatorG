@@ -62,6 +62,7 @@ public class Serial {
 			// This also simplifies sorting, etc.
 			return name.compareTo(other.name);
 		}
+		public String toString() { return this.name; }
 	}
 	
 	private static Set<Serial> portsInUse = new HashSet<Serial>();
