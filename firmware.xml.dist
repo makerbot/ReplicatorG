@@ -5,10 +5,10 @@
   <board name="RepRap Motherboard v1.X">
     <version major="1" minor="1"/>
     <version major="1" minor="2"/>
-    <programmer class="replicatorg.drivers.gen3.MBSerialUploader">
+    <programmer class="replicatorg.drivers.gen3.AvrdudeUploader">
       <protocol>stk500v1</protocol>
-      <speed>19200</speed>
-      <arch>m644</arch>
+      <speed>38400</speed>
+      <arch>m644p</arch>
     </programmer>
     <firmware-source
        listurl="http://code.google.com/p/makerbot/downloads/list" 
@@ -24,13 +24,10 @@
   </board>
   <board name="Extruder Controller v2.2">
     <version major="2" minor="2"/>
-    <programmer class="replicatorg.drivers.gen3.ExtruderSerialUploader">
+    <programmer class="replicatorg.drivers.gen3.AvrdudeUploader">
       <protocol>stk500v1</protocol>
       <speed>19200</speed>
       <arch>m168</arch>
-    </programmer>
-    <programmer>
-      <serial protocol="stk500v1" speed="19200"/>
     </programmer>
     <firmware-source
        listurl="http://code.google.com/p/makerbot/downloads/list" 

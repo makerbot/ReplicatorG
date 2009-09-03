@@ -1,7 +1,5 @@
 package replicatorg.app.ui;
 
-import gnu.io.CommPortIdentifier;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -9,12 +7,8 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.Vector;
 
 import javax.swing.AbstractListModel;
@@ -27,7 +21,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.xml.parsers.DocumentBuilder;
@@ -43,7 +36,7 @@ import org.xml.sax.SAXException;
 
 import replicatorg.app.Base;
 import replicatorg.app.Serial;
-import replicatorg.app.Serial.Name;
+import replicatorg.drivers.AbstractFirmwareUploader;
 
 public class FirmwareUploader extends Thread {
 	/**
@@ -202,6 +195,7 @@ public class FirmwareUploader extends Thread {
 		Node selectedBoard = null;
 		
 		void doBoardSelection() {
+			nextButton.setEnabled(false);
 			JPanel panel = new JPanel();
 			panel.setLayout(new MigLayout("fill","","[grow 0][grow 100]"));
 			panel.add(new JLabel("Select the board to upgrade:"),"growy 0,wrap");
@@ -234,7 +228,7 @@ public class FirmwareUploader extends Thread {
 			public FirmwareVersion(Node n) {
 				major = Integer.parseInt(n.getAttributes().getNamedItem("major").getNodeValue());
 				minor = Integer.parseInt(n.getAttributes().getNamedItem("minor").getNodeValue());
-				where = n.getAttributes().getNamedItem("major").getNodeValue();
+				where = n.getAttributes().getNamedItem("relpath").getNodeValue();
 			}
 			public String toString() {
 				return "v" + Integer.toString(major) + "." + Integer.toString(minor);
@@ -263,6 +257,7 @@ public class FirmwareUploader extends Thread {
 		FirmwareVersion selectedVersion = null;
 		
 		void doFirmwareSelection() {
+			nextButton.setEnabled(false);
 			JPanel panel = new JPanel();
 			panel.setLayout(new MigLayout("fill","","[grow 0][grow 100]"));
 			panel.add(new JLabel("Select the firmware version to install:"),"growy 0,wrap");
@@ -295,7 +290,10 @@ public class FirmwareUploader extends Thread {
 			}			
 		}
 
+		String portName = null;
+		
 		void doPortSelection() {
+			nextButton.setEnabled(false);
 			JPanel panel = new JPanel();
 			panel.setLayout(new MigLayout("fill","","[grow 0][grow 100]"));
 			panel.add(new JLabel("Select the serial port to use:"),"growy 0,wrap");
@@ -308,17 +306,46 @@ public class FirmwareUploader extends Thread {
 			nextButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					if (list.getSelectedIndex() != -1) {
+						Serial.Name name = (Serial.Name)list.getModel().getElementAt(list.getSelectedIndex());
+						portName = name.getName();
 						nextButton.removeActionListener(this);
-						doPortSelection();
+						doUpload();
 					}
 				}
 			});
 			panel.add(list,"growx,growy");
 			showPanel(panel);
 		}
-	}
-	
-	void upload() {
-		Base.getMachine().dispose();
+		
+		void doUpload() {
+			nextButton.setEnabled(true);
+			nextButton.setText("Upload");
+			JPanel panel = new JPanel();
+			panel.setLayout(new MigLayout("fill"));
+			panel.add(new JLabel("<html>Press the reset button on the target board and click the \"next\" button to upload the firmware."));
+			nextButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+						performUpload();
+				}
+			});
+			showPanel(panel);
+		}
+				
+		void performUpload() {
+			Base.getMachine().dispose();
+			AbstractFirmwareUploader uploader = null;
+			NodeList nl = selectedBoard.getChildNodes();
+			for (int i = 0; i < nl.getLength(); i++) {
+				Node n = nl.item(i);
+				if ("programmer".equalsIgnoreCase(n.getNodeName())) {
+					uploader = AbstractFirmwareUploader.makeUploader(n);
+				}
+			}
+			if (uploader != null) {
+				uploader.setPortName(portName);
+				uploader.setSource(selectedVersion.where);
+				uploader.upload();
+			}
+		}
 	}
 }
