@@ -60,6 +60,7 @@ class UploaderDialog extends JDialog implements ActionListener {
 		c.add(nextButton,"tag ok");
 		doBoardSelection();
 		pack();
+		setLocationRelativeTo(parent);
 	}
 	public void showPanel(JComponent panel) {
 		centralPanel.removeAll();
