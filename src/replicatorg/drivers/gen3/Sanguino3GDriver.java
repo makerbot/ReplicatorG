@@ -1025,7 +1025,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if (version.compareTo(new Version(1,4)) >= 0) {
 			// WDT reset introduced in version 1.4 firmware
 			PacketBuilder pb = new PacketBuilder(CommandCodeMaster.RESET.getCode());
-			PacketResponse pr = runCommand(pb.getPacket());
+			runCommand(pb.getPacket());
 		}
 		initialize();
 	}

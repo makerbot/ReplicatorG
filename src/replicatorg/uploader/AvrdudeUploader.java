@@ -24,7 +24,7 @@
   $Id: AvrdudeUploader.java 609 2009-06-01 19:27:21Z dmellis $
 */
 
-package replicatorg.drivers.gen3;
+package replicatorg.uploader;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +33,6 @@ import java.io.OutputStream;
 import java.util.Vector;
 
 import replicatorg.app.Base;
-import replicatorg.drivers.AbstractFirmwareUploader;
 
 
 public class AvrdudeUploader extends AbstractFirmwareUploader {
@@ -70,7 +69,7 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
   
   public boolean upload() {
     Vector<String> commandDownloader = new Vector<String>();
-    String avrBasePath = Base.getAppPath() + File.separator + "tools";
+    String avrBasePath = Base.getToolsPath();
     commandDownloader.add(avrBasePath + File.separator + "avrdude");
     commandDownloader.add("-C" + avrBasePath + File.separator + "avrdude.conf");
     commandDownloader.add("-c" + protocol);

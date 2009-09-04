@@ -117,9 +117,13 @@ public class Base {
 	
 	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
 
-	static public String getAppPath() {
-	    String path = System.getProperty("user.dir");
-	    return path;
+	static public String getToolsPath() {
+	    String toolsDir = System.getProperty("replicatorg.toolpath");
+	    if (toolsDir == null || toolsDir.isEmpty()) {
+		    String path = System.getProperty("user.dir");
+	    	toolsDir = path + File.separator + "tools";
+	    }
+	    return toolsDir;
 	}
 	
 	static public Font getFontPref(String name, String defaultValue) {

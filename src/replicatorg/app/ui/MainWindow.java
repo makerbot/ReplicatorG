@@ -115,6 +115,7 @@ import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.model.JEditTextAreaSource;
+import replicatorg.uploader.ui.FirmwareUploader;
 
 import com.apple.mrj.MRJAboutHandler;
 import com.apple.mrj.MRJApplicationUtils;
