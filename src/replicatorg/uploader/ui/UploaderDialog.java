@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
@@ -42,10 +43,10 @@ class UploaderDialog extends JDialog implements ActionListener {
 		centralPanel = new JPanel(new BorderLayout());
 		Container c = getContentPane();
 		c.setLayout(new MigLayout());
-		Dimension panelSize = new Dimension(500,300);
+		Dimension panelSize = new Dimension(500,180);
 		centralPanel.setMinimumSize(panelSize);
 		centralPanel.setMaximumSize(panelSize);
-		c.add(centralPanel,"wrap");
+		c.add(centralPanel,"wrap,spanx");
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -129,11 +130,13 @@ class UploaderDialog extends JDialog implements ActionListener {
 	}
 
 	void doUpload() {
+		state = State.UPLOADING;
 		nextButton.setEnabled(true);
 		nextButton.setText("Upload");
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("fill"));
-		panel.add(new JLabel("<html>Press the reset button on the target board and click the \"next\" button to upload the firmware."));
+		panel.add(new JLabel("<html>Press the reset button on the target board and click the \"Upload\" button " +
+				"to update the firmware.  Try to press the reset button as soon as you click \"Upload\".</html>"));
 		nextButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				performUpload();
@@ -155,7 +158,21 @@ class UploaderDialog extends JDialog implements ActionListener {
 		if (uploader != null) {
 			uploader.setPortName(portName);
 			uploader.setSource(selectedVersion.where);
-			uploader.upload();
+			boolean success = uploader.upload();
+			if (success) {
+				JOptionPane.showMessageDialog(this, 
+						"Firmware update succeeded!", 
+						"Firmware Uploaded",
+						JOptionPane.INFORMATION_MESSAGE);
+				doCancel();
+			} else {
+				JOptionPane.showMessageDialog(this, 
+						"<html>The firmware update did not succeed.  Check the console for details.<br/>"+
+						"You can click the \"Upload\" button to try again.</html>", 
+						"Upload Failed",
+						JOptionPane.ERROR_MESSAGE);
+				
+			}
 		}
 	}
 }

@@ -33,7 +33,6 @@ public class FirmwareUploader {
 	public static synchronized void startUploader(Frame parent) {
 		FirmwareUploader uploader = new FirmwareUploader(parent);
 		uploader.run();
-		// TODO: wait for completion.
 	}
 	
 	public void run() {

@@ -119,7 +119,7 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
         	uploading = false;
         } catch (InterruptedException intExc) {
         }
-      } 
+      }
       if(result!=0)
     	  return false;
     } catch (Exception e) {

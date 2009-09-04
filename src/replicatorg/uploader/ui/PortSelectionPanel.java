@@ -32,6 +32,7 @@ public class PortSelectionPanel extends JPanel {
 		setLayout(new MigLayout("fill","","[grow 0][grow 100]"));
 		add(new JLabel("Select the serial port to use:"),"growy 0,wrap");
 		final JList list = new JList(new SerialListModel());
+		list.setFixedCellHeight(30);
 		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent lse) {
 				if (list.getSelectedIndex() != -1) {
