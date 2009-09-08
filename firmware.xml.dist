@@ -5,7 +5,7 @@
   <board name="RepRap Motherboard v1.X">
     <version major="1" minor="1"/>
     <version major="1" minor="2"/>
-    <programmer class="replicatorg.drivers.gen3.AvrdudeUploader">
+    <programmer class="replicatorg.uploader.AvrdudeUploader">
       <protocol>stk500v1</protocol>
       <speed>38400</speed>
       <arch>m644p</arch>
@@ -24,7 +24,7 @@
   </board>
   <board name="Extruder Controller v2.2">
     <version major="2" minor="2"/>
-    <programmer class="replicatorg.drivers.gen3.AvrdudeUploader">
+    <programmer class="replicatorg.uploader.AvrdudeUploader">
       <protocol>stk500v1</protocol>
       <speed>19200</speed>
       <arch>m168</arch>

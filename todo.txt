@@ -1,6 +1,4 @@
 For 0008:
-For 0009:
-
 * built-in firmware uploader.  STK500v1 in java, or use avrdude?
 ** probably use avrdude.  flash appropriate line.
 * build to local file
@@ -8,4 +6,6 @@ For 0009:
 * build from specific filename
 * list files on card (if v1.4)
 * ignore interactive commands on non-interactive builds
+
+For 0009:
 * clean up launchers and dist for all platforms! (see latest arduino/processing revisions for tips)
