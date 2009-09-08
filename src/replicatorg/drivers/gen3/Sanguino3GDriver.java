@@ -26,6 +26,8 @@ package replicatorg.drivers.gen3;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 
 import javax.vecmath.Point3d;
@@ -71,6 +73,8 @@ public class Sanguino3GDriver extends SerialDriver
 		
 		RESET(17),
 
+		NEXT_FILENAME(18),
+		
 		// QUEUE_POINT_INC(128) obsolete
 		QUEUE_POINT_ABS(129),
 		SET_POSITION(130),
@@ -1192,5 +1196,29 @@ public class Sanguino3GDriver extends SerialDriver
 
 	public boolean hasFeatureSDCardCapture() {
 		return version.compareTo(new Version(1,3)) >= 0; 
+	}
+	
+	public List<String> getFileList() {
+		Vector<String> fileList = new Vector<String>();
+		boolean reset = true;
+		while (true) {
+			PacketBuilder pb = new PacketBuilder(CommandCodeMaster.NEXT_FILENAME.getCode());
+			pb.add8(reset?1:0);
+			reset = false;
+			PacketResponse pr = runCommand(pb.getPacket());
+			ResponseCode rc = convertSDCode(pr.get8());
+			if (rc != ResponseCode.SUCCESS) {
+				return fileList;
+			}
+			StringBuffer s = new StringBuffer();
+			while (true) {
+				char c = (char)pr.get8();
+				if (c == 0) break;
+				s.append(c);
+			}
+			if (s.length() == 0) break;
+			fileList.add(s.toString());
+		}
+		return fileList;
 	}
 }

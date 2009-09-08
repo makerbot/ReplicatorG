@@ -1,5 +1,7 @@
 package replicatorg.drivers;
 
+import java.util.List;
+
 public interface SDCardCapture {
 	enum ResponseCode {
 		SUCCESS,
@@ -27,4 +29,9 @@ public interface SDCardCapture {
 	 * @return true if this version of the firmware supports SDCardCapture.
 	 */
 	boolean hasFeatureSDCardCapture();
+	
+	/**
+	 * Return a list of the file paths of printable files.
+	 */
+	List<String> getFileList();
 }

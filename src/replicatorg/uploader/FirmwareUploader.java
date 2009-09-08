@@ -1,4 +1,4 @@
-package replicatorg.uploader.ui;
+package replicatorg.uploader;
 
 import java.awt.Frame;
 import java.io.File;
@@ -12,6 +12,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import replicatorg.app.Base;
+import replicatorg.uploader.ui.UploaderDialog;
 
 public class FirmwareUploader {
 	/**

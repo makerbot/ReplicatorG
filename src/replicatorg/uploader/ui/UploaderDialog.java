@@ -21,9 +21,10 @@ import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.uploader.AbstractFirmwareUploader;
+import replicatorg.uploader.FirmwareUploader;
 import replicatorg.uploader.FirmwareVersion;
 
-class UploaderDialog extends JDialog implements ActionListener {
+public class UploaderDialog extends JDialog implements ActionListener {
 	JButton nextButton;
 	JPanel centralPanel;
 	FirmwareUploader uploader;

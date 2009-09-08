@@ -115,7 +115,7 @@ import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.model.JEditTextAreaSource;
-import replicatorg.uploader.ui.FirmwareUploader;
+import replicatorg.uploader.FirmwareUploader;
 
 import com.apple.mrj.MRJAboutHandler;
 import com.apple.mrj.MRJApplicationUtils;
@@ -1372,20 +1372,25 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				!(machine.driver instanceof SDCardCapture)) {
 			System.err.println("Not ready to build yet.");
 		} else {
-			// close stuff.
-			doClose();
-
-			// build specific stuff
-			building = true;
-			//buttons.activate(MainButtonPanel.BUILD);
-
-			setEditorBusy(true);
-
-			// start our building thread.
-
-			message("Uploading...");
-			buildStart = new Date();
-			machine.upload("current.s3g");
+			BuildNamingDialog bsd = new BuildNamingDialog(this);
+			bsd.setVisible(true);
+			String path = bsd.getPath();
+			if (path != null) {
+				// close stuff.
+				doClose();
+	
+				// build specific stuff
+				building = true;
+				//buttons.activate(MainButtonPanel.BUILD);
+	
+				setEditorBusy(true);
+	
+				// start our building thread.
+	
+				message("Uploading...");
+				buildStart = new Date();
+				machine.upload(path);
+			}
 		}
 	}
 
@@ -1399,20 +1404,30 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				!(machine.driver instanceof SDCardCapture)) {
 			System.err.println("Not ready to build yet.");
 		} else {
-			// close stuff.
-			doClose();
+			SDCardCapture sdcc = (SDCardCapture)machine.driver;
+			List<String> files = sdcc.getFileList();
+			//for (String filename : files) { System.out.println("File "+filename); }
+			BuildSelectionDialog bsd = new BuildSelectionDialog(this,files);
+			bsd.setVisible(true);
+			String path = bsd.getSelectedPath();
+			System.err.println("Selected path is "+path);
+			if (path != null)
+			{
+				// close stuff.
+				doClose();
 
-			// build specific stuff
-			building = true;
-			//buttons.activate(MainButtonPanel.BUILD);
+				// build specific stuff
+				building = true;
+				//buttons.activate(MainButtonPanel.BUILD);
 
-			setEditorBusy(true);
+				setEditorBusy(true);
 
-			// start our building thread.
+				// start our building thread.
 
-			message("Building...");
-			buildStart = new Date();
-			machine.buildRemote("current.s3g");
+				message("Building...");
+				buildStart = new Date();
+				machine.buildRemote(path);
+			}
 		}
 	}
 	
