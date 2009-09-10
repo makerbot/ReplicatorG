@@ -384,6 +384,7 @@ public class MachineController {
 								state == MachineState.PLAYBACK_BUILDING ||
 								state.isPaused()) {
 								wait();
+							} else {
 							}
 						}
 					}

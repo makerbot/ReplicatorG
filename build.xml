@@ -1,6 +1,6 @@
 <project name="ReplicatorG" basedir="." default="test">
   <property name="project.lowercase" value="replicatorg"/>
-  <property file="ant.includes/${os.name}-${os.arch}.properties" />
+  <property file="ant.includes/${os.name}.properties" />
 	<echo>${os.name}-${os.arch}</echo>
   <property name="src.dir"       value="src"/>
   <property name="build.dir"     value="build"/>
@@ -9,18 +9,10 @@
   <property name="resources.dir" value="resources"/>
   <property name="shared.dir"    value="${build.dir}/shared"/>
   <property name="lib.dir"       value="${shared.dir}/lib"/>
-  <property name="macosx.lib.dir"   value="${build.dir}/macosx/dist"/>
-  <property name="linux.lib.dir" value="${build.dir}/linux/dist"/>
-  <property name="linux64.lib.dir" value="${build.dir}/linux64/dist"/>
-  <property name="windows.lib.dir" value="${build.dir}/windows/dist"/>
-  <property name="dist.dir"   value="dist"/>
-  <property name="macosx.dist.dir"  value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}"/>
-  <property name="linux.dist.dir"   value="${dist.dir}/linux/${project.lowercase}-${replicatorg.version}"/>
-  <property name="linux64.dist.dir" value="${dist.dir}/linux64/${project.lowercase}-${replicatorg.version}"/>
-  <property name="windows.dist.dir" value="${dist.dir}/windows/${project.lowercase}-${replicatorg.version}"/>
 
   <path id="classpath">
-    <fileset dir="${macosx.lib.dir}" includes="*.jar"/>
+    <!-- include jarbundler -->
+    <fileset dir="build/macosx" includes="*.jar"/>
     <fileset dir="${lib.dir}" includes="*.jar"/>
     <pathelement path="/System/Library/Java"/>
   </path>
@@ -129,46 +121,48 @@
   </target>
 
   <target name="dist-linux" depends="jar">
-    <mkdir dir="${linux.dist.dir}"/>
-    <copy todir="${linux.dist.dir}">
+    <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
+    <property name="target.dir"   value="dist/linux/${release.name}"/>
+    <property name="dist.dir"     value="build/linux/dist"/>
+
+    <mkdir dir="${target.dir}"/>
+    <!-- standard files -->
+    <copy todir="${target.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
       <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-      <filelist dir="${linux.lib.dir}" files="replicatorg"/>
+      <filelist dir="${dist.dir}" files="replicatorg"/>
     </copy>
-    <copy todir="${linux.dist.dir}/lib">
+    <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
+    <copy file="firmware.xml.dist" tofile="${target.dir}/firmware.xml"/>
+    <copy todir="${target.dir}/firmware">
+      <fileset dir="firmware"/>
+    </copy>
+    <copy todir="${target.dir}/lib">
       <fileset dir="${lib.dir}" includes="*.gif"/>
       <fileset dir="${lib.dir}" includes="*.jpg"/>
-      <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
+      <filelist dir="${lib.dir}" files="keywords.txt"/>
       <fileset dir="${jar.dir}" includes="*.jar"/>
     </copy>
-    <copy file="machines.xml.dist" tofile="${linux.dist.dir}/machines.xml"/>
-    <zip
-       destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-linux.zip"
-       basedir="${linux.dist.dir}">
-    </zip>
-  </target>
-
-  <target name="dist-linux64" depends="jar">
-    <mkdir dir="${linux64.dist.dir}"/>
-    <copy todir="${linux64.dist.dir}">
-      <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-      <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-      <filelist dir="${linux.lib.dir}" files="replicatorg"/>
+    <copy todir="${target.dir}/tools">
+      <filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
     </copy>
-    <copy todir="${linux64.dist.dir}/lib">
-      <fileset dir="${linux64.lib.dir}" includes="*.so"/>
-      <fileset dir="${lib.dir}" includes="*.gif"/>
-      <fileset dir="${lib.dir}" includes="*.jpg"/>
-      <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-      <fileset dir="${jar.dir}" includes="*.jar"/>
+    <copy todir="${target.dir}/lib-i686">
+      <fileset dir="${dist.dir}/lib-i686" includes="*.so"/>
     </copy>
-    <copy file="machines.xml.dist" tofile="${linux64.dist.dir}/machines.xml"/>
-    <zip
-       destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-linux64.zip"
-       basedir="${linux64.dist.dir}">
-    </zip>
-  </target>
+    <copy todir="${target.dir}/lib-x86_64">
+      <fileset dir="${dist.dir}/lib-x86_64" includes="*.so"/>
+    </copy>
 
+    <chmod file="${target.dir}/replicatorg" perm="ugo+rx"/>
+    <chmod file="${target.dir}/tools/avrdude" perm="ugo+rx"/>
+
+    <!-- Generate the .tgz -->
+    <exec dir="dist/linux" executable="/bin/tar">
+      <arg value="czf"/>
+      <arg value="../${release.name}-linux.tgz"/>
+      <arg value="${release.name}"/>
+    </exec>
+  </target>
 
   <target name="dist-windows" depends="jar">
     <mkdir dir="${windows.dist.dir}"/>
