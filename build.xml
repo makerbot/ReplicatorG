@@ -9,6 +9,7 @@
   <property name="resources.dir" value="resources"/>
   <property name="shared.dir"    value="${build.dir}/shared"/>
   <property name="lib.dir"       value="${shared.dir}/lib"/>
+  <property name="ant.build.javac.target" value="1.5"/>
 
   <path id="classpath">
     <!-- include jarbundler -->
