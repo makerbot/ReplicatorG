@@ -121,17 +121,11 @@
     <!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
   </target>
 
-  <target name="dist-linux" depends="jar">
-    <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
-    <property name="target.dir"   value="dist/linux/${release.name}"/>
-    <property name="dist.dir"     value="build/linux/dist"/>
-
+  <target name="dist-common" depends="jar">
     <mkdir dir="${target.dir}"/>
-    <!-- standard files -->
     <copy todir="${target.dir}">
-      <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+      <filelist dir="." files="license.txt,readme.txt,todo.txt"/>
       <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-      <filelist dir="${dist.dir}" files="replicatorg"/>
     </copy>
     <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
     <copy file="firmware.xml.dist" tofile="${target.dir}/firmware.xml"/>
@@ -144,6 +138,19 @@
       <filelist dir="${lib.dir}" files="keywords.txt"/>
       <fileset dir="${jar.dir}" includes="*.jar"/>
     </copy>
+  </target>
+  
+  <target name="dist-linux" depends="jar">
+    <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
+    <property name="target.dir"   value="dist/linux/${release.name}"/>
+    <property name="dist.dir"     value="build/linux/dist"/>
+
+    <!-- standard files -->
+    <antcall target="dist-common"/>
+    <!-- platform-specific files -->
+    <copy todir="${target.dir}">
+      <filelist dir="${dist.dir}" files="replicatorg"/>
+    </copy>
     <copy todir="${target.dir}/tools">
       <filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
     </copy>
@@ -153,7 +160,7 @@
     <copy todir="${target.dir}/lib-x86_64">
       <fileset dir="${dist.dir}/lib-x86_64" includes="*.so"/>
     </copy>
-
+    <!-- permissions -->
     <chmod file="${target.dir}/replicatorg" perm="ugo+rx"/>
     <chmod file="${target.dir}/tools/avrdude" perm="ugo+rx"/>
 
@@ -166,24 +173,21 @@
   </target>
 
   <target name="dist-windows" depends="jar">
-    <mkdir dir="${windows.dist.dir}"/>
-    <copy todir="${windows.dist.dir}">
-      <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-      <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
-      <fileset dir="${windows.lib.dir}" includes="*.dll"/>
-      <filelist dir="${windows.lib.dir}" files="ReplicatorG.exe"/>
-      <fileset dir="${windows.lib.dir}" includes="drivers/**/*"/>
+    <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
+    <property name="target.dir"   value="dist/windows/${release.name}"/>
+    <property name="dist.dir"     value="build/windows/dist"/>
+    <!-- standard files -->
+    <antcall target="dist-common"/>
+    <!-- platform-specific files -->
+    <copy todir="${target.dir}">
+      <fileset dir="${dist.dir}" includes="*.dll"/>
+      <filelist dir="${dist.dir}" files="ReplicatorG.exe"/>
+      <fileset dir="${dist.dir}" includes="drivers/**/*"/>
     </copy>
-    <copy todir="${windows.dist.dir}/lib">
-      <fileset dir="${lib.dir}" includes="*.gif"/>
-      <fileset dir="${lib.dir}" includes="*.jpg"/>
-      <filelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
-      <fileset dir="${jar.dir}" includes="*.jar"/>
-    </copy>
-    <copy file="machines.xml.dist" tofile="${windows.dist.dir}/machines.xml"/>
+
     <zip
-       destfile="${dist.dir}/${project.lowercase}-${replicatorg.version}-windows.zip"
-       basedir="${windows.dist.dir}">
+       destfile="dist/${project.lowercase}-${replicatorg.version}-windows.zip"
+       basedir="${target.dir}/..">
     </zip>
   </target>
 
