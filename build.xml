@@ -1,6 +1,6 @@
 <project name="ReplicatorG" basedir="." default="test">
   <property name="project.lowercase" value="replicatorg"/>
-  <property file="ant.includes/${os.name}.properties" />
+  <property file="ant.includes/${os.name}-${os.arch}.properties" />
 	<echo>${os.name}-${os.arch}</echo>
   <property name="src.dir"       value="src"/>
   <property name="build.dir"     value="build"/>
@@ -184,7 +184,9 @@
       <filelist dir="${dist.dir}" files="ReplicatorG.exe"/>
       <fileset dir="${dist.dir}" includes="drivers/**/*"/>
     </copy>
-
+    <copy todir="${target.dir}/tools">
+      <fileset dir="${dist.dir}/tools"/>
+    </copy>
     <zip
        destfile="dist/${project.lowercase}-${replicatorg.version}-windows.zip"
        basedir="${target.dir}/..">
