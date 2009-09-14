@@ -17,10 +17,6 @@
        major="1"
        minor="4"
        relpath="firmware/SanguinoMaster-v1.4.hex"/>
-    <firmware
-       major="1"
-       minor="5"
-       relpath="firmware/SanguinoMaster-v1.5.hex"/>
   </board>
   <board name="Extruder Controller v2.2">
     <version major="2" minor="2"/>
@@ -36,9 +32,5 @@
        major="1"
        minor="4"
        relpath="firmware/ArduinoSlaveExtruder-v1.4.hex"/>
-    <firmware
-       major="1"
-       minor="5"
-       relpath="firmware/ArduinoSlaveExtruder-v1.5.hex"/>
   </board>
 </boards>

@@ -25,7 +25,7 @@
   <target name="clean">
     <delete dir="${classes.dir}"/>
     <delete dir="${jar.dir}"/>
-    <delete dir="${dist.dir}"/>
+    <delete dir="dist"/>
   </target>
 
   <target name="compile">
@@ -69,6 +69,10 @@
   </target>
 
   <target name="dist-macosx" depends="jar">
+    <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
+    <property name="target.dir"   value="dist/macosx/${release.name}"/>
+    <property name="dist.dir"     value="build/macosx/dist"/>
+
     <fail message="The disk image (DMG-file) for easy distribution on Mac OS X can only be built on Mac OS X currently">
       <condition>
         <not>
@@ -77,12 +81,12 @@
       </condition>
     </fail> 
     <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
-    <mkdir dir="${macosx.dist.dir}"/>
+    <mkdir dir="${target.dir}"/>
     <jarbundler
-       dir="${macosx.dist.dir}"
+       dir="${target.dir}"
        name="ReplicatorG" 
        mainclass="replicatorg.app.Base" 
-       icon="${macosx.lib.dir}/replicatorg.icns"
+       icon="${dist.dir}/replicatorg.icns"
        extraclasspath="/System/Library/Java"
        vmoptions="-Xmx1G"
        infostring="ReplicatorG ${replicatorg.version}, © 2008-${current.year} MakerBot Industries" 
@@ -95,28 +99,28 @@
       <jarfileset dir="${macosx.lib.dir}" includes="*.jnilib"/>
       <documenttype name="CNC GCode document" 
                     extensions="gcode" 
-                    iconFile="${macosx.lib.dir}/replicatorg.icns"
+                    iconFile="${dist.dir}/replicatorg.icns"
                     role="Editor"/>
       <resourcefileset dir="${lib.dir}" includes="*.gif"/>
       <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
       <resourcefilelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
       <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
     </jarbundler>
-    <copy todir="${macosx.dist.dir}">
+    <copy todir="${target.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
-      <fileset dir="${macosx.lib.dir}" includes="drivers/*.dmg"/>
+      <fileset dir="${dist.dir}" includes="drivers/*.dmg"/>
     </copy>
-    <copy file="machines.xml.dist" tofile="${macosx.dist.dir}/machines.xml"/>
+    <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
     <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
       <arg value="-remove"/>
       <arg value="x86_64"/>
-      <arg value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
+      <arg value="${target.dir}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
       <arg value="-output"/>
-      <arg value="${dist.dir}/macosx/${project.lowercase}-${replicatorg.version}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
+      <arg value="${target.dir}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
     </exec>
     <exec dir="." os="Mac OS X" executable="/bin/sh">
       <arg value="-c"/>
-      <arg value="${macosx.lib.dir}/mkdmg.sh ${dist.dir} ./macosx image ${project.lowercase}-${replicatorg.version}-mac"/>
+      <arg value="${dist.dir}/mkdmg.sh ${target.dir} ./macosx image ${release.name}-mac"/>
     </exec>
     <!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
   </target>

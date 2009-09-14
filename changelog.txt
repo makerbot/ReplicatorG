@@ -1,3 +1,12 @@
+0008 ReplicatorG
+
+* Added avrdude to distributions
+* Added firmware binaries and .xml
+* Added firmware uploader GUI
+* Support for building to named files on the SD card
+* Support for building from named files
+* Added reset machine button
+
 0007 ReplicatorG
 
 * Fix for issue 15 (credit to Charles Pax)
