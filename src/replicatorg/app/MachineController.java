@@ -127,6 +127,7 @@ public class MachineController {
 		}
 		
 		private synchronized void setState(MachineState state) {
+			System.err.println("New state: "+state.toString());
 			MachineState prev = this.state;
 			this.state = state;
 			emitStateChange(prev, state);
@@ -193,6 +194,7 @@ public class MachineController {
 				
 				// bail if we got interrupted.
 				if (state == MachineState.STOPPING) {
+					System.err.println("Stopping build on STOPPING");
 					driver.stop();
 					return false;
 				}
@@ -370,13 +372,18 @@ public class MachineController {
 							setState(MachineState.NOT_ATTACHED);
 						}
 					} else if (state == MachineState.CONNECTING) {
+						System.err.println("reset internal");
 						resetInternal();
+						System.err.println("is initialized");
 						if (driver.isInitialized()) {
 							setState(MachineState.READY);
+							System.err.println("ready");
 						} else {
 							setState(MachineState.NOT_ATTACHED);
+							System.err.println("not attached");
 						}
 					} else if (state == MachineState.STOPPING) {
+						System.err.println("In STOPPING, going to READY");
 						setState(MachineState.READY);						
 					} else {
 						synchronized(this) {

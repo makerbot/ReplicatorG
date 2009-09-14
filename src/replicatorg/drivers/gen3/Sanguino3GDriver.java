@@ -190,10 +190,10 @@ public class Sanguino3GDriver extends SerialDriver
 	 */
 	protected void waitForStartup(int timeoutMillis) {
 		assert (serial != null);
-		System.err.println("Wait for startup");
+		//System.err.println("Wait for startup");
 		synchronized (serial) {
 			serial.setTimeout(timeoutMillis);
-
+			waitForStartupMessage();
 			try {
 				version = getVersionInternal();
 				if (getVersion() != null)
@@ -202,22 +202,7 @@ public class Sanguino3GDriver extends SerialDriver
 				// Timed out waiting; try an explicit reset.
 				System.out.println("No connection; trying to pulse RTS to reset device.");
 				serial.pulseRTSLow();
-				try {
-					Thread.sleep(3000); // wait for startup
-				} catch (InterruptedException ie) { 
-					serial.setTimeout(0);
-					return;
-				}
-				byte[] response = new byte[256];
-				StringBuffer respSB = new StringBuffer();
-				try {
-					while (serial.available() > 0) {
-						serial.read(response);
-						respSB.append(response);
-					}
-					System.err.println("Received "+ respSB.toString());
-				} catch (TimeoutException te) {
-				}
+				waitForStartupMessage();
 			}
 		}
 		// Until we fix the firmware hangs, turn off timeout during
@@ -226,6 +211,24 @@ public class Sanguino3GDriver extends SerialDriver
 		serial.setTimeout(0);
 	}
 
+	private void waitForStartupMessage() {
+		try {
+			Thread.sleep(3000); // wait for startup
+		} catch (InterruptedException ie) { 
+			serial.setTimeout(0);
+			return;
+		}
+		byte[] response = new byte[256];
+		StringBuffer respSB = new StringBuffer();
+		try {
+			while (serial.available() > 0) {
+				serial.read(response);
+				respSB.append(response);
+			}
+			//System.err.println("Received "+ respSB.toString());
+		} catch (TimeoutException te) {
+		}
+	}
 	/**
 	 * Sends the command over the serial connection and retrieves a result.
 	 */

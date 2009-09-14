@@ -2,7 +2,11 @@
 <classpath>
 	<classpathentry kind="src" output="classes" path="src"/>
 	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/RXTXcomm.jar"/>
+	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/RXTXcomm.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="trunk/build/linux/dist/lib-i686"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/antlr.jar"/>
 	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/j3dcore.jar"/>
 	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/j3dutils.jar"/>

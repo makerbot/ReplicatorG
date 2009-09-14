@@ -115,10 +115,11 @@ public class PdeKeywords extends CTokenMarker {
         reader.close();
 
       } catch (Exception e) {
-        Base.showError("Problem loading keywords",
-                          "Could not load keywords.txt,\n" +
-                          "please re-install Arduino.", e);
-        System.exit(1);
+    	  // Ignore.  We don't use the keyword mechanism anyway.
+        //Base.showError("Problem loading keywords",
+        //                  "Could not load keywords.txt,\n" +
+        //                  "please re-install Arduino.", e);
+        //System.exit(1);
       }
     }
     return keywordColoring;
