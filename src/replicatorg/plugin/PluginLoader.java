@@ -65,8 +65,8 @@ public class PluginLoader {
 					String description = props.getProperty("plugin.description");
 					is.close();
 					jar.close();
-					if (className == null || className.isEmpty() ||
-							name == null || name.isEmpty())
+					if (className == null || className.length() == 0 ||
+							name == null || name.length() == 0)
 					{
 						System.err.println("Malformed plugin.properties found in "+f.getName());
 						continue;
