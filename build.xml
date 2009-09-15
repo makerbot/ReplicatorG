@@ -96,7 +96,7 @@
        >
       <jarfileset dir="${jar.dir}" includes="ReplicatorG.jar"/>
       <jarfileset dir="${lib.dir}" includes="*.jar"/>
-      <jarfileset dir="${macosx.lib.dir}" includes="*.jnilib"/>
+      <jarfileset dir="${dist.dir}" includes="*.jnilib"/>
       <documenttype name="CNC GCode document" 
                     extensions="gcode" 
                     iconFile="${dist.dir}/replicatorg.icns"
@@ -109,6 +109,9 @@
     <copy todir="${target.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
       <fileset dir="${dist.dir}" includes="drivers/*.dmg"/>
+    </copy>
+    <copy todir="${target.dir}/tools">
+      <filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
     </copy>
     <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
     <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
