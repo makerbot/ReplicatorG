@@ -106,13 +106,18 @@
       <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
     </jarbundler>
     <copy todir="${target.dir}">
-      <filelist dir="." files="license.txt,readme.txt,todo.txt,machines.xml"/>
+      <filelist dir="." files="license.txt,readme.txt,todo.txt"/>
       <fileset dir="${dist.dir}" includes="drivers/*.dmg"/>
     </copy>
     <copy todir="${target.dir}/tools">
-      <filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
+      <filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf,*a"/>
+    </copy>
+    <chmod file="${target.dir}/tools/avrdude" perm="ugo+rx"/>
+    <copy todir="${target.dir}/firmware">
+      <fileset dir="firmware"/>
     </copy>
     <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
+    <copy file="firmware.xml.dist" tofile="${target.dir}/firmware.xml"/>
     <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
       <arg value="-remove"/>
       <arg value="x86_64"/>
@@ -122,7 +127,7 @@
     </exec>
     <exec dir="." os="Mac OS X" executable="/bin/sh">
       <arg value="-c"/>
-      <arg value="${dist.dir}/mkdmg.sh ${target.dir} ./macosx image ${release.name}-mac"/>
+      <arg value="${dist.dir}/mkdmg.sh ${target.dir} . image ${release.name}-mac"/>
     </exec>
     <!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
   </target>
