@@ -103,7 +103,6 @@
                     role="Editor"/>
       <resourcefileset dir="${lib.dir}" includes="*.gif"/>
       <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
-      <resourcefilelist dir="${lib.dir}" files="preferences.txt,keywords.txt"/>
       <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
     </jarbundler>
     <copy todir="${target.dir}">
