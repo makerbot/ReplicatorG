@@ -119,7 +119,7 @@ public class Base {
 
 	static public String getToolsPath() {
 	    String toolsDir = System.getProperty("replicatorg.toolpath");
-	    if (toolsDir == null || toolsDir.isEmpty()) {
+	    if (toolsDir == null || (toolsDir.length() == 0)) {
 		    String path = System.getProperty("user.dir");
 	    	toolsDir = path + File.separator + "tools";
 	    }
