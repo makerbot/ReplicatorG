@@ -212,7 +212,6 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	public void machineStateChanged(MachineStateChangeEvent evt) {
 		MachineState s = evt.getState();
 		boolean ready = s == MachineState.READY;
-		@SuppressWarnings("unused")
 		boolean building = s == MachineState.BUILDING ||
 			s == MachineState.PAUSED ||
 			s == MachineState.SIMULATING ||

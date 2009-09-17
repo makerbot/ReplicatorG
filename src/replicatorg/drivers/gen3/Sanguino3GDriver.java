@@ -1092,7 +1092,6 @@ public class Sanguino3GDriver extends SerialDriver
 	/// 00-01 - EEPROM data version
 	/// 02    - Axis inversion byte
 	/// 32-47 - Machine name (max. 16 chars)
-	@SuppressWarnings("unused")
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;

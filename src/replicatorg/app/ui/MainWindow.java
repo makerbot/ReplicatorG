@@ -34,7 +34,6 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -56,7 +55,6 @@ import java.awt.event.WindowEvent;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterJob;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -70,6 +68,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -87,6 +86,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -1803,40 +1803,44 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	private String selectFile() {
-		// swing's file choosers are ass ugly, so we use the
-		// native (awt peered) dialogs where possible
-		FileDialog fd = new FileDialog(this,
-				"Open a Processing sketch...", FileDialog.LOAD);
-		// fd.setDirectory(Preferences.get("sketchbook.path"));
-		// fd.setDirectory(getSketchbookPath());
-
-		// only show .gcode files as eligible bachelors
-		// TODO this doesn't seem to ever be used. AWESOME.
-		fd.setFilenameFilter(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				// System.out.println("check filter on " + dir + " " + name);
-				return name.toLowerCase().endsWith(".gcode");
+		File directory = null;
+		String loadDir = Base.preferences.get("ui.open_dir", null);
+		if (loadDir != null) { directory = new File(loadDir); }
+		JFileChooser fc = new JFileChooser(directory);
+		// We can drop this in Java 6, which already has an equivalent
+		class ExtensionFilter extends FileFilter {
+			private String extension;
+			private String description;
+			public ExtensionFilter(String extension,String description) { 
+				this.extension = extension;
+				this.description = description;
 			}
-		});
-
-		// gimme some money
-		fd.setVisible(true);
-
-		// what in the hell yu want, boy?
-		String directory = fd.getDirectory();
-		String filename = fd.getFile();
-
-		// user cancelled selection
-		if (filename == null)
-			return null;
-
-		// this may come in handy sometime
-		// handleOpenDirectory = directory;
-
-		File selection = new File(directory, filename);
-		return selection.getAbsolutePath();
-
+			public boolean accept(File f) {
+				if (f.isDirectory()) { return !f.isHidden(); }
+				return f.getPath().toLowerCase().endsWith(extension);
+			}
+			public String getDescription() {
+				return description;
+			}
+		};
+		FileFilter defaultFilter;
+		fc.addChoosableFileFilter(defaultFilter = new ExtensionFilter(".gcode","GCode files"));
+		fc.addChoosableFileFilter(new ExtensionFilter(".stl","STL files"));
+		fc.setAcceptAllFileFilterUsed(true);
+		fc.setFileFilter(defaultFilter);
+		fc.setDialogTitle("Open a gcode or STL file...");
+		fc.setDialogType(JFileChooser.OPEN_DIALOG);
+		fc.setFileHidingEnabled(false);
+		int rv = fc.showOpenDialog(this);
+	    if (rv == JFileChooser.APPROVE_OPTION) {
+	    	fc.getSelectedFile().getName();
+	    	Base.preferences.put("ui.open_dir",fc.getCurrentDirectory().getAbsolutePath());
+	    	return fc.getSelectedFile().getAbsolutePath();
+	    } else {
+	    	return null;
+	    }
 	}
+	
 	/**
 	 * Open a sketch given the full path to the .gcode file. Pass in 'null' to
 	 * prompt the user for the name of the sketch.
