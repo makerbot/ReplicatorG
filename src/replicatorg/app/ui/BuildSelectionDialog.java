@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -28,7 +29,7 @@ public class BuildSelectionDialog extends JDialog {
 		super(parent,"Select a file to build",true);
 		Container c = getContentPane();
 		c.setLayout(new MigLayout("fill"));
-		c.add(new JLabel("Select the .s3g file to build:"),"wrap");
+		c.add(new JLabel("Select the .s3g file to build:"),"wrap,spanx");
 		okButton = new JButton("OK");
 		okButton.setEnabled(false);
 		okButton.addActionListener(new ActionListener() {
@@ -42,7 +43,10 @@ public class BuildSelectionDialog extends JDialog {
 				doCancel();
 			}
 		});
+
 		final JList list = new JList(paths.toArray());
+		final JScrollPane scrollPane = new JScrollPane(list);
+		
 		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent lse) {
 				if (list.getSelectedIndex() != -1) {
@@ -51,7 +55,7 @@ public class BuildSelectionDialog extends JDialog {
 				}
 			}
 		});
-		c.add(list,"wrap");
+		c.add(scrollPane,"wrap,growx,spanx");
 		c.add(cancelButton, "tag cancel");
 		c.add(okButton,"tag ok");
 		pack();
