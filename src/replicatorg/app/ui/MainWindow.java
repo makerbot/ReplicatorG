@@ -1435,12 +1435,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	
 	public void machineStateChanged(MachineStateChangeEvent evt) {
 		if (building) {
-			if (evt.getState() == MachineState.READY ||
-				evt.getState() == MachineState.STOPPING) {
+			if (evt.getState().isReady() ||
+				evt.getState().getState() == MachineState.State.STOPPING) {
 				final MachineState endState = evt.getState();
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                    	if (endState == MachineState.READY) {
+                    	if (endState.isReady()) {
                     		notifyBuildComplete(buildStart, new Date());
                     	} else {
                     		notifyBuildAborted(buildStart, new Date());
@@ -1450,7 +1450,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
                 });
 			}
 		}
-		if (evt.getState() == MachineState.READY) {
+		if (evt.getState().isReady()) {
 			reloadSerialMenu();
 		}
 		onboardParamsItem.setVisible(machine.getDriver() instanceof OnboardParameters &&

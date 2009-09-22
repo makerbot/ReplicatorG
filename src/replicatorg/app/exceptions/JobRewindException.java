@@ -23,7 +23,7 @@
 
 package replicatorg.app.exceptions;
 
-public class JobRewindException extends Exception
+public class JobRewindException extends JobException
 {
 }
 

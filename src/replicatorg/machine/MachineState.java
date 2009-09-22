@@ -6,55 +6,96 @@ package replicatorg.machine;
 /**
  * The MachineState indicates the current high-level status of the machine.
  * 
- * It's become clear that pause status should be taken out of the state and put
- * in its own modifier in the machine model.  Not today, though.
- * 
  * @author phooky
  * 
  */
-public enum MachineState {
-	NOT_ATTACHED,
-	CONNECTING,
-	AUTO_SCAN,
-	READY,
-	ESTIMATING,
-	BUILDING,
-	STOPPING,
-	PAUSED,
-	UPLOADING,
-	SIMULATING,
-	SIMULATING_PAUSED,
-	PLAYBACK_BUILDING,
-	PLAYBACK_PAUSED;
+public class MachineState extends Object implements Cloneable {
+	public enum State {
+		NOT_ATTACHED,
+		CONNECTING,
+		AUTO_SCAN,
+		READY,
+		ESTIMATING,
+		BUILDING,
+		MANUAL_CONTROL,
+		STOPPING,
+		PLAYBACK
+	};
 	
-	public boolean isRunning() {
-		return isPaused() ||
-			this == BUILDING || 
-			this == UPLOADING ||
-			this == SIMULATING || 
-			this == PLAYBACK_BUILDING; 	
+	public enum Target {
+		NONE,
+		MACHINE,
+		SIMULATOR,
+		SD_UPLOAD,
+		FILE
+	};
+	
+	private State state = State.NOT_ATTACHED;
+	private Target target = Target.NONE;
+	private boolean paused = false;
+	
+	public MachineState() {
 	}
-
+	
+	public MachineState(State state) {
+		this.state = state;
+	}
+	
+	public MachineState(State state, Target target) {
+		this.state = state;
+		this.target = target;
+	}
+	
 	public boolean isPaused() {
-		return  this == PAUSED || this == PLAYBACK_PAUSED ||
-			this == SIMULATING_PAUSED;
+		return paused;
 	}
 	
-	public boolean isSimulating() {
-		return this == SIMULATING || this == SIMULATING_PAUSED;
+	public boolean isReady() {
+		return state == State.READY;
 	}
 	
-	public MachineState getPausedState() {
-		if (this == BUILDING) return PAUSED;
-		if (this == PLAYBACK_BUILDING) return PLAYBACK_PAUSED;
-		if (this == SIMULATING) return SIMULATING_PAUSED;
-		return this;
+	public boolean isBuilding() {
+		return state == State.BUILDING ||
+			state == State.PLAYBACK; 
 	}
 
-	public MachineState getUnpausedState() {
-		if (this == PAUSED) return BUILDING;
-		if (this == PLAYBACK_PAUSED) return PLAYBACK_BUILDING;
-		if (this == SIMULATING_PAUSED) return SIMULATING;
-		return this;
+	public boolean isSimulating() {
+		return state == State.BUILDING && target == Target.SIMULATOR;
+	}
+
+	public void setPaused(boolean paused) {
+		this.paused = paused;
+	}
+	
+	public void setTarget(Target target) {
+		this.target = target;
+	}
+
+	/**
+	 * Set the new machine state.
+	 * By default, this always resets the pause status to false.
+	 * @param state
+	 */
+	public void setState(State state) {
+		this.state = state;
+		this.paused = false;
+	}
+	
+	public Target getTarget() { return target; }
+	
+	public State getState() { return state; }
+	
+	public boolean isInteractiveTarget() {
+		return this.target == Target.MACHINE ||
+			this.target == Target.SIMULATOR; 	
+	}
+	
+	public MachineState clone() {
+		try {
+			return (MachineState)super.clone();
+		} catch (CloneNotSupportedException e) {
+			// Clone is supported.
+			throw new RuntimeException(e);
+		}
 	}
 }

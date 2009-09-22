@@ -94,8 +94,8 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	
 	protected String getMachineStateMessage() {
 		if (machine == null) { return "No machine selected"; }
-		MachineState state = machine.getState();
-		if (state == MachineState.NOT_ATTACHED) {
+		MachineState state = machine.getMachineState();
+		if (state.getState() == MachineState.State.NOT_ATTACHED) {
 			if (machine.getDriver() == null) {
 				return "No machine selected";
 			} else if (machine.driver instanceof UsesSerial && 
@@ -107,7 +107,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 				}
 			}
 		}
-		if (state == MachineState.CONNECTING) {
+		if (state.getState() == MachineState.State.CONNECTING) {
 			StringBuffer buf = new StringBuffer("Connecting to "+machine.getName());
 			if (machine.driver instanceof UsesSerial) {
 				buf.append(" on ");
@@ -118,10 +118,9 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		}
 		StringBuffer message = new StringBuffer("Machine "+machine.getName());
 		message.append(" ("+machine.getDriver().getDriverName()+") ");
-		if (state == MachineState.READY) { message.append("Ready"); }
-		else if (state == MachineState.READY) { message.append("ready"); }
-		else if (state == MachineState.BUILDING) { message.append("building"); }
-		else if (state == MachineState.PAUSED) { message.append("paused"); }
+		if (state.getState() == MachineState.State.READY) { message.append("ready"); }
+		else if (state.isPaused()) { message.append("paused"); }
+		else if (state.isBuilding()) { message.append("building"); }
 		return message.toString();
 	}
 	

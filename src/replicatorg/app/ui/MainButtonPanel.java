@@ -211,15 +211,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
 		MachineState s = evt.getState();
-		boolean ready = s == MachineState.READY;
-		boolean building = s == MachineState.BUILDING ||
-			s == MachineState.PAUSED ||
-			s == MachineState.SIMULATING ||
-			s == MachineState.UPLOADING ||
-			s == MachineState.PLAYBACK_PAUSED ||
-			s == MachineState.PLAYBACK_BUILDING;
-		boolean paused = s == MachineState.PAUSED ||
-			s == MachineState.PLAYBACK_PAUSED;
+		boolean ready = s.isReady();
+		boolean building = s.isBuilding();
+		boolean paused = s.isPaused();
 		boolean hasPlayback = (editor != null) &&
 			(editor.machine != null) && 
 			(editor.machine.driver != null) &&
@@ -238,13 +232,16 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 		pauseButton.setSelected(paused);
 
-		simButton.setSelected(s == MachineState.SIMULATING || s == MachineState.SIMULATING_PAUSED);
-		buildButton.setSelected(s == MachineState.BUILDING || s == MachineState.PAUSED);
-		uploadButton.setSelected(s == MachineState.UPLOADING);
-		playbackButton.setSelected(s == MachineState.PLAYBACK_BUILDING || s == MachineState.PLAYBACK_PAUSED);
+		MachineState.Target runningTarget = s.isBuilding()?s.getTarget():null;
 		
-		resetButton.setEnabled(s != MachineState.AUTO_SCAN && s != MachineState.NOT_ATTACHED &&
-				s != MachineState.CONNECTING );
+		simButton.setSelected(runningTarget == MachineState.Target.SIMULATOR);
+		buildButton.setSelected(runningTarget == MachineState.Target.MACHINE);
+		uploadButton.setSelected(runningTarget == MachineState.Target.SD_UPLOAD);
+		playbackButton.setSelected(runningTarget == MachineState.Target.NONE);
+		
+		resetButton.setEnabled(s.getState() != MachineState.State.AUTO_SCAN && 
+				s.getState() != MachineState.State.NOT_ATTACHED &&
+				s.getState() != MachineState.State.CONNECTING );
 	}
 
 	public void machineProgress(MachineProgressEvent event) {

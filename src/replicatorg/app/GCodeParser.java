@@ -28,11 +28,14 @@ import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JOptionPane;
 import javax.vecmath.Point3d;
 
-import replicatorg.app.exceptions.*;
-import replicatorg.drivers.*;
+import replicatorg.app.exceptions.GCodeException;
+import replicatorg.app.exceptions.JobCancelledException;
+import replicatorg.app.exceptions.JobEndException;
+import replicatorg.app.exceptions.JobException;
+import replicatorg.app.exceptions.JobRewindException;
+import replicatorg.drivers.Driver;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
@@ -1030,59 +1033,78 @@ public class GCodeParser {
 		current = new Point3d(p);
 	}
 
-	public void handleStops() throws JobRewindException, JobEndException,
-			JobCancelledException {
-		String message = "";
+	/**
+	 * StopInfo defines an optional or mandatory stop, the message to display with
+	 * said stop, and the exceptions to be triggered on success of failure of the
+	 * optional stop.
+	 * @author phooky
+	 *
+	 */
+	public class StopInfo {
+		private final JobException exception;
+		private final JobException cancelException;
+		private final String message;
+		private final boolean optional;
+		/**
+		 * Create a mandatory stop.
+		 * @param message the message to display to the user
+		 * @param exception the exception to throw
+		 */
+		public StopInfo(String message, JobException exception) {
+			this.message = message;
+			this.optional = false;
+			this.exception = this.cancelException = exception;
+		}
+		/**
+		 * Create an optional stop.
+		 * @param message the message to display to the user
+		 * @param exception the exception to throw if the user confirms the stop
+		 * @param cancelException the exception to throw if the user cancels the stop
+		 */
+		public StopInfo(String message, JobException exception, JobException cancelException) {
+			this.message = message;
+			this.optional = true;
+			this.exception = exception;
+			this.cancelException = cancelException;
+		}
+		public String getMessage() { return message; }
+		public JobException getException() { return exception; }
+		public JobException getCancelException() { return cancelException; }
+		public boolean isOptional() { return optional; }
+	}
+	
+	/**
+	 * Return a StopInfo object describing the stop defined by the current code, or null if the
+	 * code is not a stop code. 
+	 * @return stop information
+	 */
+	public StopInfo getStops()  {
+		String message = null;
+		if (comment.length() > 0)
+			message = comment;
 		int mCode;
 
 		if (hasCode("M")) {
-			// System.out.println("has stop");
-
 			// we wanna do this after its finished whatever was before.
 			driver.waitUntilBufferEmpty();
 
 			mCode = (int) getCodeValue("M");
-			// System.out.println("M" + mCode + ": " + comment);
 
 			if (mCode == 0) {
-				if (comment.length() > 0)
-					message = "Automatic Halt: " + comment;
-				else
-					message = "Automatic Halt";
-
-				if (!showContinueDialog(message))
-					throw new JobCancelledException();
-			} else if (mCode == 1
-					&& Base.preferences.getBoolean("machine.optionalstops",true)) {
-				if (comment.length() > 0)
-					message = "Optional Halt: " + comment;
-				else
-					message = "Optional Halt";
-
-				if (!showContinueDialog(message))
-					throw new JobCancelledException();
+				// M0 == unconditional halt
+				return new StopInfo(message,new JobCancelledException());
+			} else if (mCode == 1) {
+				// M1 == optional halt
+				return new StopInfo(message,null,new JobCancelledException());
 			} else if (mCode == 2) {
-				if (comment.length() > 0)
-					message = "Program End: " + comment;
-				else
-					message = "Program End";
-
-				JOptionPane.showMessageDialog(null, message);
-
-				throw new JobEndException();
+				// M2 == program end
+				return new StopInfo(message,new JobEndException());
 			} else if (mCode == 30) {
-				if (comment.length() > 0)
-					message = "Program Rewind: " + comment;
-				else
-					message = "Program Rewind";
-
-				if (!showContinueDialog(message))
-					throw new JobCancelledException();
-
-				cleanup();
-				throw new JobRewindException();
+				if (message.length() == 0) { message = "Program Rewind"; }
+				return new StopInfo(message,new JobRewindException(),new JobCancelledException());
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -1098,16 +1120,6 @@ public class GCodeParser {
 	public void probeArea(double minX, double minY, double maxX, double maxY,
 			double increment) {
 
-	}
-
-	protected boolean showContinueDialog(String message) {
-		int result = JOptionPane.showConfirmDialog(null, message,
-				"Continue Build?", JOptionPane.YES_NO_OPTION);
-
-		if (result == JOptionPane.YES_OPTION)
-			return true;
-		else
-			return false;
 	}
 
 	/**

@@ -23,7 +23,7 @@
 
 package replicatorg.app.exceptions;
 
-public class JobCancelledException extends Exception
+public class JobCancelledException extends JobException
 {
 }
 

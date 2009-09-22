@@ -23,7 +23,7 @@
 
 package replicatorg.app.exceptions;
 
-public class JobEndException extends Exception
+public class JobEndException extends JobException
 {
 }
 

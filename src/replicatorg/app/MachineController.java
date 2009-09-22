@@ -33,6 +33,7 @@ import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
 import replicatorg.app.exceptions.JobCancelledException;
 import replicatorg.app.exceptions.JobEndException;
+import replicatorg.app.exceptions.JobException;
 import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.app.tools.XML;
 import replicatorg.app.ui.MainWindow;
@@ -63,6 +64,30 @@ import replicatorg.model.StringListSource;
  */
 public class MachineController {
 
+	private MachineState state = new MachineState();
+	public MachineState getMachineState() { return state.clone(); }
+	
+	private void setState(MachineState state) {
+		MachineState oldState = this.state;
+		this.state = state;
+		emitStateChange(oldState,state);
+		// wake up machine thread
+		synchronized(machineThread) {
+			machineThread.notify();
+		}
+	}
+
+	private void setState(MachineState.State state) {
+		MachineState newState = getMachineState();
+		newState.setState(state);
+		setState(newState);
+	}
+
+	// Build statistics
+	private int linesProcessed = -1;
+	private int linesTotal = -1;
+	private double startTimeMillis = -1;
+	
 	/**
 	 * The MachineThread is responsible for communicating with the machine.
 	 * 
@@ -70,44 +95,17 @@ public class MachineController {
 	 * 
 	 */
 	class MachineThread extends Thread {
-		private MachineState state = MachineState.NOT_ATTACHED;
-		private boolean paused = false;
-		public MachineState getMachineState() { return state; }
-		public boolean isPaused() { return paused; }
-		
-		// Build statistics
-		int linesProcessed = -1;
-		int linesTotal = -1;
-		double startTimeMillis = -1;
-		boolean needsStatusPoll = false;
-	
-		class StatusPollThread extends Thread {
-			public void run() {
-				while (true) {
-					try {
-						Thread.sleep(1000);
-						needsStatusPoll = true;
-					} catch (InterruptedException e) {
-						break;
-					}
-				}
-			}
+		private long lastPolled = 0;
+		private boolean pollingEnabled = false;
+		private long pollIntervalMs = 1000;
+
+		synchronized void startStatusPolling(long interval) {
+			pollingEnabled = true;
+			pollIntervalMs = interval;
 		}
 
-		private StatusPollThread pollingThread;
-
-		synchronized void startStatusPolling() {
-			if (pollingThread == null) {
-				pollingThread = new StatusPollThread();
-				pollingThread.start();
-			}
-		}
-		
 		synchronized void stopStatusPolling() {
-			if (pollingThread != null) {
-				pollingThread.interrupt();
-				pollingThread = null;
-			}
+			pollingEnabled = false;
 		}
 		
 		/**
@@ -117,24 +115,17 @@ public class MachineController {
 		 * @throws InterruptedException
 		 */
 		private void runWarmupCommands() throws BuildFailureException, InterruptedException {
-			System.out.println("Running warmup commands.");
+			Base.logger.info("Running warmup commands.");
 			buildCodesInternal(new StringListSource(warmupCommands));
-		}			
+		}
 
 		private void runCooldownCommands() throws BuildFailureException, InterruptedException {
-			System.out.println("Running cooldown commands.");
+			Base.logger.info("Running cooldown commands.");
 			buildCodesInternal(new StringListSource(cooldownCommands));
 		}
 		
-		private synchronized void setState(MachineState state) {
-			MachineState prev = this.state;
-			this.state = state;
-			emitStateChange(prev, state);
-			notifyAll();
-		}
-
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
-			if (!state.isRunning()) {
+			if (!state.isBuilding()) {
 				// Do not continue build if the machine is not building or paused
 				return false;
 			}
@@ -144,7 +135,7 @@ public class MachineController {
 				String line = i.next();
 				linesProcessed++;
 				if (Thread.interrupted()) {
-					System.err.println("build thread interrupted");
+					Base.logger.info("build thread interrupted");
 					return false;
 				}
 				
@@ -154,7 +145,26 @@ public class MachineController {
 				if (!state.isSimulating()) { driver.parse(line); }
 				
 				try {
-					driver.getParser().handleStops();
+					GCodeParser.StopInfo info = driver.getParser().getStops();
+					if (info != null &&
+							Base.preferences.getBoolean("machine.optionalstops",true) &&
+							state.isBuilding() &&
+							state.isInteractiveTarget()) {
+						JobException e = info.getException(); 
+						if (info.isOptional()) {
+							int result = JOptionPane.showConfirmDialog(null, info.getMessage(),
+									"Continue Build?", JOptionPane.YES_NO_OPTION);
+							if (result != JOptionPane.YES_OPTION) {
+								e = info.getCancelException();
+							}
+						} else {
+							JOptionPane.showMessageDialog(null, info.getMessage(), 
+									"Build stop", JOptionPane.INFORMATION_MESSAGE);
+						}
+						if (e != null) {
+							throw e;
+						}
+					}
 				} catch (JobEndException e) {
 					return false;
 				} catch (JobCancelledException e) {
@@ -162,6 +172,8 @@ public class MachineController {
 				} catch (JobRewindException e) {
 					i = source.iterator();
 					continue;
+				} catch (JobException e) {
+					Base.logger.severe("Unknown job exception emitted");
 				}
 				
 				// simulate the command.
@@ -192,13 +204,17 @@ public class MachineController {
 				}
 				
 				// bail if we got interrupted.
-				if (state == MachineState.STOPPING) {
+				if (state.getState() == MachineState.State.STOPPING) {
 					driver.stop();
 					return false;
 				}
 				// send out updates
-				if (needsStatusPoll) {
-					pollStatus();
+				if (pollingEnabled) {
+					long curMillis = System.currentTimeMillis();
+					if (lastPolled + pollIntervalMs <= curMillis) {
+						lastPolled = curMillis;
+						pollStatus();
+					}
 				}
 				MachineProgressEvent progress = 
 					new MachineProgressEvent((double)System.currentTimeMillis()-startTimeMillis,
@@ -223,11 +239,10 @@ public class MachineController {
 			driver.reset();
 		}
 
-		public boolean isReady() { return state == MachineState.READY; }
+		public boolean isReady() { return state.isReady(); }
 
 		public void pollStatus() {
-			needsStatusPoll = false;
-			if (state.isRunning()) {
+			if (state.isBuilding()) {
 				if (Base.preferences.getBoolean("build.monitor_temp",false)) {
 					driver.readTemperature();
 					emitToolStatus(driver.getMachine().currentTool());
@@ -241,7 +256,7 @@ public class MachineController {
 		}
 		
 		public void reset() {
-			setState(MachineState.CONNECTING);
+			setState(new MachineState(MachineState.State.CONNECTING));
 		}
 
 		GCodeSource currentSource;
@@ -252,7 +267,7 @@ public class MachineController {
 			linesTotal = warmupCommands.size() + 
 				cooldownCommands.size() +
 				source.getLineCount();
-			startStatusPolling();
+			startStatusPolling(1000);
 			try {
 				runWarmupCommands();
 				System.out.println("Running build.");
@@ -276,7 +291,7 @@ public class MachineController {
 			if (remoteName == null || !(driver instanceof SDCardCapture)) return;
 			SDCardCapture sdcc = (SDCardCapture)driver;
 			if (!processSDResponse(sdcc.playback(remoteName))) {
-				state = MachineState.STOPPING;
+				setState(MachineState.State.STOPPING);
 				return;
 			}
 			while (!driver.isFinished()) {
@@ -291,7 +306,7 @@ public class MachineController {
 					}
 					
 					// bail if we got interrupted.
-					if (state == MachineState.STOPPING) {
+					if (state.getState() == MachineState.State.STOPPING) {
 						driver.stop();
 						return;
 					}
@@ -304,84 +319,95 @@ public class MachineController {
 		
 		public void build(GCodeSource source) {
 			currentSource = source;
-			setState(MachineState.BUILDING);
+			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.MACHINE));
 		}
 		
 		public void simulate(GCodeSource source) {
 			currentSource = source;
-			setState(MachineState.SIMULATING);
+			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SIMULATOR));
 		}
 
 		public void upload(GCodeSource source, String remoteName) {
 			currentSource = source;
 			this.remoteName = remoteName;
-			setState(MachineState.UPLOADING);
+			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SD_UPLOAD));
 		}
 
 		public void buildRemote(String remoteName) {
 			this.remoteName = remoteName;
-			setState(MachineState.PLAYBACK_BUILDING);
+			setState(MachineState.State.PLAYBACK);
 		}
 		
 		public void pauseBuild() {
-			if (state.isRunning() && !state.isPaused())
-				setState(state.getPausedState());
+			if (state.isBuilding() && !state.isPaused()) {
+				MachineState newState = getMachineState();
+				newState.setPaused(true);
+				setState(newState);
+			}
 		}
 		
 		public void resumeBuild() {
-			if (state.isRunning() && state.isPaused())
-				setState(state.getUnpausedState());
+			if (state.isBuilding() && state.isPaused()) {
+				MachineState newState = getMachineState();
+				newState.setPaused(false);
+				setState(newState);
+			}
 		}
 		
 		public void stopBuild() {
-			if (state.isRunning()) {
-				setState(MachineState.STOPPING);				
+			if (state.isBuilding()) {
+				setState(MachineState.State.STOPPING);				
 			}
 		}
 		
 		public void autoscan() {
-			if (state == MachineState.CONNECTING ||
-					state == MachineState.NOT_ATTACHED) {
-				setState(MachineState.AUTO_SCAN);
+			if (state.getState() == MachineState.State.CONNECTING ||
+				state.getState() == MachineState.State.NOT_ATTACHED) {
+				setState(MachineState.State.AUTO_SCAN);
 			}
 		}
 		
 		public void run() {
 			while (!interrupted()) {
 				try {
-					if (state == MachineState.BUILDING || state == MachineState.SIMULATING) {
-						buildInternal(currentSource);
-					} else if (state == MachineState.UPLOADING) {
-						if (driver instanceof SDCardCapture) {
-							SDCardCapture sdcc = (SDCardCapture)driver;
-							if (processSDResponse(sdcc.beginCapture(remoteName))) { 
-								buildInternal(currentSource);
-								System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
-							} else { state = MachineState.STOPPING; }
+					if (state.getState() == MachineState.State.BUILDING) {
+						if (state.getTarget() == MachineState.Target.SD_UPLOAD) {
+							if (driver instanceof SDCardCapture) {
+								SDCardCapture sdcc = (SDCardCapture)driver;
+								if (processSDResponse(sdcc.beginCapture(remoteName))) { 
+									buildInternal(currentSource);
+									System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
+								} else { setState(MachineState.State.STOPPING); }
+							} else {
+								setState(MachineState.State.STOPPING);
+							}
+						} else {
+							// Ordinary build
+							buildInternal(currentSource);
 						}
-					} else if (state == MachineState.PLAYBACK_BUILDING) {
+					} else if (state.getState() == MachineState.State.PLAYBACK) {
 						buildRemoteInternal(remoteName);
-					} else if (state == MachineState.AUTO_SCAN) {
+					} else if (state.getState() == MachineState.State.AUTO_SCAN) {
 						driver.autoscan();
 						if (driver.isInitialized()) {
-							setState(MachineState.READY);
+							setState(MachineState.State.READY);
 						} else {
-							setState(MachineState.NOT_ATTACHED);
+							setState(MachineState.State.NOT_ATTACHED);
 						}
-					} else if (state == MachineState.CONNECTING) {
+					} else if (state.getState() == MachineState.State.CONNECTING) {
 						resetInternal();
 						if (driver.isInitialized()) {
-							setState(MachineState.READY);
+							setState(MachineState.State.READY);
 						} else {
-							setState(MachineState.NOT_ATTACHED);
+							setState(MachineState.State.NOT_ATTACHED);
 						}
-					} else if (state == MachineState.STOPPING) {
-						setState(MachineState.READY);						
+					} else if (state.getState() == MachineState.State.STOPPING) {
+						setState(MachineState.State.READY);						
 					} else {
 						synchronized(this) {
-							if (state == MachineState.READY ||
-								state == MachineState.PLAYBACK_BUILDING ||
-								state.isPaused()) {
+							if (state.getState() == MachineState.State.READY ||
+									state.getState() == MachineState.State.PLAYBACK ||
+									state.isPaused()) {
 								wait();
 							} else {
 							}
@@ -587,9 +613,7 @@ public class MachineController {
 		model.loadXML(machineNode);
 		return model;
 	}
-	
-	public MachineState getState() { return machineThread.state; }
-	
+		
 	private void loadDriver() {
 		// load our utility drivers
 		if (Base.preferences.getBoolean("machinecontroller.simulator",true)) {
@@ -700,7 +724,7 @@ public class MachineController {
 	}
 	
 	synchronized public boolean isPaused() {
-		return getState().isPaused();
+		return getMachineState().isPaused();
 	}
 	
 	public void dispose() {
@@ -724,7 +748,7 @@ public class MachineController {
 	
 	public void addMachineStateListener(MachineListener listener) {
 		listeners.add(listener);
-		listener.machineStateChanged(new MachineStateChangeEvent(this,getState()));
+		listener.machineStateChanged(new MachineStateChangeEvent(this,getMachineState()));
 	}
 	
 	protected void emitStateChange(MachineState prev, MachineState current) {
