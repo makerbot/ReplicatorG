@@ -6,6 +6,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -33,6 +34,7 @@ public class PortSelectionPanel extends JPanel {
 		add(new JLabel("Select the serial port to use:"),"growy 0,wrap");
 		final JList list = new JList(new SerialListModel());
 		list.setFixedCellHeight(30);
+		final JScrollPane scrollPane = new JScrollPane(list);
 		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent lse) {
 				if (list.getSelectedIndex() != -1) {
@@ -42,7 +44,6 @@ public class PortSelectionPanel extends JPanel {
 				}
 			}
 		});
-		add(list,"growx,growy");
-		
+		add(scrollPane,"growx,growx");		
 	}
 }

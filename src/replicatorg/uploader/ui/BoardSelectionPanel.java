@@ -8,6 +8,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -79,6 +80,7 @@ public class BoardSelectionPanel extends JPanel {
 		add(new JLabel("Select the board to upgrade:"),"growy 0,wrap");
 		final BoardListModel blm = new BoardListModel(firmwareDoc);
 		final JList list = new JList(blm);
+		final JScrollPane scrollPane = new JScrollPane(list);
 		ImageIcon icon = new ImageIcon(Base.getImage("images/icon-board.png", this));
 		list.setCellRenderer(new BoardListCellRenderer(icon));
 		list.addListSelectionListener(new ListSelectionListener() {
@@ -87,7 +89,7 @@ public class BoardSelectionPanel extends JPanel {
 				if (listener != null) { listener.boardSelected(selectedBoard); }
 			}
 		});
-		add(list,"growx,growy");
+		add(scrollPane,"growx,growx");
 	}
 
 }

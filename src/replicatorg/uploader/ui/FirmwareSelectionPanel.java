@@ -6,6 +6,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -45,6 +46,7 @@ public class FirmwareSelectionPanel extends JPanel {
 		add(new JLabel("Select the firmware version to install:"),"growy 0,wrap");
 		final JList list = new JList(new FirmwareListModel(selectedBoard));
 		list.setFixedCellHeight(30);
+		final JScrollPane scrollPane = new JScrollPane(list);
 		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent lse) {
 				if (list.getSelectedIndex() != -1) {
@@ -54,6 +56,6 @@ public class FirmwareSelectionPanel extends JPanel {
 				}
 			}
 		});
-		add(list,"growx,growy");
+		add(scrollPane,"growx,growx");
 	}
 }
