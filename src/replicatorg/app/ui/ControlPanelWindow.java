@@ -132,8 +132,22 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	protected UpdateThread updateThread;
 
 	protected PollThread pollThread;
+	
+	private static ControlPanelWindow instance = null;
 
-	public ControlPanelWindow(MachineController m) {
+	public static synchronized ControlPanelWindow getControlPanel(MachineController m) {
+		if (instance == null) {
+			instance = new ControlPanelWindow(m);
+		} else {
+			if (instance.machine != m) {
+				instance.dispose();
+				instance = new ControlPanelWindow(m);
+			}
+		}
+		return instance;
+	}
+	
+	private ControlPanelWindow(MachineController m) {
 		super("Control Panel");
 
 		// save our machine!
@@ -949,12 +963,17 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	}
 
 	public void windowClosing(WindowEvent e) {
-		System.out.println("window closing");
 		updateThread.interrupt();
 		pollThread.interrupt();
 	}
 
 	public void windowClosed(WindowEvent e) {
+		synchronized(getClass()) {
+			machine.removeMachineStateListener(this);
+			if (instance == this) {
+				instance = null;
+			}
+		}
 	}
 
 	public void windowOpened(WindowEvent e) {
@@ -1018,7 +1037,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	}
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
-		if (evt.getState().isBuilding()) {
+		if (evt.getState().isBuilding() || !evt.getState().isConnected()) {
 			if (updateThread != null) { updateThread.interrupt(); }
 			if (pollThread != null) { pollThread.interrupt(); }
 			dispose();

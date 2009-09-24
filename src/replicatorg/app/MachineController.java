@@ -251,6 +251,7 @@ public class MachineController {
 		}
 		
 		public void forceReset() {
+			setState(new MachineState(MachineState.State.NOT_ATTACHED));
 			interrupt();
 			resetInternal();
 		}
@@ -742,6 +743,7 @@ public class MachineController {
 			getSimulatorDriver().dispose();
 		}
 		driver.dispose();
+		setState(new MachineState(MachineState.State.NOT_ATTACHED));
 	}
 	
 	private Vector<MachineListener> listeners = new Vector<MachineListener>();
@@ -750,7 +752,11 @@ public class MachineController {
 		listeners.add(listener);
 		listener.machineStateChanged(new MachineStateChangeEvent(this,getMachineState()));
 	}
-	
+
+	public void removeMachineStateListener(MachineListener listener) {
+		listeners.remove(listener);
+	}
+
 	protected void emitStateChange(MachineState prev, MachineState current) {
 		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current, prev);
 		for (MachineListener l : listeners) {

@@ -979,7 +979,6 @@ public class GCodeParser {
 		if (angleB <= angleA)
 			angleB += 2 * Math.PI;
 		angle = angleB - angleA;
-
 		// calculate a couple useful things.
 		radius = Math.sqrt(aX * aX + aY * aY);
 		length = radius * angle;

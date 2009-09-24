@@ -135,7 +135,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	JLabel statusLabel;
 
 	MainButton simButton, pauseButton, stopButton;
-	MainButton buildButton, resetButton;
+	MainButton buildButton, resetButton, cpButton;
+	MainButton disconnectButton;
 	
 	MainButton uploadButton, playbackButton;
 	
@@ -165,8 +166,16 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		stopButton = makeButton("Stop", "images/button-stop.png");
 		add(stopButton);
 
+
+		cpButton = makeButton("Control panel", "images/button-control-panel.png");
+		add(cpButton,"gap unrelated");
+		
 		resetButton = makeButton("Reset machine", "images/button-reset.png");
 		add(resetButton,"gap unrelated");
+		disconnectButton = makeButton("Disconnect machine", "images/button-disconnect.png");
+		add(disconnectButton,"gap unrelated");
+		
+		
 
 		statusLabel = new JLabel();
 		statusLabel.setFont(statusFont);
@@ -206,6 +215,10 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			editor.handleStop();
 		} else if (e.getSource() == resetButton) {
 			editor.handleReset();
+		} else if (e.getSource() == cpButton) {
+			editor.handleControlPanel();
+		} else if (e.getSource() == disconnectButton) {
+			editor.handleDisconnect();
 		}
 	}
 
@@ -238,10 +251,11 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		buildButton.setSelected(runningTarget == MachineState.Target.MACHINE);
 		uploadButton.setSelected(runningTarget == MachineState.Target.SD_UPLOAD);
 		playbackButton.setSelected(runningTarget == MachineState.Target.NONE);
-		
-		resetButton.setEnabled(s.getState() != MachineState.State.AUTO_SCAN && 
-				s.getState() != MachineState.State.NOT_ATTACHED &&
-				s.getState() != MachineState.State.CONNECTING );
+
+		boolean connected = s.isConnected();
+		resetButton.setEnabled(connected); 
+		disconnectButton.setEnabled(connected);
+		cpButton.setEnabled(ready);
 	}
 
 	public void machineProgress(MachineProgressEvent event) {

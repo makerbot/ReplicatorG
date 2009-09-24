@@ -90,6 +90,12 @@ public class MachineState extends Object implements Cloneable {
 			this.target == Target.SIMULATOR; 	
 	}
 	
+	public boolean isConnected() {
+		return state != State.AUTO_SCAN && 
+			state != State.NOT_ATTACHED &&
+			state != State.CONNECTING;
+	}
+	
 	public MachineState clone() {
 		try {
 			return (MachineState)super.clone();

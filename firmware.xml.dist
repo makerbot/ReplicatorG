@@ -36,5 +36,9 @@
        major="1"
        minor="4"
        relpath="firmware/ArduinoSlaveExtruder-v1.4.hex"/>
+    <firmware
+       major="1"
+       minor="5"
+       relpath="firmware/ArduinoSlaveExtruder-v1.5.hex"/>
   </board>
 </boards>

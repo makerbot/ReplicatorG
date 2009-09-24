@@ -1177,8 +1177,20 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					"ReplicatorG can't connect to your machine.\nTry checking your settings and resetting your machine.",
 					"Can't find machine", JOptionPane.ERROR_MESSAGE);
 		} else {
-			ControlPanelWindow window = new ControlPanelWindow(machine);
-			window.setVisible(true);
+			ControlPanelWindow window = ControlPanelWindow.getControlPanel(machine);
+			if (window != null) {
+				window.setVisible(true);
+				window.toFront();
+			}
+		}
+	}
+
+	public void handleDisconnect() {
+		if (machine == null) {
+			// machine already disconnected
+		} else {
+			machine.dispose();
+			machine = null;
 		}
 	}
 
