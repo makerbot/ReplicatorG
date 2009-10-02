@@ -4,6 +4,7 @@
 * Remember last opened directory
 * Scrolling on lists in uploader, SD card file selector
 * Bundled gen3 firmware v1.5 (SD card improvements)
+* Bundled gen3 firmware v1.6 (PID control for heater)
 * Close control panel on build start
 * Only one control panel available at a time
 * Added disconnect and control panel buttons
