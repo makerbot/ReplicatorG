@@ -15,12 +15,16 @@
        pattern="http://makerbot.googlecode.com/files/SanguinoMaster-v([0-9]+).([0-9]+)^[0-9]*.hex"/>
     <firmware
        major="1"
-       minor="4"
-       relpath="firmware/SanguinoMaster-v1.4.hex"/>
+       minor="6"
+       relpath="firmware/SanguinoMaster-v1.6.hex"/>
     <firmware
        major="1"
        minor="5"
        relpath="firmware/SanguinoMaster-v1.5.hex"/>
+    <firmware
+       major="1"
+       minor="4"
+       relpath="firmware/SanguinoMaster-v1.4.hex"/>
   </board>
   <board name="Extruder Controller v2.2">
     <version major="2" minor="2"/>
@@ -34,11 +38,15 @@
        pattern="http://makerbot.googlecode.com/files/ArduinoSlaveExtruder-v([0-9]+).([0-9]+)^[0-9]*.hex"/>
     <firmware
        major="1"
-       minor="4"
-       relpath="firmware/ArduinoSlaveExtruder-v1.4.hex"/>
+       minor="6"
+       relpath="firmware/ArduinoSlaveExtruder-v1.6.hex"/>
     <firmware
        major="1"
        minor="5"
        relpath="firmware/ArduinoSlaveExtruder-v1.5.hex"/>
+    <firmware
+       major="1"
+       minor="4"
+       relpath="firmware/ArduinoSlaveExtruder-v1.4.hex"/>
   </board>
 </boards>
