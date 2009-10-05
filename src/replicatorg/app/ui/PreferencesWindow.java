@@ -13,8 +13,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -83,14 +81,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content.add(delPrefs,"wrap");
 		delPrefs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				try {
-					Base.preferences.removeNode();
-					Base.preferences.flush();
-					showCurrentSettings();
-				} catch (BackingStoreException bse) {
-					bse.printStackTrace();
-				}
-				Base.preferences = Preferences.userNodeForPackage(Base.class);
+				Base.resetPreferences();
+				showCurrentSettings();
 			}
 			
 			

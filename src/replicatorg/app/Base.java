@@ -61,6 +61,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import javax.imageio.ImageIO;
@@ -117,6 +118,16 @@ public class Base {
 	
 	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
 
+	static public void resetPreferences() {
+		try {
+			Base.preferences.removeNode();
+			Base.preferences.flush();
+			preferences = Preferences.userNodeForPackage(Base.class);
+		} catch (BackingStoreException bse) {
+			bse.printStackTrace();
+		}
+	}
+	
 	static public String getToolsPath() {
 	    String toolsDir = System.getProperty("replicatorg.toolpath");
 	    if (toolsDir == null || (toolsDir.length() == 0)) {

@@ -20,6 +20,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
+import replicatorg.app.MachineController;
 import replicatorg.uploader.AbstractFirmwareUploader;
 import replicatorg.uploader.FirmwareUploader;
 import replicatorg.uploader.FirmwareVersion;
@@ -148,7 +149,8 @@ public class UploaderDialog extends JDialog implements ActionListener {
 	}
 
 	void performUpload() {
-		Base.getMachine().dispose();
+		MachineController machine = Base.getMachine();
+		if (machine != null) { machine.dispose(); }
 		AbstractFirmwareUploader uploader = null;
 		NodeList nl = selectedBoard.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
