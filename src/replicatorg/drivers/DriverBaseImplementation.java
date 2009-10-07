@@ -203,12 +203,14 @@ public class DriverBaseImplementation implements Driver {
 		return offsets[i];
 	}
 
+	private Point3d currentPosition = new Point3d();
+	
 	public void setCurrentPosition(Point3d p) {
-		machine.setCurrentPosition(p);
+		currentPosition = p;
 	}
 
 	public Point3d getCurrentPosition() {
-		return new Point3d(machine.getCurrentPosition());
+		return new Point3d(currentPosition);
 	}
 
 	public Point3d getPosition() {
@@ -233,7 +235,7 @@ public class DriverBaseImplementation implements Driver {
 		queuePoint(p, feedrate);
 
 		// save it as our current position now.
-		machine.setCurrentPosition(p);
+		setCurrentPosition(p);
 	}
 
 	protected void queuePoint(Point3d p, Double feedrate) {

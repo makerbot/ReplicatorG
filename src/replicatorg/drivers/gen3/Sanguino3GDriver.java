@@ -353,7 +353,7 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Queued point " + p);
 
 		// is this point even step-worthy?
-		Point3d deltaSteps = getAbsDeltaSteps(machine.getCurrentPosition(), p);
+		Point3d deltaSteps = getAbsDeltaSteps(getCurrentPosition(), p);
 		double masterSteps = getLongestLength(deltaSteps);
 
 		// okay, we need at least one step.
@@ -362,7 +362,7 @@ public class Sanguino3GDriver extends SerialDriver
 			Point3d steps = machine.mmToSteps(p);
 
 			// how fast are we doing it?
-			long micros = convertFeedrateToMicros(machine.getCurrentPosition(),
+			long micros = convertFeedrateToMicros(getCurrentPosition(),
 					p, getSafeFeedrate(deltaSteps));
 
 			// okay, send it off!

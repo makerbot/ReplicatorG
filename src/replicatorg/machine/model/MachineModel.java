@@ -38,7 +38,7 @@ public class MachineModel
 	protected Node xml;
 	
 	//our machine space
-	private Point3d currentPosition;
+	//private Point3d currentPosition;
 	@SuppressWarnings("unused")
 	private Point3d minimum;
 	private Point3d maximum;
@@ -66,7 +66,7 @@ public class MachineModel
 		clamps = new Vector<ClampModel>();
 		tools = new Vector<ToolModel>();
 		
-		currentPosition = new Point3d();
+		//currentPosition = new Point3d();
 		minimum = new Point3d();
 		maximum = new Point3d();
 		maximumFeedrates = new Point3d();
@@ -190,15 +190,15 @@ public class MachineModel
 	/*************************************
 	* Basic positioning information
 	*************************************/
-	public Point3d getCurrentPosition()
-	{
-		return new Point3d(currentPosition);
-	}
+	//public Point3d getCurrentPosition()
+	//{
+	//	return new Point3d(currentPosition);
+	//}
 	
-	public void setCurrentPosition(Point3d p)
-	{
-		currentPosition = new Point3d(p);
-	}
+	//public void setCurrentPosition(Point3d p)
+	//{
+	//	currentPosition = new Point3d(p);
+	//}
 
 	/*************************************
 	*  Convert steps to millimeter units
