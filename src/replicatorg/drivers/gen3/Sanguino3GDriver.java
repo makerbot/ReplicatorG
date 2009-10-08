@@ -234,7 +234,7 @@ public class Sanguino3GDriver extends SerialDriver
 	 */
 	protected PacketResponse runCommand(byte[] packet) {
 		assert (serial != null);
-
+		
 		if (packet == null || packet.length < 4)
 			return null; // skip empty commands or broken commands
 
@@ -1024,6 +1024,15 @@ public class Sanguino3GDriver extends SerialDriver
 		System.out.println("Stop.");
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.ABORT.getCode());
 		runCommand(pb.getPacket());
+		// invalidate position, force reconciliation.
+		invalidatePosition();
+	}
+
+	protected Point3d reconcilePosition() {
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.GET_POSITION.getCode());
+		PacketResponse pr = runCommand(pb.getPacket());
+		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
+		return machine.stepsToMM(steps);
 	}
 
 	public void reset() {

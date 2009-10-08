@@ -209,7 +209,26 @@ public class DriverBaseImplementation implements Driver {
 		currentPosition = p;
 	}
 
+	/**
+	 * Indicate that the currently maintained position may no longer be the machine's position,
+	 * and that the machine should be queried for its actual location.
+	 */
+	protected void invalidatePosition() {
+		currentPosition = null;
+	}
+	
+	/**
+	 * Drivers should override this method to get the actual position as recorded by the machine.
+	 * This is useful, for example, after stopping a print, to ask the machine where it is.
+	 */
+	protected Point3d reconcilePosition() {
+		throw new RuntimeException("Position reconcilliation requested, but not implemented for this driver");
+	}
+	
 	public Point3d getCurrentPosition() {
+		if (currentPosition == null) {
+			currentPosition = reconcilePosition();
+		}
 		return new Point3d(currentPosition);
 	}
 

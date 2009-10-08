@@ -274,7 +274,7 @@ public class MachineController {
 				System.out.println("Running build.");
 				buildCodesInternal(source);
 				runCooldownCommands();
-				reset();
+				setState(new MachineState(MachineState.State.READY));
 			} catch (BuildFailureException e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(),
 						"Build Failure", JOptionPane.ERROR_MESSAGE);

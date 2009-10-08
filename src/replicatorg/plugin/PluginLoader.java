@@ -9,6 +9,7 @@ package replicatorg.plugin;
  * plugin.name = Short name of plugin
  * plugin.description = A longer (~50 words) description of what this plugin does
  * 
+ * The plugin type is implicit in the interfaces returned by the plugin.
  */
 
 import java.io.File;
