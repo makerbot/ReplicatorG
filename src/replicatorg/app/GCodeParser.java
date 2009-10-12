@@ -57,7 +57,7 @@ public class GCodeParser {
 	// our curve section variables.
 	public static double curveSectionInches = 0.019685;
 
-	public static double curveSectionMM = 0.005;
+	public static double curveSectionMM = 0.05;
 
 	protected double curveSection = 0.0;
 
