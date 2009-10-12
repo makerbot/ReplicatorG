@@ -41,6 +41,8 @@
 		<warmup>
 		</warmup>
 		<cooldown>
+(Turn off steppers after a build.)
+M18
 		</cooldown>
 	</machine>
 	<machine experimental="1">
@@ -70,6 +72,8 @@
 		<warmup>
 		</warmup>
 		<cooldown>
+(Turn off steppers after a build.)
+M18
 		</cooldown>
 	</machine>
 	<!-- Cupcake prototype description -->
@@ -97,6 +101,8 @@
 		<warmup>
 		</warmup>
 		<cooldown>
+(Turn off steppers after a build.)
+M18
 		</cooldown>
 	</machine>
 	<machine experimental="1">
@@ -123,6 +129,8 @@
 		<warmup>
 		</warmup>
 		<cooldown>
+(Turn off steppers after a build.)
+M18
 		</cooldown>
 	</machine>
 </machines>

@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" output="classes" path="src"/>
-	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/RXTXcomm.jar">
+	<classpathentry kind="lib" path="build/shared/lib/RXTXcomm.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="trunk/build/linux/dist/lib-i686"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/antlr.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/j3dcore.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/j3dutils.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/mrj.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/oro.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/quaqua.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/registry.jar"/>
-	<classpathentry kind="lib" path="/home/phooky/makerbot/replicatorg/trunk/build/shared/lib/vecmath.jar"/>
-	<classpathentry kind="con" path="/System/Library/Java"/>
+	<classpathentry kind="lib" path="build/shared/lib/antlr.jar"/>
+	<classpathentry kind="lib" path="build/shared/lib/j3dcore.jar"/>
+	<classpathentry kind="lib" path="build/shared/lib/j3dutils.jar"/>
+	<classpathentry kind="lib" path="build/shared/lib/mrj.jar"/>
+	<classpathentry kind="lib" path="build/shared/lib/oro.jar"/>
+	<classpathentry kind="lib" path="build/shared/lib/quaqua.jar"/>
+	<classpathentry kind="lib" path="build/shared/lib/registry.jar"/>
+	<classpathentry kind="lib" path="build/shared/lib/vecmath.jar"/>
 	<classpathentry kind="lib" path="build/shared/lib/miglayout-3.7.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-6-openjdk"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

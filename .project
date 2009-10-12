@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>trunk</name>
+	<name>ReplicatorG</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -28,7 +28,7 @@
 		<link>
 			<name>classes</name>
 			<type>2</type>
-			<location>/home/phooky/makerbot/replicatorg/trunk/build/classes</location>
+			<location>build/classes</location>
 		</link>
 	</linkedResources>
 </projectDescription>
