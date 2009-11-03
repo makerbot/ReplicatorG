@@ -23,6 +23,10 @@
 
 package replicatorg.drivers.gen3;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -238,6 +242,20 @@ public class Sanguino3GDriver extends SerialDriver
 		if (packet == null || packet.length < 4)
 			return null; // skip empty commands or broken commands
 
+		if (fileCaptureOstream != null) {
+			// capture to file.
+			try {
+				if ((packet[2] & 0x80) != 0) { // ignore query commands
+					fileCaptureOstream.write(packet,2,packet.length-3);
+				} 
+			} catch (IOException ioe) {
+				// IOE should be very rare and shouldn't have to contaminate
+				// our whole call stack; we'll wrap it in a runtime error.
+				throw new RuntimeException(ioe);
+			}
+			return PacketResponse.okResponse();  // Always pretend that it's all good.
+		}
+		
 		boolean packetSent = false;
 		PacketProcessor pp = new PacketProcessor();
 		PacketResponse pr = new PacketResponse();
@@ -1179,6 +1197,17 @@ public class Sanguino3GDriver extends SerialDriver
 		return ResponseCode.FAIL_GENERIC;
 	}
 
+	FileOutputStream fileCaptureOstream = null;
+	
+	public void beginFileCapture(String path) throws FileNotFoundException {
+		fileCaptureOstream = new FileOutputStream(new File(path));
+	}
+	
+	public void endFileCapture() throws IOException {
+		fileCaptureOstream.close();
+		fileCaptureOstream = null;
+	}
+	
 	public ResponseCode beginCapture(String filename) {
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.CAPTURE_TO_FILE.getCode());
 		for (byte b : filename.getBytes()) {

@@ -129,4 +129,8 @@ public class PacketResponse {
 		return ResponseCode.fromInt(payload[0]);
 	}
 
+	public static PacketResponse okResponse() {
+		final byte[] okPayload = {1,1,1,1,1,1,1,1}; // repeated 1s to fake out queries
+		return new PacketResponse(okPayload);
+	}
 }

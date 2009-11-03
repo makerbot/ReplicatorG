@@ -138,7 +138,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	MainButton buildButton, resetButton, cpButton;
 	MainButton disconnectButton;
 	
-	MainButton uploadButton, playbackButton;
+	MainButton uploadButton, playbackButton, fileButton;
 	
 	public MainButtonPanel(MainWindow editor) {
 		setLayout(new MigLayout("gap 5"));
@@ -160,6 +160,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		add(uploadButton);
 		playbackButton = makeButton("Build from SD card", "images/button-playback.png");
 		add(playbackButton);
+		fileButton = makeButton("Build to file", "images/button-to-file.png");
+		add(fileButton);
 
 		pauseButton = makeButton("Pause", "images/button-pause.png");
 		add(pauseButton,"gap unrelated");
@@ -207,6 +209,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			editor.handleBuild();
 		} else if (e.getSource() == uploadButton) {
 			editor.handleUpload();
+		} else if (e.getSource() == fileButton) {
+			editor.handleBuildToFile();
 		} else if (e.getSource() == playbackButton) {
 			editor.handlePlayback();
 		} else if (e.getSource() == pauseButton) {
@@ -235,8 +239,10 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		
 		uploadButton.setVisible(hasPlayback);
 		playbackButton.setVisible(hasPlayback);
+		fileButton.setVisible(hasPlayback);
 
 		simButton.setEnabled(!building);
+		fileButton.setEnabled(!building);
 		buildButton.setEnabled(ready);
 		uploadButton.setEnabled(ready);
 		playbackButton.setEnabled(ready);
@@ -250,6 +256,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		simButton.setSelected(runningTarget == MachineState.Target.SIMULATOR);
 		buildButton.setSelected(runningTarget == MachineState.Target.MACHINE);
 		uploadButton.setSelected(runningTarget == MachineState.Target.SD_UPLOAD);
+		fileButton.setSelected(runningTarget == MachineState.Target.FILE);
 		playbackButton.setSelected(runningTarget == MachineState.Target.NONE);
 
 		boolean connected = s.isConnected();

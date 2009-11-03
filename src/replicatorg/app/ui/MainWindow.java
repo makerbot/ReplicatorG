@@ -1384,7 +1384,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				!(machine.driver instanceof SDCardCapture)) {
 			System.err.println("Not ready to build yet.");
 		} else {
-			BuildNamingDialog bsd = new BuildNamingDialog(this);
+			BuildNamingDialog bsd = new BuildNamingDialog(this,sketch.name);
 			bsd.setVisible(true);
 			String path = bsd.getPath();
 			if (path != null) {
@@ -1402,6 +1402,73 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				message("Uploading...");
 				buildStart = new Date();
 				machine.upload(path);
+			}
+		}
+	}
+
+	// We can drop this in Java 6, which already has an equivalent
+	private class ExtensionFilter extends FileFilter {
+		private String extension;
+		private String description;
+		public ExtensionFilter(String extension,String description) { 
+			this.extension = extension;
+			this.description = description;
+		}
+		public boolean accept(File f) {
+			if (f.isDirectory()) { return !f.isHidden(); }
+			return f.getPath().toLowerCase().endsWith(extension);
+		}
+		public String getDescription() {
+			return description;
+		}
+	};
+
+	private String selectOutputFile(String defaultName) {
+		File directory = null;
+		String loadDir = Base.preferences.get("ui.open_output_dir", null);
+		if (loadDir != null) { directory = new File(loadDir); }
+		JFileChooser fc = new JFileChooser(directory);
+		fc.setFileFilter(new ExtensionFilter(".s3g","Makerbot build file"));
+		fc.setDialogTitle("Save Makerbot build as...");
+		fc.setDialogType(JFileChooser.SAVE_DIALOG);
+		fc.setFileHidingEnabled(false);
+		fc.setSelectedFile(new File(directory,defaultName));
+		int rv = fc.showSaveDialog(this);
+	    if (rv == JFileChooser.APPROVE_OPTION) {
+	    	fc.getSelectedFile().getName();
+	    	Base.preferences.put("ui.open_output_dir",fc.getCurrentDirectory().getAbsolutePath());
+	    	return fc.getSelectedFile().getAbsolutePath();
+	    } else {
+	    	return null;
+	    }
+	}
+
+	public void handleBuildToFile() {
+		if (building)
+			return;
+		if (simulating)
+			return;
+		if (machine == null || machine.driver == null ||
+				!(machine.driver instanceof SDCardCapture)) {
+			System.err.println("Not ready to build yet.");
+		} else {
+			String sourceName = sketch.name + ".s3g";
+			String path = selectOutputFile(sourceName);
+			if (path != null) {
+				// close stuff.
+				doClose();
+	
+				// build specific stuff
+				building = true;
+				//buttons.activate(MainButtonPanel.BUILD);
+	
+				setEditorBusy(true);
+	
+				// start our building thread.
+	
+				message("Saving...");
+				buildStart = new Date();
+				machine.buildToFile(path);
 			}
 		}
 	}
@@ -1819,22 +1886,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		String loadDir = Base.preferences.get("ui.open_dir", null);
 		if (loadDir != null) { directory = new File(loadDir); }
 		JFileChooser fc = new JFileChooser(directory);
-		// We can drop this in Java 6, which already has an equivalent
-		class ExtensionFilter extends FileFilter {
-			private String extension;
-			private String description;
-			public ExtensionFilter(String extension,String description) { 
-				this.extension = extension;
-				this.description = description;
-			}
-			public boolean accept(File f) {
-				if (f.isDirectory()) { return !f.isHidden(); }
-				return f.getPath().toLowerCase().endsWith(extension);
-			}
-			public String getDescription() {
-				return description;
-			}
-		};
 		FileFilter defaultFilter;
 		fc.addChoosableFileFilter(defaultFilter = new ExtensionFilter(".gcode","GCode files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".stl","STL files"));

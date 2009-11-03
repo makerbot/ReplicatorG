@@ -22,7 +22,7 @@ public class BuildNamingDialog extends JDialog {
 	/// Returns null if no path is selected or the cancel button was clicked.
 	public String getPath() { return path; }
 
-	public BuildNamingDialog(Frame parent) {
+	public BuildNamingDialog(Frame parent, String sourceName) {
 		super(parent,"Name the captured build",true);
 		Container c = getContentPane();
 		c.setLayout(new MigLayout("fill"));
@@ -39,7 +39,12 @@ public class BuildNamingDialog extends JDialog {
 				doCancel();
 			}
 		});
-		text = new JTextField("default.s3g",12);
+		// truncate at 8 chars
+		if (sourceName.length() > 8) {
+			sourceName = sourceName.substring(0, 8);
+		}
+		sourceName = sourceName + ".s3g";
+		text = new JTextField(sourceName,12);
 //		text.getDocument().addDocumentListener(new DocumentListener() {
 //			public void changedUpdate(DocumentEvent arg0) {
 //			}

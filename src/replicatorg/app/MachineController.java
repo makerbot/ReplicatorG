@@ -334,6 +334,12 @@ public class MachineController {
 			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SD_UPLOAD));
 		}
 
+		public void buildToFile(GCodeSource source, String path) {
+			currentSource = source;
+			this.remoteName = path;
+			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.FILE));
+		}
+
 		public void buildRemote(String remoteName) {
 			this.remoteName = remoteName;
 			setState(MachineState.State.PLAYBACK);
@@ -379,6 +385,19 @@ public class MachineController {
 									buildInternal(currentSource);
 									System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
 								} else { setState(MachineState.State.STOPPING); }
+							} else {
+								setState(MachineState.State.STOPPING);
+							}
+						} else if (state.getTarget() == MachineState.Target.FILE) {
+							if (driver instanceof SDCardCapture) {
+								SDCardCapture sdcc = (SDCardCapture)driver;
+								try {
+									sdcc.beginFileCapture(remoteName); 
+									buildInternal(currentSource);
+									sdcc.endFileCapture();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
 							} else {
 								setState(MachineState.State.STOPPING);
 							}
@@ -711,6 +730,12 @@ public class MachineController {
 	synchronized public void upload(String remoteName) {
 		machineThread.upload(source, remoteName);
 	}
+
+	synchronized public void buildToFile(String path) {
+		machineThread.buildToFile(source, path);
+	}
+
+	
 	synchronized public void unpause() {
 		machineThread.resumeBuild();
 	}

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" output="classes" path="src"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="build/shared/lib/RXTXcomm.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="trunk/build/linux/dist/lib-i686"/>

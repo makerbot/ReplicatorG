@@ -1,5 +1,7 @@
 package replicatorg.drivers;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 public interface SDCardCapture {
@@ -22,6 +24,9 @@ public interface SDCardCapture {
 	 */
 	public int endCapture();
 	
+	public void beginFileCapture(String path) throws FileNotFoundException;
+	public void endFileCapture() throws IOException;
+
 	public ResponseCode playback(String filename);
 
 	/**
