@@ -39,7 +39,9 @@ public class SimulationDriver extends DriverBaseImplementation {
 	}
 
 	public void setSimulationBounds(Rectangle2D.Double bounds) {
-		simulation.setSimulationBounds(bounds);
+		if (isSimulating()) {
+			simulation.setSimulationBounds(bounds);
+		}
 	}
 	
 	public boolean isSimulating() {

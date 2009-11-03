@@ -568,7 +568,7 @@ public class MachineController {
 	 */
 	public boolean execute() {
 		// start simulator
-		if (simulator != null)
+		if (simulator != null && Base.preferences.getBoolean("build.showSimulator",true))
 			simulator.createWindow();
 
 		// estimate build time.
@@ -611,12 +611,10 @@ public class MachineController {
 			}
 
 			if (simulator != null) {
-				System.err.println("setting sim bounds on simulator");
 				simulator.setSimulationBounds(estimator.getBounds());
 			}
 			// oh, how this needs to be cleaned up...
 			if (driver instanceof SimulationDriver) {
-				System.err.println("setting sim bounds on driver");
 				((SimulationDriver)driver).setSimulationBounds(estimator.getBounds());
 			}
 			estimatedBuildTime = estimator.getBuildTime();
