@@ -40,6 +40,7 @@ import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.EstimationDriver;
+import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.machine.MachineListener;
@@ -410,6 +411,7 @@ public class MachineController {
 					} else if (state.getState() == MachineState.State.AUTO_SCAN) {
 						driver.autoscan();
 						if (driver.isInitialized()) {
+							readName();
 							setState(MachineState.State.READY);
 						} else {
 							setState(MachineState.State.NOT_ATTACHED);
@@ -417,6 +419,7 @@ public class MachineController {
 					} else if (state.getState() == MachineState.State.CONNECTING) {
 						resetInternal();
 						if (driver.isInitialized()) {
+							readName();
 							setState(MachineState.State.READY);
 						} else {
 							setState(MachineState.State.NOT_ATTACHED);
@@ -442,6 +445,14 @@ public class MachineController {
 		}
 	}
 	
+	private void readName() {
+		if (driver instanceof OnboardParameters) {
+			String n = ((OnboardParameters)driver).getMachineName();
+			if (n != null && n.length() > 0) {
+				name = n;
+			}
+		}
+	}
 	MachineThread machineThread = new MachineThread();
 	
 	// The GCode source of the current build source.
