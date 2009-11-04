@@ -807,7 +807,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		menu.add(serialMenu);
 		
 		item = new JCheckBoxMenuItem("Enable autoscan",
-					     Base.preferences.getBoolean("autoscan",true));
+					     Base.preferences.getBoolean("autoscan",false));
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			    JCheckBoxMenuItem box = 
@@ -2338,7 +2338,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					e.printStackTrace();
 				}
 			}
-			else if (Base.preferences.getBoolean("autoscan",true)) {
+			else if (Base.preferences.getBoolean("autoscan",false)) {
 				machine.autoscan();
 			} else {
 				String lastPort = Base.preferences.get("serial.last_selected", null);
