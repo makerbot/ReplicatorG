@@ -1193,7 +1193,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			machine = null;
 		}
 	}
+	
+	public void handleConnect() {
+		if (machine != null) {
+			// machine already connected
+		} else {
+			String name = Base.preferences.get("machine.name", null);
+			if ( name != null ) {
+				loadMachine(name);
+			}
+		}
+	}
 
+	
 	public void handleOnboardPrefs() {
 		if (machine == null || 
 				!(machine.driver instanceof OnboardParameters)) {

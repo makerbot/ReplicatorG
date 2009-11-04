@@ -136,7 +136,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 	MainButton simButton, pauseButton, stopButton;
 	MainButton buildButton, resetButton, cpButton;
-	MainButton disconnectButton;
+	MainButton disconnectButton, connectButton;
 	
 	MainButton uploadButton, playbackButton, fileButton;
 	
@@ -174,8 +174,10 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		
 		resetButton = makeButton("Reset machine", "images/button-reset.png");
 		add(resetButton,"gap unrelated");
+		connectButton = makeButton("Connect machine", "images/button-connect.png");
+		add(connectButton,"gap unrelated");
 		disconnectButton = makeButton("Disconnect machine", "images/button-disconnect.png");
-		add(disconnectButton,"gap unrelated");
+		add(disconnectButton);
 		
 		
 
@@ -221,6 +223,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			editor.handleReset();
 		} else if (e.getSource() == cpButton) {
 			editor.handleControlPanel();
+		} else if (e.getSource() == connectButton) {
+			editor.handleConnect();
 		} else if (e.getSource() == disconnectButton) {
 			editor.handleDisconnect();
 		}
@@ -262,6 +266,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		boolean connected = s.isConnected();
 		resetButton.setEnabled(connected); 
 		disconnectButton.setEnabled(connected);
+		connectButton.setEnabled(!connected);
 		cpButton.setEnabled(ready);
 	}
 
