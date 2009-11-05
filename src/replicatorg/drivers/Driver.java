@@ -143,6 +143,12 @@ public interface Driver {
 
 	public Point3d getCurrentPosition();
 
+	/**
+	 * Indicate that the currently maintained position may no longer be the machine's position,
+	 * and that the machine should be queried for its actual location.
+	 */
+	void invalidatePosition();
+
 	public void queuePoint(Point3d p);
 
 	public Point3d getOffset(int i);

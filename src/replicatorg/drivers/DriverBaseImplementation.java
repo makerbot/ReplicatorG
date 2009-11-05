@@ -213,7 +213,7 @@ public class DriverBaseImplementation implements Driver {
 	 * Indicate that the currently maintained position may no longer be the machine's position,
 	 * and that the machine should be queried for its actual location.
 	 */
-	protected void invalidatePosition() {
+	public void invalidatePosition() {
 		currentPosition = null;
 	}
 	

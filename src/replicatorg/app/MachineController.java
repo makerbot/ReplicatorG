@@ -275,6 +275,7 @@ public class MachineController {
 				System.out.println("Running build.");
 				buildCodesInternal(source);
 				runCooldownCommands();
+				driver.invalidatePosition();
 				setState(new MachineState(MachineState.State.READY));
 			} catch (BuildFailureException e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(),
@@ -316,7 +317,8 @@ public class MachineController {
 				} catch (InterruptedException e) {
 				}
 			}
-			reset();
+			driver.invalidatePosition();
+			setState(new MachineState(MachineState.State.READY));
 		}
 		
 		public void build(GCodeSource source) {
