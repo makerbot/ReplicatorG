@@ -1,3 +1,15 @@
+0010 ReplicatorG
+
+* Status panel responses improved
+* Added images for set home/go home buttons
+* Reconcilles position after builds
+* Connect button added
+* Autoscan defaults to disabled
+* Display machine's name, if set
+* Disable simulation in preferences
+* Build to file (to local SD card, for instance)
+* Removed post-build resets
+
 0009 ReplicatorG
 
 * Moved to Swing file selector

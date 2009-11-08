@@ -21,28 +21,7 @@ Arduino is descended from the also wonderful Processing environment (http://www.
 
 ReplicatorG was forked from Arduino in August 2008.
 
-Changes in 0007:
-
-0007 ReplicatorG
-
-* Fix for issue 15 (credit to Charles Pax)
-* Adding constants for SD card write/playback commands
-* Basic testing support for SD card builds
-* Adding card capture api
-* Adding pausability to remote builds
-* Switching out gif for png with transparency
-* Refactor/prep for SD uploading
-* Button bar revision, interface prep for SD card prints
-* Fixed up startup window positioning
-* Removed preferences store/load race condition that was screwing up window sizing
-* moved some shutdown code out of handleQuit2 into proper shutdown hook
-* hide drivers marked 'experimental'
-* added preference for viewing experimental machine profiles
-* busy cursor on long loads
-* reduced load time for files in large directory
-* proper error messages for SD operations
-* added feature check to buttons (only display for 1.3)
-* removing skeinforge from 0007, now distributed seperately
+See changelog.txt for a list of changes in each version.
 
 People who have worked on ReplicatorG include:
 
