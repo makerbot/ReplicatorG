@@ -418,8 +418,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		int w = Base.preferences.getInt("last.window.width",500); 
 		int h = Base.preferences.getInt("last.window.height",600);
 
-		//System.err.println("(pre)  using bounds: "+new Rectangle(x,y,w,h).toString());
-
 		// TODO: rely on underlying platform mechanism for window sizing and
 		// positioning
 		// * Validate w, h

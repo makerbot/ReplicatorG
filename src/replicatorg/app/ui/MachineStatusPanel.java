@@ -12,7 +12,6 @@ import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
-import replicatorg.app.Serial;
 import replicatorg.app.TimeoutException;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.UsesSerial;
@@ -42,8 +41,8 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	protected double currentTemperature = -1;
 	
 	static final private Color BG_NO_MACHINE = new Color(0xff, 0x80, 0x60);
-
 	static final private Color BG_READY = new Color(0x80, 0xff, 0x60);
+	static final private Color BG_BUILDING = new Color(0xff, 0xef, 0x00); // process yellow
 
 	// static final private Color BG_WAIT = new Color(0xff,0xff,0x60);
 
@@ -82,29 +81,23 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	 *            the machine's controller, or null if no machine is attached.
 	 */
 	public void setMachine(MachineController machine) {
-		System.err.println("Machine set to "+machine);
 		if (this.machine == machine)
 			return;
 		this.machine = machine;
-		updateMachineStatus();
+		updateMachineStatus(new MachineStateChangeEvent(machine,machine.getMachineState()));
 	}
 
 	private boolean firmwareWarningIssued = false;
 
 	
-	protected String getMachineStateMessage() {
+	protected String getMachineStateMessage(MachineController machine) {
 		if (machine == null) { return "No machine selected"; }
 		MachineState state = machine.getMachineState();
 		if (state.getState() == MachineState.State.NOT_ATTACHED) {
 			if (machine.getDriver() == null) {
 				return "No machine selected";
-			} else if (machine.driver instanceof UsesSerial && 
-					((UsesSerial)machine.driver).getSerial() == null) {
-				if (Serial.scanSerialNames().size() == 0) {
-					return "No serial ports detected";
-				} else {
-					return "No serial port selected";
-				}
+			} else {
+				return "Disconnected";
 			}
 		}
 		if (state.getState() == MachineState.State.CONNECTING) {
@@ -127,17 +120,25 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	/**
 	 * Display the current status of this machine.
 	 */
-	protected synchronized void updateMachineStatus() {
+	protected synchronized void updateMachineStatus(MachineStateChangeEvent evt) {
 		// update background to indicate high-level status
 		Color bgColor = Color.WHITE;
-		String text = getMachineStateMessage();
+		MachineController machine = evt.getSource();
+		String text = getMachineStateMessage(machine);
 		if (machine == null || machine.driver == null) {
 			bgColor = BG_NO_MACHINE;
 		} else {
-			if (!machine.isInitialized()) {
+			boolean initialized = machine.isInitialized() &&
+				evt.getState().getState() != MachineState.State.NOT_ATTACHED &&
+				evt.getState().getState() != MachineState.State.CONNECTING;
+			if (!initialized) {
 				bgColor = BG_NO_MACHINE;
 			} else {
-				bgColor = BG_READY;
+				if (evt.getState().isBuilding()) {
+					bgColor = BG_BUILDING;
+				} else {
+					bgColor = BG_READY;
+				}
 				currentTemperature = -1;
 				// Check version
 				try {
@@ -169,7 +170,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	}
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
-		updateMachineStatus();
+		updateMachineStatus(evt);
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
