@@ -2344,8 +2344,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					us.setSerial(new Serial(us.getPortName(),us));
 					machine.reset();
 				} catch (SerialException e) {
-					System.err.println("Could not use serial port specified in machines.xml ("+us.getPortName()+").");
-					e.printStackTrace();
+					System.err.println("Could not use/find serial port specified in machines.xml ("+us.getPortName()+").");
+					//e.printStackTrace();
 				}
 			}
 			else if (Base.preferences.getBoolean("autoscan",false)) {

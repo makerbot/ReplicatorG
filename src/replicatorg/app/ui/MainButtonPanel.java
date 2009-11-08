@@ -44,6 +44,7 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.app.MachineController;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -235,21 +236,16 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		boolean ready = s.isReady();
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();
-		boolean hasPlayback = (editor != null) &&
-			(editor.machine != null) && 
-			(editor.machine.driver != null) &&
-			(editor.machine.driver instanceof SDCardCapture) &&
-			(((SDCardCapture)editor.machine.driver).hasFeatureSDCardCapture());
-		
-		uploadButton.setVisible(hasPlayback);
-		playbackButton.setVisible(hasPlayback);
-		fileButton.setVisible(hasPlayback);
-
+		MachineController machine = evt.getSource();
+		boolean hasPlayback = (machine != null) && 
+			(machine.driver != null) &&
+			(machine.driver instanceof SDCardCapture) &&
+			(((SDCardCapture)machine.driver).hasFeatureSDCardCapture());
 		simButton.setEnabled(!building);
 		fileButton.setEnabled(!building);
 		buildButton.setEnabled(ready);
-		uploadButton.setEnabled(ready);
-		playbackButton.setEnabled(ready);
+		uploadButton.setEnabled(ready && hasPlayback);
+		playbackButton.setEnabled(ready && hasPlayback);
 		pauseButton.setEnabled(building);
 		stopButton.setEnabled(building);
 
