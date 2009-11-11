@@ -1949,13 +1949,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			// loading may take a few moments for large files
 
-			sketch = new Build(this, path);
-			handleOpenPath = path;
-			addMRUEntry(path);
-			reloadMruMenu();
-			header.rebuild();
-			if (Base.preferences.getBoolean("console.auto_clear",true)) {
-				console.clear();
+			if (path.toLowerCase().endsWith(".stl")) {
+				STLFrame stlFrame = new STLFrame(path);
+				stlFrame.setVisible(true);
+			} else {
+				sketch = new Build(this, path);
+				handleOpenPath = path;
+				addMRUEntry(path);
+				reloadMruMenu();
+				header.rebuild();
+				if (Base.preferences.getBoolean("console.auto_clear",true)) {
+					console.clear();
+				}
 			}
 		} catch (Exception e) {
 			error(e);
