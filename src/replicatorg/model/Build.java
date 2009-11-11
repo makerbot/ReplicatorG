@@ -29,7 +29,9 @@ import java.awt.FileDialog;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
@@ -40,17 +42,19 @@ import replicatorg.app.ui.MainWindow;
  * Stores information about files in the current sketch
  */
 public class Build {
-	static File tempBuildFolder;
-
+	/**
+	 * The editor window associated with this build.  We should remove this dependency or replace it with a
+	 * buildupdatelistener or the like.
+	 */
 	MainWindow editor;
 
 	/**
-	 * Name of sketch, which is the name of main file (without .gcode extension)
+	 * Name of sketch, which is the name of main file, sans extension.
 	 */
 	public String name;
 
 	/**
-	 * Name of 'main' file, used by load(), such as sketch_04040.gcode
+	 * Name of source file, used by load().  This may be an .STL file or a .gcode file.
 	 */
 	String mainFilename;
 
@@ -59,25 +63,23 @@ public class Build {
 	 */
 	public boolean modified;
 
+	/**
+	 * The folder which the base file is located in.
+	 */
 	public File folder;
 
-	static public final int GCODE = 0;
-
-	static public final String flavorExtensionsReal[] = new String[] { ".gcode" };
-
-	static public final String flavorExtensionsShown[] = new String[] { "", ".gcode" };
-
-	public BuildCode current;
+	/**
+	 * The STL model that this build is based on, if any.
+	 */
+	public BuildModel objectModel = null;
+	/**
+	 * The current gcode interpretation of the model.
+	 */
+	public BuildCode currentCode;
 
 	int currentIndex;
 
-	public int codeCount;
-
-	public BuildCode code[];
-
-	public int hiddenCount;
-
-	public BuildCode hidden[];
+	public Vector<BuildCode> code = new Vector<BuildCode>();
 
 	Hashtable zipFileContents;
 
@@ -110,9 +112,6 @@ public class Build {
 			mainFilename = mainFilename + ".gcode";
 		}
 
-		tempBuildFolder = Base.getBuildFolder();
-		// Base.addBuildFolderToClassPath();
-
 		String parentPath = new File(path).getParent(); 
 		if (parentPath == null) {
 			parentPath = ".";
@@ -140,51 +139,17 @@ public class Build {
 		// get list of files in the sketch folder
 		String list[] = { mainFilename }; //folder.list();
 
+		int codeCount = 0;
 		for (int i = 0; i < list.length; i++) {
 			if (list[i].endsWith(".gcode"))
 				codeCount++;
 		}
 
-		code = new BuildCode[codeCount];
-		hidden = new BuildCode[hiddenCount];
-
-		int codeCounter = 0;
-		int hiddenCounter = 0;
-
 		for (int i = 0; i < list.length; i++) {
 			if (list[i].endsWith(".gcode")) {
-				code[codeCounter++] = new BuildCode(list[i].substring(0,
-						list[i].length() - 6), new File(folder, list[i]), GCODE);
+				code.add(new BuildCode(list[i].substring(0,
+						list[i].length() - 6), new File(folder, list[i])));
 
-			}
-		}
-
-		// some of the hidden files may be bad too, so use hiddenCounter
-		// added for rev 0121, fixes bug found by axel
-		hiddenCount = hiddenCounter;
-
-		// remove any entries that didn't load properly from codeCount
-		int index = 0;
-		while (index < codeCount) {
-			if ((code[index] == null) || (code[index].program == null)) {
-				for (int i = index + 1; i < codeCount; i++) {
-					code[i - 1] = code[i];
-				}
-				codeCount--;
-
-			} else {
-				index++;
-			}
-		}
-
-		// move the main class to the first tab
-		// start at 1, if it's at zero, don't bother
-		for (int i = 1; i < codeCount; i++) {
-			if (code[i].file.getName().equals(mainFilename)) {
-				BuildCode temp = code[0];
-				code[0] = code[i];
-				code[i] = temp;
-				break;
 			}
 		}
 
@@ -199,31 +164,13 @@ public class Build {
 		// make sure the user didn't hide the sketch folder
 		ensureExistence();
 
-		// add file to the code/codeCount list, resort the list
-		if (codeCount == code.length) {
-			BuildCode temp[] = new BuildCode[codeCount + 1];
-			System.arraycopy(code, 0, temp, 0, codeCount);
-			code = temp;
-		}
-		code[codeCount++] = newCode;
+		code.add(newCode);
 	}
 
+	// NB: I just removed a hand-coded bubble sort here.  This is pretty much the equivalent
+	// of opening up a jet engine and finding a wooden gear.
 	protected void sortCode() {
-		// cheap-ass sort of the rest of the files
-		// it's a dumb, slow sort, but there shouldn't be more than ~5 files
-		for (int i = 1; i < codeCount; i++) {
-			int who = i;
-			for (int j = i + 1; j < codeCount; j++) {
-				if (code[j].name.compareTo(code[who].name) < 0) {
-					who = j; // this guy is earlier in the alphabet
-				}
-			}
-			if (who != i) { // swap with someone if changes made
-				BuildCode temp = code[who];
-				code[who] = code[i];
-				code[i] = temp;
-			}
-		}
+		Collections.sort(code);
 	}
 
 	boolean renamingCode;
@@ -285,7 +232,7 @@ public class Build {
 		// a bunch of special stuff for each platform
 		// (osx is case insensitive but preserving, windows insensitive,
 		// *nix is sensitive and preserving.. argh)
-		if (renamingCode && newName.equalsIgnoreCase(current.name)) {
+		if (renamingCode && newName.equalsIgnoreCase(currentCode.name)) {
 			// exit quietly for the 'rename' case.
 			// if it's a 'new' then an error will occur down below
 			return;
@@ -301,18 +248,15 @@ public class Build {
 		}
 
 		String newFilename = null;
-		int newFlavor = 0;
 
 		// separate into newName (no extension) and newFilename (with ext)
 		// add .gcode to file if it has no extension
 		if (newName.endsWith(".gcode")) {
 			newFilename = newName;
 			newName = newName.substring(0, newName.length() - 6);
-			newFlavor = GCODE;
 
 		} else {
 			newFilename = newName + ".gcode";
-			newFlavor = GCODE;
 		}
 
 		// dots are allowed for the .gcode and .java, but not in the name
@@ -357,11 +301,11 @@ public class Build {
 				// however this *will* first save the sketch, then rename
 
 				// first get the contents of the editor text area
-				if (current.modified) {
-					current.program = editor.getText();
+				if (currentCode.modified) {
+					currentCode.program = editor.getText();
 					try {
 						// save this new SketchCode
-						current.save();
+						currentCode.save();
 					} catch (Exception e) {
 						Base.showWarning("Error",
 								"Could not rename the sketch. (0)", e);
@@ -369,9 +313,9 @@ public class Build {
 					}
 				}
 
-				if (!current.file.renameTo(newFile)) {
+				if (!currentCode.file.renameTo(newFile)) {
 					Base.showWarning("Error", "Could not rename \""
-							+ current.file.getName() + "\" to \""
+							+ currentCode.file.getName() + "\" to \""
 							+ newFile.getName() + "\"", null);
 					return;
 				}
@@ -379,9 +323,8 @@ public class Build {
 				// save each of the other tabs because this is gonna be
 				// re-opened
 				try {
-					for (int i = 1; i < codeCount; i++) {
-						// if (code[i].modified) code[i].save();
-						code[i].save();
+					for (BuildCode c : code) {
+						c.save();
 					}
 				} catch (Exception e) {
 					Base.showWarning("Error",
@@ -415,17 +358,16 @@ public class Build {
 				//editor.sketchbook.rebuildMenus();
 
 			} else { // else if something besides code[0]
-				if (!current.file.renameTo(newFile)) {
+				if (!currentCode.file.renameTo(newFile)) {
 					Base.showWarning("Error", "Could not rename \""
-							+ current.file.getName() + "\" to \""
+							+ currentCode.file.getName() + "\" to \""
 							+ newFile.getName() + "\"", null);
 					return;
 				}
 
 				// just reopen the class itself
-				current.name = newName;
-				current.file = newFile;
-				current.flavor = newFlavor;
+				currentCode.name = newName;
+				currentCode.file = newFile;
 			}
 
 		} else { // creating a new file
@@ -437,7 +379,7 @@ public class Build {
 						+ "\"", e);
 				return;
 			}
-			BuildCode newCode = new BuildCode(newName, newFile, newFlavor);
+			BuildCode newCode = new BuildCode(newName, newFile);
 			insertCode(newCode);
 		}
 
@@ -445,7 +387,7 @@ public class Build {
 		sortCode();
 
 		// set the new guy as current
-		setCurrent(newName + flavorExtensionsShown[newFlavor]);
+		setCurrent(newName + ".gcode");
 
 		// update the tabs
 		// editor.header.repaint();
@@ -479,8 +421,7 @@ public class Build {
 		// confirm deletion with user, yes/no
 		Object[] options = { "OK", "Cancel" };
 		String prompt = (currentIndex == 0) ? "Are you sure you want to delete this sketch?"
-				: "Are you sure you want to delete \"" + current.name
-						+ flavorExtensionsShown[current.flavor] + "\"?";
+				: "Are you sure you want to delete \"" + currentCode.file.getName() + "\"?";
 		int result = JOptionPane.showOptionDialog(editor, prompt, "Delete",
 				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
 				options, options[0]);
@@ -501,14 +442,14 @@ public class Build {
 
 			} else {
 				// delete the file
-				if (!current.file.delete()) {
+				if (!currentCode.file.delete()) {
 					Base.showMessage("Couldn't do it", "Could not delete \""
-							+ current.name + "\".");
+							+ currentCode.name + "\".");
 					return;
 				}
 
 				// remove code from the list
-				removeCode(current);
+				removeCode(currentCode);
 
 				// just set current tab to the main tab
 				setCurrent(0);
@@ -522,129 +463,22 @@ public class Build {
 	protected void removeCode(BuildCode which) {
 		// remove it from the internal list of files
 		// resort internal list of files
-		for (int i = 0; i < codeCount; i++) {
-			if (code[i] == which) {
-				for (int j = i; j < codeCount - 1; j++) {
-					code[j] = code[j + 1];
-				}
-				codeCount--;
-				return;
-			}
-		}
-		System.err.println("removeCode: internal error.. could not find code");
+		code.remove(which);
 	}
 
-	public void hideCode() {
-		// make sure the user didn't hide the sketch folder
-		ensureExistence();
-
-		// if read-only, give an error
-		if (isReadOnly()) {
-			// if the files are read-only, need to first do a "save as".
-			Base
-					.showMessage(
-							"Sketch is Read-Only",
-							"Some files are marked \"read-only\", so you'll\n"
-									+ "need to re-save the sketch in another location,\n"
-									+ "and try again.");
-			return;
-		}
-
-		// don't allow hide of the main code
-		// TODO maybe gray out the menu on setCurrent(0)
-		if (currentIndex == 0) {
-			Base.showMessage("Can't do that", "You cannot hide the main "
-					+ ".gcode file from a sketch\n");
-			return;
-		}
-
-		// rename the file
-		File newFile = new File(current.file.getAbsolutePath() + ".x");
-		if (!current.file.renameTo(newFile)) {
-			Base.showWarning("Error", "Could not hide " + "\""
-					+ current.file.getName() + "\".", null);
-			return;
-		}
-		current.file = newFile;
-
-		// move it to the hidden list
-		if (hiddenCount == hidden.length) {
-			BuildCode temp[] = new BuildCode[hiddenCount + 1];
-			System.arraycopy(hidden, 0, temp, 0, hiddenCount);
-			hidden = temp;
-		}
-		hidden[hiddenCount++] = current;
-
-		// remove it from the main list
-		removeCode(current);
-
-		// update the tabs
-		setCurrent(0);
-		editor.getHeader().repaint();
-	}
-
-	public void unhideCode(String what) {
-		BuildCode unhideCode = null;
-		String name = what.substring(0, (what.indexOf(".") == -1 ? what
-				.length() : what.indexOf(".")));
-		String extension = what.indexOf(".") == -1 ? "" : what.substring(what
-				.indexOf("."));
-
-		for (int i = 0; i < hiddenCount; i++) {
-			if (hidden[i].name.equals(name)
-					&& Build.flavorExtensionsShown[hidden[i].flavor]
-							.equals(extension)) {
-				// unhideIndex = i;
-				unhideCode = hidden[i];
-
-				// remove from the 'hidden' list
-				for (int j = i; j < hiddenCount - 1; j++) {
-					hidden[j] = hidden[j + 1];
-				}
-				hiddenCount--;
-				break;
-			}
-		}
-		// if (unhideIndex == -1) {
-		if (unhideCode == null) {
-			System.err.println("internal error: could find " + what
-					+ " to unhide.");
-			return;
-		}
-		if (!unhideCode.file.exists()) {
-			Base.showMessage("Can't unhide", "The file \"" + what
-					+ "\" no longer exists.");
-			// System.out.println(unhideCode.file);
-			return;
-		}
-		String unhidePath = unhideCode.file.getAbsolutePath();
-		File unhideFile = new File(unhidePath.substring(0,
-				unhidePath.length() - 2));
-
-		if (!unhideCode.file.renameTo(unhideFile)) {
-			Base.showMessage("Can't unhide", "The file \"" + what
-					+ "\" could not be" + "renamed and unhidden.");
-			return;
-		}
-		unhideCode.file = unhideFile;
-		insertCode(unhideCode);
-		sortCode();
-		setCurrent(unhideCode.name);
-		editor.getHeader().repaint();
-	}
 
 	/**
 	 * Sets the modified value for the code in the frontmost tab.
 	 */
 	public void setModified(boolean state) {
-		current.modified = state;
+		currentCode.modified = state;
 		calcModified();
 	}
 
 	public void calcModified() {
 		modified = false;
-		for (int i = 0; i < codeCount; i++) {
-			if (code[i].modified) {
+		for (BuildCode c : code) {
+			if (c.modified) {
 				modified = true;
 				break;
 			}
@@ -660,8 +494,8 @@ public class Build {
 		ensureExistence();
 
 		// first get the contents of the editor text area
-		if (current.modified) {
-			current.program = editor.getText();
+		if (currentCode.modified) {
+			currentCode.program = editor.getText();
 		}
 
 		// don't do anything if not actually modified
@@ -679,9 +513,9 @@ public class Build {
 				return false;
 		}
 
-		for (int i = 0; i < codeCount; i++) {
-			if (code[i].modified)
-				code[i].save();
+		for (BuildCode c:code) {
+			if (c.modified)
+				c.save();
 		}
 		calcModified();
 		return true;
@@ -724,28 +558,17 @@ public class Build {
 
 		// grab the contents of the current tab before saving
 		// first get the contents of the editor text area
-		if (current.modified) {
-			current.program = editor.getText();
+		if (currentCode.modified) {
+			currentCode.program = editor.getText();
 		}
 
-		// save the other tabs to their new location
-		for (int i = 1; i < codeCount; i++) {
-			File newFile = new File(newFolder, code[i].file.getName());
-			code[i].saveAs(newFile);
+		for (BuildCode c: code) {
+			File newFile = new File(newFolder, c.file.getName());
+			c.saveAs(newFile);
 		}
-
-		// save the hidden code to its new location
-		for (int i = 0; i < hiddenCount; i++) {
-			File newFile = new File(newFolder, hidden[i].file.getName());
-			hidden[i].saveAs(newFile);
-		}
-
-		// save the main tab with its new name
-		File newFile = new File(newFolder, newName);
-		code[0].saveAs(newFile);
 
 		editor
-				.handleOpenUnchecked(newFile.getPath(), currentIndex,
+				.handleOpenUnchecked(code.get(0).file.getPath(), currentIndex,
 						editor.textarea.getSelectionStart(), editor.textarea
 								.getSelectionEnd(), editor.textarea
 								.getScrollPosition());
@@ -838,14 +661,12 @@ public class Build {
 		// make the tabs update after this guy is added
 		if (addingCode) {
 			String newName = destFile.getName();
-			int newFlavor = -1;
 			if (newName.toLowerCase().endsWith(".gcode")) {
 				newName = newName.substring(0, newName.length() - 6);
-				newFlavor = GCODE;
 			}
 
 			// see also "nameCode" for identical situation
-			BuildCode newCode = new BuildCode(newName, destFile, newFlavor);
+			BuildCode newCode = new BuildCode(newName, destFile);
 			insertCode(newCode);
 			sortCode();
 			setCurrent(newName);
@@ -864,21 +685,21 @@ public class Build {
 	 */
 	public void setCurrent(int which) {
 		// if current is null, then this is the first setCurrent(0)
-		if ((currentIndex == which) && (current != null)) {
+		if ((currentIndex == which) && (currentCode != null)) {
 			return;
 		}
 
 		// get the text currently being edited
-		if (current != null) {
-			current.program = editor.getText();
-			current.selectionStart = editor.textarea.getSelectionStart();
-			current.selectionStop = editor.textarea.getSelectionEnd();
-			current.scrollPosition = editor.textarea.getScrollPosition();
+		if (currentCode != null) {
+			currentCode.program = editor.getText();
+			currentCode.selectionStart = editor.textarea.getSelectionStart();
+			currentCode.selectionStop = editor.textarea.getSelectionEnd();
+			currentCode.scrollPosition = editor.textarea.getScrollPosition();
 		}
 
-		current = code[which];
+		currentCode = code.get(which);
 		currentIndex = which;
-		editor.setCode(current);
+		editor.setCode(currentCode);
 		// editor.setDocument(current.document,
 		// current.selectionStart, current.selectionStop,
 		// current.scrollPosition, current.undo);
@@ -908,13 +729,9 @@ public class Build {
 		String name = findName.substring(0,
 				(findName.indexOf(".") == -1 ? findName.length() : findName
 						.indexOf(".")));
-		String extension = findName.indexOf(".") == -1 ? "" : findName
-				.substring(findName.indexOf("."));
 
-		for (int i = 0; i < codeCount; i++) {
-			if (name.equals(code[i].name)
-					&& Build.flavorExtensionsShown[code[i].flavor]
-							.equals(extension)) {
+		for (int i = 0; i < code.size(); i++) {
+			if (name.equals(code.get(i).name)) {
 				setCurrent(i);
 				return;
 			}
@@ -929,11 +746,6 @@ public class Build {
 		// won't be able to delete them, so we need to force a gc here
 		System.gc();
 
-		// note that we can't remove the builddir itself, otherwise
-		// the next time we start up, internal runs using Runner won't
-		// work because the build dir won't exist at startup, so the classloader
-		// will ignore the fact that that dir is in the CLASSPATH in run.sh
-		Base.removeDescendants(tempBuildFolder);
 	}
 
 	/**
@@ -943,7 +755,7 @@ public class Build {
 		// make sure the user didn't hide the sketch folder
 		ensureExistence();
 
-		current.program = editor.getText();
+		currentCode.program = editor.getText();
 
 		// TODO record history here
 		// current.history.record(program, SketchHistory.RUN);
@@ -1028,11 +840,8 @@ public class Build {
 			folder.mkdirs();
 			modified = true;
 
-			for (int i = 0; i < codeCount; i++) {
-				code[i].save(); // this will force a save
-			}
-			for (int i = 0; i < hiddenCount; i++) {
-				hidden[i].save(); // this will force a save
+			for (BuildCode c:code) {
+				c.save(); // this will force a save
 			}
 			calcModified();
 
@@ -1052,9 +861,9 @@ public class Build {
 	 */
 	public boolean isReadOnly() {
 		// check to see if each modified code file can be written to
-		for (int i = 0; i < codeCount; i++) {
-			if (code[i].modified && !code[i].file.canWrite()
-					&& code[i].file.exists()) {
+		for (BuildCode c:code) {
+			if (c.modified && !c.file.canWrite()
+					&& c.file.exists()) {
 				// System.err.println("found a read-only file " + code[i].file);
 				return true;
 			}
@@ -1066,17 +875,17 @@ public class Build {
 	 * Returns path to the main .gcode file for this sketch.
 	 */
 	public String getMainFilePath() {
-		return code[0].file.getAbsolutePath();
+		return code.get(0).file.getAbsolutePath();
 	}
 
 	public void prevCode() {
 		int prev = currentIndex - 1;
 		if (prev < 0)
-			prev = codeCount - 1;
+			prev = code.size() - 1;
 		setCurrent(prev);
 	}
 
 	public void nextCode() {
-		setCurrent((currentIndex + 1) % codeCount);
+		setCurrent((currentIndex + 1) % code.size());
 	}
 }

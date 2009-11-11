@@ -73,8 +73,6 @@ public class EditorHeader extends JComponent {
 
 	JPopupMenu popup;
 
-	JMenuItem hideItem;
-
 	int menuLeft;
 
 	int menuRight;
@@ -141,7 +139,7 @@ public class EditorHeader extends JComponent {
 					popup.show(EditorHeader.this, x, y);
 
 				} else {
-					for (int i = 0; i < editor.sketch.codeCount; i++) {
+					for (int i = 0; i < editor.sketch.code.size(); i++) {
 						if ((x > tabLeft[i]) && (x < tabRight[i])) {
 							editor.sketch.setCurrent(i);
 							repaint();
@@ -201,22 +199,18 @@ public class EditorHeader extends JComponent {
 		g.setColor(backgroundColor);
 		g.fillRect(0, 0, imageW, imageH);
 
-		if ((tabLeft == null) || (tabLeft.length < sketch.codeCount)) {
-			tabLeft = new int[sketch.codeCount];
-			tabRight = new int[sketch.codeCount];
+		if ((tabLeft == null) || (tabLeft.length < sketch.code.size())) {
+			tabLeft = new int[sketch.code.size()];
+			tabRight = new int[sketch.code.size()];
 		}
-
-		// disable hide on the first tab
-		hideItem.setEnabled(sketch.current != sketch.code[0]);
 
 		// int x = 0; //Preferences.GUI_SMALL;
 		// int x = (Base.platform == Base.MACOSX) ? 0 : 1;
 		int x = 6; // offset from left edge of the component
-		for (int i = 0; i < sketch.codeCount; i++) {
-			BuildCode code = sketch.code[i];
+		for (int i = 0; i < sketch.code.size(); i++) {
+			BuildCode code = sketch.code.get(i);
 
-			String codeName = (code.flavor == Build.GCODE) ? code.name
-					: code.file.getName();
+			String codeName = code.name;
 
 			// if modified, add the li'l glyph next to the name
 			String text = "  " + codeName + (code.modified ? " \u00A7" : "  ");
@@ -229,7 +223,7 @@ public class EditorHeader extends JComponent {
 			int pieceCount = 2 + (textWidth / PIECE_WIDTH);
 			int pieceWidth = pieceCount * PIECE_WIDTH;
 
-			int state = (code == sketch.current) ? SELECTED : UNSELECTED;
+			int state = (code == sketch.currentCode) ? SELECTED : UNSELECTED;
 			g.drawImage(pieces[state][LEFT], x, 0, null);
 			x += PIECE_WIDTH;
 
@@ -244,7 +238,7 @@ public class EditorHeader extends JComponent {
 
 			g.setColor(textColor[state]);
 			int baseline = (sizeH + fontAscent) / 2;
-			// g.drawString(sketch.code[i].name, textLeft, baseline);
+			// g.drawString(sketch.code.get(i).name, textLeft, baseline);
 			g.drawString(text, textLeft, baseline);
 
 			g.drawImage(pieces[state][RIGHT], x, 0, null);
@@ -300,13 +294,13 @@ public class EditorHeader extends JComponent {
 		 * item = MainWindow.newJMenuItem("Previous", KeyEvent.VK_PAGE_UP);
 		 * item.addActionListener(new ActionListener() { public void
 		 * actionPerformed(ActionEvent e) { System.out.println("prev"); } }); if
-		 * (editor.sketch != null) { item.setEnabled(editor.sketch.codeCount >
+		 * (editor.sketch != null) { item.setEnabled(editor.sketch.code.size() >
 		 * 1); } menu.add(item);
 		 * 
 		 * item = MainWindow.newJMenuItem("Next", KeyEvent.VK_PAGE_DOWN);
 		 * item.addActionListener(new ActionListener() { public void
 		 * actionPerformed(ActionEvent e) { System.out.println("ext"); } }); if
-		 * (editor.sketch != null) { item.setEnabled(editor.sketch.codeCount >
+		 * (editor.sketch != null) { item.setEnabled(editor.sketch.code.size() >
 		 * 1); } menu.add(item);
 		 * 
 		 * menu.addSeparator();
@@ -339,40 +333,8 @@ public class EditorHeader extends JComponent {
 		});
 		menu.add(item);
 
-		item = new JMenuItem("Hide");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				editor.sketch.hideCode();
-			}
-		});
-		menu.add(item);
-		hideItem = item;
-
-		JMenu unhide = new JMenu("Unhide");
-		ActionListener unhideListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String which = (String) e.getActionCommand();
-				editor.sketch.unhideCode(which);
-				rebuildMenu();
-			}
-		};
 		Build sketch = editor.sketch;
-		if (sketch != null) {
-			for (int i = 0; i < sketch.hiddenCount; i++) {
-				item = new JMenuItem(sketch.hidden[i].name
-						+ Build.flavorExtensionsShown[sketch.hidden[i].flavor]);
-				item
-						.setActionCommand(sketch.hidden[i].name
-								+ Build.flavorExtensionsShown[sketch.hidden[i].flavor]);
-				item.addActionListener(unhideListener);
-				unhide.add(item);
-			}
-		}
-		if (unhide.getItemCount() == 0) {
-			unhide.setEnabled(false);
-		}
 
-		menu.add(unhide);
 		menu.addSeparator();
 
 		// KeyEvent.VK_LEFT and VK_RIGHT will make Windows beep
@@ -416,9 +378,8 @@ public class EditorHeader extends JComponent {
 					editor.sketch.setCurrent(e.getActionCommand());
 				}
 			};
-			for (int i = 0; i < sketch.codeCount; i++) {
-				item = new JMenuItem(sketch.code[i].name
-						+ Build.flavorExtensionsShown[sketch.code[i].flavor]);
+			for (int i = 0; i < sketch.code.size(); i++) {
+				item = new JMenuItem(sketch.code.get(i).name);
 				item.addActionListener(jumpListener);
 				menu.add(item);
 			}

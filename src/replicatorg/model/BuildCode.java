@@ -33,15 +33,12 @@ import javax.swing.undo.UndoManager;
 import replicatorg.app.Base;
 import replicatorg.app.syntax.SyntaxDocument;
 
-public class BuildCode {
+public class BuildCode implements Comparable<BuildCode> {
 	/** Pretty name (no extension), not the full file name */
 	public String name;
 
 	/** File object for where this code is located */
 	public File file;
-
-	/** Type of code in this tab, Sketch.PDE or Sketch.JAVA */
-	public int flavor;
 
 	/** Text of the program text for this tab */
 	public String program;
@@ -67,10 +64,9 @@ public class BuildCode {
 
 	int preprocOffset; // where this code starts relative to the concat'd code
 
-	public BuildCode(String name, File file, int flavor) {
+	public BuildCode(String name, File file) {
 		this.name = name;
 		this.file = file;
-		this.flavor = flavor;
 
 		try {
 			load();
@@ -104,5 +100,9 @@ public class BuildCode {
 	 */
 	public void saveAs(File newFile) throws IOException {
 		Base.saveFile(program, newFile);
+	}
+
+	public int compareTo(BuildCode other) {
+		return name.compareTo(other.name);
 	}
 }
