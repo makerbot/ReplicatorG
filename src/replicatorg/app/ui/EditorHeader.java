@@ -46,6 +46,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 
 import replicatorg.app.Base;
+import replicatorg.model.Build;
+import replicatorg.model.BuildCode;
 
 /**
  * Sketch tabs at the top of the editor window.
@@ -154,7 +156,7 @@ public class EditorHeader extends JComponent {
 		if (screen == null)
 			return;
 
-		Sketch sketch = editor.sketch;
+		Build sketch = editor.sketch;
 		if (sketch == null)
 			return; // ??
 
@@ -211,9 +213,9 @@ public class EditorHeader extends JComponent {
 		// int x = (Base.platform == Base.MACOSX) ? 0 : 1;
 		int x = 6; // offset from left edge of the component
 		for (int i = 0; i < sketch.codeCount; i++) {
-			SketchCode code = sketch.code[i];
+			BuildCode code = sketch.code[i];
 
-			String codeName = (code.flavor == Sketch.GCODE) ? code.name
+			String codeName = (code.flavor == Build.GCODE) ? code.name
 					: code.file.getName();
 
 			// if modified, add the li'l glyph next to the name
@@ -354,14 +356,14 @@ public class EditorHeader extends JComponent {
 				rebuildMenu();
 			}
 		};
-		Sketch sketch = editor.sketch;
+		Build sketch = editor.sketch;
 		if (sketch != null) {
 			for (int i = 0; i < sketch.hiddenCount; i++) {
 				item = new JMenuItem(sketch.hidden[i].name
-						+ Sketch.flavorExtensionsShown[sketch.hidden[i].flavor]);
+						+ Build.flavorExtensionsShown[sketch.hidden[i].flavor]);
 				item
 						.setActionCommand(sketch.hidden[i].name
-								+ Sketch.flavorExtensionsShown[sketch.hidden[i].flavor]);
+								+ Build.flavorExtensionsShown[sketch.hidden[i].flavor]);
 				item.addActionListener(unhideListener);
 				unhide.add(item);
 			}
@@ -416,7 +418,7 @@ public class EditorHeader extends JComponent {
 			};
 			for (int i = 0; i < sketch.codeCount; i++) {
 				item = new JMenuItem(sketch.code[i].name
-						+ Sketch.flavorExtensionsShown[sketch.code[i].flavor]);
+						+ Build.flavorExtensionsShown[sketch.code[i].flavor]);
 				item.addActionListener(jumpListener);
 				menu.add(item);
 			}

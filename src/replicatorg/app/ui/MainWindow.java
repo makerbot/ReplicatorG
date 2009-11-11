@@ -115,6 +115,8 @@ import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.model.JEditTextAreaSource;
+import replicatorg.model.Build;
+import replicatorg.model.BuildCode;
 import replicatorg.uploader.FirmwareUploader;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -179,6 +181,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	EditorHeader header;
 
+	public EditorHeader getHeader() { return header; }
+	
 	//EditorStatus status;
 
 	MachineStatusPanel machineStatusPanel;
@@ -192,7 +196,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	JLabel lineNumberComponent;
 
 	// currently opened program
-	public Sketch sketch;
+	public Build sketch;
 
 	public JEditTextArea textarea;
 
@@ -1257,7 +1261,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * Switch between tabs, this swaps out the Document object that's currently
 	 * being manipulated.
 	 */
-	public void setCode(SketchCode code) {
+	public void setCode(BuildCode code) {
 		if (code.document == null) { // this document not yet inited
 			code.document = new SyntaxDocument();
 
@@ -1961,7 +1965,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			// loading may take a few moments for large files
 
-			sketch = new Sketch(this, path);
+			sketch = new Build(this, path);
 			handleOpenPath = path;
 			addMRUEntry(path);
 			reloadMruMenu();

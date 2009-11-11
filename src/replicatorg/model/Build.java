@@ -23,7 +23,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app.ui;
+package replicatorg.model;
 
 import java.awt.FileDialog;
 import java.awt.Toolkit;
@@ -34,11 +34,12 @@ import java.util.Hashtable;
 import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
+import replicatorg.app.ui.MainWindow;
 
 /**
  * Stores information about files in the current sketch
  */
-public class Sketch {
+public class Build {
 	static File tempBuildFolder;
 
 	MainWindow editor;
@@ -66,17 +67,17 @@ public class Sketch {
 
 	static public final String flavorExtensionsShown[] = new String[] { "", ".gcode" };
 
-	public SketchCode current;
+	public BuildCode current;
 
 	int currentIndex;
 
 	public int codeCount;
 
-	public SketchCode code[];
+	public BuildCode code[];
 
 	public int hiddenCount;
 
-	public SketchCode hidden[];
+	public BuildCode hidden[];
 
 	Hashtable zipFileContents;
 
@@ -91,7 +92,7 @@ public class Sketch {
 	 * path is location of the main .gcode file, because this is also simplest
 	 * to use when opening the file from the finder/explorer.
 	 */
-	public Sketch(MainWindow editor, String path) throws IOException {
+	public Build(MainWindow editor, String path) throws IOException {
 		this.editor = editor;
 
 		File mainFile = new File(path);
@@ -144,15 +145,15 @@ public class Sketch {
 				codeCount++;
 		}
 
-		code = new SketchCode[codeCount];
-		hidden = new SketchCode[hiddenCount];
+		code = new BuildCode[codeCount];
+		hidden = new BuildCode[hiddenCount];
 
 		int codeCounter = 0;
 		int hiddenCounter = 0;
 
 		for (int i = 0; i < list.length; i++) {
 			if (list[i].endsWith(".gcode")) {
-				code[codeCounter++] = new SketchCode(list[i].substring(0,
+				code[codeCounter++] = new BuildCode(list[i].substring(0,
 						list[i].length() - 6), new File(folder, list[i]), GCODE);
 
 			}
@@ -180,7 +181,7 @@ public class Sketch {
 		// start at 1, if it's at zero, don't bother
 		for (int i = 1; i < codeCount; i++) {
 			if (code[i].file.getName().equals(mainFilename)) {
-				SketchCode temp = code[0];
+				BuildCode temp = code[0];
 				code[0] = code[i];
 				code[i] = temp;
 				break;
@@ -194,13 +195,13 @@ public class Sketch {
 		setCurrent(0);
 	}
 
-	protected void insertCode(SketchCode newCode) {
+	protected void insertCode(BuildCode newCode) {
 		// make sure the user didn't hide the sketch folder
 		ensureExistence();
 
 		// add file to the code/codeCount list, resort the list
 		if (codeCount == code.length) {
-			SketchCode temp[] = new SketchCode[codeCount + 1];
+			BuildCode temp[] = new BuildCode[codeCount + 1];
 			System.arraycopy(code, 0, temp, 0, codeCount);
 			code = temp;
 		}
@@ -218,7 +219,7 @@ public class Sketch {
 				}
 			}
 			if (who != i) { // swap with someone if changes made
-				SketchCode temp = code[who];
+				BuildCode temp = code[who];
 				code[who] = code[i];
 				code[i] = temp;
 			}
@@ -436,7 +437,7 @@ public class Sketch {
 						+ "\"", e);
 				return;
 			}
-			SketchCode newCode = new SketchCode(newName, newFile, newFlavor);
+			BuildCode newCode = new BuildCode(newName, newFile, newFlavor);
 			insertCode(newCode);
 		}
 
@@ -449,7 +450,7 @@ public class Sketch {
 		// update the tabs
 		// editor.header.repaint();
 
-		editor.header.rebuild();
+		editor.getHeader().rebuild();
 
 		// force the update on the mac?
 		Toolkit.getDefaultToolkit().sync();
@@ -513,12 +514,12 @@ public class Sketch {
 				setCurrent(0);
 
 				// update the tabs
-				editor.header.repaint();
+				editor.getHeader().repaint();
 			}
 		}
 	}
 
-	protected void removeCode(SketchCode which) {
+	protected void removeCode(BuildCode which) {
 		// remove it from the internal list of files
 		// resort internal list of files
 		for (int i = 0; i < codeCount; i++) {
@@ -568,7 +569,7 @@ public class Sketch {
 
 		// move it to the hidden list
 		if (hiddenCount == hidden.length) {
-			SketchCode temp[] = new SketchCode[hiddenCount + 1];
+			BuildCode temp[] = new BuildCode[hiddenCount + 1];
 			System.arraycopy(hidden, 0, temp, 0, hiddenCount);
 			hidden = temp;
 		}
@@ -579,11 +580,11 @@ public class Sketch {
 
 		// update the tabs
 		setCurrent(0);
-		editor.header.repaint();
+		editor.getHeader().repaint();
 	}
 
 	public void unhideCode(String what) {
-		SketchCode unhideCode = null;
+		BuildCode unhideCode = null;
 		String name = what.substring(0, (what.indexOf(".") == -1 ? what
 				.length() : what.indexOf(".")));
 		String extension = what.indexOf(".") == -1 ? "" : what.substring(what
@@ -591,7 +592,7 @@ public class Sketch {
 
 		for (int i = 0; i < hiddenCount; i++) {
 			if (hidden[i].name.equals(name)
-					&& Sketch.flavorExtensionsShown[hidden[i].flavor]
+					&& Build.flavorExtensionsShown[hidden[i].flavor]
 							.equals(extension)) {
 				// unhideIndex = i;
 				unhideCode = hidden[i];
@@ -629,7 +630,7 @@ public class Sketch {
 		insertCode(unhideCode);
 		sortCode();
 		setCurrent(unhideCode.name);
-		editor.header.repaint();
+		editor.getHeader().repaint();
 	}
 
 	/**
@@ -648,7 +649,7 @@ public class Sketch {
 				break;
 			}
 		}
-		editor.header.repaint();
+		editor.getHeader().repaint();
 	}
 
 	/**
@@ -844,11 +845,11 @@ public class Sketch {
 			}
 
 			// see also "nameCode" for identical situation
-			SketchCode newCode = new SketchCode(newName, destFile, newFlavor);
+			BuildCode newCode = new BuildCode(newName, destFile, newFlavor);
 			insertCode(newCode);
 			sortCode();
 			setCurrent(newName);
-			editor.header.repaint();
+			editor.getHeader().repaint();
 		}
 		return true;
 	}
@@ -896,7 +897,7 @@ public class Sketch {
 		// current.selectionStop);
 		// editor.textarea.setSelectionStart(current.selectionStart);
 		// editor.textarea.setSelectionEnd(current.selectionStop);
-		editor.header.rebuild();
+		editor.getHeader().rebuild();
 	}
 
 	/**
@@ -912,7 +913,7 @@ public class Sketch {
 
 		for (int i = 0; i < codeCount; i++) {
 			if (name.equals(code[i].name)
-					&& Sketch.flavorExtensionsShown[code[i].flavor]
+					&& Build.flavorExtensionsShown[code[i].flavor]
 							.equals(extension)) {
 				setCurrent(i);
 				return;

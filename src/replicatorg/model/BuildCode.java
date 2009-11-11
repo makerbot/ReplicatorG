@@ -23,7 +23,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app.ui;
+package replicatorg.model;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +33,7 @@ import javax.swing.undo.UndoManager;
 import replicatorg.app.Base;
 import replicatorg.app.syntax.SyntaxDocument;
 
-public class SketchCode {
+public class BuildCode {
 	/** Pretty name (no extension), not the full file name */
 	public String name;
 
@@ -67,7 +67,7 @@ public class SketchCode {
 
 	int preprocOffset; // where this code starts relative to the concat'd code
 
-	public SketchCode(String name, File file, int flavor) {
+	public BuildCode(String name, File file, int flavor) {
 		this.name = name;
 		this.file = file;
 		this.flavor = flavor;
