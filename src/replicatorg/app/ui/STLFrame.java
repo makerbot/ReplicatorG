@@ -14,6 +14,7 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.swing.JFrame;
 import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
 
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
@@ -75,22 +76,23 @@ public class STLFrame extends JFrame {
 		e.printStackTrace();
 	}
 
+	Transform3D trans = new Transform3D();
+	trans.setScale(0.1);
+	trans.setTranslation(new Vector3d(0,0,-10));
+	objTrans.setTransform(trans);
 	// Create a new Behavior object that will perform the
 	// desired operation on the specified transform and add
 	// it into the scene graph.
-	Transform3D yAxis = new Transform3D();
-	Alpha rotationAlpha = new Alpha(-1, 4000);
+//	Transform3D yAxis = new Transform3D();
+//	Alpha rotationAlpha = new Alpha(-1, 4000);
 
-	RotationInterpolator rotator =
-	    new RotationInterpolator(rotationAlpha, objTrans, yAxis,
-				     0.0f, (float) Math.PI*2.0f);
-	BoundingSphere bounds =
-	    new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
-	rotator.setSchedulingBounds(bounds);
-	objRoot.addChild(rotator);
-
-        // Have Java 3D perform optimizations on this scene graph.
-        objRoot.compile();
+//	RotationInterpolator rotator =
+//	    new RotationInterpolator(rotationAlpha, objTrans, yAxis,
+//				     0.0f, (float) Math.PI*2.0f);
+//	BoundingSphere bounds =
+//	    new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
+//	rotator.setSchedulingBounds(bounds);
+	objRoot.compile();
 
 	return objRoot;
     }
