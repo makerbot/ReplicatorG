@@ -23,6 +23,7 @@ import java.net.URL;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.TriangleArray;
+import javax.vecmath.Vector3d;
 
 import org.j3d.loaders.stl.STLFileReader;
 
@@ -172,6 +173,25 @@ public class STLLoader extends LoaderBase
                         fNormal[ 0 ] = ( float ) normal[ 0 ];
                         fNormal[ 1 ] = ( float ) normal[ 1 ];
                         fNormal[ 2 ] = ( float ) normal[ 2 ];
+                        if (
+                        		fNormal[0] == 0 &&
+                        		fNormal[1] == 0 &&
+                        		fNormal[2] == 0)
+                        {
+                        	// Calculate normal
+                        	Vector3d v0 = new Vector3d(vertices[0]);
+                        	v0.negate();
+                        	Vector3d v1 = new Vector3d(vertices[1]);
+                        	v1.add(v0);
+                        	Vector3d v2 = new Vector3d(vertices[2]);
+                        	v2.add(v0);
+                        	Vector3d n = new Vector3d();
+                        	n.cross(v1,v2);
+                        	n.normalize();
+                        	fNormal[0] = (float)n.x;
+                        	fNormal[1] = (float)n.y;
+                        	fNormal[2] = (float)n.z;
+                        }
                         for( int k = 0; k < 3; k ++ )
                         {
                             geometry.setNormal( index, fNormal );
