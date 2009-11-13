@@ -8,7 +8,6 @@ import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.util.Enumeration;
 
-import javax.media.j3d.Alpha;
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Background;
@@ -20,13 +19,11 @@ import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Geometry;
 import javax.media.j3d.GeometryArray;
-import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
-import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
@@ -114,9 +111,21 @@ public class STLFrame extends JFrame {
 	
 	private SimpleUniverse univ = null;
 	private BranchGroup scene = null;
+	/**
+	 * The switch object that allows us to toggle between wireframe and solid modes.
+	 */
 	private Switch objectSwitch = null;
+	/**
+	 * Indicates whether we're in edge (wireframe) mode.  False indicates a solid view. 
+	 */
 	private boolean showEdges = false;
-
+	/**
+	 * The transform group for the shape.  The enclosed transform should be applied to the shape before:
+	 * * bounding box calculation
+	 * * saving out the STL for skeining
+	 */
+	private TransformGroup shapeTransform = new TransformGroup();
+	
 	public Node makeAmbientLight() {
 		AmbientLight ambient = new AmbientLight();
 		ambient.setColor(new Color3f(0.3f,0.3f,0.3f));
@@ -131,34 +140,44 @@ public class STLFrame extends JFrame {
 		light.setInfluencingBounds(bounds);
 		return light;
 	}
-	
-	public Node makeBoundingBox() {
+
+	final double wireBoxCoordinates[] = {
+			 0,  0,  0,    0,  0,  1,
+			 0,  1,  0,    0,  1,  1,
+			 1,  1,  0,    1,  1,  1,
+			 1,  0,  0,    1,  0,  1,
+			 
+			 0,  0,  0,    0,  1,  0,
+			 0,  0,  1,    0,  1,  1,
+			 1,  0,  1,    1,  1,  1,
+			 1,  0,  0,    1,  1,  0,
+
+			 0,  0,  0,    1,  0,  0,
+			 0,  0,  1,    1,  0,  1,
+			 0,  1,  1,    1,  1,  1,
+			 0,  1,  0,    1,  1,  0,
+	};
+
+	public Shape3D makeBoxFrame(Point3d ll, Vector3d dim) {
 		Appearance edges = new Appearance();
 		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_DOT,true));
 		edges.setPolygonAttributes(new PolygonAttributes(PolygonAttributes.POLYGON_LINE,
 				PolygonAttributes.CULL_NONE,0));
+		double[] coords = new double[wireBoxCoordinates.length];
+		for (int i = 0; i < wireBoxCoordinates.length;) {
+			coords[i] = (wireBoxCoordinates[i] * dim.x) + ll.x; i++;
+			coords[i] = (wireBoxCoordinates[i] * dim.y) + ll.y; i++;
+			coords[i] = (wireBoxCoordinates[i] * dim.z) + ll.z; i++;
+		}
+		LineArray wires = new LineArray(wireBoxCoordinates.length/3,GeometryArray.COORDINATES);
+		wires.setCoordinates(0, coords);
 
-		
-		LineArray wires = new LineArray(24,GeometryArray.COORDINATES);
-		double coordinates[] = {
-				-50, -50, -50,   -50, -50,  50,
-				-50,  50, -50,   -50,  50,  50,
-				 50,  50, -50,    50,  50,  50,
-				 50, -50, -50,    50, -50,  50,
-				 
-				-50, -50, -50,   -50,  50, -50,
-				-50, -50,  50,   -50,  50,  50,
-				 50, -50,  50,    50,  50,  50,
-				 50, -50, -50,    50,  50, -50,
+		return new Shape3D(wires,edges); 
+	}
+	
+	public Node makeBoundingBox() {
 
-				-50, -50, -50,    50, -50, -50,
-				-50, -50,  50,    50, -50,  50,
-				-50,  50,  50,    50,  50,  50,
-				-50,  50, -50,    50,  50, -50,
-		};
-		wires.setCoordinates(0, coordinates);
-		                        
-		Shape3D boxframe = new Shape3D(wires,edges); 
+		Shape3D boxframe = makeBoxFrame(new Point3d(-50,-50,-50), new Vector3d(100,100,100));	
 		
 		Appearance sides = new Appearance();
 		sides.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST,0.9f));
@@ -200,6 +219,24 @@ public class STLFrame extends JFrame {
 		return new Shape3D(grid,edges); 
 	}
 
+	private BoundingBox getBoundingBox(Shape3D shape) {
+		BoundingBox bb = null;
+		Enumeration geometries = shape.getAllGeometries();
+		while (geometries.hasMoreElements()) {
+			Geometry g = (Geometry)geometries.nextElement();
+			if (g instanceof GeometryArray) {
+				GeometryArray ga = (GeometryArray)g;
+				Point3d p = new Point3d();
+				for (int i = 0; i < ga.getVertexCount(); i++) {
+					ga.getCoordinate(i,p);
+					if (bb == null) { bb = new BoundingBox(p,p); }
+					bb.combine(p);
+				}
+			}
+		}
+		return bb;
+	}
+	
 	private Node makeShape(String path) {
 		STLLoader loader = new STLLoader();
 		Scene scene = null;
@@ -220,26 +257,7 @@ public class STLFrame extends JFrame {
 
 		objectSwitch = new Switch();
 		Shape3D originalShape = (Shape3D)sourceGroup.getChild(0);
-	
-		BoundingBox bb = new BoundingBox();
-		Enumeration geometries = originalShape.getAllGeometries();
-		while (geometries.hasMoreElements()) {
-			Geometry g = (Geometry)geometries.nextElement();
-			if (g instanceof GeometryArray) {
-				GeometryArray ga = (GeometryArray)g;
-				Point3d p = new Point3d();
-				for (int i = 0; i < ga.getVertexCount(); i++) {
-					ga.getCoordinate(i,p);
-					bb.combine(p);
-				}
-			}
-		}
-		Point3d lower = new Point3d();
-		Point3d upper = new Point3d();
-		bb.getLower(lower);
-		bb.getUpper(upper);
-		Box bounds = new Box();
-		
+
 		Shape3D shape = (Shape3D)originalShape.cloneTree();
 		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
 		objectSwitch.addChild(shape);
@@ -263,12 +281,19 @@ public class STLFrame extends JFrame {
 				PolygonAttributes.CULL_NONE,0));
 		edgeClone.setAppearance(edges);
 		
-		Group g = new Group();
-		g.addChild(objectSwitch);
-		g.addChild(bounds);
 		return objectSwitch;
 	}
-	
+
+	/*
+	 * 		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();		
+		BoundingBox bb = getBoundingBox(originalShape);
+		bb.getLower(lower);
+		bb.getUpper(upper);
+		Vector3d size = new Vector3d();
+		size.sub(upper, lower);
+		Shape3D bounds = makeBoxFrame(lower, size);
+*/
 	public BranchGroup createSTLScene(String path) {
 		// Create the root of the branch graph
 		BranchGroup objRoot = new BranchGroup();
@@ -352,14 +377,6 @@ public class STLFrame extends JFrame {
 		return c;
 	}
 
-	// ----------------------------------------------------------------
-
-	/** This method is called from within the constructor to
-	 * initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is
-	 * always regenerated by the Form Editor.
-	 */
-	// <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
 	private void initComponents() {
 		drawingPanel = new javax.swing.JPanel();
 
@@ -369,7 +386,7 @@ public class STLFrame extends JFrame {
 		getContentPane().add(drawingPanel, java.awt.BorderLayout.CENTER);
 
 		pack();
-	}// </editor-fold>//GEN-END:initComponents
+	}
 
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables
