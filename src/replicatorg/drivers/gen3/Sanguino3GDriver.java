@@ -268,45 +268,55 @@ public class Sanguino3GDriver extends SerialDriver
 				// try {
 				// Thread.sleep(0, 50000);
 				// } catch (Exception e) {}
+				Level logLevel = Level.FINER;
 
 				// do the actual send.
+				long start = System.currentTimeMillis();
 				serial.write(packet);
+				long end = System.currentTimeMillis();
+				if (end-start > 80) {
+					logLevel = Level.WARNING;
+					Base.logger.log(logLevel,"Long packet write ("+Long.toString(end-start)+"ms)");
+				}
 
-				if (Base.logger.isLoggable(Level.FINER)) {
+				boolean c = false;
+				while (!c) {
+					int b = serial.read();
+					if (b == -1) {
+						/// Windows has no timeout; busywait
+						if (Base.isWindows()) continue;
+						throw new TimeoutException(serial);
+					}
+					c = pp.processByte((byte)b);
+				}
+
+				pr = pp.getResponse();
+
+				if (pr.isOK())
+					packetSent = true;
+				else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
+					try {
+						Thread.sleep(25);
+					} catch (Exception e) {
+					}
+				} else {
+					logLevel = Level.SEVERE;
+					Base.logger.log(logLevel,"Packet error: "+pr.getResponseCode());
+				}
+				end = System.currentTimeMillis();
+				if (end-start > 100) {
+					logLevel = Level.WARNING;
+					Base.logger.log(logLevel,"Long packet response ("+Long.toString(end-start)+"ms)");
+				}
+				if (Base.logger.isLoggable(logLevel)) {
 					StringBuffer buf = new StringBuffer("OUT: ");
 					for (int i = 0; i < packet.length; i++) {
 						buf.append(Integer
 								.toHexString((int) packet[i] & 0xff));
 						buf.append(" ");
 					}
-					Base.logger.log(Level.FINER,buf.toString());
+					Base.logger.log(logLevel,buf.toString());
 				}
-
-					boolean c = false;
-					while (!c) {
-						int b = serial.read();
-						if (b == -1) {
-							/// Windows has no timeout; busywait
-							if (Base.isWindows()) continue;
-							throw new TimeoutException(serial);
-						}
-						c = pp.processByte((byte) b);
-					}
-
-					pr = pp.getResponse();
-
-					if (pr.isOK())
-						packetSent = true;
-					else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
-						try {
-							Thread.sleep(25);
-						} catch (Exception e) {
-						}
-					}
-					// TODO: implement other error things.
-					else
-						break;
-
 			}
 		}
 		pr.printDebug();
