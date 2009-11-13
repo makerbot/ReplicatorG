@@ -11,11 +11,15 @@ import java.util.Enumeration;
 import javax.media.j3d.Alpha;
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
+import javax.media.j3d.Background;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
+import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
+import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
+import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
@@ -96,17 +100,12 @@ public class STLFrame extends JFrame {
 					return;
 				}
 				updateVP();
-				System.err.println("Camera at "+cameraTranslation.toString());
 			}
 			
 			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 			
 			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 		});
 	}
@@ -133,26 +132,70 @@ public class STLFrame extends JFrame {
 	
 	public Node makeBoundingBox() {
 		Appearance edges = new Appearance();
-		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
+		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_DOT,true));
 		edges.setPolygonAttributes(new PolygonAttributes(PolygonAttributes.POLYGON_LINE,
 				PolygonAttributes.CULL_NONE,0));
+
+		
+		LineArray wires = new LineArray(24,GeometryArray.COORDINATES);
+		double coordinates[] = {
+				-50, -50, -50,   -50, -50,  50,
+				-50,  50, -50,   -50,  50,  50,
+				 50,  50, -50,    50,  50,  50,
+				 50, -50, -50,    50, -50,  50,
+				 
+				-50, -50, -50,   -50,  50, -50,
+				-50, -50,  50,   -50,  50,  50,
+				 50, -50,  50,    50,  50,  50,
+				 50, -50, -50,    50,  50, -50,
+
+				-50, -50, -50,    50, -50, -50,
+				-50, -50,  50,    50, -50,  50,
+				-50,  50,  50,    50,  50,  50,
+				-50,  50, -50,    50,  50, -50,
+		};
+		wires.setCoordinates(0, coordinates);
+		                        
+		Shape3D boxframe = new Shape3D(wires,edges); 
+		
 		Appearance sides = new Appearance();
-		sides.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST,0.8f));
+		sides.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST,0.9f));
 		Color3f color = new Color3f(0.05f,0.05f,1.0f); 
 		Material m = new Material(color,color,color,color,64.0f);
 		sides.setMaterial(m);
+
 		Box box = new Box(50,50,50,sides);
 		Transform3D tf = new Transform3D();
 		tf.setTranslation(new Vector3d(0,0,50));
 		TransformGroup tg = new TransformGroup(tf);
 		tg.addChild(box);
+		tg.addChild(boxframe);
 		return tg;
 	}
 	
+	public Node makeBackground() {
+		Background bg = new Background(0.5f,0.5f,0.6f);
+		bg.setApplicationBounds(bounds);
+		return bg;
+	}
+	
 	public Node makeBaseGrid() {
-		Group base = new Group();
-		
-		return base;
+		Appearance edges = new Appearance();
+		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_DOT,true));
+		edges.setColoringAttributes(new ColoringAttributes(0.7f,0.7f,1f,ColoringAttributes.FASTEST));
+		final int LINES = 11;
+		LineArray grid = new LineArray(4*LINES,GeometryArray.COORDINATES);
+		for (int i = 0; i < LINES; i++) {
+			double offset = -50 + (100/(LINES-1))*i;
+			int idx = i*4;
+			// Along x axis
+			grid.setCoordinate(idx++, new Point3d(offset,-50,0));
+			grid.setCoordinate(idx++, new Point3d(offset,50,0));
+			// Along y axis
+			grid.setCoordinate(idx++, new Point3d(-50,offset,0));
+			grid.setCoordinate(idx++, new Point3d(50,offset,0));
+		}
+		return new Shape3D(grid,edges); 
 	}
 	
 	public BranchGroup createSTLScene(String path) {
@@ -191,11 +234,11 @@ public class STLFrame extends JFrame {
 			objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
 			sceneGroup.addChild(objectSwitch);
 			
-			Color3f color = new Color3f(0.05f,0.7f,0.04f); 
+			Color3f color = new Color3f(0.05f,1.0f,0.04f); 
 			Material m = new Material();
 			//m.setAmbientColor(color);
 			m.setDiffuseColor(color);
-			m.setSpecularColor(new Color3f(1f,1f,1f));
+			//m.setSpecularColor(new Color3f(1f,1f,1f));
 			Appearance solid = new Appearance();
 			solid.setMaterial(m);
 			//solid.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST, 0.2f));
@@ -209,7 +252,9 @@ public class STLFrame extends JFrame {
 
 			sceneGroup.addChild(makeAmbientLight());
 			sceneGroup.addChild(makeDirectedLight());
-			//sceneGroup.addChild(makeBoundingBox());
+			sceneGroup.addChild(makeBoundingBox());
+			sceneGroup.addChild(makeBackground());
+			sceneGroup.addChild(makeBaseGrid());
 			
 			objTrans.addChild(sceneGroup);
 		} catch (FileNotFoundException e) {
@@ -239,11 +284,10 @@ public class STLFrame extends JFrame {
 		return objRoot;
 	}
 
-	Vector3d cameraTranslation = new Vector3d(0,0,2.0);
-	double elevationAngle = Math.PI * 0.2;
-//	double elevationAngle = 0.1;
-
-	double turntableAngle = Math.PI * 0.1;
+	// These values were determined experimentally to look pretty dang good.
+	Vector3d cameraTranslation = new Vector3d(0,0.4,2.5);
+	double elevationAngle = 1.278;
+	double turntableAngle = 0.214;
 	
 	private void updateVP() {
 		TransformGroup viewTG = univ.getViewingPlatform().getViewPlatformTransform();
@@ -251,8 +295,6 @@ public class STLFrame extends JFrame {
 		Transform3D trans = new Transform3D();
 		Transform3D rotZ = new Transform3D();
 		Transform3D rotX = new Transform3D();
-//		rotZ.rotZ(0.01);
-//		rotX.rotX((Math.PI/2.0)-elevationAngle);
 		trans.setTranslation(cameraTranslation);
 		rotX.rotX(elevationAngle);
 		rotZ.rotZ(turntableAngle);
@@ -272,7 +314,7 @@ public class STLFrame extends JFrame {
 
 		// Create simple universe with view branch
 		univ = new SimpleUniverse(c);
-
+		univ.getViewer().getView().setSceneAntialiasingEnable(true);
 		updateVP();
 		
 		// Ensure at least 5 msec per frame (i.e., < 200Hz)
