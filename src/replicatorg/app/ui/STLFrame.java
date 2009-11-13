@@ -12,11 +12,13 @@ import javax.media.j3d.Alpha;
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Background;
+import javax.media.j3d.BoundingBox;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
+import javax.media.j3d.Geometry;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
@@ -197,6 +199,75 @@ public class STLFrame extends JFrame {
 		}
 		return new Shape3D(grid,edges); 
 	}
+
+	private Node makeShape(String path) {
+		STLLoader loader = new STLLoader();
+		Scene scene = null;
+		try {
+			scene = loader.load((new File(path)).toURI().toURL());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IncorrectFormatException e) {
+			e.printStackTrace();
+		} catch (ParsingErrorException e) {
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		if (scene == null) { return null; }
+		
+		BranchGroup sourceGroup = scene.getSceneGroup();
+
+		objectSwitch = new Switch();
+		Shape3D originalShape = (Shape3D)sourceGroup.getChild(0);
+	
+		BoundingBox bb = new BoundingBox();
+		Enumeration geometries = originalShape.getAllGeometries();
+		while (geometries.hasMoreElements()) {
+			Geometry g = (Geometry)geometries.nextElement();
+			if (g instanceof GeometryArray) {
+				GeometryArray ga = (GeometryArray)g;
+				Point3d p = new Point3d();
+				for (int i = 0; i < ga.getVertexCount(); i++) {
+					ga.getCoordinate(i,p);
+					bb.combine(p);
+				}
+			}
+		}
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		bb.getLower(lower);
+		bb.getUpper(upper);
+		Box bounds = new Box();
+		
+		Shape3D shape = (Shape3D)originalShape.cloneTree();
+		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
+		objectSwitch.addChild(shape);
+		objectSwitch.addChild(edgeClone);
+		objectSwitch.setWhichChild(0);
+		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+		
+		Color3f color = new Color3f(0.05f,1.0f,0.04f); 
+		Material m = new Material();
+		//m.setAmbientColor(color);
+		m.setDiffuseColor(color);
+		//m.setSpecularColor(new Color3f(1f,1f,1f));
+		Appearance solid = new Appearance();
+		solid.setMaterial(m);
+		//solid.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST, 0.2f));
+		shape.setAppearance(solid);
+		
+		Appearance edges = new Appearance();
+		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
+		edges.setPolygonAttributes(new PolygonAttributes(PolygonAttributes.POLYGON_LINE,
+				PolygonAttributes.CULL_NONE,0));
+		edgeClone.setAppearance(edges);
+		
+		Group g = new Group();
+		g.addChild(objectSwitch);
+		g.addChild(bounds);
+		return objectSwitch;
+	}
 	
 	public BranchGroup createSTLScene(String path) {
 		// Create the root of the branch graph
@@ -214,58 +285,16 @@ public class STLFrame extends JFrame {
 		objTrans.setTransform(scaleTf);
 		objRoot.addChild(objTrans);
 
-		STLLoader loader = new STLLoader();
-		try {
-			System.err.println(path);
-
-			BranchGroup sceneGroup = new BranchGroup();
+		System.err.println(path);
+		BranchGroup sceneGroup = new BranchGroup();			
+		sceneGroup.addChild(makeShape(path));
+		sceneGroup.addChild(makeAmbientLight());
+		sceneGroup.addChild(makeDirectedLight());
+		sceneGroup.addChild(makeBoundingBox());
+		sceneGroup.addChild(makeBackground());
+		sceneGroup.addChild(makeBaseGrid());
 			
-			Scene scene = loader.load((new File(path)).toURI().toURL());
-			BranchGroup sourceGroup = scene.getSceneGroup();
-
-			objectSwitch = new Switch();
-			Shape3D originalShape = (Shape3D)sourceGroup.getChild(0);
-			
-			Shape3D shape = (Shape3D)originalShape.cloneTree();
-			Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
-			objectSwitch.addChild(shape);
-			objectSwitch.addChild(edgeClone);
-			objectSwitch.setWhichChild(0);
-			objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-			sceneGroup.addChild(objectSwitch);
-			
-			Color3f color = new Color3f(0.05f,1.0f,0.04f); 
-			Material m = new Material();
-			//m.setAmbientColor(color);
-			m.setDiffuseColor(color);
-			//m.setSpecularColor(new Color3f(1f,1f,1f));
-			Appearance solid = new Appearance();
-			solid.setMaterial(m);
-			//solid.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST, 0.2f));
-			shape.setAppearance(solid);
-			
-			Appearance edges = new Appearance();
-			edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
-			edges.setPolygonAttributes(new PolygonAttributes(PolygonAttributes.POLYGON_LINE,
-					PolygonAttributes.CULL_NONE,0));
-			edgeClone.setAppearance(edges);
-
-			sceneGroup.addChild(makeAmbientLight());
-			sceneGroup.addChild(makeDirectedLight());
-			sceneGroup.addChild(makeBoundingBox());
-			sceneGroup.addChild(makeBackground());
-			sceneGroup.addChild(makeBaseGrid());
-			
-			objTrans.addChild(sceneGroup);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IncorrectFormatException e) {
-			e.printStackTrace();
-		} catch (ParsingErrorException e) {
-			e.printStackTrace();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
+		objTrans.addChild(sceneGroup);
 
 		// Create a new Behavior object that will perform the
 		// desired operation on the specified transform and add
