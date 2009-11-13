@@ -1,4 +1,4 @@
-<project name="ReplicatorG" basedir="." default="test">
+<project name="ReplicatorG" basedir="." default="help">
   <property name="project.lowercase" value="replicatorg"/>
   <property file="ant.includes/${os.name}-${os.arch}.properties" />
 	<echo>${os.name}-${os.arch}</echo>
@@ -68,7 +68,7 @@
     </java>
   </target>
 
-  <target name="dist-macosx" depends="jar">
+  <target name="dist-macosx" depends="jar" description="Builds OS X RegplicatorG distribution">
     <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
     <property name="target.dir"   value="dist/macosx/${release.name}"/>
     <property name="dist.dir"     value="build/macosx/dist"/>
@@ -82,6 +82,7 @@
     </fail> 
     <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
     <mkdir dir="${target.dir}"/>
+	<echo message="replicatorg.version = ${replicatorg.version}" />
     <jarbundler
        dir="${target.dir}"
        name="ReplicatorG" 
@@ -132,7 +133,7 @@
     <!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
   </target>
 
-  <target name="dist-common" depends="jar">
+  <target name="dist-common" depends="jar" description="Builds files common to all RegplicatorG distributions">
     <mkdir dir="${target.dir}"/>
     <copy todir="${target.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt"/>
@@ -151,7 +152,7 @@
     </copy>
   </target>
   
-  <target name="dist-linux" depends="jar">
+  <target name="dist-linux" depends="jar" description="Builds Linux RegplicatorG distribution">
     <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
     <property name="target.dir"   value="dist/linux/${release.name}"/>
     <property name="dist.dir"     value="build/linux/dist"/>
@@ -183,7 +184,7 @@
     </exec>
   </target>
 
-  <target name="dist-windows" depends="jar">
+  <target name="dist-windows" depends="jar" description="Builds Windows RegplicatorG distribution">
     <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
     <property name="target.dir"   value="dist/windows/${release.name}"/>
     <property name="dist.dir"     value="build/windows/dist"/>
@@ -204,7 +205,15 @@
     </zip>
   </target>
 
-  <target name="dist" depends="dist-linux,dist-macosx,dist-windows">
+  <target name="dist" depends="dist-linux,dist-macosx,dist-windows" description="Builds all RegplicatorG distributions">
   </target>
 
+	<!-- Help -->
+	<target name="help" description="Targets for this project">
+		<echo message="Targets for this project"/>
+		<exec executable="ant">
+	   		<arg value="-p"/>
+		</exec>
+		<antcall target="test" />
+	</target>
 </project>

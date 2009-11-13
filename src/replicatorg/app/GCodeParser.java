@@ -23,6 +23,8 @@
 
 package replicatorg.app;
 
+import java.lang.reflect.Method;
+
 import java.util.EnumSet;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
@@ -122,6 +124,10 @@ public class GCodeParser {
 	protected int drillDwell = 0;
 
 	protected double drillPecksize = 0.0;
+
+	// TwitterBot extension variables
+    protected Class extClass;
+    protected Object objExtClass;
 
 	/**
 	 * Creates the driver object.
@@ -561,6 +567,51 @@ public class GCodeParser {
 				// driver.pause();
 				break;
 
+           case 997:
+               // initialize extension
+			// Syntax: M997 ClassName param,param,param,etc
+			// your class needs to know how to process the params as it will just
+			//receive a string.
+			//This code uses a space delimiter
+			//To do: should be more general purpose
+
+               try {
+                   String params[] = command.split(" ");                       
+
+                   extClass = Class.forName(params[1]); //class name
+                   objExtClass = extClass.newInstance();
+                   String methParam = params[2];  //initialization params
+                   Method extMethod = extClass.getMethod("initialize", new Class[] {String.class});
+                   extMethod.invoke(objExtClass, new Object[] {methParam});
+               } catch (Exception e) {
+                   e.printStackTrace();
+               }
+               break;
+
+            case 998:
+                // call extension
+				// Syntax: M998 Method_name 'Content goes here'
+				// passed content is single quote delimited
+				// To do: clean up, should be more flexible
+
+                try {
+                    String params[] = command.split(" "); //method is param[1]
+                    String params2[] = command.split("\\'"); //params to pass are params2[1]
+
+                    String methParam = params2[1]; //params to pass
+                    Method extMethod = extClass.getMethod(params[1], new Class[] {String.class});  //method to call
+                    extMethod.invoke(objExtClass, new Object[] {methParam});
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+
+            case 999:
+                // cleanup extension
+				// are explicit nulls needed?
+                extClass = null;
+                objExtClass = null;
+                break;
 			default:
 				throw new GCodeException("Unknown M code: M"
 						+ (int) getCodeValue("M"));

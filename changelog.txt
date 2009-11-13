@@ -10,6 +10,10 @@
 * Build to file (to local SD card, for instance)
 * Removed post-build resets
 
+00091 ReplicatorG
+
+* Integrated Rick Pollack's TwitterBot code
+
 0009 ReplicatorG
 
 * Moved to Swing file selector
