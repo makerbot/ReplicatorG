@@ -239,11 +239,20 @@ public interface Driver {
 	 * Temperature interface functions
 	 **************************************************************************/
 	public void setTemperature(double temperature);
-
+	
 	public void readTemperature();
-
+	
 	public double getTemperature();
-
+	
+	/***************************************************************************
+	 * Platform Temperature interface functions
+	 **************************************************************************/
+	public void setPlatformTemperature(double temperature);
+	
+	public void readPlatformTemperature();
+	
+	public double getPlatformTemperature();
+	
 	/***************************************************************************
 	 * Flood Coolant interface functions
 	 **************************************************************************/

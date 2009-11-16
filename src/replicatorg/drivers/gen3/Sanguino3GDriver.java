@@ -123,7 +123,9 @@ public class Sanguino3GDriver extends SerialDriver
 		GET_MOTOR_1_PWM(19),
 		GET_MOTOR_2_PWM(20),
 		SELECT_TOOL(21),
-		IS_TOOL_READY(22);
+		IS_TOOL_READY(22),
+		GET_PLATFORM_TEMP(30),
+		SET_PLATFORM_TEMP(31);
 		
 		private int code;
 		private CommandCodeSlave(int code) {
@@ -268,55 +270,45 @@ public class Sanguino3GDriver extends SerialDriver
 				// try {
 				// Thread.sleep(0, 50000);
 				// } catch (Exception e) {}
-				Level logLevel = Level.FINER;
 
 				// do the actual send.
-				long start = System.currentTimeMillis();
 				serial.write(packet);
-				long end = System.currentTimeMillis();
-				if (end-start > 80) {
-					logLevel = Level.WARNING;
-					Base.logger.log(logLevel,"Long packet write ("+Long.toString(end-start)+"ms)");
-				}
 
-				boolean c = false;
-				while (!c) {
-					int b = serial.read();
-					if (b == -1) {
-						/// Windows has no timeout; busywait
-						if (Base.isWindows()) continue;
-						throw new TimeoutException(serial);
-					}
-					c = pp.processByte((byte)b);
-				}
-
-				pr = pp.getResponse();
-
-				if (pr.isOK())
-					packetSent = true;
-				else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
-					try {
-						Thread.sleep(25);
-					} catch (Exception e) {
-					}
-				} else {
-					logLevel = Level.SEVERE;
-					Base.logger.log(logLevel,"Packet error: "+pr.getResponseCode());
-				}
-				end = System.currentTimeMillis();
-				if (end-start > 100) {
-					logLevel = Level.WARNING;
-					Base.logger.log(logLevel,"Long packet response ("+Long.toString(end-start)+"ms)");
-				}
-				if (Base.logger.isLoggable(logLevel)) {
+				if (Base.logger.isLoggable(Level.FINER)) {
 					StringBuffer buf = new StringBuffer("OUT: ");
 					for (int i = 0; i < packet.length; i++) {
 						buf.append(Integer
 								.toHexString((int) packet[i] & 0xff));
 						buf.append(" ");
 					}
-					Base.logger.log(logLevel,buf.toString());
+					Base.logger.log(Level.FINER,buf.toString());
 				}
+
+					boolean c = false;
+					while (!c) {
+						int b = serial.read();
+						if (b == -1) {
+							/// Windows has no timeout; busywait
+							if (Base.isWindows()) continue;
+							throw new TimeoutException(serial);
+						}
+						c = pp.processByte((byte) b);
+					}
+
+					pr = pp.getResponse();
+
+					if (pr.isOK())
+						packetSent = true;
+					else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
+						try {
+							Thread.sleep(25);
+						} catch (Exception e) {
+						}
+					}
+					// TODO: implement other error things.
+					else
+						break;
+
 			}
 		}
 		pr.printDebug();
@@ -832,6 +824,41 @@ public class Sanguino3GDriver extends SerialDriver
 					+ machine.currentTool().getCurrentTemperature() + "C");
 
 		super.readTemperature();
+	}
+
+	/***************************************************************************
+	 * Platform Temperature interface functions
+	 **************************************************************************/
+	public void setPlatformTemperature(double temperature) {
+		// constrain our temperature.
+		int temp = (int) Math.round(temperature);
+		temp = Math.min(temp, 65535);
+		
+		Base.logger.log(Level.FINE,"Setting platform temperature to " + temp + "C");
+		
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(CommandCodeSlave.SET_PLATFORM_TEMP.getCode());
+		pb.add8((byte) 2); // payload length
+		pb.add16(temp);
+		runCommand(pb.getPacket());
+		
+		super.setPlatformTemperature(temperature);
+	}
+	
+	public void readPlatformTemperature() {
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(CommandCodeSlave.GET_PLATFORM_TEMP.getCode());
+		PacketResponse pr = runCommand(pb.getPacket());
+		
+		int temp = pr.get16();
+		machine.currentTool().setPlatformCurrentTemperature(temp);
+		
+		Base.logger.log(Level.FINE,"Current platform temperature: "
+						+ machine.currentTool().getPlatformCurrentTemperature() + "C");
+		
+		super.readPlatformTemperature();
 	}
 
 	/***************************************************************************

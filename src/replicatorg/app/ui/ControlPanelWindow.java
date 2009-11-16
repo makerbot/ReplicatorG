@@ -122,6 +122,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	protected JTextField zPosField;
 
 	protected JTextField currentTempField;
+	
+	protected JTextField platformCurrentTempField;
 
 	protected JTabbedPane toolsPane;
 
@@ -686,6 +688,55 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			panel.add(currentTempPanel);
 		}
 
+		// our heated platform fields
+		if (t.hasHeatedPlatform()) {
+			JLabel targetTempLabel = new JLabel("Platform Target Temp (C)");
+			targetTempLabel.setMinimumSize(labelMinimumSize);
+			targetTempLabel.setMaximumSize(labelMinimumSize);
+			targetTempLabel.setPreferredSize(labelMinimumSize);
+			targetTempLabel.setHorizontalAlignment(JLabel.LEFT);
+
+			JTextField targetTempField = new JTextField();
+			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
+			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
+			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			targetTempField.setName("platform-target-temp");
+			targetTempField.addFocusListener(this);
+
+			JLabel currentTempLabel = new JLabel("Platform Current Temp (C)");
+			currentTempLabel.setMinimumSize(labelMinimumSize);
+			currentTempLabel.setMaximumSize(labelMinimumSize);
+			currentTempLabel.setPreferredSize(labelMinimumSize);
+			currentTempLabel.setHorizontalAlignment(JLabel.LEFT);
+
+			platformCurrentTempField = new JTextField();
+			platformCurrentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
+			platformCurrentTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
+			platformCurrentTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			platformCurrentTempField.setEnabled(false);
+
+			JPanel targetTempPanel = new JPanel();
+			targetTempPanel.setLayout(new BoxLayout(targetTempPanel,
+					BoxLayout.LINE_AXIS));
+			targetTempPanel.setMaximumSize(panelSize);
+			targetTempPanel.setMinimumSize(panelSize);
+			targetTempPanel.setPreferredSize(panelSize);
+
+			JPanel currentTempPanel = new JPanel();
+			currentTempPanel.setLayout(new BoxLayout(currentTempPanel,
+					BoxLayout.LINE_AXIS));
+			currentTempPanel.setMaximumSize(panelSize);
+			currentTempPanel.setMinimumSize(panelSize);
+			currentTempPanel.setPreferredSize(panelSize);
+
+			targetTempPanel.add(targetTempLabel);
+			targetTempPanel.add(targetTempField);
+			panel.add(targetTempPanel);
+			currentTempPanel.add(currentTempLabel);
+			currentTempPanel.add(platformCurrentTempField);
+			panel.add(currentTempPanel);
+		}
+
 		// flood coolant controls
 		if (t.hasFloodCoolant()) {
 			JLabel floodCoolantLabel = new JLabel("Flood Coolant");
@@ -818,6 +869,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			driver.getMachine().currentTool().hasHeater()) {
 			double temperature = driver.getTemperature();
 			currentTempField.setText(Double.toString(temperature));
+			temperature = driver.getPlatformTemperature();
+			platformCurrentTempField.setText(Double.toString(temperature));
 		}
 	}
 
@@ -949,6 +1002,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		if (source.getText().length() > 0) {
 			if (name.equals("target-temp")) {
 				driver.setTemperature(Double.parseDouble(source.getText()));
+			} else if (name.equals("platform-target-temp")) {
+				driver.setPlatformTemperature(Double.parseDouble(source.getText()));
 			} else if (name.equals("motor-speed")) {
 				driver.setMotorRPM(Double.parseDouble(source.getText()));
 			} else if (name.equals("motor-speed-pwm")) {

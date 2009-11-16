@@ -464,6 +464,23 @@ public class DriverBaseImplementation implements Driver {
 	}
 
 	/***************************************************************************
+	 * Platform Temperature interface functions
+	 **************************************************************************/
+	public void setPlatformTemperature(double temperature) {
+		machine.currentTool().setPlatformTargetTemperature(temperature);
+	}
+
+	public void readPlatformTemperature() {
+
+	}
+
+	public double getPlatformTemperature() {
+		readPlatformTemperature();
+
+		return machine.currentTool().getPlatformCurrentTemperature();
+	}
+
+	/***************************************************************************
 	 * Flood Coolant interface functions
 	 **************************************************************************/
 	public void enableFloodCoolant() {

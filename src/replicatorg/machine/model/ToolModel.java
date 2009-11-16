@@ -67,6 +67,10 @@ public class ToolModel
 	protected double currentTemperature;
 	protected double targetTemperature;
 
+	//platform temperature variables
+	protected double platformCurrentTemperature;
+	protected double platformTargetTemperature;
+
 	//various coolant/control stuff
 	protected boolean floodCoolantEnabled;
 	protected boolean mistCoolantEnabled;
@@ -78,6 +82,7 @@ public class ToolModel
 	protected boolean hasMotor = false;
 	protected boolean hasSpindle = false;
 	protected boolean hasHeater = false;
+	protected boolean hasHeatedPlatform = false;
 	protected boolean hasFloodCoolant = false;
 	protected boolean hasMistCoolant = false;
 	protected boolean hasFan = false;
@@ -223,6 +228,11 @@ public class ToolModel
 			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
 				hasHeater = true;
 		} catch (Exception e) {} //ignore boolean/integer parse errors
+		n = XML.getAttributeValue(xml, "heatedplatform");
+		try {
+			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
+				hasHeatedPlatform = true;
+		} catch (Exception e) {} //ignore boolean/integer parse errors
 
 		//hah, all this for a debug string... lol.
 		String result = "Loading " + type + " '" + name + "': ";
@@ -244,6 +254,8 @@ public class ToolModel
 			result += "collet, ";
 		if (hasHeater)
 			result += "heater, ";
+		if (hasHeatedPlatform)
+			result += "hasHeatedPlatform, ";
 		//System.out.println(result);
 	}
 	
@@ -453,6 +465,29 @@ public class ToolModel
 	public boolean hasHeater()
 	{
 		return hasHeater;
+	}
+
+	/*************************************
+	*  Heated Platform interface functions
+	*************************************/
+	public void setPlatformTargetTemperature(double temperature)
+	{
+		platformTargetTemperature = temperature;
+	}
+
+	public void setPlatformCurrentTemperature(double temperature)
+	{
+		platformCurrentTemperature = temperature;
+	}
+	
+	public double getPlatformCurrentTemperature()
+	{
+		return platformCurrentTemperature;
+	}
+	
+	public boolean hasHeatedPlatform()
+	{
+		return hasHeatedPlatform;
 	}
 
 	/*************************************
