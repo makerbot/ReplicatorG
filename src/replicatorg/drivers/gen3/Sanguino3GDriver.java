@@ -354,7 +354,24 @@ public class Sanguino3GDriver extends SerialDriver
 			return null;
 		}
 		Version v = new Version(versionNum / 100, versionNum % 100);
-		System.out.println("Version loaded "+v);
+		System.out.println("Motherboard firmware v"+v);
+
+		PacketBuilder slavepb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		slavepb.add8((byte) machine.currentTool().getIndex());
+		slavepb.add8(CommandCodeSlave.VERSION.getCode());
+		PacketResponse slavepr = runCommand(slavepb.getPacket());
+
+		int slaveVersionNum = slavepr.get16();
+		Base.logger.log(Level.FINE,"Reported slave board version: "
+					+ Integer.toHexString(slaveVersionNum));
+		if (slaveVersionNum == 0)
+			System.err.println("Extruder board: Null version reported!");
+        else
+        {
+            Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
+            System.out.println("Extruder controller firmware v"+sv);
+        }
+        
 		return v;
 	}
 	

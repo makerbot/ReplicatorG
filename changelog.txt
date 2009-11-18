@@ -1,3 +1,8 @@
+0011 ReplicatorG
+
+* Support for heated build platform
+* On startup, ReplicatorG now not only prints the Motherboard's firmware version on the console, but also the Extruder controller's firmware version
+
 0010 ReplicatorG
 
 * Status panel responses improved
