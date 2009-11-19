@@ -1,0 +1,11 @@
+Format is tab separated multiply preferences.
+Name                          	Value
+WindowVisibilities
+Open File to be Multiplied	
+Activate Multiply:	True
+Center X (mm):	0.0
+Center Y (mm):	0.0
+Number of Columns (integer):	1
+Number of Rows (integer):	1
+Separation over Extrusion Width (ratio):	10.0
+windowPositionMultiply Preferences	162+600

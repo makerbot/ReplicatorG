@@ -1,0 +1,17 @@
+Format is tab separated skeinview preferences.
+Name                          	Value
+WindowVisibilities
+Open File to Skeinview	
+Activate Skeinview	True
+Draw Arrows	True
+Export File Extension:	
+Export Postscript Program:	gimp
+Layer Index (integer):	41
+Go Around Extruder Off Travel	False
+Display Line	True
+Viewpoint Move	False
+Scale (pixels per millimeter):	10.0
+Screen Horizontal Inset (pixels):	50
+Screen Vertical Inset (pixels):	100
+Slide Show Rate (layers/second):	2.0
+windowPositionSkeinview Preferences	144+181

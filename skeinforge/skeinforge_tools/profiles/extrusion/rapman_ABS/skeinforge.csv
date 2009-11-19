@@ -1,0 +1,8 @@
+Format is tab separated skeinforge preferences.
+Name                          	Value
+analyzeButton	0
+craftButton	0
+polyfileButton	0
+profileButton	0
+Open File to be Skeinforged	/home/arhimed/PRINT/pad.gts
+windowPositionSkeinforge Preferences	626+579

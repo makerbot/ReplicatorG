@@ -1,0 +1,15 @@
+Format is tab separated carve preferences.
+Name                          	Value
+WindowVisibilities
+Open File to be Carved	
+Bridge Thickness Multiplier (ratio):	1.45
+Extra Decimal Places (integer):	1
+Import Coarseness (ratio):	1.0
+Infill in Direction of Bridges	True
+Layer Thickness (mm):	0.36
+Layers From (index):	0
+Layers To (index):	999999999
+Correct Mesh	True
+Unproven Mesh	False
+Perimeter Width over Thickness (ratio):	1.8
+windowPositionCarve Preferences	148+287

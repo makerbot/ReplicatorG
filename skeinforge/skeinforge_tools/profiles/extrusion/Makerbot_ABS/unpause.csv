@@ -1,0 +1,8 @@
+Format is tab separated unpause preferences.
+Name                          	Value
+WindowVisibilities
+Open File to be Unpaused	
+Activate Unpause	False
+Delay (milliseconds):	28.0
+Maximum Speed (ratio):	1.5
+windowPositionUnpause Preferences	600+0

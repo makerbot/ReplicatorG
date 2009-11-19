@@ -1,0 +1,17 @@
+Format is tab separated speed preferences.
+Name                          	Value
+Activate Speed:	True
+Bridge Feedrate Multiplier (ratio):	1.0
+Extrusion Diameter over Thickness (ratio):	1.25
+Feedrate (mm/s):	16.0
+Open File to be Speeded	
+Do Not Add Flowrate	False
+Metric	False
+PWM Setting	True
+Flowrate PWM Setting (if PWM Setting is Chosen):	400.0
+Maximum Z Feedrate (mm/s):	8.0
+Orbital Feedrate over Operating Feedrate (ratio):	0.5
+Perimeter Feedrate over Operating Feedrate (ratio):	1.0
+Perimeter Flowrate over Operating Flowrate (ratio):	1.0
+Travel Feedrate (mm/s):	20.0
+windowPositionSpeed Preferences	717+378

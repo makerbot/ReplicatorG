@@ -1,0 +1,7 @@
+Format is tab separated clip preferences.
+Name                          	Value
+WindowVisibilities
+Open File to be Clipped	
+Activate Clip	True
+Clip Over Extrusion Width (ratio):	0.18
+windowPositionClip Preferences	600+0

@@ -1,0 +1,14 @@
+Format is tab separated fillet preferences.
+Name                          	Value
+WindowVisibilities
+Open File to be Filleted	
+Activate Fillet	True
+Arc Point	False
+Arc Radius	False
+Arc Segment	False
+Bevel	True
+Corner FeedRate over Operating Feed Rate (ratio):	1.0
+Fillet Radius over Perimeter Width (ratio):	0.35
+Reversal Slowdown Distance over Perimeter Width (ratio):	0.5
+Use Intermediate FeedRate in Corners	False
+windowPositionFillet Preferences	29+49

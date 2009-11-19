@@ -1,0 +1,278 @@
+
+/*
+<?xml version='1.0' standalone='yes' ?>
+
+<script>
+	<name>Cog</name>
+	<author>Forrest Higgs after Vik Olliver after Francois Guillet</author>
+	<version>1.0</version>
+	<date>16-May-2006</date>
+	<description>
+This script creates an involute profile n-toothed gear. Input: pitch radius, pressure angle, and profile definition.
+    </description>
+</script>
+*/
+
+//******************************************************************
+//******************************************************************
+//******************************************************************
+
+// convert cylindrical to rectangular coordinates...
+
+CylindricalToRectangular(double r,double theta)
+{
+   double x;
+   double y;
+   x = r * Math.cos(theta);
+   y = r * Math.sin(theta);
+   return this;
+}
+
+//******************************************************************
+//******************************************************************
+//******************************************************************
+
+// convert rectangular to cylindrical coordinates...
+
+RectangularToCylindrical(double x, double y )
+{
+   double r;
+   double theta;
+   r = Math.sqrt(x * x + y * y);
+   theta = Math.atan2(y, x);
+   return this;
+}
+
+//******************************************************************
+//******************************************************************
+//******************************************************************
+
+scene = window.getScene();
+
+double N;
+double AP;
+double AT;
+double RP;
+double P;
+double RI;
+double RO;
+double RB;
+double A1;
+double A2;
+double AD;
+double Theta;
+
+double XTemp;
+double YTemp;
+
+numberOfTeeth = new ValueField(4, ValueField.NONNEGATIVE);
+pitchRadius = new ValueField(1, ValueField.NONNEGATIVE);
+pressureAngle = new ValueField(20, ValueField.NONNEGATIVE);
+profileDefinition = new ValueField(6, ValueField.NONNEGATIVE);
+
+dlg = new ComponentsDialog(window, "Involute Gear Profile Generator" ,
+new Widget [] { numberOfTeeth, pitchRadius, pressureAngle, profileDefinition },
+new String [] { "Number of teeth (integer):", "Pitch radius:", "Pressure angle (degrees):", "Profile definition (surfaces):" } );
+
+if (!dlg.clickedOk()) return;
+
+N = (int) Math.round( numberOfTeeth.getValue() );
+
+if (N < 4)
+	N = 4;
+AP = pressureAngle.getValue();
+AT = (360 / N);
+RP = pitchRadius.getValue();
+
+NP = (int) profileDefinition.getValue();
+if (NP > 20) 
+  NP = 20;
+if (NP < 3) 
+  NP = 6;
+
+P = N / RP / 2;
+RI = RP - (Math.PI / 2) / P;
+
+RO = (1 / P) + RP;
+RB = RP * Math.cos(AP * (Math.PI / 180));
+
+A1 = 90 - AT / 4 + AP - RP * Math.sin(AP * (Math.PI/ 180)) / RB * 180 / Math.PI;
+A2 = (Math.sqrt(RO * RO - RB * RB)) / RB * 180 / Math.PI + A1;
+
+AD = ((A2 - A1) / (NP - 1));
+
+A = A1;
+
+double[] SplinePointsX = new double [100];
+double[] SplinePointsY = new double [100];
+double[] SaveClockwiseProfileX = new double [100];
+double[] SaveClockwiseProfileY = new double [100];
+double[] SaveAntiClockwiseProfileX = new double [100];
+double[] SaveAntiClockwiseProfileY = new double [100];
+double[] ToothProfileX = new double [100];
+double[] ToothProfileY = new double [100];
+
+for (int i = 1; i <= NP; i++)
+{
+  L = RB * (A - A1) * Math.PI / 180;
+  X = RB * Math.cos(A * (Math.PI / 180)) + L * Math.sin(A * (Math.PI / 180));
+  Y = RB * Math.sin(A * (Math.PI / 180)) - L * Math.cos(A * (Math.PI / 180));
+
+  SplinePointsX[i] = X;
+  SplinePointsY[i] = Y;
+
+  A = A + AD;
+}
+
+x1 = RI * Math.cos(A1 * (Math.PI / 180));
+y1 = RI * Math.sin(A1 * (Math.PI / 180));
+x2 = RB * Math.cos(A1 * (Math.PI / 180));
+y2 = RB * Math.sin(A1 * (Math.PI / 180));
+
+XY = CylindricalToRectangular(RI, (90 - AT / 2) * (Math.PI / 180));
+
+// Finangling factor to stop the troughs between teeth distorting > 45 teeth. 
+double finanglingFactor=1;
+
+if (N>45) {
+	finanglingFactor=1-((N-45)*.00068);
+	// Works out at 0.97 for 79 teeth.	But is quite horrible.
+}
+
+SaveClockwiseProfileX[1] = XY.x*finanglingFactor;
+SaveClockwiseProfileY[1] = XY.y*finanglingFactor;
+SaveClockwiseProfileX[2] = x1*finanglingFactor;
+SaveClockwiseProfileY[2] = y1*finanglingFactor;
+SaveClockwiseProfileX[3] = x2;
+SaveClockwiseProfileY[3] = y2;
+
+
+for (int i = 2; i <= NP; i++)
+{
+
+  SaveClockwiseProfileX[2 + i] = SplinePointsX[i];
+  SaveClockwiseProfileY[2 + i] = SplinePointsY[i];
+}
+        
+SaveClockwiseProfileX[2 + NP + 1] = 0;
+SaveClockwiseProfileY[2 + NP + 1] = RO;
+
+//******************************************************************
+//******************************************************************
+//******************************************************************
+
+//          mirror the tooth profile
+
+XY = CylindricalToRectangular(RI, (90 + AT / 2) * (Math.PI / 180));
+
+RTheta = RectangularToCylindrical( x1, y1 );
+        
+Theta = RTheta.theta * (180 / Math.PI);
+Theta = 90 - Theta;
+Theta = 90 + Theta;
+
+X1Y1 = CylindricalToRectangular(RTheta.r, Theta*(Math.PI / 180));
+
+RTheta = RectangularToCylindrical( x2, y2 );
+
+Theta = RTheta.theta * (180 / Math.PI);
+Theta = 90 - Theta;
+Theta = 90 + Theta;
+
+X2Y2 = CylindricalToRectangular(RTheta.r, Theta*(Math.PI / 180));
+
+SaveAntiClockwiseProfileX[1] = XY.x*finanglingFactor;
+SaveAntiClockwiseProfileY[1] = XY.y*finanglingFactor;
+SaveAntiClockwiseProfileX[2] = X1Y1.x*finanglingFactor;
+SaveAntiClockwiseProfileY[2] = X1Y1.y*finanglingFactor;
+SaveAntiClockwiseProfileX[3] = X2Y2.x;
+SaveAntiClockwiseProfileY[3] = X2Y2.y;
+
+for (int i = 2; i <= NP; i++)
+{
+ 
+  RTheta = RectangularToCylindrical( SplinePointsX[i - 1], SplinePointsY[i - 1]  );
+            
+  Theta = RTheta.theta * (180 / Math.PI);
+
+  Theta = 90 - RTheta.theta;
+  Theta = 90 + RTheta.theta;
+
+  X1Y1 = CylindricalToRectangular(RTheta.r, Theta*(Math.PI / 180));
+  RTheta = RectangularToCylindrical( SplinePointsX[i], SplinePointsY[i] );
+
+  Theta = RTheta.theta * (180 / Math.PI);
+  Theta = 90 - Theta ;
+  Theta = 90 + Theta ;
+
+  X2Y2 = CylindricalToRectangular(RTheta.r, Theta*(Math.PI / 180));
+
+  SaveAntiClockwiseProfileX[2 + i] = X2Y2.x;
+  SaveAntiClockwiseProfileY[2 + i] = X2Y2.y;
+}
+
+SaveAntiClockwiseProfileX[2 + NP + 1] = 0;
+SaveAntiClockwiseProfileY[2 + NP + 1] = RO;
+
+//******************************************************************
+//******************************************************************
+//******************************************************************
+
+int ToothProfileLimit = 0; 
+
+for (int i = 1; i <= NP + 3; i++)
+{
+            ToothProfileLimit = ToothProfileLimit + 1;
+
+            ToothProfileX[ToothProfileLimit] = SaveAntiClockwiseProfileX[i];
+            ToothProfileY[ToothProfileLimit] = SaveAntiClockwiseProfileY[i];
+}
+
+for (int i = NP + 2; i >= 1; i--)
+{
+
+            ToothProfileLimit = ToothProfileLimit + 1;
+            ToothProfileX[ToothProfileLimit] = SaveClockwiseProfileX[i];
+            ToothProfileY[ToothProfileLimit] = SaveClockwiseProfileY[i];
+
+}
+
+//******************************************************************
+//******************************************************************
+//******************************************************************
+
+Vec3[] v = new Vec3[(ToothProfileLimit-1)*N];
+float[] smoothness = new float[(ToothProfileLimit-1)*N];
+int index = 0;
+double scale = 1.0;
+double Xlast;
+double Ylast;
+
+for (int ii = 1; ii <= N; ii++)
+  {
+//print ("ii = " + ii );
+  for (int i = 2; i <= ToothProfileLimit; i++)
+    {
+    RTheta = RectangularToCylindrical( ToothProfileX[i], ToothProfileY[i] );
+    Theta = RTheta.theta - (AT) * ii * (Math.PI / 180);
+ 
+    XY = CylindricalToRectangular( RTheta.r, Theta );
+
+    v[index] = new Vec3( XY.x, XY.y, 0  );
+    v[index].scale(scale);
+    smoothness[index]=0;
+
+//print ("ii/i/x/y = " + ii + "     " + i + "     " + XY.x + "     " + XY.y);
+
+    index += 1;
+    }
+}
+
+//******************************************************************
+//******************************************************************
+//******************************************************************
+
+
+curve = new Curve( v, smoothness, Mesh.APPROXIMATING, true);
+//we're done
+window.addObject(curve, new CoordinateSystem(), "Involute Profile Gear", null);

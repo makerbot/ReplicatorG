@@ -1,0 +1,13 @@
+Format is tab separated export preferences.
+Name                          	Value
+WindowVisibilities
+Open File to be Exported	
+Activate Export	True
+Also Send Output To:	
+Delete Comments	True
+Do Not Change Output	True
+binary_16_byte	False
+gcode_step	False
+gcode_small	False
+File Extension:	gcode
+windowPositionExport Preferences	600+0

@@ -1,0 +1,14 @@
+Format is tab separated export preferences.
+Name                          	Value
+Activate Export	True
+Also Send Output To:	
+Delete Comments	True
+binary_16_byte	False
+binary_16_byteButton	0
+Do Not Change Output	True
+gcode_small	False
+gcode_step	False
+gcode_stepButton	0
+File Extension:	BFB
+Open File to be Exported	
+windowPositionExport Preferences	684+219

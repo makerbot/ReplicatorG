@@ -1,0 +1,6 @@
+Format is tab separated home preferences.
+Name                          	Value
+Activate Home	True
+Open File to be Homed	
+Name of Homing File:	homing.gcode
+windowPositionHome Preferences	6+71

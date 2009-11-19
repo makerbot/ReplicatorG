@@ -1,0 +1,23 @@
+Format is tab separated craft preferences.
+Name                          	Value
+carveButton	0
+clipButton	0
+combButton	0
+coolButton	0
+exportButton	0
+fillButton	0
+filletButton	0
+homeButton	0
+hopButton	0
+insetButton	0
+multiplyButton	0
+oozebaneButton	0
+prefaceButton	0
+raftButton	0
+speedButton	0
+stretchButton	0
+towerButton	0
+unpauseButton	0
+wipeButton	0
+Open File to be Crafted	
+windowPositionCraft Preferences	415+388
