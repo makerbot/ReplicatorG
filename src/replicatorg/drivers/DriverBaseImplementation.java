@@ -570,4 +570,14 @@ public class DriverBaseImplementation implements Driver {
 	public boolean autoscan() {
 		return false;
 	}
+
+	public double getChamberTemperature() {
+		return 0;
+	}
+
+	public void readChamberTemperature() {
+	}
+
+	public void setChamberTemperature(double temperature) {
+	}
 }

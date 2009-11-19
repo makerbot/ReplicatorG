@@ -252,7 +252,16 @@ public interface Driver {
 	public void readPlatformTemperature();
 	
 	public double getPlatformTemperature();
+
+	/***************************************************************************
+	 * Build chamber interface functions
+	 **************************************************************************/
+	public void setChamberTemperature(double temperature);
 	
+	public void readChamberTemperature();
+	
+	public double getChamberTemperature();
+
 	/***************************************************************************
 	 * Flood Coolant interface functions
 	 **************************************************************************/

@@ -1,3 +1,5 @@
+package replicatorg.app;
+
 import twitter4j.Twitter;
 import twitter4j.Status;
 import twitter4j.TwitterException;
@@ -28,7 +30,8 @@ public class TwitterBot implements Tweet{
     public void message (String message) {
 
         try {
-            Status status = twitter.updateStatus(message);
+            @SuppressWarnings("unused")
+			Status status = twitter.updateStatus(message);
         } catch (TwitterException e) {
             e.printStackTrace(); 
         }

@@ -1,3 +1,5 @@
+package replicatorg.app;
+
 /**
  * Created by IntelliJ IDEA.
  * User: admin

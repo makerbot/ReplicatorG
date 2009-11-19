@@ -517,6 +517,14 @@ public class GCodeParser {
 					driver.setMotorRPM(getCodeValue("R"));
 				break;
 
+			// set build platform temperature
+			case 109:
+				driver.setPlatformTemperature(getCodeValue("S"));
+
+			// set build chamber temperature
+			case 110:
+				driver.setChamberTemperature(getCodeValue("S"));
+				
 			// valve open
 			case 126:
 				driver.openValve();
