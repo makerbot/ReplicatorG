@@ -869,7 +869,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			driver.getMachine().currentTool().hasHeater()) {
 			double temperature = driver.getTemperature();
 			currentTempField.setText(Double.toString(temperature));
-			temperature = driver.getPlatformTemperature();
+		}
+		if (driver.getMachine().currentTool() != null &&
+			driver.getMachine().currentTool().hasHeatedPlatform()) {
+			double temperature = driver.getPlatformTemperature();
 			platformCurrentTempField.setText(Double.toString(temperature));
 		}
 	}
