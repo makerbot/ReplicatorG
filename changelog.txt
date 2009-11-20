@@ -2,6 +2,7 @@
 
 * Support for heated build platform
 * On startup, ReplicatorG now not only prints the Motherboard's firmware version on the console, but also the Extruder controller's firmware version
+* The text field in the control panel are now also handled when hitting "Enter"/"Return" (not only when focus is lost).
 
 0010 ReplicatorG
 

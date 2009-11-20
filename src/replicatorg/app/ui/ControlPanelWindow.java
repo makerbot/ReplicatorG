@@ -407,6 +407,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		xyFeedrateValue.setName("xy-feedrate-value");
 		xyFeedrateValue.setText(Integer.toString(xyFeedrateSlider.getValue()));
 		xyFeedrateValue.addFocusListener(this);
+		xyFeedrateValue.setActionCommand("handleTextfield");
+		xyFeedrateValue.addActionListener(this);
 
 		// create the xyfeedrate panel
 		JPanel xyFeedratePanel = new JPanel();
@@ -442,6 +444,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		zFeedrateValue.setName("z-feedrate-value");
 		zFeedrateValue.setText(Integer.toString(zFeedrateSlider.getValue()));
 		zFeedrateValue.addFocusListener(this);
+		zFeedrateValue.setActionCommand("handleTextfield");
+		zFeedrateValue.addActionListener(this);
 
 		// create the xyfeedrate panel
 		JPanel zFeedratePanel = new JPanel();
@@ -562,6 +566,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 				field.setPreferredSize(new Dimension(textBoxWidth, 25));
 				field.setName("motor-speed-pwm");
 				field.addFocusListener(this);
+				field.setActionCommand("handleTextfield");
+				field.addActionListener(this);
 
 				JPanel motorSpeedPanel = new JPanel();
 				motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel,
@@ -589,6 +595,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 				field.setPreferredSize(new Dimension(textBoxWidth, 25));
 				field.setName("motor-speed");
 				field.addFocusListener(this);
+				field.setActionCommand("handleTextfield");
+				field.addActionListener(this);
 
 				JPanel motorSpeedPanel = new JPanel();
 				motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel,
@@ -653,6 +661,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setName("target-temp");
 			targetTempField.addFocusListener(this);
+			targetTempField.setActionCommand("handleTextfield");
+			targetTempField.addActionListener(this);
 
 			JLabel currentTempLabel = new JLabel("Current Temperature (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
@@ -702,6 +712,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setName("platform-target-temp");
 			targetTempField.addFocusListener(this);
+			targetTempField.setActionCommand("handleTextfield");
+			targetTempField.addActionListener(this);
 
 			JLabel currentTempLabel = new JLabel("Platform Current Temp (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
@@ -879,62 +891,71 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 
 	public void actionPerformed(ActionEvent e) {
 		String s = e.getActionCommand();
-
-		Point3d current = driver.getCurrentPosition();
-		double xyFeedrate = xyFeedrateSlider.getValue();
-		double zFeedrate = zFeedrateSlider.getValue();
-
-		if (s.equals("X+")) {
-			current.x += jogRate;
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("X-")) {
-			current.x -= jogRate;
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Y+")) {
-			current.y += jogRate;
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Y-")) {
-			current.y -= jogRate;
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Z+")) {
-			current.z += jogRate;
-
-			driver.setFeedrate(zFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Z-")) {
-			current.z -= jogRate;
-
-			driver.setFeedrate(zFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Zero")) {
-			// "Zero" tells the machine to calibrate its
-			// current position as zero, not to move to its
-			// currently-set zero position.
-			driver.setCurrentPosition(new Point3d());
+		
+		if(s.equals("handleTextfield"))
+		{
+			JTextField source = (JTextField) e.getSource();
+			handleChangedTextField(source);
+			source.selectAll();
 		}
-		// get our new jog rate
-		else if (s.equals("jog size")) {
-			JComboBox cb = (JComboBox) e.getSource();
-			String jogText = (String) cb.getSelectedItem();
-
-			// look for a decimal number
-			Matcher jogMatcher = jogPattern.matcher(jogText);
-			if (jogMatcher.find())
-				jogRate = Double.parseDouble(jogMatcher.group(1));
-
-			// TODO: save this back to our preferences file.
-
-			// System.out.println("jog rate: " + jogRate);
-		} else
-			System.out.println("Unknown Action Event: " + s);
+		else
+		{
+			Point3d current = driver.getCurrentPosition();
+			double xyFeedrate = xyFeedrateSlider.getValue();
+			double zFeedrate = zFeedrateSlider.getValue();
+	
+			if (s.equals("X+")) {
+				current.x += jogRate;
+	
+				driver.setFeedrate(xyFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("X-")) {
+				current.x -= jogRate;
+	
+				driver.setFeedrate(xyFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Y+")) {
+				current.y += jogRate;
+	
+				driver.setFeedrate(xyFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Y-")) {
+				current.y -= jogRate;
+	
+				driver.setFeedrate(xyFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Z+")) {
+				current.z += jogRate;
+	
+				driver.setFeedrate(zFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Z-")) {
+				current.z -= jogRate;
+	
+				driver.setFeedrate(zFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Zero")) {
+				// "Zero" tells the machine to calibrate its
+				// current position as zero, not to move to its
+				// currently-set zero position.
+				driver.setCurrentPosition(new Point3d());
+			}
+			// get our new jog rate
+			else if (s.equals("jog size")) {
+				JComboBox cb = (JComboBox) e.getSource();
+				String jogText = (String) cb.getSelectedItem();
+	
+				// look for a decimal number
+				Matcher jogMatcher = jogPattern.matcher(jogText);
+				if (jogMatcher.find())
+					jogRate = Double.parseDouble(jogMatcher.group(1));
+	
+				// TODO: save this back to our preferences file.
+	
+				// System.out.println("jog rate: " + jogRate);
+			} else
+				System.out.println("Unknown Action Event: " + s);
+		}
 	}
 
 	public void stateChanged(ChangeEvent e) {
@@ -1000,6 +1021,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 
 	public void focusLost(FocusEvent e) {
 		JTextField source = (JTextField) e.getSource();
+		handleChangedTextField(source);
+	}
+
+	public void handleChangedTextField(JTextField source)
+	{
 		String name = source.getName();
 
 		if (source.getText().length() > 0) {
@@ -1016,10 +1042,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			} else if (name.equals("z-feedrate-value")) {
 				zFeedrateSlider.setValue(Integer.parseInt(source.getText()));
 			} else
-				System.out.println(name + " lost focus.");
+				System.out.println("Unhandled text field: "+name);
 		}
 	}
-
+	
 	public void windowClosing(WindowEvent e) {
 		updateThread.interrupt();
 		pollThread.interrupt();
