@@ -126,9 +126,13 @@ public class GCodeParser {
 	protected double drillPecksize = 0.0;
 
 	// TwitterBot extension variables
-    protected Class extClass;
-    protected Object objExtClass;
-
+        protected Class extClass;
+        protected Object objExtClass;
+	public static final String TB_CODE = "M";
+	public static final int TB_INIT = 997;
+	public static final int TB_MESSAGE = 998;
+	public static final int TB_CLEANUP = 999;
+	
 	/**
 	 * Creates the driver object.
 	 */
@@ -575,7 +579,7 @@ public class GCodeParser {
 				// driver.pause();
 				break;
 
-           case 997:
+           case TB_INIT:
                // initialize extension
 			// Syntax: M997 ClassName param,param,param,etc
 			// your class needs to know how to process the params as it will just
@@ -596,7 +600,7 @@ public class GCodeParser {
                }
                break;
 
-            case 998:
+            case TB_MESSAGE:
                 // call extension
 				// Syntax: M998 Method_name 'Content goes here'
 				// passed content is single quote delimited
@@ -614,7 +618,7 @@ public class GCodeParser {
                 }
                 break;
 
-            case 999:
+            case TB_CLEANUP:
                 // cleanup extension
 				// are explicit nulls needed?
                 extClass = null;

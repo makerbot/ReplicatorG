@@ -2,6 +2,8 @@
 
 * Support for heated build platform
 * On startup, ReplicatorG now not only prints the Motherboard's firmware version on the console, but also the Extruder controller's firmware version
+* Estimating no longer sends tweets
+* Upgraded twitter4j library to 2.0.10 
 
 0010 ReplicatorG
 

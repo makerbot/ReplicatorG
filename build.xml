@@ -29,8 +29,13 @@
   </target>
 
   <target name="compile">
-    <mkdir dir="${classes.dir}"/>
-    <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5"/>
+      <mkdir dir="${classes.dir}"/>
+      <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5">
+			<!-- Uncomment to aid in Java debugging
+			<compilerarg value="-Xlint:deprecation" />
+			<compilerarg value="-Xlint:unchecked" />
+			-->	
+		</javac>
   </target>
 
   <target name="jar" depends="compile">
