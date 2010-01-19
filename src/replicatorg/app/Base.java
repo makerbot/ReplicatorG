@@ -889,46 +889,6 @@ public class Base {
 	}
 
 	/**
-	 * Remove all files in a directory and the directory itself.
-	 */
-	static public void removeDir(File dir) {
-		if (dir.exists()) {
-			removeDescendants(dir);
-			if (!dir.delete()) {
-				System.err.println("Could not delete " + dir);
-			}
-		}
-	}
-
-	/**
-	 * Recursively remove all files within a directory, used with removeDir(),
-	 * or when the contents of a dir should be removed, but not the directory
-	 * itself. (i.e. when cleaning temp files from lib/build)
-	 */
-	static public void removeDescendants(File dir) {
-		if (!dir.exists())
-			return;
-
-		String files[] = dir.list();
-		for (int i = 0; i < files.length; i++) {
-			if (files[i].equals(".") || files[i].equals(".."))
-				continue;
-			File dead = new File(dir, files[i]);
-			if (!dead.isDirectory()) {
-				if (!preferences.getBoolean("compiler.save_build_files",false)) {
-					if (!dead.delete()) {
-						// temporarily disabled
-						System.err.println("Could not delete " + dead);
-					}
-				}
-			} else {
-				removeDir(dead);
-				// dead.delete();
-			}
-		}
-	}
-
-	/**
 	 * Gets a list of all files within the specified folder, and returns a list
 	 * of their relative paths. Ignores any files/folders prefixed with a dot.
 	 */

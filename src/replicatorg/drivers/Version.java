@@ -18,9 +18,9 @@ public class Version implements Comparable<Version> {
 	}
 
 	public int compareTo(Version v) {
-		if (major < v.major || minor < v.minor) return -1;
+		if (major > v.major || ((major == v.major) && (minor > v.minor))) return 1;
 		if (equals(v)) return 0;
-		return 1;
+		return -1;
 	}
 	
 	public String toString() {

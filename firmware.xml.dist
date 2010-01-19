@@ -42,6 +42,10 @@
        relpath="firmware/ArduinoSlaveExtruder-v1.6.hex"/>
     <firmware
        major="1"
+       minor="7"
+       relpath="firmware/ArduinoSlaveExtruder-v1.6.NE.hex"/>
+    <firmware
+       major="1"
        minor="5"
        relpath="firmware/ArduinoSlaveExtruder-v1.5.hex"/>
     <firmware

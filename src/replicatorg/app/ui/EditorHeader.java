@@ -40,9 +40,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 
 import replicatorg.app.Base;
@@ -68,10 +65,6 @@ public class EditorHeader extends JComponent {
 	FontMetrics metrics;
 
 	int fontAscent;
-
-	JMenu menu;
-
-	JPopupMenu popup;
 
 	int menuLeft;
 
@@ -135,15 +128,10 @@ public class EditorHeader extends JComponent {
 				int x = e.getX();
 				int y = e.getY();
 
-				if ((x > menuLeft) && (x < menuRight)) {
-					popup.show(EditorHeader.this, x, y);
-
-				} else {
-					for (int i = 0; i < editor.sketch.code.size(); i++) {
-						if ((x > tabLeft[i]) && (x < tabRight[i])) {
-							editor.sketch.setCurrent(i);
-							repaint();
-						}
+				for (int i = 0; i < editor.sketch.code.size(); i++) {
+					if ((x > tabLeft[i]) && (x < tabRight[i])) {
+						editor.sketch.setCurrent(i);
+						repaint();
 					}
 				}
 			}
@@ -245,12 +233,6 @@ public class EditorHeader extends JComponent {
 			x += PIECE_WIDTH - 1; // overlap by 1 pixel
 		}
 
-		menuLeft = sizeW - (16 + pieces[0][MENU].getWidth(this));
-		menuRight = sizeW - 16;
-		// draw the dropdown menu target
-		g.drawImage(pieces[popup.isVisible() ? SELECTED : UNSELECTED][MENU],
-				menuLeft, 0, null);
-
 		screen.drawImage(offscreen, 0, 0, null);
 	}
 
@@ -259,137 +241,9 @@ public class EditorHeader extends JComponent {
 	 */
 	public void rebuild() {
 		// System.out.println("rebuilding editor header");
-		rebuildMenu();
 		repaint();
 	}
-
-	public void rebuildMenu() {
-		// System.out.println("rebuilding");
-		if (menu != null) {
-			menu.removeAll();
-
-		} else {
-			menu = new JMenu();
-			popup = menu.getPopupMenu();
-			add(popup);
-			popup.setLightWeightPopupEnabled(true);
-
-			/*
-			 * popup.addPopupMenuListener(new PopupMenuListener() { public void
-			 * popupMenuCanceled(PopupMenuEvent e) { // on redraw, the
-			 * isVisible() will get checked. // actually, a repaint may be fired
-			 * anyway, so this // may be redundant. repaint(); }
-			 * 
-			 * public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { }
-			 * public void popupMenuWillBecomeVisible(PopupMenuEvent e) { } });
-			 */
-		}
-		JMenuItem item;
-
-		// maybe this shouldn't have a command key anyways..
-		// since we're not trying to make this a full ide..
-		// item = MainWindow.newJMenuItem("New", 'T');
-
-		/*
-		 * item = MainWindow.newJMenuItem("Previous", KeyEvent.VK_PAGE_UP);
-		 * item.addActionListener(new ActionListener() { public void
-		 * actionPerformed(ActionEvent e) { System.out.println("prev"); } }); if
-		 * (editor.sketch != null) { item.setEnabled(editor.sketch.code.size() >
-		 * 1); } menu.add(item);
-		 * 
-		 * item = MainWindow.newJMenuItem("Next", KeyEvent.VK_PAGE_DOWN);
-		 * item.addActionListener(new ActionListener() { public void
-		 * actionPerformed(ActionEvent e) { System.out.println("ext"); } }); if
-		 * (editor.sketch != null) { item.setEnabled(editor.sketch.code.size() >
-		 * 1); } menu.add(item);
-		 * 
-		 * menu.addSeparator();
-		 */
-
-		item = new JMenuItem("New Tab");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				editor.sketch.newCode();
-			}
-		});
-		menu.add(item);
-
-		item = new JMenuItem("Rename");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				editor.sketch.renameCode();
-//				if (editor.sketch.current == editor.sketch.code[0]) {
-//					editor.sketchbook.rebuildMenus();
-//				}
-			}
-		});
-		menu.add(item);
-
-		item = new JMenuItem("Delete");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				editor.sketch.deleteCode();
-			}
-		});
-		menu.add(item);
-
-		Build sketch = editor.sketch;
-
-		menu.addSeparator();
-
-		// KeyEvent.VK_LEFT and VK_RIGHT will make Windows beep
-
-		int ctrlAlt = ActionEvent.ALT_MASK
-				| Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-
-		// item = MainWindow.newJMenuItem("Previous Tab", '[', true);
-		item = new JMenuItem("Previous Tab");
-		// int shortcut = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-		KeyStroke ctrlAltLeft = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,
-				ctrlAlt);
-		item.setAccelerator(ctrlAltLeft);
-		// int modifiers = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-		// KeyStroke tabby = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT,
-		// modifiers);
-
-		// this didn't want to work consistently
-		/*
-		 * item.addActionListener(new ActionListener() { public void
-		 * actionPerformed(ActionEvent e) { editor.sketch.prevCode(); } });
-		 */
-		menu.add(item);
-
-		// item = MainWindow.newJMenuItem("Next Tab", ']', true);
-		item = new JMenuItem("Next Tab");
-		KeyStroke ctrlAltRight = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,
-				ctrlAlt);
-		item.setAccelerator(ctrlAltRight);
-		/*
-		 * item.addActionListener(new ActionListener() { public void
-		 * actionPerformed(ActionEvent e) { editor.sketch.nextCode(); } });
-		 */
-		menu.add(item);
-
-		if (sketch != null) {
-			menu.addSeparator();
-
-			ActionListener jumpListener = new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					editor.sketch.setCurrent(e.getActionCommand());
-				}
-			};
-			for (int i = 0; i < sketch.code.size(); i++) {
-				item = new JMenuItem(sketch.code.get(i).name);
-				item.addActionListener(jumpListener);
-				menu.add(item);
-			}
-		}
-	}
-
-	public void deselectMenu() {
-		repaint();
-	}
-
+	
 	public Dimension getPreferredSize() {
 		return getMinimumSize();
 	}
