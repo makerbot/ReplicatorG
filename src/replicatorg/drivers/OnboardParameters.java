@@ -16,4 +16,9 @@ public interface OnboardParameters {
 	 * @return true if this version of the firmware supports OnboardParameters.
 	 */
 	boolean hasFeatureOnboardParameters();
+		
+	void createThermistorTable(double r0, double t0, double beta);
+	int getR0();
+	int getT0();
+	int getBeta();
 }

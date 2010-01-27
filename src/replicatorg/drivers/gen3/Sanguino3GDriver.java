@@ -124,6 +124,8 @@ public class Sanguino3GDriver extends SerialDriver
 		GET_MOTOR_2_PWM(20),
 		SELECT_TOOL(21),
 		IS_TOOL_READY(22),
+		READ_FROM_EEPROM(25),
+		WRITE_TO_EEPROM(26),
 		GET_PLATFORM_TEMP(30),
 		SET_PLATFORM_TEMP(31);
 		
@@ -1153,7 +1155,47 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketResponse pr = runCommand(pb.getPacket());
 		assert pr.get8() == data.length; 
 	}
+
+	private byte[] readFromToolEEPROM(int offset, int len) {
+		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(CommandCodeSlave.READ_FROM_EEPROM.getCode());
+		pb.add16(offset);
+		pb.add8(len);
+		PacketResponse pr = runCommand(pb.getPacket());
+		if (pr.isOK()) {
+			int rvlen = Math.min(pr.getPayload().length - 1,len);
+			byte[] rv = new byte[rvlen];
+			// Copy removes the first response byte from the packet payload.
+			System.arraycopy(pr.getPayload(),1,rv,0,rvlen);
+			return rv;
+		}
+		return null;
+	}
 	
+	private void writeToToolEEPROM(int offset, byte[] data) {
+		final int MAX_PAYLOAD = 11;
+		while (data.length > MAX_PAYLOAD) {
+			byte[] head = new byte[MAX_PAYLOAD];
+			byte[] tail = new byte[data.length-MAX_PAYLOAD];
+			System.arraycopy(data,0,head,0,MAX_PAYLOAD);
+			System.arraycopy(data,MAX_PAYLOAD,tail,0,data.length-MAX_PAYLOAD);
+			writeToToolEEPROM(offset, head);
+			offset += MAX_PAYLOAD;
+			data = tail;
+		}
+		PacketBuilder slavepb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		slavepb.add8((byte) machine.currentTool().getIndex());
+		slavepb.add8(CommandCodeSlave.WRITE_TO_EEPROM.getCode());
+		slavepb.add16(offset);
+		slavepb.add8(data.length);
+		for (byte b : data) {
+			slavepb.add8(b);
+		}
+		PacketResponse slavepr = runCommand(slavepb.getPacket());
+		assert slavepr.get8() == data.length; 
+	}
+
 	private byte[] readFromEEPROM(int offset, int len) {
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.READ_EEPROM.getCode());
 		pb.add16(offset);
@@ -1176,6 +1218,11 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
+	
+	final private static int EEPROM_EC_THERMISTOR_TABLE_OFFSET = 0x100;
+	final private static int EEPROM_EC_R0_OFFSET = 0xf0;
+	final private static int EEPROM_EC_T0_OFFSET = 0xf4;
+	final private static int EEPROM_EC_BETA_OFFSET = 0xf8;
 	
 	final private static int MAX_MACHINE_NAME_LEN = 16;
 	public EnumSet<Axis> getInvertedParameters() {
@@ -1228,6 +1275,64 @@ public class Sanguino3GDriver extends SerialDriver
 		return version.compareTo(new Version(1,2)) >= 0; 
 	}
 
+	public void createThermistorTable(double r0, double t0, double beta) {
+		// Generate a thermistor table for r0 = 100K.
+		final int ADC_RANGE = 1024;
+		final int NUMTEMPS = 20;
+		byte table[] = new byte[NUMTEMPS*2*2];
+		class ThermistorConverter {
+			final double ZERO_C_IN_KELVIN = 273.15;
+			public double vadc,rs,vs,k,beta;
+			public ThermistorConverter(double r0, double t0C, double beta, double r2) {
+				this.beta = beta;
+				this.vs = this.vadc = 5.0;
+				final double t0K = ZERO_C_IN_KELVIN + t0C;
+				this.k = r0 * Math.exp(-beta / t0K);
+				this.rs = r2;		
+			}
+			public double temp(double adc) {
+				// Convert ADC reading into a temperature in Celsius
+				double v = adc * this.vadc / ADC_RANGE;
+				double r = this.rs * v / (this.vs - v);
+				return (this.beta / Math.log(r / this.k)) - ZERO_C_IN_KELVIN;
+			}
+		};
+		ThermistorConverter tc = new ThermistorConverter(r0,t0,beta,4700.0);
+		double adc = 1; // matching the python script's choices for now;
+		// we could do better with this distribution.
+		for (int i = 0; i < NUMTEMPS; i++) {
+			double temp = tc.temp(adc);
+			// extruder controller is little-endian
+			int tempi = (int)temp;
+			int adci = (int)adc;
+			System.err.println("{ "+Integer.toString(adci) +"," +Integer.toString(tempi)+" }");
+			table[(2*2*i)+0] = (byte)(adci & 0xff); // ADC low
+			table[(2*2*i)+1] = (byte)(adci >> 8); // ADC high
+			table[(2*2*i)+2] = (byte)(tempi & 0xff); // temp low
+			table[(2*2*i)+3] = (byte)(tempi >> 8); // temp high
+			adc += (ADC_RANGE/(NUMTEMPS-1));
+		}
+		// Add indicators
+		byte eepromIndicator[] = new byte[2];
+		eepromIndicator[0] = EEPROM_CHECK_LOW;
+		eepromIndicator[1] = EEPROM_CHECK_HIGH;
+		writeToToolEEPROM(0,eepromIndicator);
+
+		writeToToolEEPROM(EEPROM_EC_BETA_OFFSET,intToLE((int)beta));
+		writeToToolEEPROM(EEPROM_EC_R0_OFFSET,intToLE((int)r0));
+		writeToToolEEPROM(EEPROM_EC_T0_OFFSET,intToLE((int)t0));
+		writeToToolEEPROM(EEPROM_EC_THERMISTOR_TABLE_OFFSET,table);
+	}
+
+	private byte[] intToLE(int s) {
+		byte buf[] = new byte[4];
+		for (int i = 0; i < 4; i++) {
+			buf[i] = (byte)(s & 0xff);
+			s = s >>> 8;
+		}
+		return buf;
+	}
+	
 	ResponseCode convertSDCode(int code) {
 		switch (code) {
 		case 0:
@@ -1314,5 +1419,32 @@ public class Sanguino3GDriver extends SerialDriver
 			fileList.add(s.toString());
 		}
 		return fileList;
+	}
+
+	public int getBeta() {
+		byte r[] = readFromToolEEPROM(EEPROM_EC_BETA_OFFSET,4);
+		int val = 0;
+		for (int i = 0; i < 4; i++) {
+			val = val + (((int)r[i] & 0xff) << 8*i);
+		}
+		return val;
+	}
+
+	public int getR0() {
+		byte r[] = readFromToolEEPROM(EEPROM_EC_R0_OFFSET,4);
+		int val = 0;
+		for (int i = 0; i < 4; i++) {
+			val = val + (((int)r[i] & 0xff) << 8*i);
+		}
+		return val;
+	}
+
+	public int getT0() {
+		byte r[] = readFromToolEEPROM(EEPROM_EC_T0_OFFSET,4);
+		int val = 0;
+		for (int i = 0; i < 4; i++) {
+			val = val + (((int)r[i] & 0xff) << 8*i);
+		}
+		return val;
 	}
 }

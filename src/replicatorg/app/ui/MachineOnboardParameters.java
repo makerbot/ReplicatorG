@@ -26,12 +26,12 @@ import replicatorg.machine.model.Axis;
  *
  */
 public class MachineOnboardParameters extends JFrame {
-	private OnboardParameters target;
+	private final OnboardParameters target;
 	private JTextField machineNameField = new JTextField();
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
 	private JCheckBox zAxisInvertBox = new JCheckBox();
-	
+	private JButton extruderButton = new JButton("Set extruder parameters");
 	private static final int MAX_NAME_LENGTH = 16;
 	
 	private void commit() {
@@ -82,6 +82,14 @@ public class MachineOnboardParameters extends JFrame {
 		panel.add(new JLabel("Invert Z axis"));
 		panel.add(zAxisInvertBox,"wrap");
 
+		extruderButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ExtruderOnboardParameters eop = new ExtruderOnboardParameters(MachineOnboardParameters.this.target);
+				eop.setVisible(true);
+			}
+		});
+		panel.add(extruderButton,"wrap");
+		
 		panel.add(makeButtonPanel());
 		add(panel);
 		pack();
