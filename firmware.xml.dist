@@ -38,12 +38,12 @@
        pattern="http://makerbot.googlecode.com/files/ArduinoSlaveExtruder-v([0-9]+).([0-9]+)^[0-9]*.hex"/>
     <firmware
        major="1"
-       minor="6"
-       relpath="firmware/ArduinoSlaveExtruder-v1.6.hex"/>
+       minor="8"
+       relpath="firmware/ArduinoSlaveExtruder-v1.8.hex"/>
     <firmware
        major="1"
-       minor="7"
-       relpath="firmware/ArduinoSlaveExtruder-v1.6.NE.hex"/>
+       minor="6"
+       relpath="firmware/ArduinoSlaveExtruder-v1.6.hex"/>
     <firmware
        major="1"
        minor="5"
