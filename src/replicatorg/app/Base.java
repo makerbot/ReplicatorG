@@ -88,7 +88,7 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 11;
+	public static final int VERSION = 12;
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */

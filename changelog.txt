@@ -1,3 +1,7 @@
+0012 ReplicatorG
+* Added support for v1.8 extruder firmware; dynamically generates
+  thermistor table and uploads to extruder firmware
+
 0011 ReplicatorG
 
 * Support for heated build platform
