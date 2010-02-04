@@ -10,9 +10,6 @@
       <speed>38400</speed>
       <arch>m644p</arch>
     </programmer>
-    <firmware-source
-       listurl="http://code.google.com/p/makerbot/downloads/list" 
-       pattern="http://makerbot.googlecode.com/files/SanguinoMaster-v([0-9]+).([0-9]+)^[0-9]*.hex"/>
     <firmware
        major="1"
        minor="6"
@@ -33,9 +30,11 @@
       <speed>19200</speed>
       <arch>m168</arch>
     </programmer>
-    <firmware-source
-       listurl="http://code.google.com/p/makerbot/downloads/list" 
-       pattern="http://makerbot.googlecode.com/files/ArduinoSlaveExtruder-v([0-9]+).([0-9]+)^[0-9]*.hex"/>
+    <firmware
+       major="1"
+       minor="9"
+       name="v1.9 remote"
+       url="http://github.com/makerbot/G3Firmware/raw/master/dist/ArduinoSlave/ArduinoSlaveExtruder-v1.9.hex"/>
     <firmware
        major="1"
        minor="8"

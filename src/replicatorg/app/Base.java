@@ -75,6 +75,7 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 import replicatorg.app.ui.MainWindow;
+import replicatorg.uploader.FirmwareUploader;
 
 import com.apple.mrj.MRJApplicationUtils;
 import com.apple.mrj.MRJOpenDocumentHandler;
@@ -183,8 +184,8 @@ public class Base {
 			Base.openedAtStartup = args[0];
 		}
 
-		// If legacy prefs need loading, load them into the prefs
-		// TODO: Legacy preference loading
+		// Check for fresh firmware
+		FirmwareUploader.checkFirmware();
 		
 		// register a temporary/early version of the mrj open document handler,
 		// because the event may be lost (sometimes, not always) by the time

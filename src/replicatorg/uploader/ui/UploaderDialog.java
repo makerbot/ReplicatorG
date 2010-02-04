@@ -161,7 +161,7 @@ public class UploaderDialog extends JDialog implements ActionListener {
 		}
 		if (uploader != null) {
 			uploader.setPortName(portName);
-			uploader.setSource(selectedVersion.where);
+			uploader.setSource(selectedVersion.getRelPath());
 			boolean success = uploader.upload();
 			if (success) {
 				JOptionPane.showMessageDialog(this, 

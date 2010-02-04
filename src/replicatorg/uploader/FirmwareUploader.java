@@ -3,6 +3,8 @@ package replicatorg.uploader;
 import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -45,26 +47,65 @@ public class FirmwareUploader {
 	
 	Document firmwareDoc = null;
 	
+	/**
+	 * Initiate check for new firmware.  Lock on class.
+	 */
+	public static synchronized void checkFirmware() {
+		Thread t = new Thread(new Runnable() {
+			public void run() {
+				FirmwareRetriever retriever = new FirmwareRetriever(getFirmwareFile(),getFirmwareURL());
+				System.err.println(retriever.checkForUpdates().toString());
+			}
+		});
+		t.start();
+	}
+	
+	/**
+	 * Get the URL of the source for dowloading 
+	 */
+	protected static URL getFirmwareURL() {
+		try {
+			return new URL("http://localhost:8001/firmware.xml");
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * Get the path of the XML file describing the available firmware.
+	 */
+	protected static File getFirmwareFile() {
+		File f = new File("firmware.xml");
+		if (!f.exists()) {
+			File alternate = new File("firmware.xml.dist");
+			if (alternate.exists()) return alternate;
+		}
+		return f;
+	}
+	
 	public Document getFirmwareDoc() {
-		if (firmwareDoc != null) { return firmwareDoc; }
+		if (firmwareDoc == null) { firmwareDoc = loadFirmwareDoc(); }
+		return firmwareDoc;
+	}
+		
+	public static Document loadFirmwareDoc() {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		Document doc = null;
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			try {
-				File f = new File("firmware.xml");
+				File f = getFirmwareFile();
 				if (!f.exists()) {
-					f = new File("firmware.xml.dist");
-					if (!f.exists()) {
-						Base.showError(
-								"Firmware.xml Not Found",
-								"The firmware description file 'firmware.xml' was not found.\n"
-								+ "Make sure you're running ReplicatorG from the correct directory.",
-								null);
-						return null;
-					}
+					Base.showError(
+							"Firmware.xml Not Found",
+							"The firmware description file 'firmware.xml' was not found.\n" +
+							"Make sure you're running ReplicatorG from the correct directory.",
+							null);
+					return null;
 				}
 				try {
-					 firmwareDoc = db.parse(f);
+					 doc = db.parse(f);
 				} catch (SAXException e) {
 					Base.showError("Parse error",
 							"Error parsing firmware.xml.  You may need to reinstall ReplicatorG.",
@@ -80,7 +121,7 @@ public class FirmwareUploader {
 			Base.showError("Unkown error", "Unknown error parsing firmware.xml.", e);
 			return null;
 		}
-		return firmwareDoc;
+		return doc;
 	}
 
 }
