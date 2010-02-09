@@ -36,6 +36,6 @@ public class FirmwareVersion {
 	public File getFile() { return new File(where); }
 	
 	public String toString() {
-		return "v" + Integer.toString(major) + "." + Integer.toString(minor);
+		return name;
 	}
 }
