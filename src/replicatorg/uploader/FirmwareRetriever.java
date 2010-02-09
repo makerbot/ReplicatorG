@@ -9,6 +9,10 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -53,10 +57,9 @@ class FirmwareRetriever {
 	protected UpdateStatus updateURL(URL url, File file) {
 		long timestamp = file.lastModified();
 		try {
-			
-			URLConnection connection = url.openConnection();
-			connection.setConnectTimeout(TIMEOUT_MS);
+			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 			connection.setIfModifiedSince(timestamp);
+			connection.setConnectTimeout(TIMEOUT_MS);
 			connection.connect();
 			if (connection instanceof HttpURLConnection) {
 				int rc = ((HttpURLConnection)connection).getResponseCode();

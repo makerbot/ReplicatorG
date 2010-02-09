@@ -60,12 +60,14 @@ public class FirmwareUploader {
 		t.start();
 	}
 	
+	static public final String DEFAULT_UPDATES_URL = "http://firmware.makerbot.com/firmware.xml";
 	/**
 	 * Get the URL of the source for dowloading 
 	 */
 	protected static URL getFirmwareURL() {
 		try {
-			return new URL("http://localhost:8001/firmware.xml");
+			String url = Base.preferences.get("replicatorg.updates.url", DEFAULT_UPDATES_URL);
+			return new URL(url);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return null;

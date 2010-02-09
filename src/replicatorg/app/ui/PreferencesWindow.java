@@ -26,6 +26,7 @@ import javax.swing.KeyStroke;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.uploader.FirmwareUploader;
 
 /**
  * Edit the major preference settings.
@@ -39,10 +40,13 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 	MainWindow editor;
 
 	JTextField fontSizeField;
+	JTextField firmwareUpdateUrlField;
 	
 	private void showCurrentSettings() {		
 		Font editorFont = Base.getFontPref("editor.font","Monospaced,plain,12");
 		fontSizeField.setText(String.valueOf(editorFont.getSize()));
+		String firmwareUrl = Base.preferences.get("replicatorg.updates.url", FirmwareUploader.DEFAULT_UPDATES_URL);
+		firmwareUpdateUrlField.setText(firmwareUrl);
 	}
 	
 	private JCheckBox addCheckboxForPref(Container c, String text, final String pref, boolean defaultVal) {
@@ -57,7 +61,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		});
 		return cb;
 	}
-
+	
 	public PreferencesWindow() {
 		super("Preferences");
 		setResizable(false);
@@ -78,6 +82,10 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
 
 		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",true);
+
+		content.add(new JLabel("Firmware update URL: "));
+		firmwareUpdateUrlField = new JTextField(40);
+		content.add(firmwareUpdateUrlField,"wrap");
 
 		JButton delPrefs = new JButton("Restore all defaults (includes driver choice, etc.)");
 		content.add(delPrefs,"wrap");
@@ -163,6 +171,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		} catch (Exception e) {
 			System.err.println("ignoring invalid font size " + newSizeText);
 		}
+		Base.preferences.put("firmware.updates.url",firmwareUpdateUrlField.getText());
 		editor.applyPreferences();
 	}
 
