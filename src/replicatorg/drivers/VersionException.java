@@ -7,7 +7,7 @@ package replicatorg.drivers;
  * @author phooky
  *
  */
-public class VersionException extends Exception {
+public class VersionException extends RuntimeException {
 	private Version detected;
 	public VersionException(Version detected) {
 		this.detected = detected;

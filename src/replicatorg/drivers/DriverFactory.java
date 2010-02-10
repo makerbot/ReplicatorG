@@ -43,6 +43,10 @@ public class DriverFactory {
 	 * @return Driver a driver object ready for parsing / running gcode
 	 */
 	public static Driver factory(Node xml) {
+		if (xml == null) {
+			// create a null driver
+			return factory("NullDriver",null);
+		}
 		// find the "name" attribute first
 		if (xml.hasAttributes()) {
 			NamedNodeMap map = xml.getAttributes();
@@ -92,18 +96,11 @@ public class DriverFactory {
 	}
 
 	/**
-	 * empty parameters? give up a null driver.
-	 */
-	public static Driver factory() {
-		return loadClass("NullDriver");
-	}
-
-	/**
 	 * shortcut class to make it easy to load drivers with their XML configs
 	 */
 	private static Driver loadClass(String className, Node xml) {
 		Driver d = loadClass(className);
-		d.loadXML(xml);
+		if (xml != null) { d.loadXML(xml); }
 
 		return d;
 	}

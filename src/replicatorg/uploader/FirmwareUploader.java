@@ -11,9 +11,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import replicatorg.app.Base;
+import replicatorg.drivers.Version;
 import replicatorg.uploader.ui.UploaderDialog;
 
 public class FirmwareUploader {
@@ -90,7 +93,32 @@ public class FirmwareUploader {
 		if (firmwareDoc == null) { firmwareDoc = loadFirmwareDoc(); }
 		return firmwareDoc;
 	}
-		
+
+	// Return the latest available version for the given board name
+	Version getLatestVersion(String boardName) {
+		Document firmwareDoc = getFirmwareDoc();
+		NodeList nl = firmwareDoc.getElementsByTagName("board");
+		Version version = null;
+		for (int i = 0; i < nl.getLength(); i++) {
+			String name = nl.item(i).getAttributes().getNamedItem("name").getNodeValue();
+			if (name.equalsIgnoreCase(boardName)) {
+				NodeList versions = nl.item(i).getChildNodes();
+				for (int j = 0; j < nl.getLength(); j++) {
+					Node n = versions.item(j);
+					if ("firmware".equalsIgnoreCase(n.getNodeName())) {
+						int major = Integer.parseInt(n.getAttributes().getNamedItem("major").getNodeValue());
+						int minor = Integer.parseInt(n.getAttributes().getNamedItem("minor").getNodeValue());
+						Version candidate = new Version(major,minor);
+						if (version == null) { version = candidate; }
+						else if (candidate.compareTo(version) > 0) { version = candidate; }
+					}
+				}
+				break;
+			}
+		}
+		return version;
+	}
+	
 	public static Document loadFirmwareDoc() {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		Document doc = null;
