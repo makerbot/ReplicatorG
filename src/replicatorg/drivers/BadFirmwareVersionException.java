@@ -10,21 +10,20 @@ package replicatorg.drivers;
  * @author phooky
  *
  */
-public class BadFirmwareVersionException extends RuntimeException {
+public class BadFirmwareVersionException extends VersionException {
 	private static final long serialVersionUID = 6973397918493070849L;
-	/** The firmware version that was detected */
-	Version has;
 	/** The firmware version that is needed */
 	Version needs;
 	
 	public BadFirmwareVersionException(Version has, Version needs) {
-		super("Firmware v"+has+" detected; firmware v"+needs+" required.");
-		this.has = has;
+		super(has);
 		this.needs = needs;
 	}
 	
-	public Version getHas() { return has; }
-	
 	public Version getNeeds() { return needs; }
+
+	public String getMessage() {
+		return "Firmware version "+getDetected()+" detected; firmware version "+needs+" required.";
+	}
 	
 }
