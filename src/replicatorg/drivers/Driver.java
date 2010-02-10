@@ -82,7 +82,7 @@ public interface Driver {
 	/**
 	 * setup our driver for use.
 	 */
-	public void initialize();
+	public void initialize() throws VersionException;
 	
 	/**
 	 * Autoscan for a working machine.
