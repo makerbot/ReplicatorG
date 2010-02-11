@@ -1,3 +1,9 @@
+0013 ReplicatorG
+* Added ability to phone home for new firmware
+* Improved uploading; no longer need to hit reset on EC or MBs with jumpers
+* New cut of drivers, toolchains
+* Now checks firmware version upstream and warns of old versions
+
 0012 ReplicatorG
 * Added support for v1.8 extruder firmware; dynamically generates
   thermistor table and uploads to extruder firmware

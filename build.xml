@@ -123,7 +123,6 @@
       <fileset dir="firmware"/>
     </copy>
     <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
-    <copy file="firmware.xml.dist" tofile="${target.dir}/firmware.xml"/>
     <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
       <arg value="-remove"/>
       <arg value="x86_64"/>
