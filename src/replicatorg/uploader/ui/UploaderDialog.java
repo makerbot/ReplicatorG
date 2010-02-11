@@ -132,33 +132,36 @@ public class UploaderDialog extends JDialog implements ActionListener {
 		showPanel(portPanel);
 	}
 
+	AbstractFirmwareUploader createUploader() {
+		MachineController machine = Base.getMachine();
+		if (machine != null) { machine.dispose(); }
+		NodeList nl = selectedBoard.getChildNodes();
+		for (int i = 0; i < nl.getLength(); i++) {
+			Node n = nl.item(i);
+			if ("programmer".equalsIgnoreCase(n.getNodeName())) {
+				return AbstractFirmwareUploader.makeUploader(n);
+			}
+		}
+		return null;
+	}
+	
 	void doUpload() {
+		final AbstractFirmwareUploader uploader = createUploader();
 		state = State.UPLOADING;
 		nextButton.setEnabled(true);
 		nextButton.setText("Upload");
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("fill"));
-		panel.add(new JLabel("<html>Press the reset button on the target board and click the \"Upload\" button " +
-				"to update the firmware.  Try to press the reset button as soon as you click \"Upload\".</html>"));
+		panel.add(new JLabel("<html>"+uploader.getUploadInstructions()+"</html>"));
 		nextButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				performUpload();
+				performUpload(uploader);
 			}
 		});
 		showPanel(panel);
 	}
 
-	void performUpload() {
-		MachineController machine = Base.getMachine();
-		if (machine != null) { machine.dispose(); }
-		AbstractFirmwareUploader uploader = null;
-		NodeList nl = selectedBoard.getChildNodes();
-		for (int i = 0; i < nl.getLength(); i++) {
-			Node n = nl.item(i);
-			if ("programmer".equalsIgnoreCase(n.getNodeName())) {
-				uploader = AbstractFirmwareUploader.makeUploader(n);
-			}
-		}
+	void performUpload(AbstractFirmwareUploader uploader) {
 		if (uploader != null) {
 			uploader.setPortName(portName);
 			uploader.setSource(selectedVersion.getRelPath());

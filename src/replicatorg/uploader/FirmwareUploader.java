@@ -108,7 +108,7 @@ public class FirmwareUploader {
 			JCheckBox checkbox = new JCheckBox("Do not show this message for this version again");  
 			String message = "A newer version ("+latest.toString()+") of the "+boardName+" firmware is now available.\n" +
 				"Use the \"Upload Firmware...\" item in the \"Machine\" menu to upload it to your machine.";  
-			Object[] params = {message, checkbox};  
+			Object[] params = {message, checkbox};
 			JOptionPane.showMessageDialog(null, params, "New Firmware Available", JOptionPane.INFORMATION_MESSAGE);
 			boolean dontShow = checkbox.isSelected();
 			Base.preferences.putBoolean(key,dontShow);

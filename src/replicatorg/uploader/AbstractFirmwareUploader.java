@@ -12,6 +12,10 @@ public abstract class AbstractFirmwareUploader {
 	protected String architecture;
 	protected String source;
 	
+	public String getUploadInstructions() {
+		return "Click the upload button to begin uploading the firmware.";
+	}
+	
 	public void setPortName(String portName) {
 		serialName = portName;
 	}
@@ -19,6 +23,7 @@ public abstract class AbstractFirmwareUploader {
 	public void setSpeed(String speed) {
 		serialSpeed = Integer.parseInt(speed); 
 	}
+	
 	public void setArch(String arch) {
 		this.architecture = arch;
 	}
@@ -26,7 +31,7 @@ public abstract class AbstractFirmwareUploader {
 	public void setSource(String source) {
 		this.source = source;
 	}
-	
+		
 	abstract public boolean upload();
 
 	public static AbstractFirmwareUploader makeUploader(Node n) {

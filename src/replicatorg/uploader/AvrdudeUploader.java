@@ -39,6 +39,22 @@ import replicatorg.app.Serial;
 public class AvrdudeUploader extends AbstractFirmwareUploader {
 	String protocol = "stk500v1";
 
+	boolean manualReset = false;
+	
+	public String getUploadInstructions() {
+		if (manualReset == true) {
+			return "Press the reset button on the target board and click the \"Upload\" button " +
+			"to update the firmware.  Try to press the reset button as soon as you click \"Upload\".";
+		}
+		return super.getUploadInstructions();
+	}
+
+	public void setManualreset(String val) {
+		if (val == null) return;
+		System.err.println("Manual reset = "+val);
+		if ("true".equalsIgnoreCase(val)) { manualReset = true; }
+	}
+	
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
 	}
@@ -107,7 +123,7 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
       // Hit the reset line
       
       Serial serialPort = new Serial(serialName);
-      serialPort.pulseRTSLow();      
+      serialPort.pulseRTSLow();
       serialPort.dispose();
 
       Process process = Runtime.getRuntime().exec(commandArray);
