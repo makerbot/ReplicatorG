@@ -144,7 +144,6 @@
       <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
     </copy>
     <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
-    <copy file="firmware.xml.dist" tofile="${target.dir}/firmware.xml"/>
     <copy todir="${target.dir}/firmware">
       <fileset dir="firmware"/>
     </copy>
