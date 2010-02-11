@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -48,12 +50,12 @@ public class FirmwareUploader {
 		// wait for dialog to close
 	}
 	
-	Document firmwareDoc = null;
+	static Document firmwareDoc = null;
 	
 	/**
-	 * Initiate check for new firmware.  Lock on class.
+	 * Initiate check for new firmware.
 	 */
-	public static synchronized void checkFirmware() {
+	public static void checkFirmware() {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
 				FirmwareRetriever retriever = new FirmwareRetriever(getFirmwareFile(),getFirmwareURL());
@@ -89,22 +91,43 @@ public class FirmwareUploader {
 		return f;
 	}
 	
-	public Document getFirmwareDoc() {
+	public static Document getFirmwareDoc() {
 		if (firmwareDoc == null) { firmwareDoc = loadFirmwareDoc(); }
 		return firmwareDoc;
 	}
 
+	/// Check the latest version.  Returns true if the user wants to update the firmware and
+	/// abort the connections.
+	public static synchronized boolean checkLatestVersion(String boardName, Version version) {
+		Version latest = getLatestVersion(boardName);
+		if (latest == null) return false;
+		if (latest.compareTo(version) > 0) {
+			System.err.println("latest "+latest.toString()+" old "+version.toString());
+			String key = "replicatorG.ignoreFirmware."+boardName+"."+version.toString();
+			if (Base.preferences.getBoolean(key, false)) { return false; }
+			JCheckBox checkbox = new JCheckBox("Do not show this message for this version again");  
+			String message = "A newer version ("+latest.toString()+") of the "+boardName+" firmware is now available.\n" +
+				"Use the \"Upload Firmware...\" item in the \"Machine\" menu to upload it to your machine.";  
+			Object[] params = {message, checkbox};  
+			JOptionPane.showMessageDialog(null, params, "New Firmware Available", JOptionPane.INFORMATION_MESSAGE);
+			boolean dontShow = checkbox.isSelected();
+			Base.preferences.putBoolean(key,dontShow);
+			return true;
+		}
+		return false;
+	}
+	
 	// Return the latest available version for the given board name
-	Version getLatestVersion(String boardName) {
+	public static Version getLatestVersion(String boardName) {
 		Document firmwareDoc = getFirmwareDoc();
 		NodeList nl = firmwareDoc.getElementsByTagName("board");
 		Version version = null;
 		for (int i = 0; i < nl.getLength(); i++) {
 			String name = nl.item(i).getAttributes().getNamedItem("name").getNodeValue();
 			if (name.equalsIgnoreCase(boardName)) {
-				NodeList versions = nl.item(i).getChildNodes();
-				for (int j = 0; j < nl.getLength(); j++) {
-					Node n = versions.item(j);
+				NodeList children = nl.item(i).getChildNodes();
+				for (int j = 0; j < children.getLength(); j++) {
+					Node n = children.item(j);
 					if ("firmware".equalsIgnoreCase(n.getNodeName())) {
 						int major = Integer.parseInt(n.getAttributes().getNamedItem("major").getNodeValue());
 						int minor = Integer.parseInt(n.getAttributes().getNamedItem("minor").getNodeValue());

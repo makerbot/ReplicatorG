@@ -46,10 +46,13 @@ class FirmwareRetriever {
 	 */
 	UpdateStatus checkForUpdates() {
 		//System.err.println("PATH : "+ firmwareSourceURL.getPath());
-		UpdateStatus status = updateURL(firmwareSourceURL,firmwareXml);
-		if (status == UpdateStatus.NEW_UPDATES) {
-			// Pull down any new firmware that we haven't seen before.
-			retrieveNewFirmware();
+		UpdateStatus status;
+		synchronized(getClass()) {
+			status = updateURL(firmwareSourceURL,firmwareXml);
+			if (status == UpdateStatus.NEW_UPDATES) {
+				// Pull down any new firmware that we haven't seen before.
+				retrieveNewFirmware();
+			}
 		}
 		return status;
 	}

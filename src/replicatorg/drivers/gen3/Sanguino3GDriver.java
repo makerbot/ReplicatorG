@@ -47,6 +47,7 @@ import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
+import replicatorg.uploader.FirmwareUploader;
 
 public class Sanguino3GDriver extends SerialDriver
 	implements OnboardParameters, SDCardCapture
@@ -358,6 +359,9 @@ public class Sanguino3GDriver extends SerialDriver
 		Version v = new Version(versionNum / 100, versionNum % 100);
 		System.out.println("Motherboard firmware v"+v);
 
+		final String MB_NAME = "RepRap Motherboard v1.X"; 
+		FirmwareUploader.checkLatestVersion(MB_NAME, v);
+
 		PacketBuilder slavepb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
 		slavepb.add8((byte) machine.currentTool().getIndex());
 		slavepb.add8(CommandCodeSlave.VERSION.getCode());
@@ -372,6 +376,9 @@ public class Sanguino3GDriver extends SerialDriver
         {
             Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
             System.out.println("Extruder controller firmware v"+sv);
+
+            final String EC_NAME = "Extruder Controller v2.2"; 
+    		FirmwareUploader.checkLatestVersion(EC_NAME, sv);
         }
         
 		return v;

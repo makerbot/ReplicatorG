@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.util.Vector;
 
 import replicatorg.app.Base;
+import replicatorg.app.Serial;
 
 
 public class AvrdudeUploader extends AbstractFirmwareUploader {
@@ -102,6 +103,13 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
         }
         System.out.println();
       }
+
+      // Hit the reset line
+      
+      Serial serialPort = new Serial(serialName);
+      serialPort.pulseRTSLow();      
+      serialPort.dispose();
+
       Process process = Runtime.getRuntime().exec(commandArray);
       //new MessageSiphon(process.getInputStream(), this);
       //new MessageSiphon(process.getErrorStream(), this);

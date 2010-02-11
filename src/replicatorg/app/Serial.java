@@ -221,12 +221,13 @@ public class Serial {
 	 * device.
 	 */
 	public void pulseRTSLow() {
-		port.setRTS(true);
+		port.setDTR(false);
 		port.setRTS(false);
 		try {
-			Thread.sleep(1);
+			Thread.sleep(100);
 		} catch (java.lang.InterruptedException ie) {
 		}
+		port.setDTR(true);
 		port.setRTS(true);
 	}
 
