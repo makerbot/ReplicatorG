@@ -163,9 +163,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if (!isInitialized()) {
 			// attempt to send version command and retrieve reply.
 			try {
-				// read our string that means we're started up.
-				// after ten seconds, explicitly reset the device.
-				waitForStartup(8000);
+				waitForStartup(5000);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
 				e.printStackTrace();
@@ -269,12 +267,6 @@ public class Sanguino3GDriver extends SerialDriver
 			pp = new PacketProcessor();
 
 			synchronized (serial) {
-				// make things play nice.
-				// try {
-				// Thread.sleep(0, 50000);
-				// } catch (Exception e) {}
-
-				// do the actual send.
 				serial.write(packet);
 
 				if (Base.logger.isLoggable(Level.FINER)) {

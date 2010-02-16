@@ -769,8 +769,8 @@ public class MachineController {
 			machineThread.stopBuild();
 			machineThread.interrupt();
 			try {
-				machineThread.join();
-			} catch (Exception e) {}
+				machineThread.join(5000);
+			} catch (Exception e) { e.printStackTrace(); }
 		}
 		if (driver != null) {
 			driver.dispose();

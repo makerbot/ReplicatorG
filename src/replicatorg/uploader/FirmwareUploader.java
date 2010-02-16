@@ -23,62 +23,76 @@ import replicatorg.uploader.ui.UploaderDialog;
 
 public class FirmwareUploader {
 	/**
-	 * The constructor is non-public; only one firmware uploader is permitted to be running at
-	 * any given time.  To start the uploader, use "startUploader".
-	 * @param parent A parent widget, used to construct the interfaces, etc.
+	 * The constructor is non-public; only one firmware uploader is permitted to
+	 * be running at any given time. To start the uploader, use "startUploader".
+	 * 
+	 * @param parent
+	 *            A parent widget, used to construct the interfaces, etc.
 	 */
-	private FirmwareUploader(Frame parent)
-	{
+	private FirmwareUploader(Frame parent) {
 		this.parent = parent;
 	}
-	
-	private Frame parent; 
-	
+
+	private Frame parent;
+
+	private static FirmwareUploader uploader = null;
+
 	/**
-	 * Start the uploader.  Synchronized to ensure only one uploader is running at a time.
-	 * @param parent A parent widget, used to construct the user interfaces.
+	 * Start the uploader. Synchronized to ensure only one uploader is running
+	 * at a time.
+	 * 
+	 * @param parent
+	 *            A parent widget, used to construct the user interfaces.
 	 */
-	public static synchronized void startUploader(Frame parent) {
-		FirmwareUploader uploader = new FirmwareUploader(parent);
+	public static void startUploader(Frame parent) {
+		synchronized (FirmwareUploader.class) {
+			if (uploader != null) {
+				return;
+			}
+			uploader = new FirmwareUploader(parent);
+		}
 		uploader.run();
 	}
-	
+
 	public void run() {
 		// Load firmware.xml
-		UploaderDialog selector = new UploaderDialog(parent,this);
+		UploaderDialog selector = new UploaderDialog(parent, this);
 		selector.setVisible(true);
 		// wait for dialog to close
 	}
-	
+
 	static Document firmwareDoc = null;
-	
+
 	/**
 	 * Initiate check for new firmware.
 	 */
 	public static void checkFirmware() {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
-				FirmwareRetriever retriever = new FirmwareRetriever(getFirmwareFile(),getFirmwareURL());
+				FirmwareRetriever retriever = new FirmwareRetriever(
+						getFirmwareFile(), getFirmwareURL());
 				System.err.println(retriever.checkForUpdates().toString());
 			}
 		});
 		t.start();
 	}
-	
+
 	static public final String DEFAULT_UPDATES_URL = "http://firmware.makerbot.com/firmware.xml";
+
 	/**
-	 * Get the URL of the source for dowloading 
+	 * Get the URL of the source for dowloading
 	 */
 	protected static URL getFirmwareURL() {
 		try {
-			String url = Base.preferences.get("replicatorg.updates.url", DEFAULT_UPDATES_URL);
+			String url = Base.preferences.get("replicatorg.updates.url",
+					DEFAULT_UPDATES_URL);
 			return new URL(url);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Get the path of the XML file describing the available firmware.
 	 */
@@ -86,54 +100,75 @@ public class FirmwareUploader {
 		File f = new File("firmware.xml");
 		if (!f.exists()) {
 			File alternate = new File("firmware.xml.dist");
-			if (alternate.exists()) return alternate;
+			if (alternate.exists())
+				return alternate;
 		}
 		return f;
 	}
-	
+
 	public static Document getFirmwareDoc() {
-		if (firmwareDoc == null) { firmwareDoc = loadFirmwareDoc(); }
+		if (firmwareDoc == null) {
+			firmwareDoc = loadFirmwareDoc();
+		}
 		return firmwareDoc;
 	}
 
-	/// Check the latest version.  Returns true if the user wants to update the firmware and
-	/// abort the connections.
-	public static synchronized boolean checkLatestVersion(String boardName, Version version) {
+	// / Check the latest version. Returns true if the user wants to update the
+	// firmware and
+	// / abort the connections.
+	public static boolean checkLatestVersion(String boardName, Version version) {
 		Version latest = getLatestVersion(boardName);
-		if (latest == null) return false;
+		if (latest == null)
+			return false;
 		if (latest.compareTo(version) > 0) {
-			System.err.println("latest "+latest.toString()+" old "+version.toString());
-			String key = "replicatorG.ignoreFirmware."+boardName+"."+version.toString();
-			if (Base.preferences.getBoolean(key, false)) { return false; }
-			JCheckBox checkbox = new JCheckBox("Do not show this message for this version again");  
-			String message = "A newer version ("+latest.toString()+") of the "+boardName+" firmware is now available.\n" +
-				"Use the \"Upload Firmware...\" item in the \"Machine\" menu to upload it to your machine.";  
-			Object[] params = {message, checkbox};
-			JOptionPane.showMessageDialog(null, params, "New Firmware Available", JOptionPane.INFORMATION_MESSAGE);
+			System.err.println("latest " + latest.toString() + " old "
+					+ version.toString());
+			String key = "replicatorG.ignoreFirmware." + boardName + "."
+					+ version.toString();
+			if (Base.preferences.getBoolean(key, false)) {
+				return false;
+			}
+			JCheckBox checkbox = new JCheckBox(
+					"Do not show this message for this version again");
+			String message = "A newer version ("
+					+ latest.toString()
+					+ ") of the "
+					+ boardName
+					+ " firmware is now available.\n"
+					+ "Use the \"Upload Firmware...\" item in the \"Machine\" menu to upload it to your machine.";
+			Object[] params = { message, checkbox };
+			JOptionPane.showMessageDialog(null, params,
+					"New Firmware Available", JOptionPane.INFORMATION_MESSAGE);
 			boolean dontShow = checkbox.isSelected();
-			Base.preferences.putBoolean(key,dontShow);
+			Base.preferences.putBoolean(key, dontShow);
 			return true;
 		}
 		return false;
 	}
-	
+
 	// Return the latest available version for the given board name
 	public static Version getLatestVersion(String boardName) {
 		Document firmwareDoc = getFirmwareDoc();
 		NodeList nl = firmwareDoc.getElementsByTagName("board");
 		Version version = null;
 		for (int i = 0; i < nl.getLength(); i++) {
-			String name = nl.item(i).getAttributes().getNamedItem("name").getNodeValue();
+			String name = nl.item(i).getAttributes().getNamedItem("name")
+					.getNodeValue();
 			if (name.equalsIgnoreCase(boardName)) {
 				NodeList children = nl.item(i).getChildNodes();
 				for (int j = 0; j < children.getLength(); j++) {
 					Node n = children.item(j);
 					if ("firmware".equalsIgnoreCase(n.getNodeName())) {
-						int major = Integer.parseInt(n.getAttributes().getNamedItem("major").getNodeValue());
-						int minor = Integer.parseInt(n.getAttributes().getNamedItem("minor").getNodeValue());
-						Version candidate = new Version(major,minor);
-						if (version == null) { version = candidate; }
-						else if (candidate.compareTo(version) > 0) { version = candidate; }
+						int major = Integer.parseInt(n.getAttributes()
+								.getNamedItem("major").getNodeValue());
+						int minor = Integer.parseInt(n.getAttributes()
+								.getNamedItem("minor").getNodeValue());
+						Version candidate = new Version(major, minor);
+						if (version == null) {
+							version = candidate;
+						} else if (candidate.compareTo(version) > 0) {
+							version = candidate;
+						}
 					}
 				}
 				break;
@@ -141,34 +176,36 @@ public class FirmwareUploader {
 		}
 		return version;
 	}
-	
+
 	public static Document loadFirmwareDoc() {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		Document doc = null;
-		try {
+		try {	
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			try {
-				File f = getFirmwareFile();
-				if (!f.exists()) {
-					Base.showError(
+			synchronized (FirmwareRetriever.class) {
+				try {
+					File f = getFirmwareFile();
+					if (!f.exists()) {
+						Base.showError(
 							"Firmware.xml Not Found",
 							"The firmware description file 'firmware.xml' was not found.\n" +
 							"Make sure you're running ReplicatorG from the correct directory.",
 							null);
-					return null;
-				}
-				try {
-					 doc = db.parse(f);
-				} catch (SAXException e) {
-					Base.showError("Parse error",
+						return null;
+					}
+					try {
+						doc = db.parse(f);
+					} catch (SAXException e) {
+						Base.showError("Parse error",
 							"Error parsing firmware.xml.  You may need to reinstall ReplicatorG.",
 							e);
+						return null;
+					}
+				} catch (IOException e) {
+					Base.showError(null, "Could not read firmware.xml.\n"
+						+ "You may need to reinstall ReplicatorG.", e);
 					return null;
 				}
-			} catch (IOException e) {
-				Base.showError(null, "Could not read firmware.xml.\n"
-						+ "You may need to reinstall ReplicatorG.", e);
-				return null;
 			}
 		} catch (ParserConfigurationException e) {
 			Base.showError("Unkown error", "Unknown error parsing firmware.xml.", e);
@@ -176,5 +213,4 @@ public class FirmwareUploader {
 		}
 		return doc;
 	}
-
 }
