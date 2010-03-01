@@ -1,3 +1,5 @@
+* The text field in the control panel are now also handled when hitting "Enter"/"Return" (not only when focus is lost).
+
 0013 ReplicatorG
 * Added ability to phone home for new firmware
 * Improved uploading; no longer need to hit reset on EC or MBs with jumpers
