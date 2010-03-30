@@ -72,7 +72,7 @@ public class BoardSelectionPanel extends JPanel {
 	}
 
 	Node selectedBoard = null;
-
+	
 	public Node getSelectedBoard() { return selectedBoard; }
 	
 	public BoardSelectionPanel(Document firmwareDoc, final BoardSelectionListener listener) {
