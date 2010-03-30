@@ -446,7 +446,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		if (Base.logger.isLoggable(Level.FINE)) {
 			Base.logger.log(Level.FINE,"Queued absolute point " + steps + " at "
-					+ micros + " usec.");
+					+ Long.toString(micros) + " usec.");
 		}
 
 		// just add them in now.
