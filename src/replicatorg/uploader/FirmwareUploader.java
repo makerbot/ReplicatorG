@@ -59,6 +59,9 @@ public class FirmwareUploader {
 		UploaderDialog selector = new UploaderDialog(parent, this);
 		selector.setVisible(true);
 		// wait for dialog to close
+		synchronized(FirmwareUploader.class) {
+			uploader = null;
+		}
 	}
 
 	static Document firmwareDoc = null;
