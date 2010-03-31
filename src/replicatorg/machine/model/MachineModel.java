@@ -329,7 +329,7 @@ public class MachineModel
 		return null;
 	}
 	
-	public Vector getTools()
+	public Vector<ToolModel> getTools()
 	{
 		return tools;
 	}

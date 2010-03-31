@@ -445,11 +445,16 @@ public class ToolModel
 	}
 
 	/*************************************
-	*  Spindle interface functions
+	*  Heater interface functions
 	*************************************/
 	public void setTargetTemperature(double temperature)
 	{
 		targetTemperature = temperature;
+	}
+
+	public double getTargetTemperature()
+	{
+		return targetTemperature;
 	}
 
 	public void setCurrentTemperature(double temperature)
@@ -473,6 +478,11 @@ public class ToolModel
 	public void setPlatformTargetTemperature(double temperature)
 	{
 		platformTargetTemperature = temperature;
+	}
+
+	public double getPlatformTargetTemperature()
+	{
+		return platformTargetTemperature;
 	}
 
 	public void setPlatformCurrentTemperature(double temperature)

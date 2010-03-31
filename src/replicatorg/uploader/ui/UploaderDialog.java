@@ -26,6 +26,7 @@ import replicatorg.uploader.FirmwareUploader;
 import replicatorg.uploader.FirmwareVersion;
 
 public class UploaderDialog extends JDialog implements ActionListener {
+	private static final long serialVersionUID = -401692780113162450L;
 	JButton nextButton;
 	JPanel centralPanel;
 	FirmwareUploader uploader;

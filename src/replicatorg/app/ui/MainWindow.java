@@ -341,6 +341,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		pane.add(splitPane);
 
 		textarea.setTransferHandler(new TransferHandler() {
+			private static final long serialVersionUID = 2093323078348794384L;
+
 			public boolean canImport(JComponent dest, DataFlavor[] flavors) {
 				// claim that we can import everything
 				return true;
@@ -1056,6 +1058,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// ...................................................................
 
 	class UndoAction extends AbstractAction {
+		private static final long serialVersionUID = 7800704765553895387L;
+
 		public UndoAction() {
 			super("Undo");
 			this.setEnabled(false);

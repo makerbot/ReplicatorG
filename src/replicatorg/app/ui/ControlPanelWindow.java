@@ -508,9 +508,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	protected void createToolsPanel() {
 		toolsPane = new JTabbedPane();
 
-		for (Enumeration e = machine.getModel().getTools().elements(); e
+		for (Enumeration<ToolModel> e = machine.getModel().getTools().elements(); e
 				.hasMoreElements();) {
-			ToolModel t = (ToolModel) e.nextElement();
+			ToolModel t = e.nextElement();
 
 			xyFeedrateValue.setText(Integer.toString(xyFeedrateSlider
 					.getValue()));
@@ -653,6 +653,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setName("target-temp");
 			targetTempField.addFocusListener(this);
+			double temperature = driver.getMachine().currentTool().getTargetTemperature();
+			targetTempField.setText(Double.toString(temperature));
 
 			JLabel currentTempLabel = new JLabel("Current Temperature (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
@@ -702,6 +704,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setName("platform-target-temp");
 			targetTempField.addFocusListener(this);
+			double temperature = driver.getMachine().currentTool().getPlatformTargetTemperature();
+			targetTempField.setText(Double.toString(temperature));
 
 			JLabel currentTempLabel = new JLabel("Platform Current Temp (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
