@@ -18,6 +18,7 @@ public class PacketResponse {
 		CRC_MISMATCH("CRC mismatch"), 
 		QUERY_OVERFLOW("Query overflow"), 
 		UNSUPPORTED("Unsupported command"),
+		TIMEOUT("Downstream timeout"),
 		UNKNOWN("Unknown code")
 		;
 		
@@ -43,6 +44,10 @@ public class PacketResponse {
 				return QUERY_OVERFLOW;
 			case 5:
 				return UNSUPPORTED;
+			case 6:
+				return OK; // more packets expected?
+			case 7:
+				return TIMEOUT;
 			}
 			return UNKNOWN;
 		}
