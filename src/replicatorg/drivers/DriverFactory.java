@@ -84,14 +84,20 @@ public class DriverFactory {
 	// common driver factory.
 	public static Driver factory(String driverName, Node xml) {
 		if (driverName.equals("serialpassthrough"))
-			return loadClass("SerialPassthroughDriver", xml);
+			return loadClass("replicatorg.drivers.SerialPassthroughDriver", xml);
 		if (driverName.equals("sanguino3g"))
-			return loadClass("gen3.Sanguino3GDriver", xml);
+			return loadClass("replicatorg.drivers.gen3.Sanguino3GDriver", xml);
 		if (driverName.equals("null"))
-			return loadClass("NullDriver", xml);
+			return loadClass("replicatorg.drivers.NullDriver", xml);
 		else {
-			System.out.println("Driver not found, failing over to 'null'.");
-			return loadClass("NullDriver", xml);
+			// Load driver class 
+			Driver driver = loadClass(driverName, xml);
+			if (driver == null) {
+				System.out.println("Driver not found, failing over to 'null'.");
+				return loadClass("replicatorg.drivers.NullDriver", xml);
+			} else {
+				return driver;
+			}
 		}
 	}
 
@@ -111,7 +117,7 @@ public class DriverFactory {
 	private static Driver loadClass(String driverName) {
 		System.out.println("Loading driver: " + driverName);
 
-		String className = "replicatorg.drivers." + driverName;
+		String className = driverName;
 
 		// thanks to Peter Edworthy for his help with reflection.
 		// lets try to load the class in a nice, dynamic fashion!

@@ -254,11 +254,9 @@ public class Base {
 
 		// build the editor object
 		editor = new MainWindow();
-
-		// get things rawkin
 		editor.pack();
-
-		// has to be here to set window size properly
+		// Get sizing preferences. This is an issue of contention; let's look at how
+		// other programs decide how to size themselves.
 		editor.restorePreferences();
 
 		// show the window
