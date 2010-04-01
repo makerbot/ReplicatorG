@@ -55,6 +55,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.ConsoleHandler;
@@ -77,6 +79,8 @@ import javax.swing.UIManager;
 import replicatorg.app.ui.MainWindow;
 import replicatorg.uploader.FirmwareUploader;
 
+import ch.randelshofer.quaqua.QuaquaManager;
+
 import com.apple.mrj.MRJApplicationUtils;
 import com.apple.mrj.MRJOpenDocumentHandler;
 
@@ -98,7 +102,7 @@ public class Base {
 	/**
 	 * The machine controller in use.
 	 */
-	private static MachineController machine;
+	private static MachineController machine = null;
 	
 	/**
 	 * The general-purpose logging object.
@@ -170,7 +174,7 @@ public class Base {
 
 	static public void main(String args[]) {
 
-		// make sure that this is running on java 1.5
+		// make sure that this is running on java 1.5 or better.
 		if (Base.javaVersion < 1.5f) {
 			Base.showError("Need to install Java 1.5",
 					"This version of ReplicatorG requires\n"
@@ -184,13 +188,13 @@ public class Base {
 			Base.openedAtStartup = args[0];
 		}
 
-		// Check for fresh firmware
+		// Start the firmware check thread.
 		FirmwareUploader.checkFirmware();
 		
+		// MAC OS X ONLY:
 		// register a temporary/early version of the mrj open document handler,
 		// because the event may be lost (sometimes, not always) by the time
 		// that MainWindow is properly constructed.
-
 		MRJOpenDocumentHandler startupOpen = new MRJOpenDocumentHandler() {
 			public void handleOpenFile(File file) {
 				// this will only get set once.. later will be handled
@@ -203,22 +207,29 @@ public class Base {
 			}
 		};
 		MRJApplicationUtils.registerOpenDocumentHandler(startupOpen);
+		
+		// Create the new application "Base" class.
 		new Base();
 	}
 
 	public Base() {
-		machine = null;
-		
 		// set the look and feel before opening the window
-
 		try {
 			if (Base.isMacOS()) {
-				// Use the Quaqua L & F on OS X to make JFileChooser less awful
-				UIManager
-						.setLookAndFeel("ch.randelshofer.quaqua.QuaquaLookAndFeel");
-				// undo quaqua trying to fix the margins, since we've already
-				// hacked that in, bit by bit, over the years
-				UIManager.put("Component.visualMargin", new Insets(1, 1, 1, 1));
+		         // Only override the UI's necessary for ColorChooser and
+		         // FileChooser:
+		         Set<Object> includes = new HashSet<Object>();
+		         includes.add("ColorChooser");
+		         includes.add("FileChooser");
+		         includes.add("Component");
+		         includes.add("Browser");
+		         includes.add("Tree");
+		         includes.add("SplitPane");
+		         QuaquaManager.setIncludedUIs(includes);
+
+		         // set the Quaqua Look and Feel in the UIManager
+		         UIManager.setLookAndFeel("ch.randelshofer.quaqua.QuaquaLookAndFeel");
+
 
 			} else if (Base.isLinux()) {
 				// For 0120, trying out the gtk+ look and feel as the default.
@@ -243,11 +254,9 @@ public class Base {
 
 		// build the editor object
 		editor = new MainWindow();
-
-		// get things rawkin
 		editor.pack();
-
-		// has to be here to set window size properly
+		// Get sizing preferences. This is an issue of contention; let's look at how
+		// other programs decide how to size themselves.
 		editor.restorePreferences();
 
 		// show the window

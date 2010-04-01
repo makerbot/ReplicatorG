@@ -10,37 +10,63 @@ package replicatorg.machine;
  * 
  */
 public class MachineState extends Object implements Cloneable {
+	/**
+	 * The state of a machine controller abstraction.
+	 */
 	public enum State {
+		/** There is no connection to the machine, and no attempt is in progress. */ 
 		NOT_ATTACHED,
+		/** An attempt to contact the machine is in progress. */
 		CONNECTING,
+		/** The controller is scanning multiple ports in an attempt to contact the
+		 * machine. */
 		AUTO_SCAN,
+		/** The controller has successfully contacted the machine, and is ready
+		 * for input. */
 		READY,
+		/** The controller is estimating the length of a build. */
 		ESTIMATING,
+		/** A build is in progress. */
 		BUILDING,
+		/** The machine is under manual control (via control panel, for example). */
 		MANUAL_CONTROL,
+		/** The machine is stopping operation. */
 		STOPPING,
+		/** The machine is building from an SD card. */
 		PLAYBACK
 	};
 	
+	/**
+	 * Indicate the target of the current machine operations.
+	 */
 	public enum Target {
+		/** No target selected. */
 		NONE,
+		/** Operations are performed on a physical machine. */
 		MACHINE,
+		/** Operations are being simulated. */
 		SIMULATOR,
+		/** Operations are being captured to an SD card on the machine. */
 		SD_UPLOAD,
+		/** Operations are being captured to a file. */
 		FILE
 	};
 	
 	private State state = State.NOT_ATTACHED;
 	private Target target = Target.NONE;
+	/** True if the machine is paused. */
 	private boolean paused = false;
 	
+	/** Create an unattached machine state with no target. */
 	public MachineState() {
 	}
 	
+	/** Create a machine state with the given state characteristic and no target. */
 	public MachineState(State state) {
 		this.state = state;
 	}
 	
+	/** Create a machine state with the given state and target. */
 	public MachineState(State state, Target target) {
 		this.state = state;
 		this.target = target;
@@ -54,11 +80,14 @@ public class MachineState extends Object implements Cloneable {
 		return state == State.READY;
 	}
 	
+	/** True if the machine is actively building, either over the connection or
+	 * from a file on the SD card. */
 	public boolean isBuilding() {
 		return state == State.BUILDING ||
 			state == State.PLAYBACK; 
 	}
 
+	/** True if the machine's build is going to the simulator. */
 	public boolean isSimulating() {
 		return state == State.BUILDING && target == Target.SIMULATOR;
 	}
@@ -73,8 +102,7 @@ public class MachineState extends Object implements Cloneable {
 
 	/**
 	 * Set the new machine state.
-	 * By default, this always resets the pause status to false.
-	 * @param state
+	 * This call resets the pause status to false.
 	 */
 	public void setState(State state) {
 		this.state = state;
