@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,14 +15,12 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
-
 import replicatorg.drivers.OnboardParameters;
-import replicatorg.machine.model.Axis;
 
 public class ExtruderOnboardParameters extends JFrame {
+	private static final long serialVersionUID = 6353987389397209816L;
 	private OnboardParameters target;
 	
 	class ThermistorTablePanel extends JPanel {
@@ -72,6 +69,7 @@ public class ExtruderOnboardParameters extends JFrame {
 		for (ThermistorTablePanel p : thermistorTablePanels) {
 			p.commit();
 		}
+		backoffPanel.commit();
 		JOptionPane.showMessageDialog(this,
 				"Changes will not take effect until the extruder board is reset.  You can \n" +
 				"do this by turning your machine off and then on, or by disconnecting and \n" +
@@ -82,6 +80,51 @@ public class ExtruderOnboardParameters extends JFrame {
 			    JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	private class BackoffPanel extends JPanel {
+		private static final long serialVersionUID = 6593800743174557032L;
+		private JTextField stopMsField = new JTextField();
+		private JTextField reverseMsField = new JTextField();
+		private JTextField forwardMsField = new JTextField();
+		private JTextField triggerMsField = new JTextField();
+		BackoffPanel() {
+			setLayout(new MigLayout());
+			setBorder(BorderFactory.createTitledBorder("Reversal parameters"));
+			add(new JLabel("<html>These parameters effect the amount of time the extruder reverses " +
+					"when it goes from a forward state to a stopped state.</html>"),
+					"span");
+			final int FIELD_WIDTH = 20;
+			stopMsField.setColumns(FIELD_WIDTH);
+			reverseMsField.setColumns(FIELD_WIDTH);
+			forwardMsField.setColumns(FIELD_WIDTH);
+			triggerMsField.setColumns(FIELD_WIDTH);
+
+			add(new JLabel("Time to pause (ms)"));
+			add(stopMsField,"wrap");
+			add(new JLabel("Time to reverse (ms)"));
+			add(reverseMsField,"wrap");
+			add(new JLabel("Time to advance (ms)"));
+			add(forwardMsField,"wrap");
+			add(new JLabel("Min. extrusion time before reversal (ms)"));
+			add(triggerMsField,"wrap");
+			OnboardParameters.BackoffParameters bp = target.getBackoffParameters();
+			stopMsField.setText(Integer.toString(bp.stopMs));
+			reverseMsField.setText(Integer.toString(bp.reverseMs));
+			forwardMsField.setText(Integer.toString(bp.forwardMs));
+			triggerMsField.setText(Integer.toString(bp.triggerMs));
+		}
+
+		public void commit() {
+			OnboardParameters.BackoffParameters bp = new OnboardParameters.BackoffParameters();
+			bp.forwardMs = Integer.parseInt(forwardMsField.getText());
+			bp.reverseMs = Integer.parseInt(reverseMsField.getText());
+			bp.stopMs = Integer.parseInt(stopMsField.getText());
+			bp.triggerMs = Integer.parseInt(triggerMsField.getText());
+			target.setBackoffParameters(bp);
+		}
+	}
+
+	BackoffPanel backoffPanel;
+	
 	private JPanel makeButtonPanel() {
 		JPanel panel = new JPanel(new MigLayout());
 		JButton commitButton = new JButton("Commit Changes");
@@ -115,6 +158,8 @@ public class ExtruderOnboardParameters extends JFrame {
 		for (ThermistorTablePanel p : thermistorTablePanels) {
 			panel.add(p);
 		}
+		backoffPanel = new BackoffPanel();
+		panel.add(backoffPanel);
 		panel.add(makeButtonPanel());
 		add(panel);
 		pack();

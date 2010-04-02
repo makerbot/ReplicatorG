@@ -21,4 +21,15 @@ public interface OnboardParameters {
 	int getR0(int which);
 	int getT0(int which);
 	int getBeta(int which);
+	
+
+	class BackoffParameters {
+		public int stopMs;
+		public int reverseMs;
+		public int forwardMs;
+		public int triggerMs;
+	}
+	
+	BackoffParameters getBackoffParameters();
+	void setBackoffParameters(BackoffParameters params);
 }

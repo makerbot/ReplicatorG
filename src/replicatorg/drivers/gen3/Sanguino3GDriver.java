@@ -1335,15 +1335,19 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToToolEEPROM(ECThermistorOffsets.data(which),table);
 	}
 
-	private byte[] intToLE(int s) {
-		byte buf[] = new byte[4];
-		for (int i = 0; i < 4; i++) {
+	private byte[] intToLE(int s, int sz) {
+		byte buf[] = new byte[sz];
+		for (int i = 0; i < sz; i++) {
 			buf[i] = (byte)(s & 0xff);
 			s = s >>> 8;
 		}
 		return buf;
 	}
-	
+
+	private byte[] intToLE(int s) {
+		return intToLE(s,4);
+	}
+
 	ResponseCode convertSDCode(int code) {
 		switch (code) {
 		case 0:
@@ -1457,5 +1461,39 @@ public class Sanguino3GDriver extends SerialDriver
 			val = val + (((int)r[i] & 0xff) << 8*i);
 		}
 		return val;
+	}
+
+	final static class ECBackoffOffsets {
+		/// Backoff stop time, in ms: 2 bytes
+		final static int STOP_MS = 0x0004;
+		/// Backoff reverse time, in ms: 2 bytes
+		final static int REVERSE_MS = 0x0006;
+		/// Backoff forward time, in ms: 2 bytes
+		final static int FORWARD_MS = 0x0008;
+		/// Backoff trigger time, in ms: 2 bytes
+		final static int TRIGGER_MS = 0x000A;
+	};
+
+	private int read16FromToolEEPROM(int offset, int defaultValue) {
+		byte r[] = readFromToolEEPROM(offset,2);
+		int val = r[0]&0xff + ((r[1]&0xff)<<8);
+		if (val == 0x0ffff) return defaultValue;
+		return val;
+	}
+	
+	public BackoffParameters getBackoffParameters() {
+		BackoffParameters bp = new BackoffParameters();
+		bp.forwardMs = read16FromToolEEPROM(ECBackoffOffsets.FORWARD_MS, 300);
+		bp.stopMs = read16FromToolEEPROM(ECBackoffOffsets.STOP_MS, 5);
+		bp.reverseMs = read16FromToolEEPROM(ECBackoffOffsets.REVERSE_MS, 500);
+		bp.triggerMs = read16FromToolEEPROM(ECBackoffOffsets.TRIGGER_MS, 300);
+		return bp;
+	}
+	
+	public void setBackoffParameters(BackoffParameters bp) {
+		writeToToolEEPROM(ECBackoffOffsets.FORWARD_MS,intToLE(bp.forwardMs,2));
+		writeToToolEEPROM(ECBackoffOffsets.STOP_MS,intToLE(bp.stopMs,2));
+		writeToToolEEPROM(ECBackoffOffsets.REVERSE_MS,intToLE(bp.reverseMs,2));
+		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2));
 	}
 }

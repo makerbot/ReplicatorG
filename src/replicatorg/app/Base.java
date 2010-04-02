@@ -34,7 +34,6 @@ import java.awt.Component;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Insets;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
@@ -78,7 +77,6 @@ import javax.swing.UIManager;
 
 import replicatorg.app.ui.MainWindow;
 import replicatorg.uploader.FirmwareUploader;
-
 import ch.randelshofer.quaqua.QuaquaManager;
 
 import com.apple.mrj.MRJApplicationUtils;
