@@ -17,8 +17,8 @@ public interface OnboardParameters {
 	 */
 	boolean hasFeatureOnboardParameters();
 		
-	void createThermistorTable(double r0, double t0, double beta);
-	int getR0();
-	int getT0();
-	int getBeta();
+	void createThermistorTable(int which, double r0, double t0, double beta);
+	int getR0(int which);
+	int getT0(int which);
+	int getBeta(int which);
 }

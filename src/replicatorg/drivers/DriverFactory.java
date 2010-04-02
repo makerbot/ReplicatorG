@@ -123,7 +123,7 @@ public class DriverFactory {
 		// lets try to load the class in a nice, dynamic fashion!
 		try {
 			ClassLoader loader = Thread.currentThread().getContextClassLoader();
-			Class driverClass = loader.loadClass(className);
+			Class<?> driverClass = loader.loadClass(className);
 			if (Driver.class.isAssignableFrom(driverClass)) {
 				return (Driver) driverClass.newInstance();
 			}

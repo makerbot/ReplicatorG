@@ -5,13 +5,18 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -20,15 +25,53 @@ import replicatorg.machine.model.Axis;
 
 public class ExtruderOnboardParameters extends JFrame {
 	private OnboardParameters target;
-	private JTextField betaField = new JTextField();
-	private JTextField r0Field = new JTextField();
-	private JTextField t0Field = new JTextField();
+	
+	class ThermistorTablePanel extends JPanel {
+		private static final long serialVersionUID = 7765098486598830410L;
+		private JTextField betaField = new JTextField();
+		private JTextField r0Field = new JTextField();
+		private JTextField t0Field = new JTextField();
+		private int which;
+		ThermistorTablePanel(int which, String titleText) {
+			super(new MigLayout());
+			this.which = which;
+			setBorder(BorderFactory.createTitledBorder(titleText));
+			final int FIELD_WIDTH = 20;
+			betaField.setColumns(FIELD_WIDTH);
+			r0Field.setColumns(FIELD_WIDTH);
+			t0Field.setColumns(FIELD_WIDTH);
+			
+			double beta = target.getBeta(which);
+			if (beta == -1) { beta = 4066; }
+			betaField.setText(Integer.toString((int)beta));
+			add(new JLabel("Beta"));
+			add(betaField,"wrap");
+
+			double r0 = target.getR0(which);
+			if (r0 == -1) { r0 = 100000; }
+			r0Field.setText(Integer.toString((int)r0));
+			add(new JLabel("Thermistor Resistance"));
+			add(r0Field,"wrap");
+
+			double t0 = target.getT0(which);
+			if (t0 == -1) { t0 = 25; }
+			t0Field.setText(Integer.toString((int)t0));
+			add(new JLabel("Base Temperature"));
+			add(t0Field,"wrap");
+		}
+
+		void commit() {
+			int beta = Integer.parseInt(betaField.getText());
+			int r0 = Integer.parseInt(r0Field.getText());
+			int t0 = Integer.parseInt(t0Field.getText());
+			target.createThermistorTable(which,r0,t0,beta);
+		}
+	}
 
 	private void commit() {
-		int beta = Integer.parseInt(betaField.getText());
-		int r0 = Integer.parseInt(r0Field.getText());
-		int t0 = Integer.parseInt(t0Field.getText());
-		target.createThermistorTable(r0,t0,beta);
+		for (ThermistorTablePanel p : thermistorTablePanels) {
+			p.commit();
+		}
 		JOptionPane.showMessageDialog(this,
 				"Changes will not take effect until the extruder board is reset.  You can \n" +
 				"do this by turning your machine off and then on, or by disconnecting and \n" +
@@ -59,35 +102,19 @@ public class ExtruderOnboardParameters extends JFrame {
 		return panel;
 	}
 
+	private List<ThermistorTablePanel> thermistorTablePanels = new LinkedList<ThermistorTablePanel>();
+	
 	public ExtruderOnboardParameters(OnboardParameters target) {
 		super("Update onboard machine options");
 		this.target = target;
 
-		final int FIELD_WIDTH = 20;
-		betaField.setColumns(FIELD_WIDTH);
-		r0Field.setColumns(FIELD_WIDTH);
-		t0Field.setColumns(FIELD_WIDTH);
+		thermistorTablePanels.add(new ThermistorTablePanel(0,"Extruder thermistor"));
+		thermistorTablePanels.add(new ThermistorTablePanel(1,"Heated build platform thermistor"));
 
-		
-		JPanel panel = new JPanel(new MigLayout());
-		double beta = this.target.getBeta();
-		if (beta == -1) { beta = 4066; }
-		betaField.setText(Integer.toString((int)beta));
-		panel.add(new JLabel("Beta"));
-		panel.add(betaField,"wrap");
-
-		double r0 = this.target.getR0();
-		if (r0 == -1) { r0 = 100000; }
-		r0Field.setText(Integer.toString((int)r0));
-		panel.add(new JLabel("Thermistor Resistance"));
-		panel.add(r0Field,"wrap");
-
-		double t0 = this.target.getT0();
-		if (t0 == -1) { t0 = 25; }
-		t0Field.setText(Integer.toString((int)t0));
-		panel.add(new JLabel("Base Temperature"));
-		panel.add(t0Field,"wrap");
-		
+		Box panel = Box.createVerticalBox();
+		for (ThermistorTablePanel p : thermistorTablePanels) {
+			panel.add(p);
+		}
 		panel.add(makeButtonPanel());
 		add(panel);
 		pack();

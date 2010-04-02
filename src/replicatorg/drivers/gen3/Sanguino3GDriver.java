@@ -1217,12 +1217,24 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
-	
-	final private static int EEPROM_EC_THERMISTOR_TABLE_OFFSET = 0x100;
-	final private static int EEPROM_EC_R0_OFFSET = 0xf0;
-	final private static int EEPROM_EC_T0_OFFSET = 0xf4;
-	final private static int EEPROM_EC_BETA_OFFSET = 0xf8;
-	
+
+	final static class ECThermistorOffsets {
+		final private static int[] TABLE_OFFSETS = {
+			0x00f0,
+			0x0170
+		};
+
+		final private static int R0 = 0x00;
+		final private static int T0 = 0x04;
+		final private static int BETA = 0x08;
+		final private static int DATA = 0x10;
+		
+		public static int r0(int which) { return R0 + TABLE_OFFSETS[which]; }
+		public static int t0(int which) { return T0 + TABLE_OFFSETS[which]; }
+		public static int beta(int which) { return BETA + TABLE_OFFSETS[which]; }
+		public static int data(int which) { return DATA + TABLE_OFFSETS[which]; }
+	};	
+
 	final private static int MAX_MACHINE_NAME_LEN = 16;
 	public EnumSet<Axis> getInvertedParameters() {
 		checkEEPROM();
@@ -1274,7 +1286,7 @@ public class Sanguino3GDriver extends SerialDriver
 		return version.compareTo(new Version(1,2)) >= 0; 
 	}
 
-	public void createThermistorTable(double r0, double t0, double beta) {
+	public void createThermistorTable(int which, double r0, double t0, double beta) {
 		// Generate a thermistor table for r0 = 100K.
 		final int ADC_RANGE = 1024;
 		final int NUMTEMPS = 20;
@@ -1317,10 +1329,10 @@ public class Sanguino3GDriver extends SerialDriver
 		eepromIndicator[1] = EEPROM_CHECK_HIGH;
 		writeToToolEEPROM(0,eepromIndicator);
 
-		writeToToolEEPROM(EEPROM_EC_BETA_OFFSET,intToLE((int)beta));
-		writeToToolEEPROM(EEPROM_EC_R0_OFFSET,intToLE((int)r0));
-		writeToToolEEPROM(EEPROM_EC_T0_OFFSET,intToLE((int)t0));
-		writeToToolEEPROM(EEPROM_EC_THERMISTOR_TABLE_OFFSET,table);
+		writeToToolEEPROM(ECThermistorOffsets.beta(which),intToLE((int)beta));
+		writeToToolEEPROM(ECThermistorOffsets.r0(which),intToLE((int)r0));
+		writeToToolEEPROM(ECThermistorOffsets.t0(which),intToLE((int)t0));
+		writeToToolEEPROM(ECThermistorOffsets.data(which),table);
 	}
 
 	private byte[] intToLE(int s) {
@@ -1420,8 +1432,8 @@ public class Sanguino3GDriver extends SerialDriver
 		return fileList;
 	}
 
-	public int getBeta() {
-		byte r[] = readFromToolEEPROM(EEPROM_EC_BETA_OFFSET,4);
+	public int getBeta(int which) {
+		byte r[] = readFromToolEEPROM(ECThermistorOffsets.beta(which),4);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -1429,8 +1441,8 @@ public class Sanguino3GDriver extends SerialDriver
 		return val;
 	}
 
-	public int getR0() {
-		byte r[] = readFromToolEEPROM(EEPROM_EC_R0_OFFSET,4);
+	public int getR0(int which) {
+		byte r[] = readFromToolEEPROM(ECThermistorOffsets.r0(which),4);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -1438,8 +1450,8 @@ public class Sanguino3GDriver extends SerialDriver
 		return val;
 	}
 
-	public int getT0() {
-		byte r[] = readFromToolEEPROM(EEPROM_EC_T0_OFFSET,4);
+	public int getT0(int which) {
+		byte r[] = readFromToolEEPROM(ECThermistorOffsets.t0(which),4);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
