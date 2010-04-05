@@ -669,20 +669,8 @@ public class MachineController {
 		
 		driver = DriverFactory.factory(driverXml);
 		driver.setMachine(loadModel());
-		// We begin the initialization process here in a seperate
-		// thread.
-		// The rest of the system should check that the machine is
-		// initialized
-		// before proceeding with prints, etc.
-		Thread initThread = new Thread() {
-			public void run() {
-				synchronized(driver) {
-					System.err.println("Attempting to initialize driver "+driver);
-					driver.initialize();
-				}
-			}
-		};
-		initThread.start();
+		// Initialization is now handled by the machine thread when it
+		// is placed in a connecting state.
 	}
 
 	private void loadExtraPrefs() {

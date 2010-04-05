@@ -153,11 +153,8 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void initialize() {
-		// Create our serial object
-		if (serial == null) {
-			System.out.println("No serial port found.\n");
-			return;
-		}
+		// Assert: serial port present.
+		assert serial != null : "No serial port found.";
 
 		// wait till we're initialized
 		if (!isInitialized()) {
@@ -187,6 +184,22 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 	}
 
+	private boolean attemptConnection() {
+		// Eat anything in the serial buffer
+		byte[] scrap = new byte[1];
+		while (serial.available() > 0) {
+			serial.read(scrap);
+		}
+		try {
+			version = getVersionInternal();
+		} catch (TimeoutException e) {
+			version = null;
+		}
+		if (getVersion() != null)
+			setInitialized(true);
+		return isInitialized();
+	}
+	
 	/**
 	 * Wait for a startup message. After the specified timeout, replicatorG will
 	 * attempt to remotely reset the device.
@@ -197,45 +210,36 @@ public class Sanguino3GDriver extends SerialDriver
 	 */
 	protected void waitForStartup(int timeoutMillis) {
 		assert (serial != null);
-		//System.err.println("Wait for startup");
 		synchronized (serial) {
 			serial.setTimeout(timeoutMillis);
-			waitForStartupMessage();
+			if (attemptConnection()) return;
+			// Timed out waiting.  It's possible that a reset was triggered when the device
+			// was opened, since RXTX doesn't allow control of default RTS states.
+			// Wait 2.6s -- 2s for the arduino reset; .6 seconds for the rest of the
+			// system to come up.
 			try {
-				version = getVersionInternal();
-				if (getVersion() != null)
-					setInitialized(true);
-			} catch (TimeoutException e) {
-				// Timed out waiting; try an explicit reset.
-				System.out.println("No connection; trying to pulse RTS to reset device.");
-				serial.pulseRTSLow();
-				waitForStartupMessage();
+				Thread.sleep(2600);
+			} catch (InterruptedException ie) {
+				// Assume we're shutting down the app.
+				return;
 			}
+			if (attemptConnection()) return;
+			// Timed out again.  It is possible that the machine is in a bad state.
+			System.out.println("No connection; trying to pulse RTS to reset device.");
+			serial.pulseRTSLow();
+			// Wait 2.6s -- 2s for the arduino reset; .6 seconds for the rest of the
+			// system to come up.
+			try {
+				Thread.sleep(2600);
+			} catch (InterruptedException ie) {
+				// Assume we're shutting down the app.
+				return;
+			}
+			// One last attempt.
+			attemptConnection();
 		}
-		// Until we fix the firmware hangs, turn off timeout during
-		// builds.
-		// TODO: put the timeout back in
-		serial.setTimeout(0);
 	}
 
-	private void waitForStartupMessage() {
-		try {
-			Thread.sleep(3000); // wait for startup
-		} catch (InterruptedException ie) { 
-			serial.setTimeout(0);
-			return;
-		}
-		byte[] response = new byte[256];
-		StringBuffer respSB = new StringBuffer();
-		try {
-			while (serial.available() > 0) {
-				serial.read(response);
-				respSB.append(response);
-			}
-			//System.err.println("Received "+ respSB.toString());
-		} catch (TimeoutException te) {
-		}
-	}
 	/**
 	 * Sends the command over the serial connection and retrieves a result.
 	 */
@@ -1035,39 +1039,19 @@ public class Sanguino3GDriver extends SerialDriver
 
 	private long convertFeedrateToMicros(Point3d current, Point3d target,
 			double feedrate) {
-
 		Point3d deltaDistance = getAbsDeltaDistance(current, target);
 		Point3d deltaSteps = getAbsDeltaSteps(current, target);
-
-		// System.out.println("current: " + current);
-		// System.out.println("target: " + target);
-		// System.out.println("deltas:" + deltaDistance);
-
-		// try {
-		// Thread.sleep(10000);
-		// } catch (Exception e) {}
-
 		// how long is our line length?
 		double distance = Math.sqrt(deltaDistance.x * deltaDistance.x
 				+ deltaDistance.y * deltaDistance.y + deltaDistance.z
 				* deltaDistance.z);
-
 		double masterSteps = getLongestLength(deltaSteps);
-
 		// distance is in steps
 		// feedrate is in steps/
 		// distance / feedrate * 60,000,000 = move duration in microseconds
 		double micros = distance / feedrate * 60000000.0;
-
 		// micros / masterSteps = time between steps for master axis.
 		double step_delay = micros / masterSteps;
-
-		// System.out.println("Distance: " + distance);
-		// System.out.println("Feedrate: " + feedrate);
-		// System.out.println("Micros: " + micros);
-		// System.out.println("Master steps:" + masterSteps);
-		// System.out.println("Step Delay (micros): " + step_delay);
-
 		return (long) Math.round(step_delay);
 	}
 
@@ -1110,12 +1094,12 @@ public class Sanguino3GDriver extends SerialDriver
 
 	public void reset() {
 		System.out.println("Reset.");
-		setInitialized(false);
-		if (version.compareTo(new Version(1,4)) >= 0) {
+		if (isInitialized() && version.compareTo(new Version(1,4)) >= 0) {
 			// WDT reset introduced in version 1.4 firmware
 			PacketBuilder pb = new PacketBuilder(CommandCodeMaster.RESET.getCode());
 			runCommand(pb.getPacket());
 		}
+		setInitialized(false);
 		initialize();
 	}
 
@@ -1217,7 +1201,6 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
-
 	final static class ECThermistorOffsets {
 		final private static int[] TABLE_OFFSETS = {
 			0x00f0,
