@@ -11,6 +11,9 @@ public interface OnboardParameters {
 	String getMachineName();
 	void setMachineName(String machineName);
 	
+	boolean getInvertedEndstops();
+	void setInvertedEndstops(boolean invert);
+	
 	/**
 	 * Returns whether onboard parameters are supported by the current machine.
 	 * @return true if this version of the firmware supports OnboardParameters.

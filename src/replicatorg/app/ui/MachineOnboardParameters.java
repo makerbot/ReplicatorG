@@ -11,6 +11,7 @@ import java.util.EnumSet;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -34,6 +35,11 @@ public class MachineOnboardParameters extends JFrame {
 	private JCheckBox zAxisInvertBox = new JCheckBox();
 	private JButton extruderButton = new JButton("Set extruder parameters");
 	private JButton resetToFactoryButton = new JButton("Reset to factory settings");
+	private static final String[]  endstopInversionChoices = {
+		"Inverted (Default; H21LOB-based enstops)",
+		"Non-inverted (H21LOI-based endstops)"
+	};
+	private JComboBox endstopInversionSelection = new JComboBox(endstopInversionChoices);
 	private static final int MAX_NAME_LENGTH = 16;
 	
 	private void commit() {
@@ -43,6 +49,8 @@ public class MachineOnboardParameters extends JFrame {
 		if (yAxisInvertBox.isSelected()) axesInverted.add(Axis.Y);
 		if (zAxisInvertBox.isSelected()) axesInverted.add(Axis.Z);
 		target.setInvertedParameters(axesInverted);
+		boolean endstopsInverted = endstopInversionSelection.getSelectedIndex() == 0;
+		target.setInvertedEndstops(endstopsInverted);
 	}
 
 	private void resetToFactory() {
@@ -54,7 +62,9 @@ public class MachineOnboardParameters extends JFrame {
 		EnumSet<Axis> invertedAxes = this.target.getInvertedParameters();
 		xAxisInvertBox.setSelected(invertedAxes.contains(Axis.X));
 		yAxisInvertBox.setSelected(invertedAxes.contains(Axis.Y));
-		zAxisInvertBox.setSelected(invertedAxes.contains(Axis.Z));		
+		zAxisInvertBox.setSelected(invertedAxes.contains(Axis.Z));
+		// 0 == inverted, 1 == not inverted
+		endstopInversionSelection.setSelectedIndex(this.target.getInvertedEndstops()?0:1);
 	}
 
 	private JPanel makeButtonPanel() {
@@ -90,7 +100,8 @@ public class MachineOnboardParameters extends JFrame {
 		panel.add(yAxisInvertBox,"wrap");
 		panel.add(new JLabel("Invert Z axis"));
 		panel.add(zAxisInvertBox,"wrap");
-
+		panel.add(new JLabel("Invert endstops"));
+		panel.add(endstopInversionSelection,"wrap");
 		extruderButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				ExtruderOnboardParameters eop = new ExtruderOnboardParameters(MachineOnboardParameters.this.target);

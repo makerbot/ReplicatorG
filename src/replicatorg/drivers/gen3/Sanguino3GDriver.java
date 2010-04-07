@@ -1206,6 +1206,7 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
+	final private static int EEPROM_ENDSTOP_INVERSION_OFFSET = 3;
 	final static class ECThermistorOffsets {
 		final private static int[] TABLE_OFFSETS = {
 			0x00f0,
@@ -1495,5 +1496,19 @@ public class Sanguino3GDriver extends SerialDriver
 		for (int i = 0; i < 0x0200; i+=16) {
 			writeToEEPROM(i,eepromWipe);
 		}
+	}
+
+	@Override
+	public boolean getInvertedEndstops() {
+		checkEEPROM();
+		byte[] b = readFromEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,0x1f);
+		return (b[0] & 1) != 0;
+	}
+
+	@Override
+	public void setInvertedEndstops(boolean invert) {
+		byte b[] = new byte[1];
+		b[0] = invert?(byte)0x1f:(byte)0x00;
+		writeToEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,b);
 	}
 }
