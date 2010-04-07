@@ -414,9 +414,9 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 	}
 
-	public Point3d getPosition() {
-		return new Point3d();
-	}
+	//public Point3d getPosition() {
+	//	return new Point3d();
+	//}
 
 	/*
 	 * //figure out the axis with the most steps. Point3d steps =
@@ -1089,6 +1089,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.GET_POSITION.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
+		System.err.println("ENDSTOP FLAGS: " + Integer.toBinaryString(pr.get8()));
 		return machine.stepsToMM(steps);
 	}
 

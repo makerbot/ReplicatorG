@@ -661,13 +661,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setName("target-temp");
 			targetTempField.addFocusListener(this);
-<<<<<<< HEAD:src/replicatorg/app/ui/ControlPanelWindow.java
 			double temperature = driver.getMachine().currentTool().getTargetTemperature();
 			targetTempField.setText(Double.toString(temperature));
-=======
 			targetTempField.setActionCommand("handleTextfield");
 			targetTempField.addActionListener(this);
->>>>>>> zaggo:src/replicatorg/app/ui/ControlPanelWindow.java
 
 			JLabel currentTempLabel = new JLabel("Current Temperature (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
@@ -717,13 +714,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setName("platform-target-temp");
 			targetTempField.addFocusListener(this);
-<<<<<<< HEAD:src/replicatorg/app/ui/ControlPanelWindow.java
 			double temperature = driver.getMachine().currentTool().getPlatformTargetTemperature();
 			targetTempField.setText(Double.toString(temperature));
-=======
 			targetTempField.setActionCommand("handleTextfield");
 			targetTempField.addActionListener(this);
->>>>>>> zaggo:src/replicatorg/app/ui/ControlPanelWindow.java
 
 			JLabel currentTempLabel = new JLabel("Platform Current Temp (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
@@ -886,7 +880,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		xPosField.setText(Double.toString(current.x));
 		yPosField.setText(Double.toString(current.y));
 		zPosField.setText(Double.toString(current.z));
-
+		
 		if (driver.getMachine().currentTool() != null &&
 			driver.getMachine().currentTool().hasHeater()) {
 			double temperature = driver.getTemperature();
