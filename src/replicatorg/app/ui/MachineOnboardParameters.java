@@ -26,12 +26,14 @@ import replicatorg.machine.model.Axis;
  *
  */
 public class MachineOnboardParameters extends JFrame {
+	private static final long serialVersionUID = 7876192459063774731L;
 	private final OnboardParameters target;
 	private JTextField machineNameField = new JTextField();
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
 	private JCheckBox zAxisInvertBox = new JCheckBox();
 	private JButton extruderButton = new JButton("Set extruder parameters");
+	private JButton resetToFactoryButton = new JButton("Reset to factory settings");
 	private static final int MAX_NAME_LENGTH = 16;
 	
 	private void commit() {
@@ -41,6 +43,18 @@ public class MachineOnboardParameters extends JFrame {
 		if (yAxisInvertBox.isSelected()) axesInverted.add(Axis.Y);
 		if (zAxisInvertBox.isSelected()) axesInverted.add(Axis.Z);
 		target.setInvertedParameters(axesInverted);
+	}
+
+	private void resetToFactory() {
+		target.resetToFactory();
+	}
+
+	private void loadParameters() {
+		machineNameField.setText(this.target.getMachineName());
+		EnumSet<Axis> invertedAxes = this.target.getInvertedParameters();
+		xAxisInvertBox.setSelected(invertedAxes.contains(Axis.X));
+		yAxisInvertBox.setSelected(invertedAxes.contains(Axis.Y));
+		zAxisInvertBox.setSelected(invertedAxes.contains(Axis.Z));		
 	}
 
 	private JPanel makeButtonPanel() {
@@ -67,18 +81,13 @@ public class MachineOnboardParameters extends JFrame {
 		super("Update onboard machine options");
 		this.target = target;
 		JPanel panel = new JPanel(new MigLayout());
-		machineNameField.setText(this.target.getMachineName());
 		machineNameField.setColumns(MAX_NAME_LENGTH);
 		panel.add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
 		panel.add(machineNameField,"wrap");
-		EnumSet<Axis> invertedAxes = this.target.getInvertedParameters();
-		xAxisInvertBox.setSelected(invertedAxes.contains(Axis.X));
 		panel.add(new JLabel("Invert X axis"));
 		panel.add(xAxisInvertBox,"wrap");
-		yAxisInvertBox.setSelected(invertedAxes.contains(Axis.Y));
 		panel.add(new JLabel("Invert Y axis"));
 		panel.add(yAxisInvertBox,"wrap");
-		zAxisInvertBox.setSelected(invertedAxes.contains(Axis.Z));
 		panel.add(new JLabel("Invert Z axis"));
 		panel.add(zAxisInvertBox,"wrap");
 
@@ -89,10 +98,20 @@ public class MachineOnboardParameters extends JFrame {
 			}
 		});
 		panel.add(extruderButton,"wrap");
+
+		resetToFactoryButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				MachineOnboardParameters.this.resetToFactory();
+				// Reload
+				loadParameters();
+			}
+		});
+		panel.add(resetToFactoryButton,"wrap");
 		
 		panel.add(makeButtonPanel());
 		add(panel);
 		pack();
+		loadParameters();
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((screen.width - getWidth()) / 2,
 				(screen.height - getHeight()) / 2);

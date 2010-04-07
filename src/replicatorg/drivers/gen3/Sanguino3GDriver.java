@@ -1089,7 +1089,8 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.GET_POSITION.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
-		System.err.println("ENDSTOP FLAGS: " + Integer.toBinaryString(pr.get8()));
+		// Useful quickie debug for flags
+		// System.err.println("ENDSTOP FLAGS: " + Integer.toBinaryString(pr.get8()));
 		return machine.stepsToMM(steps);
 	}
 
@@ -1110,19 +1111,22 @@ public class Sanguino3GDriver extends SerialDriver
 	
 	private void checkEEPROM() {
 		if (!eepromChecked) {
-			byte versionBytes[] = readFromEEPROM(EEPROM_CHECK_OFFSET,2);
-			if ((versionBytes[0] != EEPROM_CHECK_LOW) ||
-				(versionBytes[1] != EEPROM_CHECK_HIGH)) {
-				System.err.println("Cleaning EEPROM");
-				// Wipe EEPROM
-				byte eepromWipe[] = new byte[16];
-				Arrays.fill(eepromWipe,(byte)0x00);
-				eepromWipe[0] = EEPROM_CHECK_LOW;
-				eepromWipe[1] = EEPROM_CHECK_HIGH;
-				writeToEEPROM(0,eepromWipe);
-				Arrays.fill(eepromWipe,(byte)0x00);
-				for (int i = 16; i < 256; i+=16) {
-					writeToEEPROM(i,eepromWipe);
+			// Versions 2 and up have onboard eeprom defaults and rely on 0xff values
+			if (version.getMajor() < 2) {
+				byte versionBytes[] = readFromEEPROM(EEPROM_CHECK_OFFSET,2);
+				if ((versionBytes[0] != EEPROM_CHECK_LOW) ||
+					(versionBytes[1] != EEPROM_CHECK_HIGH)) {
+					System.err.println("Cleaning EEPROM");
+					// Wipe EEPROM
+					byte eepromWipe[] = new byte[16];
+					Arrays.fill(eepromWipe,(byte)0x00);
+					eepromWipe[0] = EEPROM_CHECK_LOW;
+					eepromWipe[1] = EEPROM_CHECK_HIGH;
+					writeToEEPROM(0,eepromWipe);
+					Arrays.fill(eepromWipe,(byte)0x00);
+					for (int i = 16; i < 256; i+=16) {
+						writeToEEPROM(i,eepromWipe);
+					}
 				}
 			}
 			eepromChecked = true;
@@ -1479,5 +1483,17 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToToolEEPROM(ECBackoffOffsets.STOP_MS,intToLE(bp.stopMs,2));
 		writeToToolEEPROM(ECBackoffOffsets.REVERSE_MS,intToLE(bp.reverseMs,2));
 		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2));
+	}
+
+	/** Reset to the factory state.  This ordinarily means writing 0xff over the
+	 * entire eeprom.
+	 */
+	@Override
+	public void resetToFactory() {
+		byte eepromWipe[] = new byte[16];
+		Arrays.fill(eepromWipe,(byte)0xff);
+		for (int i = 0; i < 0x0200; i+=16) {
+			writeToEEPROM(i,eepromWipe);
+		}
 	}
 }

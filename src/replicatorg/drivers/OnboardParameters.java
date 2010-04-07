@@ -32,4 +32,7 @@ public interface OnboardParameters {
 	
 	BackoffParameters getBackoffParameters();
 	void setBackoffParameters(BackoffParameters params);
+	
+	/** Reset the onboard parameters to the factory settings. */ 
+	void resetToFactory();
 }
