@@ -1098,6 +1098,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	class RedoAction extends AbstractAction {
+		private static final long serialVersionUID = -2427139178653072745L;
+
 		public RedoAction() {
 			super("Redo");
 			this.setEnabled(false);
@@ -1201,10 +1203,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				!(machine.driver instanceof OnboardParameters)) {
 			JOptionPane.showMessageDialog(
 					this,
-					"ReplicatorG can't connect to your machine or onboard preferences are not supported..\nTry checking your settings and resetting your machine.",
+					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
 		} else {
-			MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machine.driver);
+			MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machine.driver,machine.driver);
 			moo.setVisible(true);
 		}
 	}
