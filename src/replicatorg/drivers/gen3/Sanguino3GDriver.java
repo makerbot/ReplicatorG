@@ -478,7 +478,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setCurrentPosition(p);
 	}
 
-	public void homeAxes(EnumSet<Axis> axes) {
+	public void homeAxes(EnumSet<Axis> axes, boolean positive) {
 		Base.logger.log(Level.FINE,"Homing axes "+axes.toString());
 		byte flags = 0x00;
 
@@ -508,12 +508,13 @@ public class Sanguino3GDriver extends SerialDriver
 		// calculate ticks
 		long micros = convertFeedrateToMicros(new Point3d(), target, feedrate);
 		// send it!
-		PacketBuilder pb = new PacketBuilder(
-				CommandCodeMaster.FIND_AXES_MINIMUM.getCode());
+		int code = positive?
+				CommandCodeMaster.FIND_AXES_MAXIMUM.getCode():
+				CommandCodeMaster.FIND_AXES_MINIMUM.getCode();
+		PacketBuilder pb = new PacketBuilder(code);
 		pb.add8(flags);
 		pb.add32((int) micros);
-		pb.add16(300); // default to 5 minutes
-		
+		pb.add16(20); // default to 20 seconds
 		runCommand(pb.getPacket());
 	}
 		

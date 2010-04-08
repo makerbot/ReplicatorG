@@ -206,47 +206,31 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		pollThread.start();
 	}
 
+	private JMenuItem makeHomeItem(String name,final EnumSet<Axis> set,final boolean positive) {
+		JMenuItem item = new JMenuItem(name);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				driver.homeAxes(set,positive);
+			}
+		});
+		return item;
+	}
+
 	protected JMenuBar createMenuBar() {
 		JMenuBar bar = new JMenuBar();
 		JMenu homeMenu = new JMenu("Homing");
 		bar.add(homeMenu);
-		JMenuItem item;
-		item = new JMenuItem("Home X");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.of(Axis.X));
-			}
-		});
-		homeMenu.add(item);
-		item = new JMenuItem("Home Y");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.of(Axis.Y));
-			}
-		});
-		homeMenu.add(item);
-		item = new JMenuItem("Home Z");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.of(Axis.Z));
-			}
-		});
-		homeMenu.add(item);
+		homeMenu.add(makeHomeItem("Home X+",EnumSet.of(Axis.X),true));
+		homeMenu.add(makeHomeItem("Home X-",EnumSet.of(Axis.X),false));
+		homeMenu.add(makeHomeItem("Home Y+",EnumSet.of(Axis.Y),true));
+		homeMenu.add(makeHomeItem("Home Y-",EnumSet.of(Axis.Y),false));
+		homeMenu.add(makeHomeItem("Home Z+",EnumSet.of(Axis.Z),true));
+		homeMenu.add(makeHomeItem("Home Z-",EnumSet.of(Axis.Z),false));
 		homeMenu.add(new JSeparator());
-		item = new JMenuItem("Home XY");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.of(Axis.X,Axis.Y));
-			}
-		});
-		homeMenu.add(item);
-		item = new JMenuItem("Home all");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.allOf(Axis.class));
-			}
-		});
-		homeMenu.add(item);
+		homeMenu.add(makeHomeItem("Home XY+",EnumSet.of(Axis.X,Axis.Y),true));
+		homeMenu.add(makeHomeItem("Home XY-",EnumSet.of(Axis.X,Axis.Y),false));
+		homeMenu.add(makeHomeItem("Home all+",EnumSet.allOf(Axis.class),true));
+		homeMenu.add(makeHomeItem("Home all-",EnumSet.allOf(Axis.class),false));
 		return bar;
 	}
 
