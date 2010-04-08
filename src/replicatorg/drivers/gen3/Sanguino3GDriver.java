@@ -411,6 +411,7 @@ public class Sanguino3GDriver extends SerialDriver
 			queueAbsolutePoint(steps, micros);
 
 			super.queuePoint(p);
+			super.setCurrentPosition(p);
 		}
 	}
 
@@ -463,6 +464,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void setCurrentPosition(Point3d p) {
+		if (super.getCurrentPosition().equals(p)) return;
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.SET_POSITION.getCode());
 
 		Point3d steps = machine.mmToSteps(p);

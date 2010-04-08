@@ -771,7 +771,7 @@ public class GCodeParser {
 				if (hasCode("X")) axes.add(Axis.X);
 				if (hasCode("Y")) axes.add(Axis.Y);
 				if (hasCode("Z")) axes.add(Axis.Z);
-				driver.homeAxes(axes);
+				driver.homeAxes(axes, false);
 				break;
 
 			// single probe
