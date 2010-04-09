@@ -284,7 +284,7 @@ public class SerialPassthroughDriver extends SerialDriver {
 		if (axes.contains(Axis.Z)) buf.append("Z");
 		sendCommand(buf.toString());
 
-		super.homeAxes(axes);
+		super.homeAxes(axes,false);
 	}
 
 	public void delay(long millis) {
