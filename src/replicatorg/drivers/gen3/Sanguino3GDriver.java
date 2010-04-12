@@ -1513,16 +1513,16 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	@Override
-	public boolean getInvertedEndstops() {
+	public EndstopType getInvertedEndstops() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,0x1f);
-		return (b[0] & 1) != 0;
+		return EndstopType.endstopTypeForValue(b[0]);
 	}
 
 	@Override
-	public void setInvertedEndstops(boolean invert) {
+	public void setInvertedEndstops(EndstopType endstops) {
 		byte b[] = new byte[1];
-		b[0] = invert?(byte)0x1f:(byte)0x00;
+		b[0] = endstops.getValue();
 		writeToEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,b);
 	}
 }

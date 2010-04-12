@@ -11,8 +11,27 @@ public interface OnboardParameters {
 	String getMachineName();
 	void setMachineName(String machineName);
 	
-	boolean getInvertedEndstops();
-	void setInvertedEndstops(boolean invert);
+	public enum EndstopType {
+		NOT_PRESENT((byte)0x00),
+		INVERTED((byte)0x9F),
+		NON_INVERTED((byte)0x80);
+		
+		final byte value;
+		
+		EndstopType(byte value) {
+			this.value = value;
+		}
+		
+		public byte getValue() { return value; }
+		
+		public static EndstopType endstopTypeForValue(byte value) {
+			if ((value & 1<<7) == 0) { return NOT_PRESENT; }
+			return ((value & 1) == 0)?NON_INVERTED:INVERTED;
+		}
+	}
+	
+	EndstopType getInvertedEndstops();
+	void setInvertedEndstops(EndstopType endstops);
 	
 	/**
 	 * Returns whether onboard parameters are supported by the current machine.

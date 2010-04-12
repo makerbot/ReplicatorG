@@ -39,6 +39,7 @@ public class MachineOnboardParameters extends JFrame {
 	private JButton extruderButton = new JButton("Set extruder parameters");
 	private JButton resetToFactoryButton = new JButton("Reset to factory settings");
 	private static final String[]  endstopInversionChoices = {
+		"No endstops installed",
 		"Inverted (Default; H21LOB-based enstops)",
 		"Non-inverted (H21LOI-based endstops)"
 	};
@@ -66,8 +67,10 @@ public class MachineOnboardParameters extends JFrame {
 		if (yAxisInvertBox.isSelected()) axesInverted.add(Axis.Y);
 		if (zAxisInvertBox.isSelected()) axesInverted.add(Axis.Z);
 		target.setInvertedParameters(axesInverted);
-		boolean endstopsInverted = endstopInversionSelection.getSelectedIndex() == 0;
-		target.setInvertedEndstops(endstopsInverted);
+		int idx = endstopInversionSelection.getSelectedIndex();
+		OnboardParameters.EndstopType endstops = 
+			OnboardParameters.EndstopType.values()[idx]; 
+		target.setInvertedEndstops(endstops);
 		resetDialog();
 	}
 
@@ -84,7 +87,8 @@ public class MachineOnboardParameters extends JFrame {
 		yAxisInvertBox.setSelected(invertedAxes.contains(Axis.Y));
 		zAxisInvertBox.setSelected(invertedAxes.contains(Axis.Z));
 		// 0 == inverted, 1 == not inverted
-		endstopInversionSelection.setSelectedIndex(this.target.getInvertedEndstops()?0:1);
+		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
+		endstopInversionSelection.setSelectedIndex(endstops.ordinal());
 	}
 
 	private JPanel makeButtonPanel() {
