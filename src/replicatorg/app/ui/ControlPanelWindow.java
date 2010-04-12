@@ -37,6 +37,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.text.DecimalFormat;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
@@ -85,15 +86,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	protected JPanel jogPanel;
 
 	protected JButton xPlusButton;
-
 	protected JButton xMinusButton;
-
 	protected JButton yPlusButton;
-
 	protected JButton yMinusButton;
-
 	protected JButton zPlusButton;
-
 	protected JButton zMinusButton;
 
 	protected JButton zeroButton;
@@ -108,17 +104,13 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			"1mm", "5mm", "10mm", "20mm", "50mm" };
 
 	protected JSlider xyFeedrateSlider;
-
 	protected JTextField xyFeedrateValue;
 
 	protected JSlider zFeedrateSlider;
-
 	protected JTextField zFeedrateValue;
 
 	protected JTextField xPosField;
-
 	protected JTextField yPosField;
-
 	protected JTextField zPosField;
 
 	protected JTextField currentTempField;
@@ -155,6 +147,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		// save our machine!
 		machine = m;
 		driver = machine.getDriver();
+		driver.invalidatePosition(); // Always force a query when we open the panel
 
 		// Listen to it-- stop and close if we're in build mode.
 		machine.addMachineStateListener(this);
@@ -858,12 +851,14 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		toolsPane.addTab(t.getName(), panel);
 	}
 
+	DecimalFormat positionFormatter = new DecimalFormat("###.#");
+
 	synchronized public void updateStatus() {
 		Point3d current = driver.getCurrentPosition();
 
-		xPosField.setText(Double.toString(current.x));
-		yPosField.setText(Double.toString(current.y));
-		zPosField.setText(Double.toString(current.z));
+		xPosField.setText(positionFormatter.format(current.x));
+		yPosField.setText(positionFormatter.format(current.y));
+		zPosField.setText(positionFormatter.format(current.z));
 		
 		if (driver.getMachine().currentTool() != null &&
 			driver.getMachine().currentTool().hasHeater()) {

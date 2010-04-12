@@ -175,6 +175,7 @@ public class Sanguino3GDriver extends SerialDriver
 			}
 			sendInit();
 			super.initialize();
+			invalidatePosition();
 
 			System.out.println("Ready to print.");
 
@@ -407,11 +408,12 @@ public class Sanguino3GDriver extends SerialDriver
 			long micros = convertFeedrateToMicros(getCurrentPosition(),
 					p, getSafeFeedrate(deltaSteps));
 
+			//System.err.println("Steps :"+steps.toString()+" micros "+Long.toString(micros));
+
 			// okay, send it off!
 			queueAbsolutePoint(steps, micros);
 
 			super.queuePoint(p);
-			super.setCurrentPosition(p);
 		}
 	}
 
@@ -464,7 +466,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void setCurrentPosition(Point3d p) {
+		//System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 		if (super.getCurrentPosition().equals(p)) return;
+		//System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.SET_POSITION.getCode());
 
 		Point3d steps = machine.mmToSteps(p);
@@ -1092,7 +1096,8 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.GET_POSITION.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
-		// Useful quickie debug for flags
+		// Useful quickie debugs
+		// System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
 		// System.err.println("ENDSTOP FLAGS: " + Integer.toBinaryString(pr.get8()));
 		return machine.stepsToMM(steps);
 	}

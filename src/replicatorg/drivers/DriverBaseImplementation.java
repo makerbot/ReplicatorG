@@ -203,7 +203,7 @@ public class DriverBaseImplementation implements Driver {
 		return offsets[i];
 	}
 
-	private Point3d currentPosition = new Point3d();
+	private Point3d currentPosition = null;
 	
 	public void setCurrentPosition(Point3d p) {
 		currentPosition = p;
@@ -252,11 +252,13 @@ public class DriverBaseImplementation implements Driver {
 
 		// mostly for estimation driver.
 		queuePoint(p, feedrate);
-
-		// save it as our current position now.
-		setCurrentPosition(p);
+		setInternalPosition(p);
 	}
 
+	protected void setInternalPosition(Point3d position) {
+		currentPosition = position;
+	}
+	
 	protected void queuePoint(Point3d p, Double feedrate) {
 		// do nothing here.
 	}
