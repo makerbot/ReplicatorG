@@ -125,6 +125,22 @@ public class MachineController {
 			buildCodesInternal(new StringListSource(cooldownCommands));
 		}
 		
+		// Indicates that the driver has control of the thread.  On a stop or abort, we will want to
+		// interrupt the driver explicitly by interrupting the thread, so we need to understand when
+		// we're in this code.
+		private boolean inDriver = false;
+		
+		// Interrupt any current driver call.
+		// The driver implementation should be smart enough to check for interrupted status when not blocking
+		// on IO, and handle interruptedexceptions by dumping out.
+		public void interruptDriver() {
+			synchronized(driver) {
+				if (inDriver) {
+					this.interrupt();
+				}
+			}
+		}
+		
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
 			if (!state.isBuilding()) {
 				// Do not continue build if the machine is not building or paused
@@ -183,11 +199,23 @@ public class MachineController {
 				
 				try {
 					if (!state.isSimulating()) {
+						// The inDriver bracketing is to avoid
+						// interrupting this thread outside of the
+						// call to the driver code.
+						synchronized(driver) {
+							inDriver = true;
+						}
 						driver.execute();
+						synchronized(driver) {
+							inDriver = false;
+						}
 					}
 				} catch (GCodeException e) {
 					// TODO: prompt the user to continue.
 					System.out.println("Error: " + e.getMessage());
+				} catch (InterruptedException ie) {
+					// We're in the middle of a stop or shutdown
+					inDriver = false;
 				}
 				
 				// did we get any errors?
@@ -237,6 +265,8 @@ public class MachineController {
 		 * 
 		 */
 		private synchronized void resetInternal() {
+			driver.getMachine().currentTool().setTargetTemperature(0);
+			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			driver.reset();
 		}
 
@@ -365,8 +395,11 @@ public class MachineController {
 		}
 		
 		public void stopBuild() {
+			driver.getMachine().currentTool().setTargetTemperature(0);
+			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			if (state.isBuilding()) {
-				setState(MachineState.State.STOPPING);				
+				setState(MachineState.State.STOPPING);
+				interruptDriver();
 			}
 		}
 		

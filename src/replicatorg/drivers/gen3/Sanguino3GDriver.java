@@ -269,6 +269,9 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketResponse pr = new PacketResponse();
 
 		while (!packetSent) {
+			// Dump out if interrupted
+			if (Thread.interrupted()) { return pr; }
+
 			pp = new PacketProcessor();
 
 			synchronized (serial) {
@@ -286,9 +289,10 @@ public class Sanguino3GDriver extends SerialDriver
 
 					boolean c = false;
 					while (!c) {
+						if (Thread.interrupted()) { return pr; }
 						int b = serial.read();
 						if (b == -1) {
-							/// Windows has no timeout; busywait
+							/// Windows has no timeout; busywait unless interrupted
 							if (Base.isWindows()) continue;
 							throw new TimeoutException(serial);
 						}
@@ -302,7 +306,9 @@ public class Sanguino3GDriver extends SerialDriver
 					else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
 						try {
 							Thread.sleep(25);
-						} catch (Exception e) {
+						} catch (InterruptedException e) {
+							// We've been interrupted; dump out early!
+							return pr;
 						}
 					}
 					// TODO: implement other error things.
