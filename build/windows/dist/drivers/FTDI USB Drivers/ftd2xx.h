@@ -1,6 +1,6 @@
 /*++
 
-Copyright (c) 2001-2005  Future Technology Devices International Ltd.
+Copyright (c) 2001-2007  Future Technology Devices International Ltd.
 
 Module Name:
 
@@ -32,6 +32,12 @@ Revision History:
 	25/08/05	awm		Added FT_SetDeadmanTimeout.
 	02/12/05	awm		Removed obsolete references.
 	05/12/05	awm		Added FT_GetVersion, FT_GetVersionEx.
+	08/09/06	awm		Added FT_W32_GetCommMask.
+	11/09/06	awm		Added FT_Rescan.
+	11/07/07	awm		Added support for FT2232H and FT4232H.
+	10/08/07	awm		Added flags definitions.
+	21/11/07	mja		Added FT_GetComPortNumber.
+	05/06/08	mja		Added EEPROM extensions for FT2232H.
 	
 	
 --*/
@@ -81,7 +87,8 @@ enum {
 	FT_EEPROM_NOT_PROGRAMMED,
 	FT_INVALID_ARGS,
 	FT_NOT_SUPPORTED,
-	FT_OTHER_ERROR
+	FT_OTHER_ERROR,
+	FT_DEVICE_LIST_NOT_READY,
 };
 
 
@@ -174,6 +181,7 @@ typedef void (*PFT_EVENT_HANDLER)(DWORD,DWORD);
 
 #define FT_EVENT_RXCHAR		    1
 #define FT_EVENT_MODEM_STATUS   2
+#define FT_EVENT_LINE_STATUS   4
 
 //
 // Timeouts
@@ -194,7 +202,10 @@ enum {
     FT_DEVICE_100AX,
     FT_DEVICE_UNKNOWN,
     FT_DEVICE_2232C,
-    FT_DEVICE_232R
+    FT_DEVICE_232R,
+	FT_DEVICE_2232H,
+	FT_DEVICE_4232H,
+	FT_DEVICE_232H
 };
 
 
@@ -232,7 +243,7 @@ FTD2XX_API
 FT_STATUS WINAPI FT_Read(
     FT_HANDLE ftHandle,
     LPVOID lpBuffer,
-    DWORD nBufferSize,
+    DWORD dwBytesToRead,
     LPDWORD lpBytesReturned
     );
 
@@ -240,7 +251,7 @@ FTD2XX_API
 FT_STATUS WINAPI FT_Write(
     FT_HANDLE ftHandle,
     LPVOID lpBuffer,
-    DWORD nBufferSize,
+    DWORD dwBytesToWrite,
     LPDWORD lpBytesWritten
     );
 
@@ -416,6 +427,8 @@ typedef struct ft_program_data {
 								//          0 = original
 	                            //          1 = FT2232C extensions
 								//			2 = FT232R extensions
+								//			3 = FT2232H extensions
+								//			4 = FT4232H extensions
 
 	WORD VendorId;				// 0x0403
 	WORD ProductId;				// 0x6001
@@ -428,7 +441,7 @@ typedef struct ft_program_data {
 	WORD SelfPowered;			// 0 = bus powered, 1 = self powered
 	WORD RemoteWakeup;			// 0 = not capable, 1 = capable
 	//
-	// Rev4 extensions
+	// Rev4 (FT232B) extensions
 	//
 	UCHAR Rev4;					// non-zero if Rev4 chip, zero otherwise
 	UCHAR IsoIn;				// non-zero if in endpoint is isochronous
@@ -438,7 +451,7 @@ typedef struct ft_program_data {
 	UCHAR USBVersionEnable;		// non-zero if chip uses USBVersion
 	WORD USBVersion;			// BCD (0x0200 => USB2)
 	//
-	// FT2232C extensions
+	// Rev 5 (FT2232) extensions
 	//
 	UCHAR Rev5;					// non-zero if Rev5 chip, zero otherwise
 	UCHAR IsoInA;				// non-zero if in endpoint is isochronous
@@ -460,15 +473,13 @@ typedef struct ft_program_data {
 	UCHAR IFBIsFastSer;			// non-zero if interface is Fast serial
 	UCHAR BIsVCP;				// non-zero if interface is to use VCP drivers
 	//
-	// FT232R extensions
+	// Rev 6 (FT232R) extensions
 	//
 	UCHAR UseExtOsc;			// Use External Oscillator
 	UCHAR HighDriveIOs;			// High Drive I/Os
 	UCHAR EndpointSize;			// Endpoint size
-
 	UCHAR PullDownEnableR;		// non-zero if pull down enabled
 	UCHAR SerNumEnableR;		// non-zero if serial number to be used
-
 	UCHAR InvertTXD;			// non-zero if invert TXD
 	UCHAR InvertRXD;			// non-zero if invert RXD
 	UCHAR InvertRTS;			// non-zero if invert RTS
@@ -477,14 +488,63 @@ typedef struct ft_program_data {
 	UCHAR InvertDSR;			// non-zero if invert DSR
 	UCHAR InvertDCD;			// non-zero if invert DCD
 	UCHAR InvertRI;				// non-zero if invert RI
-
 	UCHAR Cbus0;				// Cbus Mux control
 	UCHAR Cbus1;				// Cbus Mux control
 	UCHAR Cbus2;				// Cbus Mux control
 	UCHAR Cbus3;				// Cbus Mux control
 	UCHAR Cbus4;				// Cbus Mux control
-
-	UCHAR RIsVCP;				// non-zero if using VCP drivers
+	UCHAR RIsD2XX;				// non-zero if using D2XX driver
+	//
+	// Rev 7 (FT2232H) Extensions
+	//
+	UCHAR PullDownEnable7;		// non-zero if pull down enabled
+	UCHAR SerNumEnable7;		// non-zero if serial number to be used
+	UCHAR ALSlowSlew;			// non-zero if AL pins have slow slew
+	UCHAR ALSchmittInput;		// non-zero if AL pins are Schmitt input
+	UCHAR ALDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+	UCHAR AHSlowSlew;			// non-zero if AH pins have slow slew
+	UCHAR AHSchmittInput;		// non-zero if AH pins are Schmitt input
+	UCHAR AHDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+	UCHAR BLSlowSlew;			// non-zero if BL pins have slow slew
+	UCHAR BLSchmittInput;		// non-zero if BL pins are Schmitt input
+	UCHAR BLDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+	UCHAR BHSlowSlew;			// non-zero if BH pins have slow slew
+	UCHAR BHSchmittInput;		// non-zero if BH pins are Schmitt input
+	UCHAR BHDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+	UCHAR IFAIsFifo7;			// non-zero if interface is 245 FIFO
+	UCHAR IFAIsFifoTar7;		// non-zero if interface is 245 FIFO CPU target
+	UCHAR IFAIsFastSer7;		// non-zero if interface is Fast serial
+	UCHAR AIsVCP7;				// non-zero if interface is to use VCP drivers
+	UCHAR IFBIsFifo7;			// non-zero if interface is 245 FIFO
+	UCHAR IFBIsFifoTar7;		// non-zero if interface is 245 FIFO CPU target
+	UCHAR IFBIsFastSer7;		// non-zero if interface is Fast serial
+	UCHAR BIsVCP7;				// non-zero if interface is to use VCP drivers
+	UCHAR PowerSaveEnable;		// non-zero if using BCBUS7 to save power for self-powered designs
+	//
+	// Rev 8 (FT4232H) Extensions
+	//
+	UCHAR PullDownEnable8;		// non-zero if pull down enabled
+	UCHAR SerNumEnable8;		// non-zero if serial number to be used
+	UCHAR ASlowSlew;			// non-zero if AL pins have slow slew
+	UCHAR ASchmittInput;		// non-zero if AL pins are Schmitt input
+	UCHAR ADriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+	UCHAR BSlowSlew;			// non-zero if AH pins have slow slew
+	UCHAR BSchmittInput;		// non-zero if AH pins are Schmitt input
+	UCHAR BDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+	UCHAR CSlowSlew;			// non-zero if BL pins have slow slew
+	UCHAR CSchmittInput;		// non-zero if BL pins are Schmitt input
+	UCHAR CDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+	UCHAR DSlowSlew;			// non-zero if BH pins have slow slew
+	UCHAR DSchmittInput;		// non-zero if BH pins are Schmitt input
+	UCHAR DDriveCurrent;		// valid values are 4mA, 8mA, 12mA, 16mA
+	UCHAR ARIIsTXDEN;			// non-zero if port A uses RI as RS485 TXDEN
+	UCHAR BRIIsTXDEN;			// non-zero if port B uses RI as RS485 TXDEN
+	UCHAR CRIIsTXDEN;			// non-zero if port C uses RI as RS485 TXDEN
+	UCHAR DRIIsTXDEN;			// non-zero if port D uses RI as RS485 TXDEN
+	UCHAR AIsVCP8;				// non-zero if interface is to use VCP drivers
+	UCHAR BIsVCP8;				// non-zero if interface is to use VCP drivers
+	UCHAR CIsVCP8;				// non-zero if interface is to use VCP drivers
+	UCHAR DIsVCP8;				// non-zero if interface is to use VCP drivers
 
 } FT_PROGRAM_DATA, *PFT_PROGRAM_DATA;
 
@@ -622,7 +682,7 @@ FT_STATUS WINAPI FT_CyclePort(
 
 FTD2XX_API
 FT_HANDLE WINAPI FT_W32_CreateFile(
-	LPCSTR					lpszName,
+	LPCTSTR					lpszName,
 	DWORD					dwAccess,
 	DWORD					dwShareMode,
 	LPSECURITY_ATTRIBUTES	lpSecurityAttributes,
@@ -783,6 +843,12 @@ BOOL WINAPI FT_W32_SetCommMask(
     );
 
 FTD2XX_API
+BOOL WINAPI FT_W32_GetCommMask(
+    FT_HANDLE ftHandle,
+    LPDWORD lpdwEventMask
+    );
+
+FTD2XX_API
 BOOL WINAPI FT_W32_SetCommState(
     FT_HANDLE ftHandle,
     LPFTDCB lpftDcb
@@ -822,6 +888,12 @@ typedef struct _ft_device_list_info_node {
 	char Description[64];
 	FT_HANDLE ftHandle;
 } FT_DEVICE_LIST_INFO_NODE;
+
+// Device information flags
+enum {
+	FT_FLAGS_OPENED = 1,
+	FT_FLAGS_HISPEED = 2
+};
 
 
 FTD2XX_API
@@ -863,6 +935,23 @@ FT_STATUS WINAPI FT_GetLibraryVersion(
 	LPDWORD lpdwVersion
 	);
 
+
+FTD2XX_API
+FT_STATUS WINAPI FT_Rescan(
+	void
+	);
+
+FTD2XX_API
+FT_STATUS WINAPI FT_Reload(
+	WORD wVid,
+	WORD wPid
+	);
+
+FTD2XX_API
+FT_STATUS WINAPI FT_GetComPortNumber(
+    FT_HANDLE ftHandle,
+	LPLONG	lpdwComPortNumber
+	);
 
 
 
