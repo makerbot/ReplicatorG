@@ -57,6 +57,12 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	}
 
 	public void setSerial(Serial serial) {
+		if (this.serial == serial) return;
+		if (this.serial != null) {
+			this.serial.dispose();
+			this.serial = null;
+		}
+		setInitialized(false);
 		this.serial = serial;
 	}
 

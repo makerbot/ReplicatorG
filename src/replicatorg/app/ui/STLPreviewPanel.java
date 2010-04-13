@@ -35,7 +35,6 @@ import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
-import javax.media.j3d.TransparencyAttributes;
 import javax.swing.JPanel;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
@@ -47,7 +46,6 @@ import org.j3d.renderer.java3d.loaders.STLLoader;
 import com.sun.j3d.loaders.IncorrectFormatException;
 import com.sun.j3d.loaders.ParsingErrorException;
 import com.sun.j3d.loaders.Scene;
-import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**

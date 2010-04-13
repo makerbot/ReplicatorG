@@ -198,8 +198,6 @@ public class Base {
 				// this will only get set once.. later will be handled
 				// by the MainWindow version of this fella
 				if (Base.openedAtStartup == null) {
-					// System.out.println("handling outside open file: " +
-					// file);
 					Base.openedAtStartup = file.getAbsolutePath();
 				}
 			}
@@ -482,7 +480,6 @@ public class Base {
 			 * else { System.out.print("[" + PApplet.hex(c[i]) + "]"); }
 			 */
 		}
-		// System.out.println();
 		return new String(c);
 	}
 
@@ -731,7 +728,6 @@ public class Base {
 		JOptionPane.showMessageDialog(new Frame(), message, title,
 				JOptionPane.WARNING_MESSAGE);
 
-		// System.err.println(e.toString());
 		if (e != null)
 			e.printStackTrace();
 	}

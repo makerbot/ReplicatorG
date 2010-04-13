@@ -160,7 +160,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if (!isInitialized()) {
 			// attempt to send version command and retrieve reply.
 			try {
-				waitForStartup(5000);
+				waitForStartup(500);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
 				e.printStackTrace();
@@ -182,15 +182,14 @@ public class Sanguino3GDriver extends SerialDriver
 			return;
 		} else {
 			System.out.println("Unable to connect to firmware.");
+			// Dispose of driver to free up any resources
+			dispose();
 		}
 	}
 
 	private boolean attemptConnection() {
 		// Eat anything in the serial buffer
-		byte[] scrap = new byte[1];
-		while (serial.available() > 0) {
-			serial.read(scrap);
-		}
+		serial.clear();
 		try {
 			version = getVersionInternal();
 		} catch (TimeoutException e) {
@@ -293,7 +292,6 @@ public class Sanguino3GDriver extends SerialDriver
 						int b = serial.read();
 						if (b == -1) {
 							/// Windows has no timeout; busywait unless interrupted
-							if (Base.isWindows()) continue;
 							throw new TimeoutException(serial);
 						}
 						c = pp.processByte((byte) b);
@@ -1286,6 +1284,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 	
 	public boolean hasFeatureOnboardParameters() {
+		if (!isInitialized()) return false;
 		return version.compareTo(new Version(1,2)) >= 0; 
 	}
 
@@ -1412,6 +1411,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public boolean hasFeatureSDCardCapture() {
+		if (!isInitialized()) return false;
 		return version.compareTo(new Version(1,3)) >= 0; 
 	}
 	
@@ -1503,7 +1503,6 @@ public class Sanguino3GDriver extends SerialDriver
 	/** Reset to the factory state.  This ordinarily means writing 0xff over the
 	 * entire eeprom.
 	 */
-	@Override
 	public void resetToFactory() {
 		byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe,(byte)0xff);
@@ -1512,14 +1511,12 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 	}
 
-	@Override
 	public EndstopType getInvertedEndstops() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,0x1f);
 		return EndstopType.endstopTypeForValue(b[0]);
 	}
 
-	@Override
 	public void setInvertedEndstops(EndstopType endstops) {
 		byte b[] = new byte[1];
 		b[0] = endstops.getValue();

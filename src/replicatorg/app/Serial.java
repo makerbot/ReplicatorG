@@ -1,10 +1,10 @@
 /* -*- mode: java; c-basic-offset: 2; indent-tabs-mode: nil -*- */
 
 /*
- PSerial - class for serial port goodness
- Part of the Processing project - http://processing.org
+ Serial - serial port wrapper
 
  Copyright (c) 2004-05 Ben Fry & Casey Reas
+ Copyright (c) 2010 Adam Mayer
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,8 @@ package replicatorg.app;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,8 +42,11 @@ import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.exceptions.UnknownSerialPortException;
 import replicatorg.drivers.UsesSerial;
 
-public class Serial {
-
+public class Serial implements SerialPortEventListener {
+	/**
+	 * Serial.Name objects are simple compact objects that hold the name
+	 * of a serial port, along with the port's current availability.
+	 */
 	public static class Name implements Comparable<Name> {
 		private String name;
 		private boolean available;
@@ -53,6 +57,9 @@ public class Serial {
 		public String getName() {
 			return name;
 		}
+		/**
+		 * @return true if the port can be successfully opened by ReplicatorG.
+		 */
 		public boolean isAvailable() {
 			return available;
 		}
@@ -65,17 +72,21 @@ public class Serial {
 		public String toString() { return this.name; }
 	}
 	
+	/**
+	 * We maintain our own set of ports in current use, because RXTX can't be trusted.
+	 * (NB: may be obsoleted at some point on some platforms?)
+	 */
 	private static Set<Serial> portsInUse = new HashSet<Serial>();
 	
 	/**
 	 * Scan the port ids for a list of potential serial ports that we can use.
-	 * @return A vector of serial port names.
+	 * @return A vector of serial port names and availability information.
 	 */
 	public static Vector<Name> scanSerialNames()
 	{
 		Vector<Name> v = new Vector<Name>();
 		try {
-			Enumeration portList = CommPortIdentifier.getPortIdentifiers();
+			Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
 			while (portList.hasMoreElements()) {
 				CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
 				if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
@@ -87,9 +98,9 @@ public class Serial {
 			}
 		} catch (Exception e) {
 		}
-		// In-use ports may not end up in the enumeration (thanks, RXTX, you fabulous pile of shit!), so
-		// we'll scan for them, insert them if necessary, and return the whole.
-		assert portsInUse.size() <= 1;
+		// In-use ports may not end up in the enumeration (thanks, RXTX), so
+		// we'll scan for them, and insert them if necessary.  (The app wants
+		// to display in-use ports to reduce user confusion.)
 		for (Serial port: portsInUse) {
 			Name n = new Name(port.getName(),false);
 			boolean contains = false;
@@ -104,12 +115,8 @@ public class Serial {
 		return v;
 	}
 	
-	// properties can be passed in for default values
-	// otherwise defaults to 9600 N81
-
-	// these could be made static, which might be a solution
-	// for the classloading problem.. because if code ran again,
-	// the static class would have an object that could be closed
+	// Properties can be passed in for default values.
+	// Otherwise, we default to 9600 N81
 
 	private SerialPort port;
 	private String name;
@@ -120,8 +127,6 @@ public class Serial {
 
 	public String getName() { return name; }
 	
-	// read buffer and streams
-
 	private InputStream input;
 	private OutputStream output;
 
@@ -176,6 +181,8 @@ public class Serial {
 			port.setSerialPortParams(this.rate, this.data, this.stop, this.parity);
 			input = port.getInputStream();
 			output = port.getOutputStream();
+			port.addEventListener(this);
+			port.notifyOnDataAvailable(true);
 		} catch (PortInUseException e) {
 			throw new SerialException(
 					"Serial port '"
@@ -189,29 +196,25 @@ public class Serial {
 	}
 
 	/**
-	 * Used by PApplet to shut things down.
+	 * Unregister and close the port.
 	 */
-	public void dispose() {
-		try {
-			// do io streams need to be closed first?
-			if (input != null)
+	public synchronized void dispose() {
+		if (port != null) port.removeEventListener();
+		if (input != null)
+			try {
 				input.close();
-			if (output != null)
-				output.close();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		input = null;
+		if (output != null)
+			try {
+				output.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		output = null;
-
-		try {
-			if (port != null)
-				port.close(); // close the port
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		if (port != null) port.close();
 		portsInUse.remove(this);
 		port = null;
 	}
@@ -230,22 +233,6 @@ public class Serial {
 		port.setDTR(true);
 		port.setRTS(true);
 	}
-
-	public int available() {
-		try {
-			return input.available();
-		} catch (IOException ioe) {
-			return -1;
-		}
-	}
-	
-	public int read() {
-		try {
-			return input.read();
-		} catch (IOException ioe) {
-			return -1;
-		}
-	}
 	
 	/**
 	 * Attempt to fill the given buffer.
@@ -253,20 +240,68 @@ public class Serial {
 	 * @return the number of characters read.
 	 */
 	public int read(byte bytes[]) {
-		try {
-			return input.read(bytes);
-		} catch (IOException ioe) {
-			return -1;
+		int b = read();
+		int idx = 0;
+		while ((b != -1) && (idx < bytes.length)) {
+			bytes[idx++] = (byte)b;
+			b = read();
+		}
+		return idx;
+	}
+	
+	/**
+	 * Non-growable FIFO.  In theory we only need enough space for a single
+	 * packet.  Currently set at 16K.
+	 * @author phooky
+	 *
+	 */
+	class ByteFifo {
+		final static int INITIAL_FIFO_SIZE = 16 * 1024; // 16 K
+		private byte[] buffer = new byte[INITIAL_FIFO_SIZE];
+		private int head = 0; 
+		private int tail = 0;
+		public void enqueue(byte b) {
+			buffer[tail++] = b;
+			tail = tail % buffer.length;
+		}
+		public void clear() { head = tail = 0; }
+		public int size() { return (tail-head)%buffer.length; }
+		public byte dequeue() {
+			byte b = buffer[head++];
+			head = head % buffer.length;
+			return b;
+		}
+	}
+	
+	private ByteFifo readFifo = new ByteFifo();
+	
+	/**
+	 * Attempt to read a single byte.
+	 * @return the byte read, or -1 to indicate a timeout.
+	 */
+	public int read() {
+		synchronized(readFifo) {
+			try {
+				if (readFifo.size() == 0) readFifo.wait(timeoutMillis);
+			} catch (InterruptedException e) {
+				// We are most likely amidst a shutdown.
+				return -1;
+			}
+			if (readFifo.size() > 0) {
+				return readFifo.dequeue();
+			} else {
+				System.err.println("Read timed out.");
+				return -1;
+			}
 		}
 	}
 	
 	public void write(byte bytes[]) {
 		try {
 			output.write(bytes);
-			output.flush(); // hmm, not sure if a good idea
+			output.flush(); // Reconsider?
 
 		} catch (Exception e) { // null pointer or serial port dead
-			// errorMessage("write", e);
 			e.printStackTrace();
 		}
 	}
@@ -286,18 +321,16 @@ public class Serial {
 		write(what.getBytes());
 	}
 
+	/**
+	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 1s.
+	 */
+	private int timeoutMillis = 1000;
+
+	/**
+	 * Set the amount of time we're willing to wait for a read to timeout.
+	 */
 	public void setTimeout(int timeoutMillis) {
-		if (!Base.isWindows()) {
-			try {
-				if (timeoutMillis <= 0) {
-					port.disableReceiveTimeout();
-				} else {
-					port.enableReceiveTimeout(timeoutMillis);
-				}
-			} catch (UnsupportedCommOperationException unsupEx) {
-				System.err.println(unsupEx.getMessage());
-			}
-		}
+		this.timeoutMillis = timeoutMillis;
 	}
 
 	/**
@@ -307,5 +340,39 @@ public class Serial {
 	static public void errorMessage(String where, Throwable e) {
 		e.printStackTrace();
 		throw new RuntimeException("Error inside Serial." + where + "()");
+	}
+
+	public void clear() {
+		synchronized (readFifo) {
+			try {
+				while (input.available() > 0) {
+					input.read();
+				}
+			} catch (IOException e) {
+				// Error condition
+				e.printStackTrace();
+			}
+			readFifo.clear();
+			readFifo.notifyAll();
+		}
+	}
+	
+	public void serialEvent(SerialPortEvent event) {
+		synchronized (readFifo) {
+			boolean readAny = false;
+			try {
+				while (input.available() > 0) {
+					int b = input.read();
+					if (b >= 0) {
+						readFifo.enqueue((byte)b);
+						readAny = true;
+					}
+				}
+			} catch (IOException e) {
+				// Error condition
+				e.printStackTrace();
+			}
+			if (readAny) readFifo.notify();
+		}
 	}
 }

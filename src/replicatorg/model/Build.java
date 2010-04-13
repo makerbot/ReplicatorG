@@ -33,8 +33,6 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.swing.JOptionPane;
-
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
 
