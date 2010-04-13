@@ -152,7 +152,7 @@ public class FirmwareUploader {
 	// Return the latest available version for the given board name
 	public static Version getLatestVersion(String boardName) {
 		Document firmwareDoc = getFirmwareDoc();
-		if (firmwareDoc == null) return new Version(0, 0);
+		if (firmwareDoc == null) return null;
 		NodeList nl = firmwareDoc.getElementsByTagName("board");
 		Version version = null;
 		for (int i = 0; i < nl.getLength(); i++) {
