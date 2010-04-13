@@ -1,4 +1,10 @@
 0014 ReplicatorG
+* Many small stability fixes
+* Faster startup
+* Working serial timeouts on Windows and Mac OS X
+* Support for new onboard preferences for Motherboard and Extruder Controller
+* Fixes for a number of Linux and Mac display issues
+* Fix for firmware upload source pref
 * The text field in the control panel are now also handled when hitting "Enter"/"Return" (not only when focus is lost).
 
 0013 ReplicatorG
