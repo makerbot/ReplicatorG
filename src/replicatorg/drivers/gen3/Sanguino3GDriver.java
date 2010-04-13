@@ -160,7 +160,11 @@ public class Sanguino3GDriver extends SerialDriver
 		if (!isInitialized()) {
 			// attempt to send version command and retrieve reply.
 			try {
-				waitForStartup(500);
+				// Default timeout should be 2.6s for Mac, since opening a port may reset
+				// the mobo.
+				int timeout = 500;
+				if (Base.isMacOS()) timeout = 2600;
+				waitForStartup(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
 				e.printStackTrace();

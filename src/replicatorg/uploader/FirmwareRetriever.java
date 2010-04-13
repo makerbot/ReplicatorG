@@ -1,6 +1,7 @@
 package replicatorg.uploader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +31,8 @@ class FirmwareRetriever {
 	public enum UpdateStatus {
 		NETWORK_UNAVAILABLE,
 		NO_NEW_UPDATES,
-		NEW_UPDATES
+		NEW_UPDATES,
+		RO_FILESYSTEM // Can't save the downloaded firmware because running in a read-only filesystem.
 	}
 
 	/// Use a 10-second timeout when checking
@@ -87,6 +89,10 @@ class FirmwareRetriever {
 			e.printStackTrace();
 		} catch (SocketTimeoutException e) {
 			// Fine; network is unavailable
+		} catch (FileNotFoundException e) {
+			// This ordinarily indicates that the user is running on a read-only filesystem
+			// and we've got nowhere to save the incoming firmware.
+			return UpdateStatus.RO_FILESYSTEM;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
