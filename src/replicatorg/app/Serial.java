@@ -289,8 +289,9 @@ public class Serial implements SerialPortEventListener {
 			try {
 				if (readFifo.size() == 0) readFifo.wait(timeoutMillis);
 			} catch (InterruptedException e) {
-				System.err.println("Interrupted.");
-				// We are most likely amidst a shutdown.
+				// We are most likely amidst a shutdown.  Propegate the interrupt
+				// status.
+				Thread.currentThread().interrupt();
 				return -1;
 			}
 			if (readFifo.size() > 0) {

@@ -160,7 +160,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// attempt to send version command and retrieve reply.
 			try {
 				// Default timeout should be 2.6s.  Timeout can be sped up for v2, but let's play it safe.
-				int timeout = 2600;
+				int timeout = 4000;
 				waitForStartup(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
@@ -222,6 +222,8 @@ public class Sanguino3GDriver extends SerialDriver
 				Thread.sleep(2600);
 			} catch (InterruptedException ie) {
 				// Assume we're shutting down the app.
+				Thread.currentThread().interrupt();
+				System.err.println("Shutting down...");
 				return;
 			}
 			if (attemptConnection()) return;
@@ -234,6 +236,8 @@ public class Sanguino3GDriver extends SerialDriver
 				Thread.sleep(2600);
 			} catch (InterruptedException ie) {
 				// Assume we're shutting down the app.
+				Thread.currentThread().interrupt();
+				System.err.println("Shutting down....");
 				return;
 			}
 			// One last attempt.
@@ -250,10 +254,11 @@ public class Sanguino3GDriver extends SerialDriver
 		if (packet == null || packet.length < 4)
 			return null; // skip empty commands or broken commands
 
+		boolean isCommand = (packet[2] & 0x80) != 0;
 		if (fileCaptureOstream != null) {
 			// capture to file.
 			try {
-				if ((packet[2] & 0x80) != 0) { // ignore query commands
+				if (isCommand) { // ignore query commands
 					fileCaptureOstream.write(packet,2,packet.length-3);
 				} 
 			} catch (IOException ioe) {
@@ -270,7 +275,9 @@ public class Sanguino3GDriver extends SerialDriver
 
 		while (!packetSent) {
 			// Dump out if interrupted
-			if (Thread.interrupted()) { return pr; }
+			if (Thread.currentThread().isInterrupted()) {
+				return pr;
+			}
 
 			pp = new PacketProcessor();
 
@@ -289,7 +296,10 @@ public class Sanguino3GDriver extends SerialDriver
 
 					boolean c = false;
 					while (!c) {
-						if (Thread.interrupted()) { return pr; }
+						// Dump out if interrupted
+						if (Thread.currentThread().isInterrupted()) { 
+							return pr;
+						}
 						int b = serial.read();
 						if (b == -1) {
 							// resend on timeout
@@ -297,12 +307,16 @@ public class Sanguino3GDriver extends SerialDriver
 							try {
 								Thread.sleep(60);
 							} catch (InterruptedException e) {
-								System.err.println("Interrupted!");
+								Thread.currentThread().interrupt();
 								// We've been interrupted; dump out early!
 								return pr;
 							}
-							continue;
-							// throw new TimeoutException(serial);
+							if (isCommand) {
+								// Try again for commands
+								continue;
+							} else {
+								throw new TimeoutException(serial);
+							}
 							// return PacketResponse.timeoutResponse();
 						}
 						c = pp.processByte((byte) b);
@@ -316,7 +330,7 @@ public class Sanguino3GDriver extends SerialDriver
 						try {
 							Thread.sleep(25);
 						} catch (InterruptedException e) {
-							System.err.println("Interrupted!");
+							Thread.currentThread().interrupt();
 							// We've been interrupted; dump out early!
 							return pr;
 						}
@@ -1139,10 +1153,12 @@ public class Sanguino3GDriver extends SerialDriver
 	private void checkEEPROM() {
 		if (!eepromChecked) {
 			// Versions 2 and up have onboard eeprom defaults and rely on 0xff values
+			eepromChecked = true;
 			if (version.getMajor() < 2) {
 				byte versionBytes[] = readFromEEPROM(EEPROM_CHECK_OFFSET,2);
-				if ((versionBytes[0] != EEPROM_CHECK_LOW) ||
-					(versionBytes[1] != EEPROM_CHECK_HIGH)) {
+				if (versionBytes == null || versionBytes.length < 2) return;
+				if ((versionBytes[0] != EEPROM_CHECK_LOW) || 
+						(versionBytes[1] != EEPROM_CHECK_HIGH)) {
 					System.err.println("Cleaning EEPROM");
 					// Wipe EEPROM
 					byte eepromWipe[] = new byte[16];
@@ -1156,7 +1172,6 @@ public class Sanguino3GDriver extends SerialDriver
 					}
 				}
 			}
-			eepromChecked = true;
 		}
 	}
 	

@@ -129,7 +129,9 @@ public class PacketResponse {
 	}
 
 	public ResponseCode getResponseCode() {
-		return ResponseCode.fromInt(payload[0]);
+		if (payload != null && payload.length > 0)
+			return ResponseCode.fromInt(payload[0]);
+		else return ResponseCode.GENERIC_ERROR;
 	}
 
 	public static PacketResponse okResponse() {
