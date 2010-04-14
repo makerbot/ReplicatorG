@@ -159,8 +159,8 @@ public class Sanguino3GDriver extends SerialDriver
 		if (!isInitialized()) {
 			// attempt to send version command and retrieve reply.
 			try {
-				// Default timeout should be 4s.  Timeout can be sped up for v2, but let's play it safe.
-				int timeout = 4000;
+				// Default timeout should be 2.6s.  Timeout can be sped up for v2, but let's play it safe.
+				int timeout = 2600;
 				waitForStartup(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
@@ -382,7 +382,10 @@ public class Sanguino3GDriver extends SerialDriver
             final String EC_NAME = "Extruder Controller v2.2"; 
     		FirmwareUploader.checkLatestVersion(EC_NAME, sv);
         }
-        
+		// If we're dealing with older firmware, set timeout to infinity
+		if (v.getMajor() < 2) {
+			serial.setTimeout(Integer.MAX_VALUE);
+		}
 		return v;
 	}
 	
