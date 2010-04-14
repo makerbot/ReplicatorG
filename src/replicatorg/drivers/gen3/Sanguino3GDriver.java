@@ -1543,7 +1543,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 	public EndstopType getInvertedEndstops() {
 		checkEEPROM();
-		byte[] b = readFromEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,0x1f);
+		byte[] b = readFromEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,1);
 		return EndstopType.endstopTypeForValue(b[0]);
 	}
 
