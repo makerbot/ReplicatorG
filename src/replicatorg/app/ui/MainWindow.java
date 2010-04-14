@@ -855,12 +855,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 			JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
 			item.setState(true);
-			String name = item.getText();
+			final String name = item.getText();
 			Base.preferences.put("machine.name", name);
 
 			// load it and set it.
-
-			loadMachine(name);
+			Thread t = new Thread() {
+				public void run() {
+					loadMachine(name);
+				}
+			};
+			t.start();
 		}
 	}
 
