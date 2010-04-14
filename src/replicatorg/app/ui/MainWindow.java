@@ -586,17 +586,25 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			final String portName = name.getName();
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					try {
-						UsesSerial us = (UsesSerial)machine.driver;
-						if (us.getSerial() == null ||
-								us.getSerial().getName() != portName) {
-							us.setSerial(new Serial(portName, us));
-							Base.preferences.put("serial.last_selected", portName);
-							machine.reset();
+					Thread t = new Thread() {
+						public void run() {
+							try {
+								UsesSerial us = (UsesSerial)machine.driver;
+								if (us != null) synchronized(us) {
+									if (us.getSerial() == null ||
+											us.getSerial().getName() != portName) {
+										us.setSerial(new Serial(portName, us));
+										Base.preferences.put("serial.last_selected", portName);
+										machine.reset();
+									}
+								}
+							} catch (SerialException se) {
+								se.printStackTrace();
+							}
+
 						}
-					} catch (SerialException se) {
-						se.printStackTrace();
-					}
+					};
+					t.start();
 				}
 			});
 			serialMenu.add(item);
