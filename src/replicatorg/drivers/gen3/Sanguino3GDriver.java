@@ -155,15 +155,12 @@ public class Sanguino3GDriver extends SerialDriver
 	public void initialize() {
 		// Assert: serial port present.
 		assert serial != null : "No serial port found.";
-
 		// wait till we're initialized
 		if (!isInitialized()) {
 			// attempt to send version command and retrieve reply.
 			try {
-				// Default timeout should be 2.6s for Mac, since opening a port may reset
-				// the mobo.
-				int timeout = 500;
-				if (Base.isMacOS()) timeout = 2600;
+				// Default timeout should be 4s.  Timeout can be sped up for v2, but let's play it safe.
+				int timeout = 4000;
 				waitForStartup(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
