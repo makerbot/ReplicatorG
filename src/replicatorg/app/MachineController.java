@@ -403,6 +403,11 @@ public class MachineController {
 			}
 		}
 		
+		public void shutdown() {
+			running = false;
+			stopBuild();
+		}
+
 		public void autoscan() {
 			if (state.getState() == MachineState.State.CONNECTING ||
 				state.getState() == MachineState.State.NOT_ATTACHED) {
@@ -410,8 +415,10 @@ public class MachineController {
 			}
 		}
 		
+		private boolean running = true;
+		
 		public void run() {
-			while (!interrupted()) {
+			while (running) {
 				try {
 					if (state.getState() == MachineState.State.BUILDING) {
 						if (state.getTarget() == MachineState.Target.SD_UPLOAD) {
@@ -787,8 +794,7 @@ public class MachineController {
 	
 	public void dispose() {
 		if (machineThread != null) {
-			machineThread.stopBuild();
-			machineThread.interrupt();
+			machineThread.shutdown();
 			try {
 				machineThread.join(5000);
 			} catch (Exception e) { e.printStackTrace(); }

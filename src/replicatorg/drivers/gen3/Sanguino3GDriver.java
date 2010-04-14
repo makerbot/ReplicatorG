@@ -255,6 +255,7 @@ public class Sanguino3GDriver extends SerialDriver
 			return null; // skip empty commands or broken commands
 
 		boolean isCommand = (packet[2] & 0x80) != 0;
+		
 		if (fileCaptureOstream != null) {
 			// capture to file.
 			try {
@@ -1120,6 +1121,7 @@ public class Sanguino3GDriver extends SerialDriver
 	public void stop() {
 		System.out.println("Stop.");
 		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.ABORT.getCode());
+		Thread.interrupted(); // Clear interrupted status
 		runCommand(pb.getPacket());
 		// invalidate position, force reconciliation.
 		invalidatePosition();
