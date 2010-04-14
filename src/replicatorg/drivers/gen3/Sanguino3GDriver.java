@@ -292,8 +292,18 @@ public class Sanguino3GDriver extends SerialDriver
 						if (Thread.interrupted()) { return pr; }
 						int b = serial.read();
 						if (b == -1) {
-							/// Windows has no timeout; busywait unless interrupted
-							throw new TimeoutException(serial);
+							// resend on timeout
+							System.err.println("Timeout.");
+							try {
+								Thread.sleep(60);
+							} catch (InterruptedException e) {
+								System.err.println("Interrupted!");
+								// We've been interrupted; dump out early!
+								return pr;
+							}
+							continue;
+							// throw new TimeoutException(serial);
+							// return PacketResponse.timeoutResponse();
 						}
 						c = pp.processByte((byte) b);
 					}
@@ -306,6 +316,7 @@ public class Sanguino3GDriver extends SerialDriver
 						try {
 							Thread.sleep(25);
 						} catch (InterruptedException e) {
+							System.err.println("Interrupted!");
 							// We've been interrupted; dump out early!
 							return pr;
 						}
@@ -1105,8 +1116,8 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketResponse pr = runCommand(pb.getPacket());
 		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
 		// Useful quickie debugs
-		// System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
-		// System.err.println("ENDSTOP FLAGS: " + Integer.toBinaryString(pr.get8()));
+		//System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
+		//System.err.println("ENDSTOP FLAGS: " + Integer.toBinaryString(pr.get8()));
 		return machine.stepsToMM(steps);
 	}
 

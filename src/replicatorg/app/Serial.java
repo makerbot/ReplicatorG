@@ -256,19 +256,24 @@ public class Serial implements SerialPortEventListener {
 	 *
 	 */
 	class ByteFifo {
-		final static int INITIAL_FIFO_SIZE = 16 * 1024; // 16 K
+		final static int INITIAL_FIFO_SIZE = 1 * 1024; // 1 K
 		private byte[] buffer = new byte[INITIAL_FIFO_SIZE];
 		private int head = 0; 
 		private int tail = 0;
+		final private int moduloLength(int value) {
+			value = value % buffer.length;
+			if (value < 0) value += buffer.length;
+			return value;
+		}
 		public void enqueue(byte b) {
 			buffer[tail++] = b;
-			tail = tail % buffer.length;
+			tail = moduloLength(tail);
 		}
 		public void clear() { head = tail = 0; }
-		public int size() { return (tail-head)%buffer.length; }
+		public int size() { return moduloLength(tail-head); }
 		public byte dequeue() {
 			byte b = buffer[head++];
-			head = head % buffer.length;
+			head = moduloLength(head);
 			return b;
 		}
 	}
@@ -284,11 +289,13 @@ public class Serial implements SerialPortEventListener {
 			try {
 				if (readFifo.size() == 0) readFifo.wait(timeoutMillis);
 			} catch (InterruptedException e) {
+				System.err.println("Interrupted.");
 				// We are most likely amidst a shutdown.
 				return -1;
 			}
 			if (readFifo.size() > 0) {
-				return readFifo.dequeue();
+				byte b = readFifo.dequeue();
+				return b & 0xff; 
 			} else {
 				System.err.println("Read timed out.");
 				return -1;

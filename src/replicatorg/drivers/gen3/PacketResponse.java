@@ -18,6 +18,7 @@ public class PacketResponse {
 		CRC_MISMATCH("CRC mismatch"), 
 		QUERY_OVERFLOW("Query overflow"), 
 		UNSUPPORTED("Unsupported command"),
+		TIMEOUT("Packet timeout"),
 		UNKNOWN("Unknown code")
 		;
 		
@@ -43,6 +44,8 @@ public class PacketResponse {
 				return QUERY_OVERFLOW;
 			case 5:
 				return UNSUPPORTED;
+			case 127:
+				return TIMEOUT;
 			}
 			return UNKNOWN;
 		}
@@ -61,7 +64,7 @@ public class PacketResponse {
 	}
 
 	/**
-	 * Prints a debug message with the packet response code decoded, along wiith
+	 * Prints a debug message with the packet response code decoded, along with
 	 * the packet's contents in hex.
 	 */
 	public void printDebug() {
@@ -132,5 +135,10 @@ public class PacketResponse {
 	public static PacketResponse okResponse() {
 		final byte[] okPayload = {1,1,1,1,1,1,1,1}; // repeated 1s to fake out queries
 		return new PacketResponse(okPayload);
+	}
+
+	public static PacketResponse timeoutResponse() {
+		final byte[] errorPayload = {127,0,0,0,0,0,0,0}; // repeated 0s to fake out queries
+		return new PacketResponse(errorPayload);
 	}
 }
