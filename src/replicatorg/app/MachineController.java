@@ -406,6 +406,7 @@ public class MachineController {
 		public void shutdown() {
 			running = false;
 			stopBuild();
+			synchronized(this) { notify(); }
 		}
 
 		public void autoscan() {
