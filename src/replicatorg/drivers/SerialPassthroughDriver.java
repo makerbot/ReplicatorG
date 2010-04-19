@@ -83,7 +83,6 @@ public class SerialPassthroughDriver extends SerialDriver {
 			System.out.println("No Serial Port found.\n");
 			return;
 		}
-		
 		// wait till we're initialized
 		if (!isInitialized()) {
 			try {
@@ -180,8 +179,8 @@ public class SerialPassthroughDriver extends SerialDriver {
 		synchronized (serial) {
 			try {
 				int numread = serial.read(responsebuffer);
-				assert (numread != 0); // This should never happen since we
-										// know we have a buffer
+				// 0 is now an acceptable value; it merely means that we timed out
+				// waiting for input
 				if (numread < 0) {
 					// This signifies EOF. FIXME: How do we handle this?
 					System.out
@@ -484,6 +483,12 @@ public class SerialPassthroughDriver extends SerialDriver {
 		sendCommand(_getToolCode() + "M22");
 
 		super.closeCollet();
+	}
+
+	public void reset() {
+		System.out.println("Reset.");
+		setInitialized(false);
+		initialize();
 	}
 
 }

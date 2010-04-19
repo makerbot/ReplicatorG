@@ -179,6 +179,7 @@ public class Serial implements SerialPortEventListener {
 		try {
 			port = (SerialPort)portId.open("replicatorG", 2000);
 			port.setSerialPortParams(this.rate, this.data, this.stop, this.parity);
+
 			input = port.getInputStream();
 			output = port.getOutputStream();
 			port.addEventListener(this);
@@ -235,21 +236,6 @@ public class Serial implements SerialPortEventListener {
 	}
 	
 	/**
-	 * Attempt to fill the given buffer.
-	 * @param bytes The buffer to fill with as much data as is available.
-	 * @return the number of characters read.
-	 */
-	public int read(byte bytes[]) {
-		int b = read();
-		int idx = 0;
-		while ((b != -1) && (idx < bytes.length)) {
-			bytes[idx++] = (byte)b;
-			b = read();
-		}
-		return idx;
-	}
-	
-	/**
 	 * Non-growable FIFO.  In theory we only need enough space for a single
 	 * packet.  Currently set at 16K.
 	 * @author phooky
@@ -303,7 +289,33 @@ public class Serial implements SerialPortEventListener {
 			}
 		}
 	}
-	
+
+	/**
+	 * Attempt to fill the given buffer.  This method blocks until input data is available, 
+	 * end of file is detected, or an exception is thrown.  It is meant to emulate the
+	 * behavior of the call of the same signature on InputStream, with the significant
+	 * difference that it will terminate when the timeout is exceeded.
+	 * @param bytes The buffer to fill with as much data as is available.
+	 * @return the number of characters read.
+	 */
+ 	public int read(byte bytes[]) {
+		synchronized(readFifo) {
+			try {
+				if (readFifo.size() == 0) readFifo.wait(timeoutMillis);
+			} catch (InterruptedException e) {
+				// We are most likely amidst a shutdown.  Propegate the interrupt
+				// status.
+				Thread.currentThread().interrupt();
+				return -1;
+			}
+			int idx = 0;
+			while (readFifo.size() > 0 && idx < bytes.length) {
+				bytes[idx++] = readFifo.dequeue();
+			}
+			return idx;
+		}
+	}
+
 	public void write(byte bytes[]) {
 		try {
 			output.write(bytes);
