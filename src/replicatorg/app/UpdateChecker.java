@@ -1,7 +1,6 @@
 package replicatorg.app;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -26,7 +25,7 @@ import org.xml.sax.SAXException;
  *
  */
 public class UpdateChecker {
-	static public final String DEFAULT_UPDATES_URL = "http://firmware.makerbot.com/updates.xml";
+	static public final String DEFAULT_UPDATES_URL = "http://download.replicat.org/updates.xml";
 
 	protected static URL getUpdateURL() {
 		try {
