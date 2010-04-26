@@ -123,7 +123,7 @@ public class FirmwareUploader {
 		if (latest == null)
 			return false;
 		if (latest.compareTo(version) > 0) {
-			System.err.println("latest " + latest.toString() + " old "
+			Base.logger.info("latest " + latest.toString() + " old "
 					+ version.toString());
 			String key = "replicatorG.ignoreFirmware." + boardName + "."
 					+ version.toString();

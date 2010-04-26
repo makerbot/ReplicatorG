@@ -43,6 +43,8 @@ import javax.vecmath.Vector3f;
 
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
+import replicatorg.app.Base;
+
 import com.sun.j3d.loaders.IncorrectFormatException;
 import com.sun.j3d.loaders.ParsingErrorException;
 import com.sun.j3d.loaders.Scene;
@@ -356,7 +358,7 @@ public class STLPreviewPanel extends JPanel {
 		objTrans.setTransform(scaleTf);
 		objRoot.addChild(objTrans);
 
-		System.err.println(path);
+		Base.logger.info(path);
 		BranchGroup sceneGroup = new BranchGroup();			
 		sceneGroup.addChild(makeShape(path));
 		sceneGroup.addChild(makeAmbientLight());

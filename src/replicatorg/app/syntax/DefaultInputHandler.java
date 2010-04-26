@@ -18,6 +18,8 @@ import java.util.StringTokenizer;
 
 import javax.swing.KeyStroke;
 
+import replicatorg.app.Base;
+
 /**
  * The default input handler. It maps sequences of keystrokes into actions
  * and inserts key typed events into the text area.
@@ -343,7 +345,7 @@ public class DefaultInputHandler extends InputHandler
                 }
                 else if(key.length() == 0)
                 {
-                        System.err.println("Invalid key stroke: " + keyStroke);
+                	Base.logger.warning("Invalid key stroke: " + keyStroke);
                         return null;
                 }
                 else
@@ -357,7 +359,7 @@ public class DefaultInputHandler extends InputHandler
                         }
                         catch(Exception e)
                         {
-                                System.err.println("Invalid key stroke: "
+                        		Base.logger.warning("Invalid key stroke: "
                                         + keyStroke);
                                 return null;
                         }

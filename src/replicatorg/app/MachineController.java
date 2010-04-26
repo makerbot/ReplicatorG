@@ -212,7 +212,7 @@ public class MachineController {
 					}
 				} catch (GCodeException e) {
 					// TODO: prompt the user to continue.
-					System.out.println("Error: " + e.getMessage());
+					Base.logger.severe("Error: " + e.getMessage());
 				} catch (InterruptedException ie) {
 					// We're in the middle of a stop or shutdown
 					inDriver = false;
@@ -302,7 +302,7 @@ public class MachineController {
 			startStatusPolling(1000);
 			try {
 				runWarmupCommands();
-				System.out.println("Running build.");
+				Base.logger.info("Running build.");
 				buildCodesInternal(source);
 				runCooldownCommands();
 				driver.invalidatePosition();
@@ -312,7 +312,7 @@ public class MachineController {
 						"Build Failure", JOptionPane.ERROR_MESSAGE);
 
 			} catch (InterruptedException e) {
-				System.out.println("MachineController interrupted");
+				Base.logger.warning("MachineController interrupted");
 			} finally {
 				stopStatusPolling();
 			}
@@ -427,7 +427,7 @@ public class MachineController {
 								SDCardCapture sdcc = (SDCardCapture)driver;
 								if (processSDResponse(sdcc.beginCapture(remoteName))) { 
 									buildInternal(currentSource);
-									System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
+									Base.logger.info("Captured bytes: " +Integer.toString(sdcc.endCapture()));
 								} else { setState(MachineState.State.STOPPING); }
 							} else {
 								setState(MachineState.State.STOPPING);
@@ -534,7 +534,7 @@ public class MachineController {
 		machineNode = mNode;
 
 		parseName();
-		System.out.println("Loading machine: " + name);
+		Base.logger.info("Loading machine: " + name);
 
 		// load our various objects
 		loadDriver();
@@ -626,11 +626,11 @@ public class MachineController {
 			simulator.createWindow();
 
 		// estimate build time.
-		System.out.println("Estimating build time...");
+		Base.logger.info("Estimating build time...");
 		estimate();
 
 		// do that build!
-		System.out.println("Running GCode...");
+		Base.logger.info("Beginning build.");
 		machineThread.build(source);
 		return true;
 	}
@@ -641,11 +641,11 @@ public class MachineController {
 			simulator.createWindow();
 
 		// estimate build time.
-		System.out.println("Estimating build time...");
+		Base.logger.info("Estimating build time...");
 		estimate();
 
 		// do that build!
-		System.out.println("Running GCode...");
+		Base.logger.info("Beginning simulation.");
 		machineThread.simulate(source);
 		return true;
 	}
@@ -677,7 +677,7 @@ public class MachineController {
 				((SimulationDriver)driver).setSimulationBounds(estimator.getBounds());
 			}
 			estimatedBuildTime = estimator.getBuildTime();
-			System.out.println("Estimated build time is: "
+			Base.logger.info("Estimated build time is: "
 					+ EstimationDriver.getBuildTimeString(estimatedBuildTime));
 		} catch (InterruptedException e) {
 			assert (false);
@@ -694,7 +694,7 @@ public class MachineController {
 	private void loadDriver() {
 		// load our utility drivers
 		if (Base.preferences.getBoolean("machinecontroller.simulator",true)) {
-			System.err.println("loading simulator");
+			Base.logger.info("Loading simulator.");
 			simulator = new SimulationDriver();
 			simulator.setMachine(loadModel());
 		}

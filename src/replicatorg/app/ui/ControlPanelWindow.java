@@ -496,10 +496,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			xyFeedrateValue.setText(Integer.toString(xyFeedrateSlider
 					.getValue()));
 			if (t.getType().equals("extruder")) {
-				System.out.println("Creating panel for " + t.getName());
+				Base.logger.fine("Creating panel for " + t.getName());
 				createExtruderPanel(t);
 			} else {
-				System.out.println("Unsupported tool for control panel.");
+				Base.logger.warning("Unsupported tool for control panel.");
 			}
 		}
 
@@ -937,7 +937,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	
 				// System.out.println("jog rate: " + jogRate);
 			} else
-				System.out.println("Unknown Action Event: " + s);
+				Base.logger.warning("Unknown Action Event: " + s);
 		}
 	}
 
@@ -978,7 +978,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			else if (name.equals("collet-check"))
 				driver.openCollet();
 			else
-				System.out.println("checkbox selected: " + source.getName());
+				Base.logger.warning("checkbox selected: " + source.getName());
 		} else {
 			if (name.equals("motor-enabled"))
 				driver.disableMotor();
@@ -1025,7 +1025,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			} else if (name.equals("z-feedrate-value")) {
 				zFeedrateSlider.setValue(Integer.parseInt(source.getText()));
 			} else
-				System.out.println("Unhandled text field: "+name);
+				Base.logger.warning("Unhandled text field: "+name);
 		}
 	}
 	

@@ -284,7 +284,7 @@ public class Serial implements SerialPortEventListener {
 				byte b = readFifo.dequeue();
 				return b & 0xff; 
 			} else {
-				System.err.println("Read timed out.");
+				Base.logger.warning("Read timed out.");
 				return -1;
 			}
 		}

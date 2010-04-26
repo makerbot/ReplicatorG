@@ -29,6 +29,7 @@ import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
+import replicatorg.app.Base;
 import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
@@ -553,12 +554,12 @@ public class DriverBaseImplementation implements Driver {
 	 **************************************************************************/
 	public void stop() {
 		// No implementation needed for synchronous machines.
-		System.err.println("Machine stop called.");
+		Base.logger.info("Machine stop called.");
 	}
 
 	public void reset() {
 		// No implementation needed for synchronous machines.
-		System.err.println("Machine reset called.");
+		Base.logger.info("Machine reset called.");
 	}
 
 	public String getDriverName() {

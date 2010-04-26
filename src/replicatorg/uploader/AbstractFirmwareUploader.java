@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import replicatorg.app.Base;
+
 
 public abstract class AbstractFirmwareUploader {
 	protected int serialSpeed;
@@ -51,7 +53,7 @@ public abstract class AbstractFirmwareUploader {
 					Object[] params = {propValue};
 					m.invoke(afu,params);
 				} catch (NoSuchMethodException nsme) {
-					System.err.println("Couldn't set property "+propName);
+					Base.logger.severe("Couldn't set property "+propName);
 				}
 			}
 			return afu;

@@ -720,9 +720,7 @@ public class GCodeParser {
 				}
 				// or we want a radius based one
 				else if (hasCode("R")) {
-					System.out
-							.println("G02/G03 arcs with (R)adius parameter are not supported yet.");
-
+					Base.logger.warning("G02/G03 arcs with (R)adius parameter are not supported yet.");
 					if (gCode == 2)
 						drawRadius(temp, rVal, true);
 					else
@@ -741,11 +739,11 @@ public class GCodeParser {
 				currentPlane = XY_PLANE;
 				break;
 			case 18:
-				System.out.println("ZX Plane moves are not supported yet.");
+				Base.logger.warning("ZX Plane moves are not supported yet.");
 				currentPlane = ZX_PLANE;
 				break;
 			case 19:
-				System.out.println("ZY Plane moves are not supported yet.");
+				Base.logger.warning("ZY Plane moves are not supported yet.");
 				currentPlane = ZY_PLANE;
 				break;
 
@@ -776,7 +774,7 @@ public class GCodeParser {
 
 			// single probe
 			case 31:
-				System.out.println("Single point probes not yet supported.");
+				Base.logger.warning("Single point probes not yet supported.");
 
 				// set our target.
 				setTarget(temp);
@@ -786,7 +784,7 @@ public class GCodeParser {
 			// probe area
 			case 32:
 
-				System.out.println("Area probes not yet supported.");
+				Base.logger.warning("Area probes not yet supported.");
 
 				double minX = current.x;
 				double minY = current.y;

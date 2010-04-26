@@ -14,6 +14,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import replicatorg.app.Base;
+
 /**
  * Update firmware list from the website's canonical list and download any new releases.
  * @author phooky
@@ -82,7 +84,7 @@ class FirmwareRetriever {
 			}
 			out.close();
 			content.close();
-			System.out.println(Integer.toString(bytesWritten) + " bytes written to "+file.getCanonicalPath());
+			Base.logger.info(Integer.toString(bytesWritten) + " bytes written to "+file.getCanonicalPath());
 			return UpdateStatus.NEW_UPDATES;
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -112,7 +114,7 @@ class FirmwareRetriever {
 				File file = new File(path);
 				updateURL(url,file);
 			} catch (MalformedURLException e) {
-				System.err.println("Couldn't generate URL for path "+path);
+				Base.logger.severe("Couldn't generate URL for path "+path);
 			}
 		}
 	}

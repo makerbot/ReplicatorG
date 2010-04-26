@@ -70,7 +70,6 @@ public class PacketResponse {
 	public void printDebug() {
 		ResponseCode code = getResponseCode(); 
 		String msg = code.getMessage();
-
 		// only print certain messages
 		Level level = Level.FINER;
 		if (code != ResponseCode.OK && code != ResponseCode.BUFFER_OVERFLOW) level = Level.WARNING;
@@ -78,7 +77,9 @@ public class PacketResponse {
 		if (Base.logger.isLoggable(level)) {
 			Base.logger.log(level,"Packet response code: " + msg);
 			StringBuffer buf = new StringBuffer("Packet payload: ");
-			for (int i = 1; i < payload.length; i++) {
+			if (payload.length <= 1) {
+				buf.append("empty");
+			} else for (int i = 1; i < payload.length; i++) {
 				buf.append(Integer.toHexString(payload[i] & 0xff));
 				buf.append(" ");
 			}
@@ -102,7 +103,7 @@ public class PacketResponse {
 		if (payload.length > readPoint)
 			return ((int) payload[readPoint++]) & 0xff;
 		else {
-			System.out.println("Error: payload not big enough.");
+			Base.logger.fine("Error: payload not big enough.");
 			return 0;
 		}
 	}

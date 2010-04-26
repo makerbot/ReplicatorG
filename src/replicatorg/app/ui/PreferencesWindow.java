@@ -169,7 +169,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			}
 
 		} catch (Exception e) {
-			System.err.println("ignoring invalid font size " + newSizeText);
+			Base.logger.warning("ignoring invalid font size " + newSizeText);
 		}
 		Base.preferences.put("replicatorg.updates.url",firmwareUpdateUrlField.getText());
 		editor.applyPreferences();

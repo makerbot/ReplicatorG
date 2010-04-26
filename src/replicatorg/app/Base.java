@@ -108,9 +108,6 @@ public class Base {
 	public static Logger logger = Logger.getLogger("replicatorg.log");
 	{
 		logger.setLevel(Level.INFO);
-		Handler h = new ConsoleHandler();
-		h.setLevel(Level.INFO);
-		logger.addHandler(h);
 	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
@@ -631,7 +628,7 @@ public class Base {
 				if (launcher != null) {
 					Runtime.getRuntime().exec(new String[] { launcher, url });
 				} else {
-					System.err.println("Unspecified platform, no launcher available.");
+					Base.logger.warning("Unspecified platform, no launcher available.");
 				}
 			}
 

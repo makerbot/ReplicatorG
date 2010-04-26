@@ -27,6 +27,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import replicatorg.app.Base;
+
 public class DriverFactory {
 	// private constructor: static access only!!!
 	private DriverFactory() {
@@ -75,7 +77,7 @@ public class DriverFactory {
 			}
 		}
 
-		System.out.println("Failing over to null driver.");
+		Base.logger.severe("Failing over to null driver.");
 
 		// bail with a fake driver.
 		return loadClass("NullDriver");
@@ -93,7 +95,7 @@ public class DriverFactory {
 			// Load driver class 
 			Driver driver = loadClass(driverName, xml);
 			if (driver == null) {
-				System.out.println("Driver not found, failing over to 'null'.");
+				Base.logger.severe("Driver not found, failing over to 'null'.");
 				return loadClass("replicatorg.drivers.NullDriver", xml);
 			} else {
 				return driver;
@@ -115,7 +117,7 @@ public class DriverFactory {
 	 * this class handles creation of the actual class objects.
 	 */
 	private static Driver loadClass(String driverName) {
-		System.out.println("Loading driver: " + driverName);
+		Base.logger.info("Loading driver: " + driverName);
 
 		String className = driverName;
 
@@ -129,24 +131,23 @@ public class DriverFactory {
 			}
 		} catch (ClassNotFoundException e) {
 			// the class being loaded cannot be found
-			System.out.println("The class " + className + " cannot be found.");
+			Base.logger.severe("The class " + className + " cannot be found.");
 		} catch (IllegalAccessException e) {
 			// The class or its nullary constructor is not accessible.
-			System.out.println("The null constructor for " + className
+			Base.logger.severe("The null constructor for " + className
 					+ " is not accessible.");
 		} catch (InstantiationException e) {
 			// The class being created represents an abstract class,
 			// an interface, an array class, a primitive type, or void;
 			// or if the class has no nullary constructor;
 			// or if the instantiation fails for some other reason.
-			System.out.println("Initialization of " + className + " failed.");
+			Base.logger.severe("Initialization of " + className + " failed.");
 		} catch (ExceptionInInitializerError e) {
 			// The static initialization of the class failed.
-			System.out.println("Initialization of " + className + " failed.");
+			Base.logger.severe("Initialization of " + className + " failed.");
 		} catch (SecurityException e) {
 			// if there is no permission to create a new instance.
-			System.out
-					.println("Permission to create " + className + " denied.");
+			Base.logger.severe("Permission to create " + className + " denied.");
 		}
 
 		return null;

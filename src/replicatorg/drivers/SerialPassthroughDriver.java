@@ -34,6 +34,7 @@ import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
+import replicatorg.app.Base;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
@@ -80,7 +81,7 @@ public class SerialPassthroughDriver extends SerialDriver {
 	public void initialize() {
 		// declare our serial guy.
 		if (serial == null) {
-			System.out.println("No Serial Port found.\n");
+			Base.logger.severe("No Serial Port found.\n");
 			return;
 		}
 		// wait till we're initialized
@@ -90,7 +91,7 @@ public class SerialPassthroughDriver extends SerialDriver {
 				Date date = new Date();
 				long end = date.getTime() + 10000;
 
-				System.out.println("Initializing Serial.");
+				Base.logger.info("Initializing Serial.");
 				while (!isInitialized()) {
 					readResponse();
 
@@ -100,14 +101,14 @@ public class SerialPassthroughDriver extends SerialDriver {
 
 					// only give them 10 seconds
 					if (now > end) {
-						System.out.println("Serial link non-responsive.");
+						Base.logger.warning("Serial link non-responsive.");
 						return;
 					}
 				}
 			} catch (Exception e) {
 				// todo: handle init exceptions here
 			}
-			System.out.println("Ready to rock.");
+			Base.logger.info("Ready.");
 		}
 
 		// default us to absolute positioning
@@ -183,8 +184,7 @@ public class SerialPassthroughDriver extends SerialDriver {
 				// waiting for input
 				if (numread < 0) {
 					// This signifies EOF. FIXME: How do we handle this?
-					System.out
-							.println("SerialPassthroughDriver.readResponse(): EOF occured");
+					Base.logger.severe("SerialPassthroughDriver.readResponse(): EOF occured");
 					return;
 				} else {
 					result += new String(responsebuffer, 0, numread, "US-ASCII");
@@ -204,29 +204,28 @@ public class SerialPassthroughDriver extends SerialDriver {
 							continue;
 						if (line.startsWith("ok")) {
 							bufferSize -= commands.remove();
-							System.out.println(line);
+							Base.logger.info(line);
 						} else if (line.startsWith("T:")) {
 							String temp = line.substring(2);
 							machine.currentTool().setCurrentTemperature(
 									Double.parseDouble(temp));
-							System.out.println(line);
+							Base.logger.info(line);
 						}
 						// old arduino firmware sends "start"
 						else if (line.startsWith("start")) {
 							// todo: set version
 							setInitialized(true);
-							System.out.println(line);
+							Base.logger.info(line);
 						} else if (line.startsWith("Extruder Fail")) {
 							setError("Extruder failed:  cannot extrude as this rate.");
-							System.out.println(line);
+							Base.logger.severe(line);
 						} else {
-							System.out.println("Unknown: " + line);
+							Base.logger.severe("Unknown: " + line);
 						}
 					}
 				}
 			} catch (IOException e) {
-				System.out
-						.println("inputstream.read() failed: " + e.toString());
+				Base.logger.severe("inputstream.read() failed: " + e.toString());
 				// FIXME: Shut down communication somehow.
 			}
 		}
@@ -486,7 +485,7 @@ public class SerialPassthroughDriver extends SerialDriver {
 	}
 
 	public void reset() {
-		System.out.println("Reset.");
+		Base.logger.info("Reset.");
 		setInitialized(false);
 		initialize();
 	}
