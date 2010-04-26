@@ -337,8 +337,16 @@ public class Sanguino3GDriver extends SerialDriver
 						}
 					}
 					// TODO: implement other error things.
-					else
+					else {
+						StringBuffer sb = new StringBuffer("Sending ");
+						for (int i = 0; i < packet.length; i++) {
+							sb.append(Integer.toHexString(packet[i]));
+							sb.append(" ");
+						}
+						System.err.println(sb.toString());
+						pr.printDebug();
 						break;
+					}
 
 			}
 		}

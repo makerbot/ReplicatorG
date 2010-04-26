@@ -72,9 +72,8 @@ public class FirmwareUploader {
 	public static void checkFirmware() {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
-				FirmwareRetriever retriever = new FirmwareRetriever(
+				new FirmwareRetriever(
 						getFirmwareFile(), getFirmwareURL());
-				System.err.println(retriever.checkForUpdates().toString());
 			}
 		});
 		t.start();

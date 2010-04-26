@@ -42,9 +42,6 @@ public class PacketProcessor implements PacketConstants {
 	 */
 	public PacketResponse getResponse() {
 		PacketResponse pr = new PacketResponse(payload);
-
-		pr.printDebug();
-
 		return pr;
 	}
 

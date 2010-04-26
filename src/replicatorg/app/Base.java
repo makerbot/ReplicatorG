@@ -185,7 +185,7 @@ public class Base {
 		if (args.length == 1) {
 			Base.openedAtStartup = args[0];
 		}
-
+		
 		// Start the firmware check thread.
 		FirmwareUploader.checkFirmware();
 		
@@ -257,6 +257,8 @@ public class Base {
 
 		// show the window
 		editor.setVisible(true);
+
+		UpdateChecker.checkLatestVersion(editor);
 
 		// add shutdown hook to store preferences
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -620,7 +622,7 @@ public class Base {
 				com.apple.mrj.MRJFileUtils.openURL(url);
 
 			} else if (Base.isLinux()) {
-				String launcher = preferences.get("launcher.linux",null);
+				String launcher = preferences.get("launcher.linux","gnome-open");
 				if (launcher != null) {
 					Runtime.getRuntime().exec(new String[] { launcher, url });
 				}
