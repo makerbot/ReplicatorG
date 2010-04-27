@@ -30,6 +30,7 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
 
 public class MachineModel
@@ -293,7 +294,7 @@ public class MachineModel
 			ClampModel c = (ClampModel)clamps.get(index);
 			return c;
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println("Cannot get non-existant clamp (#" + index + ".");
+			Base.logger.severe("Cannot get non-existant clamp (#" + index + ".");
 			e.printStackTrace();
 		}
 		
@@ -308,7 +309,7 @@ public class MachineModel
 		try {
 			currentTool = (ToolModel)tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println("Cannot select non-existant tool (#" + index + ").");
+			Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
 		}
 	}
 
@@ -322,7 +323,7 @@ public class MachineModel
 		try {
 			//ToolModel t = tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println("Cannot get non-existant tool (#" + index + ".");
+			Base.logger.severe("Cannot get non-existant tool (#" + index + ".");
 			e.printStackTrace();
 		}
 		
@@ -345,7 +346,7 @@ public class MachineModel
 		try {
 			tools.set(index, t);
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.out.println("Cannot set non-existant tool (#" + index + ".");
+			Base.logger.severe("Cannot set non-existant tool (#" + index + ".");
 			e.printStackTrace();
 		}
 	}

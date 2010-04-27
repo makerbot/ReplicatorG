@@ -37,6 +37,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.text.DecimalFormat;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
@@ -85,15 +86,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	protected JPanel jogPanel;
 
 	protected JButton xPlusButton;
-
 	protected JButton xMinusButton;
-
 	protected JButton yPlusButton;
-
 	protected JButton yMinusButton;
-
 	protected JButton zPlusButton;
-
 	protected JButton zMinusButton;
 
 	protected JButton zeroButton;
@@ -108,17 +104,13 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			"1mm", "5mm", "10mm", "20mm", "50mm" };
 
 	protected JSlider xyFeedrateSlider;
-
 	protected JTextField xyFeedrateValue;
 
 	protected JSlider zFeedrateSlider;
-
 	protected JTextField zFeedrateValue;
 
 	protected JTextField xPosField;
-
 	protected JTextField yPosField;
-
 	protected JTextField zPosField;
 
 	protected JTextField currentTempField;
@@ -155,6 +147,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		// save our machine!
 		machine = m;
 		driver = machine.getDriver();
+		driver.invalidatePosition(); // Always force a query when we open the panel
 
 		// Listen to it-- stop and close if we're in build mode.
 		machine.addMachineStateListener(this);
@@ -206,47 +199,31 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		pollThread.start();
 	}
 
+	private JMenuItem makeHomeItem(String name,final EnumSet<Axis> set,final boolean positive) {
+		JMenuItem item = new JMenuItem(name);
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				driver.homeAxes(set,positive);
+			}
+		});
+		return item;
+	}
+
 	protected JMenuBar createMenuBar() {
 		JMenuBar bar = new JMenuBar();
 		JMenu homeMenu = new JMenu("Homing");
 		bar.add(homeMenu);
-		JMenuItem item;
-		item = new JMenuItem("Home X");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.of(Axis.X));
-			}
-		});
-		homeMenu.add(item);
-		item = new JMenuItem("Home Y");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.of(Axis.Y));
-			}
-		});
-		homeMenu.add(item);
-		item = new JMenuItem("Home Z");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.of(Axis.Z));
-			}
-		});
-		homeMenu.add(item);
+		homeMenu.add(makeHomeItem("Home X+",EnumSet.of(Axis.X),true));
+		homeMenu.add(makeHomeItem("Home X-",EnumSet.of(Axis.X),false));
+		homeMenu.add(makeHomeItem("Home Y+",EnumSet.of(Axis.Y),true));
+		homeMenu.add(makeHomeItem("Home Y-",EnumSet.of(Axis.Y),false));
+		homeMenu.add(makeHomeItem("Home Z+",EnumSet.of(Axis.Z),true));
+		homeMenu.add(makeHomeItem("Home Z-",EnumSet.of(Axis.Z),false));
 		homeMenu.add(new JSeparator());
-		item = new JMenuItem("Home XY");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.of(Axis.X,Axis.Y));
-			}
-		});
-		homeMenu.add(item);
-		item = new JMenuItem("Home all");
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(EnumSet.allOf(Axis.class));
-			}
-		});
-		homeMenu.add(item);
+		homeMenu.add(makeHomeItem("Home XY+",EnumSet.of(Axis.X,Axis.Y),true));
+		homeMenu.add(makeHomeItem("Home XY-",EnumSet.of(Axis.X,Axis.Y),false));
+		homeMenu.add(makeHomeItem("Home all+",EnumSet.allOf(Axis.class),true));
+		homeMenu.add(makeHomeItem("Home all-",EnumSet.allOf(Axis.class),false));
 		return bar;
 	}
 
@@ -407,6 +384,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		xyFeedrateValue.setName("xy-feedrate-value");
 		xyFeedrateValue.setText(Integer.toString(xyFeedrateSlider.getValue()));
 		xyFeedrateValue.addFocusListener(this);
+		xyFeedrateValue.setActionCommand("handleTextfield");
+		xyFeedrateValue.addActionListener(this);
 
 		// create the xyfeedrate panel
 		JPanel xyFeedratePanel = new JPanel();
@@ -442,6 +421,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		zFeedrateValue.setName("z-feedrate-value");
 		zFeedrateValue.setText(Integer.toString(zFeedrateSlider.getValue()));
 		zFeedrateValue.addFocusListener(this);
+		zFeedrateValue.setActionCommand("handleTextfield");
+		zFeedrateValue.addActionListener(this);
 
 		// create the xyfeedrate panel
 		JPanel zFeedratePanel = new JPanel();
@@ -515,10 +496,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			xyFeedrateValue.setText(Integer.toString(xyFeedrateSlider
 					.getValue()));
 			if (t.getType().equals("extruder")) {
-				System.out.println("Creating panel for " + t.getName());
+				Base.logger.fine("Creating panel for " + t.getName());
 				createExtruderPanel(t);
 			} else {
-				System.out.println("Unsupported tool for control panel.");
+				Base.logger.warning("Unsupported tool for control panel.");
 			}
 		}
 
@@ -562,6 +543,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 				field.setPreferredSize(new Dimension(textBoxWidth, 25));
 				field.setName("motor-speed-pwm");
 				field.addFocusListener(this);
+				field.setActionCommand("handleTextfield");
+				field.addActionListener(this);
 
 				JPanel motorSpeedPanel = new JPanel();
 				motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel,
@@ -589,6 +572,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 				field.setPreferredSize(new Dimension(textBoxWidth, 25));
 				field.setName("motor-speed");
 				field.addFocusListener(this);
+				field.setActionCommand("handleTextfield");
+				field.addActionListener(this);
 
 				JPanel motorSpeedPanel = new JPanel();
 				motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel,
@@ -655,6 +640,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.addFocusListener(this);
 			double temperature = driver.getMachine().currentTool().getTargetTemperature();
 			targetTempField.setText(Double.toString(temperature));
+			targetTempField.setActionCommand("handleTextfield");
+			targetTempField.addActionListener(this);
 
 			JLabel currentTempLabel = new JLabel("Current Temperature (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
@@ -706,6 +693,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.addFocusListener(this);
 			double temperature = driver.getMachine().currentTool().getPlatformTargetTemperature();
 			targetTempField.setText(Double.toString(temperature));
+			targetTempField.setActionCommand("handleTextfield");
+			targetTempField.addActionListener(this);
 
 			JLabel currentTempLabel = new JLabel("Platform Current Temp (C)");
 			currentTempLabel.setMinimumSize(labelMinimumSize);
@@ -862,13 +851,15 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		toolsPane.addTab(t.getName(), panel);
 	}
 
+	DecimalFormat positionFormatter = new DecimalFormat("###.#");
+
 	synchronized public void updateStatus() {
 		Point3d current = driver.getCurrentPosition();
 
-		xPosField.setText(Double.toString(current.x));
-		yPosField.setText(Double.toString(current.y));
-		zPosField.setText(Double.toString(current.z));
-
+		xPosField.setText(positionFormatter.format(current.x));
+		yPosField.setText(positionFormatter.format(current.y));
+		zPosField.setText(positionFormatter.format(current.z));
+		
 		if (driver.getMachine().currentTool() != null &&
 			driver.getMachine().currentTool().hasHeater()) {
 			double temperature = driver.getTemperature();
@@ -883,62 +874,71 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 
 	public void actionPerformed(ActionEvent e) {
 		String s = e.getActionCommand();
-
-		Point3d current = driver.getCurrentPosition();
-		double xyFeedrate = xyFeedrateSlider.getValue();
-		double zFeedrate = zFeedrateSlider.getValue();
-
-		if (s.equals("X+")) {
-			current.x += jogRate;
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("X-")) {
-			current.x -= jogRate;
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Y+")) {
-			current.y += jogRate;
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Y-")) {
-			current.y -= jogRate;
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Z+")) {
-			current.z += jogRate;
-
-			driver.setFeedrate(zFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Z-")) {
-			current.z -= jogRate;
-
-			driver.setFeedrate(zFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Zero")) {
-			// "Zero" tells the machine to calibrate its
-			// current position as zero, not to move to its
-			// currently-set zero position.
-			driver.setCurrentPosition(new Point3d());
+		
+		if(s.equals("handleTextfield"))
+		{
+			JTextField source = (JTextField) e.getSource();
+			handleChangedTextField(source);
+			source.selectAll();
 		}
-		// get our new jog rate
-		else if (s.equals("jog size")) {
-			JComboBox cb = (JComboBox) e.getSource();
-			String jogText = (String) cb.getSelectedItem();
-
-			// look for a decimal number
-			Matcher jogMatcher = jogPattern.matcher(jogText);
-			if (jogMatcher.find())
-				jogRate = Double.parseDouble(jogMatcher.group(1));
-
-			// TODO: save this back to our preferences file.
-
-			// System.out.println("jog rate: " + jogRate);
-		} else
-			System.out.println("Unknown Action Event: " + s);
+		else
+		{
+			Point3d current = driver.getCurrentPosition();
+			double xyFeedrate = xyFeedrateSlider.getValue();
+			double zFeedrate = zFeedrateSlider.getValue();
+	
+			if (s.equals("X+")) {
+				current.x += jogRate;
+	
+				driver.setFeedrate(xyFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("X-")) {
+				current.x -= jogRate;
+	
+				driver.setFeedrate(xyFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Y+")) {
+				current.y += jogRate;
+	
+				driver.setFeedrate(xyFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Y-")) {
+				current.y -= jogRate;
+	
+				driver.setFeedrate(xyFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Z+")) {
+				current.z += jogRate;
+	
+				driver.setFeedrate(zFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Z-")) {
+				current.z -= jogRate;
+	
+				driver.setFeedrate(zFeedrate);
+				driver.queuePoint(current);
+			} else if (s.equals("Zero")) {
+				// "Zero" tells the machine to calibrate its
+				// current position as zero, not to move to its
+				// currently-set zero position.
+				driver.setCurrentPosition(new Point3d());
+			}
+			// get our new jog rate
+			else if (s.equals("jog size")) {
+				JComboBox cb = (JComboBox) e.getSource();
+				String jogText = (String) cb.getSelectedItem();
+	
+				// look for a decimal number
+				Matcher jogMatcher = jogPattern.matcher(jogText);
+				if (jogMatcher.find())
+					jogRate = Double.parseDouble(jogMatcher.group(1));
+	
+				// TODO: save this back to our preferences file.
+	
+				// System.out.println("jog rate: " + jogRate);
+			} else
+				Base.logger.warning("Unknown Action Event: " + s);
+		}
 	}
 
 	public void stateChanged(ChangeEvent e) {
@@ -978,7 +978,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			else if (name.equals("collet-check"))
 				driver.openCollet();
 			else
-				System.out.println("checkbox selected: " + source.getName());
+				Base.logger.warning("checkbox selected: " + source.getName());
 		} else {
 			if (name.equals("motor-enabled"))
 				driver.disableMotor();
@@ -1004,6 +1004,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 
 	public void focusLost(FocusEvent e) {
 		JTextField source = (JTextField) e.getSource();
+		handleChangedTextField(source);
+	}
+
+	public void handleChangedTextField(JTextField source)
+	{
 		String name = source.getName();
 
 		if (source.getText().length() > 0) {
@@ -1020,10 +1025,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			} else if (name.equals("z-feedrate-value")) {
 				zFeedrateSlider.setValue(Integer.parseInt(source.getText()));
 			} else
-				System.out.println(name + " lost focus.");
+				Base.logger.warning("Unhandled text field: "+name);
 		}
 	}
-
+	
 	public void windowClosing(WindowEvent e) {
 		updateThread.interrupt();
 		pollThread.interrupt();

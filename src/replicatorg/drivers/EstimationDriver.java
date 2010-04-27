@@ -46,6 +46,11 @@ public class EstimationDriver extends DriverBaseImplementation {
 		buildTime += (double) millis / 1000;
 	}
 
+	protected Point3d reconcilePosition() {
+		// The estimation driver doesn't even care where it is.
+		return new Point3d();
+	}
+
 	public void execute() throws InterruptedException {
 		// suppress errors.
 		try {

@@ -34,7 +34,6 @@ import java.awt.Component;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Insets;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
@@ -78,7 +77,6 @@ import javax.swing.UIManager;
 
 import replicatorg.app.ui.MainWindow;
 import replicatorg.uploader.FirmwareUploader;
-
 import ch.randelshofer.quaqua.QuaquaManager;
 
 import com.apple.mrj.MRJApplicationUtils;
@@ -93,7 +91,7 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 13;
+	public static final int VERSION = 14;
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */
@@ -109,10 +107,7 @@ public class Base {
 	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
 	{
-		logger.setLevel(Level.FINE);
-		Handler h = new ConsoleHandler();
-		h.setLevel(Level.FINE);
-		logger.addHandler(h);
+		logger.setLevel(Level.INFO);
 	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
@@ -187,7 +182,7 @@ public class Base {
 		if (args.length == 1) {
 			Base.openedAtStartup = args[0];
 		}
-
+		
 		// Start the firmware check thread.
 		FirmwareUploader.checkFirmware();
 		
@@ -200,8 +195,6 @@ public class Base {
 				// this will only get set once.. later will be handled
 				// by the MainWindow version of this fella
 				if (Base.openedAtStartup == null) {
-					// System.out.println("handling outside open file: " +
-					// file);
 					Base.openedAtStartup = file.getAbsolutePath();
 				}
 			}
@@ -261,6 +254,8 @@ public class Base {
 
 		// show the window
 		editor.setVisible(true);
+
+		UpdateChecker.checkLatestVersion(editor);
 
 		// add shutdown hook to store preferences
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -484,7 +479,6 @@ public class Base {
 			 * else { System.out.print("[" + PApplet.hex(c[i]) + "]"); }
 			 */
 		}
-		// System.out.println();
 		return new String(c);
 	}
 
@@ -625,7 +619,7 @@ public class Base {
 				com.apple.mrj.MRJFileUtils.openURL(url);
 
 			} else if (Base.isLinux()) {
-				String launcher = preferences.get("launcher.linux",null);
+				String launcher = preferences.get("launcher.linux","gnome-open");
 				if (launcher != null) {
 					Runtime.getRuntime().exec(new String[] { launcher, url });
 				}
@@ -634,7 +628,7 @@ public class Base {
 				if (launcher != null) {
 					Runtime.getRuntime().exec(new String[] { launcher, url });
 				} else {
-					System.err.println("Unspecified platform, no launcher available.");
+					Base.logger.warning("Unspecified platform, no launcher available.");
 				}
 			}
 
@@ -733,7 +727,6 @@ public class Base {
 		JOptionPane.showMessageDialog(new Frame(), message, title,
 				JOptionPane.WARNING_MESSAGE);
 
-		// System.err.println(e.toString());
 		if (e != null)
 			e.printStackTrace();
 	}

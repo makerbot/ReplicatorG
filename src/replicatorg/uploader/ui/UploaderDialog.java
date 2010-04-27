@@ -93,7 +93,7 @@ public class UploaderDialog extends JDialog implements ActionListener {
 	void doBoardSelection() {
 		state = State.SELECTING_BOARD;
 		nextButton.setEnabled(false);
-		BoardSelectionPanel boardPanel = new BoardSelectionPanel(uploader.getFirmwareDoc(),
+		BoardSelectionPanel boardPanel = new BoardSelectionPanel(FirmwareUploader.getFirmwareDoc(),
 				new BoardSelectionPanel.BoardSelectionListener() {
 					public void boardSelected(Node board) {
 						selectedBoard = board;

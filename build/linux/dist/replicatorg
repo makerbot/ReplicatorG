@@ -2,7 +2,7 @@
 
 cd `dirname $0`
 
-CLASSPATH=lib/ReplicatorG.jar:java/lib/rt.jar:lib:lib/build:lib/antlr.jar:lib/core.jar:lib/j3dcore.jar:lib/j3dutils.jar:lib/mrj.jar:lib/oro.jar:lib/registry.jar:lib/RXTXcomm.jar:lib/vecmath.jar:lib/miglayout-3.7.jar
+CLASSPATH=lib/ReplicatorG.jar:lib:lib/build:lib/antlr.jar:lib/core.jar:lib/j3dcore.jar:lib/j3dutils.jar:lib/mrj.jar:lib/oro.jar:lib/registry.jar:lib/RXTXcomm.jar:lib/vecmath.jar:lib/miglayout-3.7.jar
 export CLASSPATH
 
 # put the directory where this file lives in the front of the path, because

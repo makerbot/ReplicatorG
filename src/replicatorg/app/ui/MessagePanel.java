@@ -32,11 +32,12 @@ import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -64,8 +65,9 @@ public class MessagePanel extends JScrollPane {
 
 	BufferedStyledDocument consoleDoc;
 
-	MutableAttributeSet stdStyle;
-
+	MutableAttributeSet timestampStyle;
+	MutableAttributeSet infoStyle;
+	MutableAttributeSet warnStyle;
 	MutableAttributeSet errStyle;
 
 	boolean cerror;
@@ -73,23 +75,7 @@ public class MessagePanel extends JScrollPane {
 	// int maxCharCount;
 	int maxLineCount;
 
-	static File errFile;
-
-	static File outFile;
-
 	static File tempFolder;
-
-	static PrintStream systemOut;
-
-	static PrintStream systemErr;
-
-	static PrintStream consoleOut;
-
-	static PrintStream consoleErr;
-
-	static OutputStream stdoutFile;
-
-	static OutputStream stderrFile;
 
 	public MessagePanel(MainWindow editor) {
 		this.editor = editor;
@@ -100,32 +86,33 @@ public class MessagePanel extends JScrollPane {
 		consoleTextPane = new JTextPane(consoleDoc);
 		consoleTextPane.setEditable(false);
 
-		// necessary?
-		MutableAttributeSet standard = new SimpleAttributeSet();
-		StyleConstants.setAlignment(standard, StyleConstants.ALIGN_LEFT);
-		consoleDoc.setParagraphAttributes(0, 0, standard, true);
 
 		// build styles for different types of console output
 		Color bgColor = Base.getColorPref("console.color","#000000");
-		Color fgColorOut = Base.getColorPref("console.output.color","#ccccbb");
-		Color fgColorErr = Base.getColorPref("console.error.color","#ff3000");
+		Color infoColor= Base.getColorPref("console.info.color","#88dd88");
+		Color warnColor = Base.getColorPref("console.warning.color","#dddd88");
+		Color timestampColor = Base.getColorPref("console.timestamp.color","#8888dd");
+		Color errColor = Base.getColorPref("console.error.color","#ff3000");
 		Font font = Base.getFontPref("console.font","Monospaced,plain,11");
 
-		stdStyle = new SimpleAttributeSet();
-		StyleConstants.setForeground(stdStyle, fgColorOut);
-		StyleConstants.setBackground(stdStyle, bgColor);
-		StyleConstants.setFontSize(stdStyle, font.getSize());
-		StyleConstants.setFontFamily(stdStyle, font.getFamily());
-		StyleConstants.setBold(stdStyle, font.isBold());
-		StyleConstants.setItalic(stdStyle, font.isItalic());
+		// necessary?
+		MutableAttributeSet standard = new SimpleAttributeSet();
+		StyleConstants.setAlignment(standard, StyleConstants.ALIGN_LEFT);
+		StyleConstants.setBackground(standard, bgColor);
+		StyleConstants.setFontSize(standard, font.getSize());
+		StyleConstants.setFontFamily(standard, font.getFamily());
+		StyleConstants.setBold(standard, font.isBold());
+		StyleConstants.setItalic(standard, font.isItalic());
+		consoleDoc.setParagraphAttributes(0, 0, standard, true);
 
-		errStyle = new SimpleAttributeSet();
-		StyleConstants.setForeground(errStyle, fgColorErr);
-		StyleConstants.setBackground(errStyle, bgColor);
-		StyleConstants.setFontSize(errStyle, font.getSize());
-		StyleConstants.setFontFamily(errStyle, font.getFamily());
-		StyleConstants.setBold(errStyle, font.isBold());
-		StyleConstants.setItalic(errStyle, font.isItalic());
+		infoStyle = new SimpleAttributeSet(standard);
+		StyleConstants.setForeground(infoStyle, infoColor);
+		timestampStyle = new SimpleAttributeSet(standard);
+		StyleConstants.setForeground(timestampStyle, timestampColor);
+		errStyle = new SimpleAttributeSet(standard);
+		StyleConstants.setForeground(errStyle, errColor);
+		warnStyle = new SimpleAttributeSet(standard);
+		StyleConstants.setForeground(warnStyle, warnColor);
 
 		consoleTextPane.setBackground(bgColor);
 
@@ -141,45 +128,23 @@ public class MessagePanel extends JScrollPane {
 		setPreferredSize(new Dimension(1024, (height * lines) + sizeFudge));
 		setMinimumSize(new Dimension(1024, (height * 4) + sizeFudge));
 
-		if (systemOut == null) {
-			systemOut = System.out;
-			systemErr = System.err;
-
-			tempFolder = Base.createTempFolder("console");
-			try {
-				String outFileName = Base.preferences.get("console.output.file","stdout.txt");
-				if (outFileName != null) {
-					outFile = new File(tempFolder, outFileName);
-					stdoutFile = new FileOutputStream(outFile);
-					// outFile.deleteOnExit();
-				}
-
-				String errFileName = Base.preferences.get("console.error.file","stderr.txt");
-				if (errFileName != null) {
-					errFile = new File(tempFolder, errFileName);
-					stderrFile = new FileOutputStream(errFile);
-					// errFile.deleteOnExit();
-				}
-			} catch (IOException e) {
-				Base.showWarning("Console Error",
-						"A problem occurred while trying to open the\n"
-								+ "files used to store the console output.", e);
+		Base.logger.addHandler(new Handler() {
+			SimpleDateFormat formatter = new SimpleDateFormat("'['HH:mm:ss'] '");
+			public void publish(LogRecord record) {
+				String timestamp = formatter.format(new Date(record.getMillis()));
+				message(timestamp, timestampStyle, false);
+				AttributeSet attrs = infoStyle;
+				if (record.getLevel() == Level.WARNING) { attrs = warnStyle; }
+				if (record.getLevel() == Level.SEVERE) { attrs = errStyle; }
+				message(record.getMessage(),
+						attrs,
+						true);
 			}
-
-			consoleOut = new PrintStream(new EditorConsoleStream(this, false,
-					stdoutFile));
-			consoleErr = new PrintStream(new EditorConsoleStream(this, true,
-					stderrFile));
-
-			if (Base.preferences.getBoolean("console",true)) {
-				try {
-					System.setOut(consoleOut);
-					System.setErr(consoleErr);
-				} catch (Exception e) {
-					e.printStackTrace(systemOut);
-				}
+			public void flush() {
 			}
-		}
+			public void close() throws SecurityException {
+			}
+		});
 
 		// to fix ugliness.. normally macosx java 1.3 puts an
 		// ugly white border around this object, so turn it off.
@@ -209,65 +174,16 @@ public class MessagePanel extends JScrollPane {
 	 * deleted, which can't be guaranteed when using the deleteOnExit() method.
 	 */
 	public void handleQuit() {
-		// replace original streams to remove references to console's streams
-		System.setOut(systemOut);
-		System.setErr(systemErr);
-
-		// close the PrintStream
-		consoleOut.close();
-		consoleErr.close();
-
-		// also have to close the original FileOutputStream
-		// otherwise it won't be shut down completely
-		try {
-			stdoutFile.close();
-			stderrFile.close();
-		} catch (IOException e) {
-			e.printStackTrace(systemOut);
-		}
-
-		outFile.delete();
-		errFile.delete();
-		tempFolder.delete();
-	}
-
-	public void write(byte b[], int offset, int length, boolean err) {
-		if (err != cerror) {
-			// advance the line because switching between err/out streams
-			// potentially, could check whether we're already on a new line
-			message("", cerror, true);
-		}
-
-		// we could do some cross platform CR/LF mangling here before outputting
-
-		// add text to output document
-		message(new String(b, offset, length), err, false);
-		// set last error state
-		cerror = err;
 	}
 
 	// added sync for 0091.. not sure if it helps or hinders
 	// synchronized public void message(String what, boolean err, boolean
 	// advance) {
-	public void message(String what, boolean err, boolean advance) {
-		if (err) {
-			systemErr.print(what);
-		} else {
-			systemOut.print(what);
-		}
-
+	public void message(String what, AttributeSet attrs, boolean advance) {
+		appendText(what, attrs);
 		if (advance) {
-			appendText("\n", err);
-			if (err) {
-				systemErr.println();
-			} else {
-				systemOut.println();
-			}
+			appendText("\n", attrs);
 		}
-
-		// to console display
-		appendText(what, err);
-		// moved down here since something is punting
 	}
 
 	/**
@@ -282,8 +198,8 @@ public class MessagePanel extends JScrollPane {
 	 * Updates are buffered to the console and displayed at regular intervals on
 	 * Swing's event-dispatching thread. (patch by David Mellis)
 	 */
-	synchronized private void appendText(String txt, boolean e) {
-		consoleDoc.appendString(txt, e ? errStyle : stdStyle);
+	synchronized private void appendText(String txt, AttributeSet attrs) {
+		consoleDoc.appendString(txt, attrs);
 	}
 
 	public void clear() {
@@ -292,69 +208,6 @@ public class MessagePanel extends JScrollPane {
 		} catch (BadLocationException e) {
 			// ignore the error otherwise this will cause an infinite loop
 			// maybe not a good idea in the long run?
-		}
-	}
-}
-
-class EditorConsoleStream extends OutputStream {
-	MessagePanel parent;
-
-	boolean err; // whether stderr or stdout
-
-	byte single[] = new byte[1];
-
-	OutputStream echo;
-
-	public EditorConsoleStream(MessagePanel parent, boolean err,
-			OutputStream echo) {
-		this.parent = parent;
-		this.err = err;
-		this.echo = echo;
-	}
-
-	public void close() {
-	}
-
-	public void flush() {
-	}
-
-	public void write(byte b[]) { // appears never to be used
-		parent.write(b, 0, b.length, err);
-		if (echo != null) {
-			try {
-				echo.write(b); // , 0, b.length);
-				echo.flush();
-			} catch (IOException e) {
-				e.printStackTrace();
-				echo = null;
-			}
-		}
-	}
-
-	public void write(byte b[], int offset, int length) {
-		parent.write(b, offset, length, err);
-		if (echo != null) {
-			try {
-				echo.write(b, offset, length);
-				echo.flush();
-			} catch (IOException e) {
-				e.printStackTrace();
-				echo = null;
-			}
-		}
-	}
-
-	public void write(int b) {
-		single[0] = (byte) b;
-		parent.write(single, 0, 1, err);
-		if (echo != null) {
-			try {
-				echo.write(b);
-				echo.flush();
-			} catch (IOException e) {
-				e.printStackTrace();
-				echo = null;
-			}
 		}
 	}
 }

@@ -132,7 +132,7 @@
     </exec>
     <exec dir="." os="Mac OS X" executable="/bin/sh">
       <arg value="-c"/>
-      <arg value="${dist.dir}/mkdmg.sh ${target.dir} . image ${release.name}-mac"/>
+      <arg value="${dist.dir}/mkdmg.sh ./dist ../${target.dir} image ${release.name}-mac"/>
     </exec>
     <!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
   </target>

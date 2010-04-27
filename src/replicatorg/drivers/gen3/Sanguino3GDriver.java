@@ -52,97 +52,12 @@ import replicatorg.uploader.FirmwareUploader;
 public class Sanguino3GDriver extends SerialDriver
 	implements OnboardParameters, SDCardCapture
 {
-	/**
-	 * An enumeration of the available command codes for the three-axis CNC
-	 * stage.
-	 */
-	enum CommandCodeMaster {
-		VERSION(0),
-		INIT(1),
-		GET_BUFFER_SIZE(2),
-		CLEAR_BUFFER(3),
-		GET_POSITION(4),
-		GET_RANGE(5),
-		SET_RANGE(6),
-		ABORT(7),
-		PAUSE(8),
-		PROBE(9),
-		TOOL_QUERY(10),
-		IS_FINISHED(11),
-		READ_EEPROM(12),
-		WRITE_EEPROM(13),
-		
-		CAPTURE_TO_FILE(14),
-		END_CAPTURE(15),
-		PLAYBACK_CAPTURE(16),
-		
-		RESET(17),
-
-		NEXT_FILENAME(18),
-		
-		// QUEUE_POINT_INC(128) obsolete
-		QUEUE_POINT_ABS(129),
-		SET_POSITION(130),
-		FIND_AXES_MINIMUM(131),
-		FIND_AXES_MAXIMUM(132),
-		DELAY(133),
-		CHANGE_TOOL(134),
-		WAIT_FOR_TOOL(135),
-		TOOL_COMMAND(136),
-		ENABLE_AXES(137);
-		
-		private int code;
-		private CommandCodeMaster(int code) {
-			this.code = code;
-		}
-		int getCode() { return code; }
-	};
-
-	/**
-	 * An enumeration of the available command codes for a tool.
-	 */
-	enum CommandCodeSlave {
-		VERSION(0),
-		INIT(1),
-		GET_TEMP(2),
-		SET_TEMP(3),
-		SET_MOTOR_1_PWM(4),
-		SET_MOTOR_2_PWM(5),
-		SET_MOTOR_1_RPM(6),
-		SET_MOTOR_2_RPM(7),
-		SET_MOTOR_1_DIR(8),
-		SET_MOTOR_2_DIR(9),
-		TOGGLE_MOTOR_1(10),
-		TOGGLE_MOTOR_2(11),
-		TOGGLE_FAN(12),
-		TOGGLE_VALVE(13),
-		SET_SERVO_1_POS(14),
-		SET_SERVO_2_POS(15),
-		FILAMENT_STATUS(16),
-		GET_MOTOR_1_RPM(17),
-		GET_MOTOR_2_RPM(18),
-		GET_MOTOR_1_PWM(19),
-		GET_MOTOR_2_PWM(20),
-		SELECT_TOOL(21),
-		IS_TOOL_READY(22),
-		READ_FROM_EEPROM(25),
-		WRITE_TO_EEPROM(26),
-		GET_PLATFORM_TEMP(30),
-		SET_PLATFORM_TEMP(31);
-		
-		private int code;
-		private CommandCodeSlave(int code) {
-			this.code = code;
-		}
-		int getCode() { return code; }
-	};
-
 	public Sanguino3GDriver() {
 		super();
 
-		// This driver only covers v1.X firmware
+		// This driver handles v1.X and v2.X firmware
 		minimumVersion = new Version(1,1);
-		preferredVersion = new Version(1,3);
+		preferredVersion = new Version(2,0);
 		// init our variables.
 		setInitialized(false);
 	}
@@ -153,17 +68,15 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void initialize() {
-		// Create our serial object
-		if (serial == null) {
-			System.out.println("No serial port found.\n");
-			return;
-		}
-
+		// Assert: serial port present.
+		assert serial != null : "No serial port found.";
 		// wait till we're initialized
 		if (!isInitialized()) {
 			// attempt to send version command and retrieve reply.
 			try {
-				waitForStartup(5000);
+				// Default timeout should be 2.6s.  Timeout can be sped up for v2, but let's play it safe.
+				int timeout = 4000;
+				waitForStartup(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
 				e.printStackTrace();
@@ -178,15 +91,29 @@ public class Sanguino3GDriver extends SerialDriver
 			}
 			sendInit();
 			super.initialize();
-
-			System.out.println("Ready to print.");
+			invalidatePosition();
 
 			return;
 		} else {
-			System.out.println("Unable to connect to firmware.");
+			Base.logger.log(Level.INFO,"Unable to connect to firmware.");
+			// Dispose of driver to free up any resources
+			dispose();
 		}
 	}
 
+	private boolean attemptConnection() {
+		// Eat anything in the serial buffer
+		serial.clear();
+		try {
+			version = getVersionInternal();
+		} catch (TimeoutException e) {
+			version = null;
+		}
+		if (getVersion() != null)
+			setInitialized(true);
+		return isInitialized();
+	}
+	
 	/**
 	 * Wait for a startup message. After the specified timeout, replicatorG will
 	 * attempt to remotely reset the device.
@@ -197,45 +124,42 @@ public class Sanguino3GDriver extends SerialDriver
 	 */
 	protected void waitForStartup(int timeoutMillis) {
 		assert (serial != null);
-		//System.err.println("Wait for startup");
 		synchronized (serial) {
 			serial.setTimeout(timeoutMillis);
-			waitForStartupMessage();
+			if (attemptConnection()) return;
+			// Timed out waiting.  It's possible that a reset was triggered when the device
+			// was opened, since RXTX doesn't allow control of default RTS states.
+			// Wait >2.6s -- 2s for the arduino reset; .6 seconds for the rest of the
+			// system to come up.
 			try {
-				version = getVersionInternal();
-				if (getVersion() != null)
-					setInitialized(true);
-			} catch (TimeoutException e) {
-				// Timed out waiting; try an explicit reset.
-				System.out.println("No connection; trying to pulse RTS to reset device.");
-				serial.pulseRTSLow();
-				waitForStartupMessage();
+				Thread.sleep(3000);
+			} catch (InterruptedException ie) {
+				// Assume we're shutting down the app or aborting the
+				// attempt.  Reassert interrupted status and let
+				// the thread wind down.
+				Thread.currentThread().interrupt();
+				return;
 			}
+			if (attemptConnection()) return;
+			// Timed out again.  It is possible that the machine is in a bad state.
+			Base.logger.warning("No connection; trying to pulse RTS to reset device.");
+			serial.pulseRTSLow();
+			// Wait >2.6s -- 2s for the arduino reset; .6 seconds for the rest of the
+			// system to come up.
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException ie) {
+				// Assume we're shutting down the app or aborting the
+				// attempt.  Reassert interrupted status and let
+				// the thread wind down.
+				Thread.currentThread().interrupt();
+				return;
+			}
+			// One last attempt, post reset
+			attemptConnection();
 		}
-		// Until we fix the firmware hangs, turn off timeout during
-		// builds.
-		// TODO: put the timeout back in
-		serial.setTimeout(0);
 	}
 
-	private void waitForStartupMessage() {
-		try {
-			Thread.sleep(3000); // wait for startup
-		} catch (InterruptedException ie) { 
-			serial.setTimeout(0);
-			return;
-		}
-		byte[] response = new byte[256];
-		StringBuffer respSB = new StringBuffer();
-		try {
-			while (serial.available() > 0) {
-				serial.read(response);
-				respSB.append(response);
-			}
-			//System.err.println("Received "+ respSB.toString());
-		} catch (TimeoutException te) {
-		}
-	}
 	/**
 	 * Sends the command over the serial connection and retrieves a result.
 	 */
@@ -245,10 +169,12 @@ public class Sanguino3GDriver extends SerialDriver
 		if (packet == null || packet.length < 4)
 			return null; // skip empty commands or broken commands
 
+		boolean isCommand = (packet[2] & 0x80) != 0;
+		
 		if (fileCaptureOstream != null) {
 			// capture to file.
 			try {
-				if ((packet[2] & 0x80) != 0) { // ignore query commands
+				if (isCommand) { // ignore query commands
 					fileCaptureOstream.write(packet,2,packet.length-3);
 				} 
 			} catch (IOException ioe) {
@@ -264,6 +190,11 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketResponse pr = new PacketResponse();
 
 		while (!packetSent) {
+			// Dump out if interrupted
+			if (Thread.currentThread().isInterrupted()) {
+				return pr;
+			}
+
 			pp = new PacketProcessor();
 
 			synchronized (serial) {
@@ -281,11 +212,29 @@ public class Sanguino3GDriver extends SerialDriver
 
 					boolean c = false;
 					while (!c) {
+						// Dump out if interrupted
+						if (Thread.currentThread().isInterrupted()) { 
+							return pr;
+						}
 						int b = serial.read();
 						if (b == -1) {
-							/// Windows has no timeout; busywait
-							if (Base.isWindows()) continue;
-							throw new TimeoutException(serial);
+							// Read timed out.
+							try {
+								Thread.sleep(60);
+							} catch (InterruptedException e) {
+								// If we've been explicitly interrupted, reassert
+								// interrupted status and terminate early.
+								Thread.currentThread().interrupt();
+								return pr;
+							}
+							if (isCommand) {
+								// Try again for commands
+								Base.logger.info("Read timed out; trying to resend command.");
+								continue;
+							} else {
+								Base.logger.info("Read timed out; giving up on query.");
+								throw new TimeoutException(serial);
+							}
 						}
 						c = pp.processByte((byte) b);
 					}
@@ -297,28 +246,38 @@ public class Sanguino3GDriver extends SerialDriver
 					else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
 						try {
 							Thread.sleep(25);
-						} catch (Exception e) {
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+							// We've been interrupted; dump out early!
+							return pr;
 						}
 					}
 					// TODO: implement other error things.
-					else
+					else {
+						StringBuffer sb = new StringBuffer("Sending ");
+						for (int i = 0; i < packet.length; i++) {
+							sb.append(Integer.toHexString(packet[i]));
+							sb.append(" ");
+						}
+						Base.logger.fine(sb.toString());
+						pr.printDebug();
 						break;
+					}
 
 			}
 		}
-		pr.printDebug();
 		return pr;
 	}
 
 	static boolean isNotifiedFinishedFeature = false;
 
 	public boolean isFinished() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.IS_FINISHED.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.IS_FINISHED.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		int v = pr.get8();
 		if (pr.getResponseCode() == PacketResponse.ResponseCode.UNSUPPORTED) {
 			if (!isNotifiedFinishedFeature) {
-				System.out.println("IsFinished not supported; update your firmware.");
+				Base.logger.severe("IsFinished not supported by this firmware. Update your firmware.");
 				isNotifiedFinishedFeature = true;
 			}
 			return true;
@@ -336,7 +295,7 @@ public class Sanguino3GDriver extends SerialDriver
 	 * commands used internally to driver
 	 **************************************************************************/
 	public Version getVersionInternal() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.VERSION.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.VERSION.getCode());
 		pb.add16(Base.VERSION);
 
 		PacketResponse pr = runCommand(pb.getPacket());
@@ -345,41 +304,44 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Reported version: "
 					+ Integer.toHexString(versionNum));
 		if (versionNum == 0) {
-			System.err.println("Null version reported!");
+			Base.logger.severe("Null version reported!");
 			return null;
 		}
 		Version v = new Version(versionNum / 100, versionNum % 100);
-		System.out.println("Motherboard firmware v"+v);
+		Base.logger.warning("Motherboard firmware v"+v);
 
 		final String MB_NAME = "RepRap Motherboard v1.X"; 
 		FirmwareUploader.checkLatestVersion(MB_NAME, v);
 
-		PacketBuilder slavepb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		slavepb.add8((byte) machine.currentTool().getIndex());
-		slavepb.add8(CommandCodeSlave.VERSION.getCode());
+		slavepb.add8(ToolCommandCode.VERSION.getCode());
 		PacketResponse slavepr = runCommand(slavepb.getPacket());
 
 		int slaveVersionNum = slavepr.get16();
 		Base.logger.log(Level.FINE,"Reported slave board version: "
 					+ Integer.toHexString(slaveVersionNum));
 		if (slaveVersionNum == 0)
-			System.err.println("Extruder board: Null version reported!");
+			Base.logger.severe("Extruder board: Null version reported! Make sure the extruder is connected and the power is on.");
         else
         {
             Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
-            System.out.println("Extruder controller firmware v"+sv);
+            Base.logger.warning("Extruder controller firmware v"+sv);
 
             final String EC_NAME = "Extruder Controller v2.2"; 
     		FirmwareUploader.checkLatestVersion(EC_NAME, sv);
         }
-        
+		// If we're dealing with older firmware, set timeout to infinity
+		if (v.getMajor() < 2) {
+			serial.setTimeout(Integer.MAX_VALUE);
+		}
 		return v;
 	}
 	
 	
 
 	public void sendInit() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.INIT.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.INIT.getCode());
 		runCommand(pb.getPacket());
 	}
 
@@ -403,6 +365,8 @@ public class Sanguino3GDriver extends SerialDriver
 			long micros = convertFeedrateToMicros(getCurrentPosition(),
 					p, getSafeFeedrate(deltaSteps));
 
+			//System.err.println("Steps :"+steps.toString()+" micros "+Long.toString(micros));
+
 			// okay, send it off!
 			queueAbsolutePoint(steps, micros);
 
@@ -410,9 +374,9 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 	}
 
-	public Point3d getPosition() {
-		return new Point3d();
-	}
+	//public Point3d getPosition() {
+	//	return new Point3d();
+	//}
 
 	/*
 	 * //figure out the axis with the most steps. Point3d steps =
@@ -442,7 +406,7 @@ public class Sanguino3GDriver extends SerialDriver
 	 */
 
 	private void queueAbsolutePoint(Point3d steps, long micros) {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.QUEUE_POINT_ABS.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_ABS.getCode());
 
 		if (Base.logger.isLoggable(Level.FINE)) {
 			Base.logger.log(Level.FINE,"Queued absolute point " + steps + " at "
@@ -459,7 +423,10 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void setCurrentPosition(Point3d p) {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.SET_POSITION.getCode());
+		//System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
+		if (super.getCurrentPosition().equals(p)) return;
+		//System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_POSITION.getCode());
 
 		Point3d steps = machine.mmToSteps(p);
 		pb.add32((long) steps.x);
@@ -474,7 +441,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setCurrentPosition(p);
 	}
 
-	public void homeAxes(EnumSet<Axis> axes) {
+	public void homeAxes(EnumSet<Axis> axes, boolean positive) {
 		Base.logger.log(Level.FINE,"Homing axes "+axes.toString());
 		byte flags = 0x00;
 
@@ -504,12 +471,13 @@ public class Sanguino3GDriver extends SerialDriver
 		// calculate ticks
 		long micros = convertFeedrateToMicros(new Point3d(), target, feedrate);
 		// send it!
-		PacketBuilder pb = new PacketBuilder(
-				CommandCodeMaster.FIND_AXES_MINIMUM.getCode());
+		int code = positive?
+				MotherboardCommandCode.FIND_AXES_MAXIMUM.getCode():
+				MotherboardCommandCode.FIND_AXES_MINIMUM.getCode();
+		PacketBuilder pb = new PacketBuilder(code);
 		pb.add8(flags);
 		pb.add32((int) micros);
-		pb.add16(300); // default to 5 minutes
-		
+		pb.add16(20); // default to 20 seconds
 		runCommand(pb.getPacket());
 	}
 		
@@ -520,7 +488,7 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.DELAY.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.DELAY.getCode());
 		pb.add32(millis);
 		runCommand(pb.getPacket());
 	}
@@ -539,7 +507,7 @@ public class Sanguino3GDriver extends SerialDriver
 		// Command RMB to enable its steppers. Note that they are
 		// already automagically enabled by most commands and need
 		// not be explicitly enabled.
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.ENABLE_AXES.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
 		pb.add8(0x87); // enable x,y,z
 		runCommand(pb.getPacket());
 		super.enableDrives();
@@ -547,7 +515,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 	public void disableDrives() {
 		// Command RMB to disable its steppers.
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.ENABLE_AXES.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
 		pb.add8(0x07); // disable x,y,z
 		runCommand(pb.getPacket());
 		super.disableDrives();
@@ -564,7 +532,7 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Waiting for tool #" + toolIndex);
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.WAIT_FOR_TOOL.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
 		pb.add8((byte) toolIndex);
 		pb.add16(100); // delay between master -> slave pings (millis)
 		pb.add16(120); // timeout before continuing (seconds)
@@ -575,7 +543,7 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Selecting tool #" + toolIndex);
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.CHANGE_TOOL.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.CHANGE_TOOL.getCode());
 		pb.add8((byte) toolIndex);
 		runCommand(pb.getPacket());
 
@@ -596,9 +564,9 @@ public class Sanguino3GDriver extends SerialDriver
 					+ microseconds + " microseconds)");
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.SET_MOTOR_1_RPM.getCode());
+		pb.add8(ToolCommandCode.SET_MOTOR_1_RPM.getCode());
 		pb.add8((byte) 4); // length of payload.
 		pb.add32(microseconds);
 		runCommand(pb.getPacket());
@@ -610,9 +578,9 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Setting motor 1 speed to " + pwm + " PWM");
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.SET_MOTOR_1_PWM.getCode());
+		pb.add8(ToolCommandCode.SET_MOTOR_1_PWM.getCode());
 		pb.add8((byte) 1); // length of payload.
 		pb.add8((byte) pwm);
 		runCommand(pb.getPacket());
@@ -632,9 +600,9 @@ public class Sanguino3GDriver extends SerialDriver
 					+ Integer.toBinaryString(flags));
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.TOGGLE_MOTOR_1.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
 		runCommand(pb.getPacket());
@@ -650,9 +618,9 @@ public class Sanguino3GDriver extends SerialDriver
 
 		Base.logger.log(Level.FINE,"Disabling motor 1");
 
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.TOGGLE_MOTOR_1.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
 		runCommand(pb.getPacket());
@@ -661,9 +629,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public int getMotorSpeedPWM() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.GET_MOTOR_1_PWM.getCode());
+		pb.add8(ToolCommandCode.GET_MOTOR_1_PWM.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 
 		// get it
@@ -678,9 +646,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public double getMotorSpeedRPM() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.GET_MOTOR_1_RPM.getCode());
+		pb.add8(ToolCommandCode.GET_MOTOR_1_RPM.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 
 		// convert back to RPM
@@ -709,9 +677,9 @@ public class Sanguino3GDriver extends SerialDriver
 					+ microseconds + " microseconds)");
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.SET_MOTOR_2_RPM.getCode());
+		pb.add8(ToolCommandCode.SET_MOTOR_2_RPM.getCode());
 		pb.add8((byte) 4); // payload length
 		pb.add32(microseconds);
 		runCommand(pb.getPacket());
@@ -723,9 +691,9 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Setting motor 2 speed to " + pwm + " PWM");
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.SET_MOTOR_2_PWM.getCode());
+		pb.add8(ToolCommandCode.SET_MOTOR_2_PWM.getCode());
 		pb.add8((byte) 1); // length of payload.
 		pb.add8((byte) pwm);
 		runCommand(pb.getPacket());
@@ -745,9 +713,9 @@ public class Sanguino3GDriver extends SerialDriver
 					+ Integer.toBinaryString(flags));
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.TOGGLE_MOTOR_2.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_MOTOR_2.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
 		runCommand(pb.getPacket());
@@ -763,9 +731,9 @@ public class Sanguino3GDriver extends SerialDriver
 
 		Base.logger.log(Level.FINE,"Disabling motor 2");
 
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.TOGGLE_MOTOR_1.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
 		runCommand(pb.getPacket());
@@ -774,9 +742,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public double getSpindleSpeedRPM() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.GET_MOTOR_2_RPM.getCode());
+		pb.add8(ToolCommandCode.GET_MOTOR_2_RPM.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 
 		// convert back to RPM
@@ -793,9 +761,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public int getSpindleSpeedPWM() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.GET_MOTOR_2_PWM.getCode());
+		pb.add8(ToolCommandCode.GET_MOTOR_2_PWM.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 
 		// get it
@@ -819,9 +787,9 @@ public class Sanguino3GDriver extends SerialDriver
 
 		Base.logger.log(Level.FINE,"Setting temperature to " + temp + "C");
 
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.SET_TEMP.getCode());
+		pb.add8(ToolCommandCode.SET_TEMP.getCode());
 		pb.add8((byte) 2); // payload length
 		pb.add16(temp);
 		runCommand(pb.getPacket());
@@ -830,9 +798,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void readTemperature() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.GET_TEMP.getCode());
+		pb.add8(ToolCommandCode.GET_TEMP.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 
 		int temp = pr.get16();
@@ -854,9 +822,9 @@ public class Sanguino3GDriver extends SerialDriver
 		
 		Base.logger.log(Level.FINE,"Setting platform temperature to " + temp + "C");
 		
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.SET_PLATFORM_TEMP.getCode());
+		pb.add8(ToolCommandCode.SET_PLATFORM_TEMP.getCode());
 		pb.add8((byte) 2); // payload length
 		pb.add16(temp);
 		runCommand(pb.getPacket());
@@ -865,9 +833,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 	
 	public void readPlatformTemperature() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.GET_PLATFORM_TEMP.getCode());
+		pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		
 		int temp = pr.get16();
@@ -915,9 +883,9 @@ public class Sanguino3GDriver extends SerialDriver
 	public void enableFan() {
 		Base.logger.log(Level.FINE,"Enabling fan");
 
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.TOGGLE_FAN.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_FAN.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
 		runCommand(pb.getPacket());
@@ -928,9 +896,9 @@ public class Sanguino3GDriver extends SerialDriver
 	public void disableFan() {
 		Base.logger.log(Level.FINE,"Disabling fan");
 
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.TOGGLE_FAN.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_FAN.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 0); // disable
 		runCommand(pb.getPacket());
@@ -944,9 +912,9 @@ public class Sanguino3GDriver extends SerialDriver
 	public void openValve() {
 		Base.logger.log(Level.FINE,"Opening valve");
 
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.TOGGLE_VALVE.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_VALVE.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
 		runCommand(pb.getPacket());
@@ -957,9 +925,9 @@ public class Sanguino3GDriver extends SerialDriver
 	public void closeValve() {
 		Base.logger.log(Level.FINE,"Closing valve");
 
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_COMMAND.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.TOGGLE_VALVE.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_VALVE.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 0); // disable
 		runCommand(pb.getPacket());
@@ -987,7 +955,7 @@ public class Sanguino3GDriver extends SerialDriver
 	 **************************************************************************/
 	public void pause() {
 		Base.logger.log(Level.FINE,"Sending asynch pause command");
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.PAUSE.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.PAUSE.getCode());
 		runCommand(pb.getPacket());
 	}
 
@@ -996,7 +964,7 @@ public class Sanguino3GDriver extends SerialDriver
 		// There is no explicit unpause command on the Sanguino3G; instead we
 		// use
 		// the pause command to toggle the pause state.
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.PAUSE.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.PAUSE.getCode());
 		runCommand(pb.getPacket());
 	}
 
@@ -1035,39 +1003,19 @@ public class Sanguino3GDriver extends SerialDriver
 
 	private long convertFeedrateToMicros(Point3d current, Point3d target,
 			double feedrate) {
-
 		Point3d deltaDistance = getAbsDeltaDistance(current, target);
 		Point3d deltaSteps = getAbsDeltaSteps(current, target);
-
-		// System.out.println("current: " + current);
-		// System.out.println("target: " + target);
-		// System.out.println("deltas:" + deltaDistance);
-
-		// try {
-		// Thread.sleep(10000);
-		// } catch (Exception e) {}
-
 		// how long is our line length?
 		double distance = Math.sqrt(deltaDistance.x * deltaDistance.x
 				+ deltaDistance.y * deltaDistance.y + deltaDistance.z
 				* deltaDistance.z);
-
 		double masterSteps = getLongestLength(deltaSteps);
-
 		// distance is in steps
 		// feedrate is in steps/
 		// distance / feedrate * 60,000,000 = move duration in microseconds
 		double micros = distance / feedrate * 60000000.0;
-
 		// micros / masterSteps = time between steps for master axis.
 		double step_delay = micros / masterSteps;
-
-		// System.out.println("Distance: " + distance);
-		// System.out.println("Feedrate: " + feedrate);
-		// System.out.println("Micros: " + micros);
-		// System.out.println("Master steps:" + masterSteps);
-		// System.out.println("Step Delay (micros): " + step_delay);
-
 		return (long) Math.round(step_delay);
 	}
 
@@ -1094,28 +1042,32 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Stop and system state reset
 	 **************************************************************************/
 	public void stop() {
-		System.out.println("Stop.");
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.ABORT.getCode());
+		Base.logger.warning("Stop.");
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ABORT.getCode());
+		Thread.interrupted(); // Clear interrupted status
 		runCommand(pb.getPacket());
 		// invalidate position, force reconciliation.
 		invalidatePosition();
 	}
 
 	protected Point3d reconcilePosition() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.GET_POSITION.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
+		// Useful quickie debugs
+		//System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
+		//System.err.println("ENDSTOP FLAGS: " + Integer.toBinaryString(pr.get8()));
 		return machine.stepsToMM(steps);
 	}
 
 	public void reset() {
-		System.out.println("Reset.");
-		setInitialized(false);
-		if (version.compareTo(new Version(1,4)) >= 0) {
+		Base.logger.info("Reset.");
+		if (isInitialized() && version.compareTo(new Version(1,4)) >= 0) {
 			// WDT reset introduced in version 1.4 firmware
-			PacketBuilder pb = new PacketBuilder(CommandCodeMaster.RESET.getCode());
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.RESET.getCode());
 			runCommand(pb.getPacket());
 		}
+		setInitialized(false);
 		initialize();
 	}
 
@@ -1125,27 +1077,31 @@ public class Sanguino3GDriver extends SerialDriver
 	
 	private void checkEEPROM() {
 		if (!eepromChecked) {
-			byte versionBytes[] = readFromEEPROM(EEPROM_CHECK_OFFSET,2);
-			if ((versionBytes[0] != EEPROM_CHECK_LOW) ||
-				(versionBytes[1] != EEPROM_CHECK_HIGH)) {
-				System.err.println("Cleaning EEPROM");
-				// Wipe EEPROM
-				byte eepromWipe[] = new byte[16];
-				Arrays.fill(eepromWipe,(byte)0x00);
-				eepromWipe[0] = EEPROM_CHECK_LOW;
-				eepromWipe[1] = EEPROM_CHECK_HIGH;
-				writeToEEPROM(0,eepromWipe);
-				Arrays.fill(eepromWipe,(byte)0x00);
-				for (int i = 16; i < 256; i+=16) {
-					writeToEEPROM(i,eepromWipe);
+			// Versions 2 and up have onboard eeprom defaults and rely on 0xff values
+			eepromChecked = true;
+			if (version.getMajor() < 2) {
+				byte versionBytes[] = readFromEEPROM(EEPROM_CHECK_OFFSET,2);
+				if (versionBytes == null || versionBytes.length < 2) return;
+				if ((versionBytes[0] != EEPROM_CHECK_LOW) || 
+						(versionBytes[1] != EEPROM_CHECK_HIGH)) {
+					Base.logger.severe("Cleaning EEPROM to v1.X state");
+					// Wipe EEPROM
+					byte eepromWipe[] = new byte[16];
+					Arrays.fill(eepromWipe,(byte)0x00);
+					eepromWipe[0] = EEPROM_CHECK_LOW;
+					eepromWipe[1] = EEPROM_CHECK_HIGH;
+					writeToEEPROM(0,eepromWipe);
+					Arrays.fill(eepromWipe,(byte)0x00);
+					for (int i = 16; i < 256; i+=16) {
+						writeToEEPROM(i,eepromWipe);
+					}
 				}
 			}
-			eepromChecked = true;
 		}
 	}
 	
 	private void writeToEEPROM(int offset, byte[] data) {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.WRITE_EEPROM.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WRITE_EEPROM.getCode());
 		pb.add16(offset);
 		pb.add8(data.length);
 		for (byte b : data) {
@@ -1156,9 +1112,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	private byte[] readFromToolEEPROM(int offset, int len) {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(CommandCodeSlave.READ_FROM_EEPROM.getCode());
+		pb.add8(ToolCommandCode.READ_FROM_EEPROM.getCode());
 		pb.add16(offset);
 		pb.add8(len);
 		PacketResponse pr = runCommand(pb.getPacket());
@@ -1183,9 +1139,9 @@ public class Sanguino3GDriver extends SerialDriver
 			offset += MAX_PAYLOAD;
 			data = tail;
 		}
-		PacketBuilder slavepb = new PacketBuilder(CommandCodeMaster.TOOL_QUERY.getCode());
+		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		slavepb.add8((byte) machine.currentTool().getIndex());
-		slavepb.add8(CommandCodeSlave.WRITE_TO_EEPROM.getCode());
+		slavepb.add8(ToolCommandCode.WRITE_TO_EEPROM.getCode());
 		slavepb.add16(offset);
 		slavepb.add8(data.length);
 		for (byte b : data) {
@@ -1196,7 +1152,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	private byte[] readFromEEPROM(int offset, int len) {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.READ_EEPROM.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.READ_EEPROM.getCode());
 		pb.add16(offset);
 		pb.add8(len);
 		PacketResponse pr = runCommand(pb.getPacket());
@@ -1217,12 +1173,24 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
-	
-	final private static int EEPROM_EC_THERMISTOR_TABLE_OFFSET = 0x100;
-	final private static int EEPROM_EC_R0_OFFSET = 0xf0;
-	final private static int EEPROM_EC_T0_OFFSET = 0xf4;
-	final private static int EEPROM_EC_BETA_OFFSET = 0xf8;
-	
+	final private static int EEPROM_ENDSTOP_INVERSION_OFFSET = 3;
+	final static class ECThermistorOffsets {
+		final private static int[] TABLE_OFFSETS = {
+			0x00f0,
+			0x0170
+		};
+
+		final private static int R0 = 0x00;
+		final private static int T0 = 0x04;
+		final private static int BETA = 0x08;
+		final private static int DATA = 0x10;
+		
+		public static int r0(int which) { return R0 + TABLE_OFFSETS[which]; }
+		public static int t0(int which) { return T0 + TABLE_OFFSETS[which]; }
+		public static int beta(int which) { return BETA + TABLE_OFFSETS[which]; }
+		public static int data(int which) { return DATA + TABLE_OFFSETS[which]; }
+	};	
+
 	final private static int MAX_MACHINE_NAME_LEN = 16;
 	public EnumSet<Axis> getInvertedParameters() {
 		checkEEPROM();
@@ -1271,10 +1239,11 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 	
 	public boolean hasFeatureOnboardParameters() {
+		if (!isInitialized()) return false;
 		return version.compareTo(new Version(1,2)) >= 0; 
 	}
 
-	public void createThermistorTable(double r0, double t0, double beta) {
+	public void createThermistorTable(int which, double r0, double t0, double beta) {
 		// Generate a thermistor table for r0 = 100K.
 		final int ADC_RANGE = 1024;
 		final int NUMTEMPS = 20;
@@ -1304,7 +1273,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// extruder controller is little-endian
 			int tempi = (int)temp;
 			int adci = (int)adc;
-			System.err.println("{ "+Integer.toString(adci) +"," +Integer.toString(tempi)+" }");
+			Base.logger.fine("{ "+Integer.toString(adci) +"," +Integer.toString(tempi)+" }");
 			table[(2*2*i)+0] = (byte)(adci & 0xff); // ADC low
 			table[(2*2*i)+1] = (byte)(adci >> 8); // ADC high
 			table[(2*2*i)+2] = (byte)(tempi & 0xff); // temp low
@@ -1317,21 +1286,25 @@ public class Sanguino3GDriver extends SerialDriver
 		eepromIndicator[1] = EEPROM_CHECK_HIGH;
 		writeToToolEEPROM(0,eepromIndicator);
 
-		writeToToolEEPROM(EEPROM_EC_BETA_OFFSET,intToLE((int)beta));
-		writeToToolEEPROM(EEPROM_EC_R0_OFFSET,intToLE((int)r0));
-		writeToToolEEPROM(EEPROM_EC_T0_OFFSET,intToLE((int)t0));
-		writeToToolEEPROM(EEPROM_EC_THERMISTOR_TABLE_OFFSET,table);
+		writeToToolEEPROM(ECThermistorOffsets.beta(which),intToLE((int)beta));
+		writeToToolEEPROM(ECThermistorOffsets.r0(which),intToLE((int)r0));
+		writeToToolEEPROM(ECThermistorOffsets.t0(which),intToLE((int)t0));
+		writeToToolEEPROM(ECThermistorOffsets.data(which),table);
 	}
 
-	private byte[] intToLE(int s) {
-		byte buf[] = new byte[4];
-		for (int i = 0; i < 4; i++) {
+	private byte[] intToLE(int s, int sz) {
+		byte buf[] = new byte[sz];
+		for (int i = 0; i < sz; i++) {
 			buf[i] = (byte)(s & 0xff);
 			s = s >>> 8;
 		}
 		return buf;
 	}
-	
+
+	private byte[] intToLE(int s) {
+		return intToLE(s,4);
+	}
+
 	ResponseCode convertSDCode(int code) {
 		switch (code) {
 		case 0:
@@ -1367,7 +1340,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 	
 	public ResponseCode beginCapture(String filename) {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.CAPTURE_TO_FILE.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.CAPTURE_TO_FILE.getCode());
 		for (byte b : filename.getBytes()) {
 			pb.add8(b);
 		}
@@ -1377,13 +1350,13 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public int endCapture() {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.END_CAPTURE.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.END_CAPTURE.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		return pr.get32();
 	}
 
 	public ResponseCode playback(String filename) {
-		PacketBuilder pb = new PacketBuilder(CommandCodeMaster.PLAYBACK_CAPTURE.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.PLAYBACK_CAPTURE.getCode());
 		for (byte b : filename.getBytes()) {
 			pb.add8(b);
 		}
@@ -1393,6 +1366,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public boolean hasFeatureSDCardCapture() {
+		if (!isInitialized()) return false;
 		return version.compareTo(new Version(1,3)) >= 0; 
 	}
 	
@@ -1400,7 +1374,7 @@ public class Sanguino3GDriver extends SerialDriver
 		Vector<String> fileList = new Vector<String>();
 		boolean reset = true;
 		while (true) {
-			PacketBuilder pb = new PacketBuilder(CommandCodeMaster.NEXT_FILENAME.getCode());
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.NEXT_FILENAME.getCode());
 			pb.add8(reset?1:0);
 			reset = false;
 			PacketResponse pr = runCommand(pb.getPacket());
@@ -1420,8 +1394,8 @@ public class Sanguino3GDriver extends SerialDriver
 		return fileList;
 	}
 
-	public int getBeta() {
-		byte r[] = readFromToolEEPROM(EEPROM_EC_BETA_OFFSET,4);
+	public int getBeta(int which) {
+		byte r[] = readFromToolEEPROM(ECThermistorOffsets.beta(which),4);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -1429,8 +1403,8 @@ public class Sanguino3GDriver extends SerialDriver
 		return val;
 	}
 
-	public int getR0() {
-		byte r[] = readFromToolEEPROM(EEPROM_EC_R0_OFFSET,4);
+	public int getR0(int which) {
+		byte r[] = readFromToolEEPROM(ECThermistorOffsets.r0(which),4);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -1438,12 +1412,69 @@ public class Sanguino3GDriver extends SerialDriver
 		return val;
 	}
 
-	public int getT0() {
-		byte r[] = readFromToolEEPROM(EEPROM_EC_T0_OFFSET,4);
+	public int getT0(int which) {
+		byte r[] = readFromToolEEPROM(ECThermistorOffsets.t0(which),4);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
 		}
 		return val;
+	}
+
+	final static class ECBackoffOffsets {
+		/// Backoff stop time, in ms: 2 bytes
+		final static int STOP_MS = 0x0004;
+		/// Backoff reverse time, in ms: 2 bytes
+		final static int REVERSE_MS = 0x0006;
+		/// Backoff forward time, in ms: 2 bytes
+		final static int FORWARD_MS = 0x0008;
+		/// Backoff trigger time, in ms: 2 bytes
+		final static int TRIGGER_MS = 0x000A;
+	};
+
+	private int read16FromToolEEPROM(int offset, int defaultValue) {
+		byte r[] = readFromToolEEPROM(offset,2);
+		int val = r[0]&0xff + ((r[1]&0xff)<<8);
+		if (val == 0x0ffff) return defaultValue;
+		return val;
+	}
+	
+	public BackoffParameters getBackoffParameters() {
+		BackoffParameters bp = new BackoffParameters();
+		bp.forwardMs = read16FromToolEEPROM(ECBackoffOffsets.FORWARD_MS, 300);
+		bp.stopMs = read16FromToolEEPROM(ECBackoffOffsets.STOP_MS, 5);
+		bp.reverseMs = read16FromToolEEPROM(ECBackoffOffsets.REVERSE_MS, 500);
+		bp.triggerMs = read16FromToolEEPROM(ECBackoffOffsets.TRIGGER_MS, 300);
+		return bp;
+	}
+	
+	public void setBackoffParameters(BackoffParameters bp) {
+		writeToToolEEPROM(ECBackoffOffsets.FORWARD_MS,intToLE(bp.forwardMs,2));
+		writeToToolEEPROM(ECBackoffOffsets.STOP_MS,intToLE(bp.stopMs,2));
+		writeToToolEEPROM(ECBackoffOffsets.REVERSE_MS,intToLE(bp.reverseMs,2));
+		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2));
+	}
+
+	/** Reset to the factory state.  This ordinarily means writing 0xff over the
+	 * entire eeprom.
+	 */
+	public void resetToFactory() {
+		byte eepromWipe[] = new byte[16];
+		Arrays.fill(eepromWipe,(byte)0xff);
+		for (int i = 0; i < 0x0200; i+=16) {
+			writeToEEPROM(i,eepromWipe);
+		}
+	}
+
+	public EndstopType getInvertedEndstops() {
+		checkEEPROM();
+		byte[] b = readFromEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,1);
+		return EndstopType.endstopTypeForValue(b[0]);
+	}
+
+	public void setInvertedEndstops(EndstopType endstops) {
+		byte b[] = new byte[1];
+		b[0] = endstops.getValue();
+		writeToEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,b);
 	}
 }

@@ -51,7 +51,7 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
 
 	public void setManualreset(String val) {
 		if (val == null) return;
-		System.err.println("Manual reset = "+val);
+		Base.logger.fine("Manual reset = "+val);
 		if ("true".equalsIgnoreCase(val)) { manualReset = true; }
 	}
 	

@@ -60,6 +60,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 
 import javax.swing.AbstractAction;
@@ -586,17 +587,25 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			final String portName = name.getName();
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					try {
-						UsesSerial us = (UsesSerial)machine.driver;
-						if (us.getSerial() == null ||
-								us.getSerial().getName() != portName) {
-							us.setSerial(new Serial(portName, us));
-							Base.preferences.put("serial.last_selected", portName);
-							machine.reset();
+					Thread t = new Thread() {
+						public void run() {
+							try {
+								UsesSerial us = (UsesSerial)machine.driver;
+								if (us != null) synchronized(us) {
+									if (us.getSerial() == null ||
+											us.getSerial().getName() != portName) {
+										us.setSerial(new Serial(portName, us));
+										Base.preferences.put("serial.last_selected", portName);
+										machine.reset();
+									}
+								}
+							} catch (SerialException se) {
+								se.printStackTrace();
+							}
+
 						}
-					} catch (SerialException se) {
-						se.printStackTrace();
-					}
+					};
+					t.start();
 				}
 			});
 			serialMenu.add(item);
@@ -847,12 +856,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 			JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
 			item.setState(true);
-			String name = item.getText();
+			final String name = item.getText();
 			Base.preferences.put("machine.name", name);
 
 			// load it and set it.
-
-			loadMachine(name);
+			Thread t = new Thread() {
+				public void run() {
+					loadMachine(name);
+				}
+			};
+			t.start();
 		}
 	}
 
@@ -1098,6 +1111,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	class RedoAction extends AbstractAction {
+		private static final long serialVersionUID = -2427139178653072745L;
+
 		public RedoAction() {
 			super("Redo");
 			this.setEnabled(false);
@@ -1201,10 +1216,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				!(machine.driver instanceof OnboardParameters)) {
 			JOptionPane.showMessageDialog(
 					this,
-					"ReplicatorG can't connect to your machine or onboard preferences are not supported..\nTry checking your settings and resetting your machine.",
+					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
 		} else {
-			MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machine.driver);
+			MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machine.driver,machine.driver);
 			moo.setVisible(true);
 		}
 	}
@@ -1357,7 +1372,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			return;
 
 		if (machine == null) {
-			System.err.println("Not ready to build yet.");
+			Base.logger.severe("Not ready to build yet.");
 		} else {
 			// close stuff.
 			doClose();
@@ -1384,7 +1399,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		if (machine == null || machine.driver == null ||
 				!(machine.driver instanceof SDCardCapture)) {
-			System.err.println("Not ready to build yet.");
+			Base.logger.severe("Not ready to build yet.");
 		} else {
 			BuildNamingDialog bsd = new BuildNamingDialog(this,sketch.name);
 			bsd.setVisible(true);
@@ -1452,7 +1467,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			return;
 		if (machine == null || machine.driver == null ||
 				!(machine.driver instanceof SDCardCapture)) {
-			System.err.println("Not ready to build yet.");
+			Base.logger.severe("Not ready to build yet.");
 		} else {
 			String sourceName = sketch.name + ".s3g";
 			String path = selectOutputFile(sourceName);
@@ -1483,7 +1498,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		if (machine == null || machine.driver == null ||
 				!(machine.driver instanceof SDCardCapture)) {
-			System.err.println("Not ready to build yet.");
+			Base.logger.severe("Not ready to build yet.");
 		} else {
 			SDCardCapture sdcc = (SDCardCapture)machine.driver;
 			List<String> files = sdcc.getFileList();
@@ -1491,7 +1506,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			BuildSelectionDialog bsd = new BuildSelectionDialog(this,files);
 			bsd.setVisible(true);
 			String path = bsd.getSelectedPath();
-			System.err.println("Selected path is "+path);
+			Base.logger.info("Selected path is "+path);
 			if (path != null)
 			{
 				// close stuff.
@@ -2204,12 +2219,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * Show an error int the status bar.
 	 */
 	public void error(String what) {
-		System.err.println(what);
+		Base.logger.severe(what);
 	}
 
 	public void error(Exception e) {
 		if (e == null) {
-			System.err.println("MainWindow.error() was passed a null exception.");
+			Base.logger.severe("MainWindow.error() was passed a null exception.");
 			return;
 		}
 
@@ -2225,15 +2240,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			if (mess.indexOf(javaLang) == 0) {
 				mess = mess.substring(javaLang.length());
 			}
-			error(mess);
 		}
-		e.printStackTrace();
+		Base.logger.log(Level.SEVERE,mess,e);
 	}
 
-	// synchronized public void message(String msg) {
 	public void message(String msg) {
-		System.out.println(msg);
-		// System.out.println(msg);
+		Base.logger.info(msg);
 	}
 
 	// ...................................................................
@@ -2341,7 +2353,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					us.setSerial(new Serial(us.getPortName(),us));
 					machine.reset();
 				} catch (SerialException e) {
-					System.err.println("Could not use/find serial port specified in machines.xml ("+us.getPortName()+").");
+					Base.logger.severe("Could not use/find serial port specified in machines.xml ("+us.getPortName()+").");
 					//e.printStackTrace();
 				}
 			}
@@ -2354,7 +2366,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						us.setSerial(new Serial(lastPort,us));
 						machine.reset();
 					} catch (SerialException e) {
-						System.err.println("Could not use most recently selected serial port ("+lastPort+").");
+						Base.logger.warning("Could not use most recently selected serial port ("+lastPort+").");
 						e.printStackTrace();
 					}
 				}

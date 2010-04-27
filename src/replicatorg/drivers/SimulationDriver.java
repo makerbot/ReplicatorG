@@ -112,4 +112,10 @@ public class SimulationDriver extends DriverBaseImplementation {
 
 		queuePoint(pos);
 	}
+
+	protected Point3d reconcilePosition() {
+		// Initial position irrelevant for this driver; it's all relative to the start pos
+		return new Point3d();
+	}
+
 }

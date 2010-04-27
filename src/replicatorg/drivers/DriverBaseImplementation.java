@@ -29,6 +29,7 @@ import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
+import replicatorg.app.Base;
 import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
@@ -203,7 +204,7 @@ public class DriverBaseImplementation implements Driver {
 		return offsets[i];
 	}
 
-	private Point3d currentPosition = new Point3d();
+	private Point3d currentPosition = null;
 	
 	public void setCurrentPosition(Point3d p) {
 		currentPosition = p;
@@ -252,11 +253,13 @@ public class DriverBaseImplementation implements Driver {
 
 		// mostly for estimation driver.
 		queuePoint(p, feedrate);
-
-		// save it as our current position now.
-		setCurrentPosition(p);
+		setInternalPosition(p);
 	}
 
+	protected void setInternalPosition(Point3d position) {
+		currentPosition = position;
+	}
+	
 	protected void queuePoint(Point3d p, Double feedrate) {
 		// do nothing here.
 	}
@@ -318,7 +321,7 @@ public class DriverBaseImplementation implements Driver {
 	/***************************************************************************
 	 * various homing functions
 	 **************************************************************************/
-	public void homeAxes(EnumSet<Axis> axes) {
+	public void homeAxes(EnumSet<Axis> axes, boolean positive) {
 	}
 
 	/***************************************************************************
@@ -551,12 +554,12 @@ public class DriverBaseImplementation implements Driver {
 	 **************************************************************************/
 	public void stop() {
 		// No implementation needed for synchronous machines.
-		System.err.println("Machine stop called.");
+		Base.logger.info("Machine stop called.");
 	}
 
 	public void reset() {
 		// No implementation needed for synchronous machines.
-		System.err.println("Machine reset called.");
+		Base.logger.info("Machine reset called.");
 	}
 
 	public String getDriverName() {

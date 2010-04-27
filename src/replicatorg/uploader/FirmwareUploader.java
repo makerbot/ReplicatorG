@@ -72,9 +72,8 @@ public class FirmwareUploader {
 	public static void checkFirmware() {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
-				FirmwareRetriever retriever = new FirmwareRetriever(
+				new FirmwareRetriever(
 						getFirmwareFile(), getFirmwareURL());
-				System.err.println(retriever.checkForUpdates().toString());
 			}
 		});
 		t.start();
@@ -124,7 +123,7 @@ public class FirmwareUploader {
 		if (latest == null)
 			return false;
 		if (latest.compareTo(version) > 0) {
-			System.err.println("latest " + latest.toString() + " old "
+			Base.logger.info("latest " + latest.toString() + " old "
 					+ version.toString());
 			String key = "replicatorG.ignoreFirmware." + boardName + "."
 					+ version.toString();
@@ -152,6 +151,7 @@ public class FirmwareUploader {
 	// Return the latest available version for the given board name
 	public static Version getLatestVersion(String boardName) {
 		Document firmwareDoc = getFirmwareDoc();
+		if (firmwareDoc == null) return null;
 		NodeList nl = firmwareDoc.getElementsByTagName("board");
 		Version version = null;
 		for (int i = 0; i < nl.getLength(); i++) {
@@ -192,7 +192,9 @@ public class FirmwareUploader {
 						Base.showError(
 							"Firmware.xml Not Found",
 							"The firmware description file 'firmware.xml' was not found.\n" +
-							"Make sure you're running ReplicatorG from the correct directory.",
+							"You may see this message if you're running ReplicatorG for the\n" +
+							"first time and are not connected to the internet, or if you are\n" +
+							"running ReplicatorG on a read-only filesystem.",
 							null);
 						return null;
 					}

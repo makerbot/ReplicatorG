@@ -57,6 +57,12 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	}
 
 	public void setSerial(Serial serial) {
+		if (this.serial == serial) return;
+		if (this.serial != null) {
+			this.serial.dispose();
+			this.serial = null;
+		}
+		setInitialized(false);
 		this.serial = serial;
 	}
 
@@ -95,11 +101,11 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 			// Attempt explicitly set port first
 			try {
 				Serial candidatePort = new Serial(portName,this);
-				System.out.println("Connecting to port "+portName+" specified in machine definition");
+				Base.logger.warning("Connecting to port "+portName+" specified in machine definition");
 				setSerial(candidatePort);
 				initialize();
 				if (isInitialized()) return true;
-				System.err.println("failed: "+portName);
+				Base.logger.warning("failed: "+portName);
 				setSerial(null);
 			} catch (SerialException se) {
 				se.printStackTrace();
@@ -116,11 +122,11 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 				se.printStackTrace();
 			}
 			if (candidatePort != null) {
-				System.out.println("attempting candidate "+candidateName.getName());
+				Base.logger.info("attempting candidate "+candidateName.getName());
 				setSerial(candidatePort);
 				initialize();
 				if (isInitialized()) break;
-				System.err.println("failed: "+candidateName.getName());
+				Base.logger.warning("failed: "+candidateName.getName());
 				setSerial(null);
 			}
 		}

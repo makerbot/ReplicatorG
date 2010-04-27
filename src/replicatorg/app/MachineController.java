@@ -125,6 +125,22 @@ public class MachineController {
 			buildCodesInternal(new StringListSource(cooldownCommands));
 		}
 		
+		// Indicates that the driver has control of the thread.  On a stop or abort, we will want to
+		// interrupt the driver explicitly by interrupting the thread, so we need to understand when
+		// we're in this code.
+		private boolean inDriver = false;
+		
+		// Interrupt any current driver call.
+		// The driver implementation should be smart enough to check for interrupted status when not blocking
+		// on IO, and handle interruptedexceptions by dumping out.
+		public void interruptDriver() {
+			synchronized(driver) {
+				if (inDriver) {
+					this.interrupt();
+				}
+			}
+		}
+		
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
 			if (!state.isBuilding()) {
 				// Do not continue build if the machine is not building or paused
@@ -183,11 +199,23 @@ public class MachineController {
 				
 				try {
 					if (!state.isSimulating()) {
+						// The inDriver bracketing is to avoid
+						// interrupting this thread outside of the
+						// call to the driver code.
+						synchronized(driver) {
+							inDriver = true;
+						}
 						driver.execute();
+						synchronized(driver) {
+							inDriver = false;
+						}
 					}
 				} catch (GCodeException e) {
 					// TODO: prompt the user to continue.
-					System.out.println("Error: " + e.getMessage());
+					Base.logger.severe("Error: " + e.getMessage());
+				} catch (InterruptedException ie) {
+					// We're in the middle of a stop or shutdown
+					inDriver = false;
 				}
 				
 				// did we get any errors?
@@ -237,6 +265,8 @@ public class MachineController {
 		 * 
 		 */
 		private synchronized void resetInternal() {
+			driver.getMachine().currentTool().setTargetTemperature(0);
+			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			driver.reset();
 		}
 
@@ -272,7 +302,7 @@ public class MachineController {
 			startStatusPolling(1000);
 			try {
 				runWarmupCommands();
-				System.out.println("Running build.");
+				Base.logger.info("Running build.");
 				buildCodesInternal(source);
 				runCooldownCommands();
 				driver.invalidatePosition();
@@ -282,7 +312,7 @@ public class MachineController {
 						"Build Failure", JOptionPane.ERROR_MESSAGE);
 
 			} catch (InterruptedException e) {
-				System.out.println("MachineController interrupted");
+				Base.logger.warning("MachineController interrupted");
 			} finally {
 				stopStatusPolling();
 			}
@@ -365,11 +395,20 @@ public class MachineController {
 		}
 		
 		public void stopBuild() {
+			driver.getMachine().currentTool().setTargetTemperature(0);
+			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			if (state.isBuilding()) {
-				setState(MachineState.State.STOPPING);				
+				setState(MachineState.State.STOPPING);
+				interruptDriver();
 			}
 		}
 		
+		public void shutdown() {
+			running = false;
+			stopBuild();
+			synchronized(this) { notify(); }
+		}
+
 		public void autoscan() {
 			if (state.getState() == MachineState.State.CONNECTING ||
 				state.getState() == MachineState.State.NOT_ATTACHED) {
@@ -377,8 +416,10 @@ public class MachineController {
 			}
 		}
 		
+		private boolean running = true;
+		
 		public void run() {
-			while (!interrupted()) {
+			while (running) {
 				try {
 					if (state.getState() == MachineState.State.BUILDING) {
 						if (state.getTarget() == MachineState.Target.SD_UPLOAD) {
@@ -386,7 +427,7 @@ public class MachineController {
 								SDCardCapture sdcc = (SDCardCapture)driver;
 								if (processSDResponse(sdcc.beginCapture(remoteName))) { 
 									buildInternal(currentSource);
-									System.err.println("Captured bytes: " +Integer.toString(sdcc.endCapture()));
+									Base.logger.info("Captured bytes: " +Integer.toString(sdcc.endCapture()));
 								} else { setState(MachineState.State.STOPPING); }
 							} else {
 								setState(MachineState.State.STOPPING);
@@ -493,7 +534,7 @@ public class MachineController {
 		machineNode = mNode;
 
 		parseName();
-		System.out.println("Loading machine: " + name);
+		Base.logger.info("Loading machine: " + name);
 
 		// load our various objects
 		loadDriver();
@@ -585,11 +626,11 @@ public class MachineController {
 			simulator.createWindow();
 
 		// estimate build time.
-		System.out.println("Estimating build time...");
+		Base.logger.info("Estimating build time...");
 		estimate();
 
 		// do that build!
-		System.out.println("Running GCode...");
+		Base.logger.info("Beginning build.");
 		machineThread.build(source);
 		return true;
 	}
@@ -600,11 +641,11 @@ public class MachineController {
 			simulator.createWindow();
 
 		// estimate build time.
-		System.out.println("Estimating build time...");
+		Base.logger.info("Estimating build time...");
 		estimate();
 
 		// do that build!
-		System.out.println("Running GCode...");
+		Base.logger.info("Beginning simulation.");
 		machineThread.simulate(source);
 		return true;
 	}
@@ -636,7 +677,7 @@ public class MachineController {
 				((SimulationDriver)driver).setSimulationBounds(estimator.getBounds());
 			}
 			estimatedBuildTime = estimator.getBuildTime();
-			System.out.println("Estimated build time is: "
+			Base.logger.info("Estimated build time is: "
 					+ EstimationDriver.getBuildTimeString(estimatedBuildTime));
 		} catch (InterruptedException e) {
 			assert (false);
@@ -653,7 +694,7 @@ public class MachineController {
 	private void loadDriver() {
 		// load our utility drivers
 		if (Base.preferences.getBoolean("machinecontroller.simulator",true)) {
-			System.err.println("loading simulator");
+			Base.logger.info("Loading simulator.");
 			simulator = new SimulationDriver();
 			simulator.setMachine(loadModel());
 		}
@@ -669,20 +710,8 @@ public class MachineController {
 		
 		driver = DriverFactory.factory(driverXml);
 		driver.setMachine(loadModel());
-		// We begin the initialization process here in a seperate
-		// thread.
-		// The rest of the system should check that the machine is
-		// initialized
-		// before proceeding with prints, etc.
-		Thread initThread = new Thread() {
-			public void run() {
-				synchronized(driver) {
-					System.err.println("Attempting to initialize driver "+driver);
-					driver.initialize();
-				}
-			}
-		};
-		initThread.start();
+		// Initialization is now handled by the machine thread when it
+		// is placed in a connecting state.
 	}
 
 	private void loadExtraPrefs() {
@@ -766,8 +795,7 @@ public class MachineController {
 	
 	public void dispose() {
 		if (machineThread != null) {
-			machineThread.stopBuild();
-			machineThread.interrupt();
+			machineThread.shutdown();
 			try {
 				machineThread.join(5000);
 			} catch (Exception e) { e.printStackTrace(); }

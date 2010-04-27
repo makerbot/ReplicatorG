@@ -175,7 +175,7 @@ public interface Driver {
 	/**
 	 * various homing functions
 	 */
-	public void homeAxes(EnumSet<Axis> axes);
+	public void homeAxes(EnumSet<Axis> axes, boolean positive);
 
 	/**
 	 * delay / pause function

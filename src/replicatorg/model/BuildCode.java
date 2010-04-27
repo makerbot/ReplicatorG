@@ -71,7 +71,7 @@ public class BuildCode implements Comparable<BuildCode> {
 		try {
 			load();
 		} catch (IOException e) {
-			System.err.println("error while loading code " + name);
+			Base.logger.severe("error while loading code " + name);
 		}
 	}
 

@@ -18,7 +18,7 @@ public class PacketResponse {
 		CRC_MISMATCH("CRC mismatch"), 
 		QUERY_OVERFLOW("Query overflow"), 
 		UNSUPPORTED("Unsupported command"),
-		TIMEOUT("Downstream timeout"),
+		TIMEOUT("Packet timeout"),
 		UNKNOWN("Unknown code")
 		;
 		
@@ -46,7 +46,7 @@ public class PacketResponse {
 				return UNSUPPORTED;
 			case 6:
 				return OK; // more packets expected?
-			case 7:
+			case 127:
 				return TIMEOUT;
 			}
 			return UNKNOWN;
@@ -66,13 +66,12 @@ public class PacketResponse {
 	}
 
 	/**
-	 * Prints a debug message with the packet response code decoded, along wiith
+	 * Prints a debug message with the packet response code decoded, along with
 	 * the packet's contents in hex.
 	 */
 	public void printDebug() {
 		ResponseCode code = getResponseCode(); 
 		String msg = code.getMessage();
-
 		// only print certain messages
 		Level level = Level.FINER;
 		if (code != ResponseCode.OK && code != ResponseCode.BUFFER_OVERFLOW) level = Level.WARNING;
@@ -80,7 +79,9 @@ public class PacketResponse {
 		if (Base.logger.isLoggable(level)) {
 			Base.logger.log(level,"Packet response code: " + msg);
 			StringBuffer buf = new StringBuffer("Packet payload: ");
-			for (int i = 1; i < payload.length; i++) {
+			if (payload.length <= 1) {
+				buf.append("empty");
+			} else for (int i = 1; i < payload.length; i++) {
 				buf.append(Integer.toHexString(payload[i] & 0xff));
 				buf.append(" ");
 			}
@@ -104,7 +105,7 @@ public class PacketResponse {
 		if (payload.length > readPoint)
 			return ((int) payload[readPoint++]) & 0xff;
 		else {
-			System.out.println("Error: payload not big enough.");
+			Base.logger.fine("Error: payload not big enough.");
 			return 0;
 		}
 	}
@@ -131,11 +132,18 @@ public class PacketResponse {
 	}
 
 	public ResponseCode getResponseCode() {
-		return ResponseCode.fromInt(payload[0]);
+		if (payload != null && payload.length > 0)
+			return ResponseCode.fromInt(payload[0]);
+		else return ResponseCode.GENERIC_ERROR;
 	}
 
 	public static PacketResponse okResponse() {
 		final byte[] okPayload = {1,1,1,1,1,1,1,1}; // repeated 1s to fake out queries
 		return new PacketResponse(okPayload);
+	}
+
+	public static PacketResponse timeoutResponse() {
+		final byte[] errorPayload = {127,0,0,0,0,0,0,0}; // repeated 0s to fake out queries
+		return new PacketResponse(errorPayload);
 	}
 }
