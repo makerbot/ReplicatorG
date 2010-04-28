@@ -44,6 +44,8 @@ public class PacketResponse {
 				return QUERY_OVERFLOW;
 			case 5:
 				return UNSUPPORTED;
+			case 6:
+				return OK; // more packets expected?
 			case 127:
 				return TIMEOUT;
 			}
