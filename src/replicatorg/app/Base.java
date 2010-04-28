@@ -247,13 +247,9 @@ public class Base {
 
 		// build the editor object
 		editor = new MainWindow();
-		editor.pack();
 		// Get sizing preferences. This is an issue of contention; let's look at how
 		// other programs decide how to size themselves.
 		editor.restorePreferences();
-
-		// show the window
-		editor.setVisible(true);
 
 		UpdateChecker.checkLatestVersion(editor);
 
@@ -270,6 +266,9 @@ public class Base {
 			editor.loadMachine(machineName);
 		}
 
+		editor.pack();
+		// show the window
+		editor.setVisible(true);
 	}
 
 	public enum Platform {

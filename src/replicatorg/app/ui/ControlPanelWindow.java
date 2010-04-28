@@ -71,7 +71,6 @@ import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
-import replicatorg.app.tools.XML;
 import replicatorg.drivers.Driver;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;

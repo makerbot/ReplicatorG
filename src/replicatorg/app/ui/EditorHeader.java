@@ -95,9 +95,10 @@ public class EditorHeader extends JComponent {
 
 	int imageW, imageH;
 
-	public EditorHeader(MainWindow eddie) {
-		this.editor = eddie; // weird name for listener
-
+	public EditorHeader(MainWindow mainWindow) {
+		this.editor = mainWindow;
+		// Fix positioning in box layouts
+		setAlignmentX(0);
 		pieces = new Image[STATUS.length][WHERE.length];
 		for (int i = 0; i < STATUS.length; i++) {
 			for (int j = 0; j < WHERE.length; j++) {
@@ -121,7 +122,6 @@ public class EditorHeader extends JComponent {
 		addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				int x = e.getX();
-				int y = e.getY();
 
 				for (int i = 0; i < editor.sketch.code.size(); i++) {
 					if ((x > tabLeft[i]) && (x < tabRight[i])) {
@@ -238,6 +238,7 @@ public class EditorHeader extends JComponent {
 		// System.out.println("rebuilding editor header");
 		repaint();
 	}
+
 	
 	public Dimension getPreferredSize() {
 		return getMinimumSize();
@@ -246,16 +247,10 @@ public class EditorHeader extends JComponent {
 	final static int GRID_SIZE = 33;
 	
 	public Dimension getMinimumSize() {
-		if (Base.isMacOS()) {
-			return new Dimension(300, GRID_SIZE);
-		}
-		return new Dimension(300, GRID_SIZE - 1);
+		return new Dimension(50, GRID_SIZE);
 	}
 
 	public Dimension getMaximumSize() {
-		if (Base.isMacOS()) {
-			return new Dimension(3000, GRID_SIZE);
-		}
-		return new Dimension(3000, GRID_SIZE - 1);
+		return new Dimension(Integer.MAX_VALUE, GRID_SIZE);
 	}
 }

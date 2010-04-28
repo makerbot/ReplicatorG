@@ -27,7 +27,6 @@
 
 package replicatorg.app.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -76,7 +75,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
@@ -115,9 +113,9 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
-import replicatorg.model.JEditTextAreaSource;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
+import replicatorg.model.JEditTextAreaSource;
 import replicatorg.uploader.FirmwareUploader;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -192,8 +190,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	JSplitPane splitPane;
 
-	JPanel consolePanel;
-
 	JLabel lineNumberComponent;
 
 	// currently opened program
@@ -243,6 +239,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public MainWindow() {
 		super(WINDOW_TITLE);
+		setLocationByPlatform(true);
 		// #@$*(@#$ apple.. always gotta think different
 		MRJApplicationUtils.registerAboutHandler(this);
 		MRJApplicationUtils.registerPrefsHandler(this);
@@ -290,42 +287,31 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		BoxLayout layout = new BoxLayout(pane,BoxLayout.Y_AXIS);
 		pane.setLayout(layout);
 
-		buttons = new MainButtonPanel(this);
-		
+		buttons = new MainButtonPanel(this);	
 		pane.add(buttons);
+		
 		machineStatusPanel = new MachineStatusPanel();
 		pane.add(machineStatusPanel);
 
 		header = new EditorHeader(this);
 		pane.add(header);
-
+		
 		textarea = new JEditTextArea(new PdeTextAreaDefaults());
 		textarea.setRightClickPopup(new TextAreaPopup());
 		textarea.setHorizontalOffset(6);
 
-		// assemble console panel, consisting of status area and the console
-		// itself
-		consolePanel = new JPanel();
-		consolePanel.setLayout(new BorderLayout());
-
-		//status = new EditorStatus(this);
-		//consolePanel.add(status, BorderLayout.NORTH);
-
 		console = new MessagePanel(this);
-		// windows puts an ugly border on this guy
 		console.setBorder(null);
-		consolePanel.add(console, BorderLayout.CENTER);
 
 		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, textarea,
-				consolePanel);
-		// textarea, consolePanel);
+				console);
 
 		//splitPane.setOneTouchExpandable(true);
 		// repaint child panes while resizing
 		splitPane.setContinuousLayout(true);
 		// if window increases in size, give all of increase to
 		// the textarea in the uppper pane
-		splitPane.setResizeWeight(1D);
+		splitPane.setResizeWeight(0.8);
 
 		// to fix ugliness.. normally macosx java 1.3 puts an
 		// ugly white border around this object, so turn it off.
@@ -338,7 +324,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			splitPane.setDividerSize(dividerSize);
 		}
 
-		splitPane.setMinimumSize(new Dimension(600, 600));
+		splitPane.setPreferredSize(new Dimension(400,500));
 		pane.add(splitPane);
 
 		textarea.setTransferHandler(new TransferHandler() {
@@ -406,15 +392,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		});
 	}
 
-	// ...................................................................
-
 	/**
-	 * Post-constructor setup for the editor area. Loads the last sketch that
-	 * was used (if any), and restores other MainWindow settings. The complement to
-	 * "storePreferences", this is called when the application is first
-	 * launched.
+	 * Determine the window placement.  This is essentially rotten code; we now allow the native
+	 * windowing system to determine where to place the window. 
 	 */
-	public void restorePreferences() {
+	public void placeWindow() {
 		// figure out window placement
 		Base.logger.fine("Restoring window preferences");
 
@@ -425,8 +407,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		int w = Base.preferences.getInt("last.window.width",500); 
 		int h = Base.preferences.getInt("last.window.height",600);
 
-		// TODO: rely on underlying platform mechanism for window sizing and
-		// positioning
 		// * Validate w, h
 		// ** Minimum size 300x200
 		if (w != -1 && w < 300) { w = 300; } // TODO: magic numbers to constants
@@ -440,11 +420,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// ** Validate invalid x, y
 		if (x == -1) { x = (screen.width-w)/2; }
 		if (y == -1) { y = (screen.height-h)/2; }
-
-		//System.err.println("(post) using bounds: "+new Rectangle(x,y,w,h).toString());
-		
 		setBounds(x,y,w,h); 
+	}
+	
+	// ...................................................................
 
+	/**
+	 * Post-constructor setup for the editor area. Loads the last sketch that
+	 * was used (if any), and restores other MainWindow settings. The complement to
+	 * "storePreferences", this is called when the application is first
+	 * launched.
+	 */
+	public void restorePreferences() {
 		// last sketch that was in use, or used to launch the app
 		if (Base.openedAtStartup != null) {
 			handleOpen2(Base.openedAtStartup);

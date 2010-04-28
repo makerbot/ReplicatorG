@@ -123,10 +123,13 @@ public class MessagePanel extends JScrollPane {
 		// and size window accordingly
 		FontMetrics metrics = this.getFontMetrics(font);
 		int height = metrics.getAscent() + metrics.getDescent();
-		int lines = Base.preferences.getInt("console.lines",4); // , 4);
-		int sizeFudge = 6; // 10; // unclear why this is necessary, but it is
-		setPreferredSize(new Dimension(1024, (height * lines) + sizeFudge));
-		setMinimumSize(new Dimension(1024, (height * 4) + sizeFudge));
+		// Set a preferred width of 80 columns, based on an n-space.
+		int width = metrics.charWidth('n') * 80;
+		// Set a minimum width of 40 columns, based on an n-space.
+		int minWidth = metrics.charWidth('n') * 40; 
+		int lines = Base.preferences.getInt("console.lines",8);
+		setPreferredSize(new Dimension(width, (height * lines)));
+		setMinimumSize(new Dimension(minWidth, (height * 5)));
 
 		Base.logger.addHandler(new Handler() {
 			SimpleDateFormat formatter = new SimpleDateFormat("'['HH:mm:ss'] '");

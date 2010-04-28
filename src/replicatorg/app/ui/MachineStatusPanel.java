@@ -3,6 +3,7 @@ package replicatorg.app.ui;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -67,10 +68,13 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		}
 		add(Box.createVerticalGlue());
 
-		int height = 40; // TODO: magic number
+		FontMetrics smallMetrics = this.getFontMetrics(smallFont);
+		// Height should be ~3 lines 
+		int height = (smallMetrics.getAscent() + smallMetrics.getDescent()) * 3;
 		setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
-		setMinimumSize(new Dimension(Integer.MAX_VALUE, height));
-		setPreferredSize(new Dimension(Integer.MAX_VALUE, height));
+		setMinimumSize(new Dimension(0, height));
+		int prefWidth = 80 * smallMetrics.charWidth('n');
+		setPreferredSize(new Dimension(prefWidth, height));
 		setAlignmentX(LEFT_ALIGNMENT);
 	}
 

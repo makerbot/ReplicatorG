@@ -1824,7 +1824,6 @@ public class JEditTextArea extends JComponent
       dim.width += rightPref.width;
       Dimension bottomPref = bottom.getPreferredSize();
       dim.height += bottomPref.height;
-
       return dim;
     }
 

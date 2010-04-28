@@ -187,8 +187,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		statusLabel.setForeground(statusColor);
 		add(statusLabel, "gap unrelated");
 
-		//setMaximumSize(new Dimension(3000,40));
-		//setPreferredSize(new Dimension(300,40));
+		setPreferredSize(new Dimension(700,60));
 	}
 
 	public MainButton makeButton(String rolloverText, String source) {
