@@ -74,11 +74,9 @@ M18
 M18
 		</cooldown>
 	</machine>
-	<machine experimental="1">
-		<name>EXPERIMENTAL - Cupcake PBJ</name>
-		<!-- This was the configuration used at the Yahoo! open
-		     hack day for extruding frosting, jelly and PB with
-		     the new frostruder. -->
+	<machine>
+		<name>Cupcake CNC w/ frostruder</name>
+		<!-- This configuration is for cupcakes outfitted with a frostruder. -->
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="300" maxfeedrate="5000" scale="11.767463"/> 
@@ -86,7 +84,10 @@ M18
 			<axis id="z" length="300" maxfeedrate="150" scale="320"/>
 		</geometry>
 		<tools>
-			<tool name="Frostruder v1.0" type="extruder" material="abs" motor="false" floodcoolant="false" mistcoolant="false" fan="true" valve="true" collet="false" heater="false"/>
+			<tool name="Frostruder v1.0" type="extruder" material="abs" motor="false" floodcoolant="false" mistcoolant="false" fan="true" valve="true" collet="false" heater="false">
+				<remap port="fan" name="Pressure Valve" actuated="open"/>
+				<remap port="valve" name="Relief Valve" actuated="open"/>
+			</tool>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">

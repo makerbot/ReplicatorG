@@ -65,8 +65,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
+import replicatorg.app.tools.XML;
 import replicatorg.drivers.Driver;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -780,13 +785,20 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 
 		// cooling fan controls
 		if (t.hasFan()) {
-			JLabel fanLabel = new JLabel("Cooling Fan");
+			String fanString = "Cooling Fan";
+			String enableString = "enable";
+			Element xml = findMappingNode(t.getXml(),"fan");
+			if (xml != null) {
+				fanString = xml.getAttribute("name");
+				enableString = xml.getAttribute("actuated");
+			}
+			JLabel fanLabel = new JLabel(fanString);
 			fanLabel.setMinimumSize(labelMinimumSize);
 			fanLabel.setMaximumSize(labelMinimumSize);
 			fanLabel.setPreferredSize(labelMinimumSize);
 			fanLabel.setHorizontalAlignment(JLabel.LEFT);
 
-			JCheckBox fanCheck = new JCheckBox("enable");
+			JCheckBox fanCheck = new JCheckBox(enableString);
 			fanCheck.setName("fan-check");
 			fanCheck.addItemListener(this);
 
@@ -803,13 +815,22 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 
 		// valve controls
 		if (t.hasValve()) {
-			JLabel valveLabel = new JLabel("Valve");
+			String valveString = "Valve";
+			String enableString = "open";
+
+			Element xml = findMappingNode(t.getXml(),"valve");
+			if (xml != null) {
+				valveString = xml.getAttribute("name");
+				enableString = xml.getAttribute("actuated");
+			}
+			
+			JLabel valveLabel = new JLabel(valveString);
 			valveLabel.setMinimumSize(labelMinimumSize);
 			valveLabel.setMaximumSize(labelMinimumSize);
 			valveLabel.setPreferredSize(labelMinimumSize);
 			valveLabel.setHorizontalAlignment(JLabel.LEFT);
 
-			JCheckBox valveCheck = new JCheckBox("open");
+			JCheckBox valveCheck = new JCheckBox(enableString);
 			valveCheck.setName("valve-check");
 			valveCheck.addItemListener(this);
 
@@ -851,6 +872,21 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		toolsPane.addTab(t.getName(), panel);
 	}
 
+	private Element findMappingNode(Node xml,String portName) {
+		// scan the remapping nodes.
+		NodeList children = xml.getChildNodes();
+		for (int j=0; j<children.getLength(); j++) {
+			Node child = children.item(j);
+			if (child.getNodeName().equals("remap")) {
+				Element e = (Element)child;
+				if (e.getAttribute("port").equals(portName)) {
+					return e;
+				}
+			}
+		}
+		return null;
+	}
+	
 	DecimalFormat positionFormatter = new DecimalFormat("###.#");
 
 	synchronized public void updateStatus() {

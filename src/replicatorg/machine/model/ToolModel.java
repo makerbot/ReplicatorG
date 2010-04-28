@@ -614,4 +614,11 @@ public class ToolModel
 	{
 		return hasCollet;
 	}
+	
+	/**
+	 * Retrieve XML node. A temporary hack until we have more robust tool models.
+	 */
+	public Node getXml() {
+		return xml;
+	}
 }
