@@ -1301,6 +1301,16 @@ public class Sanguino3GDriver extends SerialDriver
 		return buf;
 	}
 
+	private byte[] floatToLE(float f) {
+		byte buf[] = new byte[2];
+		double d = f;
+		double intPart = Math.floor(d);
+		double fracPart = Math.floor((d-intPart)*256.0);		
+		buf[0] = (byte)intPart;
+		buf[1] = (byte)fracPart;
+		return buf;
+	}
+
 	private byte[] intToLE(int s) {
 		return intToLE(s,4);
 	}
@@ -1431,6 +1441,12 @@ public class Sanguino3GDriver extends SerialDriver
 		/// Backoff trigger time, in ms: 2 bytes
 		final static int TRIGGER_MS = 0x000A;
 	};
+	
+	final static class PIDOffsets {
+		final static int P_TERM = 0x000C;
+		final static int I_TERM = 0x000E;
+		final static int D_TERM = 0x0010;
+	};
 
 	private int read16FromToolEEPROM(int offset, int defaultValue) {
 		byte r[] = readFromToolEEPROM(offset,2);
@@ -1438,7 +1454,13 @@ public class Sanguino3GDriver extends SerialDriver
 		if (val == 0x0ffff) return defaultValue;
 		return val;
 	}
-	
+
+	private float readFloat16FromToolEEPROM(int offset, float defaultValue) {
+		byte r[] = readFromToolEEPROM(offset,2);
+		if (r[0] == (byte)0xff && r[1] == (byte)0xff) return defaultValue;
+		return (float)r[0] + ((float)r[1])/256.0f;
+	}
+
 	public BackoffParameters getBackoffParameters() {
 		BackoffParameters bp = new BackoffParameters();
 		bp.forwardMs = read16FromToolEEPROM(ECBackoffOffsets.FORWARD_MS, 300);
@@ -1453,6 +1475,20 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToToolEEPROM(ECBackoffOffsets.STOP_MS,intToLE(bp.stopMs,2));
 		writeToToolEEPROM(ECBackoffOffsets.REVERSE_MS,intToLE(bp.reverseMs,2));
 		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2));
+	}
+
+	public PIDParameters getPIDParameters() {
+		PIDParameters pp = new PIDParameters();
+		pp.p = readFloat16FromToolEEPROM(PIDOffsets.P_TERM, 5.0f);
+		pp.i = readFloat16FromToolEEPROM(PIDOffsets.I_TERM, 0.1f);
+		pp.d = readFloat16FromToolEEPROM(PIDOffsets.D_TERM, 5.0f);
+		return pp;
+	}
+	
+	public void setPIDParameters(PIDParameters pp) {
+		writeToToolEEPROM(PIDOffsets.P_TERM,floatToLE(pp.p));
+		writeToToolEEPROM(PIDOffsets.I_TERM,floatToLE(pp.i));
+		writeToToolEEPROM(PIDOffsets.D_TERM,floatToLE(pp.d));
 	}
 
 	/** Reset to the factory state.  This ordinarily means writing 0xff over the

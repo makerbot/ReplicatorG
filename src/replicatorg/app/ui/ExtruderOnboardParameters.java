@@ -70,6 +70,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			p.commit();
 		}
 		backoffPanel.commit();
+		pidPanel.commit();
 		JOptionPane.showMessageDialog(this,
 				"Changes will not take effect until the extruder board is reset.  You can \n" +
 				"do this by turning your machine off and then on, or by disconnecting and \n" +
@@ -124,7 +125,45 @@ public class ExtruderOnboardParameters extends JFrame {
 	}
 
 	BackoffPanel backoffPanel;
+
+	private class PIDPanel extends JPanel {
+		private JTextField pField = new JTextField();
+		private JTextField iField = new JTextField();
+		private JTextField dField = new JTextField();
+		PIDPanel() {
+			setLayout(new MigLayout());
+			setBorder(BorderFactory.createTitledBorder("PID parameters"));
+			add(new JLabel("<html>These parameters determine the behavior of the PID controller " +
+					"that adjusts the temperature of the extruder.</html>"),
+					"span");
+			final int FIELD_WIDTH = 20;
+			pField.setColumns(FIELD_WIDTH);
+			iField.setColumns(FIELD_WIDTH);
+			dField.setColumns(FIELD_WIDTH);
+
+			add(new JLabel("P parameter"));
+			add(pField,"wrap");
+			add(new JLabel("I parameter"));
+			add(iField,"wrap");
+			add(new JLabel("D parameter"));
+			add(dField,"wrap");
+			OnboardParameters.PIDParameters pp = target.getPIDParameters();
+			pField.setText(Float.toString(pp.p));
+			iField.setText(Float.toString(pp.i));
+			dField.setText(Float.toString(pp.d));
+		}
+
+		public void commit() {
+			OnboardParameters.PIDParameters pp = new OnboardParameters.PIDParameters();
+			pp.p = Float.parseFloat(pField.getText());
+			pp.i = Float.parseFloat(iField.getText());
+			pp.d = Float.parseFloat(dField.getText());
+			target.setPIDParameters(pp);
+		}
+	}
 	
+	PIDPanel pidPanel;
+
 	private JPanel makeButtonPanel() {
 		JPanel panel = new JPanel(new MigLayout());
 		JButton commitButton = new JButton("Commit Changes");
@@ -160,6 +199,8 @@ public class ExtruderOnboardParameters extends JFrame {
 		}
 		backoffPanel = new BackoffPanel();
 		panel.add(backoffPanel);
+		pidPanel = new PIDPanel();
+		panel.add(pidPanel);
 		panel.add(makeButtonPanel());
 		add(panel);
 		pack();

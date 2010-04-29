@@ -55,6 +55,15 @@ public interface OnboardParameters {
 	BackoffParameters getBackoffParameters();
 	void setBackoffParameters(BackoffParameters params);
 	
+	class PIDParameters {
+		public float p;
+		public float i;
+		public float d;
+	}
+	
+	PIDParameters getPIDParameters();
+	void setPIDParameters(PIDParameters params);
+	
 	/** Reset the onboard parameters to the factory settings. */ 
 	void resetToFactory();
 }
