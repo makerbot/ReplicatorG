@@ -58,8 +58,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -73,6 +71,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import replicatorg.app.ui.MainWindow;
@@ -245,30 +244,31 @@ public class Base {
 		// use native popups so they don't look so crappy on osx
 		JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
-		// build the editor object
-		editor = new MainWindow();
-		// Get sizing preferences. This is an issue of contention; let's look at how
-		// other programs decide how to size themselves.
-		editor.restorePreferences();
-
-		UpdateChecker.checkLatestVersion(editor);
-
-		// add shutdown hook to store preferences
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			final private MainWindow w = editor; 
-			public void run() {
-				w.onShutdown();
-			}
+		SwingUtilities.invokeLater(new Runnable() {
+		    public void run() {
+				// build the editor object
+				editor = new MainWindow();
+				// Get sizing preferences. This is an issue of contention; let's look at how
+				// other programs decide how to size themselves.
+				editor.restorePreferences();
+				// add shutdown hook to store preferences
+				Runtime.getRuntime().addShutdownHook(new Thread() {
+					final private MainWindow w = editor; 
+					public void run() {
+						w.onShutdown();
+					}
+				});
+				// load up our default machine
+				String machineName = preferences.get("machine.name",null); 
+				if (machineName != null) {
+					editor.loadMachine(machineName);
+				}
+				// show the window
+				editor.setVisible(true);
+				UpdateChecker.checkLatestVersion(editor);
+		    }
 		});
-		// load up our default machine
-		String machineName = preferences.get("machine.name",null); 
-		if (machineName != null) {
-			editor.loadMachine(machineName);
-		}
 
-		editor.pack();
-		// show the window
-		editor.setVisible(true);
 	}
 
 	public enum Platform {

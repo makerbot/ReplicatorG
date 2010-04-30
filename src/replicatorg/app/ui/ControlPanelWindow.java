@@ -61,6 +61,7 @@ import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
@@ -1142,7 +1143,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		if (evt.getState().isBuilding() || !evt.getState().isConnected()) {
 			if (updateThread != null) { updateThread.interrupt(); }
 			if (pollThread != null) { pollThread.interrupt(); }
-			dispose();
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					dispose();
+				}
+			});
 		}
 	}
 

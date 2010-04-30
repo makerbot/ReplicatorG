@@ -10,6 +10,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
@@ -174,25 +175,38 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	}
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
-		updateMachineStatus(evt);
+		final MachineStateChangeEvent e = evt;
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				updateMachineStatus(e);
+			}
+		});
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
 		double proportion = (double)event.getLines()/(double)event.getTotalLines();
 		double remaining = event.getEstimated() * (1.0 - proportion);
-		String s = String.format(
+		final String s = String.format(
 				"Commands:  %1$7d / %2$7d  (%3$3.2f%%)   |   Elapsed:  %4$s  |  Estimated Remaining:  %5$s",
 				event.getLines(), event.getTotalLines(), 
 				Math.round(proportion*10000.0)/100.0,
 				EstimationDriver.getBuildTimeString(event.getElapsed(), true),
 				EstimationDriver.getBuildTimeString(remaining, true));
-		smallLabel.setText(s);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				smallLabel.setText(s);
+			}
+		});
 	}
 
 	public void toolStatusChanged(MachineToolStatusEvent event) {
 		currentTemperature = event.getTool().getCurrentTemperature();
 		if (currentTemperature != -1) {
-			tempLabel.setText(String.format("Temp: %1$3.1f\u00B0C", currentTemperature));
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					tempLabel.setText(String.format("Temp: %1$3.1f\u00B0C", currentTemperature));
+				}
+			});
 		}
 	}
 }

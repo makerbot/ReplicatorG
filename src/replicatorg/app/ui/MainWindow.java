@@ -327,6 +327,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		splitPane.setPreferredSize(new Dimension(400,500));
 		pane.add(splitPane);
 
+		pack();
+		
 		textarea.setTransferHandler(new TransferHandler() {
 			private static final long serialVersionUID = 2093323078348794384L;
 
@@ -392,37 +394,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		});
 	}
 
-	/**
-	 * Determine the window placement.  This is essentially rotten code; we now allow the native
-	 * windowing system to determine where to place the window. 
-	 */
-	public void placeWindow() {
-		// figure out window placement
-		Base.logger.fine("Restoring window preferences");
-
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-
-		int x = Base.preferences.getInt("last.window.x",-1); 
-		int y = Base.preferences.getInt("last.window.y",-1); 
-		int w = Base.preferences.getInt("last.window.width",500); 
-		int h = Base.preferences.getInt("last.window.height",600);
-
-		// * Validate w, h
-		// ** Minimum size 300x200
-		if (w != -1 && w < 300) { w = 300; } // TODO: magic numbers to constants
-		if (h != -1 && h < 200) { h = 200; }
-		// ** Maximum size is screen size
-		if (w > screen.width) { w = screen.width; }
-		if (h > screen.height) { h = screen.height; }
-		// ** Make sure we don't overhang
-		if (x != -1 && x+w > screen.width) { x = -1; }
-		if (y != -1 && y+h > screen.height) { y = -1; }
-		// ** Validate invalid x, y
-		if (x == -1) { x = (screen.width-w)/2; }
-		if (y == -1) { y = (screen.height-h)/2; }
-		setBounds(x,y,w,h); 
-	}
-	
 	// ...................................................................
 
 	/**
@@ -447,14 +418,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 		}
 
-		// location for the console/editor area divider
-		int location = Base.preferences.getInt("last.divider.location",-1);
-		if (location != -1) {
-			splitPane.setDividerLocation(location);
-		} else {
-			splitPane.setDividerLocation(0.7);
-		}
-		
 		// read the preferences that are settable in the preferences window
 		applyPreferences();
 	}
@@ -492,7 +455,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		// apply changes to the font size for the editor
 		// TextAreaPainter painter = textarea.getPainter();
-		painter.setFont(Base.getFontPref("editor.font","Monospaced,plain,12"));
+		painter.setFont(Base.getFontPref("editor.font","Monospaced,plain,10"));
 		// Font font = painter.getFont();
 		// textarea.getPainter().setFont(new Font("Courier", Font.PLAIN, 36));
 
@@ -1521,7 +1484,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			if (evt.getState().isReady() ||
 				evt.getState().getState() == MachineState.State.STOPPING) {
 				final MachineState endState = evt.getState();
-                EventQueue.invokeLater(new Runnable() {
+                SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                     	if (endState.isReady()) {
                     		notifyBuildComplete(buildStart, new Date());

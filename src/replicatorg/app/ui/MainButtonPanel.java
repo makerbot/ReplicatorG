@@ -39,6 +39,7 @@ import java.awt.image.RescaleOp;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -231,6 +232,15 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	}
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
+		final MachineStateChangeEvent e = evt;
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				machineStateChangedInternal(e);
+			}
+		});
+	}
+
+	public void machineStateChangedInternal(final MachineStateChangeEvent evt) {
 		MachineState s = evt.getState();
 		boolean ready = s.isReady();
 		boolean building = s.isBuilding();
