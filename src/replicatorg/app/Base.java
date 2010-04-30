@@ -87,6 +87,12 @@ import com.apple.mrj.MRJOpenDocumentHandler;
  * that comes from that.
  */
 public class Base {
+	public enum InitialOpenBehavior {
+		OPEN_LAST,
+		OPEN_NEW,
+		OPEN_SPECIFIC_FILE
+	};
+	
 	/**
 	 * The version number of this edition of replicatorG.
 	 */

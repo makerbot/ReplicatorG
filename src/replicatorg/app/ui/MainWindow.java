@@ -99,6 +99,7 @@ import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.app.MachineFactory;
 import replicatorg.app.Serial;
+import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
@@ -389,18 +390,25 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * launched.
 	 */
 	public void restorePreferences() {
-		// last sketch that was in use, or used to launch the app
 		if (Base.openedAtStartup != null) {
 			handleOpen2(Base.openedAtStartup);
 		} else {
-			String sketchPath = Base.preferences.get("last.sketch.path",null);
-			// Sketch sketchTemp = new Sketch(sketchPath);
-
-			if ((sketchPath != null) && (new File(sketchPath)).exists()) {
-				// don't check modified because nothing is open yet
-				handleOpen2(sketchPath);
+			// last sketch that was in use, or used to launch the app
+			final String prefName = "replicatorg.initialopenbehavior";
+			int ordinal = Base.preferences.getInt(prefName, InitialOpenBehavior.OPEN_LAST.ordinal());
+			final InitialOpenBehavior openBehavior = InitialOpenBehavior.values()[ordinal];
+			if (openBehavior == InitialOpenBehavior.OPEN_NEW) {
+				handleNew2(true);				
 			} else {
-				handleNew2(true);
+				String sketchPath = Base.preferences.get("last.sketch.path",null);
+				// Sketch sketchTemp = new Sketch(sketchPath);
+
+				if ((sketchPath != null) && (new File(sketchPath)).exists()) {
+					// don't check modified because nothing is open yet
+					handleOpen2(sketchPath);
+				} else {
+					handleNew2(true);
+				}
 			}
 		}
 

@@ -14,18 +14,22 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.uploader.FirmwareUploader;
 
 /**
@@ -61,6 +65,37 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		});
 		return cb;
 	}
+
+	private void addInitialFilePrefs(Container c) {
+		final String prefName = "replicatorg.initialopenbehavior";
+		int defaultBehavior = InitialOpenBehavior.OPEN_LAST.ordinal();
+		int ordinal = Base.preferences.getInt(prefName, defaultBehavior);
+		if (ordinal >= InitialOpenBehavior.values().length) {
+			ordinal = defaultBehavior;
+		}
+		final InitialOpenBehavior openBehavior = InitialOpenBehavior.values()[ordinal];
+		ButtonGroup bg = new ButtonGroup();
+		class RadioAction extends AbstractAction {
+			private InitialOpenBehavior behavior;
+		    public RadioAction(String text, InitialOpenBehavior behavior) {
+		    	super(text);
+		    	this.behavior = behavior;
+		    	if (behavior == openBehavior) {
+		    		putValue(SELECTED_KEY, new Boolean(true));
+		    	}
+		    }
+		    public void actionPerformed(ActionEvent e) {
+		    	Base.preferences.putInt(prefName,behavior.ordinal());
+		    }
+		}
+		JRadioButton b;
+		b = new JRadioButton(new RadioAction("Open last file",InitialOpenBehavior.OPEN_LAST));
+		bg.add(b);
+		c.add(b,"wrap");
+		b = new JRadioButton(new RadioAction("Open new file",InitialOpenBehavior.OPEN_NEW));
+		bg.add(b);
+		c.add(b,"wrap");
+	}
 	
 	public PreferencesWindow() {
 		super("Preferences");
@@ -80,12 +115,13 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp",false);
 		addCheckboxForPref(content,"Honor serial port selection in machines.xml","serial.use_machines",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
-
 		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",true);
 
 		content.add(new JLabel("Firmware update URL: "));
 		firmwareUpdateUrlField = new JTextField(40);
 		content.add(firmwareUpdateUrlField,"wrap");
+
+		addInitialFilePrefs(content);
 
 		JButton delPrefs = new JButton("Restore all defaults (includes driver choice, etc.)");
 		content.add(delPrefs,"wrap");
