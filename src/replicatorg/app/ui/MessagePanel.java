@@ -139,9 +139,18 @@ public class MessagePanel extends JScrollPane {
 				AttributeSet attrs = infoStyle;
 				if (record.getLevel() == Level.WARNING) { attrs = warnStyle; }
 				if (record.getLevel() == Level.SEVERE) { attrs = errStyle; }
-				message(record.getMessage(),
-						attrs,
-						true);
+				if (null != record.getMessage()) {
+					message(record.getMessage(), attrs, true);
+				} else if (null != record.getThrown()) {
+					Throwable t = record.getThrown();
+					if (null != t.getLocalizedMessage()) {
+						message(t.getLocalizedMessage(), attrs, true);
+					} else {
+						message(t.toString(), attrs, true);
+					}
+				} else {
+					message("<empty log message>", attrs, true);
+				}
 			}
 			public void flush() {
 			}

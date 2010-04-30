@@ -54,6 +54,7 @@ import java.awt.event.WindowEvent;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterJob;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -149,12 +150,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public Document dom;
 
 	MachineController machine;
-
-	// otherwise, if the window is resized with the message label
-	// set to blank, it's preferredSize() will be fukered
-	static public final String EMPTY = "                                                                     "
-			+ "                                                                     "
-			+ "                                                                     ";
 
 	static public final KeyStroke WINDOW_CLOSE_KEYSTROKE = KeyStroke
 			.getKeyStroke('W', Toolkit.getDefaultToolkit()
@@ -359,17 +354,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 								// see if this is a .gcode file to be opened
 								String filename = file.getName();
 								if (filename.endsWith(".gcode")) {
-									String name = filename.substring(0,
-											filename.length() - 6);
-									File parent = file.getParentFile();
-									if (name.equals(parent.getName())) {
-										handleOpenFile(file);
-										return true;
-									}
-								}
-
-								if (sketch.addFile(file)) {
-									successful++;
+									handleOpenFile(file);
+									return true;
 								}
 							}
 						}
@@ -1619,17 +1605,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	/**
-	 * Stop the applet but don't kill its window.
+	 * Stop the build.
 	 */
 	public void doStop() {
 		if (machine != null) {
 			machine.stop();
 		}
-
-		message(EMPTY);
-
-		//buttons.clear();
-
 		building = false;
 		simulating = false;
 	}
@@ -1879,6 +1860,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// haven't run across a case where i can verify that this works
 		// because open is usually very fast.
 //		buttons.activate(MainButtonPanel.OPEN);
+		Base.logger.info("Handle open");
+		System.err.println("* Handle open");
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				String path = ipath;
@@ -1887,6 +1870,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					if (path == null)
 						return;
 				}
+				Base.logger.info("Loading "+path);
+				System.err.println("* Loading "+path);
 				doClose();
 				handleOpenPath = path;
 				checkModified(HANDLE_OPEN);
@@ -1949,86 +1934,57 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		saveMRUPrefs();
 	}
 
-	// there is no handleSave1 since there's never a need to prompt
 	/**
 	 * Actually handle the save command. If 'force' is set to false, this will
 	 * happen in another thread so that the message area will update and the
 	 * save button will stay highlighted while the save is happening. If 'force'
 	 * is true, then it will happen immediately. This is used during a quit,
-	 * because invokeLater() won't run properly while a quit is happening. This
-	 * fixes <A HREF="http://dev.processing.org/bugs/show_bug.cgi?id=276">Bug
-	 * 276</A>.
+	 * because invokeLater() won't run properly while a quit is happening.
 	 */
 	public void handleSave(boolean force) {
-		doStop();
-//		buttons.activate(MainButtonPanel.SAVE);
-
-		if (force) {
-			handleSave2();
-		} else {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					handleSave2();
+		Runnable saveWork = new Runnable() {
+			public void run() {
+				Base.logger.info("Saving...");
+				try {
+					if (sketch.save()) {
+						Base.logger.info("Save operation complete.");
+					} else {
+						Base.logger.info("Save operation aborted.");
+					}
+				} catch (IOException e) {
+					// show the error as a message in the window
+					error(e);
+					// zero out the current action,
+					// so that checkModified2 will just do nothing
+					checkModifiedMode = 0;
+					// this is used when another operation calls a save
 				}
-			});
-		}
-	}
-
-	public void handleSave2() {
-		message("Saving...");
-		try {
-			if (sketch.save()) {
-				message("Done Saving.");
-			} else {
-				message(EMPTY);
 			}
-			// rebuild sketch menu in case a save-as was forced
-			// Disabling this for 0125, instead rebuild the menu inside
-			// the Save As method of the Sketch object, since that's the
-			// only one who knows whether something was renamed.
-			// sketchbook.rebuildMenus();
-			// sketchbook.rebuildMenusAsync();
-
-		} catch (Exception e) {
-			// show the error as a message in the window
-			error(e);
-
-			// zero out the current action,
-			// so that checkModified2 will just do nothing
-			checkModifiedMode = 0;
-			// this is used when another operation calls a save
-		}
-//		buttons.clear();
+		};		
+		if (force) { saveWork.run(); }
+		else { SwingUtilities.invokeLater(saveWork); }
 	}
 
 	public void handleSaveAs() {
-		doStop();
-//		buttons.activate(MainButtonPanel.SAVE);
-
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				message("Saving...");
+				// TODO: lock sketch?
+				Base.logger.info("Saving...");
 				try {
 					if (sketch.saveAs()) {
-						message("Done Saving.");
-						// Disabling this for 0125, instead rebuild the menu
-						// inside
-						// the Save As method of the Sketch object, since that's
-						// the
-						// only one who knows whether something was renamed.
-						// sketchbook.rebuildMenusAsync();
+						Base.logger.info("Save operation complete.");
+						// TODO: Add to MRU?
 					} else {
-						message("Save Cancelled.");
+						Base.logger.info("Save operation aborted.");
 					}
-				} catch (Exception e) {
+				} catch (IOException e) {
 					// show the error as a message in the window
 					error(e);
 				}
-//				buttons.clear();
 			}
 		});
 	}
-
+	
 	/**
 	 * Quit, but first ask user if it's ok. Also store preferences to disk just
 	 * in case they want to quit. Final exit() happens in MainWindow since it has

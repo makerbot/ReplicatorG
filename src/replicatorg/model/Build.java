@@ -26,12 +26,11 @@
 package replicatorg.model;
 
 import java.awt.FileDialog;
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Vector;
+
+import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
@@ -71,13 +70,13 @@ public class Build {
 	 */
 	public BuildModel objectModel = null;
 	/**
-	 * The current gcode interpretation of the model.
+	 * The gcode interpretation of the model.
 	 */
-	public BuildCode currentCode;
+	public BuildCode code;
 
 	int currentIndex;
 
-	public Vector<BuildCode> code = new Vector<BuildCode>();
+	//public Vector<BuildCode> code = new Vector<BuildCode>();
 
 	Hashtable zipFileContents;
 
@@ -94,7 +93,6 @@ public class Build {
 	 */
 	public Build(MainWindow editor, String path) throws IOException {
 		this.editor = editor;
-
 		File mainFile = new File(path);
 		// System.out.println("main file is " + mainFile);
 
@@ -134,320 +132,47 @@ public class Build {
 	 * load happens each time "run" is hit.
 	 */
 	public void load() {
-		// get list of files in the sketch folder
-		String list[] = { mainFilename }; //folder.list();
-
-		int codeCount = 0;
-		for (int i = 0; i < list.length; i++) {
-			if (list[i].endsWith(".gcode"))
-				codeCount++;
+		if (mainFilename.endsWith(".gcode")) {
+			code = new BuildCode(mainFilename.substring(0, mainFilename.length() - 6), new File(folder, mainFilename));
+			editor.setCode(code);
+			editor.getHeader().rebuild();
 		}
-
-		for (int i = 0; i < list.length; i++) {
-			if (list[i].endsWith(".gcode")) {
-				code.add(new BuildCode(list[i].substring(0,
-						list[i].length() - 6), new File(folder, list[i])));
-
-			}
-		}
-
-		// sort the entries at the top
-		sortCode();
-
-		// set the main file to be the current tab
-		setCurrent(0);
 	}
-
-	protected void insertCode(BuildCode newCode) {
-		// make sure the user didn't hide the sketch folder
-		ensureExistence();
-
-		code.add(newCode);
-	}
-
-	// NB: I just removed a hand-coded bubble sort here.  This is pretty much the equivalent
-	// of opening up a jet engine and finding a wooden gear.
-	protected void sortCode() {
-		Collections.sort(code);
-	}
-
-	boolean renamingCode;
-
-	public void newCode() {
-		// make sure the user didn't hide the sketch folder
-		ensureExistence();
-
-		// if read-only, give an error
-		if (isReadOnly()) {
-			// if the files are read-only, need to first do a "save as".
-			Base
-					.showMessage(
-							"Sketch is Read-Only",
-							"Some files are marked \"read-only\", so you'll\n"
-									+ "need to re-save the sketch in another location,\n"
-									+ "and try again.");
-			return;
-		}
-
-		renamingCode = false;
-		//editor.status.edit("Name for new file:", "");
-	}
-
-	public void renameCode() {
-		// make sure the user didn't hide the sketch folder
-		ensureExistence();
-
-		// if read-only, give an error
-		if (isReadOnly()) {
-			// if the files are read-only, need to first do a "save as".
-			Base
-					.showMessage(
-							"Sketch is Read-Only",
-							"Some files are marked \"read-only\", so you'll\n"
-									+ "need to re-save the sketch in another location,\n"
-									+ "and try again.");
-			return;
-		}
-
-		// ask for new name of file (internal to window)
-		// TODO maybe just popup a text area?
-		renamingCode = true;
-		//editor.status.edit(prompt, oldName);
-	}
-
-	/**
-	 * This is called upon return from entering a new file name. (that is, from
-	 * either newCode or renameCode after the prompt) This code is almost
-	 * identical for both the newCode and renameCode cases, so they're kept
-	 * merged except for right in the middle where they diverge.
-	 */
-	public void nameCode(String newName) {
-		// make sure the user didn't hide the sketch folder
-		ensureExistence();
-
-		// if renaming to the same thing as before, just ignore.
-		// also ignoring case here, because i don't want to write
-		// a bunch of special stuff for each platform
-		// (osx is case insensitive but preserving, windows insensitive,
-		// *nix is sensitive and preserving.. argh)
-		if (renamingCode && newName.equalsIgnoreCase(currentCode.name)) {
-			// exit quietly for the 'rename' case.
-			// if it's a 'new' then an error will occur down below
-			return;
-		}
-
-		// don't allow blank names
-		if (newName.trim().equals("")) {
-			return;
-		}
-
-		if (newName.trim().equals(".gcode")) {
-			return;
-		}
-
-		String newFilename = null;
-
-		// separate into newName (no extension) and newFilename (with ext)
-		// add .gcode to file if it has no extension
-		if (newName.endsWith(".gcode")) {
-			newFilename = newName;
-			newName = newName.substring(0, newName.length() - 6);
-
-		} else {
-			newFilename = newName + ".gcode";
-		}
-
-		// dots are allowed for the .gcode and .java, but not in the name
-		// make sure the user didn't name things poo.time.gcode
-		// or something like that (nothing against poo time)
-		if (newName.indexOf('.') != -1) {
-			newFilename = newName + ".gcode";
-		}
-
-		// create the new file, new SketchCode object and load it
-		File newFile = new File(folder, newFilename);
-		if (newFile.exists()) { // yay! users will try anything
-			Base.showMessage("Nope", "A file named \"" + newFile
-					+ "\" already exists\n" + "in \""
-					+ folder.getAbsolutePath() + "\"");
-			return;
-		}
-
-		File newFileHidden = new File(folder, newFilename + ".x");
-		if (newFileHidden.exists()) {
-			// don't let them get away with it if they try to create something
-			// with the same name as something hidden
-			Base.showMessage("No Way",
-					"A hidden tab with the same name already exists.\n"
-							+ "Use \"Unhide\" to bring it back.");
-			return;
-		}
-
-		if (renamingCode) {
-			if (currentIndex == 0) {
-				// get the new folder name/location
-				File newFolder = new File(folder.getParentFile(), newName);
-				if (newFolder.exists()) {
-					Base.showWarning("Cannot Rename",
-							"Sorry, a sketch (or folder) named " + "\""
-									+ newName + "\" already exists.", null);
-					return;
-				}
-
-				// unfortunately this can't be a "save as" because that
-				// only copies the sketch files and the data folder
-				// however this *will* first save the sketch, then rename
-
-				// first get the contents of the editor text area
-				if (currentCode.modified) {
-					currentCode.program = editor.getText();
-					try {
-						// save this new SketchCode
-						currentCode.save();
-					} catch (Exception e) {
-						Base.showWarning("Error",
-								"Could not rename the sketch. (0)", e);
-						return;
-					}
-				}
-
-				if (!currentCode.file.renameTo(newFile)) {
-					Base.showWarning("Error", "Could not rename \""
-							+ currentCode.file.getName() + "\" to \""
-							+ newFile.getName() + "\"", null);
-					return;
-				}
-
-				// save each of the other tabs because this is gonna be
-				// re-opened
-				try {
-					for (BuildCode c : code) {
-						c.save();
-					}
-				} catch (Exception e) {
-					Base.showWarning("Error",
-							"Could not rename the sketch. (1)", e);
-					return;
-				}
-
-				// now rename the sketch folder and re-open
-				boolean success = folder.renameTo(newFolder);
-				if (!success) {
-					Base.showWarning("Error",
-							"Could not rename the sketch. (2)", null);
-					return;
-				}
-				// if successful, set base properties for the sketch
-
-				File mainFile = new File(newFolder, newName + ".gcode");
-				mainFilename = mainFile.getAbsolutePath();
-
-				// having saved everything and renamed the folder and the main
-				// .gcode,
-				// use the editor to re-open the sketch to re-init state
-				// (unfortunately this will kill positions for carets etc)
-				editor.handleOpenUnchecked(mainFilename, currentIndex,
-						editor.textarea.getSelectionStart(), editor.textarea
-								.getSelectionEnd(), editor.textarea
-								.getScrollPosition());
-
-				// get the changes into the sketchbook menu
-				// (re-enabled in 0115 to fix bug #332)
-				//editor.sketchbook.rebuildMenus();
-
-			} else { // else if something besides code[0]
-				if (!currentCode.file.renameTo(newFile)) {
-					Base.showWarning("Error", "Could not rename \""
-							+ currentCode.file.getName() + "\" to \""
-							+ newFile.getName() + "\"", null);
-					return;
-				}
-
-				// just reopen the class itself
-				currentCode.name = newName;
-				currentCode.file = newFile;
-			}
-
-		} else { // creating a new file
-			try {
-				newFile.createNewFile(); // TODO returns a boolean
-			} catch (IOException e) {
-				Base.showWarning("Error", "Could not create the file \""
-						+ newFile + "\"\n" + "in \"" + folder.getAbsolutePath()
-						+ "\"", e);
-				return;
-			}
-			BuildCode newCode = new BuildCode(newName, newFile);
-			insertCode(newCode);
-		}
-
-		// sort the entries
-		sortCode();
-
-		// set the new guy as current
-		setCurrent(newName + ".gcode");
-
-		// update the tabs
-		// editor.header.repaint();
-
-		editor.getHeader().rebuild();
-
-		// force the update on the mac?
-		Toolkit.getDefaultToolkit().sync();
-		// editor.header.getToolkit().sync();
-	}
-
 
 	/**
 	 * Sets the modified value for the code in the frontmost tab.
 	 */
 	public void setModified(boolean state) {
-		currentCode.modified = state;
+		code.modified = state;
 		calcModified();
 	}
 
 	public void calcModified() {
-		modified = false;
-		for (BuildCode c : code) {
-			if (c.modified) {
-				modified = true;
-				break;
+		modified = code.modified;
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				editor.getHeader().repaint();
 			}
-		}
-		editor.getHeader().repaint();
+		});
 	}
 
 	/**
 	 * Save all code in the current sketch.
 	 */
 	public boolean save() throws IOException {
-		// make sure the user didn't hide the sketch folder
-		ensureExistence();
-
-		// first get the contents of the editor text area
-		if (currentCode.modified) {
-			currentCode.program = editor.getText();
-		}
-
-		// don't do anything if not actually modified
-		// if (!modified) return false;
-
+		if (!code.modified) { return true; }
+		code.program = editor.getText();
 		if (isReadOnly()) {
 			// if the files are read-only, need to first do a "save as".
-			Base
-					.showMessage(
-							"Sketch is read-only",
-							"Some files are marked \"read-only\", so you'll\n"
-									+ "need to re-save this sketch to another location.");
+			Base.showMessage(
+					"File is read-only",
+					"This file is marked \"read-only\", so you'll\n"
+					+ "need to re-save this file to another location.");
 			// if the user cancels, give up on the save()
 			if (!saveAs())
 				return false;
 		}
-
-		for (BuildCode c:code) {
-			if (c.modified)
-				c.save();
-		}
+		code.save();
 		calcModified();
 		return true;
 	}
@@ -467,14 +192,9 @@ public class Build {
 		// get new name for folder
 		FileDialog fd = new FileDialog(editor, "Save file as...",
 				FileDialog.SAVE);
-		if (isReadOnly()) {
-			// default to the sketchbook folder
-			fd.setDirectory(Base.preferences.get("sketchbook.path",null));
-		} else {
-			// default to the parent folder of where this was
-			fd.setDirectory(folder.getParent());
-		}
-		fd.setFile(folder.getName());
+		// default to the folder that this file is in
+		fd.setDirectory(folder.getCanonicalPath());
+		fd.setFile(mainFilename);
 
 		fd.setVisible(true);
 		String newParentDir = fd.getDirectory();
@@ -489,24 +209,22 @@ public class Build {
 
 		// grab the contents of the current tab before saving
 		// first get the contents of the editor text area
-		if (currentCode.modified) {
-			currentCode.program = editor.getText();
+		if (code.modified) {
+			code.program = editor.getText();
 		}
 
-		for (BuildCode c: code) {
-			File newFile = new File(newFolder, c.file.getName());
-			c.saveAs(newFile);
-		}
+		File newFile = new File(newFolder, newName);
+		code.saveAs(newFile);
+		editor.getHeader().rebuild();
+		calcModified();
 
-		editor
-				.handleOpenUnchecked(code.get(0).file.getPath(), currentIndex,
-						editor.textarea.getSelectionStart(), editor.textarea
-								.getSelectionEnd(), editor.textarea
-								.getScrollPosition());
+//		editor.handleOpenUnchecked(code.file.getPath(), 
+//				currentIndex,
+//				editor.textarea.getSelectionStart(), 
+//				editor.textarea.getSelectionEnd(), 
+//				editor.textarea.getScrollPosition());
 
-		// Name changed, rebuild the sketch menus
-		//editor.sketchbook.rebuildMenusAsync();
-
+		// TODO: update MRU?
 		// let MainWindow know that the save was successful
 		return true;
 	}
@@ -551,60 +269,6 @@ public class Build {
 //		addFile(sourceFile);
 //	}
 
-	/**
-	 * Add a file to the sketch. <p/> .gcode files will be added to the sketch
-	 * folder. <br/> All other files will be added to the "data" folder. <p/> If
-	 * they don't exist already, the "code" or "data" folder will be created.
-	 * <p/>
-	 * 
-	 * @return true if successful.
-	 */
-	public boolean addFile(File sourceFile) {
-		String filename = sourceFile.getName();
-		File destFile = null;
-		boolean addingCode = false;
-
-		destFile = new File(this.folder, filename);
-		addingCode = true;
-
-		// make sure they aren't the same file
-		if (!addingCode && sourceFile.equals(destFile)) {
-			Base.showWarning("You can't fool me",
-					"This file has already been copied to the\n"
-							+ "location where you're trying to add it.\n"
-							+ "I ain't not doin nuthin'.", null);
-			return false;
-		}
-
-		// in case the user is "adding" the code in an attempt
-		// to update the sketch's tabs
-		if (!sourceFile.equals(destFile)) {
-			try {
-				Base.copyFile(sourceFile, destFile);
-
-			} catch (IOException e) {
-				Base.showWarning("Error adding file", "Could not add '"
-						+ filename + "' to the sketch.", e);
-				return false;
-			}
-		}
-
-		// make the tabs update after this guy is added
-		if (addingCode) {
-			String newName = destFile.getName();
-			if (newName.toLowerCase().endsWith(".gcode")) {
-				newName = newName.substring(0, newName.length() - 6);
-			}
-
-			// see also "nameCode" for identical situation
-			BuildCode newCode = new BuildCode(newName, destFile);
-			insertCode(newCode);
-			sortCode();
-			setCurrent(newName);
-			editor.getHeader().repaint();
-		}
-		return true;
-	}
 
 	/**
 	 * Change what file is currently being edited.
@@ -616,57 +280,11 @@ public class Build {
 	 */
 	public void setCurrent(int which) {
 		// if current is null, then this is the first setCurrent(0)
-		if ((currentIndex == which) && (currentCode != null)) {
+		if ((currentIndex == which) && (code != null)) {
 			return;
 		}
-
-		// get the text currently being edited
-		if (currentCode != null) {
-			currentCode.program = editor.getText();
-			currentCode.selectionStart = editor.textarea.getSelectionStart();
-			currentCode.selectionStop = editor.textarea.getSelectionEnd();
-			currentCode.scrollPosition = editor.textarea.getScrollPosition();
-		}
-
-		currentCode = code.get(which);
-		currentIndex = which;
-		editor.setCode(currentCode);
-		// editor.setDocument(current.document,
-		// current.selectionStart, current.selectionStop,
-		// current.scrollPosition, current.undo);
-
-		// set to the text for this file
-		// 'true' means to wipe out the undo buffer
-		// (so they don't undo back to the other file.. whups!)
-		/*
-		 * editor.setText(current.program, current.selectionStart,
-		 * current.selectionStop, current.undo);
-		 */
-
-		// set stored caret and scroll positions
-		// editor.textarea.setScrollPosition(current.scrollPosition);
-		// editor.textarea.select(current.selectionStart,
-		// current.selectionStop);
-		// editor.textarea.setSelectionStart(current.selectionStart);
-		// editor.textarea.setSelectionEnd(current.selectionStop);
+		editor.setCode(code);
 		editor.getHeader().rebuild();
-	}
-
-	/**
-	 * Internal helper function to set the current tab based on a name (used by
-	 * codeNew and codeRename).
-	 */
-	public void setCurrent(String findName) {
-		String name = findName.substring(0,
-				(findName.indexOf(".") == -1 ? findName.length() : findName
-						.indexOf(".")));
-
-		for (int i = 0; i < code.size(); i++) {
-			if (name.equals(code.get(i).name)) {
-				setCurrent(i);
-				return;
-			}
-		}
 	}
 
 	/**
@@ -683,10 +301,7 @@ public class Build {
 	 * Run the GCode.
 	 */
 	public boolean handleRun() {
-		// make sure the user didn't hide the sketch folder
-		ensureExistence();
-
-		currentCode.program = editor.getText();
+		code.program = editor.getText();
 
 		// TODO record history here
 		// current.history.record(program, SketchHistory.RUN);
@@ -754,36 +369,7 @@ public class Build {
 		return new String(p);
 	}
 
-	/**
-	 * Make sure the sketch hasn't been moved or deleted by some nefarious user.
-	 * If they did, try to re-create it and save. Only checks to see if the main
-	 * folder is still around, but not its contents.
-	 */
-	protected void ensureExistence() {
-		if (folder.exists())
-			return;
 
-		Base.showWarning("Sketch Disappeared",
-				"The sketch folder has disappeared.\n "
-						+ "Will attempt to re-save in the same location,\n"
-						+ "but anything besides the code will be lost.", null);
-		try {
-			folder.mkdirs();
-			modified = true;
-
-			for (BuildCode c:code) {
-				c.save(); // this will force a save
-			}
-			calcModified();
-
-		} catch (Exception e) {
-			Base.showWarning("Could not re-save sketch",
-					"Could not properly re-save the sketch. "
-							+ "You may be in trouble at this point,\n"
-							+ "and it might be time to copy and paste "
-							+ "your code to another text editor.", e);
-		}
-	}
 
 	/**
 	 * Returns true if this is a read-only sketch. Used for the examples
@@ -792,31 +378,16 @@ public class Build {
 	 */
 	public boolean isReadOnly() {
 		// check to see if each modified code file can be written to
-		for (BuildCode c:code) {
-			if (c.modified && !c.file.canWrite()
-					&& c.file.exists()) {
-				// System.err.println("found a read-only file " + code[i].file);
-				return true;
-			}
-		}
-		return false;
+		return (code.modified && 
+				!code.file.canWrite() &&
+				code.file.exists());
 	}
 
 	/**
 	 * Returns path to the main .gcode file for this sketch.
 	 */
 	public String getMainFilePath() {
-		return code.get(0).file.getAbsolutePath();
+		return code.file.getAbsolutePath();
 	}
 
-	public void prevCode() {
-		int prev = currentIndex - 1;
-		if (prev < 0)
-			prev = code.size() - 1;
-		setCurrent(prev);
-	}
-
-	public void nextCode() {
-		setCurrent((currentIndex + 1) % code.size());
-	}
 }

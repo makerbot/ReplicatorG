@@ -99,7 +99,16 @@ public class BuildCode implements Comparable<BuildCode> {
 	 * Save this file to another location, used by Sketch.saveAs()
 	 */
 	public void saveAs(File newFile) throws IOException {
+		Base.logger.info("Saving as "+newFile.getCanonicalPath());
 		Base.saveFile(program, newFile);
+		file = newFile;
+		name = file.getName();
+		// we're still truncating the suffix, for now.
+		int lastIdx = name.lastIndexOf('.');
+		if (lastIdx > 0) {
+			name = name.substring(0, lastIdx);
+		}
+		modified = false;
 	}
 
 	public int compareTo(BuildCode other) {

@@ -123,7 +123,7 @@ public class EditorHeader extends JComponent {
 			public void mousePressed(MouseEvent e) {
 				int x = e.getX();
 
-				for (int i = 0; i < editor.sketch.code.size(); i++) {
+				for (int i = 0; i < 1; i++) {
 					if ((x > tabLeft[i]) && (x < tabRight[i])) {
 						editor.sketch.setCurrent(i);
 						repaint();
@@ -182,16 +182,17 @@ public class EditorHeader extends JComponent {
 		g.setColor(backgroundColor);
 		g.fillRect(0, 0, imageW, imageH);
 
-		if ((tabLeft == null) || (tabLeft.length < sketch.code.size())) {
-			tabLeft = new int[sketch.code.size()];
-			tabRight = new int[sketch.code.size()];
+		int tabCount = sketch.code==null?0:1;
+		if ((tabLeft == null) || (tabLeft.length < tabCount)) {
+			tabLeft = new int[tabCount];
+			tabRight = new int[tabCount];
 		}
 
 		// int x = 0; //Preferences.GUI_SMALL;
 		// int x = (Base.platform == Base.MACOSX) ? 0 : 1;
 		int x = 6; // offset from left edge of the component
-		for (int i = 0; i < sketch.code.size(); i++) {
-			BuildCode code = sketch.code.get(i);
+		for (int i = 0; i < tabCount; i++) {
+			BuildCode code = sketch.code;
 
 			String codeName = code.name;
 
@@ -206,7 +207,7 @@ public class EditorHeader extends JComponent {
 			int pieceCount = 2 + (textWidth / PIECE_WIDTH);
 			int pieceWidth = pieceCount * PIECE_WIDTH;
 
-			int state = (code == sketch.currentCode) ? SELECTED : UNSELECTED;
+			int state = (code == sketch.code) ? SELECTED : UNSELECTED;
 			g.drawImage(pieces[state][LEFT], x, 0, null);
 			x += PIECE_WIDTH;
 
