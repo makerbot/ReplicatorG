@@ -855,6 +855,7 @@ public class Base {
 	 * Spew the contents of a String object out to a file.
 	 */
 	static public void saveFile(String str, File file) throws IOException {
+		Base.logger.info("Saving as "+file.getCanonicalPath());
 
 		ByteArrayInputStream bis = new ByteArrayInputStream(str.getBytes());
 		InputStreamReader isr = new InputStreamReader(bis);

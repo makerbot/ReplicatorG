@@ -28,8 +28,6 @@ package replicatorg.model;
 import java.awt.FileDialog;
 import java.io.File;
 import java.io.IOException;
-import java.util.Hashtable;
-
 import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
@@ -76,45 +74,37 @@ public class Build {
 
 	int currentIndex;
 
-	//public Vector<BuildCode> code = new Vector<BuildCode>();
-
-	Hashtable zipFileContents;
-
-	// all these set each time build() is called
-	String mainClassName;
-
-	String classPath;
-
-	boolean externalRuntime;
-
 	/**
 	 * path is location of the main .gcode file, because this is also simplest
 	 * to use when opening the file from the finder/explorer.
 	 */
 	public Build(MainWindow editor, String path) throws IOException {
 		this.editor = editor;
-		File mainFile = new File(path);
-		// System.out.println("main file is " + mainFile);
-
-		mainFilename = mainFile.getName();
-		// System.out.println("main file is " + mainFilename);
-
-		// get the name of the sketch by chopping .gcode
-		// off of the main file name
-		if (mainFilename.endsWith(".gcode")) {
-			name = mainFilename.substring(0, mainFilename.length() - 6);
+		if (path == null) {
+			mainFilename = null;
+			name = "Untitled";
+			folder = new File("~");
 		} else {
-			name = mainFilename;
-			mainFilename = mainFilename + ".gcode";
+			File mainFile = new File(path);
+			// System.out.println("main file is " + mainFile);
+	
+			mainFilename = mainFile.getName();
+			// System.out.println("main file is " + mainFilename);
+	
+			// get the name of the sketch by chopping .gcode
+			// off of the main file name
+			if (mainFilename.endsWith(".gcode")) {
+				name = mainFilename.substring(0, mainFilename.length() - 6);
+			} else {
+				name = mainFilename;
+				mainFilename = mainFilename + ".gcode";
+			}
+			String parentPath = new File(path).getParent(); 
+			if (parentPath == null) {
+				parentPath = ".";
+			}
+			folder = new File(parentPath);
 		}
-
-		String parentPath = new File(path).getParent(); 
-		if (parentPath == null) {
-			parentPath = ".";
-		}
-		folder = new File(parentPath);
-		// System.out.println("sketch dir is " + folder);
-
 		load();
 	}
 
@@ -132,7 +122,12 @@ public class Build {
 	 * load happens each time "run" is hit.
 	 */
 	public void load() {
-		if (mainFilename.endsWith(".gcode")) {
+		if (mainFilename == null) {
+			code = new BuildCode(null,null);
+			code.modified = true;
+			editor.setCode(code);
+			editor.getHeader().rebuild();
+		} else if (mainFilename.endsWith(".gcode")) {
 			code = new BuildCode(mainFilename.substring(0, mainFilename.length() - 6), new File(folder, mainFilename));
 			editor.setCode(code);
 			editor.getHeader().rebuild();
@@ -160,6 +155,9 @@ public class Build {
 	 * Save all code in the current sketch.
 	 */
 	public boolean save() throws IOException {
+		if (mainFilename == null) {
+			return saveAs();
+		}
 		if (!code.modified) { return true; }
 		code.program = editor.getText();
 		if (isReadOnly()) {
@@ -199,11 +197,11 @@ public class Build {
 		fd.setVisible(true);
 		String newParentDir = fd.getDirectory();
 		String newName = fd.getFile();
-
-		File newFolder = new File(newParentDir);
 		// user cancelled selection
 		if (newName == null)
 			return false;
+
+		File newFolder = new File(newParentDir);
 
 		if (!newName.endsWith(".gcode")) newName = newName + ".gcode";
 
@@ -297,24 +295,6 @@ public class Build {
 
 	}
 
-	/**
-	 * Run the GCode.
-	 */
-	public boolean handleRun() {
-		code.program = editor.getText();
-
-		// TODO record history here
-		// current.history.record(program, SketchHistory.RUN);
-
-		// in case there were any boogers left behind
-		// do this here instead of after exiting, since the exit
-		// can happen so many different ways.. and this will be
-		// better connected to the dataFolder stuff below.
-		cleanup();
-
-		return (mainClassName != null);
-	}
-
 	protected int countLines(String what) {
 		char c[] = what.toCharArray();
 		int count = 0;
@@ -387,7 +367,10 @@ public class Build {
 	 * Returns path to the main .gcode file for this sketch.
 	 */
 	public String getMainFilePath() {
-		return code.file.getAbsolutePath();
+		if (code != null && code.file != null) {
+			return code.file.getAbsolutePath();
+		}
+		return null;
 	}
 
 }

@@ -195,6 +195,9 @@ public class EditorHeader extends JComponent {
 			BuildCode code = sketch.code;
 
 			String codeName = code.name;
+			if (codeName == null) {
+				codeName = "Untitled";
+			}
 
 			// if modified, add the li'l glyph next to the name
 			String text = "  " + codeName + (code.modified ? " \u00A7" : "  ");

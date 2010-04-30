@@ -469,7 +469,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// Preferences.set("last.sketch.name", sketchName);
 		// Preferences.set("last.sketch.name", sketch.name);
 		if (sketch != null) {
-			Base.preferences.put("last.sketch.path", sketch.getMainFilePath());
+			String lastPath = sketch.getMainFilePath();
+			if (lastPath != null) {
+				Base.preferences.put("last.sketch.path", sketch.getMainFilePath());
+			}
 		}
 
 		// location for the console/editor area divider
@@ -1419,7 +1422,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	
 				// start our building thread.
 	
-				message("Saving...");
 				buildStart = new Date();
 				machine.buildToFile(path);
 			}
@@ -1816,7 +1818,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 //					"An error occurred while creating\n"
 //							+ "a new sketch. ReplicatorG must now quit.", e);
 //		}
-		handleOpen2("*Untitled");
+		handleOpen2(null);
 		//buttons.clear();
 	}
 
@@ -1903,14 +1905,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			// loading may take a few moments for large files
 
-			if (path.toLowerCase().endsWith(".stl")) {
+			if (null != path && path.toLowerCase().endsWith(".stl")) {
 				STLFrame stlFrame = new STLFrame(path);
 				stlFrame.setVisible(true);
 			} else {
 				sketch = new Build(this, path);
-				handleOpenPath = path;
-				addMRUEntry(path);
-				reloadMruMenu();
+				if (null != path) {
+					handleOpenPath = path;
+					addMRUEntry(path);
+					reloadMruMenu();
+				}
 				header.rebuild();
 				if (Base.preferences.getBoolean("console.auto_clear",true)) {
 					console.clear();
