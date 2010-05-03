@@ -2269,7 +2269,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					us.isExplicit()) {
 				try {
 					us.setSerial(new Serial(us.getPortName(),us));
-					machine.reset();
+					machine.connect();
 				} catch (SerialException e) {
 					Base.logger.severe("Could not use/find serial port specified in machines.xml ("+us.getPortName()+").");
 					//e.printStackTrace();
@@ -2282,7 +2282,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				if (lastPort != null) {
 					try {
 						us.setSerial(new Serial(lastPort,us));
-						machine.reset();
+						machine.connect();
 					} catch (SerialException e) {
 						Base.logger.warning("Could not use most recently selected serial port ("+lastPort+").");
 						e.printStackTrace();

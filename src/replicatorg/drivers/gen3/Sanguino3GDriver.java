@@ -78,7 +78,7 @@ public class Sanguino3GDriver extends SerialDriver
 			try {
 				// Default timeout should be 2.6s.  Timeout can be sped up for v2, but let's play it safe.
 				int timeout = 4000;
-				waitForStartup(timeout);
+				connectToDevice(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
 				e.printStackTrace();
@@ -117,14 +117,14 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 	
 	/**
-	 * Wait for a startup message. After the specified timeout, replicatorG will
+	 * Connect to the device. After the specified timeout, replicatorG will
 	 * attempt to remotely reset the device.
 	 * 
 	 * @timeoutMillis the time, in milliseconds, that we should wait for a
 	 *                handshake.
-	 * @return true if we recieved a handshake; false if we timed out.
+	 * @return true if we received a handshake; false if we timed out.
 	 */
-	protected void waitForStartup(int timeoutMillis) {
+	protected void connectToDevice(int timeoutMillis) {
 		assert (serial != null);
 		synchronized (serial) {
 			serial.setTimeout(timeoutMillis);

@@ -283,11 +283,16 @@ public class MachineController {
 		
 		public void forceReset() {
 			setState(new MachineState(MachineState.State.NOT_ATTACHED));
-			interrupt();
+			interruptDriver();
 			resetInternal();
 		}
 		
 		public void reset() {
+			forceReset();
+			connect();
+		}
+		
+		public void connect() {
 			setState(new MachineState(MachineState.State.CONNECTING));
 		}
 
@@ -783,7 +788,11 @@ public class MachineController {
 	synchronized public void reset() {
 		machineThread.reset();
 	}
-	
+
+	synchronized public void connect() {
+		machineThread.connect();
+	}
+
 	public void autoscan() {
 		assert machineThread != null;
 		machineThread.autoscan();
