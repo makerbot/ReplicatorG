@@ -15,7 +15,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -88,8 +87,9 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		    	Base.preferences.putInt(prefName,behavior.ordinal());
 		    }
 		}
+		c.add(new JLabel("On ReplicatorG launch:"),"wrap");
 		JRadioButton b;
-		b = new JRadioButton(new RadioAction("Open last file",InitialOpenBehavior.OPEN_LAST));
+		b = new JRadioButton(new RadioAction("Open last opened or save file",InitialOpenBehavior.OPEN_LAST));
 		bg.add(b);
 		c.add(b,"wrap");
 		b = new JRadioButton(new RadioAction("Open new file",InitialOpenBehavior.OPEN_NEW));
@@ -105,20 +105,18 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 
 		// MainWindow font size [ ]
 
-		Container box = Box.createHorizontalBox();
-		box.add(new JLabel("MainWindow font size: "));
+		content.add(new JLabel("MainWindow font size: "), "split");
 		fontSizeField = new JTextField(4);
-		box.add(fontSizeField);
-		box.add(new JLabel("  (requires restart of ReplicatorG)"));
-		content.add(box,"wrap");
+		content.add(fontSizeField);
+		content.add(new JLabel("  (requires restart of ReplicatorG)"), "wrap");
 
 		addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp",false);
 		addCheckboxForPref(content,"Honor serial port selection in machines.xml","serial.use_machines",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
 		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",true);
 
-		content.add(new JLabel("Firmware update URL: "));
-		firmwareUpdateUrlField = new JTextField(40);
+		content.add(new JLabel("Firmware update URL: "),"split");
+		firmwareUpdateUrlField = new JTextField(34);
 		content.add(firmwareUpdateUrlField,"wrap");
 
 		addInitialFilePrefs(content);
