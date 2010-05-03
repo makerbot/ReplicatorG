@@ -52,6 +52,8 @@ import replicatorg.uploader.FirmwareUploader;
 public class Sanguino3GDriver extends SerialDriver
 	implements OnboardParameters, SDCardCapture
 {
+	Version toolVersion = new Version(0,0);
+	
 	public Sanguino3GDriver() {
 		super();
 
@@ -326,6 +328,7 @@ public class Sanguino3GDriver extends SerialDriver
         else
         {
             Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
+            toolVersion = sv;
             Base.logger.warning("Extruder controller firmware v"+sv);
 
             final String EC_NAME = "Extruder Controller v2.2"; 
@@ -1513,4 +1516,31 @@ public class Sanguino3GDriver extends SerialDriver
 		b[0] = endstops.getValue();
 		writeToEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,b);
 	}
+
+	public double getPlatformTemperatureSetting() {
+		// This call was introduced in version 2.3
+		if (toolVersion.atLeast(new Version(2,3))) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8(ToolCommandCode.GET_PLATFORM_SP.getCode());
+			PacketResponse pr = runCommand(pb.getPacket());
+			int sp = pr.get16();
+			machine.currentTool().setPlatformTargetTemperature(sp);
+		}		
+		return super.getPlatformTemperatureSetting();
+	}
+
+	public double getTemperatureSetting() {
+		// This call was introduced in version 2.3
+		if (toolVersion.atLeast(new Version(2,3))) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8(ToolCommandCode.GET_SP.getCode());
+			PacketResponse pr = runCommand(pb.getPacket());
+			int sp = pr.get16();
+			machine.currentTool().setTargetTemperature(sp);
+		}
+		return super.getTemperatureSetting();
+	}
+
 }

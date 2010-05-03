@@ -583,4 +583,12 @@ public class DriverBaseImplementation implements Driver {
 
 	public void setChamberTemperature(double temperature) {
 	}
+
+	public double getPlatformTemperatureSetting() {
+		return machine.currentTool().getPlatformTargetTemperature();
+	}
+
+	public double getTemperatureSetting() {
+		return machine.currentTool().getTargetTemperature();
+	}
 }

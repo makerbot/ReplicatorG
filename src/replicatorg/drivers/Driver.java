@@ -244,6 +244,8 @@ public interface Driver {
 	
 	public double getTemperature();
 	
+	public double getTemperatureSetting();
+	
 	/***************************************************************************
 	 * Platform Temperature interface functions
 	 **************************************************************************/
@@ -252,6 +254,8 @@ public interface Driver {
 	public void readPlatformTemperature();
 	
 	public double getPlatformTemperature();
+
+	public double getPlatformTemperatureSetting();
 
 	/***************************************************************************
 	 * Build chamber interface functions

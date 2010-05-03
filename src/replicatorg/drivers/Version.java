@@ -17,6 +17,10 @@ public class Version implements Comparable<Version> {
 		return false;
 	}
 
+	public boolean atLeast(Version v) {
+		return compareTo(v) >= 0;
+	}
+	
 	public int compareTo(Version v) {
 		if (major > v.major || ((major == v.major) && (minor > v.minor))) return 1;
 		if (equals(v)) return 0;

@@ -460,7 +460,7 @@ public class MachineController {
 							setState(MachineState.State.NOT_ATTACHED);
 						}
 					} else if (state.getState() == MachineState.State.CONNECTING) {
-						resetInternal();
+						driver.initialize();
 						if (driver.isInitialized()) {
 							readName();
 							setState(MachineState.State.READY);

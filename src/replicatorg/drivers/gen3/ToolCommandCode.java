@@ -30,7 +30,9 @@ public enum ToolCommandCode {
 	READ_FROM_EEPROM(25),
 	WRITE_TO_EEPROM(26),
 	GET_PLATFORM_TEMP(30),
-	SET_PLATFORM_TEMP(31);
+	SET_PLATFORM_TEMP(31),
+	GET_SP(32),
+	GET_PLATFORM_SP(33);
 	
 	private int code;
 	private ToolCommandCode(int code) {

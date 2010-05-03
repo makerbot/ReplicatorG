@@ -643,7 +643,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setName("target-temp");
 			targetTempField.addFocusListener(this);
-			double temperature = driver.getMachine().currentTool().getTargetTemperature();
+			double temperature = driver.getTemperatureSetting();
 			targetTempField.setText(Double.toString(temperature));
 			targetTempField.setActionCommand("handleTextfield");
 			targetTempField.addActionListener(this);
@@ -696,7 +696,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setName("platform-target-temp");
 			targetTempField.addFocusListener(this);
-			double temperature = driver.getMachine().currentTool().getPlatformTargetTemperature();
+			double temperature = driver.getPlatformTemperatureSetting();
 			targetTempField.setText(Double.toString(temperature));
 			targetTempField.setActionCommand("handleTextfield");
 			targetTempField.addActionListener(this);
