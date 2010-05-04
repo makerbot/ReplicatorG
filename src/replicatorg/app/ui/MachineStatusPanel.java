@@ -14,7 +14,6 @@ import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
-import replicatorg.app.TimeoutException;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.Version;
@@ -146,21 +145,19 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 				}
 				currentTemperature = -1;
 				// Check version
-				try {
-					Version v = machine.driver.getVersion();
-					if (v != null && v.compareTo(machine.driver.getPreferredVersion()) < 0) {
-						if (!firmwareWarningIssued) {
-							firmwareWarningIssued = true;
-							JOptionPane.showMessageDialog(
-									this,
-									"Firmware version "+v+" was detected on your machine.  Firmware version "+
-									machine.driver.getPreferredVersion() + " is recommended.\n" +
-									"Please update your firmware and restart ReplicatorG.",
-									"Old firmware detected", JOptionPane.WARNING_MESSAGE);
-							
-						}
+				Version v = machine.driver.getVersion();
+				if (v != null && v.compareTo(machine.driver.getPreferredVersion()) < 0) {
+					if (!firmwareWarningIssued) {
+						firmwareWarningIssued = true;
+						JOptionPane.showMessageDialog(
+								this,
+								"Firmware version "+v+" was detected on your machine.  Firmware version "+
+								machine.driver.getPreferredVersion() + " is recommended.\n" +
+								"Please update your firmware and restart ReplicatorG.",
+								"Old firmware detected", JOptionPane.WARNING_MESSAGE);
+
 					}
-				} catch (TimeoutException te) {
+				} else if (v == null) {
 					bgColor = BG_NO_MACHINE;
 					// TODO: notify 
 					text = "Machine connection timed out";

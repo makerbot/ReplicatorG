@@ -39,7 +39,6 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.app.TimeoutException;
 import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.SDCardCapture;
@@ -106,11 +105,7 @@ public class Sanguino3GDriver extends SerialDriver
 	private boolean attemptConnection() {
 		// Eat anything in the serial buffer
 		serial.clear();
-		try {
-			version = getVersionInternal();
-		} catch (TimeoutException e) {
-			version = null;
-		}
+		version = getVersionInternal();
 		if (getVersion() != null)
 			setInitialized(true);
 		return isInitialized();
@@ -235,7 +230,8 @@ public class Sanguino3GDriver extends SerialDriver
 								continue;
 							} else {
 								Base.logger.info("Read timed out; giving up on query.");
-								throw new TimeoutException(serial);
+								//throw new TimeoutException(serial);
+								return pr;
 							}
 						}
 						c = pp.processByte((byte) b);
@@ -301,6 +297,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add16(Base.VERSION);
 
 		PacketResponse pr = runCommand(pb.getPacket());
+		if (pr.isEmpty()) return null;
 		int versionNum = pr.get16();
 
 		Base.logger.log(Level.FINE,"Reported version: "
@@ -318,9 +315,11 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		slavepb.add8((byte) machine.currentTool().getIndex());
 		slavepb.add8(ToolCommandCode.VERSION.getCode());
+		int slaveVersionNum = 0;
 		PacketResponse slavepr = runCommand(slavepb.getPacket());
-
-		int slaveVersionNum = slavepr.get16();
+		if (!slavepr.isEmpty()) {
+			slaveVersionNum = slavepr.get16();
+		}
 		Base.logger.log(Level.FINE,"Reported slave board version: "
 					+ Integer.toHexString(slaveVersionNum));
 		if (slaveVersionNum == 0)

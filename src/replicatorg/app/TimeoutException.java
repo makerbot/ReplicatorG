@@ -6,7 +6,7 @@ package replicatorg.app;
  * @author phooky
  *
  */
-public class TimeoutException extends RuntimeException {
+public class TimeoutException extends Exception {
 	private static final long serialVersionUID = 110136234567896299L;
 
 	public Serial serial;

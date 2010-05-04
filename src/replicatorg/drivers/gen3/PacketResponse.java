@@ -59,12 +59,17 @@ public class PacketResponse {
 	int readPoint = 1;
 
 	public PacketResponse() {
+		payload = null;
 	}
 
 	public PacketResponse(byte[] p) {
 		payload = p;
 	}
 
+	public boolean isEmpty() {
+		return payload == null;
+	}
+	
 	/**
 	 * Prints a debug message with the packet response code decoded, along with
 	 * the packet's contents in hex.
