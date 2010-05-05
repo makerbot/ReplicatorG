@@ -59,7 +59,6 @@ class FirmwareRetriever {
 	protected UpdateStatus updateURL(URL url, File file) {
 		long timestamp = file.lastModified();
 		try {
-			System.err.println("checking for new firmware @ "+url.toExternalForm());
 			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 			connection.setIfModifiedSince(timestamp);
 			connection.setConnectTimeout(TIMEOUT_MS);
