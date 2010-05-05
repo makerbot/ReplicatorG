@@ -13,12 +13,15 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -118,6 +121,33 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content.add(new JLabel("Firmware update URL: "),"split");
 		firmwareUpdateUrlField = new JTextField(34);
 		content.add(firmwareUpdateUrlField,"wrap");
+
+		{
+			content.add(new JLabel("Arc resolution (in mm): "),"split");
+			double value = Base.preferences.getDouble("replicatorg.parser.curve_segment_mm", 1.0);
+			JFormattedTextField arcResolutionField = new JFormattedTextField(new Double(value));
+			content.add(arcResolutionField,"wrap");
+			String arcResolutionHelp = "<html><small><em>" +
+				"The arc resolution is the default segment length that the gcode parser will break arc codes "+
+				"like G2 and G3 into.  Drivers that natively handle arcs will ignore this setting." +
+				"</em></small></html>";
+			content.add(new JLabel(arcResolutionHelp),"width 100,growx,wrap");
+			arcResolutionField.setColumns(10);
+			arcResolutionField.addPropertyChangeListener(new PropertyChangeListener() {
+				public void propertyChange(PropertyChangeEvent evt) {
+					if (evt.getPropertyName() == "value") {
+						try {
+							Double v = (Double)evt.getNewValue();
+							if (v == null) return;
+							Base.preferences.putDouble("replicatorg.parser.curve_segment_mm", v.doubleValue());
+						} catch (ClassCastException cce) {
+							Base.logger.warning("Unexpected value type: "+evt.getNewValue().getClass().toString());
+						}
+					}
+				}
+			});
+		}
+		//"replicatorg.parser.curve_segment_mm"
 
 		addInitialFilePrefs(content);
 
