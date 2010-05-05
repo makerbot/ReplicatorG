@@ -66,6 +66,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -521,9 +523,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		Dimension panelSize = new Dimension(420, 30);
 
 		// create our initial panel
-		JPanel panel = new JPanel();
-		BoxLayout layout = new BoxLayout(panel, BoxLayout.PAGE_AXIS);
-		panel.setLayout(layout);
+		JPanel panel = new JPanel(new MigLayout());
 		// GridLayout extruderGrid = new GridLayout(0, 1);
 		// panel.setLayout(extruderGrid);
 
@@ -551,15 +551,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 				field.setActionCommand("handleTextfield");
 				field.addActionListener(this);
 
-				JPanel motorSpeedPanel = new JPanel();
-				motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel,
-						BoxLayout.LINE_AXIS));
-				motorSpeedPanel.setMaximumSize(panelSize);
-				motorSpeedPanel.setMinimumSize(panelSize);
-				motorSpeedPanel.setPreferredSize(panelSize);
-				motorSpeedPanel.add(label);
-				motorSpeedPanel.add(field);
-				panel.add(motorSpeedPanel);
+				panel.add(label);
+				panel.add(field,"wrap");
 			}
 
 			if (t.motorHasEncoder() || t.motorIsStepper()) {
@@ -580,15 +573,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 				field.setActionCommand("handleTextfield");
 				field.addActionListener(this);
 
-				JPanel motorSpeedPanel = new JPanel();
-				motorSpeedPanel.setLayout(new BoxLayout(motorSpeedPanel,
-						BoxLayout.LINE_AXIS));
-				motorSpeedPanel.setMaximumSize(panelSize);
-				motorSpeedPanel.setMinimumSize(panelSize);
-				motorSpeedPanel.setPreferredSize(panelSize);
-				motorSpeedPanel.add(label);
-				motorSpeedPanel.add(field);
-				panel.add(motorSpeedPanel);
+				panel.add(label);
+				panel.add(field,"wrap");
 			}
 			// create our motor options
 			JLabel motorEnabledLabel = new JLabel("Motor Control");
@@ -614,19 +600,12 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			motorControl.add(motorStoppedButton);
 			motorControl.add(motorForwardButton);
 
-			JPanel motorControlPanel = new JPanel();
-			motorControlPanel.setLayout(new BoxLayout(motorControlPanel,
-					BoxLayout.LINE_AXIS));
-			motorControlPanel.setMaximumSize(panelSize);
-			motorControlPanel.setMinimumSize(panelSize);
-			motorControlPanel.setPreferredSize(panelSize);
 
 			// add components in.
-			motorControlPanel.add(motorEnabledLabel);
-			motorControlPanel.add(motorReverseButton);
-			motorControlPanel.add(motorStoppedButton);
-			motorControlPanel.add(motorForwardButton);
-			panel.add(motorControlPanel);
+			panel.add(motorEnabledLabel,"split,spanx");
+			panel.add(motorReverseButton);
+			panel.add(motorStoppedButton);
+			panel.add(motorForwardButton,"wrap");
 		}
 
 		// our temperature fields
@@ -660,26 +639,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			currentTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			currentTempField.setEnabled(false);
 
-			JPanel targetTempPanel = new JPanel();
-			targetTempPanel.setLayout(new BoxLayout(targetTempPanel,
-					BoxLayout.LINE_AXIS));
-			targetTempPanel.setMaximumSize(panelSize);
-			targetTempPanel.setMinimumSize(panelSize);
-			targetTempPanel.setPreferredSize(panelSize);
-
-			JPanel currentTempPanel = new JPanel();
-			currentTempPanel.setLayout(new BoxLayout(currentTempPanel,
-					BoxLayout.LINE_AXIS));
-			currentTempPanel.setMaximumSize(panelSize);
-			currentTempPanel.setMinimumSize(panelSize);
-			currentTempPanel.setPreferredSize(panelSize);
-
-			targetTempPanel.add(targetTempLabel);
-			targetTempPanel.add(targetTempField);
-			panel.add(targetTempPanel);
-			currentTempPanel.add(currentTempLabel);
-			currentTempPanel.add(currentTempField);
-			panel.add(currentTempPanel);
+			panel.add(targetTempLabel);
+			panel.add(targetTempField,"wrap");
+			panel.add(currentTempLabel);
+			panel.add(currentTempField,"wrap");
 		}
 
 		// our heated platform fields
@@ -713,26 +676,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			platformCurrentTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			platformCurrentTempField.setEnabled(false);
 
-			JPanel targetTempPanel = new JPanel();
-			targetTempPanel.setLayout(new BoxLayout(targetTempPanel,
-					BoxLayout.LINE_AXIS));
-			targetTempPanel.setMaximumSize(panelSize);
-			targetTempPanel.setMinimumSize(panelSize);
-			targetTempPanel.setPreferredSize(panelSize);
-
-			JPanel currentTempPanel = new JPanel();
-			currentTempPanel.setLayout(new BoxLayout(currentTempPanel,
-					BoxLayout.LINE_AXIS));
-			currentTempPanel.setMaximumSize(panelSize);
-			currentTempPanel.setMinimumSize(panelSize);
-			currentTempPanel.setPreferredSize(panelSize);
-
-			targetTempPanel.add(targetTempLabel);
-			targetTempPanel.add(targetTempField);
-			panel.add(targetTempPanel);
-			currentTempPanel.add(currentTempLabel);
-			currentTempPanel.add(platformCurrentTempField);
-			panel.add(currentTempPanel);
+			panel.add(targetTempLabel);
+			panel.add(targetTempField,"wrap");
+			panel.add(currentTempLabel);
+			panel.add(platformCurrentTempField,"wrap");
 		}
 
 		// flood coolant controls
@@ -747,16 +694,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			floodCoolantCheck.setName("flood-coolant");
 			floodCoolantCheck.addItemListener(this);
 
-			JPanel floodCoolantPanel = new JPanel();
-			floodCoolantPanel.setLayout(new BoxLayout(floodCoolantPanel,
-					BoxLayout.LINE_AXIS));
-			floodCoolantPanel.setMaximumSize(panelSize);
-			floodCoolantPanel.setMinimumSize(panelSize);
-			floodCoolantPanel.setPreferredSize(panelSize);
-
-			floodCoolantPanel.add(floodCoolantLabel);
-			floodCoolantPanel.add(floodCoolantCheck);
-			panel.add(floodCoolantPanel);
+			panel.add(floodCoolantLabel);
+			panel.add(floodCoolantCheck,"wrap");
 		}
 
 		// mist coolant controls
@@ -771,16 +710,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			mistCoolantCheck.setName("mist-coolant");
 			mistCoolantCheck.addItemListener(this);
 
-			JPanel mistCoolantPanel = new JPanel();
-			mistCoolantPanel.setLayout(new BoxLayout(mistCoolantPanel,
-					BoxLayout.LINE_AXIS));
-			mistCoolantPanel.setMaximumSize(panelSize);
-			mistCoolantPanel.setMinimumSize(panelSize);
-			mistCoolantPanel.setPreferredSize(panelSize);
-
-			mistCoolantPanel.add(mistCoolantLabel);
-			mistCoolantPanel.add(mistCoolantCheck);
-			panel.add(mistCoolantPanel);
+			panel.add(mistCoolantLabel);
+			panel.add(mistCoolantCheck,"wrap");
 		}
 
 		// cooling fan controls
@@ -802,15 +733,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			fanCheck.setName("fan-check");
 			fanCheck.addItemListener(this);
 
-			JPanel fanPanel = new JPanel();
-			fanPanel.setLayout(new BoxLayout(fanPanel, BoxLayout.LINE_AXIS));
-			fanPanel.setMaximumSize(panelSize);
-			fanPanel.setMinimumSize(panelSize);
-			fanPanel.setPreferredSize(panelSize);
-
-			fanPanel.add(fanLabel);
-			fanPanel.add(fanCheck);
-			panel.add(fanPanel);
+			panel.add(fanLabel);
+			panel.add(fanCheck,"wrap");
 		}
 
 		// valve controls
@@ -834,16 +758,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			valveCheck.setName("valve-check");
 			valveCheck.addItemListener(this);
 
-			JPanel valvePanel = new JPanel();
-			valvePanel
-					.setLayout(new BoxLayout(valvePanel, BoxLayout.LINE_AXIS));
-			valvePanel.setMaximumSize(panelSize);
-			valvePanel.setMinimumSize(panelSize);
-			valvePanel.setPreferredSize(panelSize);
-
-			valvePanel.add(valveLabel);
-			valvePanel.add(valveCheck);
-			panel.add(valvePanel);
+			panel.add(valveLabel);
+			panel.add(valveCheck,"wrap");
 		}
 
 		// valve controls
@@ -865,9 +781,8 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			colletPanel.setMinimumSize(panelSize);
 			colletPanel.setPreferredSize(panelSize);
 
-			colletPanel.add(colletLabel);
-			colletPanel.add(colletCheck);
-			panel.add(colletPanel);
+			panel.add(colletLabel);
+			panel.add(colletCheck,"wrap");
 		}
 		toolsPane.addTab(t.getName(), panel);
 	}
