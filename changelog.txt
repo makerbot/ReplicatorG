@@ -1,3 +1,21 @@
+0015 ReplicatorG
+* Bug fixes:
+* * gh-44: "Save As" now works as expected
+* * New files now work as expected
+* * gh-35: No longer resetting machine at startup
+* * gh-33: Removed separate concept of current position from
+*   gcode parser
+* New features:
+* * gh-42: arc resolution is now controllable via preferences
+* * gh-40: valve/fan outputs renamable in machines.xml.
+* * gh-39: frostruder support.
+* * gh-37: messages are now color-coded and timestamped
+* * gh-32: preference for default sketch at start time
+* * Support for tuning the PID parameters on the extruder
+*   controller
+* * Automatically checks servers for new versions
+* * Better shutdown and interrupt behavior
+
 0014 ReplicatorG
 * Many small stability fixes
 * Faster startup
