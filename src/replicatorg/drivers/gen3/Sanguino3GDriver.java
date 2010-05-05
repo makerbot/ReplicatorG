@@ -804,7 +804,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_TEMP.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
-
+		if (pr.isEmpty()) return;
 		int temp = pr.get16();
 		machine.currentTool().setCurrentTemperature(temp);
 
@@ -839,7 +839,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
-		
+		if (pr.isEmpty()) return;
 		int temp = pr.get16();
 		machine.currentTool().setPlatformCurrentTemperature(temp);
 		

@@ -57,9 +57,8 @@ public class GCodeParser {
 			"M", "P", "Q", "R", "S", "T", "X", "Y", "Z" };
 
 	// our curve section variables.
-	public static double curveSectionInches = 0.019685;
-
-	public static double curveSectionMM = 0.05;
+	public static double curveSectionMM = Base.preferences.getDouble("replicatorg.parser.curve_segment_mm", 1.0);
+	public static double curveSectionInches = curveSectionMM / 25.4;
 
 	protected double curveSection = 0.0;
 
