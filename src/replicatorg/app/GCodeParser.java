@@ -1093,13 +1093,11 @@ public class GCodeParser {
 		// toolpath.
 		// move z first
 		Point3d current = driver.getCurrentPosition();		
-		System.err.println("SetTarget current "+current.toString() + " to "+p.toString());
 		if (p.z != current.z) {
 			driver.queuePoint(new Point3d(current.x, current.y, p.z));
 		}
 		driver.queuePoint(new Point3d(p));
 		current = new Point3d(p);
-		System.err.println("-CURRENT "+current.toString());
 	}
 
 	/**
