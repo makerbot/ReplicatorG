@@ -75,7 +75,7 @@ public class GCodeParser {
 	protected Point3d currentOffset;
 
 	// machine state varibles
-	protected Point3d current;
+	//protected Point3d current;
 
 	protected Point3d target;
 
@@ -146,7 +146,8 @@ public class GCodeParser {
 		deleteBlockPattern = Pattern.compile("^(\\.*)");
 
 		// setup our points.
-		current = new Point3d();
+//		current = new Point3d();
+//		System.err.println("-CURRENT "+current.toString());
 		target = new Point3d();
 		delta = new Point3d();
 		drillTarget = new Point3d();
@@ -708,6 +709,7 @@ public class GCodeParser {
 				if (hasCode("I") || hasCode("J")) {
 					// our centerpoint
 					Point3d center = new Point3d();
+					Point3d current = driver.getCurrentPosition();
 					center.x = current.x + iVal;
 					center.y = current.y + jVal;
 
@@ -784,14 +786,16 @@ public class GCodeParser {
 			case 32:
 
 				Base.logger.warning("Area probes not yet supported.");
-
-				double minX = current.x;
-				double minY = current.y;
-				double maxX = xVal;
-				double maxY = yVal;
-				double increment = iVal;
-
-				probeArea(minX, minY, maxX, maxY, increment);
+				{
+					Point3d current = driver.getCurrentPosition();
+					double minX = current.x;
+					double minY = current.y;
+					double maxX = xVal;
+					double maxY = yVal;
+					double increment = iVal;
+	
+					probeArea(minX, minY, maxX, maxY, increment);
+				}
 				break;
 
 			// master offset
@@ -907,7 +911,8 @@ public class GCodeParser {
 					current.z = zVal;
 
 				driver.setCurrentPosition(current);
-				this.current = current;
+//				this.current = current;
+//				System.err.println("-CURRENT "+current.toString());
 				this.target = current;
 				break;
 
@@ -937,6 +942,7 @@ public class GCodeParser {
 	 */
 	private void drillingCycle(boolean speedPeck) {
 		// Retract to R position if Z is currently below this
+		Point3d current = driver.getCurrentPosition();
 		if (current.z < drillRetract) {
 			driver.setFeedrate(getMaxFeedrate());
 			setTarget(new Point3d(current.x, current.y, drillRetract));
@@ -1016,6 +1022,7 @@ public class GCodeParser {
 		double bY;
 
 		// figure out our deltas
+		Point3d current = driver.getCurrentPosition();
 		aX = current.x - center.x;
 		aY = current.y - center.y;
 		bX = endpoint.x - center.x;
@@ -1085,11 +1092,14 @@ public class GCodeParser {
 		// If you really want two seperate moves, do it when you generate your
 		// toolpath.
 		// move z first
+		Point3d current = driver.getCurrentPosition();		
+		System.err.println("SetTarget current "+current.toString() + " to "+p.toString());
 		if (p.z != current.z) {
 			driver.queuePoint(new Point3d(current.x, current.y, p.z));
 		}
 		driver.queuePoint(new Point3d(p));
 		current = new Point3d(p);
+		System.err.println("-CURRENT "+current.toString());
 	}
 
 	/**

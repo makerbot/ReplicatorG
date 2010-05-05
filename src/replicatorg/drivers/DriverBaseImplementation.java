@@ -215,6 +215,7 @@ public class DriverBaseImplementation implements Driver {
 	 * and that the machine should be queried for its actual location.
 	 */
 	public void invalidatePosition() {
+//		System.err.println("invalidating position.");
 		currentPosition = null;
 	}
 	

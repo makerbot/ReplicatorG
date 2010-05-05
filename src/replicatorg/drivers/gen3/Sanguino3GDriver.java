@@ -425,9 +425,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void setCurrentPosition(Point3d p) {
-		//System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
+//		System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 		if (super.getCurrentPosition().equals(p)) return;
-		//System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
+//		System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_POSITION.getCode());
 
 		Point3d steps = machine.mmToSteps(p);
@@ -1057,8 +1057,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketResponse pr = runCommand(pb.getPacket());
 		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
 		// Useful quickie debugs
-		//System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
-		//System.err.println("ENDSTOP FLAGS: " + Integer.toBinaryString(pr.get8()));
+//		System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
 		return machine.stepsToMM(steps);
 	}
 

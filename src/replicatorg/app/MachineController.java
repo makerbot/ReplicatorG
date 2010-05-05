@@ -306,6 +306,7 @@ public class MachineController {
 				source.getLineCount();
 			startStatusPolling(1000);
 			try {
+				driver.getCurrentPosition(); // reconcile position
 				runWarmupCommands();
 				Base.logger.info("Running build.");
 				buildCodesInternal(source);
@@ -327,6 +328,7 @@ public class MachineController {
 		
 		private void buildRemoteInternal(String remoteName) {
 			if (remoteName == null || !(driver instanceof SDCardCapture)) return;
+			driver.getCurrentPosition(); // reconcille position
 			SDCardCapture sdcc = (SDCardCapture)driver;
 			if (!processSDResponse(sdcc.playback(remoteName))) {
 				setState(MachineState.State.STOPPING);
