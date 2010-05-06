@@ -72,6 +72,7 @@ import net.miginfocom.swing.MigLayout;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -684,6 +685,11 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			chart.setBorderVisible(false);
 			chart.setBackgroundPaint(null);
 			XYPlot plot = chart.getXYPlot();
+			ValueAxis axis = plot.getDomainAxis();
+			axis.setLowerMargin(0);
+			axis.setFixedAutoRange(2L*60L*1000L); // auto range to two minutes
+			axis = plot.getRangeAxis();
+			axis.setRange(0,255);
 			// Tweak L&F of chart
 			//((XYAreaRenderer)plot.getRenderer()).setOutline(true);
 			XYStepRenderer renderer = new XYStepRenderer();
