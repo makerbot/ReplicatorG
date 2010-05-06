@@ -38,6 +38,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
@@ -68,6 +69,15 @@ import javax.vecmath.Point3d;
 
 import net.miginfocom.swing.MigLayout;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.DatasetRenderingOrder;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYStepRenderer;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeTableXYDataset;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -133,9 +143,14 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	protected UpdateThread updateThread;
 
 	protected PollThread pollThread;
+
+	protected double targetTemperature;
 	
 	private static ControlPanelWindow instance = null;
 
+	private TimeTableXYDataset measuredDataset = new TimeTableXYDataset();
+	private TimeTableXYDataset targetDataset = new TimeTableXYDataset();
+	
 	public static synchronized ControlPanelWindow getControlPanel(MachineController m) {
 		if (instance == null) {
 			instance = new ControlPanelWindow(m);
@@ -510,10 +525,6 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			}
 		}
 
-		// add it all in. //zPanel.add(Box.createVerticalGlue());
-
-		// JPanel toolsPanel = new JPanel();
-		// toolsPanel.add(toolsPane);
 		mainPanel.add(toolsPane);
 	}
 
@@ -524,9 +535,6 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 
 		// create our initial panel
 		JPanel panel = new JPanel(new MigLayout());
-		// GridLayout extruderGrid = new GridLayout(0, 1);
-		// panel.setLayout(extruderGrid);
-
 		// create our motor options
 		if (t.hasMotor()) {
 			// Due to current implementation issues, we need to send the PWM
@@ -611,10 +619,6 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		// our temperature fields
 		if (t.hasHeater()) {
 			JLabel targetTempLabel = new JLabel("Target Temperature (C)");
-			targetTempLabel.setMinimumSize(labelMinimumSize);
-			targetTempLabel.setMaximumSize(labelMinimumSize);
-			targetTempLabel.setPreferredSize(labelMinimumSize);
-			targetTempLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JTextField targetTempField = new JTextField();
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
@@ -622,16 +626,12 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setName("target-temp");
 			targetTempField.addFocusListener(this);
-			double temperature = driver.getTemperatureSetting();
-			targetTempField.setText(Double.toString(temperature));
+			targetTemperature = driver.getTemperatureSetting();
+			targetTempField.setText(Double.toString(targetTemperature));
 			targetTempField.setActionCommand("handleTextfield");
 			targetTempField.addActionListener(this);
 
 			JLabel currentTempLabel = new JLabel("Current Temperature (C)");
-			currentTempLabel.setMinimumSize(labelMinimumSize);
-			currentTempLabel.setMaximumSize(labelMinimumSize);
-			currentTempLabel.setPreferredSize(labelMinimumSize);
-			currentTempLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			currentTempField = new JTextField();
 			currentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
@@ -648,10 +648,6 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 		// our heated platform fields
 		if (t.hasHeatedPlatform()) {
 			JLabel targetTempLabel = new JLabel("Platform Target Temp (C)");
-			targetTempLabel.setMinimumSize(labelMinimumSize);
-			targetTempLabel.setMaximumSize(labelMinimumSize);
-			targetTempLabel.setPreferredSize(labelMinimumSize);
-			targetTempLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			JTextField targetTempField = new JTextField();
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
@@ -665,10 +661,10 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			targetTempField.addActionListener(this);
 
 			JLabel currentTempLabel = new JLabel("Platform Current Temp (C)");
-			currentTempLabel.setMinimumSize(labelMinimumSize);
-			currentTempLabel.setMaximumSize(labelMinimumSize);
-			currentTempLabel.setPreferredSize(labelMinimumSize);
-			currentTempLabel.setHorizontalAlignment(JLabel.LEFT);
+//			currentTempLabel.setMinimumSize(labelMinimumSize);
+//			currentTempLabel.setMaximumSize(labelMinimumSize);
+//			currentTempLabel.setPreferredSize(labelMinimumSize);
+//			currentTempLabel.setHorizontalAlignment(JLabel.LEFT);
 
 			platformCurrentTempField = new JTextField();
 			platformCurrentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
@@ -680,6 +676,27 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			panel.add(targetTempField,"wrap");
 			panel.add(currentTempLabel);
 			panel.add(platformCurrentTempField,"wrap");
+			
+			CollapsableContainer cc = new CollapsableContainer("Temperature Graph",false);
+			JFreeChart chart = ChartFactory.createXYLineChart(null, null, null, 
+					measuredDataset, PlotOrientation.VERTICAL, 
+					false, false, false);
+			chart.setBorderVisible(false);
+			chart.setBackgroundPaint(null);
+			XYPlot plot = chart.getXYPlot();
+			// Tweak L&F of chart
+			//((XYAreaRenderer)plot.getRenderer()).setOutline(true);
+			XYStepRenderer renderer = new XYStepRenderer();
+			plot.setDataset(1, targetDataset);
+			plot.setRenderer(1, renderer);
+			plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
+			//renderer.setSeriesLinesVisible(1, true);
+			ChartPanel chartPanel = new ChartPanel(chart);
+			chartPanel.setOpaque(false);
+			chartPanel.setPreferredSize(new Dimension(400,140));
+			chartPanel.setOpaque(false);
+			cc.getContent().add(chartPanel,"growx,spanx");
+			panel.add(cc,"growx,spanx");
 		}
 
 		// flood coolant controls
@@ -803,6 +820,7 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 	}
 	
 	DecimalFormat positionFormatter = new DecimalFormat("###.#");
+	long startMillis = System.currentTimeMillis();
 
 	synchronized public void updateStatus() {
 		Point3d current = driver.getCurrentPosition();
@@ -815,6 +833,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 			driver.getMachine().currentTool().hasHeater()) {
 			double temperature = driver.getTemperature();
 			currentTempField.setText(Double.toString(temperature));
+			Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
+			measuredDataset.add(second, temperature,"a");
+			targetDataset.add(second, targetTemperature,"a");
 		}
 		if (driver.getMachine().currentTool() != null &&
 			driver.getMachine().currentTool().hasHeatedPlatform()) {
@@ -964,7 +985,9 @@ public class ControlPanelWindow extends JFrame implements ActionListener,
 
 		if (source.getText().length() > 0) {
 			if (name.equals("target-temp")) {
-				driver.setTemperature(Double.parseDouble(source.getText()));
+				double temperature = Double.parseDouble(source.getText());
+				driver.setTemperature(temperature);
+				targetTemperature = temperature;
 			} else if (name.equals("platform-target-temp")) {
 				driver.setPlatformTemperature(Double.parseDouble(source.getText()));
 			} else if (name.equals("motor-speed")) {

@@ -1131,6 +1131,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} else {
 			ControlPanelWindow window = ControlPanelWindow.getControlPanel(machine);
 			if (window != null) {
+				window.pack();
 				window.setVisible(true);
 				window.toFront();
 			}
