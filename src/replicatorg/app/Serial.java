@@ -370,12 +370,24 @@ public class Serial implements SerialPortEventListener {
 				}
 			} catch (IOException e) {
 				// Error condition
-				e.printStackTrace();
+				// e.printStackTrace();
+				// An unplugged connection will just flood the console with
+				// stack traces, and give us zero useful information.  Until
+				// we have a plan for how to respond to the user when the
+				// connection drops, we'll just let this silently fail, and set
+				// a fail bit.
+				disconnected = true;
 			}
 			readFifo.clear();
 			readFifo.notifyAll();
 		}
 	}
+	
+	private boolean disconnected = false;
+	/**
+	 * Indicates if we've received 
+	 */
+	public boolean isDisconnected() { return disconnected; }
 	
 	public void serialEvent(SerialPortEvent event) {
 		synchronized (readFifo) {
@@ -390,7 +402,13 @@ public class Serial implements SerialPortEventListener {
 				}
 			} catch (IOException e) {
 				// Error condition
-				e.printStackTrace();
+				// e.printStackTrace();
+				// An unplugged connection will just flood the console with
+				// stack traces, and give us zero useful information.  Until
+				// we have a plan for how to respond to the user when the
+				// connection drops, we'll just let this silently fail, and set
+				// a fail bit.
+				disconnected = true;
 			}
 			if (readAny) readFifo.notify();
 		}

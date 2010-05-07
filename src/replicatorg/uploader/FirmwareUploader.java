@@ -8,6 +8,7 @@ import java.net.URL;
 
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -120,31 +121,35 @@ public class FirmwareUploader {
 	// / Check the latest version. Returns true if the user wants to update the
 	// firmware and
 	// / abort the connections.
-	public static boolean checkLatestVersion(String boardName, Version version) {
-		Version latest = getLatestVersion(boardName);
+	public static boolean checkLatestVersion(final String boardName, Version version) {
+		final Version latest = getLatestVersion(boardName);
 		if (latest == null)
 			return false;
 		if (latest.compareTo(version) > 0) {
 			Base.logger.info("latest " + latest.toString() + " old "
 					+ version.toString());
-			String key = "replicatorG.ignoreFirmware." + boardName + "."
+			final String key = "replicatorG.ignoreFirmware." + boardName + "."
 					+ version.toString();
 			if (Base.preferences.getBoolean(key, false)) {
 				return false;
 			}
-			JCheckBox checkbox = new JCheckBox(
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					JCheckBox checkbox = new JCheckBox(
 					"Do not show this message for this version again");
-			String message = "A newer version ("
-					+ latest.toString()
-					+ ") of the "
-					+ boardName
-					+ " firmware is now available.\n"
-					+ "Use the \"Upload Firmware...\" item in the \"Machine\" menu to upload it to your machine.";
-			Object[] params = { message, checkbox };
-			JOptionPane.showMessageDialog(null, params,
-					"New Firmware Available", JOptionPane.INFORMATION_MESSAGE);
-			boolean dontShow = checkbox.isSelected();
-			Base.preferences.putBoolean(key, dontShow);
+					String message = "A newer version ("
+						+ latest.toString()
+						+ ") of the "
+						+ boardName
+						+ " firmware is now available.\n"
+						+ "Use the \"Upload Firmware...\" item in the \"Machine\" menu to upload it to your machine.";
+					Object[] params = { message, checkbox };
+					JOptionPane.showMessageDialog(null, params,
+							"New Firmware Available", JOptionPane.INFORMATION_MESSAGE);
+					boolean dontShow = checkbox.isSelected();
+					Base.preferences.putBoolean(key, dontShow);
+				}	
+			});
 			return true;
 		}
 		return false;
