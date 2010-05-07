@@ -11,6 +11,7 @@ import java.util.logging.Level;
 
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,28 +52,32 @@ public class UpdateChecker {
 	}
 	
 	private static void doCheckVersion(final Component parent) {
-		int latestVersion = getLatestVersion();
-		String lvString = Integer.toString(latestVersion);
+		final int latestVersion = getLatestVersion();
+		final String lvString = Integer.toString(latestVersion);
 		if (latestVersion > Base.VERSION) {
-			String key = "replicatorG.ignoreNewVersion." + lvString;
+			final String key = "replicatorG.ignoreNewVersion." + lvString;
 			if (Base.preferences.getBoolean(key, false)) {
 				return; // We've been told to ignore this message
 			}
-			JCheckBox checkbox = new JCheckBox(
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					JCheckBox checkbox = new JCheckBox(
 					"Do not show this message for this version again");
-			String message = "A newer version ("
-					+ lvString
-					+ ") of ReplicatorG is now available.\n"
-					+ "Would youlike to visit the download page?";
-			Object[] params = { message, checkbox };
-			int result = JOptionPane.showOptionDialog(parent, params,
-						"New Version Available", JOptionPane.YES_NO_OPTION,
-						JOptionPane.QUESTION_MESSAGE, null, null, null);
-			boolean dontShow = checkbox.isSelected();
-			Base.preferences.putBoolean(key, dontShow);
-			if (result == JOptionPane.YES_OPTION) {
-				Base.openURL("http://replicat.org/download/");
-			}
+					String message = "A newer version ("
+						+ lvString
+						+ ") of ReplicatorG is now available.\n"
+						+ "Would youlike to visit the download page?";
+					Object[] params = { message, checkbox };
+					int result = JOptionPane.showOptionDialog(parent, params,
+							"New Version Available", JOptionPane.YES_NO_OPTION,
+							JOptionPane.QUESTION_MESSAGE, null, null, null);
+					boolean dontShow = checkbox.isSelected();
+					Base.preferences.putBoolean(key, dontShow);
+					if (result == JOptionPane.YES_OPTION) {
+						Base.openURL("http://replicat.org/download/");
+					}
+				}
+			});
 	    }
 	}
 	/**
