@@ -122,6 +122,7 @@ public class Sanguino3GDriver extends SerialDriver
 	protected void connectToDevice(int timeoutMillis) {
 		assert (serial != null);
 		synchronized (serial) {
+			serial.clear();
 			serial.setTimeout(timeoutMillis);
 			if (attemptConnection()) return;
 			// Timed out waiting.  It's possible that a reset was triggered when the device

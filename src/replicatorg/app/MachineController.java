@@ -758,8 +758,11 @@ public class MachineController {
 		return simulator;
 	}
 
+	MachineModel cachedModel = null;
+	
 	public MachineModel getModel() {
-		return loadModel();
+		if (cachedModel == null) { cachedModel = loadModel(); }
+		return cachedModel;
 	}
 
 	synchronized public void stop() {

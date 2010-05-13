@@ -237,7 +237,7 @@ public class Serial implements SerialPortEventListener {
 	
 	/**
 	 * Non-growable FIFO.  In theory we only need enough space for a single
-	 * packet.  Currently set at 16K.
+	 * packet.  Currently set at 1K.
 	 * @author phooky
 	 *
 	 */
