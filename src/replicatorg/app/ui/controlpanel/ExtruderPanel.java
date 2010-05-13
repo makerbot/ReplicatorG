@@ -3,21 +3,26 @@ package replicatorg.app.ui.controlpanel;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.image.BufferedImage;
 import java.util.Date;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -54,8 +59,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	
 	final private static Color targetColor = Color.BLUE;
 	final private static Color measuredColor = Color.RED;
-	final private static Color targetPlatformColor = Color.GREEN;
-	final private static Color measuredPlatformColor = Color.YELLOW;
+	final private static Color targetPlatformColor = Color.YELLOW;
+	final private static Color measuredPlatformColor = Color.WHITE;
 	
 	long startMillis = System.currentTimeMillis();
 
@@ -63,6 +68,22 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	private TimeTableXYDataset targetDataset = new TimeTableXYDataset();
 	private TimeTableXYDataset measuredPlatformDataset = new TimeTableXYDataset();
 	private TimeTableXYDataset targetPlatformDataset = new TimeTableXYDataset();
+
+	/**
+	 * Make a label with an icon indicating its color on the graph.
+	 * @param text The text of the label
+	 * @param c The color of the matching line on the graph
+	 * @return the generated label
+	 */
+	private JLabel makeKeyLabel(String text, Color c) {
+		BufferedImage image = new BufferedImage(10,10,BufferedImage.TYPE_INT_RGB);
+		Graphics g = image.getGraphics();
+		g.setColor(c);
+		g.fillRect(0,0,10,10);
+		//image.getGraphics().fillRect(0,0,10,10);
+		Icon icon = new ImageIcon(image);
+		return new JLabel(text,icon,SwingConstants.LEFT);
+	}
 
 	public ChartPanel makeChart(ToolModel t) {
 		JFreeChart chart = ChartFactory.createXYLineChart(null, null, null, 
@@ -73,7 +94,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		XYPlot plot = chart.getXYPlot();
 		ValueAxis axis = plot.getDomainAxis();
 		axis.setLowerMargin(0);
-		axis.setFixedAutoRange(4L*60L*1000L); // auto range to four minutes
+		axis.setFixedAutoRange(3L*60L*1000L); // auto range to three minutes
 		axis.setTickLabelsVisible(false); // We don't need to see the millisecond count
 		axis = plot.getRangeAxis();
 		axis.setRange(0,260); // set termperature range from 0 to 260 degrees C 
@@ -85,16 +106,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		plot.getRenderer(1).setSeriesPaint(0, targetColor);
 		plot.getRenderer(0).setSeriesPaint(0, measuredColor);
 		if (t.hasHeatedPlatform()) {
-			System.err.println("Adding HBP graph");
 			plot.setDataset(2,measuredPlatformDataset);
-			plot.setRenderer(2, new XYLineAndShapeRenderer()); 
+			plot.setRenderer(2, new XYLineAndShapeRenderer(true,false)); 
 			plot.getRenderer(2).setSeriesPaint(0, measuredPlatformColor);
 			plot.setDataset(3,targetPlatformDataset);
 			plot.setRenderer(3, new XYStepRenderer()); 
 			plot.getRenderer(3).setSeriesPaint(0, targetPlatformColor);
 		}
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
-		//renderer.setSeriesLinesVisible(1, true);
 		ChartPanel chartPanel = new ChartPanel(chart);
 		chartPanel.setPreferredSize(new Dimension(400,140));
 		chartPanel.setOpaque(false);
@@ -134,7 +153,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				field.setName("motor-speed-pwm");
 				field.addFocusListener(this);
 				field.setActionCommand("handleTextfield");
-//				field.addActionListener(this);
+				field.addActionListener(this);
 
 				add(label);
 				add(field,"wrap");
@@ -195,8 +214,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 		// our temperature fields
 		if (t.hasHeater()) {
-			JLabel targetTempLabel = new JLabel("Target Temperature (C)");
-			targetTempLabel.setForeground(targetColor);
+			JLabel targetTempLabel = makeKeyLabel("Target Temperature (C)",targetColor);
 			JTextField targetTempField = new JTextField();
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
@@ -208,8 +226,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			targetTempField.setActionCommand("handleTextfield");
 			targetTempField.addActionListener(this);
 
-			JLabel currentTempLabel = new JLabel("Current Temperature (C)");
-			currentTempLabel.setForeground(measuredColor);
+			JLabel currentTempLabel = makeKeyLabel("Current Temperature (C)",measuredColor);
 			currentTempField = new JTextField();
 			currentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			currentTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
@@ -224,8 +241,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 		// our heated platform fields
 		if (t.hasHeatedPlatform()) {
-			JLabel targetTempLabel = new JLabel("Platform Target Temp (C)");
-			targetTempLabel.setForeground(targetPlatformColor);
+			JLabel targetTempLabel = makeKeyLabel("Platform Target Temp (C)",targetPlatformColor);
 			JTextField targetTempField = new JTextField();
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
@@ -238,12 +254,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			targetTempField.setActionCommand("handleTextfield");
 			targetTempField.addActionListener(this);
 
-			JLabel currentTempLabel = new JLabel("Platform Current Temp (C)");
-			currentTempLabel.setForeground(measuredPlatformColor);
-//			currentTempLabel.setMinimumSize(labelMinimumSize);
-//			currentTempLabel.setMaximumSize(labelMinimumSize);
-//			currentTempLabel.setPreferredSize(labelMinimumSize);
-//			currentTempLabel.setHorizontalAlignment(JLabel.LEFT);
+			JLabel currentTempLabel = makeKeyLabel("Platform Current Temp (C)",measuredPlatformColor);
 
 			platformCurrentTempField = new JTextField();
 			platformCurrentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));

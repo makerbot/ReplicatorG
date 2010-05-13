@@ -110,20 +110,8 @@ public class ControlPanelWindow extends JFrame implements
 		// Listen to it-- stop and close if we're in build mode.
 		machine.addMachineStateListener(this);
 		
-		// make it a reasonable size
-		// Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		// int myWidth = screen.width-40;
-		// int myHeight = screen.height-40;
-		int myWidth = 450;
-		int myHeight = 700;
-
-		setBounds(40, 40, myWidth, myHeight);
-
 		// default behavior
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
-		// no resizing... yet
-		setResizable(false);
 
 		// no menu bar.
 		setJMenuBar(createMenuBar());
