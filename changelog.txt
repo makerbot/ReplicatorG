@@ -1,3 +1,8 @@
+0016 ReplicatorG
+* New features:
+** Rearranged control panel to better suit machines with small screens
+** Added temperature monitoring graph to control panel
+
 0015 ReplicatorG
 * Bug fixes:
 * * gh-44: "Save As" now works as expected
