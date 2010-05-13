@@ -126,11 +126,11 @@ public class Build {
 			code = new BuildCode(null,null);
 			code.modified = true;
 			editor.setCode(code);
-			editor.getHeader().rebuild();
+			//editor.getHeader().rebuild(); TODO: fix
 		} else if (mainFilename.endsWith(".gcode")) {
 			code = new BuildCode(mainFilename.substring(0, mainFilename.length() - 6), new File(folder, mainFilename));
 			editor.setCode(code);
-			editor.getHeader().rebuild();
+			//editor.getHeader().rebuild(); TODO: fix
 		}
 	}
 
@@ -146,7 +146,7 @@ public class Build {
 		modified = code.modified;
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				editor.getHeader().repaint();
+				// editor.getHeader().repaint(); TODO: fix
 			}
 		});
 	}
@@ -213,7 +213,7 @@ public class Build {
 
 		File newFile = new File(newFolder, newName);
 		code.saveAs(newFile);
-		editor.getHeader().rebuild();
+		//editor.getHeader().rebuild(); TODO: fix
 		calcModified();
 
 //		editor.handleOpenUnchecked(code.file.getPath(), 
@@ -282,7 +282,7 @@ public class Build {
 			return;
 		}
 		editor.setCode(code);
-		editor.getHeader().rebuild();
+		//editor.getHeader().rebuild(); TODO:fix
 	}
 
 	/**

@@ -27,6 +27,7 @@
 
 package replicatorg.app.ui;
 
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -76,6 +77,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
@@ -174,11 +176,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	MainButtonPanel buttons;
 
-	EditorHeader header;
-
-	public EditorHeader getHeader() { return header; }
-	
-	//EditorStatus status;
+	CardLayout cardLayout = new CardLayout();
+	JPanel cardPanel = new JPanel(cardLayout);
+	EditorHeader header = new EditorHeader(this);
 
 	MachineStatusPanel machineStatusPanel;
 
@@ -267,8 +267,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// http://dev.processing.org/bugs/show_bug.cgi?id=440
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-		//sketchbook = new Sketchbook(this);
-
 		JMenuBar menubar = new JMenuBar();
 		menubar.add(buildFileMenu());
 		menubar.add(buildEditMenu());
@@ -278,7 +276,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		setJMenuBar(menubar);
 
-		// for rev 0120, placing things inside a JPanel because
 		Container pane = getContentPane();
 		BoxLayout layout = new BoxLayout(pane,BoxLayout.Y_AXIS);
 		pane.setLayout(layout);
@@ -289,17 +286,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machineStatusPanel = new MachineStatusPanel();
 		pane.add(machineStatusPanel);
 
-		header = new EditorHeader(this);
 		pane.add(header);
 		
 		textarea = new JEditTextArea(new PdeTextAreaDefaults());
 		textarea.setRightClickPopup(new TextAreaPopup());
 		textarea.setHorizontalOffset(6);
 
+		cardPanel.add(textarea);
+		
 		console = new MessagePanel(this);
 		console.setBorder(null);
 
-		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, textarea,
+		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, cardPanel,
 				console);
 
 		//splitPane.setOneTouchExpandable(true);
@@ -1250,6 +1248,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		textarea.requestFocus(); // get the caret blinking
 
+		String codeName = code.name;
+		if (codeName == null) {
+			codeName = "Untitled";
+		}
+		// if modified, add the li'l glyph next to the name
+		codeName = codeName + (code.modified ? " \u00A7" : "  ");
+
+		// tabbedPane.setTitleAt(0, codeName); // TODO: fix
+		
 		this.undo = code.undo;
 		undoAction.updateUndoState();
 		redoAction.updateRedoState();
@@ -1924,7 +1931,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					addMRUEntry(path);
 					reloadMruMenu();
 				}
-				header.rebuild();
+				//tabbedPane.setTitleAt(0, sketch.name); // TODO: fix
 				if (Base.preferences.getBoolean("console.auto_clear",true)) {
 					console.clear();
 				}

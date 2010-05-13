@@ -75,7 +75,6 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		setMinimumSize(new Dimension(0, height));
 		int prefWidth = 80 * smallMetrics.charWidth('n');
 		setPreferredSize(new Dimension(prefWidth, height));
-		setAlignmentX(LEFT_ALIGNMENT);
 	}
 
 	/**

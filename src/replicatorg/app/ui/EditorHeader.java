@@ -27,19 +27,20 @@ package replicatorg.app.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.Rectangle;
 
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JToggleButton;
+import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicButtonUI;
 
+import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.model.Build;
-import replicatorg.model.BuildCode;
 
 /**
  * Sketch tabs at the top of the editor window.
@@ -47,17 +48,32 @@ import replicatorg.model.BuildCode;
 public class EditorHeader extends JComponent {
 	static Color backgroundColor;
 
-	static Color textColor[] = new Color[2];
+	static Color textSelectedColor;
+	static Color textUnselectedColor;
 
+	private ButtonGroup tabGroup = new ButtonGroup();
+	
+	private class TabButtonUI extends BasicButtonUI {
+		protected void paintText(Graphics g,AbstractButton b,Rectangle textRect,String text) {
+			b.setForeground(b.isSelected()?textSelectedColor:textUnselectedColor);
+			super.paintText(g,b,textRect,text);
+		}
+	}
+	
+	private class TabButton extends JToggleButton {
+		public TabButton(String text) {
+			super(text);
+			setUI(new TabButtonUI());
+			setBorder(new EmptyBorder(0,0,0,0));
+			tabGroup.add(this);
+		}
+	}
+	
+	JToggleButton codeButton = new TabButton("gcode");
+	JToggleButton modelButton = new TabButton("model");
+	JLabel titleLabel = new JLabel("Untitled");
+	
 	MainWindow editor;
-
-	int tabLeft[];
-
-	int tabRight[];
-
-	Font font;
-
-	FontMetrics metrics;
 
 	int fontAscent;
 
@@ -65,76 +81,21 @@ public class EditorHeader extends JComponent {
 
 	int menuRight;
 
-	//
-
-	static final String STATUS[] = { "unsel", "sel" };
-
-	static final int UNSELECTED = 0;
-
-	static final int SELECTED = 1;
-
-	static final String WHERE[] = { "left", "mid", "right", "menu" };
-
-	static final int LEFT = 0;
-
-	static final int MIDDLE = 1;
-
-	static final int RIGHT = 2;
-
-	static final int MENU = 3;
-
-	static final int PIECE_WIDTH = 4;
-
-	Image[][] pieces;
-
-	//
-
-	Image offscreen;
-
-	int sizeW, sizeH;
-
-	int imageW, imageH;
-
 	public EditorHeader(MainWindow mainWindow) {
+		setLayout(new MigLayout("gap 15"));
 		this.editor = mainWindow;
-		// Fix positioning in box layouts
-		setAlignmentX(0);
-		pieces = new Image[STATUS.length][WHERE.length];
-		for (int i = 0; i < STATUS.length; i++) {
-			for (int j = 0; j < WHERE.length; j++) {
-				pieces[i][j] = Base.getImage("images/tab-" + STATUS[i] + "-"
-						+ WHERE[j] + ".gif", this);
-			}
-		}
 
-		if (backgroundColor == null) {
-			// backgroundColor =
-			// Preferences.getColor("header.bgcolor");
-			// hardcoding new blue color scheme for consistency with images,
-			// see EditorStatus.java for details.
-			backgroundColor = new Color(0x92, 0xA0, 0x6B);
-			textColor[SELECTED] = Base
-					.getColorPref("header.text.selected.color","#1A1A00");
-			textColor[UNSELECTED] = Base
-					.getColorPref("header.text.unselected.color","#ffffff");
-		}
-
-		addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				int x = e.getX();
-
-				for (int i = 0; i < 1; i++) {
-					if ((x > tabLeft[i]) && (x < tabRight[i])) {
-						editor.sketch.setCurrent(i);
-						repaint();
-					}
-				}
-			}
-		});
+		add(titleLabel);
+		add(modelButton);
+		add(codeButton);
+		codeButton.setSelected(true);
+		backgroundColor = new Color(0x92, 0xA0, 0x6B);
+		textSelectedColor = Base.getColorPref("header.text.selected.color","#1A1A00");
+		textUnselectedColor = Base.getColorPref("header.text.unselected.color","#ffffff");
 	}
 
-	public void paintComponent(Graphics screen) {
-		if (screen == null)
+	public void paintComponent(Graphics g) {
+		if (g == null)
 			return;
 
 		Build sketch = editor.sketch;
@@ -142,97 +103,12 @@ public class EditorHeader extends JComponent {
 			return; // ??
 
 		Dimension size = getSize();
-		if ((size.width != sizeW) || (size.height != sizeH)) {
-			// component has been resized
-
-			if ((size.width > imageW) || (size.height > imageH)) {
-				// nix the image and recreate, it's too small
-				offscreen = null;
-
-			} else {
-				// who cares, just resize
-				sizeW = size.width;
-				sizeH = size.height;
-				// userLeft = 0; // reset
-			}
-		}
-
-		if (offscreen == null) {
-			sizeW = size.width;
-			sizeH = size.height;
-			imageW = sizeW;
-			imageH = sizeH;
-			offscreen = createImage(imageW, imageH);
-		}
-
-		Graphics g = offscreen.getGraphics();
-		if (font == null) {
-			font = Base.getFontPref("header.text.font","SansSerif,plain,12");
-		}
-		g.setFont(font); // need to set this each time through
-		metrics = g.getFontMetrics();
-		fontAscent = metrics.getAscent();
-		// }
-
-		// Graphics2D g2 = (Graphics2D) g;
-		// g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-		// RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
 		// set the background for the offscreen
 		g.setColor(backgroundColor);
-		g.fillRect(0, 0, imageW, imageH);
+		g.fillRect(0, 0, size.width, size.height);
 
-		int tabCount = sketch.code==null?0:1;
-		if ((tabLeft == null) || (tabLeft.length < tabCount)) {
-			tabLeft = new int[tabCount];
-			tabRight = new int[tabCount];
-		}
-
-		// int x = 0; //Preferences.GUI_SMALL;
-		// int x = (Base.platform == Base.MACOSX) ? 0 : 1;
-		int x = 6; // offset from left edge of the component
-		for (int i = 0; i < tabCount; i++) {
-			BuildCode code = sketch.code;
-
-			String codeName = code.name;
-			if (codeName == null) {
-				codeName = "Untitled";
-			}
-
-			// if modified, add the li'l glyph next to the name
-			String text = "  " + codeName + (code.modified ? " \u00A7" : "  ");
-
-			// int textWidth = metrics.stringWidth(text);
-			Graphics2D g2 = (Graphics2D) g;
-			int textWidth = (int) font.getStringBounds(text,
-					g2.getFontRenderContext()).getWidth();
-
-			int pieceCount = 2 + (textWidth / PIECE_WIDTH);
-			int pieceWidth = pieceCount * PIECE_WIDTH;
-
-			int state = (code == sketch.code) ? SELECTED : UNSELECTED;
-			g.drawImage(pieces[state][LEFT], x, 0, null);
-			x += PIECE_WIDTH;
-
-			int contentLeft = x;
-			tabLeft[i] = x;
-			for (int j = 0; j < pieceCount; j++) {
-				g.drawImage(pieces[state][MIDDLE], x, 0, null);
-				x += PIECE_WIDTH;
-			}
-			tabRight[i] = x;
-			int textLeft = contentLeft + (pieceWidth - textWidth) / 2;
-
-			g.setColor(textColor[state]);
-			int baseline = (sizeH + fontAscent) / 2;
-			// g.drawString(sketch.code.get(i).name, textLeft, baseline);
-			g.drawString(text, textLeft, baseline);
-
-			g.drawImage(pieces[state][RIGHT], x, 0, null);
-			x += PIECE_WIDTH - 1; // overlap by 1 pixel
-		}
-
-		screen.drawImage(offscreen, 0, 0, null);
+		super.paintComponent(g);
 	}
 
 	/**
@@ -251,10 +127,6 @@ public class EditorHeader extends JComponent {
 	final static int GRID_SIZE = 33;
 	
 	public Dimension getMinimumSize() {
-		return new Dimension(50, GRID_SIZE);
-	}
-
-	public Dimension getMaximumSize() {
-		return new Dimension(Integer.MAX_VALUE, GRID_SIZE);
+		return new Dimension(0, GRID_SIZE);
 	}
 }
