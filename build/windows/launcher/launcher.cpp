@@ -73,6 +73,8 @@ WinMain (HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow)
   libs.push_back("registry.jar");
   libs.push_back("antlr.jar");
   libs.push_back("miglayout-3.7.jar");
+  libs.push_back("jfreechart-1.0.13.jar");
+  libs.push_back("jcommon-1.0.16.jar");
 
   // Construct the classpath from the jar list
   stringstream cp;
