@@ -1939,7 +1939,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				addMRUEntry(path);
 				reloadMruMenu();
 			}
-			//tabbedPane.setTitleAt(0, sketch.name); // TODO: fix
 			if (Base.preferences.getBoolean("console.auto_clear",false)) {
 				console.clear();
 			}
