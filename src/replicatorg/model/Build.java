@@ -42,8 +42,9 @@ public class Build {
 	MainWindow editor;
 
 	/** Name of sketch, which is the name of main file, sans extension. */
-	public String name;
+	private String name;
 
+	public String getName() { return name; }
 	/** Name of source file, used by load().  This may be an .STL file or a .gcode file. */
 	String mainFilename;
 

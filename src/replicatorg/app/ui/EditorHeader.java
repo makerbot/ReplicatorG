@@ -29,6 +29,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -36,6 +38,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 import net.miginfocom.swing.MigLayout;
@@ -45,13 +49,27 @@ import replicatorg.model.Build;
 /**
  * Sketch tabs at the top of the editor window.
  */
-public class EditorHeader extends JComponent {
+public class EditorHeader extends JComponent implements ActionListener {
+	public enum Tab {
+		MODEL,
+		GCODE
+	};
+	
+	public Tab getSelectedTab() {
+		if (modelButton.isSelected()) return Tab.MODEL;
+		return Tab.GCODE;
+	}
 	static Color backgroundColor;
 
 	static Color textSelectedColor;
 	static Color textUnselectedColor;
-
+ 
 	private ButtonGroup tabGroup = new ButtonGroup();
+
+	private ChangeListener changeListener;
+	void setChangeListener(ChangeListener listener) {
+		changeListener = listener;
+	}
 	
 	private class TabButtonUI extends BasicButtonUI {
 		protected void paintText(Graphics g,AbstractButton b,Rectangle textRect,String text) {
@@ -66,6 +84,7 @@ public class EditorHeader extends JComponent {
 			setUI(new TabButtonUI());
 			setBorder(new EmptyBorder(0,0,0,0));
 			tabGroup.add(this);
+			addActionListener(EditorHeader.this);
 		}
 	}
 	
@@ -94,6 +113,12 @@ public class EditorHeader extends JComponent {
 		textUnselectedColor = Base.getColorPref("header.text.unselected.color","#ffffff");
 	}
 
+	void setBuild(Build build) {
+		codeButton.setVisible(build.getCode() != null);
+		modelButton.setVisible(build.getModel() != null);
+		titleLabel.setText(build.getName());
+	}
+	
 	public void paintComponent(Graphics g) {
 		if (g == null)
 			return;
@@ -128,5 +153,10 @@ public class EditorHeader extends JComponent {
 	
 	public Dimension getMinimumSize() {
 		return new Dimension(0, GRID_SIZE);
+	}
+
+	public void actionPerformed(ActionEvent a) {
+		ChangeEvent e = new ChangeEvent(this);
+		if (changeListener != null) changeListener.stateChanged(e);
 	}
 }

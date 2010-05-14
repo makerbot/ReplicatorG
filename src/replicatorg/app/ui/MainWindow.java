@@ -38,7 +38,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -84,6 +83,8 @@ import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.event.UndoableEditEvent;
@@ -119,6 +120,7 @@ import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
+import replicatorg.model.BuildModel;
 import replicatorg.model.JEditTextAreaSource;
 import replicatorg.uploader.FirmwareUploader;
 
@@ -130,7 +132,7 @@ import com.apple.mrj.MRJQuitHandler;
 
 public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		MRJPrefsHandler, MRJOpenDocumentHandler,
-		MachineListener
+		MachineListener, ChangeListener
 {
 	/**
 	 * 
@@ -146,6 +148,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// Preference key name
 	final static String MRU_LIST_KEY = "mru_list";
 
+	final static String MODEL_TAB_KEY = "MODEL";
+	final static String GCODE_TAB_KEY = "GCODE";
 	// p5 icon for the window
 	Image icon;
 
@@ -179,7 +183,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	CardLayout cardLayout = new CardLayout();
 	JPanel cardPanel = new JPanel(cardLayout);
 	EditorHeader header = new EditorHeader(this);
-
+	{
+		header.setChangeListener(this);
+	}
 	MachineStatusPanel machineStatusPanel;
 
 	MessagePanel console;
@@ -192,9 +198,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public Build build;
 
 	public JEditTextArea textarea;
-
-	// runtime information and window placement
-	Point appletLocation;
+	public STLPreviewPanel stlPanel;
 
 	public SimulationThread simulationThread;
 
@@ -226,13 +230,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// used internally, and only briefly
 	CompoundEdit compoundEdit;
 
-	//
-
-	// SketchHistory history; // TODO re-enable history
-	//Sketchbook sketchbook;
-
 	FindReplace find;
 
+	private STLPreviewPanel getStlPanel() {
+		if (stlPanel == null) {
+			stlPanel = new STLPreviewPanel();
+			cardPanel.add(stlPanel,MODEL_TAB_KEY);
+		}
+		return stlPanel;
+	}
+	
 	public MainWindow() {
 		super(WINDOW_TITLE);
 		setLocationByPlatform(true);
@@ -292,7 +299,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		textarea.setRightClickPopup(new TextAreaPopup());
 		textarea.setHorizontalOffset(6);
 
-		cardPanel.add(textarea);
+		cardPanel.add(textarea,GCODE_TAB_KEY);
 		
 		console = new MessagePanel(this);
 		console.setBorder(null);
@@ -1211,6 +1218,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * being manipulated.
 	 */
 	public void setCode(BuildCode code) {
+		if (code == null) return;
 		if (code.document == null) { // this document not yet inited
 			code.document = new SyntaxDocument();
 
@@ -1262,6 +1270,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		redoAction.updateRedoState();
 	}
 
+	public void setModel(BuildModel model) {
+		getStlPanel().setModel(model);
+	}
+	
 	public void beginCompoundEdit() {
 		compoundEdit = new CompoundEdit();
 	}
@@ -1356,7 +1368,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				!(machine.driver instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
 		} else {
-			BuildNamingDialog bsd = new BuildNamingDialog(this,build.name);
+			BuildNamingDialog bsd = new BuildNamingDialog(this,build.getName());
 			bsd.setVisible(true);
 			String path = bsd.getPath();
 			if (path != null) {
@@ -1424,7 +1436,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				!(machine.driver instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
 		} else {
-			String sourceName = build.name + ".s3g";
+			String sourceName = build.getName() + ".s3g";
 			String path = selectOutputFile(sourceName);
 			if (path != null) {
 				// close stuff.
@@ -1699,7 +1711,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			return;
 		}
 
-		String prompt = "Save changes to " + build.name + "?  ";
+		String prompt = "Save changes to " + build.getName() + "?  ";
 
 		if (!Base.isMacOS() || Base.javaVersion < 1.5f) {
 			int result = JOptionPane.showConfirmDialog(this, prompt,
@@ -1918,21 +1930,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			// loading may take a few moments for large files
 
-			if (null != path && path.toLowerCase().endsWith(".stl")) {
-				STLFrame stlFrame = new STLFrame(path);
-				stlFrame.setVisible(true);
-			} else {
-				build = new Build(this, path);
-				setCode(build.getCode());
-				if (null != path) {
-					handleOpenPath = path;
-					addMRUEntry(path);
-					reloadMruMenu();
-				}
-				//tabbedPane.setTitleAt(0, sketch.name); // TODO: fix
-				if (Base.preferences.getBoolean("console.auto_clear",false)) {
-					console.clear();
-				}
+			build = new Build(this, path);
+			header.setBuild(build);
+			setCode(build.getCode());
+			setModel(build.getModel());
+			if (null != path) {
+				handleOpenPath = path;
+				addMRUEntry(path);
+				reloadMruMenu();
+			}
+			//tabbedPane.setTitleAt(0, sketch.name); // TODO: fix
+			if (Base.preferences.getBoolean("console.auto_clear",false)) {
+				console.clear();
 			}
 		} catch (Exception e) {
 			error(e);
@@ -2302,5 +2311,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	public void toolStatusChanged(MachineToolStatusEvent event) {
+	}
+
+	public void stateChanged(ChangeEvent e) {
+		// We get a change event when another tab is selected.
+		if (header.getSelectedTab() == EditorHeader.Tab.MODEL) {
+			((CardLayout)cardPanel.getLayout()).show(cardPanel, MODEL_TAB_KEY);
+		} else {
+			((CardLayout)cardPanel.getLayout()).show(cardPanel, GCODE_TAB_KEY);
+		}
 	}
 }

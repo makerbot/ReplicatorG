@@ -353,6 +353,7 @@ public class STLPreviewPanel extends JPanel {
 
 		BranchGroup wrapper = new BranchGroup();
 		wrapper.addChild(objectSwitch);
+		wrapper.setCapability(BranchGroup.ALLOW_DETACH);
 		wrapper.compile();
 		return wrapper;
 	}
@@ -378,6 +379,7 @@ public class STLPreviewPanel extends JPanel {
 
 		sceneGroup = new BranchGroup();
 		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
+		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
 		sceneGroup.addChild(makeAmbientLight());
 		sceneGroup.addChild(makeDirectedLight());
 		sceneGroup.addChild(makeBoundingBox());
