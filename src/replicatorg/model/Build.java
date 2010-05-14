@@ -83,20 +83,33 @@ public class Build {
 		} else {
 			File mainFile = new File(path);
 			mainFilename = mainFile.getName();
-			// get the name of the sketch by chopping .gcode
-			// off of the main file name
-			if (mainFilename.endsWith(".gcode")) {
-				name = mainFilename.substring(0, mainFilename.length() - 6);
+			String suffix = "";
+			int lastIdx = mainFilename.lastIndexOf('.');
+			if (lastIdx > 0) {
+				suffix = mainFilename.substring(lastIdx+1);
+				name = mainFilename.substring(0,lastIdx);
 			} else {
 				name = mainFilename;
-				mainFilename = mainFilename + ".gcode";
 			}
 			String parentPath = new File(path).getParent(); 
 			if (parentPath == null) {
 				parentPath = ".";
 			}
 			folder = new File(parentPath);
-			code = new BuildCode(name, new File(folder, mainFilename));
+			File codeFile = new File(folder, name + ".gcode");
+			if (codeFile.exists()) {
+				code = new BuildCode(name, codeFile);
+			}
+			final File modelFile = new File(folder, name + ".stl");
+			if (modelFile.exists()) {
+				model = new BuildModel() {
+					public String getSTLPath() {
+						try {
+							return modelFile.getCanonicalPath();
+						} catch (IOException ioe) { return null; }
+					}
+				};
+			}
 		}
 	}
 

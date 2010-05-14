@@ -1878,8 +1878,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// haven't run across a case where i can verify that this works
 		// because open is usually very fast.
 //		buttons.activate(MainButtonPanel.OPEN);
-		Base.logger.info("Handle open");
-		System.err.println("* Handle open");
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				String path = ipath;
@@ -1889,7 +1887,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						return;
 				}
 				Base.logger.info("Loading "+path);
-				System.err.println("* Loading "+path);
 				doClose();
 				handleOpenPath = path;
 				checkModified(HANDLE_OPEN);
@@ -1933,7 +1930,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					reloadMruMenu();
 				}
 				//tabbedPane.setTitleAt(0, sketch.name); // TODO: fix
-				if (Base.preferences.getBoolean("console.auto_clear",true)) {
+				if (Base.preferences.getBoolean("console.auto_clear",false)) {
 					console.clear();
 				}
 			}
