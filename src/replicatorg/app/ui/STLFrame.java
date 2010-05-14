@@ -2,11 +2,18 @@ package replicatorg.app.ui;
 
 import javax.swing.JFrame;
 
+import replicatorg.model.BuildModel;
+
 public class STLFrame extends JFrame {
-	public STLFrame(String path) {
+	public STLFrame(final String path) {
 		setTitle(path);
 		setSize(400,400);
-		stlPreview = new STLPreviewPanel(path);
+		stlPreview = new STLPreviewPanel();
+		stlPreview.setModel(new BuildModel() {
+			public String getSTLPath() {
+				return path;
+			}
+		});
 		initComponents();
 	}
 	

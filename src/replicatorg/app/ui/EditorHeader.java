@@ -98,7 +98,7 @@ public class EditorHeader extends JComponent {
 		if (g == null)
 			return;
 
-		Build sketch = editor.sketch;
+		Build sketch = editor.build;
 		if (sketch == null)
 			return; // ??
 

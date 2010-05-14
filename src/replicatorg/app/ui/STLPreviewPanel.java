@@ -44,6 +44,7 @@ import javax.vecmath.Vector3f;
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
 import replicatorg.app.Base;
+import replicatorg.model.BuildModel;
 
 import com.sun.j3d.loaders.IncorrectFormatException;
 import com.sun.j3d.loaders.ParsingErrorException;
@@ -59,14 +60,35 @@ public class STLPreviewPanel extends JPanel {
 	BoundingSphere bounds =
 		new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
 
-	public STLPreviewPanel(String path) {
+	BuildModel model = null;
+	
+	public void setModel(BuildModel model) {
+		if (model != this.model) {
+			this.model = model;
+			if (model != null) {
+				setScene(model);
+			}
+		}
+	}
+
+
+	private void setScene(BuildModel model) {
+		Base.logger.info(model.getSTLPath());
+		if (objectBranch != null) {
+			sceneGroup.removeChild(objectBranch);
+		}
+		objectBranch = makeShape(model.getSTLPath());
+		sceneGroup.addChild(objectBranch);
+	}
+	
+	public STLPreviewPanel() {
 		setLayout(new java.awt.BorderLayout());
 		// Create Canvas3D and SimpleUniverse; add canvas to drawing panel
 		Canvas3D c = createUniverse();
 		add(c, java.awt.BorderLayout.CENTER);
 
 		// Create the content branch and add it to the universe
-		scene = createSTLScene(path);
+		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
 
 		class MouseActivityListener implements MouseMotionListener, MouseListener {
@@ -79,7 +101,7 @@ public class STLPreviewPanel extends JPanel {
 				if (button == MouseEvent.BUTTON1) {
 					// Rotate view
 					turntableAngle += 0.05 * (double)(p.x - startPoint.x);
-					elevationAngle += 0.05 * (double)(p.y - startPoint.y);
+					elevationAngle -= 0.05 * (double)(p.y - startPoint.y);
 				} else if (button == MouseEvent.BUTTON3) {
 					// Pan view
 					cameraTranslation.x += -0.05 * (double)(p.x - startPoint.x);
@@ -156,7 +178,7 @@ public class STLPreviewPanel extends JPanel {
 
 
 	private SimpleUniverse univ = null;
-	private BranchGroup scene = null;
+
 	/**
 	 * The switch object that allows us to toggle between wireframe and solid modes.
 	 */
@@ -285,7 +307,7 @@ public class STLPreviewPanel extends JPanel {
 		return bb;
 	}
 
-	private Node makeShape(String path) {
+	private BranchGroup makeShape(String path) {
 		STLLoader loader = new STLLoader();
 		Scene scene = null;
 		try {
@@ -329,20 +351,16 @@ public class STLPreviewPanel extends JPanel {
 				PolygonAttributes.CULL_NONE,0));
 		edgeClone.setAppearance(edges);
 
-		return objectSwitch;
+		BranchGroup wrapper = new BranchGroup();
+		wrapper.addChild(objectSwitch);
+		wrapper.compile();
+		return wrapper;
 	}
 
-	/*
-	 * 		Point3d lower = new Point3d();
-			Point3d upper = new Point3d();		
-			BoundingBox bb = getBoundingBox(originalShape);
-			bb.getLower(lower);
-			bb.getUpper(upper);
-			Vector3d size = new Vector3d();
-			size.sub(upper, lower);
-			Shape3D bounds = makeBoxFrame(lower, size);
-	 */
-	public BranchGroup createSTLScene(String path) {
+	BranchGroup sceneGroup;
+	BranchGroup objectBranch;
+	
+	public BranchGroup createSTLScene() {
 		// Create the root of the branch graph
 		BranchGroup objRoot = new BranchGroup();
 
@@ -358,9 +376,8 @@ public class STLPreviewPanel extends JPanel {
 		objTrans.setTransform(scaleTf);
 		objRoot.addChild(objTrans);
 
-		Base.logger.info(path);
-		BranchGroup sceneGroup = new BranchGroup();			
-		sceneGroup.addChild(makeShape(path));
+		sceneGroup = new BranchGroup();
+		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 		sceneGroup.addChild(makeAmbientLight());
 		sceneGroup.addChild(makeDirectedLight());
 		sceneGroup.addChild(makeBoundingBox());

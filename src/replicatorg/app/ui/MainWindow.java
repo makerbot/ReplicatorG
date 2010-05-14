@@ -189,7 +189,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	JLabel lineNumberComponent;
 
 	// currently opened program
-	public Build sketch;
+	public Build build;
 
 	public JEditTextArea textarea;
 
@@ -474,10 +474,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// last sketch that was in use
 		// Preferences.set("last.sketch.name", sketchName);
 		// Preferences.set("last.sketch.name", sketch.name);
-		if (sketch != null) {
-			String lastPath = sketch.getMainFilePath();
+		if (build != null) {
+			String lastPath = build.getMainFilePath();
 			if (lastPath != null) {
-				Base.preferences.put("last.sketch.path", sketch.getMainFilePath());
+				Base.preferences.put("last.sketch.path", build.getMainFilePath());
 			}
 		}
 
@@ -928,7 +928,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				textarea.cut();
-				sketch.setModified(true);
+				build.setModified(true);
 			}
 		});
 		menu.add(item);
@@ -945,7 +945,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				textarea.paste();
-				sketch.setModified(true);
+				build.setModified(true);
 			}
 		});
 		menu.add(item);
@@ -1040,16 +1040,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				undoItem.setEnabled(true);
 				undoItem.setText(undo.getUndoPresentationName());
 				putValue(Action.NAME, undo.getUndoPresentationName());
-				if (sketch != null) {
-					sketch.setModified(true); // 0107
+				if (build != null) {
+					build.setModified(true); // 0107
 				}
 			} else {
 				this.setEnabled(false);
 				undoItem.setEnabled(false);
 				undoItem.setText("Undo");
 				putValue(Action.NAME, "Undo");
-				if (sketch != null) {
-					sketch.setModified(false); // 0107
+				if (build != null) {
+					build.setModified(false); // 0107
 				}
 			}
 		}
@@ -1356,7 +1356,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				!(machine.driver instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
 		} else {
-			BuildNamingDialog bsd = new BuildNamingDialog(this,sketch.name);
+			BuildNamingDialog bsd = new BuildNamingDialog(this,build.name);
 			bsd.setVisible(true);
 			String path = bsd.getPath();
 			if (path != null) {
@@ -1424,7 +1424,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				!(machine.driver instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
 		} else {
-			String sourceName = sketch.name + ".s3g";
+			String sourceName = build.name + ".s3g";
 			String path = selectOutputFile(sourceName);
 			if (path != null) {
 				// close stuff.
@@ -1678,8 +1678,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public void doClose() {
 
 		doStop(); // need to stop if runtime error
-		if (sketch != null) {
-			sketch.cleanup();
+		if (build != null) {
+			build.cleanup();
 		}
 
 		// focus the GCode again after quitting presentation mode
@@ -1694,12 +1694,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	protected void checkModified(int checkModifiedMode) {
 		this.checkModifiedMode = checkModifiedMode;
-		if (sketch == null || !sketch.modified) {
+		if (build == null || !build.modified) {
 			checkModified2();
 			return;
 		}
 
-		String prompt = "Save changes to " + sketch.name + "?  ";
+		String prompt = "Save changes to " + build.name + "?  ";
 
 		if (!Base.isMacOS() || Base.javaVersion < 1.5f) {
 			int result = JOptionPane.showConfirmDialog(this, prompt,
@@ -1906,7 +1906,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		doClose();
 		handleOpen2(path);
 
-		sketch.setCurrent(codeIndex);
+		setCode(build.getCode());
 		textarea.select(selStart, selStop);
 		// textarea.updateScrollBars();
 		textarea.setScrollPosition(scrollPos);
@@ -1925,7 +1925,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				STLFrame stlFrame = new STLFrame(path);
 				stlFrame.setVisible(true);
 			} else {
-				sketch = new Build(this, path);
+				build = new Build(this, path);
+				setCode(build.getCode());
 				if (null != path) {
 					handleOpenPath = path;
 					addMRUEntry(path);
@@ -1966,7 +1967,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			public void run() {
 				Base.logger.info("Saving...");
 				try {
-					if (sketch.save()) {
+					if (build.save()) {
 						Base.logger.info("Save operation complete.");
 					} else {
 						Base.logger.info("Save operation aborted.");
@@ -1991,7 +1992,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				// TODO: lock sketch?
 				Base.logger.info("Saving...");
 				try {
-					if (sketch.saveAs()) {
+					if (build.saveAs()) {
 						Base.logger.info("Save operation complete.");
 						// TODO: Add to MRU?
 					} else {
@@ -2194,7 +2195,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			cutItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.cut();
-					sketch.setModified(true);
+					build.setModified(true);
 				}
 			});
 			this.add(cutItem);
@@ -2211,7 +2212,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.paste();
-					sketch.setModified(true);
+					build.setModified(true);
 				}
 			});
 			this.add(item);

@@ -37,20 +37,14 @@ import replicatorg.app.ui.MainWindow;
  * Stores information about files in the current sketch
  */
 public class Build {
-	/**
-	 * The editor window associated with this build.  We should remove this dependency or replace it with a
-	 * buildupdatelistener or the like.
-	 */
+	/** The editor window associated with this build.  We should remove this dependency or replace it with a
+	 * buildupdatelistener or the like. */
 	MainWindow editor;
 
-	/**
-	 * Name of sketch, which is the name of main file, sans extension.
-	 */
+	/** Name of sketch, which is the name of main file, sans extension. */
 	public String name;
 
-	/**
-	 * Name of source file, used by load().  This may be an .STL file or a .gcode file.
-	 */
+	/** Name of source file, used by load().  This may be an .STL file or a .gcode file. */
 	String mainFilename;
 
 	/**
@@ -66,7 +60,7 @@ public class Build {
 	/**
 	 * The STL model that this build is based on, if any.
 	 */
-	public BuildModel objectModel = null;
+	public BuildModel model = null;
 	/**
 	 * The gcode interpretation of the model.
 	 */
@@ -84,13 +78,11 @@ public class Build {
 			mainFilename = null;
 			name = "Untitled";
 			folder = new File("~");
+			code = new BuildCode(null,null);
+			code.modified = true;
 		} else {
 			File mainFile = new File(path);
-			// System.out.println("main file is " + mainFile);
-	
 			mainFilename = mainFile.getName();
-			// System.out.println("main file is " + mainFilename);
-	
 			// get the name of the sketch by chopping .gcode
 			// off of the main file name
 			if (mainFilename.endsWith(".gcode")) {
@@ -104,33 +96,7 @@ public class Build {
 				parentPath = ".";
 			}
 			folder = new File(parentPath);
-		}
-		load();
-	}
-
-	/**
-	 * Build the list of files.
-	 * 
-	 * Generally this is only done once, rather than each time a change is made,
-	 * because otherwise it gets to be a nightmare to keep track of what files
-	 * went where, because not all the data will be saved to disk.
-	 * 
-	 * This also gets called when the main sketch file is renamed, because the
-	 * sketch has to be reloaded from a different folder.
-	 * 
-	 * Another exception is when an external editor is in use, in which case the
-	 * load happens each time "run" is hit.
-	 */
-	public void load() {
-		if (mainFilename == null) {
-			code = new BuildCode(null,null);
-			code.modified = true;
-			editor.setCode(code);
-			//editor.getHeader().rebuild(); TODO: fix
-		} else if (mainFilename.endsWith(".gcode")) {
-			code = new BuildCode(mainFilename.substring(0, mainFilename.length() - 6), new File(folder, mainFilename));
-			editor.setCode(code);
-			//editor.getHeader().rebuild(); TODO: fix
+			code = new BuildCode(name, new File(folder, mainFilename));
 		}
 	}
 
@@ -269,22 +235,19 @@ public class Build {
 
 
 	/**
-	 * Change what file is currently being edited.
-	 * <OL>
-	 * <LI> store the String for the text of the current file.
-	 * <LI> retrieve the String for the text of the new file.
-	 * <LI> change the text that's visible in the text area
-	 * </OL>
+	 * Return the gcode object.
 	 */
-	public void setCurrent(int which) {
-		// if current is null, then this is the first setCurrent(0)
-		if ((currentIndex == which) && (code != null)) {
-			return;
-		}
-		editor.setCode(code);
-		//editor.getHeader().rebuild(); TODO:fix
+	public BuildCode getCode() {
+		return code;
 	}
-
+	
+	/**
+	 * Return the model object.
+	 */
+	public BuildModel getModel() {
+		return model;
+	}
+	
 	/**
 	 * Cleanup temporary files used during a build/run.
 	 */

@@ -67,7 +67,6 @@ public class BuildCode implements Comparable<BuildCode> {
 	public BuildCode(String name, File file) {
 		this.name = name;
 		this.file = file;
-
 		try {
 			load();
 		} catch (IOException e) {
