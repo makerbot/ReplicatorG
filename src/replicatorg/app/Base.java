@@ -363,65 +363,6 @@ public class Base {
 		return platform == Platform.LINUX;
 	}
 
-	static File buildFolder;
-
-	static public File getBuildFolder() {
-		if (buildFolder == null) {
-			String buildPath = preferences.get("build.path",null);
-			if (buildPath != null) {
-				buildFolder = new File(buildPath);
-
-			} else {
-				// File folder = new File(getTempFolder(), "build");
-				// if (!folder.exists()) folder.mkdirs();
-				buildFolder = createTempFolder("build");
-				buildFolder.deleteOnExit();
-			}
-		}
-		return buildFolder;
-	}
-
-	/**
-	 * Get the path to the platform's temporary folder, by creating a temporary
-	 * temporary file and getting its parent folder. <br/> Modified for revision
-	 * 0094 to actually make the folder randomized to avoid conflicts in
-	 * multi-user environments. (Bug 177)
-	 */
-	static public File createTempFolder(String name) {
-		try {
-			File folder = File.createTempFile(name, null);
-			// String tempPath = ignored.getParent();
-			// return new File(tempPath);
-			folder.delete();
-			folder.mkdirs();
-			return folder;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	/**
-	 * Check for a new sketchbook location.
-	 */
-	static protected File promptSketchbookLocation() {
-		File folder = null;
-
-		folder = new File(System.getProperty("user.home"), "sketchbook");
-		if (!folder.exists()) {
-			folder.mkdirs();
-			return folder;
-		}
-
-		folder = Base.selectFolder(
-				"Select (or create new) folder for sketches...", null, null);
-		if (folder == null) {
-			System.exit(0);
-		}
-		return folder;
-	}
-
 	/**
 	 * Implementation for choosing directories that handles both the Mac OS X
 	 * hack to allow the native AWT file dialog, or uses the JFileChooser on
@@ -462,48 +403,6 @@ public class Base {
 		}
 		return null;
 	}
-
-	static public String cleanKey(String what) {
-		// jnireg seems to be reading the chars as bytes
-		// so maybe be as simple as & 0xff and then running through decoder
-
-		char c[] = what.toCharArray();
-
-		// if chars are in the tooHigh range, it's prolly because
-		// a byte from the jni registry was turned into a char
-		// and there was a sign extension.
-		// e.g. 0xFC (252, umlaut u) became 0xFFFC (65532).
-		// but on a japanese system, maybe this is two-byte and ok?
-		int tooHigh = 65536 - 128;
-		for (int i = 0; i < c.length; i++) {
-			if (c[i] >= tooHigh)
-				c[i] &= 0xff;
-
-			/*
-			 * if ((c[i] >= 32) && (c[i] < 128)) { System.out.print(c[i]); }
-			 * else { System.out.print("[" + PApplet.hex(c[i]) + "]"); }
-			 */
-		}
-		return new String(c);
-	}
-
-	// .................................................................
-
-	// someone needs to be slapped
-	// static KeyStroke closeWindowKeyStroke;
-
-	/**
-	 * Return true if the key event was a Ctrl-W or an ESC, both indicators to
-	 * close the window. Use as part of a keyPressed() event handler for frames.
-	 */
-	/*
-	 * static public boolean isCloseWindowEvent(KeyEvent e) { if
-	 * (closeWindowKeyStroke == null) { int modifiers =
-	 * Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-	 * closeWindowKeyStroke = KeyStroke.getKeyStroke('W', modifiers); } return
-	 * ((e.getKeyCode() == KeyEvent.VK_ESCAPE) ||
-	 * KeyStroke.getKeyStrokeForEvent(e).equals(closeWindowKeyStroke)); }
-	 */
 
 	/**
 	 * Registers key events for a Ctrl-W and ESC with an ActionListener that

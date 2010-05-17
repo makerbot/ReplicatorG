@@ -11,13 +11,14 @@ import replicatorg.model.BuildModel;
  *
  */
 public abstract class ToolpathGenerator {
-	private BuildModel model;
+	protected BuildModel model;
 	
 	public void setModel(BuildModel model) {
 		this.model = model;
 	}
 	
-	public void configure(JComponent component) {
+	public void visualConfigure(JComponent parent) {
+		assert parent != null;
 		assert model != null;
 	}
 	

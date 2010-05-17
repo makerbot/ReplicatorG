@@ -130,7 +130,7 @@ def writeOutput( fileName = '' ):
 	preferences.getReadRepository( exportRepository )
 	startTime = time.time()
 	print( 'File ' + gcodec.getSummarizedFilename( fileName ) + ' is being chain exported.' )
-	suffixFilename = fileName[ : fileName.rfind( '.' ) ] + '_export.' + exportRepository.fileExtension.value
+	suffixFilename = fileName[ : fileName.rfind( '.' ) ] + '.' + exportRepository.fileExtension.value
 	gcodeText = gcodec.getGcodeFileText( fileName, '' )
 	procedures = consecution.getProcedures( 'export', gcodeText )
 	gcodeText = consecution.getChainTextFromProcedures( fileName, procedures[ : - 1 ], gcodeText )
