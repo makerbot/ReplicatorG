@@ -3,8 +3,11 @@
  */
 package replicatorg.app.ui;
 
+import java.awt.BorderLayout;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -35,6 +38,7 @@ import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
@@ -71,7 +75,6 @@ public class STLPreviewPanel extends JPanel {
 		}
 	}
 
-
 	private void setScene(BuildModel model) {
 		Base.logger.info(model.getSTLPath());
 		if (objectBranch != null) {
@@ -81,12 +84,23 @@ public class STLPreviewPanel extends JPanel {
 		sceneGroup.addChild(objectBranch);
 	}
 	
-	public STLPreviewPanel() {
-		setLayout(new java.awt.BorderLayout());
+	MainWindow mainWindow;
+	
+	public STLPreviewPanel(final MainWindow mainWindow) {
+		this.mainWindow = mainWindow;
+		setLayout(new BorderLayout()); 
+		//setLayout(new MigLayout());
 		// Create Canvas3D and SimpleUniverse; add canvas to drawing panel
 		Canvas3D c = createUniverse();
-		add(c, java.awt.BorderLayout.CENTER);
-
+		add(c, BorderLayout.CENTER);
+		//add(c,"growx,growy,spanx,spany");
+		JButton sliceButton = new JButton("Slice");
+		sliceButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				mainWindow.runToolpathGenerator();
+			}
+		});
+		add(sliceButton, BorderLayout.EAST);
 		// Create the content branch and add it to the universe
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);

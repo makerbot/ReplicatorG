@@ -122,6 +122,9 @@ import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
 import replicatorg.model.BuildModel;
 import replicatorg.model.JEditTextAreaSource;
+import replicatorg.plugin.toolpath.SkeinforgeGenerator;
+import replicatorg.plugin.toolpath.ToolpathGenerator;
+import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
 import replicatorg.uploader.FirmwareUploader;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -234,7 +237,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	private STLPreviewPanel getStlPanel() {
 		if (stlPanel == null) {
-			stlPanel = new STLPreviewPanel();
+			stlPanel = new STLPreviewPanel(this);
 			cardPanel.add(stlPanel,MODEL_TAB_KEY);
 		}
 		return stlPanel;
@@ -501,6 +504,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			bse.printStackTrace();
 		}
 	}
+	
+	public void runToolpathGenerator() {
+		ToolpathGenerator generator = new SkeinforgeGenerator();
+		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this.getRootPane(), generator, build);
+		tgt.start();
+		System.err.println("running tp gen");
+	}
+	
 
 	private void saveMRUPrefs() {
 		StringBuffer sb = new StringBuffer();
