@@ -11,7 +11,16 @@ import replicatorg.model.BuildModel;
  *
  */
 public abstract class ToolpathGenerator {
+	public interface GeneratorListener {
+		public void updateGenerator(String message);
+	}
+	
 	protected BuildModel model;
+	protected GeneratorListener listener;
+	
+	public void setListener(GeneratorListener listener) {
+		this.listener = listener;
+	}
 	
 	public void setModel(BuildModel model) {
 		this.model = model;
