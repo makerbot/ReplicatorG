@@ -9,7 +9,7 @@
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="skeinforge_tools.html"><font color="#ffffff">skeinforge_tools</font></a>.<a href="skeinforge_tools.skeinforge_utilities.html"><font color="#ffffff">skeinforge_utilities</font></a>.intercircle</strong></big></big> ($Date: 2008/21/04 $)</font></td
 ><td align=right valign=bottom
 ><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/skeinforge_utilities/intercircle.py">/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/skeinforge_utilities/intercircle.py</a></font></td></tr></table>
-    <p><tt>Intercircle is a collection of utilities for intersecting circles, used to get smooth loops around a collection of points and inset &amp; outset loops.</tt></p>
+    <p><tt>Intercircle&nbsp;is&nbsp;a&nbsp;collection&nbsp;of&nbsp;utilities&nbsp;for&nbsp;intersecting&nbsp;circles,&nbsp;used&nbsp;to&nbsp;get&nbsp;smooth&nbsp;loops&nbsp;around&nbsp;a&nbsp;collection&nbsp;of&nbsp;points&nbsp;and&nbsp;inset&nbsp;&amp;&nbsp;outset&nbsp;loops.</tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#aa55cc">
@@ -54,8 +54,6 @@
 
 <dl><dt><a name="BoundingLoop-isOverlappingAnother"><strong>isOverlappingAnother</strong></a>(self, anotherBoundingLoop)</dt><dd><tt>Determine&nbsp;if&nbsp;this&nbsp;bounding&nbsp;loop&nbsp;is&nbsp;intersecting&nbsp;another&nbsp;bounding&nbsp;loop.</tt></dd></dl>
 
-<dl><dt><a name="BoundingLoop-isOverlappingAnotherInList"><strong>isOverlappingAnotherInList</strong></a>(self, boundingLoops)</dt><dd><tt>Determine&nbsp;if&nbsp;this&nbsp;bounding&nbsp;loop&nbsp;is&nbsp;intersecting&nbsp;another&nbsp;bounding&nbsp;loop&nbsp;in&nbsp;a&nbsp;list.</tt></dd></dl>
-
 <dl><dt><a name="BoundingLoop-isRectangleMissingAnother"><strong>isRectangleMissingAnother</strong></a>(self, anotherBoundingLoop)</dt><dd><tt>Determine&nbsp;if&nbsp;the&nbsp;rectangle&nbsp;of&nbsp;this&nbsp;bounding&nbsp;loop&nbsp;is&nbsp;missing&nbsp;the&nbsp;rectangle&nbsp;of&nbsp;another&nbsp;bounding&nbsp;loop.</tt></dd></dl>
 
 </td></tr></table> <p>
@@ -72,17 +70,15 @@
 
 <dl><dt><a name="CircleIntersection-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;string&nbsp;representation&nbsp;of&nbsp;this&nbsp;<a href="#CircleIntersection">CircleIntersection</a>.</tt></dd></dl>
 
-<dl><dt><a name="CircleIntersection-addToList"><strong>addToList</strong></a>(self, circleIntersectionPath)</dt><dd><tt>Add&nbsp;this&nbsp;to&nbsp;the&nbsp;circle&nbsp;intersection&nbsp;path,&nbsp;setting&nbsp;stepped&nbsp;on&nbsp;to&nbsp;be&nbsp;true.</tt></dd></dl>
+<dl><dt><a name="CircleIntersection-addToList"><strong>addToList</strong></a>(self, circleIntersectionPath)</dt></dl>
 
-<dl><dt><a name="CircleIntersection-getAbsolutePosition"><strong>getAbsolutePosition</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;absolute&nbsp;position.</tt></dd></dl>
+<dl><dt><a name="CircleIntersection-getAbsolutePosition"><strong>getAbsolutePosition</strong></a>(self)</dt></dl>
 
-<dl><dt><a name="CircleIntersection-getCircleIntersectionAhead"><strong>getCircleIntersectionAhead</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;first&nbsp;circle&nbsp;intersection&nbsp;on&nbsp;the&nbsp;circle&nbsp;node&nbsp;ahead.</tt></dd></dl>
+<dl><dt><a name="CircleIntersection-getCircleIntersectionAhead"><strong>getCircleIntersectionAhead</strong></a>(self)</dt></dl>
 
-<dl><dt><a name="CircleIntersection-getDemichord"><strong>getDemichord</strong></a>(self, aheadMinusBehind)</dt><dd><tt>Get&nbsp;the&nbsp;demichord&nbsp;from&nbsp;the&nbsp;midpoint&nbsp;of&nbsp;the&nbsp;circle&nbsp;nodes.</tt></dd></dl>
+<dl><dt><a name="CircleIntersection-getPositionRelativeToBehind"><strong>getPositionRelativeToBehind</strong></a>(self)</dt></dl>
 
-<dl><dt><a name="CircleIntersection-getPositionRelativeToBehind"><strong>getPositionRelativeToBehind</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;position&nbsp;relative&nbsp;to&nbsp;the&nbsp;circle&nbsp;node&nbsp;behind.</tt></dd></dl>
-
-<dl><dt><a name="CircleIntersection-isWithinCircles"><strong>isWithinCircles</strong></a>(self, pixelTable, width)</dt><dd><tt>Determine&nbsp;if&nbsp;this&nbsp;circle&nbsp;intersection&nbsp;is&nbsp;within&nbsp;the&nbsp;circle&nbsp;node&nbsp;circles.</tt></dd></dl>
+<dl><dt><a name="CircleIntersection-isWithinCircles"><strong>isWithinCircles</strong></a>(self, pixelTable, width)</dt></dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -98,7 +94,7 @@
 
 <dl><dt><a name="CircleNode-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Get&nbsp;the&nbsp;string&nbsp;representation&nbsp;of&nbsp;this&nbsp;<a href="#CircleNode">CircleNode</a>.</tt></dd></dl>
 
-<dl><dt><a name="CircleNode-getWithinNodes"><strong>getWithinNodes</strong></a>(self, pixelTable, width)</dt><dd><tt>Get&nbsp;the&nbsp;nodes&nbsp;this&nbsp;circle&nbsp;node&nbsp;is&nbsp;within.</tt></dd></dl>
+<dl><dt><a name="CircleNode-getWithinNodes"><strong>getWithinNodes</strong></a>(self, pixelTable, width)</dt></dl>
 
 </td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -108,37 +104,25 @@
     
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><dl><dt><a name="-addCircleIntersectionLoop"><strong>addCircleIntersectionLoop</strong></a>(circleIntersectionPathComplexes, circleIntersections)</dt><dd><tt>Add&nbsp;a&nbsp;circle&nbsp;intersection&nbsp;loop.</tt></dd></dl>
- <dl><dt><a name="-addOrbits"><strong>addOrbits</strong></a>(distanceFeedRate, loop, orbitalFeedRatePerSecond, temperatureChangeTime, z)</dt><dd><tt>Add&nbsp;orbits&nbsp;with&nbsp;the&nbsp;extruder&nbsp;off.</tt></dd></dl>
- <dl><dt><a name="-addOrbitsIfLarge"><strong>addOrbitsIfLarge</strong></a>(distanceFeedRate, loop, orbitalFeedRatePerSecond, temperatureChangeTime, z)</dt><dd><tt>Add&nbsp;orbits&nbsp;with&nbsp;the&nbsp;extruder&nbsp;off&nbsp;if&nbsp;the&nbsp;orbits&nbsp;are&nbsp;large&nbsp;enough.</tt></dd></dl>
+ <dl><dt><a name="-addOperatingOrbits"><strong>addOperatingOrbits</strong></a>(boundaryLoops, pointComplex, skein, temperatureChangeTime, z)</dt><dd><tt>Add&nbsp;the&nbsp;orbits&nbsp;before&nbsp;the&nbsp;operating&nbsp;layers.</tt></dd></dl>
+ <dl><dt><a name="-addOrbits"><strong>addOrbits</strong></a>(loop, skein, temperatureChangeTime, z)</dt><dd><tt>Add&nbsp;orbits&nbsp;with&nbsp;the&nbsp;extruder&nbsp;off.</tt></dd></dl>
  <dl><dt><a name="-addPointsFromSegment"><strong>addPointsFromSegment</strong></a>(pointComplexes, radius, pointBeginComplex, pointEndComplex, thresholdRatio<font color="#909090">=0.90000000000000002</font>)</dt><dd><tt>Add&nbsp;point&nbsp;complexes&nbsp;between&nbsp;the&nbsp;endpoints&nbsp;of&nbsp;a&nbsp;segment.</tt></dd></dl>
- <dl><dt><a name="-getAroundsFromLoop"><strong>getAroundsFromLoop</strong></a>(loop, radius)</dt><dd><tt>Get&nbsp;the&nbsp;arounds&nbsp;from&nbsp;the&nbsp;loop,&nbsp;later&nbsp;combine&nbsp;with&nbsp;get&nbsp;arounds.</tt></dd></dl>
- <dl><dt><a name="-getAroundsFromLoops"><strong>getAroundsFromLoops</strong></a>(loops, radius)</dt><dd><tt>Get&nbsp;the&nbsp;arounds&nbsp;from&nbsp;the&nbsp;loops.</tt></dd></dl>
- <dl><dt><a name="-getAroundsFromPoints"><strong>getAroundsFromPoints</strong></a>(points, radius)</dt><dd><tt>Get&nbsp;the&nbsp;arounds&nbsp;from&nbsp;the&nbsp;points.</tt></dd></dl>
- <dl><dt><a name="-getCentersFromCircleNodes"><strong>getCentersFromCircleNodes</strong></a>(circleNodes)</dt><dd><tt>Get&nbsp;the&nbsp;complex&nbsp;centers&nbsp;of&nbsp;the&nbsp;circle&nbsp;intersection&nbsp;loops&nbsp;from&nbsp;circle&nbsp;nodes.</tt></dd></dl>
+ <dl><dt><a name="-getCentersFromCircleNodes"><strong>getCentersFromCircleNodes</strong></a>(circleNodesComplex)</dt><dd><tt>Get&nbsp;the&nbsp;complex&nbsp;centers&nbsp;of&nbsp;the&nbsp;circle&nbsp;intersection&nbsp;loops&nbsp;from&nbsp;circle&nbsp;nodes.</tt></dd></dl>
  <dl><dt><a name="-getCentersFromIntersectionLoop"><strong>getCentersFromIntersectionLoop</strong></a>(circleIntersectionLoopComplex)</dt><dd><tt>Get&nbsp;the&nbsp;centers&nbsp;from&nbsp;the&nbsp;intersection&nbsp;loop.</tt></dd></dl>
  <dl><dt><a name="-getCentersFromIntersectionLoops"><strong>getCentersFromIntersectionLoops</strong></a>(circleIntersectionLoopComplexes)</dt><dd><tt>Get&nbsp;the&nbsp;centers&nbsp;from&nbsp;the&nbsp;intersection&nbsp;loops.</tt></dd></dl>
- <dl><dt><a name="-getCentersFromLoop"><strong>getCentersFromLoop</strong></a>(loop, radius)</dt><dd><tt>Get&nbsp;the&nbsp;centers&nbsp;of&nbsp;the&nbsp;loop.</tt></dd></dl>
- <dl><dt><a name="-getCentersFromLoopDirection"><strong>getCentersFromLoopDirection</strong></a>(isWiddershins, loop, radius)</dt><dd><tt>Get&nbsp;the&nbsp;centers&nbsp;of&nbsp;the&nbsp;loop&nbsp;which&nbsp;go&nbsp;around&nbsp;in&nbsp;the&nbsp;given&nbsp;direction.</tt></dd></dl>
+ <dl><dt><a name="-getCentersFromLoopDirection"><strong>getCentersFromLoopDirection</strong></a>(isWiddershins, loop, radius)</dt><dd><tt>Get&nbsp;the&nbsp;centers&nbsp;of&nbsp;the&nbsp;circle&nbsp;intersection&nbsp;loops&nbsp;which&nbsp;go&nbsp;around&nbsp;in&nbsp;the&nbsp;given&nbsp;direction.</tt></dd></dl>
  <dl><dt><a name="-getCircleIntersectionLoops"><strong>getCircleIntersectionLoops</strong></a>(circleIntersections)</dt><dd><tt>Get&nbsp;all&nbsp;the&nbsp;loops&nbsp;going&nbsp;through&nbsp;the&nbsp;circle&nbsp;intersections.</tt></dd></dl>
- <dl><dt><a name="-getCircleIntersectionsFromCircleNodes"><strong>getCircleIntersectionsFromCircleNodes</strong></a>(circleNodes)</dt><dd><tt>Get&nbsp;all&nbsp;the&nbsp;circle&nbsp;intersections&nbsp;which&nbsp;exist&nbsp;between&nbsp;all&nbsp;the&nbsp;circle&nbsp;nodes.</tt></dd></dl>
+ <dl><dt><a name="-getCircleIntersectionsFromCircleNodes"><strong>getCircleIntersectionsFromCircleNodes</strong></a>(circleNodesComplex)</dt><dd><tt>Get&nbsp;all&nbsp;the&nbsp;circle&nbsp;intersections&nbsp;which&nbsp;exist&nbsp;between&nbsp;all&nbsp;the&nbsp;circle&nbsp;nodes.</tt></dd></dl>
  <dl><dt><a name="-getCircleNodesFromLoop"><strong>getCircleNodesFromLoop</strong></a>(loop, radius)</dt><dd><tt>Get&nbsp;the&nbsp;circle&nbsp;nodes&nbsp;from&nbsp;every&nbsp;point&nbsp;on&nbsp;a&nbsp;loop&nbsp;and&nbsp;between&nbsp;points.</tt></dd></dl>
  <dl><dt><a name="-getCircleNodesFromPoints"><strong>getCircleNodesFromPoints</strong></a>(pointComplexes, radius)</dt><dd><tt>Get&nbsp;the&nbsp;circle&nbsp;nodes&nbsp;from&nbsp;a&nbsp;path.</tt></dd></dl>
  <dl><dt><a name="-getInsetFromClockwiseLoop"><strong>getInsetFromClockwiseLoop</strong></a>(loop, radius)</dt><dd><tt>Get&nbsp;loop&nbsp;inset&nbsp;from&nbsp;clockwise&nbsp;loop,&nbsp;out&nbsp;from&nbsp;widdershins&nbsp;loop.</tt></dd></dl>
  <dl><dt><a name="-getInsetFromClockwiseTriple"><strong>getInsetFromClockwiseTriple</strong></a>(aheadAbsoluteComplex, behindAbsoluteComplex, centerComplex, radius)</dt><dd><tt>Get&nbsp;loop&nbsp;inset&nbsp;from&nbsp;clockwise&nbsp;triple,&nbsp;out&nbsp;from&nbsp;widdershins&nbsp;loop.</tt></dd></dl>
- <dl><dt><a name="-getInsetLoopsFromLoop"><strong>getInsetLoopsFromLoop</strong></a>(inset, loop)</dt><dd><tt>Get&nbsp;the&nbsp;inset&nbsp;loops,&nbsp;which&nbsp;might&nbsp;overlap.</tt></dd></dl>
- <dl><dt><a name="-getInsetLoopsFromLoops"><strong>getInsetLoopsFromLoops</strong></a>(inset, loops)</dt><dd><tt>Get&nbsp;the&nbsp;inset&nbsp;loops,&nbsp;which&nbsp;might&nbsp;overlap.</tt></dd></dl>
- <dl><dt><a name="-getInsetSeparateLoopsFromLoops"><strong>getInsetSeparateLoopsFromLoops</strong></a>(inset, loops)</dt><dd><tt>Get&nbsp;the&nbsp;separate&nbsp;inset&nbsp;loops.</tt></dd></dl>
+ <dl><dt><a name="-getInsetLoops"><strong>getInsetLoops</strong></a>(inset, loops)</dt><dd><tt>Get&nbsp;the&nbsp;inset&nbsp;loops.</tt></dd></dl>
  <dl><dt><a name="-getIntersectionAtInset"><strong>getIntersectionAtInset</strong></a>(aheadComplex, behindComplex, inset)</dt><dd><tt>Get&nbsp;circle&nbsp;intersection&nbsp;loop&nbsp;at&nbsp;inset&nbsp;from&nbsp;segment.</tt></dd></dl>
- <dl><dt><a name="-getLargestInsetLoopFromLoop"><strong>getLargestInsetLoopFromLoop</strong></a>(loop, radius)</dt><dd><tt>Get&nbsp;the&nbsp;largest&nbsp;inset&nbsp;loop&nbsp;from&nbsp;the&nbsp;loop.</tt></dd></dl>
- <dl><dt><a name="-getLargestInsetLoopFromLoopNoMatterWhat"><strong>getLargestInsetLoopFromLoopNoMatterWhat</strong></a>(loop, radius)</dt><dd><tt>Get&nbsp;the&nbsp;largest&nbsp;inset&nbsp;loop&nbsp;from&nbsp;the&nbsp;loop,&nbsp;even&nbsp;if&nbsp;the&nbsp;radius&nbsp;has&nbsp;to&nbsp;be&nbsp;shrunk&nbsp;and&nbsp;even&nbsp;if&nbsp;there&nbsp;is&nbsp;still&nbsp;no&nbsp;inset&nbsp;loop.</tt></dd></dl>
  <dl><dt><a name="-getLoopsFromLoopsDirection"><strong>getLoopsFromLoopsDirection</strong></a>(isWiddershins, loops)</dt><dd><tt>Get&nbsp;the&nbsp;loops&nbsp;going&nbsp;round&nbsp;in&nbsp;a&nbsp;given&nbsp;direction.</tt></dd></dl>
- <dl><dt><a name="-getPointsFromLoop"><strong>getPointsFromLoop</strong></a>(loop, radius)</dt><dd><tt>Get&nbsp;the&nbsp;points&nbsp;from&nbsp;every&nbsp;point&nbsp;on&nbsp;a&nbsp;loop&nbsp;and&nbsp;between&nbsp;points.</tt></dd></dl>
  <dl><dt><a name="-getSimplifiedInsetFromClockwiseLoop"><strong>getSimplifiedInsetFromClockwiseLoop</strong></a>(loop, radius)</dt><dd><tt>Get&nbsp;loop&nbsp;inset&nbsp;from&nbsp;clockwise&nbsp;loop,&nbsp;out&nbsp;from&nbsp;widdershins&nbsp;loop.</tt></dd></dl>
  <dl><dt><a name="-getWithoutIntersections"><strong>getWithoutIntersections</strong></a>(loop)</dt><dd><tt>Get&nbsp;loop&nbsp;without&nbsp;intersections.</tt></dd></dl>
- <dl><dt><a name="-isLarge"><strong>isLarge</strong></a>(loop, requiredSize)</dt><dd><tt>Determine&nbsp;if&nbsp;the&nbsp;loop&nbsp;is&nbsp;as&nbsp;large&nbsp;as&nbsp;the&nbsp;required&nbsp;size.</tt></dd></dl>
- <dl><dt><a name="-isLargeSameDirection"><strong>isLargeSameDirection</strong></a>(inset, loop, requiredSize)</dt><dd><tt>Determine&nbsp;if&nbsp;the&nbsp;inset&nbsp;is&nbsp;in&nbsp;the&nbsp;same&nbsp;direction&nbsp;as&nbsp;the&nbsp;loop&nbsp;and&nbsp;if&nbsp;the&nbsp;inset&nbsp;is&nbsp;as&nbsp;large&nbsp;as&nbsp;the&nbsp;required&nbsp;size.</tt></dd></dl>
  <dl><dt><a name="-isLoopIntersectingLoop"><strong>isLoopIntersectingLoop</strong></a>(anotherLoop, loop)</dt><dd><tt>Determine&nbsp;if&nbsp;the&nbsp;a&nbsp;loop&nbsp;is&nbsp;intersecting&nbsp;another&nbsp;loop.</tt></dd></dl>
- <dl><dt><a name="-orbitsAreLarge"><strong>orbitsAreLarge</strong></a>(loop, temperatureChangeTime)</dt><dd><tt>Determine&nbsp;if&nbsp;the&nbsp;orbits&nbsp;are&nbsp;large&nbsp;enough.</tt></dd></dl>
  <dl><dt><a name="-removeIntersection"><strong>removeIntersection</strong></a>(loop)</dt><dd><tt>Get&nbsp;loop&nbsp;without&nbsp;the&nbsp;first&nbsp;intersection.</tt></dd></dl>
 </td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">

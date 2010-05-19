@@ -1,8 +1,0 @@
-Format is tab separated statistic preferences.
-Name                          	Value
-WindowVisibilities
-Activate Statistic	True
-Open File to Generate Statistics for	
-Print Statistics	True
-Save Statistics	False
-windowPositionStatistic Preferences	600+0

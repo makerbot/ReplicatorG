@@ -1,4 +1,0 @@
-(generic makerbot end script)
-M104 S0
-G91 (relative positioning)
-G1 Z5

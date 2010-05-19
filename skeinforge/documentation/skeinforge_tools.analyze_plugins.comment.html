@@ -9,36 +9,39 @@
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="skeinforge_tools.html"><font color="#ffffff">skeinforge_tools</font></a>.<a href="skeinforge_tools.analyze_plugins.html"><font color="#ffffff">analyze_plugins</font></a>.comment</strong></big></big> ($Date: 2008/21/04 $)</font></td
 ><td align=right valign=bottom
 ><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/analyze_plugins/comment.py">/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/analyze_plugins/comment.py</a></font></td></tr></table>
-    <p><tt>Comment is a script to comment a gcode file.<br>
- <br>
-The default 'Activate Comment' checkbox is on.  When it is on, the functions described below will work when called from the skeinforge toolchain, when it is off, the functions will not be called from the toolchain.  The functions will still be called, whether or not the 'Activate Comment' checkbox is on, when comment is run directly.<br>
- <br>
-To run comment, in a shell in the folder which comment is in type:<br>
-&gt; python comment.py<br>
- <br>
-An explanation of the gcodes is at:<br>
+    <p><tt>Comment&nbsp;is&nbsp;a&nbsp;script&nbsp;to&nbsp;comment&nbsp;a&nbsp;gcode&nbsp;file.<br>
+&nbsp;<br>
+The&nbsp;default&nbsp;'Activate&nbsp;Comment'&nbsp;checkbox&nbsp;is&nbsp;on.&nbsp;&nbsp;When&nbsp;it&nbsp;is&nbsp;on,&nbsp;the&nbsp;functions&nbsp;described&nbsp;below&nbsp;will&nbsp;work&nbsp;when&nbsp;called&nbsp;from&nbsp;the<br>
+skeinforge&nbsp;toolchain,&nbsp;when&nbsp;it&nbsp;is&nbsp;off,&nbsp;the&nbsp;functions&nbsp;will&nbsp;not&nbsp;be&nbsp;called&nbsp;from&nbsp;the&nbsp;toolchain.&nbsp;&nbsp;The&nbsp;functions&nbsp;will&nbsp;still&nbsp;be&nbsp;called,&nbsp;whether<br>
+or&nbsp;not&nbsp;the&nbsp;'Activate&nbsp;Comment'&nbsp;checkbox&nbsp;is&nbsp;on,&nbsp;when&nbsp;comment&nbsp;is&nbsp;run&nbsp;directly.<br>
+&nbsp;<br>
+To&nbsp;run&nbsp;comment,&nbsp;in&nbsp;a&nbsp;shell&nbsp;in&nbsp;the&nbsp;folder&nbsp;which&nbsp;comment&nbsp;is&nbsp;in&nbsp;type:<br>
+&gt;&nbsp;python&nbsp;comment.py<br>
+&nbsp;<br>
+An&nbsp;explanation&nbsp;of&nbsp;the&nbsp;gcodes&nbsp;is&nbsp;at:<br>
 <a href="http://reprap.org/bin/view/Main/Arduino_GCode_Interpreter">http://reprap.org/bin/view/Main/Arduino_GCode_Interpreter</a><br>
- <br>
-and at:<br>
+&nbsp;<br>
+and&nbsp;at:<br>
 <a href="http://reprap.org/bin/view/Main/MCodeReference">http://reprap.org/bin/view/Main/MCodeReference</a><br>
- <br>
-A gode example is at:<br>
+&nbsp;<br>
+A&nbsp;gode&nbsp;example&nbsp;is&nbsp;at:<br>
 <a href="http://forums.reprap.org/file.php?12,file=565">http://forums.reprap.org/file.php?12,file=565</a><br>
- <br>
-This example comments the gcode file Screw Holder_comb.gcode.  This example is run in a terminal in the folder which contains Screw Holder_comb.gcode and comment.py.<br>
- <br>
- <br>
-&gt; python<br>
-Python 2.5.1 (r251:54863, Sep 22 2007, 01:43:31)<br>
-[GCC 4.2.1 (SUSE Linux)] on linux2<br>
-Type "help", "copyright", "credits" or "license" for more information.<br>
-&gt;&gt;&gt; import comment<br>
-&gt;&gt;&gt; comment.<a href="#-main">main</a>()<br>
-This brings up the comment dialog.<br>
- <br>
- <br>
-&gt;&gt;&gt; comment.<a href="#-commentFile">commentFile</a>()<br>
-The commented file is saved as Screw Holder_comb_comment.gcode</tt></p>
+&nbsp;<br>
+This&nbsp;example&nbsp;comments&nbsp;the&nbsp;gcode&nbsp;file&nbsp;Screw&nbsp;Holder_comb.gcode.&nbsp;&nbsp;This&nbsp;example&nbsp;is&nbsp;run&nbsp;in&nbsp;a&nbsp;terminal&nbsp;in&nbsp;the&nbsp;folder&nbsp;which&nbsp;contains<br>
+Screw&nbsp;Holder_comb.gcode&nbsp;and&nbsp;comment.py.<br>
+&nbsp;<br>
+&nbsp;<br>
+&gt;&nbsp;python<br>
+Python&nbsp;2.5.1&nbsp;(r251:54863,&nbsp;Sep&nbsp;22&nbsp;2007,&nbsp;01:43:31)<br>
+[GCC&nbsp;4.2.1&nbsp;(SUSE&nbsp;Linux)]&nbsp;on&nbsp;linux2<br>
+Type&nbsp;"help",&nbsp;"copyright",&nbsp;"credits"&nbsp;or&nbsp;"license"&nbsp;for&nbsp;more&nbsp;information.<br>
+&gt;&gt;&gt;&nbsp;import&nbsp;comment<br>
+&gt;&gt;&gt;&nbsp;comment.<a href="#-main">main</a>()<br>
+This&nbsp;brings&nbsp;up&nbsp;the&nbsp;comment&nbsp;dialog.<br>
+&nbsp;<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;comment.<a href="#-commentFile">commentFile</a>()<br>
+The&nbsp;commented&nbsp;file&nbsp;is&nbsp;saved&nbsp;as&nbsp;Screw&nbsp;Holder_comb_comment.gcode</tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#aa55cc">
@@ -49,7 +52,7 @@ The commented file is saved as Screw Holder_comb_comment.gcode</tt></p>
 <td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="__init__.html">__init__</a><br>
 <a href="cStringIO.html">cStringIO</a><br>
 </td><td width="25%" valign=top><a href="skeinforge_tools.skeinforge_utilities.gcodec.html">skeinforge_tools.skeinforge_utilities.gcodec</a><br>
-<a href="skeinforge_tools.meta_plugins.polyfile.html">skeinforge_tools.meta_plugins.polyfile</a><br>
+<a href="skeinforge_tools.polyfile.html">skeinforge_tools.polyfile</a><br>
 </td><td width="25%" valign=top><a href="skeinforge_tools.skeinforge_utilities.preferences.html">skeinforge_tools.skeinforge_utilities.preferences</a><br>
 <a href="sys.html">sys</a><br>
 </td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
@@ -108,7 +111,6 @@ The commented file is saved as Screw Holder_comb_comment.gcode</tt></p>
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><dl><dt><a name="-commentFile"><strong>commentFile</strong></a>(fileName<font color="#909090">=''</font>)</dt><dd><tt>Comment&nbsp;a&nbsp;gcode&nbsp;file.&nbsp;&nbsp;If&nbsp;no&nbsp;fileName&nbsp;is&nbsp;specified,&nbsp;comment&nbsp;the&nbsp;first&nbsp;gcode&nbsp;file&nbsp;in&nbsp;this&nbsp;folder&nbsp;that&nbsp;is&nbsp;not&nbsp;modified.</tt></dd></dl>
  <dl><dt><a name="-getCommentGcode"><strong>getCommentGcode</strong></a>(gcodeText)</dt><dd><tt>Get&nbsp;gcode&nbsp;text&nbsp;with&nbsp;added&nbsp;comments.</tt></dd></dl>
- <dl><dt><a name="-getRepositoryConstructor"><strong>getRepositoryConstructor</strong></a>()</dt><dd><tt>Get&nbsp;the&nbsp;repository&nbsp;constructor.</tt></dd></dl>
  <dl><dt><a name="-main"><strong>main</strong></a>()</dt><dd><tt>Display&nbsp;the&nbsp;comment&nbsp;dialog.</tt></dd></dl>
  <dl><dt><a name="-writeCommentFileGivenText"><strong>writeCommentFileGivenText</strong></a>(fileName, gcodeText)</dt><dd><tt>Write&nbsp;a&nbsp;commented&nbsp;gcode&nbsp;file&nbsp;for&nbsp;a&nbsp;gcode&nbsp;file.</tt></dd></dl>
  <dl><dt><a name="-writeOutput"><strong>writeOutput</strong></a>(fileName, gcodeText<font color="#909090">=''</font>)</dt><dd><tt>Write&nbsp;a&nbsp;commented&nbsp;gcode&nbsp;file&nbsp;for&nbsp;a&nbsp;skeinforge&nbsp;gcode&nbsp;file,&nbsp;if&nbsp;'Write&nbsp;Commented&nbsp;File&nbsp;for&nbsp;Skeinforge&nbsp;Chain'&nbsp;is&nbsp;selected.</tt></dd></dl>

@@ -1,8 +1,6 @@
 """
 Analyze is a script to access the plugins which analyze a gcode file.
 
-The plugin buttons which are commonly used are bolded and the ones which are rarely used have normal font weight.
-
 An explanation of the gcodes is at:
 http://reprap.org/bin/view/Main/Arduino_GCode_Interpreter
 
@@ -17,7 +15,8 @@ import __init__
 
 from skeinforge_tools.skeinforge_utilities import gcodec
 from skeinforge_tools.skeinforge_utilities import preferences
-from skeinforge_tools.meta_plugins import polyfile
+from skeinforge_tools import polyfile
+import cStringIO
 import os
 import sys
 
@@ -27,45 +26,47 @@ __date__ = "$Date: 2008/21/04 $"
 __license__ = "GPL 3.0"
 
 
-def addToMenu( master, menu, repository, window ):
-	"Add a tool plugin menu."
-	preferences.addPluginsParentToMenu( getPluginsDirectoryPath(), menu, __file__, getPluginFilenames() )
-
-def getPluginFilenames():
+def getAnalyzePluginFilenames():
 	"Get analyze plugin fileNames."
-	return gcodec.getPluginFilenamesFromDirectoryPath( getPluginsDirectoryPath() )
-
-def getPluginsDirectoryPath():
-	"Get the plugins directory path."
-	return gcodec.getAbsoluteFolderPath( __file__, 'analyze_plugins' )
-
-def getRepositoryConstructor():
-	"Get the repository constructor."
-	return AnalyzeRepository()
+	return gcodec.getPluginFilenames( 'analyze_plugins', __file__ )
 
 def writeOutput( fileName = '', gcodeText = '' ):
 	"Analyze a gcode file.  If no fileName is specified, comment the first gcode file in this folder that is not modified."
-	gcodeText = gcodec.getTextIfEmpty( fileName, gcodeText )
-	pluginFilenames = getPluginFilenames()
-	for pluginFilename in pluginFilenames:
-		analyzePluginsDirectoryPath = getPluginsDirectoryPath()
-		pluginModule = gcodec.getModuleWithDirectoryPath( analyzePluginsDirectoryPath, pluginFilename )
+	if fileName == '':
+		unmodified = gcodec.getUncommentedGcodeFiles()
+		if len( unmodified ) == 0:
+			print( "There is no gcode file in this folder that is not a comment file." )
+			return
+		fileName = unmodified[ 0 ]
+	if gcodeText == '':
+		gcodeText = gcodec.getFileText( fileName )
+	analyzePluginFilenames = getAnalyzePluginFilenames()
+	for analyzePluginFilename in analyzePluginFilenames:
+		pluginModule = gcodec.getModule( analyzePluginFilename, 'analyze_plugins', __file__ )
 		if pluginModule != None:
 			pluginModule.writeOutput( fileName, gcodeText )
 
 
-class AnalyzeRepository:
+class AnalyzePreferences:
 	"A class to handle the analyze preferences."
 	def __init__( self ):
 		"Set the default preferences, execute title & preferences fileName."
 		#Set the default preferences.
-		preferences.addListsToRepository( self )
-		self.fileNameInput = preferences.Filename().getFromFilename( [ ( 'Gcode text files', '*.gcode' ) ], 'Open File to be Analyzed', self, '' )
-		self.analyzeLabel = preferences.LabelDisplay().getFromName( 'Open Preferences: ', self )
-		importantFilenames = [ 'behold', 'skeinview', 'statistic' ]
-		preferences.getDisplayToolButtonsRepository( getPluginsDirectoryPath(), importantFilenames, getPluginFilenames(), self )
+		self.archive = []
+		self.analyzeLabel = preferences.LabelDisplay().getFromName( 'Open Preferences: ' )
+		self.archive.append( self.analyzeLabel )
+		analyzePluginFilenames = getAnalyzePluginFilenames()
+		self.analyzePlugins = []
+		for analyzePluginFilename in analyzePluginFilenames:
+			analyzePlugin = preferences.DisplayToolButton().getFromFolderName( 'analyze_plugins', __file__, analyzePluginFilename )
+			self.analyzePlugins.append( analyzePlugin )
+#		self.analyzePlugins.sort( key = preferences.RadioCapitalized.getLowerName )
+		self.archive += self.analyzePlugins
+		self.fileNameInput = preferences.Filename().getFromFilename( [ ( 'Gcode text files', '*.gcode' ) ], 'Open File to be Analyzed', '' )
+		self.archive.append( self.fileNameInput )
 		#Create the archive, title of the execute button, title of the dialog & preferences fileName.
 		self.executeTitle = 'Analyze'
+		self.saveTitle = None
 		preferences.setHelpPreferencesFileNameTitleWindowPosition( self, 'skeinforge_tools.analyze.html' )
 
 	def execute( self ):
@@ -75,12 +76,12 @@ class AnalyzeRepository:
 			writeOutput( fileName )
 
 
-def main():
+def main( hashtable = None ):
 	"Display the analyze dialog."
 	if len( sys.argv ) > 1:
 		writeOutput( ' '.join( sys.argv[ 1 : ] ) )
 	else:
-		preferences.startMainLoopFromConstructor( getRepositoryConstructor() )
+		preferences.displayDialog( AnalyzePreferences() )
 
 if __name__ == "__main__":
 	main()

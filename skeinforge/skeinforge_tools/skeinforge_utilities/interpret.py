@@ -32,16 +32,6 @@ __date__ = "$Date: 2008/21/04 $"
 __license__ = "GPL 3.0"
 
 
-def getFirstTranslatorFileNameUnmodified( fileName ):
-	"Get the first file name from the translators in the import plugins folder, if the file name is not already set."
-	if fileName != '':
-		return fileName
-	unmodified = getGNUTranslatorFilesUnmodified()
-	if len( unmodified ) == 0:
-		print( "There are no unmodified gcode files in this folder." )
-		return ''
-	return unmodified[ 0 ]
-
 def getGNUTranslatorGcodeFileTypeTuples():
 	"Get the file type tuples from the translators in the import plugins folder plus gcode."
 	fileTypeTuples = getTranslatorFileTypeTuples()
@@ -55,7 +45,7 @@ def getGNUTranslatorFilesUnmodified():
 
 def getImportPluginFilenames():
 	"Get analyze plugin fileNames."
-	return gcodec.getPluginFilenamesFromDirectoryPath( gcodec.getAbsoluteFolderPath( os.path.dirname( __file__ ), 'import_plugins' ) )
+	return gcodec.getPluginFilenames( 'import_plugins', os.path.dirname( __file__ ) )
 
 def getTranslatorFileTypeTuples():
 	"Get the file types from the translators in the import plugins folder."

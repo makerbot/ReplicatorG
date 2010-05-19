@@ -1,9 +1,11 @@
 """
 The xml_simple_parser.py script is an xml parser that can parse a line separated xml text.
 
-This xml parser will read a line seperated xml text and produce a tree of the xml with a root element.  Each element can have an attribute table, children, a class name, parents, text and a link to the root element.
+This xml parser will read a line seperated xml text and produce a tree of the xml with a root element.  Each element can
+have an attribute table, children, a class name, parents, text and a link to the root element.
 
-This example gets an xml tree for the xml file boolean.xml.  This example is run in a terminal in the folder which contains boolean.xml and xml_simple_parser.py.
+This example gets an xml tree for the xml file boolean.xml.  This example is run in a terminal in the folder which contains
+boolean.xml and xml_simple_parser.py.
 
 
 > python

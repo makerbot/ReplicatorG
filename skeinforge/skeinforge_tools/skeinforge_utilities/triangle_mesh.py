@@ -3,7 +3,8 @@ Triangle Mesh holds the faces and edges of a triangular mesh.
 
 It can read from and write to a GNU Triangulated Surface (.gts) file.
 
-The following examples carve the GNU Triangulated Surface file Screw Holder Bottom.stl.  The examples are run in a terminal in the folder which contains Screw Holder Bottom.stl and triangle_mesh.py.
+The following examples carve the GNU Triangulated Surface file Screw Holder Bottom.stl.  The examples are run in a terminal in the folder which
+contains Screw Holder Bottom.stl and triangle_mesh.py.
 
 
 >python
@@ -23,7 +24,7 @@ The carved file is saved as Screw Holder Bottom_carve.gcode
 It took 3 seconds to carve the file.
 
 
->>> carve.getGcode("
+>>> carve.getCarveGcode("
 54 162 108 Number of Vertices,Number of Edges,Number of Faces
 -5.800000000000001 5.341893939393939 4.017841892579603 Vertex Coordinates XYZ
 5.800000000000001 5.341893939393939 4.017841892579603
@@ -104,7 +105,7 @@ def addWithLeastLength( loops, point, shortestAdditionalLength ):
 		if isInlineAfter or isInlineBefore:
 			shortestLoop.insert( shortestPointIndex, point )
 
-def compareAreaDescending( loopArea, otherLoopArea ):
+def compareArea( loopArea, otherLoopArea ):
 	"Get comparison in order to sort loop areas in descending order of area."
 	if loopArea.area < otherLoopArea.area:
 		return 1
@@ -130,18 +131,18 @@ def getBridgeDirection( belowLoops, layerLoops, layerThickness ):
 		centers = intercircle.getCentersFromLoopDirection( True, loop, slightlyGreaterThanOverhang )
 		for center in centers:
 			outset = intercircle.getSimplifiedInsetFromClockwiseLoop( center, overhangInset )
-			if intercircle.isLargeSameDirection( outset, center, muchGreaterThanOverhang ):
+			if euclidean.isLargeSameDirection( outset, center, muchGreaterThanOverhang ):
 				belowOutsetLoops.append( outset )
-	bridgeRotation = complex()
+	bridgeDirection = complex()
 	for loop in layerLoops:
 		for pointIndex in xrange( len( loop ) ):
 			previousIndex = ( pointIndex + len( loop ) - 1 ) % len( loop )
-			bridgeRotation += getOverhangDirection( belowOutsetLoops, loop[ previousIndex ], loop[ pointIndex ] )
-	if abs( bridgeRotation ) < 0.75 * layerThickness:
+			bridgeDirection += getOverhangDirection( belowOutsetLoops, loop[ previousIndex ], loop[ pointIndex ] )
+	if abs( bridgeDirection ) < 0.75 * layerThickness:
 		return None
 	else:
-		bridgeRotation /= abs( bridgeRotation )
-		return cmath.sqrt( bridgeRotation )
+		bridgeDirection /= abs( bridgeDirection )
+		return cmath.sqrt( bridgeDirection )
 
 def getBridgeLoops( layerThickness, loop ):
 	"Get the inset bridge loops from the loop."
@@ -153,7 +154,7 @@ def getBridgeLoops( layerThickness, loop ):
 	centers = intercircle.getCentersFromCircleNodes( circleNodes )
 	for center in centers:
 		extrudateLoop = intercircle.getSimplifiedInsetFromClockwiseLoop( center, halfWidth )
-		if intercircle.isLargeSameDirection( extrudateLoop, center, muchGreaterThanHalfWIdth ):
+		if euclidean.isLargeSameDirection( extrudateLoop, center, muchGreaterThanHalfWIdth ):
 			if euclidean.isPathInsideLoop( loop, extrudateLoop ) == euclidean.isWiddershins( loop ):
 				extrudateLoop.reverse()
 				extrudateLoops.append( extrudateLoop )
@@ -201,45 +202,24 @@ def getDoubledRoundZ( overhangingSegment, segmentRoundZ ):
 	roundZLength = abs( roundZ )
 	return roundZ * roundZ / roundZLength
 
-def getInclusiveLoops( allPoints, corners, importRadius, isInteriorWanted = True ):
+def getInclusiveLoops( allPoints, corners, importRadius, isInteriorWanted ):
 	"Get loops which include most of the points."
 	circleNodes = intercircle.getCircleNodesFromPoints( allPoints, importRadius )
 	centers = intercircle.getCentersFromCircleNodes( circleNodes )
-	clockwiseLoops = []
-	inclusiveLoops = []
-	tinyRadius = 0.03 * importRadius
-	for loop in centers:
-		if len( loop ) > 2:
-			insetPoint = getInsetPoint( loop, tinyRadius )
-			if getNumberOfOddIntersectionsFromLoops( insetPoint, centers ) % 4 == 0:
-				inclusiveLoops.append( loop )
-			else:
-				clockwiseLoops.append( loop )
+	loops = intercircle.getLoopsFromLoopsDirection( True, centers )
 	pointTable = {}
-	for inclusiveLoop in inclusiveLoops:
-		addLoopToPointTable( inclusiveLoop, pointTable )
+	for loop in loops:
+		addLoopToPointTable( loop, pointTable )
 	if not isInteriorWanted:
-		return getLoopsWithCorners( corners, importRadius, inclusiveLoops, pointTable )
-	clockwiseLoops = getLoopsInOrderOfArea( compareAreaDescending, clockwiseLoops )
+		return getLoopsWithCorners( corners, importRadius, loops, pointTable )
+	clockwiseLoops = getLoopsInDescendingOrderOfArea( intercircle.getLoopsFromLoopsDirection( False, centers ) )
+	clockwiseLoops.reverse()
 	for clockwiseLoop in clockwiseLoops:
-			if getOverlapRatio( clockwiseLoop, pointTable ) < 0.1:
-				inclusiveLoops.append( clockwiseLoop )
+		if len( clockwiseLoop ) > 2 and euclidean.getMaximumSpan( clockwiseLoop ) > 2.5 * importRadius:
+			if getOverlapRatio( clockwiseLoop, pointTable ) < 0.45:
+				loops.append( clockwiseLoop )
 				addLoopToPointTable( clockwiseLoop, pointTable )
-	return getLoopsWithCorners( corners, importRadius, inclusiveLoops, pointTable )
-
-def getInsetPoint( loop, tinyRadius ):
-	"Get the inset vertex."
-	pointIndex = getWideAnglePointIndex( loop )
-	point = loop[ pointIndex % len( loop ) ]
-	afterPoint = loop[ ( pointIndex + 1 ) % len( loop ) ]
-	beforePoint = loop[ ( pointIndex - 1 ) % len( loop ) ]
-	afterSegmentNormalized = euclidean.getNormalized( afterPoint - point )
-	beforeSegmentNormalized = euclidean.getNormalized( beforePoint - point )
-	afterClockwise = complex( afterSegmentNormalized.imag, - afterSegmentNormalized.real )
-	beforeWiddershins = complex( - beforeSegmentNormalized.imag, beforeSegmentNormalized.real )
-	midpoint = afterClockwise + beforeWiddershins
-	midpointNormalized = midpoint / abs( midpoint )
-	return point + midpointNormalized * tinyRadius
+	return getLoopsWithCorners( corners, importRadius, loops, pointTable )
 
 def getLoopsFromCorrectMesh( edges, faces, vertices, z ):
 	"Get loops from a carve of a correct mesh."
@@ -288,15 +268,15 @@ def getLoopsFromUnprovenMesh( edges, faces, importRadius, vertices, z ):
 	for edgePairValue in edgePairTable.values():
 		addPointsAtZ( edgePairValue, allPoints, importRadius, vertices, z )
 	pointTable = {}
-	return getInclusiveLoops( allPoints, corners, importRadius )
+	return getInclusiveLoops( allPoints, corners, importRadius, True )
 
-def getLoopsInOrderOfArea( compareAreaFunction, loops ):
-	"Get the loops in the order of area according to the compare function."
+def getLoopsInDescendingOrderOfArea( loops ):
+	"Get the lowest zone index."
 	loopAreas = []
 	for loop in loops:
 		loopArea = LoopArea( loop )
 		loopAreas.append( loopArea )
-	loopAreas.sort( compareAreaFunction )
+	loopAreas.sort( compareArea )
 	loopsInDescendingOrderOfArea = []
 	for loopArea in loopAreas:
 		loopsInDescendingOrderOfArea.append( loopArea.loop )
@@ -330,13 +310,6 @@ def getNextEdgeIndexAroundZ( edge, faces, remainingEdgeTable ):
 				return edgeIndex
 	return - 1
 
-def getNumberOfOddIntersectionsFromLoops( leftPoint, loops ):
-	"Get the number of odd intersections with the loops."
-	totalNumberOfOddIntersections = 0
-	for loop in loops:
-		totalNumberOfOddIntersections += ( euclidean.getNumberOfIntersectionsToLeft( loop, leftPoint ) % 2 )
-	return totalNumberOfOddIntersections
-
 def getOverhangDirection( belowOutsetLoops, segmentBegin, segmentEnd ):
 	"Add to span direction from the endpoint segments which overhang the layer below."
 	segment = segmentEnd - segmentBegin
@@ -351,7 +324,7 @@ def getOverhangDirection( belowOutsetLoops, segmentBegin, segmentEnd ):
 	for belowLoopIndex in xrange( len( belowOutsetLoops ) ):
 		belowLoop = belowOutsetLoops[ belowLoopIndex ]
 		rotatedOutset = euclidean.getPointsRoundZAxis( segmentYMirror, belowLoop )
-		euclidean.addXIntersectionIndexesFromLoopY( rotatedOutset, belowLoopIndex, solidXIntersectionList, y )
+		euclidean.addXIntersectionIndexes( rotatedOutset, belowLoopIndex, solidXIntersectionList, y )
 	overhangingSegments = euclidean.getSegmentsFromXIntersectionIndexes( solidXIntersectionList, y )
 	overhangDirection = complex()
 	for overhangingSegment in overhangingSegments:
@@ -406,24 +379,6 @@ def getTriangleMesh( fileName = '' ):
 		return None
 	triangleMesh = TriangleMesh().getFromGNUTriangulatedSurfaceText( gnuTriangulatedSurfaceText )
 	return triangleMesh
-
-def getWideAnglePointIndex( loop ):
-	"Get a point index which has a wide enough angle, most point indexes have a wide enough angle, this is just to make sure."
-	dotProductMinimum = 9999999.9
-	widestPointIndex = 0
-	for pointIndex in xrange( len( loop ) ):
-		point = loop[ pointIndex % len( loop ) ]
-		afterPoint = loop[ ( pointIndex + 1 ) % len( loop ) ]
-		beforePoint = loop[ ( pointIndex - 1 ) % len( loop ) ]
-		afterSegmentNormalized = euclidean.getNormalized( afterPoint - point )
-		beforeSegmentNormalized = euclidean.getNormalized( beforePoint - point )
-		dotProduct = euclidean.getDotProduct( afterSegmentNormalized, beforeSegmentNormalized )
-		if dotProduct < .99:
-			return pointIndex
-		if dotProduct < dotProductMinimum:
-			dotProductMinimum = dotProduct
-			widestPointIndex = pointIndex
-	return widestPointIndex
 
 def getZoneInterval( layerThickness ):
 	"Get the zone interval around the slice height."
@@ -631,16 +586,16 @@ class TriangleMesh:
 	def getGNUTriangulatedSurfaceText( self ):
 		"Get this mesh in the GNU Triangulated Surface (.gts) format."
 		output = cStringIO.StringIO()
-		distanceFeedRate.output.write( '%s %s %s Number of Vertices,Number of Edges,Number of Faces\n' % ( len( self.vertices ), len( self.edges ), len( self.faces ) ) )
-		distanceFeedRate.output.write( '%s %s %s Vertex Coordinates XYZ\n' % ( self.vertices[ 0 ].x, self.vertices[ 0 ].y, self.vertices[ 0 ].z ) )
+		output.write( '%s %s %s Number of Vertices,Number of Edges,Number of Faces\n' % ( len( self.vertices ), len( self.edges ), len( self.faces ) ) )
+		output.write( '%s %s %s Vertex Coordinates XYZ\n' % ( self.vertices[ 0 ].x, self.vertices[ 0 ].y, self.vertices[ 0 ].z ) )
 		for vertex in self.vertices[ 1 : ]:
-			distanceFeedRate.output.write( '%s %s %s\n' % ( vertex.x, vertex.y, vertex.z ) )
-		distanceFeedRate.output.write( '%s Edge Vertex Indices Starting from 1\n' % self.edges[ 0 ].getGNUTriangulatedSurfaceLine() )
+			output.write( '%s %s %s\n' % ( vertex.x, vertex.y, vertex.z ) )
+		output.write( '%s Edge Vertex Indices Starting from 1\n' % self.edges[ 0 ].getGNUTriangulatedSurfaceLine() )
 		for edge in self.edges[ 1 : ]:
-			distanceFeedRate.output.write( '%s\n' % edge.getGNUTriangulatedSurfaceLine() )
-		distanceFeedRate.output.write( '%s Face Edge Indices Starting from 1\n' % self.faces[ 0 ].getGNUTriangulatedSurfaceLine() )
+			output.write( '%s\n' % edge.getGNUTriangulatedSurfaceLine() )
+		output.write( '%s Face Edge Indices Starting from 1\n' % self.faces[ 0 ].getGNUTriangulatedSurfaceLine() )
 		for face in self.faces[ 1 : ]:
-			distanceFeedRate.output.write( '%s\n' % face.getGNUTriangulatedSurfaceLine() )
+			output.write( '%s\n' % face.getGNUTriangulatedSurfaceLine() )
 		return output.getvalue()
 
 	def getLoopsFromMesh( self, z ):
@@ -653,12 +608,16 @@ class TriangleMesh:
 		simplifiedLoops = []
 		for originalLoop in originalLoops:
 			simplifiedLoops.append( euclidean.getSimplifiedLoop( originalLoop, self.importRadius ) )
-		loops = getLoopsInOrderOfArea( compareAreaDescending, simplifiedLoops )
+		loops = getLoopsInDescendingOrderOfArea( simplifiedLoops )
 		for loopIndex in xrange( len( loops ) ):
 			loop = loops[ loopIndex ]
 			leftPoint = euclidean.getLeftPoint( loop )
-			isInFilledRegion = euclidean.isInFilledRegion( loops[ : loopIndex ] + loops[ loopIndex + 1 : ], leftPoint )
-			if isInFilledRegion == euclidean.isWiddershins( loop ):
+			totalNumberOfIntersectionsToLeft = 0
+			for otherLoop in loops[ : loopIndex ] + loops[ loopIndex + 1 : ]:
+				totalNumberOfIntersectionsToLeft += euclidean.getNumberOfIntersectionsToLeft( leftPoint, otherLoop )
+			loopIsWiddershins = euclidean.isWiddershins( loop )
+			isEven = totalNumberOfIntersectionsToLeft % 2 == 0
+			if isEven != loopIsWiddershins:
 				loop.reverse()
 		return loops
 

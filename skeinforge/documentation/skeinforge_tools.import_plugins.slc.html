@@ -9,28 +9,31 @@
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="skeinforge_tools.html"><font color="#ffffff">skeinforge_tools</font></a>.<a href="skeinforge_tools.import_plugins.html"><font color="#ffffff">import_plugins</font></a>.slc</strong></big></big> ($Date: 2008/21/04 $)</font></td
 ><td align=right valign=bottom
 ><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/import_plugins/slc.py">/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/import_plugins/slc.py</a></font></td></tr></table>
-    <p><tt>The slc.py script is an import translator plugin to get a carving from an slc file.<br>
- <br>
-An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin a lower case name.<br>
- <br>
-The getCarving function takes the file name of an slc file and returns the carving.<br>
- <br>
-This example gets a triangle mesh for the slc file rotor.slc.  This example is run in a terminal in the folder which contains rotor.slc and slc.py.<br>
- <br>
- <br>
-&gt; python<br>
-Python 2.5.1 (r251:54863, Sep 22 2007, 01:43:31)<br>
-[GCC 4.2.1 (SUSE Linux)] on linux2<br>
-Type "help", "copyright", "credits" or "license" for more information.<br>
-&gt;&gt;&gt; import slc<br>
-&gt;&gt;&gt; slc.<a href="#-getCarving">getCarving</a>()<br>
-0.20000000298, 999999999.0, -999999999.0, [8.72782748851e-17, None<br>
+    <p><tt>The&nbsp;slc.py&nbsp;script&nbsp;is&nbsp;an&nbsp;import&nbsp;translator&nbsp;plugin&nbsp;to&nbsp;get&nbsp;a&nbsp;carving&nbsp;from&nbsp;an&nbsp;slc&nbsp;file.<br>
+&nbsp;<br>
+An&nbsp;import&nbsp;plugin&nbsp;is&nbsp;a&nbsp;script&nbsp;in&nbsp;the&nbsp;import_plugins&nbsp;folder&nbsp;which&nbsp;has&nbsp;the&nbsp;function&nbsp;getCarving.&nbsp;&nbsp;It&nbsp;is&nbsp;meant&nbsp;to&nbsp;be&nbsp;run&nbsp;from&nbsp;the<br>
+interpret&nbsp;tool.&nbsp;&nbsp;To&nbsp;ensure&nbsp;that&nbsp;the&nbsp;plugin&nbsp;works&nbsp;on&nbsp;platforms&nbsp;which&nbsp;do&nbsp;not&nbsp;handle&nbsp;file&nbsp;capitalization&nbsp;properly,&nbsp;give&nbsp;the&nbsp;plugin<br>
+a&nbsp;lower&nbsp;case&nbsp;name.<br>
+&nbsp;<br>
+The&nbsp;getCarving&nbsp;function&nbsp;takes&nbsp;the&nbsp;file&nbsp;name&nbsp;of&nbsp;an&nbsp;slc&nbsp;file&nbsp;and&nbsp;returns&nbsp;the&nbsp;carving.<br>
+&nbsp;<br>
+This&nbsp;example&nbsp;gets&nbsp;a&nbsp;triangle&nbsp;mesh&nbsp;for&nbsp;the&nbsp;slc&nbsp;file&nbsp;rotor.slc.&nbsp;&nbsp;This&nbsp;example&nbsp;is&nbsp;run&nbsp;in&nbsp;a&nbsp;terminal&nbsp;in&nbsp;the&nbsp;folder&nbsp;which&nbsp;contains<br>
+rotor.slc&nbsp;and&nbsp;slc.py.<br>
+&nbsp;<br>
+&nbsp;<br>
+&gt;&nbsp;python<br>
+Python&nbsp;2.5.1&nbsp;(r251:54863,&nbsp;Sep&nbsp;22&nbsp;2007,&nbsp;01:43:31)<br>
+[GCC&nbsp;4.2.1&nbsp;(SUSE&nbsp;Linux)]&nbsp;on&nbsp;linux2<br>
+Type&nbsp;"help",&nbsp;"copyright",&nbsp;"credits"&nbsp;or&nbsp;"license"&nbsp;for&nbsp;more&nbsp;information.<br>
+&gt;&gt;&gt;&nbsp;import&nbsp;slc<br>
+&gt;&gt;&gt;&nbsp;slc.<a href="#-getCarving">getCarving</a>()<br>
+0.20000000298,&nbsp;999999999.0,&nbsp;-999999999.0,&nbsp;[8.72782748851e-17,&nbsp;None<br>
 ..<br>
-many more lines of the carving<br>
+many&nbsp;more&nbsp;lines&nbsp;of&nbsp;the&nbsp;carving<br>
 ..<br>
- <br>
- <br>
-An explanation of the SLC format can be found at:<br>
+&nbsp;<br>
+&nbsp;<br>
+An&nbsp;explanation&nbsp;of&nbsp;the&nbsp;SLC&nbsp;format&nbsp;can&nbsp;be&nbsp;found&nbsp;at:<br>
 <a href="http://rapid.lpt.fi/archives/rp-ml-1999/0713.html">http://rapid.lpt.fi/archives/rp-ml-1999/0713.html</a></tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -115,7 +118,7 @@ An explanation of the SLC format can be found at:<br>
  <dl><dt><a name="-getLittleEndianFloatGivenFile"><strong>getLittleEndianFloatGivenFile</strong></a>(file)</dt><dd><tt>Get&nbsp;little&nbsp;endian&nbsp;float&nbsp;given&nbsp;a&nbsp;file.</tt></dd></dl>
  <dl><dt><a name="-getLittleEndianUnsignedLongGivenFile"><strong>getLittleEndianUnsignedLongGivenFile</strong></a>(file)</dt><dd><tt>Get&nbsp;little&nbsp;endian&nbsp;float&nbsp;given&nbsp;a&nbsp;file.</tt></dd></dl>
  <dl><dt><a name="-getPointsFromFile"><strong>getPointsFromFile</strong></a>(numPoints, file)</dt><dd><tt>Process&nbsp;the&nbsp;vertice&nbsp;points&nbsp;for&nbsp;a&nbsp;given&nbsp;boundary.</tt></dd></dl>
- <dl><dt><a name="-main"><strong>main</strong></a>()</dt><dd><tt>Display&nbsp;the&nbsp;inset&nbsp;dialog.</tt></dd></dl>
+ <dl><dt><a name="-main"><strong>main</strong></a>(hashtable<font color="#909090">=None</font>)</dt><dd><tt>Display&nbsp;the&nbsp;inset&nbsp;dialog.</tt></dd></dl>
  <dl><dt><a name="-readHeader"><strong>readHeader</strong></a>(file)</dt><dd><tt>Read&nbsp;the&nbsp;slc&nbsp;header.</tt></dd></dl>
 </td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">

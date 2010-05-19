@@ -1,11 +1,14 @@
 """
 The xml.py script is an import translator plugin to get a carving from an Art of Illusion xml file.
 
-An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin a lower case name.
+An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the
+interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin
+a lower case name.
 
 The getCarving function takes the file name of an xml file and returns the carving.
 
-This example gets a triangle mesh for the xml file boolean.xml.  This example is run in a terminal in the folder which contains boolean.xml and xml.py.
+This example gets a triangle mesh for the xml file boolean.xml.  This example is run in a terminal in the folder which contains
+boolean.xml and xml.py.
 
 
 > python
@@ -20,7 +23,11 @@ many more lines of the carving
 ..
 
 
-An xml file can be exported from Art of Illusion by going to the "File" menu, then going into the "Export" menu item, then picking the XML choice.  This will bring up the XML file chooser window, choose a place to save the file then click "OK".  Leave the "compressFile" checkbox unchecked.  All the objects from the scene will be exported, this plugin will ignore the light and camera.  If you want to fabricate more than one object at a time, you can have multiple objects in the Art of Illusion scene and they will all be carved, then fabricated together.
+An xml file can be exported from Art of Illusion by going to the "File" menu, then going into the "Export" menu item, then
+picking the XML choice.  This will bring up the XML file chooser window, choose a place to save the file then click "OK".
+Leave the "compressFile" checkbox unchecked.  All the objects from the scene will be exported, this plugin will ignore
+the light and camera.  If you want to fabricate more than one object at a time, you can have multiple objects in the Art of
+Illusion scene and they will all be carved, then fabricated together.
 
 """
 
@@ -833,7 +840,7 @@ class SphereObjectInfo( CubeObjectInfo ):
 
 globalCarvableClassObjectInfoTable = getCarvableClassObjectInfoTable()
 
-def main():
+def main( hashtable = None ):
 	"Display the inset dialog."
 	if len( sys.argv ) > 1:
 		getCarving( ' '.join( sys.argv[ 1 : ] ) )

@@ -1,7 +1,9 @@
 """
 The stl.py script is an import translator plugin to get a carving from an stl file.
 
-An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin a lower case name.
+An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the
+interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin
+a lower case name.
 
 The getCarving function takes the file name of an stl file and returns the carving.
 
@@ -11,7 +13,8 @@ http://en.wikipedia.org/wiki/STL_(file_format)
 A good triangle surface format is the GNU Triangulated Surface format which is described at:
 http://gts.sourceforge.net/reference/gts-surfaces.html#GTS-SURFACE-WRITE
 
-This example gets a carving for the stl file Screw Holder Bottom.stl.  This example is run in a terminal in the folder which contains Screw Holder Bottom.stl and stl.py.
+This example gets a carving for the stl file Screw Holder Bottom.stl.  This example is run in a terminal in the folder which
+contains Screw Holder Bottom.stl and stl.py.
 
 
 > python
@@ -68,29 +71,6 @@ def addFacesGivenVertices( triangleMesh, vertexIndexTable, vertices ):
 	for vertexIndex in xrange( 0, len( vertices ), 3 ):
 		triangleMesh.faces.append( getFaceGivenLines( triangleMesh, vertexIndex, vertexIndexTable, vertices ) )
 
-def getCarving( fileName = '' ):
-	"Get the triangle mesh for the stl file."
-	if fileName == '':
-		unmodified = gcodec.getFilesWithFileTypeWithoutWords( 'stl' )
-		if len( unmodified ) == 0:
-			print( "There is no stl file in this folder." )
-			return None
-		fileName = unmodified[ 0 ]
-	stlData = gcodec.getFileText( fileName, 'rb' )
-	if stlData == '':
-		return None
-	triangleMesh = triangle_mesh.TriangleMesh()
-	vertexIndexTable = {}
-	numberOfVertexStrings = stlData.count( 'vertex' )
-	requiredVertexStringsForText = max( 2, len( stlData ) / 8000 )
-	if numberOfVertexStrings > requiredVertexStringsForText:
-		addFacesGivenText( stlData, triangleMesh, vertexIndexTable )
-	else:
-#	A binary stl should never start with the word "solid".  Because this error is common the file is been parsed as binary regardless.
-		addFacesGivenBinary( stlData, triangleMesh, vertexIndexTable )
-	triangleMesh.setEdgesForAllFaces()
-	return triangleMesh
-
 def getFaceGivenLines( triangleMesh, vertexStartIndex, vertexIndexTable, vertices ):
 	"Add face given line index and lines."
 	face = triangle_mesh.Face()
@@ -106,16 +86,35 @@ def getFaceGivenLines( triangleMesh, vertexStartIndex, vertexIndexTable, vertice
 		face.vertexIndexes.append( vertexUniqueIndex )
 	return face
 
-def getFloat( floatString ):
-	"Get the float, replacing commas if necessary because an inferior program is using a comma instead of a point for the decimal point."
-	try:
-		return float( floatString )
-	except:
-		return float( floatString.replace( ',', '.' ) )
-
 def getFloatGivenBinary( byteIndex, stlData ):
 	"Get vertex given stl vertex line."
 	return unpack( 'f', stlData[ byteIndex : byteIndex + 4 ] )[ 0 ]
+
+def getCarving( fileName = '' ):
+	"Get the triangle mesh for the stl file."
+	if fileName == '':
+		unmodified = gcodec.getFilesWithFileTypeWithoutWords( 'stl' )
+		if len( unmodified ) == 0:
+			print( "There is no stl file in this folder." )
+			return None
+		fileName = unmodified[ 0 ]
+	stlData = gcodec.getFileText( fileName, 'rb' )
+	if stlData == '':
+		return None
+	triangleMesh = triangle_mesh.TriangleMesh()
+	vertexIndexTable = {}
+	binarySolidworksHeaderErrorString = 'solid binary STL from Solid Edge, Unigraphics Solutions Inc.'
+	binarySolidworksHeaderError = stlData[ : len( binarySolidworksHeaderErrorString ) ] == binarySolidworksHeaderErrorString
+	if binarySolidworksHeaderError:
+		print( 'The solidworks file has the incorrect header:' )
+		print( binarySolidworksHeaderErrorString )
+		print( 'A binary stl should never start with the word "solid".  Because this error is common the file is been parsed as binary regardless.' )
+	if ( stlData[ : 5 ] == 'solid' and not binarySolidworksHeaderError ):
+		addFacesGivenText( stlData, triangleMesh, vertexIndexTable )
+	else:
+		addFacesGivenBinary( stlData, triangleMesh, vertexIndexTable )
+	triangleMesh.setEdgesForAllFaces()
+	return triangleMesh
 
 def getVertexGivenBinary( byteIndex, stlData ):
 	"Get vertex given stl vertex line."
@@ -124,4 +123,4 @@ def getVertexGivenBinary( byteIndex, stlData ):
 def getVertexGivenLine( line ):
 	"Get vertex given stl vertex line."
 	splitLine = line.split()
-	return Vector3( getFloat( splitLine[ 1 ] ), getFloat( splitLine[ 2 ] ), getFloat( splitLine[ 3 ] ) )
+	return Vector3( float( splitLine[ 1 ] ), float( splitLine[ 2 ] ), float( splitLine[ 3 ] ) )

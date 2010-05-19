@@ -9,28 +9,35 @@
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="skeinforge_tools.html"><font color="#ffffff">skeinforge_tools</font></a>.<a href="skeinforge_tools.import_plugins.html"><font color="#ffffff">import_plugins</font></a>.xml</strong></big></big> ($Date: 2008/21/04 $)</font></td
 ><td align=right valign=bottom
 ><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/import_plugins/xml.py">/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/import_plugins/xml.py</a></font></td></tr></table>
-    <p><tt>The xml.py script is an import translator plugin to get a carving from an Art of Illusion xml file.<br>
- <br>
-An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin a lower case name.<br>
- <br>
-The getCarving function takes the file name of an xml file and returns the carving.<br>
- <br>
-This example gets a triangle mesh for the xml file boolean.xml.  This example is run in a terminal in the folder which contains boolean.xml and xml.py.<br>
- <br>
- <br>
-&gt; python<br>
-Python 2.5.1 (r251:54863, Sep 22 2007, 01:43:31)<br>
-[GCC 4.2.1 (SUSE Linux)] on linux2<br>
-Type "help", "copyright", "credits" or "license" for more information.<br>
-&gt;&gt;&gt; import xml<br>
-&gt;&gt;&gt; xml.<a href="#-getCarving">getCarving</a>().getCarveRotatedBoundaryLayers()<br>
-[-1.159765625, None, [[(-18.925000000000001-2.4550000000000001j), (-18.754999999999981-2.4550000000000001j)<br>
+    <p><tt>The&nbsp;xml.py&nbsp;script&nbsp;is&nbsp;an&nbsp;import&nbsp;translator&nbsp;plugin&nbsp;to&nbsp;get&nbsp;a&nbsp;carving&nbsp;from&nbsp;an&nbsp;Art&nbsp;of&nbsp;Illusion&nbsp;xml&nbsp;file.<br>
+&nbsp;<br>
+An&nbsp;import&nbsp;plugin&nbsp;is&nbsp;a&nbsp;script&nbsp;in&nbsp;the&nbsp;import_plugins&nbsp;folder&nbsp;which&nbsp;has&nbsp;the&nbsp;function&nbsp;getCarving.&nbsp;&nbsp;It&nbsp;is&nbsp;meant&nbsp;to&nbsp;be&nbsp;run&nbsp;from&nbsp;the<br>
+interpret&nbsp;tool.&nbsp;&nbsp;To&nbsp;ensure&nbsp;that&nbsp;the&nbsp;plugin&nbsp;works&nbsp;on&nbsp;platforms&nbsp;which&nbsp;do&nbsp;not&nbsp;handle&nbsp;file&nbsp;capitalization&nbsp;properly,&nbsp;give&nbsp;the&nbsp;plugin<br>
+a&nbsp;lower&nbsp;case&nbsp;name.<br>
+&nbsp;<br>
+The&nbsp;getCarving&nbsp;function&nbsp;takes&nbsp;the&nbsp;file&nbsp;name&nbsp;of&nbsp;an&nbsp;xml&nbsp;file&nbsp;and&nbsp;returns&nbsp;the&nbsp;carving.<br>
+&nbsp;<br>
+This&nbsp;example&nbsp;gets&nbsp;a&nbsp;triangle&nbsp;mesh&nbsp;for&nbsp;the&nbsp;xml&nbsp;file&nbsp;boolean.xml.&nbsp;&nbsp;This&nbsp;example&nbsp;is&nbsp;run&nbsp;in&nbsp;a&nbsp;terminal&nbsp;in&nbsp;the&nbsp;folder&nbsp;which&nbsp;contains<br>
+boolean.xml&nbsp;and&nbsp;xml.py.<br>
+&nbsp;<br>
+&nbsp;<br>
+&gt;&nbsp;python<br>
+Python&nbsp;2.5.1&nbsp;(r251:54863,&nbsp;Sep&nbsp;22&nbsp;2007,&nbsp;01:43:31)<br>
+[GCC&nbsp;4.2.1&nbsp;(SUSE&nbsp;Linux)]&nbsp;on&nbsp;linux2<br>
+Type&nbsp;"help",&nbsp;"copyright",&nbsp;"credits"&nbsp;or&nbsp;"license"&nbsp;for&nbsp;more&nbsp;information.<br>
+&gt;&gt;&gt;&nbsp;import&nbsp;xml<br>
+&gt;&gt;&gt;&nbsp;xml.<a href="#-getCarving">getCarving</a>().getCarveRotatedBoundaryLayers()<br>
+[-1.159765625,&nbsp;None,&nbsp;[[(-18.925000000000001-2.4550000000000001j),&nbsp;(-18.754999999999981-2.4550000000000001j)<br>
 ..<br>
-many more lines of the carving<br>
+many&nbsp;more&nbsp;lines&nbsp;of&nbsp;the&nbsp;carving<br>
 ..<br>
- <br>
- <br>
-An xml file can be exported from Art of Illusion by going to the "File" menu, then going into the "Export" menu item, then picking the XML choice.  This will bring up the XML file chooser window, choose a place to save the file then click "OK".  Leave the "compressFile" checkbox unchecked.  All the objects from the scene will be exported, this plugin will ignore the light and camera.  If you want to fabricate more than one object at a time, you can have multiple objects in the Art of Illusion scene and they will all be carved, then fabricated together.</tt></p>
+&nbsp;<br>
+&nbsp;<br>
+An&nbsp;xml&nbsp;file&nbsp;can&nbsp;be&nbsp;exported&nbsp;from&nbsp;Art&nbsp;of&nbsp;Illusion&nbsp;by&nbsp;going&nbsp;to&nbsp;the&nbsp;"File"&nbsp;menu,&nbsp;then&nbsp;going&nbsp;into&nbsp;the&nbsp;"Export"&nbsp;menu&nbsp;item,&nbsp;then<br>
+picking&nbsp;the&nbsp;XML&nbsp;choice.&nbsp;&nbsp;This&nbsp;will&nbsp;bring&nbsp;up&nbsp;the&nbsp;XML&nbsp;file&nbsp;chooser&nbsp;window,&nbsp;choose&nbsp;a&nbsp;place&nbsp;to&nbsp;save&nbsp;the&nbsp;file&nbsp;then&nbsp;click&nbsp;"OK".<br>
+Leave&nbsp;the&nbsp;"compressFile"&nbsp;checkbox&nbsp;unchecked.&nbsp;&nbsp;All&nbsp;the&nbsp;objects&nbsp;from&nbsp;the&nbsp;scene&nbsp;will&nbsp;be&nbsp;exported,&nbsp;this&nbsp;plugin&nbsp;will&nbsp;ignore<br>
+the&nbsp;light&nbsp;and&nbsp;camera.&nbsp;&nbsp;If&nbsp;you&nbsp;want&nbsp;to&nbsp;fabricate&nbsp;more&nbsp;than&nbsp;one&nbsp;object&nbsp;at&nbsp;a&nbsp;time,&nbsp;you&nbsp;can&nbsp;have&nbsp;multiple&nbsp;objects&nbsp;in&nbsp;the&nbsp;Art&nbsp;of<br>
+Illusion&nbsp;scene&nbsp;and&nbsp;they&nbsp;will&nbsp;all&nbsp;be&nbsp;carved,&nbsp;then&nbsp;fabricated&nbsp;together.</tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#aa55cc">
@@ -314,7 +321,7 @@ Methods inherited from <a href="skeinforge_tools.import_plugins.xml.html#Triangl
  <dl><dt><a name="-getVector3TransformedByMatrix"><strong>getVector3TransformedByMatrix</strong></a>(matrix, vector3)</dt><dd><tt>Get&nbsp;the&nbsp;vector3&nbsp;multiplied&nbsp;by&nbsp;a&nbsp;vector3.</tt></dd></dl>
  <dl><dt><a name="-isPointOrEitherBoundarySideInsideLoops"><strong>isPointOrEitherBoundarySideInsideLoops</strong></a>(inside, loops, pointBegin, pointCenter, pointEnd, radius)</dt><dd><tt>Determine&nbsp;if&nbsp;the&nbsp;point&nbsp;or&nbsp;a&nbsp;point&nbsp;on&nbsp;either&nbsp;side&nbsp;of&nbsp;the&nbsp;point,&nbsp;is&nbsp;inside&nbsp;the&nbsp;loops.</tt></dd></dl>
  <dl><dt><a name="-isPointOrEitherLineBoundarySideInsideLoops"><strong>isPointOrEitherLineBoundarySideInsideLoops</strong></a>(inside, loops, pointBegin, pointCenter, pointEnd, radius)</dt><dd><tt>Determine&nbsp;if&nbsp;the&nbsp;point&nbsp;or&nbsp;a&nbsp;point&nbsp;on&nbsp;either&nbsp;side&nbsp;of&nbsp;the&nbsp;point,&nbsp;is&nbsp;inside&nbsp;the&nbsp;loops.</tt></dd></dl>
- <dl><dt><a name="-main"><strong>main</strong></a>()</dt><dd><tt>Display&nbsp;the&nbsp;inset&nbsp;dialog.</tt></dd></dl>
+ <dl><dt><a name="-main"><strong>main</strong></a>(hashtable<font color="#909090">=None</font>)</dt><dd><tt>Display&nbsp;the&nbsp;inset&nbsp;dialog.</tt></dd></dl>
 </td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#55aa55">

@@ -1,7 +1,9 @@
 """
 Comment is a script to comment a gcode file.
 
-The default 'Activate Comment' checkbox is on.  When it is on, the functions described below will work when called from the skeinforge toolchain, when it is off, the functions will not be called from the toolchain.  The functions will still be called, whether or not the 'Activate Comment' checkbox is on, when comment is run directly.
+The default 'Activate Comment' checkbox is on.  When it is on, the functions described below will work when called from the
+skeinforge toolchain, when it is off, the functions will not be called from the toolchain.  The functions will still be called, whether
+or not the 'Activate Comment' checkbox is on, when comment is run directly.
 
 To run comment, in a shell in the folder which comment is in type:
 > python comment.py
@@ -15,7 +17,8 @@ http://reprap.org/bin/view/Main/MCodeReference
 A gode example is at:
 http://forums.reprap.org/file.php?12,file=565
 
-This example comments the gcode file Screw Holder_comb.gcode.  This example is run in a terminal in the folder which contains Screw Holder_comb.gcode and comment.py.
+This example comments the gcode file Screw Holder_comb.gcode.  This example is run in a terminal in the folder which contains
+Screw Holder_comb.gcode and comment.py.
 
 
 > python
@@ -38,7 +41,7 @@ import __init__
 
 from skeinforge_tools.skeinforge_utilities import gcodec
 from skeinforge_tools.skeinforge_utilities import preferences
-from skeinforge_tools.meta_plugins import polyfile
+from skeinforge_tools import polyfile
 import cStringIO
 import sys
 
@@ -50,18 +53,19 @@ __license__ = "GPL 3.0"
 
 def commentFile( fileName = '' ):
 	"Comment a gcode file.  If no fileName is specified, comment the first gcode file in this folder that is not modified."
-	gcodeText = gcodec.getFileText( fileName )
-	writeCommentFileGivenText( fileName, gcodeText )
+	if fileName == '':
+		unmodified = gcodec.getUnmodifiedGCodeFiles()
+		if len( unmodified ) == 0:
+			print( "There are no unmodified gcode files in this folder." )
+			return
+		fileName = unmodified[ 0 ]
+	writeCommentFileGivenText( fileName, gcodec.getFileText( fileName ) )
 
 def getCommentGcode( gcodeText ):
 	"Get gcode text with added comments."
 	skein = CommentSkein()
 	skein.parseGcode( gcodeText )
 	return skein.output.getvalue()
-
-def getRepositoryConstructor():
-	"Get the repository constructor."
-	return CommentPreferences()
 
 def writeCommentFileGivenText( fileName, gcodeText ):
 	"Write a commented gcode file for a gcode file."
@@ -70,7 +74,7 @@ def writeCommentFileGivenText( fileName, gcodeText ):
 def writeOutput( fileName, gcodeText = '' ):
 	"Write a commented gcode file for a skeinforge gcode file, if 'Write Commented File for Skeinforge Chain' is selected."
 	commentPreferences = CommentPreferences()
-	preferences.getReadRepository( commentPreferences )
+	preferences.readPreferences( commentPreferences )
 	if gcodeText == '':
 		gcodeText = gcodec.getFileText( fileName )
 	if commentPreferences.activateComment.value:
@@ -152,12 +156,14 @@ class CommentPreferences:
 	def __init__( self ):
 		"Set the default preferences, execute title & preferences fileName."
 		#Set the default preferences.
-		preferences.addListsToRepository( self )
-		self.activateComment = preferences.BooleanPreference().getFromValue( 'Activate Comment', self, False )
-		self.fileNameInput = preferences.Filename().getFromFilename( [ ( 'Gcode text files', '*.gcode' ) ], 'Open File to Write Comments for', self, '' )
+		self.archive = []
+		self.activateComment = preferences.BooleanPreference().getFromValue( 'Activate Comment', False )
+		self.archive.append( self.activateComment )
+		self.fileNameInput = preferences.Filename().getFromFilename( [ ( 'Gcode text files', '*.gcode' ) ], 'Open File to Write Comments for', '' )
+		self.archive.append( self.fileNameInput )
 		#Create the archive, title of the execute button, title of the dialog & preferences fileName.
 		self.executeTitle = 'Write Comments'
-		self.saveCloseTitle = 'Save and Close'
+		self.saveTitle = 'Save Preferences'
 		preferences.setHelpPreferencesFileNameTitleWindowPosition( self, 'skeinforge_tools.analyze_plugins.comment.html' )
 
 	def execute( self ):
@@ -172,7 +178,7 @@ def main():
 	if len( sys.argv ) > 1:
 		writeOutput( ' '.join( sys.argv[ 1 : ] ) )
 	else:
-		preferences.startMainLoopFromConstructor( getRepositoryConstructor() )
+		preferences.displayDialog( CommentPreferences() )
 
 if __name__ == "__main__":
 	main()

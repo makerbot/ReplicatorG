@@ -1,11 +1,14 @@
 """
 The svg.py script is an import translator plugin to get a carving from an svg file.
 
-An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin a lower case name.
+An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the
+interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin
+a lower case name.
 
 The getCarving function takes the file name of an svg file and returns the carving.
 
-This example gets a carving for the svg file Screw Holder Bottom.svg.  This example is run in a terminal in the folder which contains Screw Holder Bottom.svg and svg.py.
+This example gets a carving for the svg file Screw Holder Bottom.svg.  This example is run in a terminal in the folder which
+contains Screw Holder Bottom.svg and svg.py.
 
 
 > python

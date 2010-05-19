@@ -9,26 +9,26 @@
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="skeinforge_tools.html"><font color="#ffffff">skeinforge_tools</font></a>.<a href="skeinforge_tools.skeinforge_utilities.html"><font color="#ffffff">skeinforge_utilities</font></a>.vector3</strong></big></big> ($Date: 2008/21/04 $)</font></td
 ><td align=right valign=bottom
 ><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/skeinforge_utilities/vector3.py">/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/skeinforge_utilities/vector3.py</a></font></td></tr></table>
-    <p><tt><a href="#Vector3">Vector3</a> is a three dimensional vector class.<br>
- <br>
-Below are examples of <a href="#Vector3">Vector3</a> use.<br>
- <br>
-&gt;&gt;&gt; from vector3 import <a href="#Vector3">Vector3</a><br>
-&gt;&gt;&gt; origin = <a href="#Vector3">Vector3</a>()<br>
-&gt;&gt;&gt; origin<br>
-0.0, 0.0, 0.0<br>
-&gt;&gt;&gt; pythagoras = <a href="#Vector3">Vector3</a>( 3, 4, 0 )<br>
-&gt;&gt;&gt; pythagoras<br>
-3.0, 4.0, 0.0<br>
-&gt;&gt;&gt; pythagoras.magnitude()<br>
+    <p><tt>Vec3&nbsp;is&nbsp;a&nbsp;three&nbsp;dimensional&nbsp;vector&nbsp;class.<br>
+&nbsp;<br>
+Below&nbsp;are&nbsp;examples&nbsp;of&nbsp;<a href="#Vector3">Vector3</a>&nbsp;use.<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;from&nbsp;vector3&nbsp;import&nbsp;<a href="#Vector3">Vector3</a><br>
+&gt;&gt;&gt;&nbsp;origin&nbsp;=&nbsp;<a href="#Vector3">Vector3</a>()<br>
+&gt;&gt;&gt;&nbsp;origin<br>
+0.0,&nbsp;0.0,&nbsp;0.0<br>
+&gt;&gt;&gt;&nbsp;pythagoras&nbsp;=&nbsp;<a href="#Vector3">Vector3</a>(&nbsp;3,&nbsp;4,&nbsp;0&nbsp;)<br>
+&gt;&gt;&gt;&nbsp;pythagoras<br>
+3.0,&nbsp;4.0,&nbsp;0.0<br>
+&gt;&gt;&gt;&nbsp;pythagoras.magnitude()<br>
 5.0<br>
-&gt;&gt;&gt; pythagoras.magnitudeSquared()<br>
+&gt;&gt;&gt;&nbsp;pythagoras.magnitudeSquared()<br>
 25<br>
-&gt;&gt;&gt; triplePythagoras = pythagoras * 3.0<br>
-&gt;&gt;&gt; triplePythagoras<br>
-9.0, 12.0, 0.0<br>
-&gt;&gt;&gt; plane = pythagoras.dropAxis( 2 )<br>
-&gt;&gt;&gt; plane<br>
+&gt;&gt;&gt;&nbsp;triplePythagoras&nbsp;=&nbsp;pythagoras&nbsp;*&nbsp;3.0<br>
+&gt;&gt;&gt;&nbsp;triplePythagoras<br>
+9.0,&nbsp;12.0,&nbsp;0.0<br>
+&gt;&gt;&gt;&nbsp;plane&nbsp;=&nbsp;pythagoras.dropAxis(&nbsp;2&nbsp;)<br>
+&gt;&gt;&gt;&nbsp;plane<br>
 (3+4j)</tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -137,7 +137,7 @@ which&nbsp;--&nbsp;the&nbsp;axis&nbsp;to&nbsp;drop&nbsp;(0=X,&nbsp;1=Y,&nbsp;2=Z
 
 <dl><dt><a name="Vector3-reflect"><strong>reflect</strong></a>(self, normal)</dt><dd><tt>Reflect&nbsp;the&nbsp;<a href="#Vector3">Vector3</a>&nbsp;across&nbsp;the&nbsp;normal,&nbsp;which&nbsp;is&nbsp;assumed&nbsp;to&nbsp;be&nbsp;normalized.</tt></dd></dl>
 
-<dl><dt><a name="Vector3-setToVector3"><strong>setToVector3</strong></a>(self, other)</dt><dd><tt>Set&nbsp;this&nbsp;<a href="#Vector3">Vector3</a>&nbsp;to&nbsp;be&nbsp;identical&nbsp;to&nbsp;other&nbsp;one.</tt></dd></dl>
+<dl><dt><a name="Vector3-setToVec3"><strong>setToVec3</strong></a>(self, other)</dt><dd><tt>Set&nbsp;this&nbsp;<a href="#Vector3">Vector3</a>&nbsp;to&nbsp;be&nbsp;identical&nbsp;to&nbsp;other&nbsp;one.</tt></dd></dl>
 
 <dl><dt><a name="Vector3-setToXYZ"><strong>setToXYZ</strong></a>(self, x, y, z)</dt><dd><tt>Set&nbsp;the&nbsp;x,&nbsp;y,&nbsp;and&nbsp;z&nbsp;components&nbsp;of&nbsp;this&nbsp;<a href="#Vector3">Vector3</a>.</tt></dd></dl>
 

@@ -1,14 +1,17 @@
 #!/usr/bin/python
+
 """
 Introduction
 
 Skeinforge is a GPL tool chain to forge a gcode skein for a model.
 
-The tool chain starts with carve, which carves the model into layers, then the layers are modified by other tools in turn like fill, comb, tower, raft, stretch, hop, wipe, oozebane, fillet & export.  Each tool automatically gets the gcode from the previous tool.  So if you want a carved & filled gcode, call the fill tool and it will call carve, then it will fill and output the gcode.  If you want to use all the tools, call export and it will call in turn all the other tools down the chain to produce the gcode file.
+The tool chain starts with carve, which carves the model into layers, then the layers are modified by other tools in turn like
+fill, comb, tower, raft, stretch, hop, wipe, oozebane, fillet & export.  Each tool automatically gets the gcode from the
+previous tool.  So if you want a carved & filled gcode, call the fill tool and it will call carve, then it will fill and output the
+gcode.  If you want to use all the tools, call export and it will call in turn all the other tools down the chain to produce the gcode file.
 
-The skeinforge module provides a single place to call up all the preference dialogs.  When the 'Skeinforge' button is clicked, skeinforge calls export, since that is the end of the chain.
-
-The plugin buttons which are commonly used are bolded and the ones which are rarely used have normal font weight.
+The skeinforge module provides a single place to call up all the preference dialogs.  When the 'Skeinforge' button is clicked,
+skeinforge calls export, since that is the end of the chain.
 
 To run skeinforge, type in a shell in the same folder as skeinforge:
 > python skeinforge.py
@@ -16,11 +19,13 @@ To run skeinforge, type in a shell in the same folder as skeinforge:
 To run only fill for example, type in the skeinforge_tools folder which fill is in:
 > python fill.py
 
-If you do not want a tool after fill to modify the output, deselect the Activate checkbox for that tool.  When the Activate checkbox is off, the tool will just hand off the gcode to the next tool without modifying it.
+If you do not want a tool after fill to modify the output, deselect the Activate checkbox for that tool.  When the Activate checkbox
+is off, the tool will just hand off the gcode to the next tool without modifying it.
 
 There are also tools which handle preferences for the chain, like material & polyfile.
 
-The analyze tool calls plugins in the analyze_plugins folder, which will analyze the gcode in some way when it is generated if their Activate checkbox is selected.
+The analyze tool calls plugins in the analyze_plugins folder, which will analyze the gcode in some way when it is generated if
+their Activate checkbox is selected.
 
 The interpret tool accesses and displays the import plugins.
 
@@ -34,12 +39,6 @@ Another way to make gcode for a model is to use the Java RepRap host program, de
 http://dev.www.reprap.org/bin/view/Main/DriverSoftware#Creating_GCode_files_from_STL_fi
 
 
-Contribute
-
-You can contribute by helping develop the manual at:
-http://www.bitsfrombytes.com/wiki/index.php?title=Skeinforge
-
-
 Getting Started
 
 For skeinforge to run, install python 2.x on your machine, which is available from:
@@ -51,8 +50,37 @@ http://www.tcl.tk/software/tcltk/
 If you want python and Tkinter together on MacOS, you can try:
 http://www.astro.washington.edu/owen/PythonOnMacOSX.html
 
-If you want python and Tkinter together on all platforms and don't mind filling out forms, you can try the ActivePython package from Active State at:
+If you want python and Tkinter together on all platforms and don't mind filling out forms, you can try the ActivePython package
+from Active State at:
 http://www.activestate.com/Products/activepython/feature_list.mhtml
+
+Skeinforge imports Stereolithography (.stl) files or GNU Triangulated Surface (.gts) files.  The import plugin for STL files is
+experimental and if it doesn't work, an indirect way to import an STL file is by turning it into a GTS file is by using the Export GNU
+Triangulated Surface script at:
+http://members.axion.net/~enrique/Export%20GNU%20Triangulated%20Surface.bsh
+
+The Export GNU Triangulated Surface script is also in the Art of Illusion folder, which is in the same folder as skeinforge.py.  To
+bring the script into Art of Illusion, drop it into the folder ArtOfIllusion/Scripts/Tools/.  Then import the STL file using the STL
+import plugin in the import submenu of the Art of Illusion file menu.  Then from the Scripts submenu in the Tools menu, choose
+'Export GNU Triangulated Surface' and select the imported STL shape.  Click the 'Export Selected' checkbox and click OK.
+Once you've created the GTS file, you can turn it into gcode by typing in a shell in the same folder as skeinforge:
+> python skeinforge.py
+
+When the skeinforge dialog pops up, click 'Skeinforge', choose the file which you exported in 'Export GNU Triangulated Surface'
+and the gcode file will be saved with the suffix '_export.gcode'.
+
+Or you can turn files into gcode by adding the file name, for example:
+> python skeinforge.py Screw Holder Bottom.stl
+
+
+
+End of the Beginning
+
+When carve is generating the code, if there is a file start.txt, it will add that to the very beginning of the gcode.  After it has
+added some initialization code and just before it adds the extrusion gcode, it will add the file endofthebeginning.txt if it exists.
+At the very end, it will add the file end.txt if it exists.  Carve does not care if the text file names are capitalized, but some file
+systems do not handle file name cases properly, so to be on the safe side you should give them lower case names.  It will
+first look for the file in the same directory as carve, if it does not find it it will look in ~/.skeinforge/gcode_scripts.
 
 The computation intensive python modules will use psyco if it is available and run about twice as fast.  Psyco is described at:
 http://psyco.sourceforge.net/index.html
@@ -60,21 +88,12 @@ http://psyco.sourceforge.net/index.html
 The psyco download page is:
 http://psyco.sourceforge.net/download.html
 
-Skeinforge imports Stereolithography (.stl) files or GNU Triangulated Surface (.gts) files.  If importing an STL file directly doesn't work, an indirect way to import an STL file is by turning it into a GTS file is by using the Export GNU Triangulated Surface script at:
-http://members.axion.net/~enrique/Export%20GNU%20Triangulated%20Surface.bsh
-
-The Export GNU Triangulated Surface script is also in the Art of Illusion folder, which is in the same folder as skeinforge.py.  To bring the script into Art of Illusion, drop it into the folder ArtOfIllusion/Scripts/Tools/.  Then import the STL file using the STL import plugin in the import submenu of the Art of Illusion file menu.  Then from the Scripts submenu in the Tools menu, choose 'Export GNU Triangulated Surface' and select the imported STL shape.  Click the 'Export Selected' checkbox and click OK. Once you've created the GTS file, you can turn it into gcode by typing in a shell in the same folder as skeinforge:
-> python skeinforge.py
-
-When the skeinforge dialog pops up, click 'Skeinforge', choose the file which you exported in 'Export GNU Triangulated Surface' and the gcode file will be saved with the suffix '_export.gcode'.
-
-Or you can turn files into gcode by adding the file name, for example:
-> python skeinforge.py Screw Holder Bottom.stl
 
 
 Documentation
 
-The documentation is in the documentation folder, in the doc strings for each module and it can be called from the '?' button in each preference dialog.
+The documentation is in the documentation folder, in the doc strings for each module and it can be called from the '?'
+button in each preference dialog.
 
 To modify the documentation for this program, modify the first comment in the desired module.  Then open a shell in
 the skeinforge.py directory, then type:
@@ -82,20 +101,16 @@ the skeinforge.py directory, then type:
 
 Then move all the generated html files to the documentation folder.
 
-There is a manual at:
-http://www.bitsfrombytes.com/wiki/index.php?title=Skeinforge
-
-A list of other tutorials is at:
-http://www.bitsfrombytes.com/wiki/index.php?title=Skeinforge#Tutorials
-
 
 
 Fabrication
 
-To fabricate a model with gcode and the Arduino you can use the send.py in the fabricate folder.  The documentation for it is in the folder as send.html and at:
+To fabricate a model with gcode and the Arduino you can use the send.py in the fabricate folder.  The documentation for it is
+in the folder as send.html and at:
 http://reprap.org/bin/view/Main/ArduinoSend
 
-Another way is to use an EMC2 or similar computer controlled milling machine, as described in the "ECM2 based repstrap" forum thread at:
+Another way is to use an EMC2 or similar computer controlled milling machine, as described in the "ECM2 based repstrap"
+forum thread at:
 http://forums.reprap.org/read.php?1,12143
 
 using the M-Apps package, which is at:
@@ -116,13 +131,6 @@ http://reprap.svn.sourceforge.net/viewvc/reprap/trunk/users/metalab/processing/G
 The Metalab group has descriptions of skeinforge in action and their adventures are described at:
 http://reprap.soup.io/
 
-There is a board about printing issues at:
-http://www.bitsfrombytes.com/fora/user/index.php?board=5.0
-
-You can buy fabricators at:
-http://www.bitsfrombytes.com/
-
-
 
 File Formats
 
@@ -135,20 +143,24 @@ http://reprap.org/bin/view/Main/MCodeReference
 A gode example is at:
 http://forums.reprap.org/file.php?12,file=565
 
-The preferences are saved as tab separated .csv files in the .skeinforge folder in your home directory.  The preferences can be set in the tool dialogs.  The .csv files can also be edited with a text editor or a spreadsheet program set to separate tabs.
+The preferences are saved as tab separated .csv files in the .skeinforge folder in your home directory.  The preferences can
+be set in the tool dialogs.  The .csv files can also be edited with a text editor or a spreadsheet program set to separate tabs.
 
-The Scalable Vector Graphics file produced by vectorwrite can be opened by an SVG viewer or an SVG capable browser like Mozilla:
+The Scalable Vector Graphics file produced by vectorwrite can be opened by an SVG viewer or an SVG capable browser
+like Mozilla:
 http://www.mozilla.com/firefox/
 
 A good triangle surface format is the GNU Triangulated Surface format, which is supported by Mesh Viewer and described at:
 http://gts.sourceforge.net/reference/gts-surfaces.html#GTS-SURFACE-WRITE
 
-You can export GTS files from Art of Illusion with the Export GNU Triangulated Surface.bsh script in the Art of Illusion Scripts folder.
+You can export GTS files from Art of Illusion with the Export GNU Triangulated Surface.bsh script in the Art of Illusion Scripts
+folder.
 
 STL is an inferior triangle surface format, described at:
 http://en.wikipedia.org/wiki/STL_(file_format)
 
-If you're using an STL file and you can't even carve it, try converting it to a GNU Triangulated Surface file in Art of Illusion.  If it still doesn't carve, then follow the advice in the troubleshooting section.
+If you're using an STL file and you can't even carve it, try converting it to a GNU Triangulated Surface file in Art of Illusion.  If
+it still doesn't carve, then follow the advice in the troubleshooting section.
 
 
 
@@ -181,21 +193,14 @@ http://forums.reprap.org/profile.php?12,488
 or posting in the "Skeinforge Powwow" thread at:
 http://forums.reprap.org/read.php?12,20013
 
-or you can email me at:
-perez_enrique@yahoo.com
-
-When asking for help please include your object and your zipped skeinforge preferences.  The skeinforge preferences are in the .skeinforge folder in your home directory.  If you include your object and zipped preferences, I will give your bug a high priority, if you do not I will give it a low priority since without the object and zipped preferences I often can not reproduce the bug.
-
-If the dialog window is too big for the screen, on most Linux window managers you can move a window by holding down the Alt key and then drag the window with the left mouse button to get to the off screen widgets.
-
-If you can't use the graphical interface, you can change the preferences for skeinforge by using a text editor or spreadsheet to change the preferences in the profiles folder in the .skeinforge folder in your home directory.
-
-Comments and suggestions are welcome, however, I usually won't reply because developing takes all my time and as of the time of this writing I have at least eight months of features to implement.
+When asking for help please include your object and your zipped skeinforge preferences.  The skeinforge preferences are in
+the .skeinforge folder in your home directory.
 
 
 Examples
 
-The following examples carve and dice the STL file Screw Holder.stl.  The examples are run in a terminal in the folder which contains Screw Holder.gts and skeinforge.py.
+The following examples carve and dice the STL file Screw Holder.stl.  The examples are run in a terminal in the folder which
+contains Screw Holder.gts and skeinforge.py.
 
 > python skeinforge.py
 This brings up the dialog, after clicking 'Skeinforge', the following is printed:
@@ -222,13 +227,11 @@ This brings up the skeinforge dialog.
 
 from __future__ import absolute_import
 
-from skeinforge_tools import craft
-from skeinforge_tools.meta_plugins import polyfile
-from skeinforge_tools.skeinforge_utilities import euclidean
 from skeinforge_tools.skeinforge_utilities import gcodec
 from skeinforge_tools.skeinforge_utilities import preferences
 from skeinforge_tools.skeinforge_utilities import interpret
-import os
+from skeinforge_tools import polyfile
+import cStringIO
 import sys
 
 
@@ -256,52 +259,42 @@ __date__ = "$Date: 2008/21/11 $"
 __license__ = "GPL 3.0"
 
 
-def addToProfileMenu( profileSelection, profileType, repository ):
-	"Add a profile menu."
-	pluginFilenames = preferences.getPluginFilenames()
-	craftTypeName = preferences.getCraftTypeName()
-	pluginModule = preferences.getCraftTypePluginModule()
-	profilePluginPreferences = preferences.getReadRepository( pluginModule.getRepositoryConstructor() )
-	for profileName in profilePluginPreferences.profileList.value:
-		preferences.ProfileSelectionMenuRadio().getFromMenuButtonDisplay( profileSelection, profileName, repository, profileName == profilePluginPreferences.profileListbox.value )
-	for pluginFilename in pluginFilenames:
-		preferences.ProfileTypeMenuRadio().getFromMenuButtonDisplay( profileType, pluginFilename, repository, craftTypeName == pluginFilename )
-
-def getPluginsDirectoryPath():
-	"Get the plugins directory path."
-	return gcodec.getAbsoluteFolderPath( __file__, 'skeinforge_tools' )
-
-def getPluginFilenames():
-	"Get analyze plugin fileNames."
-	return gcodec.getPluginFilenamesFromDirectoryPath( getPluginsDirectoryPath() )
-
-def getRepositoryConstructor():
-	"Get the repository constructor."
-	return SkeinforgeRepository()
+def getSkeinforgeToolFilenames():
+	"Get skeinforge plugin fileNames."
+	return gcodec.getPluginFilenames( 'skeinforge_tools', __file__ )
 
 def writeOutput( fileName = '' ):
-	"Craft a gcode file."
-	craft.writeOutput( fileName )
+	"Skeinforge a gcode file.  If no fileName is specified, skeinforge the first gcode file in this folder that is not modified."
+	skeinforgePluginFilenames = getSkeinforgeToolFilenames()
+	toolNames = 'export unpause fillet oozebane wipe hop stretch clip comb tower raft speed multiply fill inset carve'.split()
+	for toolName in toolNames:
+		for skeinforgePluginFilename in skeinforgePluginFilenames:
+			if skeinforgePluginFilename == toolName:
+				pluginModule = gcodec.getModule( skeinforgePluginFilename, 'skeinforge_tools', __file__ )
+				if pluginModule != None:
+					pluginModule.writeOutput( fileName )
+				return
 
 
-class SkeinforgeRepository:
+class SkeinforgePreferences:
 	"A class to handle the skeinforge preferences."
 	def __init__( self ):
 		"Set the default preferences, execute title & preferences fileName."
 		#Set the default preferences.
-		preferences.addListsToRepository( self )
-		self.fileNameInput = preferences.Filename().getFromFilename( interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Skeinforge', self, '' )
-		versionText = gcodec.getFileText( gcodec.getVersionFileName() )
-		self.createdOnLabel = preferences.LabelDisplay().getFromName( 'Created On: ' + versionText, self )
-		self.profileSelection = preferences.MenuButtonDisplay().getFromName( 'Profile Selection: ', self )
-		self.profileType = preferences.MenuButtonDisplay().getFromName( 'Profile Type: ', self )
-		addToProfileMenu( self.profileSelection, self.profileType, self )
-		preferences.LabelDisplay().getFromName( '', self )
-		self.skeinforgeLabel = preferences.LabelDisplay().getFromName( 'Open Preferences: ', self )
-		importantFilenames = [ 'craft', 'profile' ]
-		preferences.getDisplayToolButtonsRepository( gcodec.getAbsoluteFolderPath( __file__, 'skeinforge_tools' ), importantFilenames, getPluginFilenames(), self )
+		self.archive = []
+		self.skeinforgeLabel = preferences.LabelDisplay().getFromName( 'Open Preferences: ' )
+		self.archive.append( self.skeinforgeLabel )
+		skeinforgePluginFilenames = getSkeinforgeToolFilenames()
+		self.skeinforgeDisplayToolButtons = []
+		for skeinforgePluginFilename in skeinforgePluginFilenames:
+			skeinforgeDisplayToolButton = preferences.DisplayToolButton().getFromFolderName( 'skeinforge_tools', __file__, skeinforgePluginFilename )
+			self.skeinforgeDisplayToolButtons.append( skeinforgeDisplayToolButton )
+		self.archive += self.skeinforgeDisplayToolButtons
+		self.fileNameInput = preferences.Filename().getFromFilename( interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File to be Skeinforged', '' )
+		self.archive.append( self.fileNameInput )
 		#Create the archive, title of the execute button, title of the dialog & preferences fileName.
 		self.executeTitle = 'Skeinforge'
+		self.saveTitle = None
 		preferences.setHelpPreferencesFileNameTitleWindowPosition( self, 'skeinforge.html' )
 
 	def execute( self ):
@@ -310,21 +303,12 @@ class SkeinforgeRepository:
 		for fileName in fileNames:
 			writeOutput( fileName )
 
-	def save( self ):
-		"Profile has been saved and profile menu should be updated."
-		self.profileSelection.removeMenus()
-		self.profileType.removeMenus()
-		addToProfileMenu( self.profileSelection, self.profileType, self )
-		self.profileSelection.addRadiosToDialog( self.repositoryDialog )
-		self.profileType.addRadiosToDialog( self.repositoryDialog )
-
-
 def main():
 	"Display the skeinforge dialog."
 	if len( sys.argv ) > 1:
 		writeOutput( ' '.join( sys.argv[ 1 : ] ) )
 	else:
-		preferences.startMainLoopFromConstructor( getRepositoryConstructor() )
+		preferences.displayDialog( SkeinforgePreferences() )
 
 if __name__ == "__main__":
 	main()

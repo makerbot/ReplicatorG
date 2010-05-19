@@ -1,11 +1,14 @@
 """
 The obj.py script is an import translator plugin to get a carving from an obj file.
 
-An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin a lower case name.
+An import plugin is a script in the import_plugins folder which has the function getCarving.  It is meant to be run from the
+interpret tool.  To ensure that the plugin works on platforms which do not handle file capitalization properly, give the plugin
+a lower case name.
 
 The getCarving function takes the file name of an obj file and returns the carving.
 
-From wikipedia, OBJ (or .OBJ) is a geometry definition file format first developed by Wavefront Technologies for its Advanced Visualizer animation package:
+From wikipedia, OBJ (or .OBJ) is a geometry definition file format first developed by Wavefront Technologies for its
+Advanced Visualizer animation package:
 http://en.wikipedia.org/wiki/Obj
 
 The Object File specification is at:
@@ -14,7 +17,8 @@ http://local.wasp.uwa.edu.au/~pbourke/dataformats/obj/
 An excellent link page about obj files is at:
 http://people.sc.fsu.edu/~burkardt/data/obj/obj.html
 
-This example gets a carving for the obj file box.obj.  This example is run in a terminal in the folder which contains box.obj and obj.py.
+This example gets a carving for the obj file box.obj.  This example is run in a terminal in the folder which contains box.obj
+and obj.py.
 
 
 > python

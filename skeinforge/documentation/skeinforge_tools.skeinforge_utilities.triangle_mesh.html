@@ -9,36 +9,37 @@
 <font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="skeinforge_tools.html"><font color="#ffffff">skeinforge_tools</font></a>.<a href="skeinforge_tools.skeinforge_utilities.html"><font color="#ffffff">skeinforge_utilities</font></a>.triangle_mesh</strong></big></big> ($Date: 2008/02/05 $)</font></td
 ><td align=right valign=bottom
 ><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/skeinforge_utilities/triangle_mesh.py">/home/enrique/Desktop/backup/babbleold/script/reprap/pyRepRap/skeinforge_tools/skeinforge_utilities/triangle_mesh.py</a></font></td></tr></table>
-    <p><tt>Triangle Mesh holds the faces and edges of a triangular mesh.<br>
- <br>
-It can read from and write to a GNU Triangulated Surface (.gts) file.<br>
- <br>
-The following examples carve the GNU Triangulated Surface file Screw Holder Bottom.stl.  The examples are run in a terminal in the folder which contains Screw Holder Bottom.stl and triangle_mesh.py.<br>
- <br>
- <br>
+    <p><tt>Triangle&nbsp;Mesh&nbsp;holds&nbsp;the&nbsp;faces&nbsp;and&nbsp;edges&nbsp;of&nbsp;a&nbsp;triangular&nbsp;mesh.<br>
+&nbsp;<br>
+It&nbsp;can&nbsp;read&nbsp;from&nbsp;and&nbsp;write&nbsp;to&nbsp;a&nbsp;GNU&nbsp;Triangulated&nbsp;Surface&nbsp;(.gts)&nbsp;file.<br>
+&nbsp;<br>
+The&nbsp;following&nbsp;examples&nbsp;carve&nbsp;the&nbsp;GNU&nbsp;Triangulated&nbsp;Surface&nbsp;file&nbsp;Screw&nbsp;Holder&nbsp;Bottom.stl.&nbsp;&nbsp;The&nbsp;examples&nbsp;are&nbsp;run&nbsp;in&nbsp;a&nbsp;terminal&nbsp;in&nbsp;the&nbsp;folder&nbsp;which<br>
+contains&nbsp;Screw&nbsp;Holder&nbsp;Bottom.stl&nbsp;and&nbsp;triangle_mesh.py.<br>
+&nbsp;<br>
+&nbsp;<br>
 &gt;python<br>
-Python 2.5.1 (r251:54863, Sep 22 2007, 01:43:31)<br>
-[GCC 4.2.1 (SUSE Linux)] on linux2<br>
-Type "help", "copyright", "credits" or "license" for more information.<br>
-&gt;&gt;&gt; import carve<br>
-&gt;&gt;&gt; carve.main()<br>
-File Screw Holder Bottom.stl is being carved.<br>
-The carved file is saved as Screw Holder Bottom_carve.gcode<br>
-It took 3 seconds to carve the file.<br>
- <br>
- <br>
-&gt;&gt;&gt; carve.writeOutput()<br>
-File Screw Holder Bottom.gcode is being carved.<br>
-The carved file is saved as Screw Holder Bottom_carve.gcode<br>
-It took 3 seconds to carve the file.<br>
- <br>
- <br>
-&gt;&gt;&gt; carve.getGcode("<br>
-54 162 108 Number of Vertices,Number of Edges,Number of Faces<br>
--5.800000000000001 5.341893939393939 4.017841892579603 Vertex Coordinates XYZ<br>
-5.800000000000001 5.341893939393939 4.017841892579603<br>
+Python&nbsp;2.5.1&nbsp;(r251:54863,&nbsp;Sep&nbsp;22&nbsp;2007,&nbsp;01:43:31)<br>
+[GCC&nbsp;4.2.1&nbsp;(SUSE&nbsp;Linux)]&nbsp;on&nbsp;linux2<br>
+Type&nbsp;"help",&nbsp;"copyright",&nbsp;"credits"&nbsp;or&nbsp;"license"&nbsp;for&nbsp;more&nbsp;information.<br>
+&gt;&gt;&gt;&nbsp;import&nbsp;carve<br>
+&gt;&gt;&gt;&nbsp;carve.main()<br>
+File&nbsp;Screw&nbsp;Holder&nbsp;Bottom.stl&nbsp;is&nbsp;being&nbsp;carved.<br>
+The&nbsp;carved&nbsp;file&nbsp;is&nbsp;saved&nbsp;as&nbsp;Screw&nbsp;Holder&nbsp;Bottom_carve.gcode<br>
+It&nbsp;took&nbsp;3&nbsp;seconds&nbsp;to&nbsp;carve&nbsp;the&nbsp;file.<br>
+&nbsp;<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;carve.writeOutput()<br>
+File&nbsp;Screw&nbsp;Holder&nbsp;Bottom.gcode&nbsp;is&nbsp;being&nbsp;carved.<br>
+The&nbsp;carved&nbsp;file&nbsp;is&nbsp;saved&nbsp;as&nbsp;Screw&nbsp;Holder&nbsp;Bottom_carve.gcode<br>
+It&nbsp;took&nbsp;3&nbsp;seconds&nbsp;to&nbsp;carve&nbsp;the&nbsp;file.<br>
+&nbsp;<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;carve.getCarveGcode("<br>
+54&nbsp;162&nbsp;108&nbsp;Number&nbsp;of&nbsp;Vertices,Number&nbsp;of&nbsp;Edges,Number&nbsp;of&nbsp;Faces<br>
+-5.800000000000001&nbsp;5.341893939393939&nbsp;4.017841892579603&nbsp;Vertex&nbsp;Coordinates&nbsp;XYZ<br>
+5.800000000000001&nbsp;5.341893939393939&nbsp;4.017841892579603<br>
 ..<br>
-many lines of GNU Triangulated Surface vertices, edges and faces<br>
+many&nbsp;lines&nbsp;of&nbsp;GNU&nbsp;Triangulated&nbsp;Surface&nbsp;vertices,&nbsp;edges&nbsp;and&nbsp;faces<br>
 ..<br>
 ")</tt></p>
 <p>
@@ -187,29 +188,26 @@ many lines of GNU Triangulated Surface vertices, edges and faces<br>
  <dl><dt><a name="-addPointsAtZ"><strong>addPointsAtZ</strong></a>(edgePair, points, radius, vertices, z)</dt><dd><tt>Add&nbsp;point&nbsp;complexes&nbsp;on&nbsp;the&nbsp;segment&nbsp;between&nbsp;the&nbsp;edge&nbsp;intersections&nbsp;with&nbsp;z.</tt></dd></dl>
  <dl><dt><a name="-addToZoneArray"><strong>addToZoneArray</strong></a>(point, z, zoneArray, zZoneInterval)</dt><dd><tt>Add&nbsp;a&nbsp;height&nbsp;to&nbsp;the&nbsp;zone&nbsp;array.</tt></dd></dl>
  <dl><dt><a name="-addWithLeastLength"><strong>addWithLeastLength</strong></a>(loops, point, shortestAdditionalLength)</dt><dd><tt>Insert&nbsp;a&nbsp;point&nbsp;into&nbsp;a&nbsp;loop,&nbsp;at&nbsp;the&nbsp;index&nbsp;at&nbsp;which&nbsp;the&nbsp;loop&nbsp;would&nbsp;be&nbsp;shortest.</tt></dd></dl>
- <dl><dt><a name="-compareAreaDescending"><strong>compareAreaDescending</strong></a>(loopArea, otherLoopArea)</dt><dd><tt>Get&nbsp;comparison&nbsp;in&nbsp;order&nbsp;to&nbsp;sort&nbsp;loop&nbsp;areas&nbsp;in&nbsp;descending&nbsp;order&nbsp;of&nbsp;area.</tt></dd></dl>
+ <dl><dt><a name="-compareArea"><strong>compareArea</strong></a>(loopArea, otherLoopArea)</dt><dd><tt>Get&nbsp;comparison&nbsp;in&nbsp;order&nbsp;to&nbsp;sort&nbsp;loop&nbsp;areas&nbsp;in&nbsp;descending&nbsp;order&nbsp;of&nbsp;area.</tt></dd></dl>
  <dl><dt><a name="-getAdditionalLoopLength"><strong>getAdditionalLoopLength</strong></a>(loop, point, pointIndex)</dt><dd><tt>Get&nbsp;the&nbsp;additional&nbsp;length&nbsp;added&nbsp;by&nbsp;inserting&nbsp;a&nbsp;point&nbsp;into&nbsp;a&nbsp;loop.</tt></dd></dl>
  <dl><dt><a name="-getBridgeDirection"><strong>getBridgeDirection</strong></a>(belowLoops, layerLoops, layerThickness)</dt><dd><tt>Get&nbsp;span&nbsp;direction&nbsp;for&nbsp;the&nbsp;majority&nbsp;of&nbsp;the&nbsp;overhanging&nbsp;extrusion&nbsp;perimeter,&nbsp;if&nbsp;any.</tt></dd></dl>
  <dl><dt><a name="-getBridgeLoops"><strong>getBridgeLoops</strong></a>(layerThickness, loop)</dt><dd><tt>Get&nbsp;the&nbsp;inset&nbsp;bridge&nbsp;loops&nbsp;from&nbsp;the&nbsp;loop.</tt></dd></dl>
  <dl><dt><a name="-getCarveIntersectionFromEdge"><strong>getCarveIntersectionFromEdge</strong></a>(edge, vertices, z)</dt><dd><tt>Get&nbsp;the&nbsp;complex&nbsp;where&nbsp;the&nbsp;carve&nbsp;intersects&nbsp;the&nbsp;edge.</tt></dd></dl>
  <dl><dt><a name="-getCommonVertexIndex"><strong>getCommonVertexIndex</strong></a>(edgeFirst, edgeSecond)</dt><dd><tt>Get&nbsp;the&nbsp;vertex&nbsp;index&nbsp;that&nbsp;both&nbsp;edges&nbsp;have&nbsp;in&nbsp;common.</tt></dd></dl>
  <dl><dt><a name="-getDoubledRoundZ"><strong>getDoubledRoundZ</strong></a>(overhangingSegment, segmentRoundZ)</dt><dd><tt>Get&nbsp;doubled&nbsp;plane&nbsp;angle&nbsp;around&nbsp;z&nbsp;of&nbsp;the&nbsp;overhanging&nbsp;segment.</tt></dd></dl>
- <dl><dt><a name="-getInclusiveLoops"><strong>getInclusiveLoops</strong></a>(allPoints, corners, importRadius, isInteriorWanted<font color="#909090">=True</font>)</dt><dd><tt>Get&nbsp;loops&nbsp;which&nbsp;include&nbsp;most&nbsp;of&nbsp;the&nbsp;points.</tt></dd></dl>
- <dl><dt><a name="-getInsetPoint"><strong>getInsetPoint</strong></a>(loop, tinyRadius)</dt><dd><tt>Get&nbsp;the&nbsp;inset&nbsp;vertex.</tt></dd></dl>
+ <dl><dt><a name="-getInclusiveLoops"><strong>getInclusiveLoops</strong></a>(allPoints, corners, importRadius, isInteriorWanted)</dt><dd><tt>Get&nbsp;loops&nbsp;which&nbsp;include&nbsp;most&nbsp;of&nbsp;the&nbsp;points.</tt></dd></dl>
  <dl><dt><a name="-getLoopsFromCorrectMesh"><strong>getLoopsFromCorrectMesh</strong></a>(edges, faces, vertices, z)</dt><dd><tt>Get&nbsp;loops&nbsp;from&nbsp;a&nbsp;carve&nbsp;of&nbsp;a&nbsp;correct&nbsp;mesh.</tt></dd></dl>
  <dl><dt><a name="-getLoopsFromUnprovenMesh"><strong>getLoopsFromUnprovenMesh</strong></a>(edges, faces, importRadius, vertices, z)</dt><dd><tt>Get&nbsp;loops&nbsp;from&nbsp;a&nbsp;carve&nbsp;of&nbsp;an&nbsp;unproven&nbsp;mesh.</tt></dd></dl>
- <dl><dt><a name="-getLoopsInOrderOfArea"><strong>getLoopsInOrderOfArea</strong></a>(compareAreaFunction, loops)</dt><dd><tt>Get&nbsp;the&nbsp;loops&nbsp;in&nbsp;the&nbsp;order&nbsp;of&nbsp;area&nbsp;according&nbsp;to&nbsp;the&nbsp;compare&nbsp;function.</tt></dd></dl>
+ <dl><dt><a name="-getLoopsInDescendingOrderOfArea"><strong>getLoopsInDescendingOrderOfArea</strong></a>(loops)</dt><dd><tt>Get&nbsp;the&nbsp;lowest&nbsp;zone&nbsp;index.</tt></dd></dl>
  <dl><dt><a name="-getLoopsWithCorners"><strong>getLoopsWithCorners</strong></a>(corners, importRadius, loops, pointTable)</dt><dd><tt>Add&nbsp;corners&nbsp;to&nbsp;the&nbsp;loops.</tt></dd></dl>
  <dl><dt><a name="-getLowestZoneIndex"><strong>getLowestZoneIndex</strong></a>(zoneArray, z)</dt><dd><tt>Get&nbsp;the&nbsp;lowest&nbsp;zone&nbsp;index.</tt></dd></dl>
  <dl><dt><a name="-getNextEdgeIndexAroundZ"><strong>getNextEdgeIndexAroundZ</strong></a>(edge, faces, remainingEdgeTable)</dt><dd><tt>Get&nbsp;the&nbsp;next&nbsp;edge&nbsp;index&nbsp;in&nbsp;the&nbsp;mesh&nbsp;carve.</tt></dd></dl>
- <dl><dt><a name="-getNumberOfOddIntersectionsFromLoops"><strong>getNumberOfOddIntersectionsFromLoops</strong></a>(leftPoint, loops)</dt><dd><tt>Get&nbsp;the&nbsp;number&nbsp;of&nbsp;odd&nbsp;intersections&nbsp;with&nbsp;the&nbsp;loops.</tt></dd></dl>
  <dl><dt><a name="-getOverhangDirection"><strong>getOverhangDirection</strong></a>(belowOutsetLoops, segmentBegin, segmentEnd)</dt><dd><tt>Add&nbsp;to&nbsp;span&nbsp;direction&nbsp;from&nbsp;the&nbsp;endpoint&nbsp;segments&nbsp;which&nbsp;overhang&nbsp;the&nbsp;layer&nbsp;below.</tt></dd></dl>
  <dl><dt><a name="-getOverlapRatio"><strong>getOverlapRatio</strong></a>(loop, pointTable)</dt><dd><tt>Get&nbsp;the&nbsp;overlap&nbsp;ratio&nbsp;between&nbsp;the&nbsp;loop&nbsp;and&nbsp;the&nbsp;point&nbsp;table.</tt></dd></dl>
  <dl><dt><a name="-getPath"><strong>getPath</strong></a>(edges, pathIndexes, loop, z)</dt><dd><tt>Get&nbsp;the&nbsp;path&nbsp;from&nbsp;the&nbsp;edge&nbsp;intersections.</tt></dd></dl>
  <dl><dt><a name="-getRemainingEdgeTable"><strong>getRemainingEdgeTable</strong></a>(edges, vertices, z)</dt><dd><tt>Get&nbsp;the&nbsp;remaining&nbsp;edge&nbsp;hashtable.</tt></dd></dl>
  <dl><dt><a name="-getSharedFace"><strong>getSharedFace</strong></a>(firstEdge, faces, secondEdge)</dt><dd><tt>Get&nbsp;the&nbsp;face&nbsp;which&nbsp;is&nbsp;shared&nbsp;by&nbsp;two&nbsp;edges.</tt></dd></dl>
  <dl><dt><a name="-getTriangleMesh"><strong>getTriangleMesh</strong></a>(fileName<font color="#909090">=''</font>)</dt><dd><tt>Carve&nbsp;a&nbsp;GNU&nbsp;Triangulated&nbsp;Surface&nbsp;file.&nbsp;&nbsp;If&nbsp;no&nbsp;fileName&nbsp;is&nbsp;specified,&nbsp;carve&nbsp;the&nbsp;first&nbsp;GNU&nbsp;Triangulated&nbsp;Surface&nbsp;file&nbsp;in&nbsp;this&nbsp;folder.</tt></dd></dl>
- <dl><dt><a name="-getWideAnglePointIndex"><strong>getWideAnglePointIndex</strong></a>(loop)</dt><dd><tt>Get&nbsp;a&nbsp;point&nbsp;index&nbsp;which&nbsp;has&nbsp;a&nbsp;wide&nbsp;enough&nbsp;angle,&nbsp;most&nbsp;point&nbsp;indexes&nbsp;have&nbsp;a&nbsp;wide&nbsp;enough&nbsp;angle,&nbsp;this&nbsp;is&nbsp;just&nbsp;to&nbsp;make&nbsp;sure.</tt></dd></dl>
  <dl><dt><a name="-getZoneInterval"><strong>getZoneInterval</strong></a>(layerThickness)</dt><dd><tt>Get&nbsp;the&nbsp;zone&nbsp;interval&nbsp;around&nbsp;the&nbsp;slice&nbsp;height.</tt></dd></dl>
  <dl><dt><a name="-isInline"><strong>isInline</strong></a>(beginComplex, centerComplex, endComplex)</dt><dd><tt>Determine&nbsp;if&nbsp;the&nbsp;three&nbsp;complex&nbsp;points&nbsp;form&nbsp;a&nbsp;line.</tt></dd></dl>
  <dl><dt><a name="-isPathAdded"><strong>isPathAdded</strong></a>(edges, faces, loops, remainingEdgeTable, vertices, z)</dt><dd><tt>Get&nbsp;the&nbsp;path&nbsp;indexes&nbsp;around&nbsp;a&nbsp;triangle&nbsp;mesh&nbsp;carve&nbsp;and&nbsp;add&nbsp;the&nbsp;path&nbsp;to&nbsp;the&nbsp;flat&nbsp;loops.</tt></dd></dl>
