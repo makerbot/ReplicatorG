@@ -309,9 +309,21 @@ def main():
 	parser = OptionParser()
 	parser.add_option("-p", "--prefdir", help="set path to preference directory",
                   action="store", type="string", dest="preferencesDirectory")
+        parser.add_option("-s", "--start", help="set start file to use",
+                  action="store", type="string", dest="startFile")
+        parser.add_option("-e", "--end", help="set end file to use",
+                  action="store", type="string", dest="endFile")
         (options, args) = parser.parse_args()
 	if options.preferencesDirectory:
 		preferences.setPreferencesDirectoryPath(options.preferencesDirectory)
+	if options.startFile:
+		preferences.setStartFile(options.startFile)
+	else:
+		preferences.setStartFile('start.txt')
+	if options.endFile:
+		preferences.setEndFile(options.endFile)
+	else:
+		preferences.setEndFile('end.txt')
 	if len( args ) > 1:
 		writeOutput( ' '.join(args) )
 	else:
