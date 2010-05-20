@@ -392,15 +392,15 @@ class InsetSkein:
 	def addInitializationToOutput( self ):
 		"Add initialization gcode to the output."
 		self.addFromUpperLowerFile( 'Start.txt' ) # Add a start file if it exists.
-		self.addLine( '(<creator> skeinforge June 8, 2009 </creator>)' ) # GCode formatted comment
+#		self.addLine( '(<creator> skeinforge June 8, 2009 </creator>)' ) # GCode formatted comment
 		self.addLine( 'M110' ) # GCode for compatibility with Nophead's code.
 		self.addLine( '(<extruderInitialization>)' ) # GCode formatted comment
-		self.addLine( 'G21' ) # Set units to mm.
-		self.addLine( 'G90' ) # Set positioning to absolute.
-		if self.insetPreferences.startAtHome.value:
-			self.addLine( 'G28' ) # Start at home.
-		self.addLine( 'M103' ) # Turn extruder off.
-		self.addLine( 'M105' ) # Custom code for temperature reading.
+#		self.addLine( 'G21' ) # Set units to mm.
+#		self.addLine( 'G90' ) # Set positioning to absolute.
+#		if self.insetPreferences.startAtHome.value:
+#			self.addLine( 'G28' ) # Start at home.
+#		self.addLine( 'M103' ) # Turn extruder off.
+#		self.addLine( 'M105' ) # Custom code for temperature reading.
 		self.addFromUpperLowerFile( 'EndOfTheBeginning.txt' ) # Add a second start file if it exists.
 		self.addLine( '(<decimalPlacesCarried> ' + str( self.decimalPlacesCarried ) + ' </decimalPlacesCarried>)' ) # Set decimal places carried.
 		self.addLine( '(<layerThickness> ' + self.getRounded( self.layerThickness ) + ' </layerThickness>)' ) # Set layer thickness.
@@ -468,8 +468,8 @@ class InsetSkein:
 	def addShutdownToOutput( self ):
 		"Add shutdown gcode to the output."
 		self.addLine( '(</extrusion>)' ) # GCode formatted comment
-		self.addLine( 'M103' ) # Turn extruder motor off.
-		self.addLine( 'M104 S0' ) # Turn extruder heater off.
+#		self.addLine( 'M103' ) # Turn extruder motor off.
+#		self.addLine( 'M104 S0' ) # Turn extruder heater off.
 		self.addFromUpperLowerFile( 'End.txt' ) # Add an end file if it exists.
 
 	def addTextData( self, line ):
