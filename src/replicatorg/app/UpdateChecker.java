@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 
 import javax.swing.JCheckBox;
@@ -97,9 +98,11 @@ public class UpdateChecker {
 			try {
 				connection.connect();
 			} catch (SocketTimeoutException ste) {
-				Base.logger.log(Level.INFO,
-						"Network unavailable or update site timed out.");
+				Base.logger.log(Level.INFO,"Network unavailable or update site timed out.");
 				return latestVersion;
+			} catch (UnknownHostException uhe) {
+				Base.logger.log(Level.INFO,"Network unavailable or update URL incorrect.");
+				return latestVersion;				
 			}
 		    InputStream inputStream = (InputStream)connection.getContent();
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

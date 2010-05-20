@@ -9,6 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -90,6 +92,10 @@ class FirmwareRetriever {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SocketTimeoutException e) {
+			Base.logger.log(Level.INFO,"Firmware updater: network unavailable.");
+			// Fine; network is unavailable
+		} catch (UnknownHostException e) {
+			Base.logger.log(Level.INFO,"Firmware updater: network unavailable.");
 			// Fine; network is unavailable
 		} catch (FileNotFoundException e) {
 			// This ordinarily indicates that the user is running on a read-only filesystem

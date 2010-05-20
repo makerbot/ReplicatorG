@@ -31,6 +31,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -77,8 +78,21 @@ public class EditorHeader extends JComponent implements ActionListener {
 			super.paintText(g,b,textRect,text);
 		}
 	}
+
+	static BufferedImage selectedTabBg;
+	static BufferedImage regularTabBg;
 	
+	protected void initTabImages() {
+		if (selectedTabBg != null) {
+			selectedTabBg = Base.getImage("images/tab-selected.png", this);
+		}
+		if (regularTabBg != null) {
+			regularTabBg = Base.getImage("images/tab-regular.png", this);
+		}
+	}
+
 	private class TabButton extends JToggleButton {
+		
 		public TabButton(String text) {
 			super(text);
 			setUI(new TabButtonUI());
@@ -101,6 +115,7 @@ public class EditorHeader extends JComponent implements ActionListener {
 	int menuRight;
 
 	public EditorHeader(MainWindow mainWindow) {
+		initTabImages();
 		setLayout(new MigLayout("gap 15"));
 		this.editor = mainWindow;
 
