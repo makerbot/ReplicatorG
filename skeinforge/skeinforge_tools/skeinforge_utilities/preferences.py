@@ -96,6 +96,16 @@ def getPreferencesFilePath( fileName ):
 	except OSError:
 		pass
 	return os.path.join( directoryName, fileName )
+	
+def setStartFile(fileName):
+	"Get the preferences directory path, which is the home directory joined with .skeinforge."
+	global startFile
+	startFile = fileName
+	
+def setEndFile(fileName):
+	"Get the preferences directory path, which is the home directory joined with .skeinforge."
+	global endFile
+	endFile = fileName
 
 def readPreferences( archivablePreferences ):
 	"Set an archive to the preferences read from a file."
