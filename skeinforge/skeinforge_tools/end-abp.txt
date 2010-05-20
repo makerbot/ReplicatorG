@@ -1,0 +1,11 @@
+(Beginning of end.txt)
+G1 X0 Y45 F3300.0 (move to ejection position)
+M109 S0 T0 (set heated-build-platform temperature)
+G04 P120000 (wait t/1000 seconds)
+M106 (conveyor on)
+G04 P6000 (wait t/1000 seconds)
+M107 (conveyor off)
+G1 X0 Y0 Z0 F3300.0 (recenter platform)
+G04 P1000 (wait t/1000 seconds)
+(end of end.txt)
+
