@@ -108,7 +108,7 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 		JButton zPlusButton = createJogButton("Z+", "Jog Z axis in positive direction");
 		JButton zMinusButton = createJogButton("Z-", "Jog Z axis in negative direction");
 		JButton zCenterButton = createJogButton("<html><center>Center<br/>Z", "Jog Z axis to the origin","Center Z");
-		JButton zeroButton = createJogButton("<html><center>Set<br/>zero","Mark Current Position as Zero (0,0,0)","Zero");
+		JButton zeroButton = createJogButton("<html><center>Set<br/>origin","Mark Current Position as Origin (0,0,0)","Zero");
 
 		JPanel xyzPanel = new JPanel(new MigLayout("","[]0[]","[]0[]"));
         xyzPanel.add(zCenterButton, "split 3,flowy,gap 0 0 0 0");
