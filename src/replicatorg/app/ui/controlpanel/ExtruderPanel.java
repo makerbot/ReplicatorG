@@ -17,6 +17,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -57,10 +58,10 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	protected double targetTemperature;
 	protected double targetPlatformTemperature;
 	
-	final private static Color targetColor = Color.BLUE;
-	final private static Color measuredColor = Color.RED;
-	final private static Color targetPlatformColor = Color.YELLOW;
-	final private static Color measuredPlatformColor = Color.WHITE;
+	final private static Color targetColor = Color.blue;
+	final private static Color measuredColor = Color.BLUE;
+	final private static Color targetPlatformColor = Color.red;
+	final private static Color measuredPlatformColor = Color.RED;
 	
 	long startMillis = System.currentTimeMillis();
 
@@ -86,7 +87,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	}
 
 	public ChartPanel makeChart(ToolModel t) {
-		JFreeChart chart = ChartFactory.createXYLineChart(null, null, null, 
+		JFreeChart chart = ChartFactory.createXYLineChart("Temperature vs Time", "Time (ms)", "Temperature (C)", 
 				measuredDataset, PlotOrientation.VERTICAL, 
 				false, false, false);
 		chart.setBorderVisible(false);
@@ -95,9 +96,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		ValueAxis axis = plot.getDomainAxis();
 		axis.setLowerMargin(0);
 		axis.setFixedAutoRange(3L*60L*1000L); // auto range to three minutes
-		axis.setTickLabelsVisible(false); // We don't need to see the millisecond count
+		axis.setTickLabelsVisible(false); // let's not see the miliseconds count
 		axis = plot.getRangeAxis();
-		axis.setRange(0,260); // set termperature range from 0 to 260 degrees C 
+		axis.setRange(0,260); // set temperature range from 0 to 260 degrees C 
 		// Tweak L&F of chart
 		//((XYAreaRenderer)plot.getRenderer()).setOutline(true);
 		XYStepRenderer renderer = new XYStepRenderer();
@@ -115,7 +116,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
 		ChartPanel chartPanel = new ChartPanel(chart);
-		chartPanel.setPreferredSize(new Dimension(400,140));
+		//chartPanel.setPreferredSize(new Dimension(400,200));
 		chartPanel.setOpaque(false);
 		return chartPanel;
 	}
@@ -131,6 +132,30 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 		// create our initial panel
 		setLayout(new MigLayout());
+
+		// cooling fan controls
+		if (t.hasFan()) {
+			String fanString = "Cooling Fan";
+			String enableString = "enable";
+			Element xml = findMappingNode(t.getXml(),"fan");
+			if (xml != null) {
+				fanString = xml.getAttribute("name");
+				enableString = xml.getAttribute("actuated");
+			}
+			JLabel fanLabel = new JLabel(fanString);
+			fanLabel.setMinimumSize(labelMinimumSize);
+			fanLabel.setMaximumSize(labelMinimumSize);
+			fanLabel.setPreferredSize(labelMinimumSize);
+			fanLabel.setHorizontalAlignment(JLabel.LEFT);
+
+			JCheckBox fanCheck = new JCheckBox(enableString);
+			fanCheck.setName("fan-check");
+			fanCheck.addItemListener(this);
+
+			add(fanLabel);
+			add(fanCheck,"wrap");
+		}
+
 		// create our motor options
 		if (t.hasMotor()) {
 			// Due to current implementation issues, we need to send the PWM
@@ -156,7 +181,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				field.addActionListener(this);
 
 				add(label);
-				add(field,"wrap");
+				add(field);
 			}
 
 			if (t.motorHasEncoder() || t.motorIsStepper()) {
@@ -178,7 +203,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				field.addActionListener(this);
 
 				add(label);
-				add(field,"wrap");
+				add(field);
 			}
 			// create our motor options
 			JLabel motorEnabledLabel = new JLabel("Motor Control");
@@ -187,15 +212,15 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			motorEnabledLabel.setPreferredSize(labelMinimumSize);
 			motorEnabledLabel.setHorizontalAlignment(JLabel.LEFT);
 
-			JRadioButton motorReverseButton = new JRadioButton("reverse");
+			JRadioButton motorReverseButton = new JRadioButton(" < ");
 			motorReverseButton.setName("motor-reverse");
 			motorReverseButton.addItemListener(this);
 
-			JRadioButton motorStoppedButton = new JRadioButton("stop");
+			JRadioButton motorStoppedButton = new JRadioButton(" || ");
 			motorStoppedButton.setName("motor-stop");
 			motorStoppedButton.addItemListener(this);
 
-			JRadioButton motorForwardButton = new JRadioButton("forward");
+			JRadioButton motorForwardButton = new JRadioButton(" > ");
 			motorForwardButton.setName("motor-forward");
 			motorForwardButton.addItemListener(this);
 
@@ -206,15 +231,15 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 
 			// add components in.
-			add(motorEnabledLabel,"split,spanx");
-			add(motorReverseButton);
+			//add(motorEnabledLabel,"split,spanx");
+			add(motorReverseButton,"split,spanx");
 			add(motorStoppedButton);
 			add(motorForwardButton,"wrap");
 		}
 
 		// our temperature fields
 		if (t.hasHeater()) {
-			JLabel targetTempLabel = makeKeyLabel("Target Temperature (C)",targetColor);
+			JLabel targetTempLabel = makeKeyLabel("Nozzle Temp (C)",targetColor);
 			JTextField targetTempField = new JTextField();
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
@@ -226,7 +251,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			targetTempField.setActionCommand("handleTextfield");
 			targetTempField.addActionListener(this);
 
-			JLabel currentTempLabel = makeKeyLabel("Current Temperature (C)",measuredColor);
+			JLabel currentTempLabel = makeKeyLabel("Current",measuredColor);
 			currentTempField = new JTextField();
 			currentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			currentTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
@@ -234,14 +259,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			currentTempField.setEnabled(false);
 
 			add(targetTempLabel);
-			add(targetTempField,"wrap");
-			add(currentTempLabel);
+			add(targetTempField);
+			//add(currentTempLabel);
 			add(currentTempField,"wrap");
 		}
 
 		// our heated platform fields
 		if (t.hasHeatedPlatform()) {
-			JLabel targetTempLabel = makeKeyLabel("Platform Target Temp (C)",targetPlatformColor);
+			JLabel targetTempLabel = makeKeyLabel("Platform Temp (C)",targetPlatformColor);
 			JTextField targetTempField = new JTextField();
 			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
 			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
@@ -254,7 +279,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			targetTempField.setActionCommand("handleTextfield");
 			targetTempField.addActionListener(this);
 
-			JLabel currentTempLabel = makeKeyLabel("Platform Current Temp (C)",measuredPlatformColor);
+			JLabel currentTempLabel = makeKeyLabel("Current",measuredPlatformColor);
 
 			platformCurrentTempField = new JTextField();
 			platformCurrentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
@@ -263,14 +288,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			platformCurrentTempField.setEnabled(false);
 
 			add(targetTempLabel);
-			add(targetTempField,"wrap");
-			add(currentTempLabel);
+			add(targetTempField);
+			//add(currentTempLabel);
 			add(platformCurrentTempField,"wrap");
 			
 		}
 
 		if (t.hasHeater() || t.hasHeatedPlatform()) {
-			add(new JLabel("Temperature Chart"),"growx,spanx,wrap");
+			//add(new JLabel("Temperature Chart"),"growx,spanx,wrap");
 			add(makeChart(t),"growx,spanx,wrap");
 		}
 
@@ -304,29 +329,6 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 			add(mistCoolantLabel);
 			add(mistCoolantCheck,"wrap");
-		}
-
-		// cooling fan controls
-		if (t.hasFan()) {
-			String fanString = "Cooling Fan";
-			String enableString = "enable";
-			Element xml = findMappingNode(t.getXml(),"fan");
-			if (xml != null) {
-				fanString = xml.getAttribute("name");
-				enableString = xml.getAttribute("actuated");
-			}
-			JLabel fanLabel = new JLabel(fanString);
-			fanLabel.setMinimumSize(labelMinimumSize);
-			fanLabel.setMaximumSize(labelMinimumSize);
-			fanLabel.setPreferredSize(labelMinimumSize);
-			fanLabel.setHorizontalAlignment(JLabel.LEFT);
-
-			JCheckBox fanCheck = new JCheckBox(enableString);
-			fanCheck.setName("fan-check");
-			fanCheck.addItemListener(this);
-
-			add(fanLabel);
-			add(fanCheck,"wrap");
 		}
 
 		// valve controls
