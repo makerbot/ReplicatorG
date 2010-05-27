@@ -153,7 +153,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			fanCheck.addItemListener(this);
 
 			add(fanLabel);
-			add(fanCheck,"wrap");
+			add(fanCheck,"span,wrap");
 		}
 
 		// create our motor options
@@ -203,7 +203,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				field.addActionListener(this);
 
 				add(label);
-				add(field);
+				add(field,"span");
 			}
 			// create our motor options
 			JLabel motorEnabledLabel = new JLabel("Motor Control");
@@ -234,7 +234,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			//add(motorEnabledLabel,"split,spanx");
 			add(motorReverseButton,"split,spanx");
 			add(motorStoppedButton);
-			add(motorForwardButton,"wrap");
+			add(motorForwardButton,"span,wrap");
 		}
 
 		// our temperature fields
@@ -261,7 +261,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			add(targetTempLabel);
 			add(targetTempField);
 			//add(currentTempLabel);
-			add(currentTempField,"wrap");
+			add(currentTempField,"span,wrap");
 		}
 
 		// our heated platform fields
@@ -290,13 +290,13 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			add(targetTempLabel);
 			add(targetTempField);
 			//add(currentTempLabel);
-			add(platformCurrentTempField,"wrap");
+			add(platformCurrentTempField,"span,wrap");
 			
 		}
 
 		if (t.hasHeater() || t.hasHeatedPlatform()) {
 			//add(new JLabel("Temperature Chart"),"growx,spanx,wrap");
-			add(makeChart(t),"growx,spanx,wrap");
+			add(makeChart(t),"span,flowx,grow");
 		}
 
 		// flood coolant controls

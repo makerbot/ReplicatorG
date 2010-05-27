@@ -101,25 +101,27 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 
 		JButton xPlusButton = createJogButton("X+", "Jog X axis in positive direction");
 		JButton xMinusButton = createJogButton("X-", "Jog X axis in negative direction");
-		JButton xCenterButton = createJogButton("<html><center>Center<br/>X", "Jog X axis to the origin","Center X");
+		JButton xCenterButton = createJogButton("<html><center>Go to<br/>x=0", "Jog X axis to the origin","Center X");
 		JButton yPlusButton = createJogButton("Y+", "Jog Y axis in positive direction");
 		JButton yMinusButton = createJogButton("Y-", "Jog Y axis in negative direction");
-		JButton yCenterButton = createJogButton("<html><center>Center<br/>Y", "Jog Y axis to the origin","Center Y");
+		JButton yCenterButton = createJogButton("<html><center>Go to<br/>y=0", "Jog Y axis to the origin","Center Y");
 		JButton zPlusButton = createJogButton("Z+", "Jog Z axis in positive direction");
 		JButton zMinusButton = createJogButton("Z-", "Jog Z axis in negative direction");
-		JButton zCenterButton = createJogButton("<html><center>Center<br/>Z", "Jog Z axis to the origin","Center Z");
-		JButton zeroButton = createJogButton("<html><center>Set<br/>origin","Mark Current Position as Origin (0,0,0)","Zero");
+		JButton zCenterButton = createJogButton("<html><center>Go to<br/>z=0", "Jog Z axis to the origin","Center Z");
+		JButton zeroButton = createJogButton("<html><center>Set<br/>origin","Mark Current position as origin (0,0,0)","Zero");
+		JButton centerButton = createJogButton("<html><center>Go to<br/>origin","Return to origin (0,0,0)","Center XYZ"); // This would be a nice feature, but there seems to be a problem with the implementation below sending commands too fast.
 
 		JPanel xyzPanel = new JPanel(new MigLayout("","[]0[]","[]0[]"));
-        xyzPanel.add(zCenterButton, "split 3,flowy,gap 0 0 0 0");
-		xyzPanel.add(xMinusButton, "gap 0 0 0 0");
-        xyzPanel.add(yCenterButton);
+		xyzPanel.add(zeroButton, "split 1,flowy,gap 0 0 0 0");
+		//xyzPanel.add(centerButton, "gap 0 0 0 0");
+		xyzPanel.add(xPlusButton, "split 3,flowy,gap 0 0 0 0");
+		xyzPanel.add(xCenterButton, "gap 0 0 0 0");
+		xyzPanel.add(xMinusButton);
 		xyzPanel.add(yPlusButton, "split 3,flowy,gap 0 0 0 0");
-		xyzPanel.add(zeroButton,"gap 0 0 0 0");
+		xyzPanel.add(yCenterButton,"gap 0 0 0 0");
 		xyzPanel.add(yMinusButton);
-		xyzPanel.add(xPlusButton,"split 2, flowy, aligny bottom, gap 0 0 0 0, gapafter 10");
-        xyzPanel.add(xCenterButton);
-		xyzPanel.add(zPlusButton, "split 2,flowy,gap 0 0 0 0");
+		xyzPanel.add(zPlusButton,"split 3, flowy,gap 0 0 0 0");
+		xyzPanel.add(zCenterButton,"gap 0 0 0 0");
 		xyzPanel.add(zMinusButton);
 
 		// create our position panel
@@ -288,6 +290,14 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 		} else if (s.equals("Center Z")) {
 			current.z = 0;
 
+			driver.setFeedrate(zFeedrate);
+			driver.queuePoint(current);
+		} else if (s.equals("Center XYZ")) {
+			current.x = 0;
+			current.y = 0;
+			driver.setFeedrate(xyFeedrate);
+			driver.queuePoint(current);
+			current.z = 0;
 			driver.setFeedrate(zFeedrate);
 			driver.queuePoint(current);
 		} else if (s.equals("Zero")) {
