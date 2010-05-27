@@ -479,6 +479,7 @@ public class MachineController {
 					} else {
 						synchronized(this) {
 							if (state.getState() == MachineState.State.READY ||
+									state.getState() == MachineState.State.NOT_ATTACHED ||
 									state.getState() == MachineState.State.PLAYBACK ||
 									state.isPaused()) {
 								wait();
