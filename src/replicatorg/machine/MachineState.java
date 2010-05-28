@@ -18,18 +18,11 @@ public class MachineState extends Object implements Cloneable {
 		NOT_ATTACHED,
 		/** An attempt to contact the machine is in progress. */
 		CONNECTING,
-		/** The controller is scanning multiple ports in an attempt to contact the
-		 * machine. */
-		AUTO_SCAN,
 		/** The controller has successfully contacted the machine, and is ready
 		 * for input. */
 		READY,
-		/** The controller is estimating the length of a build. */
-		ESTIMATING,
 		/** A build is in progress. */
 		BUILDING,
-		/** The machine is under manual control (via control panel, for example). */
-		MANUAL_CONTROL,
 		/** The machine is stopping operation. */
 		STOPPING,
 		/** The machine is building from an SD card. */
@@ -119,8 +112,7 @@ public class MachineState extends Object implements Cloneable {
 	}
 	
 	public boolean isConnected() {
-		return state != State.AUTO_SCAN && 
-			state != State.NOT_ATTACHED &&
+		return state != State.NOT_ATTACHED &&
 			state != State.CONNECTING;
 	}
 	

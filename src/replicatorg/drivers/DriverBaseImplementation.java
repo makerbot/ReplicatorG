@@ -571,10 +571,6 @@ public class DriverBaseImplementation implements Driver {
 		return true;
 	}
 	
-	public boolean autoscan() {
-		return false;
-	}
-
 	public double getChamberTemperature() {
 		return 0;
 	}

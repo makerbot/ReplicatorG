@@ -766,17 +766,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		reloadSerialMenu();
 		menu.add(serialMenu);
 		
-		item = new JCheckBoxMenuItem("Enable autoscan",
-					     Base.preferences.getBoolean("autoscan",false));
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			    JCheckBoxMenuItem box = 
-				(JCheckBoxMenuItem)e.getSource();
-			    Base.preferences.putBoolean("autoscan",box.getState());
-			}
-		    });
-		menu.add(item);
-
 		item = new JMenuItem("Control Panel", 'C');
 		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J,ActionEvent.CTRL_MASK));
 		item.addActionListener(new ActionListener() {
@@ -2299,9 +2288,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					Base.logger.severe("Could not use/find serial port specified in machines.xml ("+us.getPortName()+").");
 					//e.printStackTrace();
 				}
-			}
-			else if (Base.preferences.getBoolean("autoscan",false)) {
-				machine.autoscan();
 			} else {
 				String lastPort = Base.preferences.get("serial.last_selected", null);
 				if (lastPort != null) {

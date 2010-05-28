@@ -7,7 +7,6 @@ import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
 import replicatorg.app.Serial;
-import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.tools.XML;
 
 /**
@@ -87,52 +86,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	public float getStopBits() {
 		return stopbits;
 	}
-	
-	/**
-	 * Autoscan manually scans available serial ports one by one. 
-	 *
-	 */
-	public boolean autoscan() {
-		assert !isInitialized();
-		assert serial == null;
 		
-		if (explicit &&
-			Base.preferences.getBoolean("serial.use_machines",true)) {
-			// Attempt explicitly set port first
-			try {
-				Serial candidatePort = new Serial(portName,this);
-				Base.logger.warning("Connecting to port "+portName+" specified in machine definition");
-				setSerial(candidatePort);
-				initialize();
-				if (isInitialized()) return true;
-				Base.logger.warning("failed: "+portName);
-				setSerial(null);
-			} catch (SerialException se) {
-				se.printStackTrace();
-			}
-		}
-		
-		for (Serial.Name candidateName: Serial.scanSerialNames()) {
-			if (!candidateName.isAvailable()) continue;
-			// Open candidate and set it
-			Serial candidatePort = null;
-			try {
-				candidatePort = new Serial(candidateName.getName(),this); 
-			} catch (SerialException se) {
-				se.printStackTrace();
-			}
-			if (candidatePort != null) {
-				Base.logger.info("attempting candidate "+candidateName.getName());
-				setSerial(candidatePort);
-				initialize();
-				if (isInitialized()) break;
-				Base.logger.warning("failed: "+candidateName.getName());
-				setSerial(null);
-			}
-		}
-		return isInitialized();
-	}
-	
 	public boolean isExplicit() { return explicit; }
 	
 	public void dispose() {
