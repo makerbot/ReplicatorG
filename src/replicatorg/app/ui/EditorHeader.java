@@ -44,6 +44,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.model.Build;
+import replicatorg.model.BuildElement;
 
 /**
  * Sketch tabs at the top of the editor window.
@@ -146,6 +147,13 @@ public class EditorHeader extends JComponent implements ActionListener {
 		codeButton.setVisible(build.getCode() != null);
 		modelButton.setVisible(build.getModel() != null);
 		titleLabel.setText(build.getName());
+		if (build.getOpenedElement() != null) {
+			if (build.getOpenedElement().getType() == BuildElement.Type.GCODE) {
+				codeButton.doClick();
+			} else {
+				modelButton.doClick();
+			}
+		}
 	}
 	
 	public void paintComponent(Graphics g) {

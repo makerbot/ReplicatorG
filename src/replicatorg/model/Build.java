@@ -37,6 +37,7 @@ import replicatorg.app.ui.MainWindow;
  * Stores information about files in the current sketch
  */
 public class Build {
+	
 	/** The editor window associated with this build.  We should remove this dependency or replace it with a
 	 * buildupdatelistener or the like. */
 	MainWindow editor;
@@ -70,6 +71,16 @@ public class Build {
 	int currentIndex;
 
 	/**
+	 * The element that this build was opened as.
+	 */
+	private BuildElement openedElement;
+	/**
+	 * Retrieve the element that this build was opened as.  If a user opens a gcode file, it should 
+	 * initially display that gcode rather than the model, etc.
+	 */
+	public BuildElement getOpenedElement() { return openedElement; }
+	
+	/**
 	 * path is location of the main .gcode file, because this is also simplest
 	 * to use when opening the file from the finder/explorer.
 	 */
@@ -80,6 +91,7 @@ public class Build {
 			name = "Untitled";
 			folder = new File("~");
 			code = new BuildCode(null,null);
+			openedElement = code;
 			code.modified = true;
 		} else {
 			File mainFile = new File(path);
@@ -104,12 +116,20 @@ public class Build {
 			final File modelFile = new File(folder, name + ".stl");
 			if (modelFile.exists()) {
 				model = new BuildModel() {
+					public BuildElement.Type getType() {
+						return BuildElement.Type.MODEL;
+					}
 					public String getSTLPath() {
 						try {
 							return modelFile.getCanonicalPath();
 						} catch (IOException ioe) { return null; }
 					}
 				};
+			}
+			if ("gcode".equals(suffix) && code != null) {
+				openedElement = code;
+			} else {
+				openedElement = model;
 			}
 		}
 	}
@@ -196,57 +216,11 @@ public class Build {
 		//editor.getHeader().rebuild(); TODO: fix
 		calcModified();
 
-//		editor.handleOpenUnchecked(code.file.getPath(), 
-//				currentIndex,
-//				editor.textarea.getSelectionStart(), 
-//				editor.textarea.getSelectionEnd(), 
-//				editor.textarea.getScrollPosition());
 
 		// TODO: update MRU?
 		// let MainWindow know that the save was successful
 		return true;
 	}
-
-	/**
-	 * Prompt the user for a new file to the sketch. This could be .class or
-	 * .jar files for the code folder, .gcode files for the project, or .dll,
-	 * .jnilib, or .so files for the code folder
-	 */
-//	public void addFile() {
-//		// make sure the user didn't hide the sketch folder
-//		ensureExistence();
-//
-//		// if read-only, give an error
-//		if (isReadOnly()) {
-//			// if the files are read-only, need to first do a "save as".
-//			Base
-//					.showMessage(
-//							"Sketch is Read-Only",
-//							"Some files are marked \"read-only\", so you'll\n"
-//									+ "need to re-save the sketch in another location,\n"
-//									+ "and try again.");
-//			return;
-//		}
-//
-//		// get a dialog, select a file to add to the sketch
-//		String prompt = "Select an image or other data file to copy to your sketch";
-//		// FileDialog fd = new FileDialog(new Frame(), prompt, FileDialog.LOAD);
-//		FileDialog fd = new FileDialog(editor, prompt, FileDialog.LOAD);
-//		fd.setVisible(true);
-//
-//		String directory = fd.getDirectory();
-//		String filename = fd.getFile();
-//		if (filename == null)
-//			return;
-//
-//		// copy the file into the folder. if people would rather
-//		// it move instead of copy, they can do it by hand
-//		File sourceFile = new File(directory, filename);
-//
-//		// now do the work of adding the file
-//		addFile(sourceFile);
-//	}
-
 
 	/**
 	 * Return the gcode object.

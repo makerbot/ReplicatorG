@@ -1931,9 +1931,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			// loading may take a few moments for large files
 
 			build = new Build(this, path);
-			header.setBuild(build);
 			setCode(build.getCode());
 			setModel(build.getModel());
+			header.setBuild(build);
 			if (null != path) {
 				handleOpenPath = path;
 				addMRUEntry(path);

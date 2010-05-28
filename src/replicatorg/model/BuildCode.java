@@ -33,7 +33,7 @@ import javax.swing.undo.UndoManager;
 import replicatorg.app.Base;
 import replicatorg.app.syntax.SyntaxDocument;
 
-public class BuildCode implements Comparable<BuildCode> {
+public class BuildCode implements Comparable<BuildCode>, BuildElement {
 	/** Pretty name (no extension), not the full file name */
 	public String name;
 
@@ -117,5 +117,9 @@ public class BuildCode implements Comparable<BuildCode> {
 	public int compareTo(BuildCode other) {
 		if (name == null) { return (other.name == null)?0:-1; }
 		return name.compareTo(other.name);
+	}
+
+	public Type getType() {
+		return BuildElement.Type.GCODE;
 	}
 }
