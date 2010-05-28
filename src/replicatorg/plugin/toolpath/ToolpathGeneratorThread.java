@@ -44,7 +44,6 @@ public class ToolpathGeneratorThread extends Thread {
 		}
 		
 		public void updateGenerator(final String message) {
-			System.err.println(message);
 			System.err.flush();
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -75,14 +74,13 @@ public class ToolpathGeneratorThread extends Thread {
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
 				synchronized (pdHandle) {
 					if (!pdHandle.isDone()) {
-						System.err.println("showing tp gen dialog");
 						pdHandle.pack();
 						pdHandle.setVisible(true);
 					}
 				}
 			}});
 		}
-		System.err.println("begin tp gen ");
+		Base.logger.info("Beginning toolpath generation.");
 		BuildCode code = generator.generateToolpath();
 		if (progressDialog != null) {
 			synchronized (progressDialog) { 

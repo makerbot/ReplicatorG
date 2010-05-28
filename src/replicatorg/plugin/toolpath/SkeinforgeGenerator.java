@@ -12,7 +12,8 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 
 	public BuildCode generateToolpath() {
 		String path = model.getSTLPath();
-		ProcessBuilder pb = new ProcessBuilder("python","skeinforge.py",path);
+		// The -u makes python output unbuffered.  Oh joyous day.
+		ProcessBuilder pb = new ProcessBuilder("python","-u","skeinforge.py",path);
 	    String skeinforgeDir = System.getProperty("replicatorg.skeinforge.path");
 	    if (skeinforgeDir == null || (skeinforgeDir.length() == 0)) {
 	    	skeinforgeDir = System.getProperty("user.dir") + File.separator + "skeinforge";
@@ -20,7 +21,13 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		pb.directory(new File(skeinforgeDir));
 		try {
 			Process process = pb.start();
-			StreamLoggerThread ist = new StreamLoggerThread(process.getInputStream());
+			StreamLoggerThread ist = new StreamLoggerThread(process.getInputStream()) {
+				@Override
+				protected void logMessage(String line) {
+					listener.updateGenerator(line);
+					super.logMessage(line);
+				}
+			};
 			StreamLoggerThread est = new StreamLoggerThread(process.getErrorStream());
 			est.setDefaultLevel(Level.SEVERE);
 			ist.start();

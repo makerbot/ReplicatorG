@@ -1,6 +1,5 @@
 package replicatorg.app.util;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,11 +8,11 @@ import java.util.logging.Level;
 import replicatorg.app.Base;
 
 public class StreamLoggerThread extends Thread {
-	private BufferedReader reader; 
+	private InputStreamReader reader; 
 	private Level defaultLevel;
 	
 	public StreamLoggerThread(InputStream stream) {
-		reader = new BufferedReader(new InputStreamReader(stream));
+		reader = new InputStreamReader(stream);
 		defaultLevel = Level.INFO;
 	}
 
@@ -33,12 +32,18 @@ public class StreamLoggerThread extends Thread {
 	public void run() {
 		boolean atEnd = false;
 		try {
+			StringBuffer nextLine = new StringBuffer();
 			while (!atEnd) {
-				String nextLine = reader.readLine();
-				if (nextLine == null) {
-					atEnd = true;
+				int nextChar = reader.read();
+				if (nextChar == '\n' || nextChar == -1) {
+					if (nextLine.length() > 0) {
+						logMessage(nextLine.toString());
+					}
+					if (nextChar == -1) { atEnd = true; }
+					nextLine = new StringBuffer();
+				} else if (nextChar == '\r') {
 				} else {
-					logMessage(nextLine);
+					nextLine.append((char)nextChar);
 				}
 			}
 		} catch (IOException e) {
