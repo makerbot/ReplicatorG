@@ -382,11 +382,10 @@ public void setFont(Font font)
    */
   public void paint(Graphics gfx)
   {
-    if (Base.isMacOS()) {
-      Graphics2D g2 = (Graphics2D) gfx;
-      g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                          RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-    }
+	boolean antialias = Base.preferences.getBoolean("replicatorg.editor.antialiasing", true);
+    Graphics2D g2 = (Graphics2D) gfx;
+    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                        antialias?RenderingHints.VALUE_TEXT_ANTIALIAS_ON:RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
 
     tabSize = fm.charWidth(' ') * ((Integer)textArea.getDocument().getProperty(PlainDocument.tabSizeAttribute)).intValue();
 
