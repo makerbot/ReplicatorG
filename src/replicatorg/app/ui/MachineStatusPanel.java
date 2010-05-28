@@ -87,7 +87,9 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		if (this.machine == machine)
 			return;
 		this.machine = machine;
-		updateMachineStatus(new MachineStateChangeEvent(machine,machine.getMachineState()));
+		MachineState state = (machine!=null)?machine.getMachineState():new MachineState();
+		MachineStateChangeEvent e = new MachineStateChangeEvent(machine,state);
+		updateMachineStatus(e);
 	}
 
 	private boolean firmwareWarningIssued = false;

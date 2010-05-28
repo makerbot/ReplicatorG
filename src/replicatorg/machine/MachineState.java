@@ -124,4 +124,12 @@ public class MachineState extends Object implements Cloneable {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public boolean equals(Object o) {
+		if (!(o instanceof MachineState)) return false;
+		MachineState other = (MachineState)o;
+		return other.state == state &&
+			other.target == target &&
+			other.paused == paused;
+	}
 }

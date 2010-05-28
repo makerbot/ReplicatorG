@@ -71,10 +71,12 @@ public class MachineController {
 	private void setState(MachineState state) {
 		MachineState oldState = this.state;
 		this.state = state;
-		emitStateChange(oldState,state);
-		// wake up machine thread
-		synchronized(machineThread) {
-			machineThread.notify();
+		if (!oldState.equals(state)) {
+			emitStateChange(oldState,state);
+			// wake up machine thread
+			synchronized(machineThread) {
+				machineThread.notify();
+			}
 		}
 	}
 

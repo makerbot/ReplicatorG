@@ -1153,8 +1153,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 	
 	public void handleConnect() {
-		if (machine != null) {
-			// machine already connected
+		if (machine != null && machine.getMachineState().getState() != MachineState.State.NOT_ATTACHED) {
+			// Already connected, ignore
 		} else {
 			String name = Base.preferences.get("machine.name", null);
 			if ( name != null ) {
@@ -1515,7 +1515,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (evt.getState().isReady()) {
 			reloadSerialMenu();
 		}
-		onboardParamsItem.setVisible(machine.getDriver() instanceof OnboardParameters &&
+		onboardParamsItem.setVisible(
+				machine != null &&
+				machine.getDriver() instanceof OnboardParameters &&
 				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters());
 	}
 
@@ -2266,16 +2268,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			this.machine.dispose();
 		}
 		this.machine = machine;
-		machine.setCodeSource(new JEditTextAreaSource(textarea));
-		machine.setMainWindow(this);
+		if (machine != null) {
+			machine.setCodeSource(new JEditTextAreaSource(textarea));
+			machine.setMainWindow(this);
+			machine.addMachineStateListener(this);
+			machine.addMachineStateListener(machineStatusPanel);
+			machine.addMachineStateListener(buttons);
+		}
 		machineStatusPanel.setMachine(this.machine);
 	}
 
 	public void loadMachine(String name) {
 		setMachine(Base.loadMachine(name));
-		machine.addMachineStateListener(this);
-		machine.addMachineStateListener(machineStatusPanel);
-		machine.addMachineStateListener(buttons);
 		reloadSerialMenu();
 		if (machine.driver instanceof UsesSerial) {
 			UsesSerial us = (UsesSerial)machine.driver;
@@ -2286,7 +2290,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					machine.connect();
 				} catch (SerialException e) {
 					Base.logger.severe("Could not use/find serial port specified in machines.xml ("+us.getPortName()+").");
-					//e.printStackTrace();
+					setMachine(null); // Revert to null state
 				}
 			} else {
 				String lastPort = Base.preferences.get("serial.last_selected", null);
@@ -2298,6 +2302,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						Base.logger.log(Level.WARNING,
 								"Could not use most recently selected serial port ("+lastPort+").",
 								e);
+						setMachine(null); // Revert to null state
 					}
 				}
 			}
