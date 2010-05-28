@@ -324,7 +324,7 @@ def main():
 		preferences.setEndFile(options.endFile)
 	else:
 		preferences.setEndFile('end.txt')
-	if len( args ) > 1:
+	if len( args ) > 0:
 		writeOutput( ' '.join(args) )
 	else:
 		preferences.displayDialog( SkeinforgePreferences() )
