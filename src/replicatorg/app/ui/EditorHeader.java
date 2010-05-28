@@ -28,12 +28,10 @@ package replicatorg.app.ui;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
-import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -73,9 +71,24 @@ public class EditorHeader extends JComponent implements ActionListener {
 	}
 	
 	private class TabButtonUI extends BasicButtonUI {
-		protected void paintText(Graphics g,AbstractButton b,Rectangle textRect,String text) {
+		public void paint(Graphics g,JComponent c) {
+			initTabImages();
+			TabButton b = (TabButton)c;
+			BufferedImage img = b.isSelected()?selectedTabBg:regularTabBg;
+			final int partWidth = img.getWidth()/3;
+			int height = img.getHeight();
+			final int x = 0;
+			final int y = 0;
+			final int w = c.getWidth();
+			// Draw left side of tab
+			g.drawImage(img, x, y, x+partWidth, y+height, 0, 0, partWidth, height, null);
+			final int rightTabStart = img.getWidth()-partWidth;
+			// Draw center of tab
+			g.drawImage(img, x+partWidth, y, x+w-partWidth, y+height, partWidth, 0, rightTabStart, height, null);
+			// Draw right side of tab
+			g.drawImage(img, x+w-partWidth, y, x+w, y+height, rightTabStart, 0, img.getWidth(), height, null);
 			b.setForeground(b.isSelected()?textSelectedColor:textUnselectedColor);
-			super.paintText(g,b,textRect,text);
+			super.paint(g,c);
 		}
 	}
 
@@ -83,20 +96,21 @@ public class EditorHeader extends JComponent implements ActionListener {
 	static BufferedImage regularTabBg;
 	
 	protected void initTabImages() {
-		if (selectedTabBg != null) {
+		if (selectedTabBg == null) {
 			selectedTabBg = Base.getImage("images/tab-selected.png", this);
 		}
-		if (regularTabBg != null) {
+		if (regularTabBg == null) {
 			regularTabBg = Base.getImage("images/tab-regular.png", this);
 		}
 	}
+
 
 	private class TabButton extends JToggleButton {
 		
 		public TabButton(String text) {
 			super(text);
 			setUI(new TabButtonUI());
-			setBorder(new EmptyBorder(0,0,0,0));
+			setBorder(new EmptyBorder(6,8,8,10));
 			tabGroup.add(this);
 			addActionListener(EditorHeader.this);
 		}
