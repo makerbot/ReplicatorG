@@ -31,7 +31,9 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.Enumeration;
 
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -55,17 +57,23 @@ public class EditorHeader extends JComponent implements ActionListener {
 		GCODE
 	};
 	
+	private ButtonGroup tabGroup = new ButtonGroup();
+
 	public Tab getSelectedTab() {
-		if (modelButton.isSelected()) return Tab.MODEL;
-		return Tab.GCODE;
+		// Enumeration isn't iterable yet?
+		Enumeration<AbstractButton> e = tabGroup.getElements();
+		while (e.hasMoreElements()) {
+			TabButton tb = (TabButton)e.nextElement();
+			if (tb.isSelected()) { return tb.getTab(); }
+		}
+		return null;
 	}
+	
 	static Color backgroundColor;
 
 	static Color textSelectedColor;
 	static Color textUnselectedColor;
  
-	private ButtonGroup tabGroup = new ButtonGroup();
-
 	private ChangeListener changeListener;
 	void setChangeListener(ChangeListener listener) {
 		changeListener = listener;
@@ -107,9 +115,13 @@ public class EditorHeader extends JComponent implements ActionListener {
 
 
 	private class TabButton extends JToggleButton {
+		final Tab which;
 		
-		public TabButton(String text) {
+		public Tab getTab() { return which; }
+		
+		public TabButton(String text, Tab which) {
 			super(text);
+			this.which = which;
 			setUI(new TabButtonUI());
 			setBorder(new EmptyBorder(6,8,8,10));
 			tabGroup.add(this);
@@ -117,8 +129,6 @@ public class EditorHeader extends JComponent implements ActionListener {
 		}
 	}
 	
-	JToggleButton codeButton = new TabButton("gcode");
-	JToggleButton modelButton = new TabButton("model");
 	JLabel titleLabel = new JLabel("Untitled");
 	
 	MainWindow editor;
@@ -135,25 +145,44 @@ public class EditorHeader extends JComponent implements ActionListener {
 		this.editor = mainWindow;
 
 		add(titleLabel);
-		add(modelButton);
-		add(codeButton);
-		codeButton.setSelected(true);
 		backgroundColor = new Color(0x92, 0xA0, 0x6B);
 		textSelectedColor = Base.getColorPref("header.text.selected.color","#1A1A00");
 		textUnselectedColor = Base.getColorPref("header.text.unselected.color","#ffffff");
 	}
 
-	void setBuild(Build build) {
-		codeButton.setVisible(build.getCode() != null);
-		modelButton.setVisible(build.getModel() != null);
-		titleLabel.setText(build.getName());
-		if (build.getOpenedElement() != null) {
-			if (build.getOpenedElement().getType() == BuildElement.Type.GCODE) {
-				codeButton.doClick();
-			} else {
-				modelButton.doClick();
+	private void removeTabs() {
+		tabGroup = new ButtonGroup();
+		for (int i = 0; i < getComponentCount(); i++) {
+			if (getComponent(i) instanceof TabButton) {
+				remove(i);
+				removeTabs();
+				return;
 			}
 		}
+		validate();
+	}
+	
+	void setBuild(Build build) {
+		removeTabs();
+		Tab initialSelection = Tab.GCODE;
+		if (build.getOpenedElement() != null) {
+			if (build.getOpenedElement().getType() == BuildElement.Type.MODEL) {
+				initialSelection = Tab.MODEL;
+			}
+		}
+		if (build.getModel() != null) {
+			TabButton tb = new TabButton("model",Tab.MODEL);
+			add(tb);
+			if (initialSelection == Tab.MODEL) { tb.doClick(); } 
+		}
+		if (build.getCode() != null) {
+			TabButton tb = new TabButton("gcode",Tab.GCODE);
+			add(tb);
+			if (initialSelection == Tab.GCODE) { tb.doClick(); } 
+		}
+		titleLabel.setText(build.getName());
+		validate();
+		repaint();
 	}
 	
 	public void paintComponent(Graphics g) {
