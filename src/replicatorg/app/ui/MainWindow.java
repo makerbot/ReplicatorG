@@ -57,12 +57,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -100,6 +98,7 @@ import javax.swing.undo.UndoManager;
 import org.w3c.dom.Document;
 
 import replicatorg.app.Base;
+import replicatorg.app.MRUList;
 import replicatorg.app.MachineController;
 import replicatorg.app.MachineFactory;
 import replicatorg.app.Serial;
@@ -145,12 +144,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	static final String WINDOW_TITLE = "ReplicatorG" + " - "
 			+ Base.VERSION_NAME;
-
-	// List of most recently opened files names.
-	List<String> mruFiles;
-
-	// Preference key name
-	final static String MRU_LIST_KEY = "mru_list";
 
 	final static String MODEL_TAB_KEY = "MODEL";
 	final static String GCODE_TAB_KEY = "GCODE";
@@ -244,6 +237,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		return stlPanel;
 	}
 	
+	private MRUList mruList;
+	
 	public MainWindow() {
 		super(WINDOW_TITLE);
 		setLocationByPlatform(true);
@@ -254,13 +249,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		MRJApplicationUtils.registerOpenDocumentHandler(this);
 
 		// load up the most recently used files list
-		String mruString = Base.preferences.get(MRU_LIST_KEY,null);
-		mruFiles = new LinkedList<String>();
-		if (mruString != null && mruString.length() != 0) {
-			for (String entry : mruString.split(",")) {
-				addMRUEntry(entry);
-			}
-		}
+		mruList = MRUList.getMRUList();
 
 		// set the window icon
 		icon = Base.getImage("images/icon.gif", this);
@@ -496,7 +485,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		int location = splitPane.getDividerLocation();
 		Base.preferences.putInt("last.divider.location", location);
 
-		saveMRUPrefs();
 		try {
 			Base.preferences.flush();
 		} catch (BackingStoreException bse) {
@@ -512,26 +500,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		tgt.start();
 		System.err.println("running tp gen");
 	}
-	
-
-	private void saveMRUPrefs() {
-		StringBuffer sb = new StringBuffer();
-		int remaining_chars = Preferences.MAX_VALUE_LENGTH;
-		for (String s : mruFiles) {
-			final int len = sb.length();
-			if ( (remaining_chars - (len+1)) < 0) {
-				break;
-			}
-			if (len != 0) {
-				sb.append(",");
-				remaining_chars--;
-			}
-			sb.append(s);
-			remaining_chars -= len;
-		}
-		Base.preferences.put(MRU_LIST_KEY, sb.toString());		
-	}
-	
+		
 	// ...................................................................
 
 	private JMenu serialMenu = null;
@@ -615,9 +584,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				handleOpen(path);
 			}
 		}
-		if (mruFiles != null && !mruFiles.isEmpty()) {
+		if (mruList != null) {
 			int index = 0;
-			for (String fileName : mruFiles) {
+			for (String fileName : mruList) {
 				String entry = Integer.toString(index) + ". "
 						+ fileName.substring(fileName.lastIndexOf('/') + 1);
 				JMenuItem item = new JMenuItem(entry, KeyEvent.VK_0 + index);
@@ -1947,7 +1916,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			header.setBuild(build);
 			if (null != path) {
 				handleOpenPath = path;
-				addMRUEntry(path);
+				mruList.update(path);
 				reloadMruMenu();
 			}
 			if (Base.preferences.getBoolean("console.auto_clear",false)) {
@@ -1958,17 +1927,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} finally {
 			this.setCursor(Cursor.getDefaultCursor());
 		}
-	}
-
-	/**
-	 * Add a path to the MRU list
-	 */
-	void addMRUEntry(String path) {
-		File f = new File(path);
-		String absPath = f.getAbsolutePath();
-		mruFiles.remove(absPath);
-		mruFiles.add(0,absPath);
-		saveMRUPrefs();
 	}
 
 	/**
