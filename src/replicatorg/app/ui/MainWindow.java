@@ -57,6 +57,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -398,12 +399,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			if (openBehavior == InitialOpenBehavior.OPEN_NEW) {
 				handleNew2(true);				
 			} else {
-				String sketchPath = Base.preferences.get("last.sketch.path",null);
-				// Sketch sketchTemp = new Sketch(sketchPath);
-
-				if ((sketchPath != null) && (new File(sketchPath)).exists()) {
-					// don't check modified because nothing is open yet
-					handleOpen2(sketchPath);
+				// Get last path opened; MRU keeps this.
+				Iterator<String> i = mruList.iterator();
+				if (i.hasNext()) {
+					String lastOpened = i.next();
+					if (new File(lastOpened).exists()) {
+						handleOpen2(lastOpened);
+					} else {
+						handleNew2(true);
+					}
 				} else {
 					handleNew2(true);
 				}
