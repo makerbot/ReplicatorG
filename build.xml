@@ -73,7 +73,7 @@
     </java>
   </target>
 
-  <target name="dist-macosx" depends="jar" description="Builds OS X RegplicatorG distribution">
+  <target name="dist-macosx" depends="jar" description="Builds OS X ReplicatorG distribution">
     <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
     <property name="target.dir"   value="dist/macosx/${release.name}"/>
     <property name="dist.dir"     value="build/macosx/dist"/>
@@ -86,8 +86,7 @@
       </condition>
     </fail> 
     <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
-    <mkdir dir="${target.dir}"/>
-	<echo message="replicatorg.version = ${replicatorg.version}" />
+    <antcall target="dist-common-plain"/>
     <jarbundler
        dir="${target.dir}"
        name="ReplicatorG" 
@@ -112,17 +111,12 @@
       <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
     </jarbundler>
     <copy todir="${target.dir}">
-      <filelist dir="." files="license.txt,readme.txt,todo.txt"/>
       <fileset dir="${dist.dir}" includes="drivers/*.dmg"/>
     </copy>
     <copy todir="${target.dir}/tools">
       <filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf,*a"/>
     </copy>
     <chmod file="${target.dir}/tools/avrdude" perm="ugo+rx"/>
-    <copy todir="${target.dir}/firmware">
-      <fileset dir="firmware"/>
-    </copy>
-    <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
     <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
       <arg value="-remove"/>
       <arg value="x86_64"/>
@@ -137,15 +131,25 @@
     <!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
   </target>
 
-  <target name="dist-common" depends="jar" description="Builds files common to all RegplicatorG distributions">
+  <target name="dist-common-plain" depends="jar" description="Copies plaintext files common to all ReplicatorG distributions.">
+    <echo message="Preparing replicatorG. Version: ${replicatorg.version}" />
     <mkdir dir="${target.dir}"/>
     <copy todir="${target.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt"/>
-      <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+    </copy>
+    <copy todir="${target.dir}/skeinforge">
+      <fileset dir="skeinforge" excludes="*.pyc"/>
     </copy>
     <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
     <copy todir="${target.dir}/firmware">
       <fileset dir="firmware"/>
+    </copy>
+  </target>
+
+  <target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">
+    <antcall target="dist-common-plain"/>
+    <copy todir="${target.dir}">
+      <fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
     </copy>
     <copy todir="${target.dir}/lib">
       <fileset dir="${lib.dir}" includes="*.gif"/>
@@ -155,7 +159,7 @@
     </copy>
   </target>
   
-  <target name="dist-linux" depends="jar" description="Builds Linux RegplicatorG distribution">
+  <target name="dist-linux" depends="jar" description="Builds Linux ReplicatorG distribution">
     <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
     <property name="target.dir"   value="dist/linux/${release.name}"/>
     <property name="dist.dir"     value="build/linux/dist"/>
@@ -187,7 +191,7 @@
     </exec>
   </target>
 
-  <target name="dist-windows" depends="jar" description="Builds Windows RegplicatorG distribution">
+  <target name="dist-windows" depends="jar" description="Builds Windows ReplicatorG distribution">
     <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
     <property name="target.dir"   value="dist/windows/${release.name}"/>
     <property name="dist.dir"     value="build/windows/dist"/>
@@ -208,7 +212,7 @@
     </zip>
   </target>
 
-  <target name="dist" depends="dist-linux,dist-macosx,dist-windows" description="Builds all RegplicatorG distributions">
+  <target name="dist" depends="dist-linux,dist-macosx,dist-windows" description="Builds all ReplicatorG distributions">
   </target>
 
 	<!-- Help -->
