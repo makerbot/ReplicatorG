@@ -219,14 +219,22 @@ public class STLPreviewPanel extends JPanel {
 
 	public Node makeAmbientLight() {
 		AmbientLight ambient = new AmbientLight();
-		ambient.setColor(new Color3f(0.3f,0.3f,0.3f));
+		ambient.setColor(new Color3f(0.3f,0.3f,0.9f));
 		ambient.setInfluencingBounds(bounds);
 		return ambient;
 	}
 
-	public Node makeDirectedLight() {
+	public Node makeDirectedLight1() {
 		Color3f color = new Color3f(0.7f,0.7f,0.7f);
 		Vector3f direction = new Vector3f(1f,0.7f,-0.2f);
+		DirectionalLight light = new DirectionalLight(color,direction);
+		light.setInfluencingBounds(bounds);
+		return light;
+	}
+
+	public Node makeDirectedLight2() {
+		Color3f color = new Color3f(0.5f,0.5f,0.5f);
+		Vector3f direction = new Vector3f(-1f,-0.7f,0.2f);
 		DirectionalLight light = new DirectionalLight(color,direction);
 		light.setInfluencingBounds(bounds);
 		return light;
@@ -358,9 +366,10 @@ public class STLPreviewPanel extends JPanel {
 		objectSwitch.setWhichChild(0);
 		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
 
-		Color3f color = new Color3f(0.05f,1.0f,0.04f); 
+		//Color3f color = new Color3f(0.05f,1.0f,0.04f); 
+		Color3f color = new Color3f(1.0f,1.0f,1.0f); 
 		Material m = new Material();
-		//m.setAmbientColor(color);
+		m.setAmbientColor(color);
 		m.setDiffuseColor(color);
 		//m.setSpecularColor(new Color3f(1f,1f,1f));
 		Appearance solid = new Appearance();
@@ -404,7 +413,8 @@ public class STLPreviewPanel extends JPanel {
 		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
 		sceneGroup.addChild(makeAmbientLight());
-		sceneGroup.addChild(makeDirectedLight());
+		sceneGroup.addChild(makeDirectedLight1());
+		sceneGroup.addChild(makeDirectedLight2());
 		sceneGroup.addChild(makeBoundingBox());
 		sceneGroup.addChild(makeBackground());
 		sceneGroup.addChild(makeBaseGrid());
