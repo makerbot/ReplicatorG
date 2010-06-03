@@ -32,7 +32,7 @@ getUnpauseChainGcode in unpause.py to unpause the text; once they have the unpau
 > python export.py
 This brings up the dialog, after clicking 'Export', the following is printed:
 File Screw Holder Bottom.stl is being chain exported.
-The exported file is saved as Screw Holder Bottom_export.gcode
+The exported file is saved as Screw Holder Bottom.gcode
 
 
 >python
@@ -47,7 +47,7 @@ This brings up the export dialog.
 >>> export.writeOutput()
 Screw Holder Bottom.stl
 File Screw Holder Bottom.stl is being chain exported.
-The exported file is saved as Screw Holder Bottom_export.gcode
+The exported file is saved as Screw Holder Bottom.gcode
 
 """
 
@@ -123,7 +123,7 @@ def writeOutput( fileName = '' ):
 	preferences.readPreferences( exportPreferences )
 	startTime = time.time()
 	print( 'File ' + gcodec.getSummarizedFilename( fileName ) + ' is being chain exported.' )
-	suffixFilename = fileName[ : fileName.rfind( '.' ) ] + '_export.' + exportPreferences.fileExtension.value
+	suffixFilename = fileName[ : fileName.rfind( '.' ) ] + '.' + exportPreferences.fileExtension.value
 	gcodeText = gcodec.getGcodeFileText( fileName, '' )
 	if not gcodec.isProcedureDone( gcodeText, 'unpause' ):
 		gcodeText = unpause.getUnpauseChainGcode( fileName, gcodeText )
