@@ -136,7 +136,8 @@ import com.apple.mrj.MRJQuitHandler;
 
 public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		MRJPrefsHandler, MRJOpenDocumentHandler,
-		MachineListener, ChangeListener
+		MachineListener, ChangeListener,
+		ToolpathGenerator.GeneratorListener
 {
 	/**
 	 * 
@@ -501,6 +502,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public void runToolpathGenerator() {
 		ToolpathGenerator generator = new SkeinforgeGenerator();
 		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this.getRootPane(), generator, build);
+		tgt.addListener(this);
 		tgt.start();
 		System.err.println("running tp gen");
 	}
@@ -2293,5 +2295,17 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} else {
 			((CardLayout)cardPanel.getLayout()).show(cardPanel, GCODE_TAB_KEY);
 		}
+	}
+
+	public void generationComplete(Completion completion, Object details) {
+		// if success, update header and switch to code
+		if (completion == Completion.SUCCESS) {
+			header.setBuild(build);
+			header.repaint();
+		}
+	}
+
+	public void updateGenerator(String message) {
+		// ignore
 	}
 }

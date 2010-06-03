@@ -109,23 +109,8 @@ public class Build {
 				parentPath = ".";
 			}
 			folder = new File(parentPath);
-			File codeFile = new File(folder, name + ".gcode");
-			if (codeFile.exists()) {
-				code = new BuildCode(name, codeFile);
-			}
-			final File modelFile = new File(folder, name + ".stl");
-			if (modelFile.exists()) {
-				model = new BuildModel() {
-					public BuildElement.Type getType() {
-						return BuildElement.Type.MODEL;
-					}
-					public String getSTLPath() {
-						try {
-							return modelFile.getCanonicalPath();
-						} catch (IOException ioe) { return null; }
-					}
-				};
-			}
+			loadCode();
+			loadModel();
 			if ("gcode".equals(suffix) && code != null) {
 				openedElement = code;
 			} else {
@@ -134,6 +119,29 @@ public class Build {
 		}
 	}
 
+	public void loadCode() {
+		File codeFile = new File(folder, name + ".gcode");
+		if (codeFile.exists()) {
+			code = new BuildCode(name, codeFile);
+		}
+	}
+	
+	public void loadModel() {
+		final File modelFile = new File(folder, name + ".stl");
+		if (modelFile.exists()) {
+			model = new BuildModel() {
+				public BuildElement.Type getType() {
+					return BuildElement.Type.MODEL;
+				}
+				public String getSTLPath() {
+					try {
+						return modelFile.getCanonicalPath();
+					} catch (IOException ioe) { return null; }
+				}
+			};
+		}		
+	}
+	
 	/**
 	 * Sets the modified value for the code in the frontmost tab.
 	 */

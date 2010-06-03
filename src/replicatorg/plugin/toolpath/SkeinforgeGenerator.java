@@ -24,7 +24,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			StreamLoggerThread ist = new StreamLoggerThread(process.getInputStream()) {
 				@Override
 				protected void logMessage(String line) {
-					listener.updateGenerator(line);
+					emitUpdate(line);
 					super.logMessage(line);
 				}
 			};
@@ -48,6 +48,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 		int lastIdx = path.lastIndexOf('.'); 
 		String root = (lastIdx >= 0)?path.substring(0,lastIdx):path;
+		System.err.println("root is "+root);
 		return new BuildCode(root,new File(root+".gcode"));
 	}
 

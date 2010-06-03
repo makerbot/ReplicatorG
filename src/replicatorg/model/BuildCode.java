@@ -58,12 +58,6 @@ public class BuildCode implements Comparable<BuildCode>, BuildElement {
 
 	public boolean modified;
 
-	// SketchHistory history; // TODO add history information
-
-	String preprocName; // name of .java file after preproc
-
-	int preprocOffset; // where this code starts relative to the concat'd code
-
 	public BuildCode(String name, File file) {
 		this.name = name;
 		this.file = file;

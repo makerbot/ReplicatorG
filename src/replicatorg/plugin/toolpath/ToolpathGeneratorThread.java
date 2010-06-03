@@ -12,12 +12,16 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
+import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorListener;
 
 public class ToolpathGeneratorThread extends Thread {
+	public interface ToolpathGenerat{
+		
+	}
 	private JComponent parent;
 	private ToolpathGenerator generator;
 	private Build build;
-	
+
 	private class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListener {
 		JLabel topLabel;
 		JLabel progressLabel;
@@ -51,12 +55,19 @@ public class ToolpathGeneratorThread extends Thread {
 				}
 			});
 		}
+
+		public void generationComplete(Completion completion, Object details) {
+		}
 	}
 	
 	public ToolpathGeneratorThread(JComponent parent, ToolpathGenerator generator, Build build) {
 		this.parent = parent;
 		this.generator = generator;
 		this.build = build;
+	}
+	
+	public void addListener(ToolpathGenerator.GeneratorListener listener) {
+		this.generator.addListener(listener);
 	}
 	
 	public void run() {
@@ -66,7 +77,7 @@ public class ToolpathGeneratorThread extends Thread {
 			// Configure, if possible
 			progressDialog = new ProgressDialog(parent,build);
 			generator.visualConfigure(parent);
-			generator.setListener(progressDialog);
+			generator.addListener(progressDialog);
 			// This actually works because it's a modal dialog;
 			// a new nested event loop is generated in the event loop
 			// that blocks other events.
@@ -81,13 +92,24 @@ public class ToolpathGeneratorThread extends Thread {
 			}});
 		}
 		Base.logger.info("Beginning toolpath generation.");
-		BuildCode code = generator.generateToolpath();
-		if (progressDialog != null) {
-			synchronized (progressDialog) { 
-				progressDialog.setVisible(false);
-				progressDialog.setDone(true);
+		try {
+			BuildCode code = generator.generateToolpath();
+			if (code != null) {
+				build.code = code;
+				build.loadCode();
+				generator.emitCompletion(GeneratorListener.Completion.SUCCESS, null);
+			} else {
+				generator.emitCompletion(GeneratorListener.Completion.FAILURE, null);
+			}
+		} catch (Exception e) {
+			generator.emitCompletion(GeneratorListener.Completion.FAILURE, e);
+		} finally {
+			if (progressDialog != null) {
+				synchronized (progressDialog) { 
+					progressDialog.setVisible(false);
+					progressDialog.setDone(true);
+				}
 			}
 		}
-		build.code = code;
 	}
 }

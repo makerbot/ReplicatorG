@@ -856,6 +856,7 @@ class FillSkein:
 
 	def addFill( self, layerIndex ):
 		"Add fill to the carve layer."
+		print "Filling layer "+str(layerIndex)
 #		if layerIndex != 17 and layerIndex != 18:
 #			return
 		alreadyFilledArounds = []

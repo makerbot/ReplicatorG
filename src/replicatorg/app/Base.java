@@ -739,6 +739,7 @@ public class Base {
 	 * Grab the contents of a file as a string.
 	 */
 	static public String loadFile(File file) throws IOException {
+		System.err.println("Load file : "+file.getAbsolutePath());
 		// empty code file.. no worries, might be getting filled up later
 		if (file.length() == 0)
 			return "";

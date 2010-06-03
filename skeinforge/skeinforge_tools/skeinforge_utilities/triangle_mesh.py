@@ -580,6 +580,7 @@ class TriangleMesh:
 		layerTop = self.cornerMaximum.z - halfHeight * 0.5
 		z = self.cornerMinimum.z + halfHeight
 		while z < layerTop:
+			print "Carving layer Z="+str(z);
 			z = self.getZAddExtruderPaths( z )
 		return self.rotatedBoundaryLayers
 
