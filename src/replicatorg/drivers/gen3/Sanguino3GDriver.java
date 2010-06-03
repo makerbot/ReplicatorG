@@ -1457,10 +1457,12 @@ public class Sanguino3GDriver extends SerialDriver
 		return val;
 	}
 
+	private int byteToInt(byte b) { return ((int)b)&0xff; }
+	
 	private float readFloat16FromToolEEPROM(int offset, float defaultValue) {
 		byte r[] = readFromToolEEPROM(offset,2);
 		if (r[0] == (byte)0xff && r[1] == (byte)0xff) return defaultValue;
-		return (float)r[0] + ((float)r[1])/256.0f;
+		return (float)byteToInt(r[0]) + ((float)byteToInt(r[1]))/256.0f;
 	}
 
 	public BackoffParameters getBackoffParameters() {
