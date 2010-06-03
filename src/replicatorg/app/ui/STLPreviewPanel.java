@@ -41,12 +41,16 @@ import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
@@ -88,6 +92,35 @@ public class STLPreviewPanel extends JPanel {
 	}
 	
 	MainWindow mainWindow;
+
+	public JButton createToolButton(String text, String iconPath) {
+		ImageIcon icon = new ImageIcon(Base.getImage(iconPath, this));
+		JButton button = new JButton(text,icon);
+		button.setVerticalTextPosition(SwingConstants.BOTTOM);
+		button.setHorizontalTextPosition(SwingConstants.CENTER);
+		return button;
+	}
+	public JPanel createToolPanel() {
+		//add(c,"growx,growy,spanx,spany");
+		JPanel panel = new JPanel(new MigLayout());
+
+		JButton resetViewButton = createToolButton("Reset view","images/look-at-object.png");
+		resetViewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				resetView();
+			}
+		});
+		panel.add(resetViewButton,"growx,wrap");
+
+		JButton sliceButton = createToolButton("Generate GCode","images/model-to-gcode.png");
+		sliceButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				mainWindow.runToolpathGenerator();
+			}
+		});
+		panel.add(sliceButton,"growx,wrap");
+		return panel;
+	}
 	
 	public STLPreviewPanel(final MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
@@ -96,14 +129,7 @@ public class STLPreviewPanel extends JPanel {
 		// Create Canvas3D and SimpleUniverse; add canvas to drawing panel
 		Canvas3D c = createUniverse();
 		add(c, BorderLayout.CENTER);
-		//add(c,"growx,growy,spanx,spany");
-		JButton sliceButton = new JButton("Slice");
-		sliceButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				mainWindow.runToolpathGenerator();
-			}
-		});
-		add(sliceButton, BorderLayout.EAST);
+		add(createToolPanel(), BorderLayout.EAST);
 		// Create the content branch and add it to the universe
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
@@ -439,10 +465,21 @@ public class STLPreviewPanel extends JPanel {
 	}
 
 	// These values were determined experimentally to look pretty dang good.
-	Vector3d cameraTranslation = new Vector3d(0,0.4,2.9);
-	double elevationAngle = 1.278;
-	double turntableAngle = 0.214;
+	final static Vector3d CAMERA_TRANSLATION_DEFAULT = new Vector3d(0,0.4,2.9);
+	final static double ELEVATION_ANGLE_DEFAULT = 1.278;
+	final static double TURNTABLE_ANGLE_DEFAULT = 0.214;
+	
+	Vector3d cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
+	double elevationAngle = ELEVATION_ANGLE_DEFAULT;
+	double turntableAngle = TURNTABLE_ANGLE_DEFAULT;
 
+	private void resetView() {
+		cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
+		elevationAngle = ELEVATION_ANGLE_DEFAULT;
+		turntableAngle = TURNTABLE_ANGLE_DEFAULT;
+		updateVP();
+	}
+	
 	private void updateVP() {
 		TransformGroup viewTG = univ.getViewingPlatform().getViewPlatformTransform();
 		Transform3D t3d = new Transform3D();
