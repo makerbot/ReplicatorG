@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -515,10 +516,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	private void saveMRUPrefs() {
 		StringBuffer sb = new StringBuffer();
+		int remaining_chars = Preferences.MAX_VALUE_LENGTH;
 		for (String s : mruFiles) {
-			if (sb.length() != 0)
+			final int len = sb.length();
+			if ( (remaining_chars - (len+1)) < 0) {
+				break;
+			}
+			if (len != 0) {
 				sb.append(",");
+				remaining_chars--;
+			}
 			sb.append(s);
+			remaining_chars -= len;
 		}
 		Base.preferences.put(MRU_LIST_KEY, sb.toString());		
 	}
