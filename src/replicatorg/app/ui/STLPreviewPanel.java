@@ -13,10 +13,13 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.util.Enumeration;
+import java.util.logging.Level;
 
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
@@ -105,7 +108,7 @@ public class STLPreviewPanel extends JPanel {
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
 
-		class MouseActivityListener implements MouseMotionListener, MouseListener {
+		class MouseActivityListener implements MouseMotionListener, MouseListener, MouseWheelListener {
 			Point startPoint = null;
 			int button = 0;
 			
@@ -139,11 +142,17 @@ public class STLPreviewPanel extends JPanel {
 			public void mouseReleased(MouseEvent e) {
 				startPoint = null;
 			}
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				int notches = e.getWheelRotation();				
+				cameraTranslation.z += 0.10 * notches;
+				updateVP();
+			}
 			
 		};
 
 		MouseActivityListener activityListener = new MouseActivityListener();
 		c.addMouseMotionListener(activityListener);
+		c.addMouseWheelListener(activityListener);
 		c.addMouseListener(activityListener);
 		
 		c.addKeyListener( new KeyListener() {
@@ -420,7 +429,7 @@ public class STLPreviewPanel extends JPanel {
 	}
 
 	// These values were determined experimentally to look pretty dang good.
-	Vector3d cameraTranslation = new Vector3d(0,0.4,2.5);
+	Vector3d cameraTranslation = new Vector3d(0,0.4,2.9);
 	double elevationAngle = 1.278;
 	double turntableAngle = 0.214;
 
@@ -437,6 +446,11 @@ public class STLPreviewPanel extends JPanel {
 		t3d.mul(rotX);
 		t3d.mul(trans);
 		viewTG.setTransform(t3d);
+
+		if (Base.logger.isLoggable(Level.FINE)) {
+			Base.logger.fine("Camera Translation: "+cameraTranslation.toString());
+			Base.logger.fine("Elevation "+Double.toString(elevationAngle)+", turntable "+Double.toString(turntableAngle));
+		}
 	}
 
 	private Canvas3D createUniverse() {
