@@ -19,9 +19,6 @@ import replicatorg.model.BuildCode;
 import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorListener;
 
 public class ToolpathGeneratorThread extends Thread {
-	public interface ToolpathGenerat{
-		
-	}
 	private JComponent parent;
 	private ToolpathGenerator generator;
 	private Build build;
