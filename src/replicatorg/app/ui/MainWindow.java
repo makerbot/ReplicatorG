@@ -58,6 +58,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -1376,16 +1377,29 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	// We can drop this in Java 6, which already has an equivalent
 	private class ExtensionFilter extends FileFilter {
-		private String extension;
+		private LinkedList<String> extensions = new LinkedList<String>();
 		private String description;
 		public ExtensionFilter(String extension,String description) { 
-			this.extension = extension;
+			this.extensions.add(extension);
 			this.description = description;
 		}
+		public ExtensionFilter(String[] extensions,String description) {
+			for (String e : extensions) {
+				this.extensions.add(e);
+			}
+			this.description = description;
+		}
+		
 		public boolean accept(File f) {
 			if (f.isDirectory()) { return !f.isHidden(); }
-			return f.getPath().toLowerCase().endsWith(extension);
+			for (String extension : extensions) {
+				if (f.getPath().toLowerCase().endsWith(extension)) {
+					return true;
+				}
+			}
+			return false;
 		}
+		
 		public String getDescription() {
 			return description;
 		}
@@ -1851,7 +1865,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (loadDir != null) { directory = new File(loadDir); }
 		JFileChooser fc = new JFileChooser(directory);
 		FileFilter defaultFilter;
-		fc.addChoosableFileFilter(defaultFilter = new ExtensionFilter(".gcode","GCode files"));
+		String[] extensions = {".gcode",".stl"};
+		fc.addChoosableFileFilter(defaultFilter = new ExtensionFilter(extensions,"GCode or STL files"));
+		fc.addChoosableFileFilter(new ExtensionFilter(".gcode","GCode files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".stl","STL files"));
 		fc.setAcceptAllFileFilterUsed(true);
 		fc.setFileFilter(defaultFilter);
@@ -2300,6 +2316,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public void generationComplete(Completion completion, Object details) {
 		// if success, update header and switch to code
 		if (completion == Completion.SUCCESS) {
+			if (build.getCode() != null) {
+				setCode(build.getCode());
+			}
 			header.setBuild(build);
 			header.repaint();
 		}

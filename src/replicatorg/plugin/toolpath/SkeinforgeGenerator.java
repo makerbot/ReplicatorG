@@ -30,6 +30,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			};
 			StreamLoggerThread est = new StreamLoggerThread(process.getErrorStream());
 			est.setDefaultLevel(Level.SEVERE);
+			ist.setDefaultLevel(Level.FINE);
 			ist.start();
 			est.start();
 			int value = process.waitFor();

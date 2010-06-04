@@ -1,6 +1,5 @@
 package replicatorg.plugin.toolpath;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -28,9 +27,10 @@ public class ToolpathGeneratorThread extends Thread {
 		
 		public ProgressDialog(JComponent parent, Build build) { 
 			super(SwingUtilities.getWindowAncestor(parent));
-			Icon icon = new ImageIcon(Base.getImage("images/slicing-icon.png",this));
+			ImageIcon icon = new ImageIcon(Base.getDirectImage("images/slicing-icon.gif",this));
 			setTitle("Generating toolpath for "+build.getName());
 			topLabel = new JLabel("Generating toolpath for "+build.getName(),icon,SwingConstants.LEFT);
+			icon.setImageObserver(topLabel);
 			progressLabel = new JLabel("Launching plugin...");
 			setLayout(new MigLayout());
 			add(topLabel,"wrap");
@@ -48,7 +48,6 @@ public class ToolpathGeneratorThread extends Thread {
 		}
 		
 		public void updateGenerator(final String message) {
-			System.err.flush();
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					progressLabel.setText(message);

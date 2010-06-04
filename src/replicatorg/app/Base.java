@@ -34,6 +34,7 @@ import java.awt.Component;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
@@ -670,6 +671,28 @@ public class Base {
 		} else {
 			return getContents("lib" + File.separator + what);
 		}
+	}
+
+	/**
+	 * We need to load animated .gifs through this mechanism vs. getImage due to
+	 * a number of bugs in Java's image loading routings.
+	 * @param name The path of the image
+	 * @param who The component that will use the image
+	 * @return the loaded image object
+	 */
+	static public Image getDirectImage(String name, Component who)  {
+		Image image = null;
+
+		// try to get the URL as a system resource
+	    URL url = ClassLoader.getSystemResource(name);
+	    try {
+	    	image = Toolkit.getDefaultToolkit().createImage(url);
+	    	MediaTracker tracker = new MediaTracker(who);
+	    	tracker.addImage(image, 0);
+			tracker.waitForAll();
+		} catch (InterruptedException e) {
+		}
+		return image;
 	}
 
 	static public BufferedImage getImage(String name, Component who) {
