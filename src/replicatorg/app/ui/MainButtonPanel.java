@@ -239,21 +239,20 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			}
 		});
 	}
-
-	public void machineStateChangedInternal(final MachineStateChangeEvent evt) {
-		MachineState s = evt.getState();
+	
+	private void updateFromState(final MachineState s, final MachineController machine) {
 		boolean ready = s.isReady();
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();
-		MachineController machine = evt.getSource();
+		boolean hasGcode = editor.getBuild().getCode() != null;
 		boolean hasPlayback = (machine != null) && 
 			(machine.driver != null) &&
 			(machine.driver instanceof SDCardCapture) &&
 			(((SDCardCapture)machine.driver).hasFeatureSDCardCapture());
-		simButton.setEnabled(!building);
-		fileButton.setEnabled(!building);
-		buildButton.setEnabled(ready);
-		uploadButton.setEnabled(ready && hasPlayback);
+		simButton.setEnabled(!building && hasGcode);
+		fileButton.setEnabled(!building && hasGcode);
+		buildButton.setEnabled(ready && hasGcode);
+		uploadButton.setEnabled(ready && hasPlayback && hasGcode);
 		playbackButton.setEnabled(ready && hasPlayback);
 		pauseButton.setEnabled(building);
 		stopButton.setEnabled(building);
@@ -273,6 +272,18 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		disconnectButton.setEnabled(connected);
 		connectButton.setEnabled(!connected);
 		cpButton.setEnabled(ready);
+		
+	}
+
+	public void updateFromMachine(final MachineController machine) {
+		MachineState s = machine.getMachineState();
+		updateFromState(s,machine);
+	}
+
+	public void machineStateChangedInternal(final MachineStateChangeEvent evt) {
+		MachineState s = evt.getState();
+		MachineController machine = evt.getSource();
+		updateFromState(s,machine);
 	}
 
 	public void machineProgress(MachineProgressEvent event) {

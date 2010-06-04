@@ -232,6 +232,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	FindReplace find;
 
+	public Build getBuild() { return build; }
+	
 	private STLPreviewPanel getStlPanel() {
 		if (stlPanel == null) {
 			stlPanel = new STLPreviewPanel(this);
@@ -2318,6 +2320,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			if (build.getCode() != null) {
 				setCode(build.getCode());
 			}
+			buttons.updateFromMachine(machine);
 			header.setBuild(build);
 			header.repaint();
 		}
