@@ -55,6 +55,7 @@ public class ToolpathGeneratorThread extends Thread {
 				}
 			});
 			add(doneButton,"tag cancel");
+			this.setModal(true);
 		}
 
 		boolean done = false;
@@ -102,11 +103,14 @@ public class ToolpathGeneratorThread extends Thread {
 			// that blocks other events.
 			final ProgressDialog pdHandle = progressDialog;
 			SwingUtilities.invokeLater(new Runnable() { public void run() {
-				synchronized (pdHandle) {
-					if (!pdHandle.isDone()) {
-						pdHandle.pack();
-						pdHandle.setVisible(true);
-					}
+				if (!pdHandle.isDone()) {
+					double x = parent.getBounds().getCenterX();
+					double y = parent.getBounds().getCenterY();
+					pdHandle.pack();
+					x -= pdHandle.getWidth() / 2.0;
+					y -= pdHandle.getHeight() / 2.0;
+					pdHandle.setLocation((int)x,(int)y);
+					pdHandle.setVisible(true);
 				}
 			}});
 		}
@@ -127,7 +131,7 @@ public class ToolpathGeneratorThread extends Thread {
 			generator.emitCompletion(GeneratorListener.Completion.FAILURE, e);
 		} finally {
 			if (progressDialog != null) {
-				synchronized (progressDialog) { 
+				synchronized (progressDialog) {
 					progressDialog.setVisible(false);
 					progressDialog.setDone(true);
 				}

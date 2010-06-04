@@ -856,7 +856,6 @@ class FillSkein:
 
 	def addFill( self, layerIndex ):
 		"Add fill to the carve layer."
-		print "Filling layer "+str(layerIndex)
 #		if layerIndex != 17 and layerIndex != 18:
 #			return
 		alreadyFilledArounds = []
@@ -1201,7 +1200,9 @@ class FillSkein:
 		self.doubleSolidSurfaceThickness = self.solidSurfaceThickness + self.solidSurfaceThickness
 		for lineIndex in xrange( self.lineIndex, len( self.lines ) ):
 			self.parseLine( lineIndex )
-		for layerIndex in xrange( len( self.rotatedLayers ) ):
+		layerCount = len(self.rotatedLayers)
+		for layerIndex in xrange( layerCount ):
+			print "Filling layer "+str(layerIndex)+"/"+str(layerCount)+"..."
 			self.addFill( layerIndex )
 		self.addShutdownToOutput()
 
