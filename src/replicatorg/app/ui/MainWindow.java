@@ -505,7 +505,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this.getRootPane(), generator, build);
 		tgt.addListener(this);
 		tgt.start();
-		System.err.println("running tp gen");
 	}
 		
 	// ...................................................................

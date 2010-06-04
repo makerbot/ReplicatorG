@@ -19,8 +19,9 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 	    	skeinforgeDir = System.getProperty("user.dir") + File.separator + "skeinforge";
 	    }
 		pb.directory(new File(skeinforgeDir));
+		Process process = null;
 		try {
-			Process process = pb.start();
+			process = pb.start();
 			StreamLoggerThread ist = new StreamLoggerThread(process.getInputStream()) {
 				@Override
 				protected void logMessage(String line) {
@@ -44,7 +45,11 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			// Throw ToolpathGeneratorException
 			return null;
 		} catch (InterruptedException e) {
-			// We are most likely shutting down.  Exit gracefully.
+			// We are most likely shutting down, or the process has been manually aborted.  
+			// Kill the background process and bail out.
+			if (process != null) {
+				process.destroy();
+			}
 			return null;
 		}
 		int lastIdx = path.lastIndexOf('.'); 

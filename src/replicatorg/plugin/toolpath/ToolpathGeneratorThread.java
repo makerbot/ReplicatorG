@@ -1,6 +1,11 @@
 package replicatorg.plugin.toolpath;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.logging.Level;
+
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -21,9 +26,15 @@ public class ToolpathGeneratorThread extends Thread {
 	private ToolpathGenerator generator;
 	private Build build;
 
+	private void abortGeneration() {
+		Base.logger.severe("Aborted toolpath generation!");
+		this.interrupt();
+	}
+	
 	private class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListener {
 		JLabel topLabel;
 		JLabel progressLabel;
+		JButton doneButton;
 		
 		public ProgressDialog(JComponent parent, Build build) { 
 			super(SwingUtilities.getWindowAncestor(parent));
@@ -34,7 +45,16 @@ public class ToolpathGeneratorThread extends Thread {
 			progressLabel = new JLabel("Launching plugin...");
 			setLayout(new MigLayout());
 			add(topLabel,"wrap");
-			add(progressLabel,"wrap");
+			add(progressLabel,"wrap,wmin 400px");
+			doneButton = new JButton("Cancel");
+			doneButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					synchronized(this) {
+						abortGeneration();
+					}
+				}
+			});
+			add(doneButton,"tag cancel");
 		}
 
 		boolean done = false;
@@ -97,10 +117,13 @@ public class ToolpathGeneratorThread extends Thread {
 				build.code = code;
 				build.loadCode();
 				generator.emitCompletion(GeneratorListener.Completion.SUCCESS, null);
+				Base.logger.info("Toolpath generation complete!");
 			} else {
 				generator.emitCompletion(GeneratorListener.Completion.FAILURE, null);
+				Base.logger.severe("Toolpath generation failed!");
 			}
 		} catch (Exception e) {
+			Base.logger.log(Level.SEVERE,"Toolpath generation failed!",e);
 			generator.emitCompletion(GeneratorListener.Completion.FAILURE, e);
 		} finally {
 			if (progressDialog != null) {
