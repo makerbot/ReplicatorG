@@ -33,9 +33,13 @@ public abstract class ToolpathGenerator {
 		this.model = model;
 	}
 	
-	public void visualConfigure(JComponent parent) {
+	/**
+	 * Returns true if configuration successful; false if aborted.
+	 */
+	public boolean visualConfigure(JComponent parent) {
 		assert parent != null;
 		assert model != null;
+		return true;
 	}
 	
 	public abstract BuildCode generateToolpath();

@@ -1,8 +1,23 @@
 package replicatorg.plugin.toolpath;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+
+import net.miginfocom.swing.MigLayout;
 
 import replicatorg.app.Base;
 import replicatorg.app.util.StreamLoggerThread;
@@ -10,14 +25,84 @@ import replicatorg.model.BuildCode;
 
 public class SkeinforgeGenerator extends ToolpathGenerator {
 
-	public BuildCode generateToolpath() {
-		String path = model.getSTLPath();
-		// The -u makes python output unbuffered.  Oh joyous day.
-		ProcessBuilder pb = new ProcessBuilder("python","-u","skeinforge.py",path);
+	boolean configSuccess = true;
+	String profile = null;
+	
+	List<String> getProfiles() {
+		List<String> profiles = new LinkedList<String>();
+		// Get default installed profiles
+		String dirPath = getSkeinforgePath();
+		File dir = new File(dirPath,"prefs");
+		if (dir.exists() && dir.isDirectory()) {
+			for (String subpath : dir.list()) {
+				File subDir = new File(dir,subpath);
+				if (subDir.isDirectory()) {
+					profiles.add(subpath);
+				}
+			}
+		}
+		Collections.sort(profiles);
+		return profiles;
+	}
+	
+	class ConfigurationDialog extends JDialog {
+		public ConfigurationDialog(JComponent parent) {
+			super(SwingUtilities.getWindowAncestor(parent),Dialog.ModalityType.APPLICATION_MODAL);
+			setTitle("Choose a skeinforge profile");
+			setLayout(new MigLayout());
+			
+			final JComboBox prefSelection = new JComboBox();
+			for (String profile : getProfiles()) {
+				prefSelection.addItem(profile);
+			}
+			add(new JLabel("Select a printing profile:"),"wrap");
+			add(prefSelection,"wrap");
+			
+			JButton ok = new JButton("Ok");
+			add(ok,"tag ok");
+			JButton cancel = new JButton("Cancel");
+			add(cancel,"tag cancel");
+			ok.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					configSuccess = true;
+					profile = (String)prefSelection.getSelectedItem();
+					setVisible(false);
+				}
+			});
+			cancel.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					configSuccess = false;
+					setVisible(false);
+				}
+			});
+		}
+		
+	};
+	public boolean visualConfigure(JComponent parent) {
+		ConfigurationDialog cd = new ConfigurationDialog(parent);
+		double x = parent.getBounds().getCenterX();
+		double y = parent.getBounds().getCenterY();
+		cd.pack();
+		x -= cd.getWidth() / 2.0;
+		y -= cd.getHeight() / 2.0;
+		cd.setLocation((int)x,(int)y);
+		cd.setVisible(true);
+		return configSuccess;
+	}
+
+	public String getSkeinforgePath() {
 	    String skeinforgeDir = System.getProperty("replicatorg.skeinforge.path");
 	    if (skeinforgeDir == null || (skeinforgeDir.length() == 0)) {
 	    	skeinforgeDir = System.getProperty("user.dir") + File.separator + "skeinforge";
 	    }
+	    return skeinforgeDir;
+	}
+	
+	public BuildCode generateToolpath() {
+		String path = model.getSTLPath();
+		// The -u makes python output unbuffered.  Oh joyous day.
+		ProcessBuilder pb = new ProcessBuilder("python","-u","skeinforge.py","-p",profile,path);
+	    String skeinforgeDir = getSkeinforgePath();
 		pb.directory(new File(skeinforgeDir));
 		Process process = null;
 		try {
@@ -54,7 +139,6 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 		int lastIdx = path.lastIndexOf('.'); 
 		String root = (lastIdx >= 0)?path.substring(0,lastIdx):path;
-		System.err.println("root is "+root);
 		return new BuildCode(root,new File(root+".gcode"));
 	}
 

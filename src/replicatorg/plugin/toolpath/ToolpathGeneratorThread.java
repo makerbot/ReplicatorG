@@ -93,7 +93,7 @@ public class ToolpathGeneratorThread extends Thread {
 		if (parent != null) {
 			// Configure, if possible
 			progressDialog = new ProgressDialog(parent,build);
-			generator.visualConfigure(parent);
+			if (!generator.visualConfigure(parent)) { return; }
 			generator.addListener(progressDialog);
 			// This actually works because it's a modal dialog;
 			// a new nested event loop is generated in the event loop
