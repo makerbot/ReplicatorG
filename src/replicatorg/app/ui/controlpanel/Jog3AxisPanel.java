@@ -152,8 +152,7 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 
 		int maxXYFeedrate = (int) Math.min(machine.getModel().getMaximumFeedrates().x, 
 				machine.getModel().getMaximumFeedrates().y);
-		int currentXYFeedrate = Math.min(maxXYFeedrate, Base.preferences
-				.getInt("controlpanel.feedrate.xy",480));
+		int currentXYFeedrate = Math.min(maxXYFeedrate, Base.preferences.getInt("controlpanel.feedrate.xy",480));
 		xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, maxXYFeedrate,
 				currentXYFeedrate);
 		xyFeedrateSlider.setMajorTickSpacing(1000);
