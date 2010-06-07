@@ -1,7 +1,21 @@
 <project name="ReplicatorG" basedir="." default="help">
-  <property name="project.lowercase" value="replicatorg"/>
+
+  <!-- Project name -->
+
+  <property name="project" value="replicatorg"/>
+
+  <!-- Set the platform property based on the current environment -->
+  <condition property="platform" 
+	     value="macosx"><os family="mac" /></condition>
+  <condition property="platform" 
+	     value="windows"><os family="windows" /></condition>
+  <condition property="platform" 
+	     value="linux"><os family="unix" /></condition>
+
+  <!-- Load the per-platform properties -->
   <property file="ant.includes/${os.name}-${os.arch}.properties" />
 	<echo>${os.name}-${os.arch}</echo>
+
   <property name="src.dir"       value="src"/>
   <property name="build.dir"     value="build"/>
   <property name="classes.dir"   value="${build.dir}/classes"/> 
@@ -50,6 +64,7 @@
   <target name="run" depends="jar">
     <java fork="true" classname="replicatorg.app.Base"> <!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
       <jvmarg value="-ea"/>
+      <jvmarg value="-d32"/>
       <classpath>
 	<path refid="classpath"/>
 	<pathelement location="${jar.dir}/${ant.project.name}.jar"/>
@@ -74,7 +89,7 @@
   </target>
 
   <target name="dist-macosx" depends="jar" description="Builds OS X ReplicatorG distribution">
-    <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
+    <property name="release.name" value="${project}-${replicatorg.version}"/>
     <property name="target.dir"   value="dist/macosx/${release.name}"/>
     <property name="dist.dir"     value="build/macosx/dist"/>
 
@@ -94,7 +109,7 @@
        icon="${dist.dir}/replicatorg.icns"
        extraclasspath="/System/Library/Java"
        vmoptions="-Xmx1G"
-       infostring="ReplicatorG ${replicatorg.version}, © 2008-${current.year} MakerBot Industries" 
+       infostring="ReplicatorG ${replicatorg.version}, © 2009-${current.year} MakerBot Industries" 
        version="${replicatorg.version}"
        jvmversion="1.5+"
        stubfile="ReplicatorG"
@@ -160,7 +175,7 @@
   </target>
   
   <target name="dist-linux" depends="jar" description="Builds Linux ReplicatorG distribution">
-    <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
+    <property name="release.name" value="${project}-${replicatorg.version}"/>
     <property name="target.dir"   value="dist/linux/${release.name}"/>
     <property name="dist.dir"     value="build/linux/dist"/>
 
@@ -192,7 +207,7 @@
   </target>
 
   <target name="dist-windows" depends="jar" description="Builds Windows ReplicatorG distribution">
-    <property name="release.name" value="${project.lowercase}-${replicatorg.version}"/>
+    <property name="release.name" value="${project}-${replicatorg.version}"/>
     <property name="target.dir"   value="dist/windows/${release.name}"/>
     <property name="dist.dir"     value="build/windows/dist"/>
     <!-- standard files -->
@@ -207,7 +222,7 @@
       <fileset dir="${dist.dir}/tools"/>
     </copy>
     <zip
-       destfile="dist/${project.lowercase}-${replicatorg.version}-windows.zip"
+       destfile="dist/${project}-${replicatorg.version}-windows.zip"
        basedir="${target.dir}/..">
     </zip>
   </target>

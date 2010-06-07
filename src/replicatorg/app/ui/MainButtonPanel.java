@@ -276,7 +276,10 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	}
 
 	public void updateFromMachine(final MachineController machine) {
-		MachineState s = machine.getMachineState();
+		MachineState s = new MachineState(MachineState.State.NOT_ATTACHED);
+		if (machine != null) {
+			s = machine.getMachineState();
+		}
 		updateFromState(s,machine);
 	}
 
