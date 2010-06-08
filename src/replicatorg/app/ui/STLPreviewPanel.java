@@ -4,6 +4,7 @@
 package replicatorg.app.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -43,6 +44,7 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.vecmath.Color3f;
@@ -100,8 +102,8 @@ public class STLPreviewPanel extends JPanel {
 		button.setHorizontalTextPosition(SwingConstants.CENTER);
 		return button;
 	}
+
 	public JPanel createToolPanel() {
-		//add(c,"growx,growy,spanx,spany");
 		JPanel panel = new JPanel(new MigLayout());
 
 		JButton resetViewButton = createToolButton("Reset view","images/look-at-object.png");
@@ -119,6 +121,13 @@ public class STLPreviewPanel extends JPanel {
 			}
 		});
 		panel.add(sliceButton,"growx,wrap");
+		String instrStr = Base.isMacOS()?
+				"<html><body>Drag to rotate<br/>Control-drag to pan<br/>Mouse wheel to zoom</body></html>":
+				"<html><body>Left button drag to rotate<br/>Right button drag to pan<br/>Mouse wheel to zoom</body></html>";
+		JLabel instructions = new JLabel(instrStr);
+		Font f = instructions.getFont();
+		instructions.setFont(f.deriveFont((float)f.getSize()*0.8f));
+		panel.add(instructions,"growx,gaptop 20,wrap");
 		return panel;
 	}
 	
@@ -141,11 +150,20 @@ public class STLPreviewPanel extends JPanel {
 			public void mouseDragged(MouseEvent e) {
 				if (startPoint == null) return;
 				Point p = e.getPoint();
-				if (button == MouseEvent.BUTTON1) {
+				boolean rotate;
+				boolean translate;
+				if (Base.isMacOS()) {
+					rotate = button == MouseEvent.BUTTON1 && !e.isControlDown();
+					translate = button == MouseEvent.BUTTON3 && e.isControlDown();
+				} else {
+					rotate = button == MouseEvent.BUTTON1;
+					translate = button == MouseEvent.BUTTON3;
+				}
+				if (rotate) {
 					// Rotate view
 					turntableAngle += 0.05 * (double)(p.x - startPoint.x);
 					elevationAngle -= 0.05 * (double)(p.y - startPoint.y);
-				} else if (button == MouseEvent.BUTTON3) {
+				} else if (translate) {
 					// Pan view
 					cameraTranslation.x += -0.05 * (double)(p.x - startPoint.x);
 					cameraTranslation.y += 0.05 * (double)(p.y - startPoint.y);
