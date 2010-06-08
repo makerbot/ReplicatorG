@@ -141,7 +141,8 @@ public class EditorHeader extends JComponent implements ActionListener {
 
 	public EditorHeader(MainWindow mainWindow) {
 		initTabImages();
-		setLayout(new MigLayout("gap 15"));
+		setBorder(null);
+		setLayout(new MigLayout("gap 10 10 0 0"));
 		this.editor = mainWindow;
 
 		add(titleLabel);
