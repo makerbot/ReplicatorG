@@ -117,18 +117,13 @@ public class PythonUtils {
 				String s = "<html><p>"+message+"</p><p>Visit the <a href=\"http://python.org/download/\">Python download page</a> to download and install "+
 				"an appropriate version.</p></html>";
 				JEditorPane j = new JEditorPane("text/html",s);
+				j.setFont(parent.getFont());
 				j.setOpaque(false);
 				j.setEditable(false);
 				j.setBorder(null);
 				j.addHyperlinkListener(new HyperlinkListener() {
 					public void hyperlinkUpdate(HyperlinkEvent e) {
-						try {
-							Desktop.getDesktop().browse(e.getURL().toURI());
-						} catch (IOException ioe) {
-							Base.logger.log(Level.SEVERE,"Couldn't open link to python dowload site",ioe);
-						} catch (URISyntaxException use) {
-							Base.logger.log(Level.SEVERE,"Couldn't create link to python dowload site",use);
-						}
+						Base.openURL(e.getURL().toExternalForm());
 					}
 				});
 				JOptionPane.showMessageDialog(parent, j, "Missing or incorrect Python interpreter detected", JOptionPane.ERROR_MESSAGE, null);
