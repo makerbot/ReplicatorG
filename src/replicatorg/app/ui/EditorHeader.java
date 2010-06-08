@@ -195,15 +195,12 @@ public class EditorHeader extends BGPanel implements ActionListener {
 		repaint();
 	}
 
-	
-	public Dimension getPreferredSize() {
-		return getMinimumSize();
-	}
-
-	final static int GRID_SIZE = 33;
-	
+	public Dimension getMaximumSize() {
+		return new Dimension(Integer.MAX_VALUE, 30);
+	}	
+		
 	public Dimension getMinimumSize() {
-		return new Dimension(0, GRID_SIZE);
+		return new Dimension(0, 0);
 	}
 
 	public void actionPerformed(ActionEvent a) {
