@@ -1,24 +1,14 @@
 package replicatorg.app.util;
 
-import java.awt.Desktop;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 
 import replicatorg.app.Base;
 
@@ -114,19 +104,11 @@ public class PythonUtils {
 	private static void notifyUser(final JComponent parent, final String message) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				String s = "<html><p>"+message+"</p><p>Visit the <a href=\"http://python.org/download/\">Python download page</a> to download and install "+
-				"an appropriate version.</p></html>";
-				JEditorPane j = new JEditorPane("text/html",s);
-				j.setFont(parent.getFont());
-				j.setOpaque(false);
-				j.setEditable(false);
-				j.setBorder(null);
-				j.addHyperlinkListener(new HyperlinkListener() {
-					public void hyperlinkUpdate(HyperlinkEvent e) {
-						Base.openURL(e.getURL().toExternalForm());
-					}
-				});
-				JOptionPane.showMessageDialog(parent, j, "Missing or incorrect Python interpreter detected", JOptionPane.ERROR_MESSAGE, null);
+				String s = "<html><p>"+message+"</p><p>Would you like to visit the Python download page now?</p></html>";
+				int rsp = JOptionPane.showConfirmDialog(parent, s, "Missing or incorrect Python interpreter detected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+				if (rsp == JOptionPane.YES_OPTION) {
+					Base.openURL("http://python.org/download");
+				}
 			}
 		});
 	}
