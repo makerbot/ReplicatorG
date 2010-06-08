@@ -51,7 +51,7 @@ import replicatorg.model.BuildElement;
 /**
  * Sketch tabs at the top of the editor window.
  */
-public class EditorHeader extends JComponent implements ActionListener {
+public class EditorHeader extends BGPanel implements ActionListener {
 	public enum Tab {
 		MODEL,
 		GCODE
