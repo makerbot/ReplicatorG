@@ -20,6 +20,7 @@ import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
 import replicatorg.app.Base;
+import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.StreamLoggerThread;
 import replicatorg.model.BuildCode;
 
@@ -79,6 +80,11 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		
 	};
 	public boolean visualConfigure(JComponent parent) {
+		// First check for Python.
+		boolean hasPython = PythonUtils.interactiveCheckVersion(parent, "Generating gcode",
+				new PythonUtils.Version(2,6,0),
+				new PythonUtils.Version(3,0,0));
+		if (!hasPython) { return false; }
 		ConfigurationDialog cd = new ConfigurationDialog(parent);
 		double x = parent.getBounds().getCenterX();
 		double y = parent.getBounds().getCenterY();
