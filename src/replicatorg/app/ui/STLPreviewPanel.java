@@ -122,7 +122,7 @@ public class STLPreviewPanel extends JPanel {
 		});
 		panel.add(sliceButton,"growx,wrap");
 		String instrStr = Base.isMacOS()?
-				"<html><body>Drag to rotate<br/>Control-drag to pan<br/>Mouse wheel to zoom</body></html>":
+				"<html><body>Drag to rotate<br/>Shift-drag to pan<br/>Mouse wheel to zoom</body></html>":
 				"<html><body>Left button drag to rotate<br/>Right button drag to pan<br/>Mouse wheel to zoom</body></html>";
 		JLabel instructions = new JLabel(instrStr);
 		Font f = instructions.getFont();
@@ -153,8 +153,8 @@ public class STLPreviewPanel extends JPanel {
 				boolean rotate;
 				boolean translate;
 				if (Base.isMacOS()) {
-					rotate = button == MouseEvent.BUTTON1 && !e.isControlDown();
-					translate = button == MouseEvent.BUTTON3 && e.isControlDown();
+					rotate = button == MouseEvent.BUTTON1 && !e.isShiftDown();
+					translate = button == MouseEvent.BUTTON1 && e.isShiftDown();
 				} else {
 					rotate = button == MouseEvent.BUTTON1;
 					translate = button == MouseEvent.BUTTON3;
