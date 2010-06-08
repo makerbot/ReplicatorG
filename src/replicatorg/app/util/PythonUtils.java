@@ -90,7 +90,9 @@ public class PythonUtils {
 						" or later.  Python version "+v.toString()+" was detected.");
 				return false;
 			}
-			if (max != null && max.compareTo(v) != -1) {
+			if (max != null && max.compareTo(v) != 1) {
+				System.err.println("Comparing "+max.toString()+" to "+v.toString());
+				System.err.println("Returned "+Integer.toString(max.compareTo(v)));
 				notifyUser(parent,procedureName+" requires a version of Python earlier than version "+max.toString()+
 						".  Python version "+v.toString()+" was detected.");
 				return false;
