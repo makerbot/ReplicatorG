@@ -16,9 +16,14 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>Java</name>
+			<type>2</type>
+			<location>/System/Library/Java</location>
+		</link>
+		<link>
 			<name>classes</name>
 			<type>2</type>
-			<location>build/classes</location>
+			<locationURI>build/classes</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -82,7 +82,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 	public boolean visualConfigure(JComponent parent) {
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent, "Generating gcode",
-				new PythonUtils.Version(2,6,0),
+				new PythonUtils.Version(2,5,0),
 				new PythonUtils.Version(3,0,0));
 		if (!hasPython) { return false; }
 		ConfigurationDialog cd = new ConfigurationDialog(parent);

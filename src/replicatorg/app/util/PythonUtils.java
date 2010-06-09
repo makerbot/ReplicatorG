@@ -54,14 +54,15 @@ public class PythonUtils {
 			int returnCode = p.waitFor();
 			if (returnCode != 0) { return null; }
 	
-			Pattern pattern = Pattern.compile("Python ([0-9]+)\\.([0-9]+)\\.([0-9]+)");
 			String line = reader.readLine();
+			Pattern pattern = Pattern.compile("Python ([0-9]+)\\.([0-9]+)(?:\\.([0-9]+))?");
 			while (line != null) {
 				Matcher m = pattern.matcher(line);
 				if (m.find()) {
-				return new Version(Integer.parseInt(m.group(1)),
-						Integer.parseInt(m.group(2)),
-						Integer.parseInt(m.group(3)));
+					int major = Integer.parseInt(m.group(1));
+					int minor = Integer.parseInt(m.group(2));
+					int revision = m.group(3)!=null?Integer.parseInt(m.group(3)):0;
+					return new Version(major,minor,revision);
 				}
 				line = reader.readLine();
 			}
