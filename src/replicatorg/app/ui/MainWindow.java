@@ -1931,6 +1931,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * modifications (if any) to the previous sketch need to be saved.
 	 */
 	protected void handleOpen2(String path) {
+		if (path != null && !new File(path).exists()) {
+			JOptionPane.showMessageDialog(this, "The file "+path+" could not be found.", "File not found", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			// loading may take a few moments for large files

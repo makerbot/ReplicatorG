@@ -1,5 +1,6 @@
 package replicatorg.app;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.prefs.Preferences;
@@ -38,7 +39,9 @@ public class MRUList implements Iterable<String> {
 		// Deserialize preference
 		if (mruString != null && mruString.length() != 0) {
 			for (String entry : mruString.split(",")) {
-				filePaths.addLast(entry);
+				if (new File(entry).exists()) {
+					filePaths.addLast(entry);
+				}
 			}
 		}
 	}
