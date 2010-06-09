@@ -1257,7 +1257,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	public void setModel(BuildModel model) {
-		getStlPanel().setModel(model);
+		if (model != null) {
+			getStlPanel().setModel(model);
+		}
 	}
 	
 	public void beginCompoundEdit() {
