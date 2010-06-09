@@ -120,7 +120,7 @@ public class ControlPanelWindow extends JFrame implements
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new MigLayout());
 		mainPanel.add(createJogPanel(),"split 2,flowy");
-		mainPanel.add(createActivationPanel(),"flowy");
+		mainPanel.add(createActivationPanel(),"flowy,growx");
 		mainPanel.add(createToolsPanel(),"spany,grow");
 		add(mainPanel);
 
@@ -187,7 +187,7 @@ public class ControlPanelWindow extends JFrame implements
 	protected JComponent createActivationPanel() {
 		JPanel activationPanel = new JPanel();
 		activationPanel.setBorder(BorderFactory
-				.createTitledBorder("Stepper Motor Control"));
+				.createTitledBorder("Stepper Motor Controls"));
 		activationPanel.setLayout(new BoxLayout(activationPanel,
 				BoxLayout.LINE_AXIS));
 
