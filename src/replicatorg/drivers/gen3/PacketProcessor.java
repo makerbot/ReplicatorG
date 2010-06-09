@@ -79,7 +79,7 @@ public class PacketProcessor implements PacketConstants {
 			payloadLength = ((int) b) & 0xFF;
 			payload = new byte[payloadLength];
 			crc = new IButtonCrc();
-			packetState = PacketState.PAYLOAD;
+			packetState = (payloadLength > 0) ? PacketState.PAYLOAD : PacketState.CRC;
 			break;
 
 		case PAYLOAD:
