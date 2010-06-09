@@ -66,7 +66,6 @@ import java.util.prefs.BackingStoreException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -96,6 +95,8 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
+
+import net.miginfocom.swing.MigLayout;
 
 import org.w3c.dom.Document;
 
@@ -135,6 +136,7 @@ import com.apple.mrj.MRJOpenDocumentHandler;
 import com.apple.mrj.MRJPrefsHandler;
 import com.apple.mrj.MRJQuitHandler;
 
+@SuppressWarnings("deprecation")
 public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		MRJPrefsHandler, MRJOpenDocumentHandler,
 		MachineListener, ChangeListener,
@@ -247,7 +249,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public MainWindow() {
 		super(WINDOW_TITLE);
 		setLocationByPlatform(true);
-		// #@$*(@#$ apple.. always gotta think different
 		MRJApplicationUtils.registerAboutHandler(this);
 		MRJApplicationUtils.registerPrefsHandler(this);
 		MRJApplicationUtils.registerQuitHandler(this);
@@ -282,16 +283,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		setJMenuBar(menubar);
 
 		Container pane = getContentPane();
-		BoxLayout layout = new BoxLayout(pane,BoxLayout.Y_AXIS);
-		pane.setLayout(layout);
+		pane.setLayout(new MigLayout("flowy,gap 0 0,ins 0"));
 
 		buttons = new MainButtonPanel(this);	
-		pane.add(buttons);
+		pane.add(buttons,"growx");
 		
 		machineStatusPanel = new MachineStatusPanel();
-		pane.add(machineStatusPanel);
+		pane.add(machineStatusPanel,"growx");
 
-		pane.add(header);
+		pane.add(header,"growx");
 		
 		textarea = new JEditTextArea(new PdeTextAreaDefaults());
 		textarea.setRightClickPopup(new TextAreaPopup());
@@ -324,7 +324,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 
 		splitPane.setPreferredSize(new Dimension(400,500));
-		pane.add(splitPane);
+		pane.add(splitPane,"growx");
 
 		pack();
 		

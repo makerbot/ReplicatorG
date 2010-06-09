@@ -26,7 +26,6 @@
 package replicatorg.app.ui;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -142,7 +141,7 @@ public class EditorHeader extends BGPanel implements ActionListener {
 	public EditorHeader(MainWindow mainWindow) {
 		initTabImages();
 		setBorder(null);
-		setLayout(new MigLayout("gap 10 10 0 0"));
+		setLayout(new MigLayout("ins 0 10 0 10,gap 10 10 0 0"));
 		this.editor = mainWindow;
 
 		add(titleLabel);
@@ -193,14 +192,6 @@ public class EditorHeader extends BGPanel implements ActionListener {
 	public void rebuild() {
 		// System.out.println("rebuilding editor header");
 		repaint();
-	}
-
-	public Dimension getMaximumSize() {
-		return new Dimension(Integer.MAX_VALUE, 30);
-	}	
-		
-	public Dimension getMinimumSize() {
-		return new Dimension(0, 0);
 	}
 
 	public void actionPerformed(ActionEvent a) {
