@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -28,6 +29,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 
 	boolean configSuccess = true;
 	String profile = null;
+	boolean useRaft = false;
 	
 	List<String> getProfiles() {
 		List<String> profiles = new LinkedList<String>();
@@ -57,8 +59,16 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 				prefSelection.addItem(profile);
 			}
 			add(new JLabel("Select a printing profile:"),"wrap");
-			add(prefSelection,"wrap");
-			
+			add(prefSelection,"growx,wrap");
+
+			final JCheckBox raftSelection = new JCheckBox("Use raft",false);
+			raftSelection.setToolTipText("If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "+
+					"Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+			add(raftSelection,"wrap");
+
+//			final JButton newPrefButton = new JButton("Manage printing profiles...");
+//			add(newPrefButton,"wrap");
+
 			JButton ok = new JButton("Ok");
 			add(ok,"tag ok");
 			JButton cancel = new JButton("Cancel");
@@ -66,7 +76,8 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			ok.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					configSuccess = true;
-					profile = (String)prefSelection.getSelectedItem();
+					profile = "prefs/"+(String)prefSelection.getSelectedItem();
+					useRaft = raftSelection.isSelected();
 					setVisible(false);
 				}
 			});
@@ -106,8 +117,21 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 	
 	public BuildCode generateToolpath() {
 		String path = model.getSTLPath();
+		
+		List<String> arguments = new LinkedList<String>();
 		// The -u makes python output unbuffered.  Oh joyous day.
-		ProcessBuilder pb = new ProcessBuilder("python","-u","skeinforge.py","-p",profile,path);
+		String[] baseArguments = { "python","-u","skeinforge.py","-p",profile};
+		for (String arg : baseArguments) { 
+			arguments.add(arg);
+		}
+		if (useRaft) {
+			arguments.add("--raft");
+		} else {
+			arguments.add("--no-raft");
+		}
+		arguments.add(path);
+		
+		ProcessBuilder pb = new ProcessBuilder(arguments);
 	    String skeinforgeDir = getSkeinforgePath();
 		pb.directory(new File(skeinforgeDir));
 		Process process = null;

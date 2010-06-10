@@ -118,8 +118,28 @@ def readPreferences( archivablePreferences ):
 		if text != '':
 			readPreferencesFromText( archivablePreferences, text )
 		writePreferences( archivablePreferences )
-		return
-	readPreferencesFromText( archivablePreferences, text )
+	else:
+		readPreferencesFromText( archivablePreferences, text )
+	applyPreferencesOverrides( archivablePreferences )
+
+# Preference overrides are tuples of the form
+# (executeTitle,prefname,value)
+preferenceOverrides = []
+
+def addPreferenceOverride( executeTitle, prefName, value ):
+	preferenceOverrides.append( ( executeTitle, prefName, value ) )
+
+def applyPreferencesOverrides( archivablePreferences ):
+	"Apply any overrides specified."
+	for (exTitle,prefname,value) in preferenceOverrides:
+		if exTitle == archivablePreferences.executeTitle:
+			applySingleOverride( archivablePreferences,prefname,value )
+
+def applySingleOverride( archivablePreferences,prefname,value ):
+	"Apply an override for a single preference."
+	for preference in archivablePreferences.archive:
+		if preference.name == prefname:
+			preference.setValueToString(value)
 
 def readPreferencesFromText( archivablePreferences, text ):
 	"Set an archive to the preferences read from a text."

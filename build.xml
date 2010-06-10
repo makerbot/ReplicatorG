@@ -129,7 +129,8 @@
       <fileset dir="${dist.dir}" includes="drivers/*.dmg"/>
     </copy>
     <copy todir="${target.dir}/tools">
-      <filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf,*a"/>
+      <filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
+      <fileset dir="${dist.dir}/tools" files="*.a"/>
     </copy>
     <chmod file="${target.dir}/tools/avrdude" perm="ugo+rx"/>
     <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">

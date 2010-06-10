@@ -1,3 +1,14 @@
+0017 ReplicatorG
+* New features:
+** STL files can now be directly loaded and previewed
+** Skeinforge 0006 integrated with some simple profiles; STL files
+   can now be sliced from within ReplicatorG
+** Build concept now encapsulates a gcode slice and an STL model
+** Fixed numerous Mac interface issues
+* Bug fixes:
+** Better handling for 0-length payloads (Aaron Colwell)
+** Fix for Mac build issues (Rick Kimball)
+
 0016 ReplicatorG
 * New features:
 ** Rearranged control panel to better suit machines with small screens

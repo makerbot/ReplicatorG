@@ -313,6 +313,8 @@ def main():
                   action="store", type="string", dest="startFile")
         parser.add_option("-e", "--end", help="set end file to use",
                   action="store", type="string", dest="endFile")
+	parser.add_option("--raft", action="store_true", dest="useRaft")
+	parser.add_option("--no-raft", action="store_false", dest="useRaft")
         (options, args) = parser.parse_args()
 	if options.preferencesDirectory:
 		preferences.setPreferencesDirectoryPath(options.preferencesDirectory)
@@ -324,6 +326,13 @@ def main():
 		preferences.setEndFile(options.endFile)
 	else:
 		preferences.setEndFile('end.txt')
+	if options.useRaft != None:
+		raftVal = "false"
+		if options.useRaft:
+			raftVal = "true"
+		preferences.addPreferenceOverride("Raft", "Activate Raft:", raftVal)
+
+	sys.argv = [sys.argv[0]] + args
 	if len( args ) > 0:
 		writeOutput( ' '.join(args) )
 	else:
