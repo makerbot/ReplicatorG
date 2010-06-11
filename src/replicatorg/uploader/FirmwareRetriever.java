@@ -110,6 +110,7 @@ class FirmwareRetriever {
 	
 	protected void retrieveNewFirmware() {
 		Document doc = FirmwareUploader.loadFirmwareDoc();
+		if (doc == null) { return; }
 		NodeList list = doc.getElementsByTagName("firmware");
 		for (int i = 0; i < list.getLength(); i++) {
 			Node n = list.item(i);
