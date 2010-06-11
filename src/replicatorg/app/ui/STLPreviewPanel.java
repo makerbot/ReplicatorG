@@ -133,12 +133,12 @@ public class STLPreviewPanel extends JPanel {
 	
 	public STLPreviewPanel(final MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
-		setLayout(new BorderLayout()); 
-		//setLayout(new MigLayout());
+		//setLayout(new MigLayout()); 
+		setLayout(new MigLayout("fill,ins 0,gap 0"));
 		// Create Canvas3D and SimpleUniverse; add canvas to drawing panel
 		Canvas3D c = createUniverse();
-		add(c, BorderLayout.CENTER);
-		add(createToolPanel(), BorderLayout.EAST);
+		add(c, "growx,growy");
+		add(createToolPanel(),"growy");
 		// Create the content branch and add it to the universe
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);

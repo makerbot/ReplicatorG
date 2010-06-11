@@ -27,6 +27,7 @@
 
 package replicatorg.app.ui;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -46,6 +47,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -66,6 +69,7 @@ import java.util.prefs.BackingStoreException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -281,9 +285,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		menubar.add(buildHelpMenu());
 
 		setJMenuBar(menubar);
-
+		
 		Container pane = getContentPane();
-		pane.setLayout(new MigLayout("flowy,gap 0 0,ins 0"));
+		MigLayout layout = new MigLayout("nocache,fill,flowy,gap 0 0,ins 0");
+		pane.setLayout(layout);
 
 		buttons = new MainButtonPanel(this);	
 		pane.add(buttons,"growx");
@@ -324,8 +329,20 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 
 		splitPane.setPreferredSize(new Dimension(400,500));
-		pane.add(splitPane,"growx");
+		layout.setRowConstraints("fill");
+		pane.add(splitPane,"growx,growy");
 
+		this.addComponentListener(new ComponentListener() {
+			public void componentResized(ComponentEvent e) {
+				getStlPanel().invalidate();
+				getContentPane().validate();
+				getContentPane().doLayout();
+				getContentPane().repaint();
+			}
+			public void componentMoved(ComponentEvent e) {}
+			public void componentHidden(ComponentEvent e) {}
+			public void componentShown(ComponentEvent e) {}
+		});
 		pack();
 		
 		textarea.setTransferHandler(new TransferHandler() {
