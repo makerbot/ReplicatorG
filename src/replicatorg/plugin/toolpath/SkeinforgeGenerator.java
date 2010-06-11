@@ -17,11 +17,8 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
-
 import replicatorg.app.Base;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.StreamLoggerThread;
@@ -29,7 +26,7 @@ import replicatorg.model.BuildCode;
 
 public class SkeinforgeGenerator extends ToolpathGenerator {
 
-	boolean configSuccess = true;
+	boolean configSuccess = false;
 	String profile = null;
 	boolean useRaft = false;
 	
