@@ -177,7 +177,7 @@ public class Base {
 
 		// make sure that this is running on java 1.5 or better.
 		if (Base.javaVersion < 1.5f) {
-			Base.showError("Need to install Java 1.5",
+			Base.quitWithError("Need to install Java 1.5",
 					"This version of ReplicatorG requires\n"
 							+ "Java 1.5 or later to run properly.\n"
 							+ "Please visit java.com to upgrade.", null);
@@ -638,10 +638,10 @@ public class Base {
 
 	/**
 	 * Show an error message that's actually fatal to the program. This is an
-	 * error that can't be recovered. Use showWarning() for errors that allow P5
-	 * to continue running.
+	 * error that can't be recovered. Use showWarning() for errors that allow 
+	 * ReplicatorG to continue running.
 	 */
-	static public void showError(String title, String message, Throwable e) {
+	static public void quitWithError(String title, String message, Throwable e) {
 		if (title == null)
 			title = "Error";
 		JOptionPane.showMessageDialog(new Frame(), message, title,

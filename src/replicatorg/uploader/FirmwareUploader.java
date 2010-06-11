@@ -196,7 +196,7 @@ public class FirmwareUploader {
 				try {
 					File f = getFirmwareFile();
 					if (!f.exists()) {
-						Base.showError(
+						Base.showWarning(
 							"Firmware.xml Not Found",
 							"The firmware description file 'firmware.xml' was not found.\n" +
 							"You may see this message if you're running ReplicatorG for the\n" +
@@ -208,19 +208,25 @@ public class FirmwareUploader {
 					try {
 						doc = db.parse(f);
 					} catch (SAXException e) {
-						Base.showError("Parse error",
-							"Error parsing firmware.xml.  You may need to reinstall ReplicatorG.",
+						Base.showWarning("Parse error",
+							"Error parsing firmware.xml. \n"+
+							"You may see this message if you're running ReplicatorG for the\n" +
+							"first time and are not connected to the internet, or if you are\n" +
+							"running ReplicatorG on a read-only filesystem.",
 							e);
 						return null;
 					}
 				} catch (IOException e) {
-					Base.showError(null, "Could not read firmware.xml.\n"
-						+ "You may need to reinstall ReplicatorG.", e);
+					Base.showWarning(null, "Could not read firmware.xml.\n" +
+							"You may see this message if you're running ReplicatorG for the\n" +
+							"first time and are not connected to the internet, or if you are\n" +
+							"running ReplicatorG on a read-only filesystem.",
+							e);
 					return null;
 				}
 			}
 		} catch (ParserConfigurationException e) {
-			Base.showError("Unkown error", "Unknown error parsing firmware.xml.", e);
+			Base.showWarning("Unkown error", "Unknown error parsing firmware.xml.", e);
 			return null;
 		}
 		return doc;

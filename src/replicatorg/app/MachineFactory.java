@@ -88,7 +88,7 @@ public class MachineFactory {
 		Document dom = loadMachinesConfig();
 
 		if (dom == null) {
-			Base.showError(null, "Error parsing machines.xml", null);
+			Base.quitWithError(null, "Error parsing machines.xml", null);
 			return null;
 		}
 
@@ -142,7 +142,7 @@ public class MachineFactory {
 							usingDistXmlWarned = true;
 						}
 					} else {
-						Base.showError(
+						Base.quitWithError(
 										"Machines.xml Not Found",
 										"The machine description file 'machines.xml' was not found.\n"
 												+ "Make sure you're running ReplicatorG from the correct directory.",
@@ -157,7 +157,7 @@ public class MachineFactory {
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
-				Base.showError(null, "Could not read machines.xml.\n"
+				Base.quitWithError(null, "Could not read machines.xml.\n"
 						+ "You'll need to reinstall ReplicatorG.", e);
 			}
 		} catch (ParserConfigurationException e) {
