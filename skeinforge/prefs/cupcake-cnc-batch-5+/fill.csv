@@ -11,7 +11,7 @@ Grid Junction Separation over Octogon Radius At Middle (ratio):	0.0
 Open File to be Filled	
 Infill Begin Rotation (degrees):	45.0
 Infill Begin Rotation Repeat (layers):	1
-Infill Solidity (ratio):	0.2
+Infill Solidity (ratio):	0.23
 Infill Odd Layer Extra Rotation (degrees):	90.0
 Grid Hexagonal	False
 Grid Rectangular	True
