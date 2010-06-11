@@ -17,6 +17,8 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -31,8 +33,25 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 	String profile = null;
 	boolean useRaft = false;
 	
-	List<String> getProfiles() {
-		List<String> profiles = new LinkedList<String>();
+	class Profile implements Comparable<Profile> {
+		private String fullPath;
+		private String name;
+		public Profile(String fullPath) {
+			this.fullPath = fullPath;
+			int idx = fullPath.lastIndexOf(File.separatorChar);
+			if (idx >= 0) {
+				name = fullPath.substring(idx+1);
+			} else {
+				name = fullPath;
+			}
+		}
+		public String getFullPath() { return fullPath; }
+		public String toString() { return name; }
+		public int compareTo(Profile o) { return name.compareTo(o.name); }
+	}
+	
+	List<Profile> getProfiles() {
+		List<Profile> profiles = new LinkedList<Profile>();
 		// Get default installed profiles
 		String dirPath = getSkeinforgePath();
 		File dir = new File(dirPath,"prefs");
@@ -40,7 +59,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			for (String subpath : dir.list()) {
 				File subDir = new File(dir,subpath);
 				if (subDir.isDirectory()) {
-					profiles.add(subpath);
+					profiles.add(new Profile(subDir.getAbsolutePath()));
 				}
 			}
 		}
@@ -55,15 +74,33 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			setLayout(new MigLayout());
 			
 			final JComboBox prefSelection = new JComboBox();
-			for (String profile : getProfiles()) {
+			final String profilePref = "replicatorg.skeinforge.profilePref";
+			String profilePath = Base.preferences.get(profilePref,null);
+			for (Profile profile : getProfiles()) {
 				prefSelection.addItem(profile);
+				if (profile.getFullPath().equals(profilePath)) {
+					prefSelection.setSelectedItem(profile);
+				}
 			}
+			prefSelection.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					Base.preferences.put(profilePref, ((Profile)prefSelection.getSelectedItem()).getFullPath());
+				}
+			});
 			add(new JLabel("Select a printing profile:"),"wrap");
 			add(prefSelection,"growx,wrap");
 
-			final JCheckBox raftSelection = new JCheckBox("Use raft",false);
+			final String useRaftPref = "replicatorg.skeinforge.useRaft";
+			useRaft = Base.preferences.getBoolean(useRaftPref, false);
+			final JCheckBox raftSelection = new JCheckBox("Use raft",useRaft);
 			raftSelection.setToolTipText("If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "+
 					"Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+			raftSelection.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					useRaft = raftSelection.isSelected();
+					Base.preferences.putBoolean(useRaftPref, useRaft);
+				}
+			});
 			add(raftSelection,"wrap");
 
 //			final JButton newPrefButton = new JButton("Manage printing profiles...");
@@ -76,8 +113,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			ok.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					configSuccess = true;
-					profile = "prefs/"+(String)prefSelection.getSelectedItem();
-					useRaft = raftSelection.isSelected();
+					profile = ((Profile)prefSelection.getSelectedItem()).getFullPath();
 					setVisible(false);
 				}
 			});
