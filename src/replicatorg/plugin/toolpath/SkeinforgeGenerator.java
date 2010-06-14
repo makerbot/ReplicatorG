@@ -74,7 +74,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		final String manageStr = "Manage profiles..."; 
 		final String profilePref = "replicatorg.skeinforge.profilePref";
 		private void loadProfiles(JComboBox prefSelection) {
-			prefSelection.removeAll();
+			prefSelection.removeAllItems();
 			String profilePath = Base.preferences.get(profilePref,null);
 			for (Profile profile : getProfiles()) {
 				prefSelection.addItem(profile);
@@ -92,7 +92,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			
 			final JComboBox prefSelection = new JComboBox();
 			loadProfiles(prefSelection);
-			//prefSelection.setRenderer(new DividableRenderer(prefSelection.getRenderer()));
+			prefSelection.setRenderer(new DividableRenderer(prefSelection.getRenderer()));
 			prefSelection.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					Object selected = prefSelection.getSelectedItem();
@@ -102,6 +102,12 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 						SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
 								ManageProfilesDialog mpd = new ManageProfilesDialog(parent);
+								double x = parent.getBounds().getCenterX();
+								double y = parent.getBounds().getCenterY();
+								mpd.pack();
+								x -= mpd.getWidth() / 2.0;
+								y -= mpd.getHeight() / 2.0;
+								mpd.setLocation((int)x,(int)y);
 								mpd.setVisible(true);
 								// restore last selection
 								loadProfiles(prefSelection);
@@ -174,6 +180,29 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 	    	skeinforgeDir = System.getProperty("user.dir") + File.separator + "skeinforge";
 	    }
 	    return skeinforgeDir;
+	}
+	
+	public void editProfile(Profile profile) {
+		String[] arguments = { "python","skeinforge.py","-p",profile.getFullPath()};
+		ProcessBuilder pb = new ProcessBuilder(arguments);
+	    String skeinforgeDir = getSkeinforgePath();
+		pb.directory(new File(skeinforgeDir));
+		Process process = null;
+		try {
+			process = pb.start();
+			int value = process.waitFor();
+			if (value != 0) {
+				Base.logger.severe("Unrecognized error code returned by Skeinforge.");
+			}
+		} catch (IOException ioe) {
+			Base.logger.log(Level.SEVERE, "Could not run skeinforge.", ioe);
+		} catch (InterruptedException e) {
+			// We are most likely shutting down, or the process has been manually aborted.  
+			// Kill the background process and bail out.
+			if (process != null) {
+				process.destroy();
+			}
+		}
 	}
 	
 	public BuildCode generateToolpath() {
@@ -263,11 +292,44 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		
 		public ManageProfilesDialog(final JComponent parent) {
 			super(SwingUtilities.getWindowAncestor(parent),Dialog.ModalityType.APPLICATION_MODAL);
-			setLayout(new MigLayout());
+			setTitle("Manage Skeinforge Profiles");
+			setLayout(new MigLayout("fill"));
 			final JList prefList = new JList();
 			loadList(prefList);
-			add(prefList,"spany 3");
-			pack();
+			add(prefList,"spany 3,growy");
+			JButton editButton = new JButton("Edit...");
+			add(editButton,"wrap,growx");
+			editButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int idx = prefList.getSelectedIndex(); 
+					if (idx == -1) {
+						JOptionPane.showMessageDialog(parent, "Select a profile to edit.");
+					} else {
+						Profile p = (Profile)prefList.getModel().getElementAt(idx);
+						editProfile(p);
+					}
+				}				
+			});
+			JButton newButton = new JButton("Create...");
+			add(newButton,"wrap,growx");
+			newButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int idx = prefList.getSelectedIndex(); 
+					if (idx == -1) {
+						JOptionPane.showMessageDialog(parent, "Select a profile to use as a base.");
+					} else {
+						String newName = JOptionPane.showInputDialog(parent,"Name your new profile:");
+						// TODO: new
+					}
+				}				
+			});
+			JButton closeButton = new JButton("Done");
+			add(closeButton,"wrap,growx");
+			closeButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					setVisible(false);
+				}				
+			});
 		}
 	}
 }
