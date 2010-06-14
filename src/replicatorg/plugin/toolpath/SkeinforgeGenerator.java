@@ -53,11 +53,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		public int compareTo(Profile o) { return name.compareTo(o.name); }
 	}
 	
-	List<Profile> getProfiles() {
-		List<Profile> profiles = new LinkedList<Profile>();
-		// Get default installed profiles
-		String dirPath = getSkeinforgePath();
-		File dir = new File(dirPath,"prefs");
+	void getProfilesIn(File dir, List<Profile> profiles) {
 		if (dir.exists() && dir.isDirectory()) {
 			for (String subpath : dir.list()) {
 				File subDir = new File(dir,subpath);
@@ -66,6 +62,20 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 				}
 			}
 		}
+	}
+
+	File getUserProfilesDir() {
+		return new File(System.getProperty("user.home")+File.separator+".replicatorg"+File.separator+"sf_profiles");
+	}
+	
+	List<Profile> getProfiles() {
+		final List<Profile> profiles = new LinkedList<Profile>();
+		// Get default installed profiles
+		String dirPath = getSkeinforgePath();
+		File dir = new File(dirPath,"prefs");
+		getProfilesIn(dir,profiles);
+		dir = getUserProfilesDir();
+		getProfilesIn(dir,profiles);
 		Collections.sort(profiles);
 		return profiles;
 	}
@@ -319,7 +329,19 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 						JOptionPane.showMessageDialog(parent, "Select a profile to use as a base.");
 					} else {
 						String newName = JOptionPane.showInputDialog(parent,"Name your new profile:");
-						// TODO: new
+						if (newName != null) {
+							File newProfDir = new File(getUserProfilesDir(),newName);
+							Profile p = (Profile)prefList.getModel().getElementAt(idx);
+							File oldProfDir = new File(p.getFullPath());
+							try {
+								Base.copyDir(oldProfDir, newProfDir);
+								Profile newProf = new Profile(newProfDir.getAbsolutePath());
+								editProfile(newProf);
+								loadList(prefList);
+							} catch (IOException ioe) {
+								Base.logger.log(Level.SEVERE,"Couldn't copy directory", ioe);
+							}
+						}
 					}
 				}				
 			});

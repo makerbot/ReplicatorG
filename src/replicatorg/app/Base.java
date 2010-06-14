@@ -675,7 +675,7 @@ public class Base {
 
 	/**
 	 * We need to load animated .gifs through this mechanism vs. getImage due to
-	 * a number of bugs in Java's image loading routings.
+	 * a number of bugs in Java's image loading routines.
 	 * @param name The path of the image
 	 * @param who The component that will use the image
 	 * @return the loaded image object
@@ -721,22 +721,6 @@ public class Base {
 	}
 
 	// ...................................................................
-
-	static public byte[] grabFile(File file) throws IOException {
-		int size = (int) file.length();
-		FileInputStream input = new FileInputStream(file);
-		byte buffer[] = new byte[size];
-		int offset = 0;
-		int bytesRead;
-		while ((bytesRead = input.read(buffer, offset, size - offset)) != -1) {
-			offset += bytesRead;
-			if (bytesRead == 0)
-				break;
-		}
-		input.close(); // weren't properly being closed
-		input = null;
-		return buffer;
-	}
 
 	static public void copyFile(File afile, File bfile) throws IOException {
 		InputStream from = new BufferedInputStream(new FileInputStream(afile));
