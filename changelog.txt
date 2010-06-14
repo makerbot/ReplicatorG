@@ -5,6 +5,7 @@
    can now be sliced from within ReplicatorG
 ** Build concept now encapsulates a gcode slice and an STL model
 ** Fixed numerous Mac interface issues
+** Multiple profiles in skeinforge 0006 (Charles Pax)
 * Bug fixes:
 ** Better handling for 0-length payloads (Aaron Colwell)
 ** Fix for Mac build issues (Rick Kimball)
