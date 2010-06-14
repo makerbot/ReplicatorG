@@ -649,7 +649,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		menu.addSeparator();
 
-		menu.addSeparator();
 		mruMenu = new JMenu("Recent");
 		reloadMruMenu();
 		menu.add(mruMenu);
