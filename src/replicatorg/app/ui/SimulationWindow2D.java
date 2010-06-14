@@ -520,7 +520,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 			Color belowColor = new Color(0, 0, 255);
 
 			synchronized (points) {
-				List lastPoints = getLastPoints(1000);
+				List<Point3d> lastPoints = getLastPoints(1000);
 				Point3d start;
 				Point3d end;
 
@@ -574,9 +574,9 @@ public class SimulationWindow2D extends SimulationWindow implements
 					}
 
 					// draw all our lines now!
-					for (ListIterator li = lastPoints.listIterator(); li
+					for (ListIterator<Point3d> li = lastPoints.listIterator(); li
 							.hasNext();) {
-						end = (Point3d) li.next();
+						end = li.next();
 
 						// we have to move somewhere!
 						if (!start.equals(end)) {
@@ -658,11 +658,11 @@ public class SimulationWindow2D extends SimulationWindow implements
 			}
 		}
 
-		private List getLastPoints(int count) {
+		private List<Point3d> getLastPoints(int count) {
 			synchronized (points) {
 				int index = Math.max(0, points.size() - count);
 
-				List mypoints = points.subList(index, points.size());
+				List<Point3d> mypoints = points.subList(index, points.size());
 
 				return mypoints;
 			}
@@ -670,7 +670,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 		@SuppressWarnings("unused")
 		private void drawToolpaths(Graphics g) {
-			Vector toolpaths = getLayerPaths(currentZ);
+			Vector<Vector<Point3d>> toolpaths = getLayerPaths(currentZ);
 			Point3d start = new Point3d();
 			Point3d end = new Point3d();
 
@@ -678,15 +678,15 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 			// draw our toolpaths.
 			if (toolpaths.size() > 0) {
-				for (Enumeration e = toolpaths.elements(); e.hasMoreElements();) {
-					Vector path = (Vector) e.nextElement();
+				for (Enumeration<Vector<Point3d>> e = toolpaths.elements(); e.hasMoreElements();) {
+					Vector<Point3d> path = e.nextElement();
 					// System.out.println("path points:" + path.size());
 
 					if (path.size() > 1) {
 						g.setColor(Color.black);
 						start = (Point3d) path.firstElement();
 
-						for (Enumeration e2 = path.elements(); e2
+						for (Enumeration<Point3d> e2 = path.elements(); e2
 								.hasMoreElements();) {
 							end = (Point3d) e2.nextElement();
 
@@ -706,7 +706,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 			}
 		}
 
-		private Vector getLayerPaths(double layerZ) {
+		private Vector<Vector<Point3d>> getLayerPaths(double layerZ) {
 			Vector<Vector<Point3d>> paths = new Vector<Vector<Point3d>>();
 			Vector<Point3d> path = new Vector<Point3d>();
 			Point3d p;

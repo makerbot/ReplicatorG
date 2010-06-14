@@ -3,7 +3,7 @@
  */
 package replicatorg.app.ui;
 
-import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
@@ -138,7 +138,7 @@ public class STLPreviewPanel extends JPanel {
 		// Create Canvas3D and SimpleUniverse; add canvas to drawing panel
 		Canvas3D c = createUniverse();
 		add(c, "growx,growy");
-		add(createToolPanel(),"growy");
+		add(createToolPanel(),"dock east");
 		// Create the content branch and add it to the universe
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
@@ -366,7 +366,7 @@ public class STLPreviewPanel extends JPanel {
 
 	private BoundingBox getBoundingBox(Shape3D shape) {
 		BoundingBox bb = null;
-		Enumeration geometries = shape.getAllGeometries();
+		Enumeration<?> geometries = shape.getAllGeometries();
 		while (geometries.hasMoreElements()) {
 			Geometry g = (Geometry)geometries.nextElement();
 			if (g instanceof GeometryArray) {
@@ -524,7 +524,12 @@ public class STLPreviewPanel extends JPanel {
 			SimpleUniverse.getPreferredConfiguration();
 
 		// Create a Canvas3D using the preferred configuration
-		Canvas3D c = new Canvas3D(config);
+		Canvas3D c = new Canvas3D(config) {
+			public Dimension getMinimumSize()
+		    {
+		        return new Dimension(0, 0);
+		    }
+		};
 
 		// Create simple universe with view branch
 		univ = new SimpleUniverse(c);

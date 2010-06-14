@@ -221,8 +221,8 @@ class STLASCIIParser extends STLParser
     {
         int numOfObjects = 0;
         int numOfFacets = 0;
-        final ArrayList facetsPerObject = new ArrayList( 10 );
-        final ArrayList names = new ArrayList( 10 );
+        final ArrayList<Integer> facetsPerObject = new ArrayList<Integer>( 10 );
+        final ArrayList<String> names = new ArrayList<String>( 10 );
         @SuppressWarnings("unused")
 		boolean isAscii = true;
         String line = reader.readLine( );
@@ -272,9 +272,9 @@ class STLASCIIParser extends STLParser
         itsNames = new String[ numOfObjects ];
         for( int i = 0; i < numOfObjects; i ++ )
         {
-            final Integer num = ( Integer )facetsPerObject.get( i );
+            final Integer num = facetsPerObject.get( i );
             itsNumOfFacets[ i ] = num.intValue( );
-            itsNames[ i ] = ( String )names.get( i );
+            itsNames[ i ] = names.get( i );
         }
         return true;
     }

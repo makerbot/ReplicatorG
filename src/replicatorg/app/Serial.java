@@ -144,7 +144,7 @@ public class Serial implements SerialPortEventListener {
 	}
 
 	private CommPortIdentifier findPortIdentifier(String name) {
-		Enumeration portList = CommPortIdentifier.getPortIdentifiers();
+		Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
 		while (portList.hasMoreElements()) {
 			CommPortIdentifier id = (CommPortIdentifier)portList.nextElement();
 			if (id.getPortType() == CommPortIdentifier.PORT_SERIAL && 

@@ -39,7 +39,7 @@ public abstract class AbstractFirmwareUploader {
 	public static AbstractFirmwareUploader makeUploader(Node n) {
 		String className = n.getAttributes().getNamedItem("class").getNodeValue();
 		try {
-			Class uploaderClass = ClassLoader.getSystemClassLoader().loadClass(className);
+			Class<?> uploaderClass = ClassLoader.getSystemClassLoader().loadClass(className);
 			AbstractFirmwareUploader afu = (AbstractFirmwareUploader)uploaderClass.newInstance();
 			NodeList nl = n.getChildNodes();
 			for (int i = 0; i < nl.getLength(); i++) {

@@ -27,7 +27,6 @@
 
 package replicatorg.app.ui;
 
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -69,7 +68,7 @@ import java.util.prefs.BackingStoreException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -291,12 +290,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		pane.setLayout(layout);
 
 		buttons = new MainButtonPanel(this);	
-		pane.add(buttons,"growx");
+		pane.add(buttons,"growx,dock north");
 		
 		machineStatusPanel = new MachineStatusPanel();
-		pane.add(machineStatusPanel,"growx");
+		pane.add(machineStatusPanel,"growx,dock north");
 
-		pane.add(header,"growx");
+		pane.add(header,"growx,dock north");
 		
 		textarea = new JEditTextArea(new PdeTextAreaDefaults());
 		textarea.setRightClickPopup(new TextAreaPopup());
@@ -311,8 +310,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				console);
 
 		//splitPane.setOneTouchExpandable(true);
-		// repaint child panes while resizing
-		splitPane.setContinuousLayout(true);
+		// repaint child panes while resizing: a little heavyweight
+		// splitPane.setContinuousLayout(true);
 		// if window increases in size, give all of increase to
 		// the textarea in the uppper pane
 		splitPane.setResizeWeight(0.8);
@@ -329,20 +328,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 
 		splitPane.setPreferredSize(new Dimension(400,500));
-		layout.setRowConstraints("fill");
-		pane.add(splitPane,"growx,growy");
-
-		this.addComponentListener(new ComponentListener() {
-			public void componentResized(ComponentEvent e) {
-				getStlPanel().invalidate();
-				getContentPane().validate();
-				getContentPane().doLayout();
-				getContentPane().repaint();
-			}
-			public void componentMoved(ComponentEvent e) {}
-			public void componentHidden(ComponentEvent e) {}
-			public void componentShown(ComponentEvent e) {}
-		});
+		pane.add(splitPane,"growx,growy,shrinkx,shrinky");
 		pack();
 		
 		textarea.setTransferHandler(new TransferHandler() {
@@ -363,9 +349,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						// System.out.println(flavors[i]);
 						// System.out.println(transferable.getTransferData(flavors[i]));
 						Object stuff = transferable.getTransferData(flavors[i]);
-						if (!(stuff instanceof java.util.List))
+						if (!(stuff instanceof java.util.List<?>))
 							continue;
-						java.util.List list = (java.util.List) stuff;
+						java.util.List<?> list = (java.util.List<?>) stuff;
 
 						for (int j = 0; j < list.size(); j++) {
 							Object item = list.get(j);
