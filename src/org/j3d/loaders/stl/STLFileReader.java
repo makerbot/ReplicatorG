@@ -66,7 +66,7 @@ public class STLFileReader
     public STLFileReader( final URL url )
     throws IOException, FileNotFoundException
     {
-        final STLASCIIParser asciiParser = new STLASCIIParser( );
+        final STLASCIIParser2 asciiParser = new STLASCIIParser2( );
         if( asciiParser.parse( url ) )
         {
             itsParser = asciiParser;
@@ -90,7 +90,7 @@ public class STLFileReader
     public STLFileReader( final URL url, final Component parentComponent )
     throws InterruptedIOException, IOException, FileNotFoundException
     {
-        final STLASCIIParser asciiParser = new STLASCIIParser( );
+        final STLASCIIParser2 asciiParser = new STLASCIIParser2( );
         if( asciiParser.parse( url, parentComponent ) )
         {
             itsParser = asciiParser;
