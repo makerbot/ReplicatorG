@@ -20,11 +20,9 @@ import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -102,11 +100,10 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 	
 	public PreferencesWindow() {
 		super("Preferences");
-		setResizable(false);
+		setResizable(true);
 
-		JComponent content = new JPanel(new MigLayout());
-
-		// MainWindow font size [ ]
+		Container content = this.getContentPane();
+		content.setLayout(new MigLayout("fill"));
 
 		content.add(new JLabel("MainWindow font size: "), "split");
 		fontSizeField = new JTextField(4);
@@ -128,10 +125,10 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			JFormattedTextField arcResolutionField = new JFormattedTextField(new Double(value));
 			content.add(arcResolutionField,"wrap");
 			String arcResolutionHelp = "<html><small><em>" +
-				"The arc resolution is the default segment length that the gcode parser will break arc codes "+
+				"The arc resolution is the default segment length that the gcode parser will break arc codes <br>"+
 				"like G2 and G3 into.  Drivers that natively handle arcs will ignore this setting." +
 				"</em></small></html>";
-			content.add(new JLabel(arcResolutionHelp),"width 100,growx,wrap");
+			content.add(new JLabel(arcResolutionHelp),"growx,wrap");
 			arcResolutionField.setColumns(10);
 			arcResolutionField.addPropertyChangeListener(new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -192,7 +189,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		};
 		Base.registerWindowCloseKeys(getRootPane(), disposer);
 
-		add(content);
 		pack();
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((screen.width - getWidth()) / 2,
