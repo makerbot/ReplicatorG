@@ -189,6 +189,19 @@ public class Base {
 			Base.openedAtStartup = args[0];
 		}
 		
+		// Warn about read-only directories
+    	{
+    		File userDir = new File(System.getProperty("user.dir"));
+    		if (!userDir.canWrite()) {
+    			Base.showMessage("Running in read-only directory", 
+    					"<html><body>ReplicatorG is running in a read-only directory.<br>" +
+    					"Some functions of ReplicatorG, like toolpath generation and firmware updates,<br>" +
+    					"require ReplicatorG to be run from a writable directory.  You may want to end this<br>"+
+    					"session, copy ReplicatorG to a writeable directory, and start it again."
+    					);
+    		}
+    	}
+
 		// Start the firmware check thread.
 		FirmwareUploader.checkFirmware();
 		
