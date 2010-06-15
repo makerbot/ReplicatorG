@@ -122,8 +122,8 @@ public class STLPreviewPanel extends JPanel {
 		});
 		panel.add(sliceButton,"growx,wrap");
 		String instrStr = Base.isMacOS()?
-				"<html><body>Drag to rotate<br/>Shift-drag to pan<br/>Mouse wheel to zoom</body></html>":
-				"<html><body>Left button drag to rotate<br/>Right button drag to pan<br/>Mouse wheel to zoom</body></html>";
+				"<html><body>Drag to rotate<br>Shift-drag to pan<br>Mouse wheel to zoom</body></html>":
+				"<html><body>Left button drag to rotate<br>Right button drag to pan<br>Mouse wheel to zoom</body></html>";
 		JLabel instructions = new JLabel(instrStr);
 		Font f = instructions.getFont();
 		instructions.setFont(f.deriveFont((float)f.getSize()*0.8f));
