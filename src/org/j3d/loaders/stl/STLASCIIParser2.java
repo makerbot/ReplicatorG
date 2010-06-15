@@ -30,6 +30,8 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
+import replicatorg.app.Base;
+
 /**
 *
 * Rewrite of the STLASCIIParser class to be a little more robust and handle
@@ -154,6 +156,7 @@ public class STLASCIIParser2 extends STLParser {
 			tt = t.nextToken();
 		}
 		if (nameBuf != null) os.name = nameBuf.toString();
+		Base.logger.info("Got name "+os.name);
 		// Scan all facets
 		while (tt == StreamTokenizer.TT_WORD && "facet".equals(t.sval)) {
 			tt = t.nextToken();
@@ -169,10 +172,12 @@ public class STLASCIIParser2 extends STLParser {
 		}
 		tt = t.nextToken();
 		// Find EOF or solid
-		while (tt == StreamTokenizer.TT_WORD && !"solid".equals(t.sval)) {};
+		while (tt == StreamTokenizer.TT_WORD && !"solid".equals(t.sval)) {
+			tt = t.nextToken();
+		}
 		// Pushback solid
 		if (tt == StreamTokenizer.TT_WORD) { t.pushBack(); }
-		System.err.println("Parsed object name["+os.name+"] facets "+Integer.toString(os.facets));
+		Base.logger.info("Parsed object name["+os.name+"] facets "+Integer.toString(os.facets));
 		return os;
 	}
 
