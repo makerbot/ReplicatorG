@@ -13,6 +13,10 @@ import javax.swing.JPanel;
  *
  */
 public class BGPanel extends JPanel {
+	public BGPanel() {
+		setOpaque(true);
+	}
+	
 	public void paint(Graphics g) {
 		g.setColor(getBackground());
 		Rectangle r = getBounds();
