@@ -1,12 +1,12 @@
 package replicatorg.plugin.toolpath;
 
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -19,7 +19,7 @@ import replicatorg.model.BuildCode;
 import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorListener;
 
 public class ToolpathGeneratorThread extends Thread {
-	private JComponent parent;
+	private Frame parent;
 	private ToolpathGenerator generator;
 	private Build build;
 
@@ -33,8 +33,8 @@ public class ToolpathGeneratorThread extends Thread {
 		JLabel progressLabel;
 		JButton doneButton;
 		
-		public ProgressDialog(JComponent parent, Build build) { 
-			super(SwingUtilities.getWindowAncestor(parent));
+		public ProgressDialog(Frame parent, Build build) { 
+			super(parent);
 			ImageIcon icon = new ImageIcon(Base.getDirectImage("images/slicing-icon.gif",this));
 			setTitle("Generating toolpath for "+build.getName());
 			topLabel = new JLabel("Generating toolpath for "+build.getName(),icon,SwingConstants.LEFT);
@@ -77,7 +77,7 @@ public class ToolpathGeneratorThread extends Thread {
 		}
 	}
 	
-	public ToolpathGeneratorThread(JComponent parent, ToolpathGenerator generator, Build build) {
+	public ToolpathGeneratorThread(Frame parent, ToolpathGenerator generator, Build build) {
 		this.parent = parent;
 		this.generator = generator;
 		this.build = build;

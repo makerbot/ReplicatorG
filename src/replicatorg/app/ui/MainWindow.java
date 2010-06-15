@@ -46,8 +46,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -68,7 +66,6 @@ import java.util.prefs.BackingStoreException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -507,7 +504,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	
 	public void runToolpathGenerator() {
 		ToolpathGenerator generator = new SkeinforgeGenerator();
-		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this.getRootPane(), generator, build);
+		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build);
 		tgt.addListener(this);
 		tgt.start();
 	}

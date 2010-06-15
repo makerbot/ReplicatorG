@@ -1,7 +1,7 @@
 package replicatorg.plugin.toolpath;
 
 import java.awt.Component;
-import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -15,7 +15,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -95,8 +94,9 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			prefSelection.addItem(new ListDivider());
 			prefSelection.addItem(manageStr);			
 		}
-		public ConfigurationDialog(final JComponent parent) {
-			super(SwingUtilities.getWindowAncestor(parent),Dialog.ModalityType.APPLICATION_MODAL);
+		
+		public ConfigurationDialog(final Frame parent) {
+			super(parent,true);
 			setTitle("Choose a skeinforge profile");
 			setLayout(new MigLayout());
 			
@@ -167,7 +167,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 		
 	};
-	public boolean visualConfigure(JComponent parent) {
+	public boolean visualConfigure(Frame parent) {
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent, "Generating gcode",
 				new PythonUtils.Version(2,5,0),
@@ -300,8 +300,8 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 			list.setModel(model);
 		}
 		
-		public ManageProfilesDialog(final JComponent parent) {
-			super(SwingUtilities.getWindowAncestor(parent),Dialog.ModalityType.APPLICATION_MODAL);
+		public ManageProfilesDialog(final Frame parent) {
+			super(parent,true);
 			setTitle("Manage Skeinforge Profiles");
 			setLayout(new MigLayout("fill"));
 			final JList prefList = new JList();

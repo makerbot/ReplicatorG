@@ -1,12 +1,12 @@
 package replicatorg.app.util;
 
+import java.awt.Frame;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -82,7 +82,7 @@ public class PythonUtils {
 	 * @param max The minimum <i>unacceptable</i> version of python, null if we don't care.
 	 * @return true if python was found and falls within acceptable boundries
 	 */
-	public static boolean interactiveCheckVersion(JComponent parent, String procedureName, Version min, Version max) {
+	public static boolean interactiveCheckVersion(Frame parent, String procedureName, Version min, Version max) {
 		Version v = checkVersion();
 		if (procedureName == null) { procedureName = "This operation"; }
 		if (v != null) {
@@ -104,7 +104,7 @@ public class PythonUtils {
 		return false;
 	}
 	
-	private static void notifyUser(final JComponent parent, final String message) {
+	private static void notifyUser(final Frame parent, final String message) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				String s = "<html><p>"+message+"</p><p>Would you like to visit the Python download page now?</p></html>";

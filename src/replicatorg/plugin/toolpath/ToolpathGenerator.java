@@ -1,8 +1,7 @@
 package replicatorg.plugin.toolpath;
 
+import java.awt.Frame;
 import java.util.LinkedList;
-
-import javax.swing.JComponent;
 
 import replicatorg.model.BuildCode;
 import replicatorg.model.BuildModel;
@@ -36,7 +35,7 @@ public abstract class ToolpathGenerator {
 	/**
 	 * Returns true if configuration successful; false if aborted.
 	 */
-	public boolean visualConfigure(JComponent parent) {
+	public boolean visualConfigure(Frame parent) {
 		assert parent != null;
 		assert model != null;
 		return true;

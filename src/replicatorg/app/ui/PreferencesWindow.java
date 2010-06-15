@@ -82,20 +82,20 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		    public RadioAction(String text, InitialOpenBehavior behavior) {
 		    	super(text);
 		    	this.behavior = behavior;
-		    	if (behavior == openBehavior) {
-		    		putValue(SELECTED_KEY, new Boolean(true));
-		    	}
 		    }
 		    public void actionPerformed(ActionEvent e) {
 		    	Base.preferences.putInt(prefName,behavior.ordinal());
 		    }
 		}
 		c.add(new JLabel("On ReplicatorG launch:"),"wrap");
+		// We don't have SELECTED_KEY in Java 1.5, so we'll do things the old-fashioned, ugly way.
 		JRadioButton b;
 		b = new JRadioButton(new RadioAction("Open last opened or save file",InitialOpenBehavior.OPEN_LAST));
+    	if (InitialOpenBehavior.OPEN_LAST == openBehavior) { b.setSelected(true); }
 		bg.add(b);
 		c.add(b,"wrap");
 		b = new JRadioButton(new RadioAction("Open new file",InitialOpenBehavior.OPEN_NEW));
+    	if (InitialOpenBehavior.OPEN_NEW == openBehavior) { b.setSelected(true); }
 		bg.add(b);
 		c.add(b,"wrap");
 	}
