@@ -104,9 +104,13 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 					g.fillRect(0,0,b.width,b.height);
 					getRolloverIcon().paintIcon(this, g, 0, 0);
 				} else {
+					g.setColor(BACK_COLOR);
+					g.fillRect(0,0,b.width,b.height);
 					getIcon().paintIcon(this,g,0,0);
 				}
 			} else {
+				g.setColor(BACK_COLOR);
+				g.fillRect(0,0,b.width,b.height);
 				getDisabledIcon().paintIcon(this, g, 0, 0);
 			}
 		}
@@ -136,6 +140,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 	JLabel statusLabel;
 
+	final static Color BACK_COLOR = new Color(0x5F, 0x73, 0x25); 
 	MainButton simButton, pauseButton, stopButton;
 	MainButton buildButton, resetButton, cpButton;
 	MainButton disconnectButton, connectButton;
@@ -149,7 +154,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		// hardcoding new blue color scheme for consistency with images,
 		// see EditorStatus.java for details.
 		// bgcolor = Preferences.getColor("buttons.bgcolor");
-		setBackground(new Color(0x5F, 0x73, 0x25));
+		setBackground(BACK_COLOR);
 
 		Font statusFont = Base.getFontPref("buttons.status.font","SansSerif,plain,12");
 		Color statusColor = Base.getColorPref("buttons.status.color","#FFFFFF");

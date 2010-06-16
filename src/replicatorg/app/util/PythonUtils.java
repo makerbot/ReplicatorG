@@ -2,6 +2,8 @@ package replicatorg.app.util;
 
 import java.awt.Frame;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -41,12 +43,56 @@ public class PythonUtils {
 			return Integer.toString(major)+"."+Integer.toString(minor)+"."+Integer.toString(revision);
 		}
 	}
+	
+	static String pythonPath = null;
+	public static String getPythonPath() {
+		if (pythonPath == null) {
+			// First, look in the system path.  This is the default solution for
+			// all platforms.
+			String paths[] = System.getenv("PATH").split(File.pathSeparator);
+			for (String path : paths) {
+				File candidate = new File(path,"python");
+				if (candidate.exists() && candidate.canExecute()) {
+					try {
+						pythonPath = candidate.getCanonicalPath();
+						return pythonPath;
+					} catch (IOException ioe) {
+						pythonPath = null;
+					}
+				}
+			}
+			// We've exhausted the system path; let's try platform-specific solutions.
+			if (Base.isWindows()) {
+				// The Windows python install does not add Python to the path by default.
+				// We look for the install in the standard locations (C:\Python26, etc.)
+				Pattern pythonPat = Pattern.compile("Python([0-9]+)");
+				File driveDir = new File("C:/");
+				if (driveDir.exists() && driveDir.isDirectory()) {
+					for (String path : driveDir.list()) {
+						Matcher match = pythonPat.matcher(path);
+						if (match.matches()) {
+							try {
+								File python = new File(new File(driveDir,path),"python.exe");
+								pythonPath = python.getCanonicalPath();
+								return pythonPath;
+							} catch (IOException ioe) {
+								pythonPath = null;
+							}
+						}
+					}
+				}
+			}
+		}
+		return pythonPath;
+	}
+	
 	/**
 	 * Check for the existence of a working python. 
 	 * @return null if python is not installed, or the version of python found. 
 	 */
 	public static Version checkVersion() {
-		ProcessBuilder pb = new ProcessBuilder("python","-V");
+		if (getPythonPath() == null) { return null; }
+		ProcessBuilder pb = new ProcessBuilder(getPythonPath(),"-V");
 		pb.redirectErrorStream(true);
 		try {
 			Process p = pb.start();

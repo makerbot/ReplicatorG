@@ -193,7 +193,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 	}
 	
 	public void editProfile(Profile profile) {
-		String[] arguments = { "python","skeinforge.py","-p",profile.getFullPath()};
+		String[] arguments = { PythonUtils.getPythonPath(),"skeinforge.py","-p",profile.getFullPath()};
 		ProcessBuilder pb = new ProcessBuilder(arguments);
 	    String skeinforgeDir = getSkeinforgePath();
 		pb.directory(new File(skeinforgeDir));
@@ -220,7 +220,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		
 		List<String> arguments = new LinkedList<String>();
 		// The -u makes python output unbuffered.  Oh joyous day.
-		String[] baseArguments = { "python","-u","skeinforge.py","-p",profile};
+		String[] baseArguments = { PythonUtils.getPythonPath(),"-u","skeinforge.py","-p",profile};
 		for (String arg : baseArguments) { 
 			arguments.add(arg);
 		}
