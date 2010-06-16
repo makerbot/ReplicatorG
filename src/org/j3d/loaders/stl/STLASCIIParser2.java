@@ -141,6 +141,13 @@ public class STLASCIIParser2 extends STLParser {
 		public String name = "";
 		public int facets = 0;
 	}
+	
+	private static boolean hasNonAscii(String s) {
+		for (char c : s.toCharArray()) {
+			if (c > 0x007f) { return false; }
+		}
+		return true;
+	}
 
 	private ObjectStats readObjectStats(StreamTokenizer t) throws IOException {
 		int tt = t.nextToken(); 
@@ -151,6 +158,7 @@ public class STLASCIIParser2 extends STLParser {
 		// Read name (all tokens up until next instance of "facet")
 		tt = t.nextToken();
 		while (tt == StreamTokenizer.TT_WORD && !"facet".equals(t.sval)) {
+			if (hasNonAscii(t.sval)) { return null; }
 			if (nameBuf == null) { nameBuf = new StringBuffer(t.sval); }
 			else { nameBuf.append(' '); nameBuf.append(t.sval); }
 			tt = t.nextToken();
