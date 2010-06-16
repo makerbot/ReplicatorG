@@ -1,4 +1,4 @@
-<project name="ReplicatorG" basedir="." default="help">
+﻿<project name="ReplicatorG" basedir="." default="help">
 
   <!-- Project name -->
 
@@ -64,7 +64,7 @@
   <target name="run" depends="jar">
     <java fork="true" classname="replicatorg.app.Base"> <!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
       <jvmarg value="-ea"/>
-      <jvmarg value="-d32"/>
+      <jvmarg value="${native.java.flags}"/>
       <classpath>
 	<path refid="classpath"/>
 	<pathelement location="${jar.dir}/${ant.project.name}.jar"/>
