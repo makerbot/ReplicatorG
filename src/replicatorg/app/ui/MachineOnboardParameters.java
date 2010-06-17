@@ -36,8 +36,8 @@ public class MachineOnboardParameters extends JFrame {
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
 	private JCheckBox zAxisInvertBox = new JCheckBox();
-	private JButton extruderButton = new JButton("Set extruder parameters");
-	private JButton resetToFactoryButton = new JButton("Reset to factory settings");
+	private JButton extruderButton = new JButton("Edit extruder parameters");
+	private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
 	private static final String[]  endstopInversionChoices = {
 		"No endstops installed",
 		"Inverted (Default; H21LOB-based enstops)",
