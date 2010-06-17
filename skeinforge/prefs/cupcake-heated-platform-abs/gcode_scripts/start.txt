@@ -1,3 +1,4 @@
+(Cupcake ABS with heated build platform skeinforge profile)
 (beginning of start.txt)
 M104 S220 T0 (Extruder Temperature to 220 Celsius)
 M109 S110 T0 (Heated Platform Temperature to 110 Celsius)
