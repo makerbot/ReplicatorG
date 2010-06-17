@@ -12,6 +12,9 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -49,7 +52,7 @@ class FirmwareRetriever {
 		//System.err.println("PATH : "+ firmwareSourceURL.getPath());
 		UpdateStatus status;
 		synchronized(getClass()) {
-			status = updateURL(firmwareSourceURL,firmwareXml);
+			status = updateURL(firmwareSourceURL,firmwareXml,true);
 			if (status == UpdateStatus.NEW_UPDATES) {
 				// Pull down any new firmware that we haven't seen before.
 				retrieveNewFirmware();
@@ -59,7 +62,24 @@ class FirmwareRetriever {
 	}
 
 	protected UpdateStatus updateURL(URL url, File file) {
+		return updateURL(url,file,false);
+	}
+
+	protected UpdateStatus updateURL(URL url, File file, boolean checkParseableXML) {
 		long timestamp = file.lastModified();
+		if (checkParseableXML) {
+			// Check the xml file for parseability.  If it is unparseable, set the timestamp
+			// to 0 to force it to pull a new version from the server.
+			if (file.exists()) {
+				try {	
+					DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+					db.parse(file);
+				} catch (Exception e) {
+					Base.logger.severe("Existing "+file.getPath()+" is not parseable; forcing refresh from web.");
+					timestamp = 0;
+				}
+			}
+		}
 		try {
 			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 			connection.setIfModifiedSince(timestamp);
@@ -69,6 +89,10 @@ class FirmwareRetriever {
 				int rc = ((HttpURLConnection)connection).getResponseCode();
 				if (rc == HttpURLConnection.HTTP_NOT_MODIFIED) {
 					return UpdateStatus.NO_NEW_UPDATES;
+				}
+				if (rc != HttpURLConnection.HTTP_OK) {
+					// Do not attempt to pull down the file if the connection failed.
+					return UpdateStatus.NETWORK_UNAVAILABLE;
 				}
 			}
 			// Pull down the file.  The content should be an input stream.
