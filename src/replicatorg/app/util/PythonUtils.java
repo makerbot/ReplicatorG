@@ -21,6 +21,10 @@ import replicatorg.app.Base;
  *
  */
 public class PythonUtils {
+	/**
+	 * Class representing a Python version.  The members are directly accessable. 
+	 * @author phooky
+	 */
 	public static class Version implements Comparable<Version> {
 		public int major;
 		public int minor;
@@ -45,6 +49,10 @@ public class PythonUtils {
 	}
 	
 	static String pythonPath = null;
+	/**
+	 * Calculate the expected path to the Python installation.  The result is cached.
+	 * @return the path as a string
+	 */
 	public static String getPythonPath() {
 		if (pythonPath == null) {
 			// First, look in the system path.  This is the default solution for
@@ -117,6 +125,41 @@ public class PythonUtils {
 		}
 		return null;
 	}
+	
+	/**
+	 * Check for a successful TkInter installation.  This should be installed by default on Windows
+	 * and OS X, but needs to be explicitly installed on many Linux distributions.
+	 * @return true if TkInter is successfully installed, false otherwise
+	 */
+	public static boolean checkTkInter() {
+		if (getPythonPath() == null) { return false; }
+		ProcessBuilder pb = new ProcessBuilder(getPythonPath(),"-c","import Tkinter");
+		try {
+			Process p = pb.start();
+			int returnCode = p.waitFor();
+			if (returnCode != 0) { return false; }
+		} catch (Exception e) {
+			Base.logger.log(Level.SEVERE,"Error attempting to detect TkInter",e);
+		}
+		return true;
+	}
+
+	/**
+	 * Check for the existence of a running TkInter package.  Pops up an error dialog
+	 * if TkInter was not found or incorrectly installed.
+	 * @param parent A frame to parent the warning dialog 
+	 * @param procedureName A string describing the procedure that requires python
+	 * @return true if TkInter is successfully installed; false otherwise
+	 */
+	public static boolean interactiveCheckTkInter(final Frame parent, String procedureName) {
+		boolean hasTkInter = checkTkInter();
+		if (procedureName == null) { procedureName = "This operation"; }
+		if (!hasTkInter) {
+			String s = procedureName+" requires TkInter to be installed.  No valid TkInter install was found.";
+			notifyUser(parent,s);
+		}
+		return hasTkInter;
+	}
 
 	/**
 	 * Check for the existence and proper version of python.  Pops up an error dialog if
@@ -149,14 +192,26 @@ public class PythonUtils {
 		notifyUser(parent,procedureName+" requires the Python interpreter to be installed.");
 		return false;
 	}
-	
+
+	/**
+	 * Notify the user that there is a problem with their python install, and give them the option of visiting
+	 * the Python site for installation instructions.  On Linux, the user instead is given a notice to install
+	 * the "python" and "python-tk" packages.
+	 * @param parent The frame to parent the warning dialog
+	 * @param message A simple description of the problem with their install
+	 */
 	private static void notifyUser(final Frame parent, final String message) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				String s = "<html><p>"+message+"</p><p>Would you like to visit the Python download page now?</p></html>";
-				int rsp = JOptionPane.showConfirmDialog(parent, s, "Missing or incorrect Python interpreter detected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
-				if (rsp == JOptionPane.YES_OPTION) {
-					Base.openURL("http://python.org/download");
+				if (Base.isLinux()) {
+					String s = "<html><p>"+message+"</p><p>Make sure your system has the 'python' and 'python-tk' packages installed.</p></html>";
+					JOptionPane.showMessageDialog(parent, s, "Missing or incorrect Python interpreter detected", JOptionPane.ERROR_MESSAGE);
+				} else {
+					String s = "<html><p>"+message+"</p><p>Would you like to visit the Python download page now?</p></html>";
+					int rsp = JOptionPane.showConfirmDialog(parent, s, "Missing or incorrect Python interpreter detected", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+					if (rsp == JOptionPane.YES_OPTION) {
+						Base.openURL("http://python.org/download");
+					}
 				}
 			}
 		});

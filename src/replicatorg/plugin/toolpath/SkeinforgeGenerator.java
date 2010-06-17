@@ -173,6 +173,8 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 				new PythonUtils.Version(2,5,0),
 				new PythonUtils.Version(3,0,0));
 		if (!hasPython) { return false; }
+		boolean hasTkInter = PythonUtils.interactiveCheckTkInter(parent, "Generating gcode");
+		if (!hasTkInter) { return false; }
 		ConfigurationDialog cd = new ConfigurationDialog(parent);
 		double x = parent.getBounds().getCenterX();
 		double y = parent.getBounds().getCenterY();
