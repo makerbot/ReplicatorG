@@ -1452,7 +1452,8 @@ public class Sanguino3GDriver extends SerialDriver
 
 	private int read16FromToolEEPROM(int offset, int defaultValue) {
 		byte r[] = readFromToolEEPROM(offset,2);
-		int val = r[0]&0xff + ((r[1]&0xff)<<8);
+		int val = ((int)r[0])&0xff;
+		val += (((int)r[1])&0xff) << 8;
 		if (val == 0x0ffff) return defaultValue;
 		return val;
 	}
