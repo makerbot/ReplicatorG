@@ -113,7 +113,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp",false);
 		addCheckboxForPref(content,"Honor serial port selection in machines.xml","serial.use_machines",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
-		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",true);
+		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",false);
 
 		content.add(new JLabel("Firmware update URL: "),"split");
 		firmwareUpdateUrlField = new JTextField(34);

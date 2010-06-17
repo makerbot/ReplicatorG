@@ -617,7 +617,7 @@ public class MachineController {
 	 */
 	public boolean execute() {
 		// start simulator
-		if (simulator != null && Base.preferences.getBoolean("build.showSimulator",true))
+		if (simulator != null && Base.preferences.getBoolean("build.showSimulator",false))
 			simulator.createWindow();
 
 		// estimate build time.
