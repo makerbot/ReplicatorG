@@ -391,7 +391,6 @@ class InsetSkein:
 
 	def addInitializationToOutput( self ):
 		"Add initialization gcode to the output."
-		self.addFromUpperLowerFile( preferences.startFile ) # Add a start file if it exists.
 #		self.addLine( '(<creator> skeinforge June 8, 2009 </creator>)' ) # GCode formatted comment
 		self.addLine( 'M110' ) # GCode for compatibility with Nophead's code.
 		self.addLine( '(<extruderInitialization>)' ) # GCode formatted comment
@@ -470,7 +469,6 @@ class InsetSkein:
 		self.addLine( '(</extrusion>)' ) # GCode formatted comment
 #		self.addLine( 'M103' ) # Turn extruder motor off.
 #		self.addLine( 'M104 S0' ) # Turn extruder heater off.
-		self.addFromUpperLowerFile( preferences.endFile ) # Add an end file if it exists.
 
 	def addTextData( self, line ):
 		"Add the data from the text line."

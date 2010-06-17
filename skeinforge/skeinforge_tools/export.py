@@ -110,6 +110,12 @@ def getSelectedPlugin( exportPreferences ):
 			return gcodec.getModule( plugin.name, 'export_plugins', __file__ )
 	return None
 
+def getStartText():
+	return preferences.getFileInGivenPreferencesDirectory( os.path.dirname( __file__ ), preferences.startFile )
+
+def getEndText():
+	return preferences.getFileInGivenPreferencesDirectory( os.path.dirname( __file__ ), preferences.endFile )
+
 def writeOutput( fileName = '' ):
 	"""Export a gcode linear move file.  Chain export the gcode if it is not already exported.
 	If no fileName is specified, export the first unmodified gcode file in this folder."""
@@ -129,8 +135,13 @@ def writeOutput( fileName = '' ):
 		gcodeText = unpause.getUnpauseChainGcode( fileName, gcodeText )
 	if gcodeText == '':
 		return
+
+	# Now prepend the start file and append the end file
+	gcodeText = getStartText() + gcodeText + getEndText()
+
 	analyze.writeOutput( suffixFilename, gcodeText )
 	exportChainGcode = getExportGcode( gcodeText, exportPreferences )
+
 	replacableExportChainGcode = None
 	selectedPluginModule = getSelectedPlugin( exportPreferences )
 	if selectedPluginModule == None:
