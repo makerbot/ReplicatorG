@@ -60,7 +60,7 @@ public class PythonUtils {
 			String paths[] = System.getenv("PATH").split(File.pathSeparator);
 			for (String path : paths) {
 				File candidate = new File(path,"python");
-				if (candidate.exists() && candidate.canExecute()) {
+				if (candidate.exists()) {
 					try {
 						pythonPath = candidate.getCanonicalPath();
 						return pythonPath;
