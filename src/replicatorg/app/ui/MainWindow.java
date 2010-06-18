@@ -2285,7 +2285,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					machine.connect();
 				} catch (SerialException e) {
 					Base.logger.severe("Could not use/find serial port specified in machines.xml ("+us.getPortName()+").");
-					setMachine(null); // Revert to null state
+					return;
 				}
 			} else {
 				String lastPort = Base.preferences.get("serial.last_selected", null);
@@ -2297,7 +2297,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						Base.logger.log(Level.WARNING,
 								"Could not use most recently selected serial port ("+lastPort+").",
 								e);
-						setMachine(null); // Revert to null state
+						return;
 					}
 				}
 			}
