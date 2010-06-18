@@ -144,9 +144,9 @@ public class STLASCIIParser2 extends STLParser {
 	
 	private static boolean hasNonAscii(String s) {
 		for (char c : s.toCharArray()) {
-			if (c > 0x007f) { return false; }
+			if (c > 0x007f) { return true; }
 		}
-		return true;
+		return false;
 	}
 
 	private ObjectStats readObjectStats(StreamTokenizer t) throws IOException {
