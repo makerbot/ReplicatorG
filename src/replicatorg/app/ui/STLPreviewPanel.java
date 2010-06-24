@@ -33,6 +33,7 @@ import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Geometry;
 import javax.media.j3d.GeometryArray;
+import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.Material;
@@ -112,7 +113,7 @@ public class STLPreviewPanel extends JPanel {
 				resetView();
 			}
 		});
-		panel.add(resetViewButton,"growx,wrap");
+		panel.add(resetViewButton,"growx,spanx,wrap");
 
 		JButton sliceButton = createToolButton("Generate GCode","images/model-to-gcode.png");
 		sliceButton.addActionListener(new ActionListener() {
@@ -120,14 +121,31 @@ public class STLPreviewPanel extends JPanel {
 				mainWindow.runToolpathGenerator();
 			}
 		});
-		panel.add(sliceButton,"growx,wrap");
+		panel.add(sliceButton,"growx,spanx,wrap");
+
+		JButton alignButton = createToolButton("Align","images/align-with-floor.png");
+		alignButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				align();
+			}
+		});
+		panel.add(alignButton,"growx,growy");
+
+		JButton flipButton = createToolButton("Flip","images/flip-object.png");
+		flipButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				flipZ();
+			}
+		});
+		panel.add(flipButton,"growx,growy,wrap");
+
 		String instrStr = Base.isMacOS()?
 				"<html><body>Drag to rotate<br>Shift-drag to pan<br>Mouse wheel to zoom</body></html>":
 				"<html><body>Left button drag to rotate<br>Right button drag to pan<br>Mouse wheel to zoom</body></html>";
 		JLabel instructions = new JLabel(instrStr);
 		Font f = instructions.getFont();
 		instructions.setFont(f.deriveFont((float)f.getSize()*0.8f));
-		panel.add(instructions,"growx,gaptop 20,wrap");
+		panel.add(instructions,"growx,gaptop 20,spanx,wrap");
 		return panel;
 	}
 	
@@ -364,7 +382,31 @@ public class STLPreviewPanel extends JPanel {
 		return new Shape3D(grid,edges); 
 	}
 
-	private BoundingBox getBoundingBox(Shape3D shape) {
+	private BoundingBox getBoundingBox(Group group, Transform3D transformation) {
+		BoundingBox bb = new BoundingBox(new Point3d(Double.MAX_VALUE,Double.MAX_VALUE,Double.MAX_VALUE),
+				new Point3d(Double.MIN_VALUE,Double.MIN_VALUE,Double.MIN_VALUE));
+		transformation = new Transform3D(transformation);
+		if (group instanceof TransformGroup) {
+			Transform3D nextTransform = new Transform3D();
+			((TransformGroup)group).getTransform(nextTransform);
+			transformation.mul(nextTransform);
+		}
+		for (int i = 0; i < group.numChildren(); i++) {
+			Node n = group.getChild(i);
+			if (n instanceof Shape3D) {
+				bb.combine(getBoundingBox((Shape3D)n, transformation));
+			} else if (n instanceof Group) {
+				bb.combine(getBoundingBox((Group)n,transformation));
+			}
+		}
+		return bb;
+	}
+	
+	private BoundingBox getBoundingBox(Group group) {
+		return getBoundingBox(group, new Transform3D());
+	}
+	
+	private BoundingBox getBoundingBox(Shape3D shape, Transform3D transformation) {
 		BoundingBox bb = null;
 		Enumeration<?> geometries = shape.getAllGeometries();
 		while (geometries.hasMoreElements()) {
@@ -374,6 +416,7 @@ public class STLPreviewPanel extends JPanel {
 				Point3d p = new Point3d();
 				for (int i = 0; i < ga.getVertexCount(); i++) {
 					ga.getCoordinate(i,p);
+					transformation.transform(p);
 					if (bb == null) { bb = new BoundingBox(p,p); }
 					bb.combine(p);
 				}
@@ -428,7 +471,12 @@ public class STLPreviewPanel extends JPanel {
 		edgeClone.setAppearance(edges);
 
 		BranchGroup wrapper = new BranchGroup();
-		wrapper.addChild(objectSwitch);
+
+		shapeTransform = new TransformGroup();
+		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		wrapper.addChild(shapeTransform);
+
+		shapeTransform.addChild(objectSwitch);
 		wrapper.setCapability(BranchGroup.ALLOW_DETACH);
 		wrapper.compile();
 		return wrapper;
@@ -436,6 +484,37 @@ public class STLPreviewPanel extends JPanel {
 
 	BranchGroup sceneGroup;
 	BranchGroup objectBranch;
+	
+	public void center() {
+		BoundingBox bb = getBoundingBox(shapeTransform);
+		Transform3D translate = new Transform3D();
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		bb.getLower(lower);
+		bb.getUpper(upper);
+		double zoff = -lower.z;
+		double xoff = -(upper.x + lower.x)/2.0d;
+		double yoff = -(upper.y + lower.y)/2.0d;
+		translate.setZero();
+		translate.setTranslation(new Vector3d(xoff,yoff,zoff));
+		Transform3D old = new Transform3D();
+		shapeTransform.getTransform(old);
+		old.add(translate);
+		shapeTransform.setTransform(old);
+	}
+	
+	public void align() {
+		center();
+	}
+	
+	public void flipZ() {
+		Transform3D flipZ = new Transform3D();
+		Transform3D old = new Transform3D();
+		shapeTransform.getTransform(old);
+		flipZ.rotY(Math.PI);
+		flipZ.mul(old); //old.mul(flipZ);
+		shapeTransform.setTransform(flipZ);
+	}
 	
 	public BranchGroup createSTLScene() {
 		// Create the root of the branch graph
@@ -445,13 +524,12 @@ public class STLPreviewPanel extends JPanel {
 		// identity. Enable the TRANSFORM_WRITE capability so that
 		// our behavior code can modify it at run time. Add it to
 		// the root of the subgraph.
-		TransformGroup objTrans = new TransformGroup();
-		objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		TransformGroup scaleTransform = new TransformGroup();
 		// All sizes are represented in mm.  We scale this down so that 1mm == 0.01 units.
 		Transform3D scaleTf = new Transform3D();
 		scaleTf.setScale(0.01d);
-		objTrans.setTransform(scaleTf);
-		objRoot.addChild(objTrans);
+		scaleTransform.setTransform(scaleTf);
+		objRoot.addChild(scaleTransform);
 
 		sceneGroup = new BranchGroup();
 		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
@@ -463,7 +541,7 @@ public class STLPreviewPanel extends JPanel {
 		sceneGroup.addChild(makeBackground());
 		sceneGroup.addChild(makeBaseGrid());
 
-		objTrans.addChild(sceneGroup);
+		scaleTransform.addChild(sceneGroup);
 
 		// Create a new Behavior object that will perform the
 		// desired operation on the specified transform and add
