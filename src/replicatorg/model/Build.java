@@ -27,11 +27,13 @@ package replicatorg.model;
 
 import java.awt.FileDialog;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
+import replicatorg.model.j3d.StlAsciiWriter;
 
 /**
  * Stores information about files in the current sketch
@@ -129,16 +131,7 @@ public class Build {
 	public void loadModel() {
 		final File modelFile = new File(folder, name + ".stl");
 		if (modelFile.exists()) {
-			model = new BuildModel() {
-				public BuildElement.Type getType() {
-					return BuildElement.Type.MODEL;
-				}
-				public String getSTLPath() {
-					try {
-						return modelFile.getCanonicalPath();
-					} catch (IOException ioe) { return null; }
-				}
-			};
+			model = new BuildModel(modelFile);
 		}		
 	}
 	
@@ -166,6 +159,13 @@ public class Build {
 		if (mainFilename == null) {
 			return saveAs();
 		}
+		// FIXME: remove below
+		// Test STL writing code
+		FileOutputStream ostream = new FileOutputStream("/home/phooky/test_out.stl");
+		StlAsciiWriter saw = new StlAsciiWriter(ostream);
+		saw.writeShape(model.getShape(), model.getTransform());
+		ostream.close();
+		
 		if (!code.modified) { return true; }
 		code.program = editor.getText();
 		if (isReadOnly()) {

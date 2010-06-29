@@ -218,7 +218,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 	}
 	
 	public BuildCode generateToolpath() {
-		String path = model.getSTLPath();
+		String path = model.getPath();
 		
 		List<String> arguments = new LinkedList<String>();
 		// The -u makes python output unbuffered.  Oh joyous day.

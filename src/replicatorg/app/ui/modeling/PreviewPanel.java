@@ -16,9 +16,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 
@@ -54,16 +51,10 @@ import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
 import net.miginfocom.swing.MigLayout;
-
-import org.j3d.renderer.java3d.loaders.STLLoader;
-
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
 import replicatorg.model.BuildModel;
 
-import com.sun.j3d.loaders.IncorrectFormatException;
-import com.sun.j3d.loaders.ParsingErrorException;
-import com.sun.j3d.loaders.Scene;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**
@@ -87,11 +78,11 @@ public class PreviewPanel extends JPanel {
 	}
 
 	private void setScene(BuildModel model) {
-		Base.logger.info(model.getSTLPath());
+		Base.logger.info(model.getPath());
 		if (objectBranch != null) {
 			sceneGroup.removeChild(objectBranch);
 		}
-		objectBranch = makeShape(model.getSTLPath());
+		objectBranch = makeShape(model);
 		sceneGroup.addChild(objectBranch);
 	}
 	
@@ -447,26 +438,9 @@ public class PreviewPanel extends JPanel {
 		return bb;
 	}
 
-	private BranchGroup makeShape(String path) {
-		STLLoader loader = new STLLoader();
-		Scene scene = null;
-		try {
-			scene = loader.load((new File(path)).toURI().toURL());
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IncorrectFormatException e) {
-			e.printStackTrace();
-		} catch (ParsingErrorException e) {
-			e.printStackTrace();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		if (scene == null) { return null; }
-
-		BranchGroup sourceGroup = scene.getSceneGroup();
-
+	private BranchGroup makeShape(BuildModel model) {
 		objectSwitch = new Switch();
-		Shape3D originalShape = (Shape3D)sourceGroup.getChild(0);
+		Shape3D originalShape = model.getShape();
 
 		Shape3D shape = (Shape3D)originalShape.cloneTree();
 		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
@@ -514,7 +488,7 @@ public class PreviewPanel extends JPanel {
 		Transform3D old = new Transform3D();
 		shapeTransform.getTransform(old);
 		old.add(translate);
-		shapeTransform.setTransform(old);		
+		shapeTransform.setTransform(old);
 	}
 	
 	/**

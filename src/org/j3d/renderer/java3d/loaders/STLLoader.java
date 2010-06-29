@@ -13,6 +13,7 @@ package org.j3d.renderer.java3d.loaders;
 
 // Local imports
 import java.awt.Component;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -82,7 +83,7 @@ public class STLLoader extends LoaderBase
     {
         try
         {
-            return load( new URL( fileName ) );
+            return load( new File(fileName).toURI().toURL() );
         }
         catch( MalformedURLException e )
         {
