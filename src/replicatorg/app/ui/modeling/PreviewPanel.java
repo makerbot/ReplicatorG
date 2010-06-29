@@ -1,7 +1,7 @@
 /**
  * 
  */
-package replicatorg.app.ui;
+package replicatorg.app.ui.modeling;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -58,6 +58,7 @@ import net.miginfocom.swing.MigLayout;
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
 import replicatorg.app.Base;
+import replicatorg.app.ui.MainWindow;
 import replicatorg.model.BuildModel;
 
 import com.sun.j3d.loaders.IncorrectFormatException;
@@ -69,7 +70,7 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
  * @author phooky
  *
  */
-public class STLPreviewPanel extends JPanel {
+public class PreviewPanel extends JPanel {
 
 	BoundingSphere bounds =
 		new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
@@ -157,7 +158,7 @@ public class STLPreviewPanel extends JPanel {
 		TRANSLATE_OBJECT
 	};
 
-	public STLPreviewPanel(final MainWindow mainWindow) {
+	public PreviewPanel(final MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
 		//setLayout(new MigLayout()); 
 		setLayout(new MigLayout("fill,ins 0,gap 0"));
@@ -548,7 +549,7 @@ public class STLPreviewPanel extends JPanel {
 		Transform3D old = new Transform3D();
 		shapeTransform.getTransform(old);
 		flipZ.rotY(Math.PI);
-		flipZ.mul(old); //old.mul(flipZ);
+		flipZ.mul(old);
 		shapeTransform.setTransform(flipZ);
 	}
 	

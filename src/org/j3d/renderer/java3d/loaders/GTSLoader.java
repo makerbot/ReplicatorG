@@ -9,11 +9,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.Reader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
-
-import org.j3d.loaders.stl.STLFileReader;
 
 import replicatorg.app.Base;
 
