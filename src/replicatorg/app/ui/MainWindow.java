@@ -518,12 +518,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	private void reloadSerialMenu() {
 		if (serialMenu == null) return;
 		serialMenu.removeAll();
-		if (machine == null || !(machine.driver instanceof UsesSerial))  {
+		if (machine == null) {
+			JMenuItem item = new JMenuItem("No machine selected.");
+			item.setEnabled(false);
+			serialMenu.add(item);
+			return;
+		} else if (!(machine.driver instanceof UsesSerial))  {
 			JMenuItem item = new JMenuItem("Currently selected machine does not use a serial port.");
 			item.setEnabled(false);
 			serialMenu.add(item);
 			return;
 		}
+		
 		String currentName = null;
 		UsesSerial us = (UsesSerial)machine.driver;
 		if (us.getSerial() != null) {
@@ -543,12 +549,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 							try {
 								UsesSerial us = (UsesSerial)machine.driver;
 								if (us != null) synchronized(us) {
-									if (us.getSerial() == null ||
-											us.getSerial().getName() != portName) {
 										us.setSerial(new Serial(portName, us));
 										Base.preferences.put("serial.last_selected", portName);
 										machine.reset();
-									}
 								}
 							} catch (SerialException se) {
 								se.printStackTrace();
