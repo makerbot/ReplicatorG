@@ -148,7 +148,15 @@ public class STLPreviewPanel extends JPanel {
 		panel.add(instructions,"growx,gaptop 20,spanx,wrap");
 		return panel;
 	}
-	
+
+	enum DragMode {
+		NONE,
+		ROTATE_VIEW,
+		TRANSLATE_VIEW,
+		ROTATE_OBJECT,
+		TRANSLATE_OBJECT
+	};
+
 	public STLPreviewPanel(final MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
 		//setLayout(new MigLayout()); 
@@ -164,30 +172,43 @@ public class STLPreviewPanel extends JPanel {
 		class MouseActivityListener implements MouseMotionListener, MouseListener, MouseWheelListener {
 			Point startPoint = null;
 			int button = 0;
-			
+						
 			public void mouseDragged(MouseEvent e) {
 				if (startPoint == null) return;
 				Point p = e.getPoint();
-				boolean rotate;
-				boolean translate;
+				DragMode mode = DragMode.ROTATE_VIEW; 
 				if (Base.isMacOS()) {
-					rotate = button == MouseEvent.BUTTON1 && !e.isShiftDown();
-					translate = button == MouseEvent.BUTTON1 && e.isShiftDown();
+					if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
+					else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_VIEW; }
 				} else {
-					rotate = button == MouseEvent.BUTTON1;
-					translate = button == MouseEvent.BUTTON3;
+					if (e.isAltDown()) {
+						if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_OBJECT; }
+						else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_OBJECT; }
+					} else {
+						if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_VIEW; }
+						else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_VIEW; }
+					}
 				}
-				if (rotate) {
+				double xd = (double)(p.x - startPoint.x);
+				double yd = (double)(p.y - startPoint.y);
+				switch (mode) {
+				case ROTATE_VIEW:
 					// Rotate view
-					turntableAngle += 0.05 * (double)(p.x - startPoint.x);
-					elevationAngle -= 0.05 * (double)(p.y - startPoint.y);
-				} else if (translate) {
+					turntableAngle += 0.05 * xd;
+					elevationAngle -= 0.05 * yd;
+					updateVP();
+					break;
+				case TRANSLATE_VIEW:
 					// Pan view
-					cameraTranslation.x += -0.05 * (double)(p.x - startPoint.x);
-					cameraTranslation.y += 0.05 * (double)(p.y - startPoint.y);
+					cameraTranslation.x += -0.05 * xd;
+					cameraTranslation.y += 0.05 * yd;
+					updateVP();
+					break;
+				case TRANSLATE_OBJECT:
+					translateObject(0.05*xd,0d,-0.05*yd);
+					break;
 				}
 				startPoint = p;
-				updateVP();
 			}
 			public void mouseMoved(MouseEvent e) {
 			}
@@ -485,9 +506,21 @@ public class STLPreviewPanel extends JPanel {
 	BranchGroup sceneGroup;
 	BranchGroup objectBranch;
 	
+	public void translateObject(double x, double y, double z) {
+		Transform3D translate = new Transform3D();
+		translate.setZero();
+		translate.setTranslation(new Vector3d(x,y,z));
+		Transform3D old = new Transform3D();
+		shapeTransform.getTransform(old);
+		old.add(translate);
+		shapeTransform.setTransform(old);		
+	}
+	
+	/**
+	 * Center the object tree and raise its lowest point to Z=0.
+	 */
 	public void center() {
 		BoundingBox bb = getBoundingBox(shapeTransform);
-		Transform3D translate = new Transform3D();
 		Point3d lower = new Point3d();
 		Point3d upper = new Point3d();
 		bb.getLower(lower);
@@ -495,18 +528,21 @@ public class STLPreviewPanel extends JPanel {
 		double zoff = -lower.z;
 		double xoff = -(upper.x + lower.x)/2.0d;
 		double yoff = -(upper.y + lower.y)/2.0d;
-		translate.setZero();
-		translate.setTranslation(new Vector3d(xoff,yoff,zoff));
-		Transform3D old = new Transform3D();
-		shapeTransform.getTransform(old);
-		old.add(translate);
-		shapeTransform.setTransform(old);
+		translateObject(xoff, yoff, zoff);
 	}
 	
+	/**
+	 * Center the object and flatten the bottommost poly.  (A more thorough version would
+	 * be able to correctly center a tripod or other spiky object.)
+	 */
 	public void align() {
 		center();
 	}
 	
+	/**
+	 * Flip the object tree around the Z axis.  This is particularly useful when
+	 * breaking a print into two parts.
+	 */
 	public void flipZ() {
 		Transform3D flipZ = new Transform3D();
 		Transform3D old = new Transform3D();

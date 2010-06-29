@@ -1942,6 +1942,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			setCode(build.getCode());
 			setModel(build.getModel());
 			header.setBuild(build);
+			buttons.updateFromMachine(machine);
 			if (null != path) {
 				handleOpenPath = path;
 				mruList.update(path);
