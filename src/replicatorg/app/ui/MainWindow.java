@@ -112,6 +112,7 @@ import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
 import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
+import replicatorg.app.ui.modeling.PreviewPanel;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.SDCardCapture;
@@ -200,7 +201,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public Build build;
 
 	public JEditTextArea textarea;
-	public STLPreviewPanel stlPanel;
+	public PreviewPanel previewPanel;
 
 	public SimulationThread simulationThread;
 
@@ -236,12 +237,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public Build getBuild() { return build; }
 	
-	private STLPreviewPanel getStlPanel() {
-		if (stlPanel == null) {
-			stlPanel = new STLPreviewPanel(this);
-			cardPanel.add(stlPanel,MODEL_TAB_KEY);
+	private PreviewPanel getPreviewPanel() {
+		if (previewPanel == null) {
+			previewPanel = new PreviewPanel(this);
+			cardPanel.add(previewPanel,MODEL_TAB_KEY);
 		}
-		return stlPanel;
+		return previewPanel;
 	}
 	
 	private MRUList mruList;
@@ -1257,7 +1258,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public void setModel(BuildModel model) {
 		if (model != null) {
-			getStlPanel().setModel(model);
+			getPreviewPanel().setModel(model);
 		}
 	}
 	
