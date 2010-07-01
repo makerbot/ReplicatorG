@@ -36,7 +36,7 @@ import replicatorg.app.ui.MainWindow;
 import replicatorg.model.j3d.StlAsciiWriter;
 
 /**
- * Stores information about files in the current sketch
+ * Stores information about files in the current build
  */
 public class Build {
 	
@@ -161,10 +161,10 @@ public class Build {
 		}
 		// FIXME: remove below
 		// Test STL writing code
-		FileOutputStream ostream = new FileOutputStream("/home/phooky/test_out.stl");
-		StlAsciiWriter saw = new StlAsciiWriter(ostream);
-		saw.writeShape(model.getShape(), model.getTransform());
-		ostream.close();
+		//FileOutputStream ostream = new FileOutputStream("/home/phooky/test_out.stl");
+		//StlAsciiWriter saw = new StlAsciiWriter(ostream);
+		//saw.writeShape(model.getShape(), model.getTransform());
+		//ostream.close();
 		
 		if (!code.modified) { return true; }
 		code.program = editor.getText();
