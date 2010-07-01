@@ -1,4 +1,6 @@
 0018 ReplicatorG
+New features:
+* Tabs indicate object modification status
 Contributions:
 * Mikko Sivulainen (paeaetech): better estimation for SD uploads
 * Mikko Sivulainen (paeaetech): improved serial selection handling

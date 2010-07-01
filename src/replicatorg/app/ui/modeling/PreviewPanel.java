@@ -482,6 +482,8 @@ public class PreviewPanel extends JPanel {
 	BranchGroup objectBranch;
 	
 	public void translateObject(double x, double y, double z) {
+		// Skip identity translations
+		if (x == 0.0 && y == 0.0 && z == 0.0) { return; }
 		Transform3D translate = new Transform3D();
 		translate.setZero();
 		translate.setTranslation(new Vector3d(x,y,z));
@@ -489,6 +491,7 @@ public class PreviewPanel extends JPanel {
 		shapeTransform.getTransform(old);
 		old.add(translate);
 		shapeTransform.setTransform(old);
+		model.setModified(true);
 	}
 	
 	/**
@@ -525,6 +528,7 @@ public class PreviewPanel extends JPanel {
 		flipZ.rotY(Math.PI);
 		flipZ.mul(old);
 		shapeTransform.setTransform(flipZ);
+		model.setModified(true);
 	}
 	
 	public BranchGroup createSTLScene() {

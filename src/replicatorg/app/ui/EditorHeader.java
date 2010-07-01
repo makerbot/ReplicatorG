@@ -125,10 +125,11 @@ public class EditorHeader extends BGPanel implements ActionListener {
 		}
 
 		public void buildElementUpdate(BuildElement element) {
-			setText(element.getType().getDisplayString());
 			if (element.isModified()) {
-				setFont(getFont().deriveFont(Font.BOLD | Font.ITALIC));
+				setText(element.getType().getDisplayString()+"*");
+				setFont(getFont().deriveFont(Font.BOLD));
 			} else {
+				setText(element.getType().getDisplayString());
 				setFont(getFont().deriveFont(Font.PLAIN));
 			}
 			repaint();
