@@ -22,8 +22,11 @@ public class StlAsciiWriter extends ModelWriter {
 			Base.logger.info("Couldn't find valid geometry during save.");
 			return;
 		}
-		String name = shape.getName();
-		if (name == null) { name = "Default"; }
+		// Oops-- this is part of the v1.4 API.  Until we ship a new J3D w/ the 
+		// Mac release, fall back to a default.
+		// String name = shape.getName();
+		// if (name == null) { name = "Default"; }
+		String name = "Default";
 		
 		w.printf("solid %s\n", name);
 		int faces = g.getVertexCount()/3;
