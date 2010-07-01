@@ -27,13 +27,12 @@ package replicatorg.model;
 
 import java.awt.FileDialog;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+
 import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
-import replicatorg.model.j3d.StlAsciiWriter;
 
 /**
  * Stores information about files in the current build
@@ -94,7 +93,7 @@ public class Build {
 			folder = new File("~");
 			code = new BuildCode(null,null);
 			openedElement = code;
-			code.modified = true;
+			code.setModified(true);
 		} else {
 			File mainFile = new File(path);
 			mainFilename = mainFile.getName();
@@ -131,7 +130,7 @@ public class Build {
 	public void loadModel() {
 		final File modelFile = new File(folder, name + ".stl");
 		if (modelFile.exists()) {
-			model = new BuildModel(modelFile);
+			model = new BuildModel(this, modelFile);
 		}		
 	}
 	
@@ -139,12 +138,12 @@ public class Build {
 	 * Sets the modified value for the code in the frontmost tab.
 	 */
 	public void setModified(boolean state) {
-		code.modified = state;
+		code.setModified(state);
 		calcModified();
 	}
 
 	public void calcModified() {
-		modified = code.modified;
+		modified = code.isModified();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				// editor.getHeader().repaint(); TODO: fix
@@ -166,7 +165,7 @@ public class Build {
 		//saw.writeShape(model.getShape(), model.getTransform());
 		//ostream.close();
 		
-		if (!code.modified) { return true; }
+		if (!code.isModified()) { return true; }
 		code.program = editor.getText();
 		if (isReadOnly()) {
 			// if the files are read-only, need to first do a "save as".
@@ -215,7 +214,7 @@ public class Build {
 
 		// grab the contents of the current tab before saving
 		// first get the contents of the editor text area
-		if (code.modified) {
+		if (code.isModified()) {
 			code.program = editor.getText();
 		}
 
@@ -317,7 +316,7 @@ public class Build {
 	 */
 	public boolean isReadOnly() {
 		// check to see if each modified code file can be written to
-		return (code.modified && 
+		return (code.isModified() && 
 				!code.file.canWrite() &&
 				code.file.exists());
 	}

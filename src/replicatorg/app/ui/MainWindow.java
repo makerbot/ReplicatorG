@@ -1247,7 +1247,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			codeName = "Untitled";
 		}
 		// if modified, add the li'l glyph next to the name
-		codeName = codeName + (code.modified ? " \u00A7" : "  ");
+		codeName = codeName + (code.isModified() ? " \u00A7" : "  ");
 
 		// tabbedPane.setTitleAt(0, codeName); // TODO: fix
 		

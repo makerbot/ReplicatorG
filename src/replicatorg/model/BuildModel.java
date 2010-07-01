@@ -2,6 +2,7 @@ package replicatorg.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.logging.Level;
 
 import javax.media.j3d.Shape3D;
@@ -13,13 +14,13 @@ import replicatorg.app.Base;
 
 import com.sun.j3d.loaders.Scene;
 
-public class BuildModel implements BuildElement {
+public class BuildModel extends BuildElement {
 
 	private File file;
 	private Transform3D transform = new Transform3D();
 	private Shape3D shape = null;
 	
-	BuildModel(File file) {
+	BuildModel(Build build, File file) {
 		this.file = file;
 	}		
 
@@ -55,5 +56,11 @@ public class BuildModel implements BuildElement {
 	public Transform3D getTransform() { return transform; }
 	public void setTransform(Transform3D t) {
 		transform.set(t);
+	}
+
+	@Override
+	void writeToStream(OutputStream ostream) {
+		// TODO Auto-generated method stub
+		
 	}
 }
