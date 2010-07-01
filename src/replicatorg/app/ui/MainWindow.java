@@ -124,6 +124,7 @@ import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
+import replicatorg.model.BuildElement;
 import replicatorg.model.BuildModel;
 import replicatorg.model.JEditTextAreaSource;
 import replicatorg.plugin.toolpath.SkeinforgeGenerator;
@@ -2314,10 +2315,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public void stateChanged(ChangeEvent e) {
 		// We get a change event when another tab is selected.
-		if (header.getSelectedTab() == EditorHeader.Tab.MODEL) {
-			((CardLayout)cardPanel.getLayout()).show(cardPanel, MODEL_TAB_KEY);
+		CardLayout cl = (CardLayout)cardPanel.getLayout();
+		if (header.getSelectedElement() != null &&
+				header.getSelectedElement().getType() == BuildElement.Type.MODEL ) {
+			cl.show(cardPanel, MODEL_TAB_KEY);
 		} else {
-			((CardLayout)cardPanel.getLayout()).show(cardPanel, GCODE_TAB_KEY);
+			cl.show(cardPanel, GCODE_TAB_KEY);
 		}
 	}
 

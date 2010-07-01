@@ -51,19 +51,14 @@ import replicatorg.model.BuildElement;
  * Sketch tabs at the top of the editor window.
  */
 public class EditorHeader extends BGPanel implements ActionListener {
-	public enum Tab {
-		MODEL,
-		GCODE
-	};
-	
 	private ButtonGroup tabGroup = new ButtonGroup();
 
-	public Tab getSelectedTab() {
+	public BuildElement getSelectedElement() {
 		// Enumeration isn't iterable yet?
 		Enumeration<AbstractButton> e = tabGroup.getElements();
 		while (e.hasMoreElements()) {
 			TabButton tb = (TabButton)e.nextElement();
-			if (tb.isSelected()) { return tb.getTab(); }
+			if (tb.isSelected()) { return tb.getBuildElement(); }
 		}
 		return null;
 	}
@@ -114,13 +109,13 @@ public class EditorHeader extends BGPanel implements ActionListener {
 
 
 	private class TabButton extends JToggleButton {
-		final Tab which;
+		final BuildElement element;
 		
-		public Tab getTab() { return which; }
+		public BuildElement getBuildElement() { return element; }
 		
-		public TabButton(String text, Tab which) {
-			super(text);
-			this.which = which;
+		public TabButton(BuildElement element) {
+			super(element.getType().getDisplayString());
+			this.element = element;
 			setUI(new TabButtonUI());
 			setBorder(new EmptyBorder(6,8,8,10));
 			tabGroup.add(this);
@@ -162,35 +157,23 @@ public class EditorHeader extends BGPanel implements ActionListener {
 		}
 		validate();
 	}
+
+	private void addTabForElement(Build build, BuildElement element) {
+		TabButton tb = new TabButton(element);
+		add(tb);
+		if (build.getOpenedElement() == element) { tb.doClick(); } 
+	}
 	
 	void setBuild(Build build) {
 		removeTabs();
-		Tab initialSelection = Tab.GCODE;
-		if (build.getOpenedElement() != null) {
-			if (build.getOpenedElement().getType() == BuildElement.Type.MODEL) {
-				initialSelection = Tab.MODEL;
-			}
-		}
 		if (build.getModel() != null) {
-			TabButton tb = new TabButton("model",Tab.MODEL);
-			add(tb);
-			if (initialSelection == Tab.MODEL) { tb.doClick(); } 
+			addTabForElement(build,build.getModel());
 		}
 		if (build.getCode() != null) {
-			TabButton tb = new TabButton("gcode",Tab.GCODE);
-			add(tb);
-			if (initialSelection == Tab.GCODE) { tb.doClick(); } 
+			addTabForElement(build,build.getCode());
 		}
 		titleLabel.setText(build.getName());
 		validate();
-		repaint();
-	}
-	
-	/**
-	 * Called when a new sketch is opened.
-	 */
-	public void rebuild() {
-		// System.out.println("rebuilding editor header");
 		repaint();
 	}
 
