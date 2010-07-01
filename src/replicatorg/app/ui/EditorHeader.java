@@ -26,6 +26,7 @@
 package replicatorg.app.ui;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -108,18 +109,29 @@ public class EditorHeader extends BGPanel implements ActionListener {
 	}
 
 
-	private class TabButton extends JToggleButton {
+	private class TabButton extends JToggleButton implements BuildElement.Listener {
 		final BuildElement element;
 		
 		public BuildElement getBuildElement() { return element; }
 		
 		public TabButton(BuildElement element) {
-			super(element.getType().getDisplayString());
+			buildElementUpdate(element); // set initial string
 			this.element = element;
 			setUI(new TabButtonUI());
 			setBorder(new EmptyBorder(6,8,8,10));
 			tabGroup.add(this);
 			addActionListener(EditorHeader.this);
+			element.addListener(this);
+		}
+
+		public void buildElementUpdate(BuildElement element) {
+			setText(element.getType().getDisplayString());
+			if (element.isModified()) {
+				setFont(getFont().deriveFont(Font.BOLD | Font.ITALIC));
+			} else {
+				setFont(getFont().deriveFont(Font.PLAIN));
+			}
+			repaint();
 		}
 	}
 	

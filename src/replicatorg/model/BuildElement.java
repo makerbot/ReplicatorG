@@ -1,8 +1,42 @@
 package replicatorg.model;
 
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 public abstract class BuildElement {
+	/** 
+	 * Classes which implement BuildElement.Listener can listen to
+	 * a build element and recieve updates when it changes.
+	 */
+	public interface Listener {
+		/**
+		 * When a build element is modified, it will call buildElementUpdate
+		 * on any listeners it may have.
+		 * @param element The build element which has been updated.
+		 */
+		public void buildElementUpdate(BuildElement element);
+	}
+	
+	private List<Listener> listeners = new LinkedList<Listener>();
+	
+	/**
+	 * Add a listener to this build element.
+	 * @param l The object that wishes to recieve updates.
+	 */
+	public void addListener(Listener l) {
+		listeners.add(l);
+	}
+	
+	/**
+	 * Tell all our listeners that we've been updated.
+	 */
+	protected void emitUpdate() {
+		for (Listener l : listeners) {
+			l.buildElementUpdate(this);
+		}
+	}
+	
 	protected Build parent = null;
 		
 	public enum Type {
@@ -29,11 +63,14 @@ public abstract class BuildElement {
 
 	/**
 	 * Mark this element as modified.  All changes made in an editing window
-	 * should mark the underlying element as modified.
-	 * @param modified
+	 * should mark the underlying element as modified.  If the state changes,
+	 * an update event will be emitted.
+	 * @param modified Whether the element is now modified or not.
 	 */
 	public void setModified(boolean modified) {
+		if (this.modified == modified) return;
 		this.modified = modified;
+		emitUpdate();
 	}
 	
 	/**

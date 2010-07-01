@@ -1246,15 +1246,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		textarea.requestFocus(); // get the caret blinking
 
-		String codeName = code.name;
-		if (codeName == null) {
-			codeName = "Untitled";
-		}
-		// if modified, add the li'l glyph next to the name
-		codeName = codeName + (code.isModified() ? " \u00A7" : "  ");
-
-		// tabbedPane.setTitleAt(0, codeName); // TODO: fix
-		
 		this.undo = code.undo;
 		undoAction.updateUndoState();
 		redoAction.updateRedoState();
