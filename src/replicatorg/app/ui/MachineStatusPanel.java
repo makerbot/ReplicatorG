@@ -182,11 +182,16 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
+		double remaining;
 		double proportion = (double)event.getLines()/(double)event.getTotalLines();
-		//if we are uploading to sd card, don't use estimated time as it is way off.
-		double remaining = event.getEstimated() * (1.0 - proportion);
+
 		if (machine.getMachineState().getTarget() == MachineState.Target.SD_UPLOAD) {
-			remaining = (event.getElapsed()/(double)event.getLines())*event.getTotalLines();
+			if (event.getLines() == 0) { 
+				remaining = 0; // avoid NaN
+			}
+			remaining = event.getElapsed() * ((1.0/proportion)-1.0);
+		} else {
+			remaining = event.getEstimated() * (1.0 - proportion);
 		}
 			
 		final String s = String.format(

@@ -1,3 +1,7 @@
+0018 ReplicatorG
+Contributions:
+* Mikko Sivulainen (paeaetech): better estimation for SD uploads
+
 0017 ReplicatorG
 * New features:
 ** STL files can now be directly loaded and previewed
