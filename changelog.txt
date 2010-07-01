@@ -1,6 +1,8 @@
 0018 ReplicatorG
 Contributions:
 * Mikko Sivulainen (paeaetech): better estimation for SD uploads
+* Mikko Sivulainen (paeaetech): improved serial selection handling
+
 
 0017 ReplicatorG
 * New features:
