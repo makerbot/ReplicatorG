@@ -925,7 +925,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				textarea.cut();
-				build.setModified(true);
+				build.getCode().setModified(true);
 			}
 		});
 		menu.add(item);
@@ -942,7 +942,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				textarea.paste();
-				build.setModified(true);
+				build.getCode().setModified(true);
 			}
 		});
 		menu.add(item);
@@ -1038,7 +1038,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				undoItem.setText(undo.getUndoPresentationName());
 				putValue(Action.NAME, undo.getUndoPresentationName());
 				if (build != null) {
-					build.setModified(true); // 0107
+					build.getCode().setModified(true);
 				}
 			} else {
 				this.setEnabled(false);
@@ -1046,7 +1046,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				undoItem.setText("Undo");
 				putValue(Action.NAME, "Undo");
 				if (build != null) {
-					build.setModified(false); // 0107
+					build.getCode().setModified(false);
 				}
 			}
 		}
@@ -1704,7 +1704,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	protected void checkModified(int checkModifiedMode) {
 		this.checkModifiedMode = checkModifiedMode;
-		if (build == null || !build.modified) {
+		if (build == null || !build.hasModifiedElements()) {
 			checkModified2();
 			return;
 		}
@@ -2194,7 +2194,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			cutItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.cut();
-					build.setModified(true);
+					build.getCode().setModified(true);
 				}
 			});
 			this.add(cutItem);
@@ -2211,7 +2211,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.paste();
-					build.setModified(true);
+					build.getCode().setModified(true);
 				}
 			});
 			this.add(item);

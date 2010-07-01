@@ -51,11 +51,6 @@ public class Build {
 	String mainFilename;
 
 	/**
-	 * true if any of the files have been modified.
-	 */
-	public boolean modified;
-
-	/**
 	 * The folder which the base file is located in.
 	 */
 	public File folder;
@@ -135,23 +130,6 @@ public class Build {
 	}
 	
 	/**
-	 * Sets the modified value for the code in the frontmost tab.
-	 */
-	public void setModified(boolean state) {
-		code.setModified(state);
-		calcModified();
-	}
-
-	public void calcModified() {
-		modified = code.isModified();
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				// editor.getHeader().repaint(); TODO: fix
-			}
-		});
-	}
-
-	/**
 	 * Save all code in the current sketch.
 	 */
 	public boolean save() throws IOException {
@@ -178,7 +156,6 @@ public class Build {
 				return false;
 		}
 		code.save();
-		calcModified();
 		return true;
 	}
 
@@ -221,8 +198,6 @@ public class Build {
 		File newFile = new File(newFolder, newName);
 		code.saveAs(newFile);
 		//editor.getHeader().rebuild(); TODO: fix
-		calcModified();
-
 
 		// TODO: update MRU?
 		// let MainWindow know that the save was successful
@@ -329,6 +304,16 @@ public class Build {
 			return code.file.getAbsolutePath();
 		}
 		return null;
+	}
+
+	/**
+	 * @return True if any of the elements of the build are modified; false otherwise
+	 */
+	public boolean hasModifiedElements() {
+		boolean rv = false;
+		if (code != null && code.isModified()) rv = true;
+		if (model != null && model.isModified()) rv = true;
+		return rv;
 	}
 
 }

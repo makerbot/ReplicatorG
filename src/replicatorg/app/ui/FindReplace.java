@@ -324,7 +324,7 @@ public class FindReplace extends JFrame implements ActionListener {
 		editor.textarea.setSelectedText(replaceField.getText());
 		// editor.setSketchModified(true);
 		// editor.sketch.setCurrentModified(true);
-		editor.build.setModified(true);
+		editor.build.getCode().setModified(true);
 
 		// don't allow a double replace
 		replaceButton.setEnabled(false);

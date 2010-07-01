@@ -491,7 +491,7 @@ public class PreviewPanel extends JPanel {
 		shapeTransform.getTransform(old);
 		old.add(translate);
 		shapeTransform.setTransform(old);
-		model.setModified(true);
+		model.setTransform(old,"move");
 	}
 	
 	/**
@@ -528,7 +528,7 @@ public class PreviewPanel extends JPanel {
 		flipZ.rotY(Math.PI);
 		flipZ.mul(old);
 		shapeTransform.setTransform(flipZ);
-		model.setModified(true);
+		model.setTransform(flipZ,"flip");
 	}
 	
 	public BranchGroup createSTLScene() {
