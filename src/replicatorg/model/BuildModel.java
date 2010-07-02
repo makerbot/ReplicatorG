@@ -1,6 +1,8 @@
 package replicatorg.model;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedList;
@@ -13,6 +15,7 @@ import javax.media.j3d.Transform3D;
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
 import replicatorg.app.Base;
+import replicatorg.model.j3d.StlAsciiWriter;
 
 import com.sun.j3d.loaders.Scene;
 
@@ -73,6 +76,22 @@ public class BuildModel extends BuildElement {
 		transform.set(t);
 		undoQueue.add(new UndoEntry(t,description));
 		setModified(true);
+	}
+
+	public void save() {
+		try {
+			FileOutputStream ostream = new FileOutputStream(file.getCanonicalPath());
+			Base.logger.info("Writing to "+file.getCanonicalPath()+".");
+			StlAsciiWriter saw = new StlAsciiWriter(ostream);
+			saw.writeShape(getShape(), getTransform());
+			ostream.close();
+			undoQueue.clear();
+			setModified(false);
+		} catch (FileNotFoundException fnfe) {
+			Base.logger.log(Level.SEVERE,"Error during save",fnfe);
+		} catch (IOException ioe) {
+			Base.logger.log(Level.SEVERE,"Error during save",ioe);
+		}
 	}
 
 	@Override

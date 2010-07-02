@@ -150,27 +150,31 @@ public class Build {
 		if (mainFilename == null) {
 			return saveAs();
 		}
-		// FIXME: remove below
-		// Test STL writing code
-		//FileOutputStream ostream = new FileOutputStream("/home/phooky/test_out.stl");
-		//StlAsciiWriter saw = new StlAsciiWriter(ostream);
-		//saw.writeShape(model.getShape(), model.getTransform());
-		//ostream.close();
+
+		if (isReadOnly()) {
+			// if the files are read-only, need to first do a "save as".
+			Base.showMessage(
+					"File is read-only",
+					"This file is marked \"read-only\", so you'll\n"
+					+ "need to re-save this file to another location.");
+			// if the user cancels, give up on the save()
+			if (!saveAs())
+				return false;
+			return true;
+		}
+
 		BuildCode code = getCode();
 		if (code != null) {
-			if (!code.isModified()) { return true; }
-			code.program = editor.getText();
-			if (isReadOnly()) {
-				// if the files are read-only, need to first do a "save as".
-				Base.showMessage(
-						"File is read-only",
-						"This file is marked \"read-only\", so you'll\n"
-						+ "need to re-save this file to another location.");
-				// if the user cancels, give up on the save()
-				if (!saveAs())
-					return false;
+			if (code.isModified()) { 
+				code.program = editor.getText();
+				code.save();
 			}
-			code.save();
+		}
+		BuildModel model = getModel();
+		if (model != null) {
+			if (model.isModified()) {
+				model.save();
+			}
 		}
 		return true;
 	}
