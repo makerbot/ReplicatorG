@@ -115,13 +115,13 @@ public class PreviewPanel extends JPanel {
 		});
 		panel.add(sliceButton,"growx,spanx,wrap");
 
-		JButton alignButton = createToolButton("Align","images/align-with-floor.png");
-		alignButton.addActionListener(new ActionListener() {
+		JButton centerButton = createToolButton("Center","images/center-object.png");
+		centerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				align();
+				center();
 			}
 		});
-		panel.add(alignButton,"growx,growy");
+		panel.add(centerButton,"growx,growy");
 
 		JButton flipButton = createToolButton("Flip","images/flip-object.png");
 		flipButton.addActionListener(new ActionListener() {
