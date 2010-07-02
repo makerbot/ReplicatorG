@@ -124,6 +124,7 @@ import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
+import replicatorg.model.BuildElement;
 import replicatorg.model.BuildModel;
 import replicatorg.model.JEditTextAreaSource;
 import replicatorg.plugin.toolpath.SkeinforgeGenerator;
@@ -517,12 +518,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	private void reloadSerialMenu() {
 		if (serialMenu == null) return;
 		serialMenu.removeAll();
-		if (machine == null || !(machine.driver instanceof UsesSerial))  {
+		if (machine == null) {
+			JMenuItem item = new JMenuItem("No machine selected.");
+			item.setEnabled(false);
+			serialMenu.add(item);
+			return;
+		} else if (!(machine.driver instanceof UsesSerial))  {
 			JMenuItem item = new JMenuItem("Currently selected machine does not use a serial port.");
 			item.setEnabled(false);
 			serialMenu.add(item);
 			return;
 		}
+		
 		String currentName = null;
 		UsesSerial us = (UsesSerial)machine.driver;
 		if (us.getSerial() != null) {
@@ -542,12 +549,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 							try {
 								UsesSerial us = (UsesSerial)machine.driver;
 								if (us != null) synchronized(us) {
-									if (us.getSerial() == null ||
-											us.getSerial().getName() != portName) {
 										us.setSerial(new Serial(portName, us));
 										Base.preferences.put("serial.last_selected", portName);
 										machine.reset();
-									}
 								}
 							} catch (SerialException se) {
 								se.printStackTrace();
@@ -921,7 +925,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				textarea.cut();
-				build.setModified(true);
+				build.getCode().setModified(true);
 			}
 		});
 		menu.add(item);
@@ -938,7 +942,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				textarea.paste();
-				build.setModified(true);
+				build.getCode().setModified(true);
 			}
 		});
 		menu.add(item);
@@ -1034,7 +1038,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				undoItem.setText(undo.getUndoPresentationName());
 				putValue(Action.NAME, undo.getUndoPresentationName());
 				if (build != null) {
-					build.setModified(true); // 0107
+					build.getCode().setModified(true);
 				}
 			} else {
 				this.setEnabled(false);
@@ -1042,7 +1046,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				undoItem.setText("Undo");
 				putValue(Action.NAME, "Undo");
 				if (build != null) {
-					build.setModified(false); // 0107
+					build.getCode().setModified(false);
 				}
 			}
 		}
@@ -1242,15 +1246,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		textarea.requestFocus(); // get the caret blinking
 
-		String codeName = code.name;
-		if (codeName == null) {
-			codeName = "Untitled";
-		}
-		// if modified, add the li'l glyph next to the name
-		codeName = codeName + (code.modified ? " \u00A7" : "  ");
-
-		// tabbedPane.setTitleAt(0, codeName); // TODO: fix
-		
 		this.undo = code.undo;
 		undoAction.updateUndoState();
 		redoAction.updateRedoState();
@@ -1709,7 +1704,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	protected void checkModified(int checkModifiedMode) {
 		this.checkModifiedMode = checkModifiedMode;
-		if (build == null || !build.modified) {
+		if (build == null || !build.hasModifiedElements()) {
 			checkModified2();
 			return;
 		}
@@ -2199,7 +2194,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			cutItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.cut();
-					build.setModified(true);
+					build.getCode().setModified(true);
 				}
 			});
 			this.add(cutItem);
@@ -2216,7 +2211,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.paste();
-					build.setModified(true);
+					build.getCode().setModified(true);
 				}
 			});
 			this.add(item);
@@ -2314,10 +2309,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public void stateChanged(ChangeEvent e) {
 		// We get a change event when another tab is selected.
-		if (header.getSelectedTab() == EditorHeader.Tab.MODEL) {
-			((CardLayout)cardPanel.getLayout()).show(cardPanel, MODEL_TAB_KEY);
+		CardLayout cl = (CardLayout)cardPanel.getLayout();
+		if (header.getSelectedElement() != null &&
+				header.getSelectedElement().getType() == BuildElement.Type.MODEL ) {
+			cl.show(cardPanel, MODEL_TAB_KEY);
 		} else {
-			((CardLayout)cardPanel.getLayout()).show(cardPanel, GCODE_TAB_KEY);
+			cl.show(cardPanel, GCODE_TAB_KEY);
 		}
 	}
 

@@ -182,8 +182,18 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
+		double remaining;
 		double proportion = (double)event.getLines()/(double)event.getTotalLines();
-		double remaining = event.getEstimated() * (1.0 - proportion);
+
+		if (machine.getMachineState().getTarget() == MachineState.Target.SD_UPLOAD) {
+			if (event.getLines() == 0) { 
+				remaining = 0; // avoid NaN
+			}
+			remaining = event.getElapsed() * ((1.0/proportion)-1.0);
+		} else {
+			remaining = event.getEstimated() * (1.0 - proportion);
+		}
+			
 		final String s = String.format(
 				"Commands:  %1$7d / %2$7d  (%3$3.2f%%)   |   Elapsed:  %4$s  |  Estimated Remaining:  %5$s",
 				event.getLines(), event.getTotalLines(), 

@@ -27,16 +27,15 @@ package replicatorg.model;
 
 import java.awt.FileDialog;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+
 import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
-import replicatorg.model.j3d.StlAsciiWriter;
 
 /**
- * Stores information about files in the current sketch
+ * Stores information about files in the current build
  */
 public class Build {
 	
@@ -50,11 +49,6 @@ public class Build {
 	public String getName() { return name; }
 	/** Name of source file, used by load().  This may be an .STL file or a .gcode file. */
 	String mainFilename;
-
-	/**
-	 * true if any of the files have been modified.
-	 */
-	public boolean modified;
 
 	/**
 	 * The folder which the base file is located in.
@@ -94,7 +88,7 @@ public class Build {
 			folder = new File("~");
 			code = new BuildCode(null,null);
 			openedElement = code;
-			code.modified = true;
+			code.setModified(true);
 		} else {
 			File mainFile = new File(path);
 			mainFilename = mainFile.getName();
@@ -131,27 +125,10 @@ public class Build {
 	public void loadModel() {
 		final File modelFile = new File(folder, name + ".stl");
 		if (modelFile.exists()) {
-			model = new BuildModel(modelFile);
+			model = new BuildModel(this, modelFile);
 		}		
 	}
 	
-	/**
-	 * Sets the modified value for the code in the frontmost tab.
-	 */
-	public void setModified(boolean state) {
-		code.modified = state;
-		calcModified();
-	}
-
-	public void calcModified() {
-		modified = code.modified;
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				// editor.getHeader().repaint(); TODO: fix
-			}
-		});
-	}
-
 	/**
 	 * Save all code in the current sketch.
 	 */
@@ -161,12 +138,12 @@ public class Build {
 		}
 		// FIXME: remove below
 		// Test STL writing code
-		FileOutputStream ostream = new FileOutputStream("/home/phooky/test_out.stl");
-		StlAsciiWriter saw = new StlAsciiWriter(ostream);
-		saw.writeShape(model.getShape(), model.getTransform());
-		ostream.close();
+		//FileOutputStream ostream = new FileOutputStream("/home/phooky/test_out.stl");
+		//StlAsciiWriter saw = new StlAsciiWriter(ostream);
+		//saw.writeShape(model.getShape(), model.getTransform());
+		//ostream.close();
 		
-		if (!code.modified) { return true; }
+		if (!code.isModified()) { return true; }
 		code.program = editor.getText();
 		if (isReadOnly()) {
 			// if the files are read-only, need to first do a "save as".
@@ -179,7 +156,6 @@ public class Build {
 				return false;
 		}
 		code.save();
-		calcModified();
 		return true;
 	}
 
@@ -215,15 +191,13 @@ public class Build {
 
 		// grab the contents of the current tab before saving
 		// first get the contents of the editor text area
-		if (code.modified) {
+		if (code.isModified()) {
 			code.program = editor.getText();
 		}
 
 		File newFile = new File(newFolder, newName);
 		code.saveAs(newFile);
 		//editor.getHeader().rebuild(); TODO: fix
-		calcModified();
-
 
 		// TODO: update MRU?
 		// let MainWindow know that the save was successful
@@ -317,7 +291,7 @@ public class Build {
 	 */
 	public boolean isReadOnly() {
 		// check to see if each modified code file can be written to
-		return (code.modified && 
+		return (code.isModified() && 
 				!code.file.canWrite() &&
 				code.file.exists());
 	}
@@ -330,6 +304,16 @@ public class Build {
 			return code.file.getAbsolutePath();
 		}
 		return null;
+	}
+
+	/**
+	 * @return True if any of the elements of the build are modified; false otherwise
+	 */
+	public boolean hasModifiedElements() {
+		boolean rv = false;
+		if (code != null && code.isModified()) rv = true;
+		if (model != null && model.isModified()) rv = true;
+		return rv;
 	}
 
 }
