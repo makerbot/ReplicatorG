@@ -26,15 +26,17 @@
 package replicatorg.model;
 
 import java.awt.FileDialog;
+import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
-import javax.swing.SwingUtilities;
+import java.util.Iterator;
+import java.util.Vector;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
 
 /**
- * Stores information about files in the current sketch
+ * Stores information about files in the current build
  */
 public class Build {
 	
@@ -42,17 +44,17 @@ public class Build {
 	 * buildupdatelistener or the like. */
 	MainWindow editor;
 
-	/** Name of sketch, which is the name of main file, sans extension. */
 	private String name;
 
+	/** Name of the build, which is the name of main file, sans extension. */
 	public String getName() { return name; }
-	/** Name of source file, used by load().  This may be an .STL file or a .gcode file. */
-	String mainFilename;
-
-	/**
-	 * true if any of the files have been modified.
+	
+	/** Name of source file, used by load().  Recognized types so far are:
+	 * .stl - model file
+	 * .gcode - gcode file
+	 * .zip - composite build file
 	 */
-	public boolean modified;
+	String mainFilename;
 
 	/**
 	 * The folder which the base file is located in.
@@ -60,15 +62,9 @@ public class Build {
 	public File folder;
 
 	/**
-	 * The STL model that this build is based on, if any.
+	 * The elements of this build.
 	 */
-	public BuildModel model = null;
-	/**
-	 * The gcode interpretation of the model.
-	 */
-	public BuildCode code;
-
-	int currentIndex;
+	private Vector<BuildElement> elements = new Vector<BuildElement>();
 
 	/**
 	 * The element that this build was opened as.
@@ -90,9 +86,10 @@ public class Build {
 			mainFilename = null;
 			name = "Untitled";
 			folder = new File("~");
-			code = new BuildCode(null,null);
+			BuildElement code = new BuildCode(null,null);
 			openedElement = code;
-			code.modified = true;
+			code.setModified(true);
+			elements.add(code);
 		} else {
 			File mainFile = new File(path);
 			mainFilename = mainFile.getName();
@@ -111,54 +108,41 @@ public class Build {
 			folder = new File(parentPath);
 			loadCode();
 			loadModel();
-			if ("gcode".equals(suffix) && code != null) {
-				openedElement = code;
+			if ("gcode".equals(suffix) && getCode() != null) {
+				openedElement = getCode();
 			} else {
-				openedElement = model;
+				openedElement = getModel();
 			}
 		}
 	}
 
+	public void reloadCode() {
+		Iterator<BuildElement> iterator = elements.iterator();
+		while(iterator.hasNext()) {
+			BuildElement e = iterator.next();
+			if (e instanceof BuildCode) {
+				elements.removeElement(e);
+				break;
+			}
+		}
+		loadCode();
+	}
+	
 	public void loadCode() {
 		File codeFile = new File(folder, name + ".gcode");
 		if (codeFile.exists()) {
-			code = new BuildCode(name, codeFile);
+			elements.add(new BuildCode(name, codeFile));
 		}
 	}
 	
 	public void loadModel() {
 		final File modelFile = new File(folder, name + ".stl");
 		if (modelFile.exists()) {
-			model = new BuildModel() {
-				public BuildElement.Type getType() {
-					return BuildElement.Type.MODEL;
-				}
-				public String getSTLPath() {
-					try {
-						return modelFile.getCanonicalPath();
-					} catch (IOException ioe) { return null; }
-				}
-			};
+			elements.add(new BuildModel(this, modelFile));
 		}		
 	}
 	
-	/**
-	 * Sets the modified value for the code in the frontmost tab.
-	 */
-	public void setModified(boolean state) {
-		code.modified = state;
-		calcModified();
-	}
-
-	public void calcModified() {
-		modified = code.modified;
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				// editor.getHeader().repaint(); TODO: fix
-			}
-		});
-	}
-
+	
 	/**
 	 * Save all code in the current sketch.
 	 */
@@ -166,8 +150,7 @@ public class Build {
 		if (mainFilename == null) {
 			return saveAs();
 		}
-		if (!code.modified) { return true; }
-		code.program = editor.getText();
+
 		if (isReadOnly()) {
 			// if the files are read-only, need to first do a "save as".
 			Base.showMessage(
@@ -177,9 +160,22 @@ public class Build {
 			// if the user cancels, give up on the save()
 			if (!saveAs())
 				return false;
+			return true;
 		}
-		code.save();
-		calcModified();
+
+		BuildCode code = getCode();
+		if (code != null) {
+			if (code.isModified()) { 
+				code.program = editor.getText();
+				code.save();
+			}
+		}
+		BuildModel model = getModel();
+		if (model != null) {
+			if (model.isModified()) {
+				model.save();
+			}
+		}
 		return true;
 	}
 
@@ -196,7 +192,7 @@ public class Build {
 	 */
 	public boolean saveAs() throws IOException {
 		// get new name for folder
-		FileDialog fd = new FileDialog(editor, "Save file as...",
+		FileDialog fd = new FileDialog(new Frame(), "Save file as...",
 				FileDialog.SAVE);
 		// default to the folder that this file is in
 		fd.setDirectory(folder.getCanonicalPath());
@@ -213,20 +209,17 @@ public class Build {
 
 		if (!newName.endsWith(".gcode")) newName = newName + ".gcode";
 
-		// grab the contents of the current tab before saving
-		// first get the contents of the editor text area
-		if (code.modified) {
-			code.program = editor.getText();
+		BuildCode code = getCode();
+		if (code != null) {
+			// grab the contents of the current tab before saving
+			// first get the contents of the editor text area
+			if (code.isModified()) {
+				code.program = editor.getText();
+			}
+
+			File newFile = new File(newFolder, newName);
+			code.saveAs(newFile);
 		}
-
-		File newFile = new File(newFolder, newName);
-		code.saveAs(newFile);
-		//editor.getHeader().rebuild(); TODO: fix
-		calcModified();
-
-
-		// TODO: update MRU?
-		// let MainWindow know that the save was successful
 		return true;
 	}
 
@@ -234,14 +227,20 @@ public class Build {
 	 * Return the gcode object.
 	 */
 	public BuildCode getCode() {
-		return code;
+		for (BuildElement e : elements) {
+			if (e instanceof BuildCode) { return (BuildCode)e; }
+		}
+		return null;
 	}
 	
 	/**
 	 * Return the model object.
 	 */
 	public BuildModel getModel() {
-		return model;
+		for (BuildElement e : elements) {
+			if (e instanceof BuildModel) { return (BuildModel)e; }
+		}
+		return null;
 	}
 	
 	/**
@@ -316,8 +315,10 @@ public class Build {
 	 * without appropriate permissions.
 	 */
 	public boolean isReadOnly() {
+		BuildCode code = getCode();
+		if (code == null) return false;
 		// check to see if each modified code file can be written to
-		return (code.modified && 
+		return (code.isModified() && 
 				!code.file.canWrite() &&
 				code.file.exists());
 	}
@@ -326,10 +327,22 @@ public class Build {
 	 * Returns path to the main .gcode file for this sketch.
 	 */
 	public String getMainFilePath() {
+		BuildCode code = getCode();
 		if (code != null && code.file != null) {
 			return code.file.getAbsolutePath();
 		}
 		return null;
+	}
+
+	/**
+	 * @return True if any of the elements of the build are modified; false otherwise
+	 */
+	public boolean hasModifiedElements() {
+		boolean rv = false;
+		for (BuildElement e : elements) {
+			if (e.isModified()) { rv = true; }
+		}
+		return rv;
 	}
 
 }

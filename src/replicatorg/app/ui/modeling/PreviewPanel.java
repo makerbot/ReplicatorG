@@ -1,7 +1,7 @@
 /**
  * 
  */
-package replicatorg.app.ui;
+package replicatorg.app.ui.modeling;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -16,9 +16,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.logging.Level;
 
@@ -33,6 +30,7 @@ import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Geometry;
 import javax.media.j3d.GeometryArray;
+import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.Material;
@@ -53,22 +51,17 @@ import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
 import net.miginfocom.swing.MigLayout;
-
-import org.j3d.renderer.java3d.loaders.STLLoader;
-
 import replicatorg.app.Base;
+import replicatorg.app.ui.MainWindow;
 import replicatorg.model.BuildModel;
 
-import com.sun.j3d.loaders.IncorrectFormatException;
-import com.sun.j3d.loaders.ParsingErrorException;
-import com.sun.j3d.loaders.Scene;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**
  * @author phooky
  *
  */
-public class STLPreviewPanel extends JPanel {
+public class PreviewPanel extends JPanel {
 
 	BoundingSphere bounds =
 		new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
@@ -85,11 +78,11 @@ public class STLPreviewPanel extends JPanel {
 	}
 
 	private void setScene(BuildModel model) {
-		Base.logger.info(model.getSTLPath());
+		Base.logger.info(model.getPath());
 		if (objectBranch != null) {
 			sceneGroup.removeChild(objectBranch);
 		}
-		objectBranch = makeShape(model.getSTLPath());
+		objectBranch = makeShape(model);
 		sceneGroup.addChild(objectBranch);
 	}
 	
@@ -112,7 +105,7 @@ public class STLPreviewPanel extends JPanel {
 				resetView();
 			}
 		});
-		panel.add(resetViewButton,"growx,wrap");
+		panel.add(resetViewButton,"growx,spanx,wrap");
 
 		JButton sliceButton = createToolButton("Generate GCode","images/model-to-gcode.png");
 		sliceButton.addActionListener(new ActionListener() {
@@ -120,18 +113,43 @@ public class STLPreviewPanel extends JPanel {
 				mainWindow.runToolpathGenerator();
 			}
 		});
-		panel.add(sliceButton,"growx,wrap");
+		panel.add(sliceButton,"growx,spanx,wrap");
+
+		JButton centerButton = createToolButton("Center","images/center-object.png");
+		centerButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				center();
+			}
+		});
+		panel.add(centerButton,"growx,growy");
+
+		JButton flipButton = createToolButton("Flip","images/flip-object.png");
+		flipButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				flipZ();
+			}
+		});
+		panel.add(flipButton,"growx,growy,wrap");
+
 		String instrStr = Base.isMacOS()?
 				"<html><body>Drag to rotate<br>Shift-drag to pan<br>Mouse wheel to zoom</body></html>":
 				"<html><body>Left button drag to rotate<br>Right button drag to pan<br>Mouse wheel to zoom</body></html>";
 		JLabel instructions = new JLabel(instrStr);
 		Font f = instructions.getFont();
 		instructions.setFont(f.deriveFont((float)f.getSize()*0.8f));
-		panel.add(instructions,"growx,gaptop 20,wrap");
+		panel.add(instructions,"growx,gaptop 20,spanx,wrap");
 		return panel;
 	}
-	
-	public STLPreviewPanel(final MainWindow mainWindow) {
+
+	enum DragMode {
+		NONE,
+		ROTATE_VIEW,
+		TRANSLATE_VIEW,
+		ROTATE_OBJECT,
+		TRANSLATE_OBJECT
+	};
+
+	public PreviewPanel(final MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
 		//setLayout(new MigLayout()); 
 		setLayout(new MigLayout("fill,ins 0,gap 0"));
@@ -146,30 +164,43 @@ public class STLPreviewPanel extends JPanel {
 		class MouseActivityListener implements MouseMotionListener, MouseListener, MouseWheelListener {
 			Point startPoint = null;
 			int button = 0;
-			
+						
 			public void mouseDragged(MouseEvent e) {
 				if (startPoint == null) return;
 				Point p = e.getPoint();
-				boolean rotate;
-				boolean translate;
+				DragMode mode = DragMode.ROTATE_VIEW; 
 				if (Base.isMacOS()) {
-					rotate = button == MouseEvent.BUTTON1 && !e.isShiftDown();
-					translate = button == MouseEvent.BUTTON1 && e.isShiftDown();
+					if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
+					else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_VIEW; }
 				} else {
-					rotate = button == MouseEvent.BUTTON1;
-					translate = button == MouseEvent.BUTTON3;
+					if (e.isAltDown()) {
+						if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_OBJECT; }
+						else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_OBJECT; }
+					} else {
+						if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_VIEW; }
+						else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_VIEW; }
+					}
 				}
-				if (rotate) {
+				double xd = (double)(p.x - startPoint.x);
+				double yd = (double)(p.y - startPoint.y);
+				switch (mode) {
+				case ROTATE_VIEW:
 					// Rotate view
-					turntableAngle += 0.05 * (double)(p.x - startPoint.x);
-					elevationAngle -= 0.05 * (double)(p.y - startPoint.y);
-				} else if (translate) {
+					turntableAngle += 0.05 * xd;
+					elevationAngle -= 0.05 * yd;
+					updateVP();
+					break;
+				case TRANSLATE_VIEW:
 					// Pan view
-					cameraTranslation.x += -0.05 * (double)(p.x - startPoint.x);
-					cameraTranslation.y += 0.05 * (double)(p.y - startPoint.y);
+					cameraTranslation.x += -0.05 * xd;
+					cameraTranslation.y += 0.05 * yd;
+					updateVP();
+					break;
+				case TRANSLATE_OBJECT:
+					translateObject(0.05*xd,0d,-0.05*yd);
+					break;
 				}
 				startPoint = p;
-				updateVP();
 			}
 			public void mouseMoved(MouseEvent e) {
 			}
@@ -364,7 +395,31 @@ public class STLPreviewPanel extends JPanel {
 		return new Shape3D(grid,edges); 
 	}
 
-	private BoundingBox getBoundingBox(Shape3D shape) {
+	private BoundingBox getBoundingBox(Group group, Transform3D transformation) {
+		BoundingBox bb = new BoundingBox(new Point3d(Double.MAX_VALUE,Double.MAX_VALUE,Double.MAX_VALUE),
+				new Point3d(Double.MIN_VALUE,Double.MIN_VALUE,Double.MIN_VALUE));
+		transformation = new Transform3D(transformation);
+		if (group instanceof TransformGroup) {
+			Transform3D nextTransform = new Transform3D();
+			((TransformGroup)group).getTransform(nextTransform);
+			transformation.mul(nextTransform);
+		}
+		for (int i = 0; i < group.numChildren(); i++) {
+			Node n = group.getChild(i);
+			if (n instanceof Shape3D) {
+				bb.combine(getBoundingBox((Shape3D)n, transformation));
+			} else if (n instanceof Group) {
+				bb.combine(getBoundingBox((Group)n,transformation));
+			}
+		}
+		return bb;
+	}
+	
+	private BoundingBox getBoundingBox(Group group) {
+		return getBoundingBox(group, new Transform3D());
+	}
+	
+	private BoundingBox getBoundingBox(Shape3D shape, Transform3D transformation) {
 		BoundingBox bb = null;
 		Enumeration<?> geometries = shape.getAllGeometries();
 		while (geometries.hasMoreElements()) {
@@ -374,6 +429,7 @@ public class STLPreviewPanel extends JPanel {
 				Point3d p = new Point3d();
 				for (int i = 0; i < ga.getVertexCount(); i++) {
 					ga.getCoordinate(i,p);
+					transformation.transform(p);
 					if (bb == null) { bb = new BoundingBox(p,p); }
 					bb.combine(p);
 				}
@@ -382,26 +438,9 @@ public class STLPreviewPanel extends JPanel {
 		return bb;
 	}
 
-	private BranchGroup makeShape(String path) {
-		STLLoader loader = new STLLoader();
-		Scene scene = null;
-		try {
-			scene = loader.load((new File(path)).toURI().toURL());
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IncorrectFormatException e) {
-			e.printStackTrace();
-		} catch (ParsingErrorException e) {
-			e.printStackTrace();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		if (scene == null) { return null; }
-
-		BranchGroup sourceGroup = scene.getSceneGroup();
-
+	private BranchGroup makeShape(BuildModel model) {
 		objectSwitch = new Switch();
-		Shape3D originalShape = (Shape3D)sourceGroup.getChild(0);
+		Shape3D originalShape = model.getShape();
 
 		Shape3D shape = (Shape3D)originalShape.cloneTree();
 		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
@@ -428,7 +467,12 @@ public class STLPreviewPanel extends JPanel {
 		edgeClone.setAppearance(edges);
 
 		BranchGroup wrapper = new BranchGroup();
-		wrapper.addChild(objectSwitch);
+
+		shapeTransform = new TransformGroup();
+		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		wrapper.addChild(shapeTransform);
+
+		shapeTransform.addChild(objectSwitch);
 		wrapper.setCapability(BranchGroup.ALLOW_DETACH);
 		wrapper.compile();
 		return wrapper;
@@ -436,6 +480,56 @@ public class STLPreviewPanel extends JPanel {
 
 	BranchGroup sceneGroup;
 	BranchGroup objectBranch;
+	
+	public void translateObject(double x, double y, double z) {
+		// Skip identity translations
+		if (x == 0.0 && y == 0.0 && z == 0.0) { return; }
+		Transform3D translate = new Transform3D();
+		translate.setZero();
+		translate.setTranslation(new Vector3d(x,y,z));
+		Transform3D old = new Transform3D();
+		shapeTransform.getTransform(old);
+		old.add(translate);
+		shapeTransform.setTransform(old);
+		model.setTransform(old,"move");
+	}
+	
+	/**
+	 * Center the object tree and raise its lowest point to Z=0.
+	 */
+	public void center() {
+		BoundingBox bb = getBoundingBox(shapeTransform);
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		bb.getLower(lower);
+		bb.getUpper(upper);
+		double zoff = -lower.z;
+		double xoff = -(upper.x + lower.x)/2.0d;
+		double yoff = -(upper.y + lower.y)/2.0d;
+		translateObject(xoff, yoff, zoff);
+	}
+	
+	/**
+	 * Center the object and flatten the bottommost poly.  (A more thorough version would
+	 * be able to correctly center a tripod or other spiky object.)
+	 */
+	public void align() {
+		center();
+	}
+	
+	/**
+	 * Flip the object tree around the Z axis.  This is particularly useful when
+	 * breaking a print into two parts.
+	 */
+	public void flipZ() {
+		Transform3D flipZ = new Transform3D();
+		Transform3D old = new Transform3D();
+		shapeTransform.getTransform(old);
+		flipZ.rotY(Math.PI);
+		flipZ.mul(old);
+		shapeTransform.setTransform(flipZ);
+		model.setTransform(flipZ,"flip");
+	}
 	
 	public BranchGroup createSTLScene() {
 		// Create the root of the branch graph
@@ -445,13 +539,12 @@ public class STLPreviewPanel extends JPanel {
 		// identity. Enable the TRANSFORM_WRITE capability so that
 		// our behavior code can modify it at run time. Add it to
 		// the root of the subgraph.
-		TransformGroup objTrans = new TransformGroup();
-		objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		TransformGroup scaleTransform = new TransformGroup();
 		// All sizes are represented in mm.  We scale this down so that 1mm == 0.01 units.
 		Transform3D scaleTf = new Transform3D();
 		scaleTf.setScale(0.01d);
-		objTrans.setTransform(scaleTf);
-		objRoot.addChild(objTrans);
+		scaleTransform.setTransform(scaleTf);
+		objRoot.addChild(scaleTransform);
 
 		sceneGroup = new BranchGroup();
 		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
@@ -463,7 +556,7 @@ public class STLPreviewPanel extends JPanel {
 		sceneGroup.addChild(makeBackground());
 		sceneGroup.addChild(makeBaseGrid());
 
-		objTrans.addChild(sceneGroup);
+		scaleTransform.addChild(sceneGroup);
 
 		// Create a new Behavior object that will perform the
 		// desired operation on the specified transform and add

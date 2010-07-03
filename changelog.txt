@@ -1,3 +1,12 @@
+0018 ReplicatorG
+New features:
+* Model can now be manipulated and saved
+* Tabs indicate object modification status
+Contributions:
+* Mikko Sivulainen (paeaetech): better estimation for SD uploads
+* Mikko Sivulainen (paeaetech): improved serial selection handling
+
+
 0017 ReplicatorG
 * New features:
 ** STL files can now be directly loaded and previewed

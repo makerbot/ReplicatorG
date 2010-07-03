@@ -27,13 +27,14 @@ package replicatorg.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.swing.undo.UndoManager;
 
 import replicatorg.app.Base;
 import replicatorg.app.syntax.SyntaxDocument;
 
-public class BuildCode implements Comparable<BuildCode>, BuildElement {
+public class BuildCode extends BuildElement implements Comparable<BuildCode> {
 	/** Pretty name (no extension), not the full file name */
 	public String name;
 
@@ -43,11 +44,11 @@ public class BuildCode implements Comparable<BuildCode>, BuildElement {
 	/** Text of the program text for this tab */
 	public String program;
 
-	/** Document object for this tab */
+	/** Document object for this tab; includes undo information, etc. */
 	public SyntaxDocument document;
 
 	/** Undo Manager for this tab, each tab keeps track of their own */
-	public UndoManager undo; // = new UndoManager();
+	public UndoManager undo;
 
 	// saved positions from last time this tab was used
 	public int selectionStart;
@@ -55,8 +56,6 @@ public class BuildCode implements Comparable<BuildCode>, BuildElement {
 	public int selectionStop;
 
 	public int scrollPosition;
-
-	public boolean modified;
 
 	public BuildCode(String name, File file) {
 		this.name = name;
@@ -74,10 +73,10 @@ public class BuildCode implements Comparable<BuildCode>, BuildElement {
 	public void load() throws IOException {
 		if (file == null) {
 			program = "";
-			modified = true;
+			setModified(true);
 		} else {
 			program = Base.loadFile(file);
-			modified = false;
+			setModified(false);
 		}
 	}
 
@@ -90,7 +89,7 @@ public class BuildCode implements Comparable<BuildCode>, BuildElement {
 		// history.record(s, SketchHistory.SAVE);
 
 		Base.saveFile(program, file);
-		modified = false;
+		setModified(false);
 	}
 
 	/**
@@ -105,7 +104,7 @@ public class BuildCode implements Comparable<BuildCode>, BuildElement {
 		if (lastIdx > 0) {
 			name = name.substring(0, lastIdx);
 		}
-		modified = false;
+		setModified(false);
 	}
 
 	public int compareTo(BuildCode other) {
@@ -115,5 +114,11 @@ public class BuildCode implements Comparable<BuildCode>, BuildElement {
 
 	public Type getType() {
 		return BuildElement.Type.GCODE;
+	}
+
+	@Override
+	void writeToStream(OutputStream ostream) {
+		// TODO Auto-generated method stub
+		
 	}
 }
