@@ -4,11 +4,8 @@
 package replicatorg.app.ui.modeling;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -34,11 +31,7 @@ import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
@@ -62,6 +55,8 @@ public class PreviewPanel extends JPanel {
 
 	EditingModel model = null;
 	
+	EditingModel getModel() { return model; }
+	
 	public void setModel(BuildModel buildModel) {
 		if (model == null || buildModel != model.getBuildModel()) {
 			if (buildModel != null) {
@@ -84,59 +79,6 @@ public class PreviewPanel extends JPanel {
 	
 	MainWindow mainWindow;
 
-	public JButton createToolButton(String text, String iconPath) {
-		ImageIcon icon = new ImageIcon(Base.getImage(iconPath, this));
-		JButton button = new JButton(text,icon);
-		button.setVerticalTextPosition(SwingConstants.BOTTOM);
-		button.setHorizontalTextPosition(SwingConstants.CENTER);
-		return button;
-	}
-
-	public JPanel createToolPanel() {
-		JPanel panel = new JPanel(new MigLayout());
-
-		JButton resetViewButton = createToolButton("Reset view","images/look-at-object.png");
-		resetViewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				resetView();
-			}
-		});
-		panel.add(resetViewButton,"growx,spanx,wrap");
-
-		JButton sliceButton = createToolButton("Generate GCode","images/model-to-gcode.png");
-		sliceButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				mainWindow.runToolpathGenerator();
-			}
-		});
-		panel.add(sliceButton,"growx,spanx,wrap");
-
-		JButton centerButton = createToolButton("Center","images/center-object.png");
-		centerButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				model.center();
-			}
-		});
-		panel.add(centerButton,"growx,growy");
-
-		JButton flipButton = createToolButton("Flip","images/flip-object.png");
-		flipButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				model.flipZ();
-			}
-		});
-		panel.add(flipButton,"growx,growy,wrap");
-
-		String instrStr = Base.isMacOS()?
-				"<html><body>Drag to rotate<br>Shift-drag to pan<br>Mouse wheel to zoom</body></html>":
-				"<html><body>Left button drag to rotate<br>Right button drag to pan<br>Mouse wheel to zoom</body></html>";
-		JLabel instructions = new JLabel(instrStr);
-		Font f = instructions.getFont();
-		instructions.setFont(f.deriveFont((float)f.getSize()*0.8f));
-		panel.add(instructions,"growx,gaptop 20,spanx,wrap");
-		return panel;
-	}
-
 	enum DragMode {
 		NONE,
 		ROTATE_VIEW,
@@ -145,6 +87,8 @@ public class PreviewPanel extends JPanel {
 		TRANSLATE_OBJECT
 	};
 
+	ToolPanel toolPanel;
+	
 	public PreviewPanel(final MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
 		//setLayout(new MigLayout()); 
@@ -152,7 +96,8 @@ public class PreviewPanel extends JPanel {
 		// Create Canvas3D and SimpleUniverse; add canvas to drawing panel
 		Canvas3D c = createUniverse();
 		add(c, "growx,growy");
-		add(createToolPanel(),"dock east");
+		toolPanel = new ToolPanel(this);
+		add(toolPanel,"dock east");
 		// Create the content branch and add it to the universe
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
@@ -441,7 +386,7 @@ public class PreviewPanel extends JPanel {
 	double elevationAngle = ELEVATION_ANGLE_DEFAULT;
 	double turntableAngle = TURNTABLE_ANGLE_DEFAULT;
 
-	private void resetView() {
+	void resetView() {
 		cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
 		elevationAngle = ELEVATION_ANGLE_DEFAULT;
 		turntableAngle = TURNTABLE_ANGLE_DEFAULT;
