@@ -54,13 +54,8 @@ public class ViewTool implements Tool, MouseMotionListener, MouseListener, Mouse
 			if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
 			else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_VIEW; }
 		} else {
-			if (e.isAltDown()) {
-				if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_OBJECT; }
-				else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_OBJECT; }
-			} else {
-				if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_VIEW; }
-				else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_VIEW; }
-			}
+			if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_VIEW; }
+			else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_VIEW; }
 		}
 		double xd = (double)(p.x - startPoint.x);
 		double yd = (double)(p.y - startPoint.y);
@@ -72,9 +67,6 @@ public class ViewTool implements Tool, MouseMotionListener, MouseListener, Mouse
 		case TRANSLATE_VIEW:
 			// Pan view
 			parent.preview.adjustViewTranslation(-0.05 * xd, 0.05 * yd);
-			break;
-		case TRANSLATE_OBJECT:
-			parent.getModel().translateObject(0.05*xd,0d,-0.05*yd);
 			break;
 		}
 		startPoint = p;

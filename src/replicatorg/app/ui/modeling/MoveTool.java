@@ -47,27 +47,16 @@ public class MoveTool implements Tool, MouseMotionListener, MouseListener, Mouse
 		Point p = e.getPoint();
 		DragMode mode = DragMode.ROTATE_VIEW; 
 		if (Base.isMacOS()) {
-			if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
-			else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_VIEW; }
+			if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_OBJECT; }
+			else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_OBJECT; }
 		} else {
-			if (e.isAltDown()) {
-				if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_OBJECT; }
-				else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_OBJECT; }
-			} else {
-				if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_VIEW; }
-				else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_VIEW; }
-			}
+			if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_OBJECT; }
+			else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_OBJECT; }
 		}
 		double xd = (double)(p.x - startPoint.x);
 		double yd = (double)(p.y - startPoint.y);
 		switch (mode) {
-		case ROTATE_VIEW:
-			// Rotate view
-			parent.preview.adjustViewAngle(0.05 * xd, -0.05 * yd);
-			break;
-		case TRANSLATE_VIEW:
-			// Pan view
-			parent.preview.adjustViewTranslation(-0.05 * xd, 0.05 * yd);
+		case ROTATE_OBJECT:
 			break;
 		case TRANSLATE_OBJECT:
 			parent.getModel().translateObject(0.05*xd,0d,-0.05*yd);
