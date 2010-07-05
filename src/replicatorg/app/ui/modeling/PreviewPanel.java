@@ -5,13 +5,10 @@ package replicatorg.app.ui.modeling;
 
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
-import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.logging.Level;
 
@@ -89,89 +86,74 @@ public class PreviewPanel extends JPanel {
 
 	ToolPanel toolPanel;
 	
+	Tool currentTool = null; // The tool currently in use.
+	
+	void setTool(Tool tool) {
+		if (currentTool == tool) { return; }
+		if (currentTool != null) {
+			if (currentTool instanceof MouseListener) {
+				canvas.removeMouseListener((MouseListener)currentTool);
+			}
+			if (currentTool instanceof MouseMotionListener) {
+				canvas.removeMouseMotionListener((MouseMotionListener)currentTool);
+			}
+			if (currentTool instanceof MouseWheelListener) {
+				canvas.removeMouseWheelListener((MouseWheelListener)currentTool);
+			}
+			if (currentTool instanceof KeyListener) {
+				canvas.removeKeyListener((KeyListener)currentTool);
+			}
+		}
+		currentTool = tool;
+		if (currentTool != null) {
+			if (currentTool instanceof MouseListener) {
+				canvas.addMouseListener((MouseListener)currentTool);
+			}
+			if (currentTool instanceof MouseMotionListener) {
+				canvas.addMouseMotionListener((MouseMotionListener)currentTool);
+			}
+			if (currentTool instanceof MouseWheelListener) {
+				canvas.addMouseWheelListener((MouseWheelListener)currentTool);
+			}
+			if (currentTool instanceof KeyListener) {
+				canvas.addKeyListener((KeyListener)currentTool);
+			}
+		}
+	}
+		
+	Canvas3D canvas;
+	
+	void adjustViewAngle(double deltaYaw, double deltaPitch) {
+		turntableAngle += deltaYaw;
+		elevationAngle += deltaPitch;
+		updateVP();
+	}
+	
+	void adjustViewTranslation(double deltaX, double deltaY) {
+		cameraTranslation.x += deltaX;
+		cameraTranslation.y += deltaY;
+		updateVP();
+	}
+	
+	void adjustZoom(double deltaZoom) {
+		cameraTranslation.z += deltaZoom;
+		updateVP();
+	}
+	
 	public PreviewPanel(final MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
 		//setLayout(new MigLayout()); 
 		setLayout(new MigLayout("fill,ins 0,gap 0"));
 		// Create Canvas3D and SimpleUniverse; add canvas to drawing panel
-		Canvas3D c = createUniverse();
-		add(c, "growx,growy");
+		canvas = createUniverse();
+		add(canvas, "growx,growy");
 		toolPanel = new ToolPanel(this);
 		add(toolPanel,"dock east");
 		// Create the content branch and add it to the universe
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
-
-		class MouseActivityListener implements MouseMotionListener, MouseListener, MouseWheelListener {
-			Point startPoint = null;
-			int button = 0;
-						
-			public void mouseDragged(MouseEvent e) {
-				if (startPoint == null) return;
-				Point p = e.getPoint();
-				DragMode mode = DragMode.ROTATE_VIEW; 
-				if (Base.isMacOS()) {
-					if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
-					else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_VIEW; }
-				} else {
-					if (e.isAltDown()) {
-						if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_OBJECT; }
-						else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_OBJECT; }
-					} else {
-						if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_VIEW; }
-						else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_VIEW; }
-					}
-				}
-				double xd = (double)(p.x - startPoint.x);
-				double yd = (double)(p.y - startPoint.y);
-				switch (mode) {
-				case ROTATE_VIEW:
-					// Rotate view
-					turntableAngle += 0.05 * xd;
-					elevationAngle -= 0.05 * yd;
-					updateVP();
-					break;
-				case TRANSLATE_VIEW:
-					// Pan view
-					cameraTranslation.x += -0.05 * xd;
-					cameraTranslation.y += 0.05 * yd;
-					updateVP();
-					break;
-				case TRANSLATE_OBJECT:
-					model.translateObject(0.05*xd,0d,-0.05*yd);
-					break;
-				}
-				startPoint = p;
-			}
-			public void mouseMoved(MouseEvent e) {
-			}
-			public void mouseClicked(MouseEvent e) {
-			}
-			public void mouseEntered(MouseEvent e) {
-			}
-			public void mouseExited(MouseEvent e) {
-			}
-			public void mousePressed(MouseEvent e) {
-				startPoint = e.getPoint();
-				button = e.getButton();
-			}
-			public void mouseReleased(MouseEvent e) {
-				startPoint = null;
-			}
-			public void mouseWheelMoved(MouseWheelEvent e) {
-				int notches = e.getWheelRotation();				
-				cameraTranslation.z += 0.10 * notches;
-				updateVP();
-			}
-			
-		};
-
-		MouseActivityListener activityListener = new MouseActivityListener();
-		c.addMouseMotionListener(activityListener);
-		c.addMouseWheelListener(activityListener);
-		c.addMouseListener(activityListener);
 		
-		c.addKeyListener( new KeyListener() {
+		canvas.addKeyListener( new KeyListener() {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyChar() == 'a') {
 					cameraTranslation.x += 0.05;
@@ -208,6 +190,7 @@ public class PreviewPanel extends JPanel {
 			public void keyTyped(KeyEvent e) {
 			}
 		});
+
 	}		
 
 
