@@ -6,6 +6,9 @@ import java.io.PrintWriter;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TriangleArray;
+import javax.vecmath.Point3d;
+import javax.vecmath.Point3f;
+import javax.vecmath.Vector3f;
 
 import replicatorg.app.Base;
 
@@ -34,14 +37,24 @@ public class StlAsciiWriter extends ModelWriter {
 		double[] coord = new double[3];
 		for (int faceIdx = 0; faceIdx < faces; faceIdx++) {
 			g.getNormal(faceIdx*3, norm);
-			w.printf("  facet normal %e %e %e\n", norm[0],norm[1],norm[2]);
+			Vector3f norm3f = new Vector3f(norm);
+			transform.transform(norm3f);
+			norm3f.normalize();
+			w.printf("  facet normal %e %e %e\n", norm3f.x,norm3f.y,norm3f.z);
 			w.printf("    outer loop\n");
+			Point3d face3d;
 			g.getCoordinate(faceIdx*3, coord);
-			w.printf("      vertex %e %e %e\n", coord[0],coord[1],coord[2]);
+			face3d = new Point3d(coord);
+			transform.transform(face3d);
+			w.printf("      vertex %e %e %e\n", face3d.x,face3d.y,face3d.z);
 			g.getCoordinate((faceIdx*3)+1, coord);
-			w.printf("      vertex %e %e %e\n", coord[0],coord[1],coord[2]);
+			face3d = new Point3d(coord);
+			transform.transform(face3d);
+			w.printf("      vertex %e %e %e\n", face3d.x,face3d.y,face3d.z);
 			g.getCoordinate((faceIdx*3)+2, coord);
-			w.printf("      vertex %e %e %e\n", coord[0],coord[1],coord[2]);
+			face3d = new Point3d(coord);
+			transform.transform(face3d);
+			w.printf("      vertex %e %e %e\n", face3d.x,face3d.y,face3d.z);
 			w.printf("    endloop\n");
 			w.printf("  endfacet\n");
 		}

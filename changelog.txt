@@ -1,5 +1,6 @@
 0018 ReplicatorG
 New features:
+* Model can now be manipulated and saved
 * Tabs indicate object modification status
 Contributions:
 * Mikko Sivulainen (paeaetech): better estimation for SD uploads

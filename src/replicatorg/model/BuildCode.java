@@ -44,11 +44,11 @@ public class BuildCode extends BuildElement implements Comparable<BuildCode> {
 	/** Text of the program text for this tab */
 	public String program;
 
-	/** Document object for this tab */
+	/** Document object for this tab; includes undo information, etc. */
 	public SyntaxDocument document;
 
 	/** Undo Manager for this tab, each tab keeps track of their own */
-	public UndoManager undo; // = new UndoManager();
+	public UndoManager undo;
 
 	// saved positions from last time this tab was used
 	public int selectionStart;
