@@ -39,7 +39,7 @@ public class ViewTool implements Tool, MouseMotionListener, MouseListener, Mouse
 	}
 
 	public String getTitle() {
-		return null;
+		return "Preview";
 	}
 
 

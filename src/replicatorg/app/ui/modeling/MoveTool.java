@@ -37,7 +37,9 @@ public class MoveTool implements Tool, MouseMotionListener, MouseListener, Mouse
 	}
 
 	public String getInstructions() {
-		return null;
+		return Base.isMacOS()?
+				"<html><body>Drag to move<br>Shift-drag to rotate<br>Mouse wheel to zoom</body></html>":
+				"<html><body>Left button drag to move object<br>Right button drag to rotate<br>Mouse wheel to zoom</body></html>";
 	}
 
 	public String getTitle() {
@@ -53,15 +55,16 @@ public class MoveTool implements Tool, MouseMotionListener, MouseListener, Mouse
 		DragMode mode = DragMode.ROTATE_VIEW; 
 		if (Base.isMacOS()) {
 			if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.TRANSLATE_OBJECT; }
-			else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_OBJECT; }
+			else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
 		} else {
 			if (button == MouseEvent.BUTTON1) { mode = DragMode.TRANSLATE_OBJECT; }
-			else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_OBJECT; }
+			else if (button == MouseEvent.BUTTON3) { mode = DragMode.ROTATE_VIEW; }
 		}
 		double xd = (double)(p.x - startPoint.x);
 		double yd = -(double)(p.y - startPoint.y);
 		switch (mode) {
-		case ROTATE_OBJECT:
+		case ROTATE_VIEW:
+			parent.preview.adjustViewAngle(0.05 * xd, -0.05 * yd);
 			break;
 		case TRANSLATE_OBJECT:
 			doTranslate(xd,yd);
@@ -95,7 +98,7 @@ public class MoveTool implements Tool, MouseMotionListener, MouseListener, Mouse
 	}
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		int notches = e.getWheelRotation();
-		parent.preview.adjustZoom(0.10 * notches);
+		parent.preview.adjustZoom(10 * notches);
 	}
 	
 	void doTranslate(double deltaX, double deltaY) {
