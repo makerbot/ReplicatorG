@@ -66,7 +66,7 @@ public class ViewTool implements Tool, MouseMotionListener, MouseListener, Mouse
 			break;
 		case TRANSLATE_VIEW:
 			// Pan view
-			parent.preview.adjustViewTranslation(-0.05 * xd, 0.05 * yd);
+			parent.preview.adjustViewTranslation(-0.5 * xd, 0.5 * yd);
 			break;
 		}
 		startPoint = p;
@@ -88,7 +88,7 @@ public class ViewTool implements Tool, MouseMotionListener, MouseListener, Mouse
 	}
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		int notches = e.getWheelRotation();
-		parent.preview.adjustZoom(0.10 * notches);
+		parent.preview.adjustZoom(10d * notches);
 	}
 
 }

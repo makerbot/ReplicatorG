@@ -180,6 +180,19 @@ public class EditingModel {
 		return bb;
 	}
 
+	public BoundingBox getBoundingBox() {
+		return getBoundingBox(shapeTransform);
+	}
+	
+	public Point3d getCentroid() {
+		BoundingBox bb = getBoundingBox();
+		Point3d p1 = new Point3d();
+		Point3d p2 = new Point3d();
+		bb.getLower(p1);
+		bb.getUpper(p2);
+		p1.interpolate(p2,0.5d);
+		return p1;
+	}
 	/**
 	 * Center the object tree and raise its lowest point to Z=0.
 	 */
