@@ -48,7 +48,7 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
 public class PreviewPanel extends JPanel {
 
 	BoundingSphere bounds =
-		new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
+		new BoundingSphere(new Point3d(0.0,0.0,0.0), 1000.0);
 
 	EditingModel model = null;
 	
@@ -320,17 +320,6 @@ public class PreviewPanel extends JPanel {
 		// Create the root of the branch graph
 		BranchGroup objRoot = new BranchGroup();
 
-		// Create the TransformGroup node and initialize it to the
-		// identity. Enable the TRANSFORM_WRITE capability so that
-		// our behavior code can modify it at run time. Add it to
-		// the root of the subgraph.
-		TransformGroup scaleTransform = new TransformGroup();
-		// All sizes are represented in mm.  We scale this down so that 1mm == 0.01 units.
-		Transform3D scaleTf = new Transform3D();
-		scaleTf.setScale(0.01d);
-		scaleTransform.setTransform(scaleTf);
-		objRoot.addChild(scaleTransform);
-
 		sceneGroup = new BranchGroup();
 		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
@@ -341,7 +330,7 @@ public class PreviewPanel extends JPanel {
 		sceneGroup.addChild(makeBackground());
 		sceneGroup.addChild(makeBaseGrid());
 
-		scaleTransform.addChild(sceneGroup);
+		objRoot.addChild(sceneGroup);
 
 		// Create a new Behavior object that will perform the
 		// desired operation on the specified transform and add
@@ -361,7 +350,7 @@ public class PreviewPanel extends JPanel {
 	}
 
 	// These values were determined experimentally to look pretty dang good.
-	final static Vector3d CAMERA_TRANSLATION_DEFAULT = new Vector3d(0,0.4,2.9);
+	final static Vector3d CAMERA_TRANSLATION_DEFAULT = new Vector3d(0,40,290);
 	final static double ELEVATION_ANGLE_DEFAULT = 1.278;
 	final static double TURNTABLE_ANGLE_DEFAULT = 0.214;
 	
@@ -374,6 +363,13 @@ public class PreviewPanel extends JPanel {
 		elevationAngle = ELEVATION_ANGLE_DEFAULT;
 		turntableAngle = TURNTABLE_ANGLE_DEFAULT;
 		updateVP();
+	}
+	
+	Transform3D getViewTransform() {
+		TransformGroup viewTG = univ.getViewingPlatform().getViewPlatformTransform();
+		Transform3D t = new Transform3D();
+		viewTG.getTransform(t);
+		return t;
 	}
 	
 	private void updateVP() {
@@ -412,6 +408,8 @@ public class PreviewPanel extends JPanel {
 		// Create simple universe with view branch
 		univ = new SimpleUniverse(c);
 		univ.getViewer().getView().setSceneAntialiasingEnable(true);
+		univ.getViewer().getView().setFrontClipDistance(10d);
+		univ.getViewer().getView().setBackClipDistance(1000d);
 		updateVP();
 
 		// Ensure at least 5 msec per frame (i.e., < 200Hz)

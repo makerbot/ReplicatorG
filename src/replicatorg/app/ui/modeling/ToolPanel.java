@@ -1,6 +1,7 @@
 package replicatorg.app.ui.modeling;
 
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -28,20 +29,37 @@ public class ToolPanel extends JPanel {
 		button.setHorizontalTextPosition(SwingConstants.CENTER);
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				preview.setTool(tool);
+				setTool(tool);
 			}
 		});
 		return button;
 	}
 
 	final PreviewPanel preview;
+	final JPanel subPanel = new JPanel();
 	
 	Tool[] tools = { 
 			new ViewTool(this),
 			new MoveTool(this)
 	};
 	
+	JLabel titleLabel;
+	
+	void setTool(Tool tool) {
+		// Default to the view tool
+		if (tool == null) { tool = tools[0]; }
+		// Connect this tool to the preview panel's mouse and keyboard handlers
+		preview.setTool(tool);
+		// Set the tool title
+		titleLabel.setText(tool.getTitle());
+		// Set tool instructions
+		infoLabel.setText(tool.getInstructions());
+		// Add tool panel
+	}
+	
 	EditingModel getModel() { return preview.getModel(); }
+	
+	final JLabel infoLabel = new JLabel();
 	
 	ToolPanel(final PreviewPanel preview) {
 		this.preview = preview;
@@ -97,12 +115,21 @@ public class ToolPanel extends JPanel {
 		});
 		toolButtons.add(flipButton,"growx,growy,wrap");
 
-		String instrStr = Base.isMacOS()?
-				"<html><body>Drag to rotate<br>Shift-drag to pan<br>Mouse wheel to zoom</body></html>":
-				"<html><body>Left button drag to rotate<br>Right button drag to pan<br>Mouse wheel to zoom</body></html>";
-		JLabel instructions = new JLabel(instrStr);
-		Font f = instructions.getFont();
-		instructions.setFont(f.deriveFont((float)f.getSize()*0.8f));
-		add(instructions,"growx,gaptop 20,spanx,growy,wrap");
+		titleLabel = new JLabel("Selected Tool");
+		add(titleLabel,"growx,gap 5,spanx,north");
+		{
+			//Font f = titleLabel.getFont();
+			titleLabel.setFont(new Font("FreeSans",Font.BOLD, 14));
+		}
+		for (String s : GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()) {
+			System.err.println("AVAILABLE: " + s);
+		}
+		
+		Font f = infoLabel.getFont();
+		infoLabel.setFont(f.deriveFont((float)f.getSize()*0.8f));
+		add(infoLabel,"growx,gap 2,spanx,south");
+
+		add(subPanel,"growx,growy,spanx");
+		setTool(tools[0]);
 	}
 }
