@@ -4,47 +4,31 @@
 package replicatorg.app.ui.modeling;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GraphicsConfiguration;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.util.Enumeration;
 import java.util.logging.Level;
 
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Background;
-import javax.media.j3d.BoundingBox;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
-import javax.media.j3d.Geometry;
 import javax.media.j3d.GeometryArray;
-import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
-import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.Shape3D;
-import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
@@ -66,80 +50,31 @@ public class PreviewPanel extends JPanel {
 	BoundingSphere bounds =
 		new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
 
-	BuildModel model = null;
+	EditingModel model = null;
 	
-	public void setModel(BuildModel model) {
-		if (model != this.model) {
-			this.model = model;
-			if (model != null) {
+	EditingModel getModel() { return model; }
+	
+	public void setModel(BuildModel buildModel) {
+		if (model == null || buildModel != model.getBuildModel()) {
+			if (buildModel != null) {
+				model = new EditingModel(buildModel);
 				setScene(model);
+			} else {
+				model = null;
 			}
 		}
 	}
 
-	private void setScene(BuildModel model) {
-		Base.logger.info(model.getPath());
+	private void setScene(EditingModel model) {
+		Base.logger.info(model.model.getPath());
 		if (objectBranch != null) {
 			sceneGroup.removeChild(objectBranch);
 		}
-		objectBranch = makeShape(model);
+		objectBranch = model.getGroup();
 		sceneGroup.addChild(objectBranch);
 	}
 	
 	MainWindow mainWindow;
-
-	public JButton createToolButton(String text, String iconPath) {
-		ImageIcon icon = new ImageIcon(Base.getImage(iconPath, this));
-		JButton button = new JButton(text,icon);
-		button.setVerticalTextPosition(SwingConstants.BOTTOM);
-		button.setHorizontalTextPosition(SwingConstants.CENTER);
-		return button;
-	}
-
-	public JPanel createToolPanel() {
-		JPanel panel = new JPanel(new MigLayout());
-
-		JButton resetViewButton = createToolButton("Reset view","images/look-at-object.png");
-		resetViewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				resetView();
-			}
-		});
-		panel.add(resetViewButton,"growx,spanx,wrap");
-
-		JButton sliceButton = createToolButton("Generate GCode","images/model-to-gcode.png");
-		sliceButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				mainWindow.runToolpathGenerator();
-			}
-		});
-		panel.add(sliceButton,"growx,spanx,wrap");
-
-		JButton centerButton = createToolButton("Center","images/center-object.png");
-		centerButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				center();
-			}
-		});
-		panel.add(centerButton,"growx,growy");
-
-		JButton flipButton = createToolButton("Flip","images/flip-object.png");
-		flipButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				flipZ();
-			}
-		});
-		panel.add(flipButton,"growx,growy,wrap");
-
-		String instrStr = Base.isMacOS()?
-				"<html><body>Drag to rotate<br>Shift-drag to pan<br>Mouse wheel to zoom</body></html>":
-				"<html><body>Left button drag to rotate<br>Right button drag to pan<br>Mouse wheel to zoom</body></html>";
-		JLabel instructions = new JLabel(instrStr);
-		Font f = instructions.getFont();
-		instructions.setFont(f.deriveFont((float)f.getSize()*0.8f));
-		panel.add(instructions,"growx,gaptop 20,spanx,wrap");
-		return panel;
-	}
 
 	enum DragMode {
 		NONE,
@@ -149,88 +84,76 @@ public class PreviewPanel extends JPanel {
 		TRANSLATE_OBJECT
 	};
 
+	ToolPanel toolPanel;
+	
+	Tool currentTool = null; // The tool currently in use.
+	
+	void setTool(Tool tool) {
+		if (currentTool == tool) { return; }
+		if (currentTool != null) {
+			if (currentTool instanceof MouseListener) {
+				canvas.removeMouseListener((MouseListener)currentTool);
+			}
+			if (currentTool instanceof MouseMotionListener) {
+				canvas.removeMouseMotionListener((MouseMotionListener)currentTool);
+			}
+			if (currentTool instanceof MouseWheelListener) {
+				canvas.removeMouseWheelListener((MouseWheelListener)currentTool);
+			}
+			if (currentTool instanceof KeyListener) {
+				canvas.removeKeyListener((KeyListener)currentTool);
+			}
+		}
+		currentTool = tool;
+		if (currentTool != null) {
+			if (currentTool instanceof MouseListener) {
+				canvas.addMouseListener((MouseListener)currentTool);
+			}
+			if (currentTool instanceof MouseMotionListener) {
+				canvas.addMouseMotionListener((MouseMotionListener)currentTool);
+			}
+			if (currentTool instanceof MouseWheelListener) {
+				canvas.addMouseWheelListener((MouseWheelListener)currentTool);
+			}
+			if (currentTool instanceof KeyListener) {
+				canvas.addKeyListener((KeyListener)currentTool);
+			}
+		}
+	}
+		
+	Canvas3D canvas;
+	
+	void adjustViewAngle(double deltaYaw, double deltaPitch) {
+		turntableAngle += deltaYaw;
+		elevationAngle += deltaPitch;
+		updateVP();
+	}
+	
+	void adjustViewTranslation(double deltaX, double deltaY) {
+		cameraTranslation.x += deltaX;
+		cameraTranslation.y += deltaY;
+		updateVP();
+	}
+	
+	void adjustZoom(double deltaZoom) {
+		cameraTranslation.z += deltaZoom;
+		updateVP();
+	}
+	
 	public PreviewPanel(final MainWindow mainWindow) {
 		this.mainWindow = mainWindow;
 		//setLayout(new MigLayout()); 
 		setLayout(new MigLayout("fill,ins 0,gap 0"));
 		// Create Canvas3D and SimpleUniverse; add canvas to drawing panel
-		Canvas3D c = createUniverse();
-		add(c, "growx,growy");
-		add(createToolPanel(),"dock east");
+		canvas = createUniverse();
+		add(canvas, "growx,growy");
+		toolPanel = new ToolPanel(this);
+		add(toolPanel,"dock east");
 		// Create the content branch and add it to the universe
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
-
-		class MouseActivityListener implements MouseMotionListener, MouseListener, MouseWheelListener {
-			Point startPoint = null;
-			int button = 0;
-						
-			public void mouseDragged(MouseEvent e) {
-				if (startPoint == null) return;
-				Point p = e.getPoint();
-				DragMode mode = DragMode.ROTATE_VIEW; 
-				if (Base.isMacOS()) {
-					if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
-					else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_VIEW; }
-				} else {
-					if (e.isAltDown()) {
-						if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_OBJECT; }
-						else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_OBJECT; }
-					} else {
-						if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_VIEW; }
-						else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_VIEW; }
-					}
-				}
-				double xd = (double)(p.x - startPoint.x);
-				double yd = (double)(p.y - startPoint.y);
-				switch (mode) {
-				case ROTATE_VIEW:
-					// Rotate view
-					turntableAngle += 0.05 * xd;
-					elevationAngle -= 0.05 * yd;
-					updateVP();
-					break;
-				case TRANSLATE_VIEW:
-					// Pan view
-					cameraTranslation.x += -0.05 * xd;
-					cameraTranslation.y += 0.05 * yd;
-					updateVP();
-					break;
-				case TRANSLATE_OBJECT:
-					translateObject(0.05*xd,0d,-0.05*yd);
-					break;
-				}
-				startPoint = p;
-			}
-			public void mouseMoved(MouseEvent e) {
-			}
-			public void mouseClicked(MouseEvent e) {
-			}
-			public void mouseEntered(MouseEvent e) {
-			}
-			public void mouseExited(MouseEvent e) {
-			}
-			public void mousePressed(MouseEvent e) {
-				startPoint = e.getPoint();
-				button = e.getButton();
-			}
-			public void mouseReleased(MouseEvent e) {
-				startPoint = null;
-			}
-			public void mouseWheelMoved(MouseWheelEvent e) {
-				int notches = e.getWheelRotation();				
-				cameraTranslation.z += 0.10 * notches;
-				updateVP();
-			}
-			
-		};
-
-		MouseActivityListener activityListener = new MouseActivityListener();
-		c.addMouseMotionListener(activityListener);
-		c.addMouseWheelListener(activityListener);
-		c.addMouseListener(activityListener);
 		
-		c.addKeyListener( new KeyListener() {
+		canvas.addKeyListener( new KeyListener() {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyChar() == 'a') {
 					cameraTranslation.x += 0.05;
@@ -253,13 +176,8 @@ public class PreviewPanel extends JPanel {
 				} else if (e.getKeyChar() == '}') {
 					turntableAngle -= 0.05;
 				} else if (e.getKeyChar() == 'e') {
-					if (showEdges) {
-						objectSwitch.setWhichChild(0);
-						showEdges = false;
-					} else {
-						objectSwitch.setWhichChild(1);
-						showEdges = true;
-					}
+					showEdges = !showEdges;
+					model.showEdges(showEdges);
 				} else {
 					return;
 				}
@@ -272,25 +190,16 @@ public class PreviewPanel extends JPanel {
 			public void keyTyped(KeyEvent e) {
 			}
 		});
+
 	}		
 
 
 	private SimpleUniverse univ = null;
 
 	/**
-	 * The switch object that allows us to toggle between wireframe and solid modes.
-	 */
-	private Switch objectSwitch = null;
-	/**
 	 * Indicates whether we're in edge (wireframe) mode.  False indicates a solid view. 
 	 */
 	private boolean showEdges = false;
-	/**
-	 * The transform group for the shape.  The enclosed transform should be applied to the shape before:
-	 * * bounding box calculation
-	 * * saving out the STL for skeining
-	 */
-	private TransformGroup shapeTransform = new TransformGroup();
 
 	public Node makeAmbientLight() {
 		AmbientLight ambient = new AmbientLight();
@@ -394,142 +303,18 @@ public class PreviewPanel extends JPanel {
 		}
 		return new Shape3D(grid,edges); 
 	}
-
-	private BoundingBox getBoundingBox(Group group, Transform3D transformation) {
-		BoundingBox bb = new BoundingBox(new Point3d(Double.MAX_VALUE,Double.MAX_VALUE,Double.MAX_VALUE),
-				new Point3d(Double.MIN_VALUE,Double.MIN_VALUE,Double.MIN_VALUE));
-		transformation = new Transform3D(transformation);
-		if (group instanceof TransformGroup) {
-			Transform3D nextTransform = new Transform3D();
-			((TransformGroup)group).getTransform(nextTransform);
-			transformation.mul(nextTransform);
-		}
-		for (int i = 0; i < group.numChildren(); i++) {
-			Node n = group.getChild(i);
-			if (n instanceof Shape3D) {
-				bb.combine(getBoundingBox((Shape3D)n, transformation));
-			} else if (n instanceof Group) {
-				bb.combine(getBoundingBox((Group)n,transformation));
-			}
-		}
-		return bb;
-	}
 	
-	private BoundingBox getBoundingBox(Group group) {
-		return getBoundingBox(group, new Transform3D());
-	}
-	
-	private BoundingBox getBoundingBox(Shape3D shape, Transform3D transformation) {
-		BoundingBox bb = null;
-		Enumeration<?> geometries = shape.getAllGeometries();
-		while (geometries.hasMoreElements()) {
-			Geometry g = (Geometry)geometries.nextElement();
-			if (g instanceof GeometryArray) {
-				GeometryArray ga = (GeometryArray)g;
-				Point3d p = new Point3d();
-				for (int i = 0; i < ga.getVertexCount(); i++) {
-					ga.getCoordinate(i,p);
-					transformation.transform(p);
-					if (bb == null) { bb = new BoundingBox(p,p); }
-					bb.combine(p);
-				}
-			}
-		}
-		return bb;
-	}
-
-	private BranchGroup makeShape(BuildModel model) {
-		objectSwitch = new Switch();
-		Shape3D originalShape = model.getShape();
-
-		Shape3D shape = (Shape3D)originalShape.cloneTree();
-		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
-		objectSwitch.addChild(shape);
-		objectSwitch.addChild(edgeClone);
-		objectSwitch.setWhichChild(0);
-		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-
-		//Color3f color = new Color3f(0.05f,1.0f,0.04f); 
-		Color3f color = new Color3f(1.0f,1.0f,1.0f); 
-		Material m = new Material();
-		m.setAmbientColor(color);
-		m.setDiffuseColor(color);
-		//m.setSpecularColor(new Color3f(1f,1f,1f));
-		Appearance solid = new Appearance();
-		solid.setMaterial(m);
-		//solid.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST, 0.2f));
-		shape.setAppearance(solid);
-
-		Appearance edges = new Appearance();
-		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
-		edges.setPolygonAttributes(new PolygonAttributes(PolygonAttributes.POLYGON_LINE,
-				PolygonAttributes.CULL_NONE,0));
-		edgeClone.setAppearance(edges);
-
-		BranchGroup wrapper = new BranchGroup();
-
-		shapeTransform = new TransformGroup();
-		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-		wrapper.addChild(shapeTransform);
-
-		shapeTransform.addChild(objectSwitch);
-		wrapper.setCapability(BranchGroup.ALLOW_DETACH);
-		wrapper.compile();
-		return wrapper;
-	}
-
 	BranchGroup sceneGroup;
 	BranchGroup objectBranch;
-	
-	public void translateObject(double x, double y, double z) {
-		// Skip identity translations
-		if (x == 0.0 && y == 0.0 && z == 0.0) { return; }
-		Transform3D translate = new Transform3D();
-		translate.setZero();
-		translate.setTranslation(new Vector3d(x,y,z));
-		Transform3D old = new Transform3D();
-		shapeTransform.getTransform(old);
-		old.add(translate);
-		shapeTransform.setTransform(old);
-		model.setTransform(old,"move");
-	}
-	
-	/**
-	 * Center the object tree and raise its lowest point to Z=0.
-	 */
-	public void center() {
-		BoundingBox bb = getBoundingBox(shapeTransform);
-		Point3d lower = new Point3d();
-		Point3d upper = new Point3d();
-		bb.getLower(lower);
-		bb.getUpper(upper);
-		double zoff = -lower.z;
-		double xoff = -(upper.x + lower.x)/2.0d;
-		double yoff = -(upper.y + lower.y)/2.0d;
-		translateObject(xoff, yoff, zoff);
-	}
-	
+			
 	/**
 	 * Center the object and flatten the bottommost poly.  (A more thorough version would
 	 * be able to correctly center a tripod or other spiky object.)
 	 */
 	public void align() {
-		center();
+		model.center();
 	}
 	
-	/**
-	 * Flip the object tree around the Z axis.  This is particularly useful when
-	 * breaking a print into two parts.
-	 */
-	public void flipZ() {
-		Transform3D flipZ = new Transform3D();
-		Transform3D old = new Transform3D();
-		shapeTransform.getTransform(old);
-		flipZ.rotY(Math.PI);
-		flipZ.mul(old);
-		shapeTransform.setTransform(flipZ);
-		model.setTransform(flipZ,"flip");
-	}
 	
 	public BranchGroup createSTLScene() {
 		// Create the root of the branch graph
@@ -584,7 +369,7 @@ public class PreviewPanel extends JPanel {
 	double elevationAngle = ELEVATION_ANGLE_DEFAULT;
 	double turntableAngle = TURNTABLE_ANGLE_DEFAULT;
 
-	private void resetView() {
+	void resetView() {
 		cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
 		elevationAngle = ELEVATION_ANGLE_DEFAULT;
 		turntableAngle = TURNTABLE_ANGLE_DEFAULT;
