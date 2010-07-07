@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
-import replicatorg.app.Base;
 
 public class ToolPanel extends JPanel {
 
@@ -36,7 +35,7 @@ public class ToolPanel extends JPanel {
 	}
 
 	final PreviewPanel preview;
-	final JPanel subPanel = new JPanel();
+	final JPanel subPanel = new JPanel(new MigLayout("fillx,filly"));
 	
 	Tool[] tools = { 
 			new ViewTool(this),
@@ -54,7 +53,13 @@ public class ToolPanel extends JPanel {
 		titleLabel.setText(tool.getTitle());
 		// Set tool instructions
 		infoLabel.setText(tool.getInstructions());
-		// Add tool panel
+		// Add subpanel
+		subPanel.removeAll();
+		JPanel toolControls = tool.getControls();
+		if (toolControls != null) {
+			subPanel.add(toolControls,"growx,growy");
+		}
+		
 	}
 	
 	EditingModel getModel() { return preview.getModel(); }
