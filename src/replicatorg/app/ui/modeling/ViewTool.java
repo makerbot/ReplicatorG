@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 import replicatorg.app.Base;
 import replicatorg.app.ui.modeling.PreviewPanel.DragMode;
 
-public class ViewTool implements Tool, MouseMotionListener, MouseListener, MouseWheelListener {
+public class ViewTool extends Tool implements MouseMotionListener, MouseListener, MouseWheelListener {
 
 	final ToolPanel parent;
 	public ViewTool(ToolPanel parent) {

@@ -13,10 +13,12 @@ import javax.swing.JPanel;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+import net.miginfocom.swing.MigLayout;
+
 import replicatorg.app.Base;
 import replicatorg.app.ui.modeling.PreviewPanel.DragMode;
 
-public class MoveTool implements Tool, MouseMotionListener, MouseListener, MouseWheelListener {
+public class MoveTool extends Tool implements MouseMotionListener, MouseListener, MouseWheelListener {
 	final ToolPanel parent;
 	public MoveTool(ToolPanel parent) {
 		this.parent = parent;
@@ -33,7 +35,9 @@ public class MoveTool implements Tool, MouseMotionListener, MouseListener, Mouse
 	}
 
 	public JPanel getControls() {
-		return null;
+		JPanel p = new JPanel(new MigLayout());
+		new CoordinateControl(p,null);
+		return p;
 	}
 
 	public String getInstructions() {
@@ -64,7 +68,7 @@ public class MoveTool implements Tool, MouseMotionListener, MouseListener, Mouse
 		double yd = -(double)(p.y - startPoint.y);
 		switch (mode) {
 		case ROTATE_VIEW:
-			parent.preview.adjustViewAngle(0.05 * xd, -0.05 * yd);
+			parent.preview.adjustViewAngle(0.05 * xd, 0.05 * yd);
 			break;
 		case TRANSLATE_OBJECT:
 			doTranslate(xd,yd);
