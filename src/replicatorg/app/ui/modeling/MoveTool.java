@@ -10,6 +10,8 @@ import java.awt.event.MouseWheelListener;
 import javax.media.j3d.Transform3D;
 import javax.swing.Icon;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
@@ -18,7 +20,8 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.ui.modeling.PreviewPanel.DragMode;
 
-public class MoveTool extends Tool implements MouseMotionListener, MouseListener, MouseWheelListener {
+public class MoveTool extends Tool implements MouseMotionListener, MouseListener, MouseWheelListener,
+	ChangeListener {
 	final ToolPanel parent;
 	public MoveTool(ToolPanel parent) {
 		this.parent = parent;
@@ -34,9 +37,15 @@ public class MoveTool extends Tool implements MouseMotionListener, MouseListener
 		return "Move";
 	}
 
+	Point3d delta = new Point3d();
+	CoordinateControl control;
+	
 	public JPanel getControls() {
 		JPanel p = new JPanel(new MigLayout());
-		new CoordinateControl(p,null);
+		relativeZero = new Point3d();
+		delta = new Point3d();
+		control = new CoordinateControl(p,delta);
+		control.update();
 		return p;
 	}
 
@@ -52,6 +61,8 @@ public class MoveTool extends Tool implements MouseMotionListener, MouseListener
 
 	Point startPoint = null;
 	int button = 0;
+	
+	Point3d relativeZero;
 
 	public void mouseDragged(MouseEvent e) {
 		if (startPoint == null) return;
@@ -109,5 +120,8 @@ public class MoveTool extends Tool implements MouseMotionListener, MouseListener
 		Vector3d v = new Vector3d(deltaX,deltaY,0d);
 		vt.transform(v);
 		parent.getModel().translateObject(v.x,v.y,v.z);
+	}
+
+	public void stateChanged(ChangeEvent arg0) {
 	}
 }

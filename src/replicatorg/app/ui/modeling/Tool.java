@@ -15,7 +15,7 @@ public abstract class Tool {
 		JSpinner spinner;
 		JCheckBox box;
 		public AxisControl(String title, JPanel parent, double initial) {
-			model = new SpinnerNumberModel(initial,-100000,100000,0.25);
+			model = new SpinnerNumberModel(initial,-100000,100000,1);
 			spinner = new JSpinner(model);
 			box = new JCheckBox("lock");
 			parent.add(new JLabel(title));
