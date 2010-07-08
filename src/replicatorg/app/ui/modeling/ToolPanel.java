@@ -58,6 +58,8 @@ public class ToolPanel extends JPanel {
 		JPanel toolControls = tool.getControls();
 		if (toolControls != null) {
 			subPanel.add(toolControls,"growx,growy");
+		} else {
+			subPanel.repaint();
 		}
 		
 	}
@@ -103,14 +105,6 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		toolButtons.add(sliceButton,"growx,spanx,wrap");
-
-		JButton centerButton = createToolButton("Center","images/center-object.png");
-		centerButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				getModel().center();
-			}
-		});
-		toolButtons.add(centerButton,"growx,growy");
 
 		JButton flipButton = createToolButton("Flip","images/flip-object.png");
 		flipButton.addActionListener(new ActionListener() {

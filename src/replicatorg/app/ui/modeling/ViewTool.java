@@ -1,6 +1,8 @@
 package replicatorg.app.ui.modeling;
 
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -8,7 +10,11 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
 import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+
+import net.miginfocom.swing.MigLayout;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.modeling.PreviewPanel.DragMode;
@@ -29,7 +35,41 @@ public class ViewTool extends Tool implements MouseMotionListener, MouseListener
 	}
 
 	public JPanel getControls() {
-		return null;
+		JPanel p = new JPanel(new MigLayout("fillx,filly"));
+		JButton b;
+		b = createToolButton("Center","images/center-object.png");
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				parent.preview.resetView();
+			}
+		});
+		p.add(b,"growx");
+
+		b = createToolButton("XY","images/center-object.png");
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				parent.preview.viewXY();
+			}
+		});
+		p.add(b,"growx,wrap");
+
+		b = createToolButton("XZ","images/center-object.png");
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				parent.preview.viewXZ();
+			}
+		});
+		p.add(b,"growx");
+
+		b = createToolButton("YZ","images/center-object.png");
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				parent.preview.viewYZ();
+			}
+		});
+		p.add(b,"growx,wrap");
+
+		return p;
 	}
 
 	public String getInstructions() {

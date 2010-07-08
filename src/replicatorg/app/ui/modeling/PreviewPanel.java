@@ -28,6 +28,7 @@ import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.media.j3d.View;
 import javax.swing.JPanel;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
@@ -354,17 +355,12 @@ public class PreviewPanel extends JPanel {
 	final static double ELEVATION_ANGLE_DEFAULT = 1.278;
 	final static double TURNTABLE_ANGLE_DEFAULT = 0.214;
 	
+	final static double CAMERA_DISTANCE_DEFAULT = 300d; // 30cm
+	
 	Vector3d cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
 	double elevationAngle = ELEVATION_ANGLE_DEFAULT;
 	double turntableAngle = TURNTABLE_ANGLE_DEFAULT;
 
-	void resetView() {
-		cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
-		elevationAngle = ELEVATION_ANGLE_DEFAULT;
-		turntableAngle = TURNTABLE_ANGLE_DEFAULT;
-		updateVP();
-	}
-	
 	Transform3D getViewTransform() {
 		TransformGroup viewTG = univ.getViewingPlatform().getViewPlatformTransform();
 		Transform3D t = new Transform3D();
@@ -372,6 +368,7 @@ public class PreviewPanel extends JPanel {
 		return t;
 	}
 	
+//	double VIEW_SCALE = 100d;
 	private void updateVP() {
 		TransformGroup viewTG = univ.getViewingPlatform().getViewPlatformTransform();
 		Transform3D t3d = new Transform3D();
@@ -384,6 +381,9 @@ public class PreviewPanel extends JPanel {
 		t3d.mul(rotZ);
 		t3d.mul(rotX);
 		t3d.mul(trans);
+//		Transform3D scale = new Transform3D();
+//		scale.setScale(VIEW_SCALE);
+//		t3d.mul(scale);
 		viewTG.setTransform(t3d);
 
 		if (Base.logger.isLoggable(Level.FINE)) {
@@ -408,14 +408,49 @@ public class PreviewPanel extends JPanel {
 		// Create simple universe with view branch
 		univ = new SimpleUniverse(c);
 		univ.getViewer().getView().setSceneAntialiasingEnable(true);
-		univ.getViewer().getView().setFrontClipDistance(10d);
-		univ.getViewer().getView().setBackClipDistance(1000d);
+		univ.getViewer().getView().setFrontClipDistance(10d / VIEW_SCALE);
+		univ.getViewer().getView().setBackClipDistance(1000d / VIEW_SCALE);
 		updateVP();
 
 		// Ensure at least 5 msec per frame (i.e., < 200Hz)
 		univ.getViewer().getView().setMinimumFrameCycleTime(5);
 
 		return c;
+	}
+
+	void resetView() {
+		cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
+		elevationAngle = ELEVATION_ANGLE_DEFAULT;
+		turntableAngle = TURNTABLE_ANGLE_DEFAULT;
+//		usePerspective(true);
+		updateVP();
+	}
+
+	public void viewXY() {
+		cameraTranslation = new Vector3d(0d,0d,CAMERA_DISTANCE_DEFAULT);
+		turntableAngle = 0d;
+		elevationAngle = 0d;
+//		usePerspective(false);
+		updateVP();	
+	}
+	
+	public void viewYZ() {
+		cameraTranslation = new Vector3d(0d,50d,CAMERA_DISTANCE_DEFAULT);
+		turntableAngle = 0d;
+		elevationAngle = Math.PI/2;
+//		usePerspective(false);
+		updateVP();	
+	}
+	public void viewXZ() {
+		cameraTranslation = new Vector3d(0d,50d,CAMERA_DISTANCE_DEFAULT);
+		elevationAngle = Math.PI/2;
+		turntableAngle = Math.PI/2;
+//		usePerspective(false);
+		updateVP();	
+	}
+
+	public void usePerspective(boolean perspective) {
+		univ.getViewer().getView().setProjectionPolicy(perspective?View.PERSPECTIVE_PROJECTION:View.PARALLEL_PROJECTION);
 	}
 
 

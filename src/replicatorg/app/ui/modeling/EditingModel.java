@@ -28,6 +28,16 @@ import replicatorg.model.BuildModel;
  *
  */
 public class EditingModel {
+	public class ReferenceFrame {
+		public Point3d origin;
+		public Vector3d zAxis;
+		
+		public ReferenceFrame() {
+			origin = new Point3d();
+			zAxis = new Vector3d(0d,0d,1d);
+		}
+	}
+	
 	/**
 	 * The underlying model being edited.
 	 */
@@ -48,7 +58,7 @@ public class EditingModel {
 	 * * saving out the STL for skeining
 	 */
 	private TransformGroup shapeTransform = new TransformGroup();
-
+	
 	public EditingModel(BuildModel model) {
 		this.model = model;
 	}
@@ -108,6 +118,15 @@ public class EditingModel {
 		} else {
 			objectSwitch.setWhichChild(1);
 		}
+	}
+	
+	public ReferenceFrame getReferenceFrame() {
+		Transform3D translate = new Transform3D();
+		shapeTransform.getTransform(translate);
+		ReferenceFrame rf = new ReferenceFrame();
+		translate.transform(rf.origin);
+		translate.transform(rf.zAxis);
+		return rf;
 	}
 
 	public void translateObject(double x, double y, double z) {

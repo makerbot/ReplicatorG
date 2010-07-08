@@ -1,11 +1,13 @@
 package replicatorg.app.ui.modeling;
 
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 
@@ -26,7 +28,15 @@ public abstract class Tool {
 			}
 		}	
 	}
-	
+
+	public JButton createToolButton(String text, String iconPath) {
+		//ImageIcon icon = new ImageIcon(Base.getImage(iconPath, this));
+		JButton button = new JButton(text);//,icon);
+		button.setVerticalTextPosition(SwingConstants.BOTTOM);
+		button.setHorizontalTextPosition(SwingConstants.CENTER);
+		return button;
+	}
+
 	public class CoordinateControl {
 		AxisControl[] axes = new AxisControl[3];
 		Point3d coordinate;
