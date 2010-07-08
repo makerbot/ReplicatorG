@@ -408,8 +408,8 @@ public class PreviewPanel extends JPanel {
 		// Create simple universe with view branch
 		univ = new SimpleUniverse(c);
 		univ.getViewer().getView().setSceneAntialiasingEnable(true);
-		univ.getViewer().getView().setFrontClipDistance(10d / VIEW_SCALE);
-		univ.getViewer().getView().setBackClipDistance(1000d / VIEW_SCALE);
+		univ.getViewer().getView().setFrontClipDistance(10d);
+		univ.getViewer().getView().setBackClipDistance(1000d);
 		updateVP();
 
 		// Ensure at least 5 msec per frame (i.e., < 200Hz)
