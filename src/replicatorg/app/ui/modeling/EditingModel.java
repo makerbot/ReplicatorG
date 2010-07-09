@@ -129,31 +129,43 @@ public class EditingModel {
 		return rf;
 	}
 
-	public void rotateObject(double turntable, double elevation) {
-		// Skip identity translations
-		if (turntable == 0.0 && elevation == 0.0) { return; }
+	/**
+	 * Transform the given transform to one that operates on the centroid of the object.
+	 * @param transform
+	 * @param name
+	 * @return
+	 */
+	public Transform3D transformOnCentroid(Transform3D transform) {
+		Transform3D old = new Transform3D();
 		Transform3D t1 = new Transform3D();
-		Transform3D r1 = new Transform3D();
-		Transform3D r2 = new Transform3D();
 		Transform3D t2 = new Transform3D();
+
 		Vector3d t1v = new Vector3d(getCentroid());
 		t1v.negate();
-		Vector3d t2v = new Vector3d(getCentroid());
 		t1.setTranslation(t1v);
+		Vector3d t2v = new Vector3d(getCentroid());
 		t2.setTranslation(t2v);
-		r1.rotX(elevation);
-		r2.rotZ(turntable);
-		Transform3D old = new Transform3D();
 		shapeTransform.getTransform(old);
 		
 		Transform3D composite = new Transform3D();
 		composite.mul(t2);
-		composite.mul(r2);
-		composite.mul(r1);
+		composite.mul(transform);
 		composite.mul(t1);
 		composite.mul(old);
-		shapeTransform.setTransform(composite);
-		model.setTransform(composite,"rotation");
+		return composite;
+	}
+	
+	public void rotateObject(double turntable, double elevation) {
+		// Skip identity translations
+		if (turntable == 0.0 && elevation == 0.0) { return; }
+		Transform3D r1 = new Transform3D();
+		Transform3D r2 = new Transform3D();
+		r1.rotX(elevation);
+		r2.rotZ(turntable);
+		r2.mul(r1);
+		r2 = transformOnCentroid(r2);
+		shapeTransform.setTransform(r2);
+		model.setTransform(r2,"rotation");
 	}
 	
 	public void translateObject(double x, double y, double z) {
@@ -199,10 +211,8 @@ public class EditingModel {
 	 */
 	public void flipZ() {
 		Transform3D flipZ = new Transform3D();
-		Transform3D old = new Transform3D();
-		shapeTransform.getTransform(old);
 		flipZ.rotY(Math.PI);
-		flipZ.mul(old);
+		flipZ = transformOnCentroid(flipZ);
 		shapeTransform.setTransform(flipZ);
 		model.setTransform(flipZ,"flip");
 	}
@@ -242,7 +252,6 @@ public class EditingModel {
 			bb.getUpper(p2);
 			p1.interpolate(p2,0.5d);
 			centroid = p1;
-			System.err.println("Centroid is "+centroid.toString());
 		}
 		return centroid;
 	}
