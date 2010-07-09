@@ -129,9 +129,37 @@ public class EditingModel {
 		return rf;
 	}
 
+	public void rotateObject(double turntable, double elevation) {
+		// Skip identity translations
+		if (turntable == 0.0 && elevation == 0.0) { return; }
+		Transform3D t1 = new Transform3D();
+		Transform3D r1 = new Transform3D();
+		Transform3D r2 = new Transform3D();
+		Transform3D t2 = new Transform3D();
+		Vector3d t1v = new Vector3d(getCentroid());
+		t1v.negate();
+		Vector3d t2v = new Vector3d(getCentroid());
+		t1.setTranslation(t1v);
+		t2.setTranslation(t2v);
+		r1.rotX(elevation);
+		r2.rotZ(turntable);
+		Transform3D old = new Transform3D();
+		shapeTransform.getTransform(old);
+		
+		Transform3D composite = new Transform3D();
+		composite.mul(t2);
+		composite.mul(r2);
+		composite.mul(r1);
+		composite.mul(t1);
+		composite.mul(old);
+		shapeTransform.setTransform(composite);
+		model.setTransform(composite,"rotation");
+	}
+	
 	public void translateObject(double x, double y, double z) {
 		// Skip identity translations
 		if (x == 0.0 && y == 0.0 && z == 0.0) { return; }
+		centroid = null;
 		Transform3D translate = new Transform3D();
 		translate.setZero();
 		translate.setTranslation(new Vector3d(x,y,z));
@@ -203,14 +231,20 @@ public class EditingModel {
 		return getBoundingBox(shapeTransform);
 	}
 	
+	private Point3d centroid = null;
+	
 	public Point3d getCentroid() {
-		BoundingBox bb = getBoundingBox();
-		Point3d p1 = new Point3d();
-		Point3d p2 = new Point3d();
-		bb.getLower(p1);
-		bb.getUpper(p2);
-		p1.interpolate(p2,0.5d);
-		return p1;
+		if (centroid == null) {
+			BoundingBox bb = getBoundingBox();
+			Point3d p1 = new Point3d();
+			Point3d p2 = new Point3d();
+			bb.getLower(p1);
+			bb.getUpper(p2);
+			p1.interpolate(p2,0.5d);
+			centroid = p1;
+			System.err.println("Centroid is "+centroid.toString());
+		}
+		return centroid;
 	}
 	/**
 	 * Center the object tree and raise its lowest point to Z=0.

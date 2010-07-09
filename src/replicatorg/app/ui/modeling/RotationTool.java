@@ -17,91 +17,119 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.ui.modeling.PreviewPanel.DragMode;
 
-public class ViewTool extends Tool implements MouseMotionListener, MouseListener, MouseWheelListener {
-	public ViewTool(ToolPanel parent) {
+public class RotationTool extends Tool implements MouseMotionListener, MouseListener, MouseWheelListener {
+	public RotationTool(ToolPanel parent) {
 		super(parent);
 	}
-
-	public Icon getButtonIcon() {
+	
+	@Override
+	Icon getButtonIcon() {
 		return null;
 	}
 
-	public String getButtonName() {
-		return "View";
+	@Override
+	String getButtonName() {
+		return "Rotate";
 	}
 
-	public JPanel getControls() {
+	@Override
+	JPanel getControls() {
 		JPanel p = new JPanel(new MigLayout("fillx,filly"));
 		JButton b;
-		b = createToolButton("Center","images/center-object.png");
+
+		b = createToolButton("Z+","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.preview.resetView();
+				parent.getModel().rotateObject(Math.PI/2, 0d);
 			}
 		});
 		p.add(b,"growx");
 
-		b = createToolButton("XY","images/center-object.png");
+		b = createToolButton("Z-","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.preview.viewXY();
+				parent.getModel().rotateObject(-Math.PI/2, 0d);
 			}
 		});
 		p.add(b,"growx,wrap");
 
-		b = createToolButton("XZ","images/center-object.png");
+		b = createToolButton("X+","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.preview.viewXZ();
+				parent.getModel().rotateObject(0d, Math.PI/2);
 			}
 		});
 		p.add(b,"growx");
 
-		b = createToolButton("YZ","images/center-object.png");
+		b = createToolButton("X-","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.preview.viewYZ();
+				parent.getModel().rotateObject(0d, -Math.PI/2);
 			}
 		});
 		p.add(b,"growx,wrap");
+
+		b = createToolButton("Y+","images/center-object.png");
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				parent.getModel().rotateObject(Math.PI/2, Math.PI/2);
+			}
+		});
+		p.add(b,"growx");
+
+		b = createToolButton("Y-","images/center-object.png");
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				parent.getModel().rotateObject(-Math.PI/2, Math.PI/2);
+			}
+		});
+		p.add(b,"growx,wrap");
+
+		b = createToolButton("Lay flat","images/center-object.png");
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				parent.getModel().rotateObject(-Math.PI/2, Math.PI/2);
+			}
+		});
+		p.add(b,"growx,spanx,wrap");
 
 		return p;
 	}
 
-	public String getInstructions() {
+	@Override
+	String getInstructions() {
 		return Base.isMacOS()?
-				"<html><body>Drag to rotate<br>Shift-drag to pan<br>Mouse wheel to zoom</body></html>":
-				"<html><body>Left button drag to rotate<br>Right button drag to pan<br>Mouse wheel to zoom</body></html>";
+				"<html><body>Drag to rotate<br>Shift-drag to pan view<br>Mouse wheel to zoom</body></html>":
+				"<html><body>Left button drag to rotate object<br>Right button drag to pan view<br>Mouse wheel to zoom</body></html>";
 	}
 
-	public String getTitle() {
-		return "Preview";
+	@Override
+	String getTitle() {
+		return "Rotate Object";
 	}
 
 
 	Point startPoint = null;
 	int button = 0;
-
+	
 	public void mouseDragged(MouseEvent e) {
 		if (startPoint == null) return;
 		Point p = e.getPoint();
 		DragMode mode = DragMode.ROTATE_VIEW; 
 		if (Base.isMacOS()) {
-			if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
+			if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_OBJECT; }
 			else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_VIEW; }
 		} else {
-			if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_VIEW; }
+			if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_OBJECT; }
 			else if (button == MouseEvent.BUTTON3) { mode = DragMode.TRANSLATE_VIEW; }
 		}
 		double xd = (double)(p.x - startPoint.x);
-		double yd = (double)(p.y - startPoint.y);
+		double yd = -(double)(p.y - startPoint.y);
 		switch (mode) {
-		case ROTATE_VIEW:
-			// Rotate view
-			parent.preview.adjustViewAngle(0.05 * xd, -0.05 * yd);
+		case ROTATE_OBJECT:
+			parent.getModel().rotateObject(0.05*xd, -0.05*yd);
 			break;
 		case TRANSLATE_VIEW:
-			// Pan view
 			parent.preview.adjustViewTranslation(-0.5 * xd, 0.5 * yd);
 			break;
 		}
@@ -115,6 +143,9 @@ public class ViewTool extends Tool implements MouseMotionListener, MouseListener
 	}
 	public void mouseExited(MouseEvent e) {
 	}
+	
+	double objectDistance;
+	
 	public void mousePressed(MouseEvent e) {
 		startPoint = e.getPoint();
 		button = e.getButton();
@@ -124,7 +155,7 @@ public class ViewTool extends Tool implements MouseMotionListener, MouseListener
 	}
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		int notches = e.getWheelRotation();
-		parent.preview.adjustZoom(10d * notches);
+		parent.preview.adjustZoom(10 * notches);
 	}
 
 }

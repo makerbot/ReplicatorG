@@ -14,20 +14,16 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
 import net.miginfocom.swing.MigLayout;
-
 import replicatorg.app.Base;
 import replicatorg.app.ui.modeling.PreviewPanel.DragMode;
 
 public class MoveTool extends Tool implements MouseMotionListener, MouseListener, MouseWheelListener {
-	final ToolPanel parent;
 	public MoveTool(ToolPanel parent) {
-		this.parent = parent;
+		super(parent);
 	}
 	
 	Transform3D vt;

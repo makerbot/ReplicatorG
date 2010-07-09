@@ -61,4 +61,10 @@ public abstract class Tool {
 	abstract Icon getButtonIcon();
 	abstract String getInstructions();
 	abstract JPanel getControls();
+	
+	final protected ToolPanel parent;
+	public Tool(ToolPanel parent) {
+		this.parent = parent;
+	}
+
 }
