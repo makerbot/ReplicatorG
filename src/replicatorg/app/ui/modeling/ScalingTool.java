@@ -8,10 +8,13 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.text.NumberFormat;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -37,8 +40,27 @@ public class ScalingTool extends Tool implements MouseMotionListener, MouseListe
 	@Override
 	JPanel getControls() {
 		JPanel p = new JPanel(new MigLayout("fillx,filly"));
-
 		JButton b;
+
+		final JTextField scaleFactor = new JFormattedTextField(NumberFormat.getInstance());
+		p.add(scaleFactor,"growx");
+
+		b = new JButton("Scale");
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String txt = scaleFactor.getText();
+				if (txt != null) {
+					try {
+						double scale = Double.parseDouble(txt);
+						parent.getModel().scale(scale);
+					} catch (NumberFormatException nfe) {
+						Base.logger.fine("Scale factor "+txt+" is not parseable");
+					}
+				}
+			}
+		});
+		p.add(b,"growx,wrap");
+		
 		b = createToolButton("inches->mm","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
