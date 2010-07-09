@@ -41,7 +41,8 @@ public class ToolPanel extends JPanel {
 			new ViewTool(this),
 			new MoveTool(this),
 			new RotationTool(this),
-			new MirrorTool(this)
+			new MirrorTool(this),
+			new ScalingTool(this)
 	};
 	
 	JLabel titleLabel;

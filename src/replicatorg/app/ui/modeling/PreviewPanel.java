@@ -82,6 +82,7 @@ public class PreviewPanel extends JPanel {
 		ROTATE_VIEW,
 		TRANSLATE_VIEW,
 		ROTATE_OBJECT,
+		SCALE_OBJECT,
 		TRANSLATE_OBJECT
 	};
 

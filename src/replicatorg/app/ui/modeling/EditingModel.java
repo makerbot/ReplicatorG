@@ -250,6 +250,15 @@ public class EditingModel {
 		model.setTransform(t,"mirror Z");
 	}
 
+	public void scale(double scale) {
+		Transform3D t = new Transform3D();
+		t.setScale(scale);
+		t = transformOnCentroid(t);
+		shapeTransform.setTransform(t);
+		model.setTransform(t,"resize");		
+	}
+	
+
 	private BoundingBox getBoundingBox(Group group, Transform3D transformation) {
 		BoundingBox bb = new BoundingBox(new Point3d(Double.MAX_VALUE,Double.MAX_VALUE,Double.MAX_VALUE),
 				new Point3d(Double.MIN_VALUE,Double.MIN_VALUE,Double.MIN_VALUE));

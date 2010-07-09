@@ -14,7 +14,6 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
-import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
 import net.miginfocom.swing.MigLayout;
@@ -98,18 +97,16 @@ public class MoveTool extends Tool implements MouseMotionListener, MouseListener
 	}
 	public void mouseExited(MouseEvent e) {
 	}
-	
-	double objectDistance;
-	
+		
 	public void mousePressed(MouseEvent e) {
 		startPoint = e.getPoint();
 		button = e.getButton();
 		// Set up view transform
 		vt = parent.preview.getViewTransform();
 		// Scale view transform to account for object distance
-		Point3d centroid = parent.getModel().getCentroid();
-		vt.transform(centroid);
-		objectDistance = centroid.distance(new Point3d());
+		//Point3d centroid = parent.getModel().getCentroid();
+		//vt.transform(centroid);
+		//objectDistance = centroid.distance(new Point3d());
 	}
 	public void mouseReleased(MouseEvent e) {
 		startPoint = null;
