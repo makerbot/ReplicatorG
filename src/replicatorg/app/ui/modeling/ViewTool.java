@@ -98,7 +98,7 @@ public class ViewTool extends Tool implements MouseMotionListener, MouseListener
 		switch (mode) {
 		case ROTATE_VIEW:
 			// Rotate view
-			parent.preview.adjustViewAngle(0.05 * xd, -0.05 * yd);
+			parent.preview.adjustViewAngle(-0.05 * xd, -0.05 * yd);
 			break;
 		case TRANSLATE_VIEW:
 			// Pan view

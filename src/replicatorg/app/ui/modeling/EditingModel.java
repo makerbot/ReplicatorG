@@ -19,6 +19,7 @@ import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+import javax.vecmath.Vector3f;
 
 import replicatorg.model.BuildModel;
 
@@ -70,9 +71,9 @@ public class EditingModel {
 		objectSwitch = new Switch();
 		Shape3D originalShape = model.getShape();
 
-		Shape3D shape = (Shape3D)originalShape.cloneTree();
+		Shape3D solidShape = (Shape3D)originalShape.cloneTree();
 		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
-		objectSwitch.addChild(shape);
+		objectSwitch.addChild(solidShape);
 		objectSwitch.addChild(edgeClone);
 		objectSwitch.setWhichChild(0);
 		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
@@ -83,7 +84,12 @@ public class EditingModel {
 		m.setDiffuseColor(color);
 		Appearance solid = new Appearance();
 		solid.setMaterial(m);
-		shape.setAppearance(solid);
+		PolygonAttributes pa = new PolygonAttributes();
+		pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+		pa.setCullFace(PolygonAttributes.CULL_NONE);
+		pa.setBackFaceNormalFlip(true);
+	    solid.setPolygonAttributes(pa);
+		solidShape.setAppearance(solid);
 
 		Appearance edges = new Appearance();
 		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
@@ -119,7 +125,7 @@ public class EditingModel {
 			objectSwitch.setWhichChild(1);
 		}
 	}
-	
+		
 	public ReferenceFrame getReferenceFrame() {
 		Transform3D translate = new Transform3D();
 		shapeTransform.getTransform(translate);
@@ -215,6 +221,33 @@ public class EditingModel {
 		flipZ = transformOnCentroid(flipZ);
 		shapeTransform.setTransform(flipZ);
 		model.setTransform(flipZ,"flip");
+	}
+
+	public void mirrorX() {
+		Transform3D t = new Transform3D();
+		Vector3d v = new Vector3d(-1d,1d,1d);
+		t.setScale(v);
+		t = transformOnCentroid(t);
+		shapeTransform.setTransform(t);
+		model.setTransform(t,"mirror X");
+	}
+
+	public void mirrorY() {
+		Transform3D t = new Transform3D();
+		Vector3d v = new Vector3d(1d,-1d,1d);
+		t.setScale(v);
+		t = transformOnCentroid(t);
+		shapeTransform.setTransform(t);
+		model.setTransform(t,"mirror Y");
+	}
+
+	public void mirrorZ() {
+		Transform3D t = new Transform3D();
+		Vector3d v = new Vector3d(1d,1d,-1d);
+		t.setScale(v);
+		t = transformOnCentroid(t);
+		shapeTransform.setTransform(t);
+		model.setTransform(t,"mirror Z");
 	}
 
 	private BoundingBox getBoundingBox(Group group, Transform3D transformation) {
