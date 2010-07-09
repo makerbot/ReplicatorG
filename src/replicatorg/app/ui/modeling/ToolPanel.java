@@ -93,13 +93,6 @@ public class ToolPanel extends JPanel {
 			
 		}
 		
-		JButton resetViewButton = createToolButton("Reset view","images/look-at-object.png");
-		resetViewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				preview.resetView();
-			}
-		});
-		toolButtons.add(resetViewButton,"growx,spanx,wrap");
 
 		JButton sliceButton = createToolButton("Generate GCode","images/model-to-gcode.png");
 		sliceButton.addActionListener(new ActionListener() {
@@ -108,14 +101,6 @@ public class ToolPanel extends JPanel {
 			}
 		});
 		toolButtons.add(sliceButton,"growx,spanx,wrap");
-
-		JButton flipButton = createToolButton("Flip","images/flip-object.png");
-		flipButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				getModel().flipZ();
-			}
-		});
-		toolButtons.add(flipButton,"growx,growy,wrap");
 
 		titleLabel = new JLabel("Selected Tool");
 		add(titleLabel,"growx,gap 5,spanx,north");
