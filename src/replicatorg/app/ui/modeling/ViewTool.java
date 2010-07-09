@@ -26,7 +26,7 @@ public class ViewTool extends Tool {
 	public JPanel getControls() {
 		JPanel p = new JPanel(new MigLayout("fillx,filly"));
 		JButton b;
-		b = createToolButton("Center","images/center-object.png");
+		b = createToolButton("Default","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parent.preview.resetView();
