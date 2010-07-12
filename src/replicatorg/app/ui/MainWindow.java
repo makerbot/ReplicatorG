@@ -113,6 +113,8 @@ import replicatorg.app.syntax.PdeTextAreaDefaults;
 import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.app.ui.modeling.PreviewPanel;
+import replicatorg.app.util.PythonUtils;
+import replicatorg.app.util.SwingPythonSelector;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.SDCardCapture;
@@ -256,6 +258,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		MRJApplicationUtils.registerQuitHandler(this);
 		MRJApplicationUtils.registerOpenDocumentHandler(this);
 
+		PythonUtils.setSelector(new SwingPythonSelector(this));
+		
 		// load up the most recently used files list
 		mruList = MRUList.getMRUList();
 

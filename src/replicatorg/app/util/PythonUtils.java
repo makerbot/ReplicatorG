@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,6 +22,31 @@ import replicatorg.app.Base;
  *
  */
 public class PythonUtils {
+	/**
+	 * Preference name for preferred Python path.
+	 */
+	final static String PYTON_PATH_PREF = "python.default_path";
+	
+	/**
+	 * Callback for Python selector method.
+	 */
+	public interface Selector {
+		/**
+		 * Select the path to the desired Python implementation.
+		 * @param candidates a list of paths to candidate implementations 
+		 * @return the selected path (which need not be a member of the candidate list)
+		 */
+		String selectPythonPath(Vector<String> candidates);
+	}
+	
+	private static Selector selector = null;
+	/**
+	 * Set the callback that allows a user to select the Python path.
+	 */
+	public static void setSelector(Selector selector) {
+		PythonUtils.selector = selector;
+	}
+	
 	/**
 	 * Class representing a Python version.  The members are directly accessable. 
 	 * @author phooky
@@ -55,7 +81,18 @@ public class PythonUtils {
 	 */
 	public static String getPythonPath() {
 		if (pythonPath == null) {
-			// First, look in the system path.  This is the default solution for
+			// First, check if the user has explicitly set the Python path.
+			{
+				String path = Base.preferences.get(PYTON_PATH_PREF, null);
+				if (path != null) {
+					File candidate = new File(path);
+					if (candidate.exists()) {
+						pythonPath = path;
+						return pythonPath;
+					}
+				}
+			}
+			// Second, look in the system path.  This is the default solution for
 			// all platforms.
 			String paths[] = System.getenv("PATH").split(File.pathSeparator);
 			for (String path : paths) {
@@ -70,6 +107,7 @@ public class PythonUtils {
 				}
 			}
 			// We've exhausted the system path; let's try platform-specific solutions.
+			Vector<String> candidates = new Vector<String>();
 			if (Base.isWindows()) {
 				// The Windows python install does not add Python to the path by default.
 				// We look for the install in the standard locations (C:\Python26, etc.)
@@ -81,26 +119,43 @@ public class PythonUtils {
 						if (match.matches()) {
 							try {
 								File python = new File(new File(driveDir,path),"python.exe");
-								pythonPath = python.getCanonicalPath();
-								return pythonPath;
+								candidates.add(python.getCanonicalPath());
 							} catch (IOException ioe) {
-								pythonPath = null;
+								// pythonPath = null;
 							}
 						}
 					}
 				}
 			}
+			if (candidates.size() == 1) {
+				pythonPath = candidates.firstElement();
+			}
+			else if (selector != null) {
+				String path = selector.selectPythonPath(candidates);
+				if (path != null) {
+					Base.preferences.put(PYTON_PATH_PREF, path);
+					pythonPath = path;
+				}
+			}
 		}
 		return pythonPath;
 	}
-	
+
 	/**
-	 * Check for the existence of a working python. 
+	 * Check for the existence of a working python at the standard location.
 	 * @return null if python is not installed, or the version of python found. 
 	 */
 	public static Version checkVersion() {
 		if (getPythonPath() == null) { return null; }
-		ProcessBuilder pb = new ProcessBuilder(getPythonPath(),"-V");
+		return checkVersion(getPythonPath());
+	}
+	
+	/**
+	 * Check for the version of a working python binary at the given path. 
+	 * @return null if python is not installed, or the version of python found. 
+	 */
+	public static Version checkVersion(String path) {
+		ProcessBuilder pb = new ProcessBuilder(path,"-V");
 		pb.redirectErrorStream(true);
 		try {
 			Process p = pb.start();
@@ -189,7 +244,7 @@ public class PythonUtils {
 			}
 			return true;
 		}
-		notifyUser(parent,procedureName+" requires the Python interpreter to be installed.");
+		notifyUser(parent,procedureName+" requires that a Python interpreter be installed.");
 		return false;
 	}
 
