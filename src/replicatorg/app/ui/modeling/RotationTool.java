@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.vecmath.AxisAngle4d;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -36,7 +37,7 @@ public class RotationTool extends Tool {
 		b = createToolButton("Z+","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.getModel().rotateObject(Math.PI/2, 0d);
+				parent.getModel().rotateObject(new AxisAngle4d(0d, 0d, 1d, Math.PI/2));
 			}
 		});
 		p.add(b,"growx");
@@ -44,7 +45,7 @@ public class RotationTool extends Tool {
 		b = createToolButton("Z-","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.getModel().rotateObject(-Math.PI/2, 0d);
+				parent.getModel().rotateObject(new AxisAngle4d(0d, 0d, 1d, -Math.PI/2));
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -52,7 +53,7 @@ public class RotationTool extends Tool {
 		b = createToolButton("X+","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.getModel().rotateObject(0d, Math.PI/2);
+				parent.getModel().rotateObject(new AxisAngle4d(1d, 0d, 0d, Math.PI/2));
 			}
 		});
 		p.add(b,"growx");
@@ -60,7 +61,7 @@ public class RotationTool extends Tool {
 		b = createToolButton("X-","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.getModel().rotateObject(0d, -Math.PI/2);
+				parent.getModel().rotateObject(new AxisAngle4d(1d, 0d, 0d, -Math.PI/2));
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -68,7 +69,7 @@ public class RotationTool extends Tool {
 		b = createToolButton("Y+","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.getModel().rotateObject(Math.PI/2, Math.PI/2);
+				parent.getModel().rotateObject(new AxisAngle4d(0d, 1d, 0d, Math.PI/2));
 			}
 		});
 		p.add(b,"growx");
@@ -76,7 +77,7 @@ public class RotationTool extends Tool {
 		b = createToolButton("Y-","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.getModel().rotateObject(-Math.PI/2, Math.PI/2);
+				parent.getModel().rotateObject(new AxisAngle4d(0d, 1d, 0d, -Math.PI/2));
 			}
 		});
 		p.add(b,"growx,wrap");
