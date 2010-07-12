@@ -85,7 +85,7 @@ public class RotationTool extends Tool {
 		b = createToolButton("Lay flat","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.getModel().rotateObject(-Math.PI/2, Math.PI/2);
+				parent.getModel().layFlat();
 			}
 		});
 		p.add(b,"growx,spanx,wrap");
