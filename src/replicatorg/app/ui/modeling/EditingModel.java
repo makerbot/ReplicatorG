@@ -65,11 +65,16 @@ public class EditingModel {
 	}
 	
 	/**
+	 * Cache of the original shape from the model.
+	 */
+	Shape3D originalShape;
+	
+	/**
 	 * Create the branchgroup that will display the object.
 	 */
 	private BranchGroup makeShape(BuildModel model) {
 		objectSwitch = new Switch();
-		Shape3D originalShape = model.getShape();
+		originalShape = model.getShape();
 
 		Shape3D solidShape = (Shape3D)originalShape.cloneTree();
 		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
@@ -320,4 +325,64 @@ public class EditingModel {
 		translateObject(xoff, yoff, zoff);
 	}
 
+	
+	/**
+	 * Lay the object flat with the Z object.  It computes this by finding the bottommost
+	 * point, and then rotating the object to make the surface with the lowest angle to
+	 * the Z plane parallel to it.
+	 * 
+	 * In the future, we will want to add a convex hull pass to this.
+	 * 
+	 */
+	public void layFlat() {
+		// Compute transformation
+		Transform3D t = new Transform3D();
+		shapeTransform.getTransform(t);
+		Enumeration<?> geometries = originalShape.getAllGeometries();
+		while (geometries.hasMoreElements()) {
+			Geometry g = (Geometry)geometries.nextElement();
+			double lowest = Double.MAX_VALUE;
+			Vector3d flattest = new Vector3d(1d,0d,0d);
+			if (g instanceof GeometryArray) {
+				GeometryArray ga = (GeometryArray)g;
+				Point3d p1 = new Point3d();
+				Point3d p2 = new Point3d();
+				Point3d p3 = new Point3d();
+				for (int i = 0; i < ga.getVertexCount();) {
+					ga.getCoordinate(i++,p1);
+					ga.getCoordinate(i++,p2);
+					ga.getCoordinate(i++,p3);
+					t.transform(p1);
+					t.transform(p2);
+					t.transform(p3);
+					double triLowest = Math.min(p1.z, Math.min(p2.z, p3.z));
+					if (triLowest < lowest) {
+						// Clear any prior triangles
+						flattest = new Vector3d(1d,0d,0d);
+						lowest = triLowest;
+					}
+					if (triLowest == lowest) {
+						// This triangle is a candidate!
+						Vector3d v1 = new Vector3d(p2);
+						v1.sub(p1);
+						Vector3d v2 = new Vector3d(p3);
+						v2.sub(p2);
+						Vector3d v = new Vector3d();
+						v.cross(v1,v2);
+						v.normalize();
+						if (v.z < flattest.z) { flattest = v; }
+					}
+				}
+			}
+			Transform3D flattenTransform = new Transform3D();
+			Vector3d downZ = new Vector3d(0d,0d,-1d);
+			double angle = Math.acos(flattest.dot(downZ));
+			Vector3d cross = new Vector3d();
+			cross.cross(flattest, downZ);
+			flattenTransform.setRotation(new AxisAngle4d(cross,angle));
+			flattenTransform = transformOnCentroid(flattenTransform);
+			shapeTransform.setTransform(flattenTransform);
+			model.setTransform(flattenTransform,"Lay flat");
+		}
+	}
 }
