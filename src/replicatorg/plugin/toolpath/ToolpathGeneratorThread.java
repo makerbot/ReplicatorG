@@ -52,7 +52,7 @@ public class ToolpathGeneratorThread extends Thread {
 				}
 			});
 			add(doneButton,"tag cancel");
-			this.setModal(true);
+			this.setModal(false);
 		}
 
 		boolean done = false;
