@@ -21,13 +21,18 @@ import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.GeometryArray;
+import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
+import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
+import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.media.j3d.TransparencyAttributes;
+import javax.media.j3d.View;
 import javax.swing.JPanel;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
@@ -81,6 +86,7 @@ public class PreviewPanel extends JPanel {
 		ROTATE_VIEW,
 		TRANSLATE_VIEW,
 		ROTATE_OBJECT,
+		SCALE_OBJECT,
 		TRANSLATE_OBJECT
 	};
 
@@ -243,7 +249,7 @@ public class PreviewPanel extends JPanel {
 
 	public Shape3D makeBoxFrame(Point3d ll, Vector3d dim) {
 		Appearance edges = new Appearance();
-		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_DOT,true));
+		edges.setLineAttributes(new LineAttributes(0.9f,LineAttributes.PATTERN_SOLID,false));
 		edges.setPolygonAttributes(new PolygonAttributes(PolygonAttributes.POLYGON_LINE,
 				PolygonAttributes.CULL_NONE,0));
 		double[] coords = new double[wireBoxCoordinates.length];
@@ -257,9 +263,43 @@ public class PreviewPanel extends JPanel {
 
 		return new Shape3D(wires,edges); 
 	}
+	
+	private void loadPoint(Point3d point, double[] array, int idx) {
+		array[idx] = point.x;
+		array[idx+1] = point.y;
+		array[idx+2] = point.z;
+	}
+		
+	private Shape3D makePlatform(Point3d lower, Point3d upper) {
+		Color3f color = new Color3f(1.0f,1.0f,1.0f); 
+		Material m = new Material();
+		m.setAmbientColor(color);
+		m.setDiffuseColor(color);
+		Appearance solid = new Appearance();
+		solid.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST,0.6f));
+		solid.setMaterial(m);
+		PolygonAttributes pa = new PolygonAttributes();
+		pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+		pa.setCullFace(PolygonAttributes.CULL_NONE);
+		pa.setBackFaceNormalFlip(true);
+	    solid.setPolygonAttributes(pa);
+
+		double[] coords = new double[4*3];
+		loadPoint(lower,coords,0);
+		loadPoint(new Point3d(lower.x,upper.y,upper.z),coords,3);
+		loadPoint(upper,coords,6);
+		loadPoint(new Point3d(upper.x,lower.y,upper.z),coords,9);
+			
+		QuadArray plat = new QuadArray(4,GeometryArray.COORDINATES);
+		plat.setCoordinates(0, coords);
+
+		return new Shape3D(plat,solid); 
+		
+	}
 
 	public Node makeBoundingBox() {
 
+		Group boxGroup = new Group();
 		Shape3D boxframe = makeBoxFrame(new Point3d(-50,-50,0), new Vector3d(100,100,100));	
 
 		/*
@@ -276,7 +316,9 @@ public class PreviewPanel extends JPanel {
 		tg.addChild(box);
 		tg.addChild(boxframe);
 		*/
-		return boxframe;
+		boxGroup.addChild(boxframe);
+		boxGroup.addChild(this.makePlatform(new Point3d(-50,-50,-0.001), new Point3d(50,50,-0.001)));
+		return boxGroup;
 	}
 
 	public Node makeBackground() {
@@ -287,13 +329,13 @@ public class PreviewPanel extends JPanel {
 
 	public Node makeBaseGrid() {
 		Appearance edges = new Appearance();
-		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_DOT,true));
-		edges.setColoringAttributes(new ColoringAttributes(0.7f,0.7f,1f,ColoringAttributes.FASTEST));
+		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
+		edges.setColoringAttributes(new ColoringAttributes(0.6f,0.6f,0.8f,ColoringAttributes.FASTEST));
 		final int LINES = 11;
-		LineArray grid = new LineArray(4*LINES,GeometryArray.COORDINATES);
-		for (int i = 0; i < LINES; i++) {
+		LineArray grid = new LineArray(4*(LINES-2),GeometryArray.COORDINATES);
+		for (int i = 1; i < LINES-1; i++) {
 			double offset = -50 + (100/(LINES-1))*i;
-			int idx = i*4;
+			int idx = (i-1)*4;
 			// Along x axis
 			grid.setCoordinate(idx++, new Point3d(offset,-50,0));
 			grid.setCoordinate(idx++, new Point3d(offset,50,0));
@@ -354,17 +396,12 @@ public class PreviewPanel extends JPanel {
 	final static double ELEVATION_ANGLE_DEFAULT = 1.278;
 	final static double TURNTABLE_ANGLE_DEFAULT = 0.214;
 	
+	final static double CAMERA_DISTANCE_DEFAULT = 300d; // 30cm
+	
 	Vector3d cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
 	double elevationAngle = ELEVATION_ANGLE_DEFAULT;
 	double turntableAngle = TURNTABLE_ANGLE_DEFAULT;
 
-	void resetView() {
-		cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
-		elevationAngle = ELEVATION_ANGLE_DEFAULT;
-		turntableAngle = TURNTABLE_ANGLE_DEFAULT;
-		updateVP();
-	}
-	
 	Transform3D getViewTransform() {
 		TransformGroup viewTG = univ.getViewingPlatform().getViewPlatformTransform();
 		Transform3D t = new Transform3D();
@@ -372,6 +409,7 @@ public class PreviewPanel extends JPanel {
 		return t;
 	}
 	
+//	double VIEW_SCALE = 100d;
 	private void updateVP() {
 		TransformGroup viewTG = univ.getViewingPlatform().getViewPlatformTransform();
 		Transform3D t3d = new Transform3D();
@@ -384,6 +422,9 @@ public class PreviewPanel extends JPanel {
 		t3d.mul(rotZ);
 		t3d.mul(rotX);
 		t3d.mul(trans);
+//		Transform3D scale = new Transform3D();
+//		scale.setScale(VIEW_SCALE);
+//		t3d.mul(scale);
 		viewTG.setTransform(t3d);
 
 		if (Base.logger.isLoggable(Level.FINE)) {
@@ -416,6 +457,41 @@ public class PreviewPanel extends JPanel {
 		univ.getViewer().getView().setMinimumFrameCycleTime(5);
 
 		return c;
+	}
+
+	void resetView() {
+		cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
+		elevationAngle = ELEVATION_ANGLE_DEFAULT;
+		turntableAngle = TURNTABLE_ANGLE_DEFAULT;
+//		usePerspective(true);
+		updateVP();
+	}
+
+	public void viewXY() {
+		cameraTranslation = new Vector3d(0d,0d,CAMERA_DISTANCE_DEFAULT);
+		turntableAngle = 0d;
+		elevationAngle = 0d;
+//		usePerspective(false);
+		updateVP();	
+	}
+	
+	public void viewYZ() {
+		cameraTranslation = new Vector3d(0d,50d,CAMERA_DISTANCE_DEFAULT);
+		turntableAngle = 0d;
+		elevationAngle = Math.PI/2;
+//		usePerspective(false);
+		updateVP();	
+	}
+	public void viewXZ() {
+		cameraTranslation = new Vector3d(0d,50d,CAMERA_DISTANCE_DEFAULT);
+		elevationAngle = Math.PI/2;
+		turntableAngle = Math.PI/2;
+//		usePerspective(false);
+		updateVP();	
+	}
+
+	public void usePerspective(boolean perspective) {
+		univ.getViewer().getView().setProjectionPolicy(perspective?View.PERSPECTIVE_PROJECTION:View.PARALLEL_PROJECTION);
 	}
 
 

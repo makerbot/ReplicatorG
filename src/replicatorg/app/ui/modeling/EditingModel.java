@@ -19,6 +19,7 @@ import javax.media.j3d.TransformGroup;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+import javax.vecmath.Vector3f;
 
 import replicatorg.model.BuildModel;
 
@@ -28,6 +29,16 @@ import replicatorg.model.BuildModel;
  *
  */
 public class EditingModel {
+	public class ReferenceFrame {
+		public Point3d origin;
+		public Vector3d zAxis;
+		
+		public ReferenceFrame() {
+			origin = new Point3d();
+			zAxis = new Vector3d(0d,0d,1d);
+		}
+	}
+	
 	/**
 	 * The underlying model being edited.
 	 */
@@ -48,7 +59,7 @@ public class EditingModel {
 	 * * saving out the STL for skeining
 	 */
 	private TransformGroup shapeTransform = new TransformGroup();
-
+	
 	public EditingModel(BuildModel model) {
 		this.model = model;
 	}
@@ -60,9 +71,9 @@ public class EditingModel {
 		objectSwitch = new Switch();
 		Shape3D originalShape = model.getShape();
 
-		Shape3D shape = (Shape3D)originalShape.cloneTree();
+		Shape3D solidShape = (Shape3D)originalShape.cloneTree();
 		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
-		objectSwitch.addChild(shape);
+		objectSwitch.addChild(solidShape);
 		objectSwitch.addChild(edgeClone);
 		objectSwitch.setWhichChild(0);
 		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
@@ -73,7 +84,12 @@ public class EditingModel {
 		m.setDiffuseColor(color);
 		Appearance solid = new Appearance();
 		solid.setMaterial(m);
-		shape.setAppearance(solid);
+		PolygonAttributes pa = new PolygonAttributes();
+		pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+		pa.setCullFace(PolygonAttributes.CULL_NONE);
+		pa.setBackFaceNormalFlip(true);
+	    solid.setPolygonAttributes(pa);
+		solidShape.setAppearance(solid);
 
 		Appearance edges = new Appearance();
 		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
@@ -109,10 +125,59 @@ public class EditingModel {
 			objectSwitch.setWhichChild(1);
 		}
 	}
+		
+	public ReferenceFrame getReferenceFrame() {
+		Transform3D translate = new Transform3D();
+		shapeTransform.getTransform(translate);
+		ReferenceFrame rf = new ReferenceFrame();
+		translate.transform(rf.origin);
+		translate.transform(rf.zAxis);
+		return rf;
+	}
 
+	/**
+	 * Transform the given transform to one that operates on the centroid of the object.
+	 * @param transform
+	 * @param name
+	 * @return
+	 */
+	public Transform3D transformOnCentroid(Transform3D transform) {
+		Transform3D old = new Transform3D();
+		Transform3D t1 = new Transform3D();
+		Transform3D t2 = new Transform3D();
+
+		Vector3d t1v = new Vector3d(getCentroid());
+		t1v.negate();
+		t1.setTranslation(t1v);
+		Vector3d t2v = new Vector3d(getCentroid());
+		t2.setTranslation(t2v);
+		shapeTransform.getTransform(old);
+		
+		Transform3D composite = new Transform3D();
+		composite.mul(t2);
+		composite.mul(transform);
+		composite.mul(t1);
+		composite.mul(old);
+		return composite;
+	}
+	
+	public void rotateObject(double turntable, double elevation) {
+		// Skip identity translations
+		if (turntable == 0.0 && elevation == 0.0) { return; }
+		Transform3D r1 = new Transform3D();
+		Transform3D r2 = new Transform3D();
+		r1.rotX(elevation);
+		r2.rotZ(turntable);
+		r2.mul(r1);
+		r2 = transformOnCentroid(r2);
+		shapeTransform.setTransform(r2);
+		model.setTransform(r2,"rotation");
+	}
+	
 	public void translateObject(double x, double y, double z) {
 		// Skip identity translations
 		if (x == 0.0 && y == 0.0 && z == 0.0) { return; }
+		centroid = null;
 		Transform3D translate = new Transform3D();
 		translate.setZero();
 		translate.setTranslation(new Vector3d(x,y,z));
@@ -152,13 +217,47 @@ public class EditingModel {
 	 */
 	public void flipZ() {
 		Transform3D flipZ = new Transform3D();
-		Transform3D old = new Transform3D();
-		shapeTransform.getTransform(old);
 		flipZ.rotY(Math.PI);
-		flipZ.mul(old);
+		flipZ = transformOnCentroid(flipZ);
 		shapeTransform.setTransform(flipZ);
 		model.setTransform(flipZ,"flip");
 	}
+
+	public void mirrorX() {
+		Transform3D t = new Transform3D();
+		Vector3d v = new Vector3d(-1d,1d,1d);
+		t.setScale(v);
+		t = transformOnCentroid(t);
+		shapeTransform.setTransform(t);
+		model.setTransform(t,"mirror X");
+	}
+
+	public void mirrorY() {
+		Transform3D t = new Transform3D();
+		Vector3d v = new Vector3d(1d,-1d,1d);
+		t.setScale(v);
+		t = transformOnCentroid(t);
+		shapeTransform.setTransform(t);
+		model.setTransform(t,"mirror Y");
+	}
+
+	public void mirrorZ() {
+		Transform3D t = new Transform3D();
+		Vector3d v = new Vector3d(1d,1d,-1d);
+		t.setScale(v);
+		t = transformOnCentroid(t);
+		shapeTransform.setTransform(t);
+		model.setTransform(t,"mirror Z");
+	}
+
+	public void scale(double scale) {
+		Transform3D t = new Transform3D();
+		t.setScale(scale);
+		t = transformOnCentroid(t);
+		shapeTransform.setTransform(t);
+		model.setTransform(t,"resize");		
+	}
+	
 
 	private BoundingBox getBoundingBox(Group group, Transform3D transformation) {
 		BoundingBox bb = new BoundingBox(new Point3d(Double.MAX_VALUE,Double.MAX_VALUE,Double.MAX_VALUE),
@@ -184,14 +283,19 @@ public class EditingModel {
 		return getBoundingBox(shapeTransform);
 	}
 	
+	private Point3d centroid = null;
+	
 	public Point3d getCentroid() {
-		BoundingBox bb = getBoundingBox();
-		Point3d p1 = new Point3d();
-		Point3d p2 = new Point3d();
-		bb.getLower(p1);
-		bb.getUpper(p2);
-		p1.interpolate(p2,0.5d);
-		return p1;
+		if (centroid == null) {
+			BoundingBox bb = getBoundingBox();
+			Point3d p1 = new Point3d();
+			Point3d p2 = new Point3d();
+			bb.getLower(p1);
+			bb.getUpper(p2);
+			p1.interpolate(p2,0.5d);
+			centroid = p1;
+		}
+		return centroid;
 	}
 	/**
 	 * Center the object tree and raise its lowest point to Z=0.
