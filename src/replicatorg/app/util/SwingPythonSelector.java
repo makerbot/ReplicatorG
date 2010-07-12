@@ -32,7 +32,7 @@ public class SwingPythonSelector implements Selector {
 		} else {
 			// Linux users should have zero problems setting up python on their system or putting it in
 			// the path.  Even n00bs.  Thank you, Debian/Ubuntu. 
-			if (Base.isLinux()) { return null; }
+			if (candidates != null && Base.isLinux()) { return null; }
 			String s = "<html>"+
 				"<p>ReplicatorG couldn't find a Python interpreter on your computer.</p>"+
 				"<p>Would you like to visit the Python download page, or manually select your Python installation?</p>"+
@@ -102,7 +102,7 @@ public class SwingPythonSelector implements Selector {
 		return selectedCandidate;
 	}
 	
-	private String selectFreeformPath() {
+	public String selectFreeformPath() {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogTitle("Select installed Python binary");
 		chooser.setDialogType(JFileChooser.OPEN_DIALOG);
