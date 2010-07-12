@@ -16,6 +16,7 @@ import javax.media.j3d.Shape3D;
 import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
@@ -171,6 +172,14 @@ public class EditingModel {
 		r2 = transformOnCentroid(r2);
 		shapeTransform.setTransform(r2);
 		model.setTransform(r2,"rotation");
+	}
+	
+	public void rotateObject(AxisAngle4d angle) {
+		Transform3D t = new Transform3D();
+		t.setRotation(angle);
+		t = transformOnCentroid(t);
+		shapeTransform.setTransform(t);
+		model.setTransform(t, "rotation");
 	}
 	
 	public void translateObject(double x, double y, double z) {

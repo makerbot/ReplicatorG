@@ -30,6 +30,8 @@ import javax.swing.KeyStroke;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.Base.InitialOpenBehavior;
+import replicatorg.app.util.PythonUtils;
+import replicatorg.app.util.SwingPythonSelector;
 import replicatorg.uploader.FirmwareUploader;
 
 /**
@@ -140,6 +142,20 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 						} catch (ClassCastException cce) {
 							Base.logger.warning("Unexpected value type: "+evt.getNewValue().getClass().toString());
 						}
+					}
+				}
+			});
+		}
+		
+		{
+			JButton b = new JButton("Select Python interpreter...");
+			content.add(b,"spanx,wrap");
+			b.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					SwingPythonSelector sps = new SwingPythonSelector(PreferencesWindow.this);
+					String path = sps.selectFreeformPath();
+					if (path != null) {
+						PythonUtils.setPythonPath(path);
 					}
 				}
 			});

@@ -271,4 +271,12 @@ public class PythonUtils {
 			}
 		});
 	}
+	
+	/**
+	 * Sets the new preferred place to find python
+	 */
+	public static void setPythonPath(String path) {
+		Base.preferences.put(PythonUtils.PYTON_PATH_PREF, path);
+		pythonPath = path;
+	}
 }
