@@ -392,7 +392,7 @@ public class PreviewPanel extends JPanel {
 	}
 
 	// These values were determined experimentally to look pretty dang good.
-	final static Vector3d CAMERA_TRANSLATION_DEFAULT = new Vector3d(0,40,290);
+	final static Vector3d CAMERA_TRANSLATION_DEFAULT = new Vector3d(0,0,290);
 	final static double ELEVATION_ANGLE_DEFAULT = 1.278;
 	final static double TURNTABLE_ANGLE_DEFAULT = 0.214;
 	
@@ -417,10 +417,16 @@ public class PreviewPanel extends JPanel {
 		Transform3D rotZ = new Transform3D();
 		Transform3D rotX = new Transform3D();
 		trans.setTranslation(cameraTranslation);
+		Transform3D drop = new Transform3D();
+		Transform3D raise = new Transform3D();
+		drop.setTranslation(new Vector3d(0,0,50));
+		raise.invert(drop);
 		rotX.rotX(elevationAngle);
 		rotZ.rotZ(turntableAngle);
+		t3d.mul(drop);
 		t3d.mul(rotZ);
 		t3d.mul(rotX);
+		t3d.mul(raise);
 		t3d.mul(trans);
 //		Transform3D scale = new Transform3D();
 //		scale.setScale(VIEW_SCALE);
@@ -476,14 +482,14 @@ public class PreviewPanel extends JPanel {
 	}
 	
 	public void viewYZ() {
-		cameraTranslation = new Vector3d(0d,50d,CAMERA_DISTANCE_DEFAULT);
+		cameraTranslation = new Vector3d(0d,0d,CAMERA_DISTANCE_DEFAULT);
 		turntableAngle = 0d;
 		elevationAngle = Math.PI/2;
 //		usePerspective(false);
 		updateVP();	
 	}
 	public void viewXZ() {
-		cameraTranslation = new Vector3d(0d,50d,CAMERA_DISTANCE_DEFAULT);
+		cameraTranslation = new Vector3d(0d,0d,CAMERA_DISTANCE_DEFAULT);
 		elevationAngle = Math.PI/2;
 		turntableAngle = Math.PI/2;
 //		usePerspective(false);

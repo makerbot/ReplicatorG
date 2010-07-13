@@ -24,7 +24,7 @@ public class ViewTool extends Tool {
 	}
 
 	public JPanel getControls() {
-		JPanel p = new JPanel(new MigLayout("fillx,filly"));
+		JPanel p = new JPanel(new MigLayout("fillx,gap 0,wrap 2","[50%]0[50%]"));
 		JButton b;
 		b = createToolButton("Default","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -32,7 +32,7 @@ public class ViewTool extends Tool {
 				parent.preview.resetView();
 			}
 		});
-		p.add(b,"growx");
+		p.add(b,"growx,growy");
 
 		b = createToolButton("XY","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -40,7 +40,7 @@ public class ViewTool extends Tool {
 				parent.preview.viewXY();
 			}
 		});
-		p.add(b,"growx,wrap");
+		p.add(b,"growx,growy");
 
 		b = createToolButton("XZ","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -48,7 +48,7 @@ public class ViewTool extends Tool {
 				parent.preview.viewXZ();
 			}
 		});
-		p.add(b,"growx");
+		p.add(b,"growx,growy");
 
 		b = createToolButton("YZ","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -56,7 +56,7 @@ public class ViewTool extends Tool {
 				parent.preview.viewYZ();
 			}
 		});
-		p.add(b,"growx,wrap");
+		p.add(b,"growx,growy");
 
 		return p;
 	}
