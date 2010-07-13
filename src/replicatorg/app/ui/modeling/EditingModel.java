@@ -310,6 +310,8 @@ public class EditingModel {
 		}
 		return centroid;
 	}
+
+	
 	/**
 	 * Center the object tree and raise its lowest point to Z=0.
 	 */
@@ -325,7 +327,17 @@ public class EditingModel {
 		translateObject(xoff, yoff, zoff);
 	}
 
-	
+	/**
+	 * Raise the object's lowest point to Z=0.
+	 */
+	public void putOnPlatform() {
+		BoundingBox bb = getBoundingBox(shapeTransform);
+		Point3d lower = new Point3d();
+		bb.getLower(lower);
+		double zoff = -lower.z;
+		translateObject(0d, 0d, zoff);
+	}
+
 	/**
 	 * Lay the object flat with the Z object.  It computes this by finding the bottommost
 	 * point, and then rotating the object to make the surface with the lowest angle to

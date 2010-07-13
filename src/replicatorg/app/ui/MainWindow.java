@@ -317,14 +317,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// splitPane.setContinuousLayout(true);
 		// if window increases in size, give all of increase to
 		// the textarea in the uppper pane
-		splitPane.setResizeWeight(0.8);
+		splitPane.setResizeWeight(0.86);
 
 		// to fix ugliness.. normally macosx java 1.3 puts an
 		// ugly white border around this object, so turn it off.
 		//splitPane.setBorder(null);
 
 		// the default size on windows is too small and kinda ugly
-		int dividerSize = Base.preferences.getInt("editor.divider.size",8);
+		int dividerSize = Base.preferences.getInt("editor.divider.size",5);
 		if (dividerSize < 5) dividerSize = 5;
 		if (dividerSize != 0) {
 			splitPane.setDividerSize(dividerSize);

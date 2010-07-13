@@ -73,9 +73,9 @@ public class ToolPanel extends JPanel {
 	
 	ToolPanel(final PreviewPanel preview) {
 		this.preview = preview;
-		setLayout(new MigLayout("gap 0,filly"));
+		setLayout(new MigLayout("gap 0,filly,wrap 1"));
 
-		JPanel toolButtons = new JPanel(new MigLayout("gap 0 0,ins 0,novisualpadding","0[50%]0[50%]0"));
+		JPanel toolButtons = new JPanel(new MigLayout("gap 0 0,ins 0,novisualpadding,wrap 1","0[100%]0"));
 		
 		add(toolButtons,"south");
 	

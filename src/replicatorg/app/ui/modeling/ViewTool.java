@@ -8,7 +8,6 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
-import replicatorg.app.Base;
 
 public class ViewTool extends Tool {
 	public ViewTool(ToolPanel parent) {
@@ -24,7 +23,7 @@ public class ViewTool extends Tool {
 	}
 
 	public JPanel getControls() {
-		JPanel p = new JPanel(new MigLayout("fillx,filly"));
+		JPanel p = new JPanel(new MigLayout("fillx,gap 0,wrap 2","[50%]0[50%]"));
 		JButton b;
 		b = createToolButton("Default","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -32,7 +31,7 @@ public class ViewTool extends Tool {
 				parent.preview.resetView();
 			}
 		});
-		p.add(b,"growx");
+		p.add(b,"growx,growy");
 
 		b = createToolButton("XY","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -40,7 +39,7 @@ public class ViewTool extends Tool {
 				parent.preview.viewXY();
 			}
 		});
-		p.add(b,"growx,wrap");
+		p.add(b,"growx,growy");
 
 		b = createToolButton("XZ","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -48,7 +47,7 @@ public class ViewTool extends Tool {
 				parent.preview.viewXZ();
 			}
 		});
-		p.add(b,"growx");
+		p.add(b,"growx,growy");
 
 		b = createToolButton("YZ","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -56,15 +55,13 @@ public class ViewTool extends Tool {
 				parent.preview.viewYZ();
 			}
 		});
-		p.add(b,"growx,wrap");
+		p.add(b,"growx,growy");
 
 		return p;
 	}
 
 	public String getInstructions() {
-		return Base.isMacOS()?
-				"<html><body>Drag to rotate<br>Shift-drag to pan<br>Mouse wheel to zoom</body></html>":
-				"<html><body>Left button drag to rotate<br>Right button drag to pan<br>Mouse wheel to zoom</body></html>";
+		return "<html><body>Drag to rotate<br>Mouse wheel to zoom</body></html>";
 	}
 
 	public String getTitle() {
