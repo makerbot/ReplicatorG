@@ -42,7 +42,15 @@ public class MoveTool extends Tool {
 			}
 		});
 		p.add(centerButton,"growx,wrap");
-		
+
+		JButton lowerButton = createToolButton("Put on platform","images/center-object.png");
+		lowerButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				parent.getModel().putOnPlatform();
+			}
+		});
+		p.add(lowerButton,"growx,wrap");
+
 		lockZ = new JCheckBox("Lock height");
 		p.add(lockZ,"growx,wrap");
 		

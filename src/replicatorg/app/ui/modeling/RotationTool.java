@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.vecmath.AxisAngle4d;
 
@@ -29,9 +30,11 @@ public class RotationTool extends Tool {
 		return "Rotate";
 	}
 
+	JCheckBox lockZ;
+	
 	@Override
 	JPanel getControls() {
-		JPanel p = new JPanel(new MigLayout("fillx,filly"));
+		JPanel p = new JPanel(new MigLayout("fillx,gap 0,wrap 2","[50%]0[50%]"));
 		JButton b;
 
 		b = createToolButton("Z+","images/center-object.png");
@@ -48,7 +51,7 @@ public class RotationTool extends Tool {
 				parent.getModel().rotateObject(new AxisAngle4d(0d, 0d, 1d, -Math.PI/2));
 			}
 		});
-		p.add(b,"growx,wrap");
+		p.add(b,"growx");
 
 		b = createToolButton("X+","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -64,7 +67,7 @@ public class RotationTool extends Tool {
 				parent.getModel().rotateObject(new AxisAngle4d(1d, 0d, 0d, -Math.PI/2));
 			}
 		});
-		p.add(b,"growx,wrap");
+		p.add(b,"growx");
 
 		b = createToolButton("Y+","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -80,7 +83,7 @@ public class RotationTool extends Tool {
 				parent.getModel().rotateObject(new AxisAngle4d(0d, 1d, 0d, -Math.PI/2));
 			}
 		});
-		p.add(b,"growx,wrap");
+		p.add(b,"growx");
 
 		b = createToolButton("Lay flat","images/center-object.png");
 		b.addActionListener(new ActionListener() {
@@ -88,7 +91,10 @@ public class RotationTool extends Tool {
 				parent.getModel().layFlat();
 			}
 		});
-		p.add(b,"growx,spanx,wrap");
+		p.add(b,"growx,spanx");
+
+		lockZ = new JCheckBox("Rotate around Z");
+		p.add(lockZ,"growx,wrap");
 
 		return p;
 	}
@@ -116,6 +122,7 @@ public class RotationTool extends Tool {
 		}
 		double xd = (double)(p.x - startPoint.x);
 		double yd = -(double)(p.y - startPoint.y);
+		if (lockZ.isSelected()) { yd = 0; }
 		switch (mode) {
 		case ROTATE_OBJECT:
 			parent.getModel().rotateObject(0.05*xd, -0.05*yd);
