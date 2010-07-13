@@ -77,9 +77,10 @@ public class ScalingTool extends Tool {
 	}
 
 	@Override
-	String getInstructions() {
-		// TODO Auto-generated method stub
-		return null;
+	public String getInstructions() {
+		return Base.isMacOS()?
+				"<html><body>Drag to scale object<br>Shift-drag to rotate view<br>Mouse wheel to zoom</body></html>":
+				"<html><body>Left drag to scale object<br>Right drag to rotate view<br>Mouse wheel to zoom</body></html>";
 	}
 
 	@Override

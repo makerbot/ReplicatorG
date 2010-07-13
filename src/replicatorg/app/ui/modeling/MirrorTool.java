@@ -57,9 +57,8 @@ public class MirrorTool extends Tool {
 	}
 
 	@Override
-	String getInstructions() {
-		// TODO Auto-generated method stub
-		return null;
+	public String getInstructions() {
+		return "<html><body>Drag to rotate view<br>Mouse wheel to zoom</body></html>";
 	}
 
 	@Override

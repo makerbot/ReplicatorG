@@ -51,8 +51,8 @@ public class MoveTool extends Tool {
 
 	public String getInstructions() {
 		return Base.isMacOS()?
-				"<html><body>Drag to move<br>Shift-drag to rotate<br>Mouse wheel to zoom</body></html>":
-				"<html><body>Left button drag to move object<br>Right button drag to rotate<br>Mouse wheel to zoom</body></html>";
+				"<html><body>Drag to move object<br>Shift-drag to rotate view<br>Mouse wheel to zoom</body></html>":
+				"<html><body>Left drag to move object<br>Right drag to rotate view<br>Mouse wheel to zoom</body></html>";
 	}
 
 	public String getTitle() {

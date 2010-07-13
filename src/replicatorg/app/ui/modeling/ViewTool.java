@@ -8,7 +8,6 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
-import replicatorg.app.Base;
 
 public class ViewTool extends Tool {
 	public ViewTool(ToolPanel parent) {
@@ -62,9 +61,7 @@ public class ViewTool extends Tool {
 	}
 
 	public String getInstructions() {
-		return Base.isMacOS()?
-				"<html><body>Drag to rotate<br>Shift-drag to pan<br>Mouse wheel to zoom</body></html>":
-				"<html><body>Left button drag to rotate<br>Right button drag to pan<br>Mouse wheel to zoom</body></html>";
+		return "<html><body>Drag to rotate<br>Mouse wheel to zoom</body></html>";
 	}
 
 	public String getTitle() {

@@ -94,10 +94,10 @@ public class RotationTool extends Tool {
 	}
 
 	@Override
-	String getInstructions() {
+	public String getInstructions() {
 		return Base.isMacOS()?
-				"<html><body>Drag to rotate<br>Shift-drag to pan view<br>Mouse wheel to zoom</body></html>":
-				"<html><body>Left button drag to rotate object<br>Right button drag to pan view<br>Mouse wheel to zoom</body></html>";
+				"<html><body>Drag to rotate object<br>Shift-drag to rotate view<br>Mouse wheel to zoom</body></html>":
+				"<html><body>Left drag to rotate object<br>Right drag to rotate view<br>Mouse wheel to zoom</body></html>";
 	}
 
 	@Override
