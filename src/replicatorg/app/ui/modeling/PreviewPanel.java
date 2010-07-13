@@ -4,6 +4,7 @@
 package replicatorg.app.ui.modeling;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -20,15 +21,19 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
+import javax.media.j3d.Font3D;
+import javax.media.j3d.FontExtrusion;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
+import javax.media.j3d.OrientedShape3D;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
+import javax.media.j3d.Text3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.TransparencyAttributes;
@@ -263,6 +268,34 @@ public class PreviewPanel extends JPanel {
 
 		return new Shape3D(wires,edges); 
 	}
+
+	Font3D labelFont = null;
+	
+	public Group makeLabel(String s, Vector3d where) {
+		if (labelFont == null) {
+			labelFont = new Font3D(Font.decode("Sans"), new FontExtrusion());
+		}
+		Text3D text = new Text3D(labelFont, s);
+        TransformGroup tg = new TransformGroup();
+        Transform3D transform = new Transform3D();
+        transform.setTranslation(where);
+        tg.setTransform(transform);
+        OrientedShape3D os = new OrientedShape3D();
+        os.setAlignmentAxis( 0.0f, 0.0f, 1.0f);
+        os.setAlignmentMode(OrientedShape3D.ROTATE_ABOUT_POINT);
+        os.setConstantScaleEnable(true);
+        os.setScale(0.05);
+        os.setGeometry(text);
+        tg.addChild(os);
+        return tg;
+	}
+	public Group makeAxes(Point3d origin) {
+		Group g = new Group();
+		g.addChild(makeLabel("X",new Vector3d(57,0,0)));
+		g.addChild(makeLabel("Y",new Vector3d(0,57,0)));
+		g.addChild(makeLabel("Z",new Vector3d(0d,0d,107)));
+		return g;
+	}
 	
 	private void loadPoint(Point3d point, double[] array, int idx) {
 		array[idx] = point.x;
@@ -428,9 +461,6 @@ public class PreviewPanel extends JPanel {
 		t3d.mul(rotX);
 		t3d.mul(raise);
 		t3d.mul(trans);
-//		Transform3D scale = new Transform3D();
-//		scale.setScale(VIEW_SCALE);
-//		t3d.mul(scale);
 		viewTG.setTransform(t3d);
 
 		if (Base.logger.isLoggable(Level.FINE)) {
@@ -466,33 +496,25 @@ public class PreviewPanel extends JPanel {
 	}
 
 	void resetView() {
-		cameraTranslation = new Vector3d(CAMERA_TRANSLATION_DEFAULT);
 		elevationAngle = ELEVATION_ANGLE_DEFAULT;
 		turntableAngle = TURNTABLE_ANGLE_DEFAULT;
-//		usePerspective(true);
 		updateVP();
 	}
 
 	public void viewXY() {
-		cameraTranslation = new Vector3d(0d,0d,CAMERA_DISTANCE_DEFAULT);
 		turntableAngle = 0d;
 		elevationAngle = 0d;
-//		usePerspective(false);
 		updateVP();	
 	}
 	
 	public void viewYZ() {
-		cameraTranslation = new Vector3d(0d,0d,CAMERA_DISTANCE_DEFAULT);
 		turntableAngle = 0d;
 		elevationAngle = Math.PI/2;
-//		usePerspective(false);
 		updateVP();	
 	}
 	public void viewXZ() {
-		cameraTranslation = new Vector3d(0d,0d,CAMERA_DISTANCE_DEFAULT);
 		elevationAngle = Math.PI/2;
 		turntableAngle = Math.PI/2;
-//		usePerspective(false);
 		updateVP();	
 	}
 
