@@ -60,7 +60,7 @@ public class ToolPanel extends JPanel {
 		subPanel.removeAll();
 		JPanel toolControls = tool.getControls();
 		if (toolControls != null) {
-			subPanel.add(toolControls,"spanx,spany,growx,growy");
+			subPanel.add(toolControls,"spanx,spany,growx,growy,width 100%");
 		} else {
 			subPanel.repaint();
 		}
@@ -116,7 +116,7 @@ public class ToolPanel extends JPanel {
 		infoLabel.setFont(f.deriveFont((float)f.getSize()*0.8f));
 		add(infoLabel,"growx,gap 2,spanx,south");
 
-		add(subPanel,"spanx,width 100%");
+		add(subPanel,"spanx,growx,growy,width 100%");
 		setTool(tools[0]);
 	}
 }
