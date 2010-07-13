@@ -29,6 +29,8 @@ import net.miginfocom.swing.MigLayout;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.axis.TickUnits;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.DatasetRenderingOrder;
 import org.jfree.chart.plot.PlotOrientation;
@@ -95,6 +97,10 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		ValueAxis axis = plot.getDomainAxis();
 		axis.setLowerMargin(0);
 		axis.setFixedAutoRange(3L*60L*1000L); // auto range to three minutes
+		TickUnits unitSource = new TickUnits();
+		unitSource.add(new NumberTickUnit(60L*1000L)); // minutes
+		unitSource.add(new NumberTickUnit(1L*1000L)); // seconds
+		axis.setStandardTickUnits(unitSource);
 		axis.setTickLabelsVisible(false); // We don't need to see the millisecond count
 		axis = plot.getRangeAxis();
 		axis.setRange(0,260); // set termperature range from 0 to 260 degrees C 

@@ -106,6 +106,9 @@ public class Build {
 				parentPath = ".";
 			}
 			folder = new File(parentPath);
+			if ("stl".equalsIgnoreCase(suffix)) {
+				modelFile = mainFile;
+			}
 			loadCode();
 			loadModel();
 			if ("gcode".equals(suffix) && getCode() != null) {
@@ -135,8 +138,12 @@ public class Build {
 		}
 	}
 	
+	File modelFile = null;
+	
 	public void loadModel() {
-		final File modelFile = new File(folder, name + ".stl");
+		if (modelFile == null || !modelFile.exists()) {
+			modelFile = new File(folder, name + ".stl");
+		}
 		if (modelFile.exists()) {
 			elements.add(new BuildModel(this, modelFile));
 		}		

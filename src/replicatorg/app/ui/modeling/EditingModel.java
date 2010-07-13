@@ -383,6 +383,7 @@ public class EditingModel {
 			flattenTransform = transformOnCentroid(flattenTransform);
 			shapeTransform.setTransform(flattenTransform);
 			model.setTransform(flattenTransform,"Lay flat");
+			centroid = null; 
 		}
 	}
 }
