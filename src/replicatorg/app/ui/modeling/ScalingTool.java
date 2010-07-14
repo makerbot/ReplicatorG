@@ -33,6 +33,9 @@ public class ScalingTool extends Tool {
 		return "Scale";
 	}
 
+	// If isAbove is true, scale from the bottom of the object; if false, scale from the rough centroid
+	boolean isOnPlatform = false;
+	
 	@Override
 	JPanel getControls() {
 		JPanel p = new JPanel(new MigLayout("fillx,filly"));
@@ -48,7 +51,7 @@ public class ScalingTool extends Tool {
 				if (txt != null) {
 					try {
 						double scale = Double.parseDouble(txt);
-						parent.getModel().scale(scale);
+						parent.getModel().scale(scale,parent.getModel().isOnPlatform());
 					} catch (NumberFormatException nfe) {
 						Base.logger.fine("Scale factor "+txt+" is not parseable");
 					}
@@ -60,7 +63,7 @@ public class ScalingTool extends Tool {
 		b = createToolButton("inches->mm","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.getModel().scale(25.4d);
+				parent.getModel().scale(25.4d,parent.getModel().isOnPlatform());
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -68,7 +71,7 @@ public class ScalingTool extends Tool {
 		b = createToolButton("mm->inches","images/center-object.png");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parent.getModel().scale(1d/25.4d);
+				parent.getModel().scale(1d/25.4d,parent.getModel().isOnPlatform());
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -88,6 +91,11 @@ public class ScalingTool extends Tool {
 		return "Scale object";
 	}
 	
+	public void mousePressed(MouseEvent e) {
+		super.mousePressed(e);
+		isOnPlatform = parent.getModel().isOnPlatform();
+	}
+
 	public void mouseDragged(MouseEvent e) {
 		if (startPoint == null) return;
 		Point p = e.getPoint();
@@ -104,7 +112,7 @@ public class ScalingTool extends Tool {
 			super.mouseDragged(e);
 			break;
 		case SCALE_OBJECT:
-			parent.getModel().scale(1d + (0.01*(xd+yd)));
+			parent.getModel().scale(1d + (0.01*(xd+yd)), isOnPlatform);
 			break;
 		}
 		startPoint = p;
