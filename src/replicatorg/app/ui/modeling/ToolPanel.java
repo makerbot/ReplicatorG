@@ -108,9 +108,9 @@ public class ToolPanel extends JPanel {
 			//Font f = titleLabel.getFont();
 			titleLabel.setFont(new Font("FreeSans",Font.BOLD, 14));
 		}
-		for (String s : GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()) {
-			System.err.println("AVAILABLE: " + s);
-		}
+//		for (String s : GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()) {
+//			System.err.println("AVAILABLE: " + s);
+//		}
 		
 		Font f = infoLabel.getFont();
 		infoLabel.setFont(f.deriveFont((float)f.getSize()*0.8f));

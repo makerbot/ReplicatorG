@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.w3c.dom.Node;
 
+import replicatorg.app.Base;
 import replicatorg.drivers.Version;
 
 public class FirmwareVersion {
@@ -38,7 +39,7 @@ public class FirmwareVersion {
 	
 	public String getRelPath() { return where; }
 
-	public File getFile() { return new File(where); }
+	public File getFile() { return Base.getUserFile(where); }
 	
 	public String toString() {
 		return name;
