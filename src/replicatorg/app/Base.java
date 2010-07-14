@@ -31,7 +31,6 @@ package replicatorg.app;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
@@ -66,8 +65,6 @@ import java.util.prefs.Preferences;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
@@ -143,6 +140,47 @@ public class Base {
 	    return toolsDir;
 	}
 	
+	static public File getUserDirectory() {
+		File dir = new File(System.getProperty("user.home")+File.separator+".replicatorg");
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		return dir;
+	}
+	
+	static public File getApplicationDirectory() {
+		return new File(System.getProperty("user.dir"));
+	}
+	
+	static public File getApplicationFile(String path) {
+		return new File(getApplicationDirectory(),path);
+	}
+	
+	static public File getUserFile(String path) {
+		if (path.contains("..")) {
+			Base.logger.info("Attempted to access parent directory in "+path+", skipping");
+			return null;
+		}
+		// First look in the user's local .replicatorG directory for the path.
+		File f = new File(getUserDirectory(),path);
+		// Make the parent file if not already there
+		File dir = f.getParentFile();
+		if (!dir.exists()) { dir.mkdirs(); }
+		if (!f.exists()) {
+			// Check if there's an application-level version
+			File original = getApplicationFile(path);
+			// If so, copy it over
+			if (original.exists()) {
+				try {
+					Base.copyFile(original,f);
+				} catch (IOException ioe) {
+					Base.logger.log(Level.SEVERE,"Couldn't copy "+path+" to your local .replicatorG directory",f);
+				}
+			}
+		}
+		return f;
+	}
+
 	static public Font getFontPref(String name, String defaultValue) {
 		String s = preferences.get(name,defaultValue);
 		StringTokenizer st = new StringTokenizer(s, ",");
@@ -191,13 +229,13 @@ public class Base {
 		
 		// Warn about read-only directories
     	{
-    		File userDir = new File(System.getProperty("user.dir"));
-    		if (!userDir.canWrite()) {
-    			Base.showMessage("Running in read-only directory", 
-    					"<html><body>ReplicatorG is running in a read-only directory.<br>" +
+    		File userDir = getUserDirectory();
+    		if (!userDir.exists() || !userDir.canWrite()) {
+    			Base.showMessage("Read-only home directory", 
+    					"<html><body>ReplicatorG can not write to the directory "+userDir.getAbsolutePath()+".<br>" +
     					"Some functions of ReplicatorG, like toolpath generation and firmware updates,<br>" +
-    					"require ReplicatorG to be run from a writable directory.  You may want to end this<br>"+
-    					"session, copy ReplicatorG to a writeable directory, and start it again."
+    					"require ReplicatorG to write data to this directory.  You should end this<br>"+
+    					"session, change the permissions on this directory, and start again."
     					);
     		}
     	}
@@ -375,47 +413,6 @@ public class Base {
 	 */
 	static public boolean isLinux() {
 		return platform == Platform.LINUX;
-	}
-
-	/**
-	 * Implementation for choosing directories that handles both the Mac OS X
-	 * hack to allow the native AWT file dialog, or uses the JFileChooser on
-	 * other platforms. Mac AWT trick obtained from <A
-	 * HREF="http://lists.apple.com/archives/java-dev/2003/Jul/msg00243.html">this
-	 * post</A> on the OS X Java dev archive which explains the cryptic note in
-	 * Apple's Java 1.4 release docs about the special System property.
-	 */
-	static public File selectFolder(String prompt, File folder, Frame frame) {
-		if (Base.isMacOS()) {
-			if (frame == null)
-				frame = new Frame(); // .pack();
-			FileDialog fd = new FileDialog(frame, prompt, FileDialog.LOAD);
-			if (folder != null) {
-				fd.setDirectory(folder.getParent());
-				// fd.setFile(folder.getName());
-			}
-			System.setProperty("apple.awt.fileDialogForDirectories", "true");
-			fd.setVisible(true);
-			System.setProperty("apple.awt.fileDialogForDirectories", "false");
-			if (fd.getFile() == null) {
-				return null;
-			}
-			return new File(fd.getDirectory(), fd.getFile());
-
-		} else {
-			JFileChooser fc = new JFileChooser();
-			fc.setDialogTitle(prompt);
-			if (folder != null) {
-				fc.setSelectedFile(folder);
-			}
-			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-			int returned = fc.showOpenDialog(new JDialog());
-			if (returned == JFileChooser.APPROVE_OPTION) {
-				return fc.getSelectedFile();
-			}
-		}
-		return null;
 	}
 
 	/**

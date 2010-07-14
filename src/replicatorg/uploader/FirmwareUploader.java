@@ -102,9 +102,9 @@ public class FirmwareUploader {
 	 * Get the path of the XML file describing the available firmware.
 	 */
 	protected static File getFirmwareFile() {
-		File f = new File("firmware.xml");
+		File f = Base.getUserFile("firmware.xml");
 		if (!f.exists()) {
-			File alternate = new File("firmware.xml.dist");
+			File alternate = Base.getApplicationFile("firmware.xml.dist");
 			if (alternate.exists())
 				return alternate;
 		}

@@ -142,7 +142,7 @@ class FirmwareRetriever {
 			URL url;
 			try {
 				url = new URL(firmwareSourceURL,path);
-				File file = new File(path);
+				File file = Base.getUserFile(path);
 				updateURL(url,file);
 			} catch (MalformedURLException e) {
 				Base.logger.severe("Couldn't generate URL for path "+path);

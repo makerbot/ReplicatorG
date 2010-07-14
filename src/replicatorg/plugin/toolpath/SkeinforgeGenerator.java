@@ -64,14 +64,13 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 	}
 
 	File getUserProfilesDir() {
-		return new File(System.getProperty("user.home")+File.separator+".replicatorg"+File.separator+"sf_profiles");
+		return Base.getUserFile("sf_profiles");
 	}
 	
 	List<Profile> getProfiles() {
 		final List<Profile> profiles = new LinkedList<Profile>();
 		// Get default installed profiles
-		String dirPath = getSkeinforgePath();
-		File dir = new File(dirPath,"prefs");
+		File dir = new File(getSkeinforgeDir(),"prefs");
 		getProfilesIn(dir,profiles);
 		dir = getUserProfilesDir();
 		getProfilesIn(dir,profiles);
@@ -186,19 +185,19 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		return configSuccess;
 	}
 
-	public String getSkeinforgePath() {
-	    String skeinforgeDir = System.getProperty("replicatorg.skeinforge.path");
-	    if (skeinforgeDir == null || (skeinforgeDir.length() == 0)) {
-	    	skeinforgeDir = System.getProperty("user.dir") + File.separator + "skeinforge";
+	public File getSkeinforgeDir() {
+	    String skeinforgePath = System.getProperty("replicatorg.skeinforge.path");
+	    if (skeinforgePath == null || (skeinforgePath.length() == 0)) {
+	    	return Base.getUserFile("skeinforge");
 	    }
-	    return skeinforgeDir;
+	    return new File(skeinforgePath);
 	}
 	
 	public void editProfile(Profile profile) {
 		String[] arguments = { PythonUtils.getPythonPath(),"skeinforge.py","-p",profile.getFullPath()};
 		ProcessBuilder pb = new ProcessBuilder(arguments);
-	    String skeinforgeDir = getSkeinforgePath();
-		pb.directory(new File(skeinforgeDir));
+	    File skeinforgeDir = getSkeinforgeDir();
+		pb.directory(skeinforgeDir);
 		Process process = null;
 		try {
 			process = pb.start();
@@ -234,8 +233,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		arguments.add(path);
 		
 		ProcessBuilder pb = new ProcessBuilder(arguments);
-	    String skeinforgeDir = getSkeinforgePath();
-		pb.directory(new File(skeinforgeDir));
+		pb.directory(getSkeinforgeDir());
 		Process process = null;
 		try {
 			process = pb.start();
