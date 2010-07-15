@@ -293,6 +293,7 @@ public class EditingModel {
 		BoundingBox bb = getBoundingBox();
 		Point3d lower = new Point3d();
 		bb.getLower(lower);
+		System.err.println("IOP: delta "+Double.toString(lower.z));
 		return lower.z == 0;
 	}
 

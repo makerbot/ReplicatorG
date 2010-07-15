@@ -94,7 +94,7 @@ public class RotationTool extends Tool {
 		p.add(b,"growx,spanx");
 
 		lockZ = new JCheckBox("Rotate around Z");
-		p.add(lockZ,"growx,wrap");
+		p.add(lockZ,"growx,spanx");
 
 		return p;
 	}

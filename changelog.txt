@@ -9,11 +9,12 @@ New features:
 * New Windows launcher
 * Save model prompt when generating a toolpath
 * Tabs indicate object modification status
+* Explicit python path preference
+* Allow user choice of python installation
 Contributions:
 * Mikko Sivulainen (paeaetech): better estimation for SD uploads
 * Mikko Sivulainen (paeaetech): improved serial selection handling
 * GitHub user Nazdravi: basic HTTP proxy support on Linux
-
 
 0017 ReplicatorG
 * New features:
