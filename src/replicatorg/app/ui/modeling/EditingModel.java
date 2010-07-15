@@ -106,6 +106,7 @@ public class EditingModel {
 
 		shapeTransform = new TransformGroup();
 		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
 		wrapper.addChild(shapeTransform);
 
 		shapeTransform.addChild(objectSwitch);
@@ -293,8 +294,7 @@ public class EditingModel {
 		BoundingBox bb = getBoundingBox();
 		Point3d lower = new Point3d();
 		bb.getLower(lower);
-		System.err.println("IOP: delta "+Double.toString(lower.z));
-		return lower.z == 0;
+		return lower.z < 0.001d && lower.z > -0.001d;
 	}
 
 	public void scale(double scale, boolean isOnPlatform) {
