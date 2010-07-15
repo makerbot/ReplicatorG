@@ -509,6 +509,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 	
 	public void runToolpathGenerator() {
+		// Check for modified STL
+		if (build.getModel().isModified()) {
+			final String message = "<html>You have made changes to this model.  Any unsaved changes will<br>" +
+				"not be reflected in the generated toolpath.<br>" +
+				"Save the model now?</html>";
+			int option = JOptionPane.showConfirmDialog(this, message, "Save model?", 
+					JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (option == JOptionPane.CANCEL_OPTION) { return; }
+			if (option == JOptionPane.YES_OPTION) {
+				// save model
+				handleSave(true);
+			}
+		}
 		ToolpathGenerator generator = new SkeinforgeGenerator();
 		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build);
 		tgt.addListener(this);
