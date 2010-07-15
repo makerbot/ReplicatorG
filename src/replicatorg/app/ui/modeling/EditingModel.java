@@ -165,7 +165,33 @@ public class EditingModel {
 		composite.mul(old);
 		return composite;
 	}
-	
+
+	/**
+	 * Transform the given transform to one that operates on the centroid of the object.
+	 * @param transform
+	 * @param name
+	 * @return
+	 */
+	public Transform3D transformOnBottom(Transform3D transform) {
+		Transform3D old = new Transform3D();
+		Transform3D t1 = new Transform3D();
+		Transform3D t2 = new Transform3D();
+
+		Vector3d t1v = new Vector3d(getBottom());
+		t1v.negate();
+		t1.setTranslation(t1v);
+		Vector3d t2v = new Vector3d(getBottom());
+		t2.setTranslation(t2v);
+		shapeTransform.getTransform(old);
+		
+		Transform3D composite = new Transform3D();
+		composite.mul(t2);
+		composite.mul(transform);
+		composite.mul(t1);
+		composite.mul(old);
+		return composite;
+	}
+
 	public void rotateObject(double turntable, double elevation) {
 		// Skip identity translations
 		if (turntable == 0.0 && elevation == 0.0) { return; }
@@ -190,7 +216,7 @@ public class EditingModel {
 	public void translateObject(double x, double y, double z) {
 		// Skip identity translations
 		if (x == 0.0 && y == 0.0 && z == 0.0) { return; }
-		centroid = null;
+		invalidateBounds();
 		Transform3D translate = new Transform3D();
 		translate.setZero();
 		translate.setTranslation(new Vector3d(x,y,z));
@@ -262,11 +288,22 @@ public class EditingModel {
 		shapeTransform.setTransform(t);
 		model.setTransform(t,"mirror Z");
 	}
+	
+	public boolean isOnPlatform() {
+		BoundingBox bb = getBoundingBox();
+		Point3d lower = new Point3d();
+		bb.getLower(lower);
+		return lower.z == 0;
+	}
 
-	public void scale(double scale) {
+	public void scale(double scale, boolean isOnPlatform) {
 		Transform3D t = new Transform3D();
 		t.setScale(scale);
-		t = transformOnCentroid(t);
+		if (isOnPlatform) {
+			t = transformOnBottom(t);
+		} else {
+			t = transformOnCentroid(t);			
+		}
 		shapeTransform.setTransform(t);
 		model.setTransform(t,"resize");		
 	}
@@ -296,21 +333,37 @@ public class EditingModel {
 		return getBoundingBox(shapeTransform);
 	}
 	
-	private Point3d centroid = null;
 	
-	public Point3d getCentroid() {
+	private Point3d centroid = null;
+	private Point3d bottom = null;
+	
+	private void invalidateBounds() {
+		centroid = null;
+		bottom = null;
+	}
+	
+	private void validateBounds() {
 		if (centroid == null) {
 			BoundingBox bb = getBoundingBox();
 			Point3d p1 = new Point3d();
 			Point3d p2 = new Point3d();
 			bb.getLower(p1);
 			bb.getUpper(p2);
-			p1.interpolate(p2,0.5d);
-			centroid = p1;
+			p2.interpolate(p1,0.5d);
+			centroid = p2;
+			bottom = new Point3d(centroid.x, centroid.y, p1.z);
 		}
+	}
+	
+	public Point3d getCentroid() {
+		validateBounds();
 		return centroid;
 	}
-
+	
+	public Point3d getBottom() {
+		validateBounds();
+		return bottom;
+	}
 	
 	/**
 	 * Center the object tree and raise its lowest point to Z=0.
@@ -395,7 +448,7 @@ public class EditingModel {
 			flattenTransform = transformOnCentroid(flattenTransform);
 			shapeTransform.setTransform(flattenTransform);
 			model.setTransform(flattenTransform,"Lay flat");
-			centroid = null; 
+			invalidateBounds(); 
 		}
 	}
 }

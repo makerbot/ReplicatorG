@@ -155,8 +155,18 @@ public class Base {
 	static public File getApplicationFile(String path) {
 		return new File(getApplicationDirectory(),path);
 	}
-	
+
 	static public File getUserFile(String path) {
+		return getUserFile(path,true);
+	}
+
+	/**
+	 * 
+	 * @param path The relative path to the file in the .replicatorG directory
+	 * @param autoCopy If true, copy over the file of the same name in the application directory if none is found in the prefs directory.
+	 * @return
+	 */
+	static public File getUserFile(String path, boolean autoCopy) {
 		if (path.contains("..")) {
 			Base.logger.info("Attempted to access parent directory in "+path+", skipping");
 			return null;
@@ -166,7 +176,7 @@ public class Base {
 		// Make the parent file if not already there
 		File dir = f.getParentFile();
 		if (!dir.exists()) { dir.mkdirs(); }
-		if (!f.exists()) {
+		if (autoCopy && !f.exists()) {
 			// Check if there's an application-level version
 			File original = getApplicationFile(path);
 			// If so, copy it over
