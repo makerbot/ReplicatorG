@@ -82,6 +82,7 @@ public class EditingModel {
 		objectSwitch.addChild(edgeClone);
 		objectSwitch.setWhichChild(0);
 		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
+		objectSwitch.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
 
 		Color3f color = new Color3f(1.0f,1.0f,1.0f); 
 		Material m = new Material();
@@ -107,6 +108,8 @@ public class EditingModel {
 		shapeTransform = new TransformGroup();
 		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+		shapeTransform.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+
 		wrapper.addChild(shapeTransform);
 
 		shapeTransform.addChild(objectSwitch);
