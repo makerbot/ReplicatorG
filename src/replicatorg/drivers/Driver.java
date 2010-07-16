@@ -168,9 +168,10 @@ public interface Driver {
 	public double getCurrentFeedrate();
 
 	/**
-	 * various homing functions
+	 * Home the given set of axes at the given feedrate.  If the feedrate is <=0, run at
+	 * maximum feedrate for the appropriate axes.
 	 */
-	public void homeAxes(EnumSet<Axis> axes, boolean positive);
+	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate);
 
 	/**
 	 * delay / pause function

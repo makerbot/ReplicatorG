@@ -322,7 +322,7 @@ public class DriverBaseImplementation implements Driver {
 	/***************************************************************************
 	 * various homing functions
 	 **************************************************************************/
-	public void homeAxes(EnumSet<Axis> axes, boolean positive) {
+	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) {
 	}
 
 	/***************************************************************************

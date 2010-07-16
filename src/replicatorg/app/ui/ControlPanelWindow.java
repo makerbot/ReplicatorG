@@ -140,7 +140,7 @@ public class ControlPanelWindow extends JFrame implements
 		JMenuItem item = new JMenuItem(name);
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(set,positive);
+				driver.homeAxes(set,positive,0);
 			}
 		});
 		return item;
