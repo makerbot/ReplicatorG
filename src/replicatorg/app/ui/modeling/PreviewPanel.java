@@ -159,7 +159,11 @@ public class PreviewPanel extends JPanel {
 		canvas = createUniverse();
 		add(canvas, "growx,growy");
 		toolPanel = new ToolPanel(this);
-		add(toolPanel,"dock east,width max(200,20%)");
+		if (Base.isMacOS()) {
+			add(toolPanel,"dock east,width max(300,25%)");
+		} else {
+			add(toolPanel,"dock east,width max(200,20%)");
+		}
 		// Create the content branch and add it to the universe
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
