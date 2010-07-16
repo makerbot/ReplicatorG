@@ -84,8 +84,11 @@ public class EditingModel {
 		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
 		objectSwitch.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
 		solidShape.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
+		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
+		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
 		edgeClone.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
-		
+		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
+		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
 		Color3f color = new Color3f(1.0f,1.0f,1.0f); 
 		Material m = new Material();
 		m.setAmbientColor(color);
