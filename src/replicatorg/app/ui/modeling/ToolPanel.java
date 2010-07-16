@@ -1,7 +1,6 @@
 package replicatorg.app.ui.modeling;
 
 import java.awt.Font;
-import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -35,7 +34,7 @@ public class ToolPanel extends JPanel {
 	}
 
 	final PreviewPanel preview;
-	final JPanel subPanel = new JPanel(new MigLayout("fillx,filly"));
+	final JPanel subPanel = new JPanel(new MigLayout("fillx,filly,ins 0, gap 0"));
 	
 	Tool[] tools = { 
 			new ViewTool(this),

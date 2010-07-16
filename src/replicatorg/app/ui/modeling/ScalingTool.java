@@ -38,7 +38,7 @@ public class ScalingTool extends Tool {
 	
 	@Override
 	JPanel getControls() {
-		JPanel p = new JPanel(new MigLayout("fillx,filly"));
+		JPanel p = new JPanel(new MigLayout("fillx,filly,gap 0"));
 		JButton b;
 
 		final JTextField scaleFactor = new JFormattedTextField(NumberFormat.getInstance());
