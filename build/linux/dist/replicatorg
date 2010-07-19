@@ -17,4 +17,9 @@ MACHINE=`uname -m`
 LD_LIBRARY_PATH=`pwd`/lib-${MACHINE}:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
 
-java replicatorg.app.Base "$@"
+if [ ${http_proxy} ]; then
+  PROXY=`echo -n -e ${http_proxy} | sed -n 's/http:\/\/\([^:]\+\):\([1234567890]\+\)/-DproxySet=true -DproxyHost=\1 -DproxyPort=\2/p'`
+  java $PROXY replicatorg.app.Base "$@"
+else
+  java replicatorg.app.Base "$@"
+fi

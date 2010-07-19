@@ -82,7 +82,15 @@ public class EditingModel {
 		objectSwitch.addChild(edgeClone);
 		objectSwitch.setWhichChild(0);
 		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-
+		objectSwitch.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+		solidShape.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
+		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
+		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
+		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_NORMAL_READ);
+		edgeClone.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
+		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
+		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
+		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_NORMAL_READ);
 		Color3f color = new Color3f(1.0f,1.0f,1.0f); 
 		Material m = new Material();
 		m.setAmbientColor(color);
@@ -106,6 +114,9 @@ public class EditingModel {
 
 		shapeTransform = new TransformGroup();
 		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+		shapeTransform.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+
 		wrapper.addChild(shapeTransform);
 
 		shapeTransform.addChild(objectSwitch);
@@ -293,7 +304,7 @@ public class EditingModel {
 		BoundingBox bb = getBoundingBox();
 		Point3d lower = new Point3d();
 		bb.getLower(lower);
-		return lower.z == 0;
+		return lower.z < 0.001d && lower.z > -0.001d;
 	}
 
 	public void scale(double scale, boolean isOnPlatform) {

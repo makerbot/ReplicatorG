@@ -330,7 +330,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			splitPane.setDividerSize(dividerSize);
 		}
 
-		splitPane.setPreferredSize(new Dimension(400,500));
+		splitPane.setPreferredSize(new Dimension(600,600));
 		pane.add(splitPane,"growx,growy,shrinkx,shrinky");
 		pack();
 		
