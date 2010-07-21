@@ -1,9 +1,0 @@
-Format is tab separated preferences.
-Activate Multiply:	True
-Center X (millimeters):	0.0
-Center Y (millimeters):	0.0
-Open File to be Multiplied	
-Number of Columns (integer):	1
-Number of Rows (integer):	1
-Separation over Extrusion Width (ratio):	10.0
-windowPositionBehold Preferences	0+0
