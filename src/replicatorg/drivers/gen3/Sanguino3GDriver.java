@@ -448,6 +448,8 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Homing axes "+axes.toString());
 		byte flags = 0x00;
 
+		invalidatePosition();
+
 		Point3d maxFeedrates = machine.getMaximumFeedrates();
 
 		if (feedrate <= 0) {
