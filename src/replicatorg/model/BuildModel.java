@@ -78,20 +78,33 @@ public class BuildModel extends BuildElement {
 		setModified(true);
 	}
 
+
 	public void save() {
+		saveInternal(file);
+	}
+
+	public void saveAs(File f) {
+		if (saveInternal(f)) {
+			file = f;
+		}
+	}
+
+	private boolean saveInternal(File f) {
 		try {
-			FileOutputStream ostream = new FileOutputStream(file.getCanonicalPath());
-			Base.logger.info("Writing to "+file.getCanonicalPath()+".");
+			FileOutputStream ostream = new FileOutputStream(f);
+			Base.logger.info("Writing to "+f.getCanonicalPath()+".");
 			StlAsciiWriter saw = new StlAsciiWriter(ostream);
 			saw.writeShape(getShape(), getTransform());
 			ostream.close();
 			undoQueue.clear();
 			setModified(false);
+			return true;
 		} catch (FileNotFoundException fnfe) {
 			Base.logger.log(Level.SEVERE,"Error during save",fnfe);
 		} catch (IOException ioe) {
 			Base.logger.log(Level.SEVERE,"Error during save",ioe);
 		}
+		return false;
 	}
 
 	@Override
