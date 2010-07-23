@@ -317,20 +317,20 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// splitPane.setContinuousLayout(true);
 		// if window increases in size, give all of increase to
 		// the textarea in the uppper pane
-		splitPane.setResizeWeight(0.8);
+		splitPane.setResizeWeight(0.86);
 
 		// to fix ugliness.. normally macosx java 1.3 puts an
 		// ugly white border around this object, so turn it off.
 		//splitPane.setBorder(null);
 
 		// the default size on windows is too small and kinda ugly
-		int dividerSize = Base.preferences.getInt("editor.divider.size",8);
+		int dividerSize = Base.preferences.getInt("editor.divider.size",5);
 		if (dividerSize < 5) dividerSize = 5;
 		if (dividerSize != 0) {
 			splitPane.setDividerSize(dividerSize);
 		}
 
-		splitPane.setPreferredSize(new Dimension(400,500));
+		splitPane.setPreferredSize(new Dimension(600,600));
 		pane.add(splitPane,"growx,growy,shrinkx,shrinky");
 		pack();
 		
@@ -509,6 +509,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 	
 	public void runToolpathGenerator() {
+		// Check for modified STL
+		if (build.getModel().isModified()) {
+			final String message = "<html>You have made changes to this model.  Any unsaved changes will<br>" +
+				"not be reflected in the generated toolpath.<br>" +
+				"Save the model now?</html>";
+			int option = JOptionPane.showConfirmDialog(this, message, "Save model?", 
+					JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (option == JOptionPane.CANCEL_OPTION) { return; }
+			if (option == JOptionPane.YES_OPTION) {
+				// save model
+				handleSave(true);
+			}
+		}
 		ToolpathGenerator generator = new SkeinforgeGenerator();
 		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build);
 		tgt.addListener(this);
@@ -1996,7 +2009,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				Base.logger.info("Saving...");
 				try {
 					if (build.saveAs()) {
+						header.setBuild(build);
 						Base.logger.info("Save operation complete.");
+						mruList.update(build.getMainFilePath());
 						// TODO: Add to MRU?
 					} else {
 						Base.logger.info("Save operation aborted.");

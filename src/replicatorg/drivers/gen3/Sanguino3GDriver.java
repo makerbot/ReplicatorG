@@ -444,15 +444,20 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setCurrentPosition(p);
 	}
 
-	public void homeAxes(EnumSet<Axis> axes, boolean positive) {
+	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) {
 		Base.logger.log(Level.FINE,"Homing axes "+axes.toString());
 		byte flags = 0x00;
 
-		// figure out our fastest feedrate.
-		Point3d maxFeedrates = machine.getMaximumFeedrates();
-		double feedrate = Math.max(maxFeedrates.x, maxFeedrates.y);
-		feedrate = Math.max(maxFeedrates.z, feedrate);
+		invalidatePosition();
 
+		Point3d maxFeedrates = machine.getMaximumFeedrates();
+
+		if (feedrate <= 0) {
+			// figure out our fastest feedrate.
+			feedrate = Math.max(maxFeedrates.x, maxFeedrates.y);
+			feedrate = Math.max(maxFeedrates.z, feedrate);
+		}
+		
 		Point3d target = new Point3d();
 		
 		if (axes.contains(Axis.X)) {

@@ -82,7 +82,15 @@ public class EditingModel {
 		objectSwitch.addChild(edgeClone);
 		objectSwitch.setWhichChild(0);
 		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-
+		objectSwitch.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+		solidShape.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
+		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
+		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
+		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_NORMAL_READ);
+		edgeClone.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
+		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
+		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
+		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_NORMAL_READ);
 		Color3f color = new Color3f(1.0f,1.0f,1.0f); 
 		Material m = new Material();
 		m.setAmbientColor(color);
@@ -106,6 +114,9 @@ public class EditingModel {
 
 		shapeTransform = new TransformGroup();
 		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		shapeTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+		shapeTransform.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+
 		wrapper.addChild(shapeTransform);
 
 		shapeTransform.addChild(objectSwitch);
@@ -165,7 +176,33 @@ public class EditingModel {
 		composite.mul(old);
 		return composite;
 	}
-	
+
+	/**
+	 * Transform the given transform to one that operates on the centroid of the object.
+	 * @param transform
+	 * @param name
+	 * @return
+	 */
+	public Transform3D transformOnBottom(Transform3D transform) {
+		Transform3D old = new Transform3D();
+		Transform3D t1 = new Transform3D();
+		Transform3D t2 = new Transform3D();
+
+		Vector3d t1v = new Vector3d(getBottom());
+		t1v.negate();
+		t1.setTranslation(t1v);
+		Vector3d t2v = new Vector3d(getBottom());
+		t2.setTranslation(t2v);
+		shapeTransform.getTransform(old);
+		
+		Transform3D composite = new Transform3D();
+		composite.mul(t2);
+		composite.mul(transform);
+		composite.mul(t1);
+		composite.mul(old);
+		return composite;
+	}
+
 	public void rotateObject(double turntable, double elevation) {
 		// Skip identity translations
 		if (turntable == 0.0 && elevation == 0.0) { return; }
@@ -190,7 +227,7 @@ public class EditingModel {
 	public void translateObject(double x, double y, double z) {
 		// Skip identity translations
 		if (x == 0.0 && y == 0.0 && z == 0.0) { return; }
-		centroid = null;
+		invalidateBounds();
 		Transform3D translate = new Transform3D();
 		translate.setZero();
 		translate.setTranslation(new Vector3d(x,y,z));
@@ -262,11 +299,22 @@ public class EditingModel {
 		shapeTransform.setTransform(t);
 		model.setTransform(t,"mirror Z");
 	}
+	
+	public boolean isOnPlatform() {
+		BoundingBox bb = getBoundingBox();
+		Point3d lower = new Point3d();
+		bb.getLower(lower);
+		return lower.z < 0.001d && lower.z > -0.001d;
+	}
 
-	public void scale(double scale) {
+	public void scale(double scale, boolean isOnPlatform) {
 		Transform3D t = new Transform3D();
 		t.setScale(scale);
-		t = transformOnCentroid(t);
+		if (isOnPlatform) {
+			t = transformOnBottom(t);
+		} else {
+			t = transformOnCentroid(t);			
+		}
 		shapeTransform.setTransform(t);
 		model.setTransform(t,"resize");		
 	}
@@ -296,20 +344,38 @@ public class EditingModel {
 		return getBoundingBox(shapeTransform);
 	}
 	
-	private Point3d centroid = null;
 	
-	public Point3d getCentroid() {
+	private Point3d centroid = null;
+	private Point3d bottom = null;
+	
+	private void invalidateBounds() {
+		centroid = null;
+		bottom = null;
+	}
+	
+	private void validateBounds() {
 		if (centroid == null) {
 			BoundingBox bb = getBoundingBox();
 			Point3d p1 = new Point3d();
 			Point3d p2 = new Point3d();
 			bb.getLower(p1);
 			bb.getUpper(p2);
-			p1.interpolate(p2,0.5d);
-			centroid = p1;
+			p2.interpolate(p1,0.5d);
+			centroid = p2;
+			bottom = new Point3d(centroid.x, centroid.y, p1.z);
 		}
+	}
+	
+	public Point3d getCentroid() {
+		validateBounds();
 		return centroid;
 	}
+	
+	public Point3d getBottom() {
+		validateBounds();
+		return bottom;
+	}
+	
 	/**
 	 * Center the object tree and raise its lowest point to Z=0.
 	 */
@@ -325,7 +391,17 @@ public class EditingModel {
 		translateObject(xoff, yoff, zoff);
 	}
 
-	
+	/**
+	 * Raise the object's lowest point to Z=0.
+	 */
+	public void putOnPlatform() {
+		BoundingBox bb = getBoundingBox(shapeTransform);
+		Point3d lower = new Point3d();
+		bb.getLower(lower);
+		double zoff = -lower.z;
+		translateObject(0d, 0d, zoff);
+	}
+
 	/**
 	 * Lay the object flat with the Z object.  It computes this by finding the bottommost
 	 * point, and then rotating the object to make the surface with the lowest angle to
@@ -383,7 +459,7 @@ public class EditingModel {
 			flattenTransform = transformOnCentroid(flattenTransform);
 			shapeTransform.setTransform(flattenTransform);
 			model.setTransform(flattenTransform,"Lay flat");
-			centroid = null; 
+			invalidateBounds(); 
 		}
 	}
 }

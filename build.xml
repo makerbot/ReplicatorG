@@ -157,9 +157,6 @@
       <fileset dir="skeinforge" excludes="*.pyc"/>
     </copy>
     <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
-    <copy todir="${target.dir}/firmware">
-      <fileset dir="firmware"/>
-    </copy>
   </target>
 
   <target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">

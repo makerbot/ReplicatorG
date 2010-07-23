@@ -1,7 +1,6 @@
 package replicatorg.app.ui.modeling;
 
 import java.awt.Font;
-import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -35,7 +34,7 @@ public class ToolPanel extends JPanel {
 	}
 
 	final PreviewPanel preview;
-	final JPanel subPanel = new JPanel(new MigLayout("fillx,filly"));
+	final JPanel subPanel = new JPanel(new MigLayout("fillx,filly,ins 0, gap 0"));
 	
 	Tool[] tools = { 
 			new ViewTool(this),
@@ -60,7 +59,7 @@ public class ToolPanel extends JPanel {
 		subPanel.removeAll();
 		JPanel toolControls = tool.getControls();
 		if (toolControls != null) {
-			subPanel.add(toolControls,"spanx,spany,growx,growy");
+			subPanel.add(toolControls,"spanx,spany,growx,growy,width 100%");
 		} else {
 			subPanel.repaint();
 		}
@@ -73,9 +72,9 @@ public class ToolPanel extends JPanel {
 	
 	ToolPanel(final PreviewPanel preview) {
 		this.preview = preview;
-		setLayout(new MigLayout("gap 0,filly"));
+		setLayout(new MigLayout("gap 0,filly,wrap 1"));
 
-		JPanel toolButtons = new JPanel(new MigLayout("gap 0 0,ins 0,novisualpadding","0[50%]0[50%]0"));
+		JPanel toolButtons = new JPanel(new MigLayout("gap 0 0,ins 0,novisualpadding,wrap 1","0[100%]0"));
 		
 		add(toolButtons,"south");
 	
@@ -108,15 +107,15 @@ public class ToolPanel extends JPanel {
 			//Font f = titleLabel.getFont();
 			titleLabel.setFont(new Font("FreeSans",Font.BOLD, 14));
 		}
-		for (String s : GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()) {
-			System.err.println("AVAILABLE: " + s);
-		}
+//		for (String s : GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()) {
+//			System.err.println("AVAILABLE: " + s);
+//		}
 		
 		Font f = infoLabel.getFont();
 		infoLabel.setFont(f.deriveFont((float)f.getSize()*0.8f));
 		add(infoLabel,"growx,gap 2,spanx,south");
 
-		add(subPanel,"spanx,width 100%");
+		add(subPanel,"spanx,growx,growy,width 100%");
 		setTool(tools[0]);
 	}
 }

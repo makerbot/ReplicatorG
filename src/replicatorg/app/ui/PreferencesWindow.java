@@ -15,6 +15,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
@@ -247,7 +248,13 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		} catch (Exception e) {
 			Base.logger.warning("ignoring invalid font size " + newSizeText);
 		}
-		Base.preferences.put("replicatorg.updates.url",firmwareUpdateUrlField.getText());
+		String origUpdateUrl = Base.preferences.get("replicatorg.updates.url", "");
+		if (!origUpdateUrl.equals(firmwareUpdateUrlField.getText())) {
+			File oldFirmwareData = Base.getUserFile("firmware.xml");
+			oldFirmwareData.delete(); // Blow away the old firmware.xml if the url has been changed
+			Base.preferences.put("replicatorg.updates.url",firmwareUpdateUrlField.getText());
+			FirmwareUploader.checkFirmware(); // Initiate a new firmware check
+		}
 		editor.applyPreferences();
 	}
 

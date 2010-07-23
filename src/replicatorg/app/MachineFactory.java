@@ -130,9 +130,9 @@ public class MachineFactory {
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			try {
-				File f = new File("machines.xml");
+				File f = Base.getUserFile("machines.xml");
 				if (!f.exists()) {
-					f = new File("machines.xml.dist");
+					f = Base.getApplicationFile("machines.xml.dist");
 					if (f.exists()) {
 						if (!usingDistXmlWarned) {
 							Base.showMessage(

@@ -308,12 +308,16 @@ public class MachineController {
 				source.getLineCount();
 			startStatusPolling(1000);
 			try {
-				driver.getCurrentPosition(); // reconcile position
+				if (!state.isSimulating()) {
+					driver.getCurrentPosition(); // reconcile position
+				}
 				runWarmupCommands();
 				Base.logger.info("Running build.");
 				buildCodesInternal(source);
 				runCooldownCommands();
-				driver.invalidatePosition();
+				if (!state.isSimulating()) {
+					driver.invalidatePosition();
+				}
 				setState(new MachineState(MachineState.State.READY));
 			} catch (BuildFailureException e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(),

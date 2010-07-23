@@ -765,15 +765,43 @@ public class GCodeParser {
 				curveSection = curveSectionMM;
 				break;
 
-			// go home to your limit switches
+			// This should be "return to home".  We need to introduce new GCodes for homing.
 			case 28:
+			{
 				// home all axes?
 				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
-				
+
 				if (hasCode("X")) axes.add(Axis.X);
 				if (hasCode("Y")) axes.add(Axis.Y);
 				if (hasCode("Z")) axes.add(Axis.Z);
-				driver.homeAxes(axes, false);
+				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
+			}
+				break;
+
+			// New code: home negative.
+			case 161:
+			{
+				// home all axes?
+				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
+
+				if (hasCode("X")) axes.add(Axis.X);
+				if (hasCode("Y")) axes.add(Axis.Y);
+				if (hasCode("Z")) axes.add(Axis.Z);
+				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
+			}
+				break;
+
+				// New code: home positive.
+			case 162:
+			{
+				// home all axes?
+				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
+
+				if (hasCode("X")) axes.add(Axis.X);
+				if (hasCode("Y")) axes.add(Axis.Y);
+				if (hasCode("Z")) axes.add(Axis.Z);
+				driver.homeAxes(axes, true, hasCode("F")?feedrate:0);
+			}
 				break;
 
 			// single probe
@@ -930,12 +958,13 @@ public class GCodeParser {
 			case 97:
 				driver.setSpindleRPM((int) getCodeValue("S"));
 				break;
-
+				
 			// error, error!
 			default:
 				throw new GCodeException("Unknown G code: G"
 						+ (int) getCodeValue("G"));
 			}
+			
 		}
 	}
 
