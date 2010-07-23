@@ -75,7 +75,7 @@ public class PluginLoader {
 					// Load class
 					URL urls[] = { f.toURI().toURL() };
 					URLClassLoader cl = new URLClassLoader(urls);
-					Class c;
+					Class<?> c;
 					try {
 						c = cl.loadClass(className.trim());
 						Object o = c.newInstance();
