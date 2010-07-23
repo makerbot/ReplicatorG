@@ -125,7 +125,7 @@ public class GCodeParser {
 	protected double drillPecksize = 0.0;
 
 	// TwitterBot extension variables
-        protected Class extClass;
+        protected Class<?> extClass;
         protected Object objExtClass;
 	public static final String TB_CODE = "M";
 	public static final int TB_INIT = 997;
