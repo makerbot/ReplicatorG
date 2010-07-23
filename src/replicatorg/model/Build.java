@@ -187,9 +187,9 @@ public class Build {
 	}
 
 	/**
-	 * Handles 'Save As' for a sketch.
+	 * Handles 'Save As' for a build.
 	 * <P>
-	 * This basically just duplicates the current sketch folder to a new
+	 * This basically just duplicates the current build to a new
 	 * location, and then calls 'Save'. (needs to take the current state of the
 	 * open files and save them to the new folder.. but not save over the old
 	 * versions for the old sketch..)
@@ -206,16 +206,19 @@ public class Build {
 		fd.setFile(mainFilename);
 
 		fd.setVisible(true);
-		String newParentDir = fd.getDirectory();
+		String parentDir = fd.getDirectory();
 		String newName = fd.getFile();
 		// user cancelled selection
 		if (newName == null)
 			return false;
 
-		File newFolder = new File(newParentDir);
+		File folder = new File(parentDir);
 
-		if (!newName.endsWith(".gcode")) newName = newName + ".gcode";
+		// Find base name
+		if (newName.toLowerCase().endsWith(".gcode")) newName = newName.substring(0, newName.length()-6);
+		if (newName.toLowerCase().endsWith(".stl")) newName = newName.substring(0, newName.length()-4);
 
+		
 		BuildCode code = getCode();
 		if (code != null) {
 			// grab the contents of the current tab before saving
@@ -223,10 +226,19 @@ public class Build {
 			if (code.isModified()) {
 				code.program = editor.getText();
 			}
-
-			File newFile = new File(newFolder, newName);
+			File newFile = new File(folder, newName+".gcode");
 			code.saveAs(newFile);
 		}
+		
+		BuildModel model = getModel();
+		if (model != null) {
+			File newFile = new File(folder, newName+".stl");
+			model.saveAs(newFile);
+		}
+		
+		this.name = newName;
+		this.mainFilename = fd.getFile();
+		this.folder = folder;
 		return true;
 	}
 

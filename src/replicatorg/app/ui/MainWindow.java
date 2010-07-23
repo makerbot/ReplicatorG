@@ -2009,7 +2009,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				Base.logger.info("Saving...");
 				try {
 					if (build.saveAs()) {
+						header.setBuild(build);
 						Base.logger.info("Save operation complete.");
+						mruList.update(build.getMainFilePath());
 						// TODO: Add to MRU?
 					} else {
 						Base.logger.info("Save operation aborted.");
