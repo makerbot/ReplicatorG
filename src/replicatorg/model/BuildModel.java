@@ -17,6 +17,7 @@ import org.j3d.renderer.java3d.loaders.STLLoader;
 import replicatorg.app.Base;
 import replicatorg.model.j3d.StlAsciiWriter;
 
+import com.sun.j3d.loaders.LoaderBase;
 import com.sun.j3d.loaders.Scene;
 
 public class BuildModel extends BuildElement {
@@ -45,17 +46,28 @@ public class BuildModel extends BuildElement {
 		}
 		return shape;
 	}
-	
-	private void loadShape() {
-		STLLoader loader = new STLLoader();
+
+	// Attempt to load the file with the given loader.  Should return
+	// null if the given loader can't identify the file as being of
+	// the correct type.
+	private Shape3D loadShape(LoaderBase loader) {
 		Scene scene = null;
 		try {
 			scene = loader.load(file.getCanonicalPath());
 		} catch (Exception e) {
-			Base.logger.log(Level.SEVERE,"Error loading model "+file.getPath(),e);
+			Base.logger.log(Level.FINE,
+					"Could not load "+file.getPath()+
+					" with "+ loader.getClass().getSimpleName(),e);
+			return null;
 		}
-		if (scene == null) { return; }
-		shape = (Shape3D)scene.getSceneGroup().getChild(0);
+		if (scene == null) { return null; }
+		return (Shape3D)scene.getSceneGroup().getChild(0);
+	}
+
+	private void loadShape() {
+		STLLoader loader = new STLLoader();
+		Shape3D candidate = loadShape(loader);
+		if (candidate != null) { shape = candidate; }
 	}
 
 	public Transform3D getTransform() { return transform; }
