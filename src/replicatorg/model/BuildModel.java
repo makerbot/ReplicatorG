@@ -5,16 +5,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.logging.Level;
 
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEdit;
 
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
 import replicatorg.app.Base;
+import replicatorg.app.ui.modeling.EditingModel;
 import replicatorg.model.j3d.StlAsciiWriter;
 
 import com.sun.j3d.loaders.LoaderBase;
@@ -25,6 +28,11 @@ public class BuildModel extends BuildElement {
 	private File file;
 	private Transform3D transform = new Transform3D();
 	private Shape3D shape = null;
+	private EditingModel editListener = null;
+	
+	public void setEditListener(EditingModel eModel) {
+		editListener = eModel;
+	}
 	
 	BuildModel(Build build, File file) {
 		this.file = file;
@@ -72,24 +80,76 @@ public class BuildModel extends BuildElement {
 
 	public Transform3D getTransform() { return transform; }
 	
-	class UndoEntry {
+	class UndoEntry implements UndoableEdit {
 		public Transform3D transform;
 		public String description;
 		public UndoEntry(Transform3D transform, String description) {
-			this.transform = transform;
+			this.transform = new Transform3D(transform);
 			this.description = description;
 		}
+		@Override
+		public boolean addEdit(UndoableEdit edit) {
+			// TODO: merge small edits
+			return false;
+		}
+		@Override
+		public boolean canRedo() {
+			return true;
+		}
+		@Override
+		public boolean canUndo() {
+			return true;
+		}
+		@Override
+		public void die() {
+			
+		}
+		@Override
+		public String getPresentationName() {
+			return description;
+		}
+		@Override
+		public String getRedoPresentationName() {
+			return "Redo "+getPresentationName();
+		}
+		@Override
+		public String getUndoPresentationName() {
+			return "Undo "+getPresentationName();
+		}
+		@Override
+		public boolean isSignificant() {
+			return true;
+		}
+		@Override
+		public void redo() throws CannotRedoException {
+			doEdit(this);
+		}
+		@Override
+		public boolean replaceEdit(UndoableEdit edit) {
+			return false;
+		}
+		@Override
+		public void undo() throws CannotUndoException {
+			doEdit(this);
+		}
 	}
-	
-	protected Queue<UndoEntry> undoQueue = new LinkedList<UndoEntry>();
-	
+		
 	public void setTransform(Transform3D t, String description) {
 		if (transform.equals(t)) return;
+		Transform3D last = new Transform3D(transform);
 		transform.set(t);
-		undoQueue.add(new UndoEntry(t,description));
+		undo.addEdit(new UndoEntry(last,description));
 		setModified(true);
+		if (editListener != null) {
+			editListener.modelTransformChanged();
+		}
 	}
 
+	public void doEdit(UndoEntry edit) {
+		transform.set(edit.transform);
+		setModified(undo.canUndo());
+		editListener.modelTransformChanged();
+	}
 
 	public void save() {
 		saveInternal(file);
@@ -108,7 +168,7 @@ public class BuildModel extends BuildElement {
 			StlAsciiWriter saw = new StlAsciiWriter(ostream);
 			saw.writeShape(getShape(), getTransform());
 			ostream.close();
-			undoQueue.clear();
+			undo = new UndoManager();
 			setModified(false);
 			return true;
 		} catch (FileNotFoundException fnfe) {

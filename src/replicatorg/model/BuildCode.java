@@ -29,8 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.swing.undo.UndoManager;
-
 import replicatorg.app.Base;
 import replicatorg.app.syntax.SyntaxDocument;
 
@@ -46,9 +44,6 @@ public class BuildCode extends BuildElement implements Comparable<BuildCode> {
 
 	/** Document object for this tab; includes undo information, etc. */
 	public SyntaxDocument document;
-
-	/** Undo Manager for this tab, each tab keeps track of their own */
-	public UndoManager undo;
 
 	// saved positions from last time this tab was used
 	public int selectionStart;

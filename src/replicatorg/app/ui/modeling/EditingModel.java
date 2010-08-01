@@ -21,6 +21,7 @@ import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+import replicatorg.app.ui.MainWindow;
 import replicatorg.model.BuildModel;
 
 /**
@@ -60,8 +61,15 @@ public class EditingModel {
 	 */
 	private TransformGroup shapeTransform = new TransformGroup();
 	
-	public EditingModel(BuildModel model) {
+	/** We maintain a link to the main window to update the undo/redo buttons.  Kind of silly, but
+	 * there it is.
+	 */
+	private final MainWindow mainWindow;
+	
+	public EditingModel(BuildModel model, final MainWindow mainWindow) {
 		this.model = model;
+		this.mainWindow = mainWindow;
+		model.setEditListener(this);
 	}
 	
 	/**
@@ -212,7 +220,6 @@ public class EditingModel {
 		r2.rotZ(turntable);
 		r2.mul(r1);
 		r2 = transformOnCentroid(r2);
-		shapeTransform.setTransform(r2);
 		model.setTransform(r2,"rotation");
 	}
 	
@@ -220,8 +227,12 @@ public class EditingModel {
 		Transform3D t = new Transform3D();
 		t.setRotation(angle);
 		t = transformOnCentroid(t);
-		shapeTransform.setTransform(t);
 		model.setTransform(t, "rotation");
+	}
+
+	public void modelTransformChanged() {
+		shapeTransform.setTransform(model.getTransform());
+		mainWindow.updateUndo();
 	}
 	
 	public void translateObject(double x, double y, double z) {
@@ -234,7 +245,6 @@ public class EditingModel {
 		Transform3D old = new Transform3D();
 		shapeTransform.getTransform(old);
 		old.add(translate);
-		shapeTransform.setTransform(old);
 		model.setTransform(old,"move");
 	}
 
@@ -269,7 +279,6 @@ public class EditingModel {
 		Transform3D flipZ = new Transform3D();
 		flipZ.rotY(Math.PI);
 		flipZ = transformOnCentroid(flipZ);
-		shapeTransform.setTransform(flipZ);
 		model.setTransform(flipZ,"flip");
 	}
 
@@ -278,7 +287,6 @@ public class EditingModel {
 		Vector3d v = new Vector3d(-1d,1d,1d);
 		t.setScale(v);
 		t = transformOnCentroid(t);
-		shapeTransform.setTransform(t);
 		model.setTransform(t,"mirror X");
 	}
 
@@ -287,7 +295,6 @@ public class EditingModel {
 		Vector3d v = new Vector3d(1d,-1d,1d);
 		t.setScale(v);
 		t = transformOnCentroid(t);
-		shapeTransform.setTransform(t);
 		model.setTransform(t,"mirror Y");
 	}
 
@@ -296,10 +303,9 @@ public class EditingModel {
 		Vector3d v = new Vector3d(1d,1d,-1d);
 		t.setScale(v);
 		t = transformOnCentroid(t);
-		shapeTransform.setTransform(t);
 		model.setTransform(t,"mirror Z");
 	}
-	
+		
 	public boolean isOnPlatform() {
 		BoundingBox bb = getBoundingBox();
 		Point3d lower = new Point3d();
