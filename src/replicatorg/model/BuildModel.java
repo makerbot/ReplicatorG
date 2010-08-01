@@ -81,10 +81,12 @@ public class BuildModel extends BuildElement {
 	public Transform3D getTransform() { return transform; }
 	
 	class UndoEntry implements UndoableEdit {
-		public Transform3D transform;
-		public String description;
-		public UndoEntry(Transform3D transform, String description) {
-			this.transform = new Transform3D(transform);
+		Transform3D before;
+		Transform3D after;
+		String description;
+		public UndoEntry(Transform3D before, Transform3D after, String description) {
+			this.before = new Transform3D(before);
+			this.after= new Transform3D(after);
 			this.description = description;
 		}
 		@Override
@@ -122,7 +124,7 @@ public class BuildModel extends BuildElement {
 		}
 		@Override
 		public void redo() throws CannotRedoException {
-			doEdit(this);
+			doEdit(after);
 		}
 		@Override
 		public boolean replaceEdit(UndoableEdit edit) {
@@ -130,23 +132,22 @@ public class BuildModel extends BuildElement {
 		}
 		@Override
 		public void undo() throws CannotUndoException {
-			doEdit(this);
+			doEdit(before);
 		}
 	}
 		
 	public void setTransform(Transform3D t, String description) {
 		if (transform.equals(t)) return;
-		Transform3D last = new Transform3D(transform);
+		undo.addEdit(new UndoEntry(transform,t,description));
 		transform.set(t);
-		undo.addEdit(new UndoEntry(last,description));
 		setModified(true);
 		if (editListener != null) {
 			editListener.modelTransformChanged();
 		}
 	}
 
-	public void doEdit(UndoEntry edit) {
-		transform.set(edit.transform);
+	public void doEdit(Transform3D edit) {
+		transform.set(edit);
 		setModified(undo.canUndo());
 		editListener.modelTransformChanged();
 	}

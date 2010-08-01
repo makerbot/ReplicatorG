@@ -2346,7 +2346,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	
 	public void stateChanged(ChangeEvent e) {
 		// We get a change event when another tab is selected.
-		System.err.println("Setting current element");
 		setCurrentElement(header.getSelectedElement());
 	}
 
