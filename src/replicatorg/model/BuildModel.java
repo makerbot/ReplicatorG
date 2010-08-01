@@ -84,16 +84,29 @@ public class BuildModel extends BuildElement {
 		Transform3D before;
 		Transform3D after;
 		String description;
-		public UndoEntry(Transform3D before, Transform3D after, String description) {
+		boolean newOp;
+		
+		// The newOp flag is set at the start of every drag or every button operation.  NewOps will never
+		// be merged into the undo op at the top of the stack.
+		public UndoEntry(Transform3D before, Transform3D after, String description, boolean newOp) {
 			this.before = new Transform3D(before);
 			this.after= new Transform3D(after);
 			this.description = description;
+			this.newOp = newOp;
 		}
+		
 		@Override
 		public boolean addEdit(UndoableEdit edit) {
-			// TODO: merge small edits
+			if (edit instanceof UndoEntry) {
+				UndoEntry ue = (UndoEntry)edit;
+				if (!ue.newOp && description == ue.description) {
+					after = ue.after;
+					return true;
+				}
+			}
 			return false;
 		}
+		
 		@Override
 		public boolean canRedo() {
 			return true;
@@ -136,9 +149,9 @@ public class BuildModel extends BuildElement {
 		}
 	}
 		
-	public void setTransform(Transform3D t, String description) {
+	public void setTransform(Transform3D t, String description, boolean newOp) {
 		if (transform.equals(t)) return;
-		undo.addEdit(new UndoEntry(transform,t,description));
+		undo.addEdit(new UndoEntry(transform,t,description, newOp));
 		transform.set(t);
 		setModified(true);
 		if (editListener != null) {
