@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 import javax.media.j3d.Shape3D;
@@ -14,12 +16,14 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
+import org.j3d.renderer.java3d.loaders.ObjLoader;
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.modeling.EditingModel;
 import replicatorg.model.j3d.StlAsciiWriter;
 
+import com.sun.j3d.loaders.Loader;
 import com.sun.j3d.loaders.LoaderBase;
 import com.sun.j3d.loaders.Scene;
 
@@ -58,7 +62,7 @@ public class BuildModel extends BuildElement {
 	// Attempt to load the file with the given loader.  Should return
 	// null if the given loader can't identify the file as being of
 	// the correct type.
-	private Shape3D loadShape(LoaderBase loader) {
+	private Shape3D loadShape(Loader loader) {
 		Scene scene = null;
 		try {
 			scene = loader.load(file.getCanonicalPath());
@@ -72,6 +76,12 @@ public class BuildModel extends BuildElement {
 		return (Shape3D)scene.getSceneGroup().getChild(0);
 	}
 
+	Map<String,Loader> loaderExtensionMap = new HashMap<String,Loader>();
+	{
+		loaderExtensionMap.put("stl",new STLLoader());
+		loaderExtensionMap.put("obj",new ObjLoader());
+	}
+	
 	private void loadShape() {
 		STLLoader loader = new STLLoader();
 		Shape3D candidate = loadShape(loader);

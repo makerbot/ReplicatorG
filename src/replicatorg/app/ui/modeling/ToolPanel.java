@@ -47,7 +47,8 @@ public class ToolPanel extends JPanel implements KeyListener {
 	};
 	
 	JLabel titleLabel;
-	
+	JPanel toolControls = null;
+	int ctr=0;
 	void setTool(Tool tool) {
 		// Default to the view tool
 		if (tool == null) { tool = tools[0]; }
@@ -58,14 +59,16 @@ public class ToolPanel extends JPanel implements KeyListener {
 		// Set tool instructions
 		infoLabel.setText(tool.getInstructions());
 		// Add subpanel
-		subPanel.removeAll();
-		JPanel toolControls = tool.getControls();
+		if (toolControls != null) {
+			subPanel.remove(toolControls);
+		}
+		toolControls = tool.getControls();
 		if (toolControls != null) {
 			subPanel.add(toolControls,"spanx,spany,growx,growy,width 100%");
 		} else {
-			subPanel.repaint();
 		}
-		
+		validate();
+		repaint();
 	}
 	
 	EditingModel getModel() { return preview.getModel(); }
