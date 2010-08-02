@@ -17,6 +17,7 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.TriangleArray;
 import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
 import replicatorg.app.Base;
@@ -57,6 +58,20 @@ public class ObjLoader extends LoaderBase {
         }
 	}
 
+	public float[] computeNormal(double[] v0d, double[] v1d, double[] v2d) {
+		Vector3d v0 = new Vector3d(v0d);
+		v0.negate();
+		Vector3d v1 = new Vector3d(v1d);
+		v1.add(v0);
+		Vector3d v2 = new Vector3d(v2d);
+		v2.add(v0);
+		Vector3d n = new Vector3d();
+		n.cross(v1,v2);
+		n.normalize();
+		float[] normal = { (float)n.x, (float)n.y, (float)n.z };
+		return normal;
+	}
+	
 	@Override
 	public Scene load(Reader r) throws FileNotFoundException,
 			IncorrectFormatException, ParsingErrorException {
@@ -98,6 +113,7 @@ public class ObjLoader extends LoaderBase {
             );
             int idx = 0;
             for (String[] tri : tris) {
+            	boolean needsNormals = false;
             	for (String v : tri) {
             		String[] components = v.split("/");
             		int vertexIdx = Integer.parseInt(components[0]) - 1;
@@ -107,10 +123,21 @@ public class ObjLoader extends LoaderBase {
             			int normalIdx = Integer.parseInt(components[2]) - 1;
             			geometry.setNormal(idx, normals.elementAt(normalIdx));
             		} else {
-            			// Compute from the triangle vertices
-            			// Todo.
+            			needsNormals = true;
             		}
             		idx++;
+            	}
+            	if (needsNormals) {
+            		double[] v0 = new double[3];
+            		double[] v1 = new double[3];
+            		double[] v2 = new double[3];
+            		geometry.getCoordinate(idx-3, v0);
+            		geometry.getCoordinate(idx-2, v1);
+            		geometry.getCoordinate(idx-1, v2);
+            		float[] normal = computeNormal(v0,v1,v2);
+            		geometry.setNormal(idx-3, normal);
+            		geometry.setNormal(idx-2, normal);
+            		geometry.setNormal(idx-1, normal);
             	}
             }
             final Shape3D shape = new Shape3D( geometry );
