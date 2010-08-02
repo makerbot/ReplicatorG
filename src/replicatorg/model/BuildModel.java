@@ -24,7 +24,6 @@ import replicatorg.app.ui.modeling.EditingModel;
 import replicatorg.model.j3d.StlAsciiWriter;
 
 import com.sun.j3d.loaders.Loader;
-import com.sun.j3d.loaders.LoaderBase;
 import com.sun.j3d.loaders.Scene;
 
 public class BuildModel extends BuildElement {
@@ -83,8 +82,27 @@ public class BuildModel extends BuildElement {
 	}
 	
 	private void loadShape() {
-		STLLoader loader = new STLLoader();
-		Shape3D candidate = loadShape(loader);
+		String suffix = null;
+		String name = file.getName();
+		int idx = name.lastIndexOf('.');
+		if (idx > 0) {
+			suffix = name.substring(idx+1);
+		}
+		// Attempt to find loader based on suffix
+		Shape3D candidate = null; 
+		if (suffix != null) {
+			Loader loadCandidate = loaderExtensionMap.get(suffix.toLowerCase());
+			if (loadCandidate != null) {
+				candidate = loadShape(loadCandidate);
+			}
+		}
+		// Couldn't find loader for suffix or file is corrupt or of wrong type
+		if (candidate == null) {
+			for (Loader loadCandidate : loaderExtensionMap.values()) {
+				candidate = loadShape(loadCandidate);
+				if (candidate != null) { break; }
+			}
+		}
 		if (candidate != null) { shape = candidate; }
 	}
 

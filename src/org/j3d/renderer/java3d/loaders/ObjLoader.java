@@ -66,6 +66,7 @@ public class ObjLoader extends LoaderBase {
 		BufferedReader br = new BufferedReader(r);
 		try {
 			for (String rl = br.readLine(); rl != null; rl = br.readLine()) {
+				if (rl.length() == 0) continue;
 				char first = rl.charAt(0);
 				if (first == '#') { continue; } // comment
 				String[] parts = rl.split(" ");
@@ -99,11 +100,11 @@ public class ObjLoader extends LoaderBase {
             for (String[] tri : tris) {
             	for (String v : tri) {
             		String[] components = v.split("/");
-            		int vertexIdx = Integer.parseInt(components[0]);
+            		int vertexIdx = Integer.parseInt(components[0]) - 1;
             		// Lookup and populate vertex
             		geometry.setCoordinate(idx, vertices.elementAt(vertexIdx));
-            		if (v.length() > 2) {
-            			int normalIdx = Integer.parseInt(components[2]);
+            		if (components.length > 2) {
+            			int normalIdx = Integer.parseInt(components[2]) - 1;
             			geometry.setNormal(idx, normals.elementAt(normalIdx));
             		} else {
             			// Compute from the triangle vertices

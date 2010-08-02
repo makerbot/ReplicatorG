@@ -1053,22 +1053,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		protected void updateUndoState() {
 			if (currentElement == null) { return; }
 			UndoManager undo = currentElement.getUndoManager();
-			if (undo.canUndo()) {
-				this.setEnabled(true);
-				undoItem.setEnabled(true);
+			boolean canUndo = undo.canUndo();
+			this.setEnabled(canUndo);
+			undoItem.setEnabled(canUndo);
+			currentElement.setModified(canUndo);
+			if (canUndo) {
 				undoItem.setText(undo.getUndoPresentationName());
 				putValue(Action.NAME, undo.getUndoPresentationName());
-				if (build != null) {
-					build.getCode().setModified(true);
-				}
 			} else {
-				this.setEnabled(false);
-				undoItem.setEnabled(false);
 				undoItem.setText("Undo");
 				putValue(Action.NAME, "Undo");
-				if (build != null) {
-					build.getCode().setModified(false);
-				}
 			}
 		}
 	}
@@ -1092,6 +1086,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 
 		protected void updateRedoState() {
+			if (currentElement == null) { return; }
 			UndoManager undo = currentElement.getUndoManager();
 			if (undo.canRedo()) {
 				redoItem.setEnabled(true);
@@ -1880,6 +1875,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		fc.addChoosableFileFilter(defaultFilter = new ExtensionFilter(extensions,"GCode or STL files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".gcode","GCode files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".stl","STL files"));
+		fc.addChoosableFileFilter(new ExtensionFilter(".obj","OBJ files (experimental)"));
 		fc.setAcceptAllFileFilterUsed(true);
 		fc.setFileFilter(defaultFilter);
 		fc.setDialogTitle("Open a gcode or STL file...");
