@@ -1876,9 +1876,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		fc.addChoosableFileFilter(new ExtensionFilter(".gcode","GCode files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".stl","STL files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".obj","OBJ files (experimental)"));
+		fc.addChoosableFileFilter(new ExtensionFilter(".dae","Collada files (experimental)"));
 		fc.setAcceptAllFileFilterUsed(true);
 		fc.setFileFilter(defaultFilter);
-		fc.setDialogTitle("Open a gcode or STL file...");
+		fc.setDialogTitle("Open a gcode or model file...");
 		fc.setDialogType(JFileChooser.OPEN_DIALOG);
 		fc.setFileHidingEnabled(false);
 		int rv = fc.showOpenDialog(this);

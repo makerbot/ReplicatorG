@@ -30,14 +30,12 @@ import com.sun.j3d.loaders.SceneBase;
 
 public class ObjLoader extends LoaderBase {
 
-	@Override
 	public Scene load(String filename) throws FileNotFoundException,
 			IncorrectFormatException, ParsingErrorException {
 		File file = new File(filename);
 		return load(new BufferedReader(new FileReader(file)));
 	}
 
-	@Override
 	public Scene load(URL url) throws FileNotFoundException,
 			IncorrectFormatException, ParsingErrorException {
 		assert(url != null);
@@ -72,7 +70,6 @@ public class ObjLoader extends LoaderBase {
 		return normal;
 	}
 	
-	@Override
 	public Scene load(Reader r) throws FileNotFoundException,
 			IncorrectFormatException, ParsingErrorException {
 		Vector<Point3d> vertices = new Vector<Point3d>();

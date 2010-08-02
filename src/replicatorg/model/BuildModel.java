@@ -16,6 +16,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
+import org.j3d.renderer.java3d.loaders.ColladaLoader;
 import org.j3d.renderer.java3d.loaders.ObjLoader;
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
@@ -79,6 +80,7 @@ public class BuildModel extends BuildElement {
 	{
 		loaderExtensionMap.put("stl",new STLLoader());
 		loaderExtensionMap.put("obj",new ObjLoader());
+		loaderExtensionMap.put("dae",new ColladaLoader());
 	}
 	
 	private void loadShape() {
@@ -123,7 +125,6 @@ public class BuildModel extends BuildElement {
 			this.newOp = newOp;
 		}
 		
-		@Override
 		public boolean addEdit(UndoableEdit edit) {
 			if (edit instanceof UndoEntry) {
 				UndoEntry ue = (UndoEntry)edit;
@@ -135,43 +136,33 @@ public class BuildModel extends BuildElement {
 			return false;
 		}
 		
-		@Override
 		public boolean canRedo() {
 			return true;
 		}
-		@Override
 		public boolean canUndo() {
 			return true;
 		}
-		@Override
 		public void die() {
 			
 		}
-		@Override
 		public String getPresentationName() {
 			return description;
 		}
-		@Override
 		public String getRedoPresentationName() {
 			return "Redo "+getPresentationName();
 		}
-		@Override
 		public String getUndoPresentationName() {
 			return "Undo "+getPresentationName();
 		}
-		@Override
 		public boolean isSignificant() {
 			return true;
 		}
-		@Override
 		public void redo() throws CannotRedoException {
 			doEdit(after);
 		}
-		@Override
 		public boolean replaceEdit(UndoableEdit edit) {
 			return false;
 		}
-		@Override
 		public void undo() throws CannotUndoException {
 			doEdit(before);
 		}

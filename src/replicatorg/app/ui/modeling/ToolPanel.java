@@ -124,15 +124,12 @@ public class ToolPanel extends JPanel implements KeyListener {
 		setTool(tools[0]);
 	}
 
-	@Override
 	public void keyPressed(KeyEvent e) {
 	}
 
-	@Override
 	public void keyReleased(KeyEvent e) {
 	}
 
-	@Override
 	public void keyTyped(KeyEvent e) {
 	}
 }

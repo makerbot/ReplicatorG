@@ -52,6 +52,7 @@ public class Build {
 	/** Name of source file, used by load().  Recognized types so far are:
 	 * .stl - model file
 	 * .obj - model file
+	 * .dae - model file
 	 * .gcode - gcode file
 	 * .zip - composite build file
 	 */
@@ -107,7 +108,7 @@ public class Build {
 				parentPath = ".";
 			}
 			folder = new File(parentPath);
-			if ("stl".equalsIgnoreCase(suffix) || "obj".equalsIgnoreCase(suffix)) {
+			if ("stl".equalsIgnoreCase(suffix) || "obj".equalsIgnoreCase(suffix) || "dae".equalsIgnoreCase(suffix)) {
 				modelFile = mainFile;
 			}
 			loadCode();
@@ -219,6 +220,7 @@ public class Build {
 		if (newName.toLowerCase().endsWith(".gcode")) newName = newName.substring(0, newName.length()-6);
 		if (newName.toLowerCase().endsWith(".stl")) newName = newName.substring(0, newName.length()-4);
 		if (newName.toLowerCase().endsWith(".obj")) newName = newName.substring(0, newName.length()-4);
+		if (newName.toLowerCase().endsWith(".dae")) newName = newName.substring(0, newName.length()-4);
 
 		
 		BuildCode code = getCode();
