@@ -21,7 +21,7 @@ newfs_hfs -v $VOLUME $MY_DISK
 hdiutil eject $MY_DISK
 hdid $DEST$TEMP.dmg
 chflags -R nouchg,noschg "$SRC"
-ditto -rsrcFork -v "$SRC" "/Volumes/$VOLUME"
+ditto -rsrcFork -v "$SRC" "/Volumes/$VOLUME/$VOLUME"
 #ditto -rsrcFork -v "./background/" "/Volumes/$VOLUME"
 hdiutil eject $MY_DISK
 hdiutil convert -format UDCO $DEST$TEMP.dmg -o $VOLUME.dmg
