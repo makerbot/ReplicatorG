@@ -67,7 +67,7 @@ public class PreviewPanel extends JPanel {
 	public void setModel(BuildModel buildModel) {
 		if (model == null || buildModel != model.getBuildModel()) {
 			if (buildModel != null) {
-				model = new EditingModel(buildModel);
+				model = new EditingModel(buildModel, mainWindow);
 				setScene(model);
 			} else {
 				model = null;
@@ -168,29 +168,9 @@ public class PreviewPanel extends JPanel {
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
 		
-		canvas.addKeyListener( new KeyListener() {
+		addKeyListener( new KeyListener() {
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyChar() == 'a') {
-					cameraTranslation.x += 0.05;
-				} else if (e.getKeyChar() == 'z') {
-					cameraTranslation.x -= 0.05;
-				} else if (e.getKeyChar() == 's') {
-					cameraTranslation.y += 0.05;
-				} else if (e.getKeyChar() == 'x') {
-					cameraTranslation.y -= 0.05;
-				} else if (e.getKeyChar() == 'd') {
-					cameraTranslation.z += 0.05;
-				} else if (e.getKeyChar() == 'c') {
-					cameraTranslation.z -= 0.05;
-				} else if (e.getKeyChar() == '[') {
-					elevationAngle += 0.05;
-				} else if (e.getKeyChar() == ']') {
-					elevationAngle -= 0.05;
-				} else if (e.getKeyChar() == '{') {
-					turntableAngle += 0.05;
-				} else if (e.getKeyChar() == '}') {
-					turntableAngle -= 0.05;
-				} else if (e.getKeyChar() == 'e') {
+				if (e.getKeyChar() == 'e') {
 					showEdges = !showEdges;
 					model.showEdges(showEdges);
 				} else {
@@ -198,13 +178,13 @@ public class PreviewPanel extends JPanel {
 				}
 				updateVP();
 			}
-
 			public void keyReleased(KeyEvent e) {
 			}
-
 			public void keyTyped(KeyEvent e) {
 			}
 		});
+		
+		addKeyListener(toolPanel);
 
 	}		
 
@@ -521,7 +501,7 @@ public class PreviewPanel extends JPanel {
 		turntableAngle = Math.PI/2;
 		updateVP();	
 	}
-
+	
 	public void usePerspective(boolean perspective) {
 		univ.getViewer().getView().setProjectionPolicy(perspective?View.PERSPECTIVE_PROJECTION:View.PARALLEL_PROJECTION);
 	}

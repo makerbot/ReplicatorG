@@ -4,7 +4,16 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.undo.UndoManager;
+
 public abstract class BuildElement {
+	protected UndoManager undo = new UndoManager();
+	
+	/**
+	 * Every editable element has its own undo/redo manager.
+	 */
+	public UndoManager getUndoManager() { return undo; }
+	
 	/** 
 	 * Classes which implement BuildElement.Listener can listen to
 	 * a build element and recieve updates when it changes.

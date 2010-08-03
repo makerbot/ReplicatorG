@@ -3,6 +3,8 @@ package replicatorg.app.ui.modeling;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -11,7 +13,7 @@ import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
 
-public class ToolPanel extends JPanel {
+public class ToolPanel extends JPanel implements KeyListener {
 
 	public JButton createToolButton(String text, String iconPath) {
 		//ImageIcon icon = new ImageIcon(Base.getImage(iconPath, this));
@@ -45,7 +47,8 @@ public class ToolPanel extends JPanel {
 	};
 	
 	JLabel titleLabel;
-	
+	JPanel toolControls = null;
+	int ctr=0;
 	void setTool(Tool tool) {
 		// Default to the view tool
 		if (tool == null) { tool = tools[0]; }
@@ -56,14 +59,16 @@ public class ToolPanel extends JPanel {
 		// Set tool instructions
 		infoLabel.setText(tool.getInstructions());
 		// Add subpanel
-		subPanel.removeAll();
-		JPanel toolControls = tool.getControls();
+		if (toolControls != null) {
+			subPanel.remove(toolControls);
+		}
+		toolControls = tool.getControls();
 		if (toolControls != null) {
 			subPanel.add(toolControls,"spanx,spany,growx,growy,width 100%");
 		} else {
-			subPanel.repaint();
 		}
-		
+		validate();
+		repaint();
 	}
 	
 	EditingModel getModel() { return preview.getModel(); }
@@ -117,5 +122,14 @@ public class ToolPanel extends JPanel {
 
 		add(subPanel,"spanx,growx,growy,width 100%");
 		setTool(tools[0]);
+	}
+
+	public void keyPressed(KeyEvent e) {
+	}
+
+	public void keyReleased(KeyEvent e) {
+	}
+
+	public void keyTyped(KeyEvent e) {
 	}
 }

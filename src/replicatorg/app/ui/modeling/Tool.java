@@ -114,10 +114,12 @@ public abstract class Tool implements MouseMotionListener, MouseListener, MouseW
 	public void mouseExited(MouseEvent e) {
 	}
 	public void mousePressed(MouseEvent e) {
+		parent.getModel().startDrag();
 		startPoint = e.getPoint();
 		button = e.getButton();
 	}
 	public void mouseReleased(MouseEvent e) {
+		parent.getModel().endDrag();
 		startPoint = null;
 	}
 	public void mouseWheelMoved(MouseWheelEvent e) {

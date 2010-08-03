@@ -5,18 +5,26 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEdit;
 
+import org.j3d.renderer.java3d.loaders.ColladaLoader;
+import org.j3d.renderer.java3d.loaders.ObjLoader;
 import org.j3d.renderer.java3d.loaders.STLLoader;
 
 import replicatorg.app.Base;
+import replicatorg.app.ui.modeling.EditingModel;
 import replicatorg.model.j3d.StlAsciiWriter;
 
+import com.sun.j3d.loaders.Loader;
 import com.sun.j3d.loaders.Scene;
 
 public class BuildModel extends BuildElement {
@@ -24,6 +32,11 @@ public class BuildModel extends BuildElement {
 	private File file;
 	private Transform3D transform = new Transform3D();
 	private Shape3D shape = null;
+	private EditingModel editListener = null;
+	
+	public void setEditListener(EditingModel eModel) {
+		editListener = eModel;
+	}
 	
 	BuildModel(Build build, File file) {
 		this.file = file;
@@ -45,39 +58,131 @@ public class BuildModel extends BuildElement {
 		}
 		return shape;
 	}
-	
-	private void loadShape() {
-		STLLoader loader = new STLLoader();
+
+	// Attempt to load the file with the given loader.  Should return
+	// null if the given loader can't identify the file as being of
+	// the correct type.
+	private Shape3D loadShape(Loader loader) {
 		Scene scene = null;
 		try {
 			scene = loader.load(file.getCanonicalPath());
 		} catch (Exception e) {
-			Base.logger.log(Level.SEVERE,"Error loading model "+file.getPath(),e);
+			Base.logger.log(Level.FINE,
+					"Could not load "+file.getPath()+
+					" with "+ loader.getClass().getSimpleName(),e);
+			return null;
 		}
-		if (scene == null) { return; }
-		shape = (Shape3D)scene.getSceneGroup().getChild(0);
+		if (scene == null) { return null; }
+		return (Shape3D)scene.getSceneGroup().getChild(0);
+	}
+
+	Map<String,Loader> loaderExtensionMap = new HashMap<String,Loader>();
+	{
+		loaderExtensionMap.put("stl",new STLLoader());
+		loaderExtensionMap.put("obj",new ObjLoader());
+		loaderExtensionMap.put("dae",new ColladaLoader());
+	}
+	
+	private void loadShape() {
+		String suffix = null;
+		String name = file.getName();
+		int idx = name.lastIndexOf('.');
+		if (idx > 0) {
+			suffix = name.substring(idx+1);
+		}
+		// Attempt to find loader based on suffix
+		Shape3D candidate = null; 
+		if (suffix != null) {
+			Loader loadCandidate = loaderExtensionMap.get(suffix.toLowerCase());
+			if (loadCandidate != null) {
+				candidate = loadShape(loadCandidate);
+			}
+		}
+		// Couldn't find loader for suffix or file is corrupt or of wrong type
+		if (candidate == null) {
+			for (Loader loadCandidate : loaderExtensionMap.values()) {
+				candidate = loadShape(loadCandidate);
+				if (candidate != null) { break; }
+			}
+		}
+		if (candidate != null) { shape = candidate; }
 	}
 
 	public Transform3D getTransform() { return transform; }
 	
-	class UndoEntry {
-		public Transform3D transform;
-		public String description;
-		public UndoEntry(Transform3D transform, String description) {
-			this.transform = transform;
+	class UndoEntry implements UndoableEdit {
+		Transform3D before;
+		Transform3D after;
+		String description;
+		boolean newOp;
+		
+		// The newOp flag is set at the start of every drag or every button operation.  NewOps will never
+		// be merged into the undo op at the top of the stack.
+		public UndoEntry(Transform3D before, Transform3D after, String description, boolean newOp) {
+			this.before = new Transform3D(before);
+			this.after= new Transform3D(after);
 			this.description = description;
+			this.newOp = newOp;
+		}
+		
+		public boolean addEdit(UndoableEdit edit) {
+			if (edit instanceof UndoEntry) {
+				UndoEntry ue = (UndoEntry)edit;
+				if (!ue.newOp && description == ue.description) {
+					after = ue.after;
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean canRedo() {
+			return true;
+		}
+		public boolean canUndo() {
+			return true;
+		}
+		public void die() {
+			
+		}
+		public String getPresentationName() {
+			return description;
+		}
+		public String getRedoPresentationName() {
+			return "Redo "+getPresentationName();
+		}
+		public String getUndoPresentationName() {
+			return "Undo "+getPresentationName();
+		}
+		public boolean isSignificant() {
+			return true;
+		}
+		public void redo() throws CannotRedoException {
+			doEdit(after);
+		}
+		public boolean replaceEdit(UndoableEdit edit) {
+			return false;
+		}
+		public void undo() throws CannotUndoException {
+			doEdit(before);
 		}
 	}
-	
-	protected Queue<UndoEntry> undoQueue = new LinkedList<UndoEntry>();
-	
-	public void setTransform(Transform3D t, String description) {
+		
+	public void setTransform(Transform3D t, String description, boolean newOp) {
 		if (transform.equals(t)) return;
+		undo.addEdit(new UndoEntry(transform,t,description, newOp));
 		transform.set(t);
-		undoQueue.add(new UndoEntry(t,description));
 		setModified(true);
+		if (editListener != null) {
+			editListener.modelTransformChanged();
+		}
 	}
 
+	public void doEdit(Transform3D edit) {
+		transform.set(edit);
+		setModified(undo.canUndo());
+		editListener.modelTransformChanged();
+	}
 
 	public void save() {
 		saveInternal(file);
@@ -96,7 +201,7 @@ public class BuildModel extends BuildElement {
 			StlAsciiWriter saw = new StlAsciiWriter(ostream);
 			saw.writeShape(getShape(), getTransform());
 			ostream.close();
-			undoQueue.clear();
+			undo = new UndoManager();
 			setModified(false);
 			return true;
 		} catch (FileNotFoundException fnfe) {

@@ -21,6 +21,7 @@ import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+import replicatorg.app.ui.MainWindow;
 import replicatorg.model.BuildModel;
 
 /**
@@ -60,8 +61,15 @@ public class EditingModel {
 	 */
 	private TransformGroup shapeTransform = new TransformGroup();
 	
-	public EditingModel(BuildModel model) {
+	/** We maintain a link to the main window to update the undo/redo buttons.  Kind of silly, but
+	 * there it is.
+	 */
+	private final MainWindow mainWindow;
+	
+	public EditingModel(BuildModel model, final MainWindow mainWindow) {
 		this.model = model;
+		this.mainWindow = mainWindow;
+		model.setEditListener(this);
 	}
 	
 	/**
@@ -212,16 +220,19 @@ public class EditingModel {
 		r2.rotZ(turntable);
 		r2.mul(r1);
 		r2 = transformOnCentroid(r2);
-		shapeTransform.setTransform(r2);
-		model.setTransform(r2,"rotation");
+		model.setTransform(r2,"rotation",isNewOp());
 	}
 	
 	public void rotateObject(AxisAngle4d angle) {
 		Transform3D t = new Transform3D();
 		t.setRotation(angle);
 		t = transformOnCentroid(t);
-		shapeTransform.setTransform(t);
-		model.setTransform(t, "rotation");
+		model.setTransform(t, "rotation",isNewOp());
+	}
+
+	public void modelTransformChanged() {
+		shapeTransform.setTransform(model.getTransform());
+		mainWindow.updateUndo();
 	}
 	
 	public void translateObject(double x, double y, double z) {
@@ -234,8 +245,7 @@ public class EditingModel {
 		Transform3D old = new Transform3D();
 		shapeTransform.getTransform(old);
 		old.add(translate);
-		shapeTransform.setTransform(old);
-		model.setTransform(old,"move");
+		model.setTransform(old,"move",isNewOp());
 	}
 
 	private BoundingBox getBoundingBox(Group group) {
@@ -269,8 +279,7 @@ public class EditingModel {
 		Transform3D flipZ = new Transform3D();
 		flipZ.rotY(Math.PI);
 		flipZ = transformOnCentroid(flipZ);
-		shapeTransform.setTransform(flipZ);
-		model.setTransform(flipZ,"flip");
+		model.setTransform(flipZ,"flip",isNewOp());
 	}
 
 	public void mirrorX() {
@@ -278,8 +287,7 @@ public class EditingModel {
 		Vector3d v = new Vector3d(-1d,1d,1d);
 		t.setScale(v);
 		t = transformOnCentroid(t);
-		shapeTransform.setTransform(t);
-		model.setTransform(t,"mirror X");
+		model.setTransform(t,"mirror X",isNewOp());
 	}
 
 	public void mirrorY() {
@@ -287,8 +295,7 @@ public class EditingModel {
 		Vector3d v = new Vector3d(1d,-1d,1d);
 		t.setScale(v);
 		t = transformOnCentroid(t);
-		shapeTransform.setTransform(t);
-		model.setTransform(t,"mirror Y");
+		model.setTransform(t,"mirror Y",isNewOp());
 	}
 
 	public void mirrorZ() {
@@ -296,10 +303,9 @@ public class EditingModel {
 		Vector3d v = new Vector3d(1d,1d,-1d);
 		t.setScale(v);
 		t = transformOnCentroid(t);
-		shapeTransform.setTransform(t);
-		model.setTransform(t,"mirror Z");
+		model.setTransform(t,"mirror Z",isNewOp());
 	}
-	
+		
 	public boolean isOnPlatform() {
 		BoundingBox bb = getBoundingBox();
 		Point3d lower = new Point3d();
@@ -316,7 +322,7 @@ public class EditingModel {
 			t = transformOnCentroid(t);			
 		}
 		shapeTransform.setTransform(t);
-		model.setTransform(t,"resize");		
+		model.setTransform(t,"resize",isNewOp());		
 	}
 	
 
@@ -458,8 +464,29 @@ public class EditingModel {
 			flattenTransform.setRotation(new AxisAngle4d(cross,angle));
 			flattenTransform = transformOnCentroid(flattenTransform);
 			shapeTransform.setTransform(flattenTransform);
-			model.setTransform(flattenTransform,"Lay flat");
+			model.setTransform(flattenTransform,"Lay flat", isNewOp());
 			invalidateBounds(); 
 		}
+	}
+	
+	boolean inDrag = false;
+	boolean firstDrag = false;
+	
+	private boolean isNewOp() {
+		if (!inDrag) { return true; }
+		if (firstDrag) {
+			firstDrag = false;
+			return true;
+		}
+		return false;
+	}
+	
+	public void startDrag() {
+		inDrag = true;
+		firstDrag = true;
+	}
+	
+	public void endDrag() {
+		inDrag = false;
 	}
 }

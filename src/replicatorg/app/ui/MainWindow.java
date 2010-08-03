@@ -228,11 +228,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	JMenuItem undoItem, redoItem;
 
 	protected UndoAction undoAction;
-
 	protected RedoAction redoAction;
 
-	UndoManager undo;
-
+	public void updateUndo() {
+		undoAction.updateUndoState();
+		redoAction.updateRedoState();
+	}
+	
 	// used internally, and only briefly
 	CompoundEdit compoundEdit;
 
@@ -1039,32 +1041,28 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		public void actionPerformed(ActionEvent e) {
 			try {
-				undo.undo();
+				if (currentElement == null) { return; }
+				currentElement.getUndoManager().undo();
 			} catch (CannotUndoException ex) {
 				// System.out.println("Unable to undo: " + ex);
 				// ex.printStackTrace();
 			}
-			updateUndoState();
-			redoAction.updateRedoState();
+			updateUndo();
 		}
 
 		protected void updateUndoState() {
-			if (undo.canUndo()) {
-				this.setEnabled(true);
-				undoItem.setEnabled(true);
+			if (currentElement == null) { return; }
+			UndoManager undo = currentElement.getUndoManager();
+			boolean canUndo = undo.canUndo();
+			this.setEnabled(canUndo);
+			undoItem.setEnabled(canUndo);
+			currentElement.setModified(canUndo);
+			if (canUndo) {
 				undoItem.setText(undo.getUndoPresentationName());
 				putValue(Action.NAME, undo.getUndoPresentationName());
-				if (build != null) {
-					build.getCode().setModified(true);
-				}
 			} else {
-				this.setEnabled(false);
-				undoItem.setEnabled(false);
 				undoItem.setText("Undo");
 				putValue(Action.NAME, "Undo");
-				if (build != null) {
-					build.getCode().setModified(false);
-				}
 			}
 		}
 	}
@@ -1079,16 +1077,17 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		public void actionPerformed(ActionEvent e) {
 			try {
-				undo.redo();
+				currentElement.getUndoManager().redo();
 			} catch (CannotRedoException ex) {
 				// System.out.println("Unable to redo: " + ex);
 				// ex.printStackTrace();
 			}
-			updateRedoState();
-			undoAction.updateUndoState();
+			updateUndo();
 		}
 
 		protected void updateRedoState() {
+			if (currentElement == null) { return; }
+			UndoManager undo = currentElement.getUndoManager();
 			if (undo.canRedo()) {
 				redoItem.setEnabled(true);
 				redoItem.setText(undo.getRedoPresentationName());
@@ -1239,9 +1238,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				bl.printStackTrace();
 			}
 
-			// set up this guy's own undo manager
-			code.undo = new UndoManager();
-
+			final UndoManager undo = code.getUndoManager();
 			// connect the undo listener to the editor
 			code.document.addUndoableEditListener(new UndoableEditListener() {
 				public void undoableEditHappened(UndoableEditEvent e) {
@@ -1250,8 +1247,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 					} else if (undo != null) {
 						undo.addEdit(e.getEdit());
-						undoAction.updateUndoState();
-						redoAction.updateRedoState();
+						updateUndo();
 					}
 				}
 			});
@@ -1262,10 +1258,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				code.selectionStop, code.scrollPosition);
 
 		textarea.requestFocus(); // get the caret blinking
-
-		this.undo = code.undo;
-		undoAction.updateUndoState();
-		redoAction.updateRedoState();
 	}
 
 	public void setModel(BuildModel model) {
@@ -1280,9 +1272,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public void endCompoundEdit() {
 		compoundEdit.end();
-		undo.addEdit(compoundEdit);
-		undoAction.updateUndoState();
-		redoAction.updateRedoState();
+		currentElement.getUndoManager().addEdit(compoundEdit);
+		updateUndo();
 		compoundEdit = null;
 	}
 
@@ -1884,9 +1875,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		fc.addChoosableFileFilter(defaultFilter = new ExtensionFilter(extensions,"GCode or STL files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".gcode","GCode files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".stl","STL files"));
+		fc.addChoosableFileFilter(new ExtensionFilter(".obj","OBJ files (experimental)"));
+		fc.addChoosableFileFilter(new ExtensionFilter(".dae","Collada files (experimental)"));
 		fc.setAcceptAllFileFilterUsed(true);
 		fc.setFileFilter(defaultFilter);
-		fc.setDialogTitle("Open a gcode or STL file...");
+		fc.setDialogTitle("Open a gcode or model file...");
 		fc.setDialogType(JFileChooser.OPEN_DIALOG);
 		fc.setFileHidingEnabled(false);
 		int rv = fc.showOpenDialog(this);
@@ -1954,7 +1947,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			build = new Build(this, path);
 			setCode(build.getCode());
 			setModel(build.getModel());
-			header.setBuild(build);
+			updateBuild();
 			buttons.updateFromMachine(machine);
 			if (null != path) {
 				handleOpenPath = path;
@@ -2009,7 +2002,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				Base.logger.info("Saving...");
 				try {
 					if (build.saveAs()) {
-						header.setBuild(build);
+						updateBuild();
 						Base.logger.info("Save operation complete.");
 						mruList.update(build.getMainFilePath());
 						// TODO: Add to MRU?
@@ -2326,15 +2319,31 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	public void toolStatusChanged(MachineToolStatusEvent event) {
 	}
 
+	BuildElement currentElement;
+	
+	public void setCurrentElement(BuildElement e) {
+		currentElement = e;
+		if (currentElement != null) {
+			CardLayout cl = (CardLayout)cardPanel.getLayout();
+			if (currentElement.getType() == BuildElement.Type.MODEL ) {
+				cl.show(cardPanel, MODEL_TAB_KEY);
+			} else {
+				cl.show(cardPanel, GCODE_TAB_KEY);
+			}
+			
+		}
+		updateUndo();
+	}
+	
+	private void updateBuild() {
+		header.setBuild(build);
+		header.repaint();
+		updateUndo();
+	}
+	
 	public void stateChanged(ChangeEvent e) {
 		// We get a change event when another tab is selected.
-		CardLayout cl = (CardLayout)cardPanel.getLayout();
-		if (header.getSelectedElement() != null &&
-				header.getSelectedElement().getType() == BuildElement.Type.MODEL ) {
-			cl.show(cardPanel, MODEL_TAB_KEY);
-		} else {
-			cl.show(cardPanel, GCODE_TAB_KEY);
-		}
+		setCurrentElement(header.getSelectedElement());
 	}
 
 	public void generationComplete(Completion completion, Object details) {
@@ -2344,8 +2353,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				setCode(build.getCode());
 			}
 			buttons.updateFromMachine(machine);
-			header.setBuild(build);
-			header.repaint();
+			updateBuild();
 		}
 	}
 

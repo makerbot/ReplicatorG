@@ -68,6 +68,4 @@ public class ViewTool extends Tool {
 		return "Preview";
 	}
 
-
-
 }
