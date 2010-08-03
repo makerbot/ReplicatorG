@@ -52,9 +52,22 @@ public class ColladaParser {
 			Node n = sources.item(idx);
 			Element e = (Element)n;
 			String id = n.getAttributes().getNamedItem("id").getNodeValue();
+			System.err.println("** SOURCE: "+id);
 			NodeList arrays = e.getElementsByTagName("float_array");
+			// Check that the array is actually a 3-tuple; ignore otherwise.
+			NodeList accessorNodes = e.getElementsByTagName("accessor");
+			if (accessorNodes.getLength() > 0) {
+				String strideStr = ((Element)accessorNodes.item(0)).getAttribute("stride");
+				if (strideStr != null) {
+					if (Integer.parseInt(strideStr) != 3) {
+						continue; // Skip this float array; it's probably just texture data
+						// or four-dimensional telemetry readouts.
+					}
+				}
+			}
 			Vector<Tuple3d> v = new Vector<Tuple3d>();
 			for (int i = 0; i < arrays.getLength(); i++) {
+				System.err.println("*** float_array "+Integer.toString(i));
 				loadFloatArray(arrays.item(i),v);
 			}
 			tupleMap.put(id,v);
@@ -81,20 +94,27 @@ public class ColladaParser {
 			Element e = (Element)geometries.item(idx);
 			loadTuples(e);
 			String id = e.getAttribute("id");
+			System.err.println("* GEOMETRY: "+id);
 			NodeList verticesList = e.getElementsByTagName("vertices");
 			Map<String,Vector<Tuple3d>> verticesMap = loadVertices((Element)verticesList.item(0));
 			Vector<Tuple3d> positions = verticesMap.get("position");
 			Vector<Tuple3d> normals = verticesMap.get("normal");
 			NodeList trianglesList = e.getElementsByTagName("triangles");
 			Element trianglesElement = (Element)trianglesList.item(0);
-			int vertexCount = Integer.parseInt(trianglesElement.getAttribute("count")) * 3;
-			TriangleArray tris = new TriangleArray(vertexCount, 
+			int triCount = Integer.parseInt(trianglesElement.getAttribute("count"));
+			TriangleArray tris = new TriangleArray(triCount * 3, 
 					GeometryArray.NORMALS | GeometryArray.COORDINATES);
 			String[] vertexIndices = trianglesElement.getTextContent().trim().split("\\s+");
-			for (int i = 0; i < vertexCount; i++) {
-				int j = Integer.parseInt(vertexIndices[i]);
-				tris.setCoordinate(i,new Point3d(positions.elementAt(j)));
-				tris.setNormal(i,new Vector3f(normals.elementAt(j)));
+			int stride = vertexIndices.length / (triCount*3);
+			for (int i = 0; i < triCount; i++) {
+				for (int j = 0; j < 3; j++) {
+					int vertRefIdx = ((i*3)+j)* stride;
+					int vertIdx = Integer.parseInt(vertexIndices[vertRefIdx]);
+					tris.setCoordinate(i*3+j,new Point3d(positions.elementAt(vertIdx)));
+					if (normals != null) {
+						tris.setNormal(i*3+j,new Vector3f(normals.elementAt(vertIdx)));
+					}
+				}
 			}
 			geometryMap.put(id,tris);
 		}
