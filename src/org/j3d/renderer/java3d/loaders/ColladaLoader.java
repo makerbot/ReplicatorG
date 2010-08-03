@@ -10,6 +10,9 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.logging.Level;
 
+import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Shape3D;
+
 import org.j3d.loaders.collada.ColladaParser;
 import org.xml.sax.InputSource;
 
@@ -19,12 +22,12 @@ import com.sun.j3d.loaders.IncorrectFormatException;
 import com.sun.j3d.loaders.LoaderBase;
 import com.sun.j3d.loaders.ParsingErrorException;
 import com.sun.j3d.loaders.Scene;
+import com.sun.j3d.loaders.SceneBase;
 
 public class ColladaLoader extends LoaderBase {
 
 	public Scene load(String filename) throws FileNotFoundException,
 			IncorrectFormatException, ParsingErrorException {
-		System.err.println("Loading COLLADA from "+filename);
 		File file = new File(filename);
 		return loadInternal(new InputSource(new FileInputStream(file)));
 	}
@@ -55,10 +58,15 @@ public class ColladaLoader extends LoaderBase {
 	}
 
 	public Scene loadInternal(InputSource is) {
-		System.err.println("LOADING COLLADA");
 		ColladaParser parser = new ColladaParser();
 		parser.parse(is);
-		return null;
+        final SceneBase scene = new SceneBase( );
+        final BranchGroup bg = new BranchGroup( );
+        final Shape3D shape = new Shape3D( parser.getTotalGeometry() );
+        bg.addChild( shape );
+        scene.addNamedObject("Object", shape);
+        scene.setSceneGroup(bg);
+		return scene;
 	}
 
 }
