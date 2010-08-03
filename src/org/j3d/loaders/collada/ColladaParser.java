@@ -81,11 +81,11 @@ public class ColladaParser {
 			Element e = (Element)geometries.item(idx);
 			loadTuples(e);
 			String id = e.getAttribute("id");
-			NodeList verticesList = doc.getElementsByTagName("vertices");
+			NodeList verticesList = e.getElementsByTagName("vertices");
 			Map<String,Vector<Tuple3d>> verticesMap = loadVertices((Element)verticesList.item(0));
 			Vector<Tuple3d> positions = verticesMap.get("position");
 			Vector<Tuple3d> normals = verticesMap.get("normal");
-			NodeList trianglesList = doc.getElementsByTagName("triangles");
+			NodeList trianglesList = e.getElementsByTagName("triangles");
 			Element trianglesElement = (Element)trianglesList.item(0);
 			int vertexCount = Integer.parseInt(trianglesElement.getAttribute("count")) * 3;
 			TriangleArray tris = new TriangleArray(vertexCount, 
