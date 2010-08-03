@@ -67,7 +67,7 @@ public class BuildModel extends BuildElement {
 		try {
 			scene = loader.load(file.getCanonicalPath());
 		} catch (Exception e) {
-			Base.logger.log(Level.FINE,
+			Base.logger.log(Level.INFO,
 					"Could not load "+file.getPath()+
 					" with "+ loader.getClass().getSimpleName(),e);
 			return null;
