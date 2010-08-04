@@ -3,13 +3,11 @@ package org.j3d.loaders.collada;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 import java.util.logging.Level;
 
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.TriangleArray;
 import javax.vecmath.Point3d;
-import javax.vecmath.Tuple3d;
 import javax.vecmath.Vector3f;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,7 +23,41 @@ import org.xml.sax.SAXException;
 import replicatorg.app.Base;
 
 public class ColladaParser {
-	Map<String, Vector<Tuple3d>> tupleMap = new HashMap<String, Vector<Tuple3d>>();
+	class FloatArray {
+		private double[] data;
+		private int offset = 0;
+		private int stride = 3;
+		public double get(int idx) { return data[idx]; }
+		public int getOffset() { return offset; }
+		public int getCount() { return data.length; }
+		public int getStride() { return stride; }
+		public void setOffset(int offset) { this.offset = offset; }
+		public FloatArray(Element e) {
+			int count = Integer.parseInt(e.getAttribute("count"));
+			data = new double[count];
+			String[] values = e.getTextContent().trim().split("\\s+");
+			assert(values.length == data.length);
+			for (int i = 0; i < data.length; i++) {
+				data[i] = Double.parseDouble(values[i]);
+			}
+			// Check the stride of the array
+			NodeList accessorNodes = e.getElementsByTagName("accessor");
+			if (accessorNodes.getLength() > 0) {
+				String strideStr = ((Element)accessorNodes.item(0)).getAttribute("stride");
+				if (strideStr != null) {
+					stride = Integer.parseInt(strideStr);
+				}
+			}
+		}
+		public Vector3f getVector(int idx) {
+			return new Vector3f((float)data[idx],(float)data[idx+1],(float)data[idx+2]);
+		}
+		public Point3d getPoint(int idx) {
+			return new Point3d(data[idx],data[idx+1],data[idx+2]);
+		}
+	}
+	
+	Map<String, FloatArray> floatArrayMap = new HashMap<String, FloatArray>();
 	Map<String, TriangleArray> geometryMap = new HashMap<String, TriangleArray>();
 	Document doc;
 	TriangleArray totalGeometry = null;
@@ -33,17 +65,8 @@ public class ColladaParser {
 	public ColladaParser() {
 	}
 
-	private void loadFloatArray(Node n, Vector<Tuple3d> v) {
-		int count = Integer.parseInt(n.getAttributes().getNamedItem("count").getNodeValue());
-		v.ensureCapacity(v.size() + (count/3));
-		String[] values = n.getTextContent().trim().split("\\s+");
-		for (int i = 0; i < values.length; i+= 3) {
-			Tuple3d t = new Point3d(
-					Double.parseDouble(values[i]),
-					Double.parseDouble(values[i+1]),
-					Double.parseDouble(values[i+2]));
-			v.add(t);
-		}
+	private FloatArray loadFloatArray(Element e) {
+		return new FloatArray(e);
 	}
 	
 	private void loadTuples(Element parent) {	
@@ -52,7 +75,7 @@ public class ColladaParser {
 			Node n = sources.item(idx);
 			Element e = (Element)n;
 			String id = n.getAttributes().getNamedItem("id").getNodeValue();
-			System.err.println("** SOURCE: "+id);
+			//System.err.println("** SOURCE: "+id);
 			NodeList arrays = e.getElementsByTagName("float_array");
 			// Check that the array is actually a 3-tuple; ignore otherwise.
 			NodeList accessorNodes = e.getElementsByTagName("accessor");
@@ -65,24 +88,27 @@ public class ColladaParser {
 					}
 				}
 			}
-			Vector<Tuple3d> v = new Vector<Tuple3d>();
 			for (int i = 0; i < arrays.getLength(); i++) {
-				System.err.println("*** float_array "+Integer.toString(i));
-				loadFloatArray(arrays.item(i),v);
+//				System.err.println("*** float_array "+Integer.toString(i));
+				floatArrayMap.put(id,loadFloatArray((Element)arrays.item(i)));
 			}
-			tupleMap.put(id,v);
 		}
 	}
 
-	Map<String,Vector<Tuple3d>> loadVertices(Element e) {
+	Map<String,FloatArray> loadVertices(Element e) {
 		NodeList inputList = e.getElementsByTagName("input");
-		Map<String,Vector<Tuple3d>> verticesMap = new HashMap<String,Vector<Tuple3d>>();
+		Map<String,FloatArray> verticesMap = new HashMap<String,FloatArray>();
 		for (int j = 0; j < inputList.getLength(); j++) {
 			Element inputElement = (Element)inputList.item(j);
 			String sourceRef = inputElement.getAttribute("source");
 			String sourceId = sourceRef.substring(1); 
-			Vector<Tuple3d> points = tupleMap.get(sourceId);
+			FloatArray points = floatArrayMap.get(sourceId);
 			String semantic = inputElement.getAttribute("semantic");
+			String offset = inputElement.getAttribute("offset");
+			if (offset != null && !offset.isEmpty()) {				
+				points.setOffset(Integer.parseInt(offset));
+			}
+//			System.err.println(" ************ SEMANTIC "+semantic+ " OFFSET "+offset);
 			verticesMap.put(semantic.toLowerCase(), points);
 		}
 		return verticesMap;
@@ -94,26 +120,25 @@ public class ColladaParser {
 			Element e = (Element)geometries.item(idx);
 			loadTuples(e);
 			String id = e.getAttribute("id");
-			System.err.println("* GEOMETRY: "+id);
+//			System.err.println("* GEOMETRY: "+id);
 			NodeList verticesList = e.getElementsByTagName("vertices");
-			Map<String,Vector<Tuple3d>> verticesMap = loadVertices((Element)verticesList.item(0));
-			Vector<Tuple3d> positions = verticesMap.get("position");
-			Vector<Tuple3d> normals = verticesMap.get("normal");
+			Map<String,FloatArray> verticesMap = loadVertices((Element)verticesList.item(0));
+			FloatArray positions = verticesMap.get("position");
+			FloatArray normals = verticesMap.get("normal");
 			NodeList trianglesList = e.getElementsByTagName("triangles");
 			Element trianglesElement = (Element)trianglesList.item(0);
-			int triCount = Integer.parseInt(trianglesElement.getAttribute("count"));
-			TriangleArray tris = new TriangleArray(triCount * 3, 
+			int vertexCount = Integer.parseInt(trianglesElement.getAttribute("count")) * 3;
+			TriangleArray tris = new TriangleArray(vertexCount, 
 					GeometryArray.NORMALS | GeometryArray.COORDINATES);
 			String[] vertexIndices = trianglesElement.getTextContent().trim().split("\\s+");
-			int stride = vertexIndices.length / (triCount*3);
-			for (int i = 0; i < triCount; i++) {
-				for (int j = 0; j < 3; j++) {
-					int vertRefIdx = ((i*3)+j)* stride;
-					int vertIdx = Integer.parseInt(vertexIndices[vertRefIdx]);
-					tris.setCoordinate(i*3+j,new Point3d(positions.elementAt(vertIdx)));
-					if (normals != null) {
-						tris.setNormal(i*3+j,new Vector3f(normals.elementAt(vertIdx)));
-					}
+			int stride = vertexIndices.length / (vertexCount);
+			for (int i = 0; i < vertexCount; i++) {
+				int vertRefIdx = i * stride;
+				int vertIdx = Integer.parseInt(vertexIndices[vertRefIdx+positions.getOffset()]);
+				tris.setCoordinate(i,positions.getPoint(vertIdx*3));
+				if (normals != null) {
+					int normIdx = Integer.parseInt(vertexIndices[vertRefIdx+normals.getOffset()]);
+					tris.setNormal(i,normals.getVector(normIdx*3));
 				}
 			}
 			geometryMap.put(id,tris);
