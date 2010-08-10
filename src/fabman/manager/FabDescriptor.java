@@ -1,5 +1,8 @@
 package fabman.manager;
 
+import javax.media.j3d.BoundingBox;
+import javax.vecmath.Point3d;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -22,6 +25,31 @@ import org.w3c.dom.NodeList;
 public class FabDescriptor {
 	Element xmlDescription = null;
 	String name;
+	BoundingBox envelope = null;
+	
+	/**
+	 * Load the build envelope bounds from the geometry element.
+	 */
+	private BoundingBox boundsFromElement(Element e) {
+		Point3d min = new Point3d();
+		Point3d max = new Point3d();
+		NodeList axes = e.getElementsByTagName("axis");
+		for (int idx = 0; idx < axes.getLength(); idx++) {
+			Element axis = (Element)axes.item(idx);
+			String idStr = axis.getAttribute("id");
+			if (idStr == null || idStr.isEmpty()) { continue; }
+			String minStr = axis.getAttribute("min");
+			String maxStr = axis.getAttribute("max");
+			double minValue = Double.MIN_VALUE;
+			double maxValue = Double.MAX_VALUE;
+			if (minStr != null && !minStr.isEmpty()) { minValue = Double.parseDouble(minStr); }
+			if (maxStr != null && !maxStr.isEmpty()) { maxValue = Double.parseDouble(maxStr); }
+			if ("x".equals(idStr)) { min.x = minValue; max.x = maxValue; }
+			else if ("y".equals(idStr)) { min.y = minValue; max.y = maxValue; }
+			else if ("z".equals(idStr)) { min.z = minValue; max.z = maxValue; }
+		}
+		return new BoundingBox(min,max);
+	}
 	
 	/**
 	 * Generate a fabricator descriptor using an Machine element.
@@ -29,10 +57,12 @@ public class FabDescriptor {
 	 */
 	public FabDescriptor(Element xmlSource) {
 		xmlDescription = (Element)xmlSource.cloneNode(true);
-		NodeList names = xmlDescription.getElementsByTagName("name");
-		assert names.getLength() == 1;
-		name = names.item(0).getTextContent();
+		name = xmlDescription.getAttribute("name");
 		assert name != null && !name.isEmpty();
+		NodeList geometries = xmlDescription.getElementsByTagName("geometry");
+		if (geometries.getLength() > 0) {
+			envelope = boundsFromElement((Element)geometries.item(0));
+		}
 	}
 	
 	/**
@@ -41,6 +71,14 @@ public class FabDescriptor {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * Get the physical bounds of this printing device's build envelope.
+	 * @return a Bounds object, or null if no bounds are specified for the device.
+	 */
+	public BoundingBox getBuildEnvelope() {
+		return envelope;
 	}
 	
 	/**

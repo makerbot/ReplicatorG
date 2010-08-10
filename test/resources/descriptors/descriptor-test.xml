@@ -1,0 +1,28 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+  <machine name="Testing Machine">
+    <geometry type="cartesian">
+      <axis id="x" min="-50" max="50" maxfeedrate="1000" scale="11.4485"/>
+      <axis id="y" min="-50" max="50" maxfeedrate="1000" scale="11.4485"/>
+      <axis id="z" min="0" max="120" maxfeedrate="100" scale="320"/>
+    </geometry>
+    <tools>
+    </tools>
+    <driver class="testing.fabman.driver.TestMachineDriver"> 
+      <speedup>20</speedup>
+    </driver>
+  </machine>
+
+  <machine name="Testing File">
+    <geometry type="cartesian">
+      <axis id="x" min="-50" max="50" maxfeedrate="1000" scale="11.4485"/>
+      <axis id="y" min="-50" max="50" maxfeedrate="1000" scale="11.4485"/>
+      <axis id="z" min="0" max="120" maxfeedrate="100" scale="320"/>
+    </geometry>
+    <tools>
+    </tools>
+    <driver class="testing.fabman.driver.TestFileDriver" type="file"> 
+      <speedup>20</speedup>
+    </driver>
+  </machine>
+</machines>
