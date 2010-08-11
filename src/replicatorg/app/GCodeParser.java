@@ -743,11 +743,11 @@ public class GCodeParser {
 				currentPlane = XY_PLANE;
 				break;
 			case 18:
-				Base.logger.warning("ZX Plane moves are not supported yet.");
+				//Base.logger.warning("ZX Plane moves are not supported yet.");
 				currentPlane = ZX_PLANE;
 				break;
 			case 19:
-				Base.logger.warning("ZY Plane moves are not supported yet.");
+				//Base.logger.warning("ZY Plane moves are not supported yet.");
 				currentPlane = ZY_PLANE;
 				break;
 
@@ -1124,10 +1124,12 @@ public class GCodeParser {
 		// If you really want two seperate moves, do it when you generate your
 		// toolpath.
 		// move z first
-		Point3d current = driver.getCurrentPosition();		
+		Point3d current = driver.getCurrentPosition();
+		/*
 		if (p.z != current.z) {
 			driver.queuePoint(new Point3d(current.x, current.y, p.z));
 		}
+		*/
 		driver.queuePoint(new Point3d(p));
 		current = new Point3d(p);
 	}
