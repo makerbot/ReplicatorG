@@ -53,7 +53,7 @@ message SendChunkResponse {
     // Double-check that we haven't missed or misordered a chunk
     OUT_OF_SEQUENCE = 3;
   }
-  required RspCode code;
+  required RspCode code = 1;
 }
 
 ///
@@ -93,7 +93,7 @@ message ListJobsResponse {
     required JobStatus status = 4;
     optional string details = 5;
   }
-  repeated JobDescriptor jobs;
+  repeated JobDescriptor jobs = 1;
 }
 
 message JobModifyRequest {
@@ -110,6 +110,6 @@ message JobModifyResponse {
     ERROR = 1;
     PERMISSION_DENIED = 2;
   }
-  required RspCode code;
-  optional uint32 jobId;
+  required RspCode code = 1;
+  optional uint32 jobId = 2;
 }
