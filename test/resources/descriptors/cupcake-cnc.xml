@@ -1,0 +1,37 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+  <!-- Machine driver -->
+  <machine name="Cupcake CNC">
+    <geometry type="cartesian">
+      <axis id="x" length="300" maxfeedrate="5000" scale="11.767463"/> 
+      <axis id="y" length="300" maxfeedrate="5000" scale="11.767463"/>
+      <axis id="z" length="300" maxfeedrate="150" scale="320"/>
+    </geometry>
+    <tools>
+      <tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+    </tools>
+    <!-- The driver supports the upload feature -->
+    <driver name="fabman.driver.sanguino3g.Sanguino3GMachine" type="serial">
+      <!-- required: we need 8 bit and 38400 baud. -->
+      <rate>38400</rate>
+      <parity>8</parity>
+    </driver>
+  </machine>
+
+  <!-- Write to file -->
+  <machine name="Print to S3G File">
+    <geometry type="cartesian">
+      <axis id="x" length="300" maxfeedrate="5000" scale="11.767463"/> 
+      <axis id="y" length="300" maxfeedrate="5000" scale="11.767463"/>
+      <axis id="z" length="300" maxfeedrate="150" scale="320"/>
+    </geometry>
+    <tools>
+      <tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+    </tools>
+    <driver name="fabman.driver.sanguino3g.Sanguino3GFile" type="file">
+      <!-- required: we need 8 bit and 38400 baud. -->
+      <rate>38400</rate>
+      <parity>8</parity>
+    </driver>
+  </machine>
+</machines>

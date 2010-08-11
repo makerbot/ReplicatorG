@@ -102,8 +102,13 @@ public class FabManager {
 		}
 	}
 	
-	/* ----------- Descriptor Iteration ----------- */
+	/* ----------- Descriptor Collection ----------- */
 	public Collection<FabDescriptor> getAvailableDescriptors() {
 		return descriptors;
+	}
+	
+	/* ----------- Open Fab ----------- */
+	public FabConnection openFab(FabDescriptor descriptor) {
+		return null;
 	}
 }
