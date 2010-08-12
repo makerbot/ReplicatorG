@@ -25,6 +25,8 @@
   <property name="lib.dir"       value="${shared.dir}/lib"/>
   <property name="ant.build.javac.target" value="1.5"/>
 
+  <property name="protocols.dir" value="${src.dir}/fabman/messages"/>
+  
   <path id="classpath">
     <!-- include jarbundler -->
     <fileset dir="build/macosx" includes="*.jar"/>
@@ -35,7 +37,15 @@
   <target name="test">
     <echo message="Version: ${replicatorg.version}"/>
   </target>
-
+  
+  <target name="protoc">
+  	<exec executable="protoc" failonerror="true">
+  		<arg value="--java_out=${src.dir}" />
+  		<arg value="--proto_path=${protocols.dir}" />
+  		<arg value="${protocols.dir}/connection.proto" />
+	</exec> 
+  </target>
+  
   <target name="clean">
     <delete dir="${classes.dir}"/>
     <delete dir="${jar.dir}"/>
