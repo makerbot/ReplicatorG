@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.ServerSocket;
 import java.net.URI;
@@ -43,7 +44,7 @@ public class FabServer {
 	}
 
 	public FabServer(String configuration) throws IOException, SAXException, ParserConfigurationException {
-		init(new InputSource(configuration));
+		init(new InputSource(new StringReader(configuration)));
 	}
 
 	public FabServer(InputStream configuration) throws IOException, SAXException, ParserConfigurationException {
@@ -82,6 +83,7 @@ public class FabServer {
 	public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException, URISyntaxException {
 		FabServer server = new FabServer(System.in);
 		System.out.print(server.getServerURI().toString());
+		System.out.close();
 		while (true) {}
 	}
 }
