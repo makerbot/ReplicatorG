@@ -62,7 +62,8 @@ from skeinforge_tools.skeinforge_utilities import preferences
 from skeinforge_tools import analyze
 from skeinforge_tools.skeinforge_utilities import interpret
 from skeinforge_tools import polyfile
-from skeinforge_tools import unpause
+#from skeinforge_tools import unpause
+from skeinforge_tools import raftless
 import cStringIO
 import os
 import sys
@@ -131,8 +132,10 @@ def writeOutput( fileName = '' ):
 	print( 'File ' + gcodec.getSummarizedFilename( fileName ) + ' is being chain exported.' )
 	suffixFilename = fileName[ : fileName.rfind( '.' ) ] + '.' + exportPreferences.fileExtension.value
 	gcodeText = gcodec.getGcodeFileText( fileName, '' )
-	if not gcodec.isProcedureDone( gcodeText, 'unpause' ):
-		gcodeText = unpause.getUnpauseChainGcode( fileName, gcodeText )
+#	if not gcodec.isProcedureDone( gcodeText, 'unpause' ):
+#		gcodeText = unpause.getUnpauseChainGcode( fileName, gcodeText )
+	if not gcodec.isProcedureDone( gcodeText, 'raftless' ):
+		gcodeText = raftless.getRaftlessChainGcode( fileName, gcodeText )
 	if gcodeText == '':
 		return
 

@@ -269,7 +269,7 @@ def getSkeinforgeToolFilenames():
 def writeOutput( fileName = '' ):
 	"Skeinforge a gcode file.  If no fileName is specified, skeinforge the first gcode file in this folder that is not modified."
 	skeinforgePluginFilenames = getSkeinforgeToolFilenames()
-	toolNames = 'export unpause fillet oozebane wipe hop stretch clip comb tower raft speed multiply fill inset carve'.split()
+	toolNames = 'export raftless unpause fillet oozebane wipe hop stretch clip comb tower raft speed multiply fill inset carve'.split()
 	for toolName in toolNames:
 		for skeinforgePluginFilename in skeinforgePluginFilenames:
 			if skeinforgePluginFilename == toolName:
