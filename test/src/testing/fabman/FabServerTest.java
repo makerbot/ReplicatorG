@@ -27,10 +27,13 @@ public class FabServerTest {
 	
 	@Test
 	public void createTestServerProcess() throws IOException, URISyntaxException {
-		URI serverUri = FabServer.startServer(xmlStub);
+		
+		FabServer.ServerInfo info = FabServer.startServer(xmlStub);
+		URI serverUri = info.socketUri;
 		assert serverUri != null;
 		assert "localhost".equals(serverUri.getHost());
 		assert serverUri.getPort() > 0;
 		assert "fab".equals(serverUri.getScheme());
+		info.process.destroy();
 	}
 }
