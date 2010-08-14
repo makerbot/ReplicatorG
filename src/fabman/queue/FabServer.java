@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.ServerSocket;
 import java.net.URI;
@@ -43,7 +44,7 @@ public class FabServer {
 	}
 
 	public FabServer(String configuration) throws IOException, SAXException, ParserConfigurationException {
-		init(new InputSource(configuration));
+		init(new InputSource(new StringReader(configuration)));
 	}
 
 	public FabServer(InputStream configuration) throws IOException, SAXException, ParserConfigurationException {
@@ -55,13 +56,27 @@ public class FabServer {
 	}
 	
 	/**
+	 * A tuple containing the URI and Process object of a started server.
+	 * @author phooky
+	 *
+	 */
+	public static class ServerInfo {
+		public URI socketUri;
+		public Process process;
+		public ServerInfo(URI socketUri, Process process) {
+			this.socketUri = socketUri;
+			this.process = process;
+		}
+	}
+	
+	/**
 	 * Start a new FabServer with the given configuration, and return the URI representing
 	 * the bound socket.
 	 * @param configuration the XML configuration string that describes the fabricator to drive
 	 * @throws IOException 
 	 * @throws URISyntaxException 
 	 */
-	public static URI startServer(String configuration) throws IOException, URISyntaxException {
+	public static ServerInfo startServer(String configuration) throws IOException, URISyntaxException {
 		String javaPath = System.getProperty("java.home") + File.separator +
 			"bin" + File.separator +
 			"java";
@@ -76,12 +91,13 @@ public class FabServer {
 		for (int c = reader.read(); c != -1; c = reader.read()) {
 			writer.append((char)c);
 		}
-		return new URI(writer.toString());
+		return new ServerInfo(new URI(writer.toString()),proc);
 	}
 	
 	public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException, URISyntaxException {
 		FabServer server = new FabServer(System.in);
 		System.out.print(server.getServerURI().toString());
+		System.out.close();
 		while (true) {}
 	}
 }

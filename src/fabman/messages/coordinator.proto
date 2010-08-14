@@ -1,0 +1,44 @@
+package fabman.messages;
+
+///
+/// The coordinator manages running fabricator queues.
+/// It handles the following requests:
+/// * List running fab queue backends.
+/// * Retrieve a socket to a given fab backend, or a code
+///   and message representing why the backend could not
+///   be retrieved (ordinarily a failure to start a process
+///   for the fab).
+///
+
+message Socket {
+  optional int port = 1;
+  optional string hostName = 2;
+  optional byte ipv4 = 3;
+}
+
+message ListFabsRequest {
+}
+
+message ListFabsResponse {
+  message FabDescription {
+    required string name = 1;
+    optional Socket socket = 2;
+  }
+  repeated FabDescription runningFabs = 1;
+}
+
+message GetFabRequest {
+  optional string fabDescriptor = 1;
+  optional bool openIfNeeded = 5 [default=true];
+}
+
+message GetFabResponse {
+  enum RspCode {
+    OK = 0;
+    ERROR = 1;
+    BAD_DESCRIPTOR = 2;
+    NO_OPEN_FAB = 3;
+  }
+  required RspCode code;
+  optional Socket socket;
+}
