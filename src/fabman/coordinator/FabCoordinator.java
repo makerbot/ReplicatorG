@@ -5,11 +5,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import fabman.messages.Coordinator;
 import fabman.messages.Coordinator.GetFabRequest;
 import fabman.messages.Coordinator.ListFabsRequest;
 
-public class FabCoordinator {
+public class FabCoordinator implements Runnable {
 	// For now, let's pick something from http://www.iana.org/assignments/port-numbers
 	// that is marked as Unassigned.  4499 is easy to remember.
 	static final int DEFAULT_COORDINATOR_PORT = 4499;
@@ -33,8 +35,14 @@ public class FabCoordinator {
 		while (running) {
 			try {
 				Socket incomingSocket = listenSocket.accept();
-				while (! (incomingSocket.isInputShutdown() || incomingSocket.isClosed())) {
-					handleRequest(incomingSocket);
+				try {
+					while (! (incomingSocket.isInputShutdown() || incomingSocket.isClosed())) {
+						handleRequest(incomingSocket);
+					}
+				} catch (InvalidProtocolBufferException ipbe) {
+					// This is a peculiarity of using delimited protocol buffer
+					// streams; a buffer exception gets thrown on end-of-stream.
+					// We can let this pass and drop the connection.
 				}
 			} catch (SocketException e) {
 				// Socket may have been closed; if so, terminate.
@@ -51,7 +59,7 @@ public class FabCoordinator {
 	}
 	
 	void handleRequest(Socket socket) throws IOException {
-		Coordinator.Request req = Coordinator.Request.parseFrom(socket.getInputStream());
+		Coordinator.Request req = Coordinator.Request.parseDelimitedFrom(socket.getInputStream());
 		Coordinator.Response.Builder rsp = Coordinator.Response.newBuilder();
 		rsp.setType(req.getType());
 		if (req != null) {
@@ -64,7 +72,7 @@ public class FabCoordinator {
 				break;
 			}
 		}
-		rsp.build().writeTo(socket.getOutputStream());
+		rsp.build().writeDelimitedTo(socket.getOutputStream());
 	}
 
 	private Coordinator.GetFabResponse handleGetFab(Socket socket, GetFabRequest getFabReq) {
