@@ -11,9 +11,9 @@ package fabman.messages;
 ///
 
 message Socket {
-  optional int port = 1;
+  optional uint32 port = 1;
   optional string hostName = 2;
-  optional byte ipv4 = 3;
+  optional bytes ipv4 = 3;
 }
 
 message ListFabsRequest {
@@ -39,6 +39,25 @@ message GetFabResponse {
     BAD_DESCRIPTOR = 2;
     NO_OPEN_FAB = 3;
   }
-  required RspCode code;
-  optional Socket socket;
+  required RspCode code = 1;
+  optional Socket socket = 2;
+}
+
+enum Type {
+  LIST_FABS = 1;
+  GET_FAB = 2;
+}
+
+message Request {
+  required Type type = 1;
+
+  optional ListFabsRequest listFabsReq = 2;
+  optional GetFabRequest getFabReq = 3;
+}
+
+message Response {
+  required Type type = 1;
+
+  optional ListFabsResponse listFabsRsp = 2;
+  optional GetFabResponse getFabRsp = 3;
 }

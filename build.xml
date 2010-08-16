@@ -43,6 +43,7 @@
   		<arg value="--java_out=${src.dir}" />
   		<arg value="--proto_path=${protocols.dir}" />
   		<arg value="${protocols.dir}/connection.proto" />
+  		<arg value="${protocols.dir}/coordinator.proto" />
 	</exec> 
   </target>
   

@@ -1,11 +1,13 @@
 package fabman.coordinator;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
+
+import fabman.messages.Coordinator;
+import fabman.messages.Coordinator.GetFabRequest;
+import fabman.messages.Coordinator.ListFabsRequest;
 
 public class FabCoordinator {
 	// For now, let's pick something from http://www.iana.org/assignments/port-numbers
@@ -27,7 +29,9 @@ public class FabCoordinator {
 		while (running) {
 			try {
 				Socket incomingSocket = listenSocket.accept();
-				if (incomingSocket != null) { handleRequest(incomingSocket); }
+				while (! (incomingSocket.isInputShutdown() || incomingSocket.isClosed())) {
+					handleRequest(incomingSocket);
+				}
 			} catch (SocketException e) {
 				// Socket may have been closed; if so, terminate.
 				running = !listenSocket.isClosed();
@@ -39,6 +43,30 @@ public class FabCoordinator {
 	}
 	
 	void handleRequest(Socket socket) throws IOException {
-		InputStream is = socket.getInputStream();	
+		Coordinator.Request req = Coordinator.Request.parseFrom(socket.getInputStream());
+		Coordinator.Response.Builder rsp = Coordinator.Response.newBuilder();
+		rsp.setType(req.getType());
+		if (req != null) {
+			switch (req.getType()) {
+			case LIST_FABS:
+				rsp.setListFabsRsp(handleListFabs(socket,req.getListFabsReq()));
+				break;
+			case GET_FAB:
+				rsp.setGetFabRsp(handleGetFab(socket,req.getGetFabReq()));
+				break;
+			}
+		}
+		rsp.build().writeTo(socket.getOutputStream());
+	}
+
+	private Coordinator.GetFabResponse handleGetFab(Socket socket, GetFabRequest getFabReq) {
+		Coordinator.GetFabResponse.Builder rsp = Coordinator.GetFabResponse.newBuilder();
+		rsp.setCode(Coordinator.GetFabResponse.RspCode.BAD_DESCRIPTOR);
+		return rsp.build();
+	}
+
+	private Coordinator.ListFabsResponse handleListFabs(Socket socket, ListFabsRequest listFabsReq) {
+		Coordinator.ListFabsResponse.Builder rsp = Coordinator.ListFabsResponse.newBuilder();
+		return rsp.build();
 	}
 }
