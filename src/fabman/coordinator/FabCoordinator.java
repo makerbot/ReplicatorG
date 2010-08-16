@@ -19,7 +19,11 @@ public class FabCoordinator {
 	public FabCoordinator() throws IOException {
 		init(DEFAULT_COORDINATOR_PORT);
 	}
-	
+
+	public FabCoordinator(int portNumber) throws IOException {
+		init(portNumber);
+	}
+
 	private void init(int portNumber) throws IOException {
 		listenSocket = new ServerSocket(portNumber);
 	}
@@ -40,6 +44,10 @@ public class FabCoordinator {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public void shutdown() throws IOException {
+		listenSocket.close();
 	}
 	
 	void handleRequest(Socket socket) throws IOException {
