@@ -12,8 +12,10 @@ import fabman.messages.Coordinator.ListFabsRequest;
 public class FabCoordinatorThread implements Runnable {
 
 	private Socket socket;
+	private FabCoordinator coordinator;
 	
-	FabCoordinatorThread(Socket socket) {
+	FabCoordinatorThread(FabCoordinator coordinator, Socket socket) {
+		this.coordinator = coordinator;
 		this.socket = socket;
 	}
 	
@@ -61,3 +63,4 @@ public class FabCoordinatorThread implements Runnable {
 	}
 
 }
+;

@@ -55,7 +55,7 @@ public class FabCoordinator implements Runnable {
 			try {
 				Socket incomingSocket = listenSocket.accept();
 				incomingSocket.setSoTimeout(TIMEOUT_MS);
-				threadPool.execute(new FabCoordinatorThread(incomingSocket));
+				threadPool.execute(new FabCoordinatorThread(this,incomingSocket));
 			} catch (SocketException e) {
 				// Socket may have been closed; if so, terminate.
 				running = !listenSocket.isClosed();
