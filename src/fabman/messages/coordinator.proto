@@ -22,7 +22,8 @@ message ListFabsRequest {
 message ListFabsResponse {
   message FabDescription {
     required string name = 1;
-    optional Socket socket = 2;
+    optional uint32 identifier = 2;
+    optional Socket socket = 3;
   }
   repeated FabDescription runningFabs = 1;
 }

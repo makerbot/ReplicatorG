@@ -10,13 +10,9 @@
     <tools>
       <tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
     </tools>
-    <!-- The driver supports the upload feature -->
-    <driver name="fabman.driver.sanguino3g.Sanguino3GMachine" type="serial">
-      <!-- required: we need 8 bit and 38400 baud. -->
-      <rate>38400</rate>
-      <parity>8</parity>
-    </driver>
-    <configuration name="port" type="serial"/>
+    <backend driver="fabman.driver.sanguino3g.Sanguino3GDriver">
+    </backend>
+    <parameter name="port" type="serial"/>
   </machine>
 
   <!-- Write to file -->
@@ -29,7 +25,7 @@
     <tools>
       <tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
     </tools>
-    <driver name="fabman.driver.sanguino3g.Sanguino3GFile" type="file">
-    </driver>
+    <backend driver="fabman.driver.sanguino3g.Sanguino3GFile">
+    </backend>
   </machine>
 </machines>

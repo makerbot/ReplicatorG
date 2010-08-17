@@ -45,6 +45,8 @@ public class FabCoordinator implements Runnable {
 	// up on the transaction and closing the socket.  Currently set to two minutes.
 	private static final int TIMEOUT_MS = 120 * 1000;
 	
+	private static final String DEFAULT_DESCRIPTOR_PATH = "~/.fabman/machines"; 
+		
 	ServerSocket listenSocket;
 	boolean running;
 	
@@ -63,7 +65,7 @@ public class FabCoordinator implements Runnable {
 	 */
 	private static Collection<File> getDefaultDescriptorPaths() {
 		Collection<File> paths = new Vector<File>();
-		paths.add(new File("~/.fabman/machines"));
+		paths.add(new File(DEFAULT_DESCRIPTOR_PATH));
 		return paths;
 	}
 

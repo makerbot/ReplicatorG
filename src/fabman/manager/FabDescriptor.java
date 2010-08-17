@@ -22,6 +22,9 @@ import org.w3c.dom.NodeList;
  * or a connection which may be instantiated (a Makerbot that is not currently
  * connected, or a write-to-file virtual fabricator).
  * 
+ * A FabDescriptor consists of:
+ * * A name, which must be locally unique.
+ * * A block of XML describing ... TODO
  * FabDescriptors may also contain a reasonable amount of information about the
  * device itself, such as the build area, whether the device is real or virtual,
  * whether the fabricator is currently connected, and so on.  It also provides
