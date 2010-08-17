@@ -1,7 +1,16 @@
 package fabman.manager;
 
+import java.io.StringWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import javax.media.j3d.BoundingBox;
 import javax.vecmath.Point3d;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -51,6 +60,8 @@ public class FabDescriptor {
 		return new BoundingBox(min,max);
 	}
 	
+	int hash;
+	
 	/**
 	 * Generate a fabricator descriptor using an Machine element.
 	 * @param xmlSource The element node of the XML document representing the fab.
@@ -63,6 +74,7 @@ public class FabDescriptor {
 		if (geometries.getLength() > 0) {
 			envelope = boundsFromElement((Element)geometries.item(0));
 		}
+		hash = generateHash();
 	}
 	
 	/**
@@ -86,8 +98,47 @@ public class FabDescriptor {
 	 * @return An Element containing the top-level Machine element, or null if 
 	 *         no XML data is available.
 	 */
-	Element getXmlDescriptor() {
+	public Element getXmlDescriptor() {
 		return xmlDescription;
 	}
 	
+	public int hashCode() {
+		return hash;
+	}
+	
+	public boolean equals(Object obj) {
+		return obj.hashCode() == hashCode();
+	}
+	
+	private String getDescriptorString() {
+		TransformerFactory transFactory = TransformerFactory.newInstance();
+		Transformer transformer;
+		try {
+			transformer = transFactory.newTransformer();
+			StringWriter buffer = new StringWriter();
+			transformer.transform(new DOMSource(xmlDescription),
+			      new StreamResult(buffer));
+			return buffer.toString();
+		} catch (TransformerException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private int generateHash() {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-1");
+			md.update(getDescriptorString().getBytes());
+			byte[] digest = md.digest();
+			hash = 0;
+			for (int i = 0; i < digest.length; i++) {
+				hash <<= 8;
+				hash |= ((int)digest[i] & 0xff);
+			}
+			return hash;
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return super.hashCode();
+	}
 }
