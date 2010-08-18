@@ -24,6 +24,7 @@
   <property name="shared.dir"    value="${build.dir}/shared"/>
   <property name="lib.dir"       value="${shared.dir}/lib"/>
   <property name="ant.build.javac.target" value="1.5"/>
+  <property name="test.src.dir"       value="test/src"/>
 
   <property name="protocols.dir" value="${src.dir}/fabman/messages"/>
   
@@ -33,10 +34,12 @@
     <fileset dir="${lib.dir}" includes="*.jar"/>
     <pathelement path="/System/Library/Java"/>
   </path>
-
-  <target name="test">
-    <echo message="Version: ${replicatorg.version}"/>
-  </target>
+  
+  <path id="test.cp">
+  	<path refid="classpath"/>
+  	<pathelement path="test/lib/testng.jar"/>
+  	<pathelement path="${classes.dir}"/>
+  </path>
   
   <target name="protoc">
   	<exec executable="protoc" failonerror="true">
@@ -84,6 +87,18 @@
       <sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
     	<sysproperty key="replicatorg.toolpath" path="${native.tools.dir}"/>
     </java>
+  </target>
+
+  <taskdef name="testng" classpath="test/lib/testng.jar" classname="org.testng.TestNGAntTask" />
+  
+  <target name="test" depends="jar">
+  	<testng classpathref="test.cp" dumpCommand="true" suiteName="" testName="">
+		<sysproperty key="java.library.path" path="${native.lib.dir}"/>
+		<sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
+		<sysproperty key="replicatorg.toolpath" path="${native.tools.dir}"/>
+  		<env key="TEST_DESCRIPTORS" value="test/resources/descriptors"/>
+    	<classfileset dir="${classes.dir}" includes="testing/**/*.class" />
+    </testng>
   </target>
   
   <target name="debug" depends="compile">
