@@ -66,6 +66,16 @@
 		</javac>
   </target>
 
+  <target name="compile-tests">
+      <mkdir dir="${classes.dir}"/>
+      <javac srcdir="${test.src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5">
+			<!-- Uncomment to aid in Java debugging
+			<compilerarg value="-Xlint:deprecation" />
+			<compilerarg value="-Xlint:unchecked" />
+			-->	
+		</javac>
+  </target>
+
   <target name="jar" depends="compile">
     <mkdir dir="${jar.dir}"/>
     <copy todir="${classes.dir}">
@@ -91,7 +101,7 @@
 
   <taskdef name="testng" classpath="test/lib/testng.jar" classname="org.testng.TestNGAntTask" />
   
-  <target name="test" depends="jar">
+  <target name="test" depends="jar,compile-tests">
   	<testng classpathref="test.cp" dumpCommand="true" suiteName="" testName="">
 		<sysproperty key="java.library.path" path="${native.lib.dir}"/>
 		<sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
