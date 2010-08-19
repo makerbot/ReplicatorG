@@ -2,12 +2,17 @@ package fabman.coordinator;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Collection;
+import java.util.Vector;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import fabman.manager.FabDescriptor;
 import fabman.messages.Coordinator;
 import fabman.messages.Coordinator.GetFabRequest;
+import fabman.messages.Coordinator.GetFabResponse;
 import fabman.messages.Coordinator.ListFabsRequest;
+import fabman.messages.Coordinator.ListFabsResponse;
 
 public class FabCoordinatorThread implements Runnable {
 
@@ -51,14 +56,24 @@ public class FabCoordinatorThread implements Runnable {
 		rsp.build().writeDelimitedTo(socket.getOutputStream());
 	}
 
-	private Coordinator.GetFabResponse handleGetFab(Socket socket, GetFabRequest getFabReq) {
-		Coordinator.GetFabResponse.Builder rsp = Coordinator.GetFabResponse.newBuilder();
-		rsp.setCode(Coordinator.GetFabResponse.RspCode.BAD_DESCRIPTOR);
+	private GetFabResponse handleGetFab(Socket socket, GetFabRequest getFabReq) {
+		GetFabResponse.Builder rsp = Coordinator.GetFabResponse.newBuilder();
+		rsp.setCode(GetFabResponse.RspCode.BAD_DESCRIPTOR);
 		return rsp.build();
 	}
 
-	private Coordinator.ListFabsResponse handleListFabs(Socket socket, ListFabsRequest listFabsReq) {
-		Coordinator.ListFabsResponse.Builder rsp = Coordinator.ListFabsResponse.newBuilder();
+	private ListFabsResponse handleListFabs(Socket socket, ListFabsRequest listFabsReq) {
+		ListFabsResponse.Builder rsp = ListFabsResponse.newBuilder();
+		Vector<ListFabsResponse.FabDescription> responses = new Vector<ListFabsResponse.FabDescription>();
+		ListFabsResponse.FabDescription.Builder fabBuilder;
+		Collection<FabDescriptor> descriptors = coordinator.getFabDescriptorList();
+		for (FabDescriptor fd : descriptors) {
+			fabBuilder = ListFabsResponse.FabDescription.newBuilder();
+			fabBuilder.setName(fd.getName());
+			fabBuilder.setFabDescriptor(fd.getDescriptorString());
+			responses.add(fabBuilder.build());
+		}
+		rsp.addAllFabs(responses);
 		return rsp.build();
 	}
 

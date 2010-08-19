@@ -1,8 +1,10 @@
 package testing.fabman;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Vector;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -22,7 +24,11 @@ public class FabCoordinatorTest {
 	public void createCoordinator() throws IOException {
 		assert coordinator == null;
 		try {
-			coordinator = new FabCoordinator(TESTING_PORT);
+			Vector<File> paths = new Vector<File>();
+			String descriptorPath = System.getenv("TEST_DESCRIPTORS");
+			assert descriptorPath != null : "TEST_DESCRIPTORS environment variable is unset; needed for test";
+			paths.add(new File(descriptorPath));
+			coordinator = new FabCoordinator(TESTING_PORT,paths);
 			new Thread(coordinator).start();
 		} catch (java.net.BindException be) {
 			assert false : "Problem binding test port; ensure that no other test is running";
@@ -57,6 +63,7 @@ public class FabCoordinatorTest {
 		Socket socket = getConnection();
 		Coordinator.GetFabRequest.Builder gfr = Coordinator.GetFabRequest.newBuilder();
 		Coordinator.Request.Builder req = Coordinator.Request.newBuilder();
+		gfr.setName("NON-EXTANT FABRICATOR");
 		req.setType(Type.GET_FAB);
 		req.setGetFabReq(gfr.build());
 		req.build().writeDelimitedTo(socket.getOutputStream());
@@ -67,6 +74,24 @@ public class FabCoordinatorTest {
 		Coordinator.GetFabResponse fabRsp = rsp.getGetFabRsp();
 		assert fabRsp != null;
 		assert fabRsp.getCode() == RspCode.BAD_DESCRIPTOR;
+		socket.close();
+	}
+
+	@Test
+	public void requestFabList() throws IOException {
+		Socket socket = getConnection();
+		Coordinator.ListFabsRequest.Builder gfr = Coordinator.ListFabsRequest.newBuilder();
+		Coordinator.Request.Builder req = Coordinator.Request.newBuilder();
+		req.setType(Type.LIST_FABS);
+		req.setListFabsReq(gfr.build());
+		req.build().writeDelimitedTo(socket.getOutputStream());
+		// Get response
+		Coordinator.Response rsp = Coordinator.Response.parseDelimitedFrom(socket.getInputStream());
+		assert rsp != null;
+		assert rsp.getType() == Type.LIST_FABS;
+		Coordinator.ListFabsResponse fabRsp = rsp.getListFabsRsp();
+		assert fabRsp != null;
+		assert fabRsp.getFabsCount() == 5 : "Expected fab count 5, got "+Integer.toString(fabRsp.getFabsCount());
 		socket.close();
 	}
 }
