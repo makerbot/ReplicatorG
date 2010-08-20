@@ -16,6 +16,18 @@ message Socket {
   optional bytes ipv4 = 3;
 }
 
+message VersionRequest {
+}
+
+message VersionResponse {
+  optional uint32 major = 1;
+  optional uint32 minor = 2;
+  optional uint32 build = 3;
+  optional string name = 4;
+  optional string buildDate = 5;
+  
+}
+
 message ListFabsRequest {
 }
 
@@ -47,20 +59,23 @@ message GetFabResponse {
 }
 
 enum Type {
-  LIST_FABS = 1;
-  GET_FAB = 2;
+  VERSION = 1;
+  LIST_FABS = 2;
+  GET_FAB = 3;
 }
 
 message Request {
   required Type type = 1;
 
-  optional ListFabsRequest listFabsReq = 2;
-  optional GetFabRequest getFabReq = 3;
+  optional VersionRequest versionReq = 2;
+  optional ListFabsRequest listFabsReq = 3;
+  optional GetFabRequest getFabReq = 4;
 }
 
 message Response {
   required Type type = 1;
 
-  optional ListFabsResponse listFabsRsp = 2;
-  optional GetFabResponse getFabRsp = 3;
+  optional VersionResponse versionRsp = 2;
+  optional ListFabsResponse listFabsRsp = 3;
+  optional GetFabResponse getFabRsp = 4;
 }

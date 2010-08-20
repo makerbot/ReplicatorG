@@ -9,8 +9,9 @@ public final class Coordinator {
   }
   public enum Type
       implements com.google.protobuf.ProtocolMessageEnum {
-    LIST_FABS(0, 1),
-    GET_FAB(1, 2),
+    VERSION(0, 1),
+    LIST_FABS(1, 2),
+    GET_FAB(2, 3),
     ;
     
     
@@ -18,8 +19,9 @@ public final class Coordinator {
     
     public static Type valueOf(int value) {
       switch (value) {
-        case 1: return LIST_FABS;
-        case 2: return GET_FAB;
+        case 1: return VERSION;
+        case 2: return LIST_FABS;
+        case 3: return GET_FAB;
         default: return null;
       }
     }
@@ -50,7 +52,7 @@ public final class Coordinator {
     }
     
     private static final Type[] VALUES = {
-      LIST_FABS, GET_FAB, 
+      VERSION, LIST_FABS, GET_FAB, 
     };
     public static Type valueOf(
         com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
@@ -410,6 +412,663 @@ public final class Coordinator {
       public Builder clearIpv4() {
         result.hasIpv4 = false;
         result.ipv4_ = getDefaultInstance().getIpv4();
+        return this;
+      }
+    }
+    
+    static {
+      fabman.messages.Coordinator.getDescriptor();
+    }
+    
+    static {
+      fabman.messages.Coordinator.internalForceInit();
+    }
+  }
+  
+  public static final class VersionRequest extends
+      com.google.protobuf.GeneratedMessage {
+    // Use VersionRequest.newBuilder() to construct.
+    private VersionRequest() {}
+    
+    private static final VersionRequest defaultInstance = new VersionRequest();
+    public static VersionRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public VersionRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return fabman.messages.Coordinator.internal_static_fabman_messages_VersionRequest_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return fabman.messages.Coordinator.internal_static_fabman_messages_VersionRequest_fieldAccessorTable;
+    }
+    
+    public final boolean isInitialized() {
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static fabman.messages.Coordinator.VersionRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeDelimitedFrom(input).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeDelimitedFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(fabman.messages.Coordinator.VersionRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private fabman.messages.Coordinator.VersionRequest result;
+      
+      // Construct using fabman.messages.Coordinator.VersionRequest.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new fabman.messages.Coordinator.VersionRequest();
+        return builder;
+      }
+      
+      protected fabman.messages.Coordinator.VersionRequest internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new fabman.messages.Coordinator.VersionRequest();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return fabman.messages.Coordinator.VersionRequest.getDescriptor();
+      }
+      
+      public fabman.messages.Coordinator.VersionRequest getDefaultInstanceForType() {
+        return fabman.messages.Coordinator.VersionRequest.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public fabman.messages.Coordinator.VersionRequest build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private fabman.messages.Coordinator.VersionRequest buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public fabman.messages.Coordinator.VersionRequest buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        fabman.messages.Coordinator.VersionRequest returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof fabman.messages.Coordinator.VersionRequest) {
+          return mergeFrom((fabman.messages.Coordinator.VersionRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(fabman.messages.Coordinator.VersionRequest other) {
+        if (other == fabman.messages.Coordinator.VersionRequest.getDefaultInstance()) return this;
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+          }
+        }
+      }
+      
+    }
+    
+    static {
+      fabman.messages.Coordinator.getDescriptor();
+    }
+    
+    static {
+      fabman.messages.Coordinator.internalForceInit();
+    }
+  }
+  
+  public static final class VersionResponse extends
+      com.google.protobuf.GeneratedMessage {
+    // Use VersionResponse.newBuilder() to construct.
+    private VersionResponse() {}
+    
+    private static final VersionResponse defaultInstance = new VersionResponse();
+    public static VersionResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public VersionResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return fabman.messages.Coordinator.internal_static_fabman_messages_VersionResponse_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return fabman.messages.Coordinator.internal_static_fabman_messages_VersionResponse_fieldAccessorTable;
+    }
+    
+    // optional uint32 major = 1;
+    public static final int MAJOR_FIELD_NUMBER = 1;
+    private boolean hasMajor;
+    private int major_ = 0;
+    public boolean hasMajor() { return hasMajor; }
+    public int getMajor() { return major_; }
+    
+    // optional uint32 minor = 2;
+    public static final int MINOR_FIELD_NUMBER = 2;
+    private boolean hasMinor;
+    private int minor_ = 0;
+    public boolean hasMinor() { return hasMinor; }
+    public int getMinor() { return minor_; }
+    
+    // optional uint32 build = 3;
+    public static final int BUILD_FIELD_NUMBER = 3;
+    private boolean hasBuild;
+    private int build_ = 0;
+    public boolean hasBuild() { return hasBuild; }
+    public int getBuild() { return build_; }
+    
+    // optional string name = 4;
+    public static final int NAME_FIELD_NUMBER = 4;
+    private boolean hasName;
+    private java.lang.String name_ = "";
+    public boolean hasName() { return hasName; }
+    public java.lang.String getName() { return name_; }
+    
+    // optional string buildDate = 5;
+    public static final int BUILDDATE_FIELD_NUMBER = 5;
+    private boolean hasBuildDate;
+    private java.lang.String buildDate_ = "";
+    public boolean hasBuildDate() { return hasBuildDate; }
+    public java.lang.String getBuildDate() { return buildDate_; }
+    
+    public final boolean isInitialized() {
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (hasMajor()) {
+        output.writeUInt32(1, getMajor());
+      }
+      if (hasMinor()) {
+        output.writeUInt32(2, getMinor());
+      }
+      if (hasBuild()) {
+        output.writeUInt32(3, getBuild());
+      }
+      if (hasName()) {
+        output.writeString(4, getName());
+      }
+      if (hasBuildDate()) {
+        output.writeString(5, getBuildDate());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasMajor()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(1, getMajor());
+      }
+      if (hasMinor()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(2, getMinor());
+      }
+      if (hasBuild()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(3, getBuild());
+      }
+      if (hasName()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(4, getName());
+      }
+      if (hasBuildDate()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(5, getBuildDate());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static fabman.messages.Coordinator.VersionResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeDelimitedFrom(input).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeDelimitedFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static fabman.messages.Coordinator.VersionResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(fabman.messages.Coordinator.VersionResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private fabman.messages.Coordinator.VersionResponse result;
+      
+      // Construct using fabman.messages.Coordinator.VersionResponse.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new fabman.messages.Coordinator.VersionResponse();
+        return builder;
+      }
+      
+      protected fabman.messages.Coordinator.VersionResponse internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new fabman.messages.Coordinator.VersionResponse();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return fabman.messages.Coordinator.VersionResponse.getDescriptor();
+      }
+      
+      public fabman.messages.Coordinator.VersionResponse getDefaultInstanceForType() {
+        return fabman.messages.Coordinator.VersionResponse.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public fabman.messages.Coordinator.VersionResponse build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private fabman.messages.Coordinator.VersionResponse buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public fabman.messages.Coordinator.VersionResponse buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        fabman.messages.Coordinator.VersionResponse returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof fabman.messages.Coordinator.VersionResponse) {
+          return mergeFrom((fabman.messages.Coordinator.VersionResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(fabman.messages.Coordinator.VersionResponse other) {
+        if (other == fabman.messages.Coordinator.VersionResponse.getDefaultInstance()) return this;
+        if (other.hasMajor()) {
+          setMajor(other.getMajor());
+        }
+        if (other.hasMinor()) {
+          setMinor(other.getMinor());
+        }
+        if (other.hasBuild()) {
+          setBuild(other.getBuild());
+        }
+        if (other.hasName()) {
+          setName(other.getName());
+        }
+        if (other.hasBuildDate()) {
+          setBuildDate(other.getBuildDate());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 8: {
+              setMajor(input.readUInt32());
+              break;
+            }
+            case 16: {
+              setMinor(input.readUInt32());
+              break;
+            }
+            case 24: {
+              setBuild(input.readUInt32());
+              break;
+            }
+            case 34: {
+              setName(input.readString());
+              break;
+            }
+            case 42: {
+              setBuildDate(input.readString());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // optional uint32 major = 1;
+      public boolean hasMajor() {
+        return result.hasMajor();
+      }
+      public int getMajor() {
+        return result.getMajor();
+      }
+      public Builder setMajor(int value) {
+        result.hasMajor = true;
+        result.major_ = value;
+        return this;
+      }
+      public Builder clearMajor() {
+        result.hasMajor = false;
+        result.major_ = 0;
+        return this;
+      }
+      
+      // optional uint32 minor = 2;
+      public boolean hasMinor() {
+        return result.hasMinor();
+      }
+      public int getMinor() {
+        return result.getMinor();
+      }
+      public Builder setMinor(int value) {
+        result.hasMinor = true;
+        result.minor_ = value;
+        return this;
+      }
+      public Builder clearMinor() {
+        result.hasMinor = false;
+        result.minor_ = 0;
+        return this;
+      }
+      
+      // optional uint32 build = 3;
+      public boolean hasBuild() {
+        return result.hasBuild();
+      }
+      public int getBuild() {
+        return result.getBuild();
+      }
+      public Builder setBuild(int value) {
+        result.hasBuild = true;
+        result.build_ = value;
+        return this;
+      }
+      public Builder clearBuild() {
+        result.hasBuild = false;
+        result.build_ = 0;
+        return this;
+      }
+      
+      // optional string name = 4;
+      public boolean hasName() {
+        return result.hasName();
+      }
+      public java.lang.String getName() {
+        return result.getName();
+      }
+      public Builder setName(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasName = true;
+        result.name_ = value;
+        return this;
+      }
+      public Builder clearName() {
+        result.hasName = false;
+        result.name_ = getDefaultInstance().getName();
+        return this;
+      }
+      
+      // optional string buildDate = 5;
+      public boolean hasBuildDate() {
+        return result.hasBuildDate();
+      }
+      public java.lang.String getBuildDate() {
+        return result.getBuildDate();
+      }
+      public Builder setBuildDate(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasBuildDate = true;
+        result.buildDate_ = value;
+        return this;
+      }
+      public Builder clearBuildDate() {
+        result.hasBuildDate = false;
+        result.buildDate_ = getDefaultInstance().getBuildDate();
         return this;
       }
     }
@@ -2175,19 +2834,26 @@ public final class Coordinator {
     // required .fabman.messages.Type type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
     private boolean hasType;
-    private fabman.messages.Coordinator.Type type_ = fabman.messages.Coordinator.Type.LIST_FABS;
+    private fabman.messages.Coordinator.Type type_ = fabman.messages.Coordinator.Type.VERSION;
     public boolean hasType() { return hasType; }
     public fabman.messages.Coordinator.Type getType() { return type_; }
     
-    // optional .fabman.messages.ListFabsRequest listFabsReq = 2;
-    public static final int LISTFABSREQ_FIELD_NUMBER = 2;
+    // optional .fabman.messages.VersionRequest versionReq = 2;
+    public static final int VERSIONREQ_FIELD_NUMBER = 2;
+    private boolean hasVersionReq;
+    private fabman.messages.Coordinator.VersionRequest versionReq_ = fabman.messages.Coordinator.VersionRequest.getDefaultInstance();
+    public boolean hasVersionReq() { return hasVersionReq; }
+    public fabman.messages.Coordinator.VersionRequest getVersionReq() { return versionReq_; }
+    
+    // optional .fabman.messages.ListFabsRequest listFabsReq = 3;
+    public static final int LISTFABSREQ_FIELD_NUMBER = 3;
     private boolean hasListFabsReq;
     private fabman.messages.Coordinator.ListFabsRequest listFabsReq_ = fabman.messages.Coordinator.ListFabsRequest.getDefaultInstance();
     public boolean hasListFabsReq() { return hasListFabsReq; }
     public fabman.messages.Coordinator.ListFabsRequest getListFabsReq() { return listFabsReq_; }
     
-    // optional .fabman.messages.GetFabRequest getFabReq = 3;
-    public static final int GETFABREQ_FIELD_NUMBER = 3;
+    // optional .fabman.messages.GetFabRequest getFabReq = 4;
+    public static final int GETFABREQ_FIELD_NUMBER = 4;
     private boolean hasGetFabReq;
     private fabman.messages.Coordinator.GetFabRequest getFabReq_ = fabman.messages.Coordinator.GetFabRequest.getDefaultInstance();
     public boolean hasGetFabReq() { return hasGetFabReq; }
@@ -2206,11 +2872,14 @@ public final class Coordinator {
       if (hasType()) {
         output.writeEnum(1, getType().getNumber());
       }
+      if (hasVersionReq()) {
+        output.writeMessage(2, getVersionReq());
+      }
       if (hasListFabsReq()) {
-        output.writeMessage(2, getListFabsReq());
+        output.writeMessage(3, getListFabsReq());
       }
       if (hasGetFabReq()) {
-        output.writeMessage(3, getGetFabReq());
+        output.writeMessage(4, getGetFabReq());
       }
       getUnknownFields().writeTo(output);
     }
@@ -2225,13 +2894,17 @@ public final class Coordinator {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, getType().getNumber());
       }
+      if (hasVersionReq()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getVersionReq());
+      }
       if (hasListFabsReq()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, getListFabsReq());
+          .computeMessageSize(3, getListFabsReq());
       }
       if (hasGetFabReq()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, getGetFabReq());
+          .computeMessageSize(4, getGetFabReq());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2385,6 +3058,9 @@ public final class Coordinator {
         if (other.hasType()) {
           setType(other.getType());
         }
+        if (other.hasVersionReq()) {
+          mergeVersionReq(other.getVersionReq());
+        }
         if (other.hasListFabsReq()) {
           mergeListFabsReq(other.getListFabsReq());
         }
@@ -2427,6 +3103,15 @@ public final class Coordinator {
               break;
             }
             case 18: {
+              fabman.messages.Coordinator.VersionRequest.Builder subBuilder = fabman.messages.Coordinator.VersionRequest.newBuilder();
+              if (hasVersionReq()) {
+                subBuilder.mergeFrom(getVersionReq());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setVersionReq(subBuilder.buildPartial());
+              break;
+            }
+            case 26: {
               fabman.messages.Coordinator.ListFabsRequest.Builder subBuilder = fabman.messages.Coordinator.ListFabsRequest.newBuilder();
               if (hasListFabsReq()) {
                 subBuilder.mergeFrom(getListFabsReq());
@@ -2435,7 +3120,7 @@ public final class Coordinator {
               setListFabsReq(subBuilder.buildPartial());
               break;
             }
-            case 26: {
+            case 34: {
               fabman.messages.Coordinator.GetFabRequest.Builder subBuilder = fabman.messages.Coordinator.GetFabRequest.newBuilder();
               if (hasGetFabReq()) {
                 subBuilder.mergeFrom(getGetFabReq());
@@ -2466,11 +3151,48 @@ public final class Coordinator {
       }
       public Builder clearType() {
         result.hasType = false;
-        result.type_ = fabman.messages.Coordinator.Type.LIST_FABS;
+        result.type_ = fabman.messages.Coordinator.Type.VERSION;
         return this;
       }
       
-      // optional .fabman.messages.ListFabsRequest listFabsReq = 2;
+      // optional .fabman.messages.VersionRequest versionReq = 2;
+      public boolean hasVersionReq() {
+        return result.hasVersionReq();
+      }
+      public fabman.messages.Coordinator.VersionRequest getVersionReq() {
+        return result.getVersionReq();
+      }
+      public Builder setVersionReq(fabman.messages.Coordinator.VersionRequest value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasVersionReq = true;
+        result.versionReq_ = value;
+        return this;
+      }
+      public Builder setVersionReq(fabman.messages.Coordinator.VersionRequest.Builder builderForValue) {
+        result.hasVersionReq = true;
+        result.versionReq_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeVersionReq(fabman.messages.Coordinator.VersionRequest value) {
+        if (result.hasVersionReq() &&
+            result.versionReq_ != fabman.messages.Coordinator.VersionRequest.getDefaultInstance()) {
+          result.versionReq_ =
+            fabman.messages.Coordinator.VersionRequest.newBuilder(result.versionReq_).mergeFrom(value).buildPartial();
+        } else {
+          result.versionReq_ = value;
+        }
+        result.hasVersionReq = true;
+        return this;
+      }
+      public Builder clearVersionReq() {
+        result.hasVersionReq = false;
+        result.versionReq_ = fabman.messages.Coordinator.VersionRequest.getDefaultInstance();
+        return this;
+      }
+      
+      // optional .fabman.messages.ListFabsRequest listFabsReq = 3;
       public boolean hasListFabsReq() {
         return result.hasListFabsReq();
       }
@@ -2507,7 +3229,7 @@ public final class Coordinator {
         return this;
       }
       
-      // optional .fabman.messages.GetFabRequest getFabReq = 3;
+      // optional .fabman.messages.GetFabRequest getFabReq = 4;
       public boolean hasGetFabReq() {
         return result.hasGetFabReq();
       }
@@ -2581,19 +3303,26 @@ public final class Coordinator {
     // required .fabman.messages.Type type = 1;
     public static final int TYPE_FIELD_NUMBER = 1;
     private boolean hasType;
-    private fabman.messages.Coordinator.Type type_ = fabman.messages.Coordinator.Type.LIST_FABS;
+    private fabman.messages.Coordinator.Type type_ = fabman.messages.Coordinator.Type.VERSION;
     public boolean hasType() { return hasType; }
     public fabman.messages.Coordinator.Type getType() { return type_; }
     
-    // optional .fabman.messages.ListFabsResponse listFabsRsp = 2;
-    public static final int LISTFABSRSP_FIELD_NUMBER = 2;
+    // optional .fabman.messages.VersionResponse versionRsp = 2;
+    public static final int VERSIONRSP_FIELD_NUMBER = 2;
+    private boolean hasVersionRsp;
+    private fabman.messages.Coordinator.VersionResponse versionRsp_ = fabman.messages.Coordinator.VersionResponse.getDefaultInstance();
+    public boolean hasVersionRsp() { return hasVersionRsp; }
+    public fabman.messages.Coordinator.VersionResponse getVersionRsp() { return versionRsp_; }
+    
+    // optional .fabman.messages.ListFabsResponse listFabsRsp = 3;
+    public static final int LISTFABSRSP_FIELD_NUMBER = 3;
     private boolean hasListFabsRsp;
     private fabman.messages.Coordinator.ListFabsResponse listFabsRsp_ = fabman.messages.Coordinator.ListFabsResponse.getDefaultInstance();
     public boolean hasListFabsRsp() { return hasListFabsRsp; }
     public fabman.messages.Coordinator.ListFabsResponse getListFabsRsp() { return listFabsRsp_; }
     
-    // optional .fabman.messages.GetFabResponse getFabRsp = 3;
-    public static final int GETFABRSP_FIELD_NUMBER = 3;
+    // optional .fabman.messages.GetFabResponse getFabRsp = 4;
+    public static final int GETFABRSP_FIELD_NUMBER = 4;
     private boolean hasGetFabRsp;
     private fabman.messages.Coordinator.GetFabResponse getFabRsp_ = fabman.messages.Coordinator.GetFabResponse.getDefaultInstance();
     public boolean hasGetFabRsp() { return hasGetFabRsp; }
@@ -2615,11 +3344,14 @@ public final class Coordinator {
       if (hasType()) {
         output.writeEnum(1, getType().getNumber());
       }
+      if (hasVersionRsp()) {
+        output.writeMessage(2, getVersionRsp());
+      }
       if (hasListFabsRsp()) {
-        output.writeMessage(2, getListFabsRsp());
+        output.writeMessage(3, getListFabsRsp());
       }
       if (hasGetFabRsp()) {
-        output.writeMessage(3, getGetFabRsp());
+        output.writeMessage(4, getGetFabRsp());
       }
       getUnknownFields().writeTo(output);
     }
@@ -2634,13 +3366,17 @@ public final class Coordinator {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, getType().getNumber());
       }
+      if (hasVersionRsp()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getVersionRsp());
+      }
       if (hasListFabsRsp()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, getListFabsRsp());
+          .computeMessageSize(3, getListFabsRsp());
       }
       if (hasGetFabRsp()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, getGetFabRsp());
+          .computeMessageSize(4, getGetFabRsp());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2794,6 +3530,9 @@ public final class Coordinator {
         if (other.hasType()) {
           setType(other.getType());
         }
+        if (other.hasVersionRsp()) {
+          mergeVersionRsp(other.getVersionRsp());
+        }
         if (other.hasListFabsRsp()) {
           mergeListFabsRsp(other.getListFabsRsp());
         }
@@ -2836,6 +3575,15 @@ public final class Coordinator {
               break;
             }
             case 18: {
+              fabman.messages.Coordinator.VersionResponse.Builder subBuilder = fabman.messages.Coordinator.VersionResponse.newBuilder();
+              if (hasVersionRsp()) {
+                subBuilder.mergeFrom(getVersionRsp());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setVersionRsp(subBuilder.buildPartial());
+              break;
+            }
+            case 26: {
               fabman.messages.Coordinator.ListFabsResponse.Builder subBuilder = fabman.messages.Coordinator.ListFabsResponse.newBuilder();
               if (hasListFabsRsp()) {
                 subBuilder.mergeFrom(getListFabsRsp());
@@ -2844,7 +3592,7 @@ public final class Coordinator {
               setListFabsRsp(subBuilder.buildPartial());
               break;
             }
-            case 26: {
+            case 34: {
               fabman.messages.Coordinator.GetFabResponse.Builder subBuilder = fabman.messages.Coordinator.GetFabResponse.newBuilder();
               if (hasGetFabRsp()) {
                 subBuilder.mergeFrom(getGetFabRsp());
@@ -2875,11 +3623,48 @@ public final class Coordinator {
       }
       public Builder clearType() {
         result.hasType = false;
-        result.type_ = fabman.messages.Coordinator.Type.LIST_FABS;
+        result.type_ = fabman.messages.Coordinator.Type.VERSION;
         return this;
       }
       
-      // optional .fabman.messages.ListFabsResponse listFabsRsp = 2;
+      // optional .fabman.messages.VersionResponse versionRsp = 2;
+      public boolean hasVersionRsp() {
+        return result.hasVersionRsp();
+      }
+      public fabman.messages.Coordinator.VersionResponse getVersionRsp() {
+        return result.getVersionRsp();
+      }
+      public Builder setVersionRsp(fabman.messages.Coordinator.VersionResponse value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.hasVersionRsp = true;
+        result.versionRsp_ = value;
+        return this;
+      }
+      public Builder setVersionRsp(fabman.messages.Coordinator.VersionResponse.Builder builderForValue) {
+        result.hasVersionRsp = true;
+        result.versionRsp_ = builderForValue.build();
+        return this;
+      }
+      public Builder mergeVersionRsp(fabman.messages.Coordinator.VersionResponse value) {
+        if (result.hasVersionRsp() &&
+            result.versionRsp_ != fabman.messages.Coordinator.VersionResponse.getDefaultInstance()) {
+          result.versionRsp_ =
+            fabman.messages.Coordinator.VersionResponse.newBuilder(result.versionRsp_).mergeFrom(value).buildPartial();
+        } else {
+          result.versionRsp_ = value;
+        }
+        result.hasVersionRsp = true;
+        return this;
+      }
+      public Builder clearVersionRsp() {
+        result.hasVersionRsp = false;
+        result.versionRsp_ = fabman.messages.Coordinator.VersionResponse.getDefaultInstance();
+        return this;
+      }
+      
+      // optional .fabman.messages.ListFabsResponse listFabsRsp = 3;
       public boolean hasListFabsRsp() {
         return result.hasListFabsRsp();
       }
@@ -2916,7 +3701,7 @@ public final class Coordinator {
         return this;
       }
       
-      // optional .fabman.messages.GetFabResponse getFabRsp = 3;
+      // optional .fabman.messages.GetFabResponse getFabRsp = 4;
       public boolean hasGetFabRsp() {
         return result.hasGetFabRsp();
       }
@@ -2969,6 +3754,16 @@ public final class Coordinator {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_fabman_messages_Socket_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_fabman_messages_VersionRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_fabman_messages_VersionRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_fabman_messages_VersionResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_fabman_messages_VersionResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_fabman_messages_ListFabsRequest_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -3014,28 +3809,34 @@ public final class Coordinator {
     java.lang.String[] descriptorData = {
       "\n\021coordinator.proto\022\017fabman.messages\"6\n\006" +
       "Socket\022\014\n\004port\030\001 \001(\r\022\020\n\010hostName\030\002 \001(\t\022\014" +
-      "\n\004ipv4\030\003 \001(\014\"\021\n\017ListFabsRequest\"\262\001\n\020List" +
-      "FabsResponse\022>\n\004fabs\030\001 \003(\01320.fabman.mess" +
-      "ages.ListFabsResponse.FabDescription\032^\n\016" +
-      "FabDescription\022\014\n\004name\030\001 \002(\t\022\025\n\rfabDescr" +
-      "iptor\030\002 \002(\t\022\'\n\006socket\030\004 \001(\0132\027.fabman.mes" +
-      "sages.Socket\"P\n\rGetFabRequest\022\014\n\004name\030\001 " +
-      "\002(\t\022\025\n\rfabDescriptor\030\002 \001(\t\022\032\n\014openIfNeed" +
-      "ed\030\005 \001(\010:\004true\"\311\001\n\016GetFabResponse\0225\n\004cod",
-      "e\030\001 \002(\0162\'.fabman.messages.GetFabResponse" +
-      ".RspCode\022\'\n\006socket\030\004 \001(\0132\027.fabman.messag" +
-      "es.Socket\022\024\n\014errorMessage\030\005 \001(\t\"A\n\007RspCo" +
-      "de\022\006\n\002OK\020\000\022\t\n\005ERROR\020\001\022\022\n\016BAD_DESCRIPTOR\020" +
-      "\002\022\017\n\013NO_OPEN_FAB\020\003\"\230\001\n\007Request\022#\n\004type\030\001" +
-      " \002(\0162\025.fabman.messages.Type\0225\n\013listFabsR" +
-      "eq\030\002 \001(\0132 .fabman.messages.ListFabsReque" +
-      "st\0221\n\tgetFabReq\030\003 \001(\0132\036.fabman.messages." +
-      "GetFabRequest\"\233\001\n\010Response\022#\n\004type\030\001 \002(\016" +
-      "2\025.fabman.messages.Type\0226\n\013listFabsRsp\030\002",
-      " \001(\0132!.fabman.messages.ListFabsResponse\022" +
-      "2\n\tgetFabRsp\030\003 \001(\0132\037.fabman.messages.Get" +
-      "FabResponse*\"\n\004Type\022\r\n\tLIST_FABS\020\001\022\013\n\007GE" +
-      "T_FAB\020\002"
+      "\n\004ipv4\030\003 \001(\014\"\020\n\016VersionRequest\"_\n\017Versio" +
+      "nResponse\022\r\n\005major\030\001 \001(\r\022\r\n\005minor\030\002 \001(\r\022" +
+      "\r\n\005build\030\003 \001(\r\022\014\n\004name\030\004 \001(\t\022\021\n\tbuildDat" +
+      "e\030\005 \001(\t\"\021\n\017ListFabsRequest\"\262\001\n\020ListFabsR" +
+      "esponse\022>\n\004fabs\030\001 \003(\01320.fabman.messages." +
+      "ListFabsResponse.FabDescription\032^\n\016FabDe" +
+      "scription\022\014\n\004name\030\001 \002(\t\022\025\n\rfabDescriptor" +
+      "\030\002 \002(\t\022\'\n\006socket\030\004 \001(\0132\027.fabman.messages",
+      ".Socket\"P\n\rGetFabRequest\022\014\n\004name\030\001 \002(\t\022\025" +
+      "\n\rfabDescriptor\030\002 \001(\t\022\032\n\014openIfNeeded\030\005 " +
+      "\001(\010:\004true\"\311\001\n\016GetFabResponse\0225\n\004code\030\001 \002" +
+      "(\0162\'.fabman.messages.GetFabResponse.RspC" +
+      "ode\022\'\n\006socket\030\004 \001(\0132\027.fabman.messages.So" +
+      "cket\022\024\n\014errorMessage\030\005 \001(\t\"A\n\007RspCode\022\006\n" +
+      "\002OK\020\000\022\t\n\005ERROR\020\001\022\022\n\016BAD_DESCRIPTOR\020\002\022\017\n\013" +
+      "NO_OPEN_FAB\020\003\"\315\001\n\007Request\022#\n\004type\030\001 \002(\0162" +
+      "\025.fabman.messages.Type\0223\n\nversionReq\030\002 \001" +
+      "(\0132\037.fabman.messages.VersionRequest\0225\n\013l",
+      "istFabsReq\030\003 \001(\0132 .fabman.messages.ListF" +
+      "absRequest\0221\n\tgetFabReq\030\004 \001(\0132\036.fabman.m" +
+      "essages.GetFabRequest\"\321\001\n\010Response\022#\n\004ty" +
+      "pe\030\001 \002(\0162\025.fabman.messages.Type\0224\n\nversi" +
+      "onRsp\030\002 \001(\0132 .fabman.messages.VersionRes" +
+      "ponse\0226\n\013listFabsRsp\030\003 \001(\0132!.fabman.mess" +
+      "ages.ListFabsResponse\0222\n\tgetFabRsp\030\004 \001(\013" +
+      "2\037.fabman.messages.GetFabResponse*/\n\004Typ" +
+      "e\022\013\n\007VERSION\020\001\022\r\n\tLIST_FABS\020\002\022\013\n\007GET_FAB" +
+      "\020\003"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -3050,8 +3851,24 @@ public final class Coordinator {
               new java.lang.String[] { "Port", "HostName", "Ipv4", },
               fabman.messages.Coordinator.Socket.class,
               fabman.messages.Coordinator.Socket.Builder.class);
-          internal_static_fabman_messages_ListFabsRequest_descriptor =
+          internal_static_fabman_messages_VersionRequest_descriptor =
             getDescriptor().getMessageTypes().get(1);
+          internal_static_fabman_messages_VersionRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_fabman_messages_VersionRequest_descriptor,
+              new java.lang.String[] { },
+              fabman.messages.Coordinator.VersionRequest.class,
+              fabman.messages.Coordinator.VersionRequest.Builder.class);
+          internal_static_fabman_messages_VersionResponse_descriptor =
+            getDescriptor().getMessageTypes().get(2);
+          internal_static_fabman_messages_VersionResponse_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_fabman_messages_VersionResponse_descriptor,
+              new java.lang.String[] { "Major", "Minor", "Build", "Name", "BuildDate", },
+              fabman.messages.Coordinator.VersionResponse.class,
+              fabman.messages.Coordinator.VersionResponse.Builder.class);
+          internal_static_fabman_messages_ListFabsRequest_descriptor =
+            getDescriptor().getMessageTypes().get(3);
           internal_static_fabman_messages_ListFabsRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_ListFabsRequest_descriptor,
@@ -3059,7 +3876,7 @@ public final class Coordinator {
               fabman.messages.Coordinator.ListFabsRequest.class,
               fabman.messages.Coordinator.ListFabsRequest.Builder.class);
           internal_static_fabman_messages_ListFabsResponse_descriptor =
-            getDescriptor().getMessageTypes().get(2);
+            getDescriptor().getMessageTypes().get(4);
           internal_static_fabman_messages_ListFabsResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_ListFabsResponse_descriptor,
@@ -3075,7 +3892,7 @@ public final class Coordinator {
               fabman.messages.Coordinator.ListFabsResponse.FabDescription.class,
               fabman.messages.Coordinator.ListFabsResponse.FabDescription.Builder.class);
           internal_static_fabman_messages_GetFabRequest_descriptor =
-            getDescriptor().getMessageTypes().get(3);
+            getDescriptor().getMessageTypes().get(5);
           internal_static_fabman_messages_GetFabRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_GetFabRequest_descriptor,
@@ -3083,7 +3900,7 @@ public final class Coordinator {
               fabman.messages.Coordinator.GetFabRequest.class,
               fabman.messages.Coordinator.GetFabRequest.Builder.class);
           internal_static_fabman_messages_GetFabResponse_descriptor =
-            getDescriptor().getMessageTypes().get(4);
+            getDescriptor().getMessageTypes().get(6);
           internal_static_fabman_messages_GetFabResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_GetFabResponse_descriptor,
@@ -3091,19 +3908,19 @@ public final class Coordinator {
               fabman.messages.Coordinator.GetFabResponse.class,
               fabman.messages.Coordinator.GetFabResponse.Builder.class);
           internal_static_fabman_messages_Request_descriptor =
-            getDescriptor().getMessageTypes().get(5);
+            getDescriptor().getMessageTypes().get(7);
           internal_static_fabman_messages_Request_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_Request_descriptor,
-              new java.lang.String[] { "Type", "ListFabsReq", "GetFabReq", },
+              new java.lang.String[] { "Type", "VersionReq", "ListFabsReq", "GetFabReq", },
               fabman.messages.Coordinator.Request.class,
               fabman.messages.Coordinator.Request.Builder.class);
           internal_static_fabman_messages_Response_descriptor =
-            getDescriptor().getMessageTypes().get(6);
+            getDescriptor().getMessageTypes().get(8);
           internal_static_fabman_messages_Response_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_Response_descriptor,
-              new java.lang.String[] { "Type", "ListFabsRsp", "GetFabRsp", },
+              new java.lang.String[] { "Type", "VersionRsp", "ListFabsRsp", "GetFabRsp", },
               fabman.messages.Coordinator.Response.class,
               fabman.messages.Coordinator.Response.Builder.class);
           return null;

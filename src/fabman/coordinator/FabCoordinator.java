@@ -49,7 +49,8 @@ public class FabCoordinator implements Runnable {
 		
 	ServerSocket listenSocket;
 	boolean running;
-	
+
+
 	public FabCoordinator() throws IOException {
 		init(DEFAULT_COORDINATOR_PORT, null);
 	}
