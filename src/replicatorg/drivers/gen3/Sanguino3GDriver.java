@@ -42,6 +42,7 @@ import replicatorg.app.Base;
 import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.SDCardCapture;
+import replicatorg.drivers.PenPlotter;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.Axis;
@@ -49,7 +50,7 @@ import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
 
 public class Sanguino3GDriver extends SerialDriver
-	implements OnboardParameters, SDCardCapture
+	implements OnboardParameters, SDCardCapture, PenPlotter
 {
 	Version toolVersion = new Version(0,0);
 	
@@ -674,6 +675,30 @@ public class Sanguino3GDriver extends SerialDriver
 		machine.currentTool().setMotorSpeedReadingRPM(rpm);
 
 		return rpm;
+	}
+
+	/***************************************************************************
+	 * PenPlotter interface functions
+	 **************************************************************************/
+	//public void moveServo(int degree) {}
+
+	//public void enableServo() {}
+
+	//public void disableServo() {}
+
+	public void setServoPos(double degree) {
+		
+		Base.logger.log(Level.FINE,"Setting servo 1 position to " + degree + " degrees");
+
+		// send it!
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(ToolCommandCode.SET_SERVO_1_POS.getCode());
+		pb.add8((byte) 1); // length of payload.
+		pb.add8((byte) degree);
+		runCommand(pb.getPacket());
+
+		//super.setServoPos(degree);		
 	}
 
 	/***************************************************************************
