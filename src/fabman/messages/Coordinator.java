@@ -706,8 +706,15 @@ public final class Coordinator {
       public boolean hasName() { return hasName; }
       public java.lang.String getName() { return name_; }
       
-      // optional .fabman.messages.Socket socket = 2;
-      public static final int SOCKET_FIELD_NUMBER = 2;
+      // required string fabDescriptor = 2;
+      public static final int FABDESCRIPTOR_FIELD_NUMBER = 2;
+      private boolean hasFabDescriptor;
+      private java.lang.String fabDescriptor_ = "";
+      public boolean hasFabDescriptor() { return hasFabDescriptor; }
+      public java.lang.String getFabDescriptor() { return fabDescriptor_; }
+      
+      // optional .fabman.messages.Socket socket = 4;
+      public static final int SOCKET_FIELD_NUMBER = 4;
       private boolean hasSocket;
       private fabman.messages.Coordinator.Socket socket_ = fabman.messages.Coordinator.Socket.getDefaultInstance();
       public boolean hasSocket() { return hasSocket; }
@@ -715,6 +722,7 @@ public final class Coordinator {
       
       public final boolean isInitialized() {
         if (!hasName) return false;
+        if (!hasFabDescriptor) return false;
         return true;
       }
       
@@ -723,8 +731,11 @@ public final class Coordinator {
         if (hasName()) {
           output.writeString(1, getName());
         }
+        if (hasFabDescriptor()) {
+          output.writeString(2, getFabDescriptor());
+        }
         if (hasSocket()) {
-          output.writeMessage(2, getSocket());
+          output.writeMessage(4, getSocket());
         }
         getUnknownFields().writeTo(output);
       }
@@ -739,9 +750,13 @@ public final class Coordinator {
           size += com.google.protobuf.CodedOutputStream
             .computeStringSize(1, getName());
         }
+        if (hasFabDescriptor()) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeStringSize(2, getFabDescriptor());
+        }
         if (hasSocket()) {
           size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(2, getSocket());
+            .computeMessageSize(4, getSocket());
         }
         size += getUnknownFields().getSerializedSize();
         memoizedSerializedSize = size;
@@ -895,6 +910,9 @@ public final class Coordinator {
           if (other.hasName()) {
             setName(other.getName());
           }
+          if (other.hasFabDescriptor()) {
+            setFabDescriptor(other.getFabDescriptor());
+          }
           if (other.hasSocket()) {
             mergeSocket(other.getSocket());
           }
@@ -928,6 +946,10 @@ public final class Coordinator {
                 break;
               }
               case 18: {
+                setFabDescriptor(input.readString());
+                break;
+              }
+              case 34: {
                 fabman.messages.Coordinator.Socket.Builder subBuilder = fabman.messages.Coordinator.Socket.newBuilder();
                 if (hasSocket()) {
                   subBuilder.mergeFrom(getSocket());
@@ -962,7 +984,28 @@ public final class Coordinator {
           return this;
         }
         
-        // optional .fabman.messages.Socket socket = 2;
+        // required string fabDescriptor = 2;
+        public boolean hasFabDescriptor() {
+          return result.hasFabDescriptor();
+        }
+        public java.lang.String getFabDescriptor() {
+          return result.getFabDescriptor();
+        }
+        public Builder setFabDescriptor(java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasFabDescriptor = true;
+          result.fabDescriptor_ = value;
+          return this;
+        }
+        public Builder clearFabDescriptor() {
+          result.hasFabDescriptor = false;
+          result.fabDescriptor_ = getDefaultInstance().getFabDescriptor();
+          return this;
+        }
+        
+        // optional .fabman.messages.Socket socket = 4;
         public boolean hasSocket() {
           return result.hasSocket();
         }
@@ -1009,20 +1052,20 @@ public final class Coordinator {
       }
     }
     
-    // repeated .fabman.messages.ListFabsResponse.FabDescription runningFabs = 1;
-    public static final int RUNNINGFABS_FIELD_NUMBER = 1;
-    private java.util.List<fabman.messages.Coordinator.ListFabsResponse.FabDescription> runningFabs_ =
+    // repeated .fabman.messages.ListFabsResponse.FabDescription fabs = 1;
+    public static final int FABS_FIELD_NUMBER = 1;
+    private java.util.List<fabman.messages.Coordinator.ListFabsResponse.FabDescription> fabs_ =
       java.util.Collections.emptyList();
-    public java.util.List<fabman.messages.Coordinator.ListFabsResponse.FabDescription> getRunningFabsList() {
-      return runningFabs_;
+    public java.util.List<fabman.messages.Coordinator.ListFabsResponse.FabDescription> getFabsList() {
+      return fabs_;
     }
-    public int getRunningFabsCount() { return runningFabs_.size(); }
-    public fabman.messages.Coordinator.ListFabsResponse.FabDescription getRunningFabs(int index) {
-      return runningFabs_.get(index);
+    public int getFabsCount() { return fabs_.size(); }
+    public fabman.messages.Coordinator.ListFabsResponse.FabDescription getFabs(int index) {
+      return fabs_.get(index);
     }
     
     public final boolean isInitialized() {
-      for (fabman.messages.Coordinator.ListFabsResponse.FabDescription element : getRunningFabsList()) {
+      for (fabman.messages.Coordinator.ListFabsResponse.FabDescription element : getFabsList()) {
         if (!element.isInitialized()) return false;
       }
       return true;
@@ -1030,7 +1073,7 @@ public final class Coordinator {
     
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      for (fabman.messages.Coordinator.ListFabsResponse.FabDescription element : getRunningFabsList()) {
+      for (fabman.messages.Coordinator.ListFabsResponse.FabDescription element : getFabsList()) {
         output.writeMessage(1, element);
       }
       getUnknownFields().writeTo(output);
@@ -1042,7 +1085,7 @@ public final class Coordinator {
       if (size != -1) return size;
     
       size = 0;
-      for (fabman.messages.Coordinator.ListFabsResponse.FabDescription element : getRunningFabsList()) {
+      for (fabman.messages.Coordinator.ListFabsResponse.FabDescription element : getFabsList()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, element);
       }
@@ -1179,9 +1222,9 @@ public final class Coordinator {
           throw new IllegalStateException(
             "build() has already been called on this Builder.");
         }
-        if (result.runningFabs_ != java.util.Collections.EMPTY_LIST) {
-          result.runningFabs_ =
-            java.util.Collections.unmodifiableList(result.runningFabs_);
+        if (result.fabs_ != java.util.Collections.EMPTY_LIST) {
+          result.fabs_ =
+            java.util.Collections.unmodifiableList(result.fabs_);
         }
         fabman.messages.Coordinator.ListFabsResponse returnMe = result;
         result = null;
@@ -1199,11 +1242,11 @@ public final class Coordinator {
       
       public Builder mergeFrom(fabman.messages.Coordinator.ListFabsResponse other) {
         if (other == fabman.messages.Coordinator.ListFabsResponse.getDefaultInstance()) return this;
-        if (!other.runningFabs_.isEmpty()) {
-          if (result.runningFabs_.isEmpty()) {
-            result.runningFabs_ = new java.util.ArrayList<fabman.messages.Coordinator.ListFabsResponse.FabDescription>();
+        if (!other.fabs_.isEmpty()) {
+          if (result.fabs_.isEmpty()) {
+            result.fabs_ = new java.util.ArrayList<fabman.messages.Coordinator.ListFabsResponse.FabDescription>();
           }
-          result.runningFabs_.addAll(other.runningFabs_);
+          result.fabs_.addAll(other.fabs_);
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1233,7 +1276,7 @@ public final class Coordinator {
             case 10: {
               fabman.messages.Coordinator.ListFabsResponse.FabDescription.Builder subBuilder = fabman.messages.Coordinator.ListFabsResponse.FabDescription.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
-              addRunningFabs(subBuilder.buildPartial());
+              addFabs(subBuilder.buildPartial());
               break;
             }
           }
@@ -1241,54 +1284,54 @@ public final class Coordinator {
       }
       
       
-      // repeated .fabman.messages.ListFabsResponse.FabDescription runningFabs = 1;
-      public java.util.List<fabman.messages.Coordinator.ListFabsResponse.FabDescription> getRunningFabsList() {
-        return java.util.Collections.unmodifiableList(result.runningFabs_);
+      // repeated .fabman.messages.ListFabsResponse.FabDescription fabs = 1;
+      public java.util.List<fabman.messages.Coordinator.ListFabsResponse.FabDescription> getFabsList() {
+        return java.util.Collections.unmodifiableList(result.fabs_);
       }
-      public int getRunningFabsCount() {
-        return result.getRunningFabsCount();
+      public int getFabsCount() {
+        return result.getFabsCount();
       }
-      public fabman.messages.Coordinator.ListFabsResponse.FabDescription getRunningFabs(int index) {
-        return result.getRunningFabs(index);
+      public fabman.messages.Coordinator.ListFabsResponse.FabDescription getFabs(int index) {
+        return result.getFabs(index);
       }
-      public Builder setRunningFabs(int index, fabman.messages.Coordinator.ListFabsResponse.FabDescription value) {
+      public Builder setFabs(int index, fabman.messages.Coordinator.ListFabsResponse.FabDescription value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        result.runningFabs_.set(index, value);
+        result.fabs_.set(index, value);
         return this;
       }
-      public Builder setRunningFabs(int index, fabman.messages.Coordinator.ListFabsResponse.FabDescription.Builder builderForValue) {
-        result.runningFabs_.set(index, builderForValue.build());
+      public Builder setFabs(int index, fabman.messages.Coordinator.ListFabsResponse.FabDescription.Builder builderForValue) {
+        result.fabs_.set(index, builderForValue.build());
         return this;
       }
-      public Builder addRunningFabs(fabman.messages.Coordinator.ListFabsResponse.FabDescription value) {
+      public Builder addFabs(fabman.messages.Coordinator.ListFabsResponse.FabDescription value) {
         if (value == null) {
           throw new NullPointerException();
         }
-        if (result.runningFabs_.isEmpty()) {
-          result.runningFabs_ = new java.util.ArrayList<fabman.messages.Coordinator.ListFabsResponse.FabDescription>();
+        if (result.fabs_.isEmpty()) {
+          result.fabs_ = new java.util.ArrayList<fabman.messages.Coordinator.ListFabsResponse.FabDescription>();
         }
-        result.runningFabs_.add(value);
+        result.fabs_.add(value);
         return this;
       }
-      public Builder addRunningFabs(fabman.messages.Coordinator.ListFabsResponse.FabDescription.Builder builderForValue) {
-        if (result.runningFabs_.isEmpty()) {
-          result.runningFabs_ = new java.util.ArrayList<fabman.messages.Coordinator.ListFabsResponse.FabDescription>();
+      public Builder addFabs(fabman.messages.Coordinator.ListFabsResponse.FabDescription.Builder builderForValue) {
+        if (result.fabs_.isEmpty()) {
+          result.fabs_ = new java.util.ArrayList<fabman.messages.Coordinator.ListFabsResponse.FabDescription>();
         }
-        result.runningFabs_.add(builderForValue.build());
+        result.fabs_.add(builderForValue.build());
         return this;
       }
-      public Builder addAllRunningFabs(
+      public Builder addAllFabs(
           java.lang.Iterable<? extends fabman.messages.Coordinator.ListFabsResponse.FabDescription> values) {
-        if (result.runningFabs_.isEmpty()) {
-          result.runningFabs_ = new java.util.ArrayList<fabman.messages.Coordinator.ListFabsResponse.FabDescription>();
+        if (result.fabs_.isEmpty()) {
+          result.fabs_ = new java.util.ArrayList<fabman.messages.Coordinator.ListFabsResponse.FabDescription>();
         }
-        super.addAll(values, result.runningFabs_);
+        super.addAll(values, result.fabs_);
         return this;
       }
-      public Builder clearRunningFabs() {
-        result.runningFabs_ = java.util.Collections.emptyList();
+      public Builder clearFabs() {
+        result.fabs_ = java.util.Collections.emptyList();
         return this;
       }
     }
@@ -1326,8 +1369,15 @@ public final class Coordinator {
       return fabman.messages.Coordinator.internal_static_fabman_messages_GetFabRequest_fieldAccessorTable;
     }
     
-    // optional string fabDescriptor = 1;
-    public static final int FABDESCRIPTOR_FIELD_NUMBER = 1;
+    // required string name = 1;
+    public static final int NAME_FIELD_NUMBER = 1;
+    private boolean hasName;
+    private java.lang.String name_ = "";
+    public boolean hasName() { return hasName; }
+    public java.lang.String getName() { return name_; }
+    
+    // optional string fabDescriptor = 2;
+    public static final int FABDESCRIPTOR_FIELD_NUMBER = 2;
     private boolean hasFabDescriptor;
     private java.lang.String fabDescriptor_ = "";
     public boolean hasFabDescriptor() { return hasFabDescriptor; }
@@ -1341,13 +1391,17 @@ public final class Coordinator {
     public boolean getOpenIfNeeded() { return openIfNeeded_; }
     
     public final boolean isInitialized() {
+      if (!hasName) return false;
       return true;
     }
     
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
+      if (hasName()) {
+        output.writeString(1, getName());
+      }
       if (hasFabDescriptor()) {
-        output.writeString(1, getFabDescriptor());
+        output.writeString(2, getFabDescriptor());
       }
       if (hasOpenIfNeeded()) {
         output.writeBool(5, getOpenIfNeeded());
@@ -1361,9 +1415,13 @@ public final class Coordinator {
       if (size != -1) return size;
     
       size = 0;
+      if (hasName()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(1, getName());
+      }
       if (hasFabDescriptor()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeStringSize(1, getFabDescriptor());
+          .computeStringSize(2, getFabDescriptor());
       }
       if (hasOpenIfNeeded()) {
         size += com.google.protobuf.CodedOutputStream
@@ -1518,6 +1576,9 @@ public final class Coordinator {
       
       public Builder mergeFrom(fabman.messages.Coordinator.GetFabRequest other) {
         if (other == fabman.messages.Coordinator.GetFabRequest.getDefaultInstance()) return this;
+        if (other.hasName()) {
+          setName(other.getName());
+        }
         if (other.hasFabDescriptor()) {
           setFabDescriptor(other.getFabDescriptor());
         }
@@ -1550,6 +1611,10 @@ public final class Coordinator {
               break;
             }
             case 10: {
+              setName(input.readString());
+              break;
+            }
+            case 18: {
               setFabDescriptor(input.readString());
               break;
             }
@@ -1562,7 +1627,28 @@ public final class Coordinator {
       }
       
       
-      // optional string fabDescriptor = 1;
+      // required string name = 1;
+      public boolean hasName() {
+        return result.hasName();
+      }
+      public java.lang.String getName() {
+        return result.getName();
+      }
+      public Builder setName(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasName = true;
+        result.name_ = value;
+        return this;
+      }
+      public Builder clearName() {
+        result.hasName = false;
+        result.name_ = getDefaultInstance().getName();
+        return this;
+      }
+      
+      // optional string fabDescriptor = 2;
       public boolean hasFabDescriptor() {
         return result.hasFabDescriptor();
       }
@@ -1711,12 +1797,19 @@ public final class Coordinator {
     public boolean hasCode() { return hasCode; }
     public fabman.messages.Coordinator.GetFabResponse.RspCode getCode() { return code_; }
     
-    // optional .fabman.messages.Socket socket = 2;
-    public static final int SOCKET_FIELD_NUMBER = 2;
+    // optional .fabman.messages.Socket socket = 4;
+    public static final int SOCKET_FIELD_NUMBER = 4;
     private boolean hasSocket;
     private fabman.messages.Coordinator.Socket socket_ = fabman.messages.Coordinator.Socket.getDefaultInstance();
     public boolean hasSocket() { return hasSocket; }
     public fabman.messages.Coordinator.Socket getSocket() { return socket_; }
+    
+    // optional string errorMessage = 5;
+    public static final int ERRORMESSAGE_FIELD_NUMBER = 5;
+    private boolean hasErrorMessage;
+    private java.lang.String errorMessage_ = "";
+    public boolean hasErrorMessage() { return hasErrorMessage; }
+    public java.lang.String getErrorMessage() { return errorMessage_; }
     
     public final boolean isInitialized() {
       if (!hasCode) return false;
@@ -1729,7 +1822,10 @@ public final class Coordinator {
         output.writeEnum(1, getCode().getNumber());
       }
       if (hasSocket()) {
-        output.writeMessage(2, getSocket());
+        output.writeMessage(4, getSocket());
+      }
+      if (hasErrorMessage()) {
+        output.writeString(5, getErrorMessage());
       }
       getUnknownFields().writeTo(output);
     }
@@ -1746,7 +1842,11 @@ public final class Coordinator {
       }
       if (hasSocket()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, getSocket());
+          .computeMessageSize(4, getSocket());
+      }
+      if (hasErrorMessage()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(5, getErrorMessage());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1903,6 +2003,9 @@ public final class Coordinator {
         if (other.hasSocket()) {
           mergeSocket(other.getSocket());
         }
+        if (other.hasErrorMessage()) {
+          setErrorMessage(other.getErrorMessage());
+        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1938,13 +2041,17 @@ public final class Coordinator {
               }
               break;
             }
-            case 18: {
+            case 34: {
               fabman.messages.Coordinator.Socket.Builder subBuilder = fabman.messages.Coordinator.Socket.newBuilder();
               if (hasSocket()) {
                 subBuilder.mergeFrom(getSocket());
               }
               input.readMessage(subBuilder, extensionRegistry);
               setSocket(subBuilder.buildPartial());
+              break;
+            }
+            case 42: {
+              setErrorMessage(input.readString());
               break;
             }
           }
@@ -1973,7 +2080,7 @@ public final class Coordinator {
         return this;
       }
       
-      // optional .fabman.messages.Socket socket = 2;
+      // optional .fabman.messages.Socket socket = 4;
       public boolean hasSocket() {
         return result.hasSocket();
       }
@@ -2007,6 +2114,27 @@ public final class Coordinator {
       public Builder clearSocket() {
         result.hasSocket = false;
         result.socket_ = fabman.messages.Coordinator.Socket.getDefaultInstance();
+        return this;
+      }
+      
+      // optional string errorMessage = 5;
+      public boolean hasErrorMessage() {
+        return result.hasErrorMessage();
+      }
+      public java.lang.String getErrorMessage() {
+        return result.getErrorMessage();
+      }
+      public Builder setErrorMessage(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasErrorMessage = true;
+        result.errorMessage_ = value;
+        return this;
+      }
+      public Builder clearErrorMessage() {
+        result.hasErrorMessage = false;
+        result.errorMessage_ = getDefaultInstance().getErrorMessage();
         return this;
       }
     }
@@ -2067,6 +2195,9 @@ public final class Coordinator {
     
     public final boolean isInitialized() {
       if (!hasType) return false;
+      if (hasGetFabReq()) {
+        if (!getGetFabReq().isInitialized()) return false;
+      }
       return true;
     }
     
@@ -2883,26 +3014,28 @@ public final class Coordinator {
     java.lang.String[] descriptorData = {
       "\n\021coordinator.proto\022\017fabman.messages\"6\n\006" +
       "Socket\022\014\n\004port\030\001 \001(\r\022\020\n\010hostName\030\002 \001(\t\022\014" +
-      "\n\004ipv4\030\003 \001(\014\"\021\n\017ListFabsRequest\"\242\001\n\020List" +
-      "FabsResponse\022E\n\013runningFabs\030\001 \003(\01320.fabm" +
-      "an.messages.ListFabsResponse.FabDescript" +
-      "ion\032G\n\016FabDescription\022\014\n\004name\030\001 \002(\t\022\'\n\006s" +
-      "ocket\030\002 \001(\0132\027.fabman.messages.Socket\"B\n\r" +
-      "GetFabRequest\022\025\n\rfabDescriptor\030\001 \001(\t\022\032\n\014" +
-      "openIfNeeded\030\005 \001(\010:\004true\"\263\001\n\016GetFabRespo" +
-      "nse\0225\n\004code\030\001 \002(\0162\'.fabman.messages.GetF",
-      "abResponse.RspCode\022\'\n\006socket\030\002 \001(\0132\027.fab" +
-      "man.messages.Socket\"A\n\007RspCode\022\006\n\002OK\020\000\022\t" +
-      "\n\005ERROR\020\001\022\022\n\016BAD_DESCRIPTOR\020\002\022\017\n\013NO_OPEN" +
-      "_FAB\020\003\"\230\001\n\007Request\022#\n\004type\030\001 \002(\0162\025.fabma" +
-      "n.messages.Type\0225\n\013listFabsReq\030\002 \001(\0132 .f" +
-      "abman.messages.ListFabsRequest\0221\n\tgetFab" +
-      "Req\030\003 \001(\0132\036.fabman.messages.GetFabReques" +
-      "t\"\233\001\n\010Response\022#\n\004type\030\001 \002(\0162\025.fabman.me" +
-      "ssages.Type\0226\n\013listFabsRsp\030\002 \001(\0132!.fabma" +
-      "n.messages.ListFabsResponse\0222\n\tgetFabRsp",
-      "\030\003 \001(\0132\037.fabman.messages.GetFabResponse*" +
-      "\"\n\004Type\022\r\n\tLIST_FABS\020\001\022\013\n\007GET_FAB\020\002"
+      "\n\004ipv4\030\003 \001(\014\"\021\n\017ListFabsRequest\"\262\001\n\020List" +
+      "FabsResponse\022>\n\004fabs\030\001 \003(\01320.fabman.mess" +
+      "ages.ListFabsResponse.FabDescription\032^\n\016" +
+      "FabDescription\022\014\n\004name\030\001 \002(\t\022\025\n\rfabDescr" +
+      "iptor\030\002 \002(\t\022\'\n\006socket\030\004 \001(\0132\027.fabman.mes" +
+      "sages.Socket\"P\n\rGetFabRequest\022\014\n\004name\030\001 " +
+      "\002(\t\022\025\n\rfabDescriptor\030\002 \001(\t\022\032\n\014openIfNeed" +
+      "ed\030\005 \001(\010:\004true\"\311\001\n\016GetFabResponse\0225\n\004cod",
+      "e\030\001 \002(\0162\'.fabman.messages.GetFabResponse" +
+      ".RspCode\022\'\n\006socket\030\004 \001(\0132\027.fabman.messag" +
+      "es.Socket\022\024\n\014errorMessage\030\005 \001(\t\"A\n\007RspCo" +
+      "de\022\006\n\002OK\020\000\022\t\n\005ERROR\020\001\022\022\n\016BAD_DESCRIPTOR\020" +
+      "\002\022\017\n\013NO_OPEN_FAB\020\003\"\230\001\n\007Request\022#\n\004type\030\001" +
+      " \002(\0162\025.fabman.messages.Type\0225\n\013listFabsR" +
+      "eq\030\002 \001(\0132 .fabman.messages.ListFabsReque" +
+      "st\0221\n\tgetFabReq\030\003 \001(\0132\036.fabman.messages." +
+      "GetFabRequest\"\233\001\n\010Response\022#\n\004type\030\001 \002(\016" +
+      "2\025.fabman.messages.Type\0226\n\013listFabsRsp\030\002",
+      " \001(\0132!.fabman.messages.ListFabsResponse\022" +
+      "2\n\tgetFabRsp\030\003 \001(\0132\037.fabman.messages.Get" +
+      "FabResponse*\"\n\004Type\022\r\n\tLIST_FABS\020\001\022\013\n\007GE" +
+      "T_FAB\020\002"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -2930,7 +3063,7 @@ public final class Coordinator {
           internal_static_fabman_messages_ListFabsResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_ListFabsResponse_descriptor,
-              new java.lang.String[] { "RunningFabs", },
+              new java.lang.String[] { "Fabs", },
               fabman.messages.Coordinator.ListFabsResponse.class,
               fabman.messages.Coordinator.ListFabsResponse.Builder.class);
           internal_static_fabman_messages_ListFabsResponse_FabDescription_descriptor =
@@ -2938,7 +3071,7 @@ public final class Coordinator {
           internal_static_fabman_messages_ListFabsResponse_FabDescription_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_ListFabsResponse_FabDescription_descriptor,
-              new java.lang.String[] { "Name", "Socket", },
+              new java.lang.String[] { "Name", "FabDescriptor", "Socket", },
               fabman.messages.Coordinator.ListFabsResponse.FabDescription.class,
               fabman.messages.Coordinator.ListFabsResponse.FabDescription.Builder.class);
           internal_static_fabman_messages_GetFabRequest_descriptor =
@@ -2946,7 +3079,7 @@ public final class Coordinator {
           internal_static_fabman_messages_GetFabRequest_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_GetFabRequest_descriptor,
-              new java.lang.String[] { "FabDescriptor", "OpenIfNeeded", },
+              new java.lang.String[] { "Name", "FabDescriptor", "OpenIfNeeded", },
               fabman.messages.Coordinator.GetFabRequest.class,
               fabman.messages.Coordinator.GetFabRequest.Builder.class);
           internal_static_fabman_messages_GetFabResponse_descriptor =
@@ -2954,7 +3087,7 @@ public final class Coordinator {
           internal_static_fabman_messages_GetFabResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_fabman_messages_GetFabResponse_descriptor,
-              new java.lang.String[] { "Code", "Socket", },
+              new java.lang.String[] { "Code", "Socket", "ErrorMessage", },
               fabman.messages.Coordinator.GetFabResponse.class,
               fabman.messages.Coordinator.GetFabResponse.Builder.class);
           internal_static_fabman_messages_Request_descriptor =

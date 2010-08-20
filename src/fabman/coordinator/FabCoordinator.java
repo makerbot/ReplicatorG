@@ -58,6 +58,10 @@ public class FabCoordinator implements Runnable {
 		init(portNumber, null);
 	}
 
+	public FabCoordinator(int portNumber, Collection<File> paths) throws IOException {
+		init(portNumber, paths);
+	}
+
 	/**
 	 * Generate a vector of files representing the default paths to search for
 	 * valid machine XML descriptors.
@@ -99,7 +103,7 @@ public class FabCoordinator implements Runnable {
 		}
 	}
 
-	private void init(int portNumber, Collection<File> descriptorPaths) throws IOException {
+	private synchronized void init(int portNumber, Collection<File> descriptorPaths) throws IOException {
 		listenSocket = new ServerSocket(portNumber);
 		threadPool = Executors.newFixedThreadPool(5);
 		if (descriptorPaths == null) {
@@ -134,4 +138,10 @@ public class FabCoordinator implements Runnable {
 		listenSocket.close();
 		threadPool.shutdown();
 	}
+	
+	/* ---------- Implementation of coordinator functions --------- */
+	public synchronized Collection<FabDescriptor> getFabDescriptorList() {
+		return descriptors;
+	}
+
 }

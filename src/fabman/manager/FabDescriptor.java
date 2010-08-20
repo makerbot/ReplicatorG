@@ -24,8 +24,9 @@ import org.w3c.dom.NodeList;
  * 
  * A FabDescriptor consists of:
  * * A name, which must be locally unique.
- * * A block of XML describing ... TODO
- * FabDescriptors may also contain a reasonable amount of information about the
+ * * A block of XML describing the configuration of the fabricator.
+ * 
+ * FabDescriptors may contain a reasonable amount of information about the
  * device itself, such as the build area, whether the device is real or virtual,
  * whether the fabricator is currently connected, and so on.  It also provides
  * an (optional) copy of the XML that describes the machine, so the application
@@ -113,7 +114,7 @@ public class FabDescriptor {
 		return obj.hashCode() == hashCode();
 	}
 	
-	private String getDescriptorString() {
+	public String getDescriptorString() {
 		TransformerFactory transFactory = TransformerFactory.newInstance();
 		Transformer transformer;
 		try {

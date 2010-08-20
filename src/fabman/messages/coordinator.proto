@@ -22,14 +22,15 @@ message ListFabsRequest {
 message ListFabsResponse {
   message FabDescription {
     required string name = 1;
-    optional uint32 identifier = 2;
-    optional Socket socket = 3;
+    required string fabDescriptor = 2;
+    optional Socket socket = 4;
   }
-  repeated FabDescription runningFabs = 1;
+  repeated FabDescription fabs = 1;
 }
 
 message GetFabRequest {
-  optional string fabDescriptor = 1;
+  required string name = 1;
+  optional string fabDescriptor = 2;
   optional bool openIfNeeded = 5 [default=true];
 }
 
@@ -41,7 +42,8 @@ message GetFabResponse {
     NO_OPEN_FAB = 3;
   }
   required RspCode code = 1;
-  optional Socket socket = 2;
+  optional Socket socket = 4;
+  optional string errorMessage = 5;
 }
 
 enum Type {
