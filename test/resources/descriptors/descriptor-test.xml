@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="utf-8"?>
 <machines>
-  <machine name="Testing Machine">
+  <machine name="No Driver Test">
     <geometry type="cartesian">
       <axis id="x" min="-50" max="50" maxfeedrate="1000" scale="11.4485"/>
       <axis id="y" min="-50" max="50" maxfeedrate="1000" scale="11.4485"/>
@@ -8,12 +8,10 @@
     </geometry>
     <tools>
     </tools>
-    <driver class="testing.fabman.driver.TestMachineDriver"> 
-      <speedup>20</speedup>
-    </driver>
+    <backend driver="testing.fabman.driver.NoSuchDriver" /> 
   </machine>
 
-  <machine name="Testing File">
+  <machine name="Fab Machine Test B">
     <geometry type="cartesian">
       <axis id="x" min="-50" max="50" maxfeedrate="1000" scale="11.4485"/>
       <axis id="y" min="-50" max="50" maxfeedrate="1000" scale="11.4485"/>
@@ -21,8 +19,6 @@
     </geometry>
     <tools>
     </tools>
-    <driver class="testing.fabman.driver.TestFileDriver" type="file"> 
-      <speedup>20</speedup>
-    </driver>
+    <backend driver="testing.fabman.driver.TestMachineDriver" /> 
   </machine>
 </machines>
