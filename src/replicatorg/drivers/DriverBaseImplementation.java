@@ -109,6 +109,7 @@ public class DriverBaseImplementation implements Driver {
 
 	public void setInitialized(boolean status) {
 		isInitialized = status;
+		if (!status) { currentPosition = null; }
 	}
 
 	public boolean isInitialized() {

@@ -162,7 +162,6 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Sends the command over the serial connection and retrieves a result.
 	 */
 	protected PacketResponse runCommand(byte[] packet) {
-		assert (serial != null);
 		
 		if (packet == null || packet.length < 4)
 			return null; // skip empty commands or broken commands
@@ -182,6 +181,8 @@ public class Sanguino3GDriver extends SerialDriver
 			}
 			return PacketResponse.okResponse();  // Always pretend that it's all good.
 		}
+
+		assert (serial != null);
 		
 		boolean packetSent = false;
 		PacketProcessor pp = new PacketProcessor();
@@ -271,6 +272,7 @@ public class Sanguino3GDriver extends SerialDriver
 	static boolean isNotifiedFinishedFeature = false;
 
 	public boolean isFinished() {
+		if (fileCaptureOstream != null) { return true; }  // always done instantly if writing to file
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.IS_FINISHED.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		int v = pr.get8();
@@ -427,7 +429,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 	public void setCurrentPosition(Point3d p) {
 //		System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
-		if (super.getCurrentPosition().equals(p)) return;
+//		if (super.getCurrentPosition().equals(p)) return;
 //		System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_POSITION.getCode());
 
@@ -1059,6 +1061,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	protected Point3d reconcilePosition() {
+		if (fileCaptureOstream != null) {
+			return new Point3d(0,0,0);
+		}
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
