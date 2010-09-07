@@ -6,8 +6,11 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -153,7 +156,38 @@ public class UploaderDialog extends JDialog implements ActionListener {
 		nextButton.setText("Upload");
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("fill"));
-		panel.add(new JLabel("<html>"+uploader.getUploadInstructions()+"</html>"));
+		panel.add(new JLabel("<html>"+uploader.getUploadInstructions()+"</html>"),"wrap");
+		try {
+			Method getWipe = uploader.getClass().getMethod("getWipe");
+			final Method setWipe = uploader.getClass().getMethod("setWipe", Boolean.TYPE);
+			Boolean v = (Boolean)getWipe.invoke(uploader);
+			final JCheckBox cbox = new JCheckBox("erase current EEPROM settings", v.booleanValue());
+			cbox.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						setWipe.invoke(uploader, new Boolean(cbox.isSelected()));
+					} catch (IllegalArgumentException e1) {
+						e1.printStackTrace();
+					} catch (IllegalAccessException e1) {
+						e1.printStackTrace();
+					} catch (InvocationTargetException e1) {
+						e1.printStackTrace();
+					}
+				}
+			});
+			panel.add(cbox,"wrap");
+			final String text = "Warning: this will reset any onboard parameters for this board to their default values.";
+			panel.add(new JLabel("<html><i>"+text+"</i></html>"),"wrap");
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
 		nextButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				performUpload(uploader);
