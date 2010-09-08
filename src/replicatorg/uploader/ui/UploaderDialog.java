@@ -25,6 +25,7 @@ import org.w3c.dom.NodeList;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.uploader.AbstractFirmwareUploader;
+import replicatorg.uploader.AvrdudeUploader;
 import replicatorg.uploader.FirmwareUploader;
 import replicatorg.uploader.FirmwareVersion;
 
@@ -157,36 +158,23 @@ public class UploaderDialog extends JDialog implements ActionListener {
 		JPanel panel = new JPanel();
 		panel.setLayout(new MigLayout("fill"));
 		panel.add(new JLabel("<html>"+uploader.getUploadInstructions()+"</html>"),"wrap");
-		try {
-			Method getWipe = uploader.getClass().getMethod("getWipe");
-			final Method setWipe = uploader.getClass().getMethod("setWipe", Boolean.TYPE);
-			Boolean v = (Boolean)getWipe.invoke(uploader);
-			final JCheckBox cbox = new JCheckBox("erase current EEPROM settings", v.booleanValue());
+
+		final String eepromPath = selectedVersion.getEepromPath();
+		if (eepromPath != null) {				
+			final JCheckBox cbox = new JCheckBox("overwrite current EEPROM settings", true);
 			cbox.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					try {
-						setWipe.invoke(uploader, new Boolean(cbox.isSelected()));
-					} catch (IllegalArgumentException e1) {
-						e1.printStackTrace();
-					} catch (IllegalAccessException e1) {
-						e1.printStackTrace();
-					} catch (InvocationTargetException e1) {
-						e1.printStackTrace();
+					if (cbox.isSelected()) {
+						selectedVersion.setEepromPath(eepromPath);
+					} else {
+						selectedVersion.setEepromPath(null);
 					}
 				}
 			});
 			panel.add(cbox,"wrap");
-			final String text = "Warning: this will reset any onboard parameters for this board to their default values.";
+			final String text = "Overwriting your eeprom will erase any changes you have made to your board settings.  If "+
+			"you've made changes you want to keep, either uncheck this box or note your parameters before overwriting.";
 			panel.add(new JLabel("<html><i>"+text+"</i></html>"),"wrap");
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
 		}
 		nextButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -199,8 +187,16 @@ public class UploaderDialog extends JDialog implements ActionListener {
 	void performUpload(AbstractFirmwareUploader uploader) {
 		if (uploader != null) {
 			uploader.setPortName(portName);
+			// This should be abstracted out; the uploader should just get the firmware node and
+			// decide what to do with it instead of making dialog pull out the data.
 			String path = Base.getUserFile(selectedVersion.getRelPath()).getAbsolutePath();
 			uploader.setSource(path);
+			if (uploader instanceof AvrdudeUploader) {
+				if (selectedVersion.getEepromPath() != null) {
+					String eepromPath = Base.getUserFile(selectedVersion.getEepromPath()).getAbsolutePath();
+					((AvrdudeUploader)uploader).setEeprom(eepromPath);
+				}
+			}
 			boolean success = uploader.upload();
 			if (success) {
 				JOptionPane.showMessageDialog(this, 

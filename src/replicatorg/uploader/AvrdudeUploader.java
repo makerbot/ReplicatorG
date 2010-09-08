@@ -41,28 +41,15 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
 
 	boolean manualReset = false;
 	
-	boolean wipe = false;
+	String eepromPath = null;
 	
-	public void setEeprom(String disposition) {
-		if ("wipe".equals(disposition)) {
-			wipe = true;
-		}
+	public void setEeprom(String path) {
+		eepromPath = path;
 	}
 	
-	/*
-	 * A bit of explanation as to why this code has been removed:
-	 * The default arduino firmware doesn't support eeprom writes or chip erases.
-	 * We're leaving this out altogether until we have bootloaders that can handle
-	 * it.
-	// Wipe property determines whether or not the eeprom should be wiped.
-	public void setWipe(boolean wipe) {
-		this.wipe = wipe;
+	public String getEeprom() {
+		return eepromPath;
 	}
-	
-	public boolean getWipe() {
-		return wipe;
-	}
-	*/
 	
 	public String getUploadInstructions() {
 		if (manualReset == true) {
@@ -116,12 +103,9 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
     commandDownloader.add("-c" + protocol);
     commandDownloader.add("-P" + (Base.isWindows() ? "\\\\.\\" : "") + serialName);
     commandDownloader.add("-b" + Integer.toString(serialSpeed));
-    if (!wipe) {
-    	commandDownloader.add("-D"); // don't erase
-    	System.err.println("DON'T ERASE");
-    } else {
-    	commandDownloader.add("-e"); // erase
-    	System.err.println("ERASE");
+	commandDownloader.add("-D"); // don't erase
+    if (eepromPath != null) {
+    	commandDownloader.add("-Ueeprom:w:"+eepromPath+":i"); // erase
     }
     commandDownloader.add("-Uflash:w:" + source + ":i");
 

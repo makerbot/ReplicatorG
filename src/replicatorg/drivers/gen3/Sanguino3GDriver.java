@@ -1517,6 +1517,14 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 	}
 
+	public void resetToolToFactory() {
+		byte eepromWipe[] = new byte[16];
+		Arrays.fill(eepromWipe,(byte)0xff);
+		for (int i = 0; i < 0x0200; i+=16) {
+			writeToToolEEPROM(i,eepromWipe);
+		}
+	}
+
 	public EndstopType getInvertedEndstops() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,1);
