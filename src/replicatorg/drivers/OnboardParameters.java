@@ -61,8 +61,8 @@ public interface OnboardParameters {
 		public float d;
 	}
 	
-	PIDParameters getPIDParameters();
-	void setPIDParameters(PIDParameters params);
+	PIDParameters getPIDParameters(int which);
+	void setPIDParameters(int which, PIDParameters params);
 	
 	/** Reset the onboard parameters on the motherboard to factory settings. */ 
 	void resetToFactory();

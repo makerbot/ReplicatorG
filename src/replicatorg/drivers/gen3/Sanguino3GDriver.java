@@ -1455,9 +1455,11 @@ public class Sanguino3GDriver extends SerialDriver
 	};
 	
 	final static class PIDOffsets {
-		final static int P_TERM = 0x000C;
-		final static int I_TERM = 0x000E;
-		final static int D_TERM = 0x0010;
+		final static int PID_EXTRUDER  = 0x000C;
+		final static int PID_HBP       = 0x0012;
+		final static int P_TERM_OFFSET = 0x0000;
+		final static int I_TERM_OFFSET = 0x0002;
+		final static int D_TERM_OFFSET = 0x0004;
 	};
 
 	private int read16FromToolEEPROM(int offset, int defaultValue) {
@@ -1492,18 +1494,20 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2));
 	}
 
-	public PIDParameters getPIDParameters() {
+	public PIDParameters getPIDParameters(int which) {
 		PIDParameters pp = new PIDParameters();
-		pp.p = readFloat16FromToolEEPROM(PIDOffsets.P_TERM, 5.0f);
-		pp.i = readFloat16FromToolEEPROM(PIDOffsets.I_TERM, 0.1f);
-		pp.d = readFloat16FromToolEEPROM(PIDOffsets.D_TERM, 5.0f);
+		int offset = (which == 0)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
+		pp.p = readFloat16FromToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET, 5.0f);
+		pp.i = readFloat16FromToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET, 0.1f);
+		pp.d = readFloat16FromToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET, 5.0f);
 		return pp;
 	}
 	
-	public void setPIDParameters(PIDParameters pp) {
-		writeToToolEEPROM(PIDOffsets.P_TERM,floatToLE(pp.p));
-		writeToToolEEPROM(PIDOffsets.I_TERM,floatToLE(pp.i));
-		writeToToolEEPROM(PIDOffsets.D_TERM,floatToLE(pp.d));
+	public void setPIDParameters(int which, PIDParameters pp) {
+		int offset = (which == 0)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
+		writeToToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET,floatToLE(pp.p));
+		writeToToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET,floatToLE(pp.i));
+		writeToToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET,floatToLE(pp.d));
 	}
 
 	/** Reset to the factory state.  This ordinarily means writing 0xff over the
@@ -1563,4 +1567,5 @@ public class Sanguino3GDriver extends SerialDriver
 		return super.getTemperatureSetting();
 	}
 
+	public Version getToolVersion() { return toolVersion; }
 }

@@ -4,8 +4,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -18,12 +17,18 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.drivers.OnboardParameters;
+import replicatorg.drivers.Version;
+import replicatorg.drivers.gen3.Sanguino3GDriver;
 
 public class ExtruderOnboardParameters extends JFrame {
 	private static final long serialVersionUID = 6353987389397209816L;
 	private OnboardParameters target;
 	
-	class ThermistorTablePanel extends JPanel {
+	interface Commitable {
+		public void commit();
+	}
+	
+	class ThermistorTablePanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 7765098486598830410L;
 		private JTextField betaField = new JTextField();
 		private JTextField r0Field = new JTextField();
@@ -57,7 +62,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(t0Field,"wrap");
 		}
 
-		void commit() {
+		public void commit() {
 			int beta = Integer.parseInt(betaField.getText());
 			int r0 = Integer.parseInt(r0Field.getText());
 			int t0 = Integer.parseInt(t0Field.getText());
@@ -65,12 +70,12 @@ public class ExtruderOnboardParameters extends JFrame {
 		}
 	}
 
+	Vector<Commitable> commitList = new Vector<Commitable>();
+	
 	private void commit() {
-		for (ThermistorTablePanel p : thermistorTablePanels) {
-			p.commit();
+		for (Commitable c : commitList) {
+			c.commit();
 		}
-		backoffPanel.commit();
-		pidPanel.commit();
 		JOptionPane.showMessageDialog(this,
 				"Changes will not take effect until the extruder board is reset.  You can \n" +
 				"do this by turning your machine off and then on, or by disconnecting and \n" +
@@ -81,7 +86,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			    JOptionPane.INFORMATION_MESSAGE);
 	}
 
-	private class BackoffPanel extends JPanel {
+	private class BackoffPanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 6593800743174557032L;
 		private JTextField stopMsField = new JTextField();
 		private JTextField reverseMsField = new JTextField();
@@ -124,15 +129,15 @@ public class ExtruderOnboardParameters extends JFrame {
 		}
 	}
 
-	BackoffPanel backoffPanel;
-
-	private class PIDPanel extends JPanel {
+	private class PIDPanel extends JPanel implements Commitable {
 		private JTextField pField = new JTextField();
 		private JTextField iField = new JTextField();
 		private JTextField dField = new JTextField();
-		PIDPanel() {
+		private int which;
+		PIDPanel(int which, String name) {
+			this.which = which;
 			setLayout(new MigLayout());
-			setBorder(BorderFactory.createTitledBorder("PID parameters"));
+			setBorder(BorderFactory.createTitledBorder(name+" PID parameters"));
 			add(new JLabel("<html>These parameters determine the behavior of the PID controller " +
 					"that adjusts the temperature of the extruder.</html>"),
 					"span");
@@ -147,7 +152,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(iField,"wrap");
 			add(new JLabel("D parameter"));
 			add(dField,"wrap");
-			OnboardParameters.PIDParameters pp = target.getPIDParameters();
+			OnboardParameters.PIDParameters pp = target.getPIDParameters(which);
 			pField.setText(Float.toString(pp.p));
 			iField.setText(Float.toString(pp.i));
 			dField.setText(Float.toString(pp.d));
@@ -158,12 +163,10 @@ public class ExtruderOnboardParameters extends JFrame {
 			pp.p = Float.parseFloat(pField.getText());
 			pp.i = Float.parseFloat(iField.getText());
 			pp.d = Float.parseFloat(dField.getText());
-			target.setPIDParameters(pp);
+			target.setPIDParameters(which,pp);
 		}
 	}
 	
-	PIDPanel pidPanel;
-
 	private JPanel makeButtonPanel() {
 		JPanel panel = new JPanel(new MigLayout());
 		JButton commitButton = new JButton("Commit Changes");
@@ -184,25 +187,36 @@ public class ExtruderOnboardParameters extends JFrame {
 		return panel;
 	}
 
-	private List<ThermistorTablePanel> thermistorTablePanels = new LinkedList<ThermistorTablePanel>();
-	
 	public ExtruderOnboardParameters(OnboardParameters target) {
 		super("Update onboard machine options");
 		this.target = target;
 
-		thermistorTablePanels.add(new ThermistorTablePanel(0,"Extruder thermistor"));
-		thermistorTablePanels.add(new ThermistorTablePanel(1,"Heated build platform thermistor"));
-
 		Box panel = Box.createVerticalBox();
-		for (ThermistorTablePanel p : thermistorTablePanels) {
-			panel.add(p);
-		}
-		backoffPanel = new BackoffPanel();
+		ThermistorTablePanel ttp;
+		ttp = new ThermistorTablePanel(0,"Extruder thermistor");
+		panel.add(ttp);
+		commitList.add(ttp);
+		ttp = new ThermistorTablePanel(1,"Heated build platform thermistor");
+		panel.add(ttp);
+		commitList.add(ttp);
+		BackoffPanel backoffPanel = new BackoffPanel();
 		panel.add(backoffPanel);
-		pidPanel = new PIDPanel();
+		commitList.add(backoffPanel);
+		PIDPanel pidPanel = new PIDPanel(0,"Extruder");
 		panel.add(pidPanel);
+		commitList.add(pidPanel);
+		if (target instanceof Sanguino3GDriver) {
+			Version v = ((Sanguino3GDriver)target).getToolVersion();
+			if (v.atLeast(new Version(2,4))) {
+				PIDPanel pp = new PIDPanel(1,"Heated build platform");
+				panel.add(pp);
+				commitList.add(pp);
+			}
+		}
+
 		panel.add(makeButtonPanel());
 		add(panel);
+
 		pack();
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((screen.width - getWidth()) / 2,
