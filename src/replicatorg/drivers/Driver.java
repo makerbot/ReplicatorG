@@ -144,6 +144,10 @@ public interface Driver {
 	 */
 	void invalidatePosition();
 
+	/**
+	 * Queue the next point to move to.
+	 * @param p The location to move to, in mm.
+	 */
 	public void queuePoint(Point3d p);
 
 	public Point3d getOffset(int i);

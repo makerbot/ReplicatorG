@@ -365,10 +365,13 @@ public class Sanguino3GDriver extends SerialDriver
 		if (masterSteps > 0.0) {
 			// where we going?
 			Point3d steps = machine.mmToSteps(p);
-
+			
+			Point3d delta = getDelta(p);
+			double feedrate = getSafeFeedrate(delta);
+			
 			// how fast are we doing it?
 			long micros = convertFeedrateToMicros(getCurrentPosition(),
-					p, getSafeFeedrate(deltaSteps));
+					p, feedrate);
 
 			//System.err.println("Steps :"+steps.toString()+" micros "+Long.toString(micros));
 
@@ -1011,17 +1014,22 @@ public class Sanguino3GDriver extends SerialDriver
 		return machine.mmToSteps(getAbsDeltaDistance(current, target));
 	}
 
+	/**
+	 * 
+	 * @param current
+	 * @param target
+	 * @param feedrate Feedrate in mm per minute
+	 * @return
+	 */
 	private long convertFeedrateToMicros(Point3d current, Point3d target,
 			double feedrate) {
 		Point3d deltaDistance = getAbsDeltaDistance(current, target);
-		Point3d deltaSteps = getAbsDeltaSteps(current, target);
-		// how long is our line length?
-		double distance = Math.sqrt(deltaDistance.x * deltaDistance.x
-				+ deltaDistance.y * deltaDistance.y + deltaDistance.z
-				* deltaDistance.z);
+ 		Point3d deltaSteps = machine.mmToSteps(deltaDistance);
 		double masterSteps = getLongestLength(deltaSteps);
-		// distance is in steps
-		// feedrate is in steps/
+		// how long is our line length?
+		double distance = deltaDistance.distance(new Point3d());
+		// distance is in mm
+		// feedrate is in mm/min
 		// distance / feedrate * 60,000,000 = move duration in microseconds
 		double micros = distance / feedrate * 60000000.0;
 		// micros / masterSteps = time between steps for master axis.

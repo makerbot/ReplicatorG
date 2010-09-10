@@ -85,6 +85,9 @@ public class GCodeParser {
 	boolean absoluteMode = false;
 
 	// our feedrate variables.
+	/**
+	 * Feedrate in mm/minute.
+	 */
 	double feedrate = 0.0;
 
 	/*
@@ -132,6 +135,11 @@ public class GCodeParser {
 	public static final int TB_MESSAGE = 998;
 	public static final int TB_CLEANUP = 999;
 	
+	// Replicate old behavior of breaking out Z moves into seperate setTarget
+	// calls.
+	
+	private boolean breakoutZMoves = Base.preferences.getBoolean("replicatorg.parser.breakzmoves", false);
+	
 	/**
 	 * Creates the driver object.
 	 */
@@ -177,7 +185,8 @@ public class GCodeParser {
 	public void init(Driver drv) {
 		// our driver class
 		driver = drv;
-
+		// reload breakout
+		breakoutZMoves = Base.preferences.getBoolean("replicatorg.parser.breakzmoves", false);
 		// init our offset variables
 		currentOffset = driver.getOffset(0);
 	}
@@ -681,6 +690,7 @@ public class GCodeParser {
 
 		// Get feedrate if supplied
 		if (hasCode("F")) {
+			// Read feedrate in mm/min.
 			feedrate = getCodeValue("F");
 			driver.setFeedrate(feedrate);
 		}
@@ -1125,8 +1135,10 @@ public class GCodeParser {
 		// toolpath.
 		// move z first
 		Point3d current = driver.getCurrentPosition();
-		if (p.z != current.z) {
-			driver.queuePoint(new Point3d(current.x, current.y, p.z));
+		if (breakoutZMoves) {
+			if (p.z != current.z) {
+				driver.queuePoint(new Point3d(current.x, current.y, p.z));
+			}
 		}
 		driver.queuePoint(new Point3d(p));
 		current = new Point3d(p);

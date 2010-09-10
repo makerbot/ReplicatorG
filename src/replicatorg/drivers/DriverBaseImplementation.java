@@ -239,16 +239,15 @@ public class DriverBaseImplementation implements Driver {
 		return getCurrentPosition();
 	}
 
+	/**
+	 * Queue the given point.
+	 * @param p The point, in mm.
+	 */
 	public void queuePoint(Point3d p) {
 		Point3d delta = getDelta(p);
 
-		// calculate the length of each axis move
-		double xFactor = Math.pow(delta.x, 2);
-		double yFactor = Math.pow(delta.y, 2);
-		double zFactor = Math.pow(delta.z, 2);
-
 		// add to the total length
-		moveLength += Math.sqrt(xFactor + yFactor + zFactor);
+		moveLength += delta.distance(new Point3d());
 
 		// what is our feedrate?
 		double feedrate = getSafeFeedrate(delta);
@@ -284,6 +283,11 @@ public class DriverBaseImplementation implements Driver {
 		return currentFeedrate;
 	}
 
+	/**
+	 * Return the maximum safe feedrate, given in mm/min., for the given delta and current feedrate.
+	 * @param delta The delta in mm.
+	 * @return
+	 */
 	public double getSafeFeedrate(Point3d delta) {
 		double feedrate = getCurrentFeedrate();
 
@@ -299,13 +303,18 @@ public class DriverBaseImplementation implements Driver {
 			// System.out.println("Zero feedrate!! " + feedrate);
 		}
 
+		// Break down feedrate by axis.
+		double length = delta.distance(new Point3d(0,0,0));
 		if (delta.x != 0)
-			feedrate = Math.min(feedrate, maxFeedrates.x);
+			if (feedrate*delta.x/length > maxFeedrates.x)
+				feedrate = maxFeedrates.x * length/delta.x;
 		if (delta.y != 0)
-			feedrate = Math.min(feedrate, maxFeedrates.y);
-		if (delta.z != 0)
-			feedrate = Math.min(feedrate, maxFeedrates.z);
-
+			if (feedrate*delta.y/length > maxFeedrates.y)
+				feedrate = maxFeedrates.y * length/delta.y;
+		if (delta.z != 0) {
+			if (feedrate*delta.z/length > maxFeedrates.z)
+				feedrate = maxFeedrates.z * length/delta.z;
+		}
 		return feedrate;
 	}
 
