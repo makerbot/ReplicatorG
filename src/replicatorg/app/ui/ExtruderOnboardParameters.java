@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -27,6 +26,8 @@ public class ExtruderOnboardParameters extends JFrame {
 	interface Commitable {
 		public void commit();
 	}
+
+	final int FIELD_WIDTH = 10;
 	
 	class ThermistorTablePanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 7765098486598830410L;
@@ -38,7 +39,6 @@ public class ExtruderOnboardParameters extends JFrame {
 			super(new MigLayout());
 			this.which = which;
 			setBorder(BorderFactory.createTitledBorder(titleText));
-			final int FIELD_WIDTH = 20;
 			betaField.setColumns(FIELD_WIDTH);
 			r0Field.setColumns(FIELD_WIDTH);
 			t0Field.setColumns(FIELD_WIDTH);
@@ -95,10 +95,6 @@ public class ExtruderOnboardParameters extends JFrame {
 		BackoffPanel() {
 			setLayout(new MigLayout());
 			setBorder(BorderFactory.createTitledBorder("Reversal parameters"));
-			add(new JLabel("<html>These parameters effect the amount of time the extruder reverses " +
-					"when it goes from a forward state to a stopped state.</html>"),
-					"span");
-			final int FIELD_WIDTH = 20;
 			stopMsField.setColumns(FIELD_WIDTH);
 			reverseMsField.setColumns(FIELD_WIDTH);
 			forwardMsField.setColumns(FIELD_WIDTH);
@@ -138,10 +134,6 @@ public class ExtruderOnboardParameters extends JFrame {
 			this.which = which;
 			setLayout(new MigLayout());
 			setBorder(BorderFactory.createTitledBorder(name+" PID parameters"));
-			add(new JLabel("<html>These parameters determine the behavior of the PID controller " +
-					"that adjusts the temperature of the extruder.</html>"),
-					"span");
-			final int FIELD_WIDTH = 20;
 			pField.setColumns(FIELD_WIDTH);
 			iField.setColumns(FIELD_WIDTH);
 			dField.setColumns(FIELD_WIDTH);
@@ -191,30 +183,30 @@ public class ExtruderOnboardParameters extends JFrame {
 		super("Update onboard machine options");
 		this.target = target;
 
-		Box panel = Box.createVerticalBox();
+		JPanel panel = new JPanel(new MigLayout());
 		ThermistorTablePanel ttp;
 		ttp = new ThermistorTablePanel(0,"Extruder thermistor");
 		panel.add(ttp);
 		commitList.add(ttp);
 		ttp = new ThermistorTablePanel(1,"Heated build platform thermistor");
-		panel.add(ttp);
+		panel.add(ttp,"wrap");
 		commitList.add(ttp);
 		BackoffPanel backoffPanel = new BackoffPanel();
-		panel.add(backoffPanel);
+		panel.add(backoffPanel,"span 2,growx,wrap");
 		commitList.add(backoffPanel);
 		PIDPanel pidPanel = new PIDPanel(0,"Extruder");
-		panel.add(pidPanel);
+		panel.add(pidPanel,"growx");
 		commitList.add(pidPanel);
 		if (target instanceof Sanguino3GDriver) {
 			Version v = ((Sanguino3GDriver)target).getToolVersion();
 			if (v.atLeast(new Version(2,4))) {
 				PIDPanel pp = new PIDPanel(1,"Heated build platform");
-				panel.add(pp);
+				panel.add(pp,"growx");
 				commitList.add(pp);
 			}
 		}
 
-		panel.add(makeButtonPanel());
+		panel.add(makeButtonPanel(),"span 2,newline");
 		add(panel);
 
 		pack();
