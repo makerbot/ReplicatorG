@@ -12,6 +12,10 @@ import org.testng.annotations.Test;
 
 import fabman.coordinator.FabCoordinator;
 import fabman.messages.Coordinator;
+import fabman.messages.Coordinator.GetFabRequest;
+import fabman.messages.Coordinator.GetFabResponse;
+import fabman.messages.Coordinator.Request;
+import fabman.messages.Coordinator.Response;
 import fabman.messages.Coordinator.Type;
 import fabman.messages.Coordinator.GetFabResponse.RspCode;
 
@@ -61,17 +65,17 @@ public class FabCoordinatorTest {
 	@Test
 	public void requestNonsenseFab() throws IOException {
 		Socket socket = getConnection();
-		Coordinator.GetFabRequest.Builder gfr = Coordinator.GetFabRequest.newBuilder();
-		Coordinator.Request.Builder req = Coordinator.Request.newBuilder();
+		GetFabRequest.Builder gfr = GetFabRequest.newBuilder();
+		Request.Builder req = Request.newBuilder();
 		gfr.setName("NON-EXTANT FABRICATOR");
 		req.setType(Type.GET_FAB);
 		req.setGetFabReq(gfr.build());
 		req.build().writeDelimitedTo(socket.getOutputStream());
 		// Get response
-		Coordinator.Response rsp = Coordinator.Response.parseDelimitedFrom(socket.getInputStream());
+		Response rsp = Response.parseDelimitedFrom(socket.getInputStream());
 		assert rsp != null;
 		assert rsp.getType() == Type.GET_FAB;
-		Coordinator.GetFabResponse fabRsp = rsp.getGetFabRsp();
+		GetFabResponse fabRsp = rsp.getGetFabRsp();
 		assert fabRsp != null;
 		assert fabRsp.getCode() == RspCode.BAD_DESCRIPTOR;
 		socket.close();
@@ -92,6 +96,26 @@ public class FabCoordinatorTest {
 		Coordinator.ListFabsResponse fabRsp = rsp.getListFabsRsp();
 		assert fabRsp != null;
 		assert fabRsp.getFabsCount() == 5 : "Expected fab count 5, got "+Integer.toString(fabRsp.getFabsCount());
+		socket.close();
+	}
+	
+	@Test
+	public void getTestFab() throws IOException {
+		Socket socket = getConnection();
+		GetFabRequest.Builder gfr = GetFabRequest.newBuilder();
+		Request.Builder req = Request.newBuilder();
+		gfr.setName("No Driver Test");
+		req.setType(Type.GET_FAB);
+		req.setGetFabReq(gfr.build());
+		req.build().writeDelimitedTo(socket.getOutputStream());
+		// Get response
+		Response rsp = Response.parseDelimitedFrom(socket.getInputStream());
+		assert rsp != null;
+		assert rsp.getType() == Type.GET_FAB;
+		GetFabResponse fabRsp = rsp.getGetFabRsp();
+		assert fabRsp != null;
+		assert fabRsp.getCode() == RspCode.ERROR;
+		System.err.println("No driver error message: "+fabRsp.getErrorMessage());
 		socket.close();
 	}
 }

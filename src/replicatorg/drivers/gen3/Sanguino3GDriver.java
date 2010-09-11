@@ -42,6 +42,7 @@ import replicatorg.app.Base;
 import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.SDCardCapture;
+import replicatorg.drivers.PenPlotter;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.Axis;
@@ -49,7 +50,7 @@ import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
 
 public class Sanguino3GDriver extends SerialDriver
-	implements OnboardParameters, SDCardCapture
+	implements OnboardParameters, SDCardCapture, PenPlotter
 {
 	Version toolVersion = new Version(0,0);
 	
@@ -162,7 +163,6 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Sends the command over the serial connection and retrieves a result.
 	 */
 	protected PacketResponse runCommand(byte[] packet) {
-		assert (serial != null);
 		
 		if (packet == null || packet.length < 4)
 			return null; // skip empty commands or broken commands
@@ -182,6 +182,8 @@ public class Sanguino3GDriver extends SerialDriver
 			}
 			return PacketResponse.okResponse();  // Always pretend that it's all good.
 		}
+
+		assert (serial != null);
 		
 		boolean packetSent = false;
 		PacketProcessor pp = new PacketProcessor();
@@ -271,6 +273,7 @@ public class Sanguino3GDriver extends SerialDriver
 	static boolean isNotifiedFinishedFeature = false;
 
 	public boolean isFinished() {
+		if (fileCaptureOstream != null) { return true; }  // always done instantly if writing to file
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.IS_FINISHED.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		int v = pr.get8();
@@ -363,10 +366,13 @@ public class Sanguino3GDriver extends SerialDriver
 		if (masterSteps > 0.0) {
 			// where we going?
 			Point3d steps = machine.mmToSteps(p);
-
+			
+			Point3d delta = getDelta(p);
+			double feedrate = getSafeFeedrate(delta);
+			
 			// how fast are we doing it?
 			long micros = convertFeedrateToMicros(getCurrentPosition(),
-					p, getSafeFeedrate(deltaSteps));
+					p, feedrate);
 
 			//System.err.println("Steps :"+steps.toString()+" micros "+Long.toString(micros));
 
@@ -427,7 +433,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 	public void setCurrentPosition(Point3d p) {
 //		System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
-		if (super.getCurrentPosition().equals(p)) return;
+//		if (super.getCurrentPosition().equals(p)) return;
 //		System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_POSITION.getCode());
 
@@ -669,6 +675,30 @@ public class Sanguino3GDriver extends SerialDriver
 		machine.currentTool().setMotorSpeedReadingRPM(rpm);
 
 		return rpm;
+	}
+
+	/***************************************************************************
+	 * PenPlotter interface functions
+	 **************************************************************************/
+	//public void moveServo(int degree) {}
+
+	//public void enableServo() {}
+
+	//public void disableServo() {}
+
+	public void setServoPos(double degree) {
+		
+		Base.logger.log(Level.FINE,"Setting servo 1 position to " + degree + " degrees");
+
+		// send it!
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(ToolCommandCode.SET_SERVO_1_POS.getCode());
+		pb.add8((byte) 1); // length of payload.
+		pb.add8((byte) degree);
+		runCommand(pb.getPacket());
+
+		//super.setServoPos(degree);		
 	}
 
 	/***************************************************************************
@@ -1009,17 +1039,22 @@ public class Sanguino3GDriver extends SerialDriver
 		return machine.mmToSteps(getAbsDeltaDistance(current, target));
 	}
 
+	/**
+	 * 
+	 * @param current
+	 * @param target
+	 * @param feedrate Feedrate in mm per minute
+	 * @return
+	 */
 	private long convertFeedrateToMicros(Point3d current, Point3d target,
 			double feedrate) {
 		Point3d deltaDistance = getAbsDeltaDistance(current, target);
-		Point3d deltaSteps = getAbsDeltaSteps(current, target);
-		// how long is our line length?
-		double distance = Math.sqrt(deltaDistance.x * deltaDistance.x
-				+ deltaDistance.y * deltaDistance.y + deltaDistance.z
-				* deltaDistance.z);
+ 		Point3d deltaSteps = machine.mmToSteps(deltaDistance);
 		double masterSteps = getLongestLength(deltaSteps);
-		// distance is in steps
-		// feedrate is in steps/
+		// how long is our line length?
+		double distance = deltaDistance.distance(new Point3d());
+		// distance is in mm
+		// feedrate is in mm/min
 		// distance / feedrate * 60,000,000 = move duration in microseconds
 		double micros = distance / feedrate * 60000000.0;
 		// micros / masterSteps = time between steps for master axis.
@@ -1059,6 +1094,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	protected Point3d reconcilePosition() {
+		if (fileCaptureOstream != null) {
+			return new Point3d(0,0,0);
+		}
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
@@ -1450,9 +1488,11 @@ public class Sanguino3GDriver extends SerialDriver
 	};
 	
 	final static class PIDOffsets {
-		final static int P_TERM = 0x000C;
-		final static int I_TERM = 0x000E;
-		final static int D_TERM = 0x0010;
+		final static int PID_EXTRUDER  = 0x000C;
+		final static int PID_HBP       = 0x0012;
+		final static int P_TERM_OFFSET = 0x0000;
+		final static int I_TERM_OFFSET = 0x0002;
+		final static int D_TERM_OFFSET = 0x0004;
 	};
 
 	private int read16FromToolEEPROM(int offset, int defaultValue) {
@@ -1487,18 +1527,20 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2));
 	}
 
-	public PIDParameters getPIDParameters() {
+	public PIDParameters getPIDParameters(int which) {
 		PIDParameters pp = new PIDParameters();
-		pp.p = readFloat16FromToolEEPROM(PIDOffsets.P_TERM, 5.0f);
-		pp.i = readFloat16FromToolEEPROM(PIDOffsets.I_TERM, 0.1f);
-		pp.d = readFloat16FromToolEEPROM(PIDOffsets.D_TERM, 5.0f);
+		int offset = (which == 0)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
+		pp.p = readFloat16FromToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET, 5.0f);
+		pp.i = readFloat16FromToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET, 0.1f);
+		pp.d = readFloat16FromToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET, 5.0f);
 		return pp;
 	}
 	
-	public void setPIDParameters(PIDParameters pp) {
-		writeToToolEEPROM(PIDOffsets.P_TERM,floatToLE(pp.p));
-		writeToToolEEPROM(PIDOffsets.I_TERM,floatToLE(pp.i));
-		writeToToolEEPROM(PIDOffsets.D_TERM,floatToLE(pp.d));
+	public void setPIDParameters(int which, PIDParameters pp) {
+		int offset = (which == 0)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
+		writeToToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET,floatToLE(pp.p));
+		writeToToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET,floatToLE(pp.i));
+		writeToToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET,floatToLE(pp.d));
 	}
 
 	/** Reset to the factory state.  This ordinarily means writing 0xff over the
@@ -1509,6 +1551,14 @@ public class Sanguino3GDriver extends SerialDriver
 		Arrays.fill(eepromWipe,(byte)0xff);
 		for (int i = 0; i < 0x0200; i+=16) {
 			writeToEEPROM(i,eepromWipe);
+		}
+	}
+
+	public void resetToolToFactory() {
+		byte eepromWipe[] = new byte[16];
+		Arrays.fill(eepromWipe,(byte)0xff);
+		for (int i = 0; i < 0x0200; i+=16) {
+			writeToToolEEPROM(i,eepromWipe);
 		}
 	}
 
@@ -1550,4 +1600,5 @@ public class Sanguino3GDriver extends SerialDriver
 		return super.getTemperatureSetting();
 	}
 
+	public Version getToolVersion() { return toolVersion; }
 }

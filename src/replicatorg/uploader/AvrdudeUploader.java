@@ -41,6 +41,16 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
 
 	boolean manualReset = false;
 	
+	String eepromPath = null;
+	
+	public void setEeprom(String path) {
+		eepromPath = path;
+	}
+	
+	public String getEeprom() {
+		return eepromPath;
+	}
+	
 	public String getUploadInstructions() {
 		if (manualReset == true) {
 			return "Press the reset button on the target board and click the \"Upload\" button " +
@@ -87,12 +97,16 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
   public boolean upload() {
     Vector<String> commandDownloader = new Vector<String>();
     String avrBasePath = Base.getToolsPath();
+    
     commandDownloader.add(avrBasePath + File.separator + "avrdude");
     commandDownloader.add("-C" + avrBasePath + File.separator + "avrdude.conf");
     commandDownloader.add("-c" + protocol);
     commandDownloader.add("-P" + (Base.isWindows() ? "\\\\.\\" : "") + serialName);
     commandDownloader.add("-b" + Integer.toString(serialSpeed));
-    commandDownloader.add("-D"); // don't erase
+	commandDownloader.add("-D"); // don't erase
+    if (eepromPath != null) {
+    	commandDownloader.add("-Ueeprom:w:"+eepromPath+":i"); // erase
+    }
     commandDownloader.add("-Uflash:w:" + source + ":i");
 
     if (Base.preferences.getBoolean("upload.verbose",false)) {

@@ -148,7 +148,10 @@ public class MachineController {
 				// Do not continue build if the machine is not building or paused
 				return false;
 			}
-
+			
+			// Flush any parser cached data
+			driver.getParser().init(driver);
+			
 			Iterator<String> i = source.iterator();
 			while (i.hasNext()) {
 				String line = i.next();

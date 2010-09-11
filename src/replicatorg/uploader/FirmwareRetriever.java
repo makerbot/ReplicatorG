@@ -147,6 +147,15 @@ class FirmwareRetriever {
 			} catch (MalformedURLException e) {
 				Base.logger.severe("Couldn't generate URL for path "+path);
 			}
+			String eeprom = new FirmwareVersion(n).getEepromPath();
+			if (eeprom != null) try {
+				url = new URL(firmwareSourceURL,eeprom);
+				File file = Base.getUserFile(path);
+				updateURL(url,file);
+			} catch (MalformedURLException e) {
+				Base.logger.severe("Couldn't generate URL for path "+path);
+			}
+
 		}
 	}
 }

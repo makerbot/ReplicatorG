@@ -11,6 +11,7 @@ public class FirmwareVersion {
 	private Version version;
 	private String name;
 	private String where;
+	private String eeprom;
 	private String description;
 	
 	private String getAttrNodeValue(Node n, String attr) {
@@ -28,6 +29,7 @@ public class FirmwareVersion {
 		name = getAttrNodeValue(n,"name");
 		if (name == null) name = "v" + version.toString(); 
 		where = getAttrNodeValue(n,"relpath");
+		eeprom = getAttrNodeValue(n,"eeprompath");
 		description = getAttrNodeValue(n,"description");
 	}
 	
@@ -38,6 +40,9 @@ public class FirmwareVersion {
 	public Version getVersion() { return version; }
 	
 	public String getRelPath() { return where; }
+
+	public String getEepromPath() { return eeprom; }
+	public void setEepromPath(String path) { eeprom = path; }
 
 	public File getFile() { return Base.getUserFile(where); }
 	

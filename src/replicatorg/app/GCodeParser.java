@@ -40,6 +40,8 @@ import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.drivers.Driver;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
+import replicatorg.drivers.PenPlotter;
+
 
 public class GCodeParser {
 	// command to parse
@@ -47,6 +49,9 @@ public class GCodeParser {
 
 	// our driver we use.
 	protected Driver driver;
+	
+	// Pen Plotter Driver 
+	//protected PenPlotter penPlotter;
 
 	// our code data storage guys.
 	protected Hashtable<String, Double> codeValues;
@@ -85,6 +90,9 @@ public class GCodeParser {
 	boolean absoluteMode = false;
 
 	// our feedrate variables.
+	/**
+	 * Feedrate in mm/minute.
+	 */
 	double feedrate = 0.0;
 
 	/*
@@ -132,6 +140,11 @@ public class GCodeParser {
 	public static final int TB_MESSAGE = 998;
 	public static final int TB_CLEANUP = 999;
 	
+	// Replicate old behavior of breaking out Z moves into seperate setTarget
+	// calls.
+	
+	private boolean breakoutZMoves = Base.preferences.getBoolean("replicatorg.parser.breakzmoves", false);
+	
 	/**
 	 * Creates the driver object.
 	 */
@@ -177,7 +190,8 @@ public class GCodeParser {
 	public void init(Driver drv) {
 		// our driver class
 		driver = drv;
-
+		// reload breakout
+		breakoutZMoves = Base.preferences.getBoolean("replicatorg.parser.breakzmoves", false);
 		// init our offset variables
 		currentOffset = driver.getOffset(0);
 	}
@@ -521,6 +535,19 @@ public class GCodeParser {
 					driver.setMotorRPM(getCodeValue("R"));
 				break;
 
+			// PEN PLOTTER
+		
+			
+			// set servo position
+			case 300:
+				if (hasCode("S")) {
+					if (driver instanceof PenPlotter) {
+						((PenPlotter)driver).setServoPos(getCodeValue("S"));
+					}
+				}
+				break;
+
+
 			// set build platform temperature
 			case 109:
 				if (hasCode("S"))
@@ -681,6 +708,7 @@ public class GCodeParser {
 
 		// Get feedrate if supplied
 		if (hasCode("F")) {
+			// Read feedrate in mm/min.
 			feedrate = getCodeValue("F");
 			driver.setFeedrate(feedrate);
 		}
@@ -1125,8 +1153,10 @@ public class GCodeParser {
 		// toolpath.
 		// move z first
 		Point3d current = driver.getCurrentPosition();
-		if (p.z != current.z) {
-			driver.queuePoint(new Point3d(current.x, current.y, p.z));
+		if (breakoutZMoves) {
+			if (p.z != current.z) {
+				driver.queuePoint(new Point3d(current.x, current.y, p.z));
+			}
 		}
 		driver.queuePoint(new Point3d(p));
 		current = new Point3d(p);
