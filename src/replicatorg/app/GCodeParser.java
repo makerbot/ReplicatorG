@@ -40,6 +40,8 @@ import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.drivers.Driver;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
+import replicatorg.drivers.PenPlotter;
+
 
 public class GCodeParser {
 	// command to parse
@@ -47,6 +49,9 @@ public class GCodeParser {
 
 	// our driver we use.
 	protected Driver driver;
+	
+	// Pen Plotter Driver 
+	//protected PenPlotter penPlotter;
 
 	// our code data storage guys.
 	protected Hashtable<String, Double> codeValues;
@@ -529,6 +534,19 @@ public class GCodeParser {
 				else if (hasCode("R"))
 					driver.setMotorRPM(getCodeValue("R"));
 				break;
+
+			// PEN PLOTTER
+		
+			
+			// set servo position
+			case 300:
+				if (hasCode("S")) {
+					if (driver instanceof PenPlotter) {
+						((PenPlotter)driver).setServoPos(getCodeValue("S"));
+					}
+				}
+				break;
+
 
 			// set build platform temperature
 			case 109:
