@@ -1,4 +1,17 @@
-0018 ReplicatorG
+0019 ReplicatorG
+New features:
+* Undo/Redo
+* Support for unicorn toolhead (Thanks to Zeeshan M.)
+* Better Mac build (thanks Zaggo)
+* ABP build profile support
+* MkV extruder build profile support
+* Support for new 2.4 extruder features (separate HBP PID settings)
+* Fixes longstanding Z-axis move breakout issue; continuous xyz motion
+  limiting should work properly now
+* Alpha .obj file importer
+* Alpha .dae file importer
+
+
 New features:
 * Model can now be manipulated and saved
 * Model translation

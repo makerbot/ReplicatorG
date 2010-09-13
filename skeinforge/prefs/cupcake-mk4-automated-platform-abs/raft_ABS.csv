@@ -1,10 +1,10 @@
 Format is tab separated preferences.
 Activate Raft:	True
-Add Raft, Elevate Nozzle, Orbit and Set Altitude:	False
+Add Raft, Elevate Nozzle, Orbit and Set Altitude:	True
 Base Infill Density (ratio):	0.28
 Base Layer Thickness over Layer Thickness:	1.8
 Base Layers (integer):	1
-Base Nozzle Lift over Half Base Layer Thickness (ratio):	0.0
+Base Nozzle Lift over Half Base Layer Thickness (ratio):	0.4
 Bottom Altitude:	0.1
 Open File to be Rafted	
 Infill Overhang (ratio):	0.1
@@ -25,9 +25,9 @@ Temperature Change Time Before Next Threads (seconds):	0.0
 Temperature Change Time Before Support Layers (seconds):	0.0
 Temperature Change Time Before Supported Layers (seconds):	0.0
 Temperature of Raft (Celcius):	230.0
-Temperature of Shape First Layer Outline (Celcius):	220.0
-Temperature of Shape First Layer Within (Celcius):	220.0
+Temperature of Shape First Layer Outline (Celcius):	215.0
+Temperature of Shape First Layer Within (Celcius):	215.0
 Temperature of Shape Next Layers (Celcius):	220.0
 Temperature of Support Layers (Celcius):	220.0
 Temperature of Supported Layers (Celcius):	220.0
-windowPositionRaft Preferences	10+71
+windowPositionRaft Preferences	6+23
