@@ -168,7 +168,7 @@ public class PreviewPanel extends JPanel {
 		BranchGroup scene = createSTLScene();
 		univ.addBranchGraph(scene);
 		
-		addKeyListener( new KeyListener() {
+		canvas.addKeyListener( new KeyListener() {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyChar() == 'e') {
 					showEdges = !showEdges;

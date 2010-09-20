@@ -146,7 +146,7 @@ public class EditingModel {
 		if (showEdges) {
 			objectSwitch.setWhichChild(1);
 		} else {
-			objectSwitch.setWhichChild(1);
+			objectSwitch.setWhichChild(0);
 		}
 	}
 		
