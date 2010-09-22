@@ -133,7 +133,7 @@ class RaftlessPreferences:
 		self.archive =[]
 		self.fileNameInput = preferences.Filename().getFromFilename( interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Raftless', '' )
 		self.archive.append( self.fileNameInput )
-		self.activateRaftless = preferences.BooleanPreference().getFromValue( 'Activate Raftless', False )
+		self.activateRaftless = preferences.BooleanPreference().getFromValue( 'Activate Raftless:', False )
 		self.archive.append( self.activateRaftless )
 		self.firstPerimeterFeedrateOverFeedrate = preferences.FloatPreference().getFromValue( '1st Perimeter Feed Rate over Feed Rate (ratio):', 0.7 )
 		self.archive.append( self.firstPerimeterFeedrateOverFeedrate )
@@ -141,14 +141,16 @@ class RaftlessPreferences:
 		self.archive.append( self.firstPerimeterFlowrateOverFlowrate )
 		self.addExtrusionIntro = preferences.BooleanPreference().getFromValue( 'Add Extrusion Intro:', True )
 		self.archive.append( self.addExtrusionIntro )
-		self.absMaxXIntro = preferences.FloatPreference().getFromValue( 'Extrusion Intro Max X Absolute (mm):', 20.0 )
+		self.absMaxXIntro = preferences.FloatPreference().getFromValue( 'Extrusion Intro Max X Absolute (mm):', 40.0 )
 		self.archive.append( self.absMaxXIntro )
-		self.absMaxYIntro = preferences.FloatPreference().getFromValue( 'Extrusion Intro Max Y Absolute (mm):', 20.0 )
+		self.absMaxYIntro = preferences.FloatPreference().getFromValue( 'Extrusion Intro Max Y Absolute (mm):', 40.0 )
 		self.archive.append( self.absMaxYIntro )
 		#Create the archive, title of the execute button, title of the dialog & preferences fileName.
 		self.executeTitle = 'Raftless'
+		self.fileNamePreferences = preferences.getPreferencesFilePath( 'raftless.csv' )
 		self.saveTitle = 'Save Preferences'
-		preferences.setHelpPreferencesFileNameTitleWindowPosition( self, 'skeinforge_tools.raftless.html' )
+		self.title = 'Raftless Preferences'
+		self.fileNameHelp = 'skeinforge_tools.raftless.html'
 
 	def execute( self ):
 		"Raftless button has been clicked."

@@ -1,3 +1,9 @@
+0020 ReplicatorG
+Contributions:
+* chlunde: Edge mode on 'e' keypress re-enabled
+* Miles Lightwood, Eberhard Rensch, koenkooi:
+  created/backported raftless to skeinforge
+
 0019 ReplicatorG
 New features:
 * Undo/Redo

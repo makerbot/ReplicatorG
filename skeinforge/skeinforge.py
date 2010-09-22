@@ -331,10 +331,14 @@ def main():
 	else:
 		preferences.setEndFile(defaultEnd)
 	if options.useRaft != None:
-		raftVal = "false"
 		if options.useRaft:
-			raftVal = "true"
-		preferences.addPreferenceOverride("Raft", "Activate Raft:", raftVal)
+			preferences.addPreferenceOverride("Raft", "Activate Raft:", "true")
+			preferences.addPreferenceOverride("Raftless", "Activate Raftless:", "false")
+		else:
+			preferences.addPreferenceOverride("Raft", "Activate Raft:", "false")
+			preferences.addPreferenceOverride("Raftless", "Activate Raftless:", "true")
+		
+		
 
 	sys.argv = [sys.argv[0]] + args
 	if len( args ) > 0:
