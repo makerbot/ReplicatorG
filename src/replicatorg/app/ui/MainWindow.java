@@ -66,6 +66,7 @@ import java.util.prefs.BackingStoreException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -129,9 +130,10 @@ import replicatorg.model.BuildCode;
 import replicatorg.model.BuildElement;
 import replicatorg.model.BuildModel;
 import replicatorg.model.JEditTextAreaSource;
-import replicatorg.plugin.toolpath.SkeinforgeGenerator;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
+import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
+import replicatorg.plugin.toolpath.ToolpathGeneratorFactory.ToolpathGeneratorDescriptor;
 import replicatorg.uploader.FirmwareUploader;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -524,7 +526,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				handleSave(true);
 			}
 		}
-		ToolpathGenerator generator = new SkeinforgeGenerator();
+		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
 		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build);
 		tgt.addListener(this);
 		tgt.start();
@@ -744,6 +746,25 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		stopItem.setEnabled(false);
 		menu.add(stopItem);
 
+		// TODO: GENERATOR
+		JMenu genMenu = new JMenu();
+		Vector<ToolpathGeneratorDescriptor> generators = ToolpathGeneratorFactory.getGeneratorList();
+		String name = ToolpathGeneratorFactory.getSelectedName();
+		ButtonGroup group = new ButtonGroup();
+		for (ToolpathGeneratorDescriptor tgd : generators) {
+			JRadioButtonMenuItem i = new JRadioButtonMenuItem(tgd.name);
+			group.add(i);
+			final String n = tgd.name;
+			i.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ToolpathGeneratorFactory.setSelectedName(n);
+				}
+			});
+			if (name.equals(tgd.name)) { i.setSelected(true); }
+			genMenu.add(i);
+		}
+		menu.add(genMenu);
+		
 		return menu;
 	}
 

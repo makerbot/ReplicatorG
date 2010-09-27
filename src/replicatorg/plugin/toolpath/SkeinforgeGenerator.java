@@ -29,11 +29,15 @@ import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.StreamLoggerThread;
 import replicatorg.model.BuildCode;
 
-public class SkeinforgeGenerator extends ToolpathGenerator {
+public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 	boolean configSuccess = false;
 	String profile = null;
 	boolean useRaft = false;
+	
+	// "skein_engines/skeinforge-0006","sf_profiles");
+	public SkeinforgeGenerator() {
+	}
 	
 	class Profile implements Comparable<Profile> {
 		private String fullPath;
@@ -63,9 +67,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
-	File getUserProfilesDir() {
-		return Base.getUserFile("sf_profiles");
-	}
+	abstract File getUserProfilesDir();
 	
 	List<Profile> getProfiles() {
 		final List<Profile> profiles = new LinkedList<Profile>();
@@ -185,9 +187,7 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		return configSuccess;
 	}
 
-	public File getDefaultSkeinforgeDir() {		
-    	return Base.getApplicationFile("skein_engines/skeinforge-0006");
-	}
+	abstract public File getDefaultSkeinforgeDir();		
 	
 	public File getSkeinforgeDir() {
 	    String skeinforgePath = System.getProperty("replicatorg.skeinforge.path");
