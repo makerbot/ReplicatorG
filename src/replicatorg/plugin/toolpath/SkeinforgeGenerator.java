@@ -185,10 +185,14 @@ public class SkeinforgeGenerator extends ToolpathGenerator {
 		return configSuccess;
 	}
 
+	public File getDefaultSkeinforgeDir() {		
+    	return Base.getApplicationFile("skein_engines/skeinforge-0006");
+	}
+	
 	public File getSkeinforgeDir() {
 	    String skeinforgePath = System.getProperty("replicatorg.skeinforge.path");
 	    if (skeinforgePath == null || (skeinforgePath.length() == 0)) {
-	    	return Base.getApplicationFile("skeinforge");
+	    	return getDefaultSkeinforgeDir();
 	    }
 	    return new File(skeinforgePath);
 	}
