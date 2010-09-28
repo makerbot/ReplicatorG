@@ -746,8 +746,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		stopItem.setEnabled(false);
 		menu.add(stopItem);
 
-		// TODO: GENERATOR
-		JMenu genMenu = new JMenu();
+		// GENERATOR
+		JMenu genMenu = new JMenu("Choose GCode generator");
 		Vector<ToolpathGeneratorDescriptor> generators = ToolpathGeneratorFactory.getGeneratorList();
 		String name = ToolpathGeneratorFactory.getSelectedName();
 		ButtonGroup group = new ButtonGroup();
