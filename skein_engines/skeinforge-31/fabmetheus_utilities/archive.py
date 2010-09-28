@@ -76,10 +76,18 @@ def getProfilesPath(subName=''):
 	'Get the profiles directory path, which is the settings directory joined with profiles.'
 	return getJoinedPath(getSettingsPath('profiles'), subName)
 
+settingsPath = os.path.join(os.path.expanduser('~'), '.skeinforge')
+ 
 def getSettingsPath(subName=''):
-	'Get the settings directory path, which is the home directory joined with .skeinforge.'
-	return getJoinedPath(os.path.join(os.path.expanduser('~'), '.skeinforge'), subName)
+	'Get the settings directory path, which defaults to the home directory joined with .skeinforge.'
+	global settingsPath
+	return getJoinedPath(settingsPath, subName)
 
+def setSettingsPath(path):
+	'Set the base settings directory path.'
+	global settingsPath
+	settingsPath = path
+	
 def getSkeinforgePath(subName=''):
 	'Get the skeinforge directory path.'
 	return getJoinedPath(getFabmetheusPath('skeinforge_application'), subName)

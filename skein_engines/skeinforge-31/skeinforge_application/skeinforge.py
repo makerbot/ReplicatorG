@@ -207,9 +207,11 @@ from fabmetheus_utilities.fabmetheus_tools import fabmetheus_interpret
 from fabmetheus_utilities import euclidean
 from fabmetheus_utilities import gcodec
 from fabmetheus_utilities import settings
+from fabmetheus_utilities import archive
 from skeinforge_application.skeinforge_utilities import skeinforge_craft
 from skeinforge_application.skeinforge_utilities import skeinforge_polyfile
 from skeinforge_application.skeinforge_utilities import skeinforge_profile
+from optparse import OptionParser
 import os
 import sys
 
@@ -554,8 +556,40 @@ class SkeinforgeRepository:
 
 def main():
 	"Display the skeinforge dialog."
-	if len( sys.argv ) > 1:
-		writeOutput(' '.join( sys.argv[1 :] ) )
+	parser = OptionParser()
+	parser.add_option("-p", "--prefdir", help="set path to preference directory",
+                  action="store", type="string", dest="preferencesDirectory")
+        parser.add_option("-s", "--start", help="set start file to use",
+                  action="store", type="string", dest="startFile")
+        parser.add_option("-e", "--end", help="set end file to use",
+                  action="store", type="string", dest="endFile")
+	parser.add_option("--raft", action="store_true", dest="useRaft")
+	parser.add_option("--no-raft", action="store_false", dest="useRaft")
+        (options, args) = parser.parse_args()
+	defaultStart = 'start.txt'
+	defaultEnd = 'end.txt'
+	if options.preferencesDirectory:
+		pdir = options.preferencesDirectory;
+		archive.setSettingsPath(pdir)
+#	if options.startFile:
+#		preferences.setStartFile(options.startFile)
+#	else:
+#		preferences.setStartFile(defaultStart)
+#	if options.endFile:
+#		preferences.setEndFile(options.endFile)
+#	else:
+#		preferences.setEndFile(defaultEnd)
+	if options.useRaft != None:
+		if options.useRaft:
+			preferences.addPreferenceOverride("Raft", "Activate Raft:", "true")
+			preferences.addPreferenceOverride("Raftless", "Activate Raftless:", "false")
+		else:
+			preferences.addPreferenceOverride("Raft", "Activate Raft:", "false")
+			preferences.addPreferenceOverride("Raftless", "Activate Raftless:", "true")
+
+	sys.argv = [sys.argv[0]] + args
+	if len( args ) > 0:
+		writeOutput( ' '.join(args) )
 	else:
 		settings.startMainLoopFromConstructor( getNewRepository() )
 
