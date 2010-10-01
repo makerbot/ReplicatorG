@@ -250,6 +250,31 @@ def getRadioPluginsAddPluginFrame( directoryPath, importantFileNames, names, rep
 	repository.pluginFrame.getFromPath( defaultRadioButton, directoryPath, repository )
 	return radioPlugins
 
+overrides = {}
+
+def addPreferenceOverride(module, name, value):
+	global overrides
+	if not module in overrides:
+		overrides[module] = {}
+	overrides[module][name] = value
+	print "OVERRIDE ",module,name,value
+	print overrides[module]
+
+def applyOverrides(repository):
+	"Apply any overrides that have been set at the command line."
+	# The override dictionary is a mapping of repository names to
+	# key-value mappings. 
+	global overrides
+	if repository.baseName in overrides:
+		settingTable = {}
+		for setting in repository.preferences:
+			settingTable[ setting.name ] = setting
+		for (name, value) in overrides[repository.baseName].items():
+			if name in settingTable:
+				settingTable[name].setValueToString(value)
+			else:
+				print "Override not applied for",name,value
+
 def getReadRepository(repository):
 	"Read and return settings from a file."
 	text = gcodec.getFileText( archive.getProfilesPath( getProfileBaseName(repository) ), 'r', False )
@@ -259,8 +284,10 @@ def getReadRepository(repository):
 		if text != '':
 			readSettingsFromText( repository, text )
 		writeSettings(repository)
+		applyOverrides(repository)
 		return repository
 	readSettingsFromText( repository, text )
+	applyOverrides(repository)
 	return repository
 
 def getRepositoryText(repository):
