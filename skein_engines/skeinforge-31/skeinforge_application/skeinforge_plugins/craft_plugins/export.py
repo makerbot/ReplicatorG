@@ -155,7 +155,7 @@ def writeOutput( fileName = ''):
 	settings.getReadRepository( exportRepository )
 	startTime = time.time()
 	print('File ' + gcodec.getSummarizedFileName(fileName) + ' is being chain exported.')
-	suffixFileName = fileName[ : fileName.rfind('.') ] + '_export.' + exportRepository.fileExtension.value
+	suffixFileName = fileName[ : fileName.rfind('.') ] + '.' + exportRepository.fileExtension.value
 	gcodeText = gcodec.getGcodeFileText( fileName, '')
 	procedures = skeinforge_craft.getProcedures('export', gcodeText )
 	gcodeText = skeinforge_craft.getChainTextFromProcedures( fileName, procedures[ : - 1 ], gcodeText )
