@@ -581,11 +581,9 @@ def main():
 #		preferences.setEndFile(defaultEnd)
 	if options.useRaft != None:
 		if options.useRaft:
-			preferences.addPreferenceOverride("Raft", "Activate Raft:", "true")
-			preferences.addPreferenceOverride("Raftless", "Activate Raftless:", "false")
+			settings.addPreferenceOverride("raft.csv", "Activate Raft", "true")
 		else:
-			preferences.addPreferenceOverride("Raft", "Activate Raft:", "false")
-			preferences.addPreferenceOverride("Raftless", "Activate Raftless:", "true")
+			settings.addPreferenceOverride("raft.csv", "Activate Raft", "false")
 
 	sys.argv = [sys.argv[0]] + args
 	if len( args ) > 0:
