@@ -9,7 +9,7 @@ cleave	False
 clip	False
 coil	False
 comb	False
-cool	True
+cool	False
 dimension	False
 drill	False
 export	False
@@ -31,7 +31,7 @@ outset	False
 preface	False
 raft	False
 speed	False
-splodge	False
+splodge	True
 stretch	False
 temperature	False
 tower	False
