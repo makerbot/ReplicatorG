@@ -448,11 +448,11 @@ public class GCodeParser {
 			// open collet
 			case 21:
 				driver.openCollet();
-
+				break;
 				// open collet
 			case 22:
 				driver.closeCollet();
-
+				break;
 				// M40-M46 = change gear ratios
 			case 40:
 				driver.changeGearRatio(0);
@@ -481,7 +481,7 @@ public class GCodeParser {
 			// read spindle speed
 			case 50:
 				driver.getSpindleRPM();
-
+				break;
 				// subroutine functions... will implement later
 				// case 97: jump
 				// case 98: jump to subroutine
