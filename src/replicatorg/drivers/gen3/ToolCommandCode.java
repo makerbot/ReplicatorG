@@ -32,7 +32,8 @@ public enum ToolCommandCode {
 	GET_PLATFORM_TEMP(30),
 	SET_PLATFORM_TEMP(31),
 	GET_SP(32),
-	GET_PLATFORM_SP(33);
+	GET_PLATFORM_SP(33),
+	GET_BUILD_NAME(34);
 	
 	private int code;
 	private ToolCommandCode(int code) {
