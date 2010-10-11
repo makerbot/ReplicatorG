@@ -1583,10 +1583,10 @@ public class Sanguino3GDriver extends SerialDriver
 		ef.heaterChannel = (efdat >> 2) & 0x0003;
 		ef.hbpChannel = (efdat >> 4) & 0x0003;
 		ef.abpChannel = (efdat >> 6) & 0x0003;
-		System.err.println("Extra features: smc "+Boolean.toString(ef.swapMotorController));
-		System.err.println("Extra features: ch ext "+Integer.toString(ef.heaterChannel));
-		System.err.println("Extra features: ch hbp "+Integer.toString(ef.hbpChannel));
-		System.err.println("Extra features: ch abp "+Integer.toString(ef.abpChannel));
+//		System.err.println("Extra features: smc "+Boolean.toString(ef.swapMotorController));
+//		System.err.println("Extra features: ch ext "+Integer.toString(ef.heaterChannel));
+//		System.err.println("Extra features: ch hbp "+Integer.toString(ef.hbpChannel));
+//		System.err.println("Extra features: ch abp "+Integer.toString(ef.abpChannel));
 		return ef;
 	}
 	
@@ -1596,7 +1596,7 @@ public class Sanguino3GDriver extends SerialDriver
 		efdat |= features.heaterChannel << 2;
 		efdat |= features.hbpChannel << 4;
 		efdat |= features.abpChannel << 6;
-		System.err.println("Writing to EF: "+Integer.toHexString(efdat));
+		//System.err.println("Writing to EF: "+Integer.toHexString(efdat));
 		writeToToolEEPROM(EEPROM_EXTRA_FEATURES,intToLE(efdat,2));
 	}
 

@@ -768,7 +768,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		return menu;
 	}
 
-	JMenuItem onboardParamsItem = new JMenuItem("Onboard Preferences");
+	JMenuItem onboardParamsItem = new JMenuItem("Cupcake Onboard Preferences");
+	JMenuItem extruderParamsItem = new JMenuItem("Extruder Onboard Preferences");
 	
 	protected JMenu buildMachineMenu() {
 		JMenuItem item;
@@ -812,7 +813,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		});
 		onboardParamsItem.setVisible(false);
 		menu.add(onboardParamsItem);
-		
+
+		extruderParamsItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				handleExtruderPrefs();
+			}
+		});
+		extruderParamsItem.setVisible(false);
+		menu.add(extruderParamsItem);
+
 		item = new JMenuItem("Upload new firmware...");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1203,7 +1212,20 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			moo.setVisible(true);
 		}
 	}
-	
+
+	public void handleExtruderPrefs() {
+		if (machine == null || 
+				!(machine.driver instanceof OnboardParameters)) {
+			JOptionPane.showMessageDialog(
+					this,
+					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
+					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
+		} else {
+			ExtruderOnboardParameters eop = new ExtruderOnboardParameters((OnboardParameters)machine.driver);
+			eop.setVisible(true);
+		}
+	}
+
 	/**
 	 * Show the preferences window.
 	 */
@@ -1540,10 +1562,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (evt.getState().isReady()) {
 			reloadSerialMenu();
 		}
-		onboardParamsItem.setVisible(
+		boolean showParams = 
 				machine != null &&
 				machine.getDriver() instanceof OnboardParameters &&
-				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters());
+				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters();
+		onboardParamsItem.setVisible(showParams);
+		extruderParamsItem.setVisible(showParams);
+
 	}
 
 	public void setEditorBusy(boolean isBusy) {

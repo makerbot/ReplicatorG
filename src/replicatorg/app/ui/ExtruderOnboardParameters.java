@@ -135,7 +135,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			setLayout(new MigLayout());
 			ef = target.getExtraFeatures();
 			swapMotors = new JCheckBox("Use 2A/2B to drive DC motor instead of 1A/1B", ef.swapMotorController);
-			add(swapMotors,"span 2,growx,wrap");
+			add(swapMotors,"span 3,growx,wrap");
 			Vector<String> choices = new Vector<String>();
 			choices.add("Channel A");
 			choices.add("Channel B");
@@ -143,15 +143,18 @@ public class ExtruderOnboardParameters extends JFrame {
 			extCh = new JComboBox(choices);
 			extCh.setSelectedIndex(ef.heaterChannel);
 			add(new JLabel("Extruder heater uses:"));
-			add(extCh,"wrap");
+			add(extCh);
+			add(new JLabel("(default ch. B)"),"wrap");
 			hbpCh = new JComboBox(choices);
 			hbpCh.setSelectedIndex(ef.hbpChannel);
 			add(new JLabel("Platform heater uses:"));
-			add(hbpCh,"wrap");
+			add(hbpCh);
+			add(new JLabel("(default ch. A)"),"wrap");
 			abpCh = new JComboBox(choices);
 			abpCh.setSelectedIndex(ef.abpChannel);
 			add(new JLabel("ABP motor uses:"));
-			add(abpCh,"wrap");
+			add(abpCh);
+			add(new JLabel("(default ch. C)"),"wrap");
 		}
 
 		public void commit() {
