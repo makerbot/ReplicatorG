@@ -45,6 +45,7 @@ import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.PenPlotter;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
+import replicatorg.drivers.OnboardParameters.ExtraFeatures;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
@@ -1218,6 +1219,7 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
+	final private static int EEPROM_EXTRA_FEATURES = 0x0018;
 	final private static int EEPROM_ENDSTOP_INVERSION_OFFSET = 3;
 	final static class ECThermistorOffsets {
 		final private static int[] TABLE_OFFSETS = {
@@ -1574,6 +1576,31 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,b);
 	}
 
+	public ExtraFeatures getExtraFeatures() {
+		int efdat = read16FromToolEEPROM(EEPROM_EXTRA_FEATURES,0x4084);
+		ExtraFeatures ef = new ExtraFeatures();
+		ef.swapMotorController = (efdat & 0x0001) != 0;
+		ef.heaterChannel = (efdat >> 2) & 0x0003;
+		ef.hbpChannel = (efdat >> 4) & 0x0003;
+		ef.abpChannel = (efdat >> 6) & 0x0003;
+		System.err.println("Extra features: smc "+Boolean.toString(ef.swapMotorController));
+		System.err.println("Extra features: ch ext "+Integer.toString(ef.heaterChannel));
+		System.err.println("Extra features: ch hbp "+Integer.toString(ef.hbpChannel));
+		System.err.println("Extra features: ch abp "+Integer.toString(ef.abpChannel));
+		return ef;
+	}
+	
+	public void setExtraFeatures(ExtraFeatures features) {
+		int efdat = 0x4000;
+		if (features.swapMotorController) { efdat = efdat | 0x0001; }
+		efdat |= features.heaterChannel << 2;
+		efdat |= features.hbpChannel << 4;
+		efdat |= features.abpChannel << 6;
+		System.err.println("Writing to EF: "+Integer.toHexString(efdat));
+		writeToToolEEPROM(EEPROM_EXTRA_FEATURES,intToLE(efdat,2));
+	}
+
+	
 	public double getPlatformTemperatureSetting() {
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2,3))) {

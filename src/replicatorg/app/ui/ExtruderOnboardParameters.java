@@ -8,6 +8,8 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -125,6 +127,42 @@ public class ExtruderOnboardParameters extends JFrame {
 		}
 	}
 
+	private class ExtraFeaturesPanel extends JPanel implements Commitable {
+		private JCheckBox swapMotors;
+		private JComboBox extCh, hbpCh, abpCh;
+		private OnboardParameters.ExtraFeatures ef;
+		ExtraFeaturesPanel() {
+			setLayout(new MigLayout());
+			ef = target.getExtraFeatures();
+			swapMotors = new JCheckBox("Use 2A/2B to drive DC motor instead of 1A/1B", ef.swapMotorController);
+			add(swapMotors,"span 2,growx,wrap");
+			Vector<String> choices = new Vector<String>();
+			choices.add("Channel A");
+			choices.add("Channel B");
+			choices.add("Channel C");
+			extCh = new JComboBox(choices);
+			extCh.setSelectedIndex(ef.heaterChannel);
+			add(new JLabel("Extruder heater uses:"));
+			add(extCh,"wrap");
+			hbpCh = new JComboBox(choices);
+			hbpCh.setSelectedIndex(ef.hbpChannel);
+			add(new JLabel("Platform heater uses:"));
+			add(hbpCh,"wrap");
+			abpCh = new JComboBox(choices);
+			abpCh.setSelectedIndex(ef.abpChannel);
+			add(new JLabel("ABP motor uses:"));
+			add(abpCh,"wrap");
+		}
+
+		public void commit() {
+			ef.swapMotorController = swapMotors.isSelected();
+			ef.heaterChannel = extCh.getSelectedIndex();
+			ef.hbpChannel = hbpCh.getSelectedIndex();
+			ef.abpChannel = abpCh.getSelectedIndex();
+			target.setExtraFeatures(ef);
+		}
+	}
+	
 	private class PIDPanel extends JPanel implements Commitable {
 		private JTextField pField = new JTextField();
 		private JTextField iField = new JTextField();
@@ -180,8 +218,13 @@ public class ExtruderOnboardParameters extends JFrame {
 	}
 
 	public ExtruderOnboardParameters(OnboardParameters target) {
-		super("Update onboard machine options");
+		super("Update onboard extruder options");
 		this.target = target;
+
+		Version v = new Version(0,0);
+		if (target instanceof Sanguino3GDriver) {
+			v = ((Sanguino3GDriver)target).getToolVersion();
+		}
 
 		JPanel panel = new JPanel(new MigLayout());
 		ThermistorTablePanel ttp;
@@ -191,19 +234,23 @@ public class ExtruderOnboardParameters extends JFrame {
 		ttp = new ThermistorTablePanel(1,"Heated build platform thermistor");
 		panel.add(ttp,"wrap");
 		commitList.add(ttp);
-		BackoffPanel backoffPanel = new BackoffPanel();
-		panel.add(backoffPanel,"span 2,growx,wrap");
-		commitList.add(backoffPanel);
+		if (!v.atLeast(new Version(2,5))) {
+			BackoffPanel backoffPanel = new BackoffPanel();
+			panel.add(backoffPanel,"span 2,growx,wrap");
+			commitList.add(backoffPanel);
+		}
+		if (v.atLeast(new Version(2,5))) {
+			ExtraFeaturesPanel efp = new ExtraFeaturesPanel();
+			panel.add(efp,"span 2,growx,wrap");
+			commitList.add(efp);
+		}
 		PIDPanel pidPanel = new PIDPanel(0,"Extruder");
 		panel.add(pidPanel,"growx");
 		commitList.add(pidPanel);
-		if (target instanceof Sanguino3GDriver) {
-			Version v = ((Sanguino3GDriver)target).getToolVersion();
-			if (v.atLeast(new Version(2,4))) {
-				PIDPanel pp = new PIDPanel(1,"Heated build platform");
-				panel.add(pp,"growx");
-				commitList.add(pp);
-			}
+		if (v.atLeast(new Version(2,4))) {
+			PIDPanel pp = new PIDPanel(1,"Heated build platform");
+			panel.add(pp,"growx");
+			commitList.add(pp);
 		}
 
 		panel.add(makeButtonPanel(),"span 2,newline");
