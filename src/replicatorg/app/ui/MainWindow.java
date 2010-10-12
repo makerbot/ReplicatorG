@@ -1604,7 +1604,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (showParams) {
 			name = machine.getName();
 		}
-		this.setTitle(WINDOW_TITLE+" - "+name);
+		this.setTitle(name + " - " + WINDOW_TITLE);
 	}
 
 	public void setEditorBusy(boolean isBusy) {
