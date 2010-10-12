@@ -934,7 +934,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// macosx already has its own about menu
 		menu.addSeparator();
 		JMenuItem aboutitem = new JMenuItem("About ReplicatorG");
-		item.addActionListener(new ActionListener() {
+		aboutitem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleAbout();
 			}
@@ -2325,8 +2325,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						machine.connect();
 					} catch (SerialException e) {
 						Base.logger.log(Level.WARNING,
-								"Could not use most recently selected serial port ("+lastPort+").",
-								e);
+								"Could not use most recently selected serial port ("+lastPort+").");
 						return;
 					}
 				}
