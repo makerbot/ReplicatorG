@@ -27,6 +27,9 @@ public class ExtruderOnboardParameters extends JFrame {
 	
 	interface Commitable {
 		public void commit();
+		// In a sane universe, this would be called "validate".  In a sane universe
+		// where Java actually implemented inheritance in a sane and happy manner.
+		public boolean isCommitable();
 	}
 
 	final int FIELD_WIDTH = 10;
@@ -70,11 +73,21 @@ public class ExtruderOnboardParameters extends JFrame {
 			int t0 = Integer.parseInt(t0Field.getText());
 			target.createThermistorTable(which,r0,t0,beta);
 		}
+		
+		public boolean isCommitable() {
+			return true;
+		}
 	}
 
 	Vector<Commitable> commitList = new Vector<Commitable>();
 	
-	private void commit() {
+	private boolean commit() {		
+		for (Commitable c : commitList) {
+			if (!c.isCommitable()) {
+				return false;
+			}
+		}
+		
 		for (Commitable c : commitList) {
 			c.commit();
 		}
@@ -86,6 +99,7 @@ public class ExtruderOnboardParameters extends JFrame {
 				"from resetting.",
 			    "Extruder controller reminder",
 			    JOptionPane.INFORMATION_MESSAGE);
+		return true;
 	}
 
 	private class BackoffPanel extends JPanel implements Commitable {
@@ -124,6 +138,10 @@ public class ExtruderOnboardParameters extends JFrame {
 			bp.stopMs = Integer.parseInt(stopMsField.getText());
 			bp.triggerMs = Integer.parseInt(triggerMsField.getText());
 			target.setBackoffParameters(bp);
+		}
+		
+		public boolean isCommitable() {
+			return true;
 		}
 	}
 
@@ -164,6 +182,18 @@ public class ExtruderOnboardParameters extends JFrame {
 			ef.abpChannel = abpCh.getSelectedIndex();
 			target.setExtraFeatures(ef);
 		}
+		
+		public boolean isCommitable() {
+			int a = extCh.getSelectedIndex();
+			int b = hbpCh.getSelectedIndex();
+			int c = abpCh.getSelectedIndex();
+			if (a == b || b == c || a == c) {
+				JOptionPane.showMessageDialog(this, "Two or more features are using the same mosfet channel!", 
+						"Channel conflict", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+			return true;
+		}
 	}
 	
 	private class PIDPanel extends JPanel implements Commitable {
@@ -198,6 +228,10 @@ public class ExtruderOnboardParameters extends JFrame {
 			pp.d = Float.parseFloat(dField.getText());
 			target.setPIDParameters(which,pp);
 		}
+		
+		public boolean isCommitable() {
+			return true;
+		}
 	}
 	
 	private JPanel makeButtonPanel() {
@@ -206,8 +240,9 @@ public class ExtruderOnboardParameters extends JFrame {
 		panel.add(commitButton);
 		commitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				ExtruderOnboardParameters.this.commit();
-				ExtruderOnboardParameters.this.dispose();				
+				if (ExtruderOnboardParameters.this.commit()) {
+					ExtruderOnboardParameters.this.dispose();
+				}
 			}
 		});
 		JButton cancelButton = new JButton("Cancel");
