@@ -1137,7 +1137,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// so used internally for everything else
 
 	public void handleAbout() {
-		final Image image = Base.getImage("images/about.jpg", this);
+		final Image image = Base.getImage("images/about.png", this);
 		int w = image.getWidth(this);
 		int h = image.getHeight(this);
 		final Window window = new Window(this) {
@@ -1146,11 +1146,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 				Graphics2D g2 = (Graphics2D) g;
 				g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-						RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+						RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
 				g.setFont(new Font("SansSerif", Font.PLAIN, 13));
 				g.setColor(Color.black);
-				g.drawString(Base.VERSION_NAME, 166, 85);
+				g.drawString("Version "+Base.VERSION_NAME, 190, 95+g.getFontMetrics().getAscent());
 			}
 		};
 		window.addMouseListener(new MouseAdapter() {
@@ -1568,7 +1568,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters();
 		onboardParamsItem.setVisible(showParams);
 		extruderParamsItem.setVisible(showParams);
-
+		// Advertise machine name
+		String name = "Not Connected";
+		if (showParams) {
+			name = machine.getName();
+		}
+		this.setTitle(WINDOW_TITLE+" - "+name);
 	}
 
 	public void setEditorBusy(boolean isBusy) {
