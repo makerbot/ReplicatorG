@@ -35,6 +35,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -51,10 +52,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineBreakMeasurer;
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -1150,7 +1157,31 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 				g.setFont(new Font("SansSerif", Font.PLAIN, 13));
 				g.setColor(Color.black);
-				g.drawString("Version "+Base.VERSION_NAME, 190, 95+g.getFontMetrics().getAscent());
+				FontMetrics fm = g.getFontMetrics();
+				String version = Base.VERSION_NAME;
+				Rectangle2D r = fm.getStringBounds(version,g);
+				g.drawString(version, (int)(364-r.getWidth()), (int)(95-r.getMinY()));
+
+				AttributedString text = new AttributedString("\u00a9 2008, 2009, 2010 by Zach Hoeken, Adam Mayer, and numerous contributors. " +
+						"See Contributors.txt for a full list.  \n\r" +
+						"This program is free software; you can redistribute it and/or modify "+
+						"it under the terms of the GNU General Public License as published by "+
+						"the Free Software Foundation; either version 2 of the License, or "+
+						"(at your option) any later version.");
+				AttributedCharacterIterator iterator = text.getIterator();
+				FontRenderContext frc = g2.getFontRenderContext();
+				LineBreakMeasurer measurer = new LineBreakMeasurer(text.getIterator(), frc);
+				measurer.setPosition(iterator.getBeginIndex());
+				final int margins = 32;
+			    float wrappingWidth = image.getWidth(this) - (margins*2);
+			    float x = margins;
+			    float y = 140;
+			    while (measurer.getPosition() < iterator.getEndIndex()) {
+			    	TextLayout layout = measurer.nextLayout(wrappingWidth);
+			         y += (layout.getAscent());
+			         layout.draw(g2, x, y);
+			         y += layout.getDescent() + layout.getLeading();
+			    }
 			}
 		};
 		window.addMouseListener(new MouseAdapter() {
