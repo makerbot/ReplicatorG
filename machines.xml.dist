@@ -163,4 +163,88 @@ M18
 M18
 		</cooldown>
 	</machine>
+	<machine experimental="1">
+		<name>EXPERIMENTAL - Thingomatic - Gen 4</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="300" maxfeedrate="4000" scale="47.069852"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="300" maxfeedrate="4000" scale="47.069852"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="300" maxfeedrate="1000" scale="200"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+		</geometry>
+		<tools>
+			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="sanguino3g">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<debuglevel>0</debuglevel>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+(Turn off steppers after a build.)
+M18
+		</cooldown>
+	</machine>
+	<machine experimental="1">
+		<name>EXPERIMENTAL - Thingomatic - Candy</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="300" maxfeedrate="4000" scale="13.2629119"/>  <!-- Pulley dia: 9.60mm / 1/8 step = 1/(9.60 * pi / 400) -->
+			<axis id="y" length="300" maxfeedrate="4000" scale="13.2629119"/>  <!-- Pulley dia: 9.60mm / 1/8 step = 1/(9.60 * pi / 400) -->
+			<axis id="z" length="300" maxfeedrate="1000" scale="50"/> <!-- TR-8x8 Z axis = 1/(8/400) -->
+		</geometry>
+		<tools>
+			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="sanguino3g">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<debuglevel>0</debuglevel>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+(Turn off steppers after a build.)
+M18
+		</cooldown>
+	</machine>
+	<machine experimental="1">
+		<name>EXPERIMENTAL - Thingomatic Halfstep</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="300" maxfeedrate="4000" scale="11.767463"/>  <!-- Pulley dia: 10.82mm / 1/4 step = 1/(10.82 * pi / 400) -->
+			<axis id="y" length="300" maxfeedrate="4000" scale="11.767463"/>  <!-- Pulley dia: 10.82mm / 1/4 step = 1/(10.82 * pi / 400) -->
+			<axis id="z" length="300" maxfeedrate="1000" scale="50"/> <!-- TR-8x8 Z axis = 1/(8/400) -->
+		</geometry>
+		<tools>
+			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="sanguino3g">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<debuglevel>0</debuglevel>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+(Turn off steppers after a build.)
+M18
+		</cooldown>
+	</machine>
 </machines>
