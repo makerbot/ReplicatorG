@@ -2349,8 +2349,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						us.setSerial(new Serial(lastPort,us));
 						machine.connect();
 					} catch (SerialException e) {
+						String msg = e.getMessage();
+						if (msg == null) { msg = "."; }
+						else { msg = ": "+msg; }
 						Base.logger.log(Level.WARNING,
-								"Could not use most recently selected serial port ("+lastPort+").");
+								"Could not use most recently selected serial port ("+lastPort+")"+ msg);
 						return;
 					}
 				}
