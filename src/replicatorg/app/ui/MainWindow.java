@@ -216,6 +216,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	JMenuItem saveAsMenuItem;
 	JMenuItem stopItem;
 	JMenuItem pauseItem;
+	JMenuItem controlPanelItem;
+	JMenuItem buildMenuItem;
 
 	JMenu machineMenu;
 	MachineMenuListener machineMenuListener;
@@ -720,13 +722,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		});
 		menu.add(item);
 
-		item = newJMenuItem("Build", 'B');
-		item.addActionListener(new ActionListener() {
+		buildMenuItem = newJMenuItem("Build", 'B');
+		buildMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleBuild();
 			}
 		});
-		menu.add(item);
+		menu.add(buildMenuItem);
 
 		pauseItem = newJMenuItem("Pause", 'E');
 		pauseItem.addActionListener(new ActionListener() {
@@ -796,14 +798,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		reloadSerialMenu();
 		menu.add(serialMenu);
 		
-		item = new JMenuItem("Control Panel", 'C');
-		item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J,ActionEvent.CTRL_MASK));
-		item.addActionListener(new ActionListener() {
+		controlPanelItem = new JMenuItem("Control Panel", 'C');
+		controlPanelItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J,ActionEvent.CTRL_MASK));
+		controlPanelItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleControlPanel();
 			}
 		});
-		menu.add(item);
+		menu.add(controlPanelItem);
 		
 		onboardParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -1521,6 +1523,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	private Date buildStart = null;
 	
 	public void machineStateChanged(MachineStateChangeEvent evt) {
+		boolean hasGcode = getBuild().getCode() != null;
 		if (building) {
 			if (evt.getState().isReady() ||
 				evt.getState().getState() == MachineState.State.STOPPING) {
@@ -1544,6 +1547,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				machine != null &&
 				machine.getDriver() instanceof OnboardParameters &&
 				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters());
+		
+		// enable the control panel menu item when the machine is ready
+		controlPanelItem.setEnabled(evt.getState().isReady());
+		// enable the build menu item when the machine is ready and there is gcode in the editor
+		buildMenuItem.setEnabled(hasGcode && evt.getState().isReady());
 	}
 
 	public void setEditorBusy(boolean isBusy) {
