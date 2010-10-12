@@ -1162,7 +1162,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				Rectangle2D r = fm.getStringBounds(version,g);
 				g.drawString(version, (int)(364-r.getWidth()), (int)(95-r.getMinY()));
 
-				AttributedString text = new AttributedString("\u00a9 2008, 2009, 2010 by Zach Hoeken, Adam Mayer, and numerous contributors. " +
+				AttributedString text = new AttributedString("\u00a9 2008, 2009, 2010 by Zach Smith, Adam Mayer, and numerous contributors. " +
 						"See Contributors.txt for a full list.  \n\r" +
 						"This program is free software; you can redistribute it and/or modify "+
 						"it under the terms of the GNU General Public License as published by "+
