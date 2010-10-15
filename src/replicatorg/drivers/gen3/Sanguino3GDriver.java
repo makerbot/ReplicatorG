@@ -256,7 +256,7 @@ public class Sanguino3GDriver extends SerialDriver
 						packetSent = true;
 					else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
 						try {
-							Thread.sleep(25);
+							Thread.sleep(5);
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
 							// We've been interrupted; dump out early!
