@@ -1,10 +1,14 @@
 0020 ReplicatorG
+Removed:
+* Took out temperature monitoring
 New features:
 * Pulled in skeinforge 31
 * Adding new profiles for skeinforge 31
 * Added support for v2.5 extruder firmware:
   * Support for motor controller swapping
   * Support for mosfet channel reassignment
+Other changes:
+* Improving handling for CRC failures
 Contributions:
 * chlunde: Edge mode on 'e' keypress re-enabled
 * Miles Lightwood, Eberhard Rensch, koenkooi:
