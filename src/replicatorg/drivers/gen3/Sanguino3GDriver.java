@@ -41,11 +41,11 @@ import org.w3c.dom.Node;
 import replicatorg.app.Base;
 import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.OnboardParameters;
-import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.PenPlotter;
+import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
-import replicatorg.drivers.OnboardParameters.ExtraFeatures;
+import replicatorg.drivers.gen3.PacketProcessor.CRCException;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
@@ -164,7 +164,11 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Sends the command over the serial connection and retrieves a result.
 	 */
 	protected PacketResponse runCommand(byte[] packet) {
-		
+		return runCommand(packet,3);
+	}
+	
+	protected PacketResponse runCommand(byte[] packet, int retries) {
+		if (retries == 0) return PacketResponse.timeoutResponse();
 		if (packet == null || packet.length < 4)
 			return null; // skip empty commands or broken commands
 
@@ -238,7 +242,12 @@ public class Sanguino3GDriver extends SerialDriver
 								return pr;
 							}
 						}
-						c = pp.processByte((byte) b);
+						try {
+							c = pp.processByte((byte) b);
+						} catch (CRCException e) {
+							Base.logger.severe("Bad CRC received; retries remaining: "+Integer.toString(retries));
+							return runCommand(packet,retries-1);
+						}
 					}
 
 					pr = pp.getResponse();

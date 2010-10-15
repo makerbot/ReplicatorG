@@ -11,6 +11,19 @@ import replicatorg.app.tools.IButtonCrc;
  */
 public class PacketProcessor implements PacketConstants {
 	
+	public static class CRCException extends Exception {
+		private int expected;
+		private int actual;
+		
+		public CRCException(int expected, int actual) {
+			this.expected = expected;
+			this.actual = actual;
+		}
+		
+		public int getActual() { return actual; }
+		public int getExpected() { return expected; }
+	}
+	
 	enum PacketState {
 		START, LEN, PAYLOAD, CRC, LAST
 	}
@@ -49,8 +62,9 @@ public class PacketProcessor implements PacketConstants {
 	 * Process the next byte in an incoming packet.
 	 * 
 	 * @return true if the packet is complete and valid; false otherwise.
+	 * @throws CRCException 
 	 */
-	public boolean processByte(byte b) {
+	public boolean processByte(byte b) throws CRCException {
 
 		if (Base.logger.isLoggable(Level.FINER)) {
 			if (b >= 32 && b <= 127)
@@ -103,7 +117,7 @@ public class PacketProcessor implements PacketConstants {
 						+ Integer.toHexString((int) crc.getCrc() & 0xff));
 			}
 			if (crc.getCrc() != targetCrc) {
-				throw new java.lang.RuntimeException("CRC mismatch on reply");
+				throw new CRCException(crc.getCrc(), targetCrc);
 			}
 			return true;
 		}
