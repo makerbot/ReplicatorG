@@ -1,8 +1,0 @@
-Format is tab separated preferences.
-Extrusion Perimeter Width over Thickness (ratio):	1.8
-Open File to be Insetted	
-Infill Perimeter Overlap (ratio):	0.05
-Calculate Overlap from Perimeter and Infill	True
-Calculate Overlap from Perimeter Only	False
-Start at Home	False
-windowPositionInset Preferences	0+0

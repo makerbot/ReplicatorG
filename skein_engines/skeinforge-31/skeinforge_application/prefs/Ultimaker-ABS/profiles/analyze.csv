@@ -5,6 +5,6 @@ WindowVisibilities
 Open File for Analyze	
 behold	False
 comment	False
-skeinview	True
+skeinview	False
 statistic	False
 vectorwrite	False

@@ -1,5 +1,5 @@
 Format is tab separated preferences.
-Activate Skeinview	True
+Activate Skeinview	False
 Draw Arrows	True
 Open File to Skeinview	
 Go Around Extruder Off Travel	False

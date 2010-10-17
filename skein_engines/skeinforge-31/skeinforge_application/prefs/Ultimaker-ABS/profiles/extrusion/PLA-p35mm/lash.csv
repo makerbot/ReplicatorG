@@ -1,8 +1,0 @@
-Format is tab separated lash preferences.
-Name                          	Value
-WindowVisibilities
-Open File to be Lashed	
-Activate Lash	True
-X Backlash (mm):	0.0
-Y Backlash (mm):	0.1
-windowPositionLash Preferences	600+0

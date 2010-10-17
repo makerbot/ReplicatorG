@@ -2,7 +2,7 @@ Format is tab separated skeinview preferences.
 Name                          	Value
 WindowVisibilities
 Open File to Skeinview	/home/erik/Desktop/whistle90p_export.gcode
-Activate Skeinview	True
+Activate Skeinview	False
 Draw Arrows	True
 Export File Extension:	
 Export Postscript Program:	gimp

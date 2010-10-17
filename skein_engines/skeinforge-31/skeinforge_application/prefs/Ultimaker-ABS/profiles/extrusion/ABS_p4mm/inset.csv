@@ -1,9 +1,0 @@
-Format is tab separated inset preferences.
-Name                          	Value
-WindowVisibilities
-Open File for Inset	
-Add Custom Code for Temperature Reading	True
-Bridge Width Multiplier (ratio):	1.0
-Overlap Removal Width over Perimeter Width (ratio):	0.6
-Turn Extruder Heater Off at Shut Down	True
-windowPositionInset Preferences	505+19

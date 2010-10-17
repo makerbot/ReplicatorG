@@ -247,8 +247,8 @@ M18
 M18
 		</cooldown>
 	</machine>
-        <machine experimental="1">
-                <name>EXPERIMENTAL - Mendel with (5D firmware)</name>
+        <machine experimental="0">
+                <name>Mendel with (5D firmware)</name>
                 <geometry type="cartesian">
                         <!-- different pulleys on X and Y axii -->
                         <axis id="x" length="300" maxfeedrate="5000" scale="47.069852"/>  <!-- 16th-step driver -->
@@ -259,6 +259,7 @@ M18
                         <tool name="Generic Extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
                 </tools>
                 <clamps></clamps>
+                <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
                 <driver name="reprap5d">
                         <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
                         <rate>57600</rate>
@@ -274,8 +275,8 @@ M18
 M108 S0
                 </cooldown>
         </machine>
-        <machine experimental="1">
-                <name>EXPERIMENTAL - Ultimaker v1.0 (5D firmware)</name>
+        <machine experimental="0">
+                <name>Ultimaker v1.0 (5D firmware)</name>
                 <geometry type="cartesian">
                         <!-- different pulleys on X and Y axii -->
                         <axis id="x" length="300" maxfeedrate="5000" scale="47.069852"/>  <!-- 16th-step driver -->

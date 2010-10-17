@@ -1,8 +1,0 @@
-Format is tab separated comb preferences.
-Name                          	Value
-WindowVisibilities
-Open File to be Combed	
-Activate Comb	True
-Minimum Departure Distance over Perimeter Width (ratio):	20.0
-Running Jump Space over Perimeter Width (ratio):	10.0
-windowPositionComb Preferences	600+0

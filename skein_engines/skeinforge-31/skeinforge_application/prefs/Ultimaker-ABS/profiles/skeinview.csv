@@ -3,7 +3,7 @@ Name                          	Value
 WindowPosition	0+0
 WindowVisibilities
 Open File to Skeinview	
-Activate Skeinview	True
+Activate Skeinview	False
 Frame List
 Animation Line Quickening (ratio):	1.0
 Animation Slide Show Rate (layers/second):	2.0
