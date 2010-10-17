@@ -1,0 +1,10 @@
+Format is tab separated skeinforge settings.
+Name                          	Value
+WindowPosition	539+244
+WindowVisibilities
+Open File for Skeinforge	/home/erik/Documents/PimJesse.stl
+analyze	False
+craft	True
+help	False
+meta	False
+profile	False

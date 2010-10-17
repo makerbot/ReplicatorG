@@ -1,0 +1,9 @@
+Format is tab separated cool preferences.
+Name                          	Value
+Activate Cool	False
+Open File to be Cooled	
+Minimum Layer Time (seconds):	15.0
+Minimum Orbital Radius (millimeters):	0.0
+Turn Fan On at Beginning	True
+Turn Fan Off at Ending	True
+windowPositionCool Preferences	600+0
