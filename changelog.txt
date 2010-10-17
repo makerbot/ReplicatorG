@@ -1,5 +1,6 @@
 0020-Erik5D
 * Very rudimentary support for printing on machines with RepRap's 5D firmware
+* Made skeinforge a lot more verbose. Added progress bars.
 
 0020 ReplicatorG
 Removed:
