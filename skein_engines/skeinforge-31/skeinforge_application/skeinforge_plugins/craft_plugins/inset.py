@@ -279,6 +279,7 @@ class InsetSkein:
 		self.distanceFeedRate = gcodec.DistanceFeedRate()
 		self.lineIndex = 0
 		self.rotatedBoundaryLayer = None
+		self.doingLayerN = 0;
 
 	def addGcodeFromPerimeterPaths( self, isIntersectingSelf, loop, loopLists, radius, z ):
 		"Add the perimeter paths to the output."
@@ -420,6 +421,8 @@ class InsetSkein:
 		elif firstWord == '(<layer>':
 			self.rotatedBoundaryLayer = euclidean.RotatedLoopLayer( float(splitLine[1]) )
 			self.distanceFeedRate.addLine(line)
+			self.doingLayerN = self.doingLayerN + 1
+			print "Insetting layer "+str(self.doingLayerN)+"..."
 		elif firstWord == '(</layer>)':
 			self.addInset( self.rotatedBoundaryLayer )
 			self.rotatedBoundaryLayer = None

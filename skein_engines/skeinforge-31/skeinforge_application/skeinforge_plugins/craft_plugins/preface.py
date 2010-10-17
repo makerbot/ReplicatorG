@@ -221,8 +221,9 @@ class PrefaceSkein:
 			self.distanceFeedRate.addGcodeFromLoop( loop, rotatedBoundaryLayer.z )
 		self.distanceFeedRate.addLine('(</layer>)')
 		self.doingLayerN=self.doingLayerN+1
-		print "Slice to GCode... z=%s       " % rotatedBoundaryLayer.z, '\r',
-#		print "Slice to GCode... n=%s       " % self.doingLayerN,
+#		print "Slice to GCode... z=%s       " % rotatedBoundaryLayer.z, '\r',
+#		print "Slice to GCode... z=%s       " % rotatedBoundaryLayer.z
+		print "Slice to GCode... layer %s. " % self.doingLayerN
 		sys.stdout.flush()
 
 	def addShutdownToOutput(self):
@@ -240,7 +241,7 @@ class PrefaceSkein:
 		self.addInitializationToOutput()
 		for rotatedBoundaryLayer in self.svgReader.rotatedLoopLayers:
 			self.addPreface( rotatedBoundaryLayer )
-		print " Layers processed: %s" % self.doingLayerN
+		print " The total Layer count is %s" % self.doingLayerN + "."
 		self.addShutdownToOutput()
 		return self.distanceFeedRate.output.getvalue()
 

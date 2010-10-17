@@ -857,7 +857,8 @@ class FillSkein:
 #		if layerIndex > 2:
 #			return
 #		print('layer index: %s  z: %s' % ( layerIndex, rotatedLayer.z ) )
-		print "Filling layer "+str(layerIndex)+"...",'\r',
+		print "Filling layer "+str(layerIndex)+"..."
+#,'\r',
                 sys.stdout.flush()
 
 		self.distanceFeedRate.addLine('(<layer> %s )' % rotatedLayer.z )
