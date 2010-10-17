@@ -247,4 +247,60 @@ M18
 M18
 		</cooldown>
 	</machine>
+        <machine experimental="1">
+                <name>EXPERIMENTAL - Mendel with (5D firmware)</name>
+                <geometry type="cartesian">
+                        <!-- different pulleys on X and Y axii -->
+                        <axis id="x" length="300" maxfeedrate="5000" scale="47.069852"/>  <!-- 16th-step driver -->
+                        <axis id="y" length="300" maxfeedrate="5000" scale="47.0698523"/>  <!-- 16th-step driver -->
+                        <axis id="z" length="300" maxfeedrate="150" scale="160"/> <!-- quarter-step driver -->
+                </geometry>
+                <tools>
+                        <tool name="Generic Extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+                </tools>
+                <clamps></clamps>
+                <driver name="reprap5d">
+                        <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+                        <rate>57600</rate>
+                        <parity>8</parity>
+                        <!-- optional, defaults to 1.                          <databits>1</databits> -->
+                        <!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+                        <debuglevel>1</debuglevel>
+                </driver>
+                <warmup>
+                </warmup>
+                <cooldown>
+(Turn off steppers after a build.)
+M108 S0
+                </cooldown>
+        </machine>
+        <machine experimental="1">
+                <name>EXPERIMENTAL - Ultimaker v1.0 (5D firmware)</name>
+                <geometry type="cartesian">
+                        <!-- different pulleys on X and Y axii -->
+                        <axis id="x" length="300" maxfeedrate="5000" scale="47.069852"/>  <!-- 16th-step driver -->
+                        <axis id="y" length="300" maxfeedrate="5000" scale="47.0698523"/>  <!-- 16th-step driver -->
+                        <axis id="z" length="300" maxfeedrate="150" scale="160"/> <!-- quarter-step driver -->
+                </geometry>
+                <tools>
+                        <tool name="Generic Extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+                </tools>
+                <clamps></clamps>
+                <firmware url="http://firmware.ultimaker.com/latest" autoupgrade="false"></firmware>
+                <help name="Ultimaking Guide" url="http://www.ultimaker.com/guide"></help>
+                <driver name="reprap5d">
+                        <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+                        <rate>57600</rate>
+                        <parity>8</parity>
+                        <!-- optional, defaults to 1.                          <databits>1</databits> -->
+                        <!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+                        <debuglevel>0</debuglevel>
+                </driver>
+                <warmup>
+                </warmup>
+                <cooldown>
+(Turn off steppers after a build.)
+M108 S0
+                </cooldown>
+        </machine>
 </machines>

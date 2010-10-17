@@ -1,3 +1,6 @@
+0020-Erik5D
+* Very rudimentary support for printing on machines with RepRap's 5D firmware
+
 0020 ReplicatorG
 Removed:
 * Took out temperature monitoring
