@@ -171,6 +171,7 @@ class PrefaceSkein:
 		self.lineIndex = 0
 		self.oldLocation = None
 		self.svgReader = SVGReader()
+		self.doingLayerN = 0
 
 	def addFromUpperLowerFile( self, fileName ):
 		"Add lines of text from the fileName or the lowercase fileName, if there is no file by the original fileName in the directory."
@@ -219,6 +220,10 @@ class PrefaceSkein:
 		for loop in rotatedBoundaryLayer.loops:
 			self.distanceFeedRate.addGcodeFromLoop( loop, rotatedBoundaryLayer.z )
 		self.distanceFeedRate.addLine('(</layer>)')
+		self.doingLayerN=self.doingLayerN+1
+		print "Slice to GCode... z=%s       " % rotatedBoundaryLayer.z, '\r',
+#		print "Slice to GCode... n=%s       " % self.doingLayerN,
+		sys.stdout.flush()
 
 	def addShutdownToOutput(self):
 		"Add shutdown gcode to the output."
@@ -235,6 +240,7 @@ class PrefaceSkein:
 		self.addInitializationToOutput()
 		for rotatedBoundaryLayer in self.svgReader.rotatedLoopLayers:
 			self.addPreface( rotatedBoundaryLayer )
+		print " Layers processed: %s" % self.doingLayerN
 		self.addShutdownToOutput()
 		return self.distanceFeedRate.output.getvalue()
 
