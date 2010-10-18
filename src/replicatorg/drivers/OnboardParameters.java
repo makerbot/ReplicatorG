@@ -64,6 +64,19 @@ public interface OnboardParameters {
 	PIDParameters getPIDParameters(int which);
 	void setPIDParameters(int which, PIDParameters params);
 	
+	class ExtraFeatures {
+		final static int CHA = 0;
+		final static int CHB = 1;
+		final static int CHC = 2;
+		public boolean swapMotorController;
+		public int heaterChannel;
+		public int hbpChannel;
+		public int abpChannel;
+	}
+	
+	ExtraFeatures getExtraFeatures();
+	void setExtraFeatures(ExtraFeatures features);
+	
 	/** Reset the onboard parameters on the motherboard to factory settings. */ 
 	void resetToFactory();
 

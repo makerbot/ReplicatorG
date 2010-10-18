@@ -14,7 +14,7 @@ TEMP="TEMPORARY"
 
 cd $BASE
 
-hdiutil create -megabytes 20 $DEST$TEMP.dmg -layout NONE
+hdiutil create -megabytes 50 $DEST$TEMP.dmg -layout NONE
 MY_DISK=`hdid -nomount $DEST$TEMP.dmg`
 echo My Dist $MY_DISK
 newfs_hfs -v $VOLUME $MY_DISK

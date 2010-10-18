@@ -45,7 +45,7 @@ public class ToolpathGeneratorFactory {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-0006");
 			}
 			File getUserProfilesDir() {
-		    	return Base.getApplicationFile("sf_profiles");
+		    	return Base.getUserFile("sf_profiles");
 			}
 		};
 		class Skeinforge31 extends SkeinforgeGenerator {
@@ -53,7 +53,7 @@ public class ToolpathGeneratorFactory {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-31/skeinforge_application");
 			}
 			File getUserProfilesDir() {
-		    	return Base.getApplicationFile("sf_31_profiles");
+		    	return Base.getUserFile("sf_31_profiles");
 			}
 		};
 

@@ -1,0 +1,22 @@
+ReplicatorG was forked from the Arduino project in 2008 by Zach
+Smith.  Adam Mayer took over maintenance of ReplicatorG in 2009.
+
+ReplicatorG includes several versions of Skeinforge, written by
+Enrique Perez and others.  See Enrique's blog for details:
+http://fabmetheus.blogspot.com/
+
+Other contributors are listed below.  In cases where I couldn't find
+the contributor's full name, I've listed their github handle instead.
+* Miles Lightwood
+* Eberhard Rensch
+* Charles Pax
+* Markus Klink
+* Mikko Sivulainen
+* chlunde
+* koenkooi
+* Aaron Colwell
+* Rick Kimball
+* Andreas Fuchs
+
+If I've left you off this list, let me know ASAP and I'll add your
+name.
