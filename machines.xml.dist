@@ -256,7 +256,7 @@ M18
                         <axis id="z" length="300" maxfeedrate="150" scale="160"/> <!-- quarter-step driver -->
                 </geometry>
                 <tools>
-                        <tool name="Generic Extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+                        <tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" motor_steps="200" heatedplatform="true" />
                 </tools>
                 <clamps></clamps>
                 <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
@@ -284,7 +284,7 @@ M108 S0
                         <axis id="z" length="300" maxfeedrate="150" scale="160"/> <!-- quarter-step driver -->
                 </geometry>
                 <tools>
-                        <tool name="Generic Extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+                        <tool name="Stepper-based pinch extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" heatedplatform="true" motor_steps="200" />
                 </tools>
                 <clamps></clamps>
                 <firmware url="http://firmware.ultimaker.com/latest" autoupgrade="false"></firmware>

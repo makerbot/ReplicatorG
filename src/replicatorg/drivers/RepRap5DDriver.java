@@ -101,8 +101,14 @@ public class RepRap5DDriver extends SerialDriver {
 				long end = date.getTime() + 10000;
 
 				Base.logger.info("Initializing Serial.");
+//				serial.clear();
 				while (!isInitialized()) {
 					readResponse();
+
+/// Recover:
+//					Base.logger.warning("No connection; trying to pulse RTS to reset device.");
+//					serial.pulseRTSLow();
+
 
 					// record our current time
 					date = new Date();
@@ -243,18 +249,31 @@ public class RepRap5DDriver extends SerialDriver {
 																			// remove
 																			// any
 																			// trailing
-																			// \r
+						Base.logger.info(line);											// \r
 						result = result.substring(index + 1);
 						if (line.length() == 0)
 							continue;
 						if (line.startsWith("ok")) {
 							bufferSize -= commands.remove();
 							Base.logger.info(line);
-						} else if (line.startsWith("T:")) {
-							String temp = line.substring(2);
-							machine.currentTool().setCurrentTemperature(
-									Double.parseDouble(temp));
-							Base.logger.info(line);
+							if (line.startsWith("ok T:")) {
+								Pattern r = Pattern.compile("^ok T:([0-9\\.]+)[^0-9]");
+							    Matcher m = r.matcher(line);
+							    if (m.find( )) {
+							    	String temp = m.group(1);
+									
+									machine.currentTool().setCurrentTemperature(
+											Double.parseDouble(temp));
+							    }
+								r = Pattern.compile("^ok.*B:([0-9\\.]+)$");
+							    m = r.matcher(line);
+							    if (m.find( )) {
+							    	String bedTemp = m.group(1);
+									machine.currentTool().setPlatformCurrentTemperature(
+											Double.parseDouble(bedTemp));
+							    }
+							}
+
 						}
 						// old arduino firmware sends "start"
 						else if (line.startsWith("start")) {
@@ -455,6 +474,9 @@ public class RepRap5DDriver extends SerialDriver {
 		super.readTemperature();
 	}
 
+	public double getPlatformTemperature(){
+		return machine.currentTool().getPlatformCurrentTemperature();
+	}
 	/***************************************************************************
 	 * Flood Coolant interface functions
 	 **************************************************************************/

@@ -162,7 +162,8 @@ public class ToolpathGeneratorThread extends Thread {
 				    m = r.matcher(message);
 				    if (m.find( ))
 				    {
-				    	subProgressBar.setValue(0);
+				    	subProgressBar.setIndeterminate(true);
+				    	// http://download.oracle.com/javase/tutorial/uiswing/components/progress.html#indeterminate
 				    	totalProgressBar.setValue(65);
 				    }
 					r = Pattern.compile("Speed procedure took");
