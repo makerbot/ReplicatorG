@@ -1599,7 +1599,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		boolean showParams = 
 				machine != null &&
 				machine.getDriver() instanceof OnboardParameters &&
-				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters());
+				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters();
 		
 		// enable the control panel menu item when the machine is ready
 		controlPanelItem.setEnabled(evt.getState().isReady());
