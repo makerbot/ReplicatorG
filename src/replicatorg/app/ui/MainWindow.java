@@ -35,6 +35,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -51,10 +52,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineBreakMeasurer;
+import java.awt.font.TextLayout;
+import java.awt.geom.Rectangle2D;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -770,7 +777,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		return menu;
 	}
 
-	JMenuItem onboardParamsItem = new JMenuItem("Onboard Preferences");
+	JMenuItem onboardParamsItem = new JMenuItem("Cupcake Onboard Preferences");
+	JMenuItem extruderParamsItem = new JMenuItem("Extruder Onboard Preferences");
 	
 	protected JMenu buildMachineMenu() {
 		JMenuItem item;
@@ -814,7 +822,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		});
 		onboardParamsItem.setVisible(false);
 		menu.add(onboardParamsItem);
-		
+
+		extruderParamsItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				handleExtruderPrefs();
+			}
+		});
+		extruderParamsItem.setVisible(false);
+		menu.add(extruderParamsItem);
+
 		item = new JMenuItem("Upload new firmware...");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -936,7 +952,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// macosx already has its own about menu
 		menu.addSeparator();
 		JMenuItem aboutitem = new JMenuItem("About ReplicatorG");
-		item.addActionListener(new ActionListener() {
+		aboutitem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleAbout();
 			}
@@ -1130,7 +1146,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// so used internally for everything else
 
 	public void handleAbout() {
-		final Image image = Base.getImage("images/about.jpg", this);
+		final Image image = Base.getImage("images/about.png", this);
 		int w = image.getWidth(this);
 		int h = image.getHeight(this);
 		final Window window = new Window(this) {
@@ -1139,11 +1155,35 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 				Graphics2D g2 = (Graphics2D) g;
 				g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-						RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+						RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
 				g.setFont(new Font("SansSerif", Font.PLAIN, 13));
 				g.setColor(Color.black);
-				g.drawString(Base.VERSION_NAME, 166, 85);
+				FontMetrics fm = g.getFontMetrics();
+				String version = Base.VERSION_NAME;
+				Rectangle2D r = fm.getStringBounds(version,g);
+				g.drawString(version, (int)(364-r.getWidth()), (int)(95-r.getMinY()));
+
+				AttributedString text = new AttributedString("\u00a9 2008, 2009, 2010 by Zach Smith, Adam Mayer, and numerous contributors. " +
+						"See Contributors.txt for a full list.  \n\r" +
+						"This program is free software; you can redistribute it and/or modify "+
+						"it under the terms of the GNU General Public License as published by "+
+						"the Free Software Foundation; either version 2 of the License, or "+
+						"(at your option) any later version.");
+				AttributedCharacterIterator iterator = text.getIterator();
+				FontRenderContext frc = g2.getFontRenderContext();
+				LineBreakMeasurer measurer = new LineBreakMeasurer(text.getIterator(), frc);
+				measurer.setPosition(iterator.getBeginIndex());
+				final int margins = 32;
+			    float wrappingWidth = image.getWidth(this) - (margins*2);
+			    float x = margins;
+			    float y = 140;
+			    while (measurer.getPosition() < iterator.getEndIndex()) {
+			    	TextLayout layout = measurer.nextLayout(wrappingWidth);
+			         y += (layout.getAscent());
+			         layout.draw(g2, x, y);
+			         y += layout.getDescent() + layout.getLeading();
+			    }
 			}
 		};
 		window.addMouseListener(new MouseAdapter() {
@@ -1205,7 +1245,20 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			moo.setVisible(true);
 		}
 	}
-	
+
+	public void handleExtruderPrefs() {
+		if (machine == null || 
+				!(machine.driver instanceof OnboardParameters)) {
+			JOptionPane.showMessageDialog(
+					this,
+					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
+					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
+		} else {
+			ExtruderOnboardParameters eop = new ExtruderOnboardParameters((OnboardParameters)machine.driver);
+			eop.setVisible(true);
+		}
+	}
+
 	/**
 	 * Show the preferences window.
 	 */
@@ -1543,7 +1596,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (evt.getState().isReady()) {
 			reloadSerialMenu();
 		}
-		onboardParamsItem.setVisible(
+		boolean showParams = 
 				machine != null &&
 				machine.getDriver() instanceof OnboardParameters &&
 				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters());
@@ -1552,6 +1605,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		controlPanelItem.setEnabled(evt.getState().isReady());
 		// enable the build menu item when the machine is ready and there is gcode in the editor
 		buildMenuItem.setEnabled(hasGcode && evt.getState().isReady());
+		onboardParamsItem.setVisible(showParams);
+		extruderParamsItem.setVisible(showParams);
+		// Advertise machine name
+		String name = "Not Connected";
+		if (showParams) {
+			name = machine.getName();
+		}
+		this.setTitle(name + " - " + WINDOW_TITLE);
 	}
 
 	public void setEditorBusy(boolean isBusy) {
@@ -2332,9 +2393,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						us.setSerial(new Serial(lastPort,us));
 						machine.connect();
 					} catch (SerialException e) {
+						String msg = e.getMessage();
+						if (msg == null) { msg = "."; }
+						else { msg = ": "+msg; }
 						Base.logger.log(Level.WARNING,
-								"Could not use most recently selected serial port ("+lastPort+").",
-								e);
+								"Could not use most recently selected serial port ("+lastPort+")"+ msg);
 						return;
 					}
 				}

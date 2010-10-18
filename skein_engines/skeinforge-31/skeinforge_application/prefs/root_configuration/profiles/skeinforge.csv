@@ -1,6 +1,6 @@
 Format is tab separated skeinforge settings.
 Name                          	Value
-WindowPosition	816+60
+WindowPosition	822+60
 Open File for Skeinforge	
 analyze	False
 craft	True
