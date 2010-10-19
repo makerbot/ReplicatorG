@@ -1,3 +1,7 @@
+0021 ReplicatorG
+Contributions:
+* justjoheinz: turn off control panel and build menu options when disconnected
+
 0020 ReplicatorG
 Removed:
 * Took out temperature monitoring
