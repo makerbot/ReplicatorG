@@ -1597,6 +1597,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			reloadSerialMenu();
 		}
 		boolean showParams = 
+				evt.getState().isReady() &&
 				machine != null &&
 				machine.getDriver() instanceof OnboardParameters &&
 				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters();
