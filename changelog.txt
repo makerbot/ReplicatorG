@@ -2,6 +2,7 @@
 Contributions:
 * justjoheinz: turn off control panel and build menu options when disconnected
 * Erik: added 5D driver for RepRap's and compatible firmwares (Ultimaker)
+* Erik: STL preview now is the actual build volumes configured in machines.xml
 
 0020 ReplicatorG
 Removed:
