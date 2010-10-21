@@ -1,6 +1,9 @@
-0020-Erik5D
-* Very rudimentary support for printing on machines with RepRap's 5D firmware
-* Made skeinforge a lot more verbose. Added progress bars.
+0021 ReplicatorG
+Contributions:
+* justjoheinz: turn off control panel and build menu options when disconnected
+* Erik: Support for printing on machines with RepRap's 5D firmware
+* Erik: Fixed 5D temperature readings
+* Erik: Made skeinforge a lot more verbose. Added progress bars for total progess and for carve, inset and fill operations.
 
 0020 ReplicatorG
 Removed:
