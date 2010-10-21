@@ -67,7 +67,7 @@ public class ToolpathGeneratorFactory {
 	}
 
 	static public String getSelectedName() {
-		String name = Base.preferences.get("replicatorg.generator.name", "Skeinforge (31)");
+		String name = Base.preferences.get("replicatorg.generator.name", "Skeinforge (standard)");
 		return name;
 	}
 

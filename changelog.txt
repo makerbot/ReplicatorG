@@ -1,9 +1,9 @@
 0021 ReplicatorG
 Contributions:
 * justjoheinz: turn off control panel and build menu options when disconnected
-* Erik: Support for printing on machines with RepRap's 5D firmware
-* Erik: Fixed 5D temperature readings
-* Erik: Made skeinforge a lot more verbose. Added progress bars for total progess and for carve, inset and fill operations.
+* Erik: Made skeinforge a more verbose (with Enrique's approval). Added progress bars for total progess and for carve, inset and fill operations.
+* Erik: Fixed errors in windows build due to Skeinview being enabled in some profiles (Skeinforge doesn't exit and is killed by RepG, otherwise)
+* Erik: Pointing out a minor (unsolved, sorry) bug in src/replicatorg/app/MachineFactory.java
 
 0020 ReplicatorG
 Removed:

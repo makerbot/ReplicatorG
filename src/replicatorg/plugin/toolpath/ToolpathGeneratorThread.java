@@ -184,6 +184,9 @@ public class ToolpathGeneratorThread extends Thread {
 					r = Pattern.compile("Clip procedure took");
 				    m = r.matcher(message);
 				    if (m.find( )) totalProgressBar.setValue(99);
+					r = Pattern.compile("The extrusion fill density ratio");
+				    m = r.matcher(message);
+				    if (m.find( )) totalProgressBar.setValue(99);
 
 				    if(logIt)
 				    	Base.logger.info(message);
