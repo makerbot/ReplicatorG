@@ -39,6 +39,7 @@ public class ToolpathGeneratorThread extends Thread {
 		JLabel topLabel;
 		JLabel progressLabel;
 		JProgressBar subProgressBar;
+		JLabel totalProgressLabel;
 		JProgressBar totalProgressBar;
 		JButton doneButton;
 		int layerIndex;
@@ -52,9 +53,10 @@ public class ToolpathGeneratorThread extends Thread {
 			icon.setImageObserver(topLabel);
 			progressLabel = new JLabel("Launching plugin...");
 			subProgressBar = new JProgressBar();
+			totalProgressLabel = new JLabel("Total progress:");
 			totalProgressBar = new JProgressBar();
 			subProgressBar.setValue(0);
-			subProgressBar.setStringPainted(true);
+			subProgressBar.setStringPainted(false);
 			subProgressBar.setValue(0);
 			totalProgressBar.setStringPainted(false);
 			int layerIndex = 0;
@@ -64,6 +66,7 @@ public class ToolpathGeneratorThread extends Thread {
 			add(new JLabel("Generator: Skeinforge"),"wrap");
 			add(progressLabel,"wrap,growx");
 			add(subProgressBar,"wrap,wmin 400px");
+			add(totalProgressLabel,"wrap,growx");
 			add(totalProgressBar,"wrap,wmin 400px");
 			doneButton = new JButton("Cancel");
 			doneButton.addActionListener(new ActionListener() {
@@ -113,7 +116,7 @@ public class ToolpathGeneratorThread extends Thread {
 				    	totalProgressBar.setValue(10 + sub);				    	
 				    }
 
-				    // THE ONE BELOW IS FOR THE OLDER SKEINFORGE!
+				    // THE ONE BELOW IS JUST FOR THE OLDER SKEINFORGE!
 					r = Pattern.compile("Filling layer[^0-9]([0-9]+)/([0-9]+)[^0-9]");
 				    m = r.matcher(message);
 				    if (m.find( )) {
