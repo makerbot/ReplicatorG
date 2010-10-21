@@ -1,8 +1,0 @@
-Format is tab separated dimension settings.
-Name                          	Value
-WindowPosition	600+0
-WindowVisibilities
-Open File for Dimension	
-Activate Dimension	False
-Absolute Extrusion Distance	False
-Relative Extrusion Distance	True

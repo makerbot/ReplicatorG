@@ -1,8 +1,0 @@
-Format is tab separated chamber preferences.
-Name                          	Value
-WindowVisibilities
-Open File for Chamber	
-Activate Chamber:	False
-Temperature of Bed (Celcius):	60.0
-Temperature of Chamber (Celcius):	30.0
-windowPositionChamber Preferences	600+0
