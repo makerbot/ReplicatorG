@@ -1581,6 +1581,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			if (evt.getState().isReady() ||
 				evt.getState().getState() == MachineState.State.STOPPING) {
 				final MachineState endState = evt.getState();
+        		building = false;
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                     	if (endState.isReady()) {
@@ -1652,7 +1653,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		String message = "Build finished.\n\n";
 		message += "Completed in "
 				+ EstimationDriver.getBuildTimeString(elapsed);
-
 		Base.showMessage("Build finished", message);
 	}
 
@@ -1677,8 +1677,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		textarea.setEnabled(true);
 
 		building = false;
-		if (machine.getSimulatorDriver() != null)
-			machine.getSimulatorDriver().destroyWindow();
+		if (machine != null) {
+			if (machine.getSimulatorDriver() != null)
+				machine.getSimulatorDriver().destroyWindow();
+		} else {
+			System.err.println("Machine is null!");
+		}
 		setEditorBusy(false);
 	}
 

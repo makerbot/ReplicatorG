@@ -164,16 +164,32 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Sends the command over the serial connection and retrieves a result.
 	 */
 	protected PacketResponse runCommand(byte[] packet) {
-		return runCommand(packet,3);
+		return runCommand(packet,5);
+	}
+	
+	void printDebugData(String title, byte[] data) {
+		if (Base.logger.isLoggable(Level.FINER)) {
+			StringBuffer buf = new StringBuffer(title + ": ");
+			for (int i = 0; i < data.length; i++) {
+				buf.append(Integer
+						.toHexString((int) data[i] & 0xff));
+				buf.append(" ");
+			}
+			Base.logger.log(Level.FINER,buf.toString());
+		}
 	}
 	
 	protected PacketResponse runCommand(byte[] packet, int retries) {
-		if (retries == 0) return PacketResponse.timeoutResponse();
-		if (packet == null || packet.length < 4)
+		if (retries == 0) {
+			Base.logger.severe("Packet timed out!");
+			return PacketResponse.timeoutResponse();
+		}
+		if (packet == null || packet.length < 4) {
+			Base.logger.severe("Attempt to send empty or too-small packet");
 			return null; // skip empty commands or broken commands
+		}
 
 		boolean isCommand = (packet[2] & 0x80) != 0;
-		
 		if (fileCaptureOstream != null) {
 			// capture to file.
 			try {
@@ -191,90 +207,76 @@ public class Sanguino3GDriver extends SerialDriver
 		assert (serial != null);
 		
 		boolean packetSent = false;
-		PacketProcessor pp = new PacketProcessor();
+		PacketProcessor pp;
 		PacketResponse pr = new PacketResponse();
 
-		while (!packetSent) {
-			// Dump out if interrupted
-			if (Thread.currentThread().isInterrupted()) {
-				return pr;
-			}
+		synchronized(serial) {
 
-			pp = new PacketProcessor();
-
-			synchronized (serial) {
-				serial.write(packet);
-
-				if (Base.logger.isLoggable(Level.FINER)) {
-					StringBuffer buf = new StringBuffer("OUT: ");
-					for (int i = 0; i < packet.length; i++) {
-						buf.append(Integer
-								.toHexString((int) packet[i] & 0xff));
-						buf.append(" ");
+			while (!packetSent) {
+				// Dump out if interrupted
+				if (Thread.currentThread().isInterrupted()) {
+					// Clear interrupted status
+					Thread.interrupted();
+					// Wait for end of packet and clear (if forthcoming)
+					try {
+						Thread.sleep(10);
+						serial.clear();
+					} catch (InterruptedException e) {
+						// safe to ignore
 					}
-					Base.logger.log(Level.FINER,buf.toString());
+					// Reestablish interrupt
+					Thread.currentThread().interrupt();
+					return pr;
 				}
 
-					boolean c = false;
-					while (!c) {
-						// Dump out if interrupted
-						if (Thread.currentThread().isInterrupted()) { 
-							return pr;
+				pp = new PacketProcessor();
+				
+				synchronized(this) {
+					// Do not allow a stop or reset command to interrupt mid-packet!
+					serial.write(packet);
+				}
+				printDebugData("OUT",packet);
+				
+				// Read entire response packet
+				boolean completed = false;
+				while (!completed) {
+					// Dump out if interrupted
+					int b = serial.read();
+					if (b == -1) {
+						if (Thread.currentThread().isInterrupted()) {
+							break;
 						}
-						int b = serial.read();
-						if (b == -1) {
-							// Read timed out.
-							try {
-								Thread.sleep(60);
-							} catch (InterruptedException e) {
-								// If we've been explicitly interrupted, reassert
-								// interrupted status and terminate early.
-								Thread.currentThread().interrupt();
-								return pr;
-							}
-							if (isCommand) {
-								// Try again for commands
-								Base.logger.info("Read timed out; trying to resend command.");
-								continue;
-							} else {
-								Base.logger.info("Read timed out; giving up on query.");
-								//throw new TimeoutException(serial);
-								return pr;
-							}
-						}
-						try {
-							c = pp.processByte((byte) b);
-						} catch (CRCException e) {
-							Base.logger.severe("Bad CRC received; retries remaining: "+Integer.toString(retries));
-							return runCommand(packet,retries-1);
-						}
+						Base.logger.severe("Read timed out; retries remaining: "+Integer.toString(retries));
+						return runCommand(packet,retries-1);
 					}
-
-					pr = pp.getResponse();
-
-					if (pr.isOK())
-						packetSent = true;
-					else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
-						try {
-							Thread.sleep(5);
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-							// We've been interrupted; dump out early!
-							return pr;
-						}
+					try {
+						completed = pp.processByte((byte) b);
+					} catch (CRCException e) {
+						Base.logger.severe("Bad CRC received; retries remaining: "+Integer.toString(retries));
+						return runCommand(packet,retries-1);
 					}
-					// TODO: implement other error things.
-					else {
-						StringBuffer sb = new StringBuffer("Sending ");
-						for (int i = 0; i < packet.length; i++) {
-							sb.append(Integer.toHexString(packet[i]));
-							sb.append(" ");
-						}
-						Base.logger.fine(sb.toString());
-						pr.printDebug();
-						break;
-					}
+				}
+				if (!completed) continue;
+				pr = pp.getResponse();
 
+				if (pr.isOK()) {
+					packetSent = true;
+				} else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
+					if (!Thread.currentThread().isInterrupted()) try {
+						Thread.sleep(5);
+					} catch (InterruptedException e) {
+						// Reassert; will catch it the next go-round
+						Thread.currentThread().interrupt();
+					}
+				}
+				else {
+					// Other random error
+					printDebugData("Unknown error sending, retry",packet);
+					if (retries > 1) {
+						return runCommand(packet,retries-1);
+					}
+					packetSent = true; // live with the fail
+				}
 			}
 		}
 		return pr;
@@ -1098,7 +1100,8 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.warning("Stop.");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ABORT.getCode());
 		Thread.interrupted(); // Clear interrupted status
-		runCommand(pb.getPacket());
+		PacketResponse pr = runCommand(pb.getPacket());
+		pr.printDebug();
 		// invalidate position, force reconciliation.
 		invalidatePosition();
 	}
@@ -1120,7 +1123,13 @@ public class Sanguino3GDriver extends SerialDriver
 		if (isInitialized() && version.compareTo(new Version(1,4)) >= 0) {
 			// WDT reset introduced in version 1.4 firmware
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.RESET.getCode());
-			runCommand(pb.getPacket());
+			System.err.println("SENDING RESET CODE");
+			Thread.interrupted(); // Clear interrupted status
+			PacketResponse pr = runCommand(pb.getPacket());
+			pr.printDebug();
+			if (pr.isOK()) { System.err.println("RESET SUCCESSFUL"); }
+			// invalidate position, force reconciliation.
+			invalidatePosition();
 		}
 		setInitialized(false);
 		initialize();
@@ -1179,6 +1188,10 @@ public class Sanguino3GDriver extends SerialDriver
 			// Copy removes the first response byte from the packet payload.
 			System.arraycopy(pr.getPayload(),1,rv,0,rvlen);
 			return rv;
+		}
+		else
+		{
+			Base.logger.severe("On tool read: "+pr.getResponseCode().getMessage());
 		}
 		return null;
 	}

@@ -156,7 +156,8 @@ public class MachineController {
 			while (i.hasNext()) {
 				String line = i.next();
 				linesProcessed++;
-				if (Thread.interrupted()) {
+				if (Thread.currentThread().isInterrupted()) {
+					System.err.println("INTERRUPTION");
 					Base.logger.info("build thread interrupted");
 					return false;
 				}
@@ -237,11 +238,17 @@ public class MachineController {
 					if (!state.isSimulating()) driver.unpause();
 				}
 				
-				// bail if we got interrupted.
+				// Send a stop command if we're stopping.
 				if (state.getState() == MachineState.State.STOPPING) {
+					System.err.println("THREAD STOP");
 					driver.stop();
+				}
+
+				// bail if we're no longer building
+				if (state.getState() != MachineState.State.BUILDING) {
 					return false;
 				}
+				
 				// send out updates
 				if (pollingEnabled) {
 					long curMillis = System.currentTimeMillis();
@@ -265,16 +272,6 @@ public class MachineController {
 			return true;
 		}
 
-		/**
-		 * Reset machine to its basic state.
-		 * 
-		 */
-		private synchronized void resetInternal() {
-			driver.getMachine().currentTool().setTargetTemperature(0);
-			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
-			driver.reset();
-		}
-
 		public boolean isReady() { return state.isReady(); }
 
 		public void pollStatus() {
@@ -287,14 +284,14 @@ public class MachineController {
 		}
 		
 		public void forceReset() {
-			setState(new MachineState(MachineState.State.NOT_ATTACHED));
+			setState(new MachineState(MachineState.State.RESET));
 			interruptDriver();
-			resetInternal();
 		}
 		
 		public void reset() {
+			System.err.println("Reset called!");
 			forceReset();
-			connect();
+			//connect();
 		}
 		
 		public void connect() {
@@ -337,6 +334,7 @@ public class MachineController {
 		
 		private void buildRemoteInternal(String remoteName) {
 			if (remoteName == null || !(driver instanceof SDCardCapture)) return;
+			if (state.getState() != MachineState.State.PLAYBACK) return;
 			driver.getCurrentPosition(); // reconcille position
 			SDCardCapture sdcc = (SDCardCapture)driver;
 			if (!processSDResponse(sdcc.playback(remoteName))) {
@@ -353,14 +351,13 @@ public class MachineController {
 						}
 						driver.unpause();
 					}
-					
+
 					// bail if we got interrupted.
-					if (state.getState() == MachineState.State.STOPPING) {
-						driver.stop();
-						return;
-					}
+					if (state.getState() != MachineState.State.PLAYBACK) return;
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
+					// bail if we got interrupted.
+					if (state.getState() != MachineState.State.PLAYBACK) return;
 				}
 			}
 			driver.invalidatePosition();
@@ -469,6 +466,11 @@ public class MachineController {
 							setState(MachineState.State.NOT_ATTACHED);
 						}
 					} else if (state.getState() == MachineState.State.STOPPING) {
+						driver.stop();
+						setState(MachineState.State.READY);						
+					} else if (state.getState() == MachineState.State.RESET) {
+						System.err.println("RESET TRIGGERED");
+						driver.reset();
 						setState(MachineState.State.READY);						
 					} else {
 						synchronized(this) {
@@ -492,6 +494,7 @@ public class MachineController {
 	
 	private void readName() {
 		if (driver instanceof OnboardParameters) {
+			if (Thread.currentThread().isInterrupted()) { System.err.println("STILL INTERRUPTED"); }
 			String n = ((OnboardParameters)driver).getMachineName();
 			if (n != null && n.length() > 0) {
 				name = n;
