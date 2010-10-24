@@ -17,6 +17,9 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -88,6 +91,10 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	class ConfigurationDialog extends JDialog {
 		final String manageStr = "Manage profiles...";
 		final String profilePref = "replicatorg.skeinforge.profilePref";
+		JButton editButton = new JButton("Edit...");
+		JButton newButton = new JButton("Create...");
+		JButton deleteButton = new JButton("Delete");
+		JButton ok = new JButton("Ok");
 
 		private void loadList(JList list) {
 			list.removeAll();
@@ -97,6 +104,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				model.addElement(p);
 			}
 			list.setModel(model);
+			list.clearSelection();
 		}
 
 		public ConfigurationDialog(final Frame parent) {
@@ -104,12 +112,32 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			setTitle("Choose a skeinforge profile");
 			setLayout(new MigLayout("aligny top"));
 
+			// have to set this. Something wrong with the initial use of the
+			// ListSelectionListener
+			ok.setEnabled(false);
+			editButton.setEnabled(false);
+			deleteButton.setEnabled(false);
+			newButton.setEnabled(false);
+
 			add(new JLabel("Select a printing profile:"), "wrap");
 
 			final JList prefList = new JList();
+			prefList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			prefList.addListSelectionListener(new ListSelectionListener() {
+
+				@Override
+				public void valueChanged(ListSelectionEvent selectionEvent) {
+					boolean selected = !((JList) selectionEvent.getSource())
+							.isSelectionEmpty();
+					ok.setEnabled(selected);
+					editButton.setEnabled(selected);
+					deleteButton.setEnabled(selected);
+					newButton.setEnabled(selected);
+				}
+			});
 			loadList(prefList);
 			add(prefList, "growy");
-			JButton editButton = new JButton("Edit...");
+
 			add(editButton, "split,flowy,growx");
 			editButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -124,53 +152,42 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 					}
 				}
 			});
-			JButton newButton = new JButton("Create...");
+
 			add(newButton, "wrap,growx,flowy");
 			newButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int idx = prefList.getSelectedIndex();
-					if (idx == -1) {
-						JOptionPane.showMessageDialog(parent,
-								"Select a profile to use as a base.");
-					} else {
-						String newName = JOptionPane.showInputDialog(parent,
-								"Name your new profile:");
-						if (newName != null) {
-							File newProfDir = new File(getUserProfilesDir(),
-									newName);
-							Profile p = (Profile) prefList.getModel()
-									.getElementAt(idx);
-							File oldProfDir = new File(p.getFullPath());
-							try {
-								Base.copyDir(oldProfDir, newProfDir);
-								Profile newProf = new Profile(newProfDir
-										.getAbsolutePath());
-								editProfile(newProf);
-								loadList(prefList);
-							} catch (IOException ioe) {
-								Base.logger.log(Level.SEVERE,
-										"Couldn't copy directory", ioe);
-							}
+					String newName = JOptionPane.showInputDialog(parent,
+							"Name your new profile:");
+					if (newName != null) {
+						File newProfDir = new File(getUserProfilesDir(),
+								newName);
+						Profile p = (Profile) prefList.getModel().getElementAt(
+								idx);
+						File oldProfDir = new File(p.getFullPath());
+						try {
+							Base.copyDir(oldProfDir, newProfDir);
+							Profile newProf = new Profile(newProfDir
+									.getAbsolutePath());
+							editProfile(newProf);
+							loadList(prefList);
+						} catch (IOException ioe) {
+							Base.logger.log(Level.SEVERE,
+									"Couldn't copy directory", ioe);
 						}
 					}
 				}
 			});
-			JButton deleteButton = new JButton("Delete");
-			add(deleteButton, "wrap,growx,flowy");
+
+			add(deleteButton, "wrap,growx,growy");
 			deleteButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int idx = prefList.getSelectedIndex();
-					if (idx == -1) {
-						JOptionPane.showMessageDialog(parent,
-								"Select a profile to delete.");
-					} else {
-						Profile p = (Profile) prefList.getModel().getElementAt(
-								idx);
-						boolean result = new ProfileUtils().delete(p);
-						loadList(prefList);
-						Base.logger.log(Level.INFO, "Profile "+p.getFullPath() + " deleted: "
-								+ result);
-					}
+					Profile p = (Profile) prefList.getModel().getElementAt(idx);
+					boolean result = new ProfileUtils().delete(p);
+					loadList(prefList);
+					Base.logger.log(Level.INFO, "Profile " + p.getFullPath()
+							+ " deleted: " + result);
 				}
 			});
 
@@ -188,23 +205,17 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			});
 			add(raftSelection, "wrap");
 
-			JButton ok = new JButton("Ok");
 			add(ok, "tag ok");
 			JButton cancel = new JButton("Cancel");
 			add(cancel, "tag cancel");
 			ok.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int idx = prefList.getSelectedIndex();
-					if (idx == -1) {
-						JOptionPane.showMessageDialog(parent,
-								"Please select a Skeinforge profile.");
-					} else {
-						Profile p = (Profile) prefList.getModel().getElementAt(
-								idx);
-						configSuccess = true;
-						profile = p.getFullPath();
-						setVisible(false);
-					}
+
+					Profile p = (Profile) prefList.getModel().getElementAt(idx);
+					configSuccess = true;
+					profile = p.getFullPath();
+					setVisible(false);
 				}
 			});
 			cancel.addActionListener(new ActionListener() {
