@@ -502,7 +502,7 @@ public class MachineController {
 			if (state.isBuilding()) {
 				if (!state.isSimulating()) driver.stop();
 			}
-			state.setState(MachineState.State.NOT_ATTACHED);
+			setState(MachineState.State.NOT_ATTACHED);
 			running = false;
 			synchronized(this) { notify(); }
 		}
@@ -559,7 +559,6 @@ public class MachineController {
 						driver.stop();
 						setState(MachineState.State.READY);						
 					} else if (state.getState() == MachineState.State.RESET) {
-						System.err.println("RESETTING");
 						driver.reset();
 						setState(MachineState.State.READY);						
 					} else {
@@ -800,18 +799,8 @@ public class MachineController {
 				driverXml = kid;
 			}
 		}
-		if (driver != null) {
-			if (driver instanceof MachineListener) {
-				// Unregister the previous driver
-				removeMachineStateListener((MachineListener)driver);
-			}
-		}
 		driver = DriverFactory.factory(driverXml);
 		driver.setMachine(loadModel());
-		if (driver instanceof MachineListener) {
-			// The driver needs to know about the current state.
-			addMachineStateListener((MachineListener)driver);
-		}
 		// Initialization is now handled by the machine thread when it
 		// is placed in a connecting state.
 	}
@@ -910,7 +899,6 @@ public class MachineController {
 		if (getSimulatorDriver() != null) {
 			getSimulatorDriver().dispose();
 		}
-		driver.dispose();
 		setState(new MachineState(MachineState.State.NOT_ATTACHED));
 	}
 	
@@ -927,7 +915,8 @@ public class MachineController {
 
 	protected void emitStateChange(MachineState prev, MachineState current) {
 		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current, prev);
-		for (MachineListener l : listeners) {
+		Vector<MachineListener> lclone = (Vector<MachineListener>) listeners.clone();
+		for (MachineListener l : lclone) {
 			l.machineStateChanged(e);
 		}
 	}

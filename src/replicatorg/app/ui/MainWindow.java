@@ -1611,7 +1611,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		extruderParamsItem.setVisible(showParams);
 		// Advertise machine name
 		String name = "Not Connected";
-		if (evt.getState().isConnected()) {
+		if (evt.getState().isConnected() && machine != null) {
 			name = machine.getName();
 		}
 		if (name != null) {

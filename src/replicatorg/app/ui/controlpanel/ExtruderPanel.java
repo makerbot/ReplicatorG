@@ -400,7 +400,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		return null;
 	}
 
-	synchronized public void updateStatus() {
+	synchronized public void updateStatus() { // FIXME sync
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
 		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeater()) {
 			double temperature = machine.getDriver().getTemperature();

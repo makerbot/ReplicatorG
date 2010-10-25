@@ -61,6 +61,7 @@ import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
+import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.machine.model.Axis;
@@ -247,7 +248,7 @@ public class ControlPanelWindow extends JFrame implements
 		return toolsPane;
 	}
 	
-	synchronized public void updateStatus() {
+	public void updateStatus() { // FIXME sync
 		jogPanel.updateStatus();
 		if (extruderPanel != null) { extruderPanel.updateStatus(); }
 	}
@@ -315,7 +316,13 @@ public class ControlPanelWindow extends JFrame implements
 			// we'll break on interrupts
 			try {
 				while (true) {
-					window.updateStatus();
+					try {
+						window.updateStatus();
+					} catch (AssertionError ae) {
+						// probaby disconnected unexpectedly; close window.
+						window.dispose();
+						break;
+					}
 					Thread.sleep(1000);
 				}
 			} catch (InterruptedException e) {
@@ -327,7 +334,9 @@ public class ControlPanelWindow extends JFrame implements
 	}
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
-		if (evt.getState().isBuilding() || !evt.getState().isConnected()) {
+		MachineState state = evt.getState();
+		if (state.isBuilding() || !state.isConnected() || 
+				state.getState() == MachineState.State.RESET) {
 			if (updateThread != null) { updateThread.interrupt(); }
 			if (pollThread != null) { pollThread.interrupt(); }
 			SwingUtilities.invokeLater(new Runnable() {

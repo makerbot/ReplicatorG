@@ -54,6 +54,8 @@ import replicatorg.uploader.FirmwareUploader;
 public class Sanguino3GDriver extends SerialDriver
 	implements OnboardParameters, SDCardCapture, PenPlotter
 {
+	protected final static int DEFAULT_RETRIES = 5;
+	
 	Version toolVersion = new Version(0,0);
 	
 	public Sanguino3GDriver() {
@@ -79,7 +81,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// attempt to send version command and retrieve reply.
 			try {
 				// Default timeout should be 2.6s.  Timeout can be sped up for v2, but let's play it safe.
-				int timeout = 4000;
+				int timeout = 400;
 				connectToDevice(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
@@ -133,7 +135,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// Wait >2.6s -- 2s for the arduino reset; .6 seconds for the rest of the
 			// system to come up.
 			try {
-				Thread.sleep(3000);
+				Thread.sleep(2600);
 			} catch (InterruptedException ie) {
 				// Assume we're shutting down the app or aborting the
 				// attempt.  Reassert interrupted status and let
@@ -148,7 +150,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// Wait >2.6s -- 2s for the arduino reset; .6 seconds for the rest of the
 			// system to come up.
 			try {
-				Thread.sleep(3000);
+				Thread.sleep(2600);
 			} catch (InterruptedException ie) {
 				// Assume we're shutting down the app or aborting the
 				// attempt.  Reassert interrupted status and let
@@ -165,15 +167,19 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Sends the command over the serial connection and retrieves a result.
 	 */
 	protected PacketResponse runCommand(byte[] packet) throws RetryException {
-		return runCommand(packet,5);
+		return runCommand(packet,DEFAULT_RETRIES);
 	}
-	
-	protected PacketResponse runQuery(byte[] packet) {
+
+	protected PacketResponse runQuery(byte[] packet, int retries) {
 		try {
-			return runCommand(packet,5);
+			return runCommand(packet,retries);
 		} catch (RetryException re) {
 			throw new RuntimeException("Queries can not have valid retries!");
 		}
+	}
+
+	protected PacketResponse runQuery(byte[] packet) {
+		return runQuery(packet,1);
 	}
 	
 	void printDebugData(String title, byte[] data) {
@@ -247,10 +253,9 @@ public class Sanguino3GDriver extends SerialDriver
 
 			pp = new PacketProcessor();
 
-			synchronized(this) {
-				// Do not allow a stop or reset command to interrupt mid-packet!
-				serial.write(packet);
-			}
+			// Do not allow a stop or reset command to interrupt mid-packet!
+			serial.write(packet);
+			
 			printDebugData("OUT",packet);
 
 			// Read entire response packet
@@ -262,7 +267,9 @@ public class Sanguino3GDriver extends SerialDriver
 					if (Thread.currentThread().isInterrupted()) {
 						break;
 					}
-					Base.logger.severe("Read timed out; retries remaining: "+Integer.toString(retries));
+					if (retries > 1) {
+						Base.logger.severe("Read timed out; retries remaining: "+Integer.toString(retries));
+					}
 					return runCommand(packet,retries-1);
 				}
 				try {
@@ -320,7 +327,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.VERSION.getCode());
 		pb.add16(Base.VERSION);
 
-		PacketResponse pr = runQuery(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket(),1);
 		if (pr.isEmpty()) return null;
 		int versionNum = pr.get16();
 
@@ -340,7 +347,7 @@ public class Sanguino3GDriver extends SerialDriver
 		slavepb.add8((byte) machine.currentTool().getIndex());
 		slavepb.add8(ToolCommandCode.VERSION.getCode());
 		int slaveVersionNum = 0;
-		PacketResponse slavepr = runQuery(slavepb.getPacket());
+		PacketResponse slavepr = runQuery(slavepb.getPacket(),1);
 		if (!slavepr.isEmpty()) {
 			slaveVersionNum = slavepr.get16();
 		}
@@ -1135,10 +1142,8 @@ public class Sanguino3GDriver extends SerialDriver
 		if (isInitialized() && version.compareTo(new Version(1,4)) >= 0) {
 			// WDT reset introduced in version 1.4 firmware
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.RESET.getCode());
-			System.err.println("SENDING RESET CODE");
 			Thread.interrupted(); // Clear interrupted status
 			PacketResponse pr = runQuery(pb.getPacket());
-			if (pr.isOK()) { System.err.println("RESET SUCCESSFUL"); }
 			// invalidate position, force reconciliation.
 			invalidatePosition();
 		}
