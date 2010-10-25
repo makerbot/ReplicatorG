@@ -392,7 +392,7 @@ public class MachineController {
 
 					// bail if we got interrupted.
 					if (state.getState() != MachineState.State.PLAYBACK) return;
-					wait(1000); // wait one second.  A pause will notify us to check the pause state.
+					synchronized(this) { wait(1000); }// wait one second.  A pause will notify us to check the pause state.
 				} catch (InterruptedException e) {
 					// bail if we got interrupted.
 					if (state.getState() != MachineState.State.PLAYBACK) return;
