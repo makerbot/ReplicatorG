@@ -38,6 +38,7 @@ import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobException;
 import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.drivers.Driver;
+import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.drivers.PenPlotter;
@@ -330,8 +331,9 @@ public class GCodeParser {
 
 	/**
 	 * Actually execute the GCode we just parsed.
+	 * @throws RetryException 
 	 */
-	public void execute() throws GCodeException {
+	public void execute() throws GCodeException, RetryException {
 		// TODO: is this the proper way?
 		// Set spindle speed?
 		// if (hasCode("S"))
@@ -351,7 +353,7 @@ public class GCodeParser {
 		}
 	}
 
-	private void executeMCodes() throws GCodeException {
+	private void executeMCodes() throws GCodeException, RetryException {
 		// find us an m code.
 		if (hasCode("M")) {
 			switch ((int) getCodeValue("M")) {
@@ -661,7 +663,7 @@ public class GCodeParser {
 		}
 	}
 
-	private void executeGCodes() throws GCodeException {
+	private void executeGCodes() throws GCodeException, RetryException {
 		// start us off at our current position...
 		Point3d temp = driver.getCurrentPosition();
 
@@ -1000,7 +1002,7 @@ public class GCodeParser {
 	 * drillTarget = new Point3d(); drillRetract = 0.0; drillFeedrate = 0.0;
 	 * drillDwell = 0.0; drillPecksize = 0.0;
 	 */
-	private void drillingCycle(boolean speedPeck) {
+	private void drillingCycle(boolean speedPeck) throws RetryException {
 		// Retract to R position if Z is currently below this
 		Point3d current = driver.getCurrentPosition();
 		if (current.z < drillRetract) {
@@ -1064,7 +1066,7 @@ public class GCodeParser {
 		}
 	}
 
-	private void drawArc(Point3d center, Point3d endpoint, boolean clockwise) {
+	private void drawArc(Point3d center, Point3d endpoint, boolean clockwise) throws RetryException {
 		// System.out.println("Arc from " + current.toString() + " to " +
 		// endpoint.toString() + " with center " + center);
 
@@ -1145,10 +1147,7 @@ public class GCodeParser {
 		// not supported!
 	}
 
-	private void setTarget(Point3d p) {
-		// TODO: wow.
-		// This is deeply broken, but I'll leave it be for now and fix with a
-		// flag later.
+	private void setTarget(Point3d p) throws RetryException {
 		// If you really want two seperate moves, do it when you generate your
 		// toolpath.
 		// move z first

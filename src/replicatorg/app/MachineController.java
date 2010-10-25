@@ -235,14 +235,21 @@ public class MachineController {
 				}
 				
 				// simulate the command.
-				if (retry == false && simulator.isSimulating())
-					simulator.execute();
+				if (retry == false && simulator.isSimulating()) {
+					try {
+						simulator.execute();
+					} catch (RetryException r) {
+						// Ignore.
+					}
+				}
+				
 				
 				try {
 					if (!state.isSimulating()) {
 						// Run the command on the machine.
 						driver.execute();
 					}
+					retry = false;
 				} catch (RetryException r) {
 					// Indicate that we should retry the current line, rather
 					// than proceeding to the next, on the next go-round.
@@ -552,6 +559,7 @@ public class MachineController {
 						driver.stop();
 						setState(MachineState.State.READY);						
 					} else if (state.getState() == MachineState.State.RESET) {
+						System.err.println("RESETTING");
 						driver.reset();
 						setState(MachineState.State.READY);						
 					} else {

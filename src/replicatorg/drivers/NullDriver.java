@@ -49,6 +49,7 @@ public class NullDriver extends DriverBaseImplementation {
 		try {
 			super.execute();
 		} catch (GCodeException e) {
+		} catch (RetryException e) {
 		}
 
 		String command = getParser().getCommand();

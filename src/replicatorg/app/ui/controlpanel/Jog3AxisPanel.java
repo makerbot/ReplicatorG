@@ -24,6 +24,7 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.drivers.Driver;
+import replicatorg.drivers.RetryException;
 
 public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListener, FocusListener
 {
@@ -238,6 +239,8 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 		double zFeedrate = zFeedrateSlider.getValue();
 		String s = e.getActionCommand();
 
+		try {
+
 		if(s.equals("handleTextfield"))
 		{
 			JTextField source = (JTextField) e.getSource();
@@ -309,9 +312,12 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 			// TODO: save this back to our preferences file.
 
 			// System.out.println("jog rate: " + jogRate);
-		} else
+		} else {
 			Base.logger.warning("Unknown Action Event: " + s);
-		
+		}
+		} catch (RetryException e1) {
+			Base.logger.severe("Could not execute command; machine busy.");
+		}
 	}
 
 	public void stateChanged(ChangeEvent e) {

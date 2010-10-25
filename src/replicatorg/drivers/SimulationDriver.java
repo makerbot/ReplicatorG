@@ -66,7 +66,7 @@ public class SimulationDriver extends DriverBaseImplementation {
 		super.dispose();
 	}
 
-	public void execute() throws InterruptedException {
+	public void execute() throws InterruptedException, RetryException {
 		// suppress any errors
 		try {
 			super.execute();
@@ -74,17 +74,17 @@ public class SimulationDriver extends DriverBaseImplementation {
 		}
 	}
 
-	public void queuePoint(Point3d p) {
+	public void queuePoint(Point3d p) throws RetryException {
 		simulation.queuePoint(p);
 
 		super.queuePoint(p);
 	}
 
-	public void homeXYZ() {
+	public void homeXYZ() throws RetryException {
 		queuePoint(new Point3d());
 	}
 
-	public void homeXY() {
+	public void homeXY() throws RetryException {
 		Point3d pos = getCurrentPosition();
 		pos.x = 0;
 		pos.y = 0;
@@ -92,21 +92,21 @@ public class SimulationDriver extends DriverBaseImplementation {
 		queuePoint(pos);
 	}
 
-	public void homeX() {
+	public void homeX() throws RetryException {
 		Point3d pos = getCurrentPosition();
 		pos.x = 0;
 
 		queuePoint(pos);
 	}
 
-	public void homeY() {
+	public void homeY() throws RetryException {
 		Point3d pos = getCurrentPosition();
 		pos.y = 0;
 
 		queuePoint(pos);
 	}
 
-	public void homeZ() {
+	public void homeZ() throws RetryException {
 		Point3d pos = getCurrentPosition();
 		pos.z = 0;
 

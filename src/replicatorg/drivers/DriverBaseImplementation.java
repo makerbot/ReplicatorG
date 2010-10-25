@@ -144,7 +144,7 @@ public class DriverBaseImplementation implements Driver {
 		return parser;
 	}
 
-	public void execute() throws GCodeException, InterruptedException {
+	public void execute() throws GCodeException, InterruptedException, RetryException {
 		assert (parser != null);
 		parser.execute();
 	}
