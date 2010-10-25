@@ -41,6 +41,7 @@ import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.OnboardParameters;
+import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.machine.MachineListener;
@@ -60,14 +61,28 @@ import replicatorg.model.StringListSource;
  * calls to MachineController ordinarily trigger an operation and return
  * immediately.
  * 
+ * When the machine is paused, the machine thread waits on notification to the machine thread object.
+ * 
+ * In general, the machine thread should *not* be interrupted, as this can cause synchronization issues.
+ * Interruption should only really happen on hanging connections and shutdown.
+ * 
  * @author phooky
  * 
  */
 public class MachineController {
 
 	private MachineState state = new MachineState();
+	/**
+	 * Get the machine state.  This is a snapshot of the state when the method was called, not a live object.
+	 * @return a copy of the machine's state object
+	 */
 	public MachineState getMachineState() { return state.clone(); }
 	
+	/**
+	 * Set the a machine state.  If the state is not the current state, a state change
+	 * event will be emitted and the machine thread will be notified.  
+	 * @param state the new state of the machine.
+	 */
 	private void setState(MachineState state) {
 		MachineState oldState = this.state;
 		this.state = state;
@@ -75,11 +90,15 @@ public class MachineController {
 			emitStateChange(oldState,state);
 			// wake up machine thread
 			synchronized(machineThread) {
-				machineThread.notify();
+				machineThread.notify(); // wake up paused machines
 			}
 		}
 	}
 
+	/**
+	 * A helper for setting the machine state to a simple state.
+	 * @param state The new state.
+	 */
 	private void setState(MachineState.State state) {
 		MachineState newState = getMachineState();
 		newState.setState(state);
@@ -102,11 +121,18 @@ public class MachineController {
 		private boolean pollingEnabled = false;
 		private long pollIntervalMs = 1000;
 
+		/**
+		 * Start polling the machine for its current status (temperatures, etc.)
+		 * @param interval The interval, in ms, between polls
+		 */
 		synchronized void startStatusPolling(long interval) {
 			pollingEnabled = true;
 			pollIntervalMs = interval;
 		}
 
+		/**
+		 * Turn off status polling.
+		 */
 		synchronized void stopStatusPolling() {
 			pollingEnabled = false;
 		}
@@ -127,25 +153,25 @@ public class MachineController {
 			buildCodesInternal(new StringListSource(cooldownCommands));
 		}
 		
-		// Indicates that the driver has control of the thread.  On a stop or abort, we will want to
-		// interrupt the driver explicitly by interrupting the thread, so we need to understand when
-		// we're in this code.
-		private boolean inDriver = false;
-		
-		// Interrupt any current driver call.
+		// Interrupt the machine controller thread.
 		// The driver implementation should be smart enough to check for interrupted status when not blocking
-		// on IO, and handle interruptedexceptions by dumping out.
+		// on IO, and handle interrupt exceptions by dumping out.
 		public void interruptDriver() {
-			synchronized(driver) {
-				if (inDriver) {
-					this.interrupt();
-				}
-			}
+			this.interrupt();
 		}
-		
+
+		/**
+		 * Build the provided gcodes.  This method does not return until the build is complete or has been terminated.
+		 * The build target need not be an actual machine; it can be a file as well.  An "upload" is considered a build
+		 * to a machine.  
+		 * @param source The gcode to build.
+		 * @return true if build terminated normally
+		 * @throws BuildFailureException
+		 * @throws InterruptedException
+		 */
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
 			if (!state.isBuilding()) {
-				// Do not continue build if the machine is not building or paused
+				// Do not build if the machine is not building or paused
 				return false;
 			}
 			
@@ -153,21 +179,28 @@ public class MachineController {
 			driver.getParser().init(driver);
 			
 			Iterator<String> i = source.iterator();
+			boolean retry = false;
+			// Iterate over all the lines in the gcode source.
 			while (i.hasNext()) {
-				String line = i.next();
-				linesProcessed++;
-				if (Thread.currentThread().isInterrupted()) {
-					System.err.println("INTERRUPTION");
-					Base.logger.info("build thread interrupted");
-					return false;
+				if (retry == false) {
+					String line = i.next();
+					linesProcessed++;
+					if (Thread.currentThread().isInterrupted()) {
+						throw new BuildFailureException("Build was interrupted");
+					}
+					
+					if (simulator.isSimulating()) {
+						// Parse a line for the simulator
+						simulator.parse(line);
+					}
+					if (!state.isSimulating()) {
+						// Parse a line for the actual machine
+						driver.parse(line); 
+					}
 				}
-				
-				// use our parser to handle the stuff.
-				if (simulator.isSimulating())
-					simulator.parse(line);
-				if (!state.isSimulating()) { driver.parse(line); }
-				
 				try {
+					// Check if there are any interactive stops on this line; if so,
+					// wait for user response.
 					GCodeParser.StopInfo info = driver.getParser().getStops();
 					if (info != null &&
 							Base.preferences.getBoolean("machine.optionalstops",true) &&
@@ -189,10 +222,12 @@ public class MachineController {
 						}
 					}
 				} catch (JobEndException e) {
-					return false;
+					// M2 codes indicate job done
+					return true;
 				} catch (JobCancelledException e) {
-					return false;
+					throw new BuildFailureException("Job cancelled by user.");
 				} catch (JobRewindException e) {
+					// Rewind the job to start of source
 					i = source.iterator();
 					continue;
 				} catch (JobException e) {
@@ -200,28 +235,25 @@ public class MachineController {
 				}
 				
 				// simulate the command.
-				if (simulator.isSimulating())
+				if (retry == false && simulator.isSimulating())
 					simulator.execute();
 				
 				try {
 					if (!state.isSimulating()) {
-						// The inDriver bracketing is to avoid
-						// interrupting this thread outside of the
-						// call to the driver code.
-						synchronized(driver) {
-							inDriver = true;
-						}
+						// Run the command on the machine.
 						driver.execute();
-						synchronized(driver) {
-							inDriver = false;
-						}
 					}
-				} catch (GCodeException e) {
-					// TODO: prompt the user to continue.
+				} catch (RetryException r) {
+					// Indicate that we should retry the current line, rather
+					// than proceeding to the next, on the next go-round.
+					retry = true;
+				}
+				catch (GCodeException e) {
+					// This is severe, but not fatal; ordinarily it means there's an
+					// unrecognized gcode in the source.
 					Base.logger.severe("Error: " + e.getMessage());
 				} catch (InterruptedException ie) {
 					// We're in the middle of a stop or shutdown
-					inDriver = false;
 				}
 				
 				// did we get any errors?
@@ -231,17 +263,21 @@ public class MachineController {
 				
 				// are we paused?
 				if (state.isPaused()) {
+					// Tell machine to enter pause mode
 					if (!state.isSimulating()) driver.pause();
 					while (state.isPaused()) {
+						// Sleep until notified
 						synchronized(this) { wait(); }
 					}
+					// Notified; tell machine to wake up.
 					if (!state.isSimulating()) driver.unpause();
 				}
 				
 				// Send a stop command if we're stopping.
-				if (state.getState() == MachineState.State.STOPPING) {
-					System.err.println("THREAD STOP");
-					driver.stop();
+				if (state.getState() == MachineState.State.STOPPING ||
+						state.getState() == MachineState.State.RESET) {
+					if (!state.isSimulating()) driver.stop();
+					throw new BuildFailureException("Build manually aborted");
 				}
 
 				// bail if we're no longer building
@@ -275,38 +311,35 @@ public class MachineController {
 		public boolean isReady() { return state.isReady(); }
 
 		public void pollStatus() {
-			if (state.isBuilding()) {
+			if (state.isBuilding() && !state.isSimulating()) {
 				if (Base.preferences.getBoolean("build.monitor_temp",false)) {
-					//driver.readTemperature();
-					//emitToolStatus(driver.getMachine().currentTool());
+					driver.readTemperature();
+					emitToolStatus(driver.getMachine().currentTool());
 				}
 			}
 		}
 		
-		public void forceReset() {
-			setState(new MachineState(MachineState.State.RESET));
-			interruptDriver();
-		}
-		
+		// Enter the reset state
 		public void reset() {
-			System.err.println("Reset called!");
-			forceReset();
-			//connect();
+			setState(new MachineState(MachineState.State.RESET));
 		}
 		
+		// Begin connecting to the machine
 		public void connect() {
 			setState(new MachineState(MachineState.State.CONNECTING));
 		}
 
 		GCodeSource currentSource;
 		
+		// Build the gcode source, bracketing it with warmup and cooldown commands.
+		// 
 		private void buildInternal(GCodeSource source) {
 			startTimeMillis = System.currentTimeMillis();
 			linesProcessed = 0;
 			linesTotal = warmupCommands.size() + 
 				cooldownCommands.size() +
 				source.getLineCount();
-			startStatusPolling(1000);
+			startStatusPolling(1000); // Will not send commands if temp mon. turned off
 			try {
 				if (!state.isSimulating()) {
 					driver.getCurrentPosition(); // reconcile position
@@ -320,9 +353,11 @@ public class MachineController {
 				}
 				setState(new MachineState(MachineState.State.READY));
 			} catch (BuildFailureException e) {
-				JOptionPane.showMessageDialog(null, e.getMessage(),
-						"Build Failure", JOptionPane.ERROR_MESSAGE);
-
+//				JOptionPane.showMessageDialog(null, e.getMessage(),
+//						"Build Failure", JOptionPane.ERROR_MESSAGE);
+				// Attempt to reestablish connection to check state on an abort
+				// or failure
+				setState(new MachineState(MachineState.State.CONNECTING));
 			} catch (InterruptedException e) {
 				Base.logger.warning("MachineController interrupted");
 			} finally {
@@ -332,15 +367,18 @@ public class MachineController {
 
 		String remoteName = null;
 		
+		// Run a remote SD card build on the machine.
 		private void buildRemoteInternal(String remoteName) {
+			// Dump out if SD builds are unsupported on this machine
 			if (remoteName == null || !(driver instanceof SDCardCapture)) return;
 			if (state.getState() != MachineState.State.PLAYBACK) return;
-			driver.getCurrentPosition(); // reconcille position
+			driver.getCurrentPosition(); // reconcile position
 			SDCardCapture sdcc = (SDCardCapture)driver;
 			if (!processSDResponse(sdcc.playback(remoteName))) {
 				setState(MachineState.State.STOPPING);
 				return;
 			}
+			// Poll for completion until done.  Check for pause states as well.
 			while (!driver.isFinished()) {
 				try {
 					// are we paused?
@@ -354,7 +392,7 @@ public class MachineController {
 
 					// bail if we got interrupted.
 					if (state.getState() != MachineState.State.PLAYBACK) return;
-					Thread.sleep(100);
+					wait(1000); // wait one second.  A pause will notify us to check the pause state.
 				} catch (InterruptedException e) {
 					// bail if we got interrupted.
 					if (state.getState() != MachineState.State.PLAYBACK) return;
@@ -364,33 +402,58 @@ public class MachineController {
 			setState(new MachineState(MachineState.State.READY));
 		}
 		
+		/**
+		 * Run an ordinary gcode build directly on the machine.
+		 * @param source
+		 */
 		public void build(GCodeSource source) {
 			currentSource = source;
 			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.MACHINE));
 		}
 		
+		/**
+		 * Simulate a gcode build without running it on the machine.
+		 * @param source
+		 */
 		public void simulate(GCodeSource source) {
 			currentSource = source;
 			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SIMULATOR));
 		}
 
+		/**
+		 * Upload the gcode to the given remote SD name.
+		 * @param source
+		 * @param remoteName
+		 */
 		public void upload(GCodeSource source, String remoteName) {
 			currentSource = source;
 			this.remoteName = remoteName;
 			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SD_UPLOAD));
 		}
 
+		/**
+		 * Build to the given file.
+		 * @param source
+		 * @param path
+		 */
 		public void buildToFile(GCodeSource source, String path) {
 			currentSource = source;
 			this.remoteName = path;
 			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.FILE));
 		}
 
+		/**
+		 * Run the remote build with the given filename.
+		 * @param remoteName
+		 */
 		public void buildRemote(String remoteName) {
 			this.remoteName = remoteName;
 			setState(MachineState.State.PLAYBACK);
 		}
 		
+		/**
+		 * Pause a running build.
+		 */
 		public void pauseBuild() {
 			if (state.isBuilding() && !state.isPaused()) {
 				MachineState newState = getMachineState();
@@ -399,6 +462,9 @@ public class MachineController {
 			}
 		}
 		
+		/**
+		 * Resume a paused build.
+		 */
 		public void resumeBuild() {
 			if (state.isBuilding() && state.isPaused()) {
 				MachineState newState = getMachineState();
@@ -407,27 +473,43 @@ public class MachineController {
 			}
 		}
 		
+		/**
+		 * Stop a running build.
+		 */
 		public void stopBuild() {
 			driver.getMachine().currentTool().setTargetTemperature(0);
 			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			if (state.isBuilding()) {
 				setState(MachineState.State.STOPPING);
-				interruptDriver();
 			}
 		}
 		
+		/**
+		 * Shutdown: abort the running build IF the current build is not an SD build.
+		 * SD builds are allowed to continue.
+		 */
 		public void shutdown() {
+			if (state.getState() == MachineState.State.PLAYBACK) {
+				return;
+			}
+			if (state.isBuilding()) {
+				if (!state.isSimulating()) driver.stop();
+			}
+			state.setState(MachineState.State.NOT_ATTACHED);
 			running = false;
-			stopBuild();
 			synchronized(this) { notify(); }
 		}
 
 		private boolean running = true;
 		
+		/**
+		 * Main machine thread loop.
+		 */
 		public void run() {
 			while (running) {
 				try {
 					if (state.getState() == MachineState.State.BUILDING) {
+						// Capture build to a card
 						if (state.getTarget() == MachineState.Target.SD_UPLOAD) {
 							if (driver instanceof SDCardCapture) {
 								SDCardCapture sdcc = (SDCardCapture)driver;
@@ -439,6 +521,7 @@ public class MachineController {
 								setState(MachineState.State.STOPPING);
 							}
 						} else if (state.getTarget() == MachineState.Target.FILE) {
+							// Output build to a file
 							if (driver instanceof SDCardCapture) {
 								SDCardCapture sdcc = (SDCardCapture)driver;
 								try {
@@ -469,14 +552,12 @@ public class MachineController {
 						driver.stop();
 						setState(MachineState.State.READY);						
 					} else if (state.getState() == MachineState.State.RESET) {
-						System.err.println("RESET TRIGGERED");
 						driver.reset();
 						setState(MachineState.State.READY);						
 					} else {
 						synchronized(this) {
 							if (state.getState() == MachineState.State.READY ||
 									state.getState() == MachineState.State.NOT_ATTACHED ||
-									state.getState() == MachineState.State.PLAYBACK ||
 									state.isPaused()) {
 								wait();
 							} else {
@@ -494,7 +575,6 @@ public class MachineController {
 	
 	private void readName() {
 		if (driver instanceof OnboardParameters) {
-			if (Thread.currentThread().isInterrupted()) { System.err.println("STILL INTERRUPTED"); }
 			String n = ((OnboardParameters)driver).getMachineName();
 			if (n != null && n.length() > 0) {
 				name = n;
@@ -712,9 +792,18 @@ public class MachineController {
 				driverXml = kid;
 			}
 		}
-		
+		if (driver != null) {
+			if (driver instanceof MachineListener) {
+				// Unregister the previous driver
+				removeMachineStateListener((MachineListener)driver);
+			}
+		}
 		driver = DriverFactory.factory(driverXml);
 		driver.setMachine(loadModel());
+		if (driver instanceof MachineListener) {
+			// The driver needs to know about the current state.
+			addMachineStateListener((MachineListener)driver);
+		}
 		// Initialization is now handled by the machine thread when it
 		// is placed in a connecting state.
 	}
