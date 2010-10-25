@@ -78,7 +78,7 @@ public class PacketResponse {
 		ResponseCode code = getResponseCode(); 
 		String msg = code.getMessage();
 		// only print certain messages
-		Level level = Level.FINER;
+		Level level = Level.INFO;
 		if (code != ResponseCode.OK && code != ResponseCode.BUFFER_OVERFLOW) level = Level.WARNING;
 		
 		if (Base.logger.isLoggable(level)) {

@@ -42,6 +42,7 @@ import replicatorg.app.Base;
 import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.PenPlotter;
+import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
@@ -163,17 +164,50 @@ public class Sanguino3GDriver extends SerialDriver
 	/**
 	 * Sends the command over the serial connection and retrieves a result.
 	 */
-	protected PacketResponse runCommand(byte[] packet) {
-		return runCommand(packet,3);
+	protected PacketResponse runCommand(byte[] packet) throws RetryException {
+		return runCommand(packet,5);
 	}
 	
-	protected PacketResponse runCommand(byte[] packet, int retries) {
-		if (retries == 0) return PacketResponse.timeoutResponse();
-		if (packet == null || packet.length < 4)
+	protected PacketResponse runQuery(byte[] packet) {
+		try {
+			return runCommand(packet,5);
+		} catch (RetryException re) {
+			throw new RuntimeException("Queries can not have valid retries!");
+		}
+	}
+	
+	void printDebugData(String title, byte[] data) {
+		if (Base.logger.isLoggable(Level.FINER)) {
+			StringBuffer buf = new StringBuffer(title + ": ");
+			for (int i = 0; i < data.length; i++) {
+				buf.append(Integer
+						.toHexString((int) data[i] & 0xff));
+				buf.append(" ");
+			}
+			Base.logger.log(Level.FINER,buf.toString());
+		}
+	}
+	/**
+	 * It's important here to understand the difference between "retries" and the retry exception.
+	 * A retry is called when packet transmission itself failed and we want to try again.
+	 * The retry exception is thrown when the packet was successfully processed, but the buffer
+	 * was full, indicating to the controller that another attempt is warranted. 
+	 * @param packet
+	 * @param retries
+	 * @return
+	 * @throws RetryException
+	 */
+	protected PacketResponse runCommand(byte[] packet, int retries) throws RetryException {
+		if (retries == 0) {
+			Base.logger.severe("Packet timed out!");
+			return PacketResponse.timeoutResponse();
+		}
+		if (packet == null || packet.length < 4) {
+			Base.logger.severe("Attempt to send empty or too-small packet");
 			return null; // skip empty commands or broken commands
+		}
 
 		boolean isCommand = (packet[2] & 0x80) != 0;
-		
 		if (fileCaptureOstream != null) {
 			// capture to file.
 			try {
@@ -189,92 +223,68 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 
 		assert (serial != null);
-		
-		boolean packetSent = false;
-		PacketProcessor pp = new PacketProcessor();
+
+		PacketProcessor pp;
 		PacketResponse pr = new PacketResponse();
 
-		while (!packetSent) {
+		synchronized(serial) {
+
 			// Dump out if interrupted
 			if (Thread.currentThread().isInterrupted()) {
+				// Clear interrupted status
+				Thread.interrupted();
+				// Wait for end of packet and clear (if forthcoming)
+				try {
+					Thread.sleep(10);
+					serial.clear();
+				} catch (InterruptedException e) {
+					// safe to ignore
+				}
+				// Reestablish interrupt
+				Thread.currentThread().interrupt();
 				return pr;
 			}
 
 			pp = new PacketProcessor();
 
-			synchronized (serial) {
+			synchronized(this) {
+				// Do not allow a stop or reset command to interrupt mid-packet!
 				serial.write(packet);
+			}
+			printDebugData("OUT",packet);
 
-				if (Base.logger.isLoggable(Level.FINER)) {
-					StringBuffer buf = new StringBuffer("OUT: ");
-					for (int i = 0; i < packet.length; i++) {
-						buf.append(Integer
-								.toHexString((int) packet[i] & 0xff));
-						buf.append(" ");
-					}
-					Base.logger.log(Level.FINER,buf.toString());
-				}
-
-					boolean c = false;
-					while (!c) {
-						// Dump out if interrupted
-						if (Thread.currentThread().isInterrupted()) { 
-							return pr;
-						}
-						int b = serial.read();
-						if (b == -1) {
-							// Read timed out.
-							try {
-								Thread.sleep(60);
-							} catch (InterruptedException e) {
-								// If we've been explicitly interrupted, reassert
-								// interrupted status and terminate early.
-								Thread.currentThread().interrupt();
-								return pr;
-							}
-							if (isCommand) {
-								// Try again for commands
-								Base.logger.info("Read timed out; trying to resend command.");
-								continue;
-							} else {
-								Base.logger.info("Read timed out; giving up on query.");
-								//throw new TimeoutException(serial);
-								return pr;
-							}
-						}
-						try {
-							c = pp.processByte((byte) b);
-						} catch (CRCException e) {
-							Base.logger.severe("Bad CRC received; retries remaining: "+Integer.toString(retries));
-							return runCommand(packet,retries-1);
-						}
-					}
-
-					pr = pp.getResponse();
-
-					if (pr.isOK())
-						packetSent = true;
-					else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
-						try {
-							Thread.sleep(5);
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-							// We've been interrupted; dump out early!
-							return pr;
-						}
-					}
-					// TODO: implement other error things.
-					else {
-						StringBuffer sb = new StringBuffer("Sending ");
-						for (int i = 0; i < packet.length; i++) {
-							sb.append(Integer.toHexString(packet[i]));
-							sb.append(" ");
-						}
-						Base.logger.fine(sb.toString());
-						pr.printDebug();
+			// Read entire response packet
+			boolean completed = false;
+			while (!completed) {
+				// Dump out if interrupted
+				int b = serial.read();
+				if (b == -1) {
+					if (Thread.currentThread().isInterrupted()) {
 						break;
 					}
+					Base.logger.severe("Read timed out; retries remaining: "+Integer.toString(retries));
+					return runCommand(packet,retries-1);
+				}
+				try {
+					completed = pp.processByte((byte) b);
+				} catch (CRCException e) {
+					Base.logger.severe("Bad CRC received; retries remaining: "+Integer.toString(retries));
+					return runCommand(packet,retries-1);
+				}
+			}
+			pr = pp.getResponse();
 
+			if (pr.isOK()) {
+				// okay!
+			} else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
+				throw new RetryException();
+			}
+			else {
+				// Other random error
+				printDebugData("Unknown error sending, retry",packet);
+				if (retries > 1) {
+					return runCommand(packet,retries-1);
+				}
 			}
 		}
 		return pr;
@@ -285,7 +295,7 @@ public class Sanguino3GDriver extends SerialDriver
 	public boolean isFinished() {
 		if (fileCaptureOstream != null) { return true; }  // always done instantly if writing to file
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.IS_FINISHED.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		int v = pr.get8();
 		if (pr.getResponseCode() == PacketResponse.ResponseCode.UNSUPPORTED) {
 			if (!isNotifiedFinishedFeature) {
@@ -310,7 +320,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.VERSION.getCode());
 		pb.add16(Base.VERSION);
 
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isEmpty()) return null;
 		int versionNum = pr.get16();
 
@@ -330,7 +340,7 @@ public class Sanguino3GDriver extends SerialDriver
 		slavepb.add8((byte) machine.currentTool().getIndex());
 		slavepb.add8(ToolCommandCode.VERSION.getCode());
 		int slaveVersionNum = 0;
-		PacketResponse slavepr = runCommand(slavepb.getPacket());
+		PacketResponse slavepr = runQuery(slavepb.getPacket());
 		if (!slavepr.isEmpty()) {
 			slaveVersionNum = slavepr.get16();
 		}
@@ -358,14 +368,15 @@ public class Sanguino3GDriver extends SerialDriver
 
 	public void sendInit() {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.INIT.getCode());
-		runCommand(pb.getPacket());
+		runQuery(pb.getPacket());
 	}
 
 	/***************************************************************************
 	 * commands for interfacing with the driver directly
+	 * @throws RetryException 
 	 **************************************************************************/
 
-	public void queuePoint(Point3d p) {
+	public void queuePoint(Point3d p) throws RetryException {
 		Base.logger.log(Level.FINE,"Queued point " + p);
 
 		// is this point even step-worthy?
@@ -424,7 +435,7 @@ public class Sanguino3GDriver extends SerialDriver
 	 * //send this segment queueIncrementalPoint(pb, segmentSteps, ticks); } }
 	 */
 
-	private void queueAbsolutePoint(Point3d steps, long micros) {
+	private void queueAbsolutePoint(Point3d steps, long micros) throws RetryException {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_ABS.getCode());
 
 		if (Base.logger.isLoggable(Level.FINE)) {
@@ -441,7 +452,7 @@ public class Sanguino3GDriver extends SerialDriver
 		runCommand(pb.getPacket());
 	}
 
-	public void setCurrentPosition(Point3d p) {
+	public void setCurrentPosition(Point3d p) throws RetryException {
 //		System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 //		if (super.getCurrentPosition().equals(p)) return;
 //		System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
@@ -460,7 +471,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setCurrentPosition(p);
 	}
 
-	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) {
+	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.log(Level.FINE,"Homing axes "+axes.toString());
 		byte flags = 0x00;
 
@@ -506,7 +517,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 		
 
-	public void delay(long millis) {
+	public void delay(long millis) throws RetryException {
 		if (Base.logger.isLoggable(Level.FINER)) {
 			Base.logger.log(Level.FINER,"Delaying " + millis + " millis.");
 		}
@@ -527,7 +538,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.closeClamp(clampIndex);
 	}
 
-	public void enableDrives() {
+	public void enableDrives() throws RetryException {
 		// Command RMB to enable its steppers. Note that they are
 		// already automagically enabled by most commands and need
 		// not be explicitly enabled.
@@ -537,7 +548,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.enableDrives();
 	}
 
-	public void disableDrives() {
+	public void disableDrives() throws RetryException {
 		// Command RMB to disable its steppers.
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
 		pb.add8(0x07); // disable x,y,z
@@ -550,7 +561,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.changeGearRatio(ratioIndex);
 	}
 
-	public void requestToolChange(int toolIndex) {
+	public void requestToolChange(int toolIndex) throws RetryException {
 		selectTool(toolIndex);
 
 		Base.logger.log(Level.FINE,"Waiting for tool #" + toolIndex);
@@ -563,7 +574,7 @@ public class Sanguino3GDriver extends SerialDriver
 		runCommand(pb.getPacket());
 	}
 
-	public void selectTool(int toolIndex) {
+	public void selectTool(int toolIndex) throws RetryException {
 		Base.logger.log(Level.FINE,"Selecting tool #" + toolIndex);
 
 		// send it!
@@ -577,7 +588,7 @@ public class Sanguino3GDriver extends SerialDriver
 	/***************************************************************************
 	 * Motor interface functions
 	 **************************************************************************/
-	public void setMotorRPM(double rpm) {
+	public void setMotorRPM(double rpm) throws RetryException {
 		// convert RPM into microseconds and then send.
 		long microseconds = (int) Math.round(60.0 * 1000000.0 / rpm); // no
 		// unsigned
@@ -598,7 +609,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setMotorRPM(rpm);
 	}
 
-	public void setMotorSpeedPWM(int pwm) {
+	public void setMotorSpeedPWM(int pwm) throws RetryException {
 		Base.logger.log(Level.FINE,"Setting motor 1 speed to " + pwm + " PWM");
 
 		// send it!
@@ -612,7 +623,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setMotorSpeedPWM(pwm);
 	}
 
-	public void enableMotor() {
+	public void enableMotor() throws RetryException {
 		// our flag variable starts with motors enabled.
 		byte flags = 1;
 
@@ -634,7 +645,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.enableMotor();
 	}
 
-	public void disableMotor() {
+	public void disableMotor() throws RetryException {
 		// bit 1 determines direction...
 		byte flags = 0;
 		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
@@ -656,7 +667,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_MOTOR_1_PWM.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 
 		// get it
 		int pwm = pr.get8();
@@ -673,7 +684,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_MOTOR_1_RPM.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 
 		// convert back to RPM
 		long micros = pr.get32();
@@ -689,6 +700,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 	/***************************************************************************
 	 * PenPlotter interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
 	//public void moveServo(int degree) {}
 
@@ -696,7 +708,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 	//public void disableServo() {}
 
-	public void setServoPos(double degree) {
+	public void setServoPos(double degree) throws RetryException {
 		
 		Base.logger.log(Level.FINE,"Setting servo 1 position to " + degree + " degrees");
 
@@ -714,7 +726,7 @@ public class Sanguino3GDriver extends SerialDriver
 	/***************************************************************************
 	 * Spindle interface functions
 	 **************************************************************************/
-	public void setSpindleRPM(double rpm) {
+	public void setSpindleRPM(double rpm) throws RetryException {
 		// convert RPM into microseconds and then send.
 		long microseconds = (int) Math.round(60 * 1000000 / rpm); // no
 		// unsigned
@@ -735,7 +747,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setSpindleRPM(rpm);
 	}
 
-	public void setSpindleSpeedPWM(int pwm) {
+	public void setSpindleSpeedPWM(int pwm) throws RetryException {
 		Base.logger.log(Level.FINE,"Setting motor 2 speed to " + pwm + " PWM");
 
 		// send it!
@@ -749,7 +761,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setMotorSpeedPWM(pwm);
 	}
 
-	public void enableSpindle() {
+	public void enableSpindle() throws RetryException {
 		// our flag variable starts with spindles enabled.
 		byte flags = 1;
 
@@ -771,7 +783,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.enableSpindle();
 	}
 
-	public void disableSpindle() {
+	public void disableSpindle() throws RetryException {
 		// bit 1 determines direction...
 		byte flags = 0;
 		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
@@ -789,7 +801,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.disableSpindle();
 	}
 
-	public double getSpindleSpeedRPM() {
+	public double getSpindleSpeedRPM() throws RetryException {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_MOTOR_2_RPM.getCode());
@@ -812,7 +824,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_MOTOR_2_PWM.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 
 		// get it
 		int pwm = pr.get8();
@@ -827,8 +839,9 @@ public class Sanguino3GDriver extends SerialDriver
 
 	/***************************************************************************
 	 * Temperature interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
-	public void setTemperature(double temperature) {
+	public void setTemperature(double temperature) throws RetryException {
 		// constrain our temperature.
 		int temp = (int) Math.round(temperature);
 		temp = Math.min(temp, 65535);
@@ -849,7 +862,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_TEMP.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isEmpty()) return;
 		int temp = pr.get16();
 		machine.currentTool().setCurrentTemperature(temp);
@@ -862,8 +875,9 @@ public class Sanguino3GDriver extends SerialDriver
 
 	/***************************************************************************
 	 * Platform Temperature interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
-	public void setPlatformTemperature(double temperature) {
+	public void setPlatformTemperature(double temperature) throws RetryException {
 		// constrain our temperature.
 		int temp = (int) Math.round(temperature);
 		temp = Math.min(temp, 65535);
@@ -884,7 +898,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isEmpty()) return;
 		int temp = pr.get16();
 		machine.currentTool().setPlatformCurrentTemperature(temp);
@@ -927,8 +941,9 @@ public class Sanguino3GDriver extends SerialDriver
 
 	/***************************************************************************
 	 * Fan interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
-	public void enableFan() {
+	public void enableFan() throws RetryException {
 		Base.logger.log(Level.FINE,"Enabling fan");
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
@@ -941,7 +956,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.enableFan();
 	}
 
-	public void disableFan() {
+	public void disableFan() throws RetryException {
 		Base.logger.log(Level.FINE,"Disabling fan");
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
@@ -956,8 +971,9 @@ public class Sanguino3GDriver extends SerialDriver
 
 	/***************************************************************************
 	 * Valve interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
-	public void openValve() {
+	public void openValve() throws RetryException {
 		Base.logger.log(Level.FINE,"Opening valve");
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
@@ -970,7 +986,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.openValve();
 	}
 
-	public void closeValve() {
+	public void closeValve() throws RetryException {
 		Base.logger.log(Level.FINE,"Closing valve");
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
@@ -1004,16 +1020,15 @@ public class Sanguino3GDriver extends SerialDriver
 	public void pause() {
 		Base.logger.log(Level.FINE,"Sending asynch pause command");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.PAUSE.getCode());
-		runCommand(pb.getPacket());
+		runQuery(pb.getPacket());
 	}
 
 	public void unpause() {
 		Base.logger.log(Level.FINE,"Sending asynch unpause command");
 		// There is no explicit unpause command on the Sanguino3G; instead we
-		// use
-		// the pause command to toggle the pause state.
+		// use the pause command to toggle the pause state.
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.PAUSE.getCode());
-		runCommand(pb.getPacket());
+		runQuery(pb.getPacket());
 	}
 
 	/***************************************************************************
@@ -1098,7 +1113,7 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.warning("Stop.");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ABORT.getCode());
 		Thread.interrupted(); // Clear interrupted status
-		runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		// invalidate position, force reconciliation.
 		invalidatePosition();
 	}
@@ -1108,7 +1123,7 @@ public class Sanguino3GDriver extends SerialDriver
 			return new Point3d(0,0,0);
 		}
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
 		// Useful quickie debugs
 //		System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
@@ -1120,7 +1135,12 @@ public class Sanguino3GDriver extends SerialDriver
 		if (isInitialized() && version.compareTo(new Version(1,4)) >= 0) {
 			// WDT reset introduced in version 1.4 firmware
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.RESET.getCode());
-			runCommand(pb.getPacket());
+			System.err.println("SENDING RESET CODE");
+			Thread.interrupted(); // Clear interrupted status
+			PacketResponse pr = runQuery(pb.getPacket());
+			if (pr.isOK()) { System.err.println("RESET SUCCESSFUL"); }
+			// invalidate position, force reconciliation.
+			invalidatePosition();
 		}
 		setInitialized(false);
 		initialize();
@@ -1162,7 +1182,7 @@ public class Sanguino3GDriver extends SerialDriver
 		for (byte b : data) {
 			pb.add8(b);
 		}
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		assert pr.get8() == data.length; 
 	}
 
@@ -1172,13 +1192,17 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8(ToolCommandCode.READ_FROM_EEPROM.getCode());
 		pb.add16(offset);
 		pb.add8(len);
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isOK()) {
 			int rvlen = Math.min(pr.getPayload().length - 1,len);
 			byte[] rv = new byte[rvlen];
 			// Copy removes the first response byte from the packet payload.
 			System.arraycopy(pr.getPayload(),1,rv,0,rvlen);
 			return rv;
+		}
+		else
+		{
+			Base.logger.severe("On tool read: "+pr.getResponseCode().getMessage());
 		}
 		return null;
 	}
@@ -1202,7 +1226,7 @@ public class Sanguino3GDriver extends SerialDriver
 		for (byte b : data) {
 			slavepb.add8(b);
 		}
-		PacketResponse slavepr = runCommand(slavepb.getPacket());
+		PacketResponse slavepr = runQuery(slavepb.getPacket());
 		assert slavepr.get8() == data.length; 
 	}
 
@@ -1210,7 +1234,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.READ_EEPROM.getCode());
 		pb.add16(offset);
 		pb.add8(len);
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isOK()) {
 			int rvlen = Math.min(pr.getPayload().length - 1,len);
 			byte[] rv = new byte[rvlen];
@@ -1411,13 +1435,13 @@ public class Sanguino3GDriver extends SerialDriver
 			pb.add8(b);
 		}
 		pb.add8(0); // null-terminate string
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		return convertSDCode(pr.get8());
 	}
 
 	public int endCapture() {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.END_CAPTURE.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		return pr.get32();
 	}
 
@@ -1427,7 +1451,7 @@ public class Sanguino3GDriver extends SerialDriver
 			pb.add8(b);
 		}
 		pb.add8(0); // null-terminate string
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 		return convertSDCode(pr.get8());
 	}
 
@@ -1443,7 +1467,7 @@ public class Sanguino3GDriver extends SerialDriver
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.NEXT_FILENAME.getCode());
 			pb.add8(reset?1:0);
 			reset = false;
-			PacketResponse pr = runCommand(pb.getPacket());
+			PacketResponse pr = runQuery(pb.getPacket());
 			ResponseCode rc = convertSDCode(pr.get8());
 			if (rc != ResponseCode.SUCCESS) {
 				return fileList;
@@ -1616,7 +1640,7 @@ public class Sanguino3GDriver extends SerialDriver
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 			pb.add8((byte) machine.currentTool().getIndex());
 			pb.add8(ToolCommandCode.GET_PLATFORM_SP.getCode());
-			PacketResponse pr = runCommand(pb.getPacket());
+			PacketResponse pr = runQuery(pb.getPacket());
 			int sp = pr.get16();
 			machine.currentTool().setPlatformTargetTemperature(sp);
 		}		
@@ -1629,7 +1653,7 @@ public class Sanguino3GDriver extends SerialDriver
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 			pb.add8((byte) machine.currentTool().getIndex());
 			pb.add8(ToolCommandCode.GET_SP.getCode());
-			PacketResponse pr = runCommand(pb.getPacket());
+			PacketResponse pr = runQuery(pb.getPacket());
 			int sp = pr.get16();
 			machine.currentTool().setTargetTemperature(sp);
 		}

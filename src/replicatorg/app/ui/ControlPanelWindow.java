@@ -58,6 +58,7 @@ import replicatorg.app.MachineController;
 import replicatorg.app.ui.controlpanel.ExtruderPanel;
 import replicatorg.app.ui.controlpanel.Jog3AxisPanel;
 import replicatorg.drivers.Driver;
+import replicatorg.drivers.RetryException;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineStateChangeEvent;
@@ -140,7 +141,11 @@ public class ControlPanelWindow extends JFrame implements
 		JMenuItem item = new JMenuItem(name);
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.homeAxes(set,positive,0);
+				try {
+					driver.homeAxes(set,positive,0);
+				} catch (RetryException e1) {
+					Base.logger.severe("Can't home axis; machine busy");
+				}
 			}
 		});
 		return item;
@@ -195,7 +200,11 @@ public class ControlPanelWindow extends JFrame implements
 		JButton enableButton = new JButton("Enable");
 		enableButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.enableDrives();
+				try {
+					driver.enableDrives();
+				} catch (RetryException e1) {
+					Base.logger.severe("Can't change stepper state; machine busy");
+				}
 			}
 		});
 		activationPanel.add(enableButton);
@@ -203,7 +212,11 @@ public class ControlPanelWindow extends JFrame implements
 		JButton disableButton = new JButton("Disable");
 		disableButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				driver.disableDrives();
+				try {
+					driver.disableDrives();
+				} catch (RetryException e1) {
+					Base.logger.severe("Can't change stepper state; machine busy");
+				}
 			}
 		});
 		activationPanel.add(disableButton);

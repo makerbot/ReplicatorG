@@ -1581,6 +1581,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			if (evt.getState().isReady() ||
 				evt.getState().getState() == MachineState.State.STOPPING) {
 				final MachineState endState = evt.getState();
+        		building = false;
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                     	if (endState.isReady()) {
@@ -1610,10 +1611,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		extruderParamsItem.setVisible(showParams);
 		// Advertise machine name
 		String name = "Not Connected";
-		if (showParams) {
+		if (evt.getState().isConnected()) {
 			name = machine.getName();
 		}
-		this.setTitle(name + " - " + WINDOW_TITLE);
+		if (name != null) {
+			this.setTitle(name + " - " + WINDOW_TITLE);
+		} else {
+			this.setTitle(WINDOW_TITLE);
+		}
 	}
 
 	public void setEditorBusy(boolean isBusy) {
@@ -1652,7 +1657,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		String message = "Build finished.\n\n";
 		message += "Completed in "
 				+ EstimationDriver.getBuildTimeString(elapsed);
-
 		Base.showMessage("Build finished", message);
 	}
 
@@ -1677,8 +1681,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		textarea.setEnabled(true);
 
 		building = false;
-		if (machine.getSimulatorDriver() != null)
-			machine.getSimulatorDriver().destroyWindow();
+		if (machine != null) {
+			if (machine.getSimulatorDriver() != null)
+				machine.getSimulatorDriver().destroyWindow();
+		} else {
+			System.err.println("Machine is null!");
+		}
 		setEditorBusy(false);
 	}
 

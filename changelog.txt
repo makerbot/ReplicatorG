@@ -1,4 +1,7 @@
 0021 ReplicatorG
+Bugfix release
+* Refactored controller/driver interaction to move buffer-full retries to controller responsibilities
+* Do not send stop packet on program exit when quitting ReplicatorG
 Contributions:
 * justjoheinz: turn off control panel and build menu options when disconnected
 

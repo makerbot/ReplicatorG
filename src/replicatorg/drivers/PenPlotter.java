@@ -10,6 +10,6 @@ public interface PenPlotter {
 
 	//public void disableServo();
 
-	public void setServoPos(double degree);
+	public void setServoPos(double degree) throws RetryException;
 	
 }

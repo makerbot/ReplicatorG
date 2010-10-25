@@ -26,7 +26,9 @@ public class MachineState extends Object implements Cloneable {
 		/** The machine is stopping operation. */
 		STOPPING,
 		/** The machine is building from an SD card. */
-		PLAYBACK
+		PLAYBACK,
+		/** The machine is being reset */
+		RESET
 	};
 	
 	/**
