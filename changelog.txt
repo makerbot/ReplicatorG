@@ -4,6 +4,7 @@ Bugfix release
 * Do not send stop packet on program exit when quitting ReplicatorG
 Contributions:
 * justjoheinz: turn off control panel and build menu options when disconnected
+* charlespax: skeinforge tweaks
 
 0020 ReplicatorG
 Removed:
