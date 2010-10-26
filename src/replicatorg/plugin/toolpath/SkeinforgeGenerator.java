@@ -153,7 +153,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				}
 			});
 
-			add(newButton, "wrap,growx,flowy");
+			add(newButton, "growx,flowy");
 			newButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int idx = prefList.getSelectedIndex();
@@ -179,7 +179,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				}
 			});
 
-			add(deleteButton, "wrap,growx,growy");
+			add(deleteButton, "wrap,growx");
 			deleteButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int idx = prefList.getSelectedIndex();
