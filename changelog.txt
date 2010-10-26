@@ -1,6 +1,7 @@
 0022 ReplicatorG
 Contributions:
 * justjoheinz: added profile delete button
+* nazdravi: check for "python2" for compatibility on systems which default to python 3.x
 
 0021 ReplicatorG
 Bugfix release
