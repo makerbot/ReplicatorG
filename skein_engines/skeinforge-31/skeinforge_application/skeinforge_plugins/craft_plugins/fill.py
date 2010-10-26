@@ -857,6 +857,10 @@ class FillSkein:
 #		if layerIndex > 2:
 #			return
 #		print('layer index: %s  z: %s' % ( layerIndex, rotatedLayer.z ) )
+		print "Filling layer "+str(layerIndex)+"..."
+#,'\r',
+                sys.stdout.flush()
+
 		self.distanceFeedRate.addLine('(<layer> %s )' % rotatedLayer.z )
 		layerRotation = self.getLayerRotation(layerIndex)
 		reverseRotation = complex( layerRotation.real, - layerRotation.imag )

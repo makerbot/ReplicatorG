@@ -2379,11 +2379,27 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			machine.addMachineStateListener(buttons);
 		}
 		machineStatusPanel.setMachine(this.machine);
+		// TODO: PreviewPanel: update with new machine
+	}
+	public MachineController getMachine(){
+		return this.machine;
 	}
 
 	public void loadMachine(String name) {
 		setMachine(Base.loadMachine(name));
 		reloadSerialMenu();
+		
+		if(previewPanel instanceof PreviewPanel)
+		{
+			/* FIXME: This is probably not the best place to do the reload. We need
+			 * the BuildVolume information (through MachineModel) which apparently
+			 * isn't initialized yet when this is called...
+			 */
+			Base.logger.info("RELOADING the machine... removing previewPanel...");
+			getPreviewPanel().rebuildScene();
+			updateBuild();
+		}
+		
 		if (machine.driver instanceof UsesSerial) {
 			UsesSerial us = (UsesSerial)machine.driver;
 			if (Base.preferences.getBoolean("serial.use_machines",true) &&

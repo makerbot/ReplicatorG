@@ -89,6 +89,8 @@ public class DriverFactory {
 			return loadClass("replicatorg.drivers.SerialPassthroughDriver", xml);
 		if (driverName.equals("sanguino3g"))
 			return loadClass("replicatorg.drivers.gen3.Sanguino3GDriver", xml);
+		if (driverName.equals("reprap5d"))
+			return loadClass("replicatorg.drivers.RepRap5DDriver", xml);
 		if (driverName.equals("null"))
 			return loadClass("replicatorg.drivers.NullDriver", xml);
 		else {
