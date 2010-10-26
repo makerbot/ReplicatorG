@@ -4,6 +4,8 @@ import java.awt.Frame;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -108,7 +110,7 @@ public class PythonUtils {
 		}
 
 		// The candidate paths to python to check. 
-		Vector<String> candidates = new Vector<String>();
+		Set<String> candidates = new TreeSet<String>();
 		
 		// Assemble a list of candidate paths.
 		// First, check if the user has explicitly set the Python path.
@@ -155,7 +157,6 @@ public class PythonUtils {
 		
 		for (String c : candidates) {
 			Version v = checkVersion(c,minVersion,maxVersion);
-			System.err.println("CANDIDATE: "+c+" V "+((v==null)?"null":v.toString()));
 		}
 		
 		// Filter candidates by version
@@ -166,19 +167,17 @@ public class PythonUtils {
 				viableCandidates.add(candidate);
 			}
 		}
-		candidates = viableCandidates;
 		
-		if (candidates.size() == 1) {
-			pythonPath = candidates.firstElement();
-			pythonVersion = checkVersion(pythonPath);
-		}
-		else if (selector != null) {
-			String path = selector.selectPythonPath(candidates);
+		if (selector != null && viableCandidates.size() > 1) {
+			String path = selector.selectPythonPath(viableCandidates);
 			if (path != null) {
 				Base.preferences.put(PYTON_PATH_PREF, path);
 				pythonPath = path;
 				pythonVersion = checkVersion(pythonPath);
 			}
+		} else if (viableCandidates.size() > 0) {
+			pythonPath = viableCandidates.firstElement();
+			pythonVersion = checkVersion(pythonPath);
 		}
 		return pythonPath;
 	}
@@ -196,7 +195,7 @@ public class PythonUtils {
 			if (minVersion != null && v.compareTo(minVersion) < 0) {
 				return null;
 			}
-			if (maxVersion != null && v.compareTo(maxVersion) < 0) {
+			if (maxVersion != null && v.compareTo(maxVersion) > 0) {
 				return null;
 			}
 		}
