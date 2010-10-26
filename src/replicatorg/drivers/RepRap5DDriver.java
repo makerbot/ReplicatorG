@@ -33,6 +33,8 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.vecmath.Point3d;
 
@@ -41,11 +43,6 @@ import org.w3c.dom.Node;
 import replicatorg.app.Base;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 public class RepRap5DDriver extends SerialDriver {
 	/**
@@ -322,9 +319,10 @@ public class RepRap5DDriver extends SerialDriver {
 
 	/***************************************************************************
 	 * commands for interfacing with the driver directly
+	 * @throws RetryException 
 	 **************************************************************************/
 
-	public void queuePoint(Point3d p) {
+	public void queuePoint(Point3d p) throws RetryException {
 		String cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
 				+ df.format(p.z) + " F" + df.format(getCurrentFeedrate());
 
@@ -333,14 +331,14 @@ public class RepRap5DDriver extends SerialDriver {
 		super.queuePoint(p);
 	}
 
-	public void setCurrentPosition(Point3d p) {
+	public void setCurrentPosition(Point3d p) throws RetryException {
 		sendCommand("G92 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
 				+ df.format(p.z));
 
 		super.setCurrentPosition(p);
 	}
 
-	public void homeAxes(EnumSet<Axis> axes) {
+	public void homeAxes(EnumSet<Axis> axes) throws RetryException {
 		StringBuffer buf = new StringBuffer("G28 ");
 		if (axes.contains(Axis.X)) buf.append("X");
 		if (axes.contains(Axis.Y)) buf.append("Y");
@@ -370,13 +368,13 @@ public class RepRap5DDriver extends SerialDriver {
 		super.closeClamp(clampIndex);
 	}
 
-	public void enableDrives() {
+	public void enableDrives() throws RetryException {
 		sendCommand("M17");
 
 		super.enableDrives();
 	}
 
-	public void disableDrives() {
+	public void disableDrives() throws RetryException {
 		sendCommand("M18");
 
 		super.disableDrives();
@@ -399,20 +397,21 @@ public class RepRap5DDriver extends SerialDriver {
 
 	/***************************************************************************
 	 * Motor interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
-	public void setMotorRPM(double rpm) {
+	public void setMotorRPM(double rpm) throws RetryException {
 		sendCommand(_getToolCode() + "M108 R" + df.format(rpm));
 
 		super.setMotorRPM(rpm);
 	}
 
-	public void setMotorSpeedPWM(int pwm) {
+	public void setMotorSpeedPWM(int pwm) throws RetryException {
 		sendCommand(_getToolCode() + "M108 S" + df.format(pwm));
 
 		super.setMotorSpeedPWM(pwm);
 	}
 
-	public void enableMotor() {
+	public void enableMotor() throws RetryException {
 		String command = _getToolCode();
 
 		if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
@@ -425,7 +424,7 @@ public class RepRap5DDriver extends SerialDriver {
 		super.enableMotor();
 	}
 
-	public void disableMotor() {
+	public void disableMotor() throws RetryException {
 		sendCommand(_getToolCode() + "M103");
 
 		super.disableMotor();
@@ -433,14 +432,15 @@ public class RepRap5DDriver extends SerialDriver {
 
 	/***************************************************************************
 	 * Spindle interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
-	public void setSpindleRPM(double rpm) {
+	public void setSpindleRPM(double rpm) throws RetryException {
 		sendCommand(_getToolCode() + "S" + df.format(rpm));
 
 		super.setSpindleRPM(rpm);
 	}
 
-	public void enableSpindle() {
+	public void enableSpindle() throws RetryException {
 		String command = _getToolCode();
 
 		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
@@ -453,7 +453,7 @@ public class RepRap5DDriver extends SerialDriver {
 		super.enableSpindle();
 	}
 
-	public void disableSpindle() {
+	public void disableSpindle() throws RetryException {
 		sendCommand(_getToolCode() + "M5");
 
 		super.disableSpindle();
@@ -461,8 +461,9 @@ public class RepRap5DDriver extends SerialDriver {
 
 	/***************************************************************************
 	 * Temperature interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
-	public void setTemperature(double temperature) {
+	public void setTemperature(double temperature) throws RetryException {
 		sendCommand(_getToolCode() + "M104 S" + df.format(temperature));
 
 		super.setTemperature(temperature);
@@ -509,14 +510,15 @@ public class RepRap5DDriver extends SerialDriver {
 
 	/***************************************************************************
 	 * Fan interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
-	public void enableFan() {
+	public void enableFan() throws RetryException {
 		sendCommand(_getToolCode() + "M106");
 
 		super.enableFan();
 	}
 
-	public void disableFan() {
+	public void disableFan() throws RetryException {
 		sendCommand(_getToolCode() + "M107");
 
 		super.disableFan();
@@ -524,14 +526,15 @@ public class RepRap5DDriver extends SerialDriver {
 
 	/***************************************************************************
 	 * Valve interface functions
+	 * @throws RetryException 
 	 **************************************************************************/
-	public void openValve() {
+	public void openValve() throws RetryException {
 		sendCommand(_getToolCode() + "M126");
 
 		super.openValve();
 	}
 
-	public void closeValve() {
+	public void closeValve() throws RetryException {
 		sendCommand(_getToolCode() + "M127");
 
 		super.closeValve();
