@@ -1,10 +1,14 @@
+0022 ReplicatorG
+Contributions:
+* justjoheinz: added profile delete button
+
 0021 ReplicatorG
 Bugfix release
 * Refactored controller/driver interaction to move buffer-full retries to controller responsibilities
 * Do not send stop packet on program exit when quitting ReplicatorG
 Contributions:
 * justjoheinz: turn off control panel and build menu options when disconnected
-* charlespax: skeinforge tweaks
+* charlespax: skeinforge tweaks (checkin of Nick Starno's code)
 
 0020 ReplicatorG
 Removed:
