@@ -1,6 +1,7 @@
 package replicatorg.plugin.toolpath;
 
 import java.io.File;
+import java.io.IOException;
 
 import replicatorg.plugin.toolpath.SkeinforgeGenerator.Profile;
 
@@ -29,6 +30,15 @@ public class ProfileUtils {
 		boolean result = true;
 		if (file.exists()) {
 			if (file.isDirectory()) {
+				try {
+					if (!file.getAbsolutePath().equals(file.getCanonicalPath())) {
+						// This is probably a symbolic link.  Do not follow.
+						return false;
+					}
+				} catch (IOException ioe) {
+					return false;
+				}
+
 				for (File f : file.listFiles()) {
 					result = result && delete(f);
 				}
