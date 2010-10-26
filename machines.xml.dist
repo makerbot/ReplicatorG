@@ -247,7 +247,7 @@ M18
 M18
 		</cooldown>
 	</machine>
-        <machine>
+        <machine experimental="1">
                 <name>Mendel with (5D firmware at 57600 baud)</name>
                 <geometry type="cartesian">
                         <!-- different pulleys on X and Y axii -->
@@ -275,7 +275,7 @@ M18
 M108 S0
                 </cooldown>
         </machine>
-        <machine>
+        <machine experimental="1">
                 <name>Ultimaker v1.0 (5D firmware)</name>
                 <geometry type="cartesian">
                         <!-- different pulleys on X and Y axii -->

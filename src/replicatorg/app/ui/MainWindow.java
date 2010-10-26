@@ -132,6 +132,7 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
+import replicatorg.machine.MachineState.State;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
 import replicatorg.model.BuildElement;
@@ -1375,9 +1376,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (simulating)
 			return;
 
-		// close stuff.
-		doClose();
-
 		// buttons/status.
 		simulating = true;
 		//buttons.activate(MainButtonPanel.SIMULATE);
@@ -1408,9 +1406,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (machine == null) {
 			Base.logger.severe("Not ready to build yet.");
 		} else {
-			// close stuff.
-			doClose();
-
 			// build specific stuff
 			building = true;
 			//buttons.activate(MainButtonPanel.BUILD);
@@ -1439,8 +1434,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			bsd.setVisible(true);
 			String path = bsd.getPath();
 			if (path != null) {
-				// close stuff.
-				doClose();
 	
 				// build specific stuff
 				building = true;
@@ -1519,9 +1512,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			String sourceName = build.getName() + ".s3g";
 			String path = selectOutputFile(sourceName);
 			if (path != null) {
-				// close stuff.
-				doClose();
-	
 				// build specific stuff
 				building = true;
 				//buttons.activate(MainButtonPanel.BUILD);
@@ -1555,9 +1545,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			Base.logger.info("Selected path is "+path);
 			if (path != null)
 			{
-				// close stuff.
-				doClose();
-
 				// build specific stuff
 				building = true;
 				//buttons.activate(MainButtonPanel.BUILD);
@@ -1685,7 +1672,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			if (machine.getSimulatorDriver() != null)
 				machine.getSimulatorDriver().destroyWindow();
 		} else {
-			System.err.println("Machine is null!");
 		}
 		setEditorBusy(false);
 	}
@@ -1789,21 +1775,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	/**
-	 * Stop the applet and kill its window. When running in presentation mode,
-	 * this will always be called instead of doStop().
-	 */
-	public void doClose() {
-
-		doStop(); // need to stop if runtime error
-		if (build != null) {
-			build.cleanup();
-		}
-
-		// focus the GCode again after quitting presentation mode
-		toFront();
-	}
-
-	/**
 	 * Check to see if there have been changes. If so, prompt user whether or
 	 * not to save first. If the user cancels, just ignore. Otherwise, one of
 	 * the other methods will handle calling checkModified2() which will get on
@@ -1881,11 +1852,24 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 	}
 
+	protected boolean confirmBuildAbort() {
+		if (machine != null && machine.getMachineState().getState() == MachineState.State.BUILDING) {
+			final String message = "<html>You are currently printing from ReplicatorG! Your build will be stopped.<br>" +
+				"Continue and abort print?</html>";
+			int option = JOptionPane.showConfirmDialog(this, message, "Abort print?", 
+					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (option == JOptionPane.CANCEL_OPTION) { return false; }
+		}
+		return true;
+	}
 	/**
 	 * Called by EditorStatus to complete the job and re-dispatch to handleNew,
 	 * handleOpen, handleQuit.
 	 */
 	public void checkModified2() {
+		// This is as good a place as any to check that we don't have an in-progress manual build
+		// that could be killed.
+		if (!confirmBuildAbort()) return;
 		switch (checkModifiedMode) {
 		case HANDLE_NEW:
 			handleNew2(false);
@@ -1911,7 +1895,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				doStop();
 				handleNewShift = shift;
 				checkModified(HANDLE_NEW);
 			}
@@ -1924,7 +1907,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * save as.
 	 */
 	public void handleNewUnchecked() {
-		doStop();
 		handleNewShift = false;
 		handleNew2(true);
 	}
@@ -2008,7 +1990,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 						return;
 				}
 				Base.logger.info("Loading "+path);
-				doClose();
 				handleOpenPath = path;
 				checkModified(HANDLE_OPEN);
 			}
@@ -2021,7 +2002,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	public void handleOpenUnchecked(String path, int codeIndex, int selStart,
 			int selStop, int scrollPos) {
-		doClose();
 		handleOpen2(path);
 
 		setCode(build.getCode());
@@ -2122,7 +2102,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 * the callback from EditorStatus.
 	 */
 	public void handleQuitInternal() {
-
+		if (!confirmBuildAbort()) return;
 		try {
 			if (simulationThread != null) {
 				simulationThread.interrupt();
@@ -2135,10 +2115,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} catch (InterruptedException e) {
 			assert (false);
 		}
-
-		// doStop() isn't sufficient with external vm & quit
-		// instead use doClose() which will kill the external vm
-		doClose();
 
 		// cleanup our machine/driver.
 		if (machine != null) {

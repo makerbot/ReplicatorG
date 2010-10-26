@@ -283,7 +283,9 @@ public class MachineController {
 				// Send a stop command if we're stopping.
 				if (state.getState() == MachineState.State.STOPPING ||
 						state.getState() == MachineState.State.RESET) {
-					if (!state.isSimulating()) driver.stop();
+					if (!state.isSimulating()) {
+						driver.stop();
+					}
 					throw new BuildFailureException("Build manually aborted");
 				}
 
@@ -386,7 +388,7 @@ public class MachineController {
 				return;
 			}
 			// Poll for completion until done.  Check for pause states as well.
-			while (!driver.isFinished()) {
+			while (running && !driver.isFinished()) {
 				try {
 					// are we paused?
 					if (state.isPaused()) {
@@ -497,23 +499,30 @@ public class MachineController {
 		 */
 		public void shutdown() {
 			if (state.getState() == MachineState.State.PLAYBACK) {
-				return;
+				running = false;
+				return; // send no further packets to machine; let it go on its own
 			}
+			
 			if (state.isBuilding()) {
-				if (!state.isSimulating()) driver.stop();
+				setState(MachineState.State.STOPPING);
 			}
-			setState(MachineState.State.NOT_ATTACHED);
 			running = false;
 			synchronized(this) { notify(); }
 		}
 
 		private boolean running = true;
 		
+		protected boolean isRunning() {
+			// If we're in stopping mode, we don't want to terminate until the stop
+			// packet is sent!
+			return running ||
+				state.getState() == MachineState.State.STOPPING;
+		}
 		/**
 		 * Main machine thread loop.
 		 */
 		public void run() {
-			while (running) {
+			while (isRunning()) {
 				try {
 					if (state.getState() == MachineState.State.BUILDING) {
 						// Capture build to a card

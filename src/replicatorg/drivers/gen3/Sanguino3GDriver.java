@@ -228,10 +228,13 @@ public class Sanguino3GDriver extends SerialDriver
 			return PacketResponse.okResponse();  // Always pretend that it's all good.
 		}
 
-		assert (serial != null);
-
+		// This can actually happen during shutdown.
+		if (serial == null) return PacketResponse.timeoutResponse();
+		
 		PacketProcessor pp;
 		PacketResponse pr = new PacketResponse();
+
+		assert (serial != null);
 
 		synchronized(serial) {
 
@@ -303,6 +306,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if (fileCaptureOstream != null) { return true; }  // always done instantly if writing to file
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.IS_FINISHED.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
+		if (!pr.isOK()) { return false; }
 		int v = pr.get8();
 		if (pr.getResponseCode() == PacketResponse.ResponseCode.UNSUPPORTED) {
 			if (!isNotifiedFinishedFeature) {
