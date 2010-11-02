@@ -5,6 +5,6 @@ Open File for Analyze
 behold	False
 comment	False
 interpret	False
-skeinview	True
-statistic	False
+skeinview	False
+statistic	True
 vectorwrite	False
