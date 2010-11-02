@@ -46,6 +46,8 @@ import replicatorg.machine.model.ToolModel;
 
 public class RepRap5DDriver extends SerialDriver {
 	private static Pattern gcodeCommentPattern = Pattern.compile("\\([^)]*\\)|;.*");
+	private static Pattern resendLinePattern = Pattern.compile("Resend:([0-9]+)");
+	private static Pattern gcodeLineNumberPattern = Pattern.compile("N([0-9]+)");
 
 	/**
 	 * To keep track of outstanding commands
@@ -61,6 +63,12 @@ public class RepRap5DDriver extends SerialDriver {
 	 * the amount of data we've sent and is in the buffer.
 	 */
 	private int bufferSize = 0;
+	
+	/**
+	 * The commands sent but not yet acknowledged by the firmware. Stored so they can be resent 
+	 * if there is a checksum problem.
+	 */
+	private LinkedList<String> buffer = new LinkedList<String>();
 
 	/**
 	 * What did we get back from serial?
@@ -188,6 +196,7 @@ public class RepRap5DDriver extends SerialDriver {
 		int cmdlen = next.length() + 1;
 		commands.add(cmdlen);
 		bufferSize += cmdlen;
+		buffer.addFirst(next);
 
 		// debug... let us know whts up!
 		System.out.println("Sent: " + next);
@@ -250,7 +259,15 @@ public class RepRap5DDriver extends SerialDriver {
 	 */
 	public String applyChecksum(String gcode) {
 		// RepRap Syntax: N<linenumber> <cmd> *<chksum>\n
-		gcode = "N"+(lineNumber++)+' '+gcode+' ';
+
+		Matcher lineNumberMatcher = gcodeLineNumberPattern.matcher(gcode);
+		if (lineNumberMatcher.matches())
+		{ // reset our line number to the specified one. this is usually a m110 line # reset
+			lineNumber = Integer.parseInt( lineNumberMatcher.group(1) );
+		}
+		{ // only add a line number if it is not already specified
+			gcode = "N"+(lineNumber++)+' '+gcode+' ';
+		}
 
 		// chksum = 0 xor each byte of the gcode (including the line number and trailing space)
 		byte checksum = 0;
@@ -292,6 +309,7 @@ public class RepRap5DDriver extends SerialDriver {
 						if (line.startsWith("ok")) {
 							setInitialized(true);
 							bufferSize -= commands.remove();
+							buffer.removeLast();
 							Base.logger.info(line);
 							if (line.startsWith("ok T:")) {
 								Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
@@ -322,6 +340,22 @@ public class RepRap5DDriver extends SerialDriver {
 						} else if (line.startsWith("Extruder Fail")) {
 							setError("Extruder failed:  cannot extrude as this rate.");
 							Base.logger.severe(line);
+						} else if (line.startsWith("Resend:")) {
+							// Bad checksum, resend requested
+							int badLineNumber = Integer.parseInt(
+									resendLinePattern.matcher(line).group(1) );
+							String bufferedLine = buffer.removeLast();
+							int bufferedLineNumber = Integer.parseInt( 
+									gcodeLineNumberPattern.matcher(bufferedLine).group(1) );
+
+							if (bufferedLineNumber != badLineNumber)
+							{
+								// reset the line number if it does not match the buffered line
+								 this.sendCommand("N"+bufferedLineNumber+" M110");
+							}
+
+							// resend the line
+							this.sendCommand(bufferedLine);
 						} else {
 							Base.logger.severe("Unknown: " + line);
 						}
