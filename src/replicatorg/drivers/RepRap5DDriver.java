@@ -45,6 +45,8 @@ import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
 public class RepRap5DDriver extends SerialDriver {
+	private static Pattern gcodeCommentPattern = Pattern.compile("\\([^)]*\\)|;.*");
+
 	/**
 	 * To keep track of outstanding commands
 	 */
@@ -69,6 +71,8 @@ public class RepRap5DDriver extends SerialDriver {
 
 	private byte[] responsebuffer = new byte[512];
 
+	private int lineNumber = -1;
+
 	public RepRap5DDriver() {
 		super();
 
@@ -92,10 +96,24 @@ public class RepRap5DDriver extends SerialDriver {
 		}
 		// wait till we're initialized
 		if (!isInitialized()) {
-			try {
+				//attempt to reset the device, this may slow down the connection time, but it 
+				//increases our chances of successfully connecting dramatically.
+				serial.pulseRTSLow();
+				//Wait for the RepRap to startup
+				try {
+					Thread.sleep(300);
+				} catch (java.lang.InterruptedException ie) {
+				}
+				//Send a line # reset command, this allows us to catch the "ok" response in 
+				//case we missed the "start" response which we seem to often miss. (also it 
+				//resets the line number which is good)
+				sendCommand("M110");
+
+
 				// record our start time.
 				Date date = new Date();
 				long end = date.getTime() + 10000;
+				try {
 
 				Base.logger.info("Initializing Serial.");
 //				serial.clear();
@@ -144,12 +162,13 @@ public class RepRap5DDriver extends SerialDriver {
 	 * method will block until the command has been sent.
 	 */
 	protected void sendCommand(String next) {
-		assert (isInitialized());
+		//assert (isInitialized());
 		assert (serial != null);
 		// System.out.println("sending: " + next);
 
 		next = clean(next);
 		next = fix(next); // make it compatible with older versions of the GCode interpeter
+		next = applyChecksum(next);
 
 		// skip empty commands.
 		if (next.length() == 0)
@@ -184,6 +203,9 @@ public class RepRap5DDriver extends SerialDriver {
 
 		// remove spaces
 		//clean = clean.replaceAll(" ", "");
+		
+		// remove all comments
+        clean = RepRap5DDriver.gcodeCommentPattern.matcher(clean).replaceAll("");
 
 		return clean;
 	}
@@ -222,6 +244,23 @@ public class RepRap5DDriver extends SerialDriver {
 	    
 	    return fixed; // no change!
 	}
+
+	/**
+	 * takes a line of gcode and returns that gcode with a line number and checksum
+	 */
+	public String applyChecksum(String gcode) {
+		// RepRap Syntax: N<linenumber> <cmd> *<chksum>\n
+		gcode = "N"+(lineNumber++)+' '+gcode+' ';
+
+		// chksum = 0 xor each byte of the gcode (including the line number and trailing space)
+		byte checksum = 0;
+		byte[] gcodeBytes = gcode.getBytes();
+		for (int i = 0; i<gcodeBytes.length; i++)
+		{
+			checksum = (byte) (checksum ^ gcodeBytes[i]);
+		}
+		return gcode+'*'+checksum;
+	}
 	
 	public void readResponse() {
 		assert (serial != null);
@@ -251,10 +290,11 @@ public class RepRap5DDriver extends SerialDriver {
 						if (line.length() == 0)
 							continue;
 						if (line.startsWith("ok")) {
+							setInitialized(true);
 							bufferSize -= commands.remove();
 							Base.logger.info(line);
 							if (line.startsWith("ok T:")) {
-								Pattern r = Pattern.compile("^ok T:([0-9\\.]+)[^0-9]");
+								Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
 							    Matcher m = r.matcher(line);
 							    if (m.find( )) {
 							    	String temp = m.group(1);
@@ -278,6 +318,7 @@ public class RepRap5DDriver extends SerialDriver {
 							// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
 							setInitialized(true);
 							Base.logger.info(line);
+							lineNumber = -1;
 						} else if (line.startsWith("Extruder Fail")) {
 							setError("Extruder failed:  cannot extrude as this rate.");
 							Base.logger.severe(line);
@@ -338,11 +379,14 @@ public class RepRap5DDriver extends SerialDriver {
 		super.setCurrentPosition(p);
 	}
 
-	public void homeAxes(EnumSet<Axis> axes) throws RetryException {
-		StringBuffer buf = new StringBuffer("G28 ");
-		if (axes.contains(Axis.X)) buf.append("X");
-		if (axes.contains(Axis.Y)) buf.append("Y");
-		if (axes.contains(Axis.Z)) buf.append("Z");
+	@Override
+	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException {
+		Base.logger.info("homing "+axes.toString());
+		StringBuffer buf = new StringBuffer("G28");
+		for (Axis axis : axes)
+		{
+			buf.append(" "+axis);
+		}
 		sendCommand(buf.toString());
 
 		super.homeAxes(axes,false,0);
