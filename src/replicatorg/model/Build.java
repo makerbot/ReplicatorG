@@ -266,16 +266,6 @@ public class Build {
 		return null;
 	}
 	
-	/**
-	 * Cleanup temporary files used during a build/run.
-	 */
-	public void cleanup() {
-		// if the java runtime is holding onto any files in the build dir, we
-		// won't be able to delete them, so we need to force a gc here
-		System.gc();
-
-	}
-
 	protected int countLines(String what) {
 		char c[] = what.toCharArray();
 		int count = 0;

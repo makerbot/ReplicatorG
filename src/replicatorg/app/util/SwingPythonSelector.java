@@ -27,7 +27,7 @@ public class SwingPythonSelector implements Selector {
 	}
 	
 	public String selectPythonPath(Vector<String> candidates) {
-		if (candidates != null && candidates.size() > 2) {
+		if (candidates != null && candidates.size() >= 2) {
 			return selectCandidatePath(candidates);
 		} else {
 			// Linux users should have zero problems setting up python on their system or putting it in
@@ -98,6 +98,7 @@ public class SwingPythonSelector implements Selector {
 		dialog.add(other,"wrap,wmin button");
 		dialog.add(ok,"tag ok,wmin button");
 		dialog.add(cancel,"tag cancel,wmin button");
+		dialog.pack();
 		dialog.setVisible(true);
 		return selectedCandidate;
 	}

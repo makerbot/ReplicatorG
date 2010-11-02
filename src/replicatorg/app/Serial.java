@@ -275,7 +275,7 @@ public class Serial implements SerialPortEventListener {
 			try {
 				if (readFifo.size() == 0) readFifo.wait(timeoutMillis);
 			} catch (InterruptedException e) {
-				// We are most likely amidst a shutdown.  Propegate the interrupt
+				// We are most likely amidst a shutdown.  Propagate the interrupt
 				// status.
 				Thread.currentThread().interrupt();
 				return -1;
@@ -303,7 +303,7 @@ public class Serial implements SerialPortEventListener {
 			try {
 				if (readFifo.size() == 0) readFifo.wait(timeoutMillis);
 			} catch (InterruptedException e) {
-				// We are most likely amidst a shutdown.  Propegate the interrupt
+				// We are most likely amidst a shutdown.  Propagate the interrupt
 				// status.
 				Thread.currentThread().interrupt();
 				return -1;
@@ -342,9 +342,9 @@ public class Serial implements SerialPortEventListener {
 	}
 
 	/**
-	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 1s.
+	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 200ms.
 	 */
-	private int timeoutMillis = 1000;
+	private int timeoutMillis = 200;
 
 	/**
 	 * Set the amount of time we're willing to wait for a read to timeout.

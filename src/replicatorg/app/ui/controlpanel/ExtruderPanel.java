@@ -46,6 +46,7 @@ import org.w3c.dom.NodeList;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.drivers.Driver;
+import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.ToolModel;
 
 public class ExtruderPanel extends JPanel implements FocusListener, ActionListener, ItemListener {
@@ -399,7 +400,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		return null;
 	}
 
-	synchronized public void updateStatus() {
+	synchronized public void updateStatus() { // FIXME sync
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
 		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeater()) {
 			double temperature = machine.getDriver().getTemperature();
@@ -420,10 +421,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 	public void focusLost(FocusEvent e) {
 		JTextField source = (JTextField) e.getSource();
-		handleChangedTextField(source);
+		try {
+			handleChangedTextField(source);
+		} catch (RetryException e1) {
+			Base.logger.severe("Could not execute command; machine busy.");
+		}
 	}
 
-	public void handleChangedTextField(JTextField source)
+	public void handleChangedTextField(JTextField source) throws RetryException
 	{
 		String name = source.getName();
 		Driver driver = machine.getDriver();
@@ -450,46 +455,50 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		Component source = (Component) e.getItemSelectable();
 		String name = source.getName();
 		Driver driver = machine.getDriver();
-		if (e.getStateChange() == ItemEvent.SELECTED) {
-			if (name.equals("motor-forward")) {
-				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
-				driver.enableMotor();
-			} else if (name.equals("motor-reverse")) {
-				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
-				driver.enableMotor();
-			} else if (name.equals("motor-stop"))
-				driver.disableMotor();
-			else if (name.equals("spindle-enabled"))
-				driver.enableSpindle();
-			else if (name.equals("flood-coolant"))
-				driver.enableFloodCoolant();
-			else if (name.equals("mist-coolant"))
-				driver.enableMistCoolant();
-			else if (name.equals("fan-check"))
-				driver.enableFan();
-			else if (name.equals("valve-check"))
-				driver.openValve();
-			else if (name.equals("collet-check"))
-				driver.openCollet();
-			else
-				Base.logger.warning("checkbox selected: " + source.getName());
-		} else {
-			if (name.equals("motor-enabled"))
-				driver.disableMotor();
-			else if (name.equals("spindle-enabled"))
-				driver.disableSpindle();
-			else if (name.equals("flood-coolant"))
-				driver.disableFloodCoolant();
-			else if (name.equals("mist-coolant"))
-				driver.disableMistCoolant();
-			else if (name.equals("fan-check"))
-				driver.disableFan();
-			else if (name.equals("valve-check"))
-				driver.closeValve();
-			else if (name.equals("collet-check"))
-				driver.closeCollet();
-			// else
-			// System.out.println("checkbox deselected: " + source.getName());
+		try {
+			if (e.getStateChange() == ItemEvent.SELECTED) {
+				if (name.equals("motor-forward")) {
+					driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
+					driver.enableMotor();
+				} else if (name.equals("motor-reverse")) {
+					driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
+					driver.enableMotor();
+				} else if (name.equals("motor-stop"))
+					driver.disableMotor();
+				else if (name.equals("spindle-enabled"))
+					driver.enableSpindle();
+				else if (name.equals("flood-coolant"))
+					driver.enableFloodCoolant();
+				else if (name.equals("mist-coolant"))
+					driver.enableMistCoolant();
+				else if (name.equals("fan-check"))
+					driver.enableFan();
+				else if (name.equals("valve-check"))
+					driver.openValve();
+				else if (name.equals("collet-check"))
+					driver.openCollet();
+				else
+					Base.logger.warning("checkbox selected: " + source.getName());
+			} else {
+				if (name.equals("motor-enabled"))
+					driver.disableMotor();
+				else if (name.equals("spindle-enabled"))
+					driver.disableSpindle();
+				else if (name.equals("flood-coolant"))
+					driver.disableFloodCoolant();
+				else if (name.equals("mist-coolant"))
+					driver.disableMistCoolant();
+				else if (name.equals("fan-check"))
+					driver.disableFan();
+				else if (name.equals("valve-check"))
+					driver.closeValve();
+				else if (name.equals("collet-check"))
+					driver.closeCollet();
+				// else
+				// System.out.println("checkbox deselected: " + source.getName());
+			}
+		} catch (RetryException r) {
+			Base.logger.severe("Could not execute command; machine busy.");			
 		}
 	}
 
@@ -499,7 +508,11 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		if(s.equals("handleTextfield"))
 		{
 			JTextField source = (JTextField) e.getSource();
-			handleChangedTextField(source);
+			try {
+				handleChangedTextField(source);
+			} catch (RetryException e1) {
+				Base.logger.severe("Could not execute command; machine busy.");
+			}
 			source.selectAll();
 		}
 	}

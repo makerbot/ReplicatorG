@@ -57,6 +57,7 @@ public class EstimationDriver extends DriverBaseImplementation {
 			super.execute();
 		} catch (GCodeException e) {
 		} catch (ArrayIndexOutOfBoundsException e) {
+		} catch (RetryException e) {
 		}
 	}
 

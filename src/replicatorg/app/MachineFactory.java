@@ -64,7 +64,7 @@ public class MachineFactory {
 			// skip experimental drivers if showExperimental is false
 			if (!showExperimental) {
 				if (n.hasAttributes() &&
-						n.getAttributes().getNamedItem("experimental") != null) {
+						n.getAttributes().getNamedItem("experimental") != null) { // THERE IS A BUG HERE: experimental=0 will also trigger experimental and leave them out!
 					// skip this node
 					continue;
 				}

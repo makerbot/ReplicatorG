@@ -24,6 +24,7 @@
 package replicatorg.machine.model;
 
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import javax.vecmath.Point3d;
 
@@ -32,6 +33,7 @@ import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
+import replicatorg.machine.model.BuildVolume;
 
 public class MachineModel
 {
@@ -58,6 +60,9 @@ public class MachineModel
 
 	//our clamp models	
 	protected Vector<ClampModel> clamps;
+	
+	// our build volume
+	protected BuildVolume buildVolume;
 
 	/*************************************
 	*  Creates the model object.
@@ -66,6 +71,8 @@ public class MachineModel
 	{
 		clamps = new Vector<ClampModel>();
 		tools = new Vector<ToolModel>();
+//		buildVolume = new BuildVolume((int)(Math.random()*300)+10,(int)(Math.random()*300)+10,(int)(Math.random()*300)+10); // preload it with the default values
+		buildVolume = new BuildVolume(100,100,100); // preload it with the default values
 		
 		//currentPosition = new Point3d();
 		minimum = new Point3d();
@@ -84,6 +91,8 @@ public class MachineModel
 		parseAxes();
 		parseClamps();
 		parseTools();
+		parseBuildVolume();
+		
 	}
 	
 	//load axes configuration
@@ -186,6 +195,52 @@ public class MachineModel
 			
 			selectTool(0);
 		}
+	}
+	//load axes configuration
+	private void parseBuildVolume()
+	{
+//		Base.logger.info("parsing build volume!");
+		
+		if(XML.hasChildNode(xml, "geometry"))
+		{
+			Node geometry = XML.getChildNodeByName(xml, "geometry");
+			
+			//look through the axes.
+			NodeList axes = geometry.getChildNodes();
+			for (int i=0; i<axes.getLength(); i++)
+			{
+				Node axis = axes.item(i);
+				
+				if (axis.getNodeName().equals("axis"))
+				{
+					//parse our information.
+					String id = XML.getAttributeValue(axis, "id");
+
+					//initialize values
+				 	double length = 100; // 100mm by default
+					
+					//if values are missing, ignore them.
+					try {
+					 	length = Double.parseDouble(XML.getAttributeValue(axis, "length"));
+					} catch (Exception e) {}
+					
+					//create the right variables.
+					if (id.toLowerCase().equals("x"))
+					{
+						buildVolume.setX((int)length);
+					}
+					else if (id.toLowerCase().equals("y"))
+					{
+						buildVolume.setY((int)length);
+					}
+					else if (id.toLowerCase().equals("z"))
+					{
+						buildVolume.setZ((int)length);
+					}
+				}
+			}
+		}
+		
 	}
 
 	/*************************************
@@ -328,6 +383,10 @@ public class MachineModel
 		}
 		
 		return null;
+	}
+	public BuildVolume getBuildVolume()
+	{
+		return buildVolume;
 	}
 	
 	public Vector<ToolModel> getTools()

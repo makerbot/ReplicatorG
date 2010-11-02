@@ -133,7 +133,7 @@ public class EditingModel {
 		return wrapper;
 	}
 
-	BuildModel getBuildModel() { return model; }
+	public BuildModel getBuildModel() { return model; }
 	
 	public BranchGroup getGroup() {
 		if (group == null) {
