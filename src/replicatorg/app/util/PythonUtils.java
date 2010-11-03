@@ -3,8 +3,9 @@ package replicatorg.app.util;
 import java.awt.Frame;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -75,72 +76,132 @@ public class PythonUtils {
 	}
 	
 	static String pythonPath = null;
+	static Version pythonVersion = null;
+	
 	/**
 	 * Calculate the expected path to the Python installation.  The result is cached.
 	 * @return the path as a string
 	 */
 	public static String getPythonPath() {
-		if (pythonPath == null) {
-			// First, check if the user has explicitly set the Python path.
-			{
-				String path = Base.preferences.get(PYTON_PATH_PREF, null);
-				if (path != null) {
-					File candidate = new File(path);
-					if (candidate.exists()) {
-						pythonPath = path;
-						return pythonPath;
-					}
-				}
+		return getPythonPath(null, null);
+	}
+	
+	/**
+	 * Calculate the expected path to the Python installation.  The result is cached.
+	 * @return the path as a string
+	 */
+	public static String getPythonPath(Version minVersion, Version maxVersion) {
+		// First, check if our cached python path, if any, meets the version requirements.
+		boolean versionOk = false;
+		if (pythonVersion != null) {
+			versionOk = true;
+			if (minVersion != null && pythonVersion.compareTo(minVersion) < 0) {
+				versionOk = false;
 			}
-			// Second, look in the system path.  This is the default solution for
-			// all platforms.
-			String paths[] = System.getenv("PATH").split(File.pathSeparator);
-			for (String path : paths) {
-				File candidate = new File(path,"python");
+			if (maxVersion != null && maxVersion.compareTo(pythonVersion) < 0) {
+				versionOk = false;
+			}
+		}
+		if (versionOk && pythonPath != null) {
+			return pythonPath;
+		} else {
+			pythonPath = null;
+			pythonVersion = null;
+		}
+
+		// The candidate paths to python to check. 
+		Set<String> candidates = new TreeSet<String>();
+		
+		// Assemble a list of candidate paths.
+		// First, check if the user has explicitly set the Python path.
+		{
+			String path = Base.preferences.get(PYTON_PATH_PREF, null);
+			if (path != null) {
+				File candidate = new File(path);
 				if (candidate.exists()) {
-					try {
-						pythonPath = candidate.getCanonicalPath();
-						return pythonPath;
-					} catch (IOException ioe) {
-						pythonPath = null;
-					}
+					candidates.add(candidate.getAbsolutePath());
 				}
 			}
-			// We've exhausted the system path; let's try platform-specific solutions.
-			Vector<String> candidates = new Vector<String>();
-			if (Base.isWindows()) {
-				// The Windows python install does not add Python to the path by default.
-				// We look for the install in the standard locations (C:\Python26, etc.)
-				Pattern pythonPat = Pattern.compile("Python([0-9]+)");
-				File driveDir = new File("C:/");
-				if (driveDir.exists() && driveDir.isDirectory()) {
-					for (String path : driveDir.list()) {
-						Matcher match = pythonPat.matcher(path);
-						if (match.matches()) {
-							try {
-								File python = new File(new File(driveDir,path),"python.exe");
-								candidates.add(python.getCanonicalPath());
-							} catch (IOException ioe) {
-								// pythonPath = null;
-							}
+		}
+		// Second, look in the system path.  This is the default solution for
+		// all platforms.
+		String paths[] = System.getenv("PATH").split(File.pathSeparator);
+		// On platforms with python 3.x installed, 2.x is sometimes named "python2".
+		String pythonNames[] = { "python", "python2" };
+		for (String path : paths) {
+			for (String name : pythonNames) {
+				File candidate = new File(path,name);
+				if (candidate.exists()) {
+					candidates.add(candidate.getAbsolutePath());
+				}
+			}
+		}
+		// Add platform-specific candidate paths.
+		if (Base.isWindows()) {
+			// The Windows python install does not add Python to the path by default.
+			// We look for the install in the standard locations (C:\Python26, etc.)
+			Pattern pythonPat = Pattern.compile("Python([0-9]+)");
+			File driveDir = new File("C:/");
+			if (driveDir.exists() && driveDir.isDirectory()) {
+				for (String path : driveDir.list()) {
+					Matcher match = pythonPat.matcher(path);
+					if (match.matches()) {
+						File python = new File(new File(driveDir,path),"python.exe");
+						if (python.exists()) {
+							candidates.add(python.getAbsolutePath());
 						}
 					}
 				}
 			}
-			if (candidates.size() == 1) {
-				pythonPath = candidates.firstElement();
+		}
+		
+		for (String c : candidates) {
+			Version v = checkVersion(c,minVersion,maxVersion);
+		}
+		
+		// Filter candidates by version
+		Vector<String> viableCandidates = new Vector<String>();
+		for (String candidate : candidates) {
+			Version v = checkVersion(candidate, minVersion, maxVersion);
+			if (v != null) {
+				viableCandidates.add(candidate);
 			}
-			else if (selector != null) {
-				String path = selector.selectPythonPath(candidates);
-				if (path != null) {
-					Base.preferences.put(PYTON_PATH_PREF, path);
-					pythonPath = path;
-				}
+		}
+		
+		if (selector != null && viableCandidates.size() > 1) {
+			String path = selector.selectPythonPath(viableCandidates);
+			if (path != null) {
+				Base.preferences.put(PYTON_PATH_PREF, path);
+				pythonPath = path;
+				pythonVersion = checkVersion(pythonPath);
 			}
+		} else if (viableCandidates.size() > 0) {
+			pythonPath = viableCandidates.firstElement();
+			pythonVersion = checkVersion(pythonPath);
 		}
 		return pythonPath;
 	}
 
+	/**
+	 * Check the version of the given python installation and return the version of python detected
+	 * if it's within the minimum and maximum version limitations, or null if it doesn't meet the requirements.
+	 * If either the maximum or minimum version is null, that constraint is ignored.
+	 * @return null if python is not installed or an inappropriate version, or the acceptable
+	 * version of python found.
+	 */
+	public static Version checkVersion(String path, Version minVersion, Version maxVersion) {
+		Version v = checkVersion(path);
+		if (v != null) {
+			if (minVersion != null && v.compareTo(minVersion) < 0) {
+				return null;
+			}
+			if (maxVersion != null && v.compareTo(maxVersion) > 0) {
+				return null;
+			}
+		}
+		return v;
+	}
+	
 	/**
 	 * Check for the existence of a working python at the standard location.
 	 * @return null if python is not installed, or the version of python found. 
@@ -227,7 +288,8 @@ public class PythonUtils {
 	 * @return true if python was found and falls within acceptable boundries
 	 */
 	public static boolean interactiveCheckVersion(Frame parent, String procedureName, Version min, Version max) {
-		Version v = checkVersion();
+		getPythonPath(min,max);
+		Version v = pythonVersion;
 		if (procedureName == null) { procedureName = "This operation"; }
 		if (v != null) {
 			if (min != null && min.compareTo(v) == 1) {

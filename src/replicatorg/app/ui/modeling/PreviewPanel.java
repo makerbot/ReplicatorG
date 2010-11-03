@@ -46,7 +46,10 @@ import javax.vecmath.Vector3f;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.app.MachineController;
 import replicatorg.app.ui.MainWindow;
+import replicatorg.machine.model.BuildVolume;
+import replicatorg.machine.model.MachineModel;
 import replicatorg.model.BuildModel;
 
 import com.sun.j3d.utils.universe.SimpleUniverse;
@@ -61,8 +64,10 @@ public class PreviewPanel extends JPanel {
 		new BoundingSphere(new Point3d(0.0,0.0,0.0), 1000.0);
 
 	EditingModel model = null;
+	BranchGroup scene;
+	BuildVolume buildVol;
 	
-	EditingModel getModel() { return model; }
+	public EditingModel getModel() { return model; }
 	
 	public void setModel(BuildModel buildModel) {
 		if (model == null || buildModel != model.getBuildModel()) {
@@ -82,6 +87,32 @@ public class PreviewPanel extends JPanel {
 		}
 		objectBranch = model.getGroup();
 		sceneGroup.addChild(objectBranch);
+	}
+	
+	/*
+	 * This is to ensure we can switch between machines with different dimensions
+	 * It is called from MainWindow loadMachine()
+	 */
+	public void rebuildScene(){
+		if (objectBranch != null) {
+			sceneGroup.removeChild(objectBranch);
+		}
+		scene.detach();
+		scene = createSTLScene();
+		objectBranch = model.getGroup();
+		sceneGroup.addChild(objectBranch);
+		univ.addBranchGraph(scene);
+	}
+	
+	
+	private void getBuildVolume(){
+		Base.logger.fine("Resetting the build volume!");
+		MachineController mc = this.mainWindow.getMachine(); 
+		if(mc instanceof MachineController){
+			MachineModel mm = mc.getModel();
+			buildVol = mm.getBuildVolume();
+			Base.logger.fine("Dimensions:" + buildVol.getX() +','+ buildVol.getY() + ',' + buildVol.getZ());
+		}
 	}
 	
 	MainWindow mainWindow;
@@ -165,7 +196,7 @@ public class PreviewPanel extends JPanel {
 			add(toolPanel,"dock east,width max(200,20%)");
 		}
 		// Create the content branch and add it to the universe
-		BranchGroup scene = createSTLScene();
+		scene = createSTLScene();
 		univ.addBranchGraph(scene);
 		
 		canvas.addKeyListener( new KeyListener() {
@@ -317,24 +348,35 @@ public class PreviewPanel extends JPanel {
 	public Node makeBoundingBox() {
 
 		Group boxGroup = new Group();
-		Shape3D boxframe = makeBoxFrame(new Point3d(-50,-50,0), new Vector3d(100,100,100));	
-
-		/*
-		Appearance sides = new Appearance();
-		sides.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST,0.9f));
-		Color3f color = new Color3f(0.05f,0.05f,1.0f); 
-		Material m = new Material(color,color,color,color,64.0f);
-		sides.setMaterial(m);
-
-		Box box = new Box(50,50,50,sides);
-		Transform3D tf = new Transform3D();
-		tf.setTranslation(new Vector3d(0,0,50));
-		TransformGroup tg = new TransformGroup(tf);
-		tg.addChild(box);
-		tg.addChild(boxframe);
-		*/
-		boxGroup.addChild(boxframe);
-		boxGroup.addChild(this.makePlatform(new Point3d(-50,-50,-0.001), new Point3d(50,50,-0.001)));
+		// TODO: Change these dimensions if it has a custom buid-volume! Display cut-outs?!
+		// Same for the platform
+		if(buildVol == null)
+		{
+			Shape3D boxframe = makeBoxFrame(new Point3d(-50,-50,0), new Vector3d(100,100,100));
+			boxGroup.addChild(boxframe);
+			boxGroup.addChild(this.makePlatform(new Point3d(-50,-50,-0.001), new Point3d(50,50,-0.001)));
+		} else {
+			Vector3d boxdims = new Vector3d(buildVol.getX(),buildVol.getY(),buildVol.getZ());
+			Shape3D boxframe = makeBoxFrame(new Point3d((int) -buildVol.getX()/2,(int) -buildVol.getY()/2,0), boxdims);	
+			boxGroup.addChild(boxframe);
+			boxGroup.addChild(this.makePlatform(new Point3d((int) -buildVol.getX()/2,(int) -buildVol.getY()/2,-0.001), new Point3d(buildVol.getX()/2,buildVol.getY()/2,-0.001)));
+		}
+			
+	
+			/*
+			Appearance sides = new Appearance();
+			sides.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST,0.9f));
+			Color3f color = new Color3f(0.05f,0.05f,1.0f); 
+			Material m = new Material(color,color,color,color,64.0f);
+			sides.setMaterial(m);
+	
+			Box box = new Box(50,50,50,sides);
+			Transform3D tf = new Transform3D();
+			tf.setTranslation(new Vector3d(0,0,50));
+			TransformGroup tg = new TransformGroup(tf);
+			tg.addChild(box);
+			tg.addChild(boxframe);
+			*/
 		return boxGroup;
 	}
 
@@ -343,25 +385,41 @@ public class PreviewPanel extends JPanel {
 		bg.setApplicationBounds(bounds);
 		return bg;
 	}
-
-	public Node makeBaseGrid() {
-		Appearance edges = new Appearance();
-		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
-		edges.setColoringAttributes(new ColoringAttributes(0.6f,0.6f,0.8f,ColoringAttributes.FASTEST));
-		final int LINES = 11;
-		LineArray grid = new LineArray(4*(LINES-2),GeometryArray.COORDINATES);
-		for (int i = 1; i < LINES-1; i++) {
-			double offset = -50 + (100/(LINES-1))*i;
-			int idx = (i-1)*4;
-			// Along x axis
-			grid.setCoordinate(idx++, new Point3d(offset,-50,0));
-			grid.setCoordinate(idx++, new Point3d(offset,50,0));
-			// Along y axis
-			grid.setCoordinate(idx++, new Point3d(-50,offset,0));
-			grid.setCoordinate(idx++, new Point3d(50,offset,0));
-		}
-		return new Shape3D(grid,edges); 
-	}
+	
+    public Node makeBaseGrid(boolean xOrY) {
+    	if(buildVol instanceof BuildVolume)
+    	{
+    		int gridSpacing = 10;
+	        Appearance edges = new Appearance();
+	        edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
+	        edges.setColoringAttributes(new ColoringAttributes(0.6f,0.6f,0.8f,ColoringAttributes.FASTEST));
+	        int lineCountX = (int) 1+(buildVol.getX()/gridSpacing);
+	        int lineCountY = (int) 1+(buildVol.getY()/gridSpacing);
+	        LineArray gridX = new LineArray(4*(lineCountX),GeometryArray.COORDINATES);
+	        LineArray gridY = new LineArray(4*(lineCountY),GeometryArray.COORDINATES);
+	        int idx;
+	        for (int i = 1; i < lineCountX-1; i++) {
+	        	double offsetX = -buildVol.getX()/2 + (buildVol.getX()/(lineCountX-1))*i;
+                idx = (i-1)*4;
+                // Along x axis
+                gridX.setCoordinate(idx++, new Point3d(offsetX,-buildVol.getY()/2,0));
+                gridX.setCoordinate(idx++, new Point3d(offsetX,buildVol.getY()/2,0));
+	        }
+	        for (int i = 1; i < lineCountY-1; i++) {
+	            double offsetY = -buildVol.getY()/2 + (buildVol.getY()/(lineCountY-1))*i;
+            	idx = (i-1)*4;
+                // Along y axis
+                gridY.setCoordinate(idx++, new Point3d(-buildVol.getX()/2,offsetY,0));
+                gridY.setCoordinate(idx++, new Point3d(buildVol.getX()/2,offsetY,0));
+	        }
+	        
+	    	Base.logger.finer("LineCountX,Y:"+lineCountX+','+lineCountY);
+    		if(xOrY==true)
+    			return new Shape3D(gridX,edges);
+    		else
+    			return new Shape3D(gridY,edges);
+    	} return null;
+    }
 	
 	BranchGroup sceneGroup;
 	BranchGroup objectBranch;
@@ -376,9 +434,11 @@ public class PreviewPanel extends JPanel {
 	
 	
 	public BranchGroup createSTLScene() {
+		getBuildVolume();
 		// Create the root of the branch graph
 		BranchGroup objRoot = new BranchGroup();
-
+		objRoot.setCapability(BranchGroup.ALLOW_DETACH );
+		
 		sceneGroup = new BranchGroup();
 		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
 		sceneGroup.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
@@ -387,7 +447,8 @@ public class PreviewPanel extends JPanel {
 		sceneGroup.addChild(makeDirectedLight2());
 		sceneGroup.addChild(makeBoundingBox());
 		sceneGroup.addChild(makeBackground());
-		sceneGroup.addChild(makeBaseGrid());
+		sceneGroup.addChild(makeBaseGrid(true));
+		sceneGroup.addChild(makeBaseGrid(false));
 
 		objRoot.addChild(sceneGroup);
 

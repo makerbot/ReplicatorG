@@ -342,9 +342,9 @@ public class Serial implements SerialPortEventListener {
 	}
 
 	/**
-	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 1s.
+	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 200ms.
 	 */
-	private int timeoutMillis = 1000;
+	private int timeoutMillis = 200;
 
 	/**
 	 * Set the amount of time we're willing to wait for a read to timeout.
