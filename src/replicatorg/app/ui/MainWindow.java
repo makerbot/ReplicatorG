@@ -2365,13 +2365,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		setMachine(Base.loadMachine(name));
 		reloadSerialMenu();
 		
-		if(previewPanel instanceof PreviewPanel)
+		if(previewPanel != null)
 		{
 			/* FIXME: This is probably not the best place to do the reload. We need
 			 * the BuildVolume information (through MachineModel) which apparently
 			 * isn't initialized yet when this is called...
 			 */
-			Base.logger.info("RELOADING the machine... removing previewPanel...");
+			Base.logger.fine("RELOADING the machine... removing previewPanel...");
 			getPreviewPanel().rebuildScene();
 			updateBuild();
 		}

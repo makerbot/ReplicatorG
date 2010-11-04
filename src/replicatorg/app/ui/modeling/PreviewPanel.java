@@ -11,7 +11,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
-import java.awt.geom.Line2D;
 import java.util.logging.Level;
 
 import javax.media.j3d.AmbientLight;
@@ -48,10 +47,9 @@ import javax.vecmath.Vector3f;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
-import replicatorg.app.Serial;
 import replicatorg.app.ui.MainWindow;
-import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.BuildVolume;
+import replicatorg.machine.model.MachineModel;
 import replicatorg.model.BuildModel;
 
 import com.sun.j3d.utils.universe.SimpleUniverse;
@@ -108,13 +106,12 @@ public class PreviewPanel extends JPanel {
 	
 	
 	private void getBuildVolume(){
-		Base.logger.info("Resetting the build volume!");
+		Base.logger.fine("Resetting the build volume!");
 		MachineController mc = this.mainWindow.getMachine(); 
 		if(mc instanceof MachineController){
-			Base.logger.info("Got the MachineController object!");
 			MachineModel mm = mc.getModel();
 			buildVol = mm.getBuildVolume();
-			Base.logger.info("Dimensions:" + buildVol.getX() +','+ buildVol.getY() + ',' + buildVol.getZ());
+			Base.logger.fine("Dimensions:" + buildVol.getX() +','+ buildVol.getY() + ',' + buildVol.getZ());
 		}
 	}
 	
@@ -416,7 +413,7 @@ public class PreviewPanel extends JPanel {
                 gridY.setCoordinate(idx++, new Point3d(buildVol.getX()/2,offsetY,0));
 	        }
 	        
-	    	Base.logger.info("LineCountX,Y:"+lineCountX+','+lineCountY);
+	    	Base.logger.finer("LineCountX,Y:"+lineCountX+','+lineCountY);
     		if(xOrY==true)
     			return new Shape3D(gridX,edges);
     		else
