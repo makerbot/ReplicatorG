@@ -198,6 +198,10 @@ public class Sanguino3GDriver extends SerialDriver
 	 * A retry is called when packet transmission itself failed and we want to try again.
 	 * The retry exception is thrown when the packet was successfully processed, but the buffer
 	 * was full, indicating to the controller that another attempt is warranted. 
+	 * 
+	 * If the specified number of retries is negative, the packet will be tried -N times, and
+	 * no logging message will be displayed when the packet times out.  This is for "unreliable"
+	 * packets (ordinarily, when scanning for toolheads).
 	 * @param packet
 	 * @param retries
 	 * @return
@@ -273,6 +277,13 @@ public class Sanguino3GDriver extends SerialDriver
 					if (retries > 1) {
 						Base.logger.severe("Read timed out; retries remaining: "+Integer.toString(retries));
 					}
+					if (retries == -1) {
+						// silently return a timeout response
+						return PacketResponse.timeoutResponse();
+					}
+					else if (retries < 0) {
+						return runCommand(packet, retries+1);
+					}
 					return runCommand(packet,retries-1);
 				}
 				try {
@@ -347,27 +358,12 @@ public class Sanguino3GDriver extends SerialDriver
 		final String MB_NAME = "RepRap Motherboard v1.X"; 
 		FirmwareUploader.checkLatestVersion(MB_NAME, v);
 
-		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		slavepb.add8((byte) machine.currentTool().getIndex());
-		slavepb.add8(ToolCommandCode.VERSION.getCode());
-		int slaveVersionNum = 0;
-		PacketResponse slavepr = runQuery(slavepb.getPacket(),1);
-		if (!slavepr.isEmpty()) {
-			slaveVersionNum = slavepr.get16();
+		// Scan for each slave
+		for (ToolModel t: getMachine().getTools()) {
+			if (t != null) {
+				initSlave(t.getIndex());
+			}
 		}
-		Base.logger.log(Level.FINE,"Reported slave board version: "
-					+ Integer.toHexString(slaveVersionNum));
-		if (slaveVersionNum == 0)
-			Base.logger.severe("Extruder board: Null version reported! Make sure the extruder is connected and the power is on.");
-        else
-        {
-            Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
-            toolVersion = sv;
-            Base.logger.warning("Extruder controller firmware v"+sv);
-
-            final String EC_NAME = "Extruder Controller v2.2"; 
-    		FirmwareUploader.checkLatestVersion(EC_NAME, sv);
-        }
 		// If we're dealing with older firmware, set timeout to infinity
 		if (v.getMajor() < 2) {
 			serial.setTimeout(Integer.MAX_VALUE);
@@ -375,7 +371,29 @@ public class Sanguino3GDriver extends SerialDriver
 		return v;
 	}
 	
-	
+	private void initSlave(int toolIndex) {
+		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+		slavepb.add8((byte)toolIndex);
+		slavepb.add8(ToolCommandCode.VERSION.getCode());
+		int slaveVersionNum = 0;
+		PacketResponse slavepr = runQuery(slavepb.getPacket(),-2);
+		if (!slavepr.isEmpty()) {
+			slaveVersionNum = slavepr.get16();
+		}
+		Base.logger.log(Level.FINE,"Reported slave board version: "
+					+ Integer.toHexString(slaveVersionNum));
+		if (slaveVersionNum == 0)
+			Base.logger.severe("Toolhead "+Integer.toString(toolIndex)+": Not found.\nMake sure the toolhead is connected and the power is on.");
+        else
+        {
+            Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
+            toolVersion = sv;
+            Base.logger.warning("Toolhead "+Integer.toString(toolIndex)+": Extruder controller firmware v"+sv);
+
+            final String EC_NAME = "Extruder Controller v2.2"; 
+    		FirmwareUploader.checkLatestVersion(EC_NAME, sv);
+        }
+	}
 
 	public void sendInit() {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.INIT.getCode());
