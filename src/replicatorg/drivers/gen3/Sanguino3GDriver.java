@@ -40,6 +40,7 @@ import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.BadFirmwareVersionException;
+import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.PenPlotter;
 import replicatorg.drivers.RetryException;
@@ -52,7 +53,7 @@ import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
 
 public class Sanguino3GDriver extends SerialDriver
-	implements OnboardParameters, SDCardCapture, PenPlotter
+	implements OnboardParameters, SDCardCapture, PenPlotter, MultiTool
 {
 	protected final static int DEFAULT_RETRIES = 5;
 	
@@ -1279,7 +1280,6 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
-	final private static int EEPROM_EXTRA_FEATURES = 0x0018;
 	final private static int EEPROM_ENDSTOP_INVERSION_OFFSET = 3;
 	final static class ECThermistorOffsets {
 		final private static int[] TABLE_OFFSETS = {
@@ -1297,6 +1297,9 @@ public class Sanguino3GDriver extends SerialDriver
 		public static int beta(int which) { return BETA + TABLE_OFFSETS[which]; }
 		public static int data(int which) { return DATA + TABLE_OFFSETS[which]; }
 	};	
+
+	final private static int EC_EEPROM_EXTRA_FEATURES = 0x0018;
+	final private static int EC_EEPROM_SLAVE_ID = 0x001A;
 
 	final private static int MAX_MACHINE_NAME_LEN = 16;
 	public EnumSet<Axis> getInvertedParameters() {
@@ -1555,8 +1558,8 @@ public class Sanguino3GDriver extends SerialDriver
 		final static int P_TERM_OFFSET = 0x0000;
 		final static int I_TERM_OFFSET = 0x0002;
 		final static int D_TERM_OFFSET = 0x0004;
-	};
-
+	};	
+	
 	private int read16FromToolEEPROM(int offset, int defaultValue) {
 		byte r[] = readFromToolEEPROM(offset,2);
 		int val = ((int)r[0])&0xff;
@@ -1637,7 +1640,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public ExtraFeatures getExtraFeatures() {
-		int efdat = read16FromToolEEPROM(EEPROM_EXTRA_FEATURES,0x4084);
+		int efdat = read16FromToolEEPROM(EC_EEPROM_EXTRA_FEATURES,0x4084);
 		ExtraFeatures ef = new ExtraFeatures();
 		ef.swapMotorController = (efdat & 0x0001) != 0;
 		ef.heaterChannel = (efdat >> 2) & 0x0003;
@@ -1657,7 +1660,7 @@ public class Sanguino3GDriver extends SerialDriver
 		efdat |= features.hbpChannel << 4;
 		efdat |= features.abpChannel << 6;
 		//System.err.println("Writing to EF: "+Integer.toHexString(efdat));
-		writeToToolEEPROM(EEPROM_EXTRA_FEATURES,intToLE(efdat,2));
+		writeToToolEEPROM(EC_EEPROM_EXTRA_FEATURES,intToLE(efdat,2));
 	}
 
 	
@@ -1688,4 +1691,18 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public Version getToolVersion() { return toolVersion; }
+
+	public boolean setConnectedToolIndex(int index) {
+		int currentIndex = machine.currentTool().getIndex();
+		machine.selectTool(255);
+		byte[] data = new byte[1];
+		data[0] = (byte) index;
+		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data);
+		machine.selectTool(currentIndex);
+		return false;
+	}
+
+	public boolean toolsCanBeReindexed() {
+		return true;
+	}
 }
