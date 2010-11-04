@@ -81,7 +81,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// attempt to send version command and retrieve reply.
 			try {
 				// Default timeout should be 2.6s.  Timeout can be sped up for v2, but let's play it safe.
-				int timeout = 400;
+				int timeout = 2600;
 				connectToDevice(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
