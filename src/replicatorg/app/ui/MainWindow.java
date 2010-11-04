@@ -569,7 +569,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		Vector<Serial.Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
 		for (Serial.Name name : names) {
-			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.getName());
+			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.toString());
 			item.setEnabled(name.isAvailable());
 			item.setSelected(name.getName().equals(currentName));
 			final String portName = name.getName();
