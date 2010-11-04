@@ -111,7 +111,7 @@ public class ToolModel
 		name = "Generic Tool";
 		type = "tool";
 		material = "unknown";
-		index = 0;
+		index = -1;
 		
 		//default our spindles/motors
 		setMotorDirection(MOTOR_CLOCKWISE);
@@ -136,7 +136,12 @@ public class ToolModel
 		String n = XML.getAttributeValue(xml, "name");
 		if (n != null)
 			name = n;
-			
+		
+		//load our index.
+		n = XML.getAttributeValue(xml, "index");
+		if (n != null)
+			index = Integer.parseInt(n);
+
 		//load our type.
 		n = XML.getAttributeValue(xml, "type");
 		if (n != null)

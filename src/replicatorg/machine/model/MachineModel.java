@@ -188,8 +188,15 @@ public class MachineModel
 				if (toolNode.getNodeName().equals("tool"))
 				{
 					ToolModel tool = new ToolModel(toolNode);
-					tool.setIndex(tools.size());
-					tools.add(tool);
+					if (tool.getIndex() == -1) {
+						tool.setIndex(tools.size());
+						tools.add(tool);
+					} else {
+						if (tools.size() <= tool.getIndex()) {
+							tools.setSize(tool.getIndex()+1);
+						}
+						tools.set(tool.getIndex(), tool);
+					}
 				}
 			}
 			
