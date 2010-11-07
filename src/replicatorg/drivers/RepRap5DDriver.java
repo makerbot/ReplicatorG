@@ -398,7 +398,11 @@ public class RepRap5DDriver extends SerialDriver {
 	 **************************************************************************/
 
 	public void queuePoint(Point3d p) throws RetryException {
-		String cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
+		String cmd = "G1 F" + df.format(getCurrentFeedrate());
+		
+		sendCommand(cmd);
+
+		cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
 				+ df.format(p.z) + " F" + df.format(getCurrentFeedrate());
 
 		sendCommand(cmd);
@@ -478,15 +482,26 @@ public class RepRap5DDriver extends SerialDriver {
 	 * @throws RetryException 
 	 **************************************************************************/
 	public void setMotorRPM(double rpm) throws RetryException {
-		sendCommand(_getToolCode() + "M108 R" + df.format(rpm));
-
+		//if !5D
+		//sendCommand(_getToolCode() + "M108 R" + df.format(rpm));
+		//if 5D
+		setExtruderSpeed(rpm);
+		
 		super.setMotorRPM(rpm);
 	}
 
 	public void setMotorSpeedPWM(int pwm) throws RetryException {
-		sendCommand(_getToolCode() + "M108 S" + df.format(pwm));
+		//sendCommand(_getToolCode() + "M108 S" + df.format(pwm));
+		
+		setExtruderSpeed(pwm);
 
 		super.setMotorSpeedPWM(pwm);
+	}
+	
+	public void setExtruderSpeed(double feedrate) {
+		String feedrateString = df.format(feedrate);
+		sendCommand(_getToolCode() + "G1 F"+feedrateString);
+		sendCommand(_getToolCode() + "G1 E10 F"+feedrateString);
 	}
 
 	public void enableMotor() throws RetryException {
