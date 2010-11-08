@@ -63,8 +63,6 @@ public class ToolheadIndexer extends JDialog {
 		c.add(indexButton);
 		c.add(cancelButton);
 		pack();
-		//doLayout();
-		//pack();
 	}
 
 }
