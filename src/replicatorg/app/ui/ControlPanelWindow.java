@@ -245,7 +245,7 @@ public class ControlPanelWindow extends JFrame implements
 		for (Enumeration<ToolModel> e = machine.getModel().getTools().elements(); e
 				.hasMoreElements();) {
 			ToolModel t = e.nextElement();
-
+			if (t == null) continue;
 			if (t.getType().equals("extruder")) {
 				Base.logger.fine("Creating panel for " + t.getName());
 				ExtruderPanel extruderPanel = new ExtruderPanel(machine,t);
@@ -262,9 +262,7 @@ public class ControlPanelWindow extends JFrame implements
 			public void stateChanged(ChangeEvent ce) {
 				final JTabbedPane tp = (JTabbedPane)ce.getSource();
 				final ExtruderPanel ep = (ExtruderPanel)tp.getSelectedComponent();
-				System.err.println("setting tool to "+ep.getTool().toString() +" index "+Integer.toString(ep.getTool().getIndex()));
 				machine.getModel().selectTool(ep.getTool().getIndex());
-				System.err.println("machine is "+machine.getModel().toString());
 			}
 		});
 		return toolsPane;

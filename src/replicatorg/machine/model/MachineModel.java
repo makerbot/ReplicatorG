@@ -58,6 +58,7 @@ public class MachineModel
 	//our tool models
 	protected Vector<ToolModel> tools;
 	protected ToolModel currentTool;
+	protected final ToolModel nullTool = new ToolModel();
 
 	//our clamp models	
 	protected Vector<ClampModel> clamps;
@@ -81,7 +82,7 @@ public class MachineModel
 		maximumFeedrates = new Point3d();
 		stepsPerMM = new Point3d(1, 1, 1); //use ones, because we divide by this!
 		
-		currentTool = new ToolModel();
+		currentTool = nullTool;
 	}
 	
 	//load data from xml config
@@ -203,10 +204,11 @@ public class MachineModel
 						}
 						tools.set(tool.getIndex(), tool);
 					}
+					if (currentTool == nullTool) {
+						this.selectTool(tool.getIndex());
+					}
 				}
 			}
-			
-			selectTool(0);
 		}
 	}
 	//load axes configuration
