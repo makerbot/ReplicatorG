@@ -809,7 +809,7 @@ public class MachineController {
 			}
 		}
 		driver = DriverFactory.factory(driverXml);
-		driver.setMachine(loadModel());
+		driver.setMachine(getModel());
 		// Initialization is now handled by the machine thread when it
 		// is placed in a connecting state.
 	}
