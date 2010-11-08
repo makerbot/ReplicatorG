@@ -977,7 +977,10 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Enabling fan");
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		int idx = machine.currentTool().getIndex();
+		pb.add8((byte) idx);
+		//pb.add8((byte) 0); // target 0 TODO FIXME !!!
+		Base.logger.log(Level.FINE,"Tool index "+Integer.toString(idx));
 		pb.add8(ToolCommandCode.TOGGLE_FAN.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
