@@ -1234,20 +1234,24 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 		return null;
 	}
-	
+
 	private void writeToToolEEPROM(int offset, byte[] data) {
+		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
+	}
+	
+	private void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 		final int MAX_PAYLOAD = 11;
 		while (data.length > MAX_PAYLOAD) {
 			byte[] head = new byte[MAX_PAYLOAD];
 			byte[] tail = new byte[data.length-MAX_PAYLOAD];
 			System.arraycopy(data,0,head,0,MAX_PAYLOAD);
 			System.arraycopy(data,MAX_PAYLOAD,tail,0,data.length-MAX_PAYLOAD);
-			writeToToolEEPROM(offset, head);
+			writeToToolEEPROM(offset, head, toolIndex);
 			offset += MAX_PAYLOAD;
 			data = tail;
 		}
 		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		slavepb.add8((byte) machine.currentTool().getIndex());
+		slavepb.add8((byte) toolIndex);
 		slavepb.add8(ToolCommandCode.WRITE_TO_EEPROM.getCode());
 		slavepb.add16(offset);
 		slavepb.add8(data.length);
@@ -1255,6 +1259,7 @@ public class Sanguino3GDriver extends SerialDriver
 			slavepb.add8(b);
 		}
 		PacketResponse slavepr = runQuery(slavepb.getPacket());
+		slavepr.printDebug();
 		assert slavepr.get8() == data.length; 
 	}
 
@@ -1693,12 +1698,9 @@ public class Sanguino3GDriver extends SerialDriver
 	public Version getToolVersion() { return toolVersion; }
 
 	public boolean setConnectedToolIndex(int index) {
-		int currentIndex = machine.currentTool().getIndex();
-		machine.selectTool(255);
 		byte[] data = new byte[1];
 		data[0] = (byte) index;
-		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data);
-		machine.selectTool(currentIndex);
+		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 255);
 		return false;
 	}
 
