@@ -408,9 +408,16 @@ public class Serial implements SerialPortEventListener {
 
 	public void clear() {
 		synchronized (readFifo) {
+			// If we're eating more than 255 characters, then there's a serious error:
+			// Either the machine is jabbering, or there's a problem with our serial
+			// connection.
+			int maxEats = 255;
+			
 			try {
-				while (input.available() > 0) {
+				while (input.available() > 0 && maxEats > 0) {
 					input.read();
+					Thread.sleep(1);
+					maxEats--;
 				}
 			} catch (IOException e) {
 				// Error condition
@@ -421,9 +428,13 @@ public class Serial implements SerialPortEventListener {
 				// connection drops, we'll just let this silently fail, and set
 				// a fail bit.
 				disconnected = true;
+			} catch (InterruptedException e) {
 			}
 			readFifo.clear();
 			readFifo.notifyAll();
+			if (maxEats == 0) {
+				throw new RuntimeException("Much more data than expected; check your serial line and reset your machine!");
+			}
 		}
 	}
 	
