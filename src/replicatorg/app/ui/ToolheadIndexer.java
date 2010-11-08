@@ -36,21 +36,21 @@ public class ToolheadIndexer extends JDialog {
 	public ToolheadIndexer(Frame parent, final Driver d) {
 		super(parent,"Set toolhead index",true);
 		Container c = getContentPane();
-		c.setLayout(new MigLayout());
-		c.add(new JLabel(instructions),"wrap");
+		c.setLayout(new MigLayout("fillx,pack pref pref"));
+		c.add(new JLabel(instructions),"wrap,wmax 500px");
 		c.add(new JLabel("Tool index:"),"split");
 		NumberFormat.getNumberInstance();
 
 		final JFormattedTextField toolIndexField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		toolIndexField.setColumns(4);
 		toolIndexField.setValue(new Integer(0));
-		c.add(toolIndexField,"wrap");
+		c.add(toolIndexField);
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setVisible(false);
 			}
 		});
-		c.add(cancelButton,"tag cancel");
 		JButton indexButton = new JButton("Set Index");
 		indexButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -60,8 +60,11 @@ public class ToolheadIndexer extends JDialog {
 				setVisible(false);
 			}
 		});
-		c.add(indexButton,"tag ok");
+		c.add(indexButton);
+		c.add(cancelButton);
 		pack();
+		//doLayout();
+		//pack();
 	}
 
 }
