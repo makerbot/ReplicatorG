@@ -154,6 +154,12 @@ public interface Driver {
 
 	public Point3d getOffset(int i);
 
+	public void setOffsetX(int i, double j);
+
+	public void setOffsetY(int i, double j);
+
+	public void setOffsetZ(int i, double j);
+
 	public Point3d getPosition();
 
 	/**

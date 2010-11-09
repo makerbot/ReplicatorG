@@ -1,0 +1,6 @@
+<?xml version='1.0' ?>
+<fabmetheus version='2010-04-04' overhangSupportAngle='35' overhangSpan='45' >
+	<lineation paths='=[creation.getPolygon(7,20.0), creation.getPolygon(-11,10.0)]' id='ring' />
+	<lineation paths='=document.getElementByID(ring)' id='hang' qqqoverhang.inclination_comment='60' overhang.activate='true' />
+	<extrude target='=document.getElementByID($hang)' />
+</fabmetheus>
