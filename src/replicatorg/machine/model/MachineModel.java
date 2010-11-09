@@ -378,6 +378,10 @@ public class MachineModel
 	{
 		try {
 			currentTool = (ToolModel)tools.get(index);
+			if (currentTool == null) { 
+				Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
+				currentTool = nullTool;
+			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			if (xml != null) { 
 				Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
