@@ -1,9 +1,9 @@
 Format is tab separated skeinforge settings.
 Name                          	Value
-WindowPosition	804+60
+WindowPosition	810+60
 Open File for Skeinforge	
-analyze	False
-craft	True
+analyze	True
+craft	False
 help	False
 meta	False
 profile	False
