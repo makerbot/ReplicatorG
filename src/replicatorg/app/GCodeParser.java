@@ -769,7 +769,7 @@ public class GCodeParser {
 				break;
 			case 10:
 				if (hasCode("P")) {
-					int offsetSystemNum = ((int)getCodeValue("P"));
+					int offsetSystemNum = ((int)getCodeValue("P"))-1;
 					if (hasCode("X")) driver.setOffsetX(offsetSystemNum, getCodeValue("X"));
 					if (hasCode("Y")) driver.setOffsetY(offsetSystemNum, getCodeValue("Y"));
 					if (hasCode("Z")) driver.setOffsetZ(offsetSystemNum, getCodeValue("Z"));
