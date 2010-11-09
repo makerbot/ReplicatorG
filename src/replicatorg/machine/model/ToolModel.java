@@ -127,6 +127,25 @@ public class ToolModel
 		closeCollet();
 	}
 	
+	/**
+	 * Returns true if the parameter is "1" or "true".
+	 */
+	private boolean isTrueOrOne(String s) {
+		if (s == null) {
+			return false;
+		}
+		if (Boolean.parseBoolean(s)) {
+			return true;
+		}
+		try {
+			if (Integer.parseInt(s) == 1) {
+				return true;
+			}
+		} catch (NumberFormatException e) {
+		}
+		return false;
+	}
+	
 	//load data from xml config
 	public void loadXML(Node node)
 	{
@@ -136,7 +155,12 @@ public class ToolModel
 		String n = XML.getAttributeValue(xml, "name");
 		if (n != null)
 			name = n;
-			
+		
+		//load our index.
+		n = XML.getAttributeValue(xml, "index");
+		if (n != null)
+			index = Integer.parseInt(n);
+
 		//load our type.
 		n = XML.getAttributeValue(xml, "type");
 		if (n != null)
@@ -149,91 +173,66 @@ public class ToolModel
 		
 		//our various capabilities
 		n = XML.getAttributeValue(xml, "motor");
-		try {
-			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
-			{
-				hasMotor = true;
-				
-				n = XML.getAttributeValue(xml, "motor_encoder_ppr");
-				try{
-					if (Integer.parseInt(n) > 0)
-					{
-						motorHasEncoder = true;
-						motorEncoderPPR = Integer.parseInt(n);
-					}
-				} catch (Exception e) {} // ignore parse errors.
+		if (isTrueOrOne(n))
+		{
+			hasMotor = true;
 
-				n = XML.getAttributeValue(xml, "motor_steps");
-				try{
-					if (Integer.parseInt(n) > 0)
-					{
-						motorIsStepper = true;
-						motorSteps = Integer.parseInt(n);
-					}
-				} catch (Exception e) {} // ignore parse errors.
+			n = XML.getAttributeValue(xml, "motor_encoder_ppr");
+			try{
+				if (Integer.parseInt(n) > 0)
+				{
+					motorHasEncoder = true;
+					motorEncoderPPR = Integer.parseInt(n);
+				}
+			} catch (Exception e) {} // ignore parse errors.
 
-			}
-		} catch (Exception e) {} //ignore boolean/integer parse errors
+			n = XML.getAttributeValue(xml, "motor_steps");
+			try{
+				if (Integer.parseInt(n) > 0)
+				{
+					motorIsStepper = true;
+					motorSteps = Integer.parseInt(n);
+				}
+			} catch (Exception e) {} // ignore parse errors.
+
+		}
 
 		n = XML.getAttributeValue(xml, "spindle");
-		try {
-			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
-			{
-				hasSpindle = true;
-				
-				n = XML.getAttributeValue(xml, "motor_encoder_ppr");
-				try{
-					if (Integer.parseInt(n) > 0)
-					{
-						motorHasEncoder = true;
-						motorEncoderPPR = Integer.parseInt(n);
-					}
-				} catch (Exception e) {} // ignore parse errors.
-			}
-		} catch (Exception e) {} //ignore boolean/integer parse errors
+		if (isTrueOrOne(n))
+		{
+			hasSpindle = true;
+
+			n = XML.getAttributeValue(xml, "motor_encoder_ppr");
+			try{
+				if (Integer.parseInt(n) > 0)
+				{
+					motorHasEncoder = true;
+					motorEncoderPPR = Integer.parseInt(n);
+				}
+			} catch (Exception e) {} // ignore parse errors.
+		}
 
 		//flood coolant
 		n = XML.getAttributeValue(xml, "floodcoolant");
-		try {
-			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
-				hasFloodCoolant = true;
-		} catch (Exception e) {} //ignore boolean/integer parse errors
+		hasFloodCoolant = hasFloodCoolant || isTrueOrOne(n);
 
 		n = XML.getAttributeValue(xml, "mistcoolant");
-		try {
-			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
-				hasMistCoolant = true;
-		} catch (Exception e) {} //ignore boolean/integer parse errors
+		hasMistCoolant = hasMistCoolant || isTrueOrOne(n);
 
 		n = XML.getAttributeValue(xml, "fan");
-		try {
-			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
-				hasFan = true;
-		} catch (Exception e) {} //ignore boolean/integer parse errors
+		hasFan = hasFan || isTrueOrOne(n);
 
 		n = XML.getAttributeValue(xml, "valve");
-		try {
-			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
-				hasValve = true;
-		} catch (Exception e) {} //ignore boolean/integer parse errors
+		hasValve = hasValve || isTrueOrOne(n);
 
 		n = XML.getAttributeValue(xml, "collet");
-		try {
-			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
-				hasCollet = true;
-		} catch (Exception e) {} //ignore boolean/integer parse errors
+		hasCollet = hasCollet || isTrueOrOne(n);
 
 		n = XML.getAttributeValue(xml, "heater");
-		try {
-			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
-				hasHeater = true;
-		} catch (Exception e) {} //ignore boolean/integer parse errors
-		n = XML.getAttributeValue(xml, "heatedplatform");
-		try {
-			if (Boolean.parseBoolean(n) || Integer.parseInt(n) == 1)
-				hasHeatedPlatform = true;
-		} catch (Exception e) {} //ignore boolean/integer parse errors
+		hasHeater = hasHeater || isTrueOrOne(n);
 
+		n = XML.getAttributeValue(xml, "heatedplatform");
+		hasHeatedPlatform = hasHeatedPlatform || isTrueOrOne(n);
 		//hah, all this for a debug string... lol.
 		String result = "Loading " + type + " '" + name + "': ";
 		result += "material: " + material + ", ";
@@ -256,7 +255,6 @@ public class ToolModel
 			result += "heater, ";
 		if (hasHeatedPlatform)
 			result += "hasHeatedPlatform, ";
-		//System.out.println(result);
 	}
 	
 	/*************************************

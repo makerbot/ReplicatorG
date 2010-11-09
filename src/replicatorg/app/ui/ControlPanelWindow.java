@@ -34,6 +34,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.EnumSet;
 import java.util.Enumeration;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -236,7 +237,7 @@ public class ControlPanelWindow extends JFrame implements
 		return activationPanel;
 	}
 
-	ExtruderPanel extruderPanel;
+	Vector<ExtruderPanel> extruderPanels = new Vector<ExtruderPanel>();
 	
 	protected JComponent createToolsPanel() {
 		toolsPane = new JTabbedPane();
@@ -244,22 +245,34 @@ public class ControlPanelWindow extends JFrame implements
 		for (Enumeration<ToolModel> e = machine.getModel().getTools().elements(); e
 				.hasMoreElements();) {
 			ToolModel t = e.nextElement();
-
+			if (t == null) continue;
 			if (t.getType().equals("extruder")) {
 				Base.logger.fine("Creating panel for " + t.getName());
-				extruderPanel = new ExtruderPanel(machine,t);
+				ExtruderPanel extruderPanel = new ExtruderPanel(machine,t);
 				toolsPane.addTab(t.getName(),extruderPanel);
+				extruderPanels.add(extruderPanel);
+				if (machine.getModel().currentTool() == t) {
+					toolsPane.setSelectedComponent(extruderPanel);
+				}
 			} else {
 				Base.logger.warning("Unsupported tool for control panel.");
 			}
-		}
-
+		} 
+		toolsPane.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent ce) {
+				final JTabbedPane tp = (JTabbedPane)ce.getSource();
+				final ExtruderPanel ep = (ExtruderPanel)tp.getSelectedComponent();
+				machine.getModel().selectTool(ep.getTool().getIndex());
+			}
+		});
 		return toolsPane;
 	}
 	
-	public void updateStatus() { // FIXME sync
+	public void updateStatus() {
 		jogPanel.updateStatus();
-		if (extruderPanel != null) { extruderPanel.updateStatus(); }
+		for (ExtruderPanel e : extruderPanels) {
+			e.updateStatus();
+		}
 	}
 	
 	public void windowClosing(WindowEvent e) {

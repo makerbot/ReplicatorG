@@ -40,6 +40,7 @@ import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.BadFirmwareVersionException;
+import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.PenPlotter;
 import replicatorg.drivers.RetryException;
@@ -52,7 +53,7 @@ import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
 
 public class Sanguino3GDriver extends SerialDriver
-	implements OnboardParameters, SDCardCapture, PenPlotter
+	implements OnboardParameters, SDCardCapture, PenPlotter, MultiTool
 {
 	protected final static int DEFAULT_RETRIES = 5;
 	
@@ -81,7 +82,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// attempt to send version command and retrieve reply.
 			try {
 				// Default timeout should be 2.6s.  Timeout can be sped up for v2, but let's play it safe.
-				int timeout = 400;
+				int timeout = 2600;
 				connectToDevice(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
@@ -198,6 +199,10 @@ public class Sanguino3GDriver extends SerialDriver
 	 * A retry is called when packet transmission itself failed and we want to try again.
 	 * The retry exception is thrown when the packet was successfully processed, but the buffer
 	 * was full, indicating to the controller that another attempt is warranted. 
+	 * 
+	 * If the specified number of retries is negative, the packet will be tried -N times, and
+	 * no logging message will be displayed when the packet times out.  This is for "unreliable"
+	 * packets (ordinarily, when scanning for toolheads).
 	 * @param packet
 	 * @param retries
 	 * @return
@@ -273,6 +278,13 @@ public class Sanguino3GDriver extends SerialDriver
 					if (retries > 1) {
 						Base.logger.severe("Read timed out; retries remaining: "+Integer.toString(retries));
 					}
+					if (retries == -1) {
+						// silently return a timeout response
+						return PacketResponse.timeoutResponse();
+					}
+					else if (retries < 0) {
+						return runCommand(packet, retries+1);
+					}
 					return runCommand(packet,retries-1);
 				}
 				try {
@@ -347,27 +359,12 @@ public class Sanguino3GDriver extends SerialDriver
 		final String MB_NAME = "RepRap Motherboard v1.X"; 
 		FirmwareUploader.checkLatestVersion(MB_NAME, v);
 
-		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		slavepb.add8((byte) machine.currentTool().getIndex());
-		slavepb.add8(ToolCommandCode.VERSION.getCode());
-		int slaveVersionNum = 0;
-		PacketResponse slavepr = runQuery(slavepb.getPacket(),1);
-		if (!slavepr.isEmpty()) {
-			slaveVersionNum = slavepr.get16();
+		// Scan for each slave
+		for (ToolModel t: getMachine().getTools()) {
+			if (t != null) {
+				initSlave(t.getIndex());
+			}
 		}
-		Base.logger.log(Level.FINE,"Reported slave board version: "
-					+ Integer.toHexString(slaveVersionNum));
-		if (slaveVersionNum == 0)
-			Base.logger.severe("Extruder board: Null version reported! Make sure the extruder is connected and the power is on.");
-        else
-        {
-            Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
-            toolVersion = sv;
-            Base.logger.warning("Extruder controller firmware v"+sv);
-
-            final String EC_NAME = "Extruder Controller v2.2"; 
-    		FirmwareUploader.checkLatestVersion(EC_NAME, sv);
-        }
 		// If we're dealing with older firmware, set timeout to infinity
 		if (v.getMajor() < 2) {
 			serial.setTimeout(Integer.MAX_VALUE);
@@ -375,7 +372,29 @@ public class Sanguino3GDriver extends SerialDriver
 		return v;
 	}
 	
-	
+	private void initSlave(int toolIndex) {
+		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+		slavepb.add8((byte)toolIndex);
+		slavepb.add8(ToolCommandCode.VERSION.getCode());
+		int slaveVersionNum = 0;
+		PacketResponse slavepr = runQuery(slavepb.getPacket(),-2);
+		if (!slavepr.isEmpty()) {
+			slaveVersionNum = slavepr.get16();
+		}
+		Base.logger.log(Level.FINE,"Reported slave board version: "
+					+ Integer.toHexString(slaveVersionNum));
+		if (slaveVersionNum == 0)
+			Base.logger.severe("Toolhead "+Integer.toString(toolIndex)+": Not found.\nMake sure the toolhead is connected and the power is on.");
+        else
+        {
+            Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
+            toolVersion = sv;
+            Base.logger.warning("Toolhead "+Integer.toString(toolIndex)+": Extruder controller firmware v"+sv);
+
+            final String EC_NAME = "Extruder Controller v2.2"; 
+    		FirmwareUploader.checkLatestVersion(EC_NAME, sv);
+        }
+	}
 
 	public void sendInit() {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.INIT.getCode());
@@ -958,7 +977,10 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Enabling fan");
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		int idx = machine.currentTool().getIndex();
+		pb.add8((byte) idx);
+		//pb.add8((byte) 0); // target 0 TODO FIXME !!!
+		Base.logger.log(Level.FINE,"Tool index "+Integer.toString(idx));
 		pb.add8(ToolCommandCode.TOGGLE_FAN.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
@@ -1215,20 +1237,24 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 		return null;
 	}
-	
+
 	private void writeToToolEEPROM(int offset, byte[] data) {
+		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
+	}
+	
+	private void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 		final int MAX_PAYLOAD = 11;
 		while (data.length > MAX_PAYLOAD) {
 			byte[] head = new byte[MAX_PAYLOAD];
 			byte[] tail = new byte[data.length-MAX_PAYLOAD];
 			System.arraycopy(data,0,head,0,MAX_PAYLOAD);
 			System.arraycopy(data,MAX_PAYLOAD,tail,0,data.length-MAX_PAYLOAD);
-			writeToToolEEPROM(offset, head);
+			writeToToolEEPROM(offset, head, toolIndex);
 			offset += MAX_PAYLOAD;
 			data = tail;
 		}
 		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		slavepb.add8((byte) machine.currentTool().getIndex());
+		slavepb.add8((byte) toolIndex);
 		slavepb.add8(ToolCommandCode.WRITE_TO_EEPROM.getCode());
 		slavepb.add16(offset);
 		slavepb.add8(data.length);
@@ -1236,6 +1262,7 @@ public class Sanguino3GDriver extends SerialDriver
 			slavepb.add8(b);
 		}
 		PacketResponse slavepr = runQuery(slavepb.getPacket());
+		slavepr.printDebug();
 		assert slavepr.get8() == data.length; 
 	}
 
@@ -1261,7 +1288,6 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
-	final private static int EEPROM_EXTRA_FEATURES = 0x0018;
 	final private static int EEPROM_ENDSTOP_INVERSION_OFFSET = 3;
 	final static class ECThermistorOffsets {
 		final private static int[] TABLE_OFFSETS = {
@@ -1279,6 +1305,9 @@ public class Sanguino3GDriver extends SerialDriver
 		public static int beta(int which) { return BETA + TABLE_OFFSETS[which]; }
 		public static int data(int which) { return DATA + TABLE_OFFSETS[which]; }
 	};	
+
+	final private static int EC_EEPROM_EXTRA_FEATURES = 0x0018;
+	final private static int EC_EEPROM_SLAVE_ID = 0x001A;
 
 	final private static int MAX_MACHINE_NAME_LEN = 16;
 	public EnumSet<Axis> getInvertedParameters() {
@@ -1537,8 +1566,8 @@ public class Sanguino3GDriver extends SerialDriver
 		final static int P_TERM_OFFSET = 0x0000;
 		final static int I_TERM_OFFSET = 0x0002;
 		final static int D_TERM_OFFSET = 0x0004;
-	};
-
+	};	
+	
 	private int read16FromToolEEPROM(int offset, int defaultValue) {
 		byte r[] = readFromToolEEPROM(offset,2);
 		int val = ((int)r[0])&0xff;
@@ -1619,7 +1648,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public ExtraFeatures getExtraFeatures() {
-		int efdat = read16FromToolEEPROM(EEPROM_EXTRA_FEATURES,0x4084);
+		int efdat = read16FromToolEEPROM(EC_EEPROM_EXTRA_FEATURES,0x4084);
 		ExtraFeatures ef = new ExtraFeatures();
 		ef.swapMotorController = (efdat & 0x0001) != 0;
 		ef.heaterChannel = (efdat >> 2) & 0x0003;
@@ -1639,7 +1668,7 @@ public class Sanguino3GDriver extends SerialDriver
 		efdat |= features.hbpChannel << 4;
 		efdat |= features.abpChannel << 6;
 		//System.err.println("Writing to EF: "+Integer.toHexString(efdat));
-		writeToToolEEPROM(EEPROM_EXTRA_FEATURES,intToLE(efdat,2));
+		writeToToolEEPROM(EC_EEPROM_EXTRA_FEATURES,intToLE(efdat,2));
 	}
 
 	
@@ -1670,4 +1699,15 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public Version getToolVersion() { return toolVersion; }
+
+	public boolean setConnectedToolIndex(int index) {
+		byte[] data = new byte[1];
+		data[0] = (byte) index;
+		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 255);
+		return false;
+	}
+
+	public boolean toolsCanBeReindexed() {
+		return true;
+	}
 }

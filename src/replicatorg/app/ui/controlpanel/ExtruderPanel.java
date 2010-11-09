@@ -53,6 +53,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	private ToolModel toolModel;
 	private MachineController machine;
 
+	public ToolModel getTool() { return toolModel; }
+	
 	protected JTextField currentTempField;
 	
 	protected JTextField platformCurrentTempField;
@@ -494,8 +496,6 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					driver.closeValve();
 				else if (name.equals("collet-check"))
 					driver.closeCollet();
-				// else
-				// System.out.println("checkbox deselected: " + source.getName());
 			}
 		} catch (RetryException r) {
 			Base.logger.severe("Could not execute command; machine busy.");			
