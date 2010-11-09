@@ -66,6 +66,7 @@ import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.Endstops;
 import replicatorg.machine.model.ToolModel;
 
 public class ControlPanelWindow extends JFrame implements
@@ -157,12 +158,20 @@ public class ControlPanelWindow extends JFrame implements
 		JMenuBar bar = new JMenuBar();
 		JMenu homeMenu = new JMenu("Homing");
 		bar.add(homeMenu);
-		homeMenu.add(makeHomeItem("Home X+",EnumSet.of(Axis.X),true));
-		homeMenu.add(makeHomeItem("Home X-",EnumSet.of(Axis.X),false));
-		homeMenu.add(makeHomeItem("Home Y+",EnumSet.of(Axis.Y),true));
-		homeMenu.add(makeHomeItem("Home Y-",EnumSet.of(Axis.Y),false));
-		homeMenu.add(makeHomeItem("Home Z+",EnumSet.of(Axis.Z),true));
-		homeMenu.add(makeHomeItem("Home Z-",EnumSet.of(Axis.Z),false));
+		
+		//adding the appropriate homing options for your endstop configuration
+		for (Axis axis : Axis.values())
+		{
+			Endstops endstops = driver.getMachine().getEndstops(axis);
+			if (endstops != null)
+			{
+				if (endstops.hasMin == true)
+					homeMenu.add(makeHomeItem("Home "+axis.name()+"-",EnumSet.of(axis),false));
+				if (endstops.hasMax == true)
+					homeMenu.add(makeHomeItem("Home "+axis.name()+"+",EnumSet.of(axis),true));
+			}
+		}
+		
 		homeMenu.add(new JSeparator());
 		homeMenu.add(makeHomeItem("Home XY+",EnumSet.of(Axis.X,Axis.Y),true));
 		homeMenu.add(makeHomeItem("Home XY-",EnumSet.of(Axis.X,Axis.Y),false));
