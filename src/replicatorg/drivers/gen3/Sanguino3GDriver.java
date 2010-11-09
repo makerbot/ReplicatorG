@@ -601,7 +601,7 @@ public class Sanguino3GDriver extends SerialDriver
 	 **************************************************************************/
 	public void setMotorRPM(double rpm) throws RetryException {
 		// convert RPM into microseconds and then send.
-		long microseconds = (int) Math.round(60.0 * 1000000.0 / rpm); // no
+		long microseconds = rpm == 0 ? 0 : Math.round(60.0 * 1000000.0 / rpm); // no
 		// unsigned
 		// ints?!?
 		// microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
