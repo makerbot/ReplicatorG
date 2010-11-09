@@ -38,7 +38,7 @@ import replicatorg.machine.model.BuildVolume;
 public class MachineModel
 {
 	//our xml config info
-	protected Node xml;
+	protected Node xml = null;
 	
 	//our machine space
 	//private Point3d currentPosition;
@@ -373,7 +373,13 @@ public class MachineModel
 		try {
 			currentTool = (ToolModel)tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
-			Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
+			if (xml != null) { 
+				Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
+			} else {
+				// If this machine is not configured, it's presumed it's a null machine
+				// and it's expected that toolheads are not specified.
+			}
+			currentTool = nullTool;
 		}
 	}
 
