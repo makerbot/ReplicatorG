@@ -205,19 +205,16 @@ public class DriverBaseImplementation implements Driver {
 		return offsets[i];
 	}
 
-	public Point3d setOffsetX(int offsetSystemNum, double j) {
+	public void setOffsetX(int offsetSystemNum, double j) {
 		offsets[offsetSystemNum].x = j;
-		return null;
 	}
 
-	public Point3d setOffsetY(int offsetSystemNum, double j) {
+	public void setOffsetY(int offsetSystemNum, double j) {
 		offsets[offsetSystemNum].y = j;
-		return null;
 	}
 
-	public Point3d setOffsetZ(int offsetSystemNum, double j) {
+	public void setOffsetZ(int offsetSystemNum, double j) {
 		offsets[offsetSystemNum].z = j;
-		return null;
 	}
 
 	private Point3d currentPosition = null;
