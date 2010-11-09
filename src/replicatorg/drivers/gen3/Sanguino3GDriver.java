@@ -384,7 +384,7 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Reported slave board version: "
 					+ Integer.toHexString(slaveVersionNum));
 		if (slaveVersionNum == 0)
-			Base.logger.severe("Toolhead "+Integer.toString(toolIndex)+": Not found.\nMake sure the toolhead is connected and the power is on.");
+			Base.logger.severe("Toolhead "+Integer.toString(toolIndex)+": Not found.\nMake sure the toolhead is connected, the power supply is plugged in and turned on, and the power switch on the motherboard is on.");
         else
         {
             Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
