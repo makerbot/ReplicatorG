@@ -82,7 +82,7 @@ public class DriverBaseImplementation implements Driver {
 		// initialize our offsets
 		offsets = new Point3d[7];
 		for (int i = 0; i < 7; i++)
-			offsets[i] = new Point3d();
+			offsets[i] = new Point3d();  // Constructs and initializes a Point3d to (0,0,0)
 
 		// initialize our driver
 		parser.init(this);
@@ -203,6 +203,21 @@ public class DriverBaseImplementation implements Driver {
 
 	public Point3d getOffset(int i) {
 		return offsets[i];
+	}
+
+	public Point3d setOffsetX(int offsetSystemNum, double j) {
+		offsets[offsetSystemNum].x = j;
+		return null;
+	}
+
+	public Point3d setOffsetY(int offsetSystemNum, double j) {
+		offsets[offsetSystemNum].y = j;
+		return null;
+	}
+
+	public Point3d setOffsetZ(int offsetSystemNum, double j) {
+		offsets[offsetSystemNum].z = j;
+		return null;
 	}
 
 	private Point3d currentPosition = null;

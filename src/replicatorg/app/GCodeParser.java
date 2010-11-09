@@ -767,6 +767,16 @@ public class GCodeParser {
 			case 4:
 				driver.delay((long) getCodeValue("P"));
 				break;
+			case 10:
+				if (hasCode("P")) {
+					int offsetSystemNum = ((int)getCodeValue("P"));
+					if (hasCode("X")) driver.setOffsetX(offsetSystemNum, getCodeValue("X"));
+					if (hasCode("Y")) driver.setOffsetY(offsetSystemNum, getCodeValue("Y"));
+					if (hasCode("Z")) driver.setOffsetZ(offsetSystemNum, getCodeValue("Z"));
+				}
+				else 
+					Base.logger.warning("No coordinate system indicated use G10 Pn, where n is 0-9.");
+				break;
 
 			// plane selection codes
 			case 17:
