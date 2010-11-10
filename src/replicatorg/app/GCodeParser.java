@@ -530,9 +530,7 @@ public class GCodeParser {
 			// set max extruder speed, RPM
 			case 108:
 				if (hasCode("S"))
-					driver
-							.setMotorSpeedPWM((int) Math
-									.round(getCodeValue("S")));
+					driver.setMotorSpeedPWM((int)Math.round(getCodeValue("S")));
 				else if (hasCode("R"))
 					driver.setMotorRPM(getCodeValue("R"));
 				break;
