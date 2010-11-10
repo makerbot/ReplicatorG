@@ -362,7 +362,7 @@ public class RepRap5DDriver extends SerialDriver {
 							// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
 							setInitialized(true);
 							Base.logger.info(line);
-							lineNumber = -1;
+							lineNumber = 0;
 						} else if (line.startsWith("Extruder Fail")) {
 							setError("Extruder failed:  cannot extrude as this rate.");
 						} else if (line.startsWith("Resend:")||line.startsWith("rs ")) {
