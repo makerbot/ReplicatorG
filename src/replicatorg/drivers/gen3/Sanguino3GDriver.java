@@ -647,7 +647,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.SET_MOTOR_1_PWM.getCode());
 		pb.add8((byte) 1); // length of payload.
-		pb.add8((byte) pwm);
+		pb.add8((byte) ((pwm > 255) ? 255 : pwm));
 		runCommand(pb.getPacket());
 
 		super.setMotorSpeedPWM(pwm);
