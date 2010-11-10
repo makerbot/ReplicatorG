@@ -157,6 +157,10 @@
                     extensions="gcode" 
                     iconFile="${dist.dir}/replicatorg.icns"
                     role="Editor"/>
+      <documenttype name="CNC STL document" 
+                    extensions="stl" 
+                    iconFile="${dist.dir}/replicatorg.icns"
+                    role="Editor"/>
       <resourcefileset dir="${lib.dir}" includes="*.gif"/>
       <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
       <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
