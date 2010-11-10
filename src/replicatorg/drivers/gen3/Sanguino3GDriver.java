@@ -347,14 +347,27 @@ public class Sanguino3GDriver extends SerialDriver
 		if (pr.isEmpty()) return null;
 		int versionNum = pr.get16();
 
+		pb = new PacketBuilder(MotherboardCommandCode.GET_BUILD_NAME.getCode());
+		pb.add16(Base.VERSION);
+
+		String buildname = "";
+		pr = runQuery(pb.getPacket(),1);
+		if (!pr.isEmpty()) {
+			byte[] payload = pr.getPayload();
+			byte[] subarray = new byte[payload.length-1];
+			System.arraycopy(payload, 1, subarray, 0, subarray.length);
+			buildname = " (" + new String(subarray) + ")";
+		}
+		
 		Base.logger.log(Level.FINE,"Reported version: "
-					+ Integer.toHexString(versionNum));
+					+ Integer.toHexString(versionNum)
+					+ " " + buildname);
 		if (versionNum == 0) {
 			Base.logger.severe("Null version reported!");
 			return null;
 		}
 		Version v = new Version(versionNum / 100, versionNum % 100);
-		Base.logger.warning("Motherboard firmware v"+v);
+		Base.logger.warning("Motherboard firmware v" + v + buildname);
 
 		final String MB_NAME = "RepRap Motherboard v1.X"; 
 		FirmwareUploader.checkLatestVersion(MB_NAME, v);
@@ -381,15 +394,31 @@ public class Sanguino3GDriver extends SerialDriver
 		if (!slavepr.isEmpty()) {
 			slaveVersionNum = slavepr.get16();
 		}
+
+		slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+		slavepb.add8((byte)toolIndex);
+		slavepb.add8(ToolCommandCode.GET_BUILD_NAME.getCode());
+		slavepr = runQuery(slavepb.getPacket(),-2);
+
+		String buildname = "";
+		slavepr = runQuery(slavepb.getPacket(),1);
+		if (!slavepr.isEmpty()) {
+			byte[] payload = slavepr.getPayload();
+			byte[] subarray = new byte[payload.length-1];
+			System.arraycopy(payload, 1, subarray, 0, subarray.length);
+			buildname = " (" + new String(subarray) + ")";
+		}
+		
 		Base.logger.log(Level.FINE,"Reported slave board version: "
-					+ Integer.toHexString(slaveVersionNum));
+					+ Integer.toHexString(slaveVersionNum)
+					+ " " + buildname);
 		if (slaveVersionNum == 0)
 			Base.logger.severe("Toolhead "+Integer.toString(toolIndex)+": Not found.\nMake sure the toolhead is connected, the power supply is plugged in and turned on, and the power switch on the motherboard is on.");
         else
         {
             Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
             toolVersion = sv;
-            Base.logger.warning("Toolhead "+Integer.toString(toolIndex)+": Extruder controller firmware v"+sv);
+            Base.logger.warning("Toolhead "+Integer.toString(toolIndex)+": Extruder controller firmware v" + sv + buildname);
 
             final String EC_NAME = "Extruder Controller v2.2"; 
     		FirmwareUploader.checkLatestVersion(EC_NAME, sv);
