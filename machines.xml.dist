@@ -247,6 +247,34 @@ M18
 M18
 		</cooldown>
 	</machine>
+        <machine experimental="1">
+                <name>Mendel with Gen 3 Electronics (19200 Baud)</name>
+                <geometry type="cartesian">
+                        <!-- different pulleys on X and Y axii -->
+                        <axis id="x" length="200" maxfeedrate="5000" scale="47.069852" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="y" length="200" maxfeedrate="5000" scale="47.0698523" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="z" length="140" maxfeedrate="30" scale="160" endstops="min"/> <!-- quarter-step driver -->
+                </geometry>
+                <tools>
+                        <tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" motor_steps="200" heatedplatform="true" />
+                </tools>
+                <clamps></clamps>
+                <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
+                <driver name="reprap5d">
+                        <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+                        <rate>19200</rate>
+                        <parity>8</parity>
+                        <!-- optional, defaults to 1.                          <databits>1</databits> -->
+                        <!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+                        <debuglevel>1</debuglevel>
+                </driver>
+                <warmup>
+                </warmup>
+                <cooldown>
+(Turn off steppers after a build.)
+M108 S0
+                </cooldown>
+        </machine>
         <machine>
                 <name>Mendel with (5D firmware at 57600 baud)</name>
                 <geometry type="cartesian">
@@ -259,7 +287,7 @@ M18
                         <tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" motor_steps="200" heatedplatform="true" />
                 </tools>
                 <clamps></clamps>
-                <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
+                <help name="RepRap Help" url="http://www.reprap.org/wiki/ReplicatorG"></help>
                 <driver name="reprap5d">
                         <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
                         <rate>57600</rate>
@@ -287,7 +315,7 @@ M108 S0
                         <tool name="Stepper-based pinch extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" heatedplatform="true" motor_steps="200" />
                 </tools>
                 <clamps></clamps>
-                <firmware url="http://firmware.ultimaker.com/latest" autoupgrade="false"></firmware>
+                <firmware url="http://firmware.ultimaker.com/ultimaker_firmware.xml" autoupgrade="false"></firmware>
                 <help name="Ultimaking Guide" url="http://www.ultimaker.com/guide"></help>
                 <driver name="reprap5d">
                         <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
