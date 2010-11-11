@@ -1,3 +1,5 @@
+Replace <version> and <previous-version> below with the Skeinforge versions in question.
+
 o cd ReplicatorG/skein_engines
 o wget http://fabmetheus.crsndoo.com/files/<version>_reprap_python_beanshell.zip
 o mkdir skeinforge-<version>
@@ -5,3 +7,20 @@ o cd skeinforge-<version>
 o unzip ../<version>_reprap_python_beanshell.zip
 o patch -p1 < ../makerbot-skeinforge.patch
 o cp -R ../skeinforge-<previous-version>/skeinforge_application/prefs skeinforge_application/
+
+In /ReplicatorG/src/replicatorg/plugin/toolpath/ToolpathGeneratorFactory.java:
+
+		class Skeinforge<version> extends SkeinforgeGenerator {
+			public File getDefaultSkeinforgeDir() {
+		    	return Base.getApplicationFile("skein_engines/skeinforge-<version>/skeinforge_application");
+			}
+			File getUserProfilesDir() {
+		    	return Base.getUserFile("sf_<version>_profiles");
+			}
+		};
+
+		list.add(new ToolpathGeneratorDescriptor("Skeinforge (<previous-version>)", 
+				"This is Skeinforge version <previous-version>.", Skeinforge<previous-version>.class));
+		list.add(new ToolpathGeneratorDescriptor("Skeinforge (<version>)", 
+				"This is the latest version of skeinforge.", Skeinforge<version>.class));
+
