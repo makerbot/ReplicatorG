@@ -252,8 +252,6 @@ def getPythonFileNamesExceptInitRecursively(directoryName=''):
 settingsPath = os.path.join(os.path.expanduser('~'), '.skeinforge')
 
 def getSettingsPath(subName=''):
-#	'Get the settings directory path, which is the home directory joined with .skeinforge.'
-#	return getJoinedPath(os.path.join(os.path.expanduser('~'), '.skeinforge'), subName)
 	'Get the settings directory path, which defaults to the home directory joined with .skeinforge.'
 	global settingsPath
 	return getJoinedPath(settingsPath, subName)

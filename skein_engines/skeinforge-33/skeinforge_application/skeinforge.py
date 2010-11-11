@@ -546,8 +546,6 @@ class SkeinforgeRepository:
 
 def main():
 	"Display the skeinforge dialog."
-#	if len(sys.argv) > 1:
-#		writeOutput(' '.join(sys.argv[1 :]))
 	parser = OptionParser()
 	parser.add_option("-p", "--prefdir", help="set path to preference directory",
 		action="store", type="string", dest="preferencesDirectory")
@@ -563,22 +561,10 @@ def main():
 	if options.preferencesDirectory:
 		pdir = options.preferencesDirectory;
 		archive.setSettingsPath(pdir)
-#	if options.startFile:
-#		preferences.setStartFile(options.startFile)
-#	else:
-#		preferences.setStartFile(defaultStart)
-#	if options.endFile:
-#		preferences.setEndFile(options.endFile)
-#	else:
-#		preferences.setEndFile(defaultEnd)
 	if options.useRaft != None:
 		if options.useRaft:
-#			preferences.addPreferenceOverride("Raft", "Activate Raft:", "true")
-#			preferences.addPreferenceOverride("Raftless", "Activate Raftless:", "false")
 			settings.addPreferenceOverride("raft.csv", "Activate Raft", "true")
 		else:
-#			preferences.addPreferenceOverride("Raft", "Activate Raft:", "false")
-#			preferences.addPreferenceOverride("Raftless", "Activate Raftless:", "true")
 			settings.addPreferenceOverride("raft.csv", "Activate Raft", "false")
 
 	sys.argv = [sys.argv[0]] + args
