@@ -4,4 +4,4 @@ o mkdir skeinforge-<version>
 o cd skeinforge-<version>
 o unzip ../<version>_reprap_python_beanshell.zip
 o patch -p1 < ../makerbot-skeinforge.patch
-o cp -R ../skeinforge-33/skeinforge_application/prefs skeinforge_application/
+o cp -R ../skeinforge-<previous-version>/skeinforge_application/prefs skeinforge_application/
