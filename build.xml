@@ -157,9 +157,14 @@
                     extensions="gcode" 
                     iconFile="${dist.dir}/replicatorg.icns"
                     role="Editor"/>
+      <documenttype name="STL 3D model" 
+                    extensions="stl" 
+                    iconFile="${dist.dir}/replicatorg.icns"
+                    role="Editor"/>
       <resourcefileset dir="${lib.dir}" includes="*.gif"/>
       <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
       <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
+      <javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
     </jarbundler>
     <copy todir="${target.dir}">
       <fileset dir="${dist.dir}" includes="drivers/*.dmg"/>
