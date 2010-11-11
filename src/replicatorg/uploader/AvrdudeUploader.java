@@ -43,6 +43,7 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
 	
 	String eepromPath = null;
 	
+	String uploadInstructions = null;
 	public void setEeprom(String path) {
 		eepromPath = path;
 	}
@@ -52,6 +53,9 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
 	}
 	
 	public String getUploadInstructions() {
+		if (uploadInstructions != null) {
+			return uploadInstructions;
+		}
 		if (manualReset == true) {
 			return "Press the reset button on the target board and click the \"Upload\" button " +
 			"to update the firmware.  Try to press the reset button as soon as you click \"Upload\".";

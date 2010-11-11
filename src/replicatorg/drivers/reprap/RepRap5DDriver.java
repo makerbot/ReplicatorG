@@ -25,7 +25,7 @@
  * 
  * 
  */
-package replicatorg.drivers;
+package replicatorg.drivers.reprap;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -41,14 +41,29 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
+import replicatorg.drivers.RetryException;
+import replicatorg.drivers.SerialDriver;
+import replicatorg.drivers.reprap.ExtrusionThread.Direction;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
 public class RepRap5DDriver extends SerialDriver {
+	private static Pattern gcodeCommentPattern = Pattern.compile("\\([^)]*\\)|;.*");
+	private static Pattern resendLinePattern = Pattern.compile("([0-9]+)");
+	private static Pattern gcodeLineNumberPattern = Pattern.compile("N([0-9]+)");
+	
+	
+	/**
+	 * Enables five D GCodes if true. If false reverts to traditional 3D Gcodes
+	 */
+	private boolean fiveD = true;
+	
+	private final ExtrusionThread extrusionThread = new ExtrusionThread(this);
+
 	/**
 	 * To keep track of outstanding commands
 	 */
-	private Queue<Integer> commands;
+	protected Queue<Integer> commands;
 
 	/**
 	 * the size of the buffer on the GCode host
@@ -59,15 +74,23 @@ public class RepRap5DDriver extends SerialDriver {
 	 * the amount of data we've sent and is in the buffer.
 	 */
 	private int bufferSize = 0;
+	
+	/**
+	 * The commands sent but not yet acknowledged by the firmware. Stored so they can be resent 
+	 * if there is a checksum problem.
+	 */
+	private LinkedList<String> buffer = new LinkedList<String>();
 
 	/**
 	 * What did we get back from serial?
 	 */
 	private String result = "";
 
-	private DecimalFormat df;
+	protected DecimalFormat df;
 
 	private byte[] responsebuffer = new byte[512];
+
+	private int lineNumber = 0;
 
 	public RepRap5DDriver() {
 		super();
@@ -92,10 +115,24 @@ public class RepRap5DDriver extends SerialDriver {
 		}
 		// wait till we're initialized
 		if (!isInitialized()) {
-			try {
+				//attempt to reset the device, this may slow down the connection time, but it 
+				//increases our chances of successfully connecting dramatically.
+				serial.pulseRTSLow();
+				//Wait for the RepRap to startup
+				try {
+					Thread.sleep(300);
+				} catch (java.lang.InterruptedException ie) {
+				}
+				//Send a line # reset command, this allows us to catch the "ok" response in 
+				//case we missed the "start" response which we seem to often miss. (also it 
+				//resets the line number which is good)
+				sendCommand("M110");
+
+
 				// record our start time.
 				Date date = new Date();
 				long end = date.getTime() + 10000;
+				try {
 
 				Base.logger.info("Initializing Serial.");
 //				serial.clear();
@@ -144,7 +181,8 @@ public class RepRap5DDriver extends SerialDriver {
 	 * method will block until the command has been sent.
 	 */
 	protected void sendCommand(String next) {
-		assert (isInitialized());
+		serialWriteLock.lock();
+		//assert (isInitialized());
 		assert (serial != null);
 		// System.out.println("sending: " + next);
 
@@ -155,6 +193,9 @@ public class RepRap5DDriver extends SerialDriver {
 		if (next.length() == 0)
 			return;
 
+		next = applyChecksum(next);
+
+		
 		// Block until we can fit the command on the Arduino
 		while (bufferSize + next.length() + 1 > maxBufferSize) {
 			readResponse();
@@ -169,11 +210,13 @@ public class RepRap5DDriver extends SerialDriver {
 		int cmdlen = next.length() + 1;
 		commands.add(cmdlen);
 		bufferSize += cmdlen;
+		buffer.addFirst(next);
 
 		// debug... let us know whts up!
 		System.out.println("Sent: " + next);
 		// System.out.println("Buffer: " + bufferSize + " (" + bufferLength + "
 		// commands)");
+		serialWriteLock.unlock();
 	}
 
 	public String clean(String str) {
@@ -184,17 +227,27 @@ public class RepRap5DDriver extends SerialDriver {
 
 		// remove spaces
 		//clean = clean.replaceAll(" ", "");
+		
+		// remove all comments
+        clean = RepRap5DDriver.gcodeCommentPattern.matcher(clean).replaceAll("");
 
 		return clean;
 	}
 	public String fix(String str) {
 		String fixed = str;
 		// The 5D firmware expects E codes for extrusion control instead of M101, M102, M103
-		
+
+		Pattern r = Pattern.compile("M01[^0-9]");
+		Matcher m = r.matcher(fixed);
+		if (m.find())
+		{
+			return "";
+		}
+
 	    // Remove M10[123] codes
 	    // This piece of code causes problems?!? Restarts?
-		Pattern r = Pattern.compile("M10[123](.*)");
-		Matcher m = r.matcher(fixed);
+		r = Pattern.compile("M10[123](.*)");
+		m = r.matcher(fixed);
 	    if (m.find( )) {
 //	    	System.out.println("Didn't find pattern in: " + str );
 //	    	fixed = m.group(1)+m.group(3)+";";
@@ -221,6 +274,35 @@ public class RepRap5DDriver extends SerialDriver {
 
 	    
 	    return fixed; // no change!
+	}
+
+	/**
+	 * takes a line of gcode and returns that gcode with a line number and checksum
+	 */
+	public String applyChecksum(String gcode) {
+		// RepRap Syntax: N<linenumber> <cmd> *<chksum>\n
+
+		if (gcode.contains("M110"))
+			lineNumber = 0;
+		
+		Matcher lineNumberMatcher = gcodeLineNumberPattern.matcher(gcode);
+		if (lineNumberMatcher.matches())
+		{ // reset our line number to the specified one. this is usually a m110 line # reset
+			lineNumber = Integer.parseInt( lineNumberMatcher.group(1) );
+		}
+		else
+		{ // only add a line number if it is not already specified
+			gcode = "N"+(lineNumber++)+' '+gcode+' ';
+		}
+
+		// chksum = 0 xor each byte of the gcode (including the line number and trailing space)
+		byte checksum = 0;
+		byte[] gcodeBytes = gcode.getBytes();
+		for (int i = 0; i<gcodeBytes.length; i++)
+		{
+			checksum = (byte) (checksum ^ gcodeBytes[i]);
+		}
+		return gcode+'*'+checksum;
 	}
 	
 	public void readResponse() {
@@ -251,10 +333,12 @@ public class RepRap5DDriver extends SerialDriver {
 						if (line.length() == 0)
 							continue;
 						if (line.startsWith("ok")) {
+							setInitialized(true);
 							bufferSize -= commands.remove();
+							buffer.removeLast();
 							Base.logger.info(line);
 							if (line.startsWith("ok T:")) {
-								Pattern r = Pattern.compile("^ok T:([0-9\\.]+)[^0-9]");
+								Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
 							    Matcher m = r.matcher(line);
 							    if (m.find( )) {
 							    	String temp = m.group(1);
@@ -278,9 +362,39 @@ public class RepRap5DDriver extends SerialDriver {
 							// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
 							setInitialized(true);
 							Base.logger.info(line);
+							lineNumber = 0;
 						} else if (line.startsWith("Extruder Fail")) {
 							setError("Extruder failed:  cannot extrude as this rate.");
+						} else if (line.startsWith("Resend:")||line.startsWith("rs ")) {
 							Base.logger.severe(line);
+							// Bad checksum, resend requested
+							String bufferedLine = buffer.removeLast();
+							int bufferedLineNumber = Integer.parseInt( 
+									gcodeLineNumberPattern.matcher(bufferedLine).group(1) );
+
+							Matcher badLineMatch = resendLinePattern.matcher(line);
+							if (badLineMatch.find())
+							{
+								int badLineNumber = Integer.parseInt(
+										badLineMatch.group(1) );
+
+								if (bufferedLineNumber != badLineNumber)
+								{
+									Base.logger.warning("unexpected line number, resetting line number");
+									// reset the line number if it does not match the buffered line
+									 this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
+								}
+							}
+							else
+							{
+								// Malformed resend line request received. Resetting the line number
+								Base.logger.warning("malformed line resend request, "
+										+"resetting line number. Malformed Data: \n"+line);
+								this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
+							}
+
+							// resend the line
+							this.sendCommand(bufferedLine);
 						} else {
 							Base.logger.severe("Unknown: " + line);
 						}
@@ -323,7 +437,11 @@ public class RepRap5DDriver extends SerialDriver {
 	 **************************************************************************/
 
 	public void queuePoint(Point3d p) throws RetryException {
-		String cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
+		String cmd = "G1 F" + df.format(getCurrentFeedrate());
+		
+		sendCommand(cmd);
+
+		cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
 				+ df.format(p.z) + " F" + df.format(getCurrentFeedrate());
 
 		sendCommand(cmd);
@@ -338,11 +456,14 @@ public class RepRap5DDriver extends SerialDriver {
 		super.setCurrentPosition(p);
 	}
 
-	public void homeAxes(EnumSet<Axis> axes) throws RetryException {
-		StringBuffer buf = new StringBuffer("G28 ");
-		if (axes.contains(Axis.X)) buf.append("X");
-		if (axes.contains(Axis.Y)) buf.append("Y");
-		if (axes.contains(Axis.Z)) buf.append("Z");
+	@Override
+	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException {
+		Base.logger.info("homing "+axes.toString());
+		StringBuffer buf = new StringBuffer("G28");
+		for (Axis axis : axes)
+		{
+			buf.append(" "+axis);
+		}
 		sendCommand(buf.toString());
 
 		super.homeAxes(axes,false,0);
@@ -391,7 +512,7 @@ public class RepRap5DDriver extends SerialDriver {
 		super.changeGearRatio(ratioIndex);
 	}
 
-	private String _getToolCode() {
+	protected String _getToolCode() {
 		return "T" + machine.currentTool().getIndex() + " ";
 	}
 
@@ -400,32 +521,58 @@ public class RepRap5DDriver extends SerialDriver {
 	 * @throws RetryException 
 	 **************************************************************************/
 	public void setMotorRPM(double rpm) throws RetryException {
-		sendCommand(_getToolCode() + "M108 R" + df.format(rpm));
-
+		if (fiveD == false)
+		{
+			sendCommand(_getToolCode() + "M108 R" + df.format(rpm));
+		}
+		else
+		{
+			extrusionThread.setFeedrate(rpm);
+		}
+		
 		super.setMotorRPM(rpm);
 	}
 
 	public void setMotorSpeedPWM(int pwm) throws RetryException {
-		sendCommand(_getToolCode() + "M108 S" + df.format(pwm));
+		if (fiveD == false)
+		{
+			sendCommand(_getToolCode() + "M108 S" + df.format(pwm));
+		}
 
 		super.setMotorSpeedPWM(pwm);
 	}
-
-	public void enableMotor() throws RetryException {
+	
+	public synchronized void enableMotor() throws RetryException {
 		String command = _getToolCode();
 
-		if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
-			command += "M101";
+		if (fiveD == false)
+		{
+			if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
+				command += "M101";
+			else
+				command += "M102";
+	
+			sendCommand(command);
+		}
 		else
-			command += "M102";
-
-		sendCommand(command);
+		{
+			extrusionThread.setDirection( machine.currentTool().getMotorDirection()==1?
+					Direction.forward : Direction.reverse );
+			extrusionThread.startExtruding();
+		}
 
 		super.enableMotor();
 	}
 
 	public void disableMotor() throws RetryException {
-		sendCommand(_getToolCode() + "M103");
+		if (fiveD == false)
+		{
+			sendCommand(_getToolCode() + "M103");
+		}
+		else
+		{
+			extrusionThread.stopExtruding();
+		}
 
 		super.disableMotor();
 	}
@@ -555,9 +702,13 @@ public class RepRap5DDriver extends SerialDriver {
 		super.closeCollet();
 	}
 
-	public void reset() {
+	public synchronized void reset() {
 		Base.logger.info("Reset.");
 		setInitialized(false);
+		// resetting the serial port + command queue
+		//this.serial.clear();
+		//commands = null;
+
 		initialize();
 	}
 

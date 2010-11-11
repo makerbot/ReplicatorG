@@ -23,8 +23,8 @@
 
 package replicatorg.machine.model;
 
+import java.util.HashMap;
 import java.util.Vector;
-import java.util.logging.Logger;
 
 import javax.vecmath.Point3d;
 
@@ -38,13 +38,14 @@ import replicatorg.machine.model.BuildVolume;
 public class MachineModel
 {
 	//our xml config info
-	protected Node xml;
+	protected Node xml = null;
 	
 	//our machine space
 	//private Point3d currentPosition;
 	@SuppressWarnings("unused")
 	private Point3d minimum;
 	private Point3d maximum;
+	private HashMap<Axis, Endstops> endstops = new HashMap<Axis, Endstops>();
 
 	//feedrate information
 	private Point3d maximumFeedrates;
@@ -57,6 +58,7 @@ public class MachineModel
 	//our tool models
 	protected Vector<ToolModel> tools;
 	protected ToolModel currentTool;
+	protected final ToolModel nullTool = new ToolModel();
 
 	//our clamp models	
 	protected Vector<ClampModel> clamps;
@@ -80,7 +82,7 @@ public class MachineModel
 		maximumFeedrates = new Point3d();
 		stepsPerMM = new Point3d(1, 1, 1); //use ones, because we divide by this!
 		
-		currentTool = new ToolModel();
+		currentTool = nullTool;
 	}
 	
 	//load data from xml config
@@ -117,12 +119,14 @@ public class MachineModel
 				 	double length = 0.0;
 				 	double maxFeedrate = 0.0;
 				 	double scale = 1.0;
+				 	Endstops endstops = Endstops.none;
 					
 					//if values are missing, ignore them.
 					try {
 					 	length = Double.parseDouble(XML.getAttributeValue(axis, "length"));
 					 	maxFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "maxfeedrate"));
 					 	scale = Double.parseDouble(XML.getAttributeValue(axis, "scale"));
+					 	endstops = Endstops.valueOf(XML.getAttributeValue(axis, "endstops"));
 					} catch (Exception e) {}
 					
 					//create the right variables.
@@ -131,18 +135,21 @@ public class MachineModel
 						maximum.x = length;
 						maximumFeedrates.x = maxFeedrate;
 						stepsPerMM.x = scale;
+						this.endstops.put(Axis.X, endstops);
 					}
 					else if (id.toLowerCase().equals("y"))
 					{
 						maximum.y = length;
 						maximumFeedrates.y = maxFeedrate;
 						stepsPerMM.y = scale;
+						this.endstops.put(Axis.Y, endstops);
 					}
 					else if (id.toLowerCase().equals("z"))
 					{
 						maximum.z = length;
 						maximumFeedrates.z = maxFeedrate;
 						stepsPerMM.z = scale;
+						this.endstops.put(Axis.Z, endstops);
 					}
 
 					//System.out.println("Loading axis " + id + ": (Length: " + length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + scale + " steps/mm)");
@@ -188,12 +195,20 @@ public class MachineModel
 				if (toolNode.getNodeName().equals("tool"))
 				{
 					ToolModel tool = new ToolModel(toolNode);
-					tool.setIndex(tools.size());
-					tools.add(tool);
+					if (tool.getIndex() == -1) {
+						tool.setIndex(tools.size());
+						tools.add(tool);
+					} else {
+						if (tools.size() <= tool.getIndex()) {
+							tools.setSize(tool.getIndex()+1);
+						}
+						tools.set(tool.getIndex(), tool);
+					}
+					if (currentTool == nullTool) {
+						this.selectTool(tool.getIndex());
+					}
 				}
 			}
-			
-			selectTool(0);
 		}
 	}
 	//load axes configuration
@@ -363,8 +378,18 @@ public class MachineModel
 	{
 		try {
 			currentTool = (ToolModel)tools.get(index);
+			if (currentTool == null) { 
+				Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
+				currentTool = nullTool;
+			}
 		} catch (ArrayIndexOutOfBoundsException e) {
-			Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
+			if (xml != null) { 
+				Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
+			} else {
+				// If this machine is not configured, it's presumed it's a null machine
+				// and it's expected that toolheads are not specified.
+			}
+			currentTool = nullTool;
 		}
 	}
 
@@ -412,6 +437,12 @@ public class MachineModel
 
   public Point3d getMaximumFeedrates() {
     return maximumFeedrates;
+  }
+  
+  /** returns the endstop configuration for the givin axis */
+  public Endstops getEndstops(Axis axis)
+  {
+	  return this.endstops.get(axis);
   }
 
 }

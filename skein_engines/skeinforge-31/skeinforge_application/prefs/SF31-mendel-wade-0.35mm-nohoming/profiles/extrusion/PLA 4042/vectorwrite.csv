@@ -1,0 +1,8 @@
+Format is tab separated vectorwrite settings.
+Name                          	Value
+WindowPosition	700+0
+Activate Vectorwrite	False
+Open File to Write Vector Graphics for	
+Layers From (index):	0
+Layers To (index):	912345678
+SVG Viewer:	webbrowser

@@ -30,6 +30,7 @@ import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,6 +38,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.exceptions.UnknownSerialPortException;
@@ -49,11 +52,24 @@ public class Serial implements SerialPortEventListener {
 	 */
 	public static class Name implements Comparable<Name> {
 		private String name;
+		private String alias;
 		private boolean available;
 		public Name(String name, boolean available) {
 			this.name = name;
+			this.alias = null;
 			this.available = available;
 		}
+		
+		public Name(String name, String alias, boolean available) {
+			this.name = name;
+			this.alias = alias;
+			this.available = available;
+		}
+		
+		public void setAlias(String alias) {
+			this.alias = alias;
+		}
+		
 		public String getName() {
 			return name;
 		}
@@ -69,7 +85,13 @@ public class Serial implements SerialPortEventListener {
 			// This also simplifies sorting, etc.
 			return name.compareTo(other.name);
 		}
-		public String toString() { return this.name; }
+		
+		public String toString() {
+			if (alias != null) {
+				return this.name + " (" + alias + ")";
+			}
+			return this.name;
+		}
 	}
 	
 	/**
@@ -112,6 +134,28 @@ public class Serial implements SerialPortEventListener {
 			}
 			if (!contains) { v.add(n); }
 		}
+
+		// Linux: scan the by-id directory and see if we can find the ids of the cables.
+		if (Base.isLinux()) {
+			Pattern idPattern = Pattern.compile("FTDI_TTL232R_([^-]*)");
+			File portDir = new File("/dev/serial/by-id/");
+			if (portDir.exists() && portDir.isDirectory()) {
+				for (File f : portDir.listFiles()) {
+					Matcher match = idPattern.matcher(f.getPath());
+					if (match.find()) try {
+						String canonical = f.getCanonicalFile().getPath();
+						for (Name m : v) {
+							if (m.getName().equals(canonical)) {
+								m.setAlias(match.group(1));
+							}
+						}
+					} catch (IOException ioe) {
+						// pass 
+					}
+				}
+			}
+		}
+
 		return v;
 	}
 	
@@ -342,9 +386,9 @@ public class Serial implements SerialPortEventListener {
 	}
 
 	/**
-	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 200ms.
+	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 500ms.
 	 */
-	private int timeoutMillis = 200;
+	private int timeoutMillis = 500;
 
 	/**
 	 * Set the amount of time we're willing to wait for a read to timeout.
@@ -364,9 +408,16 @@ public class Serial implements SerialPortEventListener {
 
 	public void clear() {
 		synchronized (readFifo) {
+			// If we're eating more than 255 characters, then there's a serious error:
+			// Either the machine is jabbering, or there's a problem with our serial
+			// connection.
+			int maxEats = 255;
+			
 			try {
-				while (input.available() > 0) {
+				while (input.available() > 0 && maxEats > 0) {
 					input.read();
+					Thread.sleep(1);
+					maxEats--;
 				}
 			} catch (IOException e) {
 				// Error condition
@@ -377,9 +428,13 @@ public class Serial implements SerialPortEventListener {
 				// connection drops, we'll just let this silently fail, and set
 				// a fail bit.
 				disconnected = true;
+			} catch (InterruptedException e) {
 			}
 			readFifo.clear();
 			readFifo.notifyAll();
+			if (maxEats == 0) {
+				throw new RuntimeException("Much more data than expected; check your serial line and reset your machine!");
+			}
 		}
 	}
 	

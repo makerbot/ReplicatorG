@@ -1,0 +1,5 @@
+<?xml version='1.0' ?>
+<fabmetheus>
+	<text id='yo' >wa</text>
+	<extrude target="=document.getElementByID(yo)" />
+</fabmetheus>

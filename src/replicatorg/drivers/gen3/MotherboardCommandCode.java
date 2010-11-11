@@ -27,6 +27,8 @@ public enum MotherboardCommandCode {
 	RESET(17),
 
 	NEXT_FILENAME(18),
+	// Get the build name
+	GET_BUILD_NAME(20),
 	
 	// QUEUE_POINT_INC(128) obsolete
 	QUEUE_POINT_ABS(129),

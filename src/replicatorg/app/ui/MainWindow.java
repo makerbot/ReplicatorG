@@ -124,6 +124,7 @@ import replicatorg.app.ui.modeling.PreviewPanel;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
 import replicatorg.drivers.EstimationDriver;
+import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.UsesSerial;
@@ -569,7 +570,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		Vector<Serial.Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
 		for (Serial.Name name : names) {
-			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.getName());
+			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.toString());
 			item.setEnabled(name.isAvailable());
 			item.setSelected(name.getName().equals(currentName));
 			final String portName = name.getName();
@@ -778,8 +779,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		return menu;
 	}
 
-	JMenuItem onboardParamsItem = new JMenuItem("Cupcake Onboard Preferences");
-	JMenuItem extruderParamsItem = new JMenuItem("Extruder Onboard Preferences");
+	JMenuItem onboardParamsItem = new JMenuItem("Cupcake Onboard Preferences...");
+	JMenuItem extruderParamsItem = new JMenuItem("Toolhead Onboard Preferences...");
+	JMenuItem toolheadIndexingItem = new JMenuItem("Set Toolhead Index...");
 	
 	protected JMenu buildMachineMenu() {
 		JMenuItem item;
@@ -832,6 +834,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		extruderParamsItem.setVisible(false);
 		menu.add(extruderParamsItem);
 
+		toolheadIndexingItem.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				handleToolheadIndexing();
+			}
+		});
+		toolheadIndexingItem.setVisible(false);
+		menu.add(toolheadIndexingItem);
+		
 		item = new JMenuItem("Upload new firmware...");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -841,6 +851,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		menu.add(item);
 		
 		return menu;
+	}
+
+	protected void handleToolheadIndexing() {
+		if (machine == null || 
+				!(machine.driver instanceof MultiTool)) {
+			JOptionPane.showMessageDialog(
+					this,
+					"ReplicatorG can't connect to your machine or toolhead index setting is not supported.\nTry checking your settings and resetting your machine.",
+					"Can't run toolhead indexing", JOptionPane.ERROR_MESSAGE);
+		} else {
+			ToolheadIndexer indexer = new ToolheadIndexer(this,machine.driver);
+			indexer.setVisible(true);
+		}
 	}
 
 	class MachineMenuListener implements ActionListener {
@@ -1596,6 +1619,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		buildMenuItem.setEnabled(hasGcode && evt.getState().isReady());
 		onboardParamsItem.setVisible(showParams);
 		extruderParamsItem.setVisible(showParams);
+		boolean showIndexing = 
+			evt.getState().isReady() &&
+			machine != null &&
+			machine.getDriver() instanceof MultiTool &&
+			((MultiTool)machine.getDriver()).toolsCanBeReindexed();
+		toolheadIndexingItem.setVisible(showIndexing);
 		// Advertise machine name
 		String name = "Not Connected";
 		if (evt.getState().isConnected() && machine != null) {
@@ -2365,13 +2394,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		setMachine(Base.loadMachine(name));
 		reloadSerialMenu();
 		
-		if(previewPanel instanceof PreviewPanel)
+		if(previewPanel != null)
 		{
 			/* FIXME: This is probably not the best place to do the reload. We need
 			 * the BuildVolume information (through MachineModel) which apparently
 			 * isn't initialized yet when this is called...
 			 */
-			Base.logger.info("RELOADING the machine... removing previewPanel...");
+			Base.logger.fine("RELOADING the machine... removing previewPanel...");
 			getPreviewPanel().rebuildScene();
 			updateBuild();
 		}

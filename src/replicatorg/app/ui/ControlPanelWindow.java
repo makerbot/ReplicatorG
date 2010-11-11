@@ -34,6 +34,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.EnumSet;
 import java.util.Enumeration;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -65,6 +66,7 @@ import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.Endstops;
 import replicatorg.machine.model.ToolModel;
 
 public class ControlPanelWindow extends JFrame implements
@@ -156,12 +158,20 @@ public class ControlPanelWindow extends JFrame implements
 		JMenuBar bar = new JMenuBar();
 		JMenu homeMenu = new JMenu("Homing");
 		bar.add(homeMenu);
-		homeMenu.add(makeHomeItem("Home X+",EnumSet.of(Axis.X),true));
-		homeMenu.add(makeHomeItem("Home X-",EnumSet.of(Axis.X),false));
-		homeMenu.add(makeHomeItem("Home Y+",EnumSet.of(Axis.Y),true));
-		homeMenu.add(makeHomeItem("Home Y-",EnumSet.of(Axis.Y),false));
-		homeMenu.add(makeHomeItem("Home Z+",EnumSet.of(Axis.Z),true));
-		homeMenu.add(makeHomeItem("Home Z-",EnumSet.of(Axis.Z),false));
+		
+		//adding the appropriate homing options for your endstop configuration
+		for (Axis axis : Axis.values())
+		{
+			Endstops endstops = driver.getMachine().getEndstops(axis);
+			if (endstops != null)
+			{
+				if (endstops.hasMin == true)
+					homeMenu.add(makeHomeItem("Home "+axis.name()+"-",EnumSet.of(axis),false));
+				if (endstops.hasMax == true)
+					homeMenu.add(makeHomeItem("Home "+axis.name()+"+",EnumSet.of(axis),true));
+			}
+		}
+		
 		homeMenu.add(new JSeparator());
 		homeMenu.add(makeHomeItem("Home XY+",EnumSet.of(Axis.X,Axis.Y),true));
 		homeMenu.add(makeHomeItem("Home XY-",EnumSet.of(Axis.X,Axis.Y),false));
@@ -227,7 +237,7 @@ public class ControlPanelWindow extends JFrame implements
 		return activationPanel;
 	}
 
-	ExtruderPanel extruderPanel;
+	Vector<ExtruderPanel> extruderPanels = new Vector<ExtruderPanel>();
 	
 	protected JComponent createToolsPanel() {
 		toolsPane = new JTabbedPane();
@@ -235,22 +245,34 @@ public class ControlPanelWindow extends JFrame implements
 		for (Enumeration<ToolModel> e = machine.getModel().getTools().elements(); e
 				.hasMoreElements();) {
 			ToolModel t = e.nextElement();
-
+			if (t == null) continue;
 			if (t.getType().equals("extruder")) {
 				Base.logger.fine("Creating panel for " + t.getName());
-				extruderPanel = new ExtruderPanel(machine,t);
+				ExtruderPanel extruderPanel = new ExtruderPanel(machine,t);
 				toolsPane.addTab(t.getName(),extruderPanel);
+				extruderPanels.add(extruderPanel);
+				if (machine.getModel().currentTool() == t) {
+					toolsPane.setSelectedComponent(extruderPanel);
+				}
 			} else {
 				Base.logger.warning("Unsupported tool for control panel.");
 			}
-		}
-
+		} 
+		toolsPane.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent ce) {
+				final JTabbedPane tp = (JTabbedPane)ce.getSource();
+				final ExtruderPanel ep = (ExtruderPanel)tp.getSelectedComponent();
+				machine.getModel().selectTool(ep.getTool().getIndex());
+			}
+		});
 		return toolsPane;
 	}
 	
-	public void updateStatus() { // FIXME sync
+	public void updateStatus() {
 		jogPanel.updateStatus();
-		if (extruderPanel != null) { extruderPanel.updateStatus(); }
+		for (ExtruderPanel e : extruderPanels) {
+			e.updateStatus();
+		}
 	}
 	
 	public void windowClosing(WindowEvent e) {

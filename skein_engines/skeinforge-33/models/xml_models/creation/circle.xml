@@ -1,0 +1,4 @@
+<?xml version='1.0' ?>
+<fabmetheus>
+	<extrude target='=creation.getCircle(9)' />
+</fabmetheus>
