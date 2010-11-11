@@ -157,7 +157,7 @@
                     extensions="gcode" 
                     iconFile="${dist.dir}/replicatorg.icns"
                     role="Editor"/>
-      <documenttype name="CNC STL document" 
+      <documenttype name="STL 3D model" 
                     extensions="stl" 
                     iconFile="${dist.dir}/replicatorg.icns"
                     role="Editor"/>
