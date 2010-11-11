@@ -1739,4 +1739,8 @@ public class Sanguino3GDriver extends SerialDriver
 	public boolean toolsCanBeReindexed() {
 		return true;
 	}
+
+	public boolean supportsSimultaneousTools() {
+		return true;
+	}
 }
