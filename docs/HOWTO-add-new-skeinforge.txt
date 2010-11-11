@@ -1,0 +1,7 @@
+o cd ReplicatorG/skein_engines
+o wget http://fabmetheus.crsndoo.com/files/<version>_reprap_python_beanshell.zip
+o mkdir skeinforge-<version>
+o cd skeinforge-<version>
+o unzip ../<version>_reprap_python_beanshell.zip
+o patch -p1 < ../makerbot-skeinforge.patch
+o cp -R ../skeinforge-33/skeinforge_application/prefs skeinforge_application/
