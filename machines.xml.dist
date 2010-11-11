@@ -276,6 +276,7 @@ M18
 M18
 		</cooldown>
 	</machine>
+<<<<<<< HEAD
         <machine experimental="1">
                 <name>Mendel with Gen 3 Electronics (19200 Baud)</name>
                 <geometry type="cartesian">
@@ -316,7 +317,7 @@ M108 S0
                         <tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" motor_steps="200" heatedplatform="true" />
                 </tools>
                 <clamps></clamps>
-                <help name="RepRap Help" url="http://www.reprap.org/wiki/ReplicatorG"></help>
+                <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
                 <driver name="reprap5d">
                         <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
                         <rate>57600</rate>
@@ -344,7 +345,7 @@ M108 S0
                         <tool name="Stepper-based pinch extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" heatedplatform="true" motor_steps="200" />
                 </tools>
                 <clamps></clamps>
-                <firmware url="http://firmware.ultimaker.com/ultimaker_firmware.xml" autoupgrade="false"></firmware>
+                <firmware url="http://firmware.ultimaker.com/latest" autoupgrade="false"></firmware>
                 <help name="Ultimaking Guide" url="http://www.ultimaker.com/guide"></help>
                 <driver name="reprap5d">
                         <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
