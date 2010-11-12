@@ -35,13 +35,13 @@ public class StreamLoggerThread extends Thread {
 			StringBuffer nextLine = new StringBuffer();
 			while (!atEnd) {
 				int nextChar = reader.read();
-				if (nextChar == '\n' || nextChar == -1) {
+				// The \r is for Skeinforge-31 ->, which outputs \r between progress lines
+				if (nextChar == '\n' || nextChar == '\r' || nextChar == -1) {
 					if (nextLine.length() > 0) {
 						logMessage(nextLine.toString());
 					}
 					if (nextChar == -1) { atEnd = true; }
 					nextLine = new StringBuffer();
-				} else if (nextChar == '\r') {
 				} else {
 					nextLine.append((char)nextChar);
 				}
