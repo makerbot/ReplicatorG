@@ -2,7 +2,7 @@ Format is tab separated skeinlayer settings.
 Name                          	Value
 WindowPosition	0+0
 Open File for Skeinlayer	
-Activate Skeinlayer	True
+Activate Skeinlayer	False
 Frame List
 Animation Line Quickening (ratio):	1.0
 Animation Slide Show Rate (layers/second):	2.0

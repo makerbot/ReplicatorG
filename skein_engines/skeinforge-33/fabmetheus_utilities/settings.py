@@ -422,8 +422,8 @@ def printProgress(layerIndex, procedureName):
 
 def printProgressByString(progressString):
 	"Print progress string."
-	sys.stdout.write(progressString)
-	sys.stdout.write(chr(27) + '\r')
+	sys.stdout.write(progressString+"\n")
+	sys.stdout.write('\033[1A')
 	sys.stdout.flush()
 
 def printProgressByNumber(layerIndex, numberOfLayers, procedureName):
