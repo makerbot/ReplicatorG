@@ -42,7 +42,6 @@ public class StreamLoggerThread extends Thread {
 					}
 					if (nextChar == -1) { atEnd = true; }
 					nextLine = new StringBuffer();
-				} else if (nextChar == '\r') {
 				} else {
 					nextLine.append((char)nextChar);
 				}
