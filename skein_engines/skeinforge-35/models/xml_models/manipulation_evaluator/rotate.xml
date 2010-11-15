@@ -1,0 +1,14 @@
+<?xml version='1.0' ?>
+<fabmetheus version="2010-03-17">
+	<trianglemesh id="tetrahedron" rotate.x="20" rotate.y="40" rotate.z="30">
+		<matrix />
+		<vertex x="-5.0" y="0.0" z="2.89" />
+		<vertex x="0.0" y="0.0" z="-5.77" />
+		<vertex x="5.0" y="0.0" z="2.89" />
+		<vertex x="0.0" y="8.66" z="0.0" />
+		<face vertex0="3" vertex1="0" vertex2="1" />
+		<face vertex0="3" vertex1="1" vertex2="2" />
+		<face vertex0="3" vertex1="2" vertex2="0" />
+		<face vertex0="0" vertex1="2" vertex2="1" />
+	</trianglemesh>
+</fabmetheus>
