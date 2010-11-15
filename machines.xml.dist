@@ -49,9 +49,9 @@ M18
 		<name>Cupcake CNC w/ automated build platform</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="300" maxfeedrate="5000" scale="11.767463"/> 
-			<axis id="y" length="300" maxfeedrate="5000" scale="11.767463"/>
-			<axis id="z" length="300" maxfeedrate="150" scale="320"/>
+			<axis id="x" length="100" maxfeedrate="5000" scale="11.767463"/> 
+			<axis id="y" length="100" maxfeedrate="5000" scale="11.767463"/>
+			<axis id="z" length="100" maxfeedrate="150" scale="320"/>
 		</geometry>
 		<tools>
 			<tool name="Plastruder Mk5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="false" valve="false" automatedplatform="true" heatedplatform="true" collet="false" heater="true"/>
