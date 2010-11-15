@@ -1,0 +1,129 @@
+diff -ru /Users/kintel/Desktop/Makerbot/33_reprap_python_beanshell/fabmetheus_utilities/archive.py skeinforge-33/fabmetheus_utilities/archive.py
+--- /Users/kintel/Desktop/Makerbot/33_reprap_python_beanshell/fabmetheus_utilities/archive.py	2010-11-01 14:05:38.000000000 -0400
++++ skeinforge-33/fabmetheus_utilities/archive.py	2010-11-11 16:58:19.000000000 -0500
+@@ -249,9 +249,17 @@
+ 	pythonFileNamesExceptInitRecursively.sort()
+ 	return pythonFileNamesExceptInitRecursively
+ 
++settingsPath = os.path.join(os.path.expanduser('~'), '.skeinforge')
++
+ def getSettingsPath(subName=''):
+-	'Get the settings directory path, which is the home directory joined with .skeinforge.'
+-	return getJoinedPath(os.path.join(os.path.expanduser('~'), '.skeinforge'), subName)
++	'Get the settings directory path, which defaults to the home directory joined with .skeinforge.'
++	global settingsPath
++	return getJoinedPath(settingsPath, subName)
++
++def setSettingsPath(path):
++	'Set the base settings directory path.'
++	global settingsPath
++	settingsPath = path
+ 
+ def getSummarizedFileName(fileName):
+ 	'Get the fileName basename if the file is in the current working directory, otherwise return the original full name.'
+diff -ru /Users/kintel/Desktop/Makerbot/33_reprap_python_beanshell/fabmetheus_utilities/settings.py skeinforge-33/fabmetheus_utilities/settings.py
+--- /Users/kintel/Desktop/Makerbot/33_reprap_python_beanshell/fabmetheus_utilities/settings.py	2010-10-25 16:10:38.000000000 -0400
++++ skeinforge-33/fabmetheus_utilities/settings.py	2010-11-09 17:42:32.000000000 -0500
+@@ -260,6 +260,31 @@
+ 	repository.pluginFrame.getFromPath( defaultRadioButton, directoryPath, repository )
+ 	return radioPlugins
+ 
++overrides = {}
++
++def addPreferenceOverride(module, name, value):
++	global overrides
++	if not module in overrides:
++		overrides[module] = {}
++	overrides[module][name] = value
++	print "OVERRIDE ",module,name,value
++	print overrides[module]
++
++def applyOverrides(repository):
++	"Apply any overrides that have been set at the command line."
++	# The override dictionary is a mapping of repository names to
++	# key-value mappings. 
++	global overrides
++	if repository.baseName in overrides:
++		settingTable = {}
++		for setting in repository.preferences:
++			settingTable[ setting.name ] = setting
++		for (name, value) in overrides[repository.baseName].items():
++			if name in settingTable:
++				settingTable[name].setValueToString(value)
++			else:
++				print "Override not applied for",name,value
++
+ def getReadRepository(repository):
+ 	"Read and return settings from a file."
+ 	text = archive.getFileText(archive.getProfilesPath(getProfileBaseName(repository)), 'r', False)
+@@ -272,8 +297,10 @@
+ 		if text != '':
+ 			readSettingsFromText( repository, text )
+ 		writeSettings(repository)
++		applyOverrides(repository)
+ 		return repository
+ 	readSettingsFromText( repository, text )
++	applyOverrides(repository)
+ 	return repository
+ 
+ def getRepositoryText(repository):
+diff -ru /Users/kintel/Desktop/Makerbot/33_reprap_python_beanshell/skeinforge_application/skeinforge.py skeinforge-33/skeinforge_application/skeinforge.py
+--- /Users/kintel/Desktop/Makerbot/33_reprap_python_beanshell/skeinforge_application/skeinforge.py	2010-11-01 14:11:28.000000000 -0400
++++ skeinforge-33/skeinforge_application/skeinforge.py	2010-11-11 16:58:55.000000000 -0500
+@@ -208,9 +208,11 @@
+ from fabmetheus_utilities import euclidean
+ from fabmetheus_utilities import gcodec
+ from fabmetheus_utilities import settings
++from fabmetheus_utilities import archive
+ from skeinforge_application.skeinforge_utilities import skeinforge_craft
+ from skeinforge_application.skeinforge_utilities import skeinforge_polyfile
+ from skeinforge_application.skeinforge_utilities import skeinforge_profile
++from optparse import OptionParser
+ import os
+ import sys
+ 
+@@ -544,8 +546,30 @@
+ 
+ def main():
+ 	"Display the skeinforge dialog."
+-	if len(sys.argv) > 1:
+-		writeOutput(' '.join(sys.argv[1 :]))
++	parser = OptionParser()
++	parser.add_option("-p", "--prefdir", help="set path to preference directory",
++		action="store", type="string", dest="preferencesDirectory")
++	parser.add_option("-s", "--start", help="set start file to use",
++		action="store", type="string", dest="startFile")
++	parser.add_option("-e", "--end", help="set end file to use",
++		action="store", type="string", dest="endFile")
++	parser.add_option("--raft", action="store_true", dest="useRaft")
++	parser.add_option("--no-raft", action="store_false", dest="useRaft")
++	(options, args) = parser.parse_args()
++	defaultStart = 'start.txt'
++	defaultEnd = 'end.txt'
++	if options.preferencesDirectory:
++		pdir = options.preferencesDirectory;
++		archive.setSettingsPath(pdir)
++	if options.useRaft != None:
++		if options.useRaft:
++			settings.addPreferenceOverride("raft.csv", "Activate Raft", "true")
++		else:
++			settings.addPreferenceOverride("raft.csv", "Activate Raft", "false")
++
++	sys.argv = [sys.argv[0]] + args
++	if len( args ) > 0:
++		writeOutput( ' '.join(args) )
+ 	else:
+ 		settings.startMainLoopFromConstructor( getNewRepository() )
+ 
+diff -ru /Users/kintel/Desktop/Makerbot/33_reprap_python_beanshell/skeinforge_application/skeinforge_plugins/craft_plugins/export.py skeinforge-33/skeinforge_application/skeinforge_plugins/craft_plugins/export.py
+--- /Users/kintel/Desktop/Makerbot/33_reprap_python_beanshell/skeinforge_application/skeinforge_plugins/craft_plugins/export.py	2010-10-25 16:32:14.000000000 -0400
++++ skeinforge-33/skeinforge_application/skeinforge_plugins/craft_plugins/export.py	2010-11-09 17:42:32.000000000 -0500
+@@ -156,7 +156,7 @@
+ 	settings.getReadRepository( exportRepository )
+ 	startTime = time.time()
+ 	print('File ' + archive.getSummarizedFileName(fileName) + ' is being chain exported.')
+-	suffixFileName = fileName[ : fileName.rfind('.') ] + '_export.' + exportRepository.fileExtension.value
++	suffixFileName = fileName[ : fileName.rfind('.') ] + '.' + exportRepository.fileExtension.value
+ 	gcodeText = gcodec.getGcodeFileText( fileName, '')
+ 	procedures = skeinforge_craft.getProcedures('export', gcodeText )
+ 	gcodeText = skeinforge_craft.getChainTextFromProcedures( fileName, procedures[ : - 1 ], gcodeText )

@@ -1,0 +1,6 @@
+<?xml version='1.0' ?>
+<fabmetheus>
+	<dictionary continuousPrintTest='=print.continuous(6)' />
+	<dictionary linePrintTest='=print.line("8,9")' />
+	<print>hello</print>
+</fabmetheus>

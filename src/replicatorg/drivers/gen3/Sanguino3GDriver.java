@@ -360,8 +360,7 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 		
 		Base.logger.log(Level.FINE,"Reported version: "
-					+ Integer.toHexString(versionNum)
-					+ " " + buildname);
+					+ versionNum + " " + buildname);
 		if (versionNum == 0) {
 			Base.logger.severe("Null version reported!");
 			return null;
@@ -410,8 +409,7 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 		
 		Base.logger.log(Level.FINE,"Reported slave board version: "
-					+ Integer.toHexString(slaveVersionNum)
-					+ " " + buildname);
+					+ slaveVersionNum + " " + buildname);
 		if (slaveVersionNum == 0)
 			Base.logger.severe("Toolhead "+Integer.toString(toolIndex)+": Not found.\nMake sure the toolhead is connected, the power supply is plugged in and turned on, and the power switch on the motherboard is on.");
         else

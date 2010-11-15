@@ -1,0 +1,5 @@
+<?xml version='1.0' ?>
+<fabmetheus>
+	<polygon id='heptagon' segment.center='[]' segment.path='[[], [0.5, 0.2], [1.0, 0.0]]' segment.start='2' wedge.center='[]' radius='20' sides='7' start='1' />
+	<extrude target='=document.getElementByID(heptagon)' pathEnd.z='[0,0,2]' />
+</fabmetheus>

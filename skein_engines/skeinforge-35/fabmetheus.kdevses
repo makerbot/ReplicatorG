@@ -1,0 +1,17 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE KDevPrjSession>
+<KDevPrjSession>
+ <DocsAndViews NumberOfDocuments="2" >
+  <Doc0 NumberOfViews="1" URL="file:///home/enrique/Desktop/backup/babbleold/script/reprap/fabmetheus/skeinforge_application/skeinforge.py" >
+   <View0 Encoding="UTF-8" line="216" Type="Source" />
+  </Doc0>
+  <Doc1 NumberOfViews="1" URL="file:///home/enrique/Desktop/backup/babbleold/script/reprap/fabmetheus/fabmetheus_utilities/euclidean.py" >
+   <View0 Encoding="" line="1380" Type="Source" />
+  </Doc1>
+ </DocsAndViews>
+ <pluginList>
+  <kdevbookmarks>
+   <bookmarks/>
+  </kdevbookmarks>
+ </pluginList>
+</KDevPrjSession>
