@@ -338,6 +338,24 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			add(fanCheck,"wrap");
 		}
 
+		// cooling fan controls
+		if (t.hasAutomatedPlatform()) {
+			String abpString = "Build platform belt";
+			String enableString = "enable";
+			JLabel abpLabel = new JLabel(abpString);
+			abpLabel.setMinimumSize(labelMinimumSize);
+			abpLabel.setMaximumSize(labelMinimumSize);
+			abpLabel.setPreferredSize(labelMinimumSize);
+			abpLabel.setHorizontalAlignment(JLabel.LEFT);
+
+			JCheckBox abpCheck = new JCheckBox(enableString);
+			abpCheck.setName("abp-check");
+			abpCheck.addItemListener(this);
+
+			add(abpLabel);
+			add(abpCheck,"wrap");
+		}
+
 		// valve controls
 		if (t.hasValve()) {
 			String valveString = "Valve";
@@ -475,6 +493,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					driver.enableMistCoolant();
 				else if (name.equals("fan-check"))
 					driver.enableFan();
+				else if (name.equals("abp-check"))
+					driver.enableFan();
 				else if (name.equals("valve-check"))
 					driver.openValve();
 				else if (name.equals("collet-check"))
@@ -491,6 +511,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				else if (name.equals("mist-coolant"))
 					driver.disableMistCoolant();
 				else if (name.equals("fan-check"))
+					driver.disableFan();
+				else if (name.equals("abp-check"))
 					driver.disableFan();
 				else if (name.equals("valve-check"))
 					driver.closeValve();

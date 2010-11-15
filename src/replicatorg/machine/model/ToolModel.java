@@ -83,6 +83,7 @@ public class ToolModel
 	protected boolean hasSpindle = false;
 	protected boolean hasHeater = false;
 	protected boolean hasHeatedPlatform = false;
+	protected boolean hasAutomatedPlatform = false;
 	protected boolean hasFloodCoolant = false;
 	protected boolean hasMistCoolant = false;
 	protected boolean hasFan = false;
@@ -233,6 +234,9 @@ public class ToolModel
 
 		n = XML.getAttributeValue(xml, "heatedplatform");
 		hasHeatedPlatform = hasHeatedPlatform || isTrueOrOne(n);
+
+		n = XML.getAttributeValue(xml, "automatedplatform");
+		hasAutomatedPlatform = hasAutomatedPlatform || isTrueOrOne(n);
 		//hah, all this for a debug string... lol.
 		String result = "Loading " + type + " '" + name + "': ";
 		result += "material: " + material + ", ";
@@ -255,6 +259,8 @@ public class ToolModel
 			result += "heater, ";
 		if (hasHeatedPlatform)
 			result += "hasHeatedPlatform, ";
+		if (hasAutomatedPlatform)
+			result += "hasAutomatedPlatform, ";
 	}
 	
 	/*************************************
@@ -496,6 +502,11 @@ public class ToolModel
 	public boolean hasHeatedPlatform()
 	{
 		return hasHeatedPlatform;
+	}
+
+	public boolean hasAutomatedPlatform()
+	{
+		return hasAutomatedPlatform;
 	}
 
 	/*************************************
