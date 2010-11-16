@@ -37,6 +37,15 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	public SkeinforgeGenerator() {
 	}
 
+	static public String getSelectedProfile() {
+		String name = Base.preferences.get("replicatorg.skeinforge.profile", "");
+		return name;
+	}
+
+	static public void setSelectedProfile(String name) {
+		Base.preferences.put("replicatorg.skeinforge.profile", name);
+	}
+
 	class Profile implements Comparable<Profile> {
 		private String fullPath;
 		private String name;
@@ -100,11 +109,19 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			list.removeAll();
 			List<Profile> profiles = getProfiles();
 			DefaultListModel model = new DefaultListModel();
+			String selected = SkeinforgeGenerator.getSelectedProfile();
+			Profile selectedprofile = null;
 			for (Profile p : profiles) {
 				model.addElement(p);
+				if (p.toString().equals(selected)) selectedprofile = p;
 			}
 			list.setModel(model);
-			list.clearSelection();
+			if (selectedprofile != null) {
+				list.setSelectedValue(selectedprofile, true);
+			}
+			else {
+				list.clearSelection();
+			}
 		}
 
 		public ConfigurationDialog(final Frame parent) {
@@ -216,6 +233,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 					configSuccess = true;
 					profile = p.getFullPath();
 					setVisible(false);
+					SkeinforgeGenerator.setSelectedProfile(p.toString());
 				}
 			});
 			cancel.addActionListener(new ActionListener() {
