@@ -327,9 +327,12 @@ public class Base {
 					}
 				});
 				// load up our default machine
-				String machineName = preferences.get("machine.name",null); 
-				if (machineName != null) {
-					editor.loadMachine(machineName);
+				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
+				if (autoconnect) {
+					String machineName = preferences.get("machine.name",null); 
+					if (machineName != null) {
+						editor.loadMachine(machineName);
+					}
 				}
 				// show the window
 				editor.setVisible(true);
