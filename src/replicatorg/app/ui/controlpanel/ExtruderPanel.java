@@ -325,7 +325,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 		// cooling fan controls
 		if (t.hasAutomatedPlatform()) {
-			String abpString = "Turn on build platform belt";
+			String abpString = "Build platform belt";
 			String enableString = "enable";
 			JLabel abpLabel = makeLabel(abpString);
 

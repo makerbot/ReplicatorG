@@ -80,9 +80,9 @@ public class MessagePanel extends JScrollPane {
 	public MessagePanel(MainWindow editor) {
 		this.editor = editor;
 
-		maxLineCount = Base.preferences.getInt("console.length",500);
+		maxLineCount = Base.preferences.getInt("console.length",100);
 
-		consoleDoc = new BufferedStyledDocument(10000, maxLineCount);
+		consoleDoc = new BufferedStyledDocument(1000, maxLineCount);
 		consoleTextPane = new JTextPane(consoleDoc);
 		consoleTextPane.setEditable(false);
 

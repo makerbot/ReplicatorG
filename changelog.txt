@@ -7,6 +7,7 @@ Contributions:
 * Charles: Added skeinforge 33
 * Marius: Added generalized skeinforge merge patch
 * Marius: Added skeinforge 35
+* Marius: Added build platform belt checkbox to control panel
 
 0021 ReplicatorG
 Bugfix release

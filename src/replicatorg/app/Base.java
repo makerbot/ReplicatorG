@@ -110,7 +110,7 @@ public class Base {
 	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
 	{
-		logger.setLevel(Level.FINE);
+		logger.setLevel(Level.INFO);
 	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
