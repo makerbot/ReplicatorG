@@ -600,7 +600,7 @@ public class Sanguino3GDriver extends SerialDriver
 		// already automagically enabled by most commands and need
 		// not be explicitly enabled.
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
-		pb.add8(0x87); // enable x,y,z
+		pb.add8(0x9f); // enable all 5 axes
 		runCommand(pb.getPacket());
 		super.enableDrives();
 	}
@@ -608,7 +608,7 @@ public class Sanguino3GDriver extends SerialDriver
 	public void disableDrives() throws RetryException {
 		// Command RMB to disable its steppers.
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
-		pb.add8(0x07); // disable x,y,z
+		pb.add8(0x1f); // disable all 5 axes
 		runCommand(pb.getPacket());
 		super.disableDrives();
 	}
