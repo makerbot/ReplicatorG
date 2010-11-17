@@ -6,18 +6,10 @@ G04 P2000 (Wait t/1000 seconds)
 M103 (Extruder off)
 M6 T0 (wait for extruder and platform to be cooled)
 M106 (conveyor on)
-M104 S225 T0 (set extruder temperature)
 M109 S130 T0 (set heated-build-platform temperature)
 G04 P9000 (wait t/1000 seconds)
 M107 (conveyor off)
-(start wipe)
-G1 X-53 Y-15.5 Z6.5 F2500.0
-G1 X-53 Y0 Z6.5 F2500.0
-G1 X-53 Y15.5 Z6.5 F2500.0
-(end wipe)
-G1 X0 Y0 F3300.0 (move nozzle to center)
-G1 X0 Y0 Z0 F3300.0 (move nozzle to origin)
+G1 X-54 Y-15 Z6 F3300.0 (move to waiting position)
 M104 S0 T0 (set extruder temperature)
 M109 S0 T0 (set heated-build-platform temperature)
 (end of end.txt)
-
