@@ -30,12 +30,12 @@ multiply	False
 oozebane	False
 outset	False
 preface	False
-raft	True
+raft	False
 speed	False
 splodge	False
 stretch	False
 temperature	False
-tower	False
+tower	True
 unpause	False
 whittle	False
 widen	False

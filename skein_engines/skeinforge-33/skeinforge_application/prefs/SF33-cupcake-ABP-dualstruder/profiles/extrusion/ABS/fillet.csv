@@ -2,7 +2,7 @@ Format is tab separated fillet settings.
 Name                          	Value
 WindowPosition	700+0
 Open File to be Filleted	
-Activate Fillet	False
+Activate Fillet	True
 Arc Point	False
 Arc Radius	False
 Arc Segment	False
