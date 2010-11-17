@@ -135,9 +135,9 @@ def getReplaced( exportText ):
 		return exportText
 	lines = archive.getTextLines( replaceText )
 	for line in lines:
-		splitLine = line.split('\t')
-		if len(splitLine) > 1:
-			exportText = exportText.replace( splitLine[0], splitLine[1] )
+                splitLine = line.replace('\\n', '\t').split('\t')
+                if len(splitLine) > 1:
+                        exportText = exportText.replace(splitLine[0], '\n'.join(splitLine[1 :]))
 	return exportText
 
 def getSelectedPluginModule( plugins ):
