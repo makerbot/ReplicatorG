@@ -2,7 +2,7 @@ Format is tab separated oozebane settings.
 Name                          	Value
 WindowPosition	700+0
 Open File for Oozebane	
-Activate Oozebane	True
+Activate Oozebane	False
 After Startup Distance (millimeters):	1.2
 Early Shutdown Distance (millimeters):	1.2
 Early Startup Distance Constant (millimeters):	20.0
