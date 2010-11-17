@@ -886,7 +886,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			// load it and set it.
 			Thread t = new Thread() {
 				public void run() {
-					loadMachine(name);
+					loadMachine(name, true);
 				}
 			};
 			t.start();
@@ -1251,7 +1251,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} else {
 			String name = Base.preferences.get("machine.name", null);
 			if ( name != null ) {
-				loadMachine(name);
+				loadMachine(name, true);
 			}
 		}
 	}
@@ -2390,7 +2390,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		return this.machine;
 	}
 
-	public void loadMachine(String name) {
+	/**
+	 * 
+	 * @param name       name of the machine
+	 * @param connect	 auto-connect on load. Usually true, but can be set to false to avoid talking on the serial port
+	 */
+	public void loadMachine(String name, Boolean connect) {
 		setMachine(Base.loadMachine(name));
 		reloadSerialMenu();
 		
@@ -2405,6 +2410,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			updateBuild();
 		}
 		
+		if (!connect) return;
+
 		if (machine.driver instanceof UsesSerial) {
 			UsesSerial us = (UsesSerial)machine.driver;
 			if (Base.preferences.getBoolean("serial.use_machines",true) &&
