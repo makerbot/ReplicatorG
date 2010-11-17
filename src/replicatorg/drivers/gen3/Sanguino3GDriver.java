@@ -618,6 +618,11 @@ public class Sanguino3GDriver extends SerialDriver
 		super.changeGearRatio(ratioIndex);
 	}
 
+	/**
+	 * Will wait for first the tool, then the build platform, it exists and supported.
+	 * Technically the platform is connected to a tool (extruder controller) 
+	 * but this information is currently not used by the firmware.
+	 */
 	public void requestToolChange(int toolIndex) throws RetryException {
 		selectTool(toolIndex);
 
@@ -629,6 +634,16 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add16(100); // delay between master -> slave pings (millis)
 		pb.add16(120); // timeout before continuing (seconds)
 		runCommand(pb.getPacket());
+
+		
+		if (this.machine.getTool(toolIndex).hasHeatedPlatform() && 
+			getVersion().atLeast(new Version(2,4)) && toolVersion.atLeast(new Version(2,6))) {
+			pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
+			pb.add8((byte) toolIndex);
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(120); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
 	}
 
 	public void selectTool(int toolIndex) throws RetryException {
