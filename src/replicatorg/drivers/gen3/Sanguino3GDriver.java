@@ -622,8 +622,10 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Will wait for first the tool, then the build platform, it exists and supported.
 	 * Technically the platform is connected to a tool (extruder controller) 
 	 * but this information is currently not used by the firmware.
+	 * 
+	 * timeout is given in seconds. If the tool isn't ready by then, the machine will continue anyway.
 	 */
-	public void requestToolChange(int toolIndex) throws RetryException {
+	public void requestToolChange(int toolIndex, int timeout) throws RetryException {
 		selectTool(toolIndex);
 
 		Base.logger.log(Level.FINE,"Waiting for tool #" + toolIndex);
@@ -633,7 +635,7 @@ public class Sanguino3GDriver extends SerialDriver
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
 			pb.add8((byte) toolIndex);
 			pb.add16(100); // delay between master -> slave pings (millis)
-			pb.add16(120); // timeout before continuing (seconds)
+			pb.add16(timeout); // timeout before continuing (seconds)
 			runCommand(pb.getPacket());
 		}
 		
@@ -643,7 +645,7 @@ public class Sanguino3GDriver extends SerialDriver
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
 			pb.add8((byte) toolIndex);
 			pb.add16(100); // delay between master -> slave pings (millis)
-			pb.add16(120); // timeout before continuing (seconds)
+			pb.add16(timeout); // timeout before continuing (seconds)
 			runCommand(pb.getPacket());
 		}
 	}

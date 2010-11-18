@@ -392,11 +392,16 @@ public class GCodeParser {
 
 			// tool change.
 			case 6:
-				if (hasCode("T"))
-					driver.requestToolChange((int) getCodeValue("T"));
-				else
-					throw new GCodeException(
-							"The T parameter is required for tool changes. (M6)");
+				int timeout = 65535;
+				if (hasCode("P")) {
+					timeout = (int)getCodeValue("P");
+				}
+				if (hasCode("T")) {
+					driver.requestToolChange((int) getCodeValue("T"), timeout);
+				}
+				else {
+					throw new GCodeException("The T parameter is required for tool changes. (M6)");
+				}
 				break;
 
 			// coolant A on (flood coolant)
