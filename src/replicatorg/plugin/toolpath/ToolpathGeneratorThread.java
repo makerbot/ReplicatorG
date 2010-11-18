@@ -46,11 +46,12 @@ public class ToolpathGeneratorThread extends Thread {
 		int layerTotal;
 	    int currentProcessI = -1;
 		SkeinStep steps[] = {
-				new SkeinStep("Carve",6), 
-				new SkeinStep("Preface",1),
-				new SkeinStep("Inset",8),
-				new SkeinStep("Fill",18),
-				new SkeinStep("Raft",8),
+				new SkeinStep("Carve",13), 
+				new SkeinStep("Inset",27),
+				new SkeinStep("Fill",12),
+				new SkeinStep("Raft",36),
+				new SkeinStep("Clip",8),
+				new SkeinStep("Comb",4),
 				new SkeinStep("Oozebane",5),
 		};
 		
@@ -68,8 +69,6 @@ public class ToolpathGeneratorThread extends Thread {
 			subProgressBar.setStringPainted(false);
 			subProgressBar.setValue(0);
 			totalProgressBar.setStringPainted(false);
-			int layerIndex = 0;
-			int layerTotal= 9999;
 			setLayout(new MigLayout());
 			add(topLabel,"wrap");
 			add(new JLabel("Generator: Skeinforge"),"wrap");
@@ -335,17 +334,17 @@ class SkeinStep {
 	public int incrementalStepTime; 
 	
 	public SkeinStep(String stepName, int thisStepTime){
-		this.totalStepTime += thisStepTime;
+		SkeinStep.totalStepTime += thisStepTime;
 		this.stepName = stepName;
 		this.thisStepTime = thisStepTime;
-		this.incrementalStepTime = this.totalStepTime;
+		this.incrementalStepTime = SkeinStep.totalStepTime;
 	}
 	public int getStepPercentage(int layerIndex, int layerTotal)
 	{
 		int percentage = (int) ((double) (this.incrementalStepTime-this.thisStepTime)/totalStepTime*100);
 		if((layerTotal > 0)&&(layerTotal!=layerIndex)){
 			//Base.logger.info("layer "+layerIndex+"/"+layerTotal+" step "+this.thisStepTime+"/"+this.totalStepTime);
-			percentage += (int) (((double) this.thisStepTime/this.totalStepTime)*((double)layerIndex/layerTotal)*100);
+			percentage += (int) (((double) this.thisStepTime/SkeinStep.totalStepTime)*((double)layerIndex/layerTotal)*100);
 		}
 		return percentage;
 	}
