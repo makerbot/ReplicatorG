@@ -1,5 +1,6 @@
 (Beginning of end.txt)
-M109 S95 T0 (set heated-build-platform temperature)
+M109 S110 T0 (set heated-build-platform temperature)
+M104 S220 (keep nozzle heated)
 G1 X0 Y54 F3300.0 (move platform to ejection position)
 M102 (Extruder on, reverse)
 G04 P2000 (Wait t/1000 seconds)
