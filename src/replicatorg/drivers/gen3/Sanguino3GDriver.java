@@ -618,17 +618,36 @@ public class Sanguino3GDriver extends SerialDriver
 		super.changeGearRatio(ratioIndex);
 	}
 
-	public void requestToolChange(int toolIndex) throws RetryException {
+	/**
+	 * Will wait for first the tool, then the build platform, it exists and supported.
+	 * Technically the platform is connected to a tool (extruder controller) 
+	 * but this information is currently not used by the firmware.
+	 * 
+	 * timeout is given in seconds. If the tool isn't ready by then, the machine will continue anyway.
+	 */
+	public void requestToolChange(int toolIndex, int timeout) throws RetryException {
 		selectTool(toolIndex);
 
 		Base.logger.log(Level.FINE,"Waiting for tool #" + toolIndex);
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
-		pb.add8((byte) toolIndex);
-		pb.add16(100); // delay between master -> slave pings (millis)
-		pb.add16(120); // timeout before continuing (seconds)
-		runCommand(pb.getPacket());
+		if (this.machine.currentTool().getTargetTemperature() > 0.0) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
+			pb.add8((byte) toolIndex);
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(timeout); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
+		
+		if (this.machine.getTool(toolIndex).hasHeatedPlatform() && 
+			this.machine.currentTool().getPlatformTargetTemperature() > 0.0 &&
+			getVersion().atLeast(new Version(2,4)) && toolVersion.atLeast(new Version(2,6))) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
+			pb.add8((byte) toolIndex);
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(timeout); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
 	}
 
 	public void selectTool(int toolIndex) throws RetryException {

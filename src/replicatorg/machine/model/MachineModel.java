@@ -401,7 +401,7 @@ public class MachineModel
 	public ToolModel getTool(int index)
 	{
 		try {
-			//ToolModel t = tools.get(index);
+			return tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			Base.logger.severe("Cannot get non-existant tool (#" + index + ".");
 			e.printStackTrace();

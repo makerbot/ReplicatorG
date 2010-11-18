@@ -166,7 +166,7 @@ public interface Driver {
 	 * Tool methods
 	 * @throws RetryException 
 	 */
-	public void requestToolChange(int toolIndex) throws RetryException;
+	public void requestToolChange(int toolIndex, int timeout) throws RetryException;
 
 	public void selectTool(int toolIndex) throws RetryException;
 
