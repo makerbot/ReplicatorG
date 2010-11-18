@@ -629,16 +629,18 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Waiting for tool #" + toolIndex);
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
-		pb.add8((byte) toolIndex);
-		pb.add16(100); // delay between master -> slave pings (millis)
-		pb.add16(120); // timeout before continuing (seconds)
-		runCommand(pb.getPacket());
-
+		if (this.machine.currentTool().getTargetTemperature() > 0.0) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
+			pb.add8((byte) toolIndex);
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(120); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
 		
 		if (this.machine.getTool(toolIndex).hasHeatedPlatform() && 
+			this.machine.currentTool().getPlatformTargetTemperature() > 0.0 &&
 			getVersion().atLeast(new Version(2,4)) && toolVersion.atLeast(new Version(2,6))) {
-			pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
 			pb.add8((byte) toolIndex);
 			pb.add16(100); // delay between master -> slave pings (millis)
 			pb.add16(120); // timeout before continuing (seconds)
