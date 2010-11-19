@@ -1240,8 +1240,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (machine == null) {
 			// machine already disconnected
 		} else {
-			machine.dispose();
-			machine = null;
+			machine.disconnect();
 		}
 	}
 	
