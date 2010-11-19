@@ -2,13 +2,14 @@ Format is tab separated skeinforge craft settings.
 Name                          	Value
 WindowPosition	0+0
 Open File for Craft	
+bottom	False
 carve	False
 chamber	False
 chop	False
 cleave	False
 clip	False
 coil	False
-comb	True
+comb	False
 cool	False
 dimension	False
 drill	False
@@ -29,12 +30,12 @@ multiply	False
 oozebane	False
 outset	False
 preface	False
-raft	True
+raft	False
 speed	False
 splodge	False
 stretch	False
 temperature	False
-tower	False
+tower	True
 unpause	False
 whittle	False
 widen	False

@@ -1,0 +1,2 @@
+M108 S510.0	M102 T3 (set toolhead T on, reverse)	M101 T4 (Extruder on, forward)	G04 P1800 (Wait t/1000 seconds)	M103 T3 (set toolhead T off)	G04 P800 (Wait t/1000 seconds)	M103 T4 (Extruder off)	G55
+M108 S255.0	M102 T4 (set toolhead T on, reverse)	M101 T3 (Extruder on, forward)	G04 P1800 (Wait t/1000 seconds)	M103 T4 (set toolhead T off)	G04 P800 (Wait t/1000 seconds)	M103 T3 (Extruder off)	G54
