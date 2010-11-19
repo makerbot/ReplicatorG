@@ -5,6 +5,6 @@ Open File for Analyze
 comment	False
 interpret	False
 skeiniso	False
-skeinlayer	True
+skeinlayer	False
 statistic	False
 vectorwrite	False

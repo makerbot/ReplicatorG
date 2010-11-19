@@ -88,8 +88,8 @@ public class ToolpathGeneratorFactory {
 							"replicatorg.skeinforge.useSupport", false,
 							"If this option is checked, skeinforge will attempt to support large overhangs by laying down a support "+
 							"structure that you can later remove.");
-				supportPref.addTrueOption(new SkeinforgeOption("raft.csv","Support Material Choice", "Exterior Only"));
-				supportPref.addFalseOption(new SkeinforgeOption("raft.csv","Support Material Choice", "None"));
+				supportPref.addTrueOption(new SkeinforgeOption("raft.csv","Support Material Choice:", "Exterior Only"));
+				supportPref.addFalseOption(new SkeinforgeOption("raft.csv","Support Material Choice:", "None"));
 				prefs.add(supportPref);
 				return prefs;
 			}
