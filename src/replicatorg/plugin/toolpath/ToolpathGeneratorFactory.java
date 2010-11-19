@@ -64,6 +64,13 @@ public class ToolpathGeneratorFactory {
 			}
 			public List<SkeinforgePreference> getPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				SkeinforgeBooleanPreference raftPref = 			
+					new SkeinforgeBooleanPreference("Use raft",
+						"replicatorg.skeinforge.useRaft", true,
+						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
+						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Activate Raft", "true"));
+				prefs.add(raftPref);
 				return prefs;
 			}
 		};
@@ -75,14 +82,15 @@ public class ToolpathGeneratorFactory {
 		    	return Base.getUserFile("sf_35_profiles");
 			}
 			public List<SkeinforgePreference> getPreferences() {
-				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
-				SkeinforgeBooleanPreference raftPref = 			
-					new SkeinforgeBooleanPreference("Use raft",
-						"replicatorg.skeinforge.useRaft", true,
-						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
-						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
-				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Activate Raft", "true"));
-				prefs.add(raftPref);
+				List <SkeinforgePreference> prefs = super.getPreferences();
+				SkeinforgeBooleanPreference supportPref =
+					new SkeinforgeBooleanPreference("Use support material",
+							"replicatorg.skeinforge.useSupport", false,
+							"If this option is checked, skeinforge will attempt to support large overhangs by laying down a support "+
+							"structure that you can later remove.");
+				supportPref.addTrueOption(new SkeinforgeOption("raft.csv","Support Material Choice", "Exterior Only"));
+				supportPref.addFalseOption(new SkeinforgeOption("raft.csv","Support Material Choice", "None"));
+				prefs.add(supportPref);
 				return prefs;
 			}
 		};

@@ -563,8 +563,10 @@ def main():
                   action="store", type="string", dest="startFile")
         parser.add_option("-e", "--end", help="set end file to use",
                   action="store", type="string", dest="endFile")
-	parser.add_option("--raft", action="store_true", dest="useRaft")
-	parser.add_option("--no-raft", action="store_false", dest="useRaft")
+	parser.add_option("-o", "--option", 
+		help='set an individual option in the format "module:preference=value"',
+		action="append", type="string", dest="preferences")
+
         (options, args) = parser.parse_args()
 	defaultStart = 'start.txt'
 	defaultEnd = 'end.txt'
@@ -579,11 +581,11 @@ def main():
 #		preferences.setEndFile(options.endFile)
 #	else:
 #		preferences.setEndFile(defaultEnd)
-	if options.useRaft != None:
-		if options.useRaft:
-			settings.addPreferenceOverride("raft.csv", "Activate Raft", "true")
-		else:
-			settings.addPreferenceOverride("raft.csv", "Activate Raft", "false")
+	if options.preferences:
+		for prefSpec in options.preferences:
+			(moduleName,prefSpec) = prefSpec.split(":",1)
+			(prefName,valueName) = prefSpec.split("=",1)
+			settings.addPreferenceOverride(moduleName,prefName,valueName)
 
 	sys.argv = [sys.argv[0]] + args
 	if len( args ) > 0:
