@@ -1,9 +1,12 @@
 package replicatorg.plugin.toolpath;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 import replicatorg.app.Base;
+import replicatorg.plugin.toolpath.SkeinforgeGenerator.SkeinforgePreference;
 
 public class ToolpathGeneratorFactory {
 	public static class ToolpathGeneratorDescriptor {
@@ -47,6 +50,10 @@ public class ToolpathGeneratorFactory {
 			File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_profiles");
 			}
+			public List<SkeinforgePreference> getPreferences() {
+				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				return prefs;
+			}
 		};
 		class Skeinforge31 extends SkeinforgeGenerator {
 			public File getDefaultSkeinforgeDir() {
@@ -55,21 +62,28 @@ public class ToolpathGeneratorFactory {
 			File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_31_profiles");
 			}
-		};
-		class Skeinforge33 extends SkeinforgeGenerator {
-			public File getDefaultSkeinforgeDir() {
-		    	return Base.getApplicationFile("skein_engines/skeinforge-33/skeinforge_application");
-			}
-			File getUserProfilesDir() {
-		    	return Base.getUserFile("sf_33_profiles");
+			public List<SkeinforgePreference> getPreferences() {
+				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				return prefs;
 			}
 		};
-		class Skeinforge35 extends SkeinforgeGenerator {
+		class Skeinforge35 extends Skeinforge31 {
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-35/skeinforge_application");
 			}
 			File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_35_profiles");
+			}
+			public List<SkeinforgePreference> getPreferences() {
+				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				SkeinforgeBooleanPreference raftPref = 			
+					new SkeinforgeBooleanPreference("Use raft",
+						"replicatorg.skeinforge.useRaft", true,
+						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
+						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Activate Raft", "true"));
+				prefs.add(raftPref);
+				return prefs;
 			}
 		};
 
@@ -78,8 +92,6 @@ public class ToolpathGeneratorFactory {
 				"ReplicatorG since 0016.", Skeinforge6.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (31)", 
 				"This is Skeinforge version 31.", Skeinforge31.class));
-		list.add(new ToolpathGeneratorDescriptor("Skeinforge (33)", 
-				"This is Skeinforge version 33.", Skeinforge33.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (35)", 
 				"This is the latest version of skeinforge.", Skeinforge35.class));
 		
