@@ -110,8 +110,8 @@ M18
 			<axis id="z" length="96" maxfeedrate="150" scale="320"/>
 		</geometry>
 		<tools>
-			<tool index="4" name="Pinch Wheel Extruder v1.1a" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="false" collet="false" heater="true"/>
-			<tool index="3" name="Pinch Wheel Extruder v1.1a" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
+			<tool index="3" name="Build material" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
+			<tool index="4" name="Support material" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="false" collet="false" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
