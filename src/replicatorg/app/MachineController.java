@@ -891,6 +891,11 @@ public class MachineController {
 		machineThread.connect();
 	}
 
+	synchronized public void disconnect() {
+		driver.uninitialize();
+		setState(new MachineState(MachineState.State.NOT_ATTACHED));
+	}
+
 	synchronized public boolean isPaused() {
 		return getMachineState().isPaused();
 	}
