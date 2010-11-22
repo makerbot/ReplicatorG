@@ -530,9 +530,7 @@ public class GCodeParser {
 			// set max extruder speed, RPM
 			case 108:
 				if (hasCode("S"))
-					driver
-							.setMotorSpeedPWM((int) Math
-									.round(getCodeValue("S")));
+					driver.setMotorSpeedPWM((int)Math.round(getCodeValue("S")));
 				else if (hasCode("R"))
 					driver.setMotorRPM(getCodeValue("R"));
 				break;
@@ -766,6 +764,18 @@ public class GCodeParser {
 			// dwell
 			case 4:
 				driver.delay((long) getCodeValue("P"));
+				break;
+			case 10:
+				if (hasCode("P")) {
+					int offsetSystemNum = ((int)getCodeValue("P"));
+					if (offsetSystemNum >= 1 && offsetSystemNum <= 6) {
+						if (hasCode("X")) driver.setOffsetX(offsetSystemNum, getCodeValue("X"));
+						if (hasCode("Y")) driver.setOffsetY(offsetSystemNum, getCodeValue("Y"));
+						if (hasCode("Z")) driver.setOffsetZ(offsetSystemNum, getCodeValue("Z"));
+					}
+				}
+				else 
+					Base.logger.warning("No coordinate system indicated use G10 Pn, where n is 0-6.");
 				break;
 
 			// plane selection codes

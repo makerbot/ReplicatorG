@@ -384,7 +384,7 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Reported slave board version: "
 					+ Integer.toHexString(slaveVersionNum));
 		if (slaveVersionNum == 0)
-			Base.logger.severe("Toolhead "+Integer.toString(toolIndex)+": Not found.\nMake sure the toolhead is connected and the power is on.");
+			Base.logger.severe("Toolhead "+Integer.toString(toolIndex)+": Not found.\nMake sure the toolhead is connected, the power supply is plugged in and turned on, and the power switch on the motherboard is on.");
         else
         {
             Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
@@ -620,7 +620,7 @@ public class Sanguino3GDriver extends SerialDriver
 	 **************************************************************************/
 	public void setMotorRPM(double rpm) throws RetryException {
 		// convert RPM into microseconds and then send.
-		long microseconds = (int) Math.round(60.0 * 1000000.0 / rpm); // no
+		long microseconds = rpm == 0 ? 0 : Math.round(60.0 * 1000000.0 / rpm); // no
 		// unsigned
 		// ints?!?
 		// microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
@@ -647,7 +647,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.SET_MOTOR_1_PWM.getCode());
 		pb.add8((byte) 1); // length of payload.
-		pb.add8((byte) pwm);
+		pb.add8((byte) ((pwm > 255) ? 255 : pwm));
 		runCommand(pb.getPacket());
 
 		super.setMotorSpeedPWM(pwm);
