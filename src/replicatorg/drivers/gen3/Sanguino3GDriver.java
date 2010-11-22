@@ -492,9 +492,8 @@ public class Sanguino3GDriver extends SerialDriver
 	 * 
 	 * //send this segment queueIncrementalPoint(pb, segmentSteps, ticks); } }
 	 */
-// FIXME: 5D port. kintel 20101122
-	private void queueAbsolutePoint(Point5d steps, long micros) throws RetryException {
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_EXT.getCode());
+	protected void queueAbsolutePoint(Point5d steps, long micros) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_ABS.getCode());
 
 		if (Base.logger.isLoggable(Level.FINE)) {
 			Base.logger.log(Level.FINE,"Queued absolute point " + steps + " at "
@@ -505,26 +504,21 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add32((int) steps.x());
 		pb.add32((int) steps.y());
 		pb.add32((int) steps.z());
-		pb.add32((int) steps.a());
-		pb.add32((int) steps.b());
 		pb.add32((int) micros);
 
 		runCommand(pb.getPacket());
 	}
 
-	// FIXME: Need to distinguish between 3D anv 5D capable machines. kintel 20101122.
 	public void setCurrentPosition(Point5d p) throws RetryException {
 //		System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 //		if (super.getCurrentPosition().equals(p)) return;
 //		System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_POSITION_EXT.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_POSITION.getCode());
 
 		Point5d steps = machine.mmToSteps(p);
 		pb.add32((long) steps.x());
 		pb.add32((long) steps.y());
 		pb.add32((long) steps.z());
-		pb.add32((long) steps.a());
-		pb.add32((long) steps.b());
 
 		Base.logger.log(Level.FINE,"Set current position to " + p + " (" + steps
 					+ ")");
@@ -1191,14 +1185,13 @@ public class Sanguino3GDriver extends SerialDriver
 		invalidatePosition();
 	}
 
-	// FIXME: 3D vs. 5D. kintel 20101122
 	protected Point5d reconcilePosition() {
 		if (fileCaptureOstream != null) {
 			return new Point5d();
 		}
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION_EXT.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
-		Point5d steps = new Point5d(pr.get32(), pr.get32(), pr.get32(), pr.get32(), pr.get32());
+		Point5d steps = new Point5d(pr.get32(), pr.get32(), pr.get32(), 0, 0);
 		// Useful quickie debugs
 //		System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
 		return machine.stepsToMM(steps);

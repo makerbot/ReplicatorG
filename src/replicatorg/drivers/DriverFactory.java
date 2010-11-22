@@ -87,11 +87,13 @@ public class DriverFactory {
 	public static Driver factory(String driverName, Node xml) {
 		if (driverName.equals("serialpassthrough"))
 			return loadClass("replicatorg.drivers.SerialPassthroughDriver", xml);
-		if (driverName.equals("sanguino3g"))
+		else if (driverName.equals("sanguino3g"))
 			return loadClass("replicatorg.drivers.gen3.Sanguino3GDriver", xml);
-		if (driverName.equals("reprap5d"))
+		else if (driverName.equals("makerbot4g"))
+			return loadClass("replicatorg.drivers.gen3.Makerbot4GDriver", xml);
+		else if (driverName.equals("reprap5d"))
 			return loadClass("replicatorg.drivers.reprap.RepRap5DDriver", xml);
-		if (driverName.equals("null"))
+		else if (driverName.equals("null"))
 			return loadClass("replicatorg.drivers.NullDriver", xml);
 		else {
 			// Load driver class 
