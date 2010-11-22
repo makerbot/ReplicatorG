@@ -27,7 +27,7 @@
 
 package replicatorg.app.ui;
 
-import javax.vecmath.Point3d;
+import replicatorg.util.Point5d;
 
 public class SimulationWindow3D extends SimulationWindow {
 	private static final long serialVersionUID = -2480132778144204969L;
@@ -36,7 +36,7 @@ public class SimulationWindow3D extends SimulationWindow {
 		super();
 	}
 
-	public void queuePoint(Point3d p) {
+	public void queuePoint(Point5d p) {
 
 	}
 }

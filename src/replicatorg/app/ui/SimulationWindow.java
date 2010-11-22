@@ -32,7 +32,8 @@ import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JFrame;
-import javax.vecmath.Point3d;
+
+import replicatorg.util.Point5d;
 
 public abstract class SimulationWindow extends JFrame {
 	protected Rectangle2D.Double simulationBounds;
@@ -67,5 +68,5 @@ public abstract class SimulationWindow extends JFrame {
 		this.simulationBounds = bounds;
 	}
 	
-	public abstract void queuePoint(Point3d p);
+	public abstract void queuePoint(Point5d p);
 }
