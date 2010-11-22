@@ -1602,6 +1602,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
                     }
                 });
 			}
+			else if (evt.getState().getState() == MachineState.State.NOT_ATTACHED) {
+				building = false; // Don't keep the building state when disconnecting from the machine
+			}
 		}
 		if (evt.getState().isReady()) {
 			reloadSerialMenu();
