@@ -330,7 +330,9 @@ public class MachineController {
 		
 		// Enter the reset state
 		public void reset() {
-			setState(new MachineState(MachineState.State.RESET));
+			if (state.isConnected()) {
+				setState(new MachineState(MachineState.State.RESET));
+			}
 		}
 		
 		// Begin connecting to the machine

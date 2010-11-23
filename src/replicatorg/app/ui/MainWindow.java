@@ -567,8 +567,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (us.getSerial() != null) {
 			currentName = us.getSerial().getName();
 		}
+		else {
+			currentName = Base.preferences.get("serial.last_selected", null);
+		}
 		Vector<Serial.Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
+		ButtonGroup radiogroup = new ButtonGroup();
 		for (Serial.Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.toString());
 			item.setEnabled(name.isAvailable());
@@ -594,6 +598,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					t.start();
 				}
 			});
+			radiogroup.add(item);
 			serialMenu.add(item);
 		}
 		if (names.isEmpty()) {
@@ -886,7 +891,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			// load it and set it.
 			Thread t = new Thread() {
 				public void run() {
-					loadMachine(name, true);
+					loadMachine(name, machine.getMachineState().isConnected());
 				}
 			};
 			t.start();
