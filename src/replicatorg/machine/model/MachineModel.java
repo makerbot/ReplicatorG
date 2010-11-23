@@ -118,14 +118,16 @@ public class MachineModel
 					//initialize values
 				 	double length = 0.0;
 				 	double maxFeedrate = 0.0;
-				 	double scale = 1.0;
+				 	double stepspermm = 1.0;
 				 	Endstops endstops = Endstops.none;
 					
 					//if values are missing, ignore them.
 					try {
 					 	length = Double.parseDouble(XML.getAttributeValue(axis, "length"));
 					 	maxFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "maxfeedrate"));
-					 	scale = Double.parseDouble(XML.getAttributeValue(axis, "scale"));
+					 	String spmm = XML.getAttributeValue(axis, "stepspermm");
+					 	if (spmm == null) spmm = XML.getAttributeValue(axis, "scale"); // Backwards compatibility
+					 	stepspermm = Double.parseDouble(spmm);
 					 	endstops = Endstops.valueOf(XML.getAttributeValue(axis, "endstops"));
 					} catch (Exception e) {}
 					
@@ -134,35 +136,35 @@ public class MachineModel
 					{
 						maximum.setX(length);
 						maximumFeedrates.setX(maxFeedrate);
-						stepsPerMM.setX(scale);
+						stepsPerMM.setX(stepspermm);
 						this.endstops.put(Axis.X, endstops);
 					}
 					else if (id.toLowerCase().equals("y"))
 					{
 						maximum.setY(length);
 						maximumFeedrates.setY(maxFeedrate);
-						stepsPerMM.setY(scale);
+						stepsPerMM.setY(stepspermm);
 						this.endstops.put(Axis.Y, endstops);
 					}
 					else if (id.toLowerCase().equals("z"))
 					{
 						maximum.setZ(length);
 						maximumFeedrates.setZ(maxFeedrate);
-						stepsPerMM.setZ(scale);
+						stepsPerMM.setZ(stepspermm);
 						this.endstops.put(Axis.Z, endstops);
 					}
 					else if (id.toLowerCase().equals("a"))
 					{
 						maximum.setA(length);
 						maximumFeedrates.setA(maxFeedrate);
-						stepsPerMM.setA(scale);
+						stepsPerMM.setA(stepspermm);
 						this.endstops.put(Axis.A, endstops);
 					}
 					else if (id.toLowerCase().equals("b"))
 					{
 						maximum.setB(length);
 						maximumFeedrates.setB(maxFeedrate);
-						stepsPerMM.setB(scale);
+						stepsPerMM.setB(stepspermm);
 						this.endstops.put(Axis.B, endstops);
 					}
 
