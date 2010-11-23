@@ -697,6 +697,7 @@ public class GCodeParser {
 		double zVal = convertToMM(getCodeValue("Z"), units); // / Z units
 		double aVal = convertToMM(getCodeValue("A"), units); // / A units
 		double bVal = convertToMM(getCodeValue("B"), units); // / B units
+		// Note: The E axis is treated internally as the A axis
 		double eVal = convertToMM(getCodeValue("E"), units); // / E units
 
 		// adjust for our offsets
@@ -714,11 +715,10 @@ public class GCodeParser {
 				temp.setZ(zVal);
 			if (hasCode("A"))
 				temp.setA(aVal);
+			if (hasCode("E"))
+				temp.setA(eVal);
 			if (hasCode("B"))
 				temp.setB(bVal);
-// FIXME: How do we handle RepRap-style 5D gcode? kintel 20101122
-//			if (hasCode("E"))
-//				temp.setA(eVal);
 		}
 		// relative specifies a delta
 		else {
@@ -730,11 +730,10 @@ public class GCodeParser {
 				temp.setZ(temp.z() + zVal);
 			if (hasCode("A"))
 				temp.setA(temp.a() + aVal);
+			if (hasCode("E"))
+				temp.setA(temp.a() + eVal);
 			if (hasCode("B"))
 				temp.setB(temp.b() + bVal);
-// FIXME: How do we handle RepRap-style 5D gcode? kintel 20101122
-//			if (hasCode("E"))
-//				temp.setZ(temp.a() + eVal);
 		}
 
 		// Get feedrate if supplied
@@ -1014,9 +1013,11 @@ public class GCodeParser {
 					current.setZ(zVal);
 				if (hasCode("A"))
 					current.setA(aVal);
+				// Note: The E axis is treated internally as the A axis
+				if (hasCode("E"))
+					current.setA(eVal);
 				if (hasCode("B"))
 					current.setB(bVal);
-//FIXME: Support E parameter. kintel 20101122
 				
 				driver.setCurrentPosition(current);
 //				this.current = current;
