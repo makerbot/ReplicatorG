@@ -162,6 +162,7 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 
 		// our display box
 		xyFeedrateValue = new JTextField();
+		xyFeedrateValue.setMinimumSize(new Dimension(75, 25));
 		xyFeedrateValue.setEnabled(true);
 		xyFeedrateValue.setName("xy-feedrate-value");
 		xyFeedrateValue.setText(Integer.toString(xyFeedrateSlider.getValue()));
@@ -183,6 +184,7 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 
 		// our display box
 		zFeedrateValue = new JTextField();
+		zFeedrateValue.setMinimumSize(new Dimension(75, 25));
 		zFeedrateValue.setEnabled(true);
 		zFeedrateValue.setName("z-feedrate-value");
 		zFeedrateValue.setText(Integer.toString(zFeedrateSlider.getValue()));
@@ -192,10 +194,10 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 
 		feedratePanel.add(new JLabel("XY Feedrate (mm/min.)"));
 		feedratePanel.add(xyFeedrateSlider,"growx");
-		feedratePanel.add(xyFeedrateValue,"wrap");
+		feedratePanel.add(xyFeedrateValue,"growx,wrap");
 		feedratePanel.add(new JLabel("Z Feedrate (mm/min.)"));
 		feedratePanel.add(zFeedrateSlider,"growx");
-		feedratePanel.add(zFeedrateValue,"wrap");
+		feedratePanel.add(zFeedrateValue,"growx,wrap");
 
 		// add it all to our jog panel
 		add(xyzPanel);
