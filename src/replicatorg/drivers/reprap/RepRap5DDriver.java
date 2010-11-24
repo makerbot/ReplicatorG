@@ -43,7 +43,7 @@ import org.w3c.dom.Node;
 import replicatorg.app.Base;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
-import replicatorg.drivers.reprap.ExtrusionThread.Direction;
+import replicatorg.drivers.reprap.FiveDExtrusionUpdater.Direction;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
@@ -58,7 +58,7 @@ public class RepRap5DDriver extends SerialDriver {
 	 */
 	private boolean fiveD = true;
 	
-	private final ExtrusionThread extrusionThread = new ExtrusionThread(this);
+	private final FiveDExtrusionUpdater extrusionUpdater = new FiveDExtrusionUpdater(this);
 
 	/**
 	 * To keep track of outstanding commands
@@ -106,6 +106,12 @@ public class RepRap5DDriver extends SerialDriver {
 	public void loadXML(Node xml) {
 		super.loadXML(xml);
 	}
+
+	public void updateManualControl() throws InterruptedException
+	{
+		extrusionUpdater.update();
+	}
+
 
 	public void initialize() {
 		// declare our serial guy.
@@ -527,7 +533,7 @@ public class RepRap5DDriver extends SerialDriver {
 		}
 		else
 		{
-			extrusionThread.setFeedrate(rpm);
+			extrusionUpdater.setFeedrate(rpm);
 		}
 		
 		super.setMotorRPM(rpm);
@@ -556,9 +562,9 @@ public class RepRap5DDriver extends SerialDriver {
 		}
 		else
 		{
-			extrusionThread.setDirection( machine.currentTool().getMotorDirection()==1?
+			extrusionUpdater.setDirection( machine.currentTool().getMotorDirection()==1?
 					Direction.forward : Direction.reverse );
-			extrusionThread.startExtruding();
+			extrusionUpdater.startExtruding();
 		}
 
 		super.enableMotor();
@@ -571,7 +577,7 @@ public class RepRap5DDriver extends SerialDriver {
 		}
 		else
 		{
-			extrusionThread.stopExtruding();
+			extrusionUpdater.stopExtruding();
 		}
 
 		super.disableMotor();

@@ -93,6 +93,11 @@ public class DriverBaseImplementation implements Driver {
 
 	public void loadXML(Node xml) {
 	}
+	
+	public void updateManualControl() throws InterruptedException
+	{
+		
+	}
 
 	public void dispose() {
 		// System.out.println("Disposing of driver.");

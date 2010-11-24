@@ -402,20 +402,31 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		return null;
 	}
 
-	synchronized public void updateStatus() { // FIXME sync
+	public void updateStatus() {
+		
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
 		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeater()) {
 			double temperature = machine.getDriver().getTemperature();
-			currentTempField.setText(Double.toString(temperature));
-			measuredDataset.add(second, temperature,"a");
-			targetDataset.add(second, targetTemperature,"a");
+			updateTemperature(second, temperature);
 		}
 		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeatedPlatform()) {
 			double temperature = machine.getDriver().getPlatformTemperature();
-			platformCurrentTempField.setText(Double.toString(temperature));
-			measuredPlatformDataset.add(second, temperature,"a");
-			targetPlatformDataset.add(second, targetPlatformTemperature,"a");
+			updatePlatformTemperature(second, temperature);
 		}
+	}
+	
+	synchronized public void updateTemperature(Second second, double temperature)
+	{
+		currentTempField.setText(Double.toString(temperature));
+		measuredDataset.add(second, temperature,"a");
+		targetDataset.add(second, targetTemperature,"a");
+	}
+
+	synchronized public void updatePlatformTemperature(Second second, double temperature)
+	{
+		platformCurrentTempField.setText(Double.toString(temperature));
+		measuredPlatformDataset.add(second, temperature,"a");
+		targetPlatformDataset.add(second, targetPlatformTemperature,"a");
 	}
 
 	public void focusGained(FocusEvent e) {

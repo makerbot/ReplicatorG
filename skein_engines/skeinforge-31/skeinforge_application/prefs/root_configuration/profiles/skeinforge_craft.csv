@@ -30,8 +30,8 @@ oozebane	False
 outset	False
 preface	False
 raft	False
-speed	False
-splodge	True
+speed	True
+splodge	False
 stretch	False
 temperature	False
 tower	False

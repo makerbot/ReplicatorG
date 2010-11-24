@@ -339,6 +339,7 @@ public class ControlPanelWindow extends JFrame implements
 			try {
 				while (true) {
 					try {
+						window.driver.updateManualControl();
 						window.updateStatus();
 					} catch (AssertionError ae) {
 						// probaby disconnected unexpectedly; close window.

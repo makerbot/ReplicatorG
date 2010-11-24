@@ -11,17 +11,20 @@ import java.util.concurrent.locks.ReentrantLock;
  * extruder control will work with the RepRap 5D firmware.
  * @author rob
  */
-public class ExtrusionThread extends Thread {
+public class FiveDExtrusionUpdater {
 	
 	private final RepRap5DDriver driver;
-	/** The notifier is used to tell us when the extruder should start extruding */
-	private final Object notifier = new Object();
-	/** true if the RepRap should be extruding */
-	private final AtomicBoolean isExtruding = new AtomicBoolean(false);
+	public final AtomicBoolean isExtruding = new AtomicBoolean(false);
 	private ReentrantLock feedrateLock = new ReentrantLock();
 	private double feedrate = 0;
 	private ReentrantLock directionLock = new ReentrantLock();
 	private Direction direction = Direction.forward;
+
+	/** the time length of each extrusion command */
+	private long commandPeriod = 500; //ms
+	/** queue this many commands at a time. Larger = smoother extrusion, 
+	 * smaller = more responsive manual extrusion. */
+	private int maxQueuedExtrudeCommands = 2;
 	
 	public enum Direction
 	{
@@ -29,11 +32,9 @@ public class ExtrusionThread extends Thread {
 		reverse;
 	}
 
-	public ExtrusionThread(RepRap5DDriver driver)
+	public FiveDExtrusionUpdater(RepRap5DDriver driver)
 	{
-		super("RepRap Extrusion Thread");
 		this.driver = driver;
-		this.start();
 	}
 	
 	
@@ -71,40 +72,27 @@ public class ExtrusionThread extends Thread {
 		directionLock.unlock();
 	}
 
-	@Override
-	public void run() {
-		synchronized(notifier)
+	public void update() throws InterruptedException {
+		int queueSize;
+
+		/* creating a series of 5D extrude commands to
+		 * keep the command queue full. */
+		if(isExtruding.get() == true)
 		{
-			/** the time length of each extrusion command */
-			//long commandPeriod = 500; //ms
+			do {
+				synchronized (driver.commands) {
+					queueSize = driver.commands.size();
+				}
+				if (queueSize > maxQueuedExtrudeCommands) Thread.sleep(100);
+			} while (queueSize > maxQueuedExtrudeCommands);
+				
+			// Send extrude command
+			/** mm/s */
+			double feedrate = this.getFeedrate();
 			/** the length of filament to extrude on each command */
-			double distance = 100; //mm (not really)
-			int queueSize = 0;
-			
-			/* Outer loop to wait for extrude commands */
-			while (true)
-			{
-				try {
-					notifier.wait();
-				} catch (InterruptedException e1) {
-					//This is actually what we want to happen!
-				}
-				/* creating a series of 5D extrude commands to
-				 * keep the command queue full. */
-				while(isExtruding.get() == true)
-				{
-					synchronized (driver.commands) {
-						queueSize = driver.commands.size();
-					}
-					if (queueSize < 6)
-					{
-						// Send extrude command
-						double feedrate = this.getFeedrate();
-						synchronized (driver) {
-							sendExtrudeCommand(distance, feedrate);
-						}
-					}
-				}
+			double distance = (feedrate*commandPeriod)/1000; //mm
+			synchronized (driver) {
+				sendExtrudeCommand(distance, feedrate);
 			}
 		}
 	}
@@ -114,11 +102,7 @@ public class ExtrusionThread extends Thread {
 	 * resumes the extruder thread (start extruding)
 	 */
 	public void startExtruding() {
-		synchronized(notifier)
-		{
-			this.isExtruding.set(true);
-			this.notifier.notifyAll();
-		}
+		this.isExtruding.set(true);
 	}
 	
 	/**
