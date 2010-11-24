@@ -208,8 +208,6 @@ M18
 		</cooldown>
 	</machine>
 	<machine experimental="1">
-<<<<<<< Updated upstream
-=======
 		<name>EXPERIMENTAL - Thingomatic - 5 axes</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
@@ -235,7 +233,6 @@ M18
 		</cooldown>
 	</machine>
 	<machine experimental="1">
->>>>>>> Stashed changes
 		<name>EXPERIMENTAL - Thingomatic - Candy</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
