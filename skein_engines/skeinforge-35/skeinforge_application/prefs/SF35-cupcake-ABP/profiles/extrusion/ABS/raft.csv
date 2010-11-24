@@ -21,14 +21,14 @@ Interface Nozzle Lift over Interface Layer Thickness (ratio):	0.3
 Object First Layer Feed Rate Infill Multiplier (ratio):	1.0
 Object First Layer Feed Rate Perimeter Multiplier (ratio):	1.0
 Object First Layer Flow Rate Multiplier (ratio):	1.0
-Operating Nozzle Lift over Layer Thickness (ratio):	1.5
+Operating Nozzle Lift over Layer Thickness (ratio):	1.0
 Raft Additional Margin over Length (%):	1.0
 Raft Margin (mm):	3.0
 Support Cross Hatch	False
-Support Flow Rate over Operating Flow Rate (ratio):	2.0
+Support Flow Rate over Operating Flow Rate (ratio):	1.0
 Support Gap over Perimeter Extrusion Width (ratio):	2.0
-None	False
+None	True
 Empty Layers Only	False
 Everywhere	False
-Exterior Only	True
+Exterior Only	False
 Support Minimum Angle (degrees):	46.0
