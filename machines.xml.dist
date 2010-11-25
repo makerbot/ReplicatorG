@@ -198,7 +198,7 @@ M18
 		<clamps></clamps>
 		<driver name="sanguino3g">
 			<!-- optional: <portname>COM1</portname> -->
-			<rate>115200</rate>
+			<rate>38400</rate>
 		</driver>
 		<warmup>
 		</warmup>
@@ -223,7 +223,7 @@ M18
 		<clamps></clamps>
 		<driver name="sanguino3g">
 			<!-- optional: <portname>COM1</portname> -->
-			<rate>115200</rate>
+			<rate>38400</rate>
 		</driver>
 		<warmup>
 		</warmup>
@@ -246,7 +246,7 @@ M18
 		<clamps></clamps>
 		<driver name="sanguino3g">
 			<!-- optional: <portname>COM1</portname> -->
-			<rate>115200</rate>
+			<rate>38400</rate>
 		</driver>
 		<warmup>
 		</warmup>
@@ -269,7 +269,7 @@ M18
 		<clamps></clamps>
 		<driver name="sanguino3g">
 			<!-- optional: <portname>COM1</portname> -->
-			<rate>115200</rate>
+			<rate>38400</rate>
 		</driver>
 		<warmup>
 		</warmup>
