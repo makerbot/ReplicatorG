@@ -567,8 +567,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (us.getSerial() != null) {
 			currentName = us.getSerial().getName();
 		}
+		else {
+			currentName = Base.preferences.get("serial.last_selected", null);
+		}
 		Vector<Serial.Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
+		ButtonGroup radiogroup = new ButtonGroup();
 		for (Serial.Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.toString());
 			item.setEnabled(name.isAvailable());
@@ -594,6 +598,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					t.start();
 				}
 			});
+			radiogroup.add(item);
 			serialMenu.add(item);
 		}
 		if (names.isEmpty()) {
@@ -886,7 +891,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			// load it and set it.
 			Thread t = new Thread() {
 				public void run() {
-					loadMachine(name);
+					loadMachine(name, machine.getMachineState().isConnected());
 				}
 			};
 			t.start();
@@ -1240,8 +1245,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (machine == null) {
 			// machine already disconnected
 		} else {
-			machine.dispose();
-			machine = null;
+			machine.disconnect();
 		}
 	}
 	
@@ -1251,7 +1255,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} else {
 			String name = Base.preferences.get("machine.name", null);
 			if ( name != null ) {
-				loadMachine(name);
+				loadMachine(name, true);
 			}
 		}
 	}
@@ -1602,6 +1606,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
                         buildingOver();
                     }
                 });
+			}
+			else if (evt.getState().getState() == MachineState.State.NOT_ATTACHED) {
+				building = false; // Don't keep the building state when disconnecting from the machine
 			}
 		}
 		if (evt.getState().isReady()) {
@@ -2390,7 +2397,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		return this.machine;
 	}
 
-	public void loadMachine(String name) {
+	/**
+	 * 
+	 * @param name       name of the machine
+	 * @param connect	 auto-connect on load. Usually true, but can be set to false to avoid talking on the serial port
+	 */
+	public void loadMachine(String name, Boolean connect) {
 		setMachine(Base.loadMachine(name));
 		reloadSerialMenu();
 		
@@ -2405,6 +2417,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			updateBuild();
 		}
 		
+		if (!connect) return;
+
 		if (machine.driver instanceof UsesSerial) {
 			UsesSerial us = (UsesSerial)machine.driver;
 			if (Base.preferences.getBoolean("serial.use_machines",true) &&

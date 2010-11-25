@@ -1,0 +1,96 @@
+<?xml version='1.0' ?>
+<fabmetheus id='fab' eight='8' seven='7' sill='=2+1' tra='3' gaga='7' version='2010-04-06'>
+	<!--
+		Arithmetic
+		-->
+	<dictionary test='=document.getElementByID($fab)[$eight]' />
+	<dictionary additionfloat='=2.0+3.0' additionint='=2+3' />
+	<dictionary divisionfloat='=2.0/3.0' divisionint='=2/3' />
+	<dictionary minus='=-3' />
+	<dictionary moduloNineFive='=9%5' />
+	<dictionary id='s ix' multiplicationTwoThree='=2*3' />
+	<dictionary powerfloat='=2.0**3.0' powerint='=2**3' />
+	<dictionary subtractionfloat='=2.0-3.0' subtractionint='=2-3' />
+	<!--
+		Boolean
+		-->
+	<dictionary andfalsefalse='=false and false' andfalsetrue='=false and true' andtruetrue='=true and true' />
+	<dictionary orfalsefalse='=false or false' orfalsetrue='=false or true' ortruetrue='=true or true' />
+	<dictionary notfalse='=not false' nottrue='=not true' />
+	<!--
+		Comparison
+	-->
+	<dictionary equalTo1and0='=1==0' equalTo1and1='=1==1' equalTo1and2='=1==2' />
+	<dictionary greaterThan1and0='=1>0' greaterThan1and1='=1>1' greaterThan1and2='=1>2' />
+	<dictionary greaterThanOrEqualTo1and0='=1>=0' greaterThanOrEqualTo1and1='=1>=1' greaterThanOrEqualTo1and2='=1>=2' />
+	<dictionary lessThan1and0='=1<0' lessThan1and1='=1<1' lessThan1and2='=1<2' />
+	<dictionary lessThanOrEqualTo1and0='=1<=0' lessThanOrEqualTo1and1='=1<=1' lessThanOrEqualTo1and2='=1<=2' />
+	<dictionary notEqualTo1and0='=1!=0' notEqualTo1and1='=1!=1' notEqualTo1and2='=1!=2' />
+	<!--
+		Value
+		-->
+	<dictionary name='five' number='5' />
+	<dictionary a='=4+' />
+	<dictionary id='kapow' kapow='=4**-2' />
+	<dictionary bracket='=2*(3+1)' compoundbracket='=2*(8/(1+1))' withoutbracket='=2*3+1' />
+	<dictionary name='name number' power='=3' />
+	<dictionary polygonFivePointTwo='=creation.getPolygon(5.2)' />
+	<dictionary polygonFive='=creation.getPolygon()*5' />
+	<function id="triple" parameters='number' >
+		<statement number='=number*3' />
+		<statement count='=1' />
+		<for index='integer' in='{1:"one",2:"two",3:"three"}' value='numericWord'>
+		</for>
+		<comment_for index='integer' in='abc' value='letter'>
+			<comment_print _localdictionary='' />
+		</comment_for>
+		<if condition='0'>
+		</if>
+		<elif condition='0'>
+		</elif>
+		<else>
+		</else>
+		<statement count='=5' />
+		<while condition='count<8'>
+			<statement count='=count+1' />
+		</while>
+		<return return='=number' />
+	</function>
+	<dictionary triple4='=triple(4)' />
+	<dictionary a='[1,2]+[2,3]' />
+	<dictionary idkapow='=id.kapow' />
+	<dictionary d='=-{1:2}' />
+	<dictionary five='=4+1' element='=document.getSelfElement()[$five]*2' />
+	<dictionary order='=-2+1+document.getParentElement()[$tra]*document.getRootElement()[$sill]' />
+	<path id='zeropath' y='1' >
+		<vertex x='4' y='6' />
+		<vertex x='4' y='5' />
+		<dictionary parentParent='=document.getSelf().parent.parent[eight]' />
+		<dictionary a='=4+' />
+		<dictionary a='=4**' />
+		<dictionary z='=[]' />
+		<dictionary listfive='=[5]' />
+		<dictionary zog='=["zog"]' />
+		<dictionary v='=document.getParentElement().getPaths()' />
+		<dictionary vZero='=document.getParentElement().getPaths()[0][0]' />
+		<dictionary t='=document.getParentElement().parent[$tra]' />
+		<dictionary parentvertex='=document.getParentElement().getVertexes()' />
+		<dictionary mathpowvertex='=math.pow(document.getParentElement().getPaths()[0][0].x, document.getParentElement().getPaths()[0][0].y)' />
+		<dictionary arrayMinusTuple='[1,2,7]-(2,3,5)' />
+		<dictionary twoTimesList='=2*[1,2,7]' />
+		<dictionary m='=-[1,2,7]' />
+		<dictionary m='[[1,2],[7,6]]' />
+		<dictionary minusNestedList='=-[[1,2],[7,6]]' />
+		<dictionary threeTimesNestedList='=3*[[1,2],[7,6]]' />
+		<dictionary m25='[2,4]*[[1,2],[7,6]]' />
+		<dictionary m='[[2,4],[3,5]]*[[1,2],[7,6]]' />
+		<dictionary a='[1,,2]' />
+		<dictionary d='=-{1:2,3:[4,5]}*2' />
+		<dictionary d='=4**{1:2,2:3}' />
+		<dictionary m='{"f":5}' />
+		<dictionary twoPlusMultipliedDictionaries='=2+{3:5,6:4}*{6:2,3:3}' />
+		<dictionaryc m='{"f":5}*{"v":[2,2],"f":[4,5]}' />
+	</path>
+	<polygon sides='1' five='5' radius='=document.getSelfElement()[$five]*2' />
+	<polygon sides='pside' radius='wow' />
+</fabmetheus>

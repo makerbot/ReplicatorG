@@ -347,14 +347,26 @@ public class Sanguino3GDriver extends SerialDriver
 		if (pr.isEmpty()) return null;
 		int versionNum = pr.get16();
 
+		pb = new PacketBuilder(MotherboardCommandCode.GET_BUILD_NAME.getCode());
+		pb.add16(Base.VERSION);
+
+		String buildname = "";
+		pr = runQuery(pb.getPacket(),1);
+		if (!pr.isEmpty()) {
+			byte[] payload = pr.getPayload();
+			byte[] subarray = new byte[payload.length-1];
+			System.arraycopy(payload, 1, subarray, 0, subarray.length);
+			buildname = " (" + new String(subarray) + ")";
+		}
+		
 		Base.logger.log(Level.FINE,"Reported version: "
-					+ Integer.toHexString(versionNum));
+					+ versionNum + " " + buildname);
 		if (versionNum == 0) {
 			Base.logger.severe("Null version reported!");
 			return null;
 		}
 		Version v = new Version(versionNum / 100, versionNum % 100);
-		Base.logger.warning("Motherboard firmware v"+v);
+		Base.logger.warning("Motherboard firmware v" + v + buildname);
 
 		final String MB_NAME = "RepRap Motherboard v1.X"; 
 		FirmwareUploader.checkLatestVersion(MB_NAME, v);
@@ -381,15 +393,30 @@ public class Sanguino3GDriver extends SerialDriver
 		if (!slavepr.isEmpty()) {
 			slaveVersionNum = slavepr.get16();
 		}
+
+		slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+		slavepb.add8((byte)toolIndex);
+		slavepb.add8(ToolCommandCode.GET_BUILD_NAME.getCode());
+		slavepr = runQuery(slavepb.getPacket(),-2);
+
+		String buildname = "";
+		slavepr = runQuery(slavepb.getPacket(),1);
+		if (!slavepr.isEmpty()) {
+			byte[] payload = slavepr.getPayload();
+			byte[] subarray = new byte[payload.length-1];
+			System.arraycopy(payload, 1, subarray, 0, subarray.length);
+			buildname = " (" + new String(subarray) + ")";
+		}
+		
 		Base.logger.log(Level.FINE,"Reported slave board version: "
-					+ Integer.toHexString(slaveVersionNum));
+					+ slaveVersionNum + " " + buildname);
 		if (slaveVersionNum == 0)
 			Base.logger.severe("Toolhead "+Integer.toString(toolIndex)+": Not found.\nMake sure the toolhead is connected, the power supply is plugged in and turned on, and the power switch on the motherboard is on.");
         else
         {
             Version sv = new Version(slaveVersionNum / 100, slaveVersionNum % 100);
             toolVersion = sv;
-            Base.logger.warning("Toolhead "+Integer.toString(toolIndex)+": Extruder controller firmware v"+sv);
+            Base.logger.warning("Toolhead "+Integer.toString(toolIndex)+": Extruder controller firmware v" + sv + buildname);
 
             final String EC_NAME = "Extruder Controller v2.2"; 
     		FirmwareUploader.checkLatestVersion(EC_NAME, sv);
@@ -573,7 +600,7 @@ public class Sanguino3GDriver extends SerialDriver
 		// already automagically enabled by most commands and need
 		// not be explicitly enabled.
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
-		pb.add8(0x87); // enable x,y,z
+		pb.add8(0x9f); // enable all 5 axes
 		runCommand(pb.getPacket());
 		super.enableDrives();
 	}
@@ -581,7 +608,7 @@ public class Sanguino3GDriver extends SerialDriver
 	public void disableDrives() throws RetryException {
 		// Command RMB to disable its steppers.
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
-		pb.add8(0x07); // disable x,y,z
+		pb.add8(0x1f); // disable all 5 axes
 		runCommand(pb.getPacket());
 		super.disableDrives();
 	}
@@ -591,17 +618,36 @@ public class Sanguino3GDriver extends SerialDriver
 		super.changeGearRatio(ratioIndex);
 	}
 
-	public void requestToolChange(int toolIndex) throws RetryException {
+	/**
+	 * Will wait for first the tool, then the build platform, it exists and supported.
+	 * Technically the platform is connected to a tool (extruder controller) 
+	 * but this information is currently not used by the firmware.
+	 * 
+	 * timeout is given in seconds. If the tool isn't ready by then, the machine will continue anyway.
+	 */
+	public void requestToolChange(int toolIndex, int timeout) throws RetryException {
 		selectTool(toolIndex);
 
 		Base.logger.log(Level.FINE,"Waiting for tool #" + toolIndex);
 
 		// send it!
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
-		pb.add8((byte) toolIndex);
-		pb.add16(100); // delay between master -> slave pings (millis)
-		pb.add16(120); // timeout before continuing (seconds)
-		runCommand(pb.getPacket());
+		if (this.machine.currentTool().getTargetTemperature() > 0.0) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
+			pb.add8((byte) toolIndex);
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(timeout); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
+		
+		if (this.machine.getTool(toolIndex).hasHeatedPlatform() && 
+			this.machine.currentTool().getPlatformTargetTemperature() > 0.0 &&
+			getVersion().atLeast(new Version(2,4)) && toolVersion.atLeast(new Version(2,6))) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
+			pb.add8((byte) toolIndex);
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(timeout); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
 	}
 
 	public void selectTool(int toolIndex) throws RetryException {
@@ -1708,6 +1754,10 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public boolean toolsCanBeReindexed() {
+		return true;
+	}
+
+	public boolean supportsSimultaneousTools() {
 		return true;
 	}
 }

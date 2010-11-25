@@ -27,4 +27,12 @@ public interface MultiTool {
 	 * @return whether the tool's index was successfully set.
 	 */
 	public boolean setConnectedToolIndex(int index);
+	
+	/**
+	 * If a machine supports multiple simultaneous toolheads, this function should return true.
+	 * Such machines can have commands dispatched to a given toolhead simply by appending a "T"
+	 * code to any M command.  It is expected that the last T code will be interpreted as the default
+	 * tool from that point onwards.
+	 */
+	public boolean supportsSimultaneousTools();
 }

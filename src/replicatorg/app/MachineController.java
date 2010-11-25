@@ -330,7 +330,9 @@ public class MachineController {
 		
 		// Enter the reset state
 		public void reset() {
-			setState(new MachineState(MachineState.State.RESET));
+			if (state.isConnected()) {
+				setState(new MachineState(MachineState.State.RESET));
+			}
 		}
 		
 		// Begin connecting to the machine
@@ -889,6 +891,11 @@ public class MachineController {
 
 	synchronized public void connect() {
 		machineThread.connect();
+	}
+
+	synchronized public void disconnect() {
+		driver.uninitialize();
+		setState(new MachineState(MachineState.State.NOT_ATTACHED));
 	}
 
 	synchronized public boolean isPaused() {

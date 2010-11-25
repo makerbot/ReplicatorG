@@ -1,0 +1,5 @@
+<?xml version='1.0' ?>
+<fabmetheus>
+	<dictionary polygonFivePointTwo='=creation.getPolygon(5.2)' />
+	<dictionary polygonFour='=creation.getPolygon({equation.spherical.elevation:"revolutions*30.0",revolutions:2})*8.0' />
+</fabmetheus>

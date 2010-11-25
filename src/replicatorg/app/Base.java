@@ -110,7 +110,7 @@ public class Base {
 	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
 	{
-		logger.setLevel(Level.FINE);
+		logger.setLevel(Level.INFO);
 	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
@@ -327,9 +327,10 @@ public class Base {
 					}
 				});
 				// load up our default machine
+				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
 				String machineName = preferences.get("machine.name",null); 
 				if (machineName != null) {
-					editor.loadMachine(machineName);
+					editor.loadMachine(machineName, autoconnect);
 				}
 				// show the window
 				editor.setVisible(true);

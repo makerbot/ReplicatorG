@@ -85,6 +85,11 @@ public interface Driver {
 	public void initialize() throws VersionException;
 		
 	/**
+	 * uninitializes driver (disconnects from machine)
+	 */
+	public void uninitialize();
+
+	/**
 	 * See if the driver has been successfully initialized.
 	 * 
 	 * @return true if the driver is initialized
@@ -171,7 +176,7 @@ public interface Driver {
 	 * Tool methods
 	 * @throws RetryException 
 	 */
-	public void requestToolChange(int toolIndex) throws RetryException;
+	public void requestToolChange(int toolIndex, int timeout) throws RetryException;
 
 	public void selectTool(int toolIndex) throws RetryException;
 

@@ -44,6 +44,16 @@ public class ToolpathGeneratorThread extends Thread {
 		JButton doneButton;
 		int layerIndex;
 		int layerTotal;
+	    int currentProcessI = -1;
+		SkeinStep steps[] = {
+				new SkeinStep("Carve",13), 
+				new SkeinStep("Inset",27),
+				new SkeinStep("Fill",12),
+				new SkeinStep("Raft",36),
+				new SkeinStep("Clip",8),
+				new SkeinStep("Comb",4),
+				new SkeinStep("Oozebane",5),
+		};
 		
 		public ProgressDialog(Frame parent, Build build) { 
 			super(parent);
@@ -59,8 +69,6 @@ public class ToolpathGeneratorThread extends Thread {
 			subProgressBar.setStringPainted(false);
 			subProgressBar.setValue(0);
 			totalProgressBar.setStringPainted(false);
-			int layerIndex = 0;
-			int layerTotal= 9999;
 			setLayout(new MigLayout());
 			add(topLabel,"wrap");
 			add(new JLabel("Generator: Skeinforge"),"wrap");
@@ -95,18 +103,48 @@ public class ToolpathGeneratorThread extends Thread {
 			SwingUtilities.invokeLater(new Runnable() {
 
 				public void run() {
-
 				    String newMessage = message;
+				    String processName = "";
 					boolean logIt = true;
 				    boolean showProgress = false;
 					int sub;
-					Pattern r = Pattern.compile("total Layer count is[^0-9]([0-9]+)[^0-9]");
-				    Matcher m = r.matcher(message);
+
+					if(newMessage.startsWith(""+'\033'))
+					{
+				    	newMessage = newMessage.substring(4);
+				    }
+				    // skeinforge 33 (and up) format: \033[1AFill layer count 28 of 35...
+				    Pattern r = Pattern.compile(" of ([0-9]+)...");
+				    Matcher m = r.matcher(newMessage);
+				    if (m.find( )) {
+		    			logIt = false;
+			    		layerTotal = Integer.parseInt(m.group(1));
+				    }
+				    // skeinforge 33 (and up)
+				    r = Pattern.compile("([A-Za-z]+) layer count ([0-9]+)");
+				    m = r.matcher(newMessage);
+				    if (m.find( )) {
+				    	processName = m.group(1);
+			    		layerIndex = Integer.parseInt(m.group(2));
+		    			logIt = false;
+			    		if(layerTotal > 0) {
+			    			subProgressBar.setIndeterminate(false);
+			    			showProgress = true;
+					    	newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
+			    		} else {
+					    	newMessage = processName + " (layer " + layerIndex +")";
+			    			subProgressBar.setIndeterminate(true);
+			    		}
+				    }
+				    
+				    // Older skeinforge's
+					r = Pattern.compile("total Layer count is[^0-9]([0-9]+)[^0-9]");
+				    m = r.matcher(newMessage);
 				    if (m.find( )) {
 			    		layerTotal = Integer.parseInt(m.group(1));
 				    }
 					r = Pattern.compile("^Filling layer.*[^0-9]([0-9]+)[^0-9]");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( ))
 				    {
 				    	layerIndex = Integer.parseInt(m.group(1));
@@ -116,9 +154,9 @@ public class ToolpathGeneratorThread extends Thread {
 				    	totalProgressBar.setValue(10 + sub);				    	
 				    }
 
-				    // THE ONE BELOW IS JUST FOR THE OLDER SKEINFORGE!
+				    // THE ONE BELOW IS JUST FOR THE OLDER SKEINFORGE < 31!
 					r = Pattern.compile("Filling layer[^0-9]([0-9]+)/([0-9]+)[^0-9]");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( )) {
 			    		layerIndex = Integer.parseInt(m.group(1));
 			    		layerTotal = Integer.parseInt(m.group(2));
@@ -129,7 +167,7 @@ public class ToolpathGeneratorThread extends Thread {
 				    }				    
 				    				    
 					r = Pattern.compile("Slice to GCode.*layer ([0-9]+)[^0-9]");//Slice to GCode... layer %s.
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( ))
 				    {
 				    	layerIndex = Integer.parseInt(m.group(1));
@@ -138,9 +176,9 @@ public class ToolpathGeneratorThread extends Thread {
 				    	sub = (int) (2*((double) layerIndex)/ layerTotal);
 				    	totalProgressBar.setValue(2 + sub);				    	
 				    }
-				    
+				    /*
 					r = Pattern.compile("Insetting.*layer ([0-9]+)[^0-9]");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( ))
 				    {
 				    	layerIndex = Integer.parseInt(m.group(1));
@@ -149,7 +187,7 @@ public class ToolpathGeneratorThread extends Thread {
 				    	sub = (int) (6*((double) layerIndex)/ layerTotal);
 				    	totalProgressBar.setValue(4 + sub);
 				    }
-				    
+				    */
 				    if(showProgress)
 				    {
 				    	String i = new Integer(layerIndex).toString();
@@ -157,40 +195,69 @@ public class ToolpathGeneratorThread extends Thread {
 						double completion =  ((double) layerIndex/layerTotal);
 						NumberFormat nf = NumberFormat.getPercentInstance();
 						String perc = nf.format(completion);
-					    if(layerIndex>0)
+					    if((layerIndex>0) && (processName == ""))
+					    {
 					    	newMessage += " ("+j+" layers)";//
+					    }
 					    subProgressBar.setValue((int) (100*completion));
 					}
+				    /*
 					r = Pattern.compile("Fill procedure took");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( ))
 				    {
 				    	subProgressBar.setIndeterminate(true);
 				    	// http://download.oracle.com/javase/tutorial/uiswing/components/progress.html#indeterminate
 				    	totalProgressBar.setValue(65);
 				    }
+
 					r = Pattern.compile("Speed procedure took");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( )) totalProgressBar.setValue(70);
 					r = Pattern.compile("Temperature procedure took");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( )) totalProgressBar.setValue(79);
 					r = Pattern.compile("Raft procedure took");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( )) totalProgressBar.setValue(85);
 					r = Pattern.compile("Jitter procedure took");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( )) totalProgressBar.setValue(88);
 					r = Pattern.compile("Clip procedure took");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( )) totalProgressBar.setValue(99);
 					r = Pattern.compile("The extrusion fill density ratio");
-				    m = r.matcher(message);
+				    m = r.matcher(newMessage);
 				    if (m.find( )) totalProgressBar.setValue(99);
-
-				    if(logIt)
-				    	Base.logger.info(message);
-
+					*/
+					r = Pattern.compile("(.*) procedure took");
+				    m = r.matcher(newMessage);
+				    if (m.find( ))
+				    {	
+					    for(int i=0;i<5;i++)
+					    {
+					    	if(steps[i].stepName.equals(m.group(1)))
+					    	{
+					    		currentProcessI = i;
+					    		subProgressBar.setIndeterminate(true);
+					    		//Base.logger.info("Step: "+steps[i].stepName+" = "+ steps[i].thisStepTime+" of "+steps[i].totalStepTime + " = "+steps[i].getStepPercentage(layerIndex,layerTotal)+"%");
+					    		
+					    	}
+					    }
+				    }
+				    if(currentProcessI >= 0)
+				    {
+				    	totalProgressBar.setValue((int) steps[currentProcessI].getStepPercentage(layerIndex,layerTotal));
+				    } else {
+				    	if(layerTotal > 0)
+				    	{
+				    	subProgressBar.setValue((int) (((double)layerIndex/layerTotal)*100));
+				    	subProgressBar.setIndeterminate(false);
+				    	}
+				    }
+				    if(logIt==true)
+				    	Base.logger.info(newMessage);
+				    	
 				    progressLabel.setText(newMessage);
 				}
 			});
@@ -256,5 +323,29 @@ public class ToolpathGeneratorThread extends Thread {
 				}
 			}
 		}
+	}
+}
+
+
+class SkeinStep {
+	public static int totalStepTime;
+	public String stepName;
+	public int thisStepTime; 
+	public int incrementalStepTime; 
+	
+	public SkeinStep(String stepName, int thisStepTime){
+		SkeinStep.totalStepTime += thisStepTime;
+		this.stepName = stepName;
+		this.thisStepTime = thisStepTime;
+		this.incrementalStepTime = SkeinStep.totalStepTime;
+	}
+	public int getStepPercentage(int layerIndex, int layerTotal)
+	{
+		int percentage = (int) ((double) (this.incrementalStepTime-this.thisStepTime)/totalStepTime*100);
+		if((layerTotal > 0)&&(layerTotal!=layerIndex)){
+			//Base.logger.info("layer "+layerIndex+"/"+layerTotal+" step "+this.thisStepTime+"/"+this.totalStepTime);
+			percentage += (int) (((double) this.thisStepTime/SkeinStep.totalStepTime)*((double)layerIndex/layerTotal)*100);
+		}
+		return percentage;
 	}
 }

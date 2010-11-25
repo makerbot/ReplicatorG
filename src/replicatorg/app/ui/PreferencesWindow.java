@@ -16,17 +16,24 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -100,6 +107,28 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		bg.add(b);
 		c.add(b,"wrap");
 	}
+
+	JComboBox makeDebugLevelDropdown() {
+		String levelName = Base.preferences.get("replicatorg.debuglevel", Level.INFO.getName());
+		Level l = Level.parse(levelName);
+		if (l == null) { l = Level.INFO; }
+		Vector<Level> levels = new Vector<Level>();
+		levels.add(Level.ALL);
+		levels.add(Level.FINE);
+		levels.add(Level.INFO);
+		levels.add(Level.WARNING);
+		final ComboBoxModel model = new DefaultComboBoxModel(levels);
+		model.setSelectedItem(l);
+		JComboBox cb = new JComboBox(model);
+		cb.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				Level level = (Level)(Level)model.getSelectedItem();
+				Base.preferences.put("replicatorg.debuglevel", level.getName());
+				Base.logger.setLevel(level);
+			}
+		});
+		return cb;
+	}
 	
 	public PreferencesWindow() {
 		super("Preferences");
@@ -115,6 +144,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 
 		//addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp",false);
 		addCheckboxForPref(content,"Honor serial port selection in machines.xml","serial.use_machines",true);
+		addCheckboxForPref(content,"Automatically connect at startup","replicatorg.autoconnect",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
 		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",false);
 		addCheckboxForPref(content,"Break Z motion into seperate moves (normally false)","replicatorg.parser.breakzmoves",false);
@@ -147,6 +177,11 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 					}
 				}
 			});
+		}
+		
+		{
+			content.add(new JLabel("Debugging level (default INFO):"),"split");
+			content.add(makeDebugLevelDropdown(),"wrap");
 		}
 		
 		{

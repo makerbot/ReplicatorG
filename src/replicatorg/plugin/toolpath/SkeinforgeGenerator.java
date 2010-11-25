@@ -13,10 +13,12 @@ import java.util.logging.Level;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -31,10 +33,20 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 	boolean configSuccess = false;
 	String profile = null;
-	boolean useRaft = false;
+	List <SkeinforgePreference> preferences;
 
 	// "skein_engines/skeinforge-0006","sf_profiles");
 	public SkeinforgeGenerator() {
+		preferences = getPreferences();
+	}
+
+	static public String getSelectedProfile() {
+		String name = Base.preferences.get("replicatorg.skeinforge.profile", "");
+		return name;
+	}
+
+	static public void setSelectedProfile(String name) {
+		Base.preferences.put("replicatorg.skeinforge.profile", name);
 	}
 
 	class Profile implements Comparable<Profile> {
@@ -88,6 +100,80 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		return profiles;
 	}
 
+	/**
+	 * A SkeinforgeOption instance describes a single preference override to pass to skeinforge.
+	 * @author phooky
+	 */
+	protected class SkeinforgeOption {
+		final String module;
+		final String preference;
+		final String value;
+		public SkeinforgeOption(String module, String preference, String value) {
+			this.module = module; 
+			this.preference = preference; 
+			this.value = value;
+		}
+		public String getSpec() {
+			return module + ":" + preference + "=" + value;
+		}
+	}
+	/**
+	 * A SkeinforgePreference describes a user-visible preference that appears in the 
+	 * configuration dialog.  SkeinforgePreferences should give a list of options
+	 * that will be set at runtime.
+	 * @param name The human-readable name of the preference.
+	 * @param pereferenceName If you wish to cache the last selected value of this option in
+	 * the java application preferences, specify it here.
+	 * @param defaultState the default state of this preference, to be used if the
+	 * preferenceState is not supplied or not set.
+	 * @author phooky
+	 *
+	 */
+	protected interface SkeinforgePreference {
+		public JComponent getUI();
+		public List<SkeinforgeOption> getOptions();
+	}
+	
+	protected class SkeinforgeBooleanPreference implements SkeinforgePreference {
+		private boolean isSet;
+		private JCheckBox component;
+		private List<SkeinforgeOption> trueOptions = new LinkedList<SkeinforgeOption>();
+		private List<SkeinforgeOption> falseOptions = new LinkedList<SkeinforgeOption>();
+		
+		public SkeinforgeBooleanPreference(String name, final String preferenceName, boolean defaultState, String toolTip) {
+			isSet = defaultState;
+			if (preferenceName != null) {
+				isSet = Base.preferences.getBoolean(preferenceName, defaultState);
+			}
+			component = new JCheckBox(name, isSet);
+			component.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					isSet = component.isSelected();
+					if (preferenceName != null) {
+						Base.preferences.putBoolean(preferenceName,isSet);
+					}
+				}
+			});
+			if (toolTip != null) {
+				component.setToolTipText(toolTip);
+			}
+		}
+		
+		public JComponent getUI() { return component; }
+		
+		public void addTrueOption(SkeinforgeOption o) { trueOptions.add(o); }
+		public void addFalseOption(SkeinforgeOption o) { falseOptions.add(o); }
+		public void addNegateableOption(SkeinforgeOption o) {
+			trueOptions.add(o);
+			String negated = o.value.equalsIgnoreCase("true")?"false":"true";
+			falseOptions.add(new SkeinforgeOption(o.module,o.preference,negated));
+		}
+
+		public List<SkeinforgeOption> getOptions() {
+			return isSet?trueOptions:falseOptions;
+		}
+	}
+	
 	class ConfigurationDialog extends JDialog {
 		final String manageStr = "Manage profiles...";
 		final String profilePref = "replicatorg.skeinforge.profilePref";
@@ -100,11 +186,19 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			list.removeAll();
 			List<Profile> profiles = getProfiles();
 			DefaultListModel model = new DefaultListModel();
+			String selected = SkeinforgeGenerator.getSelectedProfile();
+			Profile selectedprofile = null;
 			for (Profile p : profiles) {
 				model.addElement(p);
+				if (p.toString().equals(selected)) selectedprofile = p;
 			}
 			list.setModel(model);
-			list.clearSelection();
+			if (selectedprofile != null) {
+				list.setSelectedValue(selectedprofile, true);
+			}
+			else {
+				list.clearSelection();
+			}
 		}
 
 		public ConfigurationDialog(final Frame parent) {
@@ -191,19 +285,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				}
 			});
 
-			final String useRaftPref = "replicatorg.skeinforge.useRaft";
-			useRaft = Base.preferences.getBoolean(useRaftPref, false);
-			final JCheckBox raftSelection = new JCheckBox("Use raft", useRaft);
-			raftSelection
-					.setToolTipText("If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
-							+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
-			raftSelection.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					useRaft = raftSelection.isSelected();
-					Base.preferences.putBoolean(useRaftPref, useRaft);
-				}
-			});
-			add(raftSelection, "wrap");
+			for (SkeinforgePreference preference: preferences) {
+				add(preference.getUI(), "wrap");
+			}
 
 			add(ok, "tag ok");
 			JButton cancel = new JButton("Cancel");
@@ -216,6 +300,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 					configSuccess = true;
 					profile = p.getFullPath();
 					setVisible(false);
+					SkeinforgeGenerator.setSelectedProfile(p.toString());
 				}
 			});
 			cancel.addActionListener(new ActionListener() {
@@ -289,6 +374,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
+	abstract public List<SkeinforgePreference> getPreferences();
+	
 	public BuildCode generateToolpath() {
 		String path = model.getPath();
 
@@ -299,10 +386,14 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		for (String arg : baseArguments) {
 			arguments.add(arg);
 		}
-		if (useRaft) {
-			arguments.add("--raft");
-		} else {
-			arguments.add("--no-raft");
+		for (SkeinforgePreference preference : preferences) {
+			List<SkeinforgeOption> options = preference.getOptions();
+			if (options != null) {
+				for (SkeinforgeOption option : options) {
+					arguments.add("--option");
+					arguments.add(option.getSpec());
+				}
+			}
 		}
 		arguments.add(path);
 

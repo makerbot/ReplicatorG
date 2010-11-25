@@ -118,14 +118,16 @@ public class MachineModel
 					//initialize values
 				 	double length = 0.0;
 				 	double maxFeedrate = 0.0;
-				 	double scale = 1.0;
+				 	double stepspermm = 1.0;
 				 	Endstops endstops = Endstops.none;
 					
 					//if values are missing, ignore them.
 					try {
 					 	length = Double.parseDouble(XML.getAttributeValue(axis, "length"));
 					 	maxFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "maxfeedrate"));
-					 	scale = Double.parseDouble(XML.getAttributeValue(axis, "scale"));
+					 	String spmm = XML.getAttributeValue(axis, "stepspermm");
+					 	if (spmm == null) spmm = XML.getAttributeValue(axis, "scale"); // Backwards compatibility
+					 	stepspermm = Double.parseDouble(spmm);
 					 	endstops = Endstops.valueOf(XML.getAttributeValue(axis, "endstops"));
 					} catch (Exception e) {}
 					
@@ -134,21 +136,21 @@ public class MachineModel
 					{
 						maximum.x = length;
 						maximumFeedrates.x = maxFeedrate;
-						stepsPerMM.x = scale;
+						stepsPerMM.x = stepspermm;
 						this.endstops.put(Axis.X, endstops);
 					}
 					else if (id.toLowerCase().equals("y"))
 					{
 						maximum.y = length;
 						maximumFeedrates.y = maxFeedrate;
-						stepsPerMM.y = scale;
+						stepsPerMM.y = stepspermm;
 						this.endstops.put(Axis.Y, endstops);
 					}
 					else if (id.toLowerCase().equals("z"))
 					{
 						maximum.z = length;
 						maximumFeedrates.z = maxFeedrate;
-						stepsPerMM.z = scale;
+						stepsPerMM.z = stepspermm;
 						this.endstops.put(Axis.Z, endstops);
 					}
 
@@ -401,7 +403,7 @@ public class MachineModel
 	public ToolModel getTool(int index)
 	{
 		try {
-			//ToolModel t = tools.get(index);
+			return tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			Base.logger.severe("Cannot get non-existant tool (#" + index + ".");
 			e.printStackTrace();

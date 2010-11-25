@@ -38,6 +38,7 @@ import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobException;
 import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.drivers.Driver;
+import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
@@ -356,6 +357,15 @@ public class GCodeParser {
 	private void executeMCodes() throws GCodeException, RetryException {
 		// find us an m code.
 		if (hasCode("M")) {
+			// If this machine handles multiple active toolheads, we always honor a T code
+			// as being a annotation to send the given command to the given toolheads.  Be
+			// aware that appending a T code to an M code will not necessarily generate a
+			// change tool request!  Use M6 for that.
+			// M6 was historically used to wait for toolheads to get up to temperature, so
+			// you may wish to avoid using M6.
+			if (hasCode("T") && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {
+				driver.getMachine().selectTool((int) getCodeValue("T"));
+			}
 			switch ((int) getCodeValue("M")) {
 			// stop codes... handled by handleStops();
 			case 0:
@@ -380,13 +390,18 @@ public class GCodeParser {
 				driver.disableSpindle();
 				break;
 
-			// tool change
+			// tool change.
 			case 6:
-				if (hasCode("T"))
-					driver.requestToolChange((int) getCodeValue("T"));
-				else
-					throw new GCodeException(
-							"The T parameter is required for tool changes. (M6)");
+				int timeout = 65535;
+				if (hasCode("P")) {
+					timeout = (int)getCodeValue("P");
+				}
+				if (hasCode("T")) {
+					driver.requestToolChange((int) getCodeValue("T"), timeout);
+				}
+				else {
+					throw new GCodeException("The T parameter is required for tool changes. (M6)");
+				}
 				break;
 
 			// coolant A on (flood coolant)

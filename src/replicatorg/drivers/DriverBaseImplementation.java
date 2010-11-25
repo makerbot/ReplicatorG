@@ -112,6 +112,10 @@ public class DriverBaseImplementation implements Driver {
 		setInitialized(true);
 	}
 
+	public void uninitialize() {
+		setInitialized(false);
+	}
+
 	public void setInitialized(boolean status) {
 		isInitialized = status;
 		if (!status) { currentPosition = null; }
@@ -369,7 +373,7 @@ public class DriverBaseImplementation implements Driver {
 	 * Tool interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void requestToolChange(int toolIndex) throws RetryException {
+	public void requestToolChange(int toolIndex, int timeout) throws RetryException {
 		machine.selectTool(toolIndex);
 	}
 
