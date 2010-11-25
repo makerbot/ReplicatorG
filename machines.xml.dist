@@ -196,7 +196,7 @@ M18
 			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
 		</tools>
 		<clamps></clamps>
-		<driver name="makerbot4g">
+		<driver name="sanguino3g">
 			<!-- optional: <portname>COM1</portname> -->
 			<rate>115200</rate>
 		</driver>
@@ -221,7 +221,7 @@ M18
 			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
 		</tools>
 		<clamps></clamps>
-		<driver name="makerbot4g">
+		<driver name="sanguino3g">
 			<!-- optional: <portname>COM1</portname> -->
 			<rate>115200</rate>
 		</driver>
@@ -244,7 +244,7 @@ M18
 			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
 		</tools>
 		<clamps></clamps>
-		<driver name="makerbot4g">
+		<driver name="sanguino3g">
 			<!-- optional: <portname>COM1</portname> -->
 			<rate>115200</rate>
 		</driver>
@@ -267,7 +267,7 @@ M18
 			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
 		</tools>
 		<clamps></clamps>
-		<driver name="makerbot4g">
+		<driver name="sanguino3g">
 			<!-- optional: <portname>COM1</portname> -->
 			<rate>115200</rate>
 		</driver>
