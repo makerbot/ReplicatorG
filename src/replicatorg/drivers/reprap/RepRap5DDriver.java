@@ -243,7 +243,7 @@ public class RepRap5DDriver extends SerialDriver {
 		buffer.addFirst(next);
 
 		// debug... let us know whats up!
-		System.out.println("Sent: " + next);
+		Base.logger.fine("Sent: " + next);
 		// System.out.println("Buffer: " + bufferSize + " (" + bufferLength + "
 		// commands)");
 		serialWriteLock.unlock();
@@ -362,7 +362,7 @@ public class RepRap5DDriver extends SerialDriver {
 																			// remove
 																			// any
 																			// trailing
-						Base.logger.info(line);											// \r
+						Base.logger.fine(line);											// \r
 						result = result.substring(index + 1);
 						if (line.length() == 0)
 							continue;
@@ -370,7 +370,7 @@ public class RepRap5DDriver extends SerialDriver {
 							setInitialized(true);
 							bufferSize -= commands.remove();
 							buffer.removeLast();
-							Base.logger.info(line);
+							Base.logger.fine(line);
 							if (line.startsWith("ok T:")) {
 								Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
 							    Matcher m = r.matcher(line);
@@ -395,7 +395,7 @@ public class RepRap5DDriver extends SerialDriver {
 							// todo: set version
 							// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
 							setInitialized(true);
-							Base.logger.info(line);
+							Base.logger.fine(line);
 							lineNumber = 0;
 						} else if (line.startsWith("Extruder Fail")) {
 							setError("Extruder failed:  cannot extrude as this rate.");

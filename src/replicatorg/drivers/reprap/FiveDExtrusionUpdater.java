@@ -95,7 +95,6 @@ public class FiveDExtrusionUpdater {
 				synchronized (driver.commands) {
 					queueSize = driver.commands.size();
 				}
-				System.out.println(queueSize);
 				if (queueSize > maxQueuedExtrudeTime) Thread.sleep(100);
 			} while (queueSize > maxQueuedExtrudeTime);
 				
@@ -114,7 +113,7 @@ public class FiveDExtrusionUpdater {
 				{
 					extrudeQueueEnd += commandPeriod;
 				}
-				sendExtrudeCommand(distance, feedrate);
+				sendExtrudeCommand(distance, Math.abs(feedrate));
 			}
 		}
 		else
