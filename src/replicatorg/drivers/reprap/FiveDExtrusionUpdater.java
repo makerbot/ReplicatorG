@@ -4,6 +4,7 @@
 package replicatorg.drivers.reprap;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -19,12 +20,16 @@ public class FiveDExtrusionUpdater {
 	private double feedrate = 0;
 	private ReentrantLock directionLock = new ReentrantLock();
 	private Direction direction = Direction.forward;
+	/** the time (ms) the last extrude command will complete or zero if unset */
+	private long extrudeQueueEnd = 0;
 
 	/** the time length of each extrusion command */
-	private long commandPeriod = 500; //ms
-	/** queue this many commands at a time. Larger = smoother extrusion, 
+	private long commandPeriod = 100; //ms
+	/** queue this many commands into the future. Larger = smoother extrusion, 
 	 * smaller = more responsive manual extrusion. */
-	private int maxQueuedExtrudeCommands = 2;
+	private int maxQueuedExtrudeTime = 500; //ms
+	
+	
 	
 	public enum Direction
 	{
@@ -41,10 +46,12 @@ public class FiveDExtrusionUpdater {
 
 	private void sendExtrudeCommand(double distance, double feedrate) {
 		String feedrateString = driver.df.format(feedrate);
-		driver.sendCommand(driver._getToolCode() + "G92 E0");
-		driver.sendCommand(driver._getToolCode() + "G1 F"+feedrateString);
+		if (driver.feedrate.get() != feedrate)
+		{
+			driver.sendCommand(driver._getToolCode() + "G1 F"+feedrateString);
+		}
 		driver.sendCommand(driver._getToolCode() + "G1 E"+
-				driver.df.format(distance)+" F"+feedrateString);
+				driver.df.format(distance+driver.ePosition.get())+" F"+feedrateString);
 	}
 	
 	public void setFeedrate(double feedrate)
@@ -79,21 +86,40 @@ public class FiveDExtrusionUpdater {
 		 * keep the command queue full. */
 		if(isExtruding.get() == true)
 		{
+			long currentTime = System.currentTimeMillis();
+			if (extrudeQueueEnd > currentTime + maxQueuedExtrudeTime)
+			{
+				Thread.sleep(extrudeQueueEnd-currentTime);
+			}
 			do {
 				synchronized (driver.commands) {
 					queueSize = driver.commands.size();
 				}
-				if (queueSize > maxQueuedExtrudeCommands) Thread.sleep(100);
-			} while (queueSize > maxQueuedExtrudeCommands);
+				System.out.println(queueSize);
+				if (queueSize > maxQueuedExtrudeTime) Thread.sleep(100);
+			} while (queueSize > maxQueuedExtrudeTime);
 				
 			// Send extrude command
 			/** mm/s */
-			double feedrate = this.getFeedrate();
+			double feedrate = this.getFeedrate();// mm per minute
+			if (feedrate == 0) return;
 			/** the length of filament to extrude on each command */
-			double distance = (feedrate*commandPeriod)/1000; //mm
+			double distance = (feedrate*commandPeriod)/60000; // mm
 			synchronized (driver) {
+				if (extrudeQueueEnd < System.currentTimeMillis())
+				{
+					extrudeQueueEnd = System.currentTimeMillis()+commandPeriod;
+				}
+				else
+				{
+					extrudeQueueEnd += commandPeriod;
+				}
 				sendExtrudeCommand(distance, feedrate);
 			}
+		}
+		else
+		{
+			Thread.sleep(100);
 		}
 	}
 

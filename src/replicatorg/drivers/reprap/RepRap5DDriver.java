@@ -33,6 +33,8 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +52,10 @@ import replicatorg.machine.model.ToolModel;
 public class RepRap5DDriver extends SerialDriver {
 	private static Pattern gcodeCommentPattern = Pattern.compile("\\([^)]*\\)|;.*");
 	private static Pattern resendLinePattern = Pattern.compile("([0-9]+)");
-	private static Pattern gcodeLineNumberPattern = Pattern.compile("N([0-9]+)");
+	private static Pattern gcodeLineNumberPattern = Pattern.compile("N\\s*([0-9]+)");
+	
+	public final AtomicReference<Double> feedrate = new AtomicReference<Double>(0.0);
+	public final AtomicReference<Double> ePosition = new AtomicReference<Double>(0.0);
 	
 	
 	/**
@@ -181,6 +186,16 @@ public class RepRap5DDriver extends SerialDriver {
 
 		sendCommand(getParser().getCommand());
 	}
+	
+	/**
+	 * Returns null or the first instance of the matching group
+	 */
+	private String getRegexMatch(String regex, String input, int group)
+	{
+		Matcher matcher = Pattern.compile(regex).matcher(input);
+		if (!matcher.find()) return null;
+		return matcher.group(1);
+	}
 
 	/**
 	 * Actually sends command over serial. If the Arduino buffer is full, this
@@ -194,6 +209,15 @@ public class RepRap5DDriver extends SerialDriver {
 
 		next = clean(next);
 		next = fix(next); // make it compatible with older versions of the GCode interpeter
+		
+		//update the current feedrate
+		String feedrate = getRegexMatch("F(-[0-9\\.]+)", next, 1);
+		if (feedrate!=null) this.feedrate.set(Double.parseDouble(feedrate));
+
+		//update the current extruder position
+		String e = getRegexMatch("E([-0-9\\.]+)", next, 1);
+		if (e!=null) this.ePosition.set(Double.parseDouble(e));
+		
 
 		// skip empty commands.
 		if (next.length() == 0)
@@ -218,11 +242,15 @@ public class RepRap5DDriver extends SerialDriver {
 		bufferSize += cmdlen;
 		buffer.addFirst(next);
 
-		// debug... let us know whts up!
+		// debug... let us know whats up!
 		System.out.println("Sent: " + next);
 		// System.out.println("Buffer: " + bufferSize + " (" + bufferLength + "
 		// commands)");
 		serialWriteLock.unlock();
+
+		// Wait for the response (synchronous gcode transmission)
+		readResponse();
+
 	}
 
 	public String clean(String str) {

@@ -317,8 +317,8 @@ public class ControlPanelWindow extends JFrame implements
 			// we'll break on interrupts
 			try {
 				while (true) {
+					driver.updateManualControl();
 					// driver.readTemperature();
-					Thread.sleep(1000);
 				}
 			} catch (InterruptedException e) {
 			}
@@ -339,7 +339,6 @@ public class ControlPanelWindow extends JFrame implements
 			try {
 				while (true) {
 					try {
-						window.driver.updateManualControl();
 						window.updateStatus();
 					} catch (AssertionError ae) {
 						// probaby disconnected unexpectedly; close window.
