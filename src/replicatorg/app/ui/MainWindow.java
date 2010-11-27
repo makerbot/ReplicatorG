@@ -784,7 +784,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		return menu;
 	}
 
-	JMenuItem onboardParamsItem = new JMenuItem("Cupcake Onboard Preferences...");
+	JMenuItem onboardParamsItem = new JMenuItem("Motherboard Onboard Preferences...");
 	JMenuItem extruderParamsItem = new JMenuItem("Toolhead Onboard Preferences...");
 	JMenuItem toolheadIndexingItem = new JMenuItem("Set Toolhead Index...");
 	
