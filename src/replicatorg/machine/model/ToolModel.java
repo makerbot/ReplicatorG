@@ -195,7 +195,22 @@ public class ToolModel
 				}
 			} catch (Exception e) {} // ignore parse errors.
 
-		}
+			n = XML.getAttributeValue(xml, "default_rpm");
+			try{
+				if (Double.parseDouble(n) > 0)
+				{
+					motorSpeedRPM = Double.parseDouble(n);
+				}
+			} catch (Exception e) {} // ignore parse errors.
+
+			n = XML.getAttributeValue(xml, "default_pwm");
+			try{
+				if (Integer.parseInt(n) > 0)
+				{
+					motorSpeedPWM = Integer.parseInt(n);
+				}
+			} catch (Exception e) {} // ignore parse errors.
+}
 
 		n = XML.getAttributeValue(xml, "spindle");
 		if (isTrueOrOne(n))
