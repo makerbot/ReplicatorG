@@ -162,6 +162,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				field.setName("motor-speed-pwm");
 				field.addFocusListener(this);
 				field.setActionCommand("handleTextfield");
+				field.setText(Double.toString(t.getMotorSpeedPWM()));
 				field.addActionListener(this);
 
 				add(label);
@@ -184,6 +185,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				field.setName("motor-speed");
 				field.addFocusListener(this);
 				field.setActionCommand("handleTextfield");
+				field.setText(Double.toString(t.getMotorSpeedRPM()));
 				field.addActionListener(this);
 
 				add(label);
