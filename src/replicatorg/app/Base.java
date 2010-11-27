@@ -231,10 +231,42 @@ public class Base {
 							+ "Please visit java.com to upgrade.", null);
 		}
 
-		// grab any opened file from the command line
 
-		if (args.length == 1) {
-			Base.openedAtStartup = args[0];
+		// parse command line input
+		for (int i=0;i<args.length;i++) {
+			// grab any opened file from the command line
+			if(args[i].endsWith(".gcode") || args[i].endsWith(".stl") || args[i].endsWith(".dae")) {
+				Base.openedAtStartup = args[i];
+			}
+			
+			// Allow for [--debug] [DEBUGLEVEL]
+			if(args[i].equals("--debug")) {
+				int debugLevelArg = 2;
+				if((i+1) < args.length) {
+					try {
+						debugLevelArg = Integer.parseInt(args[i+1]);
+					} catch (NumberFormatException e) {};
+				}
+				if(debugLevelArg == 0) {
+					logger.setLevel(Level.INFO);
+					logger.info("Debug level is 'INFO'");
+				} else if(debugLevelArg == 1) {
+					logger.setLevel(Level.FINE);
+					logger.info("Debug level is 'FINE'");
+				} else if(debugLevelArg == 2) {
+					logger.setLevel(Level.FINER);
+					logger.info("Debug level is 'FINER'");
+				} else if(debugLevelArg == 3) {
+					logger.setLevel(Level.FINEST);
+					logger.info("Debug level is 'FINEST'");
+				} else if(debugLevelArg >= 4) {
+					logger.setLevel(Level.ALL);
+					logger.info("Debug level is 'ALL'");
+				}
+			} else if(args[i].startsWith("-")){
+				System.out.println("Usage: ./replicatorg [[--debug] [DEBUGLEVEL]] [filename.stl]");
+				System.exit(1);
+			}
 		}
 		
 		// Warn about read-only directories
