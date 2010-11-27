@@ -33,7 +33,9 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,6 +59,10 @@ public class RepRap5DDriver extends SerialDriver {
 	public final AtomicReference<Double> feedrate = new AtomicReference<Double>(0.0);
 	public final AtomicReference<Double> ePosition = new AtomicReference<Double>(0.0);
 	
+	private final ReentrantLock sendCommandLock = new ReentrantLock();
+	
+	/** true if a line containing the start keyword has been received from the firmware*/
+	private final AtomicBoolean startReceived = new AtomicBoolean(false);
 	
 	/**
 	 * Enables five D GCodes if true. If false reverts to traditional 3D Gcodes
@@ -130,10 +136,11 @@ public class RepRap5DDriver extends SerialDriver {
 				//increases our chances of successfully connecting dramatically.
 				serial.pulseRTSLow();
 				//Wait for the RepRap to startup
-				try {
-					Thread.sleep(300);
-				} catch (java.lang.InterruptedException ie) {
+				while(startReceived.get()!=true)
+				{
+					readResponse();
 				}
+
 				//Send a line # reset command, this allows us to catch the "ok" response in 
 				//case we missed the "start" response which we seem to often miss. (also it 
 				//resets the line number which is good)
@@ -198,13 +205,12 @@ public class RepRap5DDriver extends SerialDriver {
 	}
 
 	/**
-	 * Actually sends command over serial. If the Arduino buffer is full, this
-	 * method will block until the command has been sent.
+	 * Actually sends command over serial. This will block until the command is 
+	 * acknowledged with an OK response.
 	 */
 	protected void sendCommand(String next) {
-		serialWriteLock.lock();
+		sendCommandLock.lock();
 		//assert (isInitialized());
-		assert (serial != null);
 		// System.out.println("sending: " + next);
 
 		next = clean(next);
@@ -213,7 +219,6 @@ public class RepRap5DDriver extends SerialDriver {
 		// skip empty commands.
 		if (next.length() == 0)
 		{
-			serialWriteLock.unlock();
 			return;
 		}
 
@@ -229,14 +234,15 @@ public class RepRap5DDriver extends SerialDriver {
 		next = applyChecksum(next);
 		
 		// Block until we can fit the command on the Arduino
-		while (bufferSize + next.length() + 1 > maxBufferSize) {
-			readResponse();
-		}
+		//while (bufferSize + next.length() + 1 > maxBufferSize) {
+		//	readResponse();
+		//}
 
-		synchronized (serial) {
-			// do the actual send.
-			serial.write(next + "\n");
-		}
+		// do the actual send.
+		serialWriteLock.lock();
+		assert (serial != null);
+		serial.write(next + "\n");
+		serialWriteLock.unlock();
 
 		// record it in our buffer tracker.
 		int cmdlen = next.length() + 1;
@@ -246,13 +252,11 @@ public class RepRap5DDriver extends SerialDriver {
 
 		// debug... let us know whats up!
 		Base.logger.fine("Sent: " + next);
-		// System.out.println("Buffer: " + bufferSize + " (" + bufferLength + "
-		// commands)");
-		serialWriteLock.unlock();
 
 		// Wait for the response (synchronous gcode transmission)
-		readResponse();
+		while(!isFinished()) {}
 
+		sendCommandLock.unlock();
 	}
 
 	public String clean(String str) {
@@ -328,7 +332,8 @@ public class RepRap5DDriver extends SerialDriver {
 		}
 		else
 		{ // only add a line number if it is not already specified
-			gcode = "N"+(lineNumber++)+' '+gcode+' ';
+			lineNumber++;
+			gcode = "N"+lineNumber+' '+gcode+' ';
 		}
 
 		// chksum = 0 xor each byte of the gcode (including the line number and trailing space)
@@ -372,7 +377,6 @@ public class RepRap5DDriver extends SerialDriver {
 							setInitialized(true);
 							bufferSize -= commands.remove();
 							buffer.removeLast();
-							Base.logger.fine(line);
 							if (line.startsWith("ok T:")) {
 								Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
 							    Matcher m = r.matcher(line);
@@ -393,11 +397,10 @@ public class RepRap5DDriver extends SerialDriver {
 
 						}
 						// old arduino firmware sends "start"
-						else if (line.startsWith("start")) {
+						else if (line.contains("start")||line.contains("Start")) {
 							// todo: set version
 							// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
-							setInitialized(true);
-							Base.logger.fine(line);
+							startReceived.set(true);
 							lineNumber = 0;
 						} else if (line.startsWith("Extruder Fail")) {
 							setError("Extruder failed:  cannot extrude as this rate.");
