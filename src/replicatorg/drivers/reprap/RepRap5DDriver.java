@@ -210,6 +210,13 @@ public class RepRap5DDriver extends SerialDriver {
 		next = clean(next);
 		next = fix(next); // make it compatible with older versions of the GCode interpeter
 		
+		// skip empty commands.
+		if (next.length() == 0)
+		{
+			serialWriteLock.unlock();
+			return;
+		}
+
 		//update the current feedrate
 		String feedrate = getRegexMatch("F(-[0-9\\.]+)", next, 1);
 		if (feedrate!=null) this.feedrate.set(Double.parseDouble(feedrate));
@@ -217,14 +224,9 @@ public class RepRap5DDriver extends SerialDriver {
 		//update the current extruder position
 		String e = getRegexMatch("E([-0-9\\.]+)", next, 1);
 		if (e!=null) this.ePosition.set(Double.parseDouble(e));
+
 		
-
-		// skip empty commands.
-		if (next.length() == 0)
-			return;
-
 		next = applyChecksum(next);
-
 		
 		// Block until we can fit the command on the Arduino
 		while (bufferSize + next.length() + 1 > maxBufferSize) {
@@ -403,6 +405,7 @@ public class RepRap5DDriver extends SerialDriver {
 							Base.logger.severe(line);
 							// Bad checksum, resend requested
 							String bufferedLine = buffer.removeLast();
+							bufferSize -= commands.remove();
 							int bufferedLineNumber = Integer.parseInt( 
 									gcodeLineNumberPattern.matcher(bufferedLine).group(1) );
 
