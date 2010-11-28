@@ -3,6 +3,10 @@ package replicatorg.plugin.toolpath;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -10,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
+import javax.annotation.Generated;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -92,19 +97,33 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		final String manageStr = "Manage profiles...";
 		final String profilePref = "replicatorg.skeinforge.profilePref";
 		JButton editButton = new JButton("Edit...");
-		JButton newButton = new JButton("Create...");
+		JButton newButton = new JButton("Clone...");
 		JButton deleteButton = new JButton("Delete");
-		JButton ok = new JButton("Ok");
+		JButton generate = new JButton("Generate...");
 
 		private void loadList(JList list) {
 			list.removeAll();
 			List<Profile> profiles = getProfiles();
 			DefaultListModel model = new DefaultListModel();
+			int i=0;
+			int foundLastProfile = -1;
 			for (Profile p : profiles) {
 				model.addElement(p);
+				if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
+				{
+					Base.logger.fine("Selecting last used element: " + p);
+					foundLastProfile = i;
+				}
+				i++;
 			}
 			list.setModel(model);
 			list.clearSelection();
+			if(foundLastProfile != -1) {
+				list.setSelectedIndex(foundLastProfile);	
+				generate.setEnabled(true);
+				generate.requestFocusInWindow();
+				generate.setFocusPainted(true);
+			}			
 		}
 
 		public ConfigurationDialog(final Frame parent) {
@@ -112,9 +131,14 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			setTitle("Choose a skeinforge profile");
 			setLayout(new MigLayout("aligny top"));
 
+			editButton.setToolTipText("Click to edit this profile's properties.");
+			deleteButton.setToolTipText("Click to remove this profile. Note that this can not be undone.");
+			newButton.setToolTipText("This will make a copy of the currently selected profile, with a new name that you provide.");
+			
 			// have to set this. Something wrong with the initial use of the
 			// ListSelectionListener
-			ok.setEnabled(false);
+			generate.setEnabled(false);
+					
 			editButton.setEnabled(false);
 			deleteButton.setEnabled(false);
 			newButton.setEnabled(false);
@@ -129,15 +153,47 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				public void valueChanged(ListSelectionEvent selectionEvent) {
 					boolean selected = !((JList) selectionEvent.getSource())
 							.isSelectionEmpty();
-					ok.setEnabled(selected);
+					generate.setEnabled(selected);
 					editButton.setEnabled(selected);
 					deleteButton.setEnabled(selected);
 					newButton.setEnabled(selected);
 				}
 			});
+			
+			// Add a listener for mouse clicks
+			prefList.addMouseListener(new MouseAdapter() {
+			    public void mouseClicked(MouseEvent evt) {
+			        JList list = (JList)evt.getSource();
+			        if (evt.getClickCount() == 2) { // Double-click generates with this profile
+			            int idx = list.locationToIndex(evt.getPoint());
+						Profile p = (Profile) prefList.getModel().getElementAt(idx);
+						Base.preferences.put("lastGeneratorProfileSelected",p.toString());
+						configSuccess = true;
+						profile = p.getFullPath();
+						setVisible(false);
+			        }
+			    }
+			});
 			loadList(prefList);
 			add(prefList, "growy");
 
+			prefList.addKeyListener( new KeyAdapter() {
+				public void keyPressed ( KeyEvent e ) {
+					Base.logger.fine("key pressed event: "+e);
+					if(e.getKeyCode() == KeyEvent.VK_ENTER)
+					{
+						int idx = prefList.getSelectedIndex();
+						Base.logger.fine("idx="+idx);
+						Profile p = (Profile) prefList.getModel().getElementAt(idx);
+						Base.preferences.put("lastGeneratorProfileSelected",p.toString());
+						configSuccess = true;
+						profile = p.getFullPath();
+						setVisible(false);
+					}
+				}
+		     }
+			);
+			
 			add(editButton, "split,flowy,growx");
 			editButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -205,14 +261,14 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			});
 			add(raftSelection, "wrap");
 
-			add(ok, "tag ok");
+			add(generate, "tag ok");
 			JButton cancel = new JButton("Cancel");
 			add(cancel, "tag cancel");
-			ok.addActionListener(new ActionListener() {
+			generate.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
 					int idx = prefList.getSelectedIndex();
-
 					Profile p = (Profile) prefList.getModel().getElementAt(idx);
+					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 					configSuccess = true;
 					profile = p.getFullPath();
 					setVisible(false);
