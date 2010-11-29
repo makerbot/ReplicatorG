@@ -252,6 +252,7 @@ public class ToolModel
 
 		n = XML.getAttributeValue(xml, "automatedplatform");
 		hasAutomatedPlatform = hasAutomatedPlatform || isTrueOrOne(n);
+
 		//hah, all this for a debug string... lol.
 		String result = "Loading " + type + " '" + name + "': ";
 		result += "material: " + material + ", ";

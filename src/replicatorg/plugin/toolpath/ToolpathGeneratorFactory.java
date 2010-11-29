@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Vector;
 
 import replicatorg.app.Base;
-import replicatorg.plugin.toolpath.SkeinforgeGenerator.SkeinforgePreference;
 
 public class ToolpathGeneratorFactory {
 	public static class ToolpathGeneratorDescriptor {

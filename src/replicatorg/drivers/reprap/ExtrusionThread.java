@@ -40,10 +40,10 @@ public class ExtrusionThread extends Thread {
 
 	private void sendExtrudeCommand(double distance, double feedrate) {
 		String feedrateString = driver.df.format(feedrate);
+		String eCode = driver.df.format(distance*((direction == Direction.forward)?1 : -1));
 		driver.sendCommand(driver._getToolCode() + "G92 E0");
 		driver.sendCommand(driver._getToolCode() + "G1 F"+feedrateString);
-		driver.sendCommand(driver._getToolCode() + "G1 E"+
-				driver.df.format(distance)+" F"+feedrateString);
+		driver.sendCommand(driver._getToolCode() + "G1 E"+ eCode +" F"+feedrateString);
 	}
 	
 	public void setFeedrate(double feedrate)
@@ -58,9 +58,9 @@ public class ExtrusionThread extends Thread {
 		feedrateLock.lock();
 		double f = this.feedrate;
 		feedrateLock.unlock();
-		directionLock.lock();
-		f *= (direction == Direction.forward)?1 : -1;
-		directionLock.unlock();
+//		directionLock.lock();
+//		f *= (direction == Direction.forward)?1 : -1;
+//		directionLock.unlock();
 		return f;
 	}
 	
@@ -78,7 +78,7 @@ public class ExtrusionThread extends Thread {
 			/** the time length of each extrusion command */
 			//long commandPeriod = 500; //ms
 			/** the length of filament to extrude on each command */
-			double distance = 100; //mm (not really)
+			double distance = 2; //mm (not really) - FIXME: should be shorter when speed is low
 			int queueSize = 0;
 			
 			/* Outer loop to wait for extrude commands */
@@ -96,7 +96,7 @@ public class ExtrusionThread extends Thread {
 					synchronized (driver.commands) {
 						queueSize = driver.commands.size();
 					}
-					if (queueSize < 6)
+					if (queueSize < 7)//7 keeps my buffer saturated, it was 6
 					{
 						// Send extrude command
 						double feedrate = this.getFeedrate();
