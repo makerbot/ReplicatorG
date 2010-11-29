@@ -1,7 +1,10 @@
 (end of the file, cooldown routines)
-M104 S0
-G91
-G1 F15000
-G1 E-10
-G1 F400
-G1 Z10
+M104 S0 (end.gcode v2.0 - turning off extruder )
+G90 (absolute positioning - end of end.gcode)
+G92 X0 Y0 Z0 (set current as home position)
+G92 E0 (reset extrusion position)
+;G1 E-10 F15000 (reverse extruder a little)
+;G92 E0 (reset extrusion position)
+G1 X-20 F3000 (rapidly move extruder away from the object, hopefully)
+G1 Z10 F400 (platform down a little more)
+G90 (absolute positioning - end of end.gcode)
