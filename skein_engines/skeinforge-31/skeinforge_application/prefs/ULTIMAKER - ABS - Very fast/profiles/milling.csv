@@ -1,0 +1,5 @@
+Format is tab separated milling settings.
+Name                          	Value
+WindowPosition	0+400
+WindowVisibilities
+Profile Selection:	end_mill

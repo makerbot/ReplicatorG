@@ -1,0 +1,8 @@
+Format is tab separated profile settings.
+Name                          	Value
+WindowPosition	0+200
+WindowVisibilities
+cutting	False
+extrusion	True
+milling	False
+winding	False
