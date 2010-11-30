@@ -113,7 +113,7 @@ public class MachineFactory {
 			NodeList names = e.getElementsByTagName("name");
 			if (names != null && names.getLength() > 0) {
 				String mname = names.item(0).getTextContent().trim();
-				Base.logger.log(Level.INFO,"Adding machine "+mname+" for node "+e.toString());
+				Base.logger.log(Level.FINE,"Adding machine "+mname+" for node "+e.toString());
 				map.put(mname,e);
 			}
 		}
@@ -135,7 +135,7 @@ public class MachineFactory {
 			}
 			File f = new File(dir,filename);
 			if (f.exists() && f.isFile()) {
-				Base.logger.log(Level.INFO,"Scanning file "+filename);
+				Base.logger.log(Level.FINE,"Scanning file "+filename);
 				try {
 					Document d = db.parse(f);
 					addMachinesForDocument(d,machineMap);
@@ -165,6 +165,10 @@ public class MachineFactory {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			File f = Base.getApplicationFile("machines");
+			if (f.exists() && f.isDirectory()) {
+				addMachinesForDirectory(f, machineMap, db);
+			}
+			f = Base.getUserFile("machines");
 			if (f.exists() && f.isDirectory()) {
 				addMachinesForDirectory(f, machineMap, db);
 			}
