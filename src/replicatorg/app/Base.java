@@ -106,20 +106,24 @@ public class Base {
 	private static MachineController machine = null;
 	
 	/**
+	 * The user preferences store.
+	 */
+	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
+
+	/**
 	 * The general-purpose logging object.
 	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
 	{
-		logger.setLevel(Level.FINE);
+		String levelName = Base.preferences.get("replicatorg.debuglevel", Level.INFO.getName());
+		Level l = Level.parse(levelName);
+		logger.setLevel(l);
 	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
 	 * handler.
 	 */
 	static public String openedAtStartup;
-
-	
-	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
 
 	static public void resetPreferences() {
 		try {
