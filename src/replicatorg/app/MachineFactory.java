@@ -51,8 +51,15 @@ public class MachineFactory {
 		throw new AssertionError();
 	}
 
+	/**
+	 * If possible, create a machine controller for the specified device.
+	 * @param name The name of the machine descriptor in one of the machine XML files.
+	 * @return the machine controller, or null if no descriptor with the given name could be found.
+	 */
 	public static MachineController load(String name) {
-		return new MachineController(getMachineNode(name));
+		Node machineNode = getMachineNode(name);
+		if (machineNode == null) { return null; }
+		return new MachineController(machineNode);
 	}
 
 	public static MachineController loadSimulator() {

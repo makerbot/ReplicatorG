@@ -2403,6 +2403,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	public void loadMachine(String name, Boolean connect) {
 		setMachine(Base.loadMachine(name));
+		if (getMachine() == null) return; // abort on no selected machine
 		reloadSerialMenu();
 		
 		if(previewPanel != null)
