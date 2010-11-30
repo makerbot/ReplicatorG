@@ -175,7 +175,7 @@ public class MachineFactory {
 			if (f.exists() && f.isDirectory()) {
 				addMachinesForDirectory(f, machineMap, db);
 			}
-			f = Base.getUserFile("machines");
+			f = Base.getUserFile("machines", false);
 			if (f.exists() && f.isDirectory()) {
 				addMachinesForDirectory(f, machineMap, db);
 			}
