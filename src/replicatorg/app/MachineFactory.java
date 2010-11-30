@@ -25,13 +25,20 @@ package replicatorg.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
+import java.util.Map.Entry;
+import java.util.logging.Level;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -56,115 +63,115 @@ public class MachineFactory {
 		Vector<String> v = new Vector<String>();
 		boolean showExperimental = 
 			Base.preferences.getBoolean("machine.showExperimental", false);
-		NodeList nl = MachineFactory.loadMachinesConfig()
-				.getElementsByTagName("machine");
-		for (int i = 0; i < nl.getLength(); i++) {
-			// look up each machines set of kids
-			Node n = nl.item(i);
-			// skip experimental drivers if showExperimental is false
+		MachineMap mm = getMachineMap();
+		for (Entry<String, Element> entry : mm.entrySet()) {
 			if (!showExperimental) {
-				if (n.hasAttributes() &&
-						n.getAttributes().getNamedItem("experimental") != null) { // THERE IS A BUG HERE: experimental=0 will also trigger experimental and leave them out!
-					// skip this node
+				// filter on experimental attribute.
+				String exp = entry.getValue().getAttribute("experimental");
+				if (!exp.isEmpty() && !exp.equals("0")) {
+					// Hide name
 					continue;
 				}
 			}
-			NodeList kids = n.getChildNodes();
-			for (int j = 0; j < kids.getLength(); j++) {
-				Node kid = kids.item(j);
-				if (kid.getNodeName().equals("name")) {
-					String machineName = kid.getFirstChild().getNodeValue()
-							.trim();
-					v.add(machineName);
-				}
-			}
+			v.add(entry.getKey());
 		}
+		Collections.sort(v);
 		return v;
 	}
 
+	static class MachineMap extends HashMap<String,Element> {
+	};
+	
+	private static MachineMap machineMap = null;
+	
+	private static MachineMap getMachineMap() {
+		if (machineMap == null) {
+			machineMap = loadMachinesConfig();
+		}
+		return machineMap;
+	}
+	
 	// look for machine configuration node.
 	private static Node getMachineNode(String name) {
-		// load config...
-		Document dom = loadMachinesConfig();
-
-		if (dom == null) {
-			Base.quitWithError(null, "Error parsing machines.xml", null);
-			return null;
+		MachineMap mm = getMachineMap();
+		if (mm.containsKey(name)) {
+			return mm.get(name);
 		}
-
+		return null;
+	}
+	
+	/** Load all machine descriptors from a single DOM object.
+	 * @see loadMachinesConfig()
+	 * @param dom The parsed XML to scan
+	 * @param machineMap The map to add entries to
+	 */
+	private static void addMachinesForDocument(Document dom, MachineMap map) {
 		// get each machine
 		NodeList nl = dom.getElementsByTagName("machine");
-
 		for (int i = 0; i < nl.getLength(); i++) {
-			// look up each machine's set of kids
-			Node n = nl.item(i);
-			NodeList kids = n.getChildNodes();
-
-			for (int j = 0; j < kids.getLength(); j++) {
-				Node kid = kids.item(j);
-
-				if (kid.getNodeName().equals("name")) {
-					String machineName = kid.getFirstChild().getNodeValue()
-							.trim();
-
-					if (machineName.equals(name))
-						return n;
+			Element e = (Element)nl.item(i);
+			NodeList names = e.getElementsByTagName("name");
+			if (names != null && names.getLength() > 0) {
+				String mname = names.item(0).getTextContent().trim();
+				Base.logger.log(Level.INFO,"Adding machine "+mname+" for node "+e.toString());
+				map.put(mname,e);
+			}
+		}
+	}
+	
+	/** Load all machine descriptors from a single directory.
+	 * @see loadMachinesConfig()
+	 * @param dir The directory to scan
+	 * @param machineMap The map to add entries to
+	 * @param db A documentbuilder object for parsing
+	 */
+	private static void addMachinesForDirectory(File dir, MachineMap machineMap,DocumentBuilder db) {
+		db.reset(); // Allow reuse of a single DocumentBuilder.
+		List<String> filenames = Arrays.asList(dir.list());
+		Collections.sort(filenames); // Files addressed in alphabetical order.
+		for (String filename : filenames) {
+			if (!filename.endsWith(".xml") && !filename.endsWith(".XML")) {
+				continue; // Skip anything with an improper extension
+			}
+			File f = new File(dir,filename);
+			if (f.exists() && f.isFile()) {
+				Base.logger.log(Level.INFO,"Scanning file "+filename);
+				try {
+					Document d = db.parse(f);
+					addMachinesForDocument(d,machineMap);
+				} catch (SAXException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 		}
-
-		// fail with our dom.
-		return dom.getFirstChild();
 	}
-
-	/** We only need to warn the user if we're loading the machines.xml.dist file once. */
-	static boolean usingDistXmlWarned = false; 
-
-	/** Attempt to load the machines.xml file.  If it's not found, attempt to load the machines.xml.dist
-	 * file.
-	 * @return a Document object representing the config, or null if unable to load the document.
+	/** Load all the machine descriptors from XML.  Machine descriptors are looked for in:
+	 * <ol>
+	 *  <li>The "machines" directory under the ReplicatorG install directory</li>
+	 *  <li>The "~/.replicatorg/machines" directory</li>
+	 * </ol>
+	 * Any files with an .xml extension in these directories will be scanned for machine
+	 * descriptors.  Files are scanned in alphabetical order within each directory. If two
+	 * machine descriptors have the same name, the latest-scanned one appears in the machine
+	 * map.
+	 * @return a map of strings to XML Node objects.
 	 */
-	private static Document loadMachinesConfig() {
-		// attempt to load our xml document.
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		try {
+	private static MachineMap loadMachinesConfig() {
+		// Create the machine configuration map
+		MachineMap machineMap = new MachineMap();
+		try { // Catch unlikely parser configuration exception.
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			try {
-				File f = Base.getUserFile("machines.xml");
-				if (!f.exists()) {
-					f = Base.getApplicationFile("machines.xml.dist");
-					if (f.exists()) {
-						if (!usingDistXmlWarned) {
-							Base.showMessage(
-											"Machines.xml Not Found",
-											"The machine description file 'machines.xml' was not found.\n"
-													+ "Falling back to using 'machines.xml.dist' instead.");
-							usingDistXmlWarned = true;
-						}
-					} else {
-						Base.quitWithError(
-										"Machines.xml Not Found",
-										"The machine description file 'machines.xml' was not found.\n"
-												+ "Make sure you're running ReplicatorG from the correct directory.",
-										null);
-						return null;
-					}
-				}
-				try {
-					return db.parse(f);
-				} catch (SAXException e) {
-					e.printStackTrace();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				Base.quitWithError(null, "Could not read machines.xml.\n"
-						+ "You'll need to reinstall ReplicatorG.", e);
+			File f = Base.getApplicationFile("machines");
+			if (f.exists() && f.isDirectory()) {
+				addMachinesForDirectory(f, machineMap, db);
 			}
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		}
-
-		return null;
+		return machineMap;
 	}
 
 }
