@@ -34,9 +34,9 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,7 +47,7 @@ import org.w3c.dom.Node;
 import replicatorg.app.Base;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
-import replicatorg.drivers.reprap.FiveDExtrusionUpdater.Direction;
+import replicatorg.drivers.reprap.ExtrusionUpdater.Direction;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 
@@ -64,12 +64,14 @@ public class RepRap5DDriver extends SerialDriver {
 	/** true if a line containing the start keyword has been received from the firmware*/
 	private final AtomicBoolean startReceived = new AtomicBoolean(false);
 	
+	private final ResponseReader responseReader = new ResponseReader(this);
+	
 	/**
 	 * Enables five D GCodes if true. If false reverts to traditional 3D Gcodes
 	 */
 	private boolean fiveD = true;
 	
-	private final FiveDExtrusionUpdater extrusionUpdater = new FiveDExtrusionUpdater(this);
+	private final ExtrusionUpdater extrusionUpdater = new ExtrusionUpdater(this);
 
 	/**
 	 * To keep track of outstanding commands
@@ -91,6 +93,7 @@ public class RepRap5DDriver extends SerialDriver {
 	 * if there is a checksum problem.
 	 */
 	private LinkedList<String> buffer = new LinkedList<String>();
+	private ReentrantLock bufferLock = new ReentrantLock();
 
 	/**
 	 * What did we get back from serial?
@@ -101,10 +104,13 @@ public class RepRap5DDriver extends SerialDriver {
 
 	private byte[] responsebuffer = new byte[512];
 
-	private int lineNumber = 0;
+	private AtomicInteger lineNumber = new AtomicInteger(0);
 
 	public RepRap5DDriver() {
 		super();
+		
+		//start the response reader thread
+		this.responseReader.start();
 
 		// init our variables.
 		commands = new LinkedList<Integer>();
@@ -130,7 +136,7 @@ public class RepRap5DDriver extends SerialDriver {
 			Base.logger.severe("No Serial Port found.\n");
 			return;
 		}
-		// wait till we're initialized
+		// wait till we're initialised
 		if (!isInitialized()) {
 				//attempt to reset the device, this may slow down the connection time, but it 
 				//increases our chances of successfully connecting dramatically.
@@ -205,8 +211,14 @@ public class RepRap5DDriver extends SerialDriver {
 	}
 
 	/**
-	 * Actually sends command over serial. This will block until the command is 
-	 * acknowledged with an OK response.
+	 * Actually sends command over serial.
+	 * 
+	 * Commands sent here are acknowledged asynchronously in another 
+	 * thread so as to increase our serial GCode throughput.
+	 * 
+	 * Only one command can be sent at a time. If another command is 
+	 * being sent this method will block until the previous command 
+	 * is finished sending.
 	 */
 	protected void sendCommand(String next) {
 		sendCommandLock.lock();
@@ -234,9 +246,9 @@ public class RepRap5DDriver extends SerialDriver {
 		next = applyChecksum(next);
 		
 		// Block until we can fit the command on the Arduino
-		//while (bufferSize + next.length() + 1 > maxBufferSize) {
-		//	readResponse();
-		//}
+		while (bufferSize + next.length() + 1 > maxBufferSize) {
+			readResponse();
+		}
 
 		// do the actual send.
 		serialWriteLock.lock();
@@ -246,15 +258,21 @@ public class RepRap5DDriver extends SerialDriver {
 
 		// record it in our buffer tracker.
 		int cmdlen = next.length() + 1;
+		bufferLock.lock();
 		commands.add(cmdlen);
 		bufferSize += cmdlen;
 		buffer.addFirst(next);
+		bufferLock.unlock();
 
 		// debug... let us know whats up!
 		Base.logger.fine("Sent: " + next);
 
 		// Wait for the response (synchronous gcode transmission)
-		while(!isFinished()) {}
+		//while(!isFinished()) {}
+		
+		// Notify the response reader that another command has been sent so it should 
+		// await a response.
+		responseReader.notifyCommandSent();
 
 		sendCommandLock.unlock();
 	}
@@ -323,17 +341,16 @@ public class RepRap5DDriver extends SerialDriver {
 		// RepRap Syntax: N<linenumber> <cmd> *<chksum>\n
 
 		if (gcode.contains("M110"))
-			lineNumber = 0;
+			lineNumber.set(0);
 		
 		Matcher lineNumberMatcher = gcodeLineNumberPattern.matcher(gcode);
 		if (lineNumberMatcher.matches())
 		{ // reset our line number to the specified one. this is usually a m110 line # reset
-			lineNumber = Integer.parseInt( lineNumberMatcher.group(1) );
+			lineNumber.set( Integer.parseInt( lineNumberMatcher.group(1) ) );
 		}
 		else
 		{ // only add a line number if it is not already specified
-			lineNumber++;
-			gcode = "N"+lineNumber+' '+gcode+' ';
+			gcode = "N"+lineNumber.incrementAndGet()+' '+gcode+' ';
 		}
 
 		// chksum = 0 xor each byte of the gcode (including the line number and trailing space)
@@ -347,103 +364,117 @@ public class RepRap5DDriver extends SerialDriver {
 	}
 	
 	public void readResponse() {
-		assert (serial != null);
-		synchronized (serial) {
-			try {
-				int numread = serial.read(responsebuffer);
-				// 0 is now an acceptable value; it merely means that we timed out
-				// waiting for input
-				if (numread < 0) {
-					// This signifies EOF. FIXME: How do we handle this?
-					Base.logger.severe("SerialPassthroughDriver.readResponse(): EOF occured");
-					return;
-				} else {
-					result += new String(responsebuffer, 0, numread, "US-ASCII");
+		try {
+			int numread;
 
-					// System.out.println("got: " + c);
-					// System.out.println("current: " + result);
-					int index;
-					while ((index = result.indexOf('\n')) >= 0) {
-						String line = result.substring(0, index).trim(); // trim
-																			// to
-																			// remove
-																			// any
-																			// trailing
-						Base.logger.fine(line);											// \r
-						result = result.substring(index + 1);
-						if (line.length() == 0)
-							continue;
-						if (line.startsWith("ok")) {
-							setInitialized(true);
-							bufferSize -= commands.remove();
-							buffer.removeLast();
-							if (line.startsWith("ok T:")) {
-								Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
-							    Matcher m = r.matcher(line);
-							    if (m.find( )) {
-							    	String temp = m.group(1);
-									
-									machine.currentTool().setCurrentTemperature(
-											Double.parseDouble(temp));
-							    }
-								r = Pattern.compile("^ok.*B:([0-9\\.]+)$");
-							    m = r.matcher(line);
-							    if (m.find( )) {
-							    	String bedTemp = m.group(1);
-									machine.currentTool().setPlatformCurrentTemperature(
-											Double.parseDouble(bedTemp));
-							    }
-							}
+			serialWriteLock.lock();
+			assert (serial != null);
+			synchronized (serial) {
+				numread = serial.read(responsebuffer);
+			}
+			serialWriteLock.unlock();
 
+			// 0 is now an acceptable value; it merely means that we timed out
+			// waiting for input
+			if (numread < 0) {
+				// This signifies EOF. FIXME: How do we handle this?
+				Base.logger.severe("SerialPassthroughDriver.readResponse(): EOF occured");
+				return;
+			} else {
+				result += new String(responsebuffer, 0, numread, "US-ASCII");
+
+				// System.out.println("got: " + c);
+				// System.out.println("current: " + result);
+				int index;
+				while ((index = result.indexOf('\n')) >= 0) {
+					String line = result.substring(0, index).trim(); // trim
+																		// to
+																		// remove
+																		// any
+																		// trailing
+					Base.logger.fine(line);											// \r
+					result = result.substring(index + 1);
+					if (line.length() == 0)
+						continue;
+					if (line.startsWith("ok")) {
+
+						setInitialized(true);
+						bufferLock.lock();
+						bufferSize -= commands.remove();
+						buffer.removeLast();
+						bufferLock.unlock();
+
+						if (line.startsWith("ok T:")) {
+							Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
+						    Matcher m = r.matcher(line);
+						    if (m.find( )) {
+						    	String temp = m.group(1);
+								
+								machine.currentTool().setCurrentTemperature(
+										Double.parseDouble(temp));
+						    }
+							r = Pattern.compile("^ok.*B:([0-9\\.]+)$");
+						    m = r.matcher(line);
+						    if (m.find( )) {
+						    	String bedTemp = m.group(1);
+								machine.currentTool().setPlatformCurrentTemperature(
+										Double.parseDouble(bedTemp));
+						    }
 						}
-						// old arduino firmware sends "start"
-						else if (line.contains("start")||line.contains("Start")) {
-							// todo: set version
-							// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
-							startReceived.set(true);
-							lineNumber = 0;
-						} else if (line.startsWith("Extruder Fail")) {
-							setError("Extruder failed:  cannot extrude as this rate.");
-						} else if (line.startsWith("Resend:")||line.startsWith("rs ")) {
-							Base.logger.severe(line);
-							// Bad checksum, resend requested
-							String bufferedLine = buffer.removeLast();
-							bufferSize -= commands.remove();
-							int bufferedLineNumber = Integer.parseInt( 
-									gcodeLineNumberPattern.matcher(bufferedLine).group(1) );
 
-							Matcher badLineMatch = resendLinePattern.matcher(line);
-							if (badLineMatch.find())
+					}
+					// old arduino firmware sends "start"
+					else if (line.contains("start")||line.contains("Start")) {
+						// todo: set version
+						// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
+						startReceived.set(true);
+						lineNumber.set(0);
+
+					} else if (line.startsWith("Extruder Fail")) {
+						setError("Extruder failed:  cannot extrude as this rate.");
+
+					} else if (line.startsWith("Resend:")||line.startsWith("rs ")) {
+						Base.logger.severe(line);
+						// Bad checksum, resend requested
+						bufferLock.lock();
+						String bufferedLine = buffer.removeLast();
+						bufferSize -= commands.remove();
+						bufferLock.unlock();
+
+						int bufferedLineNumber = Integer.parseInt( 
+								gcodeLineNumberPattern.matcher(bufferedLine).group(1) );
+
+						Matcher badLineMatch = resendLinePattern.matcher(line);
+						if (badLineMatch.find())
+						{
+							int badLineNumber = Integer.parseInt(
+									badLineMatch.group(1) );
+
+							if (bufferedLineNumber != badLineNumber)
 							{
-								int badLineNumber = Integer.parseInt(
-										badLineMatch.group(1) );
-
-								if (bufferedLineNumber != badLineNumber)
-								{
-									Base.logger.warning("unexpected line number, resetting line number");
-									// reset the line number if it does not match the buffered line
-									 this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
-								}
+								Base.logger.warning("unexpected line number, resetting line number");
+								// reset the line number if it does not match the buffered line
+								 this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
 							}
-							else
-							{
-								// Malformed resend line request received. Resetting the line number
-								Base.logger.warning("malformed line resend request, "
-										+"resetting line number. Malformed Data: \n"+line);
-								this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
-							}
-
-							// resend the line
-							this.sendCommand(bufferedLine);
-						} else {
-							Base.logger.severe("Unknown: " + line);
 						}
+						else
+						{
+							// Malformed resend line request received. Resetting the line number
+							Base.logger.warning("malformed line resend request, "
+									+"resetting line number. Malformed Data: \n"+line);
+							this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
+						}
+
+						// resend the line
+						this.sendCommand(bufferedLine);
+					} else {
+						Base.logger.severe("Unknown: " + line);
 					}
 				}
-			} catch (IOException e) {
-				Base.logger.severe("inputstream.read() failed: " + e.toString());
-				// FIXME: Shut down communication somehow.
 			}
+		} catch (IOException e) {
+			Base.logger.severe("inputstream.read() failed: " + e.toString());
+			// FIXME: Shut down communication somehow.
 		}
 	}
 
@@ -455,14 +486,15 @@ public class RepRap5DDriver extends SerialDriver {
 	 * Is our buffer empty? If don't have a buffer, its always true.
 	 */
 	public boolean isBufferEmpty() {
-		try {
-			readResponse();
-		} catch (Exception e) {
-		}
+//		try {
+//			readResponse();
+//		} catch (Exception e) {
+//		}
 		return (bufferSize == 0);
 	}
 
 	public void dispose() {
+		this.responseReader.dispose();
 		super.dispose();
 
 		if (serial != null)

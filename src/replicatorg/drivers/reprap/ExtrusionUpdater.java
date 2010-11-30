@@ -4,7 +4,6 @@
 package replicatorg.drivers.reprap;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -12,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * extruder control will work with the RepRap 5D firmware.
  * @author rob
  */
-public class FiveDExtrusionUpdater {
+public class ExtrusionUpdater {
 	
 	private final RepRap5DDriver driver;
 	public final AtomicBoolean isExtruding = new AtomicBoolean(false);
@@ -37,7 +36,7 @@ public class FiveDExtrusionUpdater {
 		reverse;
 	}
 
-	public FiveDExtrusionUpdater(RepRap5DDriver driver)
+	public ExtrusionUpdater(RepRap5DDriver driver)
 	{
 		this.driver = driver;
 	}
