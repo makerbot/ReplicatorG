@@ -890,7 +890,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			// load it and set it.
 			Thread t = new Thread() {
 				public void run() {
-					loadMachine(name, machine.getMachineState().isConnected());
+					loadMachine(name, (machine != null) && machine.getMachineState().isConnected());
 				}
 			};
 			t.start();

@@ -82,7 +82,7 @@ public class FirmwareUploader {
 		t.start();
 	}
 
-	static public final String DEFAULT_UPDATES_URL = "http://firmware.ultimaker.com/firmware_all.xml";
+	static public final String DEFAULT_UPDATES_URL = "http://firmware.makerbot.com/firmware.xml";
 
 	/**
 	 * Get the URL of the source for dowloading
