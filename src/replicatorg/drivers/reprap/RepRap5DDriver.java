@@ -138,14 +138,17 @@ public class RepRap5DDriver extends SerialDriver {
 		}
 		// wait till we're initialised
 		if (!isInitialized()) {
+				Base.logger.info("Initializing Serial.");
 				//attempt to reset the device, this may slow down the connection time, but it 
 				//increases our chances of successfully connecting dramatically.
+				Base.logger.fine("Attempting to reset RepRap (pulsing RTS)");
 				serial.pulseRTSLow();
 				//Wait for the RepRap to startup
 				while(startReceived.get()!=true)
 				{
 					readResponse();
 				}
+				Base.logger.fine("RepRap reset");
 
 				//Send a line # reset command, this allows us to catch the "ok" response in 
 				//case we missed the "start" response which we seem to often miss. (also it 
@@ -155,13 +158,12 @@ public class RepRap5DDriver extends SerialDriver {
 
 				// record our start time.
 				Date date = new Date();
-				long end = date.getTime() + 10000;
-				try {
+				long end = date.getTime() + 1000;
 
-				Base.logger.info("Initializing Serial.");
 //				serial.clear();
+				Base.logger.fine("first gcode sent. waiting for response..");
 				while (!isInitialized()) {
-					readResponse();
+//					readResponse();
 
 /// Recover:
 //					Base.logger.warning("No connection; trying to pulse RTS to reset device.");
@@ -178,14 +180,12 @@ public class RepRap5DDriver extends SerialDriver {
 						return;
 					}
 				}
-			} catch (Exception e) {
-				// todo: handle init exceptions here
-			}
-			Base.logger.info("Ready.");
+				Base.logger.fine("first gcode response received.");
 		}
 
 		// default us to absolute positioning
 		sendCommand("G90");
+		Base.logger.info("Ready.");
 	}
 
 	/**
