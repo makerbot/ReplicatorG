@@ -255,7 +255,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			(machine.driver instanceof SDCardCapture) &&
 			(((SDCardCapture)machine.driver).hasFeatureSDCardCapture());
 		simButton.setEnabled(!building && hasGcode);
-		fileButton.setEnabled(!building && hasGcode);
+		fileButton.setEnabled(!building && (machine != null) && hasGcode);
 		buildButton.setEnabled(ready && hasGcode);
 		uploadButton.setEnabled(ready && hasPlayback && hasGcode);
 		playbackButton.setEnabled(ready && hasPlayback);

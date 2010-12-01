@@ -84,7 +84,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	 *            the machine's controller, or null if no machine is attached.
 	 */
 	public void setMachine(MachineController machine) {
-		if (this.machine == machine)
+		if (machine != null && this.machine == machine)
 			return;
 		this.machine = machine;
 		MachineState state = (machine!=null)?machine.getMachineState():new MachineState();

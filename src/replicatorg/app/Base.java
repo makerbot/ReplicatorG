@@ -365,9 +365,7 @@ public class Base {
 				// load up our default machine
 				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
 				String machineName = preferences.get("machine.name",null); 
-				if (machineName != null) {
-					editor.loadMachine(machineName, autoconnect);
-				}
+				editor.loadMachine(machineName, autoconnect);
 				// show the window
 				editor.setVisible(true);
 				UpdateChecker.checkLatestVersion(editor);
@@ -803,7 +801,7 @@ public class Base {
 	 * Grab the contents of a file as a string.
 	 */
 	static public String loadFile(File file) throws IOException {
-		System.err.println("Load file : "+file.getAbsolutePath());
+		Base.logger.info("Load file : "+file.getAbsolutePath());
 		// empty code file.. no worries, might be getting filled up later
 		if (file.length() == 0)
 			return "";

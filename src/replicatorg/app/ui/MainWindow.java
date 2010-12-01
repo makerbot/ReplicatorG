@@ -2388,6 +2388,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			machine.addMachineStateListener(this);
 			machine.addMachineStateListener(machineStatusPanel);
 			machine.addMachineStateListener(buttons);
+		} else {
+			// Buttons will need an explicit null state notification
+			MachineStateChangeEvent evt = new MachineStateChangeEvent(null, new MachineState());
+			buttons.machineStateChanged(evt);
 		}
 		machineStatusPanel.setMachine(this.machine);
 		// TODO: PreviewPanel: update with new machine
