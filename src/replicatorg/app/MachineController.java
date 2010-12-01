@@ -699,6 +699,9 @@ public class MachineController {
 		return false;
 	}
 
+	private String descriptorName;
+	
+	public String getDescriptorName() { return descriptorName; }
 	
 	private void parseName() {
 		NodeList kids = machineNode.getChildNodes();
@@ -707,7 +710,8 @@ public class MachineController {
 			Node kid = kids.item(j);
 
 			if (kid.getNodeName().equals("name")) {
-				name = kid.getFirstChild().getNodeValue().trim();
+				descriptorName = kid.getFirstChild().getNodeValue().trim();
+				name = descriptorName;
 				return;
 			}
 		}
