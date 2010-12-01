@@ -250,12 +250,13 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();
 		boolean hasGcode = editor.getBuild().getCode() != null;
-		boolean hasPlayback = (machine != null) && 
+		boolean hasMachine = machine != null;
+		boolean hasPlayback = hasMachine && 
 			(machine.driver != null) &&
 			(machine.driver instanceof SDCardCapture) &&
 			(((SDCardCapture)machine.driver).hasFeatureSDCardCapture());
-		simButton.setEnabled(!building && hasGcode);
-		fileButton.setEnabled(!building && (machine != null) && hasGcode);
+		simButton.setEnabled(hasMachine && !building && hasGcode);
+		fileButton.setEnabled(hasMachine && !building && hasGcode);
 		buildButton.setEnabled(ready && hasGcode);
 		uploadButton.setEnabled(ready && hasPlayback && hasGcode);
 		playbackButton.setEnabled(ready && hasPlayback);
@@ -275,7 +276,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		boolean connected = s.isConnected();
 		resetButton.setEnabled(connected); 
 		disconnectButton.setEnabled(connected);
-		connectButton.setEnabled(!connected);
+		connectButton.setEnabled(hasMachine && !connected);
 		cpButton.setEnabled(ready);
 		
 	}
