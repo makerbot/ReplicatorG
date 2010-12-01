@@ -16,6 +16,7 @@ import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -40,8 +41,9 @@ public class BoardSelectionPanel extends JPanel {
 	}
 
 	class BoardListCellRenderer extends JLabel implements ListCellRenderer {
+		Icon boardIcon;
 		public BoardListCellRenderer(Icon boardIcon) {
-			setIcon(boardIcon);
+			this.boardIcon = boardIcon;
 		}
 		public Component getListCellRendererComponent(
 				JList list,
@@ -49,19 +51,24 @@ public class BoardSelectionPanel extends JPanel {
 				int index,
 				boolean isSelected,
 				boolean cellHasFocus) {
-			Node node = (Node)value;
-			String name = node.getAttributes().getNamedItem("name").getNodeValue();
+			Element e = (Element)value;
+			String name = e.getAttribute("name");
+			String iconStr = e.getAttribute("icon");
+			if (iconStr != null && !iconStr.isEmpty()) {
+				ImageIcon icon = new ImageIcon(Base.getImage("images/"+iconStr, this));
+				setIcon(icon);
+			} else {
+				setIcon(boardIcon);
+			}
 			StringBuffer versions = new StringBuffer();
-			NodeList nl = node.getChildNodes();
+			NodeList nl = e.getElementsByTagName("version");
 			for (int i = 0; i < nl.getLength(); i++) {
-				Node n = nl.item(i);
-				if ("version".equalsIgnoreCase(n.getNodeName())) {
-					if (versions.length() != 0) { versions.append(", "); }
-					versions.append("v");
-					versions.append(n.getAttributes().getNamedItem("major").getNodeValue());
-					versions.append(".");
-					versions.append(n.getAttributes().getNamedItem("minor").getNodeValue());
-				}
+				Element ve = (Element)nl.item(i);
+				if (versions.length() != 0) { versions.append(", "); }
+				versions.append("v");
+				versions.append(ve.getAttribute("major"));
+				versions.append(".");
+				versions.append(ve.getAttribute("minor"));
 			}
 			setText("<html>"+name+"<br/><font color=\"gray\" size=\"-2\">"+versions.toString()+"</font></html>");
 			setBackground(isSelected?list.getSelectionBackground():list.getBackground());
