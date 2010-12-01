@@ -490,7 +490,10 @@ public class RepRap5DDriver extends SerialDriver {
 //			readResponse();
 //		} catch (Exception e) {
 //		}
-		return (bufferSize == 0);
+		bufferLock.lock();
+		boolean isEmpty = (bufferSize == 0);
+		bufferLock.unlock();
+		return isEmpty;
 	}
 
 	public void dispose() {

@@ -24,6 +24,8 @@
 package replicatorg.drivers;
 
 import java.util.EnumSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.vecmath.Point3d;
 
@@ -54,7 +56,7 @@ public class DriverBaseImplementation implements Driver {
 	private Point3d[] offsets;
 
 	// are we initialized?
-	private boolean isInitialized = false;
+	private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
 	// the length of our last move.
 	private double moveLength = 0.0;
@@ -117,12 +119,15 @@ public class DriverBaseImplementation implements Driver {
 	}
 
 	public void setInitialized(boolean status) {
-		isInitialized = status;
-		if (!status) { currentPosition = null; }
+		synchronized(isInitialized)
+		{
+			isInitialized.set(status);
+			if (!status) { invalidatePosition(); }
+		}
 	}
 
 	public boolean isInitialized() {
-		return isInitialized;
+		return isInitialized.get();
 	}
 
 	/***************************************************************************
@@ -226,10 +231,11 @@ public class DriverBaseImplementation implements Driver {
 		offsets[offsetSystemNum].z = j;
 	}
 
-	private Point3d currentPosition = null;
+	private final AtomicReference<Point3d> currentPosition =
+		new AtomicReference<Point3d>(null);
 	
 	public void setCurrentPosition(Point3d p) throws RetryException {
-		currentPosition = p;
+		currentPosition.set(p);
 	}
 
 	/**
@@ -238,7 +244,7 @@ public class DriverBaseImplementation implements Driver {
 	 */
 	public void invalidatePosition() {
 //		System.err.println("invalidating position.");
-		currentPosition = null;
+		currentPosition.set(null);
 	}
 	
 	/**
@@ -250,10 +256,11 @@ public class DriverBaseImplementation implements Driver {
 	}
 	
 	public Point3d getCurrentPosition() {
-		if (currentPosition == null) {
-			currentPosition = reconcilePosition();
+		synchronized(currentPosition)
+		{
+			currentPosition.compareAndSet(null, reconcilePosition());
+			return new Point3d(currentPosition.get());
 		}
-		return new Point3d(currentPosition);
 	}
 
 	public Point3d getPosition() {
@@ -280,7 +287,7 @@ public class DriverBaseImplementation implements Driver {
 	}
 
 	protected void setInternalPosition(Point3d position) {
-		currentPosition = position;
+		currentPosition.set(position);
 	}
 	
 	protected void queuePoint(Point3d p, Double feedrate) {
