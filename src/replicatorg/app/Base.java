@@ -903,7 +903,8 @@ public class Base {
 	 * our singleton interface to get our machine.
 	 */
 	static public MachineController loadMachine(String name) {
-		if (machine == null || machine.name != name) {
+		System.err.println("*** NAME : "+name+" MACHINE NAME : "+((machine == null?"null":machine.name)));
+		if (machine == null || !machine.name.equals(name)) {
 			machine = MachineFactory.load(name);
 		}
 		return machine;

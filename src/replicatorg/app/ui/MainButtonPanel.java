@@ -194,6 +194,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		add(statusLabel, "gap unrelated");
 
 		setPreferredSize(new Dimension(700,60));
+		
+		// Update initial state
+		machineStateChangedInternal(new MachineStateChangeEvent(null, new MachineState()));
 	}
 
 	public MainButton makeButton(String rolloverText, String source) {
@@ -249,7 +252,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		boolean ready = s.isReady();
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();
-		boolean hasGcode = editor.getBuild().getCode() != null;
+		boolean hasGcode = (editor != null) && (editor.getBuild() != null) &&
+			editor.getBuild().getCode() != null;
 		boolean hasMachine = machine != null;
 		boolean hasPlayback = hasMachine && 
 			(machine.driver != null) &&
