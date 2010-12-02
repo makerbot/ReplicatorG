@@ -403,9 +403,11 @@ public class Sanguino3GDriver extends SerialDriver
 		slavepr = runQuery(slavepb.getPacket(),1);
 		if (!slavepr.isEmpty()) {
 			byte[] payload = slavepr.getPayload();
-			byte[] subarray = new byte[payload.length-1];
-			System.arraycopy(payload, 1, subarray, 0, subarray.length);
-			buildname = " (" + new String(subarray) + ")";
+			if (payload.length > 0) {
+				byte[] subarray = new byte[payload.length-1];
+				System.arraycopy(payload, 1, subarray, 0, subarray.length);
+				buildname = " (" + new String(subarray) + ")";
+			}
 		}
 		
 		Base.logger.log(Level.FINE,"Reported slave board version: "
