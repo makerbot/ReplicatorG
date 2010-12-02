@@ -118,6 +118,12 @@ public class FirmwareUploader {
 		return firmwareDoc;
 	}
 
+	public static void invalidateFirmware() {
+		firmwareDoc = null;
+		File f = Base.getUserFile("firmware.xml");
+		if (f.exists()) { f.delete(); } // Blow away the old firmware file
+	}
+	
 	// / Check the latest version. Returns true if the user wants to update the
 	// firmware and
 	// / abort the connections.

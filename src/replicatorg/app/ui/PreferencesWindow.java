@@ -286,8 +286,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		}
 		String origUpdateUrl = Base.preferences.get("replicatorg.updates.url", "");
 		if (!origUpdateUrl.equals(firmwareUpdateUrlField.getText())) {
-			File oldFirmwareData = Base.getUserFile("firmware.xml");
-			oldFirmwareData.delete(); // Blow away the old firmware.xml if the url has been changed
+			FirmwareUploader.invalidateFirmware();
 			Base.preferences.put("replicatorg.updates.url",firmwareUpdateUrlField.getText());
 			FirmwareUploader.checkFirmware(); // Initiate a new firmware check
 		}
