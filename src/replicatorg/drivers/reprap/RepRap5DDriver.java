@@ -63,13 +63,23 @@ public class RepRap5DDriver extends SerialDriver {
 	
 	/** true if a line containing the start keyword has been received from the firmware*/
 	private final AtomicBoolean startReceived = new AtomicBoolean(false);
+
+	/** true if a line containing the ok keyword has been received from the firmware*/
+	private final AtomicBoolean okReceived = new AtomicBoolean(false);
 	
-	private final ResponseReader responseReader = new ResponseReader(this);
+	private ResponseReader responseReader;
 	
 	/**
 	 * Enables five D GCodes if true. If false reverts to traditional 3D Gcodes
+	 * TODO: add to xml
 	 */
 	private boolean fiveD = true;
+	
+	/**
+	 * if true the driver will wait for a "start" signal when pulsing rts low 
+	 * before initialising the printer.
+	 */
+	private boolean respondsToRTS = false;
 	
 	private final ExtrusionUpdater extrusionUpdater = new ExtrusionUpdater(this);
 
@@ -98,7 +108,7 @@ public class RepRap5DDriver extends SerialDriver {
 	/**
 	 * What did we get back from serial?
 	 */
-	private String result = "";
+	private StringBuffer result = new StringBuffer("");
 
 	protected DecimalFormat df;
 
@@ -109,9 +119,6 @@ public class RepRap5DDriver extends SerialDriver {
 	public RepRap5DDriver() {
 		super();
 		
-		//start the response reader thread
-		this.responseReader.start();
-
 		// init our variables.
 		commands = new LinkedList<Integer>();
 		bufferSize = 0;
@@ -130,7 +137,7 @@ public class RepRap5DDriver extends SerialDriver {
 	}
 
 
-	public void initialize() {
+	public synchronized void initialize() {
 		// declare our serial guy.
 		if (serial == null) {
 			Base.logger.severe("No Serial Port found.\n");
@@ -138,54 +145,70 @@ public class RepRap5DDriver extends SerialDriver {
 		}
 		// wait till we're initialised
 		if (!isInitialized()) {
-				Base.logger.info("Initializing Serial.");
-				//attempt to reset the device, this may slow down the connection time, but it 
-				//increases our chances of successfully connecting dramatically.
-				Base.logger.fine("Attempting to reset RepRap (pulsing RTS)");
+			Base.logger.info("Initializing Serial.");
+
+			//attempt to reset the device, this may slow down the connection time, but it 
+			//increases our chances of successfully connecting dramatically.
+			long timeout = System.currentTimeMillis()+ 9000;
+			connectionLoop: while(startReceived.get()!=true)
+			{
+				Base.logger.info("Attempting to reset RepRap (pulsing RTS)");
 				serial.pulseRTSLow();
+				// set the timeout for the current attempt. If we don't connect by then give up.
+				long retryTimeout = System.currentTimeMillis() + 5000;
+
 				//Wait for the RepRap to startup
-				while(startReceived.get()!=true)
+				while(true)
 				{
 					readResponse();
-				}
-				Base.logger.fine("RepRap reset");
+					
+					if (startReceived.get() == true || respondsToRTS == false) break connectionLoop;
 
-				//Send a line # reset command, this allows us to catch the "ok" response in 
-				//case we missed the "start" response which we seem to often miss. (also it 
-				//resets the line number which is good)
-				sendCommand("M110");
-
-
-				// record our start time.
-				Date date = new Date();
-				long end = date.getTime() + 1000;
-
-//				serial.clear();
-				Base.logger.fine("first gcode sent. waiting for response..");
-				while (!isInitialized()) {
-//					readResponse();
-
-/// Recover:
-//					Base.logger.warning("No connection; trying to pulse RTS to reset device.");
-//					serial.pulseRTSLow();
-
-
-					// record our current time
-					date = new Date();
-					long now = date.getTime();
-
-					// only give them 10 seconds
-					if (now > end) {
+					// have we timed out on this connection attempt? If so record a warning.
+					if (System.currentTimeMillis() > retryTimeout)
+					{
 						Base.logger.warning("Serial link non-responsive.");
-						return;
+						break;
 					}
 				}
-				Base.logger.fine("first gcode response received.");
-		}
+				
+				// have we timed out altogether trying to connect to this printer? Time to give up this one :(
+				if (System.currentTimeMillis() > timeout)
+				{
+					this.dispose();
+					Base.logger.warning("Failed to connect to Printer");
+					return;
+				}
+			}
 
-		// default us to absolute positioning
-		sendCommand("G90");
-		Base.logger.info("Ready.");
+			Base.logger.fine("RepRap reset");
+
+
+			//Send a line # reset command, this allows us to catch the "ok" response in 
+			//case we missed the "start" response which we seem to often miss. (also it 
+			//resets the line number which is good)
+			sendCommand("M110");
+			Base.logger.fine("first gcode sent.");
+			long gcodeTimeout = System.currentTimeMillis()+2000;
+			while (this.okReceived.get() == false)
+			{
+				readResponse();
+				if (System.currentTimeMillis() > gcodeTimeout)
+				{
+					Base.logger.warning("Printer Connection timed out waiting for gcode response");
+					return;
+				}
+			}
+			Base.logger.fine("first gcode response received.");
+
+			//start the response reader thread for asynch firmware response interpretation
+			this.responseReader = new ResponseReader(this);
+
+			// default us to absolute positioning
+			sendCommand("G90");
+			Base.logger.info("Ready.");
+			this.setInitialized(true);
+		}
 	}
 
 	/**
@@ -272,7 +295,7 @@ public class RepRap5DDriver extends SerialDriver {
 		
 		// Notify the response reader that another command has been sent so it should 
 		// await a response.
-		responseReader.notifyCommandSent();
+		if (responseReader!=null) responseReader.notifyCommandSent();
 
 		sendCommandLock.unlock();
 	}
@@ -380,25 +403,28 @@ public class RepRap5DDriver extends SerialDriver {
 				// This signifies EOF. FIXME: How do we handle this?
 				Base.logger.severe("SerialPassthroughDriver.readResponse(): EOF occured");
 				return;
-			} else {
-				result += new String(responsebuffer, 0, numread, "US-ASCII");
+			} else if(numread!=0) {
+				result.append( new String(responsebuffer, 0, numread, "US-ASCII") );
 
 				// System.out.println("got: " + c);
 				// System.out.println("current: " + result);
 				int index;
-				while ((index = result.indexOf('\n')) >= 0) {
+				while ((index = result.indexOf("\n")) >= 0) {
 					String line = result.substring(0, index).trim(); // trim
 																		// to
 																		// remove
 																		// any
 																		// trailing
 					Base.logger.fine(line);											// \r
-					result = result.substring(index + 1);
+					synchronized (result) {
+						result.delete(0, index + 1);
+					}
 					if (line.length() == 0)
 						continue;
 					if (line.startsWith("ok")) {
+						
+						this.okReceived.set(true);
 
-						setInitialized(true);
 						bufferLock.lock();
 						bufferSize -= commands.remove();
 						buffer.removeLast();
@@ -497,7 +523,7 @@ public class RepRap5DDriver extends SerialDriver {
 	}
 
 	public void dispose() {
-		this.responseReader.dispose();
+		if (this.responseReader != null) this.responseReader.dispose();
 		super.dispose();
 
 		if (serial != null)

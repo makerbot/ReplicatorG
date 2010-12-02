@@ -67,12 +67,12 @@ public class ToolModel
 
 	//temperature variables
 	protected final AtomicReference<Double> currentTemperature =
-		new AtomicReference<Double>();
+		new AtomicReference<Double>(0.0);
 	protected double targetTemperature;
 
 	//platform temperature variables
 	protected AtomicReference<Double> platformCurrentTemperature = 
-		new AtomicReference<Double>();
+		new AtomicReference<Double>(0.0);
 	protected double platformTargetTemperature;
 
 	//various coolant/control stuff

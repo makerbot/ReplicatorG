@@ -21,6 +21,8 @@ public class ResponseReader extends Thread {
 	protected ResponseReader(RepRap5DDriver driver)
 	{
 		this.driver = driver;
+		//avoids sketchy states where the ResponseReader exists but is not started.
+		this.start();
 	}
 
 	/*
@@ -35,7 +37,7 @@ public class ResponseReader extends Thread {
 		//wait for the first command to be sent before trying to read responses
 		waitForNotification(commandSentNotifier);
 
-		{
+		while(this.keepAlive.get()==true) {
 			// polling the read response function for new responses from the printer
 			driver.readResponse();
 
@@ -49,7 +51,7 @@ public class ResponseReader extends Thread {
 				}
 			}
 
-		} while(this.keepAlive.get()==true);
+		}
 
 		//Notify that the ResponseReader thread is exiting
 		synchronized (endNotifier) {
@@ -79,6 +81,11 @@ public class ResponseReader extends Thread {
 	{
 		synchronized (endNotifier) {
 			keepAlive.set(false);
+			//Stop waiting for the next command and exit the loop.
+			synchronized (commandSentNotifier) {
+				commandSentNotifier.notifyAll();
+			}
+			//wait for the thread to die.
 			waitForNotification(endNotifier);
 		}
 	}
