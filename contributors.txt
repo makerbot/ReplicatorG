@@ -17,6 +17,11 @@ the contributor's full name, I've listed their github handle instead.
 * Aaron Colwell
 * Rick Kimball
 * Andreas Fuchs
+* Erik DeBruijn
+* Robert Guisart
+* Rob Gilson
+* Marius Kintel
+* Nick Starno
 
 If I've left you off this list, let me know ASAP and I'll add your
 name.

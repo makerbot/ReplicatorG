@@ -1,13 +1,28 @@
 0022 ReplicatorG
+* UI for selecting basic skeinforge options
+* Fix: Numerous fixups to connection, disconnection, initialization,
+  post-upload and post-simulation behavior
+* Fix: update firmware list immediately on URL change
+* Optional icons for boards in uploader
+* Machines.xml banished; machine descriptors are now broken up among files in
+  the repg/machines and ~/.replicatorg/machines directories
+* Preference panel ui to control logging level
+* Experimental: multiple extruder support
 Contributions:
 * justjoheinz: added profile delete button
 * nazdravi: check for "python2" for compatibility on systems which default to python 3.x
 * Erik: added 5D driver for RepRap's and compatible firmwares (Ultimaker)
+* Erik: improved feedback during skeining operations
 * Erik: STL preview now is the actual build volumes configured in machines.xml
 * Charles: Added skeinforge 33
+* Charles: Support for G10 and friends
 * Marius: Added generalized skeinforge merge patch
 * Marius: Added skeinforge 35
 * Marius: Added build platform belt checkbox to control panel
+* Marius: Added support for wait-for-platform
+* Nick Starno: paraminator script
+* Robert Guisart: several integration fixes for OS X
+* Marius, Charles, Nick, Rob Gilson, and others: lots of hard skeinforge configuration work!
 
 0021 ReplicatorG
 Bugfix release
