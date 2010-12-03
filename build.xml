@@ -199,7 +199,9 @@
     <copy todir="${target.dir}/skein_engines">
       <fileset dir="skein_engines" excludes="*.pyc"/>
     </copy>
-    <copy file="machines.xml.dist" tofile="${target.dir}/machines.xml"/>
+    <copy todir="${target.dir}/machines">
+      <fileset dir="machines"/>
+    </copy>
   </target>
 
   <target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">
