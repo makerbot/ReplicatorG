@@ -894,6 +894,11 @@ public class MachineController {
 	}
 
 	synchronized public void connect() {
+		// recreate thread if stopped
+		if (!machineThread.isAlive()) {
+			machineThread = new MachineThread();
+			machineThread.start();
+		}
 		machineThread.connect();
 	}
 
