@@ -118,7 +118,13 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		message.append(" ("+machine.getDriver().getDriverName()+") ");
 		if (state.getState() == MachineState.State.READY) { message.append("ready"); }
 		else if (state.isPaused()) { message.append("paused"); }
-		else if (state.isBuilding()) { message.append("building"); }
+		else if (state.isBuilding()) { 
+			if (state.isSimulating()) {
+				message.append("simulating");
+			} else {
+				message.append("building");
+			}
+		}
 		return message.toString();
 	}
 	

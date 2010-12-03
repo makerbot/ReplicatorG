@@ -277,7 +277,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		fileButton.setSelected(runningTarget == MachineState.Target.FILE);
 		playbackButton.setSelected(runningTarget == MachineState.Target.NONE);
 
-		boolean connected = s.isConnected();
+		boolean connected = s.isConnected() && hasMachine && machine.isInitialized();
 		resetButton.setEnabled(connected); 
 		disconnectButton.setEnabled(connected);
 		connectButton.setEnabled(hasMachine && !connected);

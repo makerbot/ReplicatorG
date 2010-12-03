@@ -362,13 +362,23 @@ public class MachineController {
 				if (!state.isSimulating()) {
 					driver.invalidatePosition();
 				}
-				setState(new MachineState(MachineState.State.READY));
+				setState(new MachineState(driver.isInitialized()?
+						MachineState.State.READY:
+						MachineState.State.NOT_ATTACHED
+					));
 			} catch (BuildFailureException e) {
-//				JOptionPane.showMessageDialog(null, e.getMessage(),
-//						"Build Failure", JOptionPane.ERROR_MESSAGE);
-				// Attempt to reestablish connection to check state on an abort
-				// or failure
-				setState(new MachineState(MachineState.State.CONNECTING));
+				if (state.isSimulating()) {
+					// If simulating, return to connected or
+					// disconnected state.
+					setState(new MachineState(driver.isInitialized()?
+							MachineState.State.READY:
+							MachineState.State.NOT_ATTACHED));
+				} else {
+					// If a real interrupted build,
+					// Attempt to reestablish connection to check state on an abort
+					// or failure
+					setState(new MachineState(MachineState.State.CONNECTING));
+				}
 			} catch (InterruptedException e) {
 				Base.logger.warning("MachineController interrupted");
 			} finally {
