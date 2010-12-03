@@ -1,6 +1,5 @@
 package replicatorg.app.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -11,11 +10,8 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
-
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.MultiTool;

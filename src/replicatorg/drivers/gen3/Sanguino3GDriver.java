@@ -1194,7 +1194,7 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.warning("Stop.");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ABORT.getCode());
 		Thread.interrupted(); // Clear interrupted status
-		PacketResponse pr = runQuery(pb.getPacket());
+		runQuery(pb.getPacket());
 		// invalidate position, force reconciliation.
 		invalidatePosition();
 	}
@@ -1217,7 +1217,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// WDT reset introduced in version 1.4 firmware
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.RESET.getCode());
 			Thread.interrupted(); // Clear interrupted status
-			PacketResponse pr = runQuery(pb.getPacket());
+			runQuery(pb.getPacket());
 			// invalidate position, force reconciliation.
 			invalidatePosition();
 		}

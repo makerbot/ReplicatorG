@@ -18,7 +18,6 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -219,7 +218,6 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			prefList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			prefList.addListSelectionListener(new ListSelectionListener() {
 
-				@Override
 				public void valueChanged(ListSelectionEvent selectionEvent) {
 					boolean selected = !((JList) selectionEvent.getSource())
 							.isSelectionEmpty();

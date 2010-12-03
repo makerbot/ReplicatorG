@@ -150,7 +150,6 @@ import com.apple.mrj.MRJOpenDocumentHandler;
 import com.apple.mrj.MRJPrefsHandler;
 import com.apple.mrj.MRJQuitHandler;
 
-@SuppressWarnings("deprecation")
 public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 		MRJPrefsHandler, MRJOpenDocumentHandler,
 		MachineListener, ChangeListener,
