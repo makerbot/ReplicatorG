@@ -21,7 +21,7 @@ Contributions:
 * Marius: Added build platform belt checkbox to control panel
 * Marius: Added support for wait-for-platform
 * Nick Starno: paraminator script
-* Robert Guisart: several integration fixes for OS X
+* Robert Giseburt: several integration fixes for OS X
 * Marius, Charles, Nick, Rob Gilson, and others: lots of hard skeinforge configuration work!
 
 0021 ReplicatorG

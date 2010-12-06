@@ -18,7 +18,7 @@ the contributor's full name, I've listed their github handle instead.
 * Rick Kimball
 * Andreas Fuchs
 * Erik DeBruijn
-* Robert Guisart
+* Robert Giseburt
 * Rob Gilson
 * Marius Kintel
 * Nick Starno
