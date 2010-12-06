@@ -54,7 +54,7 @@ public class BoardSelectionPanel extends JPanel {
 			Element e = (Element)value;
 			String name = e.getAttribute("name");
 			String iconStr = e.getAttribute("icon");
-			if (iconStr != null && !iconStr.isEmpty()) {
+			if (iconStr != null && !(iconStr.length() == 0)) {
 				ImageIcon icon = new ImageIcon(Base.getImage("images/"+iconStr, this));
 				setIcon(icon);
 			} else {

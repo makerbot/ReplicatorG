@@ -75,7 +75,7 @@ public class MachineFactory {
 			if (!showExperimental) {
 				// filter on experimental attribute.
 				String exp = entry.getValue().getAttribute("experimental");
-				if (!exp.isEmpty() && !exp.equals("0")) {
+				if (exp.length() != 0 && !exp.equals("0")) {
 					// Hide name
 					continue;
 				}
