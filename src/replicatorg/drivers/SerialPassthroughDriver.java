@@ -248,10 +248,6 @@ public class SerialPassthroughDriver extends SerialDriver {
 
 	public void dispose() {
 		super.dispose();
-
-		if (serial != null)
-			serial.dispose();
-		serial = null;
 		commands = null;
 	}
 
