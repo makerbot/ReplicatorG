@@ -914,6 +914,9 @@ public class MachineController {
 
 	synchronized public void disconnect() {
 		driver.uninitialize();
+		if (driver != null) {
+			driver.dispose();
+		}
 		setState(new MachineState(MachineState.State.NOT_ATTACHED));
 	}
 
