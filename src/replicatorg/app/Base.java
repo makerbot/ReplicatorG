@@ -276,8 +276,12 @@ public class Base {
 		// Warn about read-only directories
     	{
     		File userDir = getUserDirectory();
-    		if (!userDir.exists() || !userDir.canWrite()) {
-    			Base.showMessage("Read-only home directory", 
+    		String header = null;
+    		if (!userDir.exists()) header = new String("Unable to create user directory");
+    		else if (!userDir.canWrite()) header = new String("Unable to write to user directory");
+    		else if (!userDir.isDirectory()) header = new String("User directory must be a directory");
+    		if (header != null) {
+    			Base.showMessage(header, 
     					"<html><body>ReplicatorG can not write to the directory "+userDir.getAbsolutePath()+".<br>" +
     					"Some functions of ReplicatorG, like toolpath generation and firmware updates,<br>" +
     					"require ReplicatorG to write data to this directory.  You should end this<br>"+
