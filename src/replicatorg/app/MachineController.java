@@ -44,6 +44,7 @@ import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
+import replicatorg.drivers.UsesSerial;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -582,8 +583,15 @@ public class MachineController {
 					} else if (state.getState() == MachineState.State.RESET) {
 						driver.reset();
 						readName();
-						setState(MachineState.State.READY);						
+						setState(MachineState.State.READY);		
 					} else {
+						if (state.getState() == MachineState.State.NOT_ATTACHED) {
+							// Kill serial port connection when not attached, to make it safe to unplug
+							if (driver instanceof UsesSerial) {
+								UsesSerial us = (UsesSerial)driver;
+								us.setSerial(null);
+							}
+						}
 						synchronized(this) {
 							if (state.getState() == MachineState.State.READY ||
 									state.getState() == MachineState.State.NOT_ATTACHED ||

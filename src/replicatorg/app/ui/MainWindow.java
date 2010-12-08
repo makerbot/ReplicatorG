@@ -1243,10 +1243,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (machine == null) {
 			// machine already disconnected
 		} else {
-			if (machine.driver instanceof UsesSerial) {
-				UsesSerial us = (UsesSerial)machine.driver;
-				us.setSerial(null);
-			}
 			machine.disconnect();
 		}
 	}
