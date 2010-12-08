@@ -68,7 +68,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 			return;
 		}
 		if (this.serial != null) {
-			synchronized(serial) {
+			synchronized(this.serial) {
 				this.serial.dispose();
 				this.serial = null;
 			}

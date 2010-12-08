@@ -581,6 +581,7 @@ public class MachineController {
 						setState(MachineState.State.READY);						
 					} else if (state.getState() == MachineState.State.RESET) {
 						driver.reset();
+						readName();
 						setState(MachineState.State.READY);						
 					} else {
 						synchronized(this) {
@@ -606,6 +607,9 @@ public class MachineController {
 			String n = ((OnboardParameters)driver).getMachineName();
 			if (n != null && n.length() > 0) {
 				name = n;
+			}
+			else {
+				parseName(); // Use name from XML file instead of reusing name from last connected machine
 			}
 		}
 	}
@@ -914,9 +918,6 @@ public class MachineController {
 
 	synchronized public void disconnect() {
 		driver.uninitialize();
-		if (driver != null) {
-			driver.dispose();
-		}
 		setState(new MachineState(MachineState.State.NOT_ATTACHED));
 	}
 
