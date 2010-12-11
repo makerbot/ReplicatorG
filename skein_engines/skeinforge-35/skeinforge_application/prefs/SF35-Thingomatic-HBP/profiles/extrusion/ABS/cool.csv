@@ -6,7 +6,7 @@ Activate Cool	False
 Orbit	True
 Slow Down	False
 Maximum Cool (Celcius):	2.0
-Minimum Layer Time (seconds):	60.0
+Minimum Layer Time (seconds):	5.0
 Minimum Orbital Radius (millimeters):	10.0
 Turn Fan On at Beginning	False
 Turn Fan Off at Ending	False
