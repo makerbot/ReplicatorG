@@ -226,9 +226,13 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 
 		if (source.getText().length() > 0) {
 			if (name.equals("xy-feedrate-value")) {
-				xyFeedrateSlider.setValue(Integer.parseInt(source.getText()));
+				int val = Integer.parseInt(source.getText());
+				xyFeedrateSlider.setValue(val);
+				Base.preferences.putInt("controlpanel.feedrate.xy", val);
 			} else if (name.equals("z-feedrate-value")) {
-				zFeedrateSlider.setValue(Integer.parseInt(source.getText()));
+				int val = Integer.parseInt(source.getText());
+				zFeedrateSlider.setValue(val);
+				Base.preferences.putInt("controlpanel.feedrate.z", val);
 			} else {
 				Base.logger.warning("Unhandled text field: "+name);
 			}
