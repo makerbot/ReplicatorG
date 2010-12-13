@@ -4,6 +4,8 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -18,12 +20,6 @@ import replicatorg.app.Base;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
 import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorListener;
-
-// For interpreting a GCode generator's output:
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 public class ToolpathGeneratorThread extends Thread {
 	private Frame parent;
@@ -190,11 +186,11 @@ public class ToolpathGeneratorThread extends Thread {
 				    */
 				    if(showProgress)
 				    {
-				    	String i = new Integer(layerIndex).toString();
+//				    	String i = new Integer(layerIndex).toString();
 						String j = new Integer(layerTotal).toString();
 						double completion =  ((double) layerIndex/layerTotal);
-						NumberFormat nf = NumberFormat.getPercentInstance();
-						String perc = nf.format(completion);
+//						NumberFormat nf = NumberFormat.getPercentInstance();
+//						String perc = nf.format(completion);
 					    if((layerIndex>0) && (processName == ""))
 					    {
 					    	newMessage += " ("+j+" layers)";//

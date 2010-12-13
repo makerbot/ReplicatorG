@@ -105,7 +105,7 @@ public class ColladaParser {
 			FloatArray points = floatArrayMap.get(sourceId);
 			String semantic = inputElement.getAttribute("semantic");
 			String offset = inputElement.getAttribute("offset");
-			if (offset != null && !offset.isEmpty()) {				
+			if (offset != null && offset.length() != 0) {				
 				points.setOffset(Integer.parseInt(offset));
 			}
 //			System.err.println(" ************ SEMANTIC "+semantic+ " OFFSET "+offset);

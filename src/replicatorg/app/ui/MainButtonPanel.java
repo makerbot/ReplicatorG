@@ -194,6 +194,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		add(statusLabel, "gap unrelated");
 
 		setPreferredSize(new Dimension(700,60));
+		
+		// Update initial state
+		machineStateChangedInternal(new MachineStateChangeEvent(null, new MachineState()));
 	}
 
 	public MainButton makeButton(String rolloverText, String source) {
@@ -249,13 +252,15 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		boolean ready = s.isReady();
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();
-		boolean hasGcode = editor.getBuild().getCode() != null;
-		boolean hasPlayback = (machine != null) && 
+		boolean hasGcode = (editor != null) && (editor.getBuild() != null) &&
+			editor.getBuild().getCode() != null;
+		boolean hasMachine = machine != null;
+		boolean hasPlayback = hasMachine && 
 			(machine.driver != null) &&
 			(machine.driver instanceof SDCardCapture) &&
 			(((SDCardCapture)machine.driver).hasFeatureSDCardCapture());
-		simButton.setEnabled(!building && hasGcode);
-		fileButton.setEnabled(!building && hasGcode);
+		simButton.setEnabled(hasMachine && !building && hasGcode);
+		fileButton.setEnabled(hasMachine && !building && hasGcode);
 		buildButton.setEnabled(ready && hasGcode);
 		uploadButton.setEnabled(ready && hasPlayback && hasGcode);
 		playbackButton.setEnabled(ready && hasPlayback);
@@ -272,10 +277,10 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		fileButton.setSelected(runningTarget == MachineState.Target.FILE);
 		playbackButton.setSelected(runningTarget == MachineState.Target.NONE);
 
-		boolean connected = s.isConnected();
+		boolean connected = s.isConnected() && hasMachine && machine.isInitialized();
 		resetButton.setEnabled(connected); 
 		disconnectButton.setEnabled(connected);
-		connectButton.setEnabled(!connected);
+		connectButton.setEnabled(hasMachine && !connected);
 		cpButton.setEnabled(ready);
 		
 	}

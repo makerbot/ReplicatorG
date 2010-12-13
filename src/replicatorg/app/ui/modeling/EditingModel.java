@@ -83,6 +83,12 @@ public class EditingModel {
 	private BranchGroup makeShape(BuildModel model) {
 		objectSwitch = new Switch();
 		originalShape = model.getShape();
+		if (originalShape.getGeometry() == null) {
+			BranchGroup wrapper = new BranchGroup();
+			wrapper.setCapability(BranchGroup.ALLOW_DETACH);
+			wrapper.compile();
+			return wrapper;
+		}
 
 		Shape3D solidShape = (Shape3D)originalShape.cloneTree();
 		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();

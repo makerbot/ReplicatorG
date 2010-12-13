@@ -196,7 +196,22 @@ public class ToolModel
 				}
 			} catch (Exception e) {} // ignore parse errors.
 
-		}
+			n = XML.getAttributeValue(xml, "default_rpm");
+			try{
+				if (Double.parseDouble(n) > 0)
+				{
+					motorSpeedRPM = Double.parseDouble(n);
+				}
+			} catch (Exception e) {} // ignore parse errors.
+
+			n = XML.getAttributeValue(xml, "default_pwm");
+			try{
+				if (Integer.parseInt(n) > 0)
+				{
+					motorSpeedPWM = Integer.parseInt(n);
+				}
+			} catch (Exception e) {} // ignore parse errors.
+}
 
 		n = XML.getAttributeValue(xml, "spindle");
 		if (isTrueOrOne(n))
@@ -237,6 +252,7 @@ public class ToolModel
 
 		n = XML.getAttributeValue(xml, "automatedplatform");
 		hasAutomatedPlatform = hasAutomatedPlatform || isTrueOrOne(n);
+
 		//hah, all this for a debug string... lol.
 		String result = "Loading " + type + " '" + name + "': ";
 		result += "material: " + material + ", ";

@@ -15,7 +15,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.Vector;
 import java.util.logging.Level;
 
@@ -32,8 +31,6 @@ import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -286,8 +283,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		}
 		String origUpdateUrl = Base.preferences.get("replicatorg.updates.url", "");
 		if (!origUpdateUrl.equals(firmwareUpdateUrlField.getText())) {
-			File oldFirmwareData = Base.getUserFile("firmware.xml");
-			oldFirmwareData.delete(); // Blow away the old firmware.xml if the url has been changed
+			FirmwareUploader.invalidateFirmware();
 			Base.preferences.put("replicatorg.updates.url",firmwareUpdateUrlField.getText());
 			FirmwareUploader.checkFirmware(); // Initiate a new firmware check
 		}

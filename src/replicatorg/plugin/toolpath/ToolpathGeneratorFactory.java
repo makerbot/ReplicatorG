@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Vector;
 
 import replicatorg.app.Base;
-import replicatorg.plugin.toolpath.SkeinforgeGenerator.SkeinforgePreference;
 
 public class ToolpathGeneratorFactory {
 	public static class ToolpathGeneratorDescriptor {
@@ -83,15 +82,26 @@ public class ToolpathGeneratorFactory {
 			}
 			public List<SkeinforgePreference> getPreferences() {
 				List <SkeinforgePreference> prefs = super.getPreferences();
-				SkeinforgeBooleanPreference supportPref =
-					new SkeinforgeBooleanPreference("Use support material",
-							"replicatorg.skeinforge.useSupport", false,
-							"If this option is checked, skeinforge will attempt to support large overhangs by laying down a support "+
+				SkeinforgeChoicePreference supportPref =
+					new SkeinforgeChoicePreference("Use support material",
+							"replicatorg.skeinforge.choiceSupport", "None",
+							"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
 							"structure that you can later remove.");
-				supportPref.addTrueOption(new SkeinforgeOption("raft.csv","Exterior Only", "true"));
-				supportPref.addTrueOption(new SkeinforgeOption("raft.csv","None", "false"));
-				supportPref.addFalseOption(new SkeinforgeOption("raft.csv","Exterior Only", "false"));
-				supportPref.addFalseOption(new SkeinforgeOption("raft.csv","None", "true"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","None", "true"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","None", "false"));
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Exterior Only", "true"));
+
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","None", "false"));
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Everywhere", "true"));
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+				
 				prefs.add(supportPref);
 				return prefs;
 			}
