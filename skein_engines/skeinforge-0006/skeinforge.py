@@ -314,6 +314,9 @@ def main():
                   action="store", type="string", dest="startFile")
         parser.add_option("-e", "--end", help="set end file to use",
                   action="store", type="string", dest="endFile")
+	parser.add_option("-o", "--option", 
+		help='set an individual option in the format "module:preference=value"',
+		action="append", type="string", dest="preferences")
 	parser.add_option("--raft", action="store_true", dest="useRaft")
 	parser.add_option("--no-raft", action="store_false", dest="useRaft")
         (options, args) = parser.parse_args()
@@ -338,7 +341,11 @@ def main():
 			preferences.addPreferenceOverride("Raft", "Activate Raft:", "false")
 			preferences.addPreferenceOverride("Raftless", "Activate Raftless:", "true")
 		
-		
+	if options.preferences:
+		for prefSpec in options.preferences:
+			(moduleName,prefSpec) = prefSpec.split(":",1)
+			(prefName,valueName) = prefSpec.split("=",1)
+			preferences.addPreferenceOverride(moduleName,prefName,valueName)
 
 	sys.argv = [sys.argv[0]] + args
 	if len( args ) > 0:
