@@ -104,23 +104,36 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		return profiles;
 	}
 
+	
 	/**
 	 * A SkeinforgeOption instance describes a single preference override to pass to skeinforge.
 	 * @author phooky
 	 */
 	protected class SkeinforgeOption {
+		final String parameter;
 		final String module;
 		final String preference;
 		final String value;
 		public SkeinforgeOption(String module, String preference, String value) {
+			this.parameter = "--option";
 			this.module = module; 
 			this.preference = preference; 
 			this.value = value;
 		}
-		public String getSpec() {
-			return module + ":" + preference + "=" + value;
+		public SkeinforgeOption(String parameter) {
+			this.parameter = parameter;
+			this.module = null;
+			this.preference = null;
+			this.value = "";
+		}
+		public String getParameter() {
+			return this.parameter;
+		}
+		public String getArgument() {
+			return (this.module != null ? this.module + ":" : "") + (this.preference != null ? this.preference + "=" : "") + this.value;
 		}
 	}
+		
 	/**
 	 * A SkeinforgePreference describes a user-visible preference that appears in the 
 	 * configuration dialog.  SkeinforgePreferences should give a list of options
@@ -185,7 +198,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			if (optionsMap.containsKey(chosen)) {
 				List<SkeinforgeOption> l = optionsMap.get(chosen);
 				for (SkeinforgeOption o : l) {
-					System.err.println(o.getSpec());
+					System.err.println(o.getArgument());
 				}
 				return optionsMap.get(chosen);
 			}
@@ -449,8 +462,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			List<SkeinforgeOption> options = preference.getOptions();
 			if (options != null) {
 				for (SkeinforgeOption option : options) {
-					arguments.add("--option");
-					arguments.add(option.getSpec());
+					arguments.add(option.getParameter());
+					String arg = option.getArgument();
+					if (arg.length() > 0) arguments.add(arg);
 				}
 			}
 		}
