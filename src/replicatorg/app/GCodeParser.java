@@ -697,7 +697,7 @@ public class GCodeParser {
 		double zVal = convertToMM(getCodeValue("Z"), units); // / Z units
 		double aVal = convertToMM(getCodeValue("A"), units); // / A units
 		double bVal = convertToMM(getCodeValue("B"), units); // / B units
-		// Note: The E axis is treated internally as the A axis
+		// Note: The E axis is treated internally as the A or B axis
 		double eVal = convertToMM(getCodeValue("E"), units); // / E units
 
 		// adjust for our offsets
@@ -715,8 +715,12 @@ public class GCodeParser {
 				temp.setZ(zVal);
 			if (hasCode("A"))
 				temp.setA(aVal);
-			if (hasCode("E"))
-				temp.setA(eVal);
+			if (hasCode("E")) {
+				if (tool == 0)
+					temp.setA(eVal);
+				else if (tool == 1)
+					temp.setB(eVal);
+			}
 			if (hasCode("B"))
 				temp.setB(bVal);
 		}
@@ -730,8 +734,12 @@ public class GCodeParser {
 				temp.setZ(temp.z() + zVal);
 			if (hasCode("A"))
 				temp.setA(temp.a() + aVal);
-			if (hasCode("E"))
-				temp.setA(temp.a() + eVal);
+			if (hasCode("E")) {
+				if (tool == 0)
+					temp.setA(temp.a() + eVal);
+				else if (tool == 1)
+					temp.setB(temp.b() + eVal);
+			}
 			if (hasCode("B"))
 				temp.setB(temp.b() + bVal);
 		}
