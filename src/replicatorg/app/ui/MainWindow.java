@@ -168,9 +168,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// p5 icon for the window
 	Image icon;
 
-	// our machines.xml document.
-	public Document dom;
-
 	MachineController machine;
 
 	static public final KeyStroke WINDOW_CLOSE_KEYSTROKE = KeyStroke
