@@ -51,15 +51,24 @@ public class ToolpathGeneratorFactory {
 			}
 			public List<SkeinforgePreference> getPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				SkeinforgeBooleanPreference raftPref = 			
+					new SkeinforgeBooleanPreference("Use raft",
+						"replicatorg.skeinforge.useRaft", true,
+						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
+						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+				raftPref.addNegateableOption(new SkeinforgeOption("Raft", "Activate Raft:", "true"));
+				raftPref.addNegateableOption(new SkeinforgeOption("Raftless", "Activate Raftless:", "false"));
+				prefs.add(raftPref);
 				return prefs;
 			}
 		};
-		class Skeinforge31 extends SkeinforgeGenerator {
+
+		class Skeinforge35 extends SkeinforgeGenerator {
 			public File getDefaultSkeinforgeDir() {
-		    	return Base.getApplicationFile("skein_engines/skeinforge-31/skeinforge_application");
+		    	return Base.getApplicationFile("skein_engines/skeinforge-35/skeinforge_application");
 			}
 			File getUserProfilesDir() {
-		    	return Base.getUserFile("sf_31_profiles");
+		    	return Base.getUserFile("sf_35_profiles");
 			}
 			public List<SkeinforgePreference> getPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
@@ -70,18 +79,6 @@ public class ToolpathGeneratorFactory {
 						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
 				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Activate Raft", "true"));
 				prefs.add(raftPref);
-				return prefs;
-			}
-		};
-		class Skeinforge35 extends Skeinforge31 {
-			public File getDefaultSkeinforgeDir() {
-		    	return Base.getApplicationFile("skein_engines/skeinforge-35/skeinforge_application");
-			}
-			File getUserProfilesDir() {
-		    	return Base.getUserFile("sf_35_profiles");
-			}
-			public List<SkeinforgePreference> getPreferences() {
-				List <SkeinforgePreference> prefs = super.getPreferences();
 				SkeinforgeChoicePreference supportPref =
 					new SkeinforgeChoicePreference("Use support material",
 							"replicatorg.skeinforge.choiceSupport", "None",
@@ -110,8 +107,6 @@ public class ToolpathGeneratorFactory {
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (standard)", 
 				"This is the standard version of skeinforge that has shipped with "+
 				"ReplicatorG since 0016.", Skeinforge6.class));
-		list.add(new ToolpathGeneratorDescriptor("Skeinforge (31)", 
-				"This is Skeinforge version 31.", Skeinforge31.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (35)", 
 				"This is the latest version of skeinforge.", Skeinforge35.class));
 		

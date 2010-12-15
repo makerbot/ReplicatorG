@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -110,6 +111,8 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 		JButton zMinusButton = createJogButton("Z-", "Jog Z axis in negative direction");
 		JButton zCenterButton = createJogButton("<html><center>Center<br/>Z", "Jog Z axis to the origin","Center Z");
 		JButton zeroButton = createJogButton("<html><center>Set<br/>zero","Mark Current Position as Zero (0,0,0)","Zero");
+		JButton panicButton = createJogButton("","Emergency stop","Stop");
+		panicButton.setIcon(new ImageIcon(Base.getImage("images/button-panic.png",this)));
 
 		JPanel xyzPanel = new JPanel(new MigLayout("","[]0[]","[]0[]"));
         xyzPanel.add(zCenterButton, "split 3,flowy,gap 0 0 0 0");
@@ -118,7 +121,8 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 		xyzPanel.add(yPlusButton, "split 3,flowy,gap 0 0 0 0");
 		xyzPanel.add(zeroButton,"gap 0 0 0 0");
 		xyzPanel.add(yMinusButton);
-		xyzPanel.add(xPlusButton,"split 2, flowy, aligny bottom, gap 0 0 0 0, gapafter 10");
+		xyzPanel.add(panicButton, "split 3,flowy,gap 0 0 0 0");
+		xyzPanel.add(xPlusButton,"gap 0 0 0 0");
         xyzPanel.add(xCenterButton);
 		xyzPanel.add(zPlusButton, "split 2,flowy,gap 0 0 0 0");
 		xyzPanel.add(zMinusButton);
@@ -254,7 +258,13 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 			source.selectAll();
 		}
 
-		if (s.equals("X+")) {
+		if (s.equals("Stop")) {
+			this.driver.stop();
+			// FIXME: If we reenable the control panel while printing, 
+			// we should check this, call this.machine.stop(),
+			// plus communicate this action back to the main window
+		}
+		else if (s.equals("X+")) {
 			current.setX(current.x() + jogRate);
 
 			driver.setFeedrate(xyFeedrate);
