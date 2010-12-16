@@ -70,6 +70,8 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -613,22 +615,23 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	
 	private JMenu mruMenu = null;
 
+	private class FileOpenActionListener implements ActionListener {
+		public String path;
+
+		FileOpenActionListener(String path) {
+			this.path = path;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			handleOpen(path);
+		}
+	}
+
 	private void reloadMruMenu() {
 		if (mruMenu == null) {
 			return;
 		}
 		mruMenu.removeAll();
-		class FileOpenActionListener implements ActionListener {
-			public String path;
-
-			FileOpenActionListener(String path) {
-				this.path = path;
-			}
-
-			public void actionPerformed(ActionEvent e) {
-				handleOpen(path);
-			}
-		}
 		if (mruList != null) {
 			int index = 0;
 			for (String fileName : mruList) {
@@ -687,6 +690,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		reloadMruMenu();
 		menu.add(mruMenu);
 
+		menu.addSeparator();
+		menu.add(buildExamplesMenu()); 
+		menu.add(buildScriptsMenu()); 
+		menu.addSeparator();
+
 		// macosx already has its own preferences and quit menu
 		if (!Base.isMacOS()) {
 			menu.addSeparator();
@@ -709,6 +717,49 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			menu.add(item);
 		}
 		return menu;
+	}
+
+	private JMenuItem buildMenuFromPath(File path, Pattern pattern) {
+		if (!path.exists()) { return null; }
+		if (path.isDirectory()) {
+			JMenu menu = new JMenu(path.getName());
+			File[] files = path.listFiles();
+			for (File f : files) {
+				JMenuItem i = buildMenuFromPath(f,pattern);
+				if (i != null) {
+					menu.add(i);
+				}
+			}
+			if (menu.getItemCount() == 0) { return null; }
+			return menu;
+		} else {
+			Matcher m = pattern.matcher(path.getName());
+			if (m.matches()) {
+				try {
+					FileOpenActionListener l = new FileOpenActionListener(path.getCanonicalPath());
+					JMenuItem item = new JMenuItem(path.getName());
+					item.addActionListener(l);
+					return item;
+				} catch (IOException ioe) { return null; }
+			}
+			return null;
+		}
+	}
+	
+	private JMenuItem buildExamplesMenu() {
+		File examplesDir = Base.getApplicationFile("examples");
+		Pattern p = Pattern.compile("[^\\.]*\\.[sS][tT][lL]$");
+		JMenuItem m = buildMenuFromPath(examplesDir,p);
+		m.setText("Examples");
+		return m;
+	}
+
+	private JMenuItem buildScriptsMenu() {
+		File examplesDir = Base.getApplicationFile("scripts");
+		Pattern p = Pattern.compile("[^\\.]*\\.[gG][cC][oO][dD][eE]$");
+		JMenuItem m = buildMenuFromPath(examplesDir,p);
+		m.setText("Scripts");
+		return m;
 	}
 
 	protected JMenu buildGCodeMenu() {
