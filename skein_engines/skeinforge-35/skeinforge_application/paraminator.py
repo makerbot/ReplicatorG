@@ -73,7 +73,7 @@ class Paraminator:
 		return self.start + self.increment*i
 
 	def getCommand(self, i, prefs):
-		return "python skeinforge.py --prefdir=%s test-objects/%s.stl >> /dev/null" % (prefs, chr(97+i)) 
+		return "python skeinforge.py --prefdir=%s test-objects/%s.stl" % (prefs, chr(97+i)) 
 
 	def tweakFile(self, prefsFile, param):
 		for line in fileinput.input(prefsFile, inplace=1):
@@ -101,8 +101,15 @@ class Paraminator:
 
 		#add it to our main file
 		singleFile = "test-objects/%s.gcode" % (chr(97+i))
-		os.system("cat %s >> %s" % (singleFile, self.output))
-		os.remove(singleFile)
+		#os.system("cat %s >> %s" % (singleFile, self.output))
+		#os.remove(singleFile)
+		infile = open(singleFile)
+		contents = infile.read()
+		outfile = open(self.output, 'a')
+		outfile.write(contents)
+		outfile.write(os.linesep)
+		outfile.close()
+		
 		
 	def generate(self):
 		"Generate the actual GCode"
@@ -152,6 +159,10 @@ def main(argv):
 	end = 0.0
 	increment = 0.0
 	output = "temp/output.gcode"
+	
+	print "Argv raw= ", str(argv)
+	print "Options= ", str(opts)
+	print "Arguments= ", str(args)
 
 	for opt, arg in opts:
 		if opt in ("-h", "--help"):
@@ -169,6 +180,8 @@ def main(argv):
 			increment = float(arg)
 		elif opt in ("--output"):
 			output = arg
+		else:
+			print "FAIL!!!!"
 			
 	testy = Paraminator(prefsFile, parameter, start, end, increment, output)
 	testy.generate()
