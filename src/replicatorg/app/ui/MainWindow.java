@@ -107,9 +107,6 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 
 import net.miginfocom.swing.MigLayout;
-
-import org.w3c.dom.Document;
-
 import replicatorg.app.Base;
 import replicatorg.app.MRUList;
 import replicatorg.app.MachineController;
