@@ -29,10 +29,10 @@ package replicatorg.drivers.reprap;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,6 +45,7 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
+import replicatorg.app.tools.XML;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.reprap.ExtrusionUpdater.Direction;
@@ -76,10 +77,22 @@ public class RepRap5DDriver extends SerialDriver {
 	private boolean fiveD = true;
 	
 	/**
+	 * Enables pulsing RTS to restart the RepRap on connect.
+	 */
+	private boolean pulseRTS = true;
+	
+	/**
 	 * if true the driver will wait for a "start" signal when pulsing rts low 
 	 * before initialising the printer.
 	 */
-	private boolean respondsToRTS = false;
+	private boolean waitForStart = false;
+	
+	/**
+	 * configures the time to wait for the first response from the RepRap in ms.
+	 */
+	private long waitForStartTimeout = 1000;
+	
+	private int waitForStartRetries = 3;
 	
 	private final ExtrusionUpdater extrusionUpdater = new ExtrusionUpdater(this);
 
@@ -129,6 +142,26 @@ public class RepRap5DDriver extends SerialDriver {
 
 	public void loadXML(Node xml) {
 		super.loadXML(xml);
+        // load from our XML config, if we have it.
+        if (XML.hasChildNode(xml, "waitforstart")) {
+        	Node startNode = XML.getChildNodeByName(xml, "waitforstart");
+            waitForStart = true;
+            
+            String timeout = XML.getAttributeValue(startNode, "timeout");
+            if (timeout !=null) waitForStartTimeout = Long.parseLong(timeout);
+            
+            String retries = XML.getAttributeValue(startNode, "retries");
+            if (retries !=null) waitForStartRetries = Integer.parseInt(retries);
+            
+        }
+
+        if (XML.hasChildNode(xml, "pulserts")) {
+            pulseRTS = Boolean.parseBoolean(XML.getChildNodeValue(xml, "pulserts"));
+        }
+
+        if (XML.hasChildNode(xml, "fived")) {
+            fiveD = Boolean.parseBoolean(XML.getChildNodeValue(xml, "fived"));
+        }
 	}
 
 	public void updateManualControl() throws InterruptedException
@@ -147,38 +180,24 @@ public class RepRap5DDriver extends SerialDriver {
 		if (!isInitialized()) {
 			Base.logger.info("Initializing Serial.");
 
-			//attempt to reset the device, this may slow down the connection time, but it 
-			//increases our chances of successfully connecting dramatically.
-			long timeout = System.currentTimeMillis()+ 9000;
-			connectionLoop: while(startReceived.get()!=true)
+			if (pulseRTS)
 			{
-				Base.logger.info("Attempting to reset RepRap (pulsing RTS)");
-				serial.pulseRTSLow();
-				// set the timeout for the current attempt. If we don't connect by then give up.
-				long retryTimeout = System.currentTimeMillis() + 5000;
-
-				//Wait for the RepRap to startup
-				while(true)
+				int retriesRemaining = waitForStartRetries+1;
+				retryPulse: do
 				{
-					readResponse();
-					
-					if (startReceived.get() == true || respondsToRTS == false) break connectionLoop;
-
-					// have we timed out on this connection attempt? If so record a warning.
-					if (System.currentTimeMillis() > retryTimeout)
-					{
-						Base.logger.warning("Serial link non-responsive.");
-						break;
+					try {
+						pulseRTS();
+						break retryPulse;
+					} catch (TimeoutException e) {
+						retriesRemaining--;
 					}
-				}
-				
-				// have we timed out altogether trying to connect to this printer? Time to give up this one :(
-				if (System.currentTimeMillis() > timeout)
-				{
-					this.dispose();
-					Base.logger.warning("Failed to connect to Printer");
-					return;
-				}
+					if (retriesRemaining == 0)
+					{
+						this.dispose();
+						Base.logger.warning("Failed to connect to Printer");
+						return;
+					}
+				} while(true);
 			}
 
 			Base.logger.fine("RepRap reset");
@@ -208,6 +227,36 @@ public class RepRap5DDriver extends SerialDriver {
 			sendCommand("G90");
 			Base.logger.info("Ready.");
 			this.setInitialized(true);
+		}
+	}
+	
+	private void pulseRTS() throws TimeoutException
+	{
+		//attempt to reset the device, this may slow down the connection time, but it 
+		//increases our chances of successfully connecting dramatically.
+
+		Base.logger.info("Attempting to reset RepRap (pulsing RTS)");
+		serial.pulseRTSLow();
+		
+		if (waitForStart == false) return;
+
+		// set the timeout for this RTS pulse attempt. If we don't receive
+		// start by then either give up or retry.
+		long timeout = System.currentTimeMillis() + waitForStartTimeout;
+
+		//Wait for the RepRap to startup
+		while(true)
+		{
+			readResponse();
+			
+			if (startReceived.get() == true) return;
+
+			// have we timed out altogether trying to connect to this printer? Time to give up this one :(
+			if (System.currentTimeMillis() > timeout)
+			{
+				Base.logger.warning("Serial link non-responsive.");
+				throw new TimeoutException();
+			}
 		}
 	}
 
@@ -522,14 +571,13 @@ public class RepRap5DDriver extends SerialDriver {
 		return isEmpty;
 	}
 
-	public void dispose() {
-		if (this.responseReader != null) this.responseReader.dispose();
-		super.dispose();
+	public synchronized void dispose() {
+		disposeReader();
 
-		if (serial != null)
-			serial.dispose();
-		serial = null;
+		serialWriteLock.lock();
+		super.dispose();
 		commands = null;
+		serialWriteLock.unlock();
 	}
 
 	/***************************************************************************
@@ -809,8 +857,17 @@ public class RepRap5DDriver extends SerialDriver {
 		// resetting the serial port + command queue
 		//this.serial.clear();
 		//commands = null;
+		disposeReader();
 
 		initialize();
+	}
+	
+	private synchronized void disposeReader() {
+		if (this.responseReader != null)
+		{
+			this.responseReader.dispose();
+			this.responseReader = null;
+		}
 	}
 
 	protected Point3d reconcilePosition() {

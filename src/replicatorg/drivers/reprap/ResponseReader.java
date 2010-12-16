@@ -13,8 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ResponseReader extends Thread {
 	final RepRap5DDriver driver;
 	private final AtomicBoolean keepAlive = new AtomicBoolean(true);
-	/** Notifies all once the thread stops executing due to keepAlive being set to false */
-	private final Object endNotifier = new Object();
 	/** Notifies the thread when a new command has been sent*/
 	private final Object commandSentNotifier = new Object();
 	
@@ -52,11 +50,6 @@ public class ResponseReader extends Thread {
 			}
 
 		}
-
-		//Notify that the ResponseReader thread is exiting
-		synchronized (endNotifier) {
-			endNotifier.notifyAll();
-		}
 	}
 	
 	/**
@@ -79,14 +72,16 @@ public class ResponseReader extends Thread {
 	 */
 	public void dispose()
 	{
-		synchronized (endNotifier) {
-			keepAlive.set(false);
-			//Stop waiting for the next command and exit the loop.
-			synchronized (commandSentNotifier) {
-				commandSentNotifier.notifyAll();
-			}
-			//wait for the thread to die.
-			waitForNotification(endNotifier);
+		keepAlive.set(false);
+		//Stop waiting for the next command and exit the loop.
+		synchronized (commandSentNotifier) {
+			commandSentNotifier.notifyAll();
+		}
+		//wait for the thread to die.
+		try {
+			this.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 	

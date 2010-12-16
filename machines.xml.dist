@@ -292,7 +292,16 @@ M18
                 <clamps></clamps>
                 <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
                 <driver name="reprap5d">
-                        <!-- optional: <portname>COM1</portname> -->
+                        <!-- optional: <portname>COM1</portname>
+
+<pulserts>true</pulserts>
+
+<waitforstart timeout=1000 retries=3></waitforstart>
+
+Note: wait for start is disabled by default. adding the waitforstart node enables the wait functionality for a "start" message after pulsing rts only if pulserts is true.
+
+<fived>true</fived>
+                         -->
                         <rate>19200</rate>
                 </driver>
                 <warmup>
@@ -317,8 +326,18 @@ M108 S0
                 <clamps></clamps>
                 <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
                 <driver name="reprap5d">
-                        <!-- optional: <portname>COM1</portname> -->
+                        <!-- optional: <portname>COM1</portname>
+
+<pulserts>true</pulserts>
+
+<waitforstart timeout=1000 retries=3></waitforstart>
+
+Note: wait for start is disabled by default. adding the waitforstart node enables the wait functionality for a "start" message after pulsing rts only if pulserts is true.
+
+<fived>true</fived>
+                         -->
                         <rate>57600</rate>
+                        <pulserts>false</pulserts>
                 </driver>
                 <warmup>
                 </warmup>
