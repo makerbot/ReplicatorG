@@ -30,12 +30,13 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import javax.vecmath.Point3d;
+
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
-import replicatorg.util.Point5d;
 
 public class SerialPassthroughDriver extends SerialDriver {
 	/**
@@ -255,20 +256,18 @@ public class SerialPassthroughDriver extends SerialDriver {
 	 * @throws RetryException 
 	 **************************************************************************/
 
-	// FIXME: 5D port
-	public void queuePoint(Point5d p) throws RetryException {
-		String cmd = "G1 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
-				+ df.format(p.z()) + " F" + df.format(getCurrentFeedrate());
+	public void queuePoint(Point3d p) throws RetryException {
+		String cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
+				+ df.format(p.z) + " F" + df.format(getCurrentFeedrate());
 
 		sendCommand(cmd);
 
 		super.queuePoint(p);
 	}
 
-	// FIXME: 5D port
-	public void setCurrentPosition(Point5d p) throws RetryException {
-		sendCommand("G92 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
-				+ df.format(p.z()));
+	public void setCurrentPosition(Point3d p) throws RetryException {
+		sendCommand("G92 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
+				+ df.format(p.z));
 
 		super.setCurrentPosition(p);
 	}

@@ -49,8 +49,6 @@ import java.util.Vector;
 import javax.swing.JComponent;
 import javax.vecmath.Point3d;
 
-import replicatorg.util.Point5d;
-
 public class SimulationWindow2D extends SimulationWindow implements
 		LayoutManager {
 	private static final long serialVersionUID = -1940284103536979587L;
@@ -76,7 +74,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 		this.setVisible(true);
 
 		// start us off at 0,0,0
-		buildView.queuePoint(new Point5d());
+		buildView.queuePoint(new Point3d());
 		getContentPane().setBackground(Color.white);
 	}
 
@@ -93,7 +91,7 @@ public class SimulationWindow2D extends SimulationWindow implements
 		invalidate();
 	}
 
-	synchronized public void queuePoint(Point5d point) {
+	synchronized public void queuePoint(Point3d point) {
 		buildView.queuePoint(point);
 	}
 
@@ -444,39 +442,39 @@ public class SimulationWindow2D extends SimulationWindow implements
 			return maximum;
 		}
 
-		public void queuePoint(Point5d point) {
-			current = new Point3d(point.get3D());
+		public void queuePoint(Point3d point) {
+			current = new Point3d(point);
 
 			// System.out.println("queued: " + point.toString());
 
-			if (current.x < minimum.x)
-				minimum.x = current.x;
-			if (current.y < minimum.y)
-				minimum.y = current.y;
-			if (current.z < minimum.z)
-				minimum.z = current.z;
+			if (point.x < minimum.x)
+				minimum.x = point.x;
+			if (point.y < minimum.y)
+				minimum.y = point.y;
+			if (point.z < minimum.z)
+				minimum.z = point.z;
 
-			if (current.x > maximum.x)
-				maximum.x = current.x;
-			if (current.y > maximum.y)
-				maximum.y = current.y;
-			if (current.z > maximum.z)
-				maximum.z = current.z;
+			if (point.x > maximum.x)
+				maximum.x = point.x;
+			if (point.y > maximum.y)
+				maximum.y = point.y;
+			if (point.z > maximum.z)
+				maximum.z = point.z;
 
-			Point3d myPoint = new Point3d(current);
+			Point3d myPoint = new Point3d(point);
 			synchronized (points) {
 				points.addElement(myPoint);
 			}
 
-			currentZ = current.z;
+			currentZ = point.z;
 
 			calculateRatio();
 
 			// set our machine position
 			SimulationWindow2D.hRuler
-					.setMachinePosition(convertRealXToPointX(current.x));
+					.setMachinePosition(convertRealXToPointX(point.x));
 			SimulationWindow2D.vRuler
-					.setMachinePosition(convertRealYToPointY(current.y));
+					.setMachinePosition(convertRealYToPointY(point.y));
 
 			buildView.repaint();
 		}

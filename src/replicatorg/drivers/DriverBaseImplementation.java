@@ -35,7 +35,6 @@ import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.MachineModel;
-import replicatorg.util.Point5d;
 
 public class DriverBaseImplementation implements Driver {
 	// our gcode parser
@@ -222,9 +221,9 @@ public class DriverBaseImplementation implements Driver {
 		offsets[offsetSystemNum].z = j;
 	}
 
-	private Point5d currentPosition = null;
+	private Point3d currentPosition = null;
 	
-	public void setCurrentPosition(Point5d p) throws RetryException {
+	public void setCurrentPosition(Point3d p) throws RetryException {
 		currentPosition = p;
 	}
 
@@ -241,18 +240,18 @@ public class DriverBaseImplementation implements Driver {
 	 * Drivers should override this method to get the actual position as recorded by the machine.
 	 * This is useful, for example, after stopping a print, to ask the machine where it is.
 	 */
-	protected Point5d reconcilePosition() {
+	protected Point3d reconcilePosition() {
 		throw new RuntimeException("Position reconcilliation requested, but not implemented for this driver");
 	}
 	
-	public Point5d getCurrentPosition() {
+	public Point3d getCurrentPosition() {
 		if (currentPosition == null) {
 			currentPosition = reconcilePosition();
 		}
-		return new Point5d(currentPosition);
+		return new Point3d(currentPosition);
 	}
 
-	public Point5d getPosition() {
+	public Point3d getPosition() {
 		return getCurrentPosition();
 	}
 
@@ -261,11 +260,11 @@ public class DriverBaseImplementation implements Driver {
 	 * @param p The point, in mm.
 	 * @throws RetryException 
 	 */
-	public void queuePoint(Point5d p) throws RetryException {
-		Point5d delta = getDelta(p);
+	public void queuePoint(Point3d p) throws RetryException {
+		Point3d delta = getDelta(p);
 
 		// add to the total length
-		moveLength += delta.get3D().distance(new Point3d());
+		moveLength += delta.distance(new Point3d());
 
 		// what is our feedrate?
 		double feedrate = getSafeFeedrate(delta);
@@ -275,11 +274,11 @@ public class DriverBaseImplementation implements Driver {
 		setInternalPosition(p);
 	}
 
-	protected void setInternalPosition(Point5d position) {
+	protected void setInternalPosition(Point3d position) {
 		currentPosition = position;
 	}
 	
-	protected void queuePoint(Point5d p, Double feedrate) {
+	protected void queuePoint(Point3d p, Double feedrate) {
 		// do nothing here.
 	}
 
@@ -303,14 +302,13 @@ public class DriverBaseImplementation implements Driver {
 
 	/**
 	 * Return the maximum safe feedrate, given in mm/min., for the given delta and current feedrate.
-	 * The feedrate is evaluated in 3D space only.
 	 * @param delta The delta in mm.
 	 * @return
 	 */
-	public double getSafeFeedrate(Point5d delta) {
+	public double getSafeFeedrate(Point3d delta) {
 		double feedrate = getCurrentFeedrate();
 
-		Point3d maxFeedrates = new Point3d(machine.getMaximumFeedrates().get3D());
+		Point3d maxFeedrates = machine.getMaximumFeedrates();
 
 		// System.out.println("max feedrates: " + maxFeedrates);
 
@@ -323,31 +321,27 @@ public class DriverBaseImplementation implements Driver {
 		}
 
 		// Break down feedrate by axis.
-		double length = delta.get3D().distance(new Point3d());
-		if (delta.x() != 0) {
-			if (feedrate*delta.x()/length > maxFeedrates.x) {
-				feedrate = maxFeedrates.x * length/delta.x();
-			}
-		}
-		if (delta.y() != 0) {
-			if (feedrate*delta.y()/length > maxFeedrates.y) {
-				feedrate = maxFeedrates.y * length/delta.y();
-			}
-		}
-		if (delta.z() != 0) {
-			if (feedrate*delta.z()/length > maxFeedrates.z) {
-				feedrate = maxFeedrates.z * length/delta.z();
-			}
+		double length = delta.distance(new Point3d(0,0,0));
+		if (delta.x != 0)
+			if (feedrate*delta.x/length > maxFeedrates.x)
+				feedrate = maxFeedrates.x * length/delta.x;
+		if (delta.y != 0)
+			if (feedrate*delta.y/length > maxFeedrates.y)
+				feedrate = maxFeedrates.y * length/delta.y;
+		if (delta.z != 0) {
+			if (feedrate*delta.z/length > maxFeedrates.z)
+				feedrate = maxFeedrates.z * length/delta.z;
 		}
 		return feedrate;
 	}
 
-	public Point5d getDelta(Point5d p) {
-		Point5d delta = new Point5d();
-		Point5d current = getCurrentPosition();
+	public Point3d getDelta(Point3d p) {
+		Point3d delta = new Point3d();
+		Point3d current = getCurrentPosition();
 
-		delta.sub(p, current); // delta = p - current
-		delta.absolute(); // absolute value of each component
+		delta.x = Math.abs(p.x - current.x);
+		delta.y = Math.abs(p.y - current.y);
+		delta.z = Math.abs(p.z - current.z);
 
 		return delta;
 	}

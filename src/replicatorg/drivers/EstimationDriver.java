@@ -26,7 +26,7 @@ package replicatorg.drivers;
 import java.awt.geom.Rectangle2D;
 
 import replicatorg.app.exceptions.GCodeException;
-import replicatorg.util.Point5d;
+import javax.vecmath.Point3d;
 
 public class EstimationDriver extends DriverBaseImplementation {
 	// build time in milliseconds
@@ -46,9 +46,9 @@ public class EstimationDriver extends DriverBaseImplementation {
 		buildTime += (double) millis / 1000;
 	}
 
-	protected Point5d reconcilePosition() {
+	protected Point3d reconcilePosition() {
 		// The estimation driver doesn't even care where it is.
-		return new Point5d();
+		return new Point3d();
 	}
 
 	public void execute() throws InterruptedException {
@@ -61,12 +61,12 @@ public class EstimationDriver extends DriverBaseImplementation {
 		}
 	}
 
-	protected void queuePoint(Point5d p, Double feedrate) {
+	protected void queuePoint(Point3d p, Double feedrate) {
 		// our speed is feedrate * distance * 60000 (milliseconds in 1 minute)
 		// feedrate is mm per minute
 		double millis = getMoveLength() / feedrate * 60000.0;
 
-		bounds.add(p.x(),p.y());
+		bounds.add(p.x,p.y);
 		
 		// add it in!
 		if (millis > 0) {

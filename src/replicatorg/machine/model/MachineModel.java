@@ -33,7 +33,7 @@ import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
-import replicatorg.util.Point5d;
+import replicatorg.machine.model.BuildVolume;
 
 public class MachineModel
 {
@@ -43,13 +43,13 @@ public class MachineModel
 	//our machine space
 	//private Point3d currentPosition;
 	@SuppressWarnings("unused")
-	private Point5d minimum;
-	private Point5d maximum;
+	private Point3d minimum;
+	private Point3d maximum;
 	private HashMap<Axis, Endstops> endstops = new HashMap<Axis, Endstops>();
 
 	//feedrate information
-	private Point5d maximumFeedrates;
-	private Point5d stepsPerMM;
+	private Point3d maximumFeedrates;
+	private Point3d stepsPerMM;
 	
 	//our drive status
 	protected boolean drivesEnabled = true;
@@ -77,10 +77,10 @@ public class MachineModel
 		buildVolume = new BuildVolume(100,100,100); // preload it with the default values
 		
 		//currentPosition = new Point3d();
-		minimum = new Point5d();
-		maximum = new Point5d();
-		maximumFeedrates = new Point5d();
-		stepsPerMM = new Point5d(1, 1, 1, 1, 1); //use ones, because we divide by this!
+		minimum = new Point3d();
+		maximum = new Point3d();
+		maximumFeedrates = new Point3d();
+		stepsPerMM = new Point3d(1, 1, 1); //use ones, because we divide by this!
 		
 		currentTool = nullTool;
 	}
@@ -134,38 +134,24 @@ public class MachineModel
 					//create the right variables.
 					if (id.toLowerCase().equals("x"))
 					{
-						maximum.setX(length);
-						maximumFeedrates.setX(maxFeedrate);
-						stepsPerMM.setX(stepspermm);
+						maximum.x = length;
+						maximumFeedrates.x = maxFeedrate;
+						stepsPerMM.x = stepspermm;
 						this.endstops.put(Axis.X, endstops);
 					}
 					else if (id.toLowerCase().equals("y"))
 					{
-						maximum.setY(length);
-						maximumFeedrates.setY(maxFeedrate);
-						stepsPerMM.setY(stepspermm);
+						maximum.y = length;
+						maximumFeedrates.y = maxFeedrate;
+						stepsPerMM.y = stepspermm;
 						this.endstops.put(Axis.Y, endstops);
 					}
 					else if (id.toLowerCase().equals("z"))
 					{
-						maximum.setZ(length);
-						maximumFeedrates.setZ(maxFeedrate);
-						stepsPerMM.setZ(stepspermm);
+						maximum.z = length;
+						maximumFeedrates.z = maxFeedrate;
+						stepsPerMM.z = stepspermm;
 						this.endstops.put(Axis.Z, endstops);
-					}
-					else if (id.toLowerCase().equals("a"))
-					{
-						maximum.setA(length);
-						maximumFeedrates.setA(maxFeedrate);
-						stepsPerMM.setA(stepspermm);
-						this.endstops.put(Axis.A, endstops);
-					}
-					else if (id.toLowerCase().equals("b"))
-					{
-						maximum.setB(length);
-						maximumFeedrates.setB(maxFeedrate);
-						stepsPerMM.setB(stepspermm);
-						this.endstops.put(Axis.B, endstops);
 					}
 
 					//System.out.println("Loading axis " + id + ": (Length: " + length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + scale + " steps/mm)");
@@ -290,16 +276,28 @@ public class MachineModel
 	/*************************************
 	*  Convert steps to millimeter units
 	*************************************/
-
-	public Point5d stepsToMM(Point5d steps)
+	public double xStepsToMM(long steps)
 	{
-		Point5d temp = new Point5d();
+		return steps/stepsPerMM.x;
+	}
+	
+	public double yStepsToMM(long steps)
+	{
+		return steps/stepsPerMM.y;
+	}
+	
+	public double zStepsToMM(long steps)
+	{
+		return steps/stepsPerMM.z;
+	}
+	
+	public Point3d stepsToMM(Point3d steps)
+	{
+		Point3d temp = new Point3d();
 
-		temp.setX(steps.x()/stepsPerMM.x());
-		temp.setY(steps.y()/stepsPerMM.y());
-		temp.setZ(steps.z()/stepsPerMM.z());
-		temp.setA(steps.a()/stepsPerMM.a());
-		temp.setB(steps.b()/stepsPerMM.b());
+		temp.x = steps.x/stepsPerMM.x;
+		temp.y = steps.y/stepsPerMM.y;
+		temp.z = steps.z/stepsPerMM.z;
 		
 		return temp;
 	}
@@ -307,16 +305,28 @@ public class MachineModel
 	/*************************************
 	*  Convert millimeters to machine steps
 	*************************************/
-
-	public Point5d mmToSteps(Point5d mm)
+	public long xMMtoSteps(double mm)
 	{
-		Point5d temp = new Point5d();
+		return Math.round(mm * stepsPerMM.x);
+	}
+	
+	public long yMMtoSteps(double mm)
+	{
+		return Math.round(mm * stepsPerMM.y);
+	}
+	
+	public long zMMtoSteps(double mm)
+	{
+		return Math.round(mm * stepsPerMM.z);
+	}
 
-		temp.setX(Math.round(mm.x() * stepsPerMM.x()));
-		temp.setY(Math.round(mm.y() * stepsPerMM.y()));
-		temp.setZ(Math.round(mm.z() * stepsPerMM.z()));
-		temp.setA(Math.round(mm.a() * stepsPerMM.a()));
-		temp.setB(Math.round(mm.b() * stepsPerMM.b()));
+	public Point3d mmToSteps(Point3d mm)
+	{
+		Point3d temp = new Point3d();
+
+		temp.x = Math.round(mm.x * stepsPerMM.x);
+		temp.y = Math.round(mm.y * stepsPerMM.y);
+		temp.z = Math.round(mm.z * stepsPerMM.z);
 		
 		return temp;
 	}
@@ -427,7 +437,7 @@ public class MachineModel
 		}
 	}
 
-  public Point5d getMaximumFeedrates() {
+  public Point3d getMaximumFeedrates() {
     return maximumFeedrates;
   }
   
