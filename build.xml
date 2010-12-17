@@ -202,6 +202,12 @@
     <copy todir="${target.dir}/machines">
       <fileset dir="machines"/>
     </copy>
+    <copy todir="${target.dir}/examples">
+      <fileset dir="examples"/>
+    </copy>
+    <copy todir="${target.dir}/scripts">
+      <fileset dir="scripts"/>
+    </copy>
   </target>
 
   <target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">
