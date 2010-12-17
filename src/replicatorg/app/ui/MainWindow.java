@@ -2485,12 +2485,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 			if (targetPort != null) {
 				try {
-					Serial current = us.getSerial();
-					System.err.println("Current serial port: "+((current==null)?"null":current.getName())+", specified "+targetPort);
-					if (current == null || !current.getName().equals(targetPort)) {
-						us.setSerial(new Serial(targetPort,us));
+					synchronized(us) {
+						Serial current = us.getSerial();
+						System.err.println("Current serial port: "+((current==null)?"null":current.getName())+", specified "+targetPort);
+						if (current == null || !current.getName().equals(targetPort)) {
+							us.setSerial(new Serial(targetPort,us));
+						}
+						machine.connect();
 					}
-					machine.connect();
 				} catch (SerialException e) {
 					String msg = e.getMessage();
 					if (msg == null) { msg = "."; }

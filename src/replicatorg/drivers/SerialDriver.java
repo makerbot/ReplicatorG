@@ -60,7 +60,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
                 stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
 	}
 
-	public void setSerial(Serial serial) {
+	public synchronized void setSerial(Serial serial) {
 		serialWriteLock.lock();
 		if (this.serial == serial)
 		{
