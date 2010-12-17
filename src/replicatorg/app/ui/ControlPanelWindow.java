@@ -172,11 +172,15 @@ public class ControlPanelWindow extends JFrame implements
 			}
 		}
 		
+		// These homing options can be dangerous on some machines, especially ones that require sequential
+		// homes.  We'll leave them out until we can improve the safety of these operations.
+		/*
 		homeMenu.add(new JSeparator());
 		homeMenu.add(makeHomeItem("Home XY+",EnumSet.of(Axis.X,Axis.Y),true));
 		homeMenu.add(makeHomeItem("Home XY-",EnumSet.of(Axis.X,Axis.Y),false));
 		homeMenu.add(makeHomeItem("Home all+",EnumSet.allOf(Axis.class),true));
 		homeMenu.add(makeHomeItem("Home all-",EnumSet.allOf(Axis.class),false));
+		*/
 		return bar;
 	}
 

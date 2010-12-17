@@ -156,6 +156,7 @@ public class PythonUtils {
 		}
 		
 		for (String c : candidates) {
+			@SuppressWarnings("unused")
 			Version v = checkVersion(c,minVersion,maxVersion);
 		}
 		

@@ -8,7 +8,6 @@ import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TriangleArray;
 
-@SuppressWarnings("deprecation")
 public abstract class ModelWriter {
 	protected OutputStream ostream;
 	

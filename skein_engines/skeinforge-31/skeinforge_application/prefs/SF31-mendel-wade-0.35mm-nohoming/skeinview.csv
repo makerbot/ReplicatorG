@@ -1,9 +1,0 @@
-Format is tab separated preferences.
-Activate Skeinview	True
-Draw Arrows	True
-Open File to Skeinview	
-Go Around Extruder Off Travel	False
-Pixels over Extrusion Width (ratio):	10.0
-Screen Horizontal Inset (pixels):	100
-Screen Vertical Inset (pixels):	100
-windowPositionBehold Preferences	0+0

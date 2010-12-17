@@ -1,0 +1,28 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+        <machine experimental="1">
+                <name>Ultimaker v1.0 (5D firmware)</name>
+                <geometry type="cartesian">
+                        <!-- different pulleys on X and Y axii -->
+                        <axis id="x" length="210" maxfeedrate="5000" stepspermm="47.069852" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="y" length="210" maxfeedrate="5000" stepspermm="47.0698523" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="z" length="210" maxfeedrate="150" stepspermm="160" endstops="min"/> <!-- quarter-step driver -->
+                </geometry>
+                <tools>
+                        <tool name="Stepper-based pinch extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" heatedplatform="true" motor_steps="200" default_rpm="1000" />
+                </tools>
+                <clamps></clamps>
+                <firmware url="http://firmware.ultimaker.com/latest" autoupgrade="false"></firmware>
+                <help name="Ultimaking Guide" url="http://www.ultimaker.com/guide"></help>
+                <driver name="reprap5d">
+                        <!-- optional: <portname>COM1</portname> -->
+                        <rate>57600</rate>
+                </driver>
+                <warmup>
+                </warmup>
+                <cooldown>
+(Turn off steppers after a build.)
+M108 S0
+                </cooldown>
+        </machine>
+</machines>

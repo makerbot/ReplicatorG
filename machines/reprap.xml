@@ -1,0 +1,80 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+        <machine experimental="1">
+                <name>Mendel with Gen 3 Electronics (19200 Baud)</name>
+                <geometry type="cartesian">
+                        <!-- different pulleys on X and Y axii -->
+                        <axis id="x" length="200" maxfeedrate="5000" stepspermm="47.069852" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="y" length="200" maxfeedrate="5000" stepspermm="47.0698523" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="z" length="140" maxfeedrate="30" stepspermm="160" endstops="min"/> <!-- quarter-step driver -->
+                </geometry>
+                <tools>
+                        <tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" motor_steps="200" heatedplatform="true" />
+                </tools>
+                <clamps></clamps>
+                <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
+                <driver name="reprap5d">
+                        <!-- optional: <portname>COM1</portname> -->
+                        <rate>19200</rate>
+                </driver>
+                <warmup>
+                </warmup>
+                <cooldown>
+(Turn off steppers after a build.)
+M108 S0
+                </cooldown>
+        </machine>
+
+        <machine experimental="1">
+                <name>Mendel with Mega/RAMPS Electronics (57600 baud)</name>
+                <geometry type="cartesian">
+                        <!-- different pulleys on X and Y axii -->
+                        <axis id="x" length="200" maxfeedrate="5000" stepspermm="47.069852" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="y" length="200" maxfeedrate="5000" stepspermm="47.0698523" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="z" length="140" maxfeedrate="150" stepspermm="160" endstops="min"/> <!-- quarter-step driver -->
+                </geometry>
+                <tools>
+                        <tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" motor_steps="200" heatedplatform="true" />
+                </tools>
+                <clamps></clamps>
+                <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
+                <driver name="reprap5d">
+                        <!-- optional: <portname>COM1</portname> -->
+                        <rate>57600</rate>
+                </driver>
+                <warmup>
+                </warmup>
+                <cooldown>
+(Turn off steppers after a build.)
+M108 S0
+                </cooldown>
+        </machine>
+        <machine experimental="1">
+                <name>Mendel with Mega/RAMPS Electronics (57600 baud)</name>
+                <geometry type="cartesian">
+                        <!-- different pulleys on X and Y axii -->
+                        <axis id="x" length="200" maxfeedrate="5000" scale="47.069852" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="y" length="200" maxfeedrate="5000" scale="47.0698523" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="z" length="140" maxfeedrate="150" scale="160" endstops="min"/> <!-- quarter-step driver -->
+                </geometry>
+                <tools>
+                        <tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" motor_steps="200" heatedplatform="true" />
+                </tools>
+                <clamps></clamps>
+                <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
+                <driver name="reprap5d">
+                        <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+                        <rate>57600</rate>
+                        <parity>8</parity>
+                        <!-- optional, defaults to 1.                          <databits>1</databits> -->
+                        <!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+                        <debuglevel>1</debuglevel>
+                </driver>
+                <warmup>
+                </warmup>
+                <cooldown>
+(Turn off steppers after a build.)
+M108 S0
+                </cooldown>
+        </machine>
+</machines>

@@ -94,7 +94,7 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 21;
+	public static final int VERSION = 22;
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */
@@ -106,20 +106,24 @@ public class Base {
 	private static MachineController machine = null;
 	
 	/**
+	 * The user preferences store.
+	 */
+	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
+
+	/**
 	 * The general-purpose logging object.
 	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
 	{
-		logger.setLevel(Level.INFO);
+		String levelName = Base.preferences.get("replicatorg.debuglevel", Level.INFO.getName());
+		Level l = Level.parse(levelName);
+		logger.setLevel(l);
 	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
 	 * handler.
 	 */
 	static public String openedAtStartup;
-
-	
-	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
 
 	static public void resetPreferences() {
 		try {
@@ -272,8 +276,12 @@ public class Base {
 		// Warn about read-only directories
     	{
     		File userDir = getUserDirectory();
-    		if (!userDir.exists() || !userDir.canWrite()) {
-    			Base.showMessage("Read-only home directory", 
+    		String header = null;
+    		if (!userDir.exists()) header = new String("Unable to create user directory");
+    		else if (!userDir.canWrite()) header = new String("Unable to write to user directory");
+    		else if (!userDir.isDirectory()) header = new String("User directory must be a directory");
+    		if (header != null) {
+    			Base.showMessage(header, 
     					"<html><body>ReplicatorG can not write to the directory "+userDir.getAbsolutePath()+".<br>" +
     					"Some functions of ReplicatorG, like toolpath generation and firmware updates,<br>" +
     					"require ReplicatorG to write data to this directory.  You should end this<br>"+
@@ -361,9 +369,7 @@ public class Base {
 				// load up our default machine
 				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
 				String machineName = preferences.get("machine.name",null); 
-				if (machineName != null) {
-					editor.loadMachine(machineName, autoconnect);
-				}
+				editor.loadMachine(machineName, autoconnect);
 				// show the window
 				editor.setVisible(true);
 				UpdateChecker.checkLatestVersion(editor);
@@ -799,7 +805,7 @@ public class Base {
 	 * Grab the contents of a file as a string.
 	 */
 	static public String loadFile(File file) throws IOException {
-		System.err.println("Load file : "+file.getAbsolutePath());
+		Base.logger.info("Load file : "+file.getAbsolutePath());
 		// empty code file.. no worries, might be getting filled up later
 		if (file.length() == 0)
 			return "";
@@ -901,7 +907,7 @@ public class Base {
 	 * our singleton interface to get our machine.
 	 */
 	static public MachineController loadMachine(String name) {
-		if (machine == null || machine.name != name) {
+		if (machine == null || !machine.getDescriptorName().equals(name)) {
 			machine = MachineFactory.load(name);
 		}
 		return machine;

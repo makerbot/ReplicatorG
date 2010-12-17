@@ -10,14 +10,17 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
-import javax.annotation.Generated;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -105,23 +108,36 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		return profiles;
 	}
 
+	
 	/**
 	 * A SkeinforgeOption instance describes a single preference override to pass to skeinforge.
 	 * @author phooky
 	 */
 	protected class SkeinforgeOption {
+		final String parameter;
 		final String module;
 		final String preference;
 		final String value;
 		public SkeinforgeOption(String module, String preference, String value) {
+			this.parameter = "--option";
 			this.module = module; 
 			this.preference = preference; 
 			this.value = value;
 		}
-		public String getSpec() {
-			return module + ":" + preference + "=" + value;
+		public SkeinforgeOption(String parameter) {
+			this.parameter = parameter;
+			this.module = null;
+			this.preference = null;
+			this.value = "";
+		}
+		public String getParameter() {
+			return this.parameter;
+		}
+		public String getArgument() {
+			return (this.module != null ? this.module + ":" : "") + (this.preference != null ? this.preference + "=" : "") + this.value;
 		}
 	}
+		
 	/**
 	 * A SkeinforgePreference describes a user-visible preference that appears in the 
 	 * configuration dialog.  SkeinforgePreferences should give a list of options
@@ -137,6 +153,62 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	protected interface SkeinforgePreference {
 		public JComponent getUI();
 		public List<SkeinforgeOption> getOptions();
+	}
+	
+	protected class SkeinforgeChoicePreference implements SkeinforgePreference {
+		private Map<String,List<SkeinforgeOption>> optionsMap = new HashMap<String,List<SkeinforgeOption>>();
+		private JPanel component;
+		private DefaultComboBoxModel model;
+		private String chosen;
+		
+		SkeinforgeChoicePreference(String name, final String preferenceName, String defaultState, String toolTip) {
+			component = new JPanel(new MigLayout());
+			chosen = defaultState;
+			if (preferenceName != null) {
+				chosen = Base.preferences.get(preferenceName, defaultState);
+			}
+			model = new DefaultComboBoxModel();
+			model.setSelectedItem(chosen);
+			component.add(new JLabel(name));
+			JComboBox cb = new JComboBox(model);
+			component.add(cb);
+			cb.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					chosen = (String)model.getSelectedItem();
+					if (preferenceName != null) {
+						Base.preferences.put(preferenceName,chosen);
+					}
+				}
+			});
+			if (toolTip != null) {
+				component.setToolTipText(toolTip);
+			}
+		}
+		public JComponent getUI() { return component; }
+		
+		public void addOption(String name, SkeinforgeOption o) {
+			if (!optionsMap.containsKey(name)) {
+				model.addElement(name);
+				optionsMap.put(name, new LinkedList<SkeinforgeOption>());
+				if (name.equals(chosen)) {
+					model.setSelectedItem(name);
+				}
+			}
+			List<SkeinforgeOption> list = optionsMap.get(name);
+			list.add(o);
+		}
+
+		public List<SkeinforgeOption> getOptions() {
+			if (optionsMap.containsKey(chosen)) {
+				List<SkeinforgeOption> l = optionsMap.get(chosen);
+				for (SkeinforgeOption o : l) {
+					System.err.println(o.getArgument());
+				}
+				return optionsMap.get(chosen);
+			}
+			return new LinkedList<SkeinforgeOption>();
+		}
+
 	}
 	
 	protected class SkeinforgeBooleanPreference implements SkeinforgePreference {
@@ -235,7 +307,6 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			prefList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			prefList.addListSelectionListener(new ListSelectionListener() {
 
-				@Override
 				public void valueChanged(ListSelectionEvent selectionEvent) {
 					boolean selected = !((JList) selectionEvent.getSource())
 							.isSelectionEmpty();
@@ -438,8 +509,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			List<SkeinforgeOption> options = preference.getOptions();
 			if (options != null) {
 				for (SkeinforgeOption option : options) {
-					arguments.add("--option");
-					arguments.add(option.getSpec());
+					arguments.add(option.getParameter());
+					String arg = option.getArgument();
+					if (arg.length() > 0) arguments.add(arg);
 				}
 			}
 		}

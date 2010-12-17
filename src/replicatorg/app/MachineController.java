@@ -44,6 +44,7 @@ import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
+import replicatorg.drivers.UsesSerial;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -362,13 +363,23 @@ public class MachineController {
 				if (!state.isSimulating()) {
 					driver.invalidatePosition();
 				}
-				setState(new MachineState(MachineState.State.READY));
+				setState(new MachineState(driver.isInitialized()?
+						MachineState.State.READY:
+						MachineState.State.NOT_ATTACHED
+					));
 			} catch (BuildFailureException e) {
-//				JOptionPane.showMessageDialog(null, e.getMessage(),
-//						"Build Failure", JOptionPane.ERROR_MESSAGE);
-				// Attempt to reestablish connection to check state on an abort
-				// or failure
-				setState(new MachineState(MachineState.State.CONNECTING));
+				if (state.isSimulating()) {
+					// If simulating, return to connected or
+					// disconnected state.
+					setState(new MachineState(driver.isInitialized()?
+							MachineState.State.READY:
+							MachineState.State.NOT_ATTACHED));
+				} else {
+					// If a real interrupted build,
+					// Attempt to reestablish connection to check state on an abort
+					// or failure
+					setState(new MachineState(MachineState.State.CONNECTING));
+				}
 			} catch (InterruptedException e) {
 				Base.logger.warning("MachineController interrupted");
 			} finally {
@@ -571,8 +582,16 @@ public class MachineController {
 						setState(MachineState.State.READY);						
 					} else if (state.getState() == MachineState.State.RESET) {
 						driver.reset();
-						setState(MachineState.State.READY);						
+						readName();
+						setState(MachineState.State.READY);		
 					} else {
+						if (state.getState() == MachineState.State.NOT_ATTACHED) {
+							// Kill serial port connection when not attached, to make it safe to unplug
+							if (driver instanceof UsesSerial) {
+								UsesSerial us = (UsesSerial)driver;
+								us.setSerial(null);
+							}
+						}
 						synchronized(this) {
 							if (state.getState() == MachineState.State.READY ||
 									state.getState() == MachineState.State.NOT_ATTACHED ||
@@ -596,6 +615,9 @@ public class MachineController {
 			String n = ((OnboardParameters)driver).getMachineName();
 			if (n != null && n.length() > 0) {
 				name = n;
+			}
+			else {
+				parseName(); // Use name from XML file instead of reusing name from last connected machine
 			}
 		}
 	}
@@ -699,6 +721,9 @@ public class MachineController {
 		return false;
 	}
 
+	private String descriptorName;
+	
+	public String getDescriptorName() { return descriptorName; }
 	
 	private void parseName() {
 		NodeList kids = machineNode.getChildNodes();
@@ -707,7 +732,8 @@ public class MachineController {
 			Node kid = kids.item(j);
 
 			if (kid.getNodeName().equals("name")) {
-				name = kid.getFirstChild().getNodeValue().trim();
+				descriptorName = kid.getFirstChild().getNodeValue().trim();
+				name = descriptorName;
 				return;
 			}
 		}
@@ -890,6 +916,11 @@ public class MachineController {
 	}
 
 	synchronized public void connect() {
+		// recreate thread if stopped
+		if (!machineThread.isAlive()) {
+			machineThread = new MachineThread();
+			machineThread.start();
+		}
 		machineThread.connect();
 	}
 

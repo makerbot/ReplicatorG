@@ -496,8 +496,8 @@ public class RepRap5DDriver extends SerialDriver {
 										Double.parseDouble(bedTemp));
 						    }
 						}
-
 					}
+
 					// old arduino firmware sends "start"
 					else if (line.contains("start")||line.contains("Start")) {
 						// todo: set version
@@ -874,4 +874,3 @@ public class RepRap5DDriver extends SerialDriver {
 		return new Point3d(0,0,0);
 	}
 }
-
