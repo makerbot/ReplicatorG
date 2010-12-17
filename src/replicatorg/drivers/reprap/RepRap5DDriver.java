@@ -40,6 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.text.StyledEditorKit.BoldAction;
 import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
@@ -140,12 +141,14 @@ public class RepRap5DDriver extends SerialDriver {
 		df = new DecimalFormat("#.######");
 	}
 
-	public void loadXML(Node xml) {
+	public synchronized void loadXML(Node xml) {
 		super.loadXML(xml);
         // load from our XML config, if we have it.
         if (XML.hasChildNode(xml, "waitforstart")) {
         	Node startNode = XML.getChildNodeByName(xml, "waitforstart");
-            waitForStart = true;
+
+            String enabled = XML.getAttributeValue(startNode, "enabled");
+            if (enabled !=null) waitForStart = Boolean.parseBoolean(enabled);
             
             String timeout = XML.getAttributeValue(startNode, "timeout");
             if (timeout !=null) waitForStartTimeout = Long.parseLong(timeout);
