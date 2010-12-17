@@ -25,11 +25,10 @@ package replicatorg.drivers;
 
 import java.awt.geom.Rectangle2D;
 
-import javax.vecmath.Point3d;
-
 import replicatorg.app.exceptions.GCodeException;
 import replicatorg.app.ui.SimulationWindow;
 import replicatorg.app.ui.SimulationWindow2D;
+import replicatorg.util.Point5d;
 
 public class SimulationDriver extends DriverBaseImplementation {
 	private SimulationWindow simulation;
@@ -75,48 +74,48 @@ public class SimulationDriver extends DriverBaseImplementation {
 		}
 	}
 
-	public void queuePoint(Point3d p) throws RetryException {
+	public void queuePoint(Point5d p) throws RetryException {
 		simulation.queuePoint(p);
 
 		super.queuePoint(p);
 	}
 
 	public void homeXYZ() throws RetryException {
-		queuePoint(new Point3d());
+		queuePoint(new Point5d());
 	}
 
 	public void homeXY() throws RetryException {
-		Point3d pos = getCurrentPosition();
-		pos.x = 0;
-		pos.y = 0;
+		Point5d pos = getCurrentPosition();
+		pos.setX(0);
+		pos.setY(0);
 
 		queuePoint(pos);
 	}
 
 	public void homeX() throws RetryException {
-		Point3d pos = getCurrentPosition();
-		pos.x = 0;
+		Point5d pos = getCurrentPosition();
+		pos.setX(0);
 
 		queuePoint(pos);
 	}
 
 	public void homeY() throws RetryException {
-		Point3d pos = getCurrentPosition();
-		pos.y = 0;
+		Point5d pos = getCurrentPosition();
+		pos.setY(0);
 
 		queuePoint(pos);
 	}
 
 	public void homeZ() throws RetryException {
-		Point3d pos = getCurrentPosition();
-		pos.z = 0;
+		Point5d pos = getCurrentPosition();
+		pos.setZ(0);
 
 		queuePoint(pos);
 	}
 
-	protected Point3d reconcilePosition() {
+	protected Point5d reconcilePosition() {
 		// Initial position irrelevant for this driver; it's all relative to the start pos
-		return new Point3d();
+		return new Point5d();
 	}
 
 }
