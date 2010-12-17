@@ -131,9 +131,9 @@ M18
 		<name>Thingomatic w/ Automated Build Platform</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="96" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="108" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="z" length="100" maxfeedrate="1000" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="x" length="106" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="106" maxfeedrate="1000" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 		</geometry>
 		<tools>
 			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="false" automatedplatform="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
@@ -155,9 +155,9 @@ M18
 		<name>Thingomatic w/ Heated Build Platform</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="96" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="108" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="z" length="100" maxfeedrate="1000" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="x" length="120" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="120" maxfeedrate="1000" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 		</geometry>
 		<tools>
 			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" automatedplatform="false" valve="false" heatedplatform="true" collet="false" heater="true"/>
@@ -180,57 +180,11 @@ M18
 		<name>EXPERIMENTAL - Thingomatic - 5 axes</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="96" maxfeedrate="4000" scale="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="108" maxfeedrate="4000" scale="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="z" length="100" maxfeedrate="1000" scale="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="x" length="106" maxfeedrate="4000" scale="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" scale="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="106" maxfeedrate="1000" scale="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 			<axis id="a" length="100" maxfeedrate="200" scale="200"/>
 			<axis id="b" length="100" maxfeedrate="200" scale="200"/>
-		</geometry>
-		<tools>
-			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
-		</tools>
-		<clamps></clamps>
-		<driver name="makerbot4g">
-			<!-- optional: <portname>COM1</portname> -->
-			<rate>115200</rate>
-		</driver>
-		<warmup>
-		</warmup>
-		<cooldown>
-(Turn off steppers after a build.)
-M18
-		</cooldown>
-	</machine>
-	<machine experimental="1">
-		<name>EXPERIMENTAL - Thingomatic - Candy</name>
-		<geometry type="cartesian">
-			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="96" maxfeedrate="4000" stepspermm="13.2629119" endstops="min"/>  <!-- Pulley dia: 9.60mm / 1/8 step = 1/(9.60 * pi / 400) -->
-			<axis id="y" length="108" maxfeedrate="4000" stepspermm="13.2629119" endstops="min"/>  <!-- Pulley dia: 9.60mm / 1/8 step = 1/(9.60 * pi / 400) -->
-			<axis id="z" length="100" maxfeedrate="1000" stepspermm="50" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/400) -->
-		</geometry>
-		<tools>
-			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
-		</tools>
-		<clamps></clamps>
-		<driver name="makerbot4g">
-			<!-- optional: <portname>COM1</portname> -->
-			<rate>115200</rate>
-		</driver>
-		<warmup>
-		</warmup>
-		<cooldown>
-(Turn off steppers after a build.)
-M18
-		</cooldown>
-	</machine>
-	<machine experimental="1">
-		<name>EXPERIMENTAL - Thingomatic Halfstep</name>
-		<geometry type="cartesian">
-			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="96" maxfeedrate="4000" stepspermm="11.767463" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/4 step = 1/(10.82 * pi / 400) -->
-			<axis id="y" length="108" maxfeedrate="4000" stepspermm="11.767463" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/4 step = 1/(10.82 * pi / 400) -->
-			<axis id="z" length="100" maxfeedrate="1000" stepspermm="50" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/400) -->
 		</geometry>
 		<tools>
 			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
