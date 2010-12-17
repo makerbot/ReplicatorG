@@ -1,3 +1,12 @@
+0023 ReplicatorG
+* Bugfix release
+* Fix machine profiles to handle correct endstops and platform sizes
+* Fix too-hot 0006 TOM profiles
+* Added emergency stop button to control panel
+* Readded raft checkbox on Skeinforge 0006
+* Removed Skeinforge 31
+
+
 0022 ReplicatorG
 * UI for selecting basic skeinforge options
 * Fix: Numerous fixups to connection, disconnection, initialization,
