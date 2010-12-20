@@ -19,13 +19,13 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.vecmath.Point3d;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
+import replicatorg.util.Point5d;
 
 public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListener, FocusListener
 {
@@ -153,8 +153,8 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 		// create the xyfeedrate panel
 		JPanel feedratePanel = new JPanel(new MigLayout());
 
-		int maxXYFeedrate = (int) Math.min(machine.getModel().getMaximumFeedrates().x, 
-				machine.getModel().getMaximumFeedrates().y);
+		int maxXYFeedrate = (int) Math.min(machine.getModel().getMaximumFeedrates().x(), 
+				machine.getModel().getMaximumFeedrates().y());
 		int currentXYFeedrate = Math.min(maxXYFeedrate, Base.preferences
 				.getInt("controlpanel.feedrate.xy",480));
 		xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, maxXYFeedrate,
@@ -176,7 +176,7 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 
 
 		// create our z slider
-		int maxZFeedrate = (int) machine.getModel().getMaximumFeedrates().z;
+		int maxZFeedrate = (int) machine.getModel().getMaximumFeedrates().z();
 		int currentZFeedrate = Math.min(maxZFeedrate, 
 				Base.preferences.getInt("controlpanel.feedrate.z",480));
 		zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, maxZFeedrate,
@@ -217,11 +217,11 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 	DecimalFormat positionFormatter = new DecimalFormat("###.#");
 
 	synchronized public void updateStatus() {
-		Point3d current = driver.getCurrentPosition();
+		Point5d current = driver.getCurrentPosition();
 
-		xPosField.setText(positionFormatter.format(current.x));
-		yPosField.setText(positionFormatter.format(current.y));
-		zPosField.setText(positionFormatter.format(current.z));		
+		xPosField.setText(positionFormatter.format(current.x()));
+		yPosField.setText(positionFormatter.format(current.y()));
+		zPosField.setText(positionFormatter.format(current.z()));		
 	}
 
 	public void handleChangedTextField(JTextField source)
@@ -244,7 +244,7 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		Point3d current = driver.getCurrentPosition();
+		Point5d current = driver.getCurrentPosition();
 		double xyFeedrate = xyFeedrateSlider.getValue();
 		double zFeedrate = zFeedrateSlider.getValue();
 		String s = e.getActionCommand();
@@ -265,47 +265,47 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 			// plus communicate this action back to the main window
 		}
 		else if (s.equals("X+")) {
-			current.x += jogRate;
+			current.setX(current.x() + jogRate);
 
 			driver.setFeedrate(xyFeedrate);
 			driver.queuePoint(current);
 		} else if (s.equals("X-")) {
-			current.x -= jogRate;
+			current.setX(current.x() - jogRate);
 
 			driver.setFeedrate(xyFeedrate);
 			driver.queuePoint(current);
 		} else if (s.equals("Y+")) {
-			current.y += jogRate;
+			current.setY(current.y() + jogRate);
 
 			driver.setFeedrate(xyFeedrate);
 			driver.queuePoint(current);
 		} else if (s.equals("Y-")) {
-			current.y -= jogRate;
+			current.setY(current.y() - jogRate);
 
 			driver.setFeedrate(xyFeedrate);
 			driver.queuePoint(current);
 		} else if (s.equals("Z+")) {
-			current.z += jogRate;
+			current.setZ(current.z() + jogRate);
 
 			driver.setFeedrate(zFeedrate);
 			driver.queuePoint(current);
 		} else if (s.equals("Z-")) {
-			current.z -= jogRate;
+			current.setZ(current.z() - jogRate);
 
 			driver.setFeedrate(zFeedrate);
 			driver.queuePoint(current);
 		} else if (s.equals("Center X")) {
-			current.x = 0;
+			current.setX(0);
 
 			driver.setFeedrate(xyFeedrate);
 			driver.queuePoint(current);
 		} else if (s.equals("Center Y")) {
-			current.y = 0;
+			current.setY(0);
 
 			driver.setFeedrate(xyFeedrate);
 			driver.queuePoint(current);
 		} else if (s.equals("Center Z")) {
-			current.z = 0;
+			current.setZ(0);
 
 			driver.setFeedrate(zFeedrate);
 			driver.queuePoint(current);
@@ -313,7 +313,7 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 			// "Zero" tells the machine to calibrate its
 			// current position as zero, not to move to its
 			// currently-set zero position.
-			driver.setCurrentPosition(new Point3d());
+			driver.setCurrentPosition(new Point5d());
 		}
 		// get our new jog rate
 		else if (s.equals("jog size")) {

@@ -51,6 +51,7 @@ import replicatorg.drivers.gen3.PacketProcessor.CRCException;
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
+import replicatorg.util.Point5d;
 
 public class Sanguino3GDriver extends SerialDriver
 	implements OnboardParameters, SDCardCapture, PenPlotter, MultiTool
@@ -435,19 +436,19 @@ public class Sanguino3GDriver extends SerialDriver
 	 * @throws RetryException 
 	 **************************************************************************/
 
-	public void queuePoint(Point3d p) throws RetryException {
+	public void queuePoint(Point5d p) throws RetryException {
 		Base.logger.log(Level.FINE,"Queued point " + p);
 
 		// is this point even step-worthy?
-		Point3d deltaSteps = getAbsDeltaSteps(getCurrentPosition(), p);
+		Point5d deltaSteps = getAbsDeltaSteps(getCurrentPosition(), p);
 		double masterSteps = getLongestLength(deltaSteps);
 
 		// okay, we need at least one step.
 		if (masterSteps > 0.0) {
 			// where we going?
-			Point3d steps = machine.mmToSteps(p);
+			Point5d steps = machine.mmToSteps(p);
 			
-			Point3d delta = getDelta(p);
+			Point5d delta = getDelta(p);
 			double feedrate = getSafeFeedrate(delta);
 			
 			// how fast are we doing it?
@@ -493,8 +494,7 @@ public class Sanguino3GDriver extends SerialDriver
 	 * 
 	 * //send this segment queueIncrementalPoint(pb, segmentSteps, ticks); } }
 	 */
-
-	private void queueAbsolutePoint(Point3d steps, long micros) throws RetryException {
+	protected void queueAbsolutePoint(Point5d steps, long micros) throws RetryException {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_ABS.getCode());
 
 		if (Base.logger.isLoggable(Level.FINE)) {
@@ -503,24 +503,24 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 
 		// just add them in now.
-		pb.add32((int) steps.x);
-		pb.add32((int) steps.y);
-		pb.add32((int) steps.z);
+		pb.add32((int) steps.x());
+		pb.add32((int) steps.y());
+		pb.add32((int) steps.z());
 		pb.add32((int) micros);
 
 		runCommand(pb.getPacket());
 	}
 
-	public void setCurrentPosition(Point3d p) throws RetryException {
+	public void setCurrentPosition(Point5d p) throws RetryException {
 //		System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 //		if (super.getCurrentPosition().equals(p)) return;
 //		System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_POSITION.getCode());
 
-		Point3d steps = machine.mmToSteps(p);
-		pb.add32((long) steps.x);
-		pb.add32((long) steps.y);
-		pb.add32((long) steps.z);
+		Point5d steps = machine.mmToSteps(p);
+		pb.add32((long) steps.x());
+		pb.add32((long) steps.y());
+		pb.add32((long) steps.z());
 
 		Base.logger.log(Level.FINE,"Set current position to " + p + " (" + steps
 					+ ")");
@@ -530,40 +530,41 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setCurrentPosition(p);
 	}
 
+	// Homes the three first axes
 	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.log(Level.FINE,"Homing axes "+axes.toString());
 		byte flags = 0x00;
 
 		invalidatePosition();
 
-		Point3d maxFeedrates = machine.getMaximumFeedrates();
+		Point5d maxFeedrates = machine.getMaximumFeedrates();
 
 		if (feedrate <= 0) {
 			// figure out our fastest feedrate.
-			feedrate = Math.max(maxFeedrates.x, maxFeedrates.y);
-			feedrate = Math.max(maxFeedrates.z, feedrate);
+			feedrate = Math.max(maxFeedrates.x(), maxFeedrates.y());
+			feedrate = Math.max(maxFeedrates.z(), feedrate);
 		}
 		
-		Point3d target = new Point3d();
+		Point5d target = new Point5d();
 		
 		if (axes.contains(Axis.X)) {
 			flags += 1;
-			feedrate = Math.min(feedrate, maxFeedrates.x);
-			target.x = 1; // just to give us feedrate info.
+			feedrate = Math.min(feedrate, maxFeedrates.x());
+			target.setX(1); // just to give us feedrate info.
 		}
 		if (axes.contains(Axis.Y)) {
 			flags += 2;
-			feedrate = Math.min(feedrate, maxFeedrates.y);
-			target.y = 1; // just to give us feedrate info.
+			feedrate = Math.min(feedrate, maxFeedrates.y());
+			target.setY(1); // just to give us feedrate info.
 		}
 		if (axes.contains(Axis.Z)) {
 			flags += 4;
-			feedrate = Math.min(feedrate, maxFeedrates.z);
-			target.z = 1; // just to give us feedrate info.
+			feedrate = Math.min(feedrate, maxFeedrates.z());
+			target.setZ(1); // just to give us feedrate info.
 		}
 		
 		// calculate ticks
-		long micros = convertFeedrateToMicros(new Point3d(), target, feedrate);
+		long micros = convertFeedrateToMicros(new Point5d(), target, feedrate);
 		// send it!
 		int code = positive?
 				MotherboardCommandCode.FIND_AXES_MAXIMUM.getCode():
@@ -1127,22 +1128,16 @@ public class Sanguino3GDriver extends SerialDriver
 		return delta;
 	}
 
-	@SuppressWarnings("unused")
-	private Point3d getDeltaSteps(Point3d current, Point3d target) {
-		return machine.mmToSteps(getDeltaDistance(current, target));
-	}
-
-	private Point3d getAbsDeltaDistance(Point3d current, Point3d target) {
+	private Point5d getAbsDeltaDistance(Point5d current, Point5d target) {
 		// calculate our deltas.
-		Point3d delta = new Point3d();
-		delta.x = Math.abs(target.x - current.x);
-		delta.y = Math.abs(target.y - current.y);
-		delta.z = Math.abs(target.z - current.z);
-
+		Point5d delta = new Point5d();
+		delta.sub(target, current); // delta = target - current
+		delta.absolute();
+		
 		return delta;
 	}
 
-	private Point3d getAbsDeltaSteps(Point3d current, Point3d target) {
+	private Point5d getAbsDeltaSteps(Point5d current, Point5d target) {
 		return machine.mmToSteps(getAbsDeltaDistance(current, target));
 	}
 
@@ -1153,13 +1148,12 @@ public class Sanguino3GDriver extends SerialDriver
 	 * @param feedrate Feedrate in mm per minute
 	 * @return
 	 */
-	private long convertFeedrateToMicros(Point3d current, Point3d target,
-			double feedrate) {
-		Point3d deltaDistance = getAbsDeltaDistance(current, target);
- 		Point3d deltaSteps = machine.mmToSteps(deltaDistance);
+	private long convertFeedrateToMicros(Point5d current, Point5d target, double feedrate) {
+		Point5d deltaDistance = getAbsDeltaDistance(current, target);
+ 		Point5d deltaSteps = machine.mmToSteps(deltaDistance);
 		double masterSteps = getLongestLength(deltaSteps);
 		// how long is our line length?
-		double distance = deltaDistance.distance(new Point3d());
+		double distance = deltaDistance.distance(new Point5d());
 		// distance is in mm
 		// feedrate is in mm/min
 		// distance / feedrate * 60,000,000 = move duration in microseconds
@@ -1169,19 +1163,13 @@ public class Sanguino3GDriver extends SerialDriver
 		return (long) Math.round(step_delay);
 	}
 
-	private double getLongestLength(Point3d p) {
+	private double getLongestLength(Point5d p) {
 		// find the dominant axis.
-		if (p.x > p.y) {
-			if (p.z > p.x)
-				return p.z;
-			else
-				return p.x;
-		} else {
-			if (p.z > p.y)
-				return p.z;
-			else
-				return p.y;
-		}
+		double longest = Math.max(p.x(), p.y());
+		longest = Math.max(longest, p.z());
+		longest = Math.max(longest, p.a());
+		longest = Math.max(longest, p.b());
+		return longest;
 	}
 
 	public String getDriverName() {
@@ -1200,13 +1188,13 @@ public class Sanguino3GDriver extends SerialDriver
 		invalidatePosition();
 	}
 
-	protected Point3d reconcilePosition() {
+	protected Point5d reconcilePosition() {
 		if (fileCaptureOstream != null) {
-			return new Point3d(0,0,0);
+			return new Point5d();
 		}
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
-		Point3d steps = new Point3d(pr.get32(), pr.get32(), pr.get32());
+		Point5d steps = new Point5d(pr.get32(), pr.get32(), pr.get32(), 0, 0);
 		// Useful quickie debugs
 //		System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
 		return machine.stepsToMM(steps);
