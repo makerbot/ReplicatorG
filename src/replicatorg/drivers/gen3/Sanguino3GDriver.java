@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 
-import javax.vecmath.Point3d;
-
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
@@ -1118,15 +1116,15 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Various timer and math functions.
 	 **************************************************************************/
 
-	private Point3d getDeltaDistance(Point3d current, Point3d target) {
-		// calculate our deltas.
-		Point3d delta = new Point3d();
-		delta.x = target.x - current.x;
-		delta.y = target.y - current.y;
-		delta.z = target.z - current.z;
-
-		return delta;
-	}
+//	private Point3d getDeltaDistance(Point3d current, Point3d target) {
+//		// calculate our deltas.
+//		Point3d delta = new Point3d();
+//		delta.x = target.x - current.x;
+//		delta.y = target.y - current.y;
+//		delta.z = target.z - current.z;
+//
+//		return delta;
+//	}
 
 	private Point5d getAbsDeltaDistance(Point5d current, Point5d target) {
 		// calculate our deltas.

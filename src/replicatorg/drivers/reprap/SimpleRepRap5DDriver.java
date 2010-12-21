@@ -36,14 +36,11 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.vecmath.Point3d;
-
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
-
 import replicatorg.machine.model.Axis;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;

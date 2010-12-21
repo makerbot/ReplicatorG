@@ -26,8 +26,6 @@ package replicatorg.machine.model;
 import java.util.HashMap;
 import java.util.Vector;
 
-import javax.vecmath.Point3d;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
