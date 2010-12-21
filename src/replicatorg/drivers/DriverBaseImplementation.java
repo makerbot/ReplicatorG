@@ -33,7 +33,7 @@ import replicatorg.app.Base;
 import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.util.Point5d;
 
@@ -356,7 +356,7 @@ public class DriverBaseImplementation implements Driver {
 	 * various homing functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException {
+	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException {
 	}
 
 	/***************************************************************************

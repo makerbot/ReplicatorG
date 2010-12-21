@@ -42,7 +42,7 @@ import replicatorg.app.Base;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.reprap.ExtrusionThread.Direction;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
@@ -452,10 +452,10 @@ public class RepRap5DDriver extends SerialDriver {
 	}
 
 	@Override
-	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException {
+	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.info("homing "+axes.toString());
 		StringBuffer buf = new StringBuffer("G28");
-		for (Axis axis : axes)
+		for (AxisId axis : axes)
 		{
 			buf.append(" "+axis);
 		}

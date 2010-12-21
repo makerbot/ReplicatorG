@@ -46,7 +46,7 @@ import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
 import replicatorg.drivers.gen3.PacketProcessor.CRCException;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
 import replicatorg.util.Point5d;
@@ -529,7 +529,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	// Homes the three first axes
-	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException {
+	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.log(Level.FINE,"Homing axes "+axes.toString());
 		byte flags = 0x00;
 
@@ -545,17 +545,17 @@ public class Sanguino3GDriver extends SerialDriver
 		
 		Point5d target = new Point5d();
 		
-		if (axes.contains(Axis.X)) {
+		if (axes.contains(AxisId.X)) {
 			flags += 1;
 			feedrate = Math.min(feedrate, maxFeedrates.x());
 			target.setX(1); // just to give us feedrate info.
 		}
-		if (axes.contains(Axis.Y)) {
+		if (axes.contains(AxisId.Y)) {
 			flags += 2;
 			feedrate = Math.min(feedrate, maxFeedrates.y());
 			target.setY(1); // just to give us feedrate info.
 		}
-		if (axes.contains(Axis.Z)) {
+		if (axes.contains(AxisId.Z)) {
 			flags += 4;
 			feedrate = Math.min(feedrate, maxFeedrates.z());
 			target.setZ(1); // just to give us feedrate info.
@@ -1345,21 +1345,21 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EC_EEPROM_SLAVE_ID = 0x001A;
 
 	final private static int MAX_MACHINE_NAME_LEN = 16;
-	public EnumSet<Axis> getInvertedParameters() {
+	public EnumSet<AxisId> getInvertedParameters() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(EEPROM_AXIS_INVERSION_OFFSET,1);
-		EnumSet<Axis> r = EnumSet.noneOf(Axis.class);
-		if ( (b[0] & (0x01 << 0)) != 0 ) r.add(Axis.X);
-		if ( (b[0] & (0x01 << 1)) != 0 ) r.add(Axis.Y);
-		if ( (b[0] & (0x01 << 2)) != 0 ) r.add(Axis.Z);
+		EnumSet<AxisId> r = EnumSet.noneOf(AxisId.class);
+		if ( (b[0] & (0x01 << 0)) != 0 ) r.add(AxisId.X);
+		if ( (b[0] & (0x01 << 1)) != 0 ) r.add(AxisId.Y);
+		if ( (b[0] & (0x01 << 2)) != 0 ) r.add(AxisId.Z);
 		return r;
 	}
 
-	public void setInvertedParameters(EnumSet<Axis> axes) {
+	public void setInvertedParameters(EnumSet<AxisId> axes) {
 		byte b[] = new byte[1];
-		if (axes.contains(Axis.X)) b[0] = (byte)(b[0] | (0x01 << 0));
-		if (axes.contains(Axis.Y)) b[0] = (byte)(b[0] | (0x01 << 1));
-		if (axes.contains(Axis.Z)) b[0] = (byte)(b[0] | (0x01 << 2));
+		if (axes.contains(AxisId.X)) b[0] = (byte)(b[0] | (0x01 << 0));
+		if (axes.contains(AxisId.Y)) b[0] = (byte)(b[0] | (0x01 << 1));
+		if (axes.contains(AxisId.Z)) b[0] = (byte)(b[0] | (0x01 << 2));
 		writeToEEPROM(EEPROM_AXIS_INVERSION_OFFSET,b);
 	}
 

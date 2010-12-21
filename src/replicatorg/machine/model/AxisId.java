@@ -1,6 +1,6 @@
 package replicatorg.machine.model;
 
-public enum Axis {
+public enum AxisId {
 	/** The X axis */
 	X(0),
 	/** The Y axis */
@@ -22,6 +22,6 @@ public enum Axis {
 	
 	private int index;
 	
-	private Axis(int index) { this.index = index; } 
+	private AxisId(int index) { this.index = index; } 
 	public int getIndex() { return index; }
 }

@@ -64,7 +64,7 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.Endstops;
 import replicatorg.machine.model.ToolModel;
 
@@ -139,7 +139,7 @@ public class ControlPanelWindow extends JFrame implements
 		pollThread.start();
 	}
 
-	private JMenuItem makeHomeItem(String name,final EnumSet<Axis> set,final boolean positive) {
+	private JMenuItem makeHomeItem(String name,final EnumSet<AxisId> set,final boolean positive) {
 		JMenuItem item = new JMenuItem(name);
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -159,7 +159,7 @@ public class ControlPanelWindow extends JFrame implements
 		bar.add(homeMenu);
 		
 		//adding the appropriate homing options for your endstop configuration
-		for (Axis axis : Axis.values())
+		for (AxisId axis : AxisId.values())
 		{
 			Endstops endstops = driver.getMachine().getEndstops(axis);
 			if (endstops != null)

@@ -33,7 +33,7 @@ import java.util.Queue;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
@@ -273,11 +273,11 @@ public class SerialPassthroughDriver extends SerialDriver {
 		super.setCurrentPosition(p);
 	}
 
-	public void homeAxes(EnumSet<Axis> axes) throws RetryException {
+	public void homeAxes(EnumSet<AxisId> axes) throws RetryException {
 		StringBuffer buf = new StringBuffer("G28 ");
-		if (axes.contains(Axis.X)) buf.append("X");
-		if (axes.contains(Axis.Y)) buf.append("Y");
-		if (axes.contains(Axis.Z)) buf.append("Z");
+		if (axes.contains(AxisId.X)) buf.append("X");
+		if (axes.contains(AxisId.Y)) buf.append("Y");
+		if (axes.contains(AxisId.Z)) buf.append("Z");
 		sendCommand(buf.toString());
 
 		super.homeAxes(axes,false,0);

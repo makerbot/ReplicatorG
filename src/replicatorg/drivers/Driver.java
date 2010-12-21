@@ -32,7 +32,7 @@ import org.w3c.dom.Node;
 import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.util.Point5d;
 
@@ -191,7 +191,7 @@ public interface Driver {
 	 * maximum feedrate for the appropriate axes.
 	 * @throws RetryException 
 	 */
-	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException;
+	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException;
 
 	/**
 	 * delay / pause function

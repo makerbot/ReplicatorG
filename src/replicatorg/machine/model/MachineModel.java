@@ -43,7 +43,7 @@ public class MachineModel
 	@SuppressWarnings("unused")
 	private Point5d minimum;
 	private Point5d maximum;
-	private HashMap<Axis, Endstops> endstops = new HashMap<Axis, Endstops>();
+	private HashMap<AxisId, Endstops> endstops = new HashMap<AxisId, Endstops>();
 
 	//feedrate information
 	private Point5d maximumFeedrates;
@@ -135,35 +135,35 @@ public class MachineModel
 						maximum.setX(length);
 						maximumFeedrates.setX(maxFeedrate);
 						stepsPerMM.setX(stepspermm);
-						this.endstops.put(Axis.X, endstops);
+						this.endstops.put(AxisId.X, endstops);
 					}
 					else if (id.toLowerCase().equals("y"))
 					{
 						maximum.setY(length);
 						maximumFeedrates.setY(maxFeedrate);
 						stepsPerMM.setY(stepspermm);
-						this.endstops.put(Axis.Y, endstops);
+						this.endstops.put(AxisId.Y, endstops);
 					}
 					else if (id.toLowerCase().equals("z"))
 					{
 						maximum.setZ(length);
 						maximumFeedrates.setZ(maxFeedrate);
 						stepsPerMM.setZ(stepspermm);
-						this.endstops.put(Axis.Z, endstops);
+						this.endstops.put(AxisId.Z, endstops);
 					}
 					else if (id.toLowerCase().equals("a"))
 					{
 						maximum.setA(length);
 						maximumFeedrates.setA(maxFeedrate);
 						stepsPerMM.setA(stepspermm);
-						this.endstops.put(Axis.A, endstops);
+						this.endstops.put(AxisId.A, endstops);
 					}
 					else if (id.toLowerCase().equals("b"))
 					{
 						maximum.setB(length);
 						maximumFeedrates.setB(maxFeedrate);
 						stepsPerMM.setB(stepspermm);
-						this.endstops.put(Axis.B, endstops);
+						this.endstops.put(AxisId.B, endstops);
 					}
 
 					//System.out.println("Loading axis " + id + ": (Length: " + length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + scale + " steps/mm)");
@@ -430,7 +430,7 @@ public class MachineModel
   }
   
   /** returns the endstop configuration for the givin axis */
-  public Endstops getEndstops(Axis axis)
+  public Endstops getEndstops(AxisId axis)
   {
 	  return this.endstops.get(axis);
   }

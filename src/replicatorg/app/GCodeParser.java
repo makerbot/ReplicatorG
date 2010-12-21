@@ -40,7 +40,7 @@ import replicatorg.drivers.Driver;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.PenPlotter;
 import replicatorg.drivers.RetryException;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
@@ -848,11 +848,11 @@ public class GCodeParser {
 			case 28:
 			{
 				// home all axes?
-				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
+				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(Axis.X);
-				if (hasCode("Y")) axes.add(Axis.Y);
-				if (hasCode("Z")) axes.add(Axis.Z);
+				if (hasCode("X")) axes.add(AxisId.X);
+				if (hasCode("Y")) axes.add(AxisId.Y);
+				if (hasCode("Z")) axes.add(AxisId.Z);
 				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
 			}
 				break;
@@ -861,11 +861,11 @@ public class GCodeParser {
 			case 161:
 			{
 				// home all axes?
-				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
+				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(Axis.X);
-				if (hasCode("Y")) axes.add(Axis.Y);
-				if (hasCode("Z")) axes.add(Axis.Z);
+				if (hasCode("X")) axes.add(AxisId.X);
+				if (hasCode("Y")) axes.add(AxisId.Y);
+				if (hasCode("Z")) axes.add(AxisId.Z);
 				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
 			}
 				break;
@@ -874,11 +874,11 @@ public class GCodeParser {
 			case 162:
 			{
 				// home all axes?
-				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
+				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(Axis.X);
-				if (hasCode("Y")) axes.add(Axis.Y);
-				if (hasCode("Z")) axes.add(Axis.Z);
+				if (hasCode("X")) axes.add(AxisId.X);
+				if (hasCode("Y")) axes.add(AxisId.Y);
+				if (hasCode("Z")) axes.add(AxisId.Z);
 				driver.homeAxes(axes, true, hasCode("F")?feedrate:0);
 			}
 				break;
