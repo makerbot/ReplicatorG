@@ -20,9 +20,15 @@ public class Point5d {
 		System.arraycopy(p.values,0,values,0,DIMENSIONS);
 	}
 	
+	// Getter/setter for by-AxisId access
 	public double axis(AxisId axis) { return values[axis.getIndex()]; }
 	public void setAxis(AxisId axis, double v) { values[axis.getIndex()] = v; }
 	
+	// Getter/setter for by-index access
+	public double get(int idx) { return values[idx]; }
+	public void set(int idx, double v) { values[idx] = v; }
+	
+	// Getters/setters for by-name access
 	public double x() { return values[0]; }
 	public double y() { return values[1]; }
 	public double z() { return values[2]; }
