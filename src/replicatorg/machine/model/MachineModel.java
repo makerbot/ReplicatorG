@@ -262,19 +262,6 @@ public class MachineModel
 	}
 
 	/*************************************
-	* Basic positioning information
-	*************************************/
-	//public Point3d getCurrentPosition()
-	//{
-	//	return new Point3d(currentPosition);
-	//}
-	
-	//public void setCurrentPosition(Point3d p)
-	//{
-	//	currentPosition = new Point3d(p);
-	//}
-
-	/*************************************
 	*  Convert steps to millimeter units
 	*************************************/
 
