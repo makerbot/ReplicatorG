@@ -103,34 +103,31 @@ public class JogPanel extends JPanel implements ActionListener, ChangeListener, 
 
 		JButton xPlusButton = createJogButton("X+", "Jog X axis in positive direction");
 		JButton xMinusButton = createJogButton("X-", "Jog X axis in negative direction");
-		JButton xCenterButton = createJogButton("<html><center>Center<br/>X", "Jog X axis to the origin","Center X");
 		JButton yPlusButton = createJogButton("Y+", "Jog Y axis in positive direction");
 		JButton yMinusButton = createJogButton("Y-", "Jog Y axis in negative direction");
-		JButton yCenterButton = createJogButton("<html><center>Center<br/>Y", "Jog Y axis to the origin","Center Y");
 		JButton zPlusButton = createJogButton("Z+", "Jog Z axis in positive direction");
 		JButton zMinusButton = createJogButton("Z-", "Jog Z axis in negative direction");
-		JButton zCenterButton = createJogButton("<html><center>Center<br/>Z", "Jog Z axis to the origin","Center Z");
 		JButton zeroButton = createJogButton("<html><center>Set<br/>zero","Mark Current Position as Zero (0,0,0)","Zero");
 		JButton panicButton = createJogButton("","Emergency stop","Stop");
 		panicButton.setIcon(new ImageIcon(Base.getImage("images/button-panic.png",this)));
 
 		JPanel xyzPanel = new JPanel(new MigLayout("","[]0[]","[]0[]"));
-        xyzPanel.add(zCenterButton, "split 3,flowy,gap 0 0 0 0");
-		xyzPanel.add(xMinusButton, "gap 0 0 0 0");
-        xyzPanel.add(yCenterButton);
-		xyzPanel.add(yPlusButton, "split 3,flowy,gap 0 0 0 0");
-		xyzPanel.add(zeroButton,"gap 0 0 0 0");
-		xyzPanel.add(yMinusButton);
-		xyzPanel.add(panicButton, "split 3,flowy,gap 0 0 0 0");
-		xyzPanel.add(xPlusButton,"gap 0 0 0 0");
-        xyzPanel.add(xCenterButton);
+		JPanel xyPanel = new JPanel(new MigLayout("","[]0[]0[]","[]0[]0[]"));
+        //xyzPanel.add(zCenterButton, );
+		xyPanel.add(yPlusButton, "skip 1,gap 0 0 0 0");
+		xyPanel.add(panicButton, "gap 0 0 0 0,wrap");
+		xyPanel.add(xMinusButton, "gap 0 0 0 0");
+		xyPanel.add(zeroButton,"gap 0 0 0 0");
+		xyPanel.add(xPlusButton,"gap 0 0 0 0,wrap");
+		xyPanel.add(yMinusButton, "skip 1,wrap,gap 0 0 0 0");
+		xyzPanel.add(xyPanel);
 		xyzPanel.add(zPlusButton, "split 2,flowy,gap 0 0 0 0");
 		xyzPanel.add(zMinusButton);
 
 		// create our position panel
-		JPanel positionPanel = new JPanel(new MigLayout("flowy"));
+		JPanel positionPanel = new JPanel(new MigLayout("flowy,fillx"));
 		// our label
-		positionPanel.add(new JLabel("Jog Size"));
+		positionPanel.add(new JLabel("Jog Size"),"growx");
 		// create our jog size dropdown
 		JComboBox jogList = new JComboBox(jogStrings);
 		jogList.setSelectedIndex(6);
@@ -139,11 +136,16 @@ public class JogPanel extends JPanel implements ActionListener, ChangeListener, 
 		positionPanel.add(jogList,"growx");
 		
 		// our position text boxes
-		for (AxisId axis : machine.getModel().getAvailableAxes()) {
+		for (final AxisId axis : machine.getModel().getAvailableAxes()) {
 			JTextField f = createDisplayField();
 			positionFields.put(axis, f);
-			positionPanel.add(new JLabel(axis.name()));
+			positionPanel.add(new JLabel(axis.name()),"split 3,flowx");
 			positionPanel.add(f,"growx");
+			JButton centerButton = new JButton("Center "+axis.name());
+			centerButton.setToolTipText("Jog "+axis.name()+" axis to the origin");
+			centerButton.setActionCommand("Center "+axis.name());
+			centerButton.addActionListener(this);
+			positionPanel.add(centerButton);
 		}
 
 		// create the xyfeedrate panel
