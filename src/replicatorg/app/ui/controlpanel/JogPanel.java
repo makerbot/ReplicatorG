@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.DecimalFormat;
+import java.util.EnumMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +26,7 @@ import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
+import replicatorg.machine.model.AxisId;
 import replicatorg.util.Point5d;
 
 public class JogPanel extends JPanel implements ActionListener, ChangeListener, FocusListener
@@ -42,9 +44,7 @@ public class JogPanel extends JPanel implements ActionListener, ChangeListener, 
 	protected JSlider zFeedrateSlider;
 	protected JTextField zFeedrateValue;
 
-	protected JTextField xPosField;
-	protected JTextField yPosField;
-	protected JTextField zPosField;
+	protected EnumMap<AxisId,JTextField> positionFields = new EnumMap<AxisId,JTextField>(AxisId.class);
 
 	protected MachineController machine;
 	protected Driver driver;
@@ -139,16 +139,12 @@ public class JogPanel extends JPanel implements ActionListener, ChangeListener, 
 		positionPanel.add(jogList,"growx");
 		
 		// our position text boxes
-		xPosField = createDisplayField();
-		yPosField = createDisplayField();
-		zPosField = createDisplayField();
-
-		positionPanel.add(new JLabel("X Position"));
-		positionPanel.add(xPosField,"growx");
-		positionPanel.add(new JLabel("Y Position"));
-		positionPanel.add(yPosField,"growx");
-		positionPanel.add(new JLabel("Z Position"));
-		positionPanel.add(zPosField,"growx");
+		for (AxisId axis : machine.getModel().getAvailableAxes()) {
+			JTextField f = createDisplayField();
+			positionFields.put(axis, f);
+			positionPanel.add(new JLabel(axis.name()));
+			positionPanel.add(f,"growx");
+		}
 
 		// create the xyfeedrate panel
 		JPanel feedratePanel = new JPanel(new MigLayout());
@@ -219,9 +215,10 @@ public class JogPanel extends JPanel implements ActionListener, ChangeListener, 
 	synchronized public void updateStatus() {
 		Point5d current = driver.getCurrentPosition();
 
-		xPosField.setText(positionFormatter.format(current.x()));
-		yPosField.setText(positionFormatter.format(current.y()));
-		zPosField.setText(positionFormatter.format(current.z()));		
+		for (AxisId axis : machine.getModel().getAvailableAxes()) {
+			double v = current.axis(axis);
+			positionFields.get(axis).setText(positionFormatter.format(v));
+		}
 	}
 
 	public void handleChangedTextField(JTextField source)
