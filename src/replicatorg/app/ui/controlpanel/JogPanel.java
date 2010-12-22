@@ -27,7 +27,7 @@ import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 import replicatorg.util.Point5d;
 
-public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListener, FocusListener
+public class JogPanel extends JPanel implements ActionListener, ChangeListener, FocusListener
 {
 	protected double jogRate;
 
@@ -92,7 +92,7 @@ public class Jog3AxisPanel extends JPanel implements ActionListener, ChangeListe
 		return tf;
 	}
 
-	public Jog3AxisPanel(MachineController machine) {
+	public JogPanel(MachineController machine) {
 		this.machine = machine;
 		this.driver = machine.getDriver();
 		setLayout(new MigLayout());
