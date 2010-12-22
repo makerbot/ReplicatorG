@@ -262,6 +262,19 @@ public class MachineModel
 	}
 
 	/*************************************
+	*  Reporting available axes
+	*************************************/
+	
+	/** Return a set enumerating all the axes that this machine has available.
+	 */
+	public Set<AxisId> getAvailableAxes() { return axes; }
+	/** Report whether this machine has the specified axis.
+	 * @param id The axis to check
+	 * @return true if the axis is available, false otherwise
+	 */
+	public boolean hasAxis(AxisId id) { return axes.contains(id); }
+	
+	/*************************************
 	*  Convert steps to millimeter units
 	*************************************/
 
