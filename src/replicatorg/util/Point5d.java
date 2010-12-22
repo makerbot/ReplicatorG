@@ -47,6 +47,40 @@ public class Point5d {
 		}
 	}
 
+	/** Set the value of each element of this point to be the
+	 * the value of the respective element of p1 divided by 
+	 * p2: this.value[axis] = p1.value[axis] / p2.value[axis].
+	 * @param p1 numerator
+	 * @param p2 denominator
+	 */
+	public void div(Point5d p1, Point5d p2) {
+		for (int idx = 0; idx < DIMENSIONS; idx++) {
+			values[idx] = p1.values[idx] / p2.values[idx];
+		}
+	}
+
+	/** Set the value of each element of this point to be the
+	 * the value of the respective element of p1 multiplied by 
+	 * p2: this.value[axis] = p1.value[axis] * p2.value[axis].
+	 * @param p1 multiplicand A
+	 * @param p2 multiplicand B
+	 */
+	public void mul(Point5d p1, Point5d p2) {
+		for (int idx = 0; idx < DIMENSIONS; idx++) {
+			values[idx] = p1.values[idx] * p2.values[idx];
+		}
+	}
+
+	/**
+	 * Round each element of the point to the nearest integer
+	 * (using Math.round).
+	 */
+	public void round() {
+		for (int idx = 0; idx < DIMENSIONS; idx++) {
+			values[idx] = Math.round(values[idx]);
+		}
+	}
+		
 	public void absolute() {
 		for (int idx = 0; idx < DIMENSIONS; idx++) {
 			values[idx] = Math.abs(values[idx]);

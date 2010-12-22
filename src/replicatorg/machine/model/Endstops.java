@@ -8,10 +8,10 @@ package replicatorg.machine.model;
  *
  */
 public enum Endstops {
-	none(false, false),
-	min(true, false),
-	max(false, true),
-	both(true, true);
+	NONE(false, false),
+	MIN(true, false),
+	MAX(false, true),
+	BOTH(true, true);
 	
 	public final boolean hasMin, hasMax;
 	

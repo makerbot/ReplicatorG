@@ -23,7 +23,9 @@
 
 package replicatorg.machine.model;
 
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.Vector;
 
 import org.w3c.dom.Node;
@@ -43,8 +45,11 @@ public class MachineModel
 	@SuppressWarnings("unused")
 	private Point5d minimum;
 	private Point5d maximum;
-	private HashMap<AxisId, Endstops> endstops = new HashMap<AxisId, Endstops>();
+	private EnumMap<AxisId, Endstops> endstops = new EnumMap<AxisId, Endstops>(AxisId.class);
 
+	// Which axes exist on this machine
+	private Set<AxisId> axes = EnumSet.noneOf(AxisId.class);
+	
 	//feedrate information
 	private Point5d maximumFeedrates;
 	private Point5d stepsPerMM;
@@ -71,7 +76,6 @@ public class MachineModel
 	{
 		clamps = new Vector<ClampModel>();
 		tools = new Vector<ToolModel>();
-//		buildVolume = new BuildVolume((int)(Math.random()*300)+10,(int)(Math.random()*300)+10,(int)(Math.random()*300)+10); // preload it with the default values
 		buildVolume = new BuildVolume(100,100,100); // preload it with the default values
 		
 		//currentPosition = new Point3d();
@@ -103,70 +107,55 @@ public class MachineModel
 			Node geometry = XML.getChildNodeByName(xml, "geometry");
 			
 			//look through the axes.
-			NodeList axes = geometry.getChildNodes();
-			for (int i=0; i<axes.getLength(); i++)
+			NodeList axisNodes = geometry.getChildNodes();
+			for (int i=0; i<axisNodes.getLength(); i++)
 			{
-				Node axis = axes.item(i);
+				Node axis = axisNodes.item(i);
 				
 				if (axis.getNodeName().equals("axis"))
 				{
 					//parse our information.
-					String id = XML.getAttributeValue(axis, "id");
-
-					//initialize values
-				 	double length = 0.0;
-				 	double maxFeedrate = 0.0;
-				 	double stepspermm = 1.0;
-				 	Endstops endstops = Endstops.none;
-					
-					//if values are missing, ignore them.
+					String idStr = XML.getAttributeValue(axis, "id");
 					try {
-					 	length = Double.parseDouble(XML.getAttributeValue(axis, "length"));
-					 	maxFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "maxfeedrate"));
-					 	String spmm = XML.getAttributeValue(axis, "stepspermm");
-					 	if (spmm == null) spmm = XML.getAttributeValue(axis, "scale"); // Backwards compatibility
-					 	stepspermm = Double.parseDouble(spmm);
-					 	endstops = Endstops.valueOf(XML.getAttributeValue(axis, "endstops"));
-					} catch (Exception e) {}
-					
-					//create the right variables.
-					if (id.toLowerCase().equals("x"))
-					{
-						maximum.setX(length);
-						maximumFeedrates.setX(maxFeedrate);
-						stepsPerMM.setX(stepspermm);
-						this.endstops.put(AxisId.X, endstops);
-					}
-					else if (id.toLowerCase().equals("y"))
-					{
-						maximum.setY(length);
-						maximumFeedrates.setY(maxFeedrate);
-						stepsPerMM.setY(stepspermm);
-						this.endstops.put(AxisId.Y, endstops);
-					}
-					else if (id.toLowerCase().equals("z"))
-					{
-						maximum.setZ(length);
-						maximumFeedrates.setZ(maxFeedrate);
-						stepsPerMM.setZ(stepspermm);
-						this.endstops.put(AxisId.Z, endstops);
-					}
-					else if (id.toLowerCase().equals("a"))
-					{
-						maximum.setA(length);
-						maximumFeedrates.setA(maxFeedrate);
-						stepsPerMM.setA(stepspermm);
-						this.endstops.put(AxisId.A, endstops);
-					}
-					else if (id.toLowerCase().equals("b"))
-					{
-						maximum.setB(length);
-						maximumFeedrates.setB(maxFeedrate);
-						stepsPerMM.setB(stepspermm);
-						this.endstops.put(AxisId.B, endstops);
+						AxisId id = AxisId.valueOf(idStr.toUpperCase());
+						axes.add(id);
+						//initialize values
+						double length = 0.0;
+						double maxFeedrate = 0.0;
+						double stepspermm = 1.0;
+						Endstops endstops = Endstops.NONE;
+						//if values are missing, ignore them.
+						try {
+						 	length = Double.parseDouble(XML.getAttributeValue(axis, "length"));
+						} catch (Exception e) {}
+						try {
+						 	maxFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "maxfeedrate"));
+						} catch (Exception e) {}
+						try {
+						 	String spmm = XML.getAttributeValue(axis, "stepspermm");
+						 	if (spmm == null) spmm = XML.getAttributeValue(axis, "scale"); // Backwards compatibility
+						 	stepspermm = Double.parseDouble(spmm);
+						} catch (Exception e) {}
+						String endstopStr = XML.getAttributeValue(axis, "endstops");
+						if (endstopStr != null) {
+							try {
+								endstops = Endstops.valueOf(endstopStr.toUpperCase());
+							} catch (IllegalArgumentException iae) {
+								Base.logger.severe("Unrecognized endstop value "+endstopStr+" for axis "+id.name());
+							}
+						}
+						maximum.setAxis(id,length);
+						maximumFeedrates.setAxis(id,maxFeedrate);
+						stepsPerMM.setAxis(id,stepspermm);
+						this.endstops.put(id, endstops);
+						Base.logger.fine("Loaded axis " + id.name() + ": (Length: " + 
+								length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + 
+								stepspermm + " steps/mm)");
+					} catch (IllegalArgumentException iae) {
+						// Unrecognized axis!
+						Base.logger.severe("Unrecognized axis "+idStr+" found in machine descriptor!");
 					}
 
-					//System.out.println("Loading axis " + id + ": (Length: " + length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + scale + " steps/mm)");
 				}
 			}
 		}
@@ -292,12 +281,7 @@ public class MachineModel
 	public Point5d stepsToMM(Point5d steps)
 	{
 		Point5d temp = new Point5d();
-
-		temp.setX(steps.x()/stepsPerMM.x());
-		temp.setY(steps.y()/stepsPerMM.y());
-		temp.setZ(steps.z()/stepsPerMM.z());
-		temp.setA(steps.a()/stepsPerMM.a());
-		temp.setB(steps.b()/stepsPerMM.b());
+		temp.div(steps, stepsPerMM);
 		
 		return temp;
 	}
@@ -309,12 +293,8 @@ public class MachineModel
 	public Point5d mmToSteps(Point5d mm)
 	{
 		Point5d temp = new Point5d();
-
-		temp.setX(Math.round(mm.x() * stepsPerMM.x()));
-		temp.setY(Math.round(mm.y() * stepsPerMM.y()));
-		temp.setZ(Math.round(mm.z() * stepsPerMM.z()));
-		temp.setA(Math.round(mm.a() * stepsPerMM.a()));
-		temp.setB(Math.round(mm.b() * stepsPerMM.b()));
+		temp.mul(mm,stepsPerMM);
+		temp.round(); // integer step counts please
 		
 		return temp;
 	}
