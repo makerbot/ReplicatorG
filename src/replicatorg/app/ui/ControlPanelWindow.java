@@ -165,9 +165,9 @@ public class ControlPanelWindow extends JFrame implements
 			if (endstops != null)
 			{
 				if (endstops.hasMin == true)
-					homeMenu.add(makeHomeItem("Home "+axis.name()+"-",EnumSet.of(axis),false));
+					homeMenu.add(makeHomeItem("Home "+axis.name()+" to minimum",EnumSet.of(axis),false));
 				if (endstops.hasMax == true)
-					homeMenu.add(makeHomeItem("Home "+axis.name()+"+",EnumSet.of(axis),true));
+					homeMenu.add(makeHomeItem("Home "+axis.name()+" to maximum",EnumSet.of(axis),true));
 			}
 		}
 		
