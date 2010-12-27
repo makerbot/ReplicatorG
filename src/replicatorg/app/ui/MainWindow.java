@@ -112,7 +112,6 @@ import replicatorg.app.Base;
 import replicatorg.app.MRUList;
 import replicatorg.app.MachineController;
 import replicatorg.app.MachineFactory;
-import replicatorg.app.Serial;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.syntax.JEditTextArea;
@@ -123,6 +122,8 @@ import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.app.ui.modeling.PreviewPanel;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
+import replicatorg.app.util.serial.Name;
+import replicatorg.app.util.serial.Serial;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
@@ -565,10 +566,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		else {
 			currentName = Base.preferences.get("serial.last_selected", null);
 		}
-		Vector<Serial.Name> names = Serial.scanSerialNames();
+		Vector<Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
 		ButtonGroup radiogroup = new ButtonGroup();
-		for (Serial.Name name : names) {
+		for (Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.toString());
 			item.setEnabled(name.isAvailable());
 			item.setSelected(name.getName().equals(currentName));

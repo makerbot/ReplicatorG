@@ -22,7 +22,7 @@
  Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app;
+package replicatorg.app.util.serial;
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
@@ -38,62 +38,16 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import replicatorg.app.Base;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.exceptions.UnknownSerialPortException;
 import replicatorg.drivers.UsesSerial;
 
 public class Serial implements SerialPortEventListener {
-	/**
-	 * Serial.Name objects are simple compact objects that hold the name
-	 * of a serial port, along with the port's current availability.
-	 */
-	public static class Name implements Comparable<Name> {
-		private String name;
-		private String alias;
-		private boolean available;
-		public Name(String name, boolean available) {
-			this.name = name;
-			this.alias = null;
-			this.available = available;
-		}
-		
-		public Name(String name, String alias, boolean available) {
-			this.name = name;
-			this.alias = alias;
-			this.available = available;
-		}
-		
-		public void setAlias(String alias) {
-			this.alias = alias;
-		}
-		
-		public String getName() {
-			return name;
-		}
-		/**
-		 * @return true if the port can be successfully opened by ReplicatorG.
-		 */
-		public boolean isAvailable() {
-			return available;
-		}
-		public int compareTo(Name other) {
-			// There should only be one entry per name, so we're going to presume
-			// that any two entries with identical names are effectively the same.
-			// This also simplifies sorting, etc.
-			return name.compareTo(other.name);
-		}
-		
-		public String toString() {
-			if (alias != null) {
-				return this.name + " (" + alias + ")";
-			}
-			return this.name;
-		}
-	}
-	
 	/**
 	 * We maintain our own set of ports in current use, because RXTX can't be trusted.
 	 * (NB: may be obsoleted at some point on some platforms?)
@@ -170,6 +124,9 @@ public class Serial implements SerialPortEventListener {
 	private int stop;
 
 	public String getName() { return name; }
+
+	public final AtomicReference<SerialFifoEventListener> listener =
+		new AtomicReference<SerialFifoEventListener>();
 	
 	private InputStream input;
 	private OutputStream output;
@@ -279,35 +236,6 @@ public class Serial implements SerialPortEventListener {
 		port.setRTS(true);
 	}
 	
-	/**
-	 * Non-growable FIFO.  In theory we only need enough space for a single
-	 * packet.  Currently set at 1K.
-	 * @author phooky
-	 *
-	 */
-	class ByteFifo {
-		final static int INITIAL_FIFO_SIZE = 1 * 1024; // 1 K
-		private byte[] buffer = new byte[INITIAL_FIFO_SIZE];
-		private int head = 0; 
-		private int tail = 0;
-		final private int moduloLength(int value) {
-			value = value % buffer.length;
-			if (value < 0) value += buffer.length;
-			return value;
-		}
-		public void enqueue(byte b) {
-			buffer[tail++] = b;
-			tail = moduloLength(tail);
-		}
-		public void clear() { head = tail = 0; }
-		public int size() { return moduloLength(tail-head); }
-		public byte dequeue() {
-			byte b = buffer[head++];
-			head = moduloLength(head);
-			return b;
-		}
-	}
-	
 	private ByteFifo readFifo = new ByteFifo();
 	
 	/**
@@ -321,11 +249,13 @@ public class Serial implements SerialPortEventListener {
 	{
 		try {
 			long to = System.currentTimeMillis() + timeoutMillis;
-			/* wait a short period and check if we have received enough bytes so as not 
-			to waste to much time with unnecessary waiting */
-			while(System.currentTimeMillis() < to && readFifo.size() < numberOfBytes)
+			while (System.currentTimeMillis() < to && readFifo.size() < numberOfBytes)
 			{
-				readFifo.wait(timeoutMillis/500);
+				/*
+				 * Wait until we timeout or a byte is received (which will notify this 
+				 * method). readFifo notifies for each byte received.
+				 */
+				readFifo.wait(timeoutMillis);
 			}
 		} catch (InterruptedException e) {
 			// We are most likely amidst a shutdown.  Propagate the interrupt
@@ -341,8 +271,10 @@ public class Serial implements SerialPortEventListener {
 	 * @return the byte read, or -1 to indicate a timeout.
 	 */
 	public int read() {
+ 		//wait for the fifo to fill
+		if (waitForBytes(1) == -1) return -1;
+		//read the fifo
 		synchronized(readFifo) {
-			if (waitForBytes(1) == -1) return -1;
 			if (readFifo.size() > 0) {
 				byte b = readFifo.dequeue();
 				return b & 0xff; 
@@ -362,8 +294,10 @@ public class Serial implements SerialPortEventListener {
 	 * @return the number of characters read.
 	 */
  	public int read(byte bytes[]) {
+ 		//wait for the fifo to fill
+		if (waitForBytes(bytes.length) == -1) return -1;
+		//read the fifo
 		synchronized(readFifo) {
-			if (waitForBytes(bytes.length) == -1) return -1;
 			int idx = 0;
 			while (readFifo.size() > 0 && idx < bytes.length) {
 				bytes[idx++] = readFifo.dequeue();
@@ -457,14 +391,22 @@ public class Serial implements SerialPortEventListener {
 	public boolean isDisconnected() { return disconnected; }
 	
 	public void serialEvent(SerialPortEvent event) {
-		synchronized (readFifo) {
-			boolean readAny = false;
+		synchronized(input)
+		{
 			try {
 				while (input.available() > 0) {
 					int b = input.read();
 					if (b >= 0) {
 						readFifo.enqueue((byte)b);
-						readAny = true;
+						//notify each byte received
+						synchronized (readFifo) {
+							readFifo.notifyAll();
+						}
+						synchronized(listener)
+						{
+							if (listener.get() != null)
+								listener.get().serialByteReceivedEvent(readFifo);
+						}
 					}
 				}
 			} catch (IOException e) {
@@ -477,7 +419,6 @@ public class Serial implements SerialPortEventListener {
 				// a fail bit.
 				disconnected = true;
 			}
-			if (readAny) readFifo.notify();
 		}
 	}
 }

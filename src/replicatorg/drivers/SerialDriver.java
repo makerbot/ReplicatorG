@@ -10,8 +10,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.app.Serial;
 import replicatorg.app.tools.XML;
+import replicatorg.app.util.serial.Serial;
+import replicatorg.app.util.serial.SerialFifoEventListener;
 
 /**
  * @author phooky
@@ -67,6 +68,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 
 	public void setSerial(Serial serial) {
 		serialLock.writeLock().lock();
+		
 		if (this.serial == serial)
 		{
 			serialLock.writeLock().unlock();
@@ -80,6 +82,12 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 		}
 		setInitialized(false);
 		this.serial = serial;
+
+		// asynch option: the serial port forwards all received data in FIFO format via 
+		// serialByteReceivedEvent if the driver implements SerialFifoEventListener.
+		if (this instanceof SerialFifoEventListener)
+			serial.listener.set( (SerialFifoEventListener) this );
+
 		serialLock.writeLock().unlock();
 	}
 

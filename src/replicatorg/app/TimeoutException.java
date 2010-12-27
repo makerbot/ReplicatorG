@@ -1,5 +1,7 @@
 package replicatorg.app;
 
+import replicatorg.app.util.serial.Serial;
+
 /**
  * Timeout exceptions are thrown when a serial operation has waited longer than the serial timeout
  * period.
