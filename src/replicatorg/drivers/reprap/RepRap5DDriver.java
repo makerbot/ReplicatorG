@@ -27,7 +27,7 @@
  */
 package replicatorg.drivers.reprap;
 
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -40,7 +40,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
 import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
@@ -118,6 +117,9 @@ public class RepRap5DDriver extends SerialDriver {
 	 */
 	private LinkedList<String> buffer = new LinkedList<String>();
 	private ReentrantLock bufferLock = new ReentrantLock();
+	
+	/** locks the readResponse method to prevent multiple concurrent reads */
+	private ReentrantLock readResponseLock = new ReentrantLock();
 
 	/**
 	 * What did we get back from serial?
@@ -321,15 +323,20 @@ public class RepRap5DDriver extends SerialDriver {
 		next = applyChecksum(next);
 		
 		// Block until we can fit the command on the Arduino
-		while (bufferSize + next.length() + 1 > maxBufferSize) {
-			readResponse();
+		if (bufferSize + next.length() + 1 > maxBufferSize)
+		{
+			Base.logger.warning("reprap driver buffer full. gcode write slowed.");
+
+			while (bufferSize + next.length() + 1 > maxBufferSize) {
+				readResponse();
+			}
 		}
 
 		// do the actual send.
-		serialWriteLock.lock();
+		serialInUse.lock();
 		assert (serial != null);
 		serial.write(next + "\n");
-		serialWriteLock.unlock();
+		serialInUse.unlock();
 
 		// record it in our buffer tracker.
 		int cmdlen = next.length() + 1;
@@ -439,121 +446,122 @@ public class RepRap5DDriver extends SerialDriver {
 	}
 	
 	public void readResponse() {
-		try {
-			int numread;
+		readResponseLock.lock();
+		int numread;
 
-			serialWriteLock.lock();
-			assert (serial != null);
-			synchronized (serial) {
-				numread = serial.read(responsebuffer);
-			}
-			serialWriteLock.unlock();
+		serialInUse.lock();
+		assert (serial != null);
+			numread = serial.read(responsebuffer);
+		serialInUse.unlock();
 
-			// 0 is now an acceptable value; it merely means that we timed out
-			// waiting for input
-			if (numread < 0) {
-				// This signifies EOF. FIXME: How do we handle this?
-				Base.logger.severe("SerialPassthroughDriver.readResponse(): EOF occured");
-				return;
-			} else if(numread!=0) {
+		// 0 is now an acceptable value; it merely means that we timed out
+		// waiting for input
+		if (numread < 0) {
+			// This signifies EOF. FIXME: How do we handle this?
+			Base.logger.severe("SerialPassthroughDriver.readResponse(): EOF occured");
+			return;
+		} else if(numread!=0) {
+			try
+			{
 				result.append( new String(responsebuffer, 0, numread, "US-ASCII") );
+			} catch (UnsupportedEncodingException e) {
+				Base.logger.severe("US-ASCII required. Terminating.");
+				throw new RuntimeException(e);
+			}
 
-				// System.out.println("got: " + c);
-				// System.out.println("current: " + result);
-				int index;
-				while ((index = result.indexOf("\n")) >= 0) {
-					String line = result.substring(0, index).trim(); // trim
-																		// to
-																		// remove
-																		// any
-																		// trailing
-					Base.logger.fine(line);											// \r
-					synchronized (result) {
-						result.delete(0, index + 1);
-					}
-					if (line.length() == 0)
-						continue;
-					if (line.startsWith("ok")) {
-						
-						this.okReceived.set(true);
+			// System.out.println("got: " + c);
+			// System.out.println("current: " + result);
+			int index;
+			while ((index = result.indexOf("\n")) >= 0) {
+				String line = result.substring(0, index).trim(); // trim
+																	// to
+																	// remove
+																	// any
+																	// trailing
+				Base.logger.fine(line);											// \r
+				result.delete(0, index + 1);
 
-						bufferLock.lock();
-						bufferSize -= commands.remove();
-						buffer.removeLast();
-						bufferLock.unlock();
+				if (line.length() == 0)
+					continue;
+				if (line.startsWith("ok")) {
+					
+					this.okReceived.set(true);
 
-						if (line.startsWith("ok T:")) {
-							Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
-						    Matcher m = r.matcher(line);
-						    if (m.find( )) {
-						    	String temp = m.group(1);
-								
-								machine.currentTool().setCurrentTemperature(
-										Double.parseDouble(temp));
-						    }
-							r = Pattern.compile("^ok.*B:([0-9\\.]+)$");
-						    m = r.matcher(line);
-						    if (m.find( )) {
-						    	String bedTemp = m.group(1);
-								machine.currentTool().setPlatformCurrentTemperature(
-										Double.parseDouble(bedTemp));
-						    }
-						}
-					}
+					bufferLock.lock();
+					bufferSize -= commands.remove();
+					buffer.removeLast();
+					bufferLock.unlock();
 
-					// old arduino firmware sends "start"
-					else if (line.contains("start")||line.contains("Start")) {
-						// todo: set version
-						// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
-						startReceived.set(true);
-						lineNumber.set(0);
-
-					} else if (line.startsWith("Extruder Fail")) {
-						setError("Extruder failed:  cannot extrude as this rate.");
-
-					} else if (line.startsWith("Resend:")||line.startsWith("rs ")) {
-						Base.logger.severe(line);
-						// Bad checksum, resend requested
-						bufferLock.lock();
-						String bufferedLine = buffer.removeLast();
-						bufferSize -= commands.remove();
-						bufferLock.unlock();
-
-						int bufferedLineNumber = Integer.parseInt( 
-								gcodeLineNumberPattern.matcher(bufferedLine).group(1) );
-
-						Matcher badLineMatch = resendLinePattern.matcher(line);
-						if (badLineMatch.find())
-						{
-							int badLineNumber = Integer.parseInt(
-									badLineMatch.group(1) );
-
-							if (bufferedLineNumber != badLineNumber)
-							{
-								Base.logger.warning("unexpected line number, resetting line number");
-								// reset the line number if it does not match the buffered line
-								 this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
-							}
-						}
-						else
-						{
-							// Malformed resend line request received. Resetting the line number
-							Base.logger.warning("malformed line resend request, "
-									+"resetting line number. Malformed Data: \n"+line);
-							this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
-						}
-
-						// resend the line
-						this.sendCommand(bufferedLine);
-					} else {
-						Base.logger.severe("Unknown: " + line);
+					if (line.startsWith("ok T:")) {
+						Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
+					    Matcher m = r.matcher(line);
+					    if (m.find( )) {
+					    	String temp = m.group(1);
+							
+							machine.currentTool().setCurrentTemperature(
+									Double.parseDouble(temp));
+					    }
+						r = Pattern.compile("^ok.*B:([0-9\\.]+)$");
+					    m = r.matcher(line);
+					    if (m.find( )) {
+					    	String bedTemp = m.group(1);
+							machine.currentTool().setPlatformCurrentTemperature(
+									Double.parseDouble(bedTemp));
+					    }
 					}
 				}
+
+				// old arduino firmware sends "start"
+				else if (line.contains("start")||line.contains("Start")) {
+					// todo: set version
+					// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
+					startReceived.set(true);
+					lineNumber.set(0);
+
+				} else if (line.startsWith("Extruder Fail")) {
+					setError("Extruder failed:  cannot extrude as this rate.");
+
+				} else if (line.startsWith("Resend:")||line.startsWith("rs ")) {
+					Base.logger.severe(line);
+					// Bad checksum, resend requested
+					bufferLock.lock();
+					String bufferedLine = buffer.removeLast();
+					bufferSize -= commands.remove();
+					bufferLock.unlock();
+
+					int bufferedLineNumber = Integer.parseInt( 
+							gcodeLineNumberPattern.matcher(bufferedLine).group(1) );
+
+					Matcher badLineMatch = resendLinePattern.matcher(line);
+					if (badLineMatch.find())
+					{
+						int badLineNumber = Integer.parseInt(
+								badLineMatch.group(1) );
+
+						if (bufferedLineNumber != badLineNumber)
+						{
+							Base.logger.warning("unexpected line number, resetting line number");
+							// reset the line number if it does not match the buffered line
+							 this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
+						}
+					}
+					else
+					{
+						// Malformed resend line request received. Resetting the line number
+						Base.logger.warning("malformed line resend request, "
+								+"resetting line number. Malformed Data: \n"+line);
+						this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
+					}
+
+					// resend the line
+					this.sendCommand(bufferedLine);
+				} else {
+					Base.logger.severe("Unknown: " + line);
+				}
 			}
-		} catch (IOException e) {
-			Base.logger.severe("inputstream.read() failed: " + e.toString());
-			// FIXME: Shut down communication somehow.
 		}
+
+		readResponseLock.unlock();
 	}
 
 	public boolean isFinished() {
@@ -577,10 +585,10 @@ public class RepRap5DDriver extends SerialDriver {
 	public synchronized void dispose() {
 		disposeReader();
 
-		serialWriteLock.lock();
+		bufferLock.lock();
 		super.dispose();
 		commands = null;
-		serialWriteLock.unlock();
+		bufferLock.unlock();
 	}
 
 	/***************************************************************************

@@ -311,19 +311,38 @@ public class Serial implements SerialPortEventListener {
 	private ByteFifo readFifo = new ByteFifo();
 	
 	/**
+	 * polls the readFifo for new bytes. If numberOfBytes bytes are received or the 
+	 * wait times out the method returns zero. If a interrupt exception is thrown 
+	 * the method returns -1.
+	 * @param numberOfBytes
+	 * @return
+	 */
+	private int waitForBytes(int numberOfBytes)
+	{
+		try {
+			long to = System.currentTimeMillis() + timeoutMillis;
+			/* wait a short period and check if we have received enough bytes so as not 
+			to waste to much time with unnecessary waiting */
+			while(System.currentTimeMillis() < to && readFifo.size() < numberOfBytes)
+			{
+				readFifo.wait(timeoutMillis/500);
+			}
+		} catch (InterruptedException e) {
+			// We are most likely amidst a shutdown.  Propagate the interrupt
+			// status.
+			Thread.currentThread().interrupt();
+			return -1;
+		}
+		return 0;
+	}
+	
+	/**
 	 * Attempt to read a single byte.
 	 * @return the byte read, or -1 to indicate a timeout.
 	 */
 	public int read() {
 		synchronized(readFifo) {
-			try {
-				if (readFifo.size() == 0) readFifo.wait(timeoutMillis);
-			} catch (InterruptedException e) {
-				// We are most likely amidst a shutdown.  Propagate the interrupt
-				// status.
-				Thread.currentThread().interrupt();
-				return -1;
-			}
+			if (waitForBytes(1) == -1) return -1;
 			if (readFifo.size() > 0) {
 				byte b = readFifo.dequeue();
 				return b & 0xff; 
@@ -344,14 +363,7 @@ public class Serial implements SerialPortEventListener {
 	 */
  	public int read(byte bytes[]) {
 		synchronized(readFifo) {
-			try {
-				if (readFifo.size() == 0) readFifo.wait(timeoutMillis);
-			} catch (InterruptedException e) {
-				// We are most likely amidst a shutdown.  Propagate the interrupt
-				// status.
-				Thread.currentThread().interrupt();
-				return -1;
-			}
+			if (waitForBytes(bytes.length) == -1) return -1;
 			int idx = 0;
 			while (readFifo.size() > 0 && idx < bytes.length) {
 				bytes[idx++] = readFifo.dequeue();

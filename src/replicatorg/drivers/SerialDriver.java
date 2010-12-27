@@ -4,6 +4,8 @@
 package replicatorg.drivers;
 
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
 import org.w3c.dom.Node;
 
@@ -28,7 +30,10 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
     private boolean explicit = false;
 	
     /** Lock for multi-threaded access to this driver's serial port. */
-	public final ReentrantLock serialWriteLock = new ReentrantLock();
+	private final ReentrantReadWriteLock serialLock = new ReentrantReadWriteLock();
+	/** Locks the serial object as in use so that it cannot be disposed until it is 
+	 * unlocked. Multiple threads can hold this lock concurrently. */
+	public final ReadLock serialInUse = serialLock.readLock();
 	
     protected SerialDriver() {
     	portName = Base.preferences.get("serial.portname",null);
@@ -61,10 +66,10 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	}
 
 	public void setSerial(Serial serial) {
-		serialWriteLock.lock();
+		serialLock.writeLock().lock();
 		if (this.serial == serial)
 		{
-			serialWriteLock.unlock();
+			serialLock.writeLock().unlock();
 			return;
 		}
 		if (this.serial != null) {
@@ -75,7 +80,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 		}
 		setInitialized(false);
 		this.serial = serial;
-		serialWriteLock.unlock();
+		serialLock.writeLock().unlock();
 	}
 
 	public Serial getSerial() { return serial; }
@@ -103,11 +108,11 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	public boolean isExplicit() { return explicit; }
 	
 	public void dispose() {
-		serialWriteLock.lock();
+		serialLock.writeLock().lock();
 		super.dispose();
 		if (serial != null)
 			serial.dispose();
 		serial = null;
-		serialWriteLock.unlock();
+		serialLock.writeLock().unlock();
 	}
 }
