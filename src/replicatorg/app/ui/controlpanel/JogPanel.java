@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.EnumMap;
 import java.util.Set;
@@ -46,6 +47,28 @@ public class JogPanel extends JPanel implements ActionListener
 	protected MachineController machine;
 	protected Driver driver;
 
+	public class JogButton extends JButton {
+		public JogButton(String root, String tooltip) {
+			BufferedImage img = Base.getImage("images/"+root+".png", this);					
+			setIcon(new ImageIcon(img));
+			BufferedImage overImg = Base.getImage("images/"+root+"_over.png",this);
+			if (overImg != null) {
+				setRolloverIcon(new ImageIcon(overImg));
+				setRolloverEnabled(true);
+			}
+			Dimension imgSize = new Dimension(img.getWidth(null),img.getHeight(null));
+			setSize(imgSize);
+			setMinimumSize(imgSize);
+			setPreferredSize(imgSize);
+			setOpaque(false);
+			setFocusPainted(false);
+			setBorderPainted(false);
+			setContentAreaFilled(false);
+			setBorder(BorderFactory.createEmptyBorder(4,4,4,4));
+			setToolTipText(tooltip);
+		}
+	}
+
 	/**
 	 * Create a jog-style button with the given name and tooltip.  By default, the
 	 * action name is the same as the text of the button.  The button will emit an
@@ -54,13 +77,8 @@ public class JogPanel extends JPanel implements ActionListener
 	 * @param tooltip the text to display when the mouse hovers over the button.
 	 * @return the generated button.
 	 */
-	protected JButton createJogButton(String text, String tooltip) {
-		final int buttonSize = 60;
-		JButton b = new JButton(text);
-		b.setToolTipText(tooltip);
-		b.setMaximumSize(new Dimension(buttonSize, buttonSize));
-		b.setPreferredSize(new Dimension(buttonSize, buttonSize));
-		b.setMinimumSize(new Dimension(buttonSize, buttonSize));
+	protected JButton createJogButton(String root, String tooltip) {
+		JogButton b = new JogButton(root,tooltip);
 		b.addActionListener(this);
 		return b;
 	}
@@ -74,8 +92,8 @@ public class JogPanel extends JPanel implements ActionListener
 	 * @param action the string representing the action.
 	 * @return the generated button.
 	 */
-	protected JButton createJogButton(String text, String tooltip, String action) {
-		JButton button = createJogButton(text,tooltip);
+	protected JButton createJogButton(String root, String tooltip, String action) {
+		JButton button = createJogButton(root,tooltip);
 		button.setActionCommand(action);
 		return button;
 	}
@@ -134,7 +152,7 @@ public class JogPanel extends JPanel implements ActionListener
 			slider.setValue(currentFeedrate);
 			slider.addChangeListener(this);
 			parent.add(slider,"growx");
-			field.setMinimumSize(new Dimension(75, 25));
+			field.setMinimumSize(new Dimension(75, 22));
 			field.setEnabled(true);
 			field.setText(Integer.toString(currentFeedrate));
 			field.addFocusListener(this);
@@ -185,15 +203,14 @@ public class JogPanel extends JPanel implements ActionListener
 		jogRate = 10.0;
 		jogPattern = Pattern.compile("([.0-9]+)");
 
-		JButton xPlusButton = createJogButton("X+", "Jog X axis in positive direction");
-		JButton xMinusButton = createJogButton("X-", "Jog X axis in negative direction");
-		JButton yPlusButton = createJogButton("Y+", "Jog Y axis in positive direction");
-		JButton yMinusButton = createJogButton("Y-", "Jog Y axis in negative direction");
-		JButton zPlusButton = createJogButton("Z+", "Jog Z axis in positive direction");
-		JButton zMinusButton = createJogButton("Z-", "Jog Z axis in negative direction");
-		JButton zeroButton = createJogButton("<html><center>Set<br/>zero","Mark Current Position as Zero (0,0,0)","Zero");
-		JButton panicButton = createJogButton("","Emergency stop","Stop");
-		panicButton.setIcon(new ImageIcon(Base.getImage("images/button-panic.png",this)));
+		JButton xPlusButton = createJogButton("button-stop", "Jog X axis in positive direction", "X+");
+		JButton xMinusButton = createJogButton("button-stop", "Jog X axis in negative direction", "X-");
+		JButton yPlusButton = createJogButton("button-stop", "Jog Y axis in positive direction", "Y+");
+		JButton yMinusButton = createJogButton("button-stop", "Jog Y axis in negative direction", "Y-");
+		JButton zPlusButton = createJogButton("button-stop", "Jog Z axis in positive direction", "Z+");
+		JButton zMinusButton = createJogButton("button-stop", "Jog Z axis in negative direction", "Z-");
+		JButton zeroButton = createJogButton("button-stop","Mark Current Position as Zero (0,0,0)","Zero");
+		JButton panicButton = createJogButton("button-panic","Emergency stop","Stop");
 
 		JPanel xyzPanel = new JPanel(new MigLayout("","[]0[]","[]0[]"));
 		JPanel xyPanel = new JPanel(new MigLayout("","[]0[]0[]","[]0[]0[]"));

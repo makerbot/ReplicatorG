@@ -771,6 +771,8 @@ public class Base {
 			image = img2;
 		} catch (InterruptedException e) {
 		} catch (IOException ioe) {
+		} catch (IllegalArgumentException iae) {
+			iae.printStackTrace();
 		}
 		return image;
 	}
