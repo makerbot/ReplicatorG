@@ -7,6 +7,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.DecimalFormat;
 import java.util.EnumMap;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +30,7 @@ import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.util.Point5d;
 
-public class JogPanel extends JPanel implements ActionListener, ChangeListener, FocusListener
+public class JogPanel extends JPanel implements ActionListener
 {
 	protected double jogRate;
 
@@ -38,11 +39,7 @@ public class JogPanel extends JPanel implements ActionListener, ChangeListener, 
 	protected String[] jogStrings = { "0.01mm", "0.05mm", "0.1mm", "0.5mm",
 			"1mm", "5mm", "10mm", "20mm", "50mm" };
 
-	protected JSlider xyFeedrateSlider;
-	protected JTextField xyFeedrateValue;
-
-	protected JSlider zFeedrateSlider;
-	protected JTextField zFeedrateValue;
+	protected final Point5d feedrate;
 
 	protected EnumMap<AxisId,JTextField> positionFields = new EnumMap<AxisId,JTextField>(AxisId.class);
 
@@ -91,10 +88,97 @@ public class JogPanel extends JPanel implements ActionListener, ChangeListener, 
 		tf.setEnabled(false);
 		return tf;
 	}
+	
+	private JPanel buildPositionPanel() {
+		// create our position panel
+		JPanel positionPanel = new JPanel(new MigLayout("flowy,fillx"));
+		// our label
+		positionPanel.add(new JLabel("Jog Size"),"growx");
+		// create our jog size dropdown
+		JComboBox jogList = new JComboBox(jogStrings);
+		jogList.setSelectedIndex(6);
+		jogList.setActionCommand("jog size");
+		jogList.addActionListener(this);
+		positionPanel.add(jogList,"growx");
+		
+		// our position text boxes
+		for (final AxisId axis : machine.getModel().getAvailableAxes()) {
+			JTextField f = createDisplayField();
+			positionFields.put(axis, f);
+			positionPanel.add(new JLabel(axis.name()),"split 3,flowx");
+			positionPanel.add(f,"growx");
+			JButton centerButton = new JButton("Center "+axis.name());
+			centerButton.setToolTipText("Jog "+axis.name()+" axis to the origin");
+			centerButton.setActionCommand("Center "+axis.name());
+			centerButton.addActionListener(this);
+			positionPanel.add(centerButton);
+		}
+		return positionPanel;
+	}
+
+	private class FeedrateControl implements ActionListener, FocusListener, ChangeListener {
+		final JSlider slider;
+		final AxisId axis;
+		final JTextField field;
+
+		private FeedrateControl(String display, AxisId axis, JPanel parent) {
+			this.axis = axis;
+			slider = new JSlider(JSlider.HORIZONTAL);
+			field = new JTextField();
+			parent.add(new JLabel(display));
+			int maxFeedrate = (int)machine.getModel().getMaximumFeedrates().axis(axis);
+			int currentFeedrate = Math.min(maxFeedrate, Base.preferences.getInt(getPrefName(),480));
+			feedrate.setAxis(axis, currentFeedrate);
+			slider.setMinimum(1);
+			slider.setMaximum(maxFeedrate);
+			slider.setValue(currentFeedrate);
+			slider.addChangeListener(this);
+			parent.add(slider,"growx");
+			field.setMinimumSize(new Dimension(75, 25));
+			field.setEnabled(true);
+			field.setText(Integer.toString(currentFeedrate));
+			field.addFocusListener(this);
+			field.addActionListener(this);
+			parent.add(field,"growx");
+			parent.add(new JLabel("mm/min."),"wrap");
+		}
+
+		String getPrefName() { 
+			return "controlpanel.feedrate."+axis.name().toLowerCase();
+		}
+
+		void updateFromField() {
+			int val = Integer.parseInt(field.getText());
+			feedrate.setAxis(axis, val);
+			Base.preferences.putInt(getPrefName(), val);
+			slider.setValue(val);
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			updateFromField();
+		}
+
+		public void focusGained(FocusEvent e) {
+		}
+
+		public void focusLost(FocusEvent e) {
+			updateFromField();
+		}
+
+		public void stateChanged(ChangeEvent e) {
+			int val = slider.getValue();
+			feedrate.setAxis(axis, val);
+			Base.preferences.putInt(getPrefName(), val);			
+			field.setText(Integer.toString(val));			
+		}
+	}
 
 	public JogPanel(MachineController machine) {
+		feedrate = new Point5d();
 		this.machine = machine;
 		this.driver = machine.getDriver();
+		Set<AxisId> axes = machine.getModel().getAvailableAxes();
+		
 		setLayout(new MigLayout());
 		
 		// compile our regexes
@@ -124,86 +208,26 @@ public class JogPanel extends JPanel implements ActionListener, ChangeListener, 
 		xyzPanel.add(zPlusButton, "split 2,flowy,gap 0 0 0 0");
 		xyzPanel.add(zMinusButton);
 
-		// create our position panel
-		JPanel positionPanel = new JPanel(new MigLayout("flowy,fillx"));
-		// our label
-		positionPanel.add(new JLabel("Jog Size"),"growx");
-		// create our jog size dropdown
-		JComboBox jogList = new JComboBox(jogStrings);
-		jogList.setSelectedIndex(6);
-		jogList.setActionCommand("jog size");
-		jogList.addActionListener(this);
-		positionPanel.add(jogList,"growx");
-		
-		// our position text boxes
-		for (final AxisId axis : machine.getModel().getAvailableAxes()) {
-			JTextField f = createDisplayField();
-			positionFields.put(axis, f);
-			positionPanel.add(new JLabel(axis.name()),"split 3,flowx");
-			positionPanel.add(f,"growx");
-			JButton centerButton = new JButton("Center "+axis.name());
-			centerButton.setToolTipText("Jog "+axis.name()+" axis to the origin");
-			centerButton.setActionCommand("Center "+axis.name());
-			centerButton.addActionListener(this);
-			positionPanel.add(centerButton);
-		}
 
 		// create the xyfeedrate panel
 		JPanel feedratePanel = new JPanel(new MigLayout());
 
-		int maxXYFeedrate = (int) Math.min(machine.getModel().getMaximumFeedrates().x(), 
-				machine.getModel().getMaximumFeedrates().y());
-		int currentXYFeedrate = Math.min(maxXYFeedrate, Base.preferences
-				.getInt("controlpanel.feedrate.xy",480));
-		xyFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, maxXYFeedrate,
-				currentXYFeedrate);
-		xyFeedrateSlider.setMajorTickSpacing(1000);
-		xyFeedrateSlider.setMinorTickSpacing(100);
-		xyFeedrateSlider.setName("xy-feedrate-slider");
-		xyFeedrateSlider.addChangeListener(this);
+		if (axes.contains(AxisId.X) || axes.contains(AxisId.Y)) {
+			new FeedrateControl("XY Feedrate",AxisId.X,feedratePanel);
+		}
 
-		// our display box
-		xyFeedrateValue = new JTextField();
-		xyFeedrateValue.setMinimumSize(new Dimension(75, 25));
-		xyFeedrateValue.setEnabled(true);
-		xyFeedrateValue.setName("xy-feedrate-value");
-		xyFeedrateValue.setText(Integer.toString(xyFeedrateSlider.getValue()));
-		xyFeedrateValue.addFocusListener(this);
-		xyFeedrateValue.setActionCommand("handleTextfield");
-		xyFeedrateValue.addActionListener(this);
-
-
-		// create our z slider
-		int maxZFeedrate = (int) machine.getModel().getMaximumFeedrates().z();
-		int currentZFeedrate = Math.min(maxZFeedrate, 
-				Base.preferences.getInt("controlpanel.feedrate.z",480));
-		zFeedrateSlider = new JSlider(JSlider.HORIZONTAL, 1, maxZFeedrate,
-				currentZFeedrate);
-		zFeedrateSlider.setMajorTickSpacing(10);
-		zFeedrateSlider.setMinorTickSpacing(1);
-		zFeedrateSlider.setName("z-feedrate-slider");
-		zFeedrateSlider.addChangeListener(this);
-
-		// our display box
-		zFeedrateValue = new JTextField();
-		zFeedrateValue.setMinimumSize(new Dimension(75, 25));
-		zFeedrateValue.setEnabled(true);
-		zFeedrateValue.setName("z-feedrate-value");
-		zFeedrateValue.setText(Integer.toString(zFeedrateSlider.getValue()));
-		zFeedrateValue.addFocusListener(this);
-		zFeedrateValue.setActionCommand("handleTextfield");
-		zFeedrateValue.addActionListener(this);
-
-		feedratePanel.add(new JLabel("XY Feedrate (mm/min.)"));
-		feedratePanel.add(xyFeedrateSlider,"growx");
-		feedratePanel.add(xyFeedrateValue,"growx,wrap");
-		feedratePanel.add(new JLabel("Z Feedrate (mm/min.)"));
-		feedratePanel.add(zFeedrateSlider,"growx");
-		feedratePanel.add(zFeedrateValue,"growx,wrap");
-
+		if (axes.contains(AxisId.Z)) {
+			new FeedrateControl("Z Feedrate",AxisId.Z,feedratePanel);
+		}
+		if (axes.contains(AxisId.A)) {
+			new FeedrateControl("A Feedrate",AxisId.A,feedratePanel);
+		}
+		if (axes.contains(AxisId.B)) {
+			new FeedrateControl("B Feedrate",AxisId.B,feedratePanel);
+		}
 		// add it all to our jog panel
 		add(xyzPanel);
-		add(positionPanel,"growx,wrap");
+		add(buildPositionPanel(),"growx,wrap");
 		add(feedratePanel,"growx,spanx");
 
 		// add jog panel border and stuff.
@@ -223,135 +247,62 @@ public class JogPanel extends JPanel implements ActionListener, ChangeListener, 
 		}
 	}
 
-	public void handleChangedTextField(JTextField source)
-	{
-		String name = source.getName();
-
-		if (source.getText().length() > 0) {
-			if (name.equals("xy-feedrate-value")) {
-				int val = Integer.parseInt(source.getText());
-				xyFeedrateSlider.setValue(val);
-				Base.preferences.putInt("controlpanel.feedrate.xy", val);
-			} else if (name.equals("z-feedrate-value")) {
-				int val = Integer.parseInt(source.getText());
-				zFeedrateSlider.setValue(val);
-				Base.preferences.putInt("controlpanel.feedrate.z", val);
-			} else {
-				Base.logger.warning("Unhandled text field: "+name);
-			}
-		}
-	}
-
+	Pattern jogActionParser = Pattern.compile("([XYZAB])([\\+\\-])");
+	Pattern centerActionParser = Pattern.compile("Center ([XYZAB])");
+	
 	public void actionPerformed(ActionEvent e) {
 		Point5d current = driver.getCurrentPosition();
-		double xyFeedrate = xyFeedrateSlider.getValue();
-		double zFeedrate = zFeedrateSlider.getValue();
 		String s = e.getActionCommand();
 
 		try {
+			Matcher jogMatch = jogActionParser.matcher(s);
+			Matcher centerMatch = centerActionParser.matcher(s);
+			if (jogMatch.matches()) {
+				AxisId axis = AxisId.valueOf(jogMatch.group(1));
+				boolean positive = jogMatch.group(2).equals("+");
+				current.setAxis(axis, current.axis(axis) + (positive?jogRate:-jogRate));
+				double f = feedrate.axis(axis);
+				// Exception: XY feedrate is assumed to be X feedrate (symmetrical)
+				if (axis.equals(AxisId.Y)) { f = feedrate.axis(AxisId.X); }
+				driver.setFeedrate(f);
+				driver.queuePoint(current);
+			} else if (s.equals("Stop")) {
+				this.driver.stop();
+				// FIXME: If we reenable the control panel while printing, 
+				// we should check this, call this.machine.stop(),
+				// plus communicate this action back to the main window
+			} else if (centerMatch.matches()) {
+				AxisId axis = AxisId.valueOf(centerMatch.group(1));
+				current.setAxis(axis, 0);
+				double f = feedrate.axis(axis);
+				// Exception: XY feedrate is assumed to be X feedrate (symmetrical)
+				if (axis.equals(AxisId.Y)) { f = feedrate.axis(AxisId.X); }
+				driver.setFeedrate(f);
+				driver.queuePoint(current);
+			} else if (s.equals("Zero")) {
+				// "Zero" tells the machine to calibrate its
+				// current position as zero, not to move to its
+				// currently-set zero position.
+				driver.setCurrentPosition(new Point5d());
+			}
+			// get our new jog rate
+			else if (s.equals("jog size")) {
+				JComboBox cb = (JComboBox) e.getSource();
+				String jogText = (String) cb.getSelectedItem();
 
-		if(s.equals("handleTextfield"))
-		{
-			JTextField source = (JTextField) e.getSource();
-			handleChangedTextField(source);
-			source.selectAll();
-		}
+				// look for a decimal number
+				Matcher jogMatcher = jogPattern.matcher(jogText);
+				if (jogMatcher.find())
+					jogRate = Double.parseDouble(jogMatcher.group(1));
 
-		if (s.equals("Stop")) {
-			this.driver.stop();
-			// FIXME: If we reenable the control panel while printing, 
-			// we should check this, call this.machine.stop(),
-			// plus communicate this action back to the main window
-		}
-		else if (s.equals("X+")) {
-			current.setX(current.x() + jogRate);
+				// TODO: save this back to our preferences file.
 
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("X-")) {
-			current.setX(current.x() - jogRate);
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Y+")) {
-			current.setY(current.y() + jogRate);
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Y-")) {
-			current.setY(current.y() - jogRate);
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Z+")) {
-			current.setZ(current.z() + jogRate);
-
-			driver.setFeedrate(zFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Z-")) {
-			current.setZ(current.z() - jogRate);
-
-			driver.setFeedrate(zFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Center X")) {
-			current.setX(0);
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Center Y")) {
-			current.setY(0);
-
-			driver.setFeedrate(xyFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Center Z")) {
-			current.setZ(0);
-
-			driver.setFeedrate(zFeedrate);
-			driver.queuePoint(current);
-		} else if (s.equals("Zero")) {
-			// "Zero" tells the machine to calibrate its
-			// current position as zero, not to move to its
-			// currently-set zero position.
-			driver.setCurrentPosition(new Point5d());
-		}
-		// get our new jog rate
-		else if (s.equals("jog size")) {
-			JComboBox cb = (JComboBox) e.getSource();
-			String jogText = (String) cb.getSelectedItem();
-
-			// look for a decimal number
-			Matcher jogMatcher = jogPattern.matcher(jogText);
-			if (jogMatcher.find())
-				jogRate = Double.parseDouble(jogMatcher.group(1));
-
-			// TODO: save this back to our preferences file.
-
-			// System.out.println("jog rate: " + jogRate);
-		} else {
-			Base.logger.warning("Unknown Action Event: " + s);
-		}
+				// System.out.println("jog rate: " + jogRate);
+			} else {
+				Base.logger.warning("Unknown Action Event: " + s);
+			}
 		} catch (RetryException e1) {
 			Base.logger.severe("Could not execute command; machine busy.");
 		}
-	}
-
-	public void stateChanged(ChangeEvent e) {
-		JSlider source = (JSlider) e.getSource();
-		int feedrate = source.getValue();
-
-		if (source.getName().equals("xy-feedrate-slider")) {
-			xyFeedrateValue.setText(Integer.toString(feedrate));
-		} else if (source.getName().equals("z-feedrate-slider")) {
-			zFeedrateValue.setText(Integer.toString(feedrate));
-		}
-	}
-
-	
-	public void focusGained(FocusEvent e) {
-	}
-
-	public void focusLost(FocusEvent e) {
-		JTextField source = (JTextField) e.getSource();
-		handleChangedTextField(source);
 	}
 }
