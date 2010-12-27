@@ -213,8 +213,8 @@ public class RepRap5DDriver extends SerialDriver {
 			//resets the line number which is good)
 			sendCommand("M110");
 			Base.logger.fine("first gcode sent.");
-			long gcodeTimeout = System.currentTimeMillis()+2000;
-			while (this.okReceived.get() == false)
+			long gcodeTimeout = System.currentTimeMillis()+3000;
+			while ((this.okReceived.get() == false) && (this.startReceived.get() == false))
 			{
 				readResponse();
 				if (System.currentTimeMillis() > gcodeTimeout)
@@ -423,7 +423,7 @@ public class RepRap5DDriver extends SerialDriver {
 		// RepRap Syntax: N<linenumber> <cmd> *<chksum>\n
 
 		if (gcode.contains("M110"))
-			lineNumber.set(0);
+			lineNumber.set(-1);
 		
 		Matcher lineNumberMatcher = gcodeLineNumberPattern.matcher(gcode);
 		if (lineNumberMatcher.matches())
@@ -478,7 +478,7 @@ public class RepRap5DDriver extends SerialDriver {
 																	// remove
 																	// any
 																	// trailing
-				Base.logger.fine(line);											// \r
+				Base.logger.info(line);											// \r
 				result.delete(0, index + 1);
 
 				if (line.length() == 0)
@@ -516,7 +516,7 @@ public class RepRap5DDriver extends SerialDriver {
 					// todo: set version
 					// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
 					startReceived.set(true);
-					lineNumber.set(0);
+					lineNumber.set(-1);
 
 				} else if (line.startsWith("Extruder Fail")) {
 					setError("Extruder failed:  cannot extrude as this rate.");
