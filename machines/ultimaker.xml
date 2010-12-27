@@ -17,9 +17,9 @@
                 <driver name="reprap5d">
                         <!-- optional: <portname>COM1</portname> -->
                         <rate>57600</rate>
-												<pulserts>false</pulserts>
-												<waitforstart enabled="false" timeout="1000" retries="3"></waitforstart>
-												<fived>true</fived>
+			<pulserts>false</pulserts>
+			<waitforstart enabled="true" timeout="3000" retries="3"></waitforstart>
+			<fived>true</fived>
                 </driver>
                 <warmup>
                 </warmup>
