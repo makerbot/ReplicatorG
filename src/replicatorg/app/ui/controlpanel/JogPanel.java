@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.EnumMap;
@@ -32,13 +34,16 @@ import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.util.Point5d;
 
-public class JogPanel extends JPanel implements ActionListener
+public class JogPanel extends JPanel implements ActionListener, MouseListener
 {
+	private final String JOGMODE_PREF_NAME = "controlpanel.jogmode";
+	
+	protected boolean continuousJogMode = false;
 	protected double jogRate;
 
 	protected Pattern jogPattern;
 
-	protected String[] jogStrings = { "0.01mm", "0.05mm", "0.1mm", "0.5mm",
+	protected String[] jogStrings = { "Continuous Jog", "0.01mm", "0.05mm", "0.1mm", "0.5mm",
 			"1mm", "5mm", "10mm", "20mm", "50mm" };
 
 	protected final Point5d feedrate;
@@ -50,7 +55,6 @@ public class JogPanel extends JPanel implements ActionListener
 
 	public class JogButton extends JButton {
 		public JogButton(String root, String tooltip) {
-			System.err.println("images/"+root+".png");
 			BufferedImage img = Base.getImage("images/"+root+".png", this);					
 			setIcon(new ImageIcon(img));
 			BufferedImage overImg = Base.getImage("images/"+root+"Over.png",this);
@@ -82,6 +86,7 @@ public class JogPanel extends JPanel implements ActionListener
 	protected JButton createJogButton(String root, String tooltip) {
 		JogButton b = new JogButton(root,tooltip);
 		b.addActionListener(this);
+		b.addMouseListener(this);
 		return b;
 	}
 
@@ -110,16 +115,36 @@ public class JogPanel extends JPanel implements ActionListener
 		return tf;
 	}
 	
+	private void setJogMode(String mode) {
+		if ("Continuous Jog".equals(mode)) {
+			continuousJogMode = true;
+			jogRate = 0;
+		} else {
+			// If we were in continuous jog mode, send a stop to be safe
+			if (continuousJogMode) {
+				this.driver.stop();			
+			}
+			continuousJogMode = false;
+			Matcher jogMatcher = jogPattern.matcher(mode);
+			if (jogMatcher.find())
+				jogRate = Double.parseDouble(jogMatcher.group(1));
+		}
+		if (mode != null && mode.length() > 0) {
+			Base.preferences.put(JOGMODE_PREF_NAME,mode);
+		}		
+	}
+	
 	private JPanel buildPositionPanel() {
 		// create our position panel
 		JPanel positionPanel = new JPanel(new MigLayout("flowy,fillx"));
 		// our label
-		positionPanel.add(new JLabel("Jog Size"),"growx");
+		positionPanel.add(new JLabel("Jog Mode"),"growx");
 		// create our jog size dropdown
 		JComboBox jogList = new JComboBox(jogStrings);
-		jogList.setSelectedIndex(6);
+		jogList.setSelectedItem(Base.preferences.get(JOGMODE_PREF_NAME,"10mm"));
 		jogList.setActionCommand("jog size");
 		jogList.addActionListener(this);
+		setJogMode((String)jogList.getSelectedItem());
 		positionPanel.add(jogList,"growx");
 		
 		// our position text boxes
@@ -217,16 +242,16 @@ public class JogPanel extends JPanel implements ActionListener
 		JButton yMinusButton = createJogButton("jog/Y-", "Jog Y axis in negative direction", "Y-");
 		JButton zPlusButton = createJogButton("jog/Z+", "Jog Z axis in positive direction", "Z+");
 		JButton zMinusButton = createJogButton("jog/Z-", "Jog Z axis in negative direction", "Z-");
-		JButton panicButton = createJogButton("button-panic","Emergency stop","Stop");
+		JButton panicButton = createJogButton("jog/panic","Emergency stop","Stop");
 
-		JPanel xyzPanel = new JPanel(new MigLayout("","[]0[]","[]0[]"));
-		JPanel xyPanel = new JPanel(new MigLayout("","[]0[]0[]","[]0[]0[]"));
+		JPanel xyzPanel = new JPanel(new MigLayout("","[]2[]","[]2[]"));
+		JPanel xyPanel = new JPanel(new MigLayout("","[]2[]2[]","[]2[]2[]"));
         //xyzPanel.add(zCenterButton, );
-		xyPanel.add(yPlusButton, "skip 1,wrap");
-		xyPanel.add(xMinusButton);
+		xyPanel.add(yPlusButton, "skip 1,wrap,growx,growy");
+		xyPanel.add(xMinusButton,"growx,growy");
 		xyPanel.add(panicButton,"growx,growy");
-		xyPanel.add(xPlusButton,"wrap");
-		xyPanel.add(yMinusButton, "skip 1,wrap");
+		xyPanel.add(xPlusButton,"growx,growy,wrap");
+		xyPanel.add(yMinusButton, "skip 1,growx,growy,wrap");
 		xyzPanel.add(xyPanel);
 		xyzPanel.add(zPlusButton, "split 2,flowy");
 		xyzPanel.add(zMinusButton);
@@ -281,14 +306,17 @@ public class JogPanel extends JPanel implements ActionListener
 			Matcher jogMatch = jogActionParser.matcher(s);
 			Matcher centerMatch = centerActionParser.matcher(s);
 			if (jogMatch.matches()) {
-				AxisId axis = AxisId.valueOf(jogMatch.group(1));
-				boolean positive = jogMatch.group(2).equals("+");
-				current.setAxis(axis, current.axis(axis) + (positive?jogRate:-jogRate));
-				double f = feedrate.axis(axis);
-				// Exception: XY feedrate is assumed to be X feedrate (symmetrical)
-				if (axis.equals(AxisId.Y)) { f = feedrate.axis(AxisId.X); }
-				driver.setFeedrate(f);
-				driver.queuePoint(current);
+				// If continuous jog mode, let the mouse listener interface handle it.
+				if (!continuousJogMode) {
+					AxisId axis = AxisId.valueOf(jogMatch.group(1));
+					boolean positive = jogMatch.group(2).equals("+");
+					current.setAxis(axis, current.axis(axis) + (positive?jogRate:-jogRate));
+					double f = feedrate.axis(axis);
+					// Exception: XY feedrate is assumed to be X feedrate (symmetrical)
+					if (axis.equals(AxisId.Y)) { f = feedrate.axis(AxisId.X); }
+					driver.setFeedrate(f);
+					driver.queuePoint(current);
+				}
 			} else if (s.equals("Stop")) {
 				this.driver.stop();
 				// FIXME: If we reenable the control panel while printing, 
@@ -312,20 +340,53 @@ public class JogPanel extends JPanel implements ActionListener
 			else if (s.equals("jog size")) {
 				JComboBox cb = (JComboBox) e.getSource();
 				String jogText = (String) cb.getSelectedItem();
-
-				// look for a decimal number
-				Matcher jogMatcher = jogPattern.matcher(jogText);
-				if (jogMatcher.find())
-					jogRate = Double.parseDouble(jogMatcher.group(1));
-
-				// TODO: save this back to our preferences file.
-
-				// System.out.println("jog rate: " + jogRate);
+				setJogMode(jogText);
 			} else {
 				Base.logger.warning("Unknown Action Event: " + s);
 			}
 		} catch (RetryException e1) {
 			Base.logger.severe("Could not execute command; machine busy.");
+		}
+	}
+
+	public void mouseClicked(MouseEvent arg0) {
+		// Ignore; let default handler take care of it
+	}
+
+	public void mouseEntered(MouseEvent arg0) {
+		// Ignore; let default handler take care of it
+	}
+
+	public void mouseExited(MouseEvent arg0) {
+		// Ignore; let default handler take care of it
+	}
+
+	public void mousePressed(MouseEvent e) {
+		if (continuousJogMode) {
+			Point5d current = driver.getCurrentPosition();
+			String s = ((JButton)e.getSource()).getActionCommand();
+			Matcher jogMatch = jogActionParser.matcher(s);
+			if (jogMatch.matches()) {
+				AxisId axis = AxisId.valueOf(jogMatch.group(1));
+				boolean positive = jogMatch.group(2).equals("+");
+				// Fake it by sending a 1m move
+				current.setAxis(axis, current.axis(axis) + (positive?1000:-1000));
+				double f = feedrate.axis(axis);
+				// Exception: XY feedrate is assumed to be X feedrate (symmetrical)
+				if (axis.equals(AxisId.Y)) { f = feedrate.axis(AxisId.X); }
+				driver.setFeedrate(f);
+				try {
+					driver.queuePoint(current);
+				} catch (RetryException e1) {
+					Base.logger.severe("Could not execute command; machine busy.");
+				}
+			}
+		}
+	}
+
+	public void mouseReleased(MouseEvent arg0) {
+		if (continuousJogMode) {
+			driver.stop();
 		}
 	}
 }

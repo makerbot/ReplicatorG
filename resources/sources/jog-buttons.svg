@@ -94,16 +94,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.0794763"
-     inkscape:cx="202.39157"
-     inkscape:cy="677.24254"
+     inkscape:zoom="0.89907937"
+     inkscape:cx="182.96493"
+     inkscape:cy="630.76424"
      inkscape:document-units="px"
      inkscape:current-layer="g3848"
      showgrid="true"
-     inkscape:window-width="1122"
+     inkscape:window-width="1208"
      inkscape:window-height="787"
-     inkscape:window-x="266"
-     inkscape:window-y="179"
+     inkscape:window-x="120"
+     inkscape:window-y="120"
      inkscape:window-maximized="0">
     <inkscape:grid
        type="xygrid"
@@ -454,6 +454,79 @@
          d="m 714.58873,377.19353 -25.43374,-13.1869 0.026,-0.052 -0.026,-0.056 7.47963,-3.7417 c -3.41717,-6.8066 -8.93658,-12.5393 -15.61322,-16.204 -3.3472,-1.8373 -6.97338,-3.1637 -10.71599,-3.92 l -0.004,0 c -3.74148,-0.7558 -7.59919,-0.943 -11.39595,-0.55 -3.79797,0.3932 -7.53469,1.3652 -11.04296,2.8722 -3.50827,1.5071 -6.78692,3.5503 -9.68674,6.0343 -5.79944,4.9678 -10.03965,11.7322 -11.98303,19.1171 l -0.0594,-0.015 -0.0149,0.056 -16.29692,-4.2879 0.0149,-0.056 -0.0557,-0.015 c 1.40736,-5.348 3.62856,-10.4817 6.56558,-15.1674 2.93703,-4.6856 6.58674,-8.9242 10.78658,-12.5218 4.19984,-3.5976 8.94929,-6.5528 14.03036,-8.7355 5.08107,-2.1827 10.49529,-3.5921 15.99594,-4.1615 5.50065,-0.5695 11.08454,-0.3004 16.505,0.7951 5.42045,1.0955 10.67255,3.0166 15.52033,5.6776 4.84778,2.6609 9.28909,6.0625 13.12373,10.0471 3.8212,3.9706 7.03869,8.5208 9.5084,13.447 l 7.48335,-3.7417 0.026,0.048 0.0595,0.011 -4.70774,28.2651 -0.0595,-0.011 -0.0297,0.052 z"
          id="path3928"
          inkscape:connector-curvature="0" />
+      <g
+         id="g3839"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/panic.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
+        <path
+           inkscape:export-ydpi="89.607811"
+           inkscape:export-xdpi="89.607811"
+           inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/panic.png"
+           transform="matrix(0.92387953,-0.38268343,0.38268343,0.92387953,230.42673,-47.452795)"
+           d="M 285,387.36218 277.67767,405.03985 260,412.36218 242.32233,405.03985 235,387.36218 242.32233,369.68451 260,362.36218 l 17.67767,7.32233 z"
+           inkscape:randomized="0"
+           inkscape:rounded="0"
+           inkscape:flatsided="true"
+           sodipodi:arg2="0.39269908"
+           sodipodi:arg1="0"
+           sodipodi:r2="23.096989"
+           sodipodi:r1="25"
+           sodipodi:cy="387.36218"
+           sodipodi:cx="260"
+           sodipodi:sides="8"
+           id="path3839"
+           style="color:#000000;fill:#ee8888;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+           sodipodi:type="star" />
+        <text
+           inkscape:export-ydpi="89.607811"
+           inkscape:export-xdpi="89.607811"
+           inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/panic.png"
+           sodipodi:linespacing="125%"
+           id="text3841"
+           y="216.47751"
+           x="618.88312"
+           style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           xml:space="preserve"><tspan
+             y="216.47751"
+             x="618.88312"
+             id="tspan3843"
+             sodipodi:role="line">STOP</tspan></text>
+      </g>
+      <g
+         id="g3851"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/panicOver.png"
+         inkscape:export-xdpi="80.471909"
+         inkscape:export-ydpi="80.471909"
+         transform="translate(-3.0863647,0.98491839)">
+        <path
+           sodipodi:type="star"
+           style="color:#000000;fill:#ff0000;fill-opacity:1;stroke:#ffffff;stroke-width:3;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+           id="path3845"
+           sodipodi:sides="8"
+           sodipodi:cx="260"
+           sodipodi:cy="387.36218"
+           sodipodi:r1="25"
+           sodipodi:r2="23.096989"
+           sodipodi:arg1="0"
+           sodipodi:arg2="0.39269908"
+           inkscape:flatsided="true"
+           inkscape:rounded="0"
+           inkscape:randomized="0"
+           d="M 285,387.36218 277.67767,405.03985 260,412.36218 242.32233,405.03985 235,387.36218 242.32233,369.68451 260,362.36218 l 17.67767,7.32233 z"
+           transform="matrix(0.92387953,-0.38268343,0.38268343,0.92387953,291.84902,-48.907811)" />
+        <text
+           xml:space="preserve"
+           style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           x="680.30542"
+           y="215.02249"
+           id="text3847"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan3849"
+             x="680.30542"
+             y="215.02249">STOP</tspan></text>
+      </g>
     </g>
   </g>
 </svg>
