@@ -103,7 +103,7 @@
      inkscape:window-width="1122"
      inkscape:window-height="787"
      inkscape:window-x="266"
-     inkscape:window-y="180"
+     inkscape:window-y="179"
      inkscape:window-maximized="0">
     <inkscape:grid
        type="xygrid"
@@ -122,7 +122,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -138,9 +138,15 @@
          style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#aaaaaa;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-opacity:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans;stroke-miterlimit:4;stroke-dasharray:none"
          d="m 575.98868,402.31189 -25.43374,13.1869 0.026,0.052 -0.026,0.056 7.47963,3.7417 c -3.41717,6.8066 -8.93658,12.5393 -15.61322,16.204 -3.3472,1.8373 -6.97338,3.1637 -10.71599,3.92 l -0.004,0 c -3.74148,0.7558 -7.59919,0.943 -11.39595,0.55 -3.79797,-0.3932 -7.53469,-1.3652 -11.04296,-2.8722 -3.50827,-1.5071 -6.78692,-3.5503 -9.68674,-6.0343 -5.79944,-4.9678 -10.03965,-11.7322 -11.98303,-19.1171 l -0.0594,0.015 -0.0149,-0.056 -16.29692,4.2879 0.0149,0.056 -0.0557,0.015 c 1.40736,5.348 3.62856,10.4817 6.56558,15.1674 2.93703,4.6856 6.58674,8.9242 10.78658,12.5218 4.19984,3.5976 8.94929,6.5528 14.03036,8.7355 5.08107,2.1827 10.49529,3.5921 15.99594,4.1615 5.50065,0.5695 11.08454,0.3004 16.505,-0.7951 5.42045,-1.0955 10.67255,-3.0166 15.52033,-5.6776 4.84778,-2.6609 9.28909,-6.0625 13.12373,-10.0471 3.8212,-3.9706 7.03869,-8.5208 9.5084,-13.447 l 7.48335,3.7417 0.026,-0.048 0.0595,-0.011 -4.70774,-28.2651 -0.0595,0.011 -0.0297,-0.052 z"
          id="path4706"
-         inkscape:connector-curvature="0" />
+         inkscape:connector-curvature="0"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/CCW.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80" />
       <g
-         id="g3906">
+         id="g3906"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/Y+.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            inkscape:connector-curvature="0"
            inkscape:original-d="m 485.54087,182.59867 -27.42382,27.42382 12.18836,0 0,21.32964 30.47092,0 0,-21.32964 12.18836,0 z"
@@ -161,7 +167,10 @@
              sodipodi:role="line">Y+</tspan></text>
       </g>
       <g
-         id="g3911">
+         id="g3911"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/Y+Over.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            style="color:#000000;fill:#80ee66;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
            d="m 550.06995,182.59867 -27.42382,27.42382 12.18836,0 0,21.32964 30.47092,0 0,-21.32964 12.18836,0 -27.42382,-27.42382"
@@ -182,7 +191,10 @@
              y="219.02249">Y+</tspan></text>
       </g>
       <g
-         id="g3916">
+         id="g3916"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/Y-.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            style="color:#000000;fill:#aaaaaa;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
            d="m 486.01181,296.35213 27.42382,-27.42382 -12.18836,0 0,-21.32964 -30.47092,0 0,21.32964 -12.18836,0 27.42382,27.42382"
@@ -203,7 +215,10 @@
              y="274.02249">Y-</tspan></text>
       </g>
       <g
-         id="g3921">
+         id="g3921"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/Y-Over.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            inkscape:connector-curvature="0"
            inkscape:original-d="m 550.54089,296.35213 27.42382,-27.42382 -12.18836,0 0,-21.32964 -30.47092,0 0,21.32964 -12.18836,0 z"
@@ -224,7 +239,10 @@
              sodipodi:role="line">Y-</tspan></text>
       </g>
       <g
-         id="g3876">
+         id="g3876"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/X+.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            style="color:#000000;fill:#aaaaaa;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
            d="m 505.38852,146.9754 -27.42382,-27.42382 0,12.18836 -21.32964,0 0,30.47092 21.32964,0 0,12.18836 27.42382,-27.42382"
@@ -245,7 +263,10 @@
              y="153.02249">X+</tspan></text>
       </g>
       <g
-         id="g3881">
+         id="g3881"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/X+Over.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            inkscape:connector-curvature="0"
            inkscape:original-d="m 569.9176,146.9754 -27.42382,-27.42382 0,12.18836 -21.32964,0 0,30.47092 21.32964,0 0,12.18836 z"
@@ -266,7 +287,10 @@
              sodipodi:role="line">X+</tspan></text>
       </g>
       <g
-         id="g3866">
+         id="g3866"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/X-.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            inkscape:connector-curvature="0"
            inkscape:original-d="m 449.63505,79.9754 27.42382,27.42382 0,-12.18836 21.32964,0 0,-30.47092 -21.32964,0 0,-12.188359 z"
@@ -287,7 +311,10 @@
              sodipodi:role="line">X-</tspan></text>
       </g>
       <g
-         id="g3871">
+         id="g3871"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/X-Over.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            style="color:#000000;fill:#80ee66;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
            d="m 514.16413,79.9754 27.42382,27.42382 0,-12.18836 21.32964,0 0,-30.47092 -21.32964,0 0,-12.188359 -27.42382,27.423819"
@@ -308,7 +335,10 @@
              y="86.022491">X-</tspan></text>
       </g>
       <g
-         id="g3886">
+         id="g3886"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/Z+.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            style="color:#000000;fill:#aaaaaa;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
            d="m 616.01181,53.598671 -27.42382,27.42382 12.18836,0 0,21.329639 30.47092,0 0,-21.329639 12.18836,0 -27.42382,-27.42382"
@@ -329,7 +359,10 @@
              y="90.022491">Z+</tspan></text>
       </g>
       <g
-         id="g3891">
+         id="g3891"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/Z+Over.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            inkscape:connector-curvature="0"
            inkscape:original-d="m 680.54089,53.598671 -27.42382,27.42382 12.18836,0 0,21.329639 30.47092,0 0,-21.329639 12.18836,0 z"
@@ -350,7 +383,10 @@
              sodipodi:role="line">Z+</tspan></text>
       </g>
       <g
-         id="g3896">
+         id="g3896"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/Z-.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            inkscape:connector-curvature="0"
            inkscape:original-d="m 616.48275,167.35213 27.42382,-27.42382 -12.18836,0 0,-21.32964 -30.47092,0 0,21.32964 -12.18836,0 z"
@@ -371,7 +407,10 @@
              sodipodi:role="line">Z-</tspan></text>
       </g>
       <g
-         id="g3901">
+         id="g3901"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/Z-Over.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80">
         <path
            style="color:#000000;fill:#80ee66;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
            d="m 681.01183,167.35213 27.42382,-27.42382 -12.18836,0 0,-21.32964 -30.47092,0 0,21.32964 -12.18836,0 27.42382,27.42382"
@@ -395,7 +434,26 @@
          inkscape:connector-curvature="0"
          id="path3864"
          d="m 714.58873,402.86189 -25.43374,13.1869 0.026,0.052 -0.026,0.056 7.47963,3.7417 c -3.41717,6.8066 -8.93658,12.5393 -15.61322,16.204 -3.3472,1.8373 -6.97338,3.1637 -10.71599,3.92 l -0.004,0 c -3.74148,0.7558 -7.59919,0.943 -11.39595,0.55 -3.79797,-0.3932 -7.53469,-1.3652 -11.04296,-2.8722 -3.50827,-1.5071 -6.78692,-3.5503 -9.68674,-6.0343 -5.79944,-4.9678 -10.03965,-11.7322 -11.98303,-19.1171 l -0.0594,0.015 -0.0149,-0.056 -16.29692,4.2879 0.0149,0.056 -0.0557,0.015 c 1.40736,5.348 3.62856,10.4817 6.56558,15.1674 2.93703,4.6856 6.58674,8.9242 10.78658,12.5218 4.19984,3.5976 8.94929,6.5528 14.03036,8.7355 5.08107,2.1827 10.49529,3.5921 15.99594,4.1615 5.50065,0.5695 11.08454,0.3004 16.505,-0.7951 5.42045,-1.0955 10.67255,-3.0166 15.52033,-5.6776 4.84778,-2.6609 9.28909,-6.0625 13.12373,-10.0471 3.8212,-3.9706 7.03869,-8.5208 9.5084,-13.447 l 7.48335,3.7417 0.026,-0.048 0.0595,-0.011 -4.70774,-28.2651 -0.0595,0.011 -0.0297,-0.052 z"
-         style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#80ee66;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans" />
+         style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#80ee66;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/CCWOver.png"
+         inkscape:export-xdpi="80"
+         inkscape:export-ydpi="80" />
+      <path
+         inkscape:export-ydpi="80"
+         inkscape:export-xdpi="80"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/CW.png"
+         inkscape:connector-curvature="0"
+         id="path3926"
+         d="m 575.98868,377.74353 -25.43374,-13.1869 0.026,-0.052 -0.026,-0.056 7.47963,-3.7417 c -3.41717,-6.8066 -8.93658,-12.5393 -15.61322,-16.204 -3.3472,-1.8373 -6.97338,-3.1637 -10.71599,-3.92 l -0.004,0 c -3.74148,-0.7558 -7.59919,-0.943 -11.39595,-0.55 -3.79797,0.3932 -7.53469,1.3652 -11.04296,2.8722 -3.50827,1.5071 -6.78692,3.5503 -9.68674,6.0343 -5.79944,4.9678 -10.03965,11.7322 -11.98303,19.1171 l -0.0594,-0.015 -0.0149,0.056 -16.29692,-4.2879 0.0149,-0.056 -0.0557,-0.015 c 1.40736,-5.348 3.62856,-10.4817 6.56558,-15.1674 2.93703,-4.6856 6.58674,-8.9242 10.78658,-12.5218 4.19984,-3.5976 8.94929,-6.5528 14.03036,-8.7355 5.08107,-2.1827 10.49529,-3.5921 15.99594,-4.1615 5.50065,-0.5695 11.08454,-0.3004 16.505,0.7951 5.42045,1.0955 10.67255,3.0166 15.52033,5.6776 4.84778,2.6609 9.28909,6.0625 13.12373,10.0471 3.8212,3.9706 7.03869,8.5208 9.5084,13.447 l 7.48335,-3.7417 0.026,0.048 0.0595,0.011 -4.70774,28.2651 -0.0595,-0.011 -0.0297,0.052 z"
+         style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#aaaaaa;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans" />
+      <path
+         inkscape:export-ydpi="80"
+         inkscape:export-xdpi="80"
+         inkscape:export-filename="/home/phooky/makerbot/ReplicatorG/resources/images/jog/CWOver.png"
+         style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#80ee66;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
+         d="m 714.58873,377.19353 -25.43374,-13.1869 0.026,-0.052 -0.026,-0.056 7.47963,-3.7417 c -3.41717,-6.8066 -8.93658,-12.5393 -15.61322,-16.204 -3.3472,-1.8373 -6.97338,-3.1637 -10.71599,-3.92 l -0.004,0 c -3.74148,-0.7558 -7.59919,-0.943 -11.39595,-0.55 -3.79797,0.3932 -7.53469,1.3652 -11.04296,2.8722 -3.50827,1.5071 -6.78692,3.5503 -9.68674,6.0343 -5.79944,4.9678 -10.03965,11.7322 -11.98303,19.1171 l -0.0594,-0.015 -0.0149,0.056 -16.29692,-4.2879 0.0149,-0.056 -0.0557,-0.015 c 1.40736,-5.348 3.62856,-10.4817 6.56558,-15.1674 2.93703,-4.6856 6.58674,-8.9242 10.78658,-12.5218 4.19984,-3.5976 8.94929,-6.5528 14.03036,-8.7355 5.08107,-2.1827 10.49529,-3.5921 15.99594,-4.1615 5.50065,-0.5695 11.08454,-0.3004 16.505,0.7951 5.42045,1.0955 10.67255,3.0166 15.52033,5.6776 4.84778,2.6609 9.28909,6.0625 13.12373,10.0471 3.8212,3.9706 7.03869,8.5208 9.5084,13.447 l 7.48335,-3.7417 0.026,0.048 0.0595,0.011 -4.70774,28.2651 -0.0595,-0.011 -0.0297,0.052 z"
+         id="path3928"
+         inkscape:connector-curvature="0" />
     </g>
   </g>
 </svg>

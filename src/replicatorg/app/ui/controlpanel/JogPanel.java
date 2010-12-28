@@ -49,9 +49,10 @@ public class JogPanel extends JPanel implements ActionListener
 
 	public class JogButton extends JButton {
 		public JogButton(String root, String tooltip) {
+			System.err.println("images/"+root+".png");
 			BufferedImage img = Base.getImage("images/"+root+".png", this);					
 			setIcon(new ImageIcon(img));
-			BufferedImage overImg = Base.getImage("images/"+root+"_over.png",this);
+			BufferedImage overImg = Base.getImage("images/"+root+"Over.png",this);
 			if (overImg != null) {
 				setRolloverIcon(new ImageIcon(overImg));
 				setRolloverEnabled(true);
@@ -203,12 +204,12 @@ public class JogPanel extends JPanel implements ActionListener
 		jogRate = 10.0;
 		jogPattern = Pattern.compile("([.0-9]+)");
 
-		JButton xPlusButton = createJogButton("button-stop", "Jog X axis in positive direction", "X+");
-		JButton xMinusButton = createJogButton("button-stop", "Jog X axis in negative direction", "X-");
-		JButton yPlusButton = createJogButton("button-stop", "Jog Y axis in positive direction", "Y+");
-		JButton yMinusButton = createJogButton("button-stop", "Jog Y axis in negative direction", "Y-");
-		JButton zPlusButton = createJogButton("button-stop", "Jog Z axis in positive direction", "Z+");
-		JButton zMinusButton = createJogButton("button-stop", "Jog Z axis in negative direction", "Z-");
+		JButton xPlusButton = createJogButton("jog/X+", "Jog X axis in positive direction", "X+");
+		JButton xMinusButton = createJogButton("jog/X-", "Jog X axis in negative direction", "X-");
+		JButton yPlusButton = createJogButton("jog/Y+", "Jog Y axis in positive direction", "Y+");
+		JButton yMinusButton = createJogButton("jog/Y-", "Jog Y axis in negative direction", "Y-");
+		JButton zPlusButton = createJogButton("jog/Z+", "Jog Z axis in positive direction", "Z+");
+		JButton zMinusButton = createJogButton("jog/Z-", "Jog Z axis in negative direction", "Z-");
 		JButton zeroButton = createJogButton("button-stop","Mark Current Position as Zero (0,0,0)","Zero");
 		JButton panicButton = createJogButton("button-panic","Emergency stop","Stop");
 
