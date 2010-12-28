@@ -1,5 +1,6 @@
 package replicatorg.app.ui.controlpanel;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -105,6 +106,7 @@ public class JogPanel extends JPanel implements ActionListener
 	protected JTextField createDisplayField() {
 		JTextField tf = new JTextField();
 		tf.setEnabled(false);
+		tf.setDisabledTextColor(Color.BLACK);
 		return tf;
 	}
 	
@@ -132,6 +134,11 @@ public class JogPanel extends JPanel implements ActionListener
 			centerButton.addActionListener(this);
 			positionPanel.add(centerButton);
 		}
+		JButton zeroButton = new JButton("Make current position zero");
+		zeroButton.setToolTipText("Mark Current Position as zero (0,0,0).  Will not move the toolhead.");
+		zeroButton.setActionCommand("Zero");
+		zeroButton.addActionListener(this);
+		positionPanel.add(zeroButton,"growx");
 		return positionPanel;
 	}
 
@@ -210,20 +217,18 @@ public class JogPanel extends JPanel implements ActionListener
 		JButton yMinusButton = createJogButton("jog/Y-", "Jog Y axis in negative direction", "Y-");
 		JButton zPlusButton = createJogButton("jog/Z+", "Jog Z axis in positive direction", "Z+");
 		JButton zMinusButton = createJogButton("jog/Z-", "Jog Z axis in negative direction", "Z-");
-		JButton zeroButton = createJogButton("button-stop","Mark Current Position as Zero (0,0,0)","Zero");
 		JButton panicButton = createJogButton("button-panic","Emergency stop","Stop");
 
 		JPanel xyzPanel = new JPanel(new MigLayout("","[]0[]","[]0[]"));
 		JPanel xyPanel = new JPanel(new MigLayout("","[]0[]0[]","[]0[]0[]"));
         //xyzPanel.add(zCenterButton, );
-		xyPanel.add(yPlusButton, "skip 1,gap 0 0 0 0");
-		xyPanel.add(panicButton, "gap 0 0 0 0,wrap");
-		xyPanel.add(xMinusButton, "gap 0 0 0 0");
-		xyPanel.add(zeroButton,"gap 0 0 0 0");
-		xyPanel.add(xPlusButton,"gap 0 0 0 0,wrap");
-		xyPanel.add(yMinusButton, "skip 1,wrap,gap 0 0 0 0");
+		xyPanel.add(yPlusButton, "skip 1,wrap");
+		xyPanel.add(xMinusButton);
+		xyPanel.add(panicButton,"growx,growy");
+		xyPanel.add(xPlusButton,"wrap");
+		xyPanel.add(yMinusButton, "skip 1,wrap");
 		xyzPanel.add(xyPanel);
-		xyzPanel.add(zPlusButton, "split 2,flowy,gap 0 0 0 0");
+		xyzPanel.add(zPlusButton, "split 2,flowy");
 		xyzPanel.add(zMinusButton);
 
 
