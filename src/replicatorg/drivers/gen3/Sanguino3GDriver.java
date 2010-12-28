@@ -1178,7 +1178,7 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Stop and system state reset
 	 **************************************************************************/
 	public void stop() {
-		Base.logger.warning("Stop.");
+		Base.logger.fine("Stop.");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ABORT.getCode());
 		Thread.interrupted(); // Clear interrupted status
 		runQuery(pb.getPacket());
