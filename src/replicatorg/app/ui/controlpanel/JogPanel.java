@@ -62,6 +62,11 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 				setRolloverIcon(new ImageIcon(overImg));
 				setRolloverEnabled(true);
 			}
+			BufferedImage downImg = Base.getImage("images/"+root+"Down.png",this);
+			if (downImg == null) { downImg = overImg; }
+			if (downImg != null) {
+				setSelectedIcon(new ImageIcon(downImg));
+			}
 			Dimension imgSize = new Dimension(img.getWidth(null),img.getHeight(null));
 			setSize(imgSize);
 			setMinimumSize(imgSize);
@@ -224,6 +229,17 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		}
 	}
 
+	// Make a rotation tool (for A and B axes)
+	private JPanel makeRotationPanel(AxisId axis) {
+		JButton cwButton = createJogButton("jog/CW", "Jog "+axis.name()+" axis in clockwise direction", axis.name()+"+");
+		JButton ccwButton = createJogButton("jog/CCW", "Jog "+axis.name()+" axis in counterclockwise direction", axis.name()+"-");
+		JPanel panel = new JPanel(new MigLayout());
+		panel.add(new JLabel(axis.name()));
+		panel.add(cwButton,"split 2,flowy");
+		panel.add(ccwButton);
+		return panel;
+	}
+	
 	public JogPanel(MachineController machine) {
 		feedrate = new Point5d();
 		this.machine = machine;
@@ -240,11 +256,9 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		JButton xMinusButton = createJogButton("jog/X-", "Jog X axis in negative direction", "X-");
 		JButton yPlusButton = createJogButton("jog/Y+", "Jog Y axis in positive direction", "Y+");
 		JButton yMinusButton = createJogButton("jog/Y-", "Jog Y axis in negative direction", "Y-");
-		JButton zPlusButton = createJogButton("jog/Z+", "Jog Z axis in positive direction", "Z+");
-		JButton zMinusButton = createJogButton("jog/Z-", "Jog Z axis in negative direction", "Z-");
 		JButton panicButton = createJogButton("jog/panic","Emergency stop","Stop");
 
-		JPanel xyzPanel = new JPanel(new MigLayout("","[]2[]","[]2[]"));
+		JPanel jogButtonPanel = new JPanel(new MigLayout("nogrid"));
 		JPanel xyPanel = new JPanel(new MigLayout("","[]2[]2[]","[]2[]2[]"));
         //xyzPanel.add(zCenterButton, );
 		xyPanel.add(yPlusButton, "skip 1,wrap,growx,growy");
@@ -252,10 +266,21 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		xyPanel.add(panicButton,"growx,growy");
 		xyPanel.add(xPlusButton,"growx,growy,wrap");
 		xyPanel.add(yMinusButton, "skip 1,growx,growy,wrap");
-		xyzPanel.add(xyPanel);
-		xyzPanel.add(zPlusButton, "split 2,flowy");
-		xyzPanel.add(zMinusButton);
-
+		jogButtonPanel.add(xyPanel);
+		if (axes.contains(AxisId.Z)) {
+			JButton zPlusButton = createJogButton("jog/Z+", "Jog Z axis in positive direction", "Z+");
+			JButton zMinusButton = createJogButton("jog/Z-", "Jog Z axis in negative direction", "Z-");
+			JPanel zPanel = new JPanel(new MigLayout("flowy"));
+			zPanel.add(zPlusButton);
+			zPanel.add(zMinusButton);
+			jogButtonPanel.add(zPanel,"wrap");
+		}
+		if (axes.contains(AxisId.A)) {
+			jogButtonPanel.add(makeRotationPanel(AxisId.A));
+		}		
+		if (axes.contains(AxisId.B)) {
+			jogButtonPanel.add(makeRotationPanel(AxisId.B));
+		}
 
 		// create the xyfeedrate panel
 		JPanel feedratePanel = new JPanel(new MigLayout());
@@ -274,7 +299,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			new FeedrateControl("B Feedrate",AxisId.B,feedratePanel);
 		}
 		// add it all to our jog panel
-		add(xyzPanel);
+		add(jogButtonPanel);
 		add(buildPositionPanel(),"growx,wrap");
 		add(feedratePanel,"growx,spanx");
 
