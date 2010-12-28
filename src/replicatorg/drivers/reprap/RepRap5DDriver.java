@@ -123,7 +123,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 	protected DecimalFormat df;
 
-	private AtomicInteger lineNumber = new AtomicInteger(0);
+	private AtomicInteger lineNumber = new AtomicInteger(-1);
 
 	public RepRap5DDriver() {
 		super();
@@ -213,7 +213,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			
 			try
 			{
-				waitForNotification(okReceived, 2000);
+				waitForNotification(okReceived, 3000);
 			}
 			catch (TimeoutException e)
 			{
@@ -431,7 +431,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		// RepRap Syntax: N<linenumber> <cmd> *<chksum>\n
 
 		if (gcode.contains("M110"))
-			lineNumber.set(0);
+			lineNumber.set(-1);
 		
 		Matcher lineNumberMatcher = gcodeLineNumberPattern.matcher(gcode);
 		if (lineNumberMatcher.matches())
@@ -482,7 +482,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			// System.out.println("got: " + c);
 			// System.out.println("current: " + result);
 
-			Base.logger.fine(line);
+			//Base.logger.fine(line);
+			Base.logger.info(line);
 
 			if (line.length() == 0)
 				Base.logger.fine("empty line received");
@@ -532,7 +533,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					startReceived.set(true);
 					startReceived.notifyAll();
 				}
-				lineNumber.set(0);
+				lineNumber.set(-1);
 
 			} else if (line.startsWith("Extruder Fail")) {
 				setError("Extruder failed:  cannot extrude as this rate.");
