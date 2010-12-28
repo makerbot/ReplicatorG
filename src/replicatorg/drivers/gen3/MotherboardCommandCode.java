@@ -31,16 +31,6 @@ public enum MotherboardCommandCode {
 	GET_BUILD_NAME(20),
 	GET_POSITION_EXT(21),
 	
-	// Note that these have the same names as tool codes
-	// but have different values!
-	SET_MOTOR_1_RPM(22),
-	SET_MOTOR_2_RPM(23),
-	SET_MOTOR_1_DIR(24),
-	SET_MOTOR_2_DIR(25),
-	
-	GET_MOTOR_1_RPM(26),
-	GET_MOTOR_2_RPM(27),
-	
 	// QUEUE_POINT_INC(128) obsolete
 	QUEUE_POINT_ABS(129),
 	SET_POSITION(130),
