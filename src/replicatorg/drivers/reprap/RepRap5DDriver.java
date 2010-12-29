@@ -99,7 +99,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/**
 	 * To keep track of outstanding commands
 	 */
-	protected Queue<Integer> commands;
+	protected final Queue<Integer> commands;
 
 	/**
 	 * the size of the buffer on the GCode host
@@ -208,18 +208,22 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			//Send a line # reset command, this allows us to catch the "ok" response in 
 			//case we missed the "start" response which we seem to often miss. (also it 
 			//resets the line number which is good)
-			sendCommand("M110");
-			Base.logger.fine("first gcode sent.");
-			
-			try
+			synchronized(okReceived)
 			{
-				waitForNotification(okReceived, 3000);
-			}
-			catch (TimeoutException e)
-			{
-				this.dispose();
-				Base.logger.warning("RepRap not responding to gcode. Failed to connect.");
-				return;
+				sendCommand("M110");
+				Base.logger.fine("first gcode sent.");
+				
+				try
+				{
+					waitForNotification(okReceived, 3000);
+				}
+				catch (TimeoutException e)
+				{
+					this.dispose();
+					Base.logger.warning(
+							"RepRap not responding to gcode. Failed to connect.");
+					return;
+				}
 			}
 
 			Base.logger.info("GCode transmission confirmed. RepRap connected.");
@@ -256,27 +260,33 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	
 	private void pulseRTS() throws TimeoutException
 	{
-		//attempt to reset the device, this may slow down the connection time, but it 
-		//increases our chances of successfully connecting dramatically.
+		// attempt to reset the device, this may slow down the connection time, but it 
+		// increases our chances of successfully connecting dramatically.
 
 		Base.logger.info("Attempting to reset RepRap (pulsing RTS)");
-		serial.pulseRTSLow();
 		
-		if (waitForStart == false) return;
-
-		//Wait for the RepRap to respond to the RTS pulse attempt or for this to timeout.
-		waitForNotification(startReceived, waitForStartTimeout);
+		synchronized (startReceived) {
+			serial.pulseRTSLow();
+			
+			if (waitForStart == false) return;
+	
+			// Wait for the RepRap to respond to the RTS pulse attempt 
+			// or for this to timeout.
+			waitForNotification(startReceived, waitForStartTimeout);
+		}
 	}
 
 	/**
 	 * Actually execute the GCode we just parsed.
 	 */
 	public void execute() {
+		//If we're not initialized (ie. disconnected) do not execute commands on the disconnected machine.
+		if(!isInitialized()) return;
+
 		// we *DONT* want to use the parents one,
 		// as that will call all sorts of misc functions.
 		// we'll simply pass it along.
 		// super.execute();
-
 		sendCommand(getParser().getCommand());
 	}
 	
@@ -285,7 +295,12 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 */
 	private String getRegexMatch(String regex, String input, int group)
 	{
-		Matcher matcher = Pattern.compile(regex).matcher(input);
+		return getRegexMatch(Pattern.compile(regex), input, group);
+	}
+
+	private String getRegexMatch(Pattern regex, String input, int group)
+	{
+		Matcher matcher = regex.matcher(input);
 		if (!matcher.find()) return null;
 		return matcher.group(1);
 	}
@@ -546,8 +561,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				bufferSize -= commands.remove();
 				bufferLock.unlock();
 
-				int bufferedLineNumber = Integer.parseInt( 
-						gcodeLineNumberPattern.matcher(bufferedLine).group(1) );
+				int bufferedLineNumber = Integer.parseInt( getRegexMatch(
+						gcodeLineNumberPattern, bufferedLine, 1) );
 
 				Matcher badLineMatch = resendLinePattern.matcher(line);
 				if (badLineMatch.find())
@@ -601,7 +616,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	public synchronized void dispose() {
 		bufferLock.lock();
 		super.dispose();
-		commands = null;
+		commands.clear();
 		bufferLock.unlock();
 	}
 

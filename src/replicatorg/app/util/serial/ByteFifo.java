@@ -26,7 +26,7 @@ public class ByteFifo {
 	public synchronized void clear() { head = tail = 0; }
 	public synchronized int size() { return moduloLength(tail-head); }
 	public synchronized byte dequeue() {
-		int nextHead = moduloLength(head++);
+		int nextHead = moduloLength(head+1);
 		if (newLineSearchHead == head) newLineSearchHead = nextHead;
 		
 		byte b = buffer[head];
@@ -47,15 +47,17 @@ public class ByteFifo {
 			if (buffer[i] == (byte)'\n')
 			{
 				byte[] match = new byte[i+1];
-				for ( int j = head; j != moduloLength(i+1); moduloLength(j++) )
+				int k = 0;
+				for ( int j = head; j != moduloLength(i+1); j = moduloLength(j+1) )
 				{
-					match[j-head] = dequeue();
+					match[k++] = dequeue();
 				}
 				return match;
 			}
 
 			i = moduloLength(i+1);
 		}
+		newLineSearchHead = i;
 		return new byte[0];
 	}
 }
