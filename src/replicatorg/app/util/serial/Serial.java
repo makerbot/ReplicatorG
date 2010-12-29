@@ -91,7 +91,7 @@ public class Serial implements SerialPortEventListener {
 
 		// Linux: scan the by-id directory and see if we can find the ids of the cables.
 		if (Base.isLinux()) {
-			Pattern idPattern = Pattern.compile("FTDI_TTL232R_([^-]*)");
+			Pattern idPattern = Pattern.compile("(FTDI_TTL232R_|usb-Arduino__www.arduino.cc__Arduino_Uno_)([^-]*)");
 			File portDir = new File("/dev/serial/by-id/");
 			if (portDir.exists() && portDir.isDirectory()) {
 				for (File f : portDir.listFiles()) {
@@ -100,7 +100,7 @@ public class Serial implements SerialPortEventListener {
 						String canonical = f.getCanonicalFile().getPath();
 						for (Name m : v) {
 							if (m.getName().equals(canonical)) {
-								m.setAlias(match.group(1));
+								m.setAlias(match.group(2));
 							}
 						}
 					} catch (IOException ioe) {
