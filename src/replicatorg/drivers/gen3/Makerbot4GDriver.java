@@ -1,12 +1,16 @@
 package replicatorg.drivers.gen3;
 
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.logging.Level;
+
+import org.w3c.dom.Element;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.RetryException;
-import replicatorg.drivers.gen3.MotherboardCommandCode;
-import replicatorg.drivers.gen3.PacketBuilder;
-import replicatorg.drivers.gen3.Sanguino3GDriver;
+import replicatorg.machine.model.AxisId;
+import replicatorg.machine.model.MachineModel;
+import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
 public class Makerbot4GDriver extends Sanguino3GDriver {
@@ -23,6 +27,18 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 					+ Long.toString(micros) + " usec.");
 		}
 
+		// override steps on axis controllers
+		for (Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
+			ToolModel curTool = machine.currentTool(); 
+			if (curTool.equals(entry.getValue()) && curTool.isMotorEnabled()) {
+				boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
+				long toolSteps = micros; // fixme
+				steps.setAxis(entry.getKey(), clockwise?toolSteps:-toolSteps);
+			} else {
+				steps.setAxis(entry.getKey(), 0);
+			}
+		}
+		
 		// just add them in now.
 		pb.add32((int) steps.x());
 		pb.add32((int) steps.y());
@@ -54,7 +70,36 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 
 		super.setCurrentPosition(p);
 	}
-
+	
+	EnumMap<AxisId,ToolModel> stepExtruderMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
+	
+	@Override
+	/**
+	 * When the machine is set for this driver, some toolheads may poach the an extrusion axis.
+	 */
+	public void setMachine(MachineModel m) {
+		super.setMachine(m);
+		for (ToolModel tm : m.getTools()) {
+			Element e = (Element)tm.getXml();
+			if (e.hasAttribute("stepaxis")) {
+				final String stepAxisStr = e.getAttribute("stepaxis");
+				try {
+					AxisId axis = AxisId.valueOf(stepAxisStr);
+					if (m.hasAxis(axis)) {
+						// If we're seizing an axis for an extruder, remove it from the available axes and get
+						// the data associated with that axis.
+						stepExtruderMap.put(axis,tm);
+						m.getAvailableAxes().remove(axis);
+					} else {
+						Base.logger.severe("Tool claims unavailable axis "+axis.name());
+					}
+				} catch (IllegalArgumentException iae) {
+					Base.logger.severe("Unintelligible axis designator "+stepAxisStr);
+				}
+			}
+		}
+	}
+	
 	protected Point5d reconcilePosition() {
 		if (fileCaptureOstream != null) {
 			return new Point5d();
