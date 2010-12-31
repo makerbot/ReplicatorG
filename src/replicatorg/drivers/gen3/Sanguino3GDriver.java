@@ -539,26 +539,18 @@ public class Sanguino3GDriver extends SerialDriver
 
 		if (feedrate <= 0) {
 			// figure out our fastest feedrate.
-			feedrate = Math.max(maxFeedrates.x(), maxFeedrates.y());
-			feedrate = Math.max(maxFeedrates.z(), feedrate);
+			feedrate = 0;
+			for (AxisId axis : machine.getAvailableAxes()) {
+				feedrate = Math.max(maxFeedrates.axis(axis),feedrate);
+			}
 		}
 		
 		Point5d target = new Point5d();
 		
-		if (axes.contains(AxisId.X)) {
-			flags += 1;
-			feedrate = Math.min(feedrate, maxFeedrates.x());
-			target.setX(1); // just to give us feedrate info.
-		}
-		if (axes.contains(AxisId.Y)) {
-			flags += 2;
-			feedrate = Math.min(feedrate, maxFeedrates.y());
-			target.setY(1); // just to give us feedrate info.
-		}
-		if (axes.contains(AxisId.Z)) {
-			flags += 4;
-			feedrate = Math.min(feedrate, maxFeedrates.z());
-			target.setZ(1); // just to give us feedrate info.
+		for (AxisId axis : axes) {
+			flags += 1 << axis.getIndex();
+			feedrate = Math.min(feedrate, maxFeedrates.axis(axis));
+			target.setAxis(axis, 1);
 		}
 		
 		// calculate ticks
@@ -1116,16 +1108,6 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Various timer and math functions.
 	 **************************************************************************/
 
-//	private Point3d getDeltaDistance(Point3d current, Point3d target) {
-//		// calculate our deltas.
-//		Point3d delta = new Point3d();
-//		delta.x = target.x - current.x;
-//		delta.y = target.y - current.y;
-//		delta.z = target.z - current.z;
-//
-//		return delta;
-//	}
-
 	private Point5d getAbsDeltaDistance(Point5d current, Point5d target) {
 		// calculate our deltas.
 		Point5d delta = new Point5d();
@@ -1135,7 +1117,7 @@ public class Sanguino3GDriver extends SerialDriver
 		return delta;
 	}
 
-	private Point5d getAbsDeltaSteps(Point5d current, Point5d target) {
+	protected Point5d getAbsDeltaSteps(Point5d current, Point5d target) {
 		return machine.mmToSteps(getAbsDeltaDistance(current, target));
 	}
 
@@ -1146,12 +1128,17 @@ public class Sanguino3GDriver extends SerialDriver
 	 * @param feedrate Feedrate in mm per minute
 	 * @return
 	 */
-	private long convertFeedrateToMicros(Point5d current, Point5d target, double feedrate) {
+	protected long convertFeedrateToMicros(Point5d current, Point5d target, double feedrate) {
 		Point5d deltaDistance = getAbsDeltaDistance(current, target);
  		Point5d deltaSteps = machine.mmToSteps(deltaDistance);
 		double masterSteps = getLongestLength(deltaSteps);
 		// how long is our line length?
-		double distance = deltaDistance.distance(new Point5d());
+		// We calculate this manually, so that we only account for active axes.
+		double distanceSq = 0.0;
+		for (AxisId axis : machine.getAvailableAxes()) {
+			distanceSq += deltaDistance.axis(axis);
+		}
+		double distance = Math.sqrt(distanceSq);
 		// distance is in mm
 		// feedrate is in mm/min
 		// distance / feedrate * 60,000,000 = move duration in microseconds
@@ -1161,12 +1148,12 @@ public class Sanguino3GDriver extends SerialDriver
 		return (long) Math.round(step_delay);
 	}
 
-	private double getLongestLength(Point5d p) {
+	protected double getLongestLength(Point5d p) {
 		// find the dominant axis.
-		double longest = Math.max(p.x(), p.y());
-		longest = Math.max(longest, p.z());
-		longest = Math.max(longest, p.a());
-		longest = Math.max(longest, p.b());
+		double longest = 0d;
+		for (AxisId axis : machine.getAvailableAxes()) {
+			longest = Math.max(longest, p.axis(axis));
+		}
 		return longest;
 	}
 

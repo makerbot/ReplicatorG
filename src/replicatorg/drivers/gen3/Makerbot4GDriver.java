@@ -19,6 +19,50 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 		return "Makerbot4G";
 	}
 
+	public void queuePoint(Point5d p) throws RetryException {
+		Base.logger.log(Level.FINE,"Queued point " + p);
+
+		// is this point even step-worthy?
+		Point5d deltaSteps = getAbsDeltaSteps(getCurrentPosition(), p);
+		double masterSteps = getLongestLength(deltaSteps);
+
+		// okay, we need at least one step.
+		if (masterSteps > 0.0) {
+			// Modify hijacked axes
+			for (Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
+				ToolModel curTool = machine.currentTool();
+				final AxisId axis = entry.getKey();
+				double toolPos = getCurrentPosition().axis(axis);
+				if (curTool.equals(entry.getValue()) && curTool.isMotorEnabled()) {
+					boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
+					toolPos += clockwise?2:-2; // fixme
+					p.setAxis(axis, toolPos);
+				} else {
+					p.setAxis(axis, toolPos);
+				}
+			}
+
+			
+			// where we going?
+			Point5d steps = machine.mmToSteps(p);
+			
+			Point5d delta = getDelta(p);
+			double feedrate = getSafeFeedrate(delta);
+
+			// how fast are we doing it?
+			long micros = convertFeedrateToMicros(getCurrentPosition(),
+					p, feedrate);
+
+			//System.err.println("Steps :"+steps.toString()+" micros "+Long.toString(micros));
+
+			// okay, send it off!
+			queueAbsolutePoint(steps, micros);
+
+			super.queuePoint(p);
+		}
+	}
+
+	
 	protected void queueAbsolutePoint(Point5d steps, long micros) throws RetryException {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_EXT.getCode());
 
@@ -27,18 +71,6 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 					+ Long.toString(micros) + " usec.");
 		}
 
-		// override steps on axis controllers
-		for (Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
-			ToolModel curTool = machine.currentTool(); 
-			if (curTool.equals(entry.getValue()) && curTool.isMotorEnabled()) {
-				boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
-				long toolSteps = micros; // fixme
-				steps.setAxis(entry.getKey(), clockwise?toolSteps:-toolSteps);
-			} else {
-				steps.setAxis(entry.getKey(), 0);
-			}
-		}
-		
 		// just add them in now.
 		pb.add32((int) steps.x());
 		pb.add32((int) steps.y());
