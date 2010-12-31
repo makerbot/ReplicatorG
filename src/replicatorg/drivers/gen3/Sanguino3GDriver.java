@@ -1134,11 +1134,12 @@ public class Sanguino3GDriver extends SerialDriver
 		double masterSteps = getLongestLength(deltaSteps);
 		// how long is our line length?
 		// We calculate this manually, so that we only account for active axes.
-		double distanceSq = 0.0;
-		for (AxisId axis : machine.getAvailableAxes()) {
-			distanceSq += deltaDistance.axis(axis);
-		}
-		double distance = Math.sqrt(distanceSq);
+//		double distanceSq = 0.0;
+//		for (AxisId axis : machine.getAvailableAxes()) {
+//			distanceSq += deltaDistance.axis(axis);
+//		}
+//		double distance = Math.sqrt(distanceSq);
+		double distance = deltaDistance.length();
 		// distance is in mm
 		// feedrate is in mm/min
 		// distance / feedrate * 60,000,000 = move duration in microseconds
@@ -1151,8 +1152,8 @@ public class Sanguino3GDriver extends SerialDriver
 	protected double getLongestLength(Point5d p) {
 		// find the dominant axis.
 		double longest = 0d;
-		for (AxisId axis : machine.getAvailableAxes()) {
-			longest = Math.max(longest, p.axis(axis));
+		for (int i = 0; i < 5; i++) {
+			longest = Math.max(longest, p.get(i));
 		}
 		return longest;
 	}

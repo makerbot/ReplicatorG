@@ -286,6 +286,11 @@ public class MachineModel
 		return temp;
 	}
 	
+	/**
+	 * Get steps-mm conversion value
+	 */
+	public Point5d getStepsPerMM() { return stepsPerMM; }
+
 	/*************************************
 	*  Convert millimeters to machine steps
 	*************************************/

@@ -210,7 +210,7 @@ M18
 			<axis id="a" length="100" maxfeedrate="200" scale="200" endstops="none"/>
 		</geometry>
 		<tools>
-			<tool name="Plastruder MK6" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" stepaxis="A" heater="true"/>
+			<tool name="Plastruder MK6" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" stepaxis="A" motor_steps="200" default_rpm="2.0" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4g">

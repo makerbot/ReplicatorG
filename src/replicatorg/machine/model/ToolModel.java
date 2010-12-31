@@ -51,7 +51,7 @@ public class ToolModel
 	protected boolean motorHasEncoder;
 	protected int motorEncoderPPR;
 	protected boolean motorIsStepper;
-	protected int motorSteps;
+	protected int motorSteps; // motor steps per full rotation
 
 	//spindle stuff
 	protected boolean spindleEnabled;
@@ -187,6 +187,7 @@ public class ToolModel
 				}
 			} catch (Exception e) {} // ignore parse errors.
 
+			// Get number of steps per full rotation of the toolhead motor.
 			n = XML.getAttributeValue(xml, "motor_steps");
 			try{
 				if (Integer.parseInt(n) > 0)
@@ -329,6 +330,13 @@ public class ToolModel
 	public double getMotorSpeedRPM()
 	{
 		return motorSpeedRPM;
+	}
+	
+	/**
+	 * Get number of steps per revolution
+	 */
+	public double getMotorSteps() {
+		return motorSteps;
 	}
 
 	public int getMotorSpeedPWM()

@@ -95,4 +95,25 @@ public class Point5d {
 		}
 		return Math.sqrt(acc);
 	}
+	
+	public double length() {
+		double acc = 0d;
+		for (int idx = 0; idx < DIMENSIONS; idx++) {
+			double delta = values[idx];
+			acc += (delta*delta);
+		}
+		return Math.sqrt(acc);		
+	}
+	
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append('(');
+		sb.append(values[0]);
+		for (int idx = 1; idx < DIMENSIONS; idx++) {
+			sb.append(',');
+			sb.append(values[idx]);
+		}
+		sb.append(')');
+		return sb.toString();
+	}
 }
