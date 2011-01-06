@@ -704,7 +704,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		StringBuffer buf = new StringBuffer("G28");
 		for (Axis axis : axes)
 		{
-			buf.append(" "+axis);
+			buf.append(" "+axis+"0");
 		}
 		sendCommand(buf.toString());
 
