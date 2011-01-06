@@ -15,11 +15,14 @@
                 <firmware url="http://firmware.ultimaker.com/latest" autoupgrade="false"></firmware>
                 <help name="Ultimaking Guide" url="http://www.ultimaker.com/guide"></help>
                 <driver name="reprap5d">
-                        <!-- optional: <portname>COM1</portname> -->
+                        <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
                         <rate>57600</rate>
-			<pulserts>false</pulserts>
-			<waitforstart enabled="true" timeout="5000" retries="3"></waitforstart>
-			<fived>true</fived>
+                        <parity>8</parity>
+												<pulserts>true</pulserts>
+												<waitforstart enabled="true" timeout="1000" retries="3"></waitforstart>
+												<fived>true</fived>
+                        <!-- optional, defaults to 1.                          <databits>1</databits> -->
+                        <!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
                 </driver>
                 <warmup>
                 </warmup>

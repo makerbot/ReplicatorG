@@ -39,6 +39,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +55,8 @@ public class Serial implements SerialPortEventListener {
 	 * (NB: may be obsoleted at some point on some platforms?)
 	 */
 	private static Set<Serial> portsInUse = new HashSet<Serial>();
+
+	private ReentrantLock inputLock = new ReentrantLock();
 	
 	/**
 	 * Scan the port ids for a list of potential serial ports that we can use.
@@ -391,10 +395,21 @@ public class Serial implements SerialPortEventListener {
 	public boolean isDisconnected() { return disconnected; }
 	
 	public void serialEvent(SerialPortEvent event) {
-		synchronized(input)
-		{
+		if (event.getEventType() != SerialPortEvent.DATA_AVAILABLE) return;
 			try {
-				while (input.available() > 0) {
+				while (true) {
+					synchronized(input)
+					{
+						if (input.available() == 0)
+						{
+							return;
+						}
+						else
+						{
+							inputLock.tryLock();
+						}
+					}
+
 					int b = input.read();
 					if (b >= 0) {
 						readFifo.enqueue((byte)b);
@@ -402,12 +417,11 @@ public class Serial implements SerialPortEventListener {
 						synchronized (readFifo) {
 							readFifo.notifyAll();
 						}
-						synchronized(listener)
-						{
-							if (listener.get() != null)
-								listener.get().serialByteReceivedEvent(readFifo);
-						}
+						SerialFifoEventListener l = listener.get();
+						if (l != null)
+							l.serialByteReceivedEvent(readFifo);
 					}
+					inputLock.unlock();
 				}
 			} catch (IOException e) {
 				// Error condition
@@ -417,8 +431,9 @@ public class Serial implements SerialPortEventListener {
 				// we have a plan for how to respond to the user when the
 				// connection drops, we'll just let this silently fail, and set
 				// a fail bit.
+				Base.logger.warning("Serial IO exception. Printer communication may be disrupted.");
 				disconnected = true;
+				inputLock.unlock();
 			}
-		}
 	}
 }

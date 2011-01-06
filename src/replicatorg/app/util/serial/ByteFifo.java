@@ -15,8 +15,8 @@ public class ByteFifo {
 	private int newLineSearchHead = head;
 
 	final private int moduloLength(int value) {
-		value = value % buffer.length;
 		if (value < 0) value += buffer.length;
+		value = value % buffer.length;
 		return value;
 	}
 	public synchronized void enqueue(byte b) {
@@ -46,7 +46,7 @@ public class ByteFifo {
 		{
 			if (buffer[i] == (byte)'\n')
 			{
-				byte[] match = new byte[i+1];
+				byte[] match = new byte[moduloLength( moduloLength(i+1) - head )];
 				int k = 0;
 				for ( int j = head; j != moduloLength(i+1); j = moduloLength(j+1) )
 				{

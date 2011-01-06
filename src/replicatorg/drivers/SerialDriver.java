@@ -85,7 +85,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 
 		// asynch option: the serial port forwards all received data in FIFO format via 
 		// serialByteReceivedEvent if the driver implements SerialFifoEventListener.
-		if (this instanceof SerialFifoEventListener)
+		if (this instanceof SerialFifoEventListener && serial != null)
 			serial.listener.set( (SerialFifoEventListener) this );
 
 		serialLock.writeLock().unlock();

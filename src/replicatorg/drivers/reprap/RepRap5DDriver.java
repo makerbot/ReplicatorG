@@ -178,6 +178,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		if (!isInitialized()) {
 			Base.logger.info("Initializing Serial.");
 
+			Base.logger.fine("Resetting RepRap: Pulsing RTS..");
 			if (pulseRTS)
 			{
 				int retriesRemaining = waitForStartRetries+1;
@@ -185,6 +186,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				{
 					try {
 						pulseRTS();
+						Base.logger.finer("start received");
 						break retryPulse;
 					} catch (TimeoutException e) {
 						retriesRemaining--;
@@ -200,9 +202,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 						Base.logger.warning("RepRap not responding to RTS reset. Trying again..");
 					}
 				} while(true);
+				Base.logger.fine("RepRap Reset. RTS pulsing complete.");
 			}
 
-			Base.logger.fine("RepRap reset");
 
 
 			//Send a line # reset command, this allows us to catch the "ok" response in 
@@ -210,8 +212,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			//resets the line number which is good)
 			synchronized(okReceived)
 			{
-				sendCommand("M110");
-				Base.logger.fine("first gcode sent.");
+				sendCommand("M110", false);
+				Base.logger.fine("GCode sent. waiting for response..");
 				
 				try
 				{
@@ -226,10 +228,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				}
 			}
 
-			Base.logger.info("GCode transmission confirmed. RepRap connected.");
+			Base.logger.fine("GCode response received. RepRap connected.");
 
 			// default us to absolute positioning
 			sendCommand("G90");
+			sendCommand("G92 X0 Y0 Z0 E0");
 			Base.logger.info("Ready.");
 			this.setInitialized(true);
 		}
@@ -316,7 +319,27 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * is finished sending.
 	 */
 	protected void sendCommand(String next) {
-		sendCommandLock.lock();
+		_sendCommand(next, true, false);
+	}
+
+	protected void sendCommand(String next, boolean synchronous) {
+		_sendCommand(next, synchronous, false);
+	}
+
+	
+	protected void resendCommand(String command) {
+		synchronized (sendCommandLock)
+		{
+			_sendCommand(command, false, true);
+		}
+	}
+
+	/**
+	 * inner method. not for use outside sendCommand and resendCommand
+	 */
+	protected void _sendCommand(String next, boolean synchronous, boolean resending) {
+		if (!resending) sendCommandLock.lock();
+		
 		//assert (isInitialized());
 		// System.out.println("sending: " + next);
 
@@ -341,7 +364,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		next = applyChecksum(next);
 		
 		// Block until we can fit the command on the Arduino
-		synchronized(bufferLock)
+/*		synchronized(bufferLock)
 		{
 			//wait for the number of commands queued in the buffer to shrink before 
 			//adding the next command to it.
@@ -357,29 +380,42 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					return;
 				}
 			}
-		}
-
-		// do the actual send.
-		serialInUse.lock();
-		assert (serial != null);
-		serial.write(next + "\n");
-		serialInUse.unlock();
-
-		// record it in our buffer tracker.
-		int cmdlen = next.length() + 1;
-		bufferLock.lock();
-		commands.add(cmdlen);
-		bufferSize += cmdlen;
-		buffer.addFirst(next);
-		bufferLock.unlock();
+		}*/
+		
 
 		// debug... let us know whats up!
-		Base.logger.fine("Sent: " + next);
+		Base.logger.finest("Sent: " + next);
+
+		try {
+			synchronized(next)
+			{
+				// do the actual send.
+				serialInUse.lock();
+				bufferLock.lock();
+				assert (serial != null);
+				serial.write(next + "\n");
+				serialInUse.unlock();
+
+				// record it in our buffer tracker.
+				int cmdlen = next.length() + 1;
+				commands.add(cmdlen);
+				bufferSize += cmdlen;
+				buffer.addFirst(next);
+				bufferLock.unlock();
+
+				// Synchronous gcode transfer. Waits for the 'ok' ack to be received.
+				if (synchronous) next.wait();
+			}
+		} catch (InterruptedException e1) {
+			//Presumably we're shutting down
+			Thread.currentThread().interrupt();
+			return;
+		}
 
 		// Wait for the response (synchronous gcode transmission)
 		//while(!isFinished()) {}
 		
-		sendCommandLock.unlock();
+		if (!resending) sendCommandLock.unlock();
 	}
 
 	public String clean(String str) {
@@ -494,11 +530,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				throw new RuntimeException(e);
 			}
 
-			// System.out.println("got: " + c);
-			// System.out.println("current: " + result);
-
-			//Base.logger.fine(line);
-			Base.logger.info(line);
+			//System.out.println("received: " + line);
+			//Base.logger.finest("received: " + line);
+			Base.logger.info("received: " + line);
 
 			if (line.length() == 0)
 				Base.logger.fine("empty line received");
@@ -513,7 +547,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 				bufferLock.lock();
 				bufferSize -= commands.remove();
-				buffer.removeLast();
+				//Notify the thread waitining in this gcode's sendCommand method that the gcode has been received.
+				String notifier = buffer.removeLast();
+				synchronized(notifier) { notifier.notifyAll(); }
+				
 				synchronized(bufferLock)
 				{ /*let any sendCommand method waiting to send know that the buffer is 
 					now smaller and may be able to fit their command.*/
@@ -574,7 +611,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					{
 						Base.logger.warning("unexpected line number, resetting line number");
 						// reset the line number if it does not match the buffered line
-						 this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
+						 this.resendCommand("N"+(bufferedLineNumber-1)+" M110");
 					}
 				}
 				else
@@ -582,11 +619,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					// Malformed resend line request received. Resetting the line number
 					Base.logger.warning("malformed line resend request, "
 							+"resetting line number. Malformed Data: \n"+line);
-					this.sendCommand("N"+(bufferedLineNumber-1)+" M110");
+					this.resendCommand("N"+(bufferedLineNumber-1)+" M110");
 				}
 
 				// resend the line
-				this.sendCommand(bufferedLine);
+				this.resendCommand(bufferedLine);
 			} else {
 				Base.logger.severe("Unknown: " + line);
 			}
