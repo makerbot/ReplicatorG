@@ -2,6 +2,8 @@ package replicatorg.plugin.toolpath;
 
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -80,8 +82,20 @@ public class ToolpathGeneratorThread extends Thread {
 					}
 				}
 			});
+			
 			add(doneButton,"tag cancel");
 			this.setModal(false);
+
+			// Escape key to abort generation
+			doneButton.addKeyListener( new KeyAdapter()  {
+                        	public void keyPressed ( KeyEvent e ) {
+                                        if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+						synchronized(this) {
+							abortGeneration();
+						}
+                                        }
+				}
+			} );
 		}
 
 		boolean done = false;

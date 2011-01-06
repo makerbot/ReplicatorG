@@ -346,7 +346,10 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 						configSuccess = true;
 						profile = p.getFullPath();
 						setVisible(false);
+					} else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+						setVisible(false);
 					}
+					
 				}
 		     }
 			);
