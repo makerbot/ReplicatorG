@@ -18,9 +18,9 @@
                         <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
                         <rate>57600</rate>
                         <parity>8</parity>
-												<pulserts>true</pulserts>
-												<waitforstart enabled="true" timeout="1000" retries="3"></waitforstart>
-												<fived>true</fived>
+			<pulserts>true</pulserts>
+			<waitforstart enabled="true" timeout="3000" retries="3"></waitforstart>
+			<fived>true</fived>
                         <!-- optional, defaults to 1.                          <databits>1</databits> -->
                         <!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
                 </driver>
