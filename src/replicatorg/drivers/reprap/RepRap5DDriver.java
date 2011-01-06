@@ -304,8 +304,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	private String getRegexMatch(Pattern regex, String input, int group)
 	{
 		Matcher matcher = regex.matcher(input);
-		if (!matcher.find()) return null;
-		return matcher.group(1);
+		if (!matcher.find() || matcher.groupCount() < group) return null;
+		return matcher.group(group);
 	}
 
 	/**
@@ -327,10 +327,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	}
 
 	
-	protected void resendCommand(String command) {
+	protected void resendCommand(String command, String originalCmd) {
 		synchronized (sendCommandLock)
 		{
 			_sendCommand(command, false, true);
+			if (originalCmd != null) originalCmd.notifyAll();
 		}
 	}
 
@@ -591,12 +592,26 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				setError("Extruder failed:  cannot extrude as this rate.");
 
 			} else if (line.startsWith("Resend:")||line.startsWith("rs ")) {
-				Base.logger.severe(line);
-				// Bad checksum, resend requested
+				//Getting the correct line from our buffer
 				bufferLock.lock();
 				String bufferedLine = buffer.removeLast();
 				bufferSize -= commands.remove();
 				bufferLock.unlock();
+
+				//Is it a Dud M or G code? If so write a warning and return.
+				String letter = getRegexMatch("Dud ([A-Za-z]) code", line, 1);
+				if ( (letter)!=null)
+				{
+					Base.logger.info("Dud "+letter+" code received. ignoring.");
+					synchronized (bufferedLine) {
+						bufferedLine.notifyAll();
+					}
+					readResponseLock.unlock();
+					return;
+				}
+				
+				// Bad checksum, resend requested
+				Base.logger.severe(line);
 
 				int bufferedLineNumber = Integer.parseInt( getRegexMatch(
 						gcodeLineNumberPattern, bufferedLine, 1) );
@@ -611,7 +626,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					{
 						Base.logger.warning("unexpected line number, resetting line number");
 						// reset the line number if it does not match the buffered line
-						 this.resendCommand("N"+(bufferedLineNumber-1)+" M110");
+						 this.resendCommand("N"+(bufferedLineNumber-1)+" M110", null);
 					}
 				}
 				else
@@ -619,11 +634,12 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					// Malformed resend line request received. Resetting the line number
 					Base.logger.warning("malformed line resend request, "
 							+"resetting line number. Malformed Data: \n"+line);
-					this.resendCommand("N"+(bufferedLineNumber-1)+" M110");
+					this.resendCommand("N"+(bufferedLineNumber-1)+" M110", null);
 				}
 
 				// resend the line
-				this.resendCommand(bufferedLine);
+				this.resendCommand(bufferedLine, bufferedLine);
+
 			} else {
 				Base.logger.severe("Unknown: " + line);
 			}
