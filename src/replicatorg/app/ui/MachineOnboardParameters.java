@@ -21,7 +21,7 @@ import javax.swing.JTextField;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 
 /**
  * A panel for editing the options stored onboard a machine.
@@ -36,6 +36,8 @@ public class MachineOnboardParameters extends JFrame {
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
 	private JCheckBox zAxisInvertBox = new JCheckBox();
+	private JCheckBox aAxisInvertBox = new JCheckBox();
+	private JCheckBox bAxisInvertBox = new JCheckBox();
 	private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
 	private static final String[]  endstopInversionChoices = {
 		"No endstops installed",
@@ -61,10 +63,12 @@ public class MachineOnboardParameters extends JFrame {
 	
 	private void commit() {
 		target.setMachineName(machineNameField.getText());
-		EnumSet<Axis> axesInverted = EnumSet.noneOf(Axis.class);
-		if (xAxisInvertBox.isSelected()) axesInverted.add(Axis.X);
-		if (yAxisInvertBox.isSelected()) axesInverted.add(Axis.Y);
-		if (zAxisInvertBox.isSelected()) axesInverted.add(Axis.Z);
+		EnumSet<AxisId> axesInverted = EnumSet.noneOf(AxisId.class);
+		if (xAxisInvertBox.isSelected()) axesInverted.add(AxisId.X);
+		if (yAxisInvertBox.isSelected()) axesInverted.add(AxisId.Y);
+		if (zAxisInvertBox.isSelected()) axesInverted.add(AxisId.Z);
+		if (aAxisInvertBox.isSelected()) axesInverted.add(AxisId.A);
+		if (bAxisInvertBox.isSelected()) axesInverted.add(AxisId.B);
 		target.setInvertedParameters(axesInverted);
 		int idx = endstopInversionSelection.getSelectedIndex();
 		OnboardParameters.EndstopType endstops = 
@@ -81,10 +85,12 @@ public class MachineOnboardParameters extends JFrame {
 
 	private void loadParameters() {
 		machineNameField.setText(this.target.getMachineName());
-		EnumSet<Axis> invertedAxes = this.target.getInvertedParameters();
-		xAxisInvertBox.setSelected(invertedAxes.contains(Axis.X));
-		yAxisInvertBox.setSelected(invertedAxes.contains(Axis.Y));
-		zAxisInvertBox.setSelected(invertedAxes.contains(Axis.Z));
+		EnumSet<AxisId> invertedAxes = this.target.getInvertedParameters();
+		xAxisInvertBox.setSelected(invertedAxes.contains(AxisId.X));
+		yAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Y));
+		zAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Z));
+		aAxisInvertBox.setSelected(invertedAxes.contains(AxisId.A));
+		bAxisInvertBox.setSelected(invertedAxes.contains(AxisId.B));
 		// 0 == inverted, 1 == not inverted
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
 		endstopInversionSelection.setSelectedIndex(endstops.ordinal());
@@ -97,7 +103,7 @@ public class MachineOnboardParameters extends JFrame {
 		commitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				MachineOnboardParameters.this.commit();
-				MachineOnboardParameters.this.dispose();				
+				MachineOnboardParameters.this.dispose();
 			}
 		});
 		JButton cancelButton = new JButton("Cancel");
@@ -124,6 +130,10 @@ public class MachineOnboardParameters extends JFrame {
 		panel.add(yAxisInvertBox,"wrap");
 		panel.add(new JLabel("Invert Z axis"));
 		panel.add(zAxisInvertBox,"wrap");
+		panel.add(new JLabel("Invert A axis"));
+		panel.add(aAxisInvertBox,"wrap");
+		panel.add(new JLabel("Invert B axis"));
+		panel.add(bAxisInvertBox,"wrap");
 		panel.add(new JLabel("Invert endstops"));
 		panel.add(endstopInversionSelection,"wrap");
 

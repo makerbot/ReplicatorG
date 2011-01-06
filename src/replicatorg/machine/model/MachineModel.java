@@ -23,18 +23,18 @@
 
 package replicatorg.machine.model;
 
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
-import replicatorg.machine.model.BuildVolume;
+import replicatorg.util.Point5d;
 
 public class MachineModel
 {
@@ -44,13 +44,16 @@ public class MachineModel
 	//our machine space
 	//private Point3d currentPosition;
 	@SuppressWarnings("unused")
-	private Point3d minimum;
-	private Point3d maximum;
-	private HashMap<Axis, Endstops> endstops = new HashMap<Axis, Endstops>();
+	private Point5d minimum;
+	private Point5d maximum;
+	private EnumMap<AxisId, Endstops> endstops = new EnumMap<AxisId, Endstops>(AxisId.class);
 
+	// Which axes exist on this machine
+	private Set<AxisId> axes = EnumSet.noneOf(AxisId.class);
+	
 	//feedrate information
-	private Point3d maximumFeedrates;
-	private Point3d stepsPerMM;
+	private Point5d maximumFeedrates;
+	private Point5d stepsPerMM;
 	
 	//our drive status
 	protected boolean drivesEnabled = true;
@@ -74,14 +77,13 @@ public class MachineModel
 	{
 		clamps = new Vector<ClampModel>();
 		tools = new Vector<ToolModel>();
-//		buildVolume = new BuildVolume((int)(Math.random()*300)+10,(int)(Math.random()*300)+10,(int)(Math.random()*300)+10); // preload it with the default values
 		buildVolume = new BuildVolume(100,100,100); // preload it with the default values
 		
 		//currentPosition = new Point3d();
-		minimum = new Point3d();
-		maximum = new Point3d();
-		maximumFeedrates = new Point3d();
-		stepsPerMM = new Point3d(1, 1, 1); //use ones, because we divide by this!
+		minimum = new Point5d();
+		maximum = new Point5d();
+		maximumFeedrates = new Point5d();
+		stepsPerMM = new Point5d(1, 1, 1, 1, 1); //use ones, because we divide by this!
 		
 		currentTool.set(nullTool);
 	}
@@ -106,56 +108,55 @@ public class MachineModel
 			Node geometry = XML.getChildNodeByName(xml, "geometry");
 			
 			//look through the axes.
-			NodeList axes = geometry.getChildNodes();
-			for (int i=0; i<axes.getLength(); i++)
+			NodeList axisNodes = geometry.getChildNodes();
+			for (int i=0; i<axisNodes.getLength(); i++)
 			{
-				Node axis = axes.item(i);
+				Node axis = axisNodes.item(i);
 				
 				if (axis.getNodeName().equals("axis"))
 				{
 					//parse our information.
-					String id = XML.getAttributeValue(axis, "id");
-
-					//initialize values
-				 	double length = 0.0;
-				 	double maxFeedrate = 0.0;
-				 	double stepspermm = 1.0;
-				 	Endstops endstops = Endstops.none;
-					
-					//if values are missing, ignore them.
+					String idStr = XML.getAttributeValue(axis, "id");
 					try {
-					 	length = Double.parseDouble(XML.getAttributeValue(axis, "length"));
-					 	maxFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "maxfeedrate"));
-					 	String spmm = XML.getAttributeValue(axis, "stepspermm");
-					 	if (spmm == null) spmm = XML.getAttributeValue(axis, "scale"); // Backwards compatibility
-					 	stepspermm = Double.parseDouble(spmm);
-					 	endstops = Endstops.valueOf(XML.getAttributeValue(axis, "endstops"));
-					} catch (Exception e) {}
-					
-					//create the right variables.
-					if (id.toLowerCase().equals("x"))
-					{
-						maximum.x = length;
-						maximumFeedrates.x = maxFeedrate;
-						stepsPerMM.x = stepspermm;
-						this.endstops.put(Axis.X, endstops);
-					}
-					else if (id.toLowerCase().equals("y"))
-					{
-						maximum.y = length;
-						maximumFeedrates.y = maxFeedrate;
-						stepsPerMM.y = stepspermm;
-						this.endstops.put(Axis.Y, endstops);
-					}
-					else if (id.toLowerCase().equals("z"))
-					{
-						maximum.z = length;
-						maximumFeedrates.z = maxFeedrate;
-						stepsPerMM.z = stepspermm;
-						this.endstops.put(Axis.Z, endstops);
+						AxisId id = AxisId.valueOf(idStr.toUpperCase());
+						axes.add(id);
+						//initialize values
+						double length = 0.0;
+						double maxFeedrate = 0.0;
+						double stepspermm = 1.0;
+						Endstops endstops = Endstops.NONE;
+						//if values are missing, ignore them.
+						try {
+						 	length = Double.parseDouble(XML.getAttributeValue(axis, "length"));
+						} catch (Exception e) {}
+						try {
+						 	maxFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "maxfeedrate"));
+						} catch (Exception e) {}
+						try {
+						 	String spmm = XML.getAttributeValue(axis, "stepspermm");
+						 	if (spmm == null) spmm = XML.getAttributeValue(axis, "scale"); // Backwards compatibility
+						 	stepspermm = Double.parseDouble(spmm);
+						} catch (Exception e) {}
+						String endstopStr = XML.getAttributeValue(axis, "endstops");
+						if (endstopStr != null) {
+							try {
+								endstops = Endstops.valueOf(endstopStr.toUpperCase());
+							} catch (IllegalArgumentException iae) {
+								Base.logger.severe("Unrecognized endstop value "+endstopStr+" for axis "+id.name());
+							}
+						}
+						maximum.setAxis(id,length);
+						maximumFeedrates.setAxis(id,maxFeedrate);
+						stepsPerMM.setAxis(id,stepspermm);
+						this.endstops.put(id, endstops);
+						Base.logger.fine("Loaded axis " + id.name() + ": (Length: " + 
+								length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + 
+								stepspermm + " steps/mm)");
+					} catch (IllegalArgumentException iae) {
+						// Unrecognized axis!
+						Base.logger.severe("Unrecognized axis "+idStr+" found in machine descriptor!");
 					}
 
-					//System.out.println("Loading axis " + id + ": (Length: " + length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + scale + " steps/mm)");
 				}
 			}
 		}
@@ -265,43 +266,26 @@ public class MachineModel
 	}
 
 	/*************************************
-	* Basic positioning information
+	*  Reporting available axes
 	*************************************/
-	//public Point3d getCurrentPosition()
-	//{
-	//	return new Point3d(currentPosition);
-	//}
 	
-	//public void setCurrentPosition(Point3d p)
-	//{
-	//	currentPosition = new Point3d(p);
-	//}
-
+	/** Return a set enumerating all the axes that this machine has available.
+	 */
+	public Set<AxisId> getAvailableAxes() { return axes; }
+	/** Report whether this machine has the specified axis.
+	 * @param id The axis to check
+	 * @return true if the axis is available, false otherwise
+	 */
+	public boolean hasAxis(AxisId id) { return axes.contains(id); }
+	
 	/*************************************
 	*  Convert steps to millimeter units
 	*************************************/
-	public double xStepsToMM(long steps)
-	{
-		return steps/stepsPerMM.x;
-	}
-	
-	public double yStepsToMM(long steps)
-	{
-		return steps/stepsPerMM.y;
-	}
-	
-	public double zStepsToMM(long steps)
-	{
-		return steps/stepsPerMM.z;
-	}
-	
-	public Point3d stepsToMM(Point3d steps)
-	{
-		Point3d temp = new Point3d();
 
-		temp.x = steps.x/stepsPerMM.x;
-		temp.y = steps.y/stepsPerMM.y;
-		temp.z = steps.z/stepsPerMM.z;
+	public Point5d stepsToMM(Point5d steps)
+	{
+		Point5d temp = new Point5d();
+		temp.div(steps, stepsPerMM);
 		
 		return temp;
 	}
@@ -309,28 +293,12 @@ public class MachineModel
 	/*************************************
 	*  Convert millimeters to machine steps
 	*************************************/
-	public long xMMtoSteps(double mm)
-	{
-		return Math.round(mm * stepsPerMM.x);
-	}
-	
-	public long yMMtoSteps(double mm)
-	{
-		return Math.round(mm * stepsPerMM.y);
-	}
-	
-	public long zMMtoSteps(double mm)
-	{
-		return Math.round(mm * stepsPerMM.z);
-	}
 
-	public Point3d mmToSteps(Point3d mm)
+	public Point5d mmToSteps(Point5d mm)
 	{
-		Point3d temp = new Point3d();
-
-		temp.x = Math.round(mm.x * stepsPerMM.x);
-		temp.y = Math.round(mm.y * stepsPerMM.y);
-		temp.z = Math.round(mm.z * stepsPerMM.z);
+		Point5d temp = new Point5d();
+		temp.mul(mm,stepsPerMM);
+		temp.round(); // integer step counts please
 		
 		return temp;
 	}
@@ -444,12 +412,12 @@ public class MachineModel
 		}
 	}
 
-  public Point3d getMaximumFeedrates() {
+  public Point5d getMaximumFeedrates() {
     return maximumFeedrates;
   }
   
   /** returns the endstop configuration for the givin axis */
-  public Endstops getEndstops(Axis axis)
+  public Endstops getEndstops(AxisId axis)
   {
 	  return this.endstops.get(axis);
   }
