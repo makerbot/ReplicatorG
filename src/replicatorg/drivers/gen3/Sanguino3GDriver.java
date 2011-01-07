@@ -1139,7 +1139,7 @@ public class Sanguino3GDriver extends SerialDriver
 //			distanceSq += deltaDistance.axis(axis);
 //		}
 //		double distance = Math.sqrt(distanceSq);
-		double distance = deltaDistance.length();
+		double distance = deltaDistance.magnitude();
 		// distance is in mm
 		// feedrate is in mm/min
 		// distance / feedrate * 60,000,000 = move duration in microseconds
@@ -1152,7 +1152,7 @@ public class Sanguino3GDriver extends SerialDriver
 	protected double getLongestLength(Point5d p) {
 		// find the dominant axis.
 		double longest = 0d;
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 3; i++) {	// TODO: we'll ignore a and b for now
 			longest = Math.max(longest, p.get(i));
 		}
 		return longest;

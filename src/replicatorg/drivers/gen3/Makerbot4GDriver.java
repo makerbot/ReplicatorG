@@ -20,36 +20,61 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	}
 
 	public void queuePoint(Point5d p) throws RetryException {
-		Base.logger.log(Level.FINE,"Queued point " + p);
-		new Exception().printStackTrace();
+//		Base.logger.log(Level.FINE,"Queued point " + p);
+
 		// is this point even step-worthy?
 		Point5d deltaSteps = getAbsDeltaSteps(getCurrentPosition(), p);
 		double masterSteps = getLongestLength(deltaSteps);
 
 		// okay, we need at least one step.
 		if (masterSteps > 0.0) {
-
 			
-			// where we going?
+			// First, determine where we have to go
 			Point5d steps = machine.mmToSteps(p);
 			
+			// Now, calculate a displacement vector for the toolhead in 3d.
+			// This is the distance that the toolhead will have to travel
+			// through xyz dimensions during this move.
 			Point5d delta = getDelta(p);
+			
+			// Calculate the feedrate. This is the speed that the toolhead will
+			// be traveling at.
 			double feedrate = getSafeFeedrate(delta);
 			
-			// Modify hijacked axes
+			// Find our toolhead axis, and calculate what position it should
+			// be moved to in order to extrude the proper amount of material
+			// for this current movement.
 			for (Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
 				ToolModel curTool = machine.currentTool();
 				final AxisId axis = entry.getKey();
 				double toolPos = getCurrentPosition().axis(axis);
 				if (curTool.equals(entry.getValue()) && curTool.isMotorEnabled()) {
 					// Figure out length of move
-					final double timeInMinutes = (delta.length()/feedrate);
+					
+					// Determine how long it will take for the toolhead to complete this move
+					final double timeInMinutes = (delta.magnitude()/feedrate);
+					
+					// Determine the number of steps that the toolhead will take if it turns at a constant RPM
+					// during this move
 					final double extruderSteps = curTool.getMotorSpeedRPM()*timeInMinutes*curTool.getMotorSteps();
+					
+					// Look up the conversion ratio between extruder steps and length of extruded material
 					final double extruderFeedrate = machine.getStepsPerMM().axis(axis);
-					final double mm = extruderSteps/extruderFeedrate;
+					
+					// calculate the absolute length of the material extruded during this move
+					final double feedLength = extruderSteps/extruderFeedrate;
+					
+					// correct for sign
 					boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
-					toolPos += clockwise?-mm:mm;
+					toolPos += clockwise?-feedLength:feedLength;
+					
+					// TODO: What is the purpose of this?
 					feedrate = Math.sqrt((feedrate*feedrate)+(extruderFeedrate*extruderFeedrate));
+					
+					// Record the position that our extruder should move to, in steps
+					steps.setAxis(axis, toolPos*extruderFeedrate);
+					
+					// And record the final position (in mm)
 					p.setAxis(axis, toolPos);
 				} else {
 					p.setAxis(axis, toolPos);
@@ -75,8 +100,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 			Base.logger.log(Level.FINE,"Queued absolute point " + steps + " at "
 					+ Long.toString(micros) + " usec.");
 		}
-		System.err.println("Queued absolute point " + steps + " at " + Long.toString(micros) + " usec.");
-
+		
 		// just add them in now.
 		pb.add32((int) steps.x());
 		pb.add32((int) steps.y());

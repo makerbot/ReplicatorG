@@ -96,7 +96,7 @@ public class Point5d {
 		return Math.sqrt(acc);
 	}
 	
-	public double length() {
+	public double magnitude() {
 		double acc = 0d;
 		for (int idx = 0; idx < DIMENSIONS; idx++) {
 			double delta = values[idx];

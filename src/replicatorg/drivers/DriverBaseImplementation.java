@@ -267,7 +267,8 @@ public class DriverBaseImplementation implements Driver {
 		// add to the total length
 		moveLength += delta.get3D().distance(new Point3d());
 
-		// what is our feedrate?
+		// Calculate the feedrate. This is the speed that the toolhead will
+		// be traveling at.
 		double feedrate = getSafeFeedrate(delta);
 
 		// mostly for estimation driver.
@@ -314,16 +315,23 @@ public class DriverBaseImplementation implements Driver {
 
 		// System.out.println("max feedrates: " + maxFeedrates);
 
-		// no zero feedrates!
+		// If the current feedrate is 0, set it to the maximum feedrate of any
+		// of the machine axis. If those are also all 0 (misconfiguration?),
+		// set the feedrate to 1.
+		// TODO: Where else is feedrate set?
 		if (feedrate == 0) {
 			feedrate = Math.max(maxFeedrates.x, maxFeedrates.y);
 			feedrate = Math.max(feedrate, maxFeedrates.z);
 			feedrate = Math.max(feedrate, 1);
-			// System.out.println("Zero feedrate!! " + feedrate);
+			Base.logger.warning("Zero feedrate detected, reset to: " + feedrate);
 		}
 
-		// Break down feedrate by axis.
+		// Determine the magnitude of this delta (3D distance)
 		double length = delta.get3D().distance(new Point3d());
+		
+		// For each axis: if the current feedrate will cause this axis to move
+		// faster than it's maximum feedrate, lower the system feedrate so
+		// that it will be compliant.
 		if (delta.x() != 0) {
 			if (feedrate*delta.x()/length > maxFeedrates.x) {
 				feedrate = maxFeedrates.x * length/delta.x();
@@ -339,6 +347,9 @@ public class DriverBaseImplementation implements Driver {
 				feedrate = maxFeedrates.z * length/delta.z();
 			}
 		}
+		
+		// Return the feedrate, which is how fast the toolhead will be moving
+		// through 3d space (magnitude of the toolhead velocity)
 		return feedrate;
 	}
 
