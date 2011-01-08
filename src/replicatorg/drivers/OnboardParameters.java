@@ -2,11 +2,11 @@ package replicatorg.drivers;
 
 import java.util.EnumSet;
 
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 
 public interface OnboardParameters {
-	EnumSet<Axis> getInvertedParameters();
-	void setInvertedParameters(EnumSet<Axis> axes);
+	EnumSet<AxisId> getInvertedParameters();
+	void setInvertedParameters(EnumSet<AxisId> axes);
 	
 	String getMachineName();
 	void setMachineName(String machineName);

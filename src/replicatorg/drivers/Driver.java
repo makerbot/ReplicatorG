@@ -32,8 +32,9 @@ import org.w3c.dom.Node;
 import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.exceptions.GCodeException;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
+import replicatorg.util.Point5d;
 
 // import org.xml.sax.*;
 // import org.xml.sax.helpers.XMLReaderFactory;
@@ -145,9 +146,9 @@ public interface Driver {
 	 *            the point to map the current position to
 	 * @throws RetryException 
 	 */
-	public void setCurrentPosition(Point3d p) throws RetryException;
+	public void setCurrentPosition(Point5d p) throws RetryException;
 
-	public Point3d getCurrentPosition();
+	public Point5d getCurrentPosition();
 
 	/**
 	 * Indicate that the currently maintained position may no longer be the machine's position,
@@ -160,7 +161,7 @@ public interface Driver {
 	 * @param p The location to move to, in mm.
 	 * @throws RetryException 
 	 */
-	public void queuePoint(Point3d p) throws RetryException;
+	public void queuePoint(Point5d p) throws RetryException;
 
 	public Point3d getOffset(int i);
 
@@ -170,7 +171,7 @@ public interface Driver {
 
 	public void setOffsetZ(int i, double j);
 
-	public Point3d getPosition();
+	public Point5d getPosition();
 
 	/**
 	 * Tool methods
@@ -195,7 +196,7 @@ public interface Driver {
 	 * maximum feedrate for the appropriate axes.
 	 * @throws RetryException 
 	 */
-	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException;
+	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException;
 
 	/**
 	 * delay / pause function

@@ -66,9 +66,17 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
                 stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
 	}
 
-	public void setSerial(Serial serial) {
-		serialLock.writeLock().lock();
+// diplo1d: see this fix by kintel that conflicted when merging. You also fixed it but differently:
+// https://github.com/makerbot/ReplicatorG/commit/899c7c8e059d986ac0744ca4ab1f2f44efaae4b5
+// your fix:
+//	public void setSerial(Serial serial) {
+//		serialLock.writeLock().lock();
 		
+// kintel had just changed it to "synchronized".
+//	public synchronized void setSerial(Serial serial) {
+      public synchronized void setSerial(Serial serial) {
+                serialLock.writeLock().lock();
+//		serialWriteLock.lock();
 		if (this.serial == serial)
 		{
 			serialLock.writeLock().unlock();

@@ -40,8 +40,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.vecmath.Point3d;
-
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
@@ -51,8 +49,9 @@ import replicatorg.app.util.serial.SerialFifoEventListener;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.reprap.ExtrusionUpdater.Direction;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
+import replicatorg.util.Point5d;
 
 public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListener {
 	private static Pattern gcodeCommentPattern = Pattern.compile("\\([^)]*\\)|;.*");
@@ -678,31 +677,31 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * @throws RetryException 
 	 **************************************************************************/
 
-	public void queuePoint(Point3d p) throws RetryException {
+	public void queuePoint(Point5d p) throws RetryException {
 		String cmd = "G1 F" + df.format(getCurrentFeedrate());
 		
 		sendCommand(cmd);
 
-		cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
-				+ df.format(p.z) + " F" + df.format(getCurrentFeedrate());
+		cmd = "G1 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
+				+ df.format(p.z()) + " F" + df.format(getCurrentFeedrate());
 
 		sendCommand(cmd);
 
 		super.queuePoint(p);
 	}
 
-	public void setCurrentPosition(Point3d p) throws RetryException {
-		sendCommand("G92 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
-				+ df.format(p.z));
+	public void setCurrentPosition(Point5d p) throws RetryException {
+		sendCommand("G92 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
+				+ df.format(p.z()));
 
 		super.setCurrentPosition(p);
 	}
 
 	@Override
-	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException {
+	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.info("homing "+axes.toString());
 		StringBuffer buf = new StringBuffer("G28");
-		for (Axis axis : axes)
+		for (AxisId axis : axes)
 		{
 			buf.append(" "+axis+"0");
 		}
@@ -953,8 +952,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 		initialize();
 	}
-	
-	protected Point3d reconcilePosition() {
-		return new Point3d(0,0,0);
+
+	protected Point5d reconcilePosition() {
+		return new Point5d();
 	}
 }

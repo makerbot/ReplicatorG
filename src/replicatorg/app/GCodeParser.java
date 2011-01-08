@@ -24,7 +24,6 @@
 package replicatorg.app;
 
 import java.lang.reflect.Method;
-
 import java.util.EnumSet;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
@@ -39,10 +38,11 @@ import replicatorg.app.exceptions.JobException;
 import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.MultiTool;
-import replicatorg.drivers.RetryException;
-import replicatorg.machine.model.Axis;
-import replicatorg.machine.model.ToolModel;
 import replicatorg.drivers.PenPlotter;
+import replicatorg.drivers.RetryException;
+import replicatorg.machine.model.AxisId;
+import replicatorg.machine.model.ToolModel;
+import replicatorg.util.Point5d;
 
 
 public class GCodeParser {
@@ -60,7 +60,7 @@ public class GCodeParser {
 
 	protected Hashtable<String, Boolean> seenCodes;
 
-	static protected String[] codes = { "D", "F", "G", "H", "I", "J", "K", "L",
+	static protected String[] codes = { "A", "B", "D", "E", "F", "G", "H", "I", "J", "K", "L",
 			"M", "P", "Q", "R", "S", "T", "X", "Y", "Z" };
 
 	// our curve section variables.
@@ -84,9 +84,8 @@ public class GCodeParser {
 	// machine state varibles
 	//protected Point3d current;
 
-	protected Point3d target;
-
-	protected Point3d delta;
+	protected Point5d target;
+	protected Point5d delta;
 
 	// false = incremental; true = absolute
 	boolean absoluteMode = false;
@@ -163,8 +162,8 @@ public class GCodeParser {
 		// setup our points.
 //		current = new Point3d();
 //		System.err.println("-CURRENT "+current.toString());
-		target = new Point3d();
-		delta = new Point3d();
+		target = new Point5d();
+		delta = new Point5d();
 		drillTarget = new Point3d();
 
 		// init our value tables.
@@ -183,7 +182,7 @@ public class GCodeParser {
 		// eventually check for z-axis motions and use that feedrate. We should
 		// also either alter the model, or post a warning when the x and y
 		// feedrates differ.
-		return driver.getMachine().getMaximumFeedrates().x;
+		return driver.getMachine().getMaximumFeedrates().x();
 	}
 
 	/**
@@ -678,7 +677,7 @@ public class GCodeParser {
 
 	private void executeGCodes() throws GCodeException, RetryException {
 		// start us off at our current position...
-		Point3d temp = driver.getCurrentPosition();
+		Point5d temp = driver.getCurrentPosition();
 
 		// initialize our points, etc.
 		double iVal = convertToMM(getCodeValue("I"), units); // / X offset
@@ -696,6 +695,10 @@ public class GCodeParser {
 		double xVal = convertToMM(getCodeValue("X"), units); // / X units
 		double yVal = convertToMM(getCodeValue("Y"), units); // / Y units
 		double zVal = convertToMM(getCodeValue("Z"), units); // / Z units
+		double aVal = convertToMM(getCodeValue("A"), units); // / A units
+		double bVal = convertToMM(getCodeValue("B"), units); // / B units
+		// Note: The E axis is treated internally as the A or B axis
+		double eVal = convertToMM(getCodeValue("E"), units); // / E units
 
 		// adjust for our offsets
 		xVal += currentOffset.x;
@@ -705,20 +708,40 @@ public class GCodeParser {
 		// absolute just specifies the new position
 		if (absoluteMode) {
 			if (hasCode("X"))
-				temp.x = xVal;
+				temp.setX(xVal);
 			if (hasCode("Y"))
-				temp.y = yVal;
+				temp.setY(yVal);
 			if (hasCode("Z"))
-				temp.z = zVal;
+				temp.setZ(zVal);
+			if (hasCode("A"))
+				temp.setA(aVal);
+			if (hasCode("E")) {
+				if (tool == 0)
+					temp.setA(eVal);
+				else if (tool == 1)
+					temp.setB(eVal);
+			}
+			if (hasCode("B"))
+				temp.setB(bVal);
 		}
 		// relative specifies a delta
 		else {
 			if (hasCode("X"))
-				temp.x += xVal;
+				temp.setX(temp.x() + xVal);
 			if (hasCode("Y"))
-				temp.y += yVal;
+				temp.setY(temp.y() + yVal);
 			if (hasCode("Z"))
-				temp.z += zVal;
+				temp.setZ(temp.z() + zVal);
+			if (hasCode("A"))
+				temp.setA(temp.a() + aVal);
+			if (hasCode("E")) {
+				if (tool == 0)
+					temp.setA(temp.a() + eVal);
+				else if (tool == 1)
+					temp.setB(temp.b() + eVal);
+			}
+			if (hasCode("B"))
+				temp.setB(temp.b() + bVal);
 		}
 
 		// Get feedrate if supplied
@@ -752,12 +775,13 @@ public class GCodeParser {
 				// Counterclockwise arc
 			case 3: {
 				// call our arc drawing function.
+				// Note: We don't support 5D
 				if (hasCode("I") || hasCode("J")) {
 					// our centerpoint
-					Point3d center = new Point3d();
-					Point3d current = driver.getCurrentPosition();
-					center.x = current.x + iVal;
-					center.y = current.y + jVal;
+					Point5d center = new Point5d();
+					Point5d current = driver.getCurrentPosition();
+					center.setX(current.x() + iVal);
+					center.setY(current.y() + jVal);
 
 					// draw the arc itself.
 					if (gCode == 2)
@@ -824,11 +848,11 @@ public class GCodeParser {
 			case 28:
 			{
 				// home all axes?
-				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
+				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(Axis.X);
-				if (hasCode("Y")) axes.add(Axis.Y);
-				if (hasCode("Z")) axes.add(Axis.Z);
+				if (hasCode("X")) axes.add(AxisId.X);
+				if (hasCode("Y")) axes.add(AxisId.Y);
+				if (hasCode("Z")) axes.add(AxisId.Z);
 				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
 			}
 				break;
@@ -837,11 +861,11 @@ public class GCodeParser {
 			case 161:
 			{
 				// home all axes?
-				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
+				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(Axis.X);
-				if (hasCode("Y")) axes.add(Axis.Y);
-				if (hasCode("Z")) axes.add(Axis.Z);
+				if (hasCode("X")) axes.add(AxisId.X);
+				if (hasCode("Y")) axes.add(AxisId.Y);
+				if (hasCode("Z")) axes.add(AxisId.Z);
 				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
 			}
 				break;
@@ -850,11 +874,11 @@ public class GCodeParser {
 			case 162:
 			{
 				// home all axes?
-				EnumSet<Axis> axes = EnumSet.noneOf(Axis.class);
+				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(Axis.X);
-				if (hasCode("Y")) axes.add(Axis.Y);
-				if (hasCode("Z")) axes.add(Axis.Z);
+				if (hasCode("X")) axes.add(AxisId.X);
+				if (hasCode("Y")) axes.add(AxisId.Y);
+				if (hasCode("Z")) axes.add(AxisId.Z);
 				driver.homeAxes(axes, true, hasCode("F")?feedrate:0);
 			}
 				break;
@@ -873,9 +897,9 @@ public class GCodeParser {
 
 				Base.logger.warning("Area probes not yet supported.");
 				{
-					Point3d current = driver.getCurrentPosition();
-					double minX = current.x;
-					double minY = current.y;
+					Point5d current = driver.getCurrentPosition();
+					double minX = current.x();
+					double minY = current.y();
 					double maxX = xVal;
 					double maxY = yVal;
 					double increment = iVal;
@@ -938,11 +962,11 @@ public class GCodeParser {
 
 				// setup our parameters
 				if (hasCode("X"))
-					drillTarget.x = temp.x;
+					drillTarget.x = temp.x();
 				if (hasCode("Y"))
-					drillTarget.y = temp.y;
+					drillTarget.y = temp.y();
 				if (hasCode("Z"))
-					drillTarget.z = temp.z;
+					drillTarget.z = temp.z();
 				if (hasCode("F"))
 					drillFeedrate = getCodeValue("F");
 				if (hasCode("R"))
@@ -987,15 +1011,22 @@ public class GCodeParser {
 			// Set position
 			case 92:
 
-				Point3d current = driver.getCurrentPosition();
+				Point5d current = driver.getCurrentPosition();
 
 				if (hasCode("X"))
-					current.x = xVal;
+					current.setX(xVal);
 				if (hasCode("Y"))
-					current.y = yVal;
+					current.setY(yVal);
 				if (hasCode("Z"))
-					current.z = zVal;
-
+					current.setZ(zVal);
+				if (hasCode("A"))
+					current.setA(aVal);
+				// Note: The E axis is treated internally as the A axis
+				if (hasCode("E"))
+					current.setA(eVal);
+				if (hasCode("B"))
+					current.setB(bVal);
+				
 				driver.setCurrentPosition(current);
 //				this.current = current;
 //				System.err.println("-CURRENT "+current.toString());
@@ -1029,15 +1060,15 @@ public class GCodeParser {
 	 */
 	private void drillingCycle(boolean speedPeck) throws RetryException {
 		// Retract to R position if Z is currently below this
-		Point3d current = driver.getCurrentPosition();
-		if (current.z < drillRetract) {
+		Point5d current = driver.getCurrentPosition();
+		if (current.z() < drillRetract) {
 			driver.setFeedrate(getMaxFeedrate());
-			setTarget(new Point3d(current.x, current.y, drillRetract));
+			setTarget(new Point5d(current.x(), current.y(), drillRetract, current.a(), current.b()));
 		}
 
 		// Move to start XY
 		driver.setFeedrate(getMaxFeedrate());
-		setTarget(new Point3d(drillTarget.x, drillTarget.y, current.z));
+		setTarget(new Point5d(drillTarget.x, drillTarget.y, current.z(), current.a(), current.b()));
 
 		// Do the actual drilling
 		double targetZ = drillRetract;
@@ -1056,7 +1087,7 @@ public class GCodeParser {
 			if (targetZ != drillRetract && !speedPeck) {
 				// TODO: move this to 10% of the bottom.
 				driver.setFeedrate(getMaxFeedrate());
-				setTarget(new Point3d(drillTarget.x, drillTarget.y, targetZ));
+				setTarget(new Point5d(drillTarget.x, drillTarget.y, targetZ, current.a(), current.b()));
 			}
 
 			// set our plunge depth
@@ -1069,7 +1100,7 @@ public class GCodeParser {
 			driver.setFeedrate(drillFeedrate);
 
 			// do it!
-			setTarget(new Point3d(drillTarget.x, drillTarget.y, targetZ));
+			setTarget(new Point5d(drillTarget.x, drillTarget.y, targetZ, current.a(), current.b()));
 
 			// Dwell if doing a G82
 			if (drillDwell > 0)
@@ -1078,20 +1109,20 @@ public class GCodeParser {
 			// Retract unless we're speed pecking.
 			if (!speedPeck) {
 				driver.setFeedrate(getMaxFeedrate());
-				setTarget(new Point3d(drillTarget.x, drillTarget.y,
-						drillRetract));
+				setTarget(new Point5d(drillTarget.x, drillTarget.y, drillRetract, current.a(), current.b()));
 			}
 
 		} while (targetZ > drillTarget.z);
 
 		// double check for final speedpeck retract
-		if (current.z < drillRetract) {
+		if (current.z() < drillRetract) {
 			driver.setFeedrate(getMaxFeedrate());
-			setTarget(new Point3d(drillTarget.x, drillTarget.y, drillRetract));
+			setTarget(new Point5d(drillTarget.x, drillTarget.y, drillRetract, current.a(), current.b()));
 		}
 	}
 
-	private void drawArc(Point3d center, Point3d endpoint, boolean clockwise) throws RetryException {
+	// Note: 5D is not supported
+	private void drawArc(Point5d center, Point5d endpoint, boolean clockwise) throws RetryException {
 		// System.out.println("Arc from " + current.toString() + " to " +
 		// endpoint.toString() + " with center " + center);
 
@@ -1109,11 +1140,11 @@ public class GCodeParser {
 		double bY;
 
 		// figure out our deltas
-		Point3d current = driver.getCurrentPosition();
-		aX = current.x - center.x;
-		aY = current.y - center.y;
-		bX = endpoint.x - center.x;
-		bY = endpoint.y - center.y;
+		Point5d current = driver.getCurrentPosition();
+		aX = current.x() - center.x();
+		aY = current.y() - center.y();
+		bX = endpoint.x() - center.x();
+		bY = endpoint.y() - center.y();
 
 		// Clockwise
 		if (clockwise) {
@@ -1147,8 +1178,8 @@ public class GCodeParser {
 		steps = (int) Math.ceil(Math.max(angle * 2.4, length / curveSection));
 
 		// this is the real draw action.
-		Point3d newPoint = new Point3d();
-		double arcStartZ = current.z;
+		Point5d newPoint = new Point5d(current);
+		double arcStartZ = current.z();
 		for (s = 1; s <= steps; s++) {
 			// Forwards for CCW, backwards for CW
 			if (!clockwise)
@@ -1157,33 +1188,31 @@ public class GCodeParser {
 				step = steps - s;
 
 			// calculate our waypoint.
-			newPoint.x = center.x + radius
-					* Math.cos(angleA + angle * ((double) step / steps));
-			newPoint.y = center.y + radius
-					* Math.sin(angleA + angle * ((double) step / steps));
-			newPoint.z = arcStartZ + (endpoint.z - arcStartZ) * s / steps;
+			newPoint.setX(center.x() + radius * Math.cos(angleA + angle * ((double) step / steps)));
+			newPoint.setY(center.y() + radius * Math.sin(angleA + angle * ((double) step / steps)));
+			newPoint.setZ(arcStartZ + (endpoint.z() - arcStartZ) * s / steps);
 
 			// start the move
 			setTarget(newPoint);
 		}
 	}
 
-	private void drawRadius(Point3d endpoint, double r, boolean clockwise) {
+	private void drawRadius(Point5d endpoint, double r, boolean clockwise) {
 		// not supported!
 	}
 
-	private void setTarget(Point3d p) throws RetryException {
-		// If you really want two seperate moves, do it when you generate your
+	private void setTarget(Point5d p) throws RetryException {
+		// If you really want two separate moves, do it when you generate your
 		// toolpath.
 		// move z first
-		Point3d current = driver.getCurrentPosition();
+		Point5d current = driver.getCurrentPosition();
 		if (breakoutZMoves) {
-			if (p.z != current.z) {
-				driver.queuePoint(new Point3d(current.x, current.y, p.z));
+			if (p.z() != current.z()) {
+				driver.queuePoint(new Point5d(current.x(), current.y(), p.z(), current.a(), current.b()));
 			}
 		}
-		driver.queuePoint(new Point3d(p));
-		current = new Point3d(p);
+		driver.queuePoint(new Point5d(p));
+		current = new Point5d(p);
 	}
 
 	/**
@@ -1280,7 +1309,7 @@ public class GCodeParser {
 	 */
 	public void cleanup() {
 		// move us to our target.
-		delta = new Point3d();
+		delta = new Point5d();
 
 		// save our gcode
 		if (hasCode("G"))

@@ -70,6 +70,8 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -105,9 +107,6 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 
 import net.miginfocom.swing.MigLayout;
-
-import org.w3c.dom.Document;
-
 import replicatorg.app.Base;
 import replicatorg.app.MRUList;
 import replicatorg.app.MachineController;
@@ -374,7 +373,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 								// see if this is a .gcode file to be opened
 								String filename = file.getName();
-								if (filename.endsWith(".gcode")) {
+								// FIXME: where did this come from?  Need case insensitivity.
+								if (filename.endsWith(".gcode") || filename.endsWith(".ngc")) {
 									handleOpenFile(file);
 									return true;
 								}
@@ -614,22 +614,23 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	
 	private JMenu mruMenu = null;
 
+	private class FileOpenActionListener implements ActionListener {
+		public String path;
+
+		FileOpenActionListener(String path) {
+			this.path = path;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			handleOpen(path);
+		}
+	}
+
 	private void reloadMruMenu() {
 		if (mruMenu == null) {
 			return;
 		}
 		mruMenu.removeAll();
-		class FileOpenActionListener implements ActionListener {
-			public String path;
-
-			FileOpenActionListener(String path) {
-				this.path = path;
-			}
-
-			public void actionPerformed(ActionEvent e) {
-				handleOpen(path);
-			}
-		}
 		if (mruList != null) {
 			int index = 0;
 			for (String fileName : mruList) {
@@ -688,6 +689,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		reloadMruMenu();
 		menu.add(mruMenu);
 
+		menu.addSeparator();
+		menu.add(buildExamplesMenu()); 
+		menu.add(buildScriptsMenu()); 
+		menu.addSeparator();
+
 		// macosx already has its own preferences and quit menu
 		if (!Base.isMacOS()) {
 			menu.addSeparator();
@@ -710,6 +716,63 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			menu.add(item);
 		}
 		return menu;
+	}
+
+	private JMenuItem buildMenuFromPath(File path, Pattern pattern) {
+		if (!path.exists()) { return null; }
+		if (path.isDirectory()) {
+			JMenu menu = new JMenu(path.getName());
+			File[] files = path.listFiles();
+			for (File f : files) {
+				JMenuItem i = buildMenuFromPath(f,pattern);
+				if (i != null) {
+					menu.add(i);
+				}
+			}
+			if (menu.getItemCount() == 0) { return null; }
+			return menu;
+		} else {
+			Matcher m = pattern.matcher(path.getName());
+			if (m.matches()) {
+				try {
+					FileOpenActionListener l = new FileOpenActionListener(path.getCanonicalPath());
+					JMenuItem item = new JMenuItem(path.getName());
+					item.addActionListener(l);
+					return item;
+				} catch (IOException ioe) { return null; }
+			}
+			return null;
+		}
+	}
+	
+	private JMenuItem buildExamplesMenu() {
+		File examplesDir = Base.getApplicationFile("examples");
+		Pattern p = Pattern.compile("[^\\.]*\\.[sS][tT][lL]$");
+		JMenuItem m = buildMenuFromPath(examplesDir,p);
+		if(m == null) {
+			JMenuItem m2 = new JMenu("Examples");
+			m2.add(new JMenuItem("No example dirs found."));
+			m2.add(new JMenuItem("Check if this dir exists:" + Base.getApplicationFile("examples")));
+			return m2;
+		} else {
+			m.setText("Examples");
+			return m;
+		}
+	}
+
+	private JMenuItem buildScriptsMenu() {
+		File examplesDir = Base.getApplicationFile("scripts");
+		Pattern p = Pattern.compile("[^\\.]*\\.[gG][cC][oO][dD][eE]$");
+		JMenuItem m = buildMenuFromPath(examplesDir,p);
+		if(m == null) {
+			JMenuItem m2 = new JMenu("Scripts");
+			m2.add(new JMenuItem("No scripts found."));
+			m2.add(new JMenuItem("Check if this dir exists:" + Base.getApplicationFile("scripts")));
+			return m2;
+		} else {
+			m.setText("Scripts");
+			return m;
+		}
 	}
 
 	protected JMenu buildGCodeMenu() {
@@ -1984,9 +2047,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (loadDir != null) { directory = new File(loadDir); }
 		JFileChooser fc = new JFileChooser(directory);
 		FileFilter defaultFilter;
-		String[] extensions = {".gcode",".stl"};
+		String[] extensions = {".gcode",".ngc",".stl"};
 		fc.addChoosableFileFilter(defaultFilter = new ExtensionFilter(extensions,"GCode or STL files"));
-		fc.addChoosableFileFilter(new ExtensionFilter(".gcode","GCode files"));
+		String[] gcodeExtensions = {".gcode",".ngc"};
+		fc.addChoosableFileFilter(new ExtensionFilter(gcodeExtensions,"GCode files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".stl","STL files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".obj","OBJ files (experimental)"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".dae","Collada files (experimental)"));
@@ -2435,12 +2499,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 			if (targetPort != null) {
 				try {
-					Serial current = us.getSerial();
-					System.err.println("Current serial port: "+((current==null)?"null":current.getName())+", specified "+targetPort);
-					if (current == null || !current.getName().equals(targetPort)) {
-						us.setSerial(new Serial(targetPort,us));
+					synchronized(us) {
+						Serial current = us.getSerial();
+						System.err.println("Current serial port: "+((current==null)?"null":current.getName())+", specified "+targetPort);
+						if (current == null || !current.getName().equals(targetPort)) {
+							us.setSerial(new Serial(targetPort,us));
+						}
+						machine.connect();
 					}
-					machine.connect();
 				} catch (SerialException e) {
 					String msg = e.getMessage();
 					if (msg == null) { msg = "."; }
