@@ -953,6 +953,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		initialize();
 	}
 
+        public synchronized void stop() {
+                // No implementation needed for synchronous machines.
+        		sendCommand("M0");
+                Base.logger.info("RepRap/Ultimaker Machine stop called.");
+        }
 	protected Point5d reconcilePosition() {
 		return new Point5d();
 	}
