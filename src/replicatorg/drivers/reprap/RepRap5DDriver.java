@@ -69,6 +69,18 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/** true if a line containing the ok keyword has been received from the firmware*/
 	private final AtomicBoolean okReceived = new AtomicBoolean(false);
 	
+
+	/**
+	 * An above zero level shows more info
+	 */
+	private int debugLevel = 0;
+	
+	/**
+	 * Temporary. This allows for purposefully injection of noise to speed up debugging of retransmits and recovery.
+	 */
+	private int introduceNoiseEveryN = -1;
+	private int lineIterator = 0;
+	
 	/**
 	 * Enables five D GCodes if true. If false reverts to traditional 3D Gcodes
 	 * TODO: add to xml
@@ -159,7 +171,19 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
         if (XML.hasChildNode(xml, "fived")) {
             fiveD = Boolean.parseBoolean(XML.getChildNodeValue(xml, "fived"));
         }
-	}
+        if (XML.hasChildNode(xml, "debugLevel")) {
+        	debugLevel = Integer.parseInt(XML.getChildNodeValue(xml, "debugLevel"));
+        }
+        
+        if (XML.hasChildNode(xml, "introduceNoise")) {
+        	Base.logger.warning("Purposefully injecting noise into communications. This is NOT for production.");
+        	Base.logger.warning("Turn this off by removing introduceNoise from the machines XML file of your machine.");
+        	double introduceNoise = Double.parseDouble(XML.getChildNodeValue(xml, "introduceNoise"));
+        	if(introduceNoise != 0) {
+            	introduceNoiseEveryN = (int) (1/introduceNoise);
+        	}
+        }
+    }
 
 	public void updateManualControl() throws InterruptedException
 	{
@@ -362,6 +386,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 		
 		next = applyChecksum(next);
+		
+		if((introduceNoiseEveryN != -1) && (lineIterator++) >= introduceNoiseEveryN) {
+			next = "#INJECTED_NOISE#" + next;
+			lineIterator = 0;
+		}
 		
 		// Block until we can fit the command on the Arduino
 /*		synchronized(bufferLock)
