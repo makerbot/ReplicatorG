@@ -80,6 +80,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 */
 	private int introduceNoiseEveryN = -1;
 	private int lineIterator = 0;
+	private int numResends = 0;
 	
 	/**
 	 * Enables five D GCodes if true. If false reverts to traditional 3D Gcodes
@@ -176,10 +177,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
         }
         
         if (XML.hasChildNode(xml, "introduceNoise")) {
-        	Base.logger.warning("Purposefully injecting noise into communications. This is NOT for production.");
-        	Base.logger.warning("Turn this off by removing introduceNoise from the machines XML file of your machine.");
         	double introduceNoise = Double.parseDouble(XML.getChildNodeValue(xml, "introduceNoise"));
         	if(introduceNoise != 0) {
+            	Base.logger.warning("Purposefully injecting noise into communications. This is NOT for production.");
+            	Base.logger.warning("Turn this off by removing introduceNoise from the machines XML file of your machine.");
             	introduceNoiseEveryN = (int) (1/introduceNoise);
         	}
         }
@@ -351,8 +352,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 	
 	protected void resendCommand(String command, String originalCmd) {
+		numResends++;
 		synchronized (sendCommandLock)
 		{
+			if(debugLevel > 0)
+				Base.logger.warning("Resending: \"" + command + "\". Resends in "+ numResends + " of "+lineIterator+" lines.");
 			_sendCommand(command, false, true);
 			if (originalCmd != null) originalCmd.notifyAll();
 		}
@@ -362,36 +366,35 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * inner method. not for use outside sendCommand and resendCommand
 	 */
 	protected void _sendCommand(String next, boolean synchronous, boolean resending) {
-		if (!resending) sendCommandLock.lock();
-		
-		//assert (isInitialized());
-		// System.out.println("sending: " + next);
-
-		next = clean(next);
-		next = fix(next); // make it compatible with older versions of the GCode interpeter
-		
-		// skip empty commands.
-		if (next.length() == 0)
+				
+		// If this line is uncommented, it simply sends the next line instead of doing a retransmit!
+		if (!resending) 
 		{
-			return;
+			sendCommandLock.lock();
+
+			//assert (isInitialized());
+			// System.out.println("sending: " + next);
+	
+			next = clean(next);
+			next = fix(next); // make it compatible with older versions of the GCode interpeter
+			
+			// skip empty commands.
+			if (next.length() == 0)
+			{
+				return;
+			}
+	
+			//update the current feedrate
+			String feedrate = getRegexMatch("F(-[0-9\\.]+)", next, 1);
+			if (feedrate!=null) this.feedrate.set(Double.parseDouble(feedrate));
+	
+			//update the current extruder position
+			String e = getRegexMatch("E([-0-9\\.]+)", next, 1);
+			if (e!=null) this.ePosition.set(Double.parseDouble(e));
+	
+			// applychecksum replaces the line that was to be retransmitted, into the next line.
+			next = applyChecksum(next);
 		}
-
-		//update the current feedrate
-		String feedrate = getRegexMatch("F(-[0-9\\.]+)", next, 1);
-		if (feedrate!=null) this.feedrate.set(Double.parseDouble(feedrate));
-
-		//update the current extruder position
-		String e = getRegexMatch("E([-0-9\\.]+)", next, 1);
-		if (e!=null) this.ePosition.set(Double.parseDouble(e));
-
-		
-		next = applyChecksum(next);
-		
-		if((introduceNoiseEveryN != -1) && (lineIterator++) >= introduceNoiseEveryN) {
-			next = "#INJECTED_NOISE#" + next;
-			lineIterator = 0;
-		}
-		
 		// Block until we can fit the command on the Arduino
 /*		synchronized(bufferLock)
 		{
@@ -413,7 +416,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		
 
 		// debug... let us know whats up!
-		Base.logger.finest("Sent: " + next);
+		if(debugLevel > 1)
+			Base.logger.info("Sending: " + next);
+
 
 		try {
 			synchronized(next)
@@ -422,7 +427,15 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				serialInUse.lock();
 				bufferLock.lock();
 				assert (serial != null);
-				serial.write(next + "\n");
+				
+				if((introduceNoiseEveryN != -1) && (lineIterator++) >= introduceNoiseEveryN) {
+					Base.logger.info("Introducing noise (lineIterator=="
+							+ lineIterator + ",introduceNoiseEveryN=" + introduceNoiseEveryN + ")");
+					lineIterator = 0;
+					serial.write(next.replace('6','7').replace('7','1') + "\n");
+				} else {				
+					serial.write(next + "\n");
+				}
 				serialInUse.unlock();
 
 				// record it in our buffer tracker.
@@ -444,7 +457,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		// Wait for the response (synchronous gcode transmission)
 		//while(!isFinished()) {}
 		
-		if (!resending) sendCommandLock.unlock();
+		if (!resending) 
+			sendCommandLock.unlock();
 	}
 
 	public String clean(String str) {
@@ -561,7 +575,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 			//System.out.println("received: " + line);
 			//Base.logger.finest("received: " + line);
-			Base.logger.info("received: " + line);
+			if(debugLevel > 1)
+				Base.logger.info("received: " + line);
 
 			if (line.length() == 0)
 				Base.logger.fine("empty line received");
@@ -639,7 +654,6 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				}
 				
 				// Bad checksum, resend requested
-				Base.logger.severe(line);
 
 				int bufferedLineNumber = Integer.parseInt( getRegexMatch(
 						gcodeLineNumberPattern, bufferedLine, 1) );
@@ -649,6 +663,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				{
 					int badLineNumber = Integer.parseInt(
 							badLineMatch.group(1) );
+					if(debugLevel > 1)
+						Base.logger.severe("Bad line number: " + badLineNumber + ", bufferedLineNumber: "+bufferedLineNumber + ", bufferedLine: \""+bufferedLine+"\"");
 
 					if (bufferedLineNumber != badLineNumber)
 					{
@@ -982,13 +998,12 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		initialize();
 	}
 
-    public synchronized void stop() {
-            // No implementation needed for synchronous machines.
-    		sendCommand("M0");
-            Base.logger.info("RepRap/Ultimaker Machine stop called.");
-    }
-
-    protected Point5d reconcilePosition() {
+        public synchronized void stop() {
+                // No implementation needed for synchronous machines.
+        		sendCommand("M0");
+                Base.logger.info("RepRap/Ultimaker Machine stop called.");
+        }
+	protected Point5d reconcilePosition() {
 		return new Point5d();
 	}
 }
