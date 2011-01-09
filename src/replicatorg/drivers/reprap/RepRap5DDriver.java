@@ -40,8 +40,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.vecmath.Point3d;
-
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
@@ -51,8 +49,9 @@ import replicatorg.app.util.serial.SerialFifoEventListener;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.reprap.ExtrusionUpdater.Direction;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
+import replicatorg.util.Point5d;
 
 public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListener {
 	private static Pattern gcodeCommentPattern = Pattern.compile("\\([^)]*\\)|;.*");
@@ -69,6 +68,18 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 	/** true if a line containing the ok keyword has been received from the firmware*/
 	private final AtomicBoolean okReceived = new AtomicBoolean(false);
+	
+
+	/**
+	 * An above zero level shows more info
+	 */
+	private int debugLevel = 0;
+	
+	/**
+	 * Temporary. This allows for purposefully injection of noise to speed up debugging of retransmits and recovery.
+	 */
+	private int introduceNoiseEveryN = -1;
+	private int lineIterator = 0;
 	
 	/**
 	 * Enables five D GCodes if true. If false reverts to traditional 3D Gcodes
@@ -160,7 +171,19 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
         if (XML.hasChildNode(xml, "fived")) {
             fiveD = Boolean.parseBoolean(XML.getChildNodeValue(xml, "fived"));
         }
-	}
+        if (XML.hasChildNode(xml, "debugLevel")) {
+        	debugLevel = Integer.parseInt(XML.getChildNodeValue(xml, "debugLevel"));
+        }
+        
+        if (XML.hasChildNode(xml, "introduceNoise")) {
+        	Base.logger.warning("Purposefully injecting noise into communications. This is NOT for production.");
+        	Base.logger.warning("Turn this off by removing introduceNoise from the machines XML file of your machine.");
+        	double introduceNoise = Double.parseDouble(XML.getChildNodeValue(xml, "introduceNoise"));
+        	if(introduceNoise != 0) {
+            	introduceNoiseEveryN = (int) (1/introduceNoise);
+        	}
+        }
+    }
 
 	public void updateManualControl() throws InterruptedException
 	{
@@ -363,6 +386,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 		
 		next = applyChecksum(next);
+		
+		if((introduceNoiseEveryN != -1) && (lineIterator++) >= introduceNoiseEveryN) {
+			next = "#INJECTED_NOISE#" + next;
+			lineIterator = 0;
+		}
 		
 		// Block until we can fit the command on the Arduino
 /*		synchronized(bufferLock)
@@ -678,31 +706,31 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * @throws RetryException 
 	 **************************************************************************/
 
-	public void queuePoint(Point3d p) throws RetryException {
+	public void queuePoint(Point5d p) throws RetryException {
 		String cmd = "G1 F" + df.format(getCurrentFeedrate());
 		
 		sendCommand(cmd);
 
-		cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
-				+ df.format(p.z) + " F" + df.format(getCurrentFeedrate());
+		cmd = "G1 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
+				+ df.format(p.z()) + " F" + df.format(getCurrentFeedrate());
 
 		sendCommand(cmd);
 
 		super.queuePoint(p);
 	}
 
-	public void setCurrentPosition(Point3d p) throws RetryException {
-		sendCommand("G92 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
-				+ df.format(p.z));
+	public void setCurrentPosition(Point5d p) throws RetryException {
+		sendCommand("G92 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
+				+ df.format(p.z()));
 
 		super.setCurrentPosition(p);
 	}
 
 	@Override
-	public void homeAxes(EnumSet<Axis> axes, boolean positive, double feedrate) throws RetryException {
+	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.info("homing "+axes.toString());
 		StringBuffer buf = new StringBuffer("G28");
-		for (Axis axis : axes)
+		for (AxisId axis : axes)
 		{
 			buf.append(" "+axis+"0");
 		}
@@ -953,9 +981,14 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 		initialize();
 	}
-	
-	protected Point3d reconcilePosition() {
-		return new Point3d(0,0,0);
+
+        public synchronized void stop() {
+                // No implementation needed for synchronous machines.
+        		sendCommand("M0");
+                Base.logger.info("RepRap/Ultimaker Machine stop called.");
+        }
+	protected Point5d reconcilePosition() {
+		return new Point5d();
 	}
 
         public synchronized void stop() {

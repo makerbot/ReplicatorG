@@ -46,7 +46,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -57,7 +56,7 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.app.ui.controlpanel.ExtruderPanel;
-import replicatorg.app.ui.controlpanel.Jog3AxisPanel;
+import replicatorg.app.ui.controlpanel.JogPanel;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 import replicatorg.machine.MachineListener;
@@ -65,7 +64,7 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.Endstops;
 import replicatorg.machine.model.ToolModel;
 
@@ -77,7 +76,7 @@ public class ControlPanelWindow extends JFrame implements
 
 	protected JPanel mainPanel;
 
-	protected Jog3AxisPanel jogPanel;
+	protected JogPanel jogPanel;
 
 	protected JTabbedPane toolsPane;
 
@@ -140,7 +139,7 @@ public class ControlPanelWindow extends JFrame implements
 		pollThread.start();
 	}
 
-	private JMenuItem makeHomeItem(String name,final EnumSet<Axis> set,final boolean positive) {
+	private JMenuItem makeHomeItem(String name,final EnumSet<AxisId> set,final boolean positive) {
 		JMenuItem item = new JMenuItem(name);
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -160,15 +159,15 @@ public class ControlPanelWindow extends JFrame implements
 		bar.add(homeMenu);
 		
 		//adding the appropriate homing options for your endstop configuration
-		for (Axis axis : Axis.values())
+		for (AxisId axis : AxisId.values())
 		{
 			Endstops endstops = driver.getMachine().getEndstops(axis);
 			if (endstops != null)
 			{
 				if (endstops.hasMin == true)
-					homeMenu.add(makeHomeItem("Home "+axis.name()+"-",EnumSet.of(axis),false));
+					homeMenu.add(makeHomeItem("Home "+axis.name()+" to minimum",EnumSet.of(axis),false));
 				if (endstops.hasMax == true)
-					homeMenu.add(makeHomeItem("Home "+axis.name()+"+",EnumSet.of(axis),true));
+					homeMenu.add(makeHomeItem("Home "+axis.name()+" to maximum",EnumSet.of(axis),true));
 			}
 		}
 		
@@ -196,7 +195,7 @@ public class ControlPanelWindow extends JFrame implements
 	}
 
 	protected JComponent createJogPanel() {
-		jogPanel = new Jog3AxisPanel(machine);
+		jogPanel = new JogPanel(machine);
 		return jogPanel;
 	}
 

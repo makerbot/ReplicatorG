@@ -30,13 +30,12 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import javax.vecmath.Point3d;
-
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.machine.model.Axis;
+import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
+import replicatorg.util.Point5d;
 
 public class SerialPassthroughDriver extends SerialDriver {
 	/**
@@ -256,27 +255,33 @@ public class SerialPassthroughDriver extends SerialDriver {
 	 * @throws RetryException 
 	 **************************************************************************/
 
-	public void queuePoint(Point3d p) throws RetryException {
-		String cmd = "G1 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
-				+ df.format(p.z) + " F" + df.format(getCurrentFeedrate());
+	// FIXME: 5D port
+	public void queuePoint(Point5d p) throws RetryException {
+		String cmd = "G1 F" + df.format(getCurrentFeedrate());
+		
+		sendCommand(cmd);
+
+		cmd = "G1 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
+				+ df.format(p.z()) + " F" + df.format(getCurrentFeedrate());
 
 		sendCommand(cmd);
 
 		super.queuePoint(p);
 	}
 
-	public void setCurrentPosition(Point3d p) throws RetryException {
-		sendCommand("G92 X" + df.format(p.x) + " Y" + df.format(p.y) + " Z"
-				+ df.format(p.z));
+	// FIXME: 5D port
+	public void setCurrentPosition(Point5d p) throws RetryException {
+		sendCommand("G92 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
+				+ df.format(p.z()));
 
 		super.setCurrentPosition(p);
 	}
 
-	public void homeAxes(EnumSet<Axis> axes) throws RetryException {
+	public void homeAxes(EnumSet<AxisId> axes) throws RetryException {
 		StringBuffer buf = new StringBuffer("G28 ");
-		if (axes.contains(Axis.X)) buf.append("X");
-		if (axes.contains(Axis.Y)) buf.append("Y");
-		if (axes.contains(Axis.Z)) buf.append("Z");
+		if (axes.contains(AxisId.X)) buf.append("X");
+		if (axes.contains(AxisId.Y)) buf.append("Y");
+		if (axes.contains(AxisId.Z)) buf.append("Z");
 		sendCommand(buf.toString());
 
 		super.homeAxes(axes,false,0);
@@ -492,4 +497,7 @@ public class SerialPassthroughDriver extends SerialDriver {
 		initialize();
 	}
 
+	protected Point5d reconcilePosition() {
+		return new Point5d();
+	}
 }

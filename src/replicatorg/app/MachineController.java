@@ -962,7 +962,7 @@ public class MachineController {
 
 	protected void emitStateChange(MachineState prev, MachineState current) {
 		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current, prev);
-		Vector<MachineListener> lclone = (Vector<MachineListener>) listeners.clone();
+		Vector<MachineListener> lclone = new Vector<MachineListener>(listeners);
 		for (MachineListener l : lclone) {
 			l.machineStateChanged(e);
 		}

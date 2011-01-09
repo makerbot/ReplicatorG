@@ -255,7 +255,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		final String manageStr = "Manage profiles...";
 		final String profilePref = "replicatorg.skeinforge.profilePref";
 		JButton editButton = new JButton("Edit...");
-		JButton newButton = new JButton("Clone...");
+		JButton newButton = new JButton("Duplicate...");
 		JButton deleteButton = new JButton("Delete");
 		JButton generate = new JButton("Generate...");
 
