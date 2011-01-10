@@ -58,8 +58,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -114,10 +117,29 @@ public class Base {
 	 * The general-purpose logging object.
 	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
-	{
+	{	
 		String levelName = Base.preferences.get("replicatorg.debuglevel", Level.INFO.getName());
 		Level l = Level.parse(levelName);
 		logger.setLevel(l);
+		
+		// Add logfile handler
+	    try {
+	      boolean append = true;
+	      FileHandler fh = new FileHandler("RepG.log", append);
+	      //fh.setFormatter(new XMLFormatter());
+	      fh.setFormatter(new SimpleFormatter());
+	      logger.addHandler(fh);
+	    }
+	    catch (IOException e) {
+	      e.printStackTrace();
+	    }
+		
+		// Configure handlers to use FINE
+	    Handler[] handlers =
+	    logger.getHandlers();
+	    for ( int index = 0; index < handlers.length; index++ ) {
+	    	handlers[index].setLevel( Level.FINE );
+	    }
 	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
