@@ -28,6 +28,7 @@
 package replicatorg.app.ui;
 
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -105,6 +106,9 @@ public class ControlPanelWindow extends JFrame implements
 	private ControlPanelWindow(MachineController m) {
 		super("Control Panel");
 
+		Image icon = Base.getImage("images/icon.gif", this);
+		setIconImage(icon);
+		
 		// save our machine!
 		machine = m;
 		driver = machine.getDriver();
