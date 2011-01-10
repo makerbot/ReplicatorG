@@ -1752,6 +1752,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		message += "Stopped after "
 				+ EstimationDriver.getBuildTimeString(elapsed);
 
+		// Highlight the line at which the user aborted...
+		highlightLine(machine.getLinesProcessed());
+
 		Base.showMessage("Build aborted", message);
 	}
 
@@ -1863,6 +1866,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} else {
 			message("Paused.");
 			machine.pause();
+			highlightLine(machine.getLinesProcessed());
 
 			//buttons.clear();
 			//buttons.activate(MainButtonPanel.PAUSE);
