@@ -46,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
+import replicatorg.drivers.RealtimeControl;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -295,6 +296,15 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		disconnectButton.setEnabled(connected);
 		connectButton.setEnabled(hasMachine && !connected);
 		cpButton.setEnabled(ready);
+		rcButton.setVisible(editor.supportsRealTimeControl());
+//		if (!editor.supportsRealTimeControl()) 
+//		{
+			// how to hide this button without taking up any space???
+//			remove(rcButton);
+//		} else {
+			// FIXME: this changes the ordering of the buttons
+//			add(rcButton);
+//		}
 		
 	}
 

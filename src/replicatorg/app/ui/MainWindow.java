@@ -914,8 +914,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				handleRealTimeControl();
 			}
 		});
-		realtimeControlItem.setVisible(false);
-		menu.add(realtimeControlItem);
+		if (machine != null && 
+				(machine.driver instanceof RealtimeControl))
+		{
+			realtimeControlItem.setVisible(false);
+			menu.add(realtimeControlItem);
+		}
 		
 		item = new JMenuItem("Upload new firmware...");
 		item.addActionListener(new ActionListener() {
@@ -940,10 +944,16 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			indexer.setVisible(true);
 		}
 	}
-	
-	protected void handleRealTimeControl() {
+	public boolean supportsRealTimeControl() {
 		if (machine == null || 
 				!(machine.driver instanceof RealtimeControl)) {
+			return false;
+		}
+		Base.logger.info("Supports RC");
+		return true;
+	}
+	protected void handleRealTimeControl() {
+		if(!this.supportsRealTimeControl()) {
 			JOptionPane.showMessageDialog(
 					this,
 					"Real time control is not supported for your machine's driver.",

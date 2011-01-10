@@ -55,7 +55,8 @@ import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
-public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListener, RealtimeControl {
+public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListener, RealtimeControl 
+{
 	private static Pattern gcodeCommentPattern = Pattern.compile("\\([^)]*\\)|;.*");
 	private static Pattern resendLinePattern = Pattern.compile("([0-9]+)");
 	private static Pattern gcodeLineNumberPattern = Pattern.compile("N\\s*([0-9]+)");
@@ -184,6 +185,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
         }
         if (XML.hasChildNode(xml, "debugLevel")) {
         	debugLevel = Integer.parseInt(XML.getChildNodeValue(xml, "debugLevel"));
+        }
+        if (XML.hasChildNode(xml, "limitFeedrate")) {
+        	rcFeedrateLimit = Double.parseDouble(XML.getChildNodeValue(xml, "limitFeedrate"));
         }
         
         if (XML.hasChildNode(xml, "introduceNoise")) {
