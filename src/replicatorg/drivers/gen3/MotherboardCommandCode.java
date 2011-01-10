@@ -43,7 +43,8 @@ public enum MotherboardCommandCode {
 	ENABLE_AXES(137),
 	QUEUE_POINT_EXT(139),
 	SET_POSITION_EXT(140),
-	WAIT_FOR_PLATFORM(141);
+	WAIT_FOR_PLATFORM(141),
+	QUEUE_POINT_NEW(142);
 	
 	private int code;
 	private MotherboardCommandCode(int code) {

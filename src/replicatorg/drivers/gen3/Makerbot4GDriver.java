@@ -20,53 +20,63 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	}
 
 	public void queuePoint(Point5d p) throws RetryException {
-		Base.logger.log(Level.FINE,"Queued point " + p);
-		new Exception().printStackTrace();
 		// is this point even step-worthy?
 		Point5d deltaSteps = getAbsDeltaSteps(getCurrentPosition(), p);
-		double masterSteps = getLongestLength(deltaSteps);
-
-		// okay, we need at least one step.
-		if (masterSteps > 0.0) {
-
-			
+		double length = deltaSteps.length();
+		if (length > 0.0) { // only compute nonzero moves
 			// where we going?
 			Point5d steps = machine.mmToSteps(p);
 			
 			Point5d delta = getDelta(p);
 			double feedrate = getSafeFeedrate(delta);
 			
+			// Calculate time for move in usec
+			double minutes = delta.length() / feedrate;
+			double us = (60.0 * 1000.0 * 1000.0) * minutes;
+
+			int relative = 0;
 			// Modify hijacked axes
 			for (Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
 				ToolModel curTool = machine.currentTool();
 				final AxisId axis = entry.getKey();
-				double toolPos = getCurrentPosition().axis(axis);
+				relative |= 1 << axis.getIndex();
 				if (curTool.equals(entry.getValue()) && curTool.isMotorEnabled()) {
 					// Figure out length of move
-					final double timeInMinutes = (delta.length()/feedrate);
-					final double extruderSteps = curTool.getMotorSpeedRPM()*timeInMinutes*curTool.getMotorSteps();
-					final double extruderFeedrate = machine.getStepsPerMM().axis(axis);
-					final double mm = extruderSteps/extruderFeedrate;
-					boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
-					toolPos += clockwise?-mm:mm;
-					feedrate = Math.sqrt((feedrate*feedrate)+(extruderFeedrate*extruderFeedrate));
-					p.setAxis(axis, toolPos);
+					final double extruderStepsPerMinute = curTool.getMotorSpeedRPM()*curTool.getMotorSteps();
+					final boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
+					final double extruderSteps = (clockwise?-1d:1d) * extruderStepsPerMinute * minutes;
+					steps.setAxis(axis, extruderSteps);
 				} else {
-					p.setAxis(axis, toolPos);
+					p.setAxis(axis, 0);
 				}
 			}
 
-			// how fast are we doing it?
-			long micros = convertFeedrateToMicros(getCurrentPosition(),
-					p, feedrate);
-
 			// okay, send it off!
-			queueAbsolutePoint(steps, micros);
+			queueNewPoint(steps, (long)us, relative);
 
 			setInternalPosition(p);
 		}
 	}
 
+	protected void queueNewPoint(Point5d steps, long us, int relative) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_NEW.getCode());
+
+		if (Base.logger.isLoggable(Level.FINE)) {
+			Base.logger.log(Level.FINE,"Queued new-style point " + steps + " over "
+					+ Long.toString(us) + " usec., relative " + Integer.toString(relative));
+		}
+
+		// just add them in now.
+		pb.add32((int) steps.x());
+		pb.add32((int) steps.y());
+		pb.add32((int) steps.z());
+		pb.add32((int) steps.a());
+		pb.add32((int) steps.b());
+		pb.add32((int) us);
+		pb.add8((int) relative);
+
+		runCommand(pb.getPacket());
+	}
 	
 	protected void queueAbsolutePoint(Point5d steps, long micros) throws RetryException {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_EXT.getCode());
@@ -75,7 +85,6 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 			Base.logger.log(Level.FINE,"Queued absolute point " + steps + " at "
 					+ Long.toString(micros) + " usec.");
 		}
-		System.err.println("Queued absolute point " + steps + " at " + Long.toString(micros) + " usec.");
 
 		// just add them in now.
 		pb.add32((int) steps.x());
