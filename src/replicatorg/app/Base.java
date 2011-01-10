@@ -120,10 +120,8 @@ public class Base {
 	{	
 		String levelName = Base.preferences.get("replicatorg.debuglevel", Level.INFO.getName());
 		Level l = Level.parse(levelName);
-//		logger.setLevel(l);
-		logger.setLevel( Level.FINE );
+		logger.setLevel(l);
 		
-
 		// Add logfile handler
 	    try {
 	      boolean append = true;

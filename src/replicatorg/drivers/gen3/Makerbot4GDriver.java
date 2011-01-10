@@ -21,11 +21,11 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 
 	public void queuePoint(Point5d p) throws RetryException {
 //		Base.logger.log(Level.FINE,"Queued point " + p);
-
+			
 		// is this point even step-worthy?
 		Point5d deltaSteps = getAbsDeltaSteps(getCurrentPosition(), p);
 		double masterSteps = getLongestLength(deltaSteps);
-
+	
 		// okay, we need at least one step.
 		if (masterSteps > 0.0) {
 			
@@ -40,10 +40,11 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 			// Calculate the feedrate. This is the speed that the toolhead will
 			// be traveling at.
 			double feedrate = getSafeFeedrate(delta);
-			
+				
 			// Find our toolhead axis, and calculate what position it should
 			// be moved to in order to extrude the proper amount of material
 			// for this current movement.
+			// TODO: refactor this, shouldn't do a for loop here.
 			for (Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
 				ToolModel curTool = machine.currentTool();
 				final AxisId axis = entry.getKey();
@@ -79,6 +80,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 				} else {
 					p.setAxis(axis, toolPos);
 				}
+				
 			}
 
 			// how fast are we doing it?
@@ -89,6 +91,9 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 			queueAbsolutePoint(steps, micros);
 
 			setInternalPosition(p);
+		}
+		else {
+			Base.logger.log(Level.FINE,"Unworthy point discarded: " + p);
 		}
 	}
 
