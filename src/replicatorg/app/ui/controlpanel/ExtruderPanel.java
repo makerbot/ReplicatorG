@@ -107,7 +107,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		axis.setStandardTickUnits(unitSource);
 		axis.setTickLabelsVisible(false); // We don't need to see the millisecond count
 		axis = plot.getRangeAxis();
-		axis.setRange(0,260); // set termperature range from 0 to 260 degrees C 
+		axis.setRange(0,300); // set termperature range from 0 to 300 degrees C so you can see overshoots 
 		// Tweak L&F of chart
 		//((XYAreaRenderer)plot.getRenderer()).setOutline(true);
 		XYStepRenderer renderer = new XYStepRenderer();
@@ -125,7 +125,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
 		ChartPanel chartPanel = new ChartPanel(chart);
-		chartPanel.setPreferredSize(new Dimension(400,140));
+		chartPanel.setPreferredSize(new Dimension(400,160));
 		chartPanel.setOpaque(false);
 		return chartPanel;
 	}
