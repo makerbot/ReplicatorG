@@ -260,7 +260,9 @@ public class Serial implements SerialPortEventListener {
 				 * Wait until we timeout or a byte is received (which will notify this 
 				 * method). readFifo notifies for each byte received.
 				 */
-				readFifo.wait(timeoutMillis);
+				synchronized (readFifo) {
+					readFifo.wait(timeoutMillis);
+				}
 			}
 		} catch (InterruptedException e) {
 			// We are most likely amidst a shutdown.  Propagate the interrupt
@@ -312,7 +314,7 @@ public class Serial implements SerialPortEventListener {
 	}
 
 	public void write(byte bytes[]) {
-		if (disconnected.get() == false) Base.logger.warning("serial disconnected");
+		if (disconnected.get() == true) Base.logger.warning("serial disconnected");
 		try {
 			output.write(bytes);
 			output.flush(); // Reconsider?
