@@ -1165,9 +1165,19 @@ public class Sanguino3GDriver extends SerialDriver
 	/***************************************************************************
 	 * Stop and system state reset
 	 **************************************************************************/
+	final private Version extendedStopVersion = new Version(2,7);
+	
 	public void stop() {
-		Base.logger.warning("Stop.");
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ABORT.getCode());
+		Base.logger.fine("Stop.");
+		PacketBuilder pb;
+		if (version.atLeast(extendedStopVersion)) {
+			pb = new PacketBuilder(MotherboardCommandCode.EXTENDED_STOP.getCode());
+			// Clear command queue and stop motion
+			pb.add8(1<<0 | 1<<1);
+			
+		} else {
+			pb = new PacketBuilder(MotherboardCommandCode.ABORT.getCode());
+		}
 		Thread.interrupted(); // Clear interrupted status
 		runQuery(pb.getPacket());
 		// invalidate position, force reconciliation.
