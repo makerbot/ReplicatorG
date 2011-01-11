@@ -581,6 +581,23 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			if (line.length() == 0)
 				Base.logger.fine("empty line received");
 
+			else if (line.startsWith("ok T:")||line.startsWith("T:")) {
+				Pattern r = Pattern.compile("T:([0-9\\.]+)");
+			    Matcher m = r.matcher(line);
+			    if (m.find( )) {
+			    	String temp = m.group(1);
+					
+					machine.currentTool().setCurrentTemperature(
+							Double.parseDouble(temp));
+			    }
+				r = Pattern.compile("^ok.*B:([0-9\\.]+)$");
+			    m = r.matcher(line);
+			    if (m.find( )) {
+			    	String bedTemp = m.group(1);
+					machine.currentTool().setPlatformCurrentTemperature(
+							Double.parseDouble(bedTemp));
+			    }
+			}
 			else if (line.startsWith("ok")) {
 				
 				synchronized(okReceived)
@@ -601,24 +618,6 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					bufferLock.notifyAll();
 				}
 				bufferLock.unlock();
-
-				if (line.startsWith("ok T:")) {
-					Pattern r = Pattern.compile("^ok T:([0-9\\.]+)");
-				    Matcher m = r.matcher(line);
-				    if (m.find( )) {
-				    	String temp = m.group(1);
-						
-						machine.currentTool().setCurrentTemperature(
-								Double.parseDouble(temp));
-				    }
-					r = Pattern.compile("^ok.*B:([0-9\\.]+)$");
-				    m = r.matcher(line);
-				    if (m.find( )) {
-				    	String bedTemp = m.group(1);
-						machine.currentTool().setPlatformCurrentTemperature(
-								Double.parseDouble(bedTemp));
-				    }
-				}
 			}
 
 			// old arduino firmware sends "start"
