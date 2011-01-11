@@ -52,6 +52,7 @@ public class ToolModel
 	protected int motorEncoderPPR;
 	protected boolean motorIsStepper;
 	protected int motorSteps; // motor steps per full rotation
+	protected String motorStepperAxis;    // Stepper axis this motor is connected to
 
 	//spindle stuff
 	protected boolean spindleEnabled;
@@ -197,6 +198,13 @@ public class ToolModel
 				}
 			} catch (Exception e) {} // ignore parse errors.
 
+			n = XML.getAttributeValue(xml, "stepper_axis");
+			try{
+				if (n != null) {
+					motorStepperAxis = n;
+				}
+			} catch (Exception e) {} // ignore parse errors.
+			
 			n = XML.getAttributeValue(xml, "default_rpm");
 			try{
 				if (Double.parseDouble(n) > 0)
@@ -278,6 +286,11 @@ public class ToolModel
 			result += "hasHeatedPlatform, ";
 		if (hasAutomatedPlatform)
 			result += "hasAutomatedPlatform, ";
+		if (motorIsStepper) {
+			result += "motorIsStepper, ";
+			result += "motorStepperAxis: " + motorStepperAxis + ", ";
+			result += "motorSteps: " + motorSteps + ", ";
+		}
 	}
 	
 	/*************************************
@@ -393,6 +406,12 @@ public class ToolModel
 	{
 		return motorIsStepper;
 	}
+	
+	public String getMotorStepperAxis()
+	{
+		return motorStepperAxis;
+	}
+	
 
 	/*************************************
 	*  Spindle interface functions

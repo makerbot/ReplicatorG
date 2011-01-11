@@ -23,6 +23,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 
@@ -255,6 +256,8 @@ public class MachineController {
 				} catch (RetryException r) {
 					// Indicate that we should retry the current line, rather
 					// than proceeding to the next, on the next go-round.
+//					Base.logger.fine("Message delivery failed, retrying");
+					Base.logger.log(Level.FINE,"Message delivery failed, retrying");
 					retry = true;
 				} catch (GCodeException e) {
 					// This is severe, but not fatal; ordinarily it means there's an
