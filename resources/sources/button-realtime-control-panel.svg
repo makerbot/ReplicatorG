@@ -54,9 +54,9 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="10.977778"
-     inkscape:cx="15.82269"
-     inkscape:cy="21.745934"
+     inkscape:zoom="5.488889"
+     inkscape:cx="32.274309"
+     inkscape:cy="35.538379"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -99,145 +99,221 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect5749"
+       width="51"
+       height="48"
+       x="-5"
+       y="2" />
+    <rect
        style="fill:none;stroke:#ffffff;stroke-opacity:1"
        id="box"
        width="38"
        height="38"
        x="4"
-       y="4" />
+       y="4"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
        d="m 29.498989,5.4989878 0,16.0350752 0,0.9375 2,0 0,-0.84375 0,-16.1288252 z m 0,21.9725752 0,0.875 0,11.152425 2,0 0,-11.058675 0,-0.96875 z"
        id="path5649"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccccccccccccc" />
+       sodipodi:nodetypes="cccccccccccccc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <rect
        style="color:#000000;fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        id="rect5624-7"
        width="8"
        height="5"
        x="26.498987"
-       y="22.498989" />
+       y="22.498989"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 32.498989,6.0142886 2,0"
        id="path5678"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5686"
        d="m 32.498989,10.014289 2,0"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 32.498989,14.014289 2,0"
        id="path5688"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5690"
        d="m 32.498989,18.014289 2,0"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 32.498989,22.014289 2,0"
        id="path5692"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5694"
        d="m 32.498989,30.014289 2,0"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5698"
        d="m 32.498989,34.014289 2,0"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 32.498989,38.014289 2,0"
        id="path5700"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5702"
        d="m 32.498989,38.014289 2,0"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        id="path5704"
        d="m 11.498989,5.4989878 c 0,7.3333332 0,-0.3333333 0,7.0000002 l 2,0 c 0,-7.3333335 0,0.333333 0,-7.0000002 z m 0,12.0312502 0,0.875 0,21.09375 2,0 0,-21 0,-0.96875 z"
        style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccccccccccc" />
+       sodipodi:nodetypes="cccccccccccc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <rect
        y="12.498988"
        x="8.4989872"
        height="5"
        width="8"
        id="rect5706"
-       style="color:#000000;fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:none;stroke:#ffffff;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5708"
        d="m 14.498989,6.0142886 2,0"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 14.498989,10.014289 2,0"
        id="path5710"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 14.498989,18.014289 2,0"
        id="path5714"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5716"
        d="m 14.498989,22.014289 2,0"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 14.498989,26.014289 2,0"
        id="path5718"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5720"
        d="m 14.498989,30.014289 2,0"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 14.498989,34.014289 2,0"
        id="path5722"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
        id="path5724"
        d="m 14.498989,38.014289 2,0"
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 14.498989,38.014289 2,0"
        id="path5726"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/erik/Dev/ReplicatorG/resources/images/button-realtime-panel.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
   </g>
 </svg>
