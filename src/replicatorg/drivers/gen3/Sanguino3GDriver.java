@@ -1167,10 +1167,10 @@ public class Sanguino3GDriver extends SerialDriver
 	 **************************************************************************/
 	final private Version extendedStopVersion = new Version(2,7);
 	
-	public void stop() {
+	public void stop(boolean abort) {
 		Base.logger.fine("Stop.");
 		PacketBuilder pb;
-		if (version.atLeast(extendedStopVersion)) {
+		if (!abort && version.atLeast(extendedStopVersion)) {
 			pb = new PacketBuilder(MotherboardCommandCode.EXTENDED_STOP.getCode());
 			// Clear command queue and stop motion
 			pb.add8(1<<0 | 1<<1);

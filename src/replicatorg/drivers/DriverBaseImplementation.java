@@ -605,7 +605,7 @@ public class DriverBaseImplementation implements Driver {
 	/***************************************************************************
 	 * Stop and system state reset
 	 **************************************************************************/
-	public void stop() {
+	public void stop(boolean abort) {
 		// No implementation needed for synchronous machines.
 		Base.logger.info("Machine stop called.");
 	}

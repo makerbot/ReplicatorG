@@ -334,7 +334,11 @@ public interface Driver {
 	/***************************************************************************
 	 * Stop and system state reset
 	 **************************************************************************/
-	public void stop();
+	/** Stop the motion of the machine. A normal stop will merely halt all steppers.
+	 * An abort (a stop with the abort bit set true) will also instruct the machine
+	 * to stop all subsystems and toolhead.
+	 */
+	public void stop(boolean abort);
 
 	public void reset();
 

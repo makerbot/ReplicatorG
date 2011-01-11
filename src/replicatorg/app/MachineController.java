@@ -288,7 +288,7 @@ public class MachineController {
 				if (state.getState() == MachineState.State.STOPPING ||
 						state.getState() == MachineState.State.RESET) {
 					if (!state.isSimulating()) {
-						driver.stop();
+						driver.stop(true);
 					}
 					throw new BuildFailureException("Build manually aborted");
 				}
@@ -581,7 +581,7 @@ public class MachineController {
 							setState(MachineState.State.NOT_ATTACHED);
 						}
 					} else if (state.getState() == MachineState.State.STOPPING) {
-						driver.stop();
+						driver.stop(true);
 						setState(MachineState.State.READY);						
 					} else if (state.getState() == MachineState.State.RESET) {
 						driver.reset();
