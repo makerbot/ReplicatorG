@@ -30,6 +30,7 @@ public enum MotherboardCommandCode {
 	// Get the build name
 	GET_BUILD_NAME(20),
 	GET_POSITION_EXT(21),
+	EXTENDED_STOP(22),
 	
 	// QUEUE_POINT_INC(128) obsolete
 	QUEUE_POINT_ABS(129),
