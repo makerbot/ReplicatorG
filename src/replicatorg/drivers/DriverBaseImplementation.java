@@ -222,7 +222,7 @@ public class DriverBaseImplementation implements Driver {
 		offsets[offsetSystemNum].z = j;
 	}
 
-	private Point5d currentPosition = null;
+	protected Point5d currentPosition = null;
 	
 	public void setCurrentPosition(Point5d p) throws RetryException {
 		currentPosition = p;

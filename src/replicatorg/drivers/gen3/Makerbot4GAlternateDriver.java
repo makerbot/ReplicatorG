@@ -115,7 +115,7 @@ public class Makerbot4GAlternateDriver extends Sanguino3GDriver {
 
 		runCommand(pb.getPacket());
 
-		super.setCurrentPosition(p);
+		this.currentPosition = p;
 	}
 	
 	EnumMap<AxisId,ToolModel> stepExtruderMap = new EnumMap<AxisId,ToolModel>(AxisId.class);

@@ -324,7 +324,7 @@ public class MachineController {
 					if (state.getState() == MachineState.State.STOPPING ||
 						state.getState() == MachineState.State.RESET) {
 						if (!state.isSimulating()) {
-							driver.stop();
+							driver.stop(true);
 						}
 						throw new BuildFailureException("Build manually aborted");
 					}
