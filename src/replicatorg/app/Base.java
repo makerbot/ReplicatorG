@@ -225,6 +225,29 @@ public class Base {
 	 */
 	MainWindow editor = null;
 
+	private static final String[] supportedExtensions = {
+			"gcode", "ngc",
+			"stl", "dae", "obj"
+	};
+	
+	/**
+	 * Return the extension of a path, converted to lowercase.
+	 * @param path The path to check.
+	 * @return The extension suffix, sans ".".
+	 */
+	public static String getExtension(String path) {
+		String[] split = path.split("\\.");
+		return split[split.length-1];
+	}
+	
+	public static boolean supportedExtension(String path) {
+		String suffix = getExtension(path);
+		for (final String s : supportedExtensions) {
+			if (s.equals(suffix)) { return true; }
+		}
+		return false;
+	}
+	
 	static public void main(String args[]) {
 
 		// make sure that this is running on java 1.5 or better.
@@ -239,7 +262,7 @@ public class Base {
 		// parse command line input
 		for (int i=0;i<args.length;i++) {
 			// grab any opened file from the command line
-			if(args[i].endsWith(".gcode") || args[i].endsWith(".stl") || args[i].endsWith(".dae")) {
+			if (supportedExtension(args[i])) {
 				Base.openedAtStartup = args[i];
 			}
 			
