@@ -467,6 +467,17 @@ public class DriverBaseImplementation implements Driver {
 		return machine.currentTool().getMotorSpeedReadingPWM();
 	}
 
+	// TODO: These are backwards?
+	public void readToolStatus() {
+	}
+
+	public int getToolStatus() {
+		readToolStatus();
+
+		return machine.currentTool().getToolStatus();
+	}
+
+	
 	/***************************************************************************
 	 * Spindle interface functions
 	 **************************************************************************/
@@ -497,7 +508,7 @@ public class DriverBaseImplementation implements Driver {
 	public int getSpindleSpeedPWM() {
 		return machine.currentTool().getSpindleSpeedReadingPWM();
 	}
-
+	
 	/***************************************************************************
 	 * Temperature interface functions
 	 * @throws RetryException 
@@ -515,7 +526,7 @@ public class DriverBaseImplementation implements Driver {
 
 		return machine.currentTool().getCurrentTemperature();
 	}
-
+	
 	/***************************************************************************
 	 * Platform Temperature interface functions
 	 * @throws RetryException 

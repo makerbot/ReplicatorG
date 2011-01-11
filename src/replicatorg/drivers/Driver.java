@@ -218,6 +218,10 @@ public interface Driver {
 	 * change our gear ratio
 	 */
 	public void changeGearRatio(int ratioIndex);
+	
+	public void readToolStatus();
+	
+	public int getToolStatus();
 
 	/***************************************************************************
 	 * Motor interface functions

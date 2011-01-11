@@ -767,6 +767,21 @@ public class Sanguino3GDriver extends SerialDriver
 		return rpm;
 	}
 
+
+	public void readToolStatus() {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(ToolCommandCode.GET_TOOL_STATUS.getCode());
+		PacketResponse pr = runQuery(pb.getPacket());
+		if (pr.isEmpty()) return;
+		// FIXME: First, check that the result code is OK. We occationally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
+		int status = pr.get8();
+		machine.currentTool().setToolStatus(status);
+
+		Base.logger.log(Level.FINE,"Tool Status: "
+					+ machine.currentTool().getToolStatus());
+	}
+	
 	/***************************************************************************
 	 * PenPlotter interface functions
 	 * @throws RetryException 
@@ -942,7 +957,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		super.readTemperature();
 	}
-
+	
 	/***************************************************************************
 	 * Platform Temperature interface functions
 	 * @throws RetryException 
