@@ -525,7 +525,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		runCommand(pb.getPacket());
 
-		super.setCurrentPosition(p);
+		this.currentPosition = p;
 	}
 
 	// Homes the three first axes
@@ -1350,6 +1350,8 @@ public class Sanguino3GDriver extends SerialDriver
 		if ( (b[0] & (0x01 << 0)) != 0 ) r.add(AxisId.X);
 		if ( (b[0] & (0x01 << 1)) != 0 ) r.add(AxisId.Y);
 		if ( (b[0] & (0x01 << 2)) != 0 ) r.add(AxisId.Z);
+		if ( (b[0] & (0x01 << 3)) != 0 ) r.add(AxisId.A);
+		if ( (b[0] & (0x01 << 4)) != 0 ) r.add(AxisId.B);
 		return r;
 	}
 
@@ -1358,6 +1360,8 @@ public class Sanguino3GDriver extends SerialDriver
 		if (axes.contains(AxisId.X)) b[0] = (byte)(b[0] | (0x01 << 0));
 		if (axes.contains(AxisId.Y)) b[0] = (byte)(b[0] | (0x01 << 1));
 		if (axes.contains(AxisId.Z)) b[0] = (byte)(b[0] | (0x01 << 2));
+		if (axes.contains(AxisId.A)) b[0] = (byte)(b[0] | (0x01 << 3));
+		if (axes.contains(AxisId.B)) b[0] = (byte)(b[0] | (0x01 << 4));
 		writeToEEPROM(EEPROM_AXIS_INVERSION_OFFSET,b);
 	}
 

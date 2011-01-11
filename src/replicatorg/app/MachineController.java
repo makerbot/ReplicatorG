@@ -184,6 +184,7 @@ public class MachineController {
 			boolean retry = false;
 			// Iterate over all the lines in the gcode source.
 			while (i.hasNext()) {
+				// Read and process next line
 				if (retry == false) {
 					String line = i.next();
 					linesProcessed++;
@@ -258,8 +259,7 @@ public class MachineController {
 //					Base.logger.fine("Message delivery failed, retrying");
 					Base.logger.log(Level.FINE,"Message delivery failed, retrying");
 					retry = true;
-				}
-				catch (GCodeException e) {
+				} catch (GCodeException e) {
 					// This is severe, but not fatal; ordinarily it means there's an
 					// unrecognized gcode in the source.
 					Base.logger.severe("Error: " + e.getMessage());
@@ -315,8 +315,25 @@ public class MachineController {
 			}
 			
 			// wait for driver to finish up.
-			if (!state.isSimulating()) while (!driver.isFinished()) {
-				Thread.sleep(100);
+			if (!state.isSimulating()) {
+				while (!driver.isFinished()) {
+					// We're checking for stop/reset here as well. This will catch stops occurring
+					// after all lines have been queued on the motherboard.
+					
+					// Send a stop command if we're stopping.
+					if (state.getState() == MachineState.State.STOPPING ||
+						state.getState() == MachineState.State.RESET) {
+						if (!state.isSimulating()) {
+							driver.stop();
+						}
+						throw new BuildFailureException("Build manually aborted");
+					}
+					// bail if we're no longer building
+					if (state.getState() != MachineState.State.BUILDING) {
+						return false;
+					}
+					Thread.sleep(100);
+				}
 			}
 			return true;
 		}
