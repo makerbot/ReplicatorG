@@ -54,6 +54,7 @@ public class Build {
 	 * .obj - model file
 	 * .dae - model file
 	 * .gcode - gcode file
+	 * .ngc - gcode file
 	 * .zip - composite build file
 	 */
 	String mainFilename;
@@ -113,7 +114,7 @@ public class Build {
 			}
 			loadCode();
 			loadModel();
-			if ("gcode".equals(suffix) && getCode() != null) {
+			if (("gcode".equalsIgnoreCase(suffix) || "ngc".equalsIgnoreCase(suffix)) && getCode() != null) {
 				openedElement = getCode();
 			} else {
 				openedElement = getModel();
@@ -137,6 +138,11 @@ public class Build {
 		File codeFile = new File(folder, name + ".gcode");
 		if (codeFile.exists()) {
 			elements.add(new BuildCode(name, codeFile));
+		} else {
+			codeFile = new File(folder, name + ".ngc");
+			if (codeFile.exists()) {
+				elements.add(new BuildCode(name, codeFile));
+			}
 		}
 	}
 	
@@ -218,6 +224,7 @@ public class Build {
 
 		// Find base name
 		if (newName.toLowerCase().endsWith(".gcode")) newName = newName.substring(0, newName.length()-6);
+		if (newName.toLowerCase().endsWith(".ngc")) newName = newName.substring(0, newName.length()-4);
 		if (newName.toLowerCase().endsWith(".stl")) newName = newName.substring(0, newName.length()-4);
 		if (newName.toLowerCase().endsWith(".obj")) newName = newName.substring(0, newName.length()-4);
 		if (newName.toLowerCase().endsWith(".dae")) newName = newName.substring(0, newName.length()-4);

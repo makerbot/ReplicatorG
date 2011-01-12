@@ -56,7 +56,7 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
 import replicatorg.app.ui.controlpanel.ExtruderPanel;
-import replicatorg.app.ui.controlpanel.Jog3AxisPanel;
+import replicatorg.app.ui.controlpanel.JogPanel;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 import replicatorg.machine.MachineListener;
@@ -76,7 +76,7 @@ public class ControlPanelWindow extends JFrame implements
 
 	protected JPanel mainPanel;
 
-	protected Jog3AxisPanel jogPanel;
+	protected JogPanel jogPanel;
 
 	protected JTabbedPane toolsPane;
 
@@ -195,7 +195,7 @@ public class ControlPanelWindow extends JFrame implements
 	}
 
 	protected JComponent createJogPanel() {
-		jogPanel = new Jog3AxisPanel(machine);
+		jogPanel = new JogPanel(machine);
 		return jogPanel;
 	}
 

@@ -372,7 +372,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 								// see if this is a .gcode file to be opened
 								String filename = file.getName();
-								if (filename.endsWith(".gcode")) {
+								// FIXME: where did this come from?  Need case insensitivity.
+								if (filename.endsWith(".gcode") || filename.endsWith(".ngc")) {
 									handleOpenFile(file);
 									return true;
 								}
@@ -2031,9 +2032,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (loadDir != null) { directory = new File(loadDir); }
 		JFileChooser fc = new JFileChooser(directory);
 		FileFilter defaultFilter;
-		String[] extensions = {".gcode",".stl"};
+		String[] extensions = {".gcode",".ngc",".stl"};
 		fc.addChoosableFileFilter(defaultFilter = new ExtensionFilter(extensions,"GCode or STL files"));
-		fc.addChoosableFileFilter(new ExtensionFilter(".gcode","GCode files"));
+		String[] gcodeExtensions = {".gcode",".ngc"};
+		fc.addChoosableFileFilter(new ExtensionFilter(gcodeExtensions,"GCode files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".stl","STL files"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".obj","OBJ files (experimental)"));
 		fc.addChoosableFileFilter(new ExtensionFilter(".dae","Collada files (experimental)"));
