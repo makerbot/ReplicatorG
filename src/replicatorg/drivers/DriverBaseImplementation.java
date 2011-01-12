@@ -69,6 +69,8 @@ public class DriverBaseImplementation implements Driver {
 	// what is our mode of positioning?
 	protected int positioningMode = 0;
 
+	protected Point5d currentPosition = null;
+	
 	static public int ABSOLUTE = 0;
 
 	static public int INCREMENTAL = 1;
@@ -222,8 +224,6 @@ public class DriverBaseImplementation implements Driver {
 		offsets[offsetSystemNum].z = j;
 	}
 
-	protected Point5d currentPosition = null;
-	
 	public void setCurrentPosition(Point5d p) throws RetryException {
 		currentPosition = p;
 	}
