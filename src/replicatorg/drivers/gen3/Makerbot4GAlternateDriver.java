@@ -2,6 +2,7 @@ package replicatorg.drivers.gen3;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Level;
 
 import org.w3c.dom.Element;
@@ -19,43 +20,102 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		return "Makerbot4GAlternate";
 	}
 
+	/**
+	 * Overloaded to manage a hijacked axis and run this axis in relative mode instead of the extruder DC motor
+	 */
 	public void queuePoint(Point5d p) throws RetryException {
-		// is this point even step-worthy?
-		Point5d deltaSteps = getAbsDeltaSteps(getCurrentPosition(), p);
-		double length = deltaSteps.length();
-		if (length > 0.0) { // only compute nonzero moves
-			// where we going?
-			Point5d steps = machine.mmToSteps(p);
+
+		// Filter away any hijacked axes from the given point.
+		// This is necessary to avoid taking deltas into account where we 
+		// compare the relative p coordinate (usually 0) with the absolute 
+		// currentPosition (which we get from the Motherboard).
+		Point5d filteredpoint = new Point5d(p);
+		Point5d filteredcurrent = new Point5d(getCurrentPosition());
+		for (AxisId axis : getHijackedAxes()) {
+			filteredpoint.setAxis(axis, 0d);
+			filteredcurrent.setAxis(axis, 0d);
+		}
+		
+		// is this point even step-worthy? Only compute nonzero moves
+		Point5d deltaSteps = getAbsDeltaSteps(filteredcurrent, filteredpoint);
+		if (deltaSteps.length() > 0.0) {
+			Point5d delta = new Point5d();
+			delta.sub(filteredpoint, filteredcurrent); // delta = p - current
+			delta.absolute(); // absolute value of each component
 			
-			Point5d delta = getDelta(p);
-			double feedrate = getSafeFeedrate(delta);
+			double feedrate = getSafeFeedrate(delta); // FIXME: Doesn't take max feedrate of the extruder into account
 			
 			// Calculate time for move in usec
 			double minutes = delta.length() / feedrate;
-			double us = (60.0 * 1000.0 * 1000.0) * minutes;
 
-			int relative = 0;
-			// Modify hijacked axes
-			for (Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
-				ToolModel curTool = machine.currentTool();
-				final AxisId axis = entry.getKey();
-				relative |= 1 << axis.getIndex();
-				if (curTool.equals(entry.getValue()) && curTool.isMotorEnabled()) {
-					// Figure out length of move
-					final double extruderStepsPerMinute = curTool.getMotorSpeedRPM()*curTool.getMotorSteps();
-					final boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
-					final double extruderSteps = (clockwise?-1d:1d) * extruderStepsPerMinute * minutes;
-					steps.setAxis(axis, extruderSteps);
-				} else {
-					p.setAxis(axis, 0);
-				}
-			}
+			Point5d steps = machine.mmToSteps(filteredpoint);		
+			int relative = modifyHijackedAxes(steps, minutes);
 
 			// okay, send it off!
-			queueNewPoint(steps, (long)us, relative);
+			queueNewPoint(steps, (long) (60 * 1000 * 1000 * minutes), relative);
 
-			setInternalPosition(p);
+			setInternalPosition(filteredpoint);
 		}
+	}
+
+	/**
+	 * Overloaded to support extruding without moving by converting a delay in to an extruder command
+	 */
+	public void delay(long millis) throws RetryException {
+		if (Base.logger.isLoggable(Level.FINER)) {
+			Base.logger.log(Level.FINER,"Delaying " + millis + " millis.");
+		}
+
+		Point5d steps = new Point5d();
+		modifyHijackedAxes(steps, millis / 60000d);
+
+		if (steps.length() > 0) {
+			queueNewPoint(steps, millis * 1000, 0x1f); // All axes relative to avoid dealing with absolute coords
+		}
+		else {
+			super.delay(millis); // This resulted in no stepper movements -> fall back to normal delay
+		}
+	}
+	
+	/** 
+	 * Returns the hijacked axes for the current tool.
+	 */
+	private Iterable<AxisId> getHijackedAxes() {
+		Vector<AxisId> axes = new Vector<AxisId>();
+		for ( Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
+			ToolModel curTool = machine.currentTool();
+			AxisId axis = entry.getKey();
+			if (curTool.equals(entry.getValue())) {
+				axes.add(axis);
+			}
+		}
+		return axes;
+	}
+
+	/**
+	 * Write a relative movement to any axes which has been hijacked where the extruder is turned on.
+	 * The axis will be moved with a length corresponding to the current RPM and the duration of the movement.
+	 * If the extruder is off, the corresponding axes are set to a zero relative movement.
+	 * @param steps
+	 * @param minutes
+	 * @return a bitmask with the relative bit set for all hijacked axes
+	 */
+	private int modifyHijackedAxes(Point5d steps, double minutes) {
+		int relative = 0;
+
+		for (AxisId axis : getHijackedAxes()) {
+			relative |= 1 << axis.getIndex();
+			double extruderSteps = 0;
+			ToolModel curTool = machine.currentTool();
+			if (curTool.isMotorEnabled()) {
+				// Figure out length of move
+				final double extruderStepsPerMinute = curTool.getMotorSpeedRPM()*curTool.getMotorSteps();
+				final boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
+				extruderSteps = (clockwise?-1d:1d) * extruderStepsPerMinute * minutes;
+			}
+			steps.setAxis(axis, extruderSteps);
+		}
+		return relative;
 	}
 
 	protected void queueNewPoint(Point5d steps, long us, int relative) throws RetryException {
