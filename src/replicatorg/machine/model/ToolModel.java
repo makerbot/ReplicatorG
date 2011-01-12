@@ -32,6 +32,9 @@ public class ToolModel
 	public static int MOTOR_CLOCKWISE = 1;
 	public static int MOTOR_COUNTER_CLOCKWISE = 2;
 	
+	// TODO: should this be a bitfield?
+	protected int toolStatus;
+	
 	//our xml config info
 	protected Node xml;
 	
@@ -316,7 +319,17 @@ public class ToolModel
 	{
 		return type;
 	}
+	
+	public int getToolStatus()
+	{
+		return toolStatus;
+	}
 
+	public void setToolStatus(int status)
+	{
+		toolStatus = status;
+	}
+	
 	/*************************************
 	*  Motor interface functions
 	*************************************/

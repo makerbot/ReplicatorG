@@ -222,7 +222,7 @@ public class DriverBaseImplementation implements Driver {
 		offsets[offsetSystemNum].z = j;
 	}
 
-	private Point5d currentPosition = null;
+	protected Point5d currentPosition = null;
 	
 	public void setCurrentPosition(Point5d p) throws RetryException {
 		currentPosition = p;
@@ -467,6 +467,17 @@ public class DriverBaseImplementation implements Driver {
 		return machine.currentTool().getMotorSpeedReadingPWM();
 	}
 
+	// TODO: These are backwards?
+	public void readToolStatus() {
+	}
+
+	public int getToolStatus() {
+		readToolStatus();
+
+		return machine.currentTool().getToolStatus();
+	}
+
+	
 	/***************************************************************************
 	 * Spindle interface functions
 	 **************************************************************************/
@@ -497,7 +508,7 @@ public class DriverBaseImplementation implements Driver {
 	public int getSpindleSpeedPWM() {
 		return machine.currentTool().getSpindleSpeedReadingPWM();
 	}
-
+	
 	/***************************************************************************
 	 * Temperature interface functions
 	 * @throws RetryException 
@@ -515,7 +526,7 @@ public class DriverBaseImplementation implements Driver {
 
 		return machine.currentTool().getCurrentTemperature();
 	}
-
+	
 	/***************************************************************************
 	 * Platform Temperature interface functions
 	 * @throws RetryException 
@@ -605,7 +616,7 @@ public class DriverBaseImplementation implements Driver {
 	/***************************************************************************
 	 * Stop and system state reset
 	 **************************************************************************/
-	public void stop() {
+	public void stop(boolean abort) {
 		// No implementation needed for synchronous machines.
 		Base.logger.info("Machine stop called.");
 	}
