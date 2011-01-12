@@ -778,8 +778,26 @@ public class Sanguino3GDriver extends SerialDriver
 		int status = pr.get8();
 		machine.currentTool().setToolStatus(status);
 
+		int errorTerm = (int)pr.get16();
+		int deltaTerm = (int)pr.get16();
+		int lastOutput = (int)pr.get16();
+		
+		// Convert to signed integers, this is dangerous.
+		if (errorTerm >= 1<<15 ) {
+			errorTerm = errorTerm - (1<<16);
+		}
+		if (deltaTerm >= 1<<15 ) {
+			deltaTerm = deltaTerm - (1<<16);
+		}
+		if (lastOutput >= 1<<15 ) {
+			lastOutput = lastOutput - (1<<16);
+		}
+		
 		Base.logger.log(Level.FINE,"Tool Status: "
-					+ machine.currentTool().getToolStatus());
+					+ machine.currentTool().getToolStatus()
+					+ "  PID error term: " + errorTerm 
+					+ "  PID delta term: " + deltaTerm
+					+ "  PID output: " + lastOutput);
 	}
 	
 	/***************************************************************************
