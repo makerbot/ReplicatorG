@@ -9,6 +9,7 @@ public class Point5d {
 	final private double values[] = new double[DIMENSIONS];
 
 	public Point5d() {
+		this(0,0,0,0,0);
 	}
 	
 	public Point5d(double x, double y, double z, double a, double b) {
