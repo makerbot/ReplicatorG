@@ -23,6 +23,8 @@
 
 package replicatorg.machine.model;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.w3c.dom.Node;
 
 import replicatorg.app.tools.XML;
@@ -64,11 +66,13 @@ public class ToolModel
 	protected int spindleEncoderPPR;
 
 	//temperature variables
-	protected double currentTemperature;
+	protected final AtomicReference<Double> currentTemperature =
+		new AtomicReference<Double>(0.0);
 	protected double targetTemperature;
 
 	//platform temperature variables
-	protected double platformCurrentTemperature;
+	protected AtomicReference<Double> platformCurrentTemperature = 
+		new AtomicReference<Double>(0.0);
 	protected double platformTargetTemperature;
 
 	//various coolant/control stuff
@@ -479,12 +483,12 @@ public class ToolModel
 
 	public void setCurrentTemperature(double temperature)
 	{
-		currentTemperature = temperature;
+		currentTemperature.set( temperature );
 	}
 	
 	public double getCurrentTemperature()
 	{
-		return currentTemperature;
+		return currentTemperature.get();
 	}
 	
 	public boolean hasHeater()
@@ -507,12 +511,12 @@ public class ToolModel
 
 	public void setPlatformCurrentTemperature(double temperature)
 	{
-		platformCurrentTemperature = temperature;
+		platformCurrentTemperature.set(temperature);
 	}
 	
 	public double getPlatformCurrentTemperature()
 	{
-		return platformCurrentTemperature;
+		return platformCurrentTemperature.get();
 	}
 	
 	public boolean hasHeatedPlatform()

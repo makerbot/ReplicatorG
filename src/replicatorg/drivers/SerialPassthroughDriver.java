@@ -257,7 +257,12 @@ public class SerialPassthroughDriver extends SerialDriver {
 
 	// FIXME: 5D port
 	public void queuePoint(Point5d p) throws RetryException {
-		String cmd = "G1 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
+		// Redundant feedrate send added in Ultimaker merge. TODO: ask Erik, D1plo1d about this. 
+		String cmd = "G1 F" + df.format(getCurrentFeedrate());
+		
+		sendCommand(cmd);
+
+		cmd = "G1 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
 				+ df.format(p.z()) + " F" + df.format(getCurrentFeedrate());
 
 		sendCommand(cmd);
@@ -493,4 +498,7 @@ public class SerialPassthroughDriver extends SerialDriver {
 		initialize();
 	}
 
+	protected Point5d reconcilePosition() {
+		return new Point5d();
+	}
 }

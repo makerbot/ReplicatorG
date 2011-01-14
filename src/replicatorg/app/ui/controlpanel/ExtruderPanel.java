@@ -20,6 +20,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -106,7 +107,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		axis.setStandardTickUnits(unitSource);
 		axis.setTickLabelsVisible(false); // We don't need to see the millisecond count
 		axis = plot.getRangeAxis();
-		axis.setRange(0,260); // set termperature range from 0 to 260 degrees C 
+		axis.setRange(0,300); // set termperature range from 0 to 300 degrees C so you can see overshoots 
 		// Tweak L&F of chart
 		//((XYAreaRenderer)plot.getRenderer()).setOutline(true);
 		XYStepRenderer renderer = new XYStepRenderer();
@@ -124,7 +125,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 		plot.setDatasetRenderingOrder(DatasetRenderingOrder.REVERSE);
 		ChartPanel chartPanel = new ChartPanel(chart);
-		chartPanel.setPreferredSize(new Dimension(400,140));
+		chartPanel.setPreferredSize(new Dimension(400,160));
 		chartPanel.setOpaque(false);
 		return chartPanel;
 	}
@@ -395,20 +396,31 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		return null;
 	}
 
-	synchronized public void updateStatus() { // FIXME sync
+	public void updateStatus() {
+		
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
 		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeater()) {
 			double temperature = machine.getDriver().getTemperature();
-			currentTempField.setText(Double.toString(temperature));
-			measuredDataset.add(second, temperature,"a");
-			targetDataset.add(second, targetTemperature,"a");
+			updateTemperature(second, temperature);
 		}
 		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeatedPlatform()) {
 			double temperature = machine.getDriver().getPlatformTemperature();
-			platformCurrentTempField.setText(Double.toString(temperature));
-			measuredPlatformDataset.add(second, temperature,"a");
-			targetPlatformDataset.add(second, targetPlatformTemperature,"a");
+			updatePlatformTemperature(second, temperature);
 		}
+	}
+	
+	synchronized public void updateTemperature(Second second, double temperature)
+	{
+		currentTempField.setText(Double.toString(temperature));
+		measuredDataset.add(second, temperature,"a");
+		targetDataset.add(second, targetTemperature,"a");
+	}
+
+	synchronized public void updatePlatformTemperature(Second second, double temperature)
+	{
+		platformCurrentTempField.setText(Double.toString(temperature));
+		measuredPlatformDataset.add(second, temperature,"a");
+		targetPlatformDataset.add(second, targetPlatformTemperature,"a");
 	}
 
 	public void focusGained(FocusEvent e) {
@@ -428,14 +440,61 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		String name = source.getName();
 		Driver driver = machine.getDriver();
 		if (source.getText().length() > 0) {
-			if (name.equals("target-temp")) {
-				double temperature = Double.parseDouble(source.getText());
-				driver.setTemperature(temperature);
-				targetTemperature = temperature;
-			} else if (name.equals("platform-target-temp")) {
-				double temperature = Double.parseDouble(source.getText());
-				driver.setPlatformTemperature(temperature);
-				targetPlatformTemperature = temperature;
+			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
+				double temperatureInput = Double.parseDouble(source.getText());
+				double temperatureLimitAccepted;
+				double aTargetTemperature;
+				
+				if(name.equals("target-temp")) {
+					temperatureLimitAccepted = Double.parseDouble(Base.preferences.get("temperature.acceptedLimit","260.0"));
+					aTargetTemperature = targetTemperature;
+				} else {
+					temperatureLimitAccepted = Double.parseDouble(Base.preferences.get("temperature.acceptedLimit.bed","90.0"));
+					aTargetTemperature = targetPlatformTemperature;
+				}
+				if(temperatureInput > temperatureLimitAccepted){
+					// Temperature warning dialog!
+					Object[] options = {"Yes.",
+					                    "Yes, and never ask up to "+ temperatureInput +" degrees Celsius.",
+					                    "Oops. No!"};
+					int n = JOptionPane.showOptionDialog(this,
+							"Setting the temperature to " + temperatureInput+ " degrees Celsius may involve health and/or safety risks and may cause damage to your machine!\n"
+		                    + "Do you accept the risk and still want set this temperature?",
+					    "Danger",
+					    JOptionPane.YES_NO_CANCEL_OPTION,
+					    JOptionPane.WARNING_MESSAGE,
+					    null,
+					    options,
+					    options[2]);
+					if (n == 0) { // Yes
+						aTargetTemperature = temperatureInput;
+					}
+					if (n == 1) { // Yes, remember.
+						aTargetTemperature = temperatureInput;
+						if(name.equals("target-temp")) {
+							Base.preferences.put("temperature.acceptedLimit",Double.toString(temperatureInput));
+						} else {
+							Base.preferences.put("temperature.acceptedLimit.bed",Double.toString(temperatureInput));
+						}
+					}
+					if (n == 2) { // No!
+						if(aTargetTemperature > temperatureLimitAccepted) 
+							aTargetTemperature = temperatureLimitAccepted; // never revert above an accepted limit either!
+						temperatureInput = aTargetTemperature; // undo
+						source.setText(Double.toString(aTargetTemperature)); // revert text field
+					}
+				} else { // relatively safe temperature range:
+					aTargetTemperature = temperatureInput;	
+				}
+				if(name.equals("target-temp")) {
+					targetTemperature = aTargetTemperature;
+					driver.setTemperature(targetTemperature);
+				} else {
+					targetPlatformTemperature = aTargetTemperature;
+					driver.setPlatformTemperature(targetTemperature);
+				}
+				// This gives some feedback by adding .0 it it wasn't typed.
+				source.setText(Double.toString(aTargetTemperature));
 			} else if (name.equals("motor-speed")) {
 				driver.setMotorRPM(Double.parseDouble(source.getText()));
 			} else if (name.equals("motor-speed-pwm")) {

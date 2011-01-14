@@ -1,0 +1,10 @@
+Format is tab separated multiply settings.
+Name                          	Value
+WindowPosition	700+0
+Open File for Multiply	
+Activate Multiply:	False
+Center X (mm):	0.0
+Center Y (mm):	0.0
+Number of Columns (integer):	1
+Number of Rows (integer):	1
+Separation over Perimeter Width (ratio):	15.0

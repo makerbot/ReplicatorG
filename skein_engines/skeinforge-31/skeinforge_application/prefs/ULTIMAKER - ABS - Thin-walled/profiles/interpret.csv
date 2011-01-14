@@ -1,0 +1,8 @@
+Format is tab separated interpret settings.
+Name                          	Value
+WindowPosition	0+0
+WindowVisibilities
+Open File for Interpret	
+Activate Interpret	False
+Print Interpretion	False
+Text Program:	webbrowser

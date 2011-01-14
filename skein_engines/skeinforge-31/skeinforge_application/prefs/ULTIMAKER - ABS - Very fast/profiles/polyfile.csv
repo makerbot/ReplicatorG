@@ -1,0 +1,6 @@
+Format is tab separated polyfile settings.
+Name                          	Value
+WindowPosition	0+0
+WindowVisibilities
+Execute All Unmodified Files in a Directory	False
+Execute File	True

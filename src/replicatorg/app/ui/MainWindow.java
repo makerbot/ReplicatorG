@@ -111,7 +111,6 @@ import replicatorg.app.Base;
 import replicatorg.app.MRUList;
 import replicatorg.app.MachineController;
 import replicatorg.app.MachineFactory;
-import replicatorg.app.Serial;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.syntax.JEditTextArea;
@@ -122,6 +121,8 @@ import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.app.ui.modeling.PreviewPanel;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
+import replicatorg.app.util.serial.Name;
+import replicatorg.app.util.serial.Serial;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
@@ -565,10 +566,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		else {
 			currentName = Base.preferences.get("serial.last_selected", null);
 		}
-		Vector<Serial.Name> names = Serial.scanSerialNames();
+		Vector<Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
 		ButtonGroup radiogroup = new ButtonGroup();
-		for (Serial.Name name : names) {
+		for (Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.toString());
 			item.setEnabled(name.isAvailable());
 			item.setSelected(name.getName().equals(currentName));
@@ -748,16 +749,30 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		File examplesDir = Base.getApplicationFile("examples");
 		Pattern p = Pattern.compile("[^\\.]*\\.[sS][tT][lL]$");
 		JMenuItem m = buildMenuFromPath(examplesDir,p);
-		m.setText("Examples");
-		return m;
+		if(m == null) {
+			JMenuItem m2 = new JMenu("Examples");
+			m2.add(new JMenuItem("No example dirs found."));
+			m2.add(new JMenuItem("Check if this dir exists:" + Base.getApplicationFile("examples")));
+			return m2;
+		} else {
+			m.setText("Examples");
+			return m;
+		}
 	}
 
 	private JMenuItem buildScriptsMenu() {
 		File examplesDir = Base.getApplicationFile("scripts");
 		Pattern p = Pattern.compile("[^\\.]*\\.[gG][cC][oO][dD][eE]$");
 		JMenuItem m = buildMenuFromPath(examplesDir,p);
-		m.setText("Scripts");
-		return m;
+		if(m == null) {
+			JMenuItem m2 = new JMenu("Scripts");
+			m2.add(new JMenuItem("No scripts found."));
+			m2.add(new JMenuItem("Check if this dir exists:" + Base.getApplicationFile("scripts")));
+			return m2;
+		} else {
+			m.setText("Scripts");
+			return m;
+		}
 	}
 
 	protected JMenu buildGCodeMenu() {
@@ -1737,7 +1752,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		message += "Stopped after "
 				+ EstimationDriver.getBuildTimeString(elapsed);
 
-		Base.showMessage("Build aborted", message);
+		// Highlight the line at which the user aborted...
+		int atWhichLine = machine.getLinesProcessed();
+		highlightLine(atWhichLine);
+
+		Base.showMessage("Build aborted (line "+ atWhichLine+")", message);
 	}
 
 	// synchronized public void buildingOver()
@@ -1846,8 +1865,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 			//buttons.inactivate(MainButtonPanel.PAUSE);
 		} else {
-			message("Paused.");
 			machine.pause();
+			int atWhichLine = machine.getLinesProcessed();
+			highlightLine(atWhichLine);
+			message("Paused at line "+ atWhichLine +".");
 
 			//buttons.clear();
 			//buttons.activate(MainButtonPanel.PAUSE);

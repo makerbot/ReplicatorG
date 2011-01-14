@@ -28,10 +28,15 @@ Contributions:
 * Marius: Added generalized skeinforge merge patch
 * Marius: Added skeinforge 35
 * Marius: Added build platform belt checkbox to control panel
+<<<<<<< HEAD
+* Erik: Pre-seeds the extruder PWM and RPM as configured in machines.xml
+* Rob: RepRap 5D driver checksum, linenumber and manual extrude support. Various RepRap 5D driver bug fixes.
+=======
 * Marius: Added support for wait-for-platform
 * Nick Starno: paraminator script
 * Robert Giseburt: several integration fixes for OS X
 * Marius, Charles, Nick, Rob Gilson, and others: lots of hard skeinforge configuration work!
+>>>>>>> a6c64e2747710fcadf5ac6ba0596fcf0ba5287e7
 
 0021 ReplicatorG
 Bugfix release

@@ -27,6 +27,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -60,7 +61,7 @@ public class MachineModel
 	
 	//our tool models
 	protected Vector<ToolModel> tools;
-	protected ToolModel currentTool;
+	protected final AtomicReference<ToolModel> currentTool = new AtomicReference<ToolModel>();
 	protected final ToolModel nullTool = new ToolModel();
 
 	//our clamp models	
@@ -84,7 +85,7 @@ public class MachineModel
 		maximumFeedrates = new Point5d();
 		stepsPerMM = new Point5d(1, 1, 1, 1, 1); //use ones, because we divide by this!
 		
-		currentTool = nullTool;
+		currentTool.set(nullTool);
 	}
 	
 	//load data from xml config
@@ -207,8 +208,11 @@ public class MachineModel
 						}
 						tools.set(tool.getIndex(), tool);
 					}
-					if (currentTool == nullTool) {
-						this.selectTool(tool.getIndex());
+					synchronized(currentTool)
+					{
+						if (currentTool.get() == nullTool) {
+							this.selectTool(tool.getIndex());
+						}
 					}
 				}
 			}
@@ -346,26 +350,29 @@ public class MachineModel
 	*************************************/
 	public void selectTool(int index)
 	{
-		try {
-			currentTool = (ToolModel)tools.get(index);
-			if (currentTool == null) { 
-				Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
-				currentTool = nullTool;
+		synchronized(currentTool)
+		{
+			try {
+				currentTool.set( (ToolModel)tools.get(index) );
+				if (currentTool.get() == null) { 
+					Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
+					currentTool.set(nullTool);
+				}
+			} catch (ArrayIndexOutOfBoundsException e) {
+				if (xml != null) { 
+					Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
+				} else {
+					// If this machine is not configured, it's presumed it's a null machine
+					// and it's expected that toolheads are not specified.
+				}
+				currentTool.set(nullTool);
 			}
-		} catch (ArrayIndexOutOfBoundsException e) {
-			if (xml != null) { 
-				Base.logger.severe("Cannot select non-existant tool (#" + index + ").");
-			} else {
-				// If this machine is not configured, it's presumed it's a null machine
-				// and it's expected that toolheads are not specified.
-			}
-			currentTool = nullTool;
 		}
 	}
 
 	public ToolModel currentTool()
 	{
-		return currentTool;
+		return currentTool.get();
 	}
 	
 	public ToolModel getTool(int index)

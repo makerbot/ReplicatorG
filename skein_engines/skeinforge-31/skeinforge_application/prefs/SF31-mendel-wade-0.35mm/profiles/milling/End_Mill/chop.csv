@@ -1,0 +1,15 @@
+Format is tab separated chop settings.
+Name                          	Value
+WindowPosition	700+0
+Open File to be Chopped	
+Add Extra Top Layer if Necessary	True
+Add Layer Template to SVG	True
+Extra Decimal Places (integer):	1
+Import Coarseness (ratio):	1.0
+Layer Thickness (mm):	0.4
+Layers From (index):	0
+Layers To (index):	999999999
+Correct Mesh	True
+Unproven Mesh	False
+Perimeter Width (mm):	2.0
+SVG Viewer:	webbrowser

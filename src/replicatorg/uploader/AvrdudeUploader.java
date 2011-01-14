@@ -33,7 +33,7 @@ import java.io.OutputStream;
 import java.util.Vector;
 
 import replicatorg.app.Base;
-import replicatorg.app.Serial;
+import replicatorg.app.util.serial.Serial;
 
 
 public class AvrdudeUploader extends AbstractFirmwareUploader {

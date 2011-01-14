@@ -3,13 +3,15 @@
  */
 package replicatorg.drivers;
 
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.app.Serial;
 import replicatorg.app.tools.XML;
+import replicatorg.app.util.serial.Serial;
+import replicatorg.app.util.serial.SerialFifoEventListener;
 
 /**
  * @author phooky
@@ -28,7 +30,10 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
     private boolean explicit = false;
 	
     /** Lock for multi-threaded access to this driver's serial port. */
-	public final ReentrantLock serialWriteLock = new ReentrantLock();
+	private final ReentrantReadWriteLock serialLock = new ReentrantReadWriteLock();
+	/** Locks the serial object as in use so that it cannot be disposed until it is 
+	 * unlocked. Multiple threads can hold this lock concurrently. */
+	public final ReadLock serialInUse = serialLock.readLock();
 	
     protected SerialDriver() {
     	portName = Base.preferences.get("serial.portname",null);
@@ -60,11 +65,17 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
                 stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
 	}
 
+// diplo1d: see this fix by kintel that conflicted when merging. You also fixed it but differently:
+// https://github.com/makerbot/ReplicatorG/commit/899c7c8e059d986ac0744ca4ab1f2f44efaae4b5
+// your fix:
+//	public void setSerial(Serial serial) {
+//		serialLock.writeLock().lock();
+// kintel had just changed it to "synchronized".
 	public synchronized void setSerial(Serial serial) {
-		serialWriteLock.lock();
+		serialLock.writeLock().lock();
 		if (this.serial == serial)
 		{
-			serialWriteLock.unlock();
+			serialLock.writeLock().unlock();
 			return;
 		}
 		if (this.serial != null) {
@@ -75,7 +86,13 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 		}
 		setInitialized(false);
 		this.serial = serial;
-		serialWriteLock.unlock();
+
+		// asynch option: the serial port forwards all received data in FIFO format via 
+		// serialByteReceivedEvent if the driver implements SerialFifoEventListener.
+		if (this instanceof SerialFifoEventListener && serial != null)
+			serial.listener.set( (SerialFifoEventListener) this );
+
+		serialLock.writeLock().unlock();
 	}
 
 	public Serial getSerial() { return serial; }
@@ -103,11 +120,11 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	public boolean isExplicit() { return explicit; }
 	
 	public void dispose() {
-		serialWriteLock.lock();
+		serialLock.writeLock().lock();
 		super.dispose();
 		if (serial != null)
 			serial.dispose();
 		serial = null;
-		serialWriteLock.unlock();
+		serialLock.writeLock().unlock();
 	}
 }

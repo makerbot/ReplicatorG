@@ -1,0 +1,17 @@
+Format is tab separated speed settings.
+Name                          	Value
+WindowPosition	700+0
+Open File for Speed	
+Activate Speed:	True
+Add Flow Rate:	True
+Bridge Feed Rate Multiplier (ratio):	1.12
+Bridge Flow Rate Multiplier (ratio):	0.92
+Duty Cyle at Beginning (portion):	1.0
+Duty Cyle at Ending (portion):	0.0
+Feed Rate (mm/s):	50.0
+Flow Rate Setting (float):	26.0
+Maximum Z Feed Rate (mm/s):	2.5
+Orbital Feed Rate over Operating Feed Rate (ratio):	1.0
+Perimeter Feed Rate over Operating Feed Rate (ratio):	1.1
+Perimeter Flow Rate over Operating Flow Rate (ratio):	1.0
+Travel Feed Rate (mm/s):	125.0
