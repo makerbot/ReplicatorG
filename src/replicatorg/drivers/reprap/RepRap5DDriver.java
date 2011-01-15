@@ -59,7 +59,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 {
 	private static Pattern gcodeCommentPattern = Pattern.compile("\\([^)]*\\)|;.*");
 	private static Pattern resendLinePattern = Pattern.compile("([0-9]+)");
-	private static Pattern gcodeLineNumberPattern = Pattern.compile("N\\s*([0-9]+)");
+	private static Pattern gcodeLineNumberPattern = Pattern.compile("n\\s*([0-9]+)");
 	
 	public final AtomicReference<Double> feedrate = new AtomicReference<Double>(0.0);
 	public final AtomicReference<Double> ePosition = new AtomicReference<Double>(0.0);
@@ -89,6 +89,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * Enables five D GCodes if true. If false reverts to traditional 3D Gcodes
 	 */
 	private boolean fiveD = true;
+	
+	/**
+	 * Adds check-sums on to each gcode line sent to the RepRap.
+	 */
+	private boolean hasChecksums = true;
 	
 	/**
 	 * Enables pulsing RTS to restart the RepRap on connect.
@@ -180,6 +185,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
             pulseRTS = Boolean.parseBoolean(XML.getChildNodeValue(xml, "pulserts"));
         }
 
+        if (XML.hasChildNode(xml, "checksums")) {
+            hasChecksums = Boolean.parseBoolean(XML.getChildNodeValue(xml, "checksums"));
+        }
+
         if (XML.hasChildNode(xml, "fived")) {
             fiveD = Boolean.parseBoolean(XML.getChildNodeValue(xml, "fived"));
         }
@@ -216,9 +225,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		if (!isInitialized()) {
 			Base.logger.info("Initializing Serial.");
 
-			Base.logger.fine("Resetting RepRap: Pulsing RTS..");
 			if (pulseRTS)
 			{
+				Base.logger.fine("Resetting RepRap: Pulsing RTS..");
 				int retriesRemaining = waitForStartRetries+1;
 				retryPulse: do
 				{
@@ -407,7 +416,13 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			if (e!=null) this.ePosition.set(Double.parseDouble(e));
 	
 			// applychecksum replaces the line that was to be retransmitted, into the next line.
-			next = applyChecksum(next);
+			if (hasChecksums) next = applyChecksum(next);
+			
+			Base.logger.finest("sending: "+next);
+		}
+		else
+		{
+			Base.logger.finest("resending: "+next);
 		}
 		// Block until we can fit the command on the Arduino
 /*		synchronized(bufferLock)
@@ -602,7 +617,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			try
 			{
 				//convert to string and remove any trailing \r or \n's
-				line = new String(response, 0, responseLength, "US-ASCII").trim();
+				line = new String(response, 0, responseLength, "US-ASCII")
+							.trim().toLowerCase();
 			} catch (UnsupportedEncodingException e) {
 				Base.logger.severe("US-ASCII required. Terminating.");
 				throw new RuntimeException(e);
@@ -615,9 +631,12 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 			if (line.length() == 0)
 				Base.logger.fine("empty line received");
-
-			else if (line.startsWith("ok T:")||line.startsWith("T:")) {
-				Pattern r = Pattern.compile("T:([0-9\\.]+)");
+			else if (line.startsWith("echo:")) {
+					//if echo is turned on relay it to the user for debugging
+					Base.logger.info(line);
+			}
+			else if (line.startsWith("ok t:")||line.startsWith("t:")) {
+				Pattern r = Pattern.compile("t:([0-9\\.]+)");
 			    Matcher m = r.matcher(line);
 			    if (m.find( )) {
 			    	String temp = m.group(1);
@@ -625,7 +644,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					machine.currentTool().setCurrentTemperature(
 							Double.parseDouble(temp));
 			    }
-				r = Pattern.compile("^ok.*B:([0-9\\.]+)$");
+				r = Pattern.compile("^ok.*b:([0-9\\.]+)$");
 			    m = r.matcher(line);
 			    if (m.find( )) {
 			    	String bedTemp = m.group(1);
@@ -640,9 +659,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					okReceived.set(true);
 					okReceived.notifyAll();
 				}
+				bufferSize -= commands.remove();
 
 				bufferLock.lock();
-				bufferSize -= commands.remove();
 				//Notify the thread waitining in this gcode's sendCommand method that the gcode has been received.
 				String notifier = buffer.removeLast();
 				synchronized(notifier) { notifier.notifyAll(); }
@@ -656,7 +675,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			}
 
 			// old arduino firmware sends "start"
-			else if (line.contains("start")||line.contains("Start")) {
+			else if (line.contains("start")) {
 				// todo: set version
 				// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
 				synchronized (startReceived) {
@@ -665,10 +684,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				}
 				lineNumber.set(-1);
 
-			} else if (line.startsWith("Extruder Fail")) {
+			} else if (line.startsWith("extruder fail")) {
 				setError("Extruder failed:  cannot extrude as this rate.");
 
-			} else if (line.startsWith("Resend:")||line.startsWith("rs ")) {
+			} else if (line.startsWith("resend:")||line.startsWith("rs ")) {
 				//Getting the correct line from our buffer
 				bufferLock.lock();
 				String bufferedLine = buffer.removeLast();
@@ -676,7 +695,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				bufferLock.unlock();
 
 				//Is it a Dud M or G code? If so write a warning and return.
-				String letter = getRegexMatch("Dud ([A-Za-z]) code", line, 1);
+				String letter = getRegexMatch("dud ([a-z]) code", line, 1);
 				if ( (letter)!=null)
 				{
 					Base.logger.info("Dud "+letter+" code received. ignoring.");
