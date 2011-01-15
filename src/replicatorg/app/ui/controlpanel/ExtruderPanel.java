@@ -536,12 +536,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
 						driver.delay(extrudeTime*1000);
 					}
+					driver.disableMotor();
 				} else if (name.equals("motor-reverse")) {
 					driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 					driver.enableMotor();
 					if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
 						driver.delay(extrudeTime*1000);
 					}
+					driver.disableMotor();
 				} else if (name.equals("motor-stop")) {
 					driver.disableMotor();
 					if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
@@ -612,12 +614,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
 					driver.delay(extrudeTime*1000);
 				}
+				driver.disableMotor();
 			} else if (s.equals("reverse")) {
 				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 				driver.enableMotor();
 				if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
 					driver.delay(extrudeTime*1000);
 				}
+				driver.disableMotor();
 			} else if (s.equals("stop")) {
 				driver.disableMotor();
 				if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
