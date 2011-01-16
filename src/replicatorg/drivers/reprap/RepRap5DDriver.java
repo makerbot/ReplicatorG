@@ -652,7 +652,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 							Double.parseDouble(bedTemp));
 			    }
 			}
-			else if (line.startsWith("ok")) {
+			if (line.startsWith("ok")) {
 				
 				synchronized(okReceived)
 				{
