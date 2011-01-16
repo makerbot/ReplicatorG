@@ -38,6 +38,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -259,7 +260,9 @@ public class Serial implements SerialPortEventListener {
 				 * Wait until we timeout or a byte is received (which will notify this 
 				 * method). readFifo notifies for each byte received.
 				 */
-				readFifo.wait(timeoutMillis);
+				synchronized (readFifo) {
+					readFifo.wait(timeoutMillis);
+				}
 			}
 		} catch (InterruptedException e) {
 			// We are most likely amidst a shutdown.  Propagate the interrupt
@@ -311,12 +314,13 @@ public class Serial implements SerialPortEventListener {
 	}
 
 	public void write(byte bytes[]) {
+		if (disconnected.get() == true) Base.logger.warning("serial disconnected");
 		try {
 			output.write(bytes);
 			output.flush(); // Reconsider?
 
 		} catch (Exception e) { // null pointer or serial port dead
-			e.printStackTrace();
+			Base.logger.warning( "serial error: \n" + e.getMessage() );
 		}
 	}
 
@@ -377,7 +381,7 @@ public class Serial implements SerialPortEventListener {
 				// we have a plan for how to respond to the user when the
 				// connection drops, we'll just let this silently fail, and set
 				// a fail bit.
-				disconnected = true;
+				disconnected.set(true);
 			} catch (InterruptedException e) {
 			}
 			readFifo.clear();
@@ -388,11 +392,11 @@ public class Serial implements SerialPortEventListener {
 		}
 	}
 	
-	private boolean disconnected = false;
+	private AtomicBoolean disconnected = new AtomicBoolean(false);
 	/**
 	 * Indicates if we've received 
 	 */
-	public boolean isDisconnected() { return disconnected; }
+	public boolean isDisconnected() { return disconnected.get(); }
 	
 	public void serialEvent(SerialPortEvent event) {
 		if (event.getEventType() != SerialPortEvent.DATA_AVAILABLE) return;
@@ -432,7 +436,7 @@ public class Serial implements SerialPortEventListener {
 				// connection drops, we'll just let this silently fail, and set
 				// a fail bit.
 				Base.logger.warning("Serial IO exception. Printer communication may be disrupted.");
-				disconnected = true;
+				disconnected.set(true);
 				inputLock.unlock();
 			}
 	}

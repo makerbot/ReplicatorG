@@ -16,7 +16,36 @@
                 <driver name="reprap5d">
                         <!-- optional: <portname>COM1</portname>!-->
 												<pulserts>false</pulserts>
-												<waitforstart enabled="false" timeout="1000" retries="3"></waitforstart>
+												<waitforstart enabled="false"></waitforstart>
+												<fived>true</fived>
+												<rate>19200</rate>
+                </driver>
+                <warmup>
+                </warmup>
+                <cooldown>
+(Turn off steppers after a build.)
+M108 S0
+                </cooldown>
+        </machine>
+
+        <machine experimental="1">
+                <name>Darwin with Gen 2 Electronics (19200 Baud)</name>
+                <geometry type="cartesian">
+                        <!-- different pulleys on X and Y axii -->
+                        <axis id="x" length="200" maxfeedrate="5000" stepspermm="47.069852" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="y" length="200" maxfeedrate="5000" stepspermm="47.0698523" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="z" length="140" maxfeedrate="30" stepspermm="160" endstops="min"/> <!-- quarter-step driver -->
+                </geometry>
+                <tools>
+                        <tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" motor_steps="200" heatedplatform="true" />
+                </tools>
+                <clamps></clamps>
+                <help name="RepRap Help" url="http://www.reprap.org/ReplicatorG"></help>
+                <driver name="reprap5d">
+                        <!-- optional: <portname>COM1</portname>!-->
+												<pulserts>false</pulserts>
+												<waitforstart enabled="false"></waitforstart>
+												<checksums>false</checksums>
 												<fived>true</fived>
 												<rate>19200</rate>
                 </driver>
