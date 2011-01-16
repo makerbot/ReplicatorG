@@ -77,6 +77,9 @@ public class RealtimePanel extends JFrame implements ChangeListener, WindowListe
 		// Extrusion
 		extrusionPanel.add(new JLabel("Extrusion"),"growx,wrap");
 		extrusionControl = new ControlSlider("Material muliplier","%",5,500,100,extrusionPanel);
+		// TODO: extrusion scaling is not implemented in the driver yet.
+		extrusionControl.slider.setEnabled(false);
+		extrusionControl.field.setEnabled(false);
 
 		mainPanel = new JPanel();
 		mainPanel.setLayout(new MigLayout());
