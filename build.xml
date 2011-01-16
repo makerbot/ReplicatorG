@@ -58,7 +58,7 @@
 
   <target name="compile">
       <mkdir dir="${classes.dir}"/>
-      <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5">
+      <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5" includeAntRuntime="false">
 			<!-- Uncomment to aid in Java debugging
 			<compilerarg value="-Xlint:deprecation" />
 			<compilerarg value="-Xlint:unchecked" />
