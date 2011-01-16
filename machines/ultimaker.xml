@@ -22,6 +22,7 @@
                         <waitforstart enabled="true" timeout="3000" retries="3"></waitforstart>
                         <fived>true</fived>
                         <debugLevel>1</debugLevel>
+                        <limitFeedrate>20000.0</limitFeedrate>
                         <!-- purposefully inject noise to speed up debugging of retransmits and recovery. Use a value 0 to turn it off, 0.05 for once every 20 lines transmitted. -->
                         <introduceNoise>0</introduceNoise>
 
