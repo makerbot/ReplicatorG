@@ -43,15 +43,18 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			delta.sub(filteredpoint, filteredcurrent); // delta = p - current
 			delta.absolute(); // absolute value of each component
 			
-			double feedrate = getSafeFeedrate(delta); // FIXME: Doesn't take max feedrate of the extruder into account
+			Point5d axesmovement = calcHijackedAxesMovement(delta);
+			delta.add(axesmovement);
 			
 			// Calculate time for move in usec
-			double minutes = delta.length() / feedrate;
-
 			Point5d steps = machine.mmToSteps(filteredpoint);		
-			int relative = modifyHijackedAxes(steps, minutes);
+			int relative = 0;
+			for (int i=0;i<5;i++) {
+				if (axesmovement.get(i) != 0d) relative |= 1 << i;
+			}
 
 			// okay, send it off!
+			double minutes = delta.length() / getSafeFeedrate(delta);
 			queueNewPoint(steps, (long) (60 * 1000 * 1000 * minutes), relative);
 
 			setInternalPosition(filteredpoint);
@@ -93,8 +96,32 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	}
 
 	/**
+	 * Calculate and return the corresponding movement of any hijacked axes where the extruder is on.
+	 * The returned movement is in mm of incoming filament (corresponding to mm in machines.xml)
+	 * If the extruder is off, the hijacked axes are not moved.
+	 * @param delta relative XYZ movement.
+	 * @return The relative movement (in mm) of the hijacked axes
+	 */
+	private Point5d calcHijackedAxesMovement(Point5d delta) {
+
+		Point5d movement = new Point5d();
+		double minutes = delta.length() / getCurrentFeedrate();
+
+		for (AxisId axis : getHijackedAxes()) {
+			ToolModel curTool = machine.currentTool();
+			if (curTool.isMotorEnabled()) {
+				double extruderStepsPerMinute = curTool.getMotorSpeedRPM() * curTool.getMotorSteps();
+				final boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
+				movement.setAxis(axis, extruderStepsPerMinute * minutes / machine.getStepsPerMM().axis(axis) * (clockwise?-1d:1d));
+			}
+		}
+		return movement;
+	}
+
+	/**
 	 * Write a relative movement to any axes which has been hijacked where the extruder is turned on.
-	 * The axis will be moved with a length corresponding to the current RPM and the duration of the movement.
+	 * The axis will be moved with a length corresponding to the duration of the movement.
+	 * The speed of the hijacked axis will be clamped to its maximum feedrate.
 	 * If the extruder is off, the corresponding axes are set to a zero relative movement.
 	 * @param steps
 	 * @param minutes
@@ -108,10 +135,10 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			double extruderSteps = 0;
 			ToolModel curTool = machine.currentTool();
 			if (curTool.isMotorEnabled()) {
-				// Figure out length of move
-				final double extruderStepsPerMinute = curTool.getMotorSpeedRPM()*curTool.getMotorSteps();
-				final boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
-				extruderSteps = (clockwise?-1d:1d) * extruderStepsPerMinute * minutes;
+				double maxrpm = machine.getMaximumFeedrates().axis(axis) * machine.getStepsPerMM().axis(axis) / curTool.getMotorSteps();
+				double rpm = curTool.getMotorSpeedRPM() > maxrpm ? maxrpm :  curTool.getMotorSpeedRPM();
+				boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
+				extruderSteps = rpm * curTool.getMotorSteps() * minutes * (clockwise?-1d:1d);
 			}
 			steps.setAxis(axis, extruderSteps);
 		}

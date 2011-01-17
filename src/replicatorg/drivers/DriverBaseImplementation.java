@@ -304,14 +304,13 @@ public class DriverBaseImplementation implements Driver {
 
 	/**
 	 * Return the maximum safe feedrate, given in mm/min., for the given delta and current feedrate.
-	 * The feedrate is evaluated in 3D space only.
 	 * @param delta The delta in mm.
-	 * @return
+	 * @return safe feedrate in mm/min
 	 */
 	public double getSafeFeedrate(Point5d delta) {
 		double feedrate = getCurrentFeedrate();
 
-		Point3d maxFeedrates = new Point3d(machine.getMaximumFeedrates().get3D());
+		Point5d maxFeedrates = machine.getMaximumFeedrates();
 
 		// System.out.println("max feedrates: " + maxFeedrates);
 
@@ -320,36 +319,27 @@ public class DriverBaseImplementation implements Driver {
 		// set the feedrate to 1.
 		// TODO: Where else is feedrate set?
 		if (feedrate == 0) {
-			feedrate = Math.max(maxFeedrates.x, maxFeedrates.y);
-			feedrate = Math.max(feedrate, maxFeedrates.z);
-			feedrate = Math.max(feedrate, 1);
+			for (int i=0;i<5;i++) {
+				feedrate = Math.max(feedrate, maxFeedrates.get(i));
+			}
 			Base.logger.warning("Zero feedrate detected, reset to: " + feedrate);
 		}
 
-		// Determine the magnitude of this delta (3D distance)
-		double length = delta.get3D().distance(new Point3d());
+		// Determine the magnitude of this delta
+		double length = delta.length();
 		
 		// For each axis: if the current feedrate will cause this axis to move
 		// faster than it's maximum feedrate, lower the system feedrate so
 		// that it will be compliant.
-		if (delta.x() != 0) {
-			if (feedrate*delta.x()/length > maxFeedrates.x) {
-				feedrate = maxFeedrates.x * length/delta.x();
-			}
-		}
-		if (delta.y() != 0) {
-			if (feedrate*delta.y()/length > maxFeedrates.y) {
-				feedrate = maxFeedrates.y * length/delta.y();
-			}
-		}
-		if (delta.z() != 0) {
-			if (feedrate*delta.z()/length > maxFeedrates.z) {
-				feedrate = maxFeedrates.z * length/delta.z();
+		for (int i=0;i<5;i++) {
+			if (delta.get(i) != 0) {
+				if (feedrate * delta.get(i) / length > maxFeedrates.get(i)) {
+					feedrate = maxFeedrates.get(i) * length / delta.get(i);
+				}
 			}
 		}
 		
-		// Return the feedrate, which is how fast the toolhead will be moving
-		// through 3d space (magnitude of the toolhead velocity)
+		// Return the feedrate, which is how fast the toolhead will be moving (magnitude of the toolhead velocity)
 		return feedrate;
 	}
 
