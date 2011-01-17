@@ -9,7 +9,7 @@ public class Point5d {
 	final private double values[] = new double[DIMENSIONS];
 
 	public Point5d() {
-		this(0,0,0,0,0);
+		this(0d, 0d, 0d, 0d, 0d);
 	}
 	
 	public Point5d(double x, double y, double z, double a, double b) {
@@ -42,6 +42,12 @@ public class Point5d {
 	public void setB(double b) { values[4] = b; }
 	public Point3d get3D() { return new Point3d(values); }
 	
+	public void add(Point5d p1) {
+		for (int idx = 0; idx < DIMENSIONS; idx++) {
+			values[idx] += p1.values[idx];
+		}
+	}
+
 	public void sub(Point5d p1, Point5d p2) {
 		for (int idx = 0; idx < DIMENSIONS; idx++) {
 			values[idx] = p1.values[idx] - p2.values[idx];
