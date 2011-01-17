@@ -774,7 +774,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8(ToolCommandCode.GET_TOOL_STATUS.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isEmpty()) return;
-		// FIXME: First, check that the result code is OK. We occationally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
+		// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
 		int status = pr.get8();
 		machine.currentTool().setToolStatus(status);
 
@@ -966,7 +966,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8(ToolCommandCode.GET_TEMP.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isEmpty()) return;
-		// FIXME: First, check that the result code is OK. We occationally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
+		// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
 		int temp = pr.get16();
 		machine.currentTool().setCurrentTemperature(temp);
 
