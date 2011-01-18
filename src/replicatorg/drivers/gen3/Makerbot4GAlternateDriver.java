@@ -16,6 +16,8 @@ import replicatorg.util.Point5d;
 
 public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 
+	private boolean stepperExtruderFanEnabled = false;
+
 	public String getDriverName() {
 		return "Makerbot4GAlternate";
 	}
@@ -145,6 +147,14 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	}
 
 	protected void queueNewPoint(Point5d steps, long us, int relative) throws RetryException {
+
+		// Turn on fan if necessary
+		for (AxisId axis : getHijackedAxes()) {
+			if (steps.axis(axis) != 0) {
+				enableStepperExtruderFan(true);
+			}
+		}
+
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_NEW.getCode());
 
 		if (Base.logger.isLoggable(Level.FINE)) {
@@ -191,7 +201,54 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	public void setMotorRPM(double rpm) throws RetryException {
 		machine.currentTool().setMotorSpeedRPM(rpm);
 	}
+
+	public void enableDrives() throws RetryException {
+		super.enableDrives();
+		enableStepperExtruderFan(true);
+	}
+
+	public void disableDrives() throws RetryException {
+		super.disableDrives();
+		enableStepperExtruderFan(false);
+	}
 	
+	/**
+	 * Will turn on/off the stepper extruder fan if it's not already in the correct state.
+	 * 
+	 */
+	public void enableStepperExtruderFan(boolean enabled) throws RetryException {
+		
+		if (this.stepperExtruderFanEnabled == enabled) return;
+		
+		// FIXME: Should be called per hijacked axis with the correct tool
+		// our flag variable starts with motors enabled.
+		byte flags = (byte) (enabled ? 1 : 0);
+
+		// bit 1 determines direction...
+		flags += 2;
+
+		Base.logger.log(Level.FINE,"Stepper Extruder fan w/flags: "
+					+ Integer.toBinaryString(flags));
+
+		// send it!
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
+		pb.add8((byte) 1); // payload length
+		pb.add8(flags);
+		runCommand(pb.getPacket());
+
+		// Always use max PWM
+		pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(ToolCommandCode.SET_MOTOR_1_PWM.getCode());
+		pb.add8((byte) 1); // length of payload.
+		pb.add8((byte) 255);
+		runCommand(pb.getPacket());
+		
+		this.stepperExtruderFanEnabled = enabled;
+	}
+
 	EnumMap<AxisId,ToolModel> stepExtruderMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
 	
 	@Override
