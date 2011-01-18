@@ -165,6 +165,34 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		runCommand(pb.getPacket());
 	}
 	
+	/**
+	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
+	 */
+	public void enableMotor() throws RetryException {
+		machine.currentTool().enableMotor();
+	}
+	
+	/**
+	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
+	 */
+	public void disableMotor() throws RetryException {
+		machine.currentTool().disableMotor();
+	}
+	
+	/**
+	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
+	 */
+	public void setMotorSpeedPWM(int pwm) throws RetryException {
+		machine.currentTool().setMotorSpeedPWM(pwm);
+	}
+
+	/**
+	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
+	 */
+	public void setMotorRPM(double rpm) throws RetryException {
+		machine.currentTool().setMotorSpeedRPM(rpm);
+	}
+	
 	EnumMap<AxisId,ToolModel> stepExtruderMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
 	
 	@Override
@@ -198,7 +226,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	/**
 	 * Overridden to not ask the board for the RPM as it would report the RPM from the extruder controller, which doesn't know about it in this case.
 	 */
-	public double getMotorSpeedRPM() {
+	public double getMotorRPM() {
 		double rpm = machine.currentTool().getMotorSpeedRPM();
 		machine.currentTool().setMotorSpeedReadingRPM(rpm);
 		return rpm;
