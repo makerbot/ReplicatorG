@@ -1,10 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
-# This script will only work on POSIX systems.
+# Will update to the latest version from upstream git and run
+# Give a branch name as a parameter to run a specific branch
 
-x="`echo $(readlink -f $0)`"
+if [ $# -ge 1 ]; then
+  branch=$1
+else
+  branch=master
+fi
 
-cd ${x%`echo $(basename $0)`}
+cd `dirname $0`
 
-git fetch upstream; git merge upstream/master; ant run
-
+git fetch upstream
+git co -B $branch upstream/$branch
+git merge upstream/$branch
+ant run
