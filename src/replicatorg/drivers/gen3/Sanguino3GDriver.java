@@ -749,7 +749,7 @@ public class Sanguino3GDriver extends SerialDriver
 		return pwm;
 	}
 
-	public double getMotorSpeedRPM() {
+	public double getMotorRPM() {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_MOTOR_1_RPM.getCode());
