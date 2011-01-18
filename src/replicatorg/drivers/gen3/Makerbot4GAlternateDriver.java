@@ -31,9 +31,11 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		// currentPosition (which we get from the Motherboard).
 		Point5d filteredpoint = new Point5d(p);
 		Point5d filteredcurrent = new Point5d(getCurrentPosition());
+		int relative = 0;
 		for (AxisId axis : getHijackedAxes()) {
 			filteredpoint.setAxis(axis, 0d);
 			filteredcurrent.setAxis(axis, 0d);
+			relative |= 1 << axis.getIndex();
 		}
 		
 		// is this point even step-worthy? Only compute nonzero moves
@@ -49,10 +51,6 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			
 			// Calculate time for move in usec
 			Point5d steps = machine.mmToSteps(filteredpoint);		
-			int relative = 0;
-			for (int i=0;i<5;i++) {
-				if (axesmovement.get(i) != 0d) relative |= 1 << i;
-			}
 
 			// okay, send it off!
 			double minutes = delta.length() / getSafeFeedrate(delta);
