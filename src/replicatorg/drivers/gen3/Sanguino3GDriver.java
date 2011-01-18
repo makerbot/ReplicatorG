@@ -895,7 +895,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_MOTOR_2.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
 		runCommand(pb.getPacket());
