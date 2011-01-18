@@ -193,7 +193,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder.
-			if (t.getMotorStepperAxis().isEmpty()) {
+			if (t.getMotorStepperAxis() == null) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
 				JTextField field = new JTextField();
@@ -533,20 +533,20 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				if (name.equals("motor-forward")) {
 					driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
 					driver.enableMotor();
-					if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
+					if (this.toolModel.getMotorStepperAxis() != null) {
 						driver.delay(extrudeTime*1000);
+						driver.disableMotor();
 					}
-					driver.disableMotor();
 				} else if (name.equals("motor-reverse")) {
 					driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 					driver.enableMotor();
-					if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
+					if (this.toolModel.getMotorStepperAxis() != null) {
 						driver.delay(extrudeTime*1000);
+						driver.disableMotor();
 					}
-					driver.disableMotor();
 				} else if (name.equals("motor-stop")) {
 					driver.disableMotor();
-					if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
+					if (this.toolModel.getMotorStepperAxis() != null) {
 						driver.stop(false);
 					}
 				}
@@ -611,20 +611,20 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if (s.equals("forward")) {
 				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
 				driver.enableMotor();
-				if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
+				if (this.toolModel.getMotorStepperAxis() != null) {
 					driver.delay(extrudeTime*1000);
+					driver.disableMotor();
 				}
-				driver.disableMotor();
 			} else if (s.equals("reverse")) {
 				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 				driver.enableMotor();
-				if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
+				if (this.toolModel.getMotorStepperAxis() != null) {
 					driver.delay(extrudeTime*1000);
+					driver.disableMotor();
 				}
-				driver.disableMotor();
 			} else if (s.equals("stop")) {
 				driver.disableMotor();
-				if (!this.toolModel.getMotorStepperAxis().isEmpty()) {
+				if (this.toolModel.getMotorStepperAxis() != null) {
 					driver.stop(false);
 				}
 			}

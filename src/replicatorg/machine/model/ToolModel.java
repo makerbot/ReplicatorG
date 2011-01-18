@@ -184,7 +184,7 @@ public class ToolModel
 
 			n = XML.getAttributeValue(xml, "motor_encoder_ppr");
 			try{
-				if (Integer.parseInt(n) > 0)
+				if (n != null && Integer.parseInt(n) > 0)
 				{
 					motorHasEncoder = true;
 					motorEncoderPPR = Integer.parseInt(n);
@@ -194,7 +194,7 @@ public class ToolModel
 			// Get number of steps per full rotation of the toolhead motor.
 			n = XML.getAttributeValue(xml, "motor_steps");
 			try{
-				if (Integer.parseInt(n) > 0)
+				if (n != null && Integer.parseInt(n) > 0)
 				{
 					motorIsStepper = true;
 					motorSteps = Integer.parseInt(n);
@@ -203,14 +203,14 @@ public class ToolModel
 
 			n = XML.getAttributeValue(xml, "stepper_axis");
 			try{
-				if (n != null) {
+				if (n != null && n.length() > 0) {
 					motorStepperAxis = n;
 				}
 			} catch (Exception e) {} // ignore parse errors.
 			
 			n = XML.getAttributeValue(xml, "default_rpm");
 			try{
-				if (Double.parseDouble(n) > 0)
+				if (n != null && Double.parseDouble(n) > 0)
 				{
 					motorSpeedRPM = Double.parseDouble(n);
 				}
@@ -218,7 +218,7 @@ public class ToolModel
 
 			n = XML.getAttributeValue(xml, "default_pwm");
 			try{
-				if (Integer.parseInt(n) > 0)
+				if (n != null && Integer.parseInt(n) > 0)
 				{
 					motorSpeedPWM = Integer.parseInt(n);
 				}
@@ -232,7 +232,7 @@ public class ToolModel
 
 			n = XML.getAttributeValue(xml, "motor_encoder_ppr");
 			try{
-				if (Integer.parseInt(n) > 0)
+				if (n != null && Integer.parseInt(n) > 0)
 				{
 					motorHasEncoder = true;
 					motorEncoderPPR = Integer.parseInt(n);
@@ -420,6 +420,10 @@ public class ToolModel
 		return motorIsStepper;
 	}
 	
+	/**
+	 * 
+	 * @return null if motorstepperaxis wasn't specified. The axis identifier otherwise
+	 */
 	public String getMotorStepperAxis()
 	{
 		return motorStepperAxis;
