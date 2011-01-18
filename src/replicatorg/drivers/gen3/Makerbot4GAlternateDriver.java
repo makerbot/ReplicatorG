@@ -45,6 +45,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			
 			Point5d axesmovement = calcHijackedAxesMovement(delta);
 			delta.add(axesmovement);
+			filteredpoint.add(axesmovement);
 			
 			// Calculate time for move in usec
 			Point5d steps = machine.mmToSteps(filteredpoint);		
