@@ -530,25 +530,15 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		try {
 			if (e.getStateChange() == ItemEvent.SELECTED) {
+				/* Handle DC extruder commands */
 				if (name.equals("motor-forward")) {
 					driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
 					driver.enableMotor();
-					if (this.toolModel.getMotorStepperAxis() != null) {
-						driver.delay(extrudeTime*1000);
-						driver.disableMotor();
-					}
 				} else if (name.equals("motor-reverse")) {
 					driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 					driver.enableMotor();
-					if (this.toolModel.getMotorStepperAxis() != null) {
-						driver.delay(extrudeTime*1000);
-						driver.disableMotor();
-					}
 				} else if (name.equals("motor-stop")) {
 					driver.disableMotor();
-					if (this.toolModel.getMotorStepperAxis() != null) {
-						driver.stop(false);
-					}
 				}
 				else if (name.equals("spindle-enabled"))
 					driver.enableSpindle();
@@ -608,17 +598,18 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				String timeText = (String) cb.getSelectedItem();
 				setExtrudeTime(timeText);
 			}
+			/* Handle stepper extruder commands */
 			if (s.equals("forward")) {
 				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
-				driver.enableMotor();
-				if (this.toolModel.getMotorStepperAxis() != null) {
+			if (this.toolModel.getMotorStepperAxis() != null) {
+					driver.enableMotor();
 					driver.delay(extrudeTime*1000);
 					driver.disableMotor();
 				}
 			} else if (s.equals("reverse")) {
 				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
-				driver.enableMotor();
 				if (this.toolModel.getMotorStepperAxis() != null) {
+					driver.enableMotor();
 					driver.delay(extrudeTime*1000);
 					driver.disableMotor();
 				}
