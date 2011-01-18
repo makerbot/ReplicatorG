@@ -449,7 +449,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					temperatureLimitAccepted = Double.parseDouble(Base.preferences.get("temperature.acceptedLimit","260.0"));
 					aTargetTemperature = targetTemperature;
 				} else {
-					temperatureLimitAccepted = Double.parseDouble(Base.preferences.get("temperature.acceptedLimit.bed","90.0"));
+					temperatureLimitAccepted = Double.parseDouble(Base.preferences.get("temperature.acceptedLimit.bed","130.0"));
 					aTargetTemperature = targetPlatformTemperature;
 				}
 				if(temperatureInput > temperatureLimitAccepted){
