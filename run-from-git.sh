@@ -11,7 +11,15 @@ fi
 
 cd `dirname $0`
 
-git fetch upstream
-git co -B $branch upstream/$branch
-git merge upstream/$branch
-ant run
+git fetch upstream                        # Get all remote changes
+git co $branch                            # Switch to local branch if it exists
+if [ $? -ne 0 ]; then                     # ..else get branch from upstream
+  git co -b $branch upstream/$branch
+fi
+if [ $? -eq 0 ]; then
+  git merge upstream/$branch              # Only merge if nothing went wrong
+fi
+if [ $? -eq 0 ]; then
+  ant run                                 # Only run if nothing went wrong
+fi
+
