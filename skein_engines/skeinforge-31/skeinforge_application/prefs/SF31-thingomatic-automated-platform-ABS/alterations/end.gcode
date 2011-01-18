@@ -1,0 +1,21 @@
+(**** Beginning of end.txt ****)
+M102 (Extruder on, reverse)
+G04 P2000 (Wait t/1000 seconds)
+M103 (Extruder off)
+M109 S100 T0 (set heated-build-platform temperature)
+G1 X0.0 Y65.0 F3300.0 (move to ejection position)
+G04 P90000 (wait t/1000 seconds)
+M106 (conveyor on)
+G04 P2000 (wait t/1000 seconds)
+M104 S220 T0 (set extruder temperature)
+M109 S118 T0 (set heated-build-platform temperature)
+G04 P10000 (wait t/1000 seconds)
+M107 (conveyor off)
+(**** start wipe ****)
+G1 X47 Y-57 Z10 F3300.0
+G1 X57 Y-57 Z10 F3300.0
+G1 X57 Y-35 Z10 F3300.0
+(**** end wipe *****)
+M104 S0 T0 (set extruder temperature)
+M109 S0 T0 (set heated-build-platform temperature)
+(**** end of end.txt ****)

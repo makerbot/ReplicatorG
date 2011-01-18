@@ -1,0 +1,8 @@
+Format is tab separated vectorwrite settings.
+Name                          	Value
+WindowPosition	0+0
+WindowVisibilities
+Activate Vectorwrite	False
+Open File to Write Vector Graphics for	
+Layers From (index):	0
+Layers To (index):	912345678

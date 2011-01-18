@@ -1,0 +1,12 @@
+Format is tab separated preface settings.
+Name                          	Value
+WindowPosition	700+0
+Open File for Preface	
+Meta:	
+Name of End File:	end.gcode
+Name of Start File:	start.gcode
+Set Positioning to Absolute	True
+Set Units to Millimeters	True
+Start at Home	False
+Turn Extruder Off at Shut Down	True
+Turn Extruder Off at Start Up	True

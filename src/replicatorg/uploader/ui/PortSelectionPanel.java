@@ -11,7 +11,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import net.miginfocom.swing.MigLayout;
-import replicatorg.app.Serial;
+import replicatorg.app.util.serial.Name;
+import replicatorg.app.util.serial.Serial;
 
 public class PortSelectionPanel extends JPanel {
 	interface PortSelectionListener {
@@ -19,7 +20,7 @@ public class PortSelectionPanel extends JPanel {
 	}
 	
 	class SerialListModel extends AbstractListModel {
-		public Vector<Serial.Name> names = Serial.scanSerialNames();
+		public Vector<Name> names = Serial.scanSerialNames();
 		public Object getElementAt(int idx) {
 			return names.elementAt(idx);
 		}
@@ -38,7 +39,7 @@ public class PortSelectionPanel extends JPanel {
 		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent lse) {
 				if (list.getSelectedIndex() != -1) {
-					Serial.Name name = (Serial.Name)list.getModel().getElementAt(list.getSelectedIndex());
+					Name name = (Name)list.getModel().getElementAt(list.getSelectedIndex());
 					String portName = name.getName();
 					listener.portSelected(portName);
 				}

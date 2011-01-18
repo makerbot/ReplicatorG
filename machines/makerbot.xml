@@ -75,6 +75,31 @@ M18
 M18
 		</cooldown>
 	</machine>
+
+	<machine>
+		<name>Cupcake w/ Gen4 electronics and ABP</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="4000" stepspermm="47.069852"/> 
+			<axis id="y" length="100" maxfeedrate="4000" stepspermm="47.069852"/>
+			<axis id="z" length="100" maxfeedrate="150" stepspermm="1280"/>
+		</geometry>
+		<tools>
+			<tool name="Plastruder Mk5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="false" valve="false" automatedplatform="true" heatedplatform="true" collet="false" heater="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="sanguino3g">
+			<!-- optional: <portname>COM1</portname> -->
+			<rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+(Turn off steppers after a build.)
+M18
+		</cooldown>
+	</machine>
+
 	<machine experimental="1">
 		<name>Cupcake w/ HBP, 2 toolheads</name>
 		<geometry type="cartesian">

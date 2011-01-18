@@ -4,11 +4,13 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.text.NumberFormat;
 
 import javax.media.j3d.Transform3D;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.vecmath.Vector3d;
 
@@ -32,6 +34,7 @@ public class MoveTool extends Tool {
 	}
 
 	JCheckBox lockZ;
+	JFormattedTextField transX, transY, transZ;
 	
 	public JPanel getControls() {
 		JPanel p = new JPanel(new MigLayout("fillx,filly"));
@@ -50,7 +53,106 @@ public class MoveTool extends Tool {
 			}
 		});
 		p.add(lowerButton,"growx,wrap");
-
+		transX = new JFormattedTextField(NumberFormat.getInstance());
+		transY = new JFormattedTextField(NumberFormat.getInstance());
+		transZ = new JFormattedTextField(NumberFormat.getInstance());
+		transX.setValue(10);
+		transY.setValue(10);
+		transZ.setValue(10);
+		JButton transXplus = new JButton("X+");
+		JButton transYplus = new JButton("Y+");
+		JButton transZplus = new JButton("Z+");
+		JButton transXminus = new JButton("X-");
+		JButton transYminus = new JButton("Y-");
+		JButton transZminus = new JButton("Z-");
+		p.add(transXminus);
+		p.add(transX,"growx");
+		p.add(transXplus,"wrap");
+		p.add(transYminus);
+		p.add(transY,"growx");
+		p.add(transYplus,"wrap");
+		p.add(transZminus);
+		p.add(transZ,"growx");
+		p.add(transZplus,"wrap");
+		
+		transXplus.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String txt = transX.getText();
+				if (txt != null) {
+					try {
+						double transXval = Double.parseDouble(txt);
+						parent.getModel().translateObject(transXval, 0, 0);
+					} catch (Exception e) {
+						Base.logger.fine("Problem parsing number or translating object.");
+					}
+				}
+			}
+		});
+		transXminus.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String txt = transX.getText();
+				if (txt != null) {
+					try {
+						double transXval = Double.parseDouble(txt);
+						parent.getModel().translateObject(-transXval, 0, 0);
+					} catch (Exception e) {
+						Base.logger.fine("Problem parsing number or translating object.");
+					}
+				}
+			}
+		});
+		transYplus.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String txt = transY.getText();
+				if (txt != null) {
+					try {
+						double transYval = Double.parseDouble(txt);
+						parent.getModel().translateObject(0,transYval, 0);
+					} catch (Exception e) {
+						Base.logger.fine("Problem parsing number or translating object.");
+					}
+				}
+			}
+		});
+		transYminus.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String txt = transY.getText();
+				if (txt != null) {
+					try {
+						double transYval = Double.parseDouble(txt);
+						parent.getModel().translateObject(0,-transYval,0);
+					} catch (Exception e) {
+						Base.logger.fine("Problem parsing number or translating object.");
+					}
+				}
+			}
+		});
+		transZplus.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String txt = transZ.getText();
+				if (txt != null) {
+					try {
+						double transZval = Double.parseDouble(txt);
+						parent.getModel().translateObject(0,0,transZval);
+					} catch (Exception e) {
+						Base.logger.fine("Problem parsing number or translating object.");
+					}
+				}
+			}
+		});
+		transZminus.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String txt = transZ.getText();
+				if (txt != null) {
+					try {
+						double transZval = Double.parseDouble(txt);
+						parent.getModel().translateObject(0,0,-transZval);
+					} catch (Exception e) {
+						Base.logger.fine("Problem parsing number or translating object.");
+					}
+				}
+			}
+		});
 		lockZ = new JCheckBox("Lock height");
 		p.add(lockZ,"growx,wrap");
 		

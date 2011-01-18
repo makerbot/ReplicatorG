@@ -1,0 +1,9 @@
+Format is tab separated statistic settings.
+Name                          	Value
+WindowPosition	0+0
+WindowVisibilities
+Activate Statistic	True
+Extrusion Diameter over Thickness (ratio):	1.25
+Open File to Generate Statistics for	
+Print Statistics	True
+Save Statistics	False

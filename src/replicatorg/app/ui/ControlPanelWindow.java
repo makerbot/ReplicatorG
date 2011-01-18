@@ -320,8 +320,8 @@ public class ControlPanelWindow extends JFrame implements
 			// we'll break on interrupts
 			try {
 				while (true) {
+					driver.updateManualControl();
 					// driver.readTemperature();
-					Thread.sleep(1000);
 				}
 			} catch (InterruptedException e) {
 			}

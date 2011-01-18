@@ -111,6 +111,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		if (l == null) { l = Level.INFO; }
 		Vector<Level> levels = new Vector<Level>();
 		levels.add(Level.ALL);
+		levels.add(Level.FINEST);
+		levels.add(Level.FINER);
 		levels.add(Level.FINE);
 		levels.add(Level.INFO);
 		levels.add(Level.WARNING);
@@ -119,7 +121,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		JComboBox cb = new JComboBox(model);
 		cb.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				Level level = (Level)(Level)model.getSelectedItem();
+				Level level = (Level)(model.getSelectedItem());
 				Base.preferences.put("replicatorg.debuglevel", level.getName());
 				Base.logger.setLevel(level);
 			}

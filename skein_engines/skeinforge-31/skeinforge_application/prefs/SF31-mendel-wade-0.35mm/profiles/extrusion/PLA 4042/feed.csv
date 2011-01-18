@@ -1,0 +1,9 @@
+Format is tab separated feed settings.
+Name                          	Value
+WindowPosition	700+0
+Open File for Feed	
+Activate Feed:	True
+Feed Rate (mm/s):	16.0
+Maximum Z Drill Feed Rate (mm/s):	0.1
+Maximum Z Travel Feed Rate (mm/s):	8.0
+Travel Feed Rate (mm/s):	16.0

@@ -160,6 +160,7 @@ public class MachineController {
 		public void interruptDriver() {
 			this.interrupt();
 		}
+	
 
 		/**
 		 * Build the provided gcodes.  This method does not return until the build is complete or has been terminated.
@@ -996,5 +997,11 @@ public class MachineController {
 		for (MachineListener l : listeners) {
 			l.toolStatusChanged(e);
 		}
+	}
+
+	public int getLinesProcessed() {
+		/* This is for jumping to the right line when aborting or pausing. 
+		 * This way you'll have the ability to track down where to continue printing. */
+		return linesProcessed;
 	}
 }

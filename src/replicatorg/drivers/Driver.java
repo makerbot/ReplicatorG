@@ -125,6 +125,11 @@ public interface Driver {
 	public String getFirmwareInfo();
 
 	public Version getVersion();
+	
+	/** Called at regular intervals when under manual control. Allows insertion of 
+	 * machine-specific logic into each manual control panel update. 
+	 * @throws InterruptedException */
+	public void updateManualControl() throws InterruptedException;
 
 	public Version getMinimumVersion();
 	

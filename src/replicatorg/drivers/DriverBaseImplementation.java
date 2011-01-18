@@ -24,6 +24,8 @@
 package replicatorg.drivers;
 
 import java.util.EnumSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.vecmath.Point3d;
 
@@ -55,7 +57,7 @@ public class DriverBaseImplementation implements Driver {
 	private Point3d[] offsets;
 
 	// are we initialized?
-	private boolean isInitialized = false;
+	private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
 	// the length of our last move.
 	private double moveLength = 0.0;
@@ -94,6 +96,11 @@ public class DriverBaseImplementation implements Driver {
 
 	public void loadXML(Node xml) {
 	}
+	
+	public void updateManualControl() throws InterruptedException
+	{
+		
+	}
 
 	public void dispose() {
 		// System.out.println("Disposing of driver.");
@@ -113,12 +120,15 @@ public class DriverBaseImplementation implements Driver {
 	}
 
 	public void setInitialized(boolean status) {
-		isInitialized = status;
-		if (!status) { currentPosition = null; }
+		synchronized(isInitialized)
+		{
+			isInitialized.set(status);
+			if (!status) { invalidatePosition(); }
+		}
 	}
 
 	public boolean isInitialized() {
-		return isInitialized;
+		return isInitialized.get();
 	}
 
 	/***************************************************************************
@@ -222,10 +232,11 @@ public class DriverBaseImplementation implements Driver {
 		offsets[offsetSystemNum].z = j;
 	}
 
-	private Point5d currentPosition = null;
+	private final AtomicReference<Point5d> currentPosition =
+		new AtomicReference<Point5d>(null);
 	
 	public void setCurrentPosition(Point5d p) throws RetryException {
-		currentPosition = p;
+		currentPosition.set(p);
 	}
 
 	/**
@@ -234,7 +245,7 @@ public class DriverBaseImplementation implements Driver {
 	 */
 	public void invalidatePosition() {
 //		System.err.println("invalidating position.");
-		currentPosition = null;
+		currentPosition.set(null);
 	}
 	
 	/**
@@ -246,10 +257,15 @@ public class DriverBaseImplementation implements Driver {
 	}
 	
 	public Point5d getCurrentPosition() {
-		if (currentPosition == null) {
-			currentPosition = reconcilePosition();
+		synchronized(currentPosition)
+		{
+			// Explicit null check; otherwise reconcilePosition, a potentially expensive call (including a packet
+			// transaction) will be called every time.
+			if (currentPosition.get() == null) {
+				currentPosition.compareAndSet(null, reconcilePosition());
+			}
+			return new Point5d(currentPosition.get());
 		}
-		return new Point5d(currentPosition);
 	}
 
 	public Point5d getPosition() {
@@ -276,7 +292,7 @@ public class DriverBaseImplementation implements Driver {
 	}
 
 	protected void setInternalPosition(Point5d position) {
-		currentPosition = position;
+		currentPosition.set(position);
 	}
 	
 	protected void queuePoint(Point5d p, Double feedrate) {

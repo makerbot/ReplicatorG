@@ -1,0 +1,10 @@
+Format is tab separated analyze preferences.
+Name                          	Value
+beholdButton	0
+commentButton	0
+skeinviewButton	1
+skeinview_xButton	1
+statisticButton	0
+vectorwriteButton	0
+Open File to be Analyzed	
+windowPositionAnalyze Preferences	400+0

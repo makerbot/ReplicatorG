@@ -1,6 +1,6 @@
 package replicatorg.drivers;
 
-import replicatorg.app.Serial;
+import replicatorg.app.util.serial.Serial;
 
 public interface UsesSerial {
 	

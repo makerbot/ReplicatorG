@@ -5,3 +5,4 @@ dist-all
 build/jar
 build/classes
 *.pyc
+*.class
