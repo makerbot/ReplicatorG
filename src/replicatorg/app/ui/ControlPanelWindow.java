@@ -322,6 +322,7 @@ public class ControlPanelWindow extends JFrame implements
 				while (true) {
 					driver.updateManualControl();
 					// driver.readTemperature();
+					Thread.sleep(700);  // update every .7 s
 				}
 			} catch (InterruptedException e) {
 			}
