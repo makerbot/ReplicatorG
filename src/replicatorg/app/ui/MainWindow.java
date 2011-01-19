@@ -691,7 +691,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		menu.addSeparator();
 		menu.add(buildExamplesMenu()); 
-		menu.add(buildUpgradesMenu()); 
 		menu.add(buildScriptsMenu()); 
 		menu.addSeparator();
 
@@ -757,21 +756,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			return m2;
 		} else {
 			m.setText("Examples");
-			return m;
-		}
-	}
-	
-	private JMenuItem buildUpgradesMenu() {
-		File examplesDir = Base.getApplicationFile("upgrades");
-		Pattern p = Pattern.compile("[^\\.]*\\.[sS][tT][lL]$");
-		JMenuItem m = buildMenuFromPath(examplesDir,p);
-		if(m == null) {
-			JMenuItem m2 = new JMenu("Upgrades");
-			m2.add(new JMenuItem("No upgrades dirs found."));
-			m2.add(new JMenuItem("Check if this dir exists:" + Base.getApplicationFile("upgrades")));
-			return m2;
-		} else {
-			m.setText("Upgrades");
 			return m;
 		}
 	}
