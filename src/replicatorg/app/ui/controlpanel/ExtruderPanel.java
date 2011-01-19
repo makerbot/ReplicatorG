@@ -435,72 +435,67 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 	}
 
+	//
+	// Check the temperature range and insure that the target is within bounds.  If not,
+	// query the user to see if they want to make an exception.
+	// agm: I've removed the "set this as the new limit" option.  This should be set in the
+	// preferences or some other hard-to-reach place.  Accidentally clicking a button
+	// to set a potentially dangerous limit would suck.
+	// @return Double.MIN_VALUE if cancelled; the target temperature otherwise.
+	//
+	private double confirmTemperature(double target, String limitPrefName, double defaultLimit) {
+		double limit = Base.preferences.getDouble("temperature.acceptedLimit", defaultLimit);
+		if (target > limit){
+			// Temperature warning dialog!
+			int n = JOptionPane.showConfirmDialog(this,
+					"<html>Setting the temperature to <b>" + Double.toString(target) + "°C</b> may<br>"+
+					"involve health and/or safety risks or cause damage to your machine!<br>"+
+					"The maximum recommended temperature is <b>"+Double.toString(limit)+"</b>.<br>"+
+					"Do you accept the risk and still want to set this temperature?",
+					"Danger",
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.WARNING_MESSAGE);
+			if (n == JOptionPane.YES_OPTION) {
+				return target;
+			} else if (n == JOptionPane.NO_OPTION) {
+				return Double.MIN_VALUE;
+			} else { // Cancel or whatnot
+				return Double.MIN_VALUE;
+			}
+		}  else {
+			return target;
+		}
+	}
+	
 	public void handleChangedTextField(JTextField source) throws RetryException
 	{
 		String name = source.getName();
 		Driver driver = machine.getDriver();
 		if (source.getText().length() > 0) {
 			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
-				double temperatureInput = Double.parseDouble(source.getText());
-				double temperatureLimitAccepted;
-				double aTargetTemperature;
-				
+				double target = Double.parseDouble(source.getText());
 				if(name.equals("target-temp")) {
-					temperatureLimitAccepted = Double.parseDouble(Base.preferences.get("temperature.acceptedLimit","260.0"));
-					aTargetTemperature = targetTemperature;
+					target = confirmTemperature(target,"temperature.acceptedLimit",260.0);
+					if (target == Double.MIN_VALUE) {
+						return;
+					}
+					driver.setTemperature(target);
 				} else {
-					temperatureLimitAccepted = Double.parseDouble(Base.preferences.get("temperature.acceptedLimit.bed","130.0"));
-					aTargetTemperature = targetPlatformTemperature;
-				}
-				if(temperatureInput > temperatureLimitAccepted){
-					// Temperature warning dialog!
-					Object[] options = {"Yes.",
-					                    "Yes, and never ask up to "+ temperatureInput +" degrees Celsius.",
-					                    "Oops. No!"};
-					int n = JOptionPane.showOptionDialog(this,
-							"Setting the temperature to " + temperatureInput+ " degrees Celsius may involve health and/or safety risks and may cause damage to your machine!\n"
-		                    + "Do you accept the risk and still want set this temperature?",
-					    "Danger",
-					    JOptionPane.YES_NO_CANCEL_OPTION,
-					    JOptionPane.WARNING_MESSAGE,
-					    null,
-					    options,
-					    options[2]);
-					if (n == 0) { // Yes
-						aTargetTemperature = temperatureInput;
+					target = confirmTemperature(target,"temperature.acceptedLimit.bed",130.0);
+					if (target == Double.MIN_VALUE) {
+						return;
 					}
-					if (n == 1) { // Yes, remember.
-						aTargetTemperature = temperatureInput;
-						if(name.equals("target-temp")) {
-							Base.preferences.put("temperature.acceptedLimit",Double.toString(temperatureInput));
-						} else {
-							Base.preferences.put("temperature.acceptedLimit.bed",Double.toString(temperatureInput));
-						}
-					}
-					if (n == 2) { // No!
-						if(aTargetTemperature > temperatureLimitAccepted) 
-							aTargetTemperature = temperatureLimitAccepted; // never revert above an accepted limit either!
-						temperatureInput = aTargetTemperature; // undo
-						source.setText(Double.toString(aTargetTemperature)); // revert text field
-					}
-				} else { // relatively safe temperature range:
-					aTargetTemperature = temperatureInput;	
-				}
-				if(name.equals("target-temp")) {
-					targetTemperature = aTargetTemperature;
-					driver.setTemperature(targetTemperature);
-				} else {
-					targetPlatformTemperature = aTargetTemperature;
-					driver.setPlatformTemperature(targetTemperature);
+					driver.setPlatformTemperature(target);
 				}
 				// This gives some feedback by adding .0 it it wasn't typed.
-				source.setText(Double.toString(aTargetTemperature));
+				source.setText(Double.toString(target));
 			} else if (name.equals("motor-speed")) {
 				driver.setMotorRPM(Double.parseDouble(source.getText()));
 			} else if (name.equals("motor-speed-pwm")) {
 				driver.setMotorSpeedPWM((int)Double.parseDouble(source.getText()));
-			} else
+			} else {
 				Base.logger.warning("Unhandled text field: "+name);
+			}
 		}
 	}
 
