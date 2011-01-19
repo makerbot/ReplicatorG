@@ -30,6 +30,7 @@ public enum MotherboardCommandCode {
 	// Get the build name
 	GET_BUILD_NAME(20),
 	GET_POSITION_EXT(21),
+	EXTENDED_STOP(22),
 	
 	// QUEUE_POINT_INC(128) obsolete
 	QUEUE_POINT_ABS(129),
@@ -43,7 +44,8 @@ public enum MotherboardCommandCode {
 	ENABLE_AXES(137),
 	QUEUE_POINT_EXT(139),
 	SET_POSITION_EXT(140),
-	WAIT_FOR_PLATFORM(141);
+	WAIT_FOR_PLATFORM(141),
+	QUEUE_POINT_NEW(142);
 	
 	private int code;
 	private MotherboardCommandCode(int code) {

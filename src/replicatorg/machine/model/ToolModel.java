@@ -34,6 +34,9 @@ public class ToolModel
 	public static int MOTOR_CLOCKWISE = 1;
 	public static int MOTOR_COUNTER_CLOCKWISE = 2;
 	
+	// TODO: should this be a bitfield?
+	protected int toolStatus;
+	
 	//our xml config info
 	protected Node xml;
 	
@@ -53,7 +56,8 @@ public class ToolModel
 	protected boolean motorHasEncoder;
 	protected int motorEncoderPPR;
 	protected boolean motorIsStepper;
-	protected int motorSteps;
+	protected int motorSteps; // motor steps per full rotation
+	protected String motorStepperAxis;    // Stepper axis this motor is connected to
 
 	//spindle stuff
 	protected boolean spindleEnabled;
@@ -184,25 +188,33 @@ public class ToolModel
 
 			n = XML.getAttributeValue(xml, "motor_encoder_ppr");
 			try{
-				if (Integer.parseInt(n) > 0)
+				if (n != null && Integer.parseInt(n) > 0)
 				{
 					motorHasEncoder = true;
 					motorEncoderPPR = Integer.parseInt(n);
 				}
 			} catch (Exception e) {} // ignore parse errors.
 
+			// Get number of steps per full rotation of the toolhead motor.
 			n = XML.getAttributeValue(xml, "motor_steps");
 			try{
-				if (Integer.parseInt(n) > 0)
+				if (n != null && Integer.parseInt(n) > 0)
 				{
 					motorIsStepper = true;
 					motorSteps = Integer.parseInt(n);
 				}
 			} catch (Exception e) {} // ignore parse errors.
 
+			n = XML.getAttributeValue(xml, "stepper_axis");
+			try{
+				if (n != null && n.length() > 0) {
+					motorStepperAxis = n;
+				}
+			} catch (Exception e) {} // ignore parse errors.
+			
 			n = XML.getAttributeValue(xml, "default_rpm");
 			try{
-				if (Double.parseDouble(n) > 0)
+				if (n != null && Double.parseDouble(n) > 0)
 				{
 					motorSpeedRPM = Double.parseDouble(n);
 				}
@@ -210,7 +222,7 @@ public class ToolModel
 
 			n = XML.getAttributeValue(xml, "default_pwm");
 			try{
-				if (Integer.parseInt(n) > 0)
+				if (n != null && Integer.parseInt(n) > 0)
 				{
 					motorSpeedPWM = Integer.parseInt(n);
 				}
@@ -224,7 +236,7 @@ public class ToolModel
 
 			n = XML.getAttributeValue(xml, "motor_encoder_ppr");
 			try{
-				if (Integer.parseInt(n) > 0)
+				if (n != null && Integer.parseInt(n) > 0)
 				{
 					motorHasEncoder = true;
 					motorEncoderPPR = Integer.parseInt(n);
@@ -281,6 +293,11 @@ public class ToolModel
 			result += "hasHeatedPlatform, ";
 		if (hasAutomatedPlatform)
 			result += "hasAutomatedPlatform, ";
+		if (motorIsStepper) {
+			result += "motorIsStepper, ";
+			result += "motorStepperAxis: " + motorStepperAxis + ", ";
+			result += "motorSteps: " + motorSteps + ", ";
+		}
 	}
 	
 	/*************************************
@@ -306,7 +323,17 @@ public class ToolModel
 	{
 		return type;
 	}
+	
+	public int getToolStatus()
+	{
+		return toolStatus;
+	}
 
+	public void setToolStatus(int status)
+	{
+		toolStatus = status;
+	}
+	
 	/*************************************
 	*  Motor interface functions
 	*************************************/
@@ -333,6 +360,13 @@ public class ToolModel
 	public double getMotorSpeedRPM()
 	{
 		return motorSpeedRPM;
+	}
+	
+	/**
+	 * Get number of steps per revolution
+	 */
+	public double getMotorSteps() {
+		return motorSteps;
 	}
 
 	public int getMotorSpeedPWM()
@@ -389,6 +423,16 @@ public class ToolModel
 	{
 		return motorIsStepper;
 	}
+	
+	/**
+	 * 
+	 * @return null if motorstepperaxis wasn't specified. The axis identifier otherwise
+	 */
+	public String getMotorStepperAxis()
+	{
+		return motorStepperAxis;
+	}
+	
 
 	/*************************************
 	*  Spindle interface functions

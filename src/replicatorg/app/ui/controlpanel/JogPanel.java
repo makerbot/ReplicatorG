@@ -127,7 +127,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		} else {
 			// If we were in continuous jog mode, send a stop to be safe
 			if (continuousJogMode) {
-				this.driver.stop();			
+				this.driver.stop(false);			
 			}
 			continuousJogMode = false;
 			Matcher jogMatcher = jogPattern.matcher(mode);
@@ -231,8 +231,8 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	// Make a rotation tool (for A and B axes)
 	private JPanel makeRotationPanel(AxisId axis) {
-		JButton cwButton = createJogButton("jog/CW", "Jog "+axis.name()+" axis in clockwise direction", axis.name()+"+");
-		JButton ccwButton = createJogButton("jog/CCW", "Jog "+axis.name()+" axis in counterclockwise direction", axis.name()+"-");
+		JButton cwButton = createJogButton("jog/CW", "Jog "+axis.name()+" axis in clockwise direction", axis.name()+"-");
+		JButton ccwButton = createJogButton("jog/CCW", "Jog "+axis.name()+" axis in counterclockwise direction", axis.name()+"+");
 		JPanel panel = new JPanel(new MigLayout());
 		panel.add(new JLabel(axis.name()));
 		panel.add(cwButton,"split 2,flowy");
@@ -343,7 +343,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 					driver.queuePoint(current);
 				}
 			} else if (s.equals("Stop")) {
-				this.driver.stop();
+				this.driver.stop(false);
 				// FIXME: If we reenable the control panel while printing, 
 				// we should check this, call this.machine.stop(),
 				// plus communicate this action back to the main window
@@ -411,7 +411,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	public void mouseReleased(MouseEvent arg0) {
 		if (continuousJogMode) {
-			driver.stop();
+			driver.stop(false);
 		}
 	}
 }
