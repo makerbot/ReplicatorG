@@ -6,3 +6,5 @@ build/jar
 build/classes
 *.pyc
 *.class
+#.
+*~
