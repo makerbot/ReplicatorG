@@ -525,7 +525,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		runCommand(pb.getPacket());
 
-		super.setCurrentPosition(p);
+		this.currentPosition.set(p);
 	}
 
 	// Homes the three first axes
@@ -539,26 +539,18 @@ public class Sanguino3GDriver extends SerialDriver
 
 		if (feedrate <= 0) {
 			// figure out our fastest feedrate.
-			feedrate = Math.max(maxFeedrates.x(), maxFeedrates.y());
-			feedrate = Math.max(maxFeedrates.z(), feedrate);
+			feedrate = 0;
+			for (AxisId axis : machine.getAvailableAxes()) {
+				feedrate = Math.max(maxFeedrates.axis(axis),feedrate);
+			}
 		}
 		
 		Point5d target = new Point5d();
 		
-		if (axes.contains(AxisId.X)) {
-			flags += 1;
-			feedrate = Math.min(feedrate, maxFeedrates.x());
-			target.setX(1); // just to give us feedrate info.
-		}
-		if (axes.contains(AxisId.Y)) {
-			flags += 2;
-			feedrate = Math.min(feedrate, maxFeedrates.y());
-			target.setY(1); // just to give us feedrate info.
-		}
-		if (axes.contains(AxisId.Z)) {
-			flags += 4;
-			feedrate = Math.min(feedrate, maxFeedrates.z());
-			target.setZ(1); // just to give us feedrate info.
+		for (AxisId axis : axes) {
+			flags += 1 << axis.getIndex();
+			feedrate = Math.min(feedrate, maxFeedrates.axis(axis));
+			target.setAxis(axis, 1);
 		}
 		
 		// calculate ticks
@@ -757,7 +749,7 @@ public class Sanguino3GDriver extends SerialDriver
 		return pwm;
 	}
 
-	public double getMotorSpeedRPM() {
+	public double getMotorRPM() {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_MOTOR_1_RPM.getCode());
@@ -775,6 +767,39 @@ public class Sanguino3GDriver extends SerialDriver
 		return rpm;
 	}
 
+
+	public void readToolStatus() {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(ToolCommandCode.GET_TOOL_STATUS.getCode());
+		PacketResponse pr = runQuery(pb.getPacket());
+		if (pr.isEmpty()) return;
+		// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
+		int status = pr.get8();
+		machine.currentTool().setToolStatus(status);
+
+		int errorTerm = (int)pr.get16();
+		int deltaTerm = (int)pr.get16();
+		int lastOutput = (int)pr.get16();
+		
+		// Convert to signed integers, this is dangerous.
+		if (errorTerm >= 1<<15 ) {
+			errorTerm = errorTerm - (1<<16);
+		}
+		if (deltaTerm >= 1<<15 ) {
+			deltaTerm = deltaTerm - (1<<16);
+		}
+		if (lastOutput >= 1<<15 ) {
+			lastOutput = lastOutput - (1<<16);
+		}
+		
+		Base.logger.log(Level.FINE,"Tool Status: "
+					+ machine.currentTool().getToolStatus()
+					+ "  PID error term: " + errorTerm 
+					+ "  PID delta term: " + deltaTerm
+					+ "  PID output: " + lastOutput);
+	}
+	
 	/***************************************************************************
 	 * PenPlotter interface functions
 	 * @throws RetryException 
@@ -870,7 +895,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
+		pb.add8(ToolCommandCode.TOGGLE_MOTOR_2.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
 		runCommand(pb.getPacket());
@@ -941,7 +966,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8(ToolCommandCode.GET_TEMP.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isEmpty()) return;
-		// FIXME: First, check that the result code is OK. We occationally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
+		// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
 		int temp = pr.get16();
 		machine.currentTool().setCurrentTemperature(temp);
 
@@ -950,7 +975,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		super.readTemperature();
 	}
-
+	
 	/***************************************************************************
 	 * Platform Temperature interface functions
 	 * @throws RetryException 
@@ -1116,16 +1141,6 @@ public class Sanguino3GDriver extends SerialDriver
 	 * Various timer and math functions.
 	 **************************************************************************/
 
-//	private Point3d getDeltaDistance(Point3d current, Point3d target) {
-//		// calculate our deltas.
-//		Point3d delta = new Point3d();
-//		delta.x = target.x - current.x;
-//		delta.y = target.y - current.y;
-//		delta.z = target.z - current.z;
-//
-//		return delta;
-//	}
-
 	private Point5d getAbsDeltaDistance(Point5d current, Point5d target) {
 		// calculate our deltas.
 		Point5d delta = new Point5d();
@@ -1135,7 +1150,7 @@ public class Sanguino3GDriver extends SerialDriver
 		return delta;
 	}
 
-	private Point5d getAbsDeltaSteps(Point5d current, Point5d target) {
+	protected Point5d getAbsDeltaSteps(Point5d current, Point5d target) {
 		return machine.mmToSteps(getAbsDeltaDistance(current, target));
 	}
 
@@ -1146,12 +1161,18 @@ public class Sanguino3GDriver extends SerialDriver
 	 * @param feedrate Feedrate in mm per minute
 	 * @return
 	 */
-	private long convertFeedrateToMicros(Point5d current, Point5d target, double feedrate) {
+	protected long convertFeedrateToMicros(Point5d current, Point5d target, double feedrate) {
 		Point5d deltaDistance = getAbsDeltaDistance(current, target);
  		Point5d deltaSteps = machine.mmToSteps(deltaDistance);
 		double masterSteps = getLongestLength(deltaSteps);
 		// how long is our line length?
-		double distance = deltaDistance.distance(new Point5d());
+		// We calculate this manually, so that we only account for active axes.
+//		double distanceSq = 0.0;
+//		for (AxisId axis : machine.getAvailableAxes()) {
+//			distanceSq += deltaDistance.axis(axis);
+//		}
+//		double distance = Math.sqrt(distanceSq);
+		double distance = deltaDistance.magnitude();
 		// distance is in mm
 		// feedrate is in mm/min
 		// distance / feedrate * 60,000,000 = move duration in microseconds
@@ -1161,12 +1182,12 @@ public class Sanguino3GDriver extends SerialDriver
 		return (long) Math.round(step_delay);
 	}
 
-	private double getLongestLength(Point5d p) {
+	protected double getLongestLength(Point5d p) {
 		// find the dominant axis.
-		double longest = Math.max(p.x(), p.y());
-		longest = Math.max(longest, p.z());
-		longest = Math.max(longest, p.a());
-		longest = Math.max(longest, p.b());
+		double longest = 0d;
+		for (int i = 0; i < 5; i++) {	// TODO: we'll ignore a and b for now
+			longest = Math.max(longest, p.get(i));
+		}
 		return longest;
 	}
 
@@ -1177,9 +1198,19 @@ public class Sanguino3GDriver extends SerialDriver
 	/***************************************************************************
 	 * Stop and system state reset
 	 **************************************************************************/
-	public void stop() {
+	final private Version extendedStopVersion = new Version(2,7);
+	
+	public void stop(boolean abort) {
 		Base.logger.fine("Stop.");
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ABORT.getCode());
+		PacketBuilder pb;
+		if (!abort && version.atLeast(extendedStopVersion)) {
+			pb = new PacketBuilder(MotherboardCommandCode.EXTENDED_STOP.getCode());
+			// Clear command queue and stop motion
+			pb.add8(1<<0 | 1<<1);
+			
+		} else {
+			pb = new PacketBuilder(MotherboardCommandCode.ABORT.getCode());
+		}
 		Thread.interrupted(); // Clear interrupted status
 		runQuery(pb.getPacket());
 		// invalidate position, force reconciliation.

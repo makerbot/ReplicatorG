@@ -1,7 +1,7 @@
 /*
-  ToolModel.java
+  XML.java
 
-  A class to model a toolhead.
+  XML convenience methods
 
   Part of the ReplicatorG project - http://www.replicat.org
   Copyright (c) 2008 Zach Smith

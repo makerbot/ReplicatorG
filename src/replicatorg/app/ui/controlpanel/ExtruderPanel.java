@@ -12,12 +12,16 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JOptionPane;
@@ -75,6 +79,17 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	private TimeTableXYDataset measuredPlatformDataset = new TimeTableXYDataset();
 	private TimeTableXYDataset targetPlatformDataset = new TimeTableXYDataset();
 
+	protected Pattern extrudeTimePattern;
+	
+	protected String[] extrudeTimeStrings = { /* "Continuous Move", */ "1s", "2s", "5s", "10s", "30s", "60s", "300s" };
+	
+	protected boolean continuousJogMode = false;
+	protected long extrudeTime;
+	private final String EXTRUDE_TIME_PREF_NAME = "extruderpanel.extrudetime";
+	
+	protected Driver driver;
+	
+	
 	/**
 	 * Make a label with an icon indicating its color on the graph.
 	 * @param text The text of the label
@@ -141,6 +156,26 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		label.setHorizontalAlignment(JLabel.LEFT);
 		return label;
 	}
+
+	
+	private void setExtrudeTime(String mode) {
+		if ("Continuous Jog".equals(mode)) {
+			continuousJogMode = true;
+			extrudeTime = 0;
+		} else {
+			// If we were in continuous jog mode, send a stop to be safe
+			if (continuousJogMode) {
+				this.driver.stop(false);			
+			}
+			continuousJogMode = false;
+			Matcher jogMatcher = extrudeTimePattern.matcher(mode);
+			if (jogMatcher.find())
+				extrudeTime = Long.parseLong(jogMatcher.group(1));
+		}
+		if (mode != null && mode.length() > 0) {
+			Base.preferences.put(EXTRUDE_TIME_PREF_NAME,mode);
+		}		
+	}
 	
 	public ExtruderPanel(MachineController machine, ToolModel t) {
 		this.machine = machine;
@@ -148,17 +183,18 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		int textBoxWidth = 75;
 		Dimension panelSize = new Dimension(420, 30);
-		Driver driver = machine.getDriver();
+		driver = machine.getDriver();
 
+		extrudeTimePattern = Pattern.compile("([.0-9]+)");
+		
 		// create our initial panel
 		setLayout(new MigLayout());
 		// create our motor options
 		if (t.hasMotor()) {
 			// Due to current implementation issues, we need to send the PWM
-			// before the RPM
-			// for a stepper motor. Thus we display both controls in these
-			// cases.
-			{
+			// before the RPM for a stepper motor. Thus we display both controls in these
+			// cases. This shouldn't be necessary for a Gen4 stepper extruder.
+			if (t.getMotorStepperAxis() == null) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
 				JTextField field = new JTextField();
@@ -184,7 +220,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				field.setMaximumSize(new Dimension(textBoxWidth, 25));
 				field.setMinimumSize(new Dimension(textBoxWidth, 25));
 				field.setPreferredSize(new Dimension(textBoxWidth, 25));
-				field.setName("motor-speed");
+				field.setName("motor-speed-rpm");
 				field.addFocusListener(this);
 				field.setActionCommand("handleTextfield");
 				field.setText(Double.toString(driver.getMotorRPM()));
@@ -192,33 +228,72 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 				add(label);
 				add(field,"wrap");
+
+				label = makeLabel("Extrude duration");
+				
+				JComboBox timeList = new JComboBox(extrudeTimeStrings);
+				timeList.setSelectedItem(Base.preferences.get(EXTRUDE_TIME_PREF_NAME,"5s"));
+				timeList.setActionCommand("Extrude-duration");
+				timeList.addActionListener(this);
+				setExtrudeTime((String)timeList.getSelectedItem());
+				add(label);
+				add(timeList,"wrap");
 			}
 			// create our motor options
 			JLabel motorEnabledLabel = makeLabel("Motor Control");
+			
+			if (t.motorHasEncoder() || t.motorIsStepper()) {
+				JButton motorReverseButton = new JButton("reverse");
+				motorReverseButton.setActionCommand("reverse");
+				motorReverseButton.addActionListener(this);
 
-			JRadioButton motorReverseButton = new JRadioButton("reverse");
-			motorReverseButton.setName("motor-reverse");
-			motorReverseButton.addItemListener(this);
+				JButton motorStoppedButton = new JButton("stop");
+				motorStoppedButton.setActionCommand("stop");
+				motorStoppedButton.addActionListener(this);
 
-			JRadioButton motorStoppedButton = new JRadioButton("stop");
-			motorStoppedButton.setName("motor-stop");
-			motorStoppedButton.addItemListener(this);
+				JButton motorForwardButton = new JButton("forward");
+				motorForwardButton.setActionCommand("forward");
+				motorForwardButton.addActionListener(this);
 
-			JRadioButton motorForwardButton = new JRadioButton("forward");
-			motorForwardButton.setName("motor-forward");
-			motorForwardButton.addItemListener(this);
+				ButtonGroup motorControl = new ButtonGroup();
+				motorControl.add(motorReverseButton);
+				motorControl.add(motorStoppedButton);
+				motorControl.add(motorForwardButton);
 
-			ButtonGroup motorControl = new ButtonGroup();
-			motorControl.add(motorReverseButton);
-			motorControl.add(motorStoppedButton);
-			motorControl.add(motorForwardButton);
+				// add components in.
+				add(motorEnabledLabel,"split,spanx");
+				add(motorReverseButton);
+				add(motorStoppedButton);
+				add(motorForwardButton,"wrap");
+			}
+			else {
+				JRadioButton motorReverseButton = new JRadioButton("reverse");
+				motorReverseButton.setName("motor-reverse");
+				motorReverseButton.setActionCommand("motor-reverse");
+				motorReverseButton.addItemListener(this);
 
+				JRadioButton motorStoppedButton = new JRadioButton("stop");
+				motorStoppedButton.setName("motor-stop");
+				motorStoppedButton.setActionCommand("motor-stop");
+				motorStoppedButton.addItemListener(this);
 
-			// add components in.
-			add(motorEnabledLabel,"split,spanx");
-			add(motorReverseButton);
-			add(motorStoppedButton);
-			add(motorForwardButton,"wrap");
+				JRadioButton motorForwardButton = new JRadioButton("forward");
+				motorForwardButton.setName("motor-forward");
+				motorForwardButton.setActionCommand("motor-forward");
+				motorForwardButton.addItemListener(this);
+
+				ButtonGroup motorControl = new ButtonGroup();
+				motorControl.add(motorReverseButton);
+				motorControl.add(motorStoppedButton);
+				motorControl.add(motorForwardButton);
+
+				// add components in.
+				add(motorEnabledLabel,"split,spanx");
+				add(motorReverseButton);
+				add(motorStoppedButton);
+				add(motorForwardButton,"wrap");		
+			}
+
 		}
 
 		// our temperature fields
@@ -399,6 +474,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	public void updateStatus() {
 		
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
+		int toolStatus = machine.getDriver().getToolStatus();
+		
 		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeater()) {
 			double temperature = machine.getDriver().getTemperature();
 			updateTemperature(second, temperature);
@@ -480,12 +557,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 						return;
 					}
 					driver.setTemperature(target);
+					targetTemperature = target;
 				} else {
 					target = confirmTemperature(target,"temperature.acceptedLimit.bed",130.0);
 					if (target == Double.MIN_VALUE) {
 						return;
 					}
 					driver.setPlatformTemperature(target);
+					targetPlatformTemperature = target;
 				}
 				// This gives some feedback by adding .0 it it wasn't typed.
 				source.setText(Double.toString(target));
@@ -504,16 +583,19 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		Component source = (Component) e.getItemSelectable();
 		String name = source.getName();
 		Driver driver = machine.getDriver();
+		
 		try {
 			if (e.getStateChange() == ItemEvent.SELECTED) {
+				/* Handle DC extruder commands */
 				if (name.equals("motor-forward")) {
 					driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
 					driver.enableMotor();
 				} else if (name.equals("motor-reverse")) {
 					driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 					driver.enableMotor();
-				} else if (name.equals("motor-stop"))
+				} else if (name.equals("motor-stop")) {
 					driver.disableMotor();
+				}
 				else if (name.equals("spindle-enabled"))
 					driver.enableSpindle();
 				else if (name.equals("flood-coolant"))
@@ -556,15 +638,45 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	public void actionPerformed(ActionEvent e) {
 		String s = e.getActionCommand();
 		
-		if(s.equals("handleTextfield"))
-		{
-			JTextField source = (JTextField) e.getSource();
-			try {
-				handleChangedTextField(source);
-			} catch (RetryException e1) {
-				Base.logger.severe("Could not execute command; machine busy.");
+		try {
+			if(s.equals("handleTextfield"))
+			{
+				JTextField source = (JTextField) e.getSource();
+				try {
+					handleChangedTextField(source);
+				} catch (RetryException e1) {
+					Base.logger.severe("Could not execute command; machine busy.");
+				}
+				source.selectAll();
 			}
-			source.selectAll();
+			else if (s.equals("Extrude-duration")) {
+				JComboBox cb = (JComboBox) e.getSource();
+				String timeText = (String) cb.getSelectedItem();
+				setExtrudeTime(timeText);
+			}
+			/* Handle stepper extruder commands */
+			if (s.equals("forward")) {
+				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
+			if (this.toolModel.getMotorStepperAxis() != null) {
+					driver.enableMotor();
+					driver.delay(extrudeTime*1000);
+					driver.disableMotor();
+				}
+			} else if (s.equals("reverse")) {
+				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
+				if (this.toolModel.getMotorStepperAxis() != null) {
+					driver.enableMotor();
+					driver.delay(extrudeTime*1000);
+					driver.disableMotor();
+				}
+			} else if (s.equals("stop")) {
+				driver.disableMotor();
+				if (this.toolModel.getMotorStepperAxis() != null) {
+					driver.stop(false);
+				}
+			}
+		} catch (RetryException e1) {
+			Base.logger.severe("Could not execute command; machine busy.");
 		}
 	}
 

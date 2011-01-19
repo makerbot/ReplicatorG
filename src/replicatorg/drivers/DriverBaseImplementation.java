@@ -232,7 +232,7 @@ public class DriverBaseImplementation implements Driver {
 		offsets[offsetSystemNum].z = j;
 	}
 
-	private final AtomicReference<Point5d> currentPosition =
+	protected final AtomicReference<Point5d> currentPosition =
 		new AtomicReference<Point5d>(null);
 	
 	public void setCurrentPosition(Point5d p) throws RetryException {
@@ -283,7 +283,8 @@ public class DriverBaseImplementation implements Driver {
 		// add to the total length
 		moveLength += delta.get3D().distance(new Point3d());
 
-		// what is our feedrate?
+		// Calculate the feedrate. This is the speed that the toolhead will
+		// be traveling at.
 		double feedrate = getSafeFeedrate(delta);
 
 		// mostly for estimation driver.
@@ -319,42 +320,42 @@ public class DriverBaseImplementation implements Driver {
 
 	/**
 	 * Return the maximum safe feedrate, given in mm/min., for the given delta and current feedrate.
-	 * The feedrate is evaluated in 3D space only.
 	 * @param delta The delta in mm.
-	 * @return
+	 * @return safe feedrate in mm/min
 	 */
 	public double getSafeFeedrate(Point5d delta) {
 		double feedrate = getCurrentFeedrate();
 
-		Point3d maxFeedrates = new Point3d(machine.getMaximumFeedrates().get3D());
+		Point5d maxFeedrates = machine.getMaximumFeedrates();
 
 		// System.out.println("max feedrates: " + maxFeedrates);
 
-		// no zero feedrates!
+		// If the current feedrate is 0, set it to the maximum feedrate of any
+		// of the machine axis. If those are also all 0 (misconfiguration?),
+		// set the feedrate to 1.
+		// TODO: Where else is feedrate set?
 		if (feedrate == 0) {
-			feedrate = Math.max(maxFeedrates.x, maxFeedrates.y);
-			feedrate = Math.max(feedrate, maxFeedrates.z);
-			feedrate = Math.max(feedrate, 1);
-			// System.out.println("Zero feedrate!! " + feedrate);
+			for (int i=0;i<5;i++) {
+				feedrate = Math.max(feedrate, maxFeedrates.get(i));
+			}
+			Base.logger.warning("Zero feedrate detected, reset to: " + feedrate);
 		}
 
-		// Break down feedrate by axis.
-		double length = delta.get3D().distance(new Point3d());
-		if (delta.x() != 0) {
-			if (feedrate*delta.x()/length > maxFeedrates.x) {
-				feedrate = maxFeedrates.x * length/delta.x();
+		// Determine the magnitude of this delta
+		double length = delta.length();
+		
+		// For each axis: if the current feedrate will cause this axis to move
+		// faster than it's maximum feedrate, lower the system feedrate so
+		// that it will be compliant.
+		for (int i=0;i<5;i++) {
+			if (delta.get(i) != 0) {
+				if (feedrate * delta.get(i) / length > maxFeedrates.get(i)) {
+					feedrate = maxFeedrates.get(i) * length / delta.get(i);
+				}
 			}
 		}
-		if (delta.y() != 0) {
-			if (feedrate*delta.y()/length > maxFeedrates.y) {
-				feedrate = maxFeedrates.y * length/delta.y();
-			}
-		}
-		if (delta.z() != 0) {
-			if (feedrate*delta.z()/length > maxFeedrates.z) {
-				feedrate = maxFeedrates.z * length/delta.z();
-			}
-		}
+		
+		// Return the feedrate, which is how fast the toolhead will be moving (magnitude of the toolhead velocity)
 		return feedrate;
 	}
 
@@ -472,6 +473,17 @@ public class DriverBaseImplementation implements Driver {
 		return machine.currentTool().getMotorSpeedReadingPWM();
 	}
 
+	// TODO: These are backwards?
+	public void readToolStatus() {
+	}
+
+	public int getToolStatus() {
+		readToolStatus();
+
+		return machine.currentTool().getToolStatus();
+	}
+
+	
 	/***************************************************************************
 	 * Spindle interface functions
 	 **************************************************************************/
@@ -502,7 +514,7 @@ public class DriverBaseImplementation implements Driver {
 	public int getSpindleSpeedPWM() {
 		return machine.currentTool().getSpindleSpeedReadingPWM();
 	}
-
+	
 	/***************************************************************************
 	 * Temperature interface functions
 	 * @throws RetryException 
@@ -520,7 +532,7 @@ public class DriverBaseImplementation implements Driver {
 
 		return machine.currentTool().getCurrentTemperature();
 	}
-
+	
 	/***************************************************************************
 	 * Platform Temperature interface functions
 	 * @throws RetryException 
@@ -610,7 +622,7 @@ public class DriverBaseImplementation implements Driver {
 	/***************************************************************************
 	 * Stop and system state reset
 	 **************************************************************************/
-	public void stop() {
+	public void stop(boolean abort) {
 		// No implementation needed for synchronous machines.
 		Base.logger.info("Machine stop called.");
 	}

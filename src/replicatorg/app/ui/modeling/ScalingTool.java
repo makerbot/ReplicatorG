@@ -12,8 +12,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
-
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.ui.modeling.PreviewPanel.DragMode;
