@@ -133,7 +133,17 @@ public class MachineFactory {
 	 * @param db A documentbuilder object for parsing
 	 */
 	private static void addMachinesForDirectory(File dir, MachineMap machineMap,DocumentBuilder db) {
-		db.reset(); // Allow reuse of a single DocumentBuilder.
+		try {
+			db.reset(); // Allow reuse of a single DocumentBuilder.
+		} catch (UnsupportedOperationException uoe) {
+			// In case they've got a rogue xerces. :(
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			try {
+				db = dbf.newDocumentBuilder();
+			} catch (ParserConfigurationException e) {
+				Base.logger.log(Level.SEVERE, "Could not create document builder", e);
+			}
+		}
 		List<String> filenames = Arrays.asList(dir.list());
 		Collections.sort(filenames); // Files addressed in alphabetical order.
 		for (String filename : filenames) {
