@@ -229,20 +229,22 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				add(label);
 				add(field,"wrap");
 
-				label = makeLabel("Extrude duration");
+				if (this.toolModel.getMotorStepperAxis() != null) {
+					label = makeLabel("Extrude duration");
 				
-				JComboBox timeList = new JComboBox(extrudeTimeStrings);
-				timeList.setSelectedItem(Base.preferences.get(EXTRUDE_TIME_PREF_NAME,"5s"));
-				timeList.setActionCommand("Extrude-duration");
-				timeList.addActionListener(this);
-				setExtrudeTime((String)timeList.getSelectedItem());
-				add(label);
-				add(timeList,"wrap");
+					JComboBox timeList = new JComboBox(extrudeTimeStrings);
+					timeList.setSelectedItem(Base.preferences.get(EXTRUDE_TIME_PREF_NAME,"5s"));
+					timeList.setActionCommand("Extrude-duration");
+					timeList.addActionListener(this);
+					setExtrudeTime((String)timeList.getSelectedItem());
+					add(label);
+					add(timeList,"wrap");
+				}
 			}
 			// create our motor options
 			JLabel motorEnabledLabel = makeLabel("Motor Control");
 			
-			if (t.motorHasEncoder() || t.motorIsStepper()) {
+			if (t.motorHasEncoder() || (t.motorIsStepper() && this.toolModel.getMotorStepperAxis() != null)) {
 				JButton motorReverseButton = new JButton("reverse");
 				motorReverseButton.setActionCommand("reverse");
 				motorReverseButton.addActionListener(this);
