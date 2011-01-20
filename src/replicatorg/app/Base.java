@@ -374,7 +374,10 @@ public class Base {
 
 		         // set the Quaqua Look and Feel in the UIManager
 		         UIManager.setLookAndFeel("ch.randelshofer.quaqua.QuaquaLookAndFeel");
-
+		         // Default to sun's XML parser, PLEASE.  Some apps are installing some janky-ass xerces.
+		         System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+		        		 "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+		         
 
 			} else if (Base.isLinux()) {
 				// For 0120, trying out the gtk+ look and feel as the default.
