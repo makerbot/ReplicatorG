@@ -159,6 +159,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		Font statusFont = Base.getFontPref("buttons.status.font","SansSerif,plain,12");
 		Color statusColor = Base.getColorPref("buttons.status.color","#FFFFFF");
 
+
 		simButton = makeButton("Simulate", "images/button-simulate.png");
 		add(simButton);
 		buildButton = makeButton("Build", "images/button-build.png");
@@ -185,8 +186,6 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		add(connectButton,"gap unrelated");
 		disconnectButton = makeButton("Disconnect machine", "images/button-disconnect.png");
 		add(disconnectButton);
-		
-		
 
 		statusLabel = new JLabel();
 		statusLabel.setFont(statusFont);
@@ -200,8 +199,15 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	}
 
 	public MainButton makeButton(String rolloverText, String source) {
-		BufferedImage img = Base.getImage(source, this);
 		
+		BufferedImage img = Base.getImage(source, this);
+		if (img == null) {
+			Base.logger.severe("Couldn't load button image: " + source
+								+ ". Check that your path (" + System.getProperty("user.dir")
+								+ ") contains this file");
+			System.exit(1);
+		}
+
 		BufferedImage disabled = disabledOp.filter(img,null);
 		Image inactive = img;
 		Image rollover = img;
