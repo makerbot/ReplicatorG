@@ -12,9 +12,9 @@ fi
 cd `dirname $0`
 
 git fetch upstream                        # Get all remote changes
-git co $branch                            # Switch to local branch if it exists
+git checkout $branch                            # Switch to local branch if it exists
 if [ $? -ne 0 ]; then                     # ..else get branch from upstream
-  git co -b $branch upstream/$branch
+  git checkout -b $branch upstream/$branch
 fi
 if [ $? -eq 0 ]; then
   git merge upstream/$branch              # Only merge if nothing went wrong
