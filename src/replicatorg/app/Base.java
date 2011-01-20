@@ -280,7 +280,12 @@ public class Base {
 							+ "Please visit java.com to upgrade.", null);
 		}
 
-
+		if (Base.isMacOS()) {
+	         // Default to sun's XML parser, PLEASE.  Some apps are installing some janky-ass xerces.
+	         System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+	        		 "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+		}
+		
 		// parse command line input
 		for (int i=0;i<args.length;i++) {
 			// grab any opened file from the command line
@@ -374,9 +379,6 @@ public class Base {
 
 		         // set the Quaqua Look and Feel in the UIManager
 		         UIManager.setLookAndFeel("ch.randelshofer.quaqua.QuaquaLookAndFeel");
-		         // Default to sun's XML parser, PLEASE.  Some apps are installing some janky-ass xerces.
-		         System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-		        		 "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 		         
 
 			} else if (Base.isLinux()) {
