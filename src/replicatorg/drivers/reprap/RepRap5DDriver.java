@@ -381,7 +381,13 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			if(debugLevel > 0)
 				Base.logger.warning("Resending: \"" + command + "\". Resends in "+ numResends + " of "+lineIterator+" lines.");
 			_sendCommand(command, false, true);
-			if (originalCmd != null) originalCmd.notifyAll();
+			if (originalCmd != null)
+			{
+				synchronized(originalCmd)
+				{
+					originalCmd.notifyAll();
+				}
+			}
 		}
 	}
 
@@ -461,8 +467,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					Base.logger.info("Introducing noise (lineIterator=="
 							+ lineIterator + ",introduceNoiseEveryN=" + introduceNoiseEveryN + ")");
 					lineIterator = 0;
-					serial.write(next.replace('6','7').replace('7','1') + "\n");
-				} else {				
+					String noisyNext = next.replace('6','7').replace('7','1') + "\n";
+					serial.write(noisyNext);
+				} else {
 					serial.write(next + "\n");
 				}
 				serialInUse.unlock();
@@ -601,7 +608,6 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		readResponseLock.lock();
 
 		serialInUse.lock();
-		assert (serial != null);
 		byte[] response = fifo.dequeueLine();
 		int responseLength = response.length;
 		serialInUse.unlock();
@@ -709,7 +715,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				// Bad checksum, resend requested
 
 				int bufferedLineNumber = Integer.parseInt( getRegexMatch(
-						gcodeLineNumberPattern, bufferedLine, 1) );
+						gcodeLineNumberPattern, bufferedLine.toLowerCase(), 1) );
 
 				Matcher badLineMatch = resendLinePattern.matcher(line);
 				if (badLineMatch.find())

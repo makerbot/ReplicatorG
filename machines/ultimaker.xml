@@ -24,7 +24,7 @@
                         <debugLevel>1</debugLevel>
                         <limitFeedrate>20000.0</limitFeedrate>
                         <!-- purposefully inject noise to speed up debugging of retransmits and recovery. Use a value 0 to turn it off, 0.05 for once every 20 lines transmitted. -->
-                        <introduceNoise>0</introduceNoise>
+                        <introduceNoise>0.1</introduceNoise>
 
                         <!-- optional, defaults to 1.                          <databits>1</databits> -->
                         <!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
