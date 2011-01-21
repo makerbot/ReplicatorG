@@ -57,8 +57,6 @@ public class Serial implements SerialPortEventListener {
 	 */
 	private static Set<Serial> portsInUse = new HashSet<Serial>();
 
-	private ReentrantLock inputLock = new ReentrantLock();
-	
 	/**
 	 * Scan the port ids for a list of potential serial ports that we can use.
 	 * @return A vector of serial port names and availability information.
@@ -397,9 +395,10 @@ public class Serial implements SerialPortEventListener {
 	 * Indicates if we've received 
 	 */
 	public boolean isDisconnected() { return disconnected.get(); }
-	
+
 	public void serialEvent(SerialPortEvent event) {
 		if (event.getEventType() != SerialPortEvent.DATA_AVAILABLE) return;
+		synchronized (readFifo) {
 			try {
 				while (true) {
 					synchronized(input)
@@ -408,24 +407,17 @@ public class Serial implements SerialPortEventListener {
 						{
 							return;
 						}
-						else
-						{
-							inputLock.tryLock();
-						}
 					}
 
 					int b = input.read();
 					if (b >= 0) {
 						readFifo.enqueue((byte)b);
 						//notify each byte received
-						synchronized (readFifo) {
-							readFifo.notifyAll();
-						}
+						readFifo.notifyAll();
 						SerialFifoEventListener l = listener.get();
 						if (l != null)
 							l.serialByteReceivedEvent(readFifo);
 					}
-					inputLock.unlock();
 				}
 			} catch (IOException e) {
 				// Error condition
@@ -437,7 +429,7 @@ public class Serial implements SerialPortEventListener {
 				// a fail bit.
 				Base.logger.warning("Serial IO exception. Printer communication may be disrupted.");
 				disconnected.set(true);
-				inputLock.unlock();
 			}
+		}
 	}
 }

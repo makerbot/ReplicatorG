@@ -19,13 +19,13 @@ public class ByteFifo {
 		value = value % buffer.length;
 		return value;
 	}
-	public synchronized void enqueue(byte b) {
+	public void enqueue(byte b) {
 		buffer[tail++] = b;
 		tail = moduloLength(tail);
 	}
-	public synchronized void clear() { head = tail = 0; }
-	public synchronized int size() { return moduloLength(tail-head); }
-	public synchronized byte dequeue() {
+	public void clear() { head = tail = 0; }
+	public int size() { return moduloLength(tail-head); }
+	public byte dequeue() {
 		int nextHead = moduloLength(head+1);
 		if (newLineSearchHead == head) newLineSearchHead = nextHead;
 		
