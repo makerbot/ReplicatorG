@@ -1649,6 +1649,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	private Date buildStart = null;
 	
 	public void machineStateChanged(MachineStateChangeEvent evt) {
+
+		if (Base.logger.isLoggable(Level.FINE)) {
+			Base.logger.finest("Machine state changed to " + evt.getState().getState());
+		}
 		boolean hasGcode = getBuild().getCode() != null;
 		if (building) {
 			if (evt.getState().isReady() ||
@@ -1678,6 +1682,27 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				machine != null &&
 				machine.getDriver() instanceof OnboardParameters &&
 				((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters();
+
+		if (Base.logger.isLoggable(Level.FINE)) {
+			if (!showParams) {
+				String cause = new String();
+				if (evt.getState().isReady()) {
+					if (machine == null) cause += "[no machine] ";
+					else {
+						if (!(machine.getDriver() instanceof OnboardParameters)) {
+							cause += "[driver doesn't implement onboard parameters] ";
+						}
+						else if (!machine.getDriver().isInitialized()) {
+							cause += "[machine not initialized] ";
+						}
+						else if (!((OnboardParameters)machine.getDriver()).hasFeatureOnboardParameters()) {
+							cause += "[firmware doesn't support onboard parameters]";
+						}
+					}
+					Base.logger.finest("Couldn't show onboard parameters: " + cause);
+				}
+			}
+		}
 		
 		// enable the control panel menu item when the machine is ready
 		controlPanelItem.setEnabled(evt.getState().isReady());

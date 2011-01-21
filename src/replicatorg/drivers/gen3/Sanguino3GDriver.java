@@ -757,7 +757,8 @@ public class Sanguino3GDriver extends SerialDriver
 
 		// convert back to RPM
 		long micros = pr.get32();
-		double rpm = (60.0 * 1000000.0 / micros);
+		double rpm = 0;
+		if (micros > 0) rpm = (60.0 * 1000000.0 / micros);
 
 		Base.logger.log(Level.FINE,"Current motor 1 RPM: " + rpm + " (" + micros + ")");
 
