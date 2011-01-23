@@ -146,6 +146,13 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		return relative;
 	}
 
+	public void stop(boolean abort) {
+		// Record the toolstate as off, so we don't excite the extruder motor in future moves.
+		machine.currentTool().disableMotor();
+		
+		super.stop(abort);
+	}
+	
 	protected void queueNewPoint(Point5d steps, long us, int relative) throws RetryException {
 
 		// Turn on fan if necessary
@@ -154,7 +161,6 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 				enableStepperExtruderFan(true);
 			}
 		}
-
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_NEW.getCode());
 
 		if (Base.logger.isLoggable(Level.FINE)) {
