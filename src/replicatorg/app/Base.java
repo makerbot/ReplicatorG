@@ -357,7 +357,7 @@ public class Base {
 			}
 		};
 		MRJApplicationUtils.registerOpenDocumentHandler(startupOpen);
-		
+
 		// Create the new application "Base" class.
 		new Base();
 	}
@@ -426,6 +426,10 @@ public class Base {
 		    }
 		});
 
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + System.getProperty("os.arch") + ")");
+			logger.fine("JVM: " + System.getProperty("java.version") + " " + System.getProperty("java.vm.name") + " (" + System.getProperty("java.vm.version") + " " + System.getProperty("java.vendor") + ")");
+		}
 	}
 
 	public enum Platform {
