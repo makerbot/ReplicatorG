@@ -1,6 +1,6 @@
 # git ignore
 # no dist files
-dist
+/dist
 dist-all
 build/jar
 build/classes
@@ -8,3 +8,4 @@ build/classes
 *.class
 #.
 *~
+RepG.log

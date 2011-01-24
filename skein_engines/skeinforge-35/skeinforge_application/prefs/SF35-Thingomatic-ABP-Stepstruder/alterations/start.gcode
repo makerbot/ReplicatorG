@@ -21,6 +21,7 @@ G1 X52 Y-57.0 Z10 F3300.0 (move to waiting position)
 M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
 M101 (Extruder on, forward)
 G04 P5000 (Wait t/1000 seconds)
+M103 (Make sure extruder is off)
 (**** end pre-wipe commands ****)
 (**** end of start.txt ****)
 

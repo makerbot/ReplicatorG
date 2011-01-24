@@ -55,6 +55,7 @@ class ReversalRepository:
 		self.reversalRPM = settings.FloatSpin().getFromValue( 2, 'Reversal speed (RPM):', self, 50, 35 )
 		self.reversalTime = settings.FloatSpin().getFromValue( 10, 'Reversal time (milliseconds):', self, 1000, 75 )
 		self.reversalThreshold = settings.FloatSpin().getFromValue( 0.1, 'Reversal threshold (mm):', self, 5.0, 1.0 )
+		self.startupTime = settings.FloatSpin().getFromValue( 0.1, 'Startup time(milliseconds):', self, 1000, 75 )
 		self.executeTitle = 'Reversal'
 
 	def execute(self):
@@ -108,6 +109,7 @@ class ReversalSkein:
 		self.reversalRPM = self.reversalRepository.reversalRPM.value
 		self.reversalTime = self.reversalRepository.reversalTime.value
 		self.reversalThreshold = self.reversalRepository.reversalThreshold.value
+		self.startupTime = self.reversalRepository.startupTime.value
 		for self.lineIndex in xrange(len(self.lines)):
 			line = self.lines[self.lineIndex]
 			splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
@@ -133,7 +135,7 @@ class ReversalSkein:
                         if self.reversalActive:
                                 self.distanceFeedRate.addLine("M108 R" + str(self.reversalRPM))
                                 self.distanceFeedRate.addLine("M101")
-                                self.distanceFeedRate.addLine("G04 P" + str(self.reversalTime))
+                                self.distanceFeedRate.addLine("G04 P" + str(self.startupTime))
                                 self.distanceFeedRate.addLine("M108 R" + str(self.flowrate))
                                 return
 		elif firstWord == 'M103':

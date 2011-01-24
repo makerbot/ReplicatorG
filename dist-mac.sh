@@ -5,4 +5,4 @@ REVISION=`head -n 1 changelog.txt | sed 's/[^0-9]//g'`
 
 rm -rf dist
 ant clean
-ant -Dreplicatorg.version=$REVISION -lib build/macosx/jarbundler-2.1.0.jar dist-macosx
+ant -Dreplicatorg.version=$REVISION -lib build/macosx/jarbundler-2.2.0.jar dist-macosx
