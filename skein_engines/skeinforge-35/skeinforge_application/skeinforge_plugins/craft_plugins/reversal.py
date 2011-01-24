@@ -196,7 +196,6 @@ class ReversalSkein:
         # This is the main loop
 	def parseLine(self, line):
 		"Parse a gcode line and add it to the bevel gcode."
-                print "-- " + line
 		splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
 		if len(splitLine) < 1:
 			return
@@ -224,7 +223,6 @@ class ReversalSkein:
 		elif firstWord == 'M101':
                         self.extruderOn = True
                         self.reversalWorthy = self.isNextStopReversalWorthy(self.reversalThreshold)
-                        if self.reversalWorthy: print " -> Worthy"
                         if self.didReverse and not self.activateEarlyReversal:
                                 self.distanceFeedRate.addLine("M108 R" + str(self.reversalRPM))
                                 self.distanceFeedRate.addLine("M101")
