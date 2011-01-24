@@ -12,4 +12,4 @@ echo Volume $4
 
 cd $BASE
 
-hdiutil create $VOLUME.dmg -srcfolder $SRC -format UDZO -volname $VOLUME
+hdiutil create $VOLUME.dmg -srcfolder $SRC -format UDZO -volname $VOLUME -ov

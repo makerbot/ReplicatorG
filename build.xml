@@ -131,13 +131,6 @@
     <property name="target.dir"   value="dist/macosx/${release.name}"/>
     <property name="dist.dir"     value="build/macosx/dist"/>
 
-    <fail message="The disk image (DMG-file) for easy distribution on Mac OS X can only be built on Mac OS X currently">
-      <condition>
-        <not>
-          <os family="mac" />
-        </not>
-      </condition>
-    </fail> 
     <taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
     <antcall target="dist-common-plain"/>
     <jarbundler
@@ -150,7 +143,7 @@
        infostring="ReplicatorG ${replicatorg.version}, © 2009-${current.year} MakerBot Industries" 
        version="${replicatorg.version}"
        jvmversion="1.5+"
-       stubfile="ReplicatorG"
+       stubfile="${dist.dir}/ReplicatorG"
        >
       <jarfileset dir="${jar.dir}" includes="ReplicatorG.jar"/>
       <jarfileset dir="${lib.dir}" includes="*.jar"/>
@@ -164,7 +157,6 @@
                     iconFile="${dist.dir}/replicatorg.icns"
                     role="Editor"/>
       <resourcefileset dir="${lib.dir}" includes="*.gif"/>
-      <resourcefileset dir="${lib.dir}" includes="*.jpg"/>
       <javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
       <javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
     </jarbundler>
@@ -173,7 +165,6 @@
     </copy>
     <copy todir="${target.dir}/tools">
       <filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
-      <fileset dir="${dist.dir}/tools" includes="*.a"/>
     </copy>
     <chmod file="${target.dir}/tools/avrdude" perm="ugo+rx"/>
     <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
@@ -183,11 +174,26 @@
       <arg value="-output"/>
       <arg value="${target.dir}/ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
     </exec>
+
+    <condition property="macosx">
+      <os family="mac"/>
+    </condition>
+    <antcall target="dist-macosx-zip"/>
+    <antcall target="dist-macosx-dmg"/>
+  </target>
+
+  <target name="dist-macosx-zip" unless="macosx">
+    <echo>Mac OS X zip</echo>
+    <zip destfile="dist/${release.name}-mac.zip">
+      <zipfileset dir="dist/macosx/${release.name}" prefix="${release.name}"/>
+    </zip>
+  </target>
+  <target name="dist-macosx-dmg" if="macosx">
+    <echo>Mac OS X dmg</echo>
     <exec dir="." os="Mac OS X" executable="/bin/sh">
       <arg value="-c"/>
       <arg value="${dist.dir}/mkdmg.sh ./dist ../${target.dir} image ${release.name}-mac"/>
     </exec>
-    <!--		<gzip zipfile="${macosx.dist.dir}-image/ReplicatorG .dmg.gz" src="${dist}/mac-image/MyTool.dmg"/>-->
   </target>
 
   <target name="dist-common-plain" depends="jar" description="Copies plaintext files common to all ReplicatorG distributions.">
@@ -217,7 +223,6 @@
     </copy>
     <copy todir="${target.dir}/lib">
       <fileset dir="${lib.dir}" includes="*.gif"/>
-      <fileset dir="${lib.dir}" includes="*.jpg"/>
       <filelist dir="${lib.dir}" files="keywords.txt"/>
       <fileset dir="${jar.dir}" includes="*.jar"/>
     </copy>
@@ -247,12 +252,9 @@
     <chmod file="${target.dir}/replicatorg" perm="ugo+rx"/>
     <chmod file="${target.dir}/tools/avrdude" perm="ugo+rx"/>
 
-    <!-- Generate the .tgz -->
-    <exec dir="dist/linux" executable="/bin/tar">
-      <arg value="czf"/>
-      <arg value="../${release.name}-linux.tgz"/>
-      <arg value="${release.name}"/>
-    </exec>
+    <tar destfile="dist/${release.name}-linux.tgz" compression="gzip" longfile="gnu">
+      <tarfileset dir="dist/linux/${release.name}" prefix="${release.name}"/>
+    </tar>
   </target>
 
   <target name="dist-windows" depends="jar" description="Builds Windows ReplicatorG distribution">
