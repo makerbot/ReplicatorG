@@ -248,10 +248,11 @@ class ReversalSkein:
                         self.extruderOn = True
                         self.didReverse = True
                         self.reversalActive = True
-
+                elif firstWord == 'M108':
+                        indexOfR = gcodec.getIndexOfStartingWithSecond('R', splitLine)
+                        if indexOfR > 0: 
+                                self.flowrate = gcodec.getDoubleAfterFirstLetter(splitLine[indexOfR])
 		self.distanceFeedRate.addLine(line)
-
-
 
 def main():
 	"Display the reversal dialog."
