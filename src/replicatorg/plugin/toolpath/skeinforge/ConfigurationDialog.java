@@ -191,7 +191,7 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 
-		for (SkeinforgePreference preference: parentGenerator.preferences) {
+		for (SkeinforgePreference preference: parentGenerator.get().preferences) {
 			add(preference.getUI(), "wrap");
 		}
 

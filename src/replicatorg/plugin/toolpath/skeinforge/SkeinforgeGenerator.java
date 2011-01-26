@@ -46,7 +46,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		Base.preferences.put("replicatorg.skeinforge.profile", name);
 	}
 
-	class Profile implements Comparable<Profile> {
+	static class Profile implements Comparable<Profile> {
 		private String fullPath;
 		private String name;
 
@@ -102,7 +102,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	 * A SkeinforgeOption instance describes a single preference override to pass to skeinforge.
 	 * @author phooky
 	 */
-	protected class SkeinforgeOption {
+	protected static class SkeinforgeOption {
 		final String parameter;
 		final String module;
 		final String preference;
@@ -144,7 +144,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		public List<SkeinforgeOption> getOptions();
 	}
 	
-	public class SkeinforgeChoicePreference implements SkeinforgePreference {
+	public static class SkeinforgeChoicePreference implements SkeinforgePreference {
 		private Map<String,List<SkeinforgeOption>> optionsMap = new HashMap<String,List<SkeinforgeOption>>();
 		private JPanel component;
 		private DefaultComboBoxModel model;
@@ -200,7 +200,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 	}
 	
-	protected class SkeinforgeBooleanPreference implements SkeinforgePreference {
+	protected static class SkeinforgeBooleanPreference implements SkeinforgePreference {
 		private boolean isSet;
 		private JCheckBox component;
 		private List<SkeinforgeOption> trueOptions = new LinkedList<SkeinforgeOption>();
