@@ -1,7 +1,5 @@
 (**** beginning of start.txt ****)
 (This file is for a MakerBot Thing-O-Matic)
-(with an automated build platform and a MK6 stepstruder)
-(This file has been sliced using Skeinforge 35)
 (**** begin initilization commands ****)
 G21 (set units to mm)
 G90 (set positioning to absolute)
