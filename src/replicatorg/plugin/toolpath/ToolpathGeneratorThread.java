@@ -33,6 +33,15 @@ public class ToolpathGeneratorThread extends Thread {
 		this.interrupt();
 	}
 	
+	// Parsing for progress messages.  There is no need to compile all these patterns every single time.
+	static private Pattern patOfNum = Pattern.compile(" of ([0-9]+)...");
+    static private Pattern patLayerCount = Pattern.compile("([A-Za-z]+) layer count ([0-9]+)");
+	static private Pattern patOldLayerTotal = Pattern.compile("total Layer count is[^0-9]([0-9]+)[^0-9]");
+	static private Pattern patFillingLayer = Pattern.compile("^Filling layer.*[^0-9]([0-9]+)[^0-9]");
+	static private Pattern patOldFillingLayer = Pattern.compile("Filling layer[^0-9]([0-9]+)/([0-9]+)[^0-9]");
+	static private Pattern patSliceToGcode = Pattern.compile("Slice to GCode.*layer ([0-9]+)[^0-9]");//Slice to GCode... layer %s.
+	static private Pattern patProcedureTook = Pattern.compile("(.*) procedure took");
+
 	private class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListener {
 		JLabel topLabel;
 		JLabel progressLabel;
@@ -88,12 +97,12 @@ public class ToolpathGeneratorThread extends Thread {
 
 			// Escape key to abort generation
 			doneButton.addKeyListener( new KeyAdapter()  {
-                        	public void keyPressed ( KeyEvent e ) {
-                                        if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+				public void keyPressed ( KeyEvent e ) {
+					if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 						synchronized(this) {
 							abortGeneration();
 						}
-                                        }
+					}
 				}
 			} );
 		}
@@ -107,7 +116,7 @@ public class ToolpathGeneratorThread extends Thread {
 		public void setDone(boolean done) {
 			this.done = done;
 		}
-		
+				
 		public void updateGenerator(final String message) {
 
 			SwingUtilities.invokeLater(new Runnable() {
@@ -124,15 +133,13 @@ public class ToolpathGeneratorThread extends Thread {
 				    	newMessage = newMessage.substring(4);
 				    }
 				    // skeinforge 33 (and up) format: \033[1AFill layer count 28 of 35...
-				    Pattern r = Pattern.compile(" of ([0-9]+)...");
-				    Matcher m = r.matcher(newMessage);
+				    Matcher m = patOfNum.matcher(newMessage);
 				    if (m.find( )) {
 		    			logIt = false;
 			    		layerTotal = Integer.parseInt(m.group(1));
 				    }
 				    // skeinforge 33 (and up)
-				    r = Pattern.compile("([A-Za-z]+) layer count ([0-9]+)");
-				    m = r.matcher(newMessage);
+				    m = patLayerCount.matcher(newMessage);
 				    if (m.find( )) {
 				    	processName = m.group(1);
 			    		layerIndex = Integer.parseInt(m.group(2));
@@ -148,13 +155,11 @@ public class ToolpathGeneratorThread extends Thread {
 				    }
 				    
 				    // Older skeinforge's
-					r = Pattern.compile("total Layer count is[^0-9]([0-9]+)[^0-9]");
-				    m = r.matcher(newMessage);
+				    m = patOldLayerTotal.matcher(newMessage);
 				    if (m.find( )) {
 			    		layerTotal = Integer.parseInt(m.group(1));
 				    }
-					r = Pattern.compile("^Filling layer.*[^0-9]([0-9]+)[^0-9]");
-				    m = r.matcher(newMessage);
+				    m = patFillingLayer.matcher(newMessage);
 				    if (m.find( ))
 				    {
 				    	layerIndex = Integer.parseInt(m.group(1));
@@ -165,8 +170,7 @@ public class ToolpathGeneratorThread extends Thread {
 				    }
 
 				    // THE ONE BELOW IS JUST FOR THE OLDER SKEINFORGE < 31!
-					r = Pattern.compile("Filling layer[^0-9]([0-9]+)/([0-9]+)[^0-9]");
-				    m = r.matcher(newMessage);
+				    m = patOldFillingLayer.matcher(newMessage);
 				    if (m.find( )) {
 			    		layerIndex = Integer.parseInt(m.group(1));
 			    		layerTotal = Integer.parseInt(m.group(2));
@@ -176,8 +180,7 @@ public class ToolpathGeneratorThread extends Thread {
 				    	totalProgressBar.setValue(10 + sub);
 				    }				    
 				    				    
-					r = Pattern.compile("Slice to GCode.*layer ([0-9]+)[^0-9]");//Slice to GCode... layer %s.
-				    m = r.matcher(newMessage);
+				    m = patSliceToGcode.matcher(newMessage);
 				    if (m.find( ))
 				    {
 				    	layerIndex = Integer.parseInt(m.group(1));
@@ -186,62 +189,17 @@ public class ToolpathGeneratorThread extends Thread {
 				    	sub = (int) (2*((double) layerIndex)/ layerTotal);
 				    	totalProgressBar.setValue(2 + sub);				    	
 				    }
-				    /*
-					r = Pattern.compile("Insetting.*layer ([0-9]+)[^0-9]");
-				    m = r.matcher(newMessage);
-				    if (m.find( ))
-				    {
-				    	layerIndex = Integer.parseInt(m.group(1));
-				    	showProgress = true;
-				    	logIt = false;
-				    	sub = (int) (6*((double) layerIndex)/ layerTotal);
-				    	totalProgressBar.setValue(4 + sub);
-				    }
-				    */
 				    if(showProgress)
 				    {
-//				    	String i = new Integer(layerIndex).toString();
 						String j = new Integer(layerTotal).toString();
 						double completion =  ((double) layerIndex/layerTotal);
-//						NumberFormat nf = NumberFormat.getPercentInstance();
-//						String perc = nf.format(completion);
 					    if((layerIndex>0) && (processName == ""))
 					    {
 					    	newMessage += " ("+j+" layers)";//
 					    }
 					    subProgressBar.setValue((int) (100*completion));
 					}
-				    /*
-					r = Pattern.compile("Fill procedure took");
-				    m = r.matcher(newMessage);
-				    if (m.find( ))
-				    {
-				    	subProgressBar.setIndeterminate(true);
-				    	// http://download.oracle.com/javase/tutorial/uiswing/components/progress.html#indeterminate
-				    	totalProgressBar.setValue(65);
-				    }
-
-					r = Pattern.compile("Speed procedure took");
-				    m = r.matcher(newMessage);
-				    if (m.find( )) totalProgressBar.setValue(70);
-					r = Pattern.compile("Temperature procedure took");
-				    m = r.matcher(newMessage);
-				    if (m.find( )) totalProgressBar.setValue(79);
-					r = Pattern.compile("Raft procedure took");
-				    m = r.matcher(newMessage);
-				    if (m.find( )) totalProgressBar.setValue(85);
-					r = Pattern.compile("Jitter procedure took");
-				    m = r.matcher(newMessage);
-				    if (m.find( )) totalProgressBar.setValue(88);
-					r = Pattern.compile("Clip procedure took");
-				    m = r.matcher(newMessage);
-				    if (m.find( )) totalProgressBar.setValue(99);
-					r = Pattern.compile("The extrusion fill density ratio");
-				    m = r.matcher(newMessage);
-				    if (m.find( )) totalProgressBar.setValue(99);
-					*/
-					r = Pattern.compile("(.*) procedure took");
-				    m = r.matcher(newMessage);
+				    m = patProcedureTook.matcher(newMessage);
 				    if (m.find( ))
 				    {	
 					    for(int i=0;i<5;i++)
