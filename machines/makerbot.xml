@@ -10,7 +10,7 @@
 			<axis id="z" length="100" maxfeedrate="150" stepspermm="320" endstops="min"/>
 		</geometry>
 		<tools>
-			<tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"/>
+			<tool name="Pinch Wheel Extruder v1.1" type="extruder" material="abs" motor="true" fan="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
@@ -33,7 +33,7 @@ M18
 			<axis id="z" length="100" maxfeedrate="150" stepspermm="320"/>
 		</geometry>
 		<tools>
-			<tool name="Plastruder Mk5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="false" valve="false" automatedplatform="true" heatedplatform="true" collet="false" heater="true"/>
+			<tool name="Plastruder Mk5" type="extruder" material="abs" motor="true" automatedplatform="true" heatedplatform="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
@@ -56,7 +56,7 @@ M18
 			<axis id="z" length="96" maxfeedrate="150" stepspermm="320" endstops="min"/>
 		</geometry>
 		<tools>
-			<tool name="Pinch Wheel Extruder v1.1a" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
+			<tool name="Pinch Wheel Extruder v1.1a" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
@@ -85,7 +85,7 @@ M18
 			<axis id="z" length="100" maxfeedrate="150" stepspermm="1280"/>
 		</geometry>
 		<tools>
-			<tool name="Plastruder Mk5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="false" valve="false" automatedplatform="true" heatedplatform="true" collet="false" heater="true"/>
+			<tool name="Plastruder Mk5" type="extruder" material="abs" motor="true" automatedplatform="true" heatedplatform="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
@@ -109,8 +109,8 @@ M18
 			<axis id="z" length="96" maxfeedrate="150" stepspermm="320"/>
 		</geometry>
 		<tools>
-			<tool index="4" name="Pinch Wheel Extruder v1.1a" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="false" collet="false" heater="true"/>
-			<tool index="3" name="Pinch Wheel Extruder v1.1a" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
+			<tool index="4" name="Pinch Wheel Extruder v1.1a" type="extruder" material="abs" motor="true" fan="true" heatedplatform="false" heater="true"/>
+			<tool index="3" name="Pinch Wheel Extruder v1.1a" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
@@ -134,7 +134,7 @@ M18
 			<axis id="z" length="100" maxfeedrate="150" stepspermm="320" endstops="min"/>
 		</geometry>
 		<tools>
-			<tool name="Frostruder v1.0" type="extruder" material="abs" motor="false" floodcoolant="false" mistcoolant="false" fan="true" valve="true" collet="false" heater="false">
+			<tool name="Frostruder v1.0" type="extruder" material="abs" motor="false" fan="true" valve="true" heater="false">
 				<remap port="fan" name="Pressure Valve" actuated="open"/>
 				<remap port="valve" name="Relief Valve" actuated="open"/>
 			</tool>
@@ -161,7 +161,7 @@ M18
 			<axis id="z" length="106" maxfeedrate="1000" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 		</geometry>
 		<tools>
-			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="false" automatedplatform="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
+			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" automatedplatform="true" heatedplatform="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
@@ -185,7 +185,7 @@ M18
 			<axis id="z" length="120" maxfeedrate="1000" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 		</geometry>
 		<tools>
-			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" automatedplatform="false" valve="false" heatedplatform="true" collet="false" heater="true"/>
+			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
@@ -258,7 +258,7 @@ M18
 			<axis id="a" length="100" maxfeedrate="200" stepspermm="200" endstops="none"/>
 		</geometry>
 		<tools>
-			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" heatedplatform="true" collet="false" heater="true"/>
+			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4g">
