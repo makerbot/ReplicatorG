@@ -1,6 +1,6 @@
 (**** Beginning of end.txt ****)
-(This file is for a MakerBot Thing-O-Matic with)
-(an automated build platform)
+(This file is for a MakerBot Thing-O-Matic)
+(with an automated build platform)
 (This file has been sliced using Skeinforge 35)
 (*** begin settings ****)
 M109 S75 T0 (set heated-build-platform temperature)
