@@ -1,3 +1,50 @@
+"""
+Reversal is a script to rapidly revert the extruder before the end of
+a thread and push back before the beginning. This is an alternative
+approach to oozebane for battling filament ooze and will work for
+stepper extruders when printing in 3D mode.
+
+==Operation==
+
+The default 'Activate Reversal' checkbox is on.  When it is on, the
+functions described below will work, when it is off, the functions
+will not be called.
+
+==Settings==
+
+===Reversal speed (RPM)===
+
+The speed of the reversal. The meaning of RPM is dependent of how your
+bot is configured, but is ususally defined to be the RPM of the gear
+actually pushing the filament.
+
+===Reversal time (milliseconds)==
+
+For how long we are going to reverse.
+
+===Push-back time (milliseconds)===
+
+For how long we are going to push back. This is usually the same as
+the reversal time, but could be increased due to small amounts of ooze
+forming at the start of a push-back because heater barrel pressure
+dropped.
+
+===Reversal threshold (mm)===
+
+Ignore small extruder jump smaller than this threshold.
+
+Since there is a small time delay from the act of push the filament
+into the heater barrel to the extruded filament exits it, we don't
+want to waste time doing retracts which doesn't benefit us at the
+right time and place.
+
+===Activate early reversal and push-back===
+
+If this is activated, the reversal will be done while moving on the
+last segment of the thread. If it's off, the machine will stop at the
+end of the thread while reversing. Correspondingly for push-back.
+
+"""
 from __future__ import absolute_import
 #Init has to be imported first because it has code to workaround the python bug where relative imports don't work if the module is imported as a main module.
 import __init__
