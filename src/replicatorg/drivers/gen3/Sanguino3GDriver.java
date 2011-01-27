@@ -781,6 +781,19 @@ public class Sanguino3GDriver extends SerialDriver
 		// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
 		int status = pr.get8();
 		machine.currentTool().setToolStatus(status);
+
+		if (Base.logger.isLoggable(Level.FINE)) {
+			Base.logger.log(Level.FINE, "Extruder Status: "
+				+ status + ": "
+				+ (((status & 0x80)!=0) ? "EXTRUDER_ERROR " : "")
+				+ (((status & 0x40)!=0) ? "PLATFORM_ERROR " : "")
+				+ (((status & 0x20)!=0) ? "WDRF " : "")
+				+ (((status & 0x10)!=0) ? "BORF " : "")
+				+ (((status & 0x08)!=0) ? "EXTRF " : "")
+				+ (((status & 0x04)!=0) ? "PORF " : "")
+				+ (((status & 0x01)!=0) ? "READY" : "NOT READY") + " "
+			);
+		}
 		
 		readToolPIDState();
 	}
@@ -816,8 +829,8 @@ public class Sanguino3GDriver extends SerialDriver
 			Base.logger.log(Level.FINE,"Extuder PID State:"
 						+ "  error: " + extruderErrorTerm 
 						+ "  delta: " + extruderDeltaTerm
-						+ "  output: " + extruderLastOutput
-						+ "\nPlatform PID State:"
+						+ "  output: " + extruderLastOutput);
+			Base.logger.log(Level.FINE,"Platform PID State:"
 						+ "  error: " + platformErrorTerm 
 						+ "  delta: " + platformDeltaTerm
 						+ "  output: " + platformLastOutput);
