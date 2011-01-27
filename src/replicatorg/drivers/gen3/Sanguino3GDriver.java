@@ -75,6 +75,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 	public void initialize() {
 		// Assert: serial port present.
+		// TODO: Handle this better
 		assert serial != null : "No serial port found.";
 		// wait till we're initialized
 		if (!isInitialized()) {
@@ -780,6 +781,47 @@ public class Sanguino3GDriver extends SerialDriver
 		// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
 		int status = pr.get8();
 		machine.currentTool().setToolStatus(status);
+		
+		readToolPIDState();
+	}
+
+	// TODO: This doesn't belong here
+	private int fixSigned(int value) {
+		if (value >= 1<<15 ) {
+			value = value - (1<<16);
+		}
+		
+		return value;
+	}
+	
+	// TODO: Implement a way for this to reach the outside
+	public void readToolPIDState() {
+		if (Base.logger.isLoggable(Level.FINE)) {
+		
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8(ToolCommandCode.GET_PID_STATE.getCode());
+			PacketResponse pr = runQuery(pb.getPacket());
+			if (pr.isEmpty()) return;
+			// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
+			
+			int extruderErrorTerm = fixSigned((int)pr.get16());
+			int extruderDeltaTerm = fixSigned((int)pr.get16());
+			int extruderLastOutput = fixSigned((int)pr.get16());
+	
+			int platformErrorTerm = fixSigned((int)pr.get16());
+			int platformDeltaTerm = fixSigned((int)pr.get16());
+			int platformLastOutput = fixSigned((int)pr.get16());
+			
+			Base.logger.log(Level.FINE,"Extuder PID State:"
+						+ "  error: " + extruderErrorTerm 
+						+ "  delta: " + extruderDeltaTerm
+						+ "  output: " + extruderLastOutput
+						+ "\nPlatform PID State:"
+						+ "  error: " + platformErrorTerm 
+						+ "  delta: " + platformDeltaTerm
+						+ "  output: " + platformLastOutput);
+		}
 	}
 	
 	/***************************************************************************
