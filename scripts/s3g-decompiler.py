@@ -42,7 +42,7 @@ commandTable = {
     139: ("<iiiiiI","Absolute move to (%i,%i,%i,%i,%i) at DDA %i"),
     140: ("<iiiii","Machine position set as (%i,%i,%i,%i,%i)"),
     141: ("<BHH","Wait for platform %i (%i ms between polls, %i s timeout)"),
-    142: ("<iiiiiI","Move to (%i,%i,%i,%i,%i) in %i us (relative: %X)")
+    142: ("<iiiiiIB","Move to (%i,%i,%i,%i,%i) in %i us (relative: %X)")
 }
 
 def parseNextCommand():
