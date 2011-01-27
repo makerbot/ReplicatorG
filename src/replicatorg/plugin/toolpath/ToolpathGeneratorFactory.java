@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Vector;
 
 import replicatorg.app.Base;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
 
 public class ToolpathGeneratorFactory {
 	public static class ToolpathGeneratorDescriptor {
@@ -46,7 +47,7 @@ public class ToolpathGeneratorFactory {
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-0006");
 			}
-			File getUserProfilesDir() {
+			public File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_profiles");
 			}
 			public List<SkeinforgePreference> getPreferences() {
@@ -67,7 +68,7 @@ public class ToolpathGeneratorFactory {
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-35/skeinforge_application");
 			}
-			File getUserProfilesDir() {
+			public File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_35_profiles");
 			}
 			public List<SkeinforgePreference> getPreferences() {
@@ -108,7 +109,7 @@ public class ToolpathGeneratorFactory {
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-31/skeinforge_application");
 			}
-			File getUserProfilesDir() {
+			public File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_31_profiles");
 			}
 			public List<SkeinforgePreference> getPreferences() {
@@ -128,7 +129,7 @@ public class ToolpathGeneratorFactory {
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-39/skeinforge_application");
 			}
-			File getUserProfilesDir() {
+			public File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_beta_profiles");
 				
 			}

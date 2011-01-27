@@ -1,9 +1,7 @@
-package replicatorg.plugin.toolpath;
+package replicatorg.plugin.toolpath.skeinforge;
 
 import java.io.File;
 import java.io.IOException;
-
-import replicatorg.plugin.toolpath.SkeinforgeGenerator.Profile;
 
 /**
  * Helper utilities for profiles.
@@ -21,7 +19,7 @@ public class ProfileUtils {
 	 * @param p the profile
 	 * @return true on success
 	 */
-	public boolean delete(Profile p) {
+	public boolean delete(SkeinforgeGenerator.Profile p) {
 		return delete(new File(p.getFullPath()));
 		
 	}

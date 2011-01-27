@@ -567,7 +567,6 @@ public class GCodeParser {
 				if (hasCode("S"))
 					driver.setPlatformTemperature(getCodeValue("S"));
 				break;
-				//driver.setPlatformTemperature(getCodeValue("S"));
 
 			// set build chamber temperature
 			case 110:

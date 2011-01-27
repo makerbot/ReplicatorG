@@ -31,6 +31,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.lang.ref.WeakReference;
 import java.util.Enumeration;
 
 import javax.swing.AbstractButton;
@@ -110,13 +111,16 @@ public class EditorHeader extends BGPanel implements ActionListener {
 
 
 	private class TabButton extends JToggleButton implements BuildElement.Listener {
-		final BuildElement element;
+		// Using a weak reference to work around massive leaks
+		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4726458
+		// This bug is almost old enough to attend high school.
+		final WeakReference<BuildElement> element;
 		
-		public BuildElement getBuildElement() { return element; }
+		public BuildElement getBuildElement() { return element.get(); }
 		
 		public TabButton(BuildElement element) {
 			buildElementUpdate(element); // set initial string
-			this.element = element;
+			this.element = new WeakReference<BuildElement>(element);
 			setUI(new TabButtonUI());
 			setBorder(new EmptyBorder(6,8,8,10));
 			tabGroup.add(this);
