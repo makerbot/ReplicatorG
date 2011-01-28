@@ -247,7 +247,13 @@ class ReversalSkein:
 		if len(splitLine) < 1:
 			return
 		firstWord = splitLine[0]
-		if firstWord == 'G1':
+		if firstWord == 'M108': # built-in rpmify
+                        line = line.replace( 'M108 S', 'M108 R' )
+                        splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
+                        indexOfR = gcodec.getIndexOfStartingWithSecond('R', splitLine)
+                        if indexOfR > 0:
+                                self.flowrate = gcodec.getDoubleAfterFirstLetter(splitLine[indexOfR])
+		elif firstWord == 'G1':
 			self.oldLocation = self.newLocation
 			self.newLocation = gcodec.getLocationFromSplitLine(self.oldLocation, splitLine)
                         self.feedRateMinute = gcodec.getFeedRateMinute(self.feedRateMinute, splitLine)
@@ -295,10 +301,7 @@ class ReversalSkein:
                         self.extruderOn = True
                         self.didReverse = True
                         self.reversalActive = True
-                elif firstWord == 'M108':
-                        indexOfR = gcodec.getIndexOfStartingWithSecond('R', splitLine)
-                        if indexOfR > 0: 
-                                self.flowrate = gcodec.getDoubleAfterFirstLetter(splitLine[indexOfR])
+
 		self.distanceFeedRate.addLine(line)
 
 def main():
