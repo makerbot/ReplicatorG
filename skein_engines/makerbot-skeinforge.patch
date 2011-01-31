@@ -44,3 +44,17 @@ diff -ru skeinforge-latest/skeinforge_application/skeinforge.py skeinforge-39/sk
  	sys.argv = [sys.argv[0]] + args
  	if len( args ) > 0:
  		writeOutput( ' '.join(args) )
+diff -ru /Users/kintel/Desktop/Makerbot/39_reprap_python_beanshell/skeinforge_application/skeinforge_plugins/craft_plugins/export.py ./skeinforge_application/skeinforge_plugins/craft_plugins/export.py
+--- /Users/kintel/Desktop/Makerbot/39_reprap_python_beanshell/skeinforge_application/skeinforge_plugins/craft_plugins/export.py	2011-01-03 18:36:38.000000000 +0100
++++ ./skeinforge_application/skeinforge_plugins/craft_plugins/export.py	2011-01-31 20:04:00.000000000 +0100
+@@ -167,8 +167,8 @@
+ 	print('File ' + archive.getSummarizedFileName(fileName) + ' is being chain exported.')
+ 	suffixFileName = fileName[: fileName.rfind('.')]
+ 	if repository.addExportSuffix.value:
+-		suffixFileName += '_export.'
+-	suffixFileName += repository.fileExtension.value
++		suffixFileName += '_export'
++	suffixFileName += '.' + repository.fileExtension.value
+ 	gcodeText = gcodec.getGcodeFileText(fileName, '')
+ 	procedures = skeinforge_craft.getProcedures('export', gcodeText)
+ 	gcodeText = skeinforge_craft.getChainTextFromProcedures(fileName, procedures[ : - 1 ], gcodeText)

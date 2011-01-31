@@ -167,8 +167,8 @@ def writeOutput(fileName=''):
 	print('File ' + archive.getSummarizedFileName(fileName) + ' is being chain exported.')
 	suffixFileName = fileName[: fileName.rfind('.')]
 	if repository.addExportSuffix.value:
-		suffixFileName += '_export.'
-	suffixFileName += repository.fileExtension.value
+		suffixFileName += '_export'
+	suffixFileName += '.' + repository.fileExtension.value
 	gcodeText = gcodec.getGcodeFileText(fileName, '')
 	procedures = skeinforge_craft.getProcedures('export', gcodeText)
 	gcodeText = skeinforge_craft.getChainTextFromProcedures(fileName, procedures[ : - 1 ], gcodeText)
