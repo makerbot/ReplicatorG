@@ -1,5 +1,21 @@
 0024 ReplicatorG
-* TODO: finish changelog
+* More example objects and scripts
+* Build temperature monitoring reenabled
+* Number of UI cleanups
+* Skeinforge 39 introduced
+* Improved extruder status reporting
+* Several memory leaks solved
+* Early reversal for stepper-driven extruders
+* 64-bit platform fixes for Mac OS X, x86_64
+* Added s3g decompilation script
+* Startup info dump to aid debugging
+* Continuous jog and motion stop commands
+* Improved Ultimaker support
+* Support for legacy RepRap firmware
+* Improvements to serial layer
+* 5-axis motion commands for G4 hardware
+* Scale field reflects mouse scaling factor
+* Skeinforge 31 readded
 
 0023 ReplicatorG
 * Bugfix release
@@ -31,15 +47,12 @@ Contributions:
 * Marius: Added generalized skeinforge merge patch
 * Marius: Added skeinforge 35
 * Marius: Added build platform belt checkbox to control panel
-<<<<<<< HEAD
 * Erik: Pre-seeds the extruder PWM and RPM as configured in machines.xml
 * Rob: RepRap 5D driver checksum, linenumber and manual extrude support. Various RepRap 5D driver bug fixes.
-=======
 * Marius: Added support for wait-for-platform
 * Nick Starno: paraminator script
 * Robert Giseburt: several integration fixes for OS X
 * Marius, Charles, Nick, Rob Gilson, and others: lots of hard skeinforge configuration work!
->>>>>>> a6c64e2747710fcadf5ac6ba0596fcf0ba5287e7
 
 0021 ReplicatorG
 Bugfix release
