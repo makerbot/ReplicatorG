@@ -73,6 +73,7 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 		});
 		
 		add(doneButton,"tag cancel");
+		this.setResizable(false);
 		this.setModal(false);
 
 		// Escape key to abort generation
