@@ -1,11 +1,18 @@
 #!/bin/bash
 
-if [ $# != 1 ]; then exit; fi
+if [ $# != 2 ]; then
+  echo "Usage: $0 <skeinforge-version> <overridefile>"
+  exit
+fi
 
-echo "using override file $1"
+VERSION=$1
+OVERRIDES=$2
+
+echo "Using skeinforge version $VERSION"
+echo "Using override file $OVERRIDES"
 
 echo "Building new-profile"
 rm -rf new-profile
-cp -r ../skein_engines/skeinforge-35/skeinforge_application/prefs/SF35-Thingomatic-baseline new-profile
+cp -r ../skein_engines/skeinforge-$VERSION/skeinforge_application/prefs/SF$VERSION-Thingomatic-baseline new-profile
 echo "Applying overrides"
-./apply_overrides.py -p new-profile -o $1
+./apply_overrides.py -p new-profile -o $OVERRIDES
