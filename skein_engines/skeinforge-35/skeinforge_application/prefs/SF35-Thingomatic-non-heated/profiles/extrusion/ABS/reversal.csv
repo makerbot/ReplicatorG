@@ -2,7 +2,7 @@ Format is tab separated reversal settings.
 Name                          	Value
 WindowPosition	700+0
 Open File for Reversal	
-Activate Reversal	True
+Activate Reversal	False
 Reversal speed (RPM):	35
 Reversal time (milliseconds):	75
 Push-back time (milliseconds):	75
