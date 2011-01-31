@@ -1,131 +1,46 @@
-diff -ru skeinforge-latest/fabmetheus_utilities/archive.py skeinforge-modified/fabmetheus_utilities/archive.py
---- skeinforge-latest/fabmetheus_utilities/archive.py	2010-11-01 16:05:38.000000000 -0400
-+++ skeinforge-modified/fabmetheus_utilities/archive.py	2010-11-19 11:59:21.462172001 -0500
-@@ -249,9 +249,17 @@
- 	pythonFileNamesExceptInitRecursively.sort()
- 	return pythonFileNamesExceptInitRecursively
+diff -ru skeinforge-latest/fabmetheus_utilities/settings.py skeinforge-39/fabmetheus_utilities/settings.py
+--- skeinforge-latest/fabmetheus_utilities/settings.py	2011-01-31 18:09:43.000000000 +0100
++++ skeinforge-39/fabmetheus_utilities/settings.py	2011-01-31 17:16:26.000000000 +0100
+@@ -563,7 +563,7 @@
+ 		settingTable = {}
+ 		for setting in repository.preferences:
+ 			settingTable[ setting.name ] = setting
+-		for (name, value) in overrides[repository.baseName].items():
++		for (name, value) in globalTemporaryOverrides[repository.baseName].items():
+ 			if name in settingTable:
+ 				settingTable[name].setValueToString(value)
+ 			else:
+diff -ru skeinforge-latest/skeinforge_application/skeinforge.py skeinforge-39/skeinforge_application/skeinforge.py
+--- skeinforge-latest/skeinforge_application/skeinforge.py	2011-01-31 18:09:43.000000000 +0100
++++ skeinforge-39/skeinforge_application/skeinforge.py	2011-01-31 17:15:52.000000000 +0100
+@@ -540,8 +540,7 @@
+ 	'Craft a file, display dialog.'
+ 	repository = getNewRepository()
+ 	repository.fileNameInput.value = fileName
+-	repository.execute()
+-	settings.startMainLoopFromConstructor(repository)
++	settings.startMainLoopFromWindow(repository.execute())
  
-+settingsPath = os.path.join(os.path.expanduser('~'), '.skeinforge')
-+
- def getSettingsPath(subName=''):
--	'Get the settings directory path, which is the home directory joined with .skeinforge.'
--	return getJoinedPath(os.path.join(os.path.expanduser('~'), '.skeinforge'), subName)
-+	'Get the settings directory path, which defaults to the home directory joined with .skeinforge.'
-+	global settingsPath
-+	return getJoinedPath(settingsPath, subName)
-+
-+def setSettingsPath(path):
-+	'Set the base settings directory path.'
-+	global settingsPath
-+	settingsPath = path
  
- def getSummarizedFileName(fileName):
- 	'Get the fileName basename if the file is in the current working directory, otherwise return the original full name.'
-diff -ru skeinforge-latest/fabmetheus_utilities/settings.py skeinforge-modified/fabmetheus_utilities/settings.py
---- skeinforge-latest/fabmetheus_utilities/settings.py	2010-11-05 22:48:34.000000000 -0400
-+++ skeinforge-modified/fabmetheus_utilities/settings.py	2010-11-19 11:59:21.462172001 -0500
-@@ -260,6 +260,31 @@
- 	repository.pluginFrame.getFromPath( defaultRadioButton, directoryPath, repository )
- 	return radioPlugins
+ class SkeinforgeRepository:
+@@ -569,8 +568,10 @@
+ 	def execute(self):
+ 		'Skeinforge button has been clicked.'
+ 		fileNames = skeinforge_polyfile.getFileOrDirectoryTypesUnmodifiedGcode(self.fileNameInput.value, fabmetheus_interpret.getImportPluginFileNames(), self.fileNameInput.wasCancelled)
++                window = None
+ 		for fileName in fileNames:
+-			skeinforge_craft.writeOutput(fileName)
++			window = skeinforge_craft.writeOutput(fileName)
++                return window
  
-+overrides = {}
-+
-+def addPreferenceOverride(module, name, value):
-+	global overrides
-+	if not module in overrides:
-+		overrides[module] = {}
-+	overrides[module][name] = value
-+	print "OVERRIDE ",module,name,value
-+	print overrides[module]
-+
-+def applyOverrides(repository):
-+	"Apply any overrides that have been set at the command line."
-+	# The override dictionary is a mapping of repository names to
-+	# key-value mappings. 
-+	global overrides
-+	if repository.baseName in overrides:
-+		settingTable = {}
-+		for setting in repository.preferences:
-+			settingTable[ setting.name ] = setting
-+		for (name, value) in overrides[repository.baseName].items():
-+			if name in settingTable:
-+				settingTable[name].setValueToString(value)
-+			else:
-+				print "Override not applied for",name,value
-+
- def getReadRepository(repository):
- 	"Read and return settings from a file."
- 	text = archive.getFileText(archive.getProfilesPath(getProfileBaseName(repository)), 'r', False)
-@@ -272,8 +297,10 @@
- 		if text != '':
- 			readSettingsFromText( repository, text )
- 		writeSettings(repository)
-+		applyOverrides(repository)
- 		return repository
- 	readSettingsFromText( repository, text )
-+	applyOverrides(repository)
- 	return repository
- 
- def getRepositoryText(repository):
-diff -ru skeinforge-latest/skeinforge_application/skeinforge_plugins/craft_plugins/export.py skeinforge-modified/skeinforge_application/skeinforge_plugins/craft_plugins/export.py
---- skeinforge-latest/skeinforge_application/skeinforge_plugins/craft_plugins/export.py	2010-11-05 21:53:35.000000000 -0400
-+++ skeinforge-modified/skeinforge_application/skeinforge_plugins/craft_plugins/export.py	2010-11-19 11:59:21.462172001 -0500
-@@ -156,7 +156,7 @@
- 	settings.getReadRepository( exportRepository )
- 	startTime = time.time()
- 	print('File ' + archive.getSummarizedFileName(fileName) + ' is being chain exported.')
--	suffixFileName = fileName[ : fileName.rfind('.') ] + '_export.' + exportRepository.fileExtension.value
-+	suffixFileName = fileName[ : fileName.rfind('.') ] + '.' + exportRepository.fileExtension.value
- 	gcodeText = gcodec.getGcodeFileText( fileName, '')
- 	procedures = skeinforge_craft.getProcedures('export', gcodeText )
- 	gcodeText = skeinforge_craft.getChainTextFromProcedures( fileName, procedures[ : - 1 ], gcodeText )
-diff -ru skeinforge-latest/skeinforge_application/skeinforge.py skeinforge-modified/skeinforge_application/skeinforge.py
---- skeinforge-latest/skeinforge_application/skeinforge.py	2010-11-05 22:03:05.000000000 -0400
-+++ skeinforge-modified/skeinforge_application/skeinforge.py	2010-11-19 12:22:31.090172001 -0500
-@@ -208,9 +208,11 @@
- from fabmetheus_utilities import euclidean
- from fabmetheus_utilities import gcodec
- from fabmetheus_utilities import settings
-+from fabmetheus_utilities import archive
- from skeinforge_application.skeinforge_utilities import skeinforge_craft
- from skeinforge_application.skeinforge_utilities import skeinforge_polyfile
- from skeinforge_application.skeinforge_utilities import skeinforge_profile
-+from optparse import OptionParser
- import os
- import sys
- 
-@@ -547,8 +549,32 @@
- 
- def main():
- 	"Display the skeinforge dialog."
--	if len(sys.argv) > 1:
--		writeOutput(' '.join(sys.argv[1 :]))
-+	parser = OptionParser()
-+	parser.add_option("-p", "--prefdir", help="set path to preference directory",
-+		action="store", type="string", dest="preferencesDirectory")
-+	parser.add_option("-s", "--start", help="set start file to use",
-+		action="store", type="string", dest="startFile")
-+	parser.add_option("-e", "--end", help="set end file to use",
-+		action="store", type="string", dest="endFile")
-+	parser.add_option("-o", "--option", 
-+		help='set an individual option in the format "module:preference=value"',
-+		action="append", type="string", dest="preferences")
-+
-+	(options, args) = parser.parse_args()
-+	defaultStart = 'start.txt'
-+	defaultEnd = 'end.txt'
-+	if options.preferencesDirectory:
-+		pdir = options.preferencesDirectory;
-+		archive.setSettingsPath(pdir)
-+	if options.preferences:
-+		for prefSpec in options.preferences:
-+			(moduleName,prefSpec) = prefSpec.split(":",1)
-+			(prefName,valueName) = prefSpec.split("=",1)
-+			settings.addPreferenceOverride(moduleName,prefName,valueName)
-+
-+	sys.argv = [sys.argv[0]] + args
-+	if len( args ) > 0:
-+		writeOutput( ' '.join(args) )
- 	else:
- 		settings.startMainLoopFromConstructor( getNewRepository() )
- 
+ 	def save(self):
+ 		'Profile has been saved and profile menu should be updated.'
+@@ -600,7 +601,7 @@
+ 		for prefSpec in options.preferences:
+ 			(moduleName, prefSpec) = prefSpec.split(':', 1)
+ 			(prefName, valueName) = prefSpec.split('=', 1)
+-			settings.addPreferenceOverride(moduleName, prefName, valueName)
++			settings.temporaryAddPreferenceOverride(moduleName, prefName, valueName)
+ 	sys.argv = [sys.argv[0]] + args
+ 	if len( args ) > 0:
+ 		writeOutput( ' '.join(args) )

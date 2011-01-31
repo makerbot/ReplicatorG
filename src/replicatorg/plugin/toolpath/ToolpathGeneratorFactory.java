@@ -64,6 +64,26 @@ public class ToolpathGeneratorFactory {
 			}
 		};
 
+		class Skeinforge31 extends SkeinforgeGenerator {
+			public File getDefaultSkeinforgeDir() {
+		    	return Base.getApplicationFile("skein_engines/skeinforge-31/skeinforge_application");
+			}
+			public File getUserProfilesDir() {
+		    	return Base.getUserFile("sf_31_profiles");
+			}
+			public List<SkeinforgePreference> getPreferences() {
+				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				SkeinforgeBooleanPreference raftPref = 			
+					new SkeinforgeBooleanPreference("Use raft",
+						"replicatorg.skeinforge.useRaft", true,
+						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
+						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Activate Raft", "true"));
+				prefs.add(raftPref);
+				return prefs;
+			}
+		};
+		
 		class Skeinforge35 extends SkeinforgeGenerator {
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-35/skeinforge_application");
@@ -105,43 +125,13 @@ public class ToolpathGeneratorFactory {
 			}
 		};
 
-		class Skeinforge31 extends SkeinforgeGenerator {
-			public File getDefaultSkeinforgeDir() {
-		    	return Base.getApplicationFile("skein_engines/skeinforge-31/skeinforge_application");
-			}
-			public File getUserProfilesDir() {
-		    	return Base.getUserFile("sf_31_profiles");
-			}
-			public List<SkeinforgePreference> getPreferences() {
-				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
-				SkeinforgeBooleanPreference raftPref = 			
-					new SkeinforgeBooleanPreference("Use raft",
-						"replicatorg.skeinforge.useRaft", true,
-						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
-						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
-				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Activate Raft", "true"));
-				prefs.add(raftPref);
-				return prefs;
-			}
-		};
-		
-		class Skeinforge39 extends SkeinforgeGenerator {
+		class Skeinforge39 extends Skeinforge35 {
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-39/skeinforge_application");
 			}
 			public File getUserProfilesDir() {
-		    	return Base.getUserFile("sf_beta_profiles");
+		    	return Base.getUserFile("sf_39_profiles");
 				
-			}
-			public List<SkeinforgePreference> getPreferences() {
-				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
-				SkeinforgeBooleanPreference raftPref = 			
-					new SkeinforgeBooleanPreference("Use raft",
-						"replicatorg.skeinforge.useRaft", true,
-						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
-						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
-				
-				return prefs;
 			}
 		};
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (standard)", 
