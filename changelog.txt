@@ -1,3 +1,6 @@
+0024 ReplicatorG
+* TODO: finish changelog
+
 0023 ReplicatorG
 * Bugfix release
 * Fix machine profiles to handle correct endstops and platform sizes
