@@ -1773,7 +1773,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		boolean showRealtimeTuning = 
 			evt.getState().isReady() &&
 			machine != null &&
-			machine.getDriver() instanceof OnboardParameters &&
+			machine.getDriver() instanceof RealtimeControl &&
 			((RealtimeControl)machine.getDriver()).hasFeatureRealtimeControl();
 		realtimeControlItem.setVisible(showRealtimeTuning);
 		realtimeControlItem.setEnabled(showRealtimeTuning);
