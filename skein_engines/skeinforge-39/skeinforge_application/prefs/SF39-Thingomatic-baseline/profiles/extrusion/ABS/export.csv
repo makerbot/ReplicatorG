@@ -5,9 +5,9 @@ Open File for Export
 Activate Export	True
 Add Export Suffix	False
 Also Send Output To:	
-Do Not Delete Comments	False
+Do Not Delete Comments	True
 Delete Crafting Comments	False
-Delete All Comments	True
+Delete All Comments	False
 Do Not Change Output	True
 binary_16_byte	False
 gcode_step	False
