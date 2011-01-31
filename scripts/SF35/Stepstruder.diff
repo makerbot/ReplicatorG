@@ -16,20 +16,18 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/alterations/start.gcode SF35
  M103 (Make sure extruder is off)
  M104 S225 T0 (set extruder temperature)
  M109 S125 T0 (set heated-build-platform temperature)
-diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/profiles/extrusion/ABS/reversal.csv SF35-Thingomatic-ABP-Stepstruder/profiles/extrusion/ABS/reversal.csv
---- SF35-Thingomatic-ABP/profiles/extrusion/ABS/reversal.csv	1970-01-01 01:00:00.000000000 +0100
-+++ SF35-Thingomatic-ABP-Stepstruder/profiles/extrusion/ABS/reversal.csv	2011-01-26 22:53:09.000000000 +0100
-@@ -0,0 +1,10 @@
-+Format is tab separated reversal settings.
-+Name                          	Value
-+WindowPosition	700+0
-+Open File for Reversal	
+diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-baseline/profiles/extrusion/ABS/reversal.csv SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/reversal.csv
+--- SF35-Thingomatic-baseline/profiles/extrusion/ABS/reversal.csv	2011-01-31 15:30:18.000000000 +0100
++++ SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/reversal.csv	2011-01-31 15:42:20.000000000 +0100
+@@ -2,7 +2,7 @@
+ Name                          	Value
+ WindowPosition	700+0
+ Open File for Reversal	
+-Activate Reversal	False
 +Activate Reversal	True
-+Reversal speed (RPM):	35.0
-+Reversal time (milliseconds):	75.0
-+Push-back time (milliseconds):	75.0
-+Reversal threshold (mm):	1.0
-+Activate early reversal and push-back	True
+ Reversal speed (RPM):	35
+ Reversal time (milliseconds):	75
+ Push-back time (milliseconds):	75
 diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/profiles/extrusion/ABS/speed.csv SF35-Thingomatic-ABP-Stepstruder/profiles/extrusion/ABS/speed.csv
 --- SF35-Thingomatic-ABP/profiles/extrusion/ABS/speed.csv	2011-01-26 22:52:40.000000000 +0100
 +++ SF35-Thingomatic-ABP-Stepstruder/profiles/extrusion/ABS/speed.csv	2011-01-26 22:52:40.000000000 +0100
