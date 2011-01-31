@@ -87,7 +87,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	abstract public File getUserProfilesDir();
 
 	List<Profile> getProfiles() {
-		final List<Profile> profiles = new LinkedList<Profile>();
+		final List<Profile> profiles = new LinkedList<Profile>(); 
 		// Get default installed profiles
 		File dir = new File(getSkeinforgeDir(), "prefs");
 		getProfilesIn(dir, profiles);

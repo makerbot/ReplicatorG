@@ -696,7 +696,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		// macosx already has its own preferences and quit menu
 		if (!Base.isMacOS()) {
-			menu.addSeparator();
 
 			item = newJMenuItem("Preferences", ',');
 			item.addActionListener(new ActionListener() {
