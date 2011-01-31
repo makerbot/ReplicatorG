@@ -1,0 +1,8 @@
+speed.csv:Flow Rate Setting (float):=1.98
+reversal.csv:Activate Reversal=True
+reversal.csv:Reversal speed (RPM):=35.0
+reversal.csv:Reversal time (milliseconds):=75.0
+reversal.csv:Push-back time (milliseconds):=75.0
+reversal.csv:Reversal threshold (mm):=1.0
+reversal.csv:Activate early reversal and push-back=True
+replace.csv:M108 S=M108 R
