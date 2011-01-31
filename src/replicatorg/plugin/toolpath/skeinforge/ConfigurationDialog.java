@@ -7,6 +7,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,12 +36,11 @@ class ConfigurationDialog extends JDialog {
 	JButton deleteButton = new JButton("Delete");
 	JButton generate = new JButton("Generate...");
 	private WeakReference<SkeinforgeGenerator> parentGenerator;
-	private WeakReference<List<Profile>> wrProfileList = new WeakReference<List<Profile>>(null);
+	private List<Profile> profiles = null; // NB: must explicitly deallocate at close time
 	
 	private void loadList(JList list) {
 		list.removeAll();
-		wrProfileList = new WeakReference<List<Profile>>(parentGenerator.get().getProfiles());
-		List<Profile> profiles = wrProfileList.get();
+		profiles = parentGenerator.get().getProfiles();
 		DefaultListModel model = new DefaultListModel();
 		int i=0;
 		int foundLastProfile = -1;
@@ -76,7 +77,7 @@ class ConfigurationDialog extends JDialog {
 	final JList prefList = new JList();
 
 	private Profile getListedProfile(int idx) {
-		return wrProfileList.get().get(idx);
+		return profiles.get(idx);
 	}
 
 	public ConfigurationDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
@@ -213,6 +214,14 @@ class ConfigurationDialog extends JDialog {
 			public void actionPerformed(ActionEvent arg0) {
 				parentGenerator.get().configSuccess = false;
 				setVisible(false);
+			}
+		});
+		
+		addWindowListener( new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				profiles = null;
+				super.windowClosed(e);
 			}
 		});
 	}
