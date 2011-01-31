@@ -29,6 +29,7 @@ package replicatorg.drivers.reprap;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -46,6 +47,7 @@ import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
 import replicatorg.app.util.serial.ByteFifo;
 import replicatorg.app.util.serial.SerialFifoEventListener;
+import replicatorg.drivers.RealtimeControl;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.reprap.ExtrusionUpdater.Direction;
@@ -53,10 +55,11 @@ import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
-public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListener {
+public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListener, RealtimeControl 
+{
 	private static Pattern gcodeCommentPattern = Pattern.compile("\\([^)]*\\)|;.*");
 	private static Pattern resendLinePattern = Pattern.compile("([0-9]+)");
-	private static Pattern gcodeLineNumberPattern = Pattern.compile("N\\s*([0-9]+)");
+	private static Pattern gcodeLineNumberPattern = Pattern.compile("n\\s*([0-9]+)");
 	
 	public final AtomicReference<Double> feedrate = new AtomicReference<Double>(0.0);
 	public final AtomicReference<Double> ePosition = new AtomicReference<Double>(0.0);
@@ -84,9 +87,13 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	
 	/**
 	 * Enables five D GCodes if true. If false reverts to traditional 3D Gcodes
-	 * TODO: add to xml
 	 */
 	private boolean fiveD = true;
+	
+	/**
+	 * Adds check-sums on to each gcode line sent to the RepRap.
+	 */
+	private boolean hasChecksums = true;
 	
 	/**
 	 * Enables pulsing RTS to restart the RepRap on connect.
@@ -105,6 +112,15 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	private long waitForStartTimeout = 1000;
 	
 	private int waitForStartRetries = 3;
+
+	/**
+	 * This allows for real time adjustment of certain printing variables!
+	 */
+	private boolean realtimeControl = false;
+	private double rcFeedrateMultiply = 1;
+	private double rcTravelFeedrateMultiply = 1;
+	private double rcExtrusionMultiply = 1;
+	private double rcFeedrateLimit = 60*300; // 300mm/s still works on Ultimakers!
 	
 	private final ExtrusionUpdater extrusionUpdater = new ExtrusionUpdater(this);
 
@@ -169,11 +185,18 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
             pulseRTS = Boolean.parseBoolean(XML.getChildNodeValue(xml, "pulserts"));
         }
 
+        if (XML.hasChildNode(xml, "checksums")) {
+            hasChecksums = Boolean.parseBoolean(XML.getChildNodeValue(xml, "checksums"));
+        }
+
         if (XML.hasChildNode(xml, "fived")) {
             fiveD = Boolean.parseBoolean(XML.getChildNodeValue(xml, "fived"));
         }
         if (XML.hasChildNode(xml, "debugLevel")) {
         	debugLevel = Integer.parseInt(XML.getChildNodeValue(xml, "debugLevel"));
+        }
+        if (XML.hasChildNode(xml, "limitFeedrate")) {
+        	rcFeedrateLimit = Double.parseDouble(XML.getChildNodeValue(xml, "limitFeedrate"));
         }
         
         if (XML.hasChildNode(xml, "introduceNoise")) {
@@ -202,9 +225,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		if (!isInitialized()) {
 			Base.logger.info("Initializing Serial.");
 
-			Base.logger.fine("Resetting RepRap: Pulsing RTS..");
 			if (pulseRTS)
 			{
+				Base.logger.fine("Resetting RepRap: Pulsing RTS..");
 				int retriesRemaining = waitForStartRetries+1;
 				retryPulse: do
 				{
@@ -358,7 +381,13 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			if(debugLevel > 0)
 				Base.logger.warning("Resending: \"" + command + "\". Resends in "+ numResends + " of "+lineIterator+" lines.");
 			_sendCommand(command, false, true);
-			if (originalCmd != null) originalCmd.notifyAll();
+			if (originalCmd != null)
+			{
+				synchronized(originalCmd)
+				{
+					originalCmd.notifyAll();
+				}
+			}
 		}
 	}
 
@@ -393,7 +422,13 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			if (e!=null) this.ePosition.set(Double.parseDouble(e));
 	
 			// applychecksum replaces the line that was to be retransmitted, into the next line.
-			next = applyChecksum(next);
+			if (hasChecksums) next = applyChecksum(next);
+			
+			Base.logger.finest("sending: "+next);
+		}
+		else
+		{
+			Base.logger.finest("resending: "+next);
 		}
 		// Block until we can fit the command on the Arduino
 /*		synchronized(bufferLock)
@@ -432,8 +467,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					Base.logger.info("Introducing noise (lineIterator=="
 							+ lineIterator + ",introduceNoiseEveryN=" + introduceNoiseEveryN + ")");
 					lineIterator = 0;
-					serial.write(next.replace('6','7').replace('7','1') + "\n");
-				} else {				
+					String noisyNext = next.replace('6','7').replace('7','1') + "\n";
+					serial.write(noisyNext);
+				} else {
 					serial.write(next + "\n");
 				}
 				serialInUse.unlock();
@@ -504,16 +540,37 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			fixed = m.group(1)+" E"+m.group(3)+" "+m.group(2);
 	    }
 
-	    // Rescale E value
-//		r = Pattern.compile("(.*)E([0-9\\.]*)(.*)");//E317.52// Z-moves slower! Extrude 10% less? More and more rapid reversing
-//	    m = r.matcher(fixed);
-//	    if (m.find( )) {
-//	    	double newEvalue = Double.valueOf(m.group(2).trim()).doubleValue();
-//	    	newEvalue = newEvalue * 0.040;
-//	    	NumberFormat formatter = new DecimalFormat("#0.0");
-//	    	fixed = m.group(1)+" E"+formatter.format(newEvalue)+" "+m.group(3);
-//	    }
-
+	    if(realtimeControl) {
+		    // Rescale F value
+			r = Pattern.compile("(.*)F([0-9\\.]*)(.*)");
+		    m = r.matcher(fixed);
+		    if (m.find( )) {
+		    	double newvalue = Double.valueOf(m.group(2).trim()).doubleValue();
+		    	// FIXME: kind of an ugly way to test for extrusionless "travel" versus extrusion.
+		    	if(fixed.contains("E"))
+		    	{
+		    		newvalue *= rcTravelFeedrateMultiply;
+		    	} else {
+		    		newvalue *= rcFeedrateMultiply;
+		    	}
+		    	if(newvalue > rcFeedrateLimit)
+		    		newvalue = rcFeedrateLimit;
+		    	
+		    	NumberFormat formatter = new DecimalFormat("#0.0");
+		    	fixed = m.group(1)+" F"+formatter.format(newvalue)+" "+m.group(3);
+		    }
+		    
+	/*	    // Rescale E value
+			r = Pattern.compile("(.*)E([0-9\\.]*)(.*)");//E317.52// Z-moves slower! Extrude 10% less? More and more rapid reversing
+		    m = r.matcher(fixed);
+		    if (m.find( )) {
+		    	double newEvalue = Double.valueOf(m.group(2).trim()).doubleValue();
+		    	newEvalue = newEvalue * 0.040;
+		    	NumberFormat formatter = new DecimalFormat("#0.0");
+		    	fixed = m.group(1)+" E"+formatter.format(newEvalue)+" "+m.group(3);
+		    }
+	*/
+	    }
 	    
 	    return fixed; // no change!
 	}
@@ -551,7 +608,6 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		readResponseLock.lock();
 
 		serialInUse.lock();
-		assert (serial != null);
 		byte[] response = fifo.dequeueLine();
 		int responseLength = response.length;
 		serialInUse.unlock();
@@ -567,7 +623,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			try
 			{
 				//convert to string and remove any trailing \r or \n's
-				line = new String(response, 0, responseLength, "US-ASCII").trim();
+				line = new String(response, 0, responseLength, "US-ASCII")
+							.trim().toLowerCase();
 			} catch (UnsupportedEncodingException e) {
 				Base.logger.severe("US-ASCII required. Terminating.");
 				throw new RuntimeException(e);
@@ -580,9 +637,12 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 			if (line.length() == 0)
 				Base.logger.fine("empty line received");
-
-			else if (line.startsWith("ok T:")||line.startsWith("T:")) {
-				Pattern r = Pattern.compile("T:([0-9\\.]+)");
+			else if (line.startsWith("echo:")) {
+					//if echo is turned on relay it to the user for debugging
+					Base.logger.info(line);
+			}
+			else if (line.startsWith("ok t:")||line.startsWith("t:")) {
+				Pattern r = Pattern.compile("t:([0-9\\.]+)");
 			    Matcher m = r.matcher(line);
 			    if (m.find( )) {
 			    	String temp = m.group(1);
@@ -590,7 +650,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					machine.currentTool().setCurrentTemperature(
 							Double.parseDouble(temp));
 			    }
-				r = Pattern.compile("^ok.*B:([0-9\\.]+)$");
+				r = Pattern.compile("^ok.*b:([0-9\\.]+)$");
 			    m = r.matcher(line);
 			    if (m.find( )) {
 			    	String bedTemp = m.group(1);
@@ -598,16 +658,16 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 							Double.parseDouble(bedTemp));
 			    }
 			}
-			else if (line.startsWith("ok")) {
+			if (line.startsWith("ok")) {
 				
 				synchronized(okReceived)
 				{
 					okReceived.set(true);
 					okReceived.notifyAll();
 				}
+				bufferSize -= commands.remove();
 
 				bufferLock.lock();
-				bufferSize -= commands.remove();
 				//Notify the thread waitining in this gcode's sendCommand method that the gcode has been received.
 				String notifier = buffer.removeLast();
 				synchronized(notifier) { notifier.notifyAll(); }
@@ -621,7 +681,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			}
 
 			// old arduino firmware sends "start"
-			else if (line.contains("start")||line.contains("Start")) {
+			else if (line.contains("start")) {
 				// todo: set version
 				// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
 				synchronized (startReceived) {
@@ -630,10 +690,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				}
 				lineNumber.set(-1);
 
-			} else if (line.startsWith("Extruder Fail")) {
+			} else if (line.startsWith("extruder fail")) {
 				setError("Extruder failed:  cannot extrude as this rate.");
 
-			} else if (line.startsWith("Resend:")||line.startsWith("rs ")) {
+			} else if (line.startsWith("resend:")||line.startsWith("rs ")) {
 				//Getting the correct line from our buffer
 				bufferLock.lock();
 				String bufferedLine = buffer.removeLast();
@@ -641,7 +701,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				bufferLock.unlock();
 
 				//Is it a Dud M or G code? If so write a warning and return.
-				String letter = getRegexMatch("Dud ([A-Za-z]) code", line, 1);
+				String letter = getRegexMatch("dud ([a-z]) code", line, 1);
 				if ( (letter)!=null)
 				{
 					Base.logger.info("Dud "+letter+" code received. ignoring.");
@@ -655,7 +715,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				// Bad checksum, resend requested
 
 				int bufferedLineNumber = Integer.parseInt( getRegexMatch(
-						gcodeLineNumberPattern, bufferedLine, 1) );
+						gcodeLineNumberPattern, bufferedLine.toLowerCase(), 1) );
 
 				Matcher badLineMatch = resendLinePattern.matcher(line);
 				if (badLineMatch.find())
@@ -999,11 +1059,73 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 	public synchronized void stop() {
 		// No implementation needed for synchronous machines.
-		sendCommand("M0");
+		//sendCommand("M0");
+		// M0 is the same as emergency stop: will hang all communications. You don't really want that...
 		Base.logger.info("RepRap/Ultimaker Machine stop called.");
 	}
 
-	protected Point5d reconcilePosition() {
+        protected Point5d reconcilePosition() {
 		return new Point5d();
+	}
+
+	/* ===============
+	 * This driver has real time control over feedrate and extrusion parameters, allowing real-time tuning!
+	 */
+	public boolean hasFeatureRealtimeControl() {
+		Base.logger.info("Yes, I have a Realtime Control feature." );
+		return true;
+	}
+
+	public void enableRealtimeControl(boolean enable) {
+		realtimeControl = enable;
+		Base.logger.info("Realtime Control (RC) is: "+ realtimeControl );
+	}
+	
+	public double getExtrusionMultiplier() {
+		return rcExtrusionMultiply;
+	}
+
+	public double getFeedrateMultiplier() {
+		return rcFeedrateMultiply;
+	}
+	
+	public double getTravelFeedrateMultiplier() {
+		return rcTravelFeedrateMultiply;
+	}
+
+	public boolean setExtrusionMultiplier(double multiplier) {
+		rcExtrusionMultiply = multiplier;
+		if(debugLevel == 2)
+			Base.logger.info("RC muplipliers: extrusion="+rcExtrusionMultiply+"x, feedrate="+rcFeedrateMultiply+"x" );
+		return true;
+	}
+
+	public boolean setFeedrateMultiplier(double multiplier) {
+		rcFeedrateMultiply = multiplier;
+		if(debugLevel == 2)
+			Base.logger.info("RC muplipliers: extrusion="+rcExtrusionMultiply+"x, feedrate="+rcFeedrateMultiply+"x" );
+		return true;
+	}
+	public boolean setTravelFeedrateMultiplier(double multiplier) {
+		rcTravelFeedrateMultiply = multiplier;
+		if(debugLevel == 2)
+			Base.logger.info("RC muplipliers: extrusion="+rcExtrusionMultiply+"x, feedrate="+rcFeedrateMultiply+"x, travel feedrate="+rcTravelFeedrateMultiply+"x" );
+		return true;
+	}
+
+	public void setDebugLevel(int level) {
+		debugLevel = level;
+	}
+	public int getDebugLevel() {
+		return debugLevel;
+	}
+
+	public double getFeedrateLimit() {
+		return rcFeedrateLimit;
+	}
+
+	public boolean setFeedrateLimit(double limit) {
+		rcFeedrateLimit = limit;
+		return true;
 	}
 }

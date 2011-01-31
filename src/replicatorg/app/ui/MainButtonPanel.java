@@ -142,7 +142,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 	final static Color BACK_COLOR = new Color(0x5F, 0x73, 0x25); 
 	MainButton simButton, pauseButton, stopButton;
-	MainButton buildButton, resetButton, cpButton;
+	MainButton buildButton, resetButton, cpButton, rcButton;
 	MainButton disconnectButton, connectButton;
 	
 	MainButton uploadButton, playbackButton, fileButton;
@@ -178,19 +178,31 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 
 		cpButton = makeButton("Control panel", "images/button-control-panel.png");
+		rcButton = makeButton("Live tuning", "images/button-realtime-panel.png");
 		add(cpButton,"gap unrelated");
+		add(rcButton);
 		
 		resetButton = makeButton("Reset machine", "images/button-reset.png");
 		add(resetButton,"gap unrelated");
-		connectButton = makeButton("Connect machine", "images/button-connect.png");
+		connectButton = makeButton("Connect", "images/button-connect.png");
 		add(connectButton,"gap unrelated");
-		disconnectButton = makeButton("Disconnect machine", "images/button-disconnect.png");
+		disconnectButton = makeButton("Disconnect", "images/button-disconnect.png");
 		add(disconnectButton);
 
 		statusLabel = new JLabel();
 		statusLabel.setFont(statusFont);
 		statusLabel.setForeground(statusColor);
-		add(statusLabel, "gap unrelated");
+		add(statusLabel, "gap unrelated,growx");
+
+		simButton.setToolTipText("This will open a window showing a rapid simulation of what toolpaths the machine is going to perform.");
+		buildButton.setToolTipText("This will start building the object on the machine.");
+		pauseButton.setToolTipText("This will pause or resume the build.");
+		stopButton.setToolTipText("This will abort the build in progress.");
+		cpButton.setToolTipText("Here you'll find manually controls for the machine.");
+		rcButton.setToolTipText("This can be used to tune the process, in real time, during a print job.");
+		resetButton.setToolTipText("This will restart the firmware on the machine.");
+		connectButton.setToolTipText("Connect to the machine.");
+		disconnectButton.setToolTipText("Disconnect from the machine.");
 
 		setPreferredSize(new Dimension(700,60));
 		
@@ -242,6 +254,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			editor.handleConnect();
 		} else if (e.getSource() == disconnectButton) {
 			editor.handleDisconnect();
+		} else if (e.getSource() == rcButton) {
+			editor.handleRealTimeControl();
 		}
 	}
 
@@ -274,6 +288,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		stopButton.setEnabled(building);
 
 		pauseButton.setSelected(paused);
+		rcButton.setEnabled(building);
 
 		MachineState.Target runningTarget = s.isBuilding()?s.getTarget():null;
 		
@@ -288,6 +303,15 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		disconnectButton.setEnabled(connected);
 		connectButton.setEnabled(hasMachine && !connected);
 		cpButton.setEnabled(ready);
+		rcButton.setVisible(editor.supportsRealTimeControl());
+//		if (!editor.supportsRealTimeControl()) 
+//		{
+			// how to hide this button without taking up any space???
+//			remove(rcButton);
+//		} else {
+			// FIXME: this changes the ordering of the buttons
+//			add(rcButton);
+//		}
 		
 	}
 
