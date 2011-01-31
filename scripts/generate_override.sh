@@ -1,18 +1,18 @@
 #!/bin/bash
 
 if [ $# != 2 ]; then
-  echo "Usage: $0 <skeinforge-version> <overridefile>"
+  echo "Usage: $0 <baseline> <overridefile>"
   exit
 fi
 
-VERSION=$1
+BASELINE=$1
 OVERRIDES=$2
 
-echo "Using skeinforge version $VERSION"
+echo "Using skeinforge baseline $BASELINE"
 echo "Using override file $OVERRIDES"
 
 echo "Building new-profile"
 rm -rf new-profile
-cp -r ../skein_engines/skeinforge-$VERSION/skeinforge_application/prefs/SF$VERSION-Thingomatic-baseline new-profile
+cp -r $BASELINE new-profile
 echo "Applying overrides"
 ./apply_overrides.py -p new-profile -o $OVERRIDES
