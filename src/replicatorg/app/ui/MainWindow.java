@@ -63,6 +63,7 @@ import java.io.IOException;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -720,15 +721,31 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	private JMenuItem buildMenuFromPath(File path, Pattern pattern) {
 		if (!path.exists()) { return null; }
 		if (path.isDirectory()) {
-			JMenu menu = new JMenu(path.getName());
 			File[] files = path.listFiles();
+			Vector<JMenuItem> items = new Vector<JMenuItem>();
 			for (File f : files) {
 				JMenuItem i = buildMenuFromPath(f,pattern);
 				if (i != null) {
-					menu.add(i);
+					items.add(i);
 				}
 			}
-			if (menu.getItemCount() == 0) { return null; }
+			Collections.sort(items,new Comparator<JMenuItem>() {
+				public int compare(JMenuItem o1, JMenuItem o2) {
+					if (o1 instanceof JMenu) {
+						if (!(o2 instanceof JMenu)) {
+							return 1; // o1 is JMenu and o2 is not, display second
+						}
+					} else if (o2 instanceof JMenu) {
+						return -1; // o2 is JMenu and o1 is not, display first
+					}
+					return o1.getText().compareTo(o2.getText());
+				}
+			});
+			if (items.size() == 0) { return null; }
+			JMenu menu = new JMenu(path.getName());
+			for (JMenuItem i : items) {
+				menu.add(i);
+			}
 			return menu;
 		} else {
 			Matcher m = pattern.matcher(path.getName());
