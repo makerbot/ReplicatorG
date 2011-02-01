@@ -15,7 +15,7 @@ The models included here are:
 
 * hexagon.stl: Hexagon Calibration Block by dna (Derivative
   of same by Time4PlanB)
-  Released into the public domain 
+  Released into the public domain
   http://www.thingiverse.com/thing:5031
 
 * wfu_cbi_skull.stl: Skull by bothacker
@@ -23,3 +23,39 @@ The models included here are:
   http://creativecommons.org/licenses/by-sa/3.0/
   http://www.thingiverse.com/thing:3400
 
+* Razor Blade Holder (thing 4179).STL: Razor Blade Holder by donutman_2000
+  Released into the public domain
+  http://www.thingiverse.com/thing:4179
+
+* Marker Holder (thing 5570).stl: Marker Holder by theorbtwo
+  Released into the public domain
+  http://www.thingiverse.com/thing:5570
+
+* Filament Dust Remover (thing 5639).stl: Filament Dust Remover by nicgravel
+  Shared under CC-BY 3.0 license
+  http://creativecommons.org/licenses/by/3.0/
+  http://www.thingiverse.com/thing:5639
+
+* Cable Clip 2 (thing 4022).stl: Makerbot Extruder Cable Clip by coasterman
+  Released into the public domain
+  http://www.thingiverse.com/thing:4022
+
+* Cable Clip 1 (thing 3989).stl: Makerbot extruder cable clip by justjoheinz
+  Shared underCC-BY 3.0 license
+  http://creativecommons.org/licenses/by/3.0/
+  http://www.thingiverse.com/thing:3989
+
+* Z Axis Knob (thing 3234).STL: Z-Axis Knob by Stefan
+  shared under CC-GPL license
+  http://creativecommons.org/licenses/GPL/2.0/
+  http://www.thingiverse.com/thing:3234
+
+* Z Axis Oiler (1 of 2, thing 4774).stl, Z-Axis Oiler (2 of 2, thing 4774).stl: Z Axis Oiler by Fido
+  Shared under CC-GPL license
+  http://creativecommons.org/licenses/GPL/2.0/
+  http://www.thingiverse.com/thing:4774
+
+* Z Axis Wobble Arrester (thing 3057).stl: wobble Arresting Z Bracket by natetrue
+  Shared under CC-LGPL
+  http://creativecommons.org/licenses/LGPL/2.1/
+  http://www.thingiverse.com/thing:3057
