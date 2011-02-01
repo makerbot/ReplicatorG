@@ -1545,6 +1545,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (machine == null) {
 			Base.logger.severe("Not ready to build yet.");
 		} else {
+			// First, stop any leftover actions (for example, from the control panel)
+			doStop();
+			
 			// build specific stuff
 			building = true;
 			//buttons.activate(MainButtonPanel.BUILD);
