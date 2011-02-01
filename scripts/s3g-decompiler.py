@@ -70,6 +70,6 @@ def parseNextCommand():
         disp(parsed)
     return True
 
-s3gFile = open(sys.argv[1])
+s3gFile = open(sys.argv[1],'rb')
 while parseNextCommand():
     pass
