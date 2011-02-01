@@ -527,7 +527,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		if (target > limit){
 			// Temperature warning dialog!
 			int n = JOptionPane.showConfirmDialog(this,
-					"<html>Setting the temperature to <b>" + Double.toString(target) + "°C</b> may<br>"+
+					"<html>Setting the temperature to <b>" + Double.toString(target) + "\u00b0C</b> may<br>"+
 					"involve health and/or safety risks or cause damage to your machine!<br>"+
 					"The maximum recommended temperature is <b>"+Double.toString(limit)+"</b>.<br>"+
 					"Do you accept the risk and still want to set this temperature?",
