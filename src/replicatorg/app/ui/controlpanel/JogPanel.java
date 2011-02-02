@@ -231,8 +231,8 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	// Make a rotation tool (for A and B axes)
 	private JPanel makeRotationPanel(AxisId axis) {
-		JButton cwButton = createJogButton("jog/CW", "Jog "+axis.name()+" axis in clockwise direction", axis.name()+"-");
-		JButton ccwButton = createJogButton("jog/CCW", "Jog "+axis.name()+" axis in counterclockwise direction", axis.name()+"+");
+		JButton cwButton = createJogButton("jog/CW", "Jog "+axis.name()+" axis in clockwise direction", axis.name()+"+");
+		JButton ccwButton = createJogButton("jog/CCW", "Jog "+axis.name()+" axis in counterclockwise direction", axis.name()+"-");
 		JPanel panel = new JPanel(new MigLayout());
 		panel.add(new JLabel(axis.name()));
 		panel.add(cwButton,"split 2,flowy");
