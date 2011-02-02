@@ -797,7 +797,6 @@ public class GCodeParser {
 			case 2:
 				// Counterclockwise arc
 			case 3: {
-				Base.logger.fine("Called arc function!");
 				// call our arc drawing function.
 				// Note: We don't support 5D
 				if (hasCode("I") || hasCode("J")) {
@@ -812,21 +811,20 @@ public class GCodeParser {
 						pointQueue.addAll(drawArc(center, temp, true));
 					else
 						pointQueue.addAll(drawArc(center, temp, false));
-					
-					// now play them back
-					while( !pointQueue.isEmpty()) {
-						Base.logger.fine("dequeueing!");
-						setTarget(pointQueue.peek());
-						pointQueue.remove();
-					}
 				}
 				// or we want a radius based one
 				else if (hasCode("R")) {
 					Base.logger.warning("G02/G03 arcs with (R)adius parameter are not supported yet.");
 					if (gCode == 2)
-						drawRadius(temp, rVal, true);
+						pointQueue.addAll(drawRadius(temp, rVal, true));
 					else
-						drawRadius(temp, rVal, false);
+						pointQueue.addAll(drawRadius(temp, rVal, false));
+				}
+				
+				// now play them back
+				while( !pointQueue.isEmpty()) {
+					setTarget(pointQueue.peek());
+					pointQueue.remove();
 				}
 			}
 				break;
@@ -1157,7 +1155,7 @@ public class GCodeParser {
 		// System.out.println("Arc from " + current.toString() + " to " +
 		// endpoint.toString() + " with center " + center);
 
-		Queue< Point5d > pointQueue = new LinkedList< Point5d >();
+		Queue< Point5d > points = new LinkedList< Point5d >();
 		
 		// angle variables.
 		double angleA;
@@ -1226,14 +1224,15 @@ public class GCodeParser {
 			newPoint.setZ(arcStartZ + (endpoint.z() - arcStartZ) * s / steps);
 
 			// start the move
-			pointQueue.add(new Point5d(newPoint));
+			points.add(new Point5d(newPoint));
 		}
 		
-		return pointQueue;
+		return points;
 	}
 
-	private void drawRadius(Point5d endpoint, double r, boolean clockwise) {
+	private Queue< Point5d > drawRadius(Point5d endpoint, double r, boolean clockwise) throws GCodeException {
 		// not supported!
+		throw new GCodeException("The drawRadius command is not supported");
 	}
 
 	private void setTarget(Point5d p) throws RetryException {
