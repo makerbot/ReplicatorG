@@ -26,6 +26,8 @@ package replicatorg.app;
 import java.lang.reflect.Method;
 import java.util.EnumSet;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +53,9 @@ public class GCodeParser {
 
 	// our driver we use.
 	protected Driver driver;
+	
+	// Queue of points that we need to run. Yaay for dangerous state info!
+	Queue< Point5d > pointQueue;
 	
 	// Pen Plotter Driver 
 	//protected PenPlotter penPlotter;
@@ -172,6 +177,9 @@ public class GCodeParser {
 
 		// init our offset
 		currentOffset = new Point3d();
+		
+		// make a queue to store future point moves in
+		pointQueue = new LinkedList< Point5d >();
 	}
 
 	/**
@@ -195,6 +203,8 @@ public class GCodeParser {
 		breakoutZMoves = Base.preferences.getBoolean("replicatorg.parser.breakzmoves", false);
 		// init our offset variables
 		currentOffset = driver.getOffset(0);
+		
+		pointQueue = new LinkedList< Point5d >();
 	}
 
 	/**
@@ -339,17 +349,31 @@ public class GCodeParser {
 		// if (hasCode("S"))
 		// driver.setSpindleRPM(getCodeValue("S"));
 
-		// execute our other codes
-		executeMCodes();
-		executeGCodes();
-
-		// Select our tool?
-		int tempTool = (int) getCodeValue("T");
-		if (hasCode("T")) {
-			if (tempTool != tool)
-				driver.selectTool(tempTool);
-
-			tool = tempTool;
+		// TODO: This is a hack, fix it.
+		// We have two states here- it is possible that the previous command
+		// created a series of point motions, then encountered a retry.
+		// If that is the case, then we should just keep trying to queue them.
+		if (!pointQueue.isEmpty()) {
+			while( !pointQueue.isEmpty()) {
+				Base.logger.fine("dequeueing!");
+				setTarget(pointQueue.peek());
+				pointQueue.remove();
+			}
+		}
+		else {
+		
+			// execute our other codes
+			executeMCodes();
+			executeGCodes();
+	
+			// Select our tool?
+			int tempTool = (int) getCodeValue("T");
+			if (hasCode("T")) {
+				if (tempTool != tool)
+					driver.selectTool(tempTool);
+	
+				tool = tempTool;
+			}
 		}
 	}
 
@@ -773,6 +797,7 @@ public class GCodeParser {
 			case 2:
 				// Counterclockwise arc
 			case 3: {
+				Base.logger.fine("Called arc function!");
 				// call our arc drawing function.
 				// Note: We don't support 5D
 				if (hasCode("I") || hasCode("J")) {
@@ -782,11 +807,18 @@ public class GCodeParser {
 					center.setX(current.x() + iVal);
 					center.setY(current.y() + jVal);
 
-					// draw the arc itself.
+					// Get the points for the arc
 					if (gCode == 2)
-						drawArc(center, temp, true);
+						pointQueue.addAll(drawArc(center, temp, true));
 					else
-						drawArc(center, temp, false);
+						pointQueue.addAll(drawArc(center, temp, false));
+					
+					// now play them back
+					while( !pointQueue.isEmpty()) {
+						Base.logger.fine("dequeueing!");
+						setTarget(pointQueue.peek());
+						pointQueue.remove();
+					}
 				}
 				// or we want a radius based one
 				else if (hasCode("R")) {
@@ -1121,10 +1153,12 @@ public class GCodeParser {
 	}
 
 	// Note: 5D is not supported
-	private void drawArc(Point5d center, Point5d endpoint, boolean clockwise) throws RetryException {
+	Queue< Point5d > drawArc(Point5d center, Point5d endpoint, boolean clockwise) {
 		// System.out.println("Arc from " + current.toString() + " to " +
 		// endpoint.toString() + " with center " + center);
 
+		Queue< Point5d > pointQueue = new LinkedList< Point5d >();
+		
 		// angle variables.
 		double angleA;
 		double angleB;
@@ -1192,8 +1226,10 @@ public class GCodeParser {
 			newPoint.setZ(arcStartZ + (endpoint.z() - arcStartZ) * s / steps);
 
 			// start the move
-			setTarget(newPoint);
+			pointQueue.add(new Point5d(newPoint));
 		}
+		
+		return pointQueue;
 	}
 
 	private void drawRadius(Point5d endpoint, double r, boolean clockwise) {
