@@ -390,7 +390,7 @@ public class GCodeParser {
 				driver.getMachine().selectTool((int) getCodeValue("T"));
 			}
 			switch ((int) getCodeValue("M")) {
-			// stop codes... handled by handleStops();
+			// stop codes... handled by getStops();
 			case 0:
 			case 1:
 			case 2:
