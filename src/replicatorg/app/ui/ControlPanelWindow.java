@@ -129,6 +129,8 @@ public class ControlPanelWindow extends JFrame implements
 		mainPanel.add(createJogPanel(),"split 2,flowy");
 		mainPanel.add(createActivationPanel(),"flowy,growx");
 		mainPanel.add(createToolsPanel(),"spany,grow");
+		
+		this.setResizable(false);
 		add(mainPanel);
 
 		// add our listener hooks.
