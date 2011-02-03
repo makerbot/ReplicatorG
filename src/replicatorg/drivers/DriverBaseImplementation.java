@@ -26,6 +26,7 @@ package replicatorg.drivers;
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 import javax.vecmath.Point3d;
 
@@ -103,7 +104,9 @@ public class DriverBaseImplementation implements Driver {
 	}
 
 	public void dispose() {
-		// System.out.println("Disposing of driver.");
+		if (Base.logger.isLoggable(Level.FINE)) {
+			Base.logger.fine("Disposing of driver " + getDriverName());
+		}
 		parser = null;
 	}
 
