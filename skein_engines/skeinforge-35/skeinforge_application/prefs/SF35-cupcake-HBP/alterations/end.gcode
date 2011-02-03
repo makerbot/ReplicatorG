@@ -5,6 +5,8 @@ M102 (Extruder on, reverse)
 G04 P2000 (Wait t/1000 seconds)
 M103 (Extruder off)
 
+(**** begin move to cooling position ****)
 G91
 G1 Z10
+(**** end move to cooling position ****)
 (**** end of end.gcode ****)
