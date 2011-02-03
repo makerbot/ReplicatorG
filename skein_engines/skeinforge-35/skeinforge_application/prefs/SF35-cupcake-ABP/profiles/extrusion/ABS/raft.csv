@@ -25,13 +25,8 @@ Operating Nozzle Lift over Layer Thickness (ratio):	1.2
 Raft Additional Margin over Length (%):	1.3
 Raft Margin (mm):	5.0
 Support Cross Hatch	False
-<<<<<<< HEAD
-Support Flow Rate over Operating Flow Rate (ratio):	1.0
-Support Gap over Perimeter Extrusion Width (ratio):	6.0
-=======
 Support Flow Rate over Operating Flow Rate (ratio):	0.8
 Support Gap over Perimeter Extrusion Width (ratio):	2.0
->>>>>>> upstream/master
 None	False
 Empty Layers Only	False
 Everywhere	False
