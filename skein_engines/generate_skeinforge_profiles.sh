@@ -34,7 +34,7 @@ cd skeinforge-$VERSION/skeinforge_application/prefs
 echo "Building SF$VERSION-Thingomatic-baseline"
 rm -rf SF$VERSION-Thingomatic-baseline
 cp -r SF$VERSION-Makerbot-baseline SF$VERSION-Thingomatic-baseline
-cd SF$VERSION-Thingomatic-ABP; patch -s -p1 < $DIFFS/Thingomatic.diff; cd ..
+cd SF$VERSION-Thingomatic-baseline; patch -s -p1 < $DIFFS/Thingomatic.diff; cd ..
 
 echo "Building SF$VERSION-Thingomatic-non-heated"
 rm -rf SF$VERSION-Thingomatic-non-heated
@@ -62,7 +62,7 @@ cd SF$VERSION-Thingomatic-ABP-Stepstruder; patch -s -p1 < $DIFFS/Stepstruder.dif
 echo "Building SF$VERSION-cupcake-baseline"
 rm -rf SF$VERSION-cupcake-baseline
 cp -r SF$VERSION-Makerbot-baseline SF$VERSION-cupcake-baseline
-cd SF$VERSION-Thingomatic-ABP; patch -s -p1 < $DIFFS/cupcake.diff; cd ..
+cd SF$VERSION-cupcake-baseline; patch -s -p1 < $DIFFS/cupcake.diff; cd ..
 
 echo "Building SF$VERSION-cupcake-non-heated"
 rm -rf SF$VERSION-cupcake-non-heated
@@ -75,4 +75,4 @@ cp -r SF$VERSION-cupcake-baseline SF$VERSION-cupcake-HBP
 echo "Building SF$VERSION-cupcake-ABP"
 rm -rf SF$VERSION-cupcake-ABP
 cp -r SF$VERSION-cupcake-HBP SF$VERSION-cupcake-ABP
-cd SF$VERSION-Thingomatic-ABP; patch -s -p1 < $DIFFS/cupcake-ABP.diff; cd ..
+cd SF$VERSION-cupcake-ABP; patch -s -p1 < $DIFFS/cupcake-ABP.diff; cd ..
