@@ -38,15 +38,3 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/start.gcode SF
 +M01 (The heater is warming up and will do a test extrusion.  Click yes after you have cleared the nozzle of the extrusion.)
 +G0 Z0(Go back to zero.)
  (**** end of start.gcode ****)
-diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/profiles/extrusion/ABS/wipe.csv SF35-cupcake-baseline/profiles/extrusion/ABS/wipe.csv
---- SF35-Makerbot-baseline/profiles/extrusion/ABS/wipe.csv	2011-02-03 03:23:18.000000000 +0100
-+++ SF35-cupcake-baseline/profiles/extrusion/ABS/wipe.csv	2011-02-03 03:38:59.000000000 +0100
-@@ -2,7 +2,7 @@
- Name                          	Value
- WindowPosition	700+0
- Open File for Wipe	
--Activate Wipe	True
-+Activate Wipe	False
- Location Arrival X (mm):	52.0
- Location Arrival Y (mm):	-57.0
- Location Arrival Z (mm):	10.0

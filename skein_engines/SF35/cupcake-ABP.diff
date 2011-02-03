@@ -76,7 +76,7 @@ diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-HBP/profiles/extrusion/ABS/wipe.csv 
  Name                          	Value
  WindowPosition	700+0
  Open File for Wipe	
--Activate Wipe	False
+ Activate Wipe	True
 -Location Arrival X (mm):	52.0
 -Location Arrival Y (mm):	-57.0
 -Location Arrival Z (mm):	10.0
@@ -86,7 +86,6 @@ diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-HBP/profiles/extrusion/ABS/wipe.csv 
 -Location Wipe X (mm):	52.0
 -Location Wipe Y (mm):	-55.0
 -Location Wipe Z (mm):	10.0
-+Activate Wipe	True
 +Location Arrival X (mm):	-54.0
 +Location Arrival Y (mm):	-30.0
 +Location Arrival Z (mm):	6.0
