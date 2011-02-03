@@ -5,7 +5,7 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/alterations/end.gcode SF35-T
  G1 X0.0 Y55.0 F3300.0 (move to cooling position)
  (**** end move to cooling position ****)
  (**** begin filament reversal ****)
-+M108 R1.98
++M108 R1.98 (set extruder speed)
  M102 (Extruder on, reverse)
  G04 P2000 (Wait t/1000 seconds)
  M103 (Extruder off)
