@@ -66,6 +66,8 @@ __date__ = '$Date: 2011/01/20 $'
 __license__ = 'GPL 3.0'
 
 
+DEBUG = False
+
 def getCraftedText(fileName, text, reversalRepository = None):
 	"Reversal a gcode linear move file or text."
 	return getCraftedTextFromText(archive.getTextIfEmpty(fileName, text), reversalRepository)
@@ -243,6 +245,18 @@ class ReversalSkein:
                         segment = self.newLocation - self.oldLocation
                         segmentLength = segment.magnitude()
                         segmentTime = segment.magnitude() / self.feedRateMinute * 60000
+                        if DEBUG: 
+                                self.distanceFeedRate.addLine(
+                                        "(oldLocation="+str(self.oldLocation)+")")
+                                self.distanceFeedRate.addLine(
+                                        "(newLocation="+str(self.newLocation)+")")
+                                self.distanceFeedRate.addLine(
+                                        "("+
+                                        " thresholdTime="+str(thresholdTime)+
+                                        " segmentLength="+str(segmentLength)+
+                                        " segmentTime="+str(segmentTime)+
+                                        " timeToSplit="+str(timeToSplit)+
+                                        ")")
                         if timeToSplit >= 0:
                                 reversalPosition = self.oldLocation + segment * timeToSplit / segmentTime
                                 self.reversalFeedrate = self.feedRateMinute
@@ -252,7 +266,13 @@ class ReversalSkein:
                                 # We don't have time to perform the full reversal
                                 # -> slow down the feedrate to the reversal time
                                 reversalPosition = self.newLocation
-                                self.reversalFeedrate = self.feedRateMinute * segmentTime/thresholdTime
+                                self.reversalFeedrate = self.feedRateMinute * (thresholdTime + timeToSplit)/thresholdTime
+                        if DEBUG: 
+                                self.distanceFeedRate.addLine(
+                                        "("+
+                                        " reversalPosition="+str(reversalPosition)+
+                                        " reversalFeedrate="+str(self.reversalFeedrate)+
+                                        ")")
                         return True
                 return False
 
