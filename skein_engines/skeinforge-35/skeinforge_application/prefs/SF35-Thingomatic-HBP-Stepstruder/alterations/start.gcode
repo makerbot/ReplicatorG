@@ -1,4 +1,4 @@
-(**** beginning of start.txt ****)
+(**** beginning of start.gcode ****)
 (This file is for a MakerBot Thing-O-Matic)
 (**** begin initilization commands ****)
 G21 (set units to mm)
@@ -21,5 +21,4 @@ M101 (Extruder on, forward)
 G04 P5000 (Wait t/1000 seconds)
 M103 (Extruder off)
 (**** end pre-wipe commands ****)
-(**** end of start.txt ****)
-
+(**** end of start.gcode ****)
