@@ -1,0 +1,10 @@
+diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-non-heated/profiles/extrusion/ABS/outline.csv SF35-Thingomatic-HBP/profiles/extrusion/ABS/outline.csv
+--- SF35-Thingomatic-non-heated/profiles/extrusion/ABS/outline.csv	2011-02-03 13:51:03.000000000 +0100
++++ SF35-Thingomatic-HBP/profiles/extrusion/ABS/outline.csv	2011-02-03 14:15:36.000000000 +0100
+@@ -2,5 +2,5 @@
+ Name                          	Value
+ WindowPosition	600+0
+ Open File for Outline	
+-Activate Outline	False
++Activate Outline	True
+ Outline Margin:	3.0
