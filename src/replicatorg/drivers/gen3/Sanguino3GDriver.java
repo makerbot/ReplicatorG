@@ -847,21 +847,47 @@ public class Sanguino3GDriver extends SerialDriver
 
 	//public void disableServo() {}
 
-	public void setServoPos(double degree) throws RetryException {
+	public void setServoPos(int index, double degree) throws RetryException {
+		int command = 0;
 		
-		Base.logger.log(Level.FINE,"Setting servo 1 position to " + degree + " degrees");
+		// We can handle two servos
+		if (index == 0) {
+			command = ToolCommandCode.SET_SERVO_1_POS.getCode();
+		}
+		else if (index == 1) {
+			command = ToolCommandCode.SET_SERVO_2_POS.getCode();
+		}
+		else {
+			//throw?
+			Base.logger.log(Level.SEVERE,"Servo index " + index + " not supported, ignoring");
+			return; 
+		}
+		
+		// We accept from 0 - 180 degrees. It is noted that some older servos can only handle 90 degrees of rotation;
+		// for them, use 45-135. To turn the servo off, use 255.
+		if (degree == 255) {
+			//thats ok.
+		}
+		else if (degree < 0) {
+			degree = 0;
+		}
+		else if (degree > 180) {
+			degree = 180;
+		}
+		
+		Base.logger.log(Level.FINE,"Setting servo " + index + " position to " + degree + " degrees");
 
 		// send it!
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.SET_SERVO_1_POS.getCode());
+		pb.add8(command);
 		pb.add8((byte) 1); // length of payload.
 		pb.add8((byte) degree);
 		runCommand(pb.getPacket());
 
 		//super.setServoPos(degree);		
-	}
 
+	}
 	/***************************************************************************
 	 * Spindle interface functions
 	 **************************************************************************/

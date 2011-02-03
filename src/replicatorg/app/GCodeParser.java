@@ -573,19 +573,6 @@ public class GCodeParser {
 					driver.setMotorRPM(getCodeValue("R"));
 				break;
 
-			// PEN PLOTTER
-		
-			
-			// set servo position
-			case 300:
-				if (hasCode("S")) {
-					if (driver instanceof PenPlotter) {
-						((PenPlotter)driver).setServoPos(getCodeValue("S"));
-					}
-				}
-				break;
-
-
 			// set build platform temperature
 			case 109:
 				if (hasCode("S"))
@@ -645,7 +632,25 @@ public class GCodeParser {
 			case 204:
 				// driver.pause();
 				break;
+			
+			// set servo 1 position
+			case 300:
+				if (hasCode("S")) {
+					if (driver instanceof PenPlotter) {
+						((PenPlotter)driver).setServoPos(0, getCodeValue("S"));
+					}
+				}
+				break;
 
+			// set servo 2 position
+			case 301:
+				if (hasCode("S")) {
+					if (driver instanceof PenPlotter) {
+						((PenPlotter)driver).setServoPos(1, getCodeValue("S"));
+					}
+				}
+				break;
+				
            case TB_INIT:
                // initialize extension
 			// Syntax: M997 ClassName param,param,param,etc
