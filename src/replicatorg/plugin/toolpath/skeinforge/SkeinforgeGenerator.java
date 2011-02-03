@@ -276,19 +276,20 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		return new File(skeinforgePath);
 	}
 
-	public void duplicateProfile(Profile originalProfile, String newName) {
+	public Profile duplicateProfile(Profile originalProfile, String newName) {
 		File newProfDir = new File(getUserProfilesDir(),
 				newName);
 		File oldProfDir = new File(originalProfile.getFullPath());
 		try {
 			Base.copyDir(oldProfDir, newProfDir);
-			Profile newProf = new Profile(newProfDir
-					.getAbsolutePath());
+			Profile newProf = new Profile(newProfDir.getAbsolutePath());
 			editProfile(newProf);
+			return newProf;
 		} catch (IOException ioe) {
 			Base.logger.log(Level.SEVERE,
 					"Couldn't copy directory", ioe);
 		}
+		return null;
 	}
 	
 	public void editProfile(Profile profile) {

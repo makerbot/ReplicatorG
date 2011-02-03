@@ -32,7 +32,7 @@ class ConfigurationDialog extends JDialog {
 	final String manageStr = "Manage profiles...";
 	final String profilePref = "replicatorg.skeinforge.profilePref";
 	JButton editButton = new JButton("Edit...");
-	JButton newButton = new JButton("Duplicate...");
+	JButton duplicateButton = new JButton("Duplicate...");
 	JButton deleteButton = new JButton("Delete");
 	JButton generate = new JButton("Generate...");
 	private WeakReference<SkeinforgeGenerator> parentGenerator;
@@ -46,7 +46,6 @@ class ConfigurationDialog extends JDialog {
 		int foundLastProfile = -1;
 		for (Profile p : profiles) {
 			model.addElement(p.toString());
-			
 			if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
 			{
 				Base.logger.fine("Selecting last used element: " + p);
@@ -88,7 +87,7 @@ class ConfigurationDialog extends JDialog {
 
 		editButton.setToolTipText("Click to edit this profile's properties.");
 		deleteButton.setToolTipText("Click to remove this profile. Note that this can not be undone.");
-		newButton.setToolTipText("This will make a copy of the currently selected profile, with a new name that you provide.");
+		duplicateButton.setToolTipText("This will make a copy of the currently selected profile, with a new name that you provide.");
 		
 		// have to set this. Something wrong with the initial use of the
 		// ListSelectionListener
@@ -96,7 +95,7 @@ class ConfigurationDialog extends JDialog {
 				
 		editButton.setEnabled(false);
 		deleteButton.setEnabled(false);
-		newButton.setEnabled(false);
+		duplicateButton.setEnabled(false);
 
 		add(new JLabel("Select a printing profile:"), "wrap");
 
@@ -109,7 +108,7 @@ class ConfigurationDialog extends JDialog {
 				generate.setEnabled(selected);
 				editButton.setEnabled(selected);
 				deleteButton.setEnabled(selected);
-				newButton.setEnabled(selected);
+				duplicateButton.setEnabled(selected);
 			}
 		});
 		
@@ -164,16 +163,18 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 
-		add(newButton, "growx,flowy");
-		newButton.addActionListener(new ActionListener() {
+		add(duplicateButton, "growx,flowy");
+		duplicateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
 				String newName = JOptionPane.showInputDialog(parent,
 						"Name your new profile:");
 				if (newName != null) {
 					Profile p = getListedProfile(idx);
-					parentGenerator.get().duplicateProfile(p, newName);
+					Profile newp = parentGenerator.get().duplicateProfile(p, newName);
 					loadList(prefList);
+					// Select new profile
+					if (newp != null) prefList.setSelectedValue(newp.toString(), true);
 					pack();
 				}
 			}
