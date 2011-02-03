@@ -1,6 +1,6 @@
-diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/alterations/end.gcode SF35-Thingomatic-ABP-Stepstruder/alterations/end.gcode
---- SF35-Thingomatic-ABP/alterations/end.gcode	2011-01-31 19:24:03.000000000 +0100
-+++ SF35-Thingomatic-ABP-Stepstruder/alterations/end.gcode	2011-01-31 19:24:54.000000000 +0100
+diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-HBP/alterations/end.gcode SF35-Thingomatic-HBP-Stepstruder/alterations/end.gcode
+--- SF35-Thingomatic-HBP/alterations/end.gcode	2011-02-03 23:39:58.000000000 +0100
++++ SF35-Thingomatic-HBP-Stepstruder/alterations/end.gcode	2011-02-03 23:39:58.000000000 +0100
 @@ -8,6 +8,7 @@
  G1 X0.0 Y55.0 F3300.0 (move to cooling position)
  (**** end move to cooling position ****)
@@ -9,15 +9,15 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/alterations/end.gcode SF35-T
  M102 (Extruder on, reverse)
  G04 P2000 (Wait t/1000 seconds)
  M103 (Extruder off)
-diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/alterations/replace.csv SF35-Thingomatic-ABP-Stepstruder/alterations/replace.csv
---- SF35-Thingomatic-ABP/alterations/replace.csv	2011-01-31 19:24:03.000000000 +0100
-+++ SF35-Thingomatic-ABP-Stepstruder/alterations/replace.csv	2011-01-31 19:24:03.000000000 +0100
+diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-HBP/alterations/replace.csv SF35-Thingomatic-HBP-Stepstruder/alterations/replace.csv
+--- SF35-Thingomatic-HBP/alterations/replace.csv	2011-02-03 23:39:58.000000000 +0100
++++ SF35-Thingomatic-HBP-Stepstruder/alterations/replace.csv	2011-02-03 23:39:58.000000000 +0100
 @@ -1 +1,2 @@
  M113	;M113
 +M108 S	M108 R
-diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/alterations/start.gcode SF35-Thingomatic-ABP-Stepstruder/alterations/start.gcode
---- SF35-Thingomatic-ABP/alterations/start.gcode	2011-01-31 19:24:03.000000000 +0100
-+++ SF35-Thingomatic-ABP-Stepstruder/alterations/start.gcode	2011-01-31 19:24:03.000000000 +0100
+diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-HBP/alterations/start.gcode SF35-Thingomatic-HBP-Stepstruder/alterations/start.gcode
+--- SF35-Thingomatic-HBP/alterations/start.gcode	2011-02-03 23:39:58.000000000 +0100
++++ SF35-Thingomatic-HBP-Stepstruder/alterations/start.gcode	2011-02-03 23:39:58.000000000 +0100
 @@ -3,7 +3,7 @@
  (**** begin initilization commands ****)
  G21 (set units to mm)
@@ -27,9 +27,31 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/alterations/start.gcode SF35
  M103 (Make sure extruder is off)
  M104 S225 T0 (set extruder temperature)
  M109 S125 T0 (set heated-build-platform temperature)
-diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/profiles/extrusion/ABS/reversal.csv SF35-Thingomatic-ABP-Stepstruder/profiles/extrusion/ABS/reversal.csv
---- SF35-Thingomatic-ABP/profiles/extrusion/ABS/reversal.csv	2011-01-31 19:24:03.000000000 +0100
-+++ SF35-Thingomatic-ABP-Stepstruder/profiles/extrusion/ABS/reversal.csv	2011-01-31 19:24:03.000000000 +0100
+diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-HBP/profiles/extrusion/ABS/carve.csv SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/carve.csv
+--- SF35-Thingomatic-HBP/profiles/extrusion/ABS/carve.csv	2011-02-03 23:39:58.000000000 +0100
++++ SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/carve.csv	2011-02-03 23:47:17.000000000 +0100
+@@ -12,5 +12,5 @@
+ Layers To (index):	912345678
+ Correct Mesh	True
+ Unproven Mesh	False
+-Perimeter Width over Thickness (ratio):	1.45
++Perimeter Width over Thickness (ratio):	1.25
+ SVG Viewer:	webbrowser
+diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-HBP/profiles/extrusion/ABS/fill.csv SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/fill.csv
+--- SF35-Thingomatic-HBP/profiles/extrusion/ABS/fill.csv	2011-02-03 23:39:58.000000000 +0100
++++ SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/fill.csv	2011-02-03 23:47:17.000000000 +0100
+@@ -23,7 +23,7 @@
+ Line	False
+ Infill Perimeter Overlap (ratio):	0.35
+ Infill Solidity (ratio):	0.25
+-Infill Width over Thickness (ratio):	1.5
++Infill Width over Thickness (ratio):	1.25
+ Solid Surface Thickness (layers):	2
+ Infill > Loops > Perimeter	False
+ Infill > Perimeter > Loops	False
+diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-HBP/profiles/extrusion/ABS/reversal.csv SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/reversal.csv
+--- SF35-Thingomatic-HBP/profiles/extrusion/ABS/reversal.csv	2011-02-03 23:39:58.000000000 +0100
++++ SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/reversal.csv	2011-02-03 23:39:58.000000000 +0100
 @@ -2,7 +2,7 @@
  Name                          	Value
  WindowPosition	700+0
@@ -39,10 +61,10 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/profiles/extrusion/ABS/rever
  Reversal speed (RPM):	35
  Reversal time (milliseconds):	75
  Push-back time (milliseconds):	75
-diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/profiles/extrusion/ABS/speed.csv SF35-Thingomatic-ABP-Stepstruder/profiles/extrusion/ABS/speed.csv
---- SF35-Thingomatic-ABP/profiles/extrusion/ABS/speed.csv	2011-01-31 19:24:03.000000000 +0100
-+++ SF35-Thingomatic-ABP-Stepstruder/profiles/extrusion/ABS/speed.csv	2011-01-31 19:24:03.000000000 +0100
-@@ -9,7 +9,7 @@
+diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-HBP/profiles/extrusion/ABS/speed.csv SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/speed.csv
+--- SF35-Thingomatic-HBP/profiles/extrusion/ABS/speed.csv	2011-02-03 23:39:58.000000000 +0100
++++ SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/speed.csv	2011-02-03 23:47:17.000000000 +0100
+@@ -9,8 +9,8 @@
  Duty Cyle at Beginning (portion):	1.0
  Duty Cyle at Ending (portion):	0.0
  Feed Rate (mm/s):	32.0
@@ -51,3 +73,5 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-ABP/profiles/extrusion/ABS/speed
  Orbital Feed Rate over Operating Feed Rate (ratio):	0.5
  Perimeter Feed Rate over Operating Feed Rate (ratio):	1.0
  Perimeter Flow Rate over Operating Flow Rate (ratio):	1.0
+-Travel Feed Rate (mm/s):	32.0
++Travel Feed Rate (mm/s):	40.0
