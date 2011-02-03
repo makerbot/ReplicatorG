@@ -31,7 +31,7 @@ dropped.
 
 ===Reversal threshold (mm)===
 
-Ignore small extruder jump smaller than this threshold.
+Ignore extrusion on-times or off-times smaller than this threshold.
 
 Since there is a small time delay from the act of push the filament
 into the heater barrel to the extruded filament exits it, we don't
@@ -117,6 +117,10 @@ class ReversalRepository:
 
 class ReversalSkein:
 	"A class to reversal a skein of extrusions."
+
+        FILAMENT_READY = 0
+        FILAMENT_REVERSED = 1
+
 	def __init__(self):
 		self.distanceFeedRate = gcodec.DistanceFeedRate()
 		self.flowrate = 1.99
@@ -125,10 +129,12 @@ class ReversalSkein:
 		self.oldLocation = None
 		self.newLocation = None
                 self.reversalActive = False
+                self.pushbackActive = False
                 self.reversalWorthy = False
+                self.pushbackWorthy = False
                 self.feedRateMinute = 0
                 self.extruderOn = False
-                self.didReverse = False
+                self.filamentState = ReversalSkein.FILAMENT_READY
 
 	def getCraftedGcode(self, gcodeText, reversalRepository):
 		"Parse gcode text and store the reversal gcode."
@@ -159,8 +165,10 @@ class ReversalSkein:
 		splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
                 # location of the end of the current movement command
 		lastThreadLocation = gcodec.getLocationFromSplitLine(self.newLocation, splitLine)
-		currentTime = lastThreadLocation.distance(self.oldLocation) / self.feedRateMinute * 60000
+                currentDistance = lastThreadLocation.distance(self.oldLocation)
+		currentTime = currentDistance / self.feedRateMinute * 60000
 		totalTime = 0.0
+                totalDistance = 0.0
 		for afterIndex in xrange(self.lineIndex + 1, len(self.lines)):
 			line = self.lines[afterIndex]
 			splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
@@ -168,7 +176,9 @@ class ReversalSkein:
 			if firstWord == 'G1':
                                 # Time to the end of next movement command
 				location = gcodec.getLocationFromSplitLine(lastThreadLocation, splitLine)
-				totalTime += location.distance(lastThreadLocation) / self.feedRateMinute * 60000
+                                distance = location.distance(lastThreadLocation)
+                                totalDistance += distance
+				totalTime += distance / self.feedRateMinute * 60000
 				lastThreadLocation = location
                                 # Case 1)
 				if totalTime >= threshold:
@@ -176,17 +186,28 @@ class ReversalSkein:
                         # We reached the wanted command before our threshold -> we must split the
                         # current command
 			elif firstWord == command:
+                                if DEBUG: self.distanceFeedRate.addLine(
+                                        "( totalDistance=" +
+                                        str(totalDistance+currentDistance) + " )")
                                 return totalTime + currentTime - threshold
 		return None
 
-	def isNextStopReversalWorthy(self, threshold):
-		"""Returns True if we should reverse on next stop, False otherwise. 
-                The given threshold defines the off distance under which we don't reverse."""
-		extruderOnReached = False
+	def isNextMovementReversalWorthy(self, threshold, starttoken, endtoken):
+		"""
+                Returns True if we should activate reversal on the next movement,
+                False otherwise.
+
+                The given threshold defines the movement distance
+                under which we don't reverse.
+
+                starttoken,endtoken is the movement delimiter (M101,M103 for thread, 
+                M103,M101 for stop)
+                """
 		line = self.lines[self.lineIndex]
 		splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
 		lastThreadLocation = gcodec.getLocationFromSplitLine(self.newLocation, splitLine)
-		threadEndReached = False
+		startTokenReached = False
+		endTokenReached = False
 		totalDistance = 0.0
 		for afterIndex in xrange(self.lineIndex + 1, len(self.lines)):
 			line = self.lines[afterIndex]
@@ -194,16 +215,17 @@ class ReversalSkein:
 			firstWord = gcodec.getFirstWord(splitLine)
 			if firstWord == 'G1':
 				location = gcodec.getLocationFromSplitLine(lastThreadLocation, splitLine)
-				if threadEndReached:
+				if startTokenReached:
 					totalDistance += location.distance(lastThreadLocation)
 					if totalDistance >= threshold:
+                                                if DEBUG: self.distanceFeedRate.addLine("( Next movement worthy: " + str(totalDistance) + " )")
 						return True
 				lastThreadLocation = location
-			elif firstWord == 'M101':
-				extruderOnReached = True
-                                if threadEndReached: return False
-			elif firstWord == 'M103':
-				threadEndReached = True
+			elif firstWord == endtoken:
+				endTokenReached = True
+                                if startTokenReached: return False
+			elif firstWord == starttoken:
+				startTokenReached = True
 		return False
 
 	def parseInitialization(self, reversalRepository):
@@ -264,7 +286,7 @@ class ReversalSkein:
                                 self.distanceFeedRate.addLine(line)
                         else:
                                 # We don't have time to perform the full reversal
-                                # -> slow down the feedrate to the reversal time
+                                # -> do as much as we can, take notes
                                 reversalPosition = self.newLocation
                                 self.reversalFeedrate = self.feedRateMinute * (thresholdTime + timeToSplit)/thresholdTime
                         if DEBUG: 
@@ -275,6 +297,15 @@ class ReversalSkein:
                                         ")")
                         return True
                 return False
+
+        def printState(self):
+                        if self.filamentState == ReversalSkein.FILAMENT_REVERSED: state = "REVERSED"
+                        elif self.filamentState == ReversalSkein.FILAMENT_READY: state = "READY"
+                        self.distanceFeedRate.addLine("( state:"+
+                                                      " reversalActive="+str(self.reversalActive)+
+                                                      " pushbackActive="+str(self.pushbackActive)+
+                                                      " filamentState="+state+
+                                                      " )")
 
         # This is the main loop
 	def parseLine(self, line):
@@ -292,6 +323,7 @@ class ReversalSkein:
                 o If early reversal is active
                 
                 """
+                if DEBUG: self.distanceFeedRate.addLine("( line: " + line + " )")
 		splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
 		if len(splitLine) < 1:
 			return
@@ -314,23 +346,31 @@ class ReversalSkein:
                         self.feedRateMinute = gcodec.getFeedRateMinute(self.feedRateMinute, splitLine)
                         if self.activateEarlyReversal:
                                 # If we did reverse and we're not already pushing back
-                                if not self.extruderOn and self.didReverse and not self.reversalActive:
+                                if (not self.extruderOn and 
+                                    self.filamentState == ReversalSkein.FILAMENT_REVERSED and 
+                                    self.pushbackWorthy and 
+                                    not self.pushbackActive):
                                         # If this movement crosses the push-back point, this will
-                                        # move us to where reversal starts and return true.
+                                        # move us to where pushback starts and return true.
                                         if self.detectAndMoveToReversalEvent('M101', self.pushbackTime):
+                                                if DEBUG: self.distanceFeedRate.addLine("( activating pushback: )")
                                                 self.distanceFeedRate.addLine("M101")
-                                                self.reversalActive = True
+                                                self.pushbackActive = True
+                                                self.filamentState = ReversalSkein.FILAMENT_READY
 
                                 # If we're going to reverse on next stop and we're not already reversing
-                                if self.extruderOn and self.reversalWorthy and not self.reversalActive:
-                                        assert(not self.didReverse)
+                                if (self.extruderOn and 
+                                    self.filamentState == ReversalSkein.FILAMENT_READY and
+                                    self.reversalWorthy and 
+                                    not self.reversalActive):
                                         # If this movement crosses the reversal point, this will
                                         # move us to where reversal starts and return true.
                                         if self.detectAndMoveToReversalEvent('M103', self.reversalTime):
+                                                if DEBUG: self.distanceFeedRate.addLine("( activating reverse: )")
                                                 self.distanceFeedRate.addLine("M108 R" + str(self.reversalRPM))
                                                 self.distanceFeedRate.addLine("M102")
                                                 self.reversalActive = True
-                                                self.didReverse = True
+                                                self.filamentState = ReversalSkein.FILAMENT_REVERSED
                         # Note: We don't return here since the current G1 command will
                         # keep moving to the end of the current movement thread with 
                         # reversal/push-back potentially active.
@@ -338,38 +378,49 @@ class ReversalSkein:
                 # Detect extruder ON commands
 		elif firstWord == 'M101':
                         self.extruderOn = True
-                        self.reversalWorthy = self.isNextStopReversalWorthy(self.reversalThreshold)
-                        if self.didReverse and not self.activateEarlyReversal:
+                        self.reversalWorthy = self.isNextMovementReversalWorthy(self.reversalThreshold, 'M103', 'M101')
+                        if (not self.activateEarlyReversal and 
+                            self.pushbackWorthy and 
+                            self.filamentState == ReversalSkein.FILAMENT_REVERSED):
                                 self.distanceFeedRate.addLine("M108 R" + str(self.reversalRPM))
                                 self.distanceFeedRate.addLine("M101")
                                 self.distanceFeedRate.addLine("G04 P" + str(self.reversalTime))
-                                self.reversalActive = True
-                        if self.reversalActive:
+                                self.pushbackActive = True
+                        if self.pushbackActive:
                                 self.distanceFeedRate.addLine("M108 R" + str(self.flowrate))
-                                self.reversalActive = False
-                                self.didReverse = False
-                                return
-                        
+                                self.pushbackActive = False
+                                self.filamentState = ReversalSkein.FILAMENT_READY
+                                if DEBUG: self.printState()
+                                return # Motor is already on - no need to emit the M101
+
                 # Detect extruder OFF commands
 		elif firstWord == 'M103':
                         self.extruderOn = False
-                        self.reversalActive = False
-                        if self.reversalWorthy and not self.activateEarlyReversal and not self.didReverse:
+                        self.pushbackWorthy = self.isNextMovementReversalWorthy(self.reversalThreshold, 'M101', 'M103')
+                        if (not self.activateEarlyReversal and 
+                            self.reversalWorthy and 
+                            self.filamentState == ReversalSkein.FILAMENT_READY):
                                 self.distanceFeedRate.addLine("M108 R" + str(self.reversalRPM))
                                 self.distanceFeedRate.addLine("M102")
                                 self.distanceFeedRate.addLine("G04 P" + str(self.pushbackTime))
-                                self.didReverse = True
+                                self.filamentState = ReversalSkein.FILAMENT_REVERSED
+                        if self.reversalActive:
+                                self.reversalActive = False
+                                self.filamentState = ReversalSkein.FILAMENT_REVERSED
 
                 # If someone else inserted a reverse command, detect this and update state
                 # (e.g. end.gcode for Makerbots does this for retracting the filament)
 		elif firstWord == 'M102':
                         self.extruderOn = True
-                        self.didReverse = True
+                        self.filamentState = ReversalSkein.FILAMENT_REVERSED
                         self.reversalActive = True
 
 
+                if DEBUG: 
+                        if firstWord == 'M101' or firstWord == 'M102' or firstWord == 'M103':
+                                self.printState()
                 # The reversal may change the feedrate for the remaining reversal movements
-                if self.reversalActive and firstWord == 'G1':
+                if (self.reversalActive or self.pushbackActive) and firstWord == 'G1':
                         line = self.distanceFeedRate.getLineWithFeedRate(self.reversalFeedrate, line, splitLine)
                 self.distanceFeedRate.addLine(line)
 
