@@ -1,0 +1,18 @@
+diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/end.gcode SF35-Thingomatic-baseline/alterations/end.gcode
+--- SF35-Makerbot-baseline/alterations/end.gcode	2011-02-03 03:33:02.000000000 +0100
++++ SF35-Thingomatic-baseline/alterations/end.gcode	2011-02-03 03:00:07.000000000 +0100
+@@ -1,4 +1,5 @@
+ (**** Beginning of end.gcode ****)
++(This file is for a MakerBot Thing-O-Matic)
+ (*** begin settings ****)
+ M109 S75 T0 (set heated-build-platform temperature)
+ (**** end settings ****)
+diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/start.gcode SF35-Thingomatic-baseline/alterations/start.gcode
+--- SF35-Makerbot-baseline/alterations/start.gcode	2011-02-03 03:33:03.000000000 +0100
++++ SF35-Thingomatic-baseline/alterations/start.gcode	2011-02-03 03:00:21.000000000 +0100
+@@ -1,4 +1,5 @@
+ (**** beginning of start.gcode ****)
++(This file is for a MakerBot Thing-O-Matic)
+ (**** begin initilization commands ****)
+ G21 (set units to mm)
+ G90 (set positioning to absolute)

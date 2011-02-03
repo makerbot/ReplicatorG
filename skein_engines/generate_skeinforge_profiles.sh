@@ -1,5 +1,22 @@
 #!/bin/bash
 
+#
+# Profile cascading script
+# 
+# Cascade hierarchy:
+# 
+# Makerbot-baseline 
+# +--Thingomatic-baseline
+# |  +--Thingomatic-non-heated
+# |  +--Thingomatic-HBP
+# |  |  +--Thingomatic-HBP-Stepstruder
+# |  +--Thingomatic-ABP
+# |     +--Thingomatic-HBP-Stepstruder
+# +--Cupcake-baseline
+#    +--Cupcake-HBP
+#    +--Cupcake-ABP
+# 
+
 if [ $# != 2 ]; then
   echo "Usage: $0 <skeinforge-version> <diffdir>"
   exit
@@ -14,6 +31,11 @@ echo "Patching using $DIFFDIR"
 DIFFS=$PWD/$DIFFDIR
 cd skeinforge-$VERSION/skeinforge_application/prefs
 
+echo "Building SF$VERSION-Thingomatic-baseline"
+rm -rf SF$VERSION-Thingomatic-baseline
+cp -r SF$VERSION-Makerbot-baseline SF$VERSION-Thingomatic-baseline
+cd SF$VERSION-Thingomatic-ABP; patch -s -p1 < $DIFFS/Thingomatic.diff; cd ..
+
 echo "Building SF$VERSION-Thingomatic-non-heated"
 rm -rf SF$VERSION-Thingomatic-non-heated
 cp -r SF$VERSION-Thingomatic-baseline SF$VERSION-Thingomatic-non-heated
@@ -25,7 +47,7 @@ cp -r SF$VERSION-Thingomatic-non-heated SF$VERSION-Thingomatic-HBP
 echo "Building SF$VERSION-Thingomatic-ABP"
 rm -rf SF$VERSION-Thingomatic-ABP
 cp -r SF$VERSION-Thingomatic-HBP SF$VERSION-Thingomatic-ABP
-cd SF$VERSION-Thingomatic-ABP; patch -s -p1 < $DIFFS/ABP.diff; cd ..
+cd SF$VERSION-Thingomatic-ABP; patch -s -p1 < $DIFFS/Thingomatic-ABP.diff; cd ..
 
 echo "Building SF$VERSION-Thingomatic-HBP-Stepstruder"
 rm -rf SF$VERSION-Thingomatic-HBP-Stepstruder
@@ -36,3 +58,21 @@ echo "Building SF$VERSION-Thingomatic-ABP-Stepstruder"
 rm -rf SF$VERSION-Thingomatic-ABP-Stepstruder
 cp -r SF$VERSION-Thingomatic-ABP SF$VERSION-Thingomatic-ABP-Stepstruder
 cd SF$VERSION-Thingomatic-ABP-Stepstruder; patch -s -p1 < $DIFFS/Stepstruder.diff; cd ..
+
+echo "Building SF$VERSION-cupcake-baseline"
+rm -rf SF$VERSION-cupcake-baseline
+cp -r SF$VERSION-Makerbot-baseline SF$VERSION-cupcake-baseline
+cd SF$VERSION-Thingomatic-ABP; patch -s -p1 < $DIFFS/cupcake.diff; cd ..
+
+echo "Building SF$VERSION-cupcake-non-heated"
+rm -rf SF$VERSION-cupcake-non-heated
+cp -r SF$VERSION-cupcake-baseline SF$VERSION-cupcake-non-heated
+
+echo "Building SF$VERSION-cupcake-HBP"
+rm -rf SF$VERSION-cupcake-HBP
+cp -r SF$VERSION-cupcake-baseline SF$VERSION-cupcake-HBP
+
+echo "Building SF$VERSION-cupcake-ABP"
+rm -rf SF$VERSION-cupcake-ABP
+cp -r SF$VERSION-cupcake-HBP SF$VERSION-cupcake-ABP
+cd SF$VERSION-Thingomatic-ABP; patch -s -p1 < $DIFFS/cupcake-ABP.diff; cd ..
