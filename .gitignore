@@ -6,6 +6,6 @@ build/jar
 build/classes
 *.pyc
 *.class
-#.
+\#*\#
 *~
 RepG.log
