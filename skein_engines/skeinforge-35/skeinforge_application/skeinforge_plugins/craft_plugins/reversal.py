@@ -142,22 +142,39 @@ class ReversalSkein:
 		"""Get the time in milliseconds to the next command matching 
                 the given command string.
                 Returns None if the time is larger than the given threshold."""
+
+                # Cases:
+                # 1) The current movement doesn't bring us within threshold
+                #    -> Return None
+                # 2) The current movement is >= threshold and the requested command is next
+                #    -> A split will happen here -> Return time to split
+                # 3) The current movement brings us within the threshold and more movements follow
+                #    -> A split will happen here -> Return time to split
+                # 4) The current movement is < threshold
+                #    -> We need more time to reverse properly -> Return missing time (negative)
+
 		line = self.lines[self.lineIndex]
 		splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
+                # location of the end of the current movement command
 		lastThreadLocation = gcodec.getLocationFromSplitLine(self.newLocation, splitLine)
+		currentTime = lastThreadLocation.distance(self.oldLocation) / self.feedRateMinute * 60000
 		totalTime = 0.0
 		for afterIndex in xrange(self.lineIndex + 1, len(self.lines)):
 			line = self.lines[afterIndex]
 			splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
 			firstWord = gcodec.getFirstWord(splitLine)
 			if firstWord == 'G1':
+                                # Time to the end of next movement command
 				location = gcodec.getLocationFromSplitLine(lastThreadLocation, splitLine)
 				totalTime += location.distance(lastThreadLocation) / self.feedRateMinute * 60000
 				lastThreadLocation = location
+                                # Case 1)
 				if totalTime >= threshold:
 					return None
+                        # We reached the wanted command before our threshold -> we must split the
+                        # current command
 			elif firstWord == command:
-				return totalTime
+                                return totalTime + currentTime - threshold
 		return None
 
 	def isNextStopReversalWorthy(self, threshold):
@@ -221,45 +238,65 @@ class ReversalSkein:
                 # well as any other movement between here
                 # and the end of the thread will incorporate
                 # a reversal
-                timeTo = self.getTimeToCommand(command, thresholdTime)
-                if timeTo != None:
+                timeToSplit = self.getTimeToCommand(command, thresholdTime)
+                if timeToSplit != None:
                         segment = self.newLocation - self.oldLocation
                         segmentLength = segment.magnitude()
                         segmentTime = segment.magnitude() / self.feedRateMinute * 60000
-#                       # If this is the only segment left
-#                       if timeToOn == 0.0:
-#                               print "Case B: timeToOn=" + str(timeToOn) + ", segmentTime=" + str(segmentTime)
-#                       # We have more segments
-#                       else:
-#                               print "Case C: timeToOn=" + str(timeToOn) + ", segmentTime=" + str(segmentTime)
-                        splitTime = thresholdTime - timeTo
-                        reversalPosition = self.oldLocation + segment * (segmentTime - splitTime) / segmentTime
-#                       print "  oldPos: " + str(self.newLocation)
-#                       print "  newPos: " + str(reversalPosition)
-                        self.distanceFeedRate.addLine(self.getLinearMoveWithFeedRate(self.feedRateMinute, reversalPosition))
+                        if timeToSplit >= 0:
+                                reversalPosition = self.oldLocation + segment * timeToSplit / segmentTime
+                                self.reversalFeedrate = self.feedRateMinute
+                                line = self.getLinearMoveWithFeedRate(self.reversalFeedrate, reversalPosition)
+                                self.distanceFeedRate.addLine(line)
+                        else:
+                                # We don't have time to perform the full reversal
+                                # -> slow down the feedrate to the reversal time
+                                reversalPosition = self.newLocation
+                                self.reversalFeedrate = self.feedRateMinute * segmentTime/thresholdTime
                         return True
                 return False
 
         # This is the main loop
 	def parseLine(self, line):
-		"Parse a gcode line and add it to the bevel gcode."
+		"""Parse a gcode line and add it to the reversal gcode.
+                Overview:
+                o Keep track of gcode state:
+                  current flowrate (self.flowrate), 
+                  current position (self.newLocation/oldLocation)
+                  current feedrate (self.feedRateMinute)
+                  current logical extruder state (self.extruderOn)
+                o Keep track of reversal state: (self.didReverse, self.reversalActive)
+                o If early reversal is NOT active, it will insert a pause command at the end
+                  of each thread (G4). This will cause the extruder to move without XYZ.
+                  This is not recommended as it might cause some blobbing
+                o If early reversal is active
+                
+                """
 		splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
 		if len(splitLine) < 1:
 			return
 		firstWord = splitLine[0]
-		if firstWord == 'M108': # built-in rpmify
+
+		if firstWord == 'M108':
+                        # If we didn't already rpmify the M108 commands, do this now
                         line = line.replace( 'M108 S', 'M108 R' )
                         splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
+                        # Keep track of current flowrate
                         indexOfR = gcodec.getIndexOfStartingWithSecond('R', splitLine)
                         if indexOfR > 0:
                                 self.flowrate = gcodec.getDoubleAfterFirstLetter(splitLine[indexOfR])
+                # Pick up all movement commands
 		elif firstWord == 'G1':
+                        # Location at the start of this movement
 			self.oldLocation = self.newLocation
+                        # Location at the end start of this movement
 			self.newLocation = gcodec.getLocationFromSplitLine(self.oldLocation, splitLine)
                         self.feedRateMinute = gcodec.getFeedRateMinute(self.feedRateMinute, splitLine)
                         if self.activateEarlyReversal:
                                 # If we did reverse and we're not already pushing back
                                 if not self.extruderOn and self.didReverse and not self.reversalActive:
+                                        # If this movement crosses the push-back point, this will
+                                        # move us to where reversal starts and return true.
                                         if self.detectAndMoveToReversalEvent('M101', self.pushbackTime):
                                                 self.distanceFeedRate.addLine("M101")
                                                 self.reversalActive = True
@@ -267,12 +304,18 @@ class ReversalSkein:
                                 # If we're going to reverse on next stop and we're not already reversing
                                 if self.extruderOn and self.reversalWorthy and not self.reversalActive:
                                         assert(not self.didReverse)
+                                        # If this movement crosses the reversal point, this will
+                                        # move us to where reversal starts and return true.
                                         if self.detectAndMoveToReversalEvent('M103', self.reversalTime):
                                                 self.distanceFeedRate.addLine("M108 R" + str(self.reversalRPM))
                                                 self.distanceFeedRate.addLine("M102")
                                                 self.reversalActive = True
                                                 self.didReverse = True
+                        # Note: We don't return here since the current G1 command will
+                        # keep moving to the end of the current movement thread with 
+                        # reversal/push-back potentially active.
 
+                # Detect extruder ON commands
 		elif firstWord == 'M101':
                         self.extruderOn = True
                         self.reversalWorthy = self.isNextStopReversalWorthy(self.reversalThreshold)
@@ -287,6 +330,7 @@ class ReversalSkein:
                                 self.didReverse = False
                                 return
                         
+                # Detect extruder OFF commands
 		elif firstWord == 'M103':
                         self.extruderOn = False
                         self.reversalActive = False
@@ -296,13 +340,18 @@ class ReversalSkein:
                                 self.distanceFeedRate.addLine("G04 P" + str(self.pushbackTime))
                                 self.didReverse = True
 
-                # If someone else inserted a reverse command, detect this (e.g. end.gcode)
+                # If someone else inserted a reverse command, detect this and update state
+                # (e.g. end.gcode for Makerbots does this for retracting the filament)
 		elif firstWord == 'M102':
                         self.extruderOn = True
                         self.didReverse = True
                         self.reversalActive = True
 
-		self.distanceFeedRate.addLine(line)
+
+                # The reversal may change the feedrate for the remaining reversal movements
+                if self.reversalActive and firstWord == 'G1':
+                        line = self.distanceFeedRate.getLineWithFeedRate(self.reversalFeedrate, line, splitLine)
+                self.distanceFeedRate.addLine(line)
 
 def main():
 	"Display the reversal dialog."
