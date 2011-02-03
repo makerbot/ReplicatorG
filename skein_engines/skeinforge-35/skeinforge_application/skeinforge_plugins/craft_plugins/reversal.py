@@ -354,6 +354,7 @@ class ReversalSkein:
                                         # move us to where pushback starts and return true.
                                         if self.detectAndMoveToReversalEvent('M101', self.pushbackTime):
                                                 if DEBUG: self.distanceFeedRate.addLine("( activating pushback: )")
+                                                self.distanceFeedRate.addLine("M108 R" + str(self.reversalRPM))
                                                 self.distanceFeedRate.addLine("M101")
                                                 self.pushbackActive = True
                                                 self.filamentState = ReversalSkein.FILAMENT_READY
