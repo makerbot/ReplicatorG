@@ -1,6 +1,6 @@
 (**** beginning of start.gcode ****)
 (This file is for a MakerBot Thing-O-Matic)
-(**** begin initilization commands ****)
+(**** begin initialization commands ****)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 M108 S255 (set extruder speed to maximum)
