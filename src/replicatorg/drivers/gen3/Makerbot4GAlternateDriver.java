@@ -23,7 +23,15 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	public String getDriverName() {
 		return "Makerbot4GAlternate";
 	}
+	
+	public void reset() {
+		// We should poll the machine for it's state here, but it is more important to have the
+		// fan on than off.
+		stepperExtruderFanEnabled = false;
 
+		super.reset();
+	}
+	
 	/**
 	 * Overloaded to manage a hijacked axis and run this axis in relative mode instead of the extruder DC motor
 	 */
@@ -152,7 +160,10 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	public void stop(boolean abort) {
 		// Record the toolstate as off, so we don't excite the extruder motor in future moves.
 		machine.currentTool().disableMotor();
-		
+
+		// We should stop the fan here, but it will be stopped for us by the super.
+		stepperExtruderFanEnabled = false;
+
 		super.stop(abort);
 	}
 	
@@ -212,13 +223,15 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	}
 
 	public void enableDrives() throws RetryException {
-		super.enableDrives();
 		enableStepperExtruderFan(true);
+		
+		super.enableDrives();
 	}
 
 	public void disableDrives() throws RetryException {
-		super.disableDrives();
 		enableStepperExtruderFan(false);
+		
+		super.disableDrives();
 	}
 	
 	/**
@@ -228,7 +241,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	public void enableStepperExtruderFan(boolean enabled) throws RetryException {
 		
 		// Always re-enable the fan when 
-		//if (this.stepperExtruderFanEnabled == enabled) return;
+		if (this.stepperExtruderFanEnabled == enabled) return;
 		
 		// FIXME: Should be called per hijacked axis with the correct tool
 		// our flag variable starts with motors enabled.
