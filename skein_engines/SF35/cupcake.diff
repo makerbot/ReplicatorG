@@ -1,14 +1,17 @@
 diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/end.gcode SF35-cupcake-baseline/alterations/end.gcode
 --- SF35-Makerbot-baseline/alterations/end.gcode	2011-02-03 14:30:23.000000000 +0100
-+++ SF35-cupcake-baseline/alterations/end.gcode	2011-02-04 15:22:25.000000000 +0100
-@@ -1,2 +1,12 @@
++++ SF35-cupcake-baseline/alterations/end.gcode	2011-02-04 16:02:16.000000000 +0100
+@@ -1,2 +1,15 @@
  (**** Beginning of end.gcode ****)
++(**** begin cool for safety ****)
 +M104 S0 T0 (set extruder temperature)
 +M109 S0 T0 (set heated-build-platform temperature)
++(**** end cool for safety ****)
++(**** begin filament reversal ****)
 +M102 (Extruder on, reverse)
 +G04 P2000 (Wait t/1000 seconds)
 +M103 (Extruder off)
-+
++(**** end filament reversal ****)
 +(**** begin move to cooling position ****)
 +G91
 +G1 Z10
@@ -16,7 +19,7 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/end.gcode SF35
  (**** end of end.gcode ****)
 diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/start.gcode SF35-cupcake-baseline/alterations/start.gcode
 --- SF35-Makerbot-baseline/alterations/start.gcode	2011-02-04 15:17:10.000000000 +0100
-+++ SF35-cupcake-baseline/alterations/start.gcode	2011-02-04 15:27:27.000000000 +0100
++++ SF35-cupcake-baseline/alterations/start.gcode	2011-02-04 15:55:38.000000000 +0100
 @@ -1,4 +1,5 @@
  (**** beginning of start.gcode ****)
 +(This file is for a MakerBot Cupcake CNC)
