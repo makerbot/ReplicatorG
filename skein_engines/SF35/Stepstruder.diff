@@ -58,9 +58,9 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-HBP/profiles/extrusion/ABS/rever
  Open File for Reversal	
 -Activate Reversal	False
 +Activate Reversal	True
- Reversal speed (RPM):	35
- Reversal time (milliseconds):	75
- Push-back time (milliseconds):	75
+ Reversal speed (RPM):	35.0
+ Reversal time (milliseconds):	70.0
+ Push-back time (milliseconds):	73.0
 diff -P -u -x '*~' -x '\.*' -r SF35-Thingomatic-HBP/profiles/extrusion/ABS/speed.csv SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/speed.csv
 --- SF35-Thingomatic-HBP/profiles/extrusion/ABS/speed.csv	2011-02-03 23:39:58.000000000 +0100
 +++ SF35-Thingomatic-HBP-Stepstruder/profiles/extrusion/ABS/speed.csv	2011-02-03 23:47:17.000000000 +0100
