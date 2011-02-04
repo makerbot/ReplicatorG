@@ -1,6 +1,6 @@
-diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-HBP/alterations/end.gcode SF35-cupcake-ABP/alterations/end.gcode
---- SF35-cupcake-HBP/alterations/end.gcode	2011-02-03 03:55:19.000000000 +0100
-+++ SF35-cupcake-ABP/alterations/end.gcode	2011-02-03 03:58:08.000000000 +0100
+diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-non-heated/alterations/end.gcode SF35-cupcake-ABP/alterations/end.gcode
+--- SF35-cupcake-non-heated/alterations/end.gcode	2011-02-04 14:56:04.000000000 +0100
++++ SF35-cupcake-ABP/alterations/end.gcode	2011-02-04 14:56:04.000000000 +0100
 @@ -1,12 +1,23 @@
  (**** Beginning of end.gcode ****)
 -M104 S0 T0 (set extruder temperature)
@@ -32,26 +32,16 @@ diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-HBP/alterations/end.gcode SF35-cupca
 +M109 S0 T0 (set heated-build-platform temperature)
  (**** end of end.gcode ****)
 +
-diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-HBP/alterations/start.gcode SF35-cupcake-ABP/alterations/start.gcode
---- SF35-cupcake-HBP/alterations/start.gcode	2011-02-03 03:55:19.000000000 +0100
-+++ SF35-cupcake-ABP/alterations/start.gcode	2011-02-03 03:58:08.000000000 +0100
-@@ -3,18 +3,21 @@
- (**** begin initilization commands ****)
- G21 (set units to mm)
- G90 (set positioning to absolute)
--M108 S255 (set extruder speed to maximum)
--M103 (Make sure extruder is off)
--M104 S225 T0 (set extruder temperature)
--M109 S125 T0 (set heated-build-platform temperature)
+diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-non-heated/alterations/start.gcode SF35-cupcake-ABP/alterations/start.gcode
+--- SF35-cupcake-non-heated/alterations/start.gcode	2011-02-04 14:56:04.000000000 +0100
++++ SF35-cupcake-ABP/alterations/start.gcode	2011-02-04 15:00:46.000000000 +0100
+@@ -9,12 +9,16 @@
+ M109 S125 T0 (set heated-build-platform temperature)
  G92 X0 Y0 Z0 (set origin to current position)
--(**** end initialization commands ****)
+ (**** end initialization commands ****)
 -G0 Z15 (Move up for test extrusion)
 -M108 S255 (Extruder speed = max)
 -M6 T0 (Wait for tool to heat up)
-+M108 S255 (set extruder speed to maximum)
-+M104 S220 T0 (set extruder temperature)
-+M109 S120 T0 (set heated-build-platform temperature)
-+(**** end initilization commands ****)
 +(**** begin pre-wipe commands ****)
 +G1 X-54 Y-30 Z6 F3300.0 (move to waiting position)
 +M6 T0 (wait for tool to heat up)
@@ -69,11 +59,10 @@ diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-HBP/alterations/start.gcode SF35-cup
 +M101 (start extruder, fwd)
 +G1 X0 Y0 Z0 F2400.0 (move to origin)
 +(**** end of start.gxode ****)
-diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-HBP/profiles/extrusion/ABS/wipe.csv SF35-cupcake-ABP/profiles/extrusion/ABS/wipe.csv
---- SF35-cupcake-HBP/profiles/extrusion/ABS/wipe.csv	2011-02-03 03:55:19.000000000 +0100
-+++ SF35-cupcake-ABP/profiles/extrusion/ABS/wipe.csv	2011-02-03 03:55:19.000000000 +0100
-@@ -2,14 +2,14 @@
- Name                          	Value
+diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-non-heated/profiles/extrusion/ABS/wipe.csv SF35-cupcake-ABP/profiles/extrusion/ABS/wipe.csv
+--- SF35-cupcake-non-heated/profiles/extrusion/ABS/wipe.csv	2011-02-04 14:56:04.000000000 +0100
++++ SF35-cupcake-ABP/profiles/extrusion/ABS/wipe.csv	2011-02-04 14:56:04.000000000 +0100
+@@ -3,13 +3,13 @@
  WindowPosition	700+0
  Open File for Wipe	
  Activate Wipe	True
