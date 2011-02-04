@@ -38,7 +38,7 @@ echo "Using skeinforge version $VERSION"
 echo "Patching using $DIFFDIR"
 
 DIFFS=$PWD/$DIFFDIR
-cd skeinforge-$VERSION/skeinforge_application/prefs
+cd skeinforge-$VERSION/skeinforge_application/prefs-experimental
 
 echo "Building SF$VERSION-Thingomatic-baseline"
 rm -rf SF$VERSION-Thingomatic-baseline
