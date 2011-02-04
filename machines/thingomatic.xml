@@ -9,7 +9,7 @@
 			<axis id="z" length="106" maxfeedrate="1000" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 		</geometry>
 		<tools>
-			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" automatedplatform="true" heatedplatform="true" heater="true" uses_relay="true"/>
+			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" automatedplatform="true" heatedplatform="true" heater="true" uses_relay="false"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
