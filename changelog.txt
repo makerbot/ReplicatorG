@@ -2,7 +2,7 @@
 * More example objects and scripts
 * Build temperature monitoring reenabled
 * Number of UI cleanups
-* Skeinforge 39 introduced
+* Skeinforge 39 introduced as experimental
 * Improved extruder status reporting
 * Several memory leaks solved
 * Early reversal for stepper-driven extruders
@@ -15,7 +15,7 @@
 * Improvements to serial layer
 * 5-axis motion commands for G4 hardware
 * Scale field reflects mouse scaling factor
-* Skeinforge 31 readded
+* Skeinforge 31 reintroduced for Ultimaker
 
 0023 ReplicatorG
 * Bugfix release
