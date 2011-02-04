@@ -1,6 +1,6 @@
 diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-non-heated/alterations/end.gcode SF35-cupcake-ABP/alterations/end.gcode
---- SF35-cupcake-non-heated/alterations/end.gcode	2011-02-04 14:56:04.000000000 +0100
-+++ SF35-cupcake-ABP/alterations/end.gcode	2011-02-04 14:56:04.000000000 +0100
+--- SF35-cupcake-non-heated/alterations/end.gcode	2011-02-04 15:04:54.000000000 +0100
++++ SF35-cupcake-ABP/alterations/end.gcode	2011-02-04 15:04:54.000000000 +0100
 @@ -1,12 +1,23 @@
  (**** Beginning of end.gcode ****)
 -M104 S0 T0 (set extruder temperature)
@@ -33,12 +33,12 @@ diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-non-heated/alterations/end.gcode SF3
  (**** end of end.gcode ****)
 +
 diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-non-heated/alterations/start.gcode SF35-cupcake-ABP/alterations/start.gcode
---- SF35-cupcake-non-heated/alterations/start.gcode	2011-02-04 14:56:04.000000000 +0100
-+++ SF35-cupcake-ABP/alterations/start.gcode	2011-02-04 15:00:46.000000000 +0100
-@@ -9,12 +9,16 @@
- M109 S125 T0 (set heated-build-platform temperature)
+--- SF35-cupcake-non-heated/alterations/start.gcode	2011-02-04 15:12:23.000000000 +0100
++++ SF35-cupcake-ABP/alterations/start.gcode	2011-02-04 15:19:49.000000000 +0100
+@@ -11,12 +11,16 @@
+ (**** begin homing ****)
  G92 X0 Y0 Z0 (set origin to current position)
- (**** end initialization commands ****)
+ (**** end homing ****)
 -G0 Z15 (Move up for test extrusion)
 -M108 S255 (Extruder speed = max)
 -M6 T0 (Wait for tool to heat up)
@@ -52,16 +52,15 @@ diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-non-heated/alterations/start.gcode S
  M103 (Extruder off)
 -M01 (The heater is warming up and will do a test extrusion.  Click yes after you have cleared the nozzle of the extrusion.)
 -G0 Z0(Go back to zero.)
--(**** end of start.gcode ****)
 +(**** end pre-wipe commands ****)
 +G1 X-30 Y30 Z6 F3300.0 (move to initial position)
 +G1 Z0 F3300.0 (Go back down)
 +M101 (start extruder, fwd)
 +G1 X0 Y0 Z0 F2400.0 (move to origin)
-+(**** end of start.gxode ****)
+ (**** end of start.gcode ****)
 diff -P -u -x '*~' -x '\.*' -r SF35-cupcake-non-heated/profiles/extrusion/ABS/wipe.csv SF35-cupcake-ABP/profiles/extrusion/ABS/wipe.csv
---- SF35-cupcake-non-heated/profiles/extrusion/ABS/wipe.csv	2011-02-04 14:56:04.000000000 +0100
-+++ SF35-cupcake-ABP/profiles/extrusion/ABS/wipe.csv	2011-02-04 14:56:04.000000000 +0100
+--- SF35-cupcake-non-heated/profiles/extrusion/ABS/wipe.csv	2011-02-04 15:04:54.000000000 +0100
++++ SF35-cupcake-ABP/profiles/extrusion/ABS/wipe.csv	2011-02-04 15:04:54.000000000 +0100
 @@ -3,13 +3,13 @@
  WindowPosition	700+0
  Open File for Wipe	

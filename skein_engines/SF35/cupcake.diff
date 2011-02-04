@@ -1,6 +1,6 @@
 diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/end.gcode SF35-cupcake-baseline/alterations/end.gcode
---- SF35-Makerbot-baseline/alterations/end.gcode	2011-02-03 03:54:29.000000000 +0100
-+++ SF35-cupcake-baseline/alterations/end.gcode	2011-02-03 03:54:28.000000000 +0100
+--- SF35-Makerbot-baseline/alterations/end.gcode	2011-02-03 14:30:23.000000000 +0100
++++ SF35-cupcake-baseline/alterations/end.gcode	2011-02-04 15:04:54.000000000 +0100
 @@ -1,2 +1,12 @@
  (**** Beginning of end.gcode ****)
 +M104 S0 T0 (set extruder temperature)
@@ -15,20 +15,20 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/end.gcode SF35
 +(**** end move to cooling position ****)
  (**** end of end.gcode ****)
 diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/start.gcode SF35-cupcake-baseline/alterations/start.gcode
---- SF35-Makerbot-baseline/alterations/start.gcode	2011-02-03 03:52:18.000000000 +0100
-+++ SF35-cupcake-baseline/alterations/start.gcode	2011-02-03 03:52:11.000000000 +0100
+--- SF35-Makerbot-baseline/alterations/start.gcode	2011-02-04 15:17:10.000000000 +0100
++++ SF35-cupcake-baseline/alterations/start.gcode	2011-02-04 15:16:40.000000000 +0100
 @@ -1,4 +1,5 @@
  (**** beginning of start.gcode ****)
 +(This file is for a MakerBot Cupcake CNC)
  (**** begin initialization commands ****)
  G21 (set units to mm)
  G90 (set positioning to absolute)
-@@ -6,5 +7,14 @@
- M103 (Make sure extruder is off)
- M104 S225 T0 (set extruder temperature)
+@@ -8,5 +9,14 @@
  M109 S125 T0 (set heated-build-platform temperature)
-+G92 X0 Y0 Z0 (set origin to current position)
  (**** end initialization commands ****)
+ (**** begin homing ****)
++G92 X0 Y0 Z0 (set origin to current position)
+ (**** end homing ****)
 +G0 Z15 (Move up for test extrusion)
 +M108 S255 (Extruder speed = max)
 +M6 T0 (Wait for tool to heat up)
