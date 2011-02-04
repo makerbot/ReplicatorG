@@ -227,7 +227,8 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 */
 	public void enableStepperExtruderFan(boolean enabled) throws RetryException {
 		
-		if (this.stepperExtruderFanEnabled == enabled) return;
+		// Always re-enable the fan when 
+		//if (this.stepperExtruderFanEnabled == enabled) return;
 		
 		// FIXME: Should be called per hijacked axis with the correct tool
 		// our flag variable starts with motors enabled.
