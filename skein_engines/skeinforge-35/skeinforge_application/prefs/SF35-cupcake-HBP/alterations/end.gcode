@@ -1,10 +1,13 @@
 (**** Beginning of end.gcode ****)
+(**** begin cool for safety ****)
 M104 S0 T0 (set extruder temperature)
 M109 S0 T0 (set heated-build-platform temperature)
+(**** end cool for safety ****)
+(**** begin filament reversal ****)
 M102 (Extruder on, reverse)
 G04 P2000 (Wait t/1000 seconds)
 M103 (Extruder off)
-
+(**** end filament reversal ****)
 (**** begin move to cooling position ****)
 G91
 G1 Z10

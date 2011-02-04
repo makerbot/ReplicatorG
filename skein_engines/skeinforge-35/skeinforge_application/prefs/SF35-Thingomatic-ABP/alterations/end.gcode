@@ -1,7 +1,7 @@
 (**** Beginning of end.gcode ****)
 (This file is for a MakerBot Thing-O-Matic)
 (*** begin settings ****)
-M109 S75 T0 (set heated-build-platform temperature)
+M109 S95 T0 (set heated-build-platform temperature)
 (**** end settings ****)
 (**** begin move to cooling position ****)
 G1 X0.0 F3300.0       (move to cooling position)
