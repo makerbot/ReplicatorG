@@ -20,7 +20,7 @@ diff -P -u -x '*~' -x '\.*' -r SF35-Makerbot-baseline/alterations/start.gcode SF
 @@ -1,4 +1,5 @@
  (**** beginning of start.gcode ****)
 +(This file is for a MakerBot Cupcake CNC)
- (**** begin initilization commands ****)
+ (**** begin initialization commands ****)
  G21 (set units to mm)
  G90 (set positioning to absolute)
 @@ -6,5 +7,14 @@
