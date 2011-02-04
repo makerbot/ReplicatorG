@@ -1,5 +1,5 @@
 (**** beginning of start.gcode ****)
-(**** begin initilization commands ****)
+(**** begin initialization commands ****)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 M108 S255 (set extruder speed to maximum)
