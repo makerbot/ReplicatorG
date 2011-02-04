@@ -13,7 +13,7 @@
 # |     +--Thingomatic-ABP
 # |        +--Thingomatic-HBP-Stepstruder
 # +--Cupcake-baseline
-#    +--Thingomatic-non-heated
+#    +--Cupcake-non-heated
 #       +--Cupcake-HBP
 #       +--Cupcake-ABP
 # 
