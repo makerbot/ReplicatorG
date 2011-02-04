@@ -235,7 +235,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		byte flags = (byte) (enabled ? 1 : 0);
 
 		// bit 1 determines direction...
-		flags += 2;
+		flags |= 2;
 
 		Base.logger.log(Level.FINE,"Stepper Extruder fan w/flags: "
 					+ Integer.toBinaryString(flags));
