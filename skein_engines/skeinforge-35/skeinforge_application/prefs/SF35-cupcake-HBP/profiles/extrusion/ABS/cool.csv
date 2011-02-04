@@ -2,7 +2,7 @@ Format is tab separated cool settings.
 Name                          	Value
 WindowPosition	700+0
 Open File for Cool	
-Activate Cool	True
+Activate Cool	False
 Orbit	False
 Slow Down	True
 Maximum Cool (Celcius):	0.0
