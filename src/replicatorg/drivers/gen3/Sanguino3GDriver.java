@@ -682,6 +682,12 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void setMotorSpeedPWM(int pwm) throws RetryException {
+		// If we are using a relay, make sure that we don't enable the PWM
+		if (machine.currentTool().getMotorUsesRelay() && pwm > 0) {
+			Base.logger.log(Level.FINE,"Tool motor uses relay, overriding PWM setting");
+			pwm = 255;
+		}
+		
 		Base.logger.log(Level.FINE,"Setting motor 1 speed to " + pwm + " PWM");
 
 		// send it!

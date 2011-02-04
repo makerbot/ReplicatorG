@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.w3c.dom.Node;
 
+import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
 
 public class ToolModel
@@ -53,6 +54,7 @@ public class ToolModel
 	protected int motorSpeedPWM;
 	protected double motorSpeedReadingRPM;
 	protected int motorSpeedReadingPWM;
+	protected boolean motorUsesRelay = false;
 	protected boolean motorHasEncoder;
 	protected int motorEncoderPPR;
 	protected boolean motorIsStepper;
@@ -227,7 +229,18 @@ public class ToolModel
 					motorSpeedPWM = Integer.parseInt(n);
 				}
 			} catch (Exception e) {} // ignore parse errors.
-}
+			
+			n = XML.getAttributeValue(xml, "uses_relay");
+			try{
+				if (n != null)
+				{
+					motorUsesRelay = isTrueOrOne(n);
+					if (motorUsesRelay) {
+						Base.logger.severe("Notice: Motor controller configured to use relay, PWM values will be overridden");
+					}
+				}
+			} catch (Exception e) {} // ignore parse errors.
+		}
 
 		n = XML.getAttributeValue(xml, "spindle");
 		if (isTrueOrOne(n))
@@ -372,6 +385,11 @@ public class ToolModel
 	public int getMotorSpeedPWM()
 	{
 		return motorSpeedPWM;
+	}
+	
+	public boolean getMotorUsesRelay()
+	{
+		return motorUsesRelay;
 	}
 	
 	public void setMotorSpeedReadingRPM(double rpm)
