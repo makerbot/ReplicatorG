@@ -156,6 +156,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",false);
 		addCheckboxForPref(content,"Break Z motion into seperate moves (normally false)","replicatorg.parser.breakzmoves",false);
 		addCheckboxForPref(content,"Show starfield in model preview window","ui.show_starfield",false);
+		addCheckboxForPref(content,"Notifications in System tray","ui.preferSystemTrayNotifications",false);
 		
 		
 		JButton modelColorButton;
