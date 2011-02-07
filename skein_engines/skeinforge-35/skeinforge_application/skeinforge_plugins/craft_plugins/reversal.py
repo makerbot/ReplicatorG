@@ -408,6 +408,11 @@ class ReversalSkein:
                         if self.reversalActive:
                                 self.reversalActive = False
                                 self.filamentState = ReversalSkein.FILAMENT_REVERSED
+                                # For safety, reset feedrate here. It's a known issue
+                                # that some other plugins keep track of flowrate state
+                                # and removed redundant settings, so we need to keep
+                                # the original state whenever we're done with an operation
+                                self.distanceFeedRate.addLine("M108 R" + str(self.flowrate))
 
                 # If someone else inserted a reverse command, detect this and update state
                 # (e.g. end.gcode for Makerbots does this for retracting the filament)
