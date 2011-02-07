@@ -341,6 +341,7 @@ public class DriverBaseImplementation implements Driver {
 			for (int i=0;i<5;i++) {
 				feedrate = Math.max(feedrate, maxFeedrates.get(i));
 			}
+			feedrate = Math.max(feedrate, 1);
 			Base.logger.warning("Zero feedrate detected, reset to: " + feedrate);
 		}
 
