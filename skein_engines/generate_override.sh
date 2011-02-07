@@ -1,18 +1,23 @@
 #!/bin/bash
 
-if [ $# != 2 ]; then
-  echo "Usage: $0 <baseline> <overridefile>"
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <baseline> <overridefile> [<new-profile>]"
   exit
 fi
 
 BASELINE=$1
 OVERRIDES=$2
+if [ $# == 3 ]; then
+  NEWPROFILE=$3
+else
+  NEWPROFILE=new-profile
+fi
 
-echo "Using skeinforge baseline $BASELINE"
-echo "Using override file $OVERRIDES"
+#echo "Using skeinforge baseline $BASELINE"
+#echo "Using override file $OVERRIDES"
 
-echo "Building new-profile"
-rm -rf new-profile
-cp -r $BASELINE new-profile
-echo "Applying overrides"
-./apply_overrides.py -p new-profile -o $OVERRIDES
+#echo "Building $NEWPROFILE"
+rm -rf "$NEWPROFILE"
+cp -r "$BASELINE" "$NEWPROFILE"
+#echo "Applying overrides"
+`dirname $0`/apply_overrides.py -p "$NEWPROFILE" -o "$OVERRIDES"

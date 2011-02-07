@@ -86,13 +86,13 @@ if __name__ == "__main__":
                 if not moduleName in overridedict: overridedict[moduleName] = {}
                 overridedict[moduleName][splitoverride[0]] = splitoverride[1]
 
-    print "Updating",
+#    print "Updating",
     for csvfile in overridedict:
         if not csvfile in csvfiles:
             print "CSV file not found: " + csvfile
             break
-        print csvfile,
+#        print csvfile,
         processCSV(csvfiles[csvfile], overridedict[csvfile])
-    print "\n"
+#    print "\n"
 
     sys.exit(0)
