@@ -121,7 +121,9 @@ public class Base {
 		String levelName = Base.preferences.get("replicatorg.debuglevel", Level.INFO.getName());
 		Level l = Level.parse(levelName);
 		logger.setLevel(l);
-		
+
+/*
+ * 	TODO: Add log-to-file option to preferences.
 		// Add logfile handler
 	    try {
 	      boolean append = true;
@@ -134,12 +136,13 @@ public class Base {
 	      e.printStackTrace();
 	    }
 		
-		// Configure handlers to use FINE
+		// Configure handlers to use selected level
 	    Handler[] handlers =
 	    logger.getHandlers();
 	    for ( int index = 0; index < handlers.length; index++ ) {
-	    	handlers[index].setLevel( Level.FINE );
+	    	handlers[index].setLevel( l );
 	    }
+*/
 	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document
