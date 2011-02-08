@@ -21,6 +21,7 @@ import __init__
 
 from skeinforge_application.skeinforge_utilities import skeinforge_profile
 from skeinforge_application.skeinforge_utilities import skeinforge_polyfile
+from fabmetheus_utilities.vector3 import Vector3
 from fabmetheus_utilities import euclidean
 from fabmetheus_utilities import gcodec
 from fabmetheus_utilities import archive
@@ -87,6 +88,7 @@ class OutlineSkein:
 		self.distanceFeedRate = gcodec.DistanceFeedRate()
 		self.lineIndex = 0
 		self.lines = None
+		self.location = None
                 self.currentLayer = 0
 		self.minX = 0
 		self.minY = 0
@@ -142,13 +144,20 @@ class OutlineSkein:
                 self.maxX = self.maxX + self.repository.outlineMargin.value
                 self.minY = self.minY - self.repository.outlineMargin.value
                 self.maxY = self.maxY + self.repository.outlineMargin.value
-		#print("Margin bounding box is ", self.minX, ",", self.minY, " - ", self.maxX, ",", self.maxY, " at Z", self.firstZ, ", selected F", self.firstFeed )
-                self.distanceFeedRate.addLine('G1 ' + 'X' + self.distanceFeedRate.getRounded( self.minX ) + ' Y' + self.distanceFeedRate.getRounded( self.minY ) + ' Z' + self.distanceFeedRate.getRounded( self.firstZ ) + ' F' + self.distanceFeedRate.getRounded( self.firstFeed ))
-                self.distanceFeedRate.addLine('M101')
-                self.distanceFeedRate.addLine('G1 ' + 'X' + self.distanceFeedRate.getRounded( self.minX ) + ' Y' + self.distanceFeedRate.getRounded( self.maxY ) + ' Z' + self.distanceFeedRate.getRounded( self.firstZ ) + ' F' + self.distanceFeedRate.getRounded( self.firstFeed ))
-                self.distanceFeedRate.addLine('G1 ' + 'X' + self.distanceFeedRate.getRounded( self.maxX ) + ' Y' + self.distanceFeedRate.getRounded( self.maxY ) + ' Z' + self.distanceFeedRate.getRounded( self.firstZ ) + ' F' + self.distanceFeedRate.getRounded( self.firstFeed ))
-                self.distanceFeedRate.addLine('G1 ' + 'X' + self.distanceFeedRate.getRounded( self.maxX ) + ' Y' + self.distanceFeedRate.getRounded( self.minY ) + ' Z' + self.distanceFeedRate.getRounded( self.firstZ ) + ' F' + self.distanceFeedRate.getRounded( self.firstFeed ))
-                self.distanceFeedRate.addLine('G1 ' + 'X' + self.distanceFeedRate.getRounded( self.minX ) + ' Y' + self.distanceFeedRate.getRounded( self.minY ) + ' Z' + self.distanceFeedRate.getRounded( self.firstZ ) + ' F' + self.distanceFeedRate.getRounded( self.firstFeed ))
+
+                bbox = ( Vector3(self.minX, self.minY, self.firstZ),
+                         Vector3(self.minX, self.maxY, self.firstZ),
+                         Vector3(self.maxX, self.maxY, self.firstZ),
+                         Vector3(self.maxX, self.minY, self.firstZ) )
+
+
+                dist = [self.location.distanceSquared(vec) for vec in bbox]
+                closestidx = dist.index(min(dist))
+
+                for i in range(5):
+                        pos = bbox[(closestidx + i) % 4]
+                        self.distanceFeedRate.addLine('G1 ' + 'X' + self.distanceFeedRate.getRounded(pos.x) + ' Y' + self.distanceFeedRate.getRounded(pos.y) + ' Z' + self.distanceFeedRate.getRounded(pos.z) + ' F' + self.distanceFeedRate.getRounded( self.firstFeed ))
+                        if i == 0: self.distanceFeedRate.addLine('M101')
                 self.distanceFeedRate.addLine('M103')
 
 
@@ -183,8 +192,10 @@ class OutlineSkein:
 		firstWord = splitLine[ 0 ]
 		if firstWord == '(<layer>':
 			self.currentLayer=self.currentLayer+1
-		elif self.wantsOutline and self.currentLayer==1 and firstWord == 'G1':
-                        self.addBoundingBox()
+                elif firstWord == 'G1':
+                        self.location = gcodec.getLocationFromSplitLine(self.location, splitLine)
+                        if self.wantsOutline and self.currentLayer==1:
+                                self.addBoundingBox()
 		self.distanceFeedRate.addLine( line )
 
 def main():
