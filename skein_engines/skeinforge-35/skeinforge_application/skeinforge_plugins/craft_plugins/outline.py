@@ -88,7 +88,8 @@ class OutlineSkein:
 		self.distanceFeedRate = gcodec.DistanceFeedRate()
 		self.lineIndex = 0
 		self.lines = None
-		self.location = None
+		self.location = Vector3(0,0,0)
+		self.oldLocation = Vector3(0,0,0)
                 self.currentLayer = 0
 		self.minX = 0
 		self.minY = 0
@@ -151,7 +152,7 @@ class OutlineSkein:
                          Vector3(self.maxX, self.minY, self.firstZ) )
 
 
-                dist = [self.location.distanceSquared(vec) for vec in bbox]
+                dist = [self.oldLocation.distanceSquared(vec) for vec in bbox]
                 closestidx = dist.index(min(dist))
 
                 for i in range(5):
@@ -179,7 +180,10 @@ class OutlineSkein:
 			line = self.lines[ self.lineIndex ]
 			splitLine = line.split()
 			firstWord = gcodec.getFirstWord( splitLine )
-			if firstWord == '(</extruderInitialization>)':
+                        if firstWord == 'G1':
+                                self.oldLocation = self.location
+                                self.location = gcodec.getLocationFromSplitLine(self.oldLocation, splitLine)
+			elif firstWord == '(</extruderInitialization>)':
 				self.distanceFeedRate.addLine( '(<procedureDone> outline </procedureDone>)' )
 				return
 			self.distanceFeedRate.addLine( line )
@@ -193,7 +197,8 @@ class OutlineSkein:
 		if firstWord == '(<layer>':
 			self.currentLayer=self.currentLayer+1
                 elif firstWord == 'G1':
-                        self.location = gcodec.getLocationFromSplitLine(self.location, splitLine)
+                        self.oldLocation = self.location
+                        self.location = gcodec.getLocationFromSplitLine(self.oldLocation, splitLine)
                         if self.wantsOutline and self.currentLayer==1:
                                 self.addBoundingBox()
 		self.distanceFeedRate.addLine( line )
