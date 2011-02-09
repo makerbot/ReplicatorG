@@ -261,6 +261,10 @@
 
     <tar destfile="dist/${release.name}-linux.tgz" compression="gzip" longfile="gnu">
       <tarfileset dir="dist/linux/${release.name}" prefix="${release.name}"/>
+      <tarfileset dir="dist/linux/${release.name}" prefix="${release.name}" filemode="755">
+       <include name="replicatorg" />
+       <include name="tools/avrdude" />
+      </tarfileset>
     </tar>
   </target>
 
