@@ -179,6 +179,15 @@ public class MachineController {
 			}
 			
 			// Flush any parser cached data
+			if (driver == null) {
+				Base.logger.severe("Machinecontroller driver is null, can't print");
+				return false;
+			}
+			if (driver.getParser() == null) {
+				Base.logger.severe("GCode parser is null, can't print");
+				return false;
+			}
+			
 			driver.getParser().init(driver);
 			
 			Iterator<String> i = source.iterator();
