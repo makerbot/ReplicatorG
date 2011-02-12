@@ -9,6 +9,11 @@ The models included here are:
   http://creativecommons.org/licenses/by-nc-sa/3.0/
   http://www.thingiverse.com/thing:4743
 
+* Penny_bottle_opener.stl: Coin-op Bottle Opener by Starno
+  Shared under the Creative Commons - GNU GPL 
+  http://www.gnu.org/licenses/gpl-2.0.html
+  http://www.thingiverse.com/thing:1842
+
 * vase3.stl: Faceted Vase 3 by Zydac
   Released into the public domain
   http://www.thingiverse.com/thing:4167
