@@ -1,2 +1,2 @@
 Todos are now maintained on our issue tracker:
-http://github.com/makerbot/ReplicatorG/issues
+http://replicatorg.lighthouseapp.com/tickets

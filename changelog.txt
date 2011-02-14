@@ -1,11 +1,13 @@
 0024 ReplicatorG
+* Support for stepper-based extruders on G4 hardware
+* Early reversal for stepper-driven extruders
+* 5-axis motion commands for G4 hardware
 * More example objects and scripts
 * Build temperature monitoring reenabled
 * Number of UI cleanups
 * Skeinforge 39 introduced as experimental
 * Improved extruder status reporting
 * Several memory leaks solved
-* Early reversal for stepper-driven extruders
 * 64-bit platform fixes for Mac OS X, x86_64
 * Added s3g decompilation script
 * Startup info dump to aid debugging
@@ -13,7 +15,6 @@
 * Improved Ultimaker support
 * Support for legacy RepRap firmware
 * Improvements to serial layer
-* 5-axis motion commands for G4 hardware
 * Scale field reflects mouse scaling factor
 * Skeinforge 31 reintroduced for Ultimaker
 

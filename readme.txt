@@ -8,9 +8,9 @@ For more information, see the website at: http://www.replicat.org
 
 INSTALLATION
 
-Windows: http://www.replicat.org/windows-installation
-Mac OSX: http://www.replicat.org/mac-osx-installation
-Linux:   http://www.replicat.org/linux-installation
+Windows: http://replicat.org/installation-windows
+Mac OSX: http://replicat.org/installation-mac
+Linux:   http://replicat.org/installation-linux
 
 CREDITS
 
@@ -28,4 +28,6 @@ People who have worked on ReplicatorG include:
 Zach 'Hoeken' Smith (http://www.zachhoeken.com)
 Marius Kintel (http://reprap.soup.io)
 Adam Mayer (http://makerbot.com)
+
+A full list of contributers is in contributers.txt
 
