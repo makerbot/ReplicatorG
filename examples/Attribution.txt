@@ -19,6 +19,11 @@ The models included here are:
   http://creativecommons.org/licenses/BSD/
   http://www.thingiverse.com/thing:5504
 
+* Whistle_v2.stl: Whistle by Zaggo
+  Shared under CC-BY-NC 3.0 license
+  http://creativecommons.org/licenses/by-nc/3.0/
+  http://www.thingiverse.com/thing:1046
+
 * vase3.stl: Faceted Vase 3 by Zydac
   Released into the public domain
   http://www.thingiverse.com/thing:4167
