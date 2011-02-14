@@ -14,6 +14,11 @@ The models included here are:
   http://www.gnu.org/licenses/gpl-2.0.html
   http://www.thingiverse.com/thing:1842
 
+* 3D_Knot.stl: 3D Knot by MakeALot
+  Shared under BSD License license
+  http://creativecommons.org/licenses/BSD/
+  http://www.thingiverse.com/thing:5504
+
 * vase3.stl: Faceted Vase 3 by Zydac
   Released into the public domain
   http://www.thingiverse.com/thing:4167
