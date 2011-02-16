@@ -46,7 +46,12 @@ public class MachineOnboardParameters extends JFrame {
 	};
 	private JComboBox endstopInversionSelection = new JComboBox(endstopInversionChoices);
 	private static final int MAX_NAME_LENGTH = 16;
-
+	private JTextField xAxisHomeOffsetField = new JTextField();
+	private JTextField yAxisHomeOffsetField = new JTextField();
+	private JTextField zAxisHomeOffsetField = new JTextField();
+	private JTextField aAxisHomeOffsetField = new JTextField();
+	private JTextField bAxisHomeOffsetField = new JTextField();
+	
 	private void resetDialog() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
 				"<html>Before these changes can take effect, you'll need to reset your <br/>"+
@@ -74,6 +79,13 @@ public class MachineOnboardParameters extends JFrame {
 		OnboardParameters.EndstopType endstops = 
 			OnboardParameters.EndstopType.values()[idx]; 
 		target.setInvertedEndstops(endstops);
+		
+		target.setAxisHomeOffset(0, Integer.parseInt(xAxisHomeOffsetField.getText()));
+		target.setAxisHomeOffset(1, Integer.parseInt(yAxisHomeOffsetField.getText()));
+		target.setAxisHomeOffset(2, Integer.parseInt(zAxisHomeOffsetField.getText()));
+		target.setAxisHomeOffset(3, Integer.parseInt(aAxisHomeOffsetField.getText()));
+		target.setAxisHomeOffset(4, Integer.parseInt(bAxisHomeOffsetField.getText()));
+		
 		resetDialog();
 	}
 
@@ -94,6 +106,12 @@ public class MachineOnboardParameters extends JFrame {
 		// 0 == inverted, 1 == not inverted
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
 		endstopInversionSelection.setSelectedIndex(endstops.ordinal());
+		
+		xAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(0)));
+		yAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(1)));
+		zAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(2)));
+		aAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(3)));
+		bAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(4)));
 	}
 
 	private JPanel makeButtonPanel() {
@@ -121,8 +139,8 @@ public class MachineOnboardParameters extends JFrame {
 		this.target = target;
 		this.driver = driver;
 		JPanel panel = new JPanel(new MigLayout());
-		machineNameField.setColumns(MAX_NAME_LENGTH);
 		panel.add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
+		machineNameField.setColumns(MAX_NAME_LENGTH);
 		panel.add(machineNameField,"wrap");
 		panel.add(new JLabel("Invert X axis"));
 		panel.add(xAxisInvertBox,"wrap");
@@ -136,7 +154,24 @@ public class MachineOnboardParameters extends JFrame {
 		panel.add(bAxisInvertBox,"wrap");
 		panel.add(new JLabel("Invert endstops"));
 		panel.add(endstopInversionSelection,"wrap");
-
+		
+		xAxisHomeOffsetField.setColumns(10);
+		yAxisHomeOffsetField.setColumns(10);
+		zAxisHomeOffsetField.setColumns(10);
+		aAxisHomeOffsetField.setColumns(10);
+		bAxisHomeOffsetField.setColumns(10);
+		
+		panel.add(new JLabel("X home offset"));
+		panel.add(xAxisHomeOffsetField,"wrap");
+		panel.add(new JLabel("Y home offset"));
+		panel.add(yAxisHomeOffsetField,"wrap");
+		panel.add(new JLabel("Z home offset"));
+		panel.add(zAxisHomeOffsetField,"wrap");
+		panel.add(new JLabel("A home offset"));
+		panel.add(aAxisHomeOffsetField,"wrap");
+		panel.add(new JLabel("B home offset"));
+		panel.add(bAxisHomeOffsetField,"wrap");
+		
 		resetToFactoryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				MachineOnboardParameters.this.resetToFactory();

@@ -148,6 +148,16 @@ public interface Driver {
 	 */
 	public void setCurrentPosition(Point5d p) throws RetryException;
 
+	/** 
+	 * Tell the machine to record it's current position into storage 
+	 */
+	public void storeHomePositions(EnumSet<AxisId> axes);
+	
+	/** 
+	 * Tell the machine to restore it's current position from storage 
+	 */
+	public void recallHomePositions(EnumSet<AxisId> axes);
+
 	public Point5d getCurrentPosition();
 
 	/**

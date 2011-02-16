@@ -661,4 +661,10 @@ public class DriverBaseImplementation implements Driver {
 	public double getTemperatureSetting() {
 		return machine.currentTool().getTargetTemperature();
 	}
+
+	public void storeHomePositions(EnumSet<AxisId> axes) {
+	}
+
+	public void recallHomePositions(EnumSet<AxisId> axes) {
+	}
 }

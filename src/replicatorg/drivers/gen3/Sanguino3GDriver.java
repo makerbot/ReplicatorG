@@ -1422,6 +1422,7 @@ public class Sanguino3GDriver extends SerialDriver
 	/// 32-47 - Machine name (max. 16 chars)
 	final private static int EEPROM_CHECK_OFFSET = 0;
 	final private static int EEPROM_MACHINE_NAME_OFFSET = 32;
+	final private static int EEPROM_AXIS_HOME_POSITIONS_OFFSET = 96;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
 	final private static int EEPROM_ENDSTOP_INVERSION_OFFSET = 3;
 	final static class ECThermistorOffsets {
@@ -1495,6 +1496,78 @@ public class Sanguino3GDriver extends SerialDriver
 		if (idx < 16) b[idx] = 0;
 		writeToEEPROM(EEPROM_MACHINE_NAME_OFFSET,b);
 	}
+	
+	public int getAxisHomeOffset(int axis) {
+		if ((axis < 0) || (axis > 4)) {
+			// TODO: handle this
+			return 0;
+		}
+		
+		checkEEPROM();
+		byte[] r = readFromEEPROM(EEPROM_AXIS_HOME_POSITIONS_OFFSET + axis*4, 4);
+		
+		int val = 0;
+		for (int i = 0; i < 4; i++) {
+			val = val + (((int)r[i] & 0xff) << 8*i);
+		}
+		return val;
+	}
+
+	
+	public void setAxisHomeOffset(int axis, int offset) {
+		if ((axis < 0) || (axis > 4)) {
+			// TODO: handle this
+			return;
+		}
+		
+		writeToEEPROM(EEPROM_AXIS_HOME_POSITIONS_OFFSET + axis*4,intToLE(offset));
+	}
+	
+	public void storeHomePositions(EnumSet<AxisId> axes) {
+		byte b = 0;
+		if (axes.contains(AxisId.X)) b = (byte)(b | (0x01 << 0));
+		if (axes.contains(AxisId.Y)) b = (byte)(b | (0x01 << 1));
+		if (axes.contains(AxisId.Z)) b = (byte)(b | (0x01 << 2));
+		if (axes.contains(AxisId.A)) b = (byte)(b | (0x01 << 3));
+		if (axes.contains(AxisId.B)) b = (byte)(b | (0x01 << 4));
+		
+		Base.logger.fine("Storing home positions ["
+						   + ((axes.contains(AxisId.X))?"X":"")
+						   + ((axes.contains(AxisId.Y))?"Y":"")
+						   + ((axes.contains(AxisId.Z))?"Z":"")
+						   + ((axes.contains(AxisId.A))?"A":"")
+						   + ((axes.contains(AxisId.B))?"B":"")
+						   + "]");
+		
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.STORE_HOME_POSITIONS.getCode());
+		pb.add8(b);
+		
+		runQuery(pb.getPacket());
+	}
+
+	public void recallHomePositions(EnumSet<AxisId> axes) {
+		byte b = 0;
+		if (axes.contains(AxisId.X)) b = (byte)(b | (0x01 << 0));
+		if (axes.contains(AxisId.Y)) b = (byte)(b | (0x01 << 1));
+		if (axes.contains(AxisId.Z)) b = (byte)(b | (0x01 << 2));
+		if (axes.contains(AxisId.A)) b = (byte)(b | (0x01 << 3));
+		if (axes.contains(AxisId.B)) b = (byte)(b | (0x01 << 4));
+
+		Base.logger.fine("Recalling home positions ["
+				   + ((axes.contains(AxisId.X))?"X":"")
+				   + ((axes.contains(AxisId.Y))?"Y":"")
+				   + ((axes.contains(AxisId.Z))?"Z":"")
+				   + ((axes.contains(AxisId.A))?"A":"")
+				   + ((axes.contains(AxisId.B))?"B":"")
+				   + "]");
+		
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.RECALL_HOME_POSITIONS.getCode());
+		pb.add8(b);
+		
+		runQuery(pb.getPacket());
+		// TODO: Update driver position.
+	}
+	
 	
 	public boolean hasFeatureOnboardParameters() {
 		if (!isInitialized()) return false;

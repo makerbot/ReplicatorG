@@ -232,7 +232,7 @@ public class GCodeParser {
 
 		// if no command was seen, but parameters were,
 		// then use the last G code as the current command
-		if (!hasCode("G") && (hasCode("X") || hasCode("Y") || hasCode("Z"))) {
+		if (!(hasCode("G") || hasCode("M")) && (hasCode("X") || hasCode("Y") || hasCode("Z"))) {
 			seenCodes.put(new String("G"), new Boolean(true));
 			codeValues.put(new String("G"), new Double(lastGCode));
 		}
@@ -608,6 +608,36 @@ public class GCodeParser {
 				// driver.setRange();
 				break;
 
+			// Instruct the machine to store it's current position to EEPROM
+			case 131:
+			{
+				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+				if (hasCode("X")) axes.add(AxisId.X);
+				if (hasCode("Y")) axes.add(AxisId.Y);
+				if (hasCode("Z")) axes.add(AxisId.Z);
+				if (hasCode("A")) axes.add(AxisId.A);
+				if (hasCode("B")) axes.add(AxisId.B);
+				
+				driver.storeHomePositions(axes);
+			}
+				break;
+
+			// Instruct the machine to restore it's current position from EEPROM
+			case 132:
+			{
+				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+				if (hasCode("X")) axes.add(AxisId.X);
+				if (hasCode("Y")) axes.add(AxisId.Y);
+				if (hasCode("Z")) axes.add(AxisId.Z);
+				if (hasCode("A")) axes.add(AxisId.A);
+				if (hasCode("B")) axes.add(AxisId.B);
+				
+				driver.recallHomePositions(axes);
+			}
+				break;
+				
 			// initialize to default state.
 			case 200:
 				driver.initialize();
