@@ -21,6 +21,31 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/* ___________________________________________________
+ * @@@@@@@@@@@@@@@@@@@@@**^^""~~~"^@@^*@*@@**@@@@@@@@@
+ * @@@@@@@@@@@@@*^^'"~   , - ' '; ,@@b. '  -e@@@@@@@@@
+ * @@@@@@@@*^"~      . '     . ' ,@@@@(  e@*@@@@@@@@@@
+ * @@@@@^~         .       .   ' @@@@@@, ~^@@@@@@@@@@@
+ * @@@~ ,e**@@*e,  ,e**e, .    ' '@@@@@@e,  "*@@@@@'^@
+ * @',e@@@@@@@@@@ e@@@@@@       ' '*@@@@@@    @@@'   0
+ * @@@@@@@@@@@@@@@@@@@@@',e,     ;  ~^*^'    ;^~   ' 0
+ * @@@@@@@@@@@@@@@^""^@@e@@@   .'           ,'   .'  @
+ * @@@@@@@@@@@@@@'    '@@@@@ '         ,  ,e'  .    ;@
+ * @@@@@@@@@@@@@' ,&&,  ^@*'     ,  .  i^"@e, ,e@e  @@
+ * @@@@@@@@@@@@' ,@@@@,          ;  ,& !,,@@@e@@@@ e@@
+ * @@@@@,~*@@*' ,@@@@@@e,   ',   e^~^@,   ~'@@@@@@,@@@
+ * @@@@@@, ~" ,e@@@@@@@@@*e*@*  ,@e  @@""@e,,@@@@@@@@@
+ * @@@@@@@@ee@@@@@@@@@@@@@@@" ,e@' ,e@' e@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@" ,@" ,e@@e,,@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@~ ,@@@,,0@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@,,@@@@@@@@@@@@@@@@@@@@@@@@@
+ * """""""""""""""""""""""""""""""""""""""""""""""""""
+ * ~~~~~~~~~~~~WARNING: HERE BE DRAGONS ~~~~~~~~~~~~~~
+ * 
+ * Dragon from:
+ * http://www.textfiles.com/artscene/asciiart/castles
+ */
+
 package replicatorg.app;
 
 import java.lang.reflect.Method;
@@ -48,26 +73,17 @@ import replicatorg.util.Point5d;
 
 
 public class GCodeParser {
-	// command to parse
-	protected String command;
-
 	// our driver we use.
 	protected Driver driver;
 	
+	// The code that we are currently executing
+	// TODO: do we actually need to keep this?
+	GCode gcode;
+	
 	// Queue of points that we need to run. Yaay for dangerous state info!
+	// TODO: Drop this!
 	Queue< Point5d > pointQueue;
 	
-	// Pen Plotter Driver 
-	//protected PenPlotter penPlotter;
-
-	// our code data storage guys.
-	protected Hashtable<String, Double> codeValues;
-
-	protected Hashtable<String, Boolean> seenCodes;
-
-	static protected String[] codes = { "A", "B", "D", "E", "F", "G", "H", "I", "J", "K", "L",
-			"M", "P", "Q", "R", "S", "T", "X", "Y", "Z" };
-
 	// our curve section variables.
 	public static double curveSectionMM = Base.preferences.getDouble("replicatorg.parser.curve_segment_mm", 1.0);
 	public static double curveSectionInches = curveSectionMM / 25.4;
@@ -101,24 +117,9 @@ public class GCodeParser {
 	 */
 	double feedrate = 0.0;
 
-	/*
-	 * keep track of the last G code - this is the command mode to use if there
-	 * is no command in the current string
-	 */
-	int lastGCode = -1;
 
 	// current selected tool
 	protected int tool = -1;
-
-	// a comment passed in
-	protected String comment = "";
-
-	// pattern matchers.
-	Pattern parenPattern;
-
-	Pattern semiPattern;
-
-	Pattern deleteBlockPattern;
 
 	// unit variables.
 	public static int UNITS_MM = 0;
@@ -139,8 +140,8 @@ public class GCodeParser {
 	protected double drillPecksize = 0.0;
 
 	// TwitterBot extension variables
-        protected Class<?> extClass;
-        protected Object objExtClass;
+    protected Class<?> extClass;
+    protected Object objExtClass;
 	public static final String TB_CODE = "M";
 	public static final int TB_INIT = 997;
 	public static final int TB_MESSAGE = 998;
@@ -159,21 +160,12 @@ public class GCodeParser {
 		units = UNITS_MM;
 		curveSection = curveSectionMM;
 
-		// precompile regexes for speed
-		parenPattern = Pattern.compile("\\((.*)\\)");
-		semiPattern = Pattern.compile(";(.*)");
-		deleteBlockPattern = Pattern.compile("^(\\.*)");
-
 		// setup our points.
 //		current = new Point3d();
 //		System.err.println("-CURRENT "+current.toString());
 		target = new Point5d();
 		delta = new Point5d();
 		drillTarget = new Point3d();
-
-		// init our value tables.
-		codeValues = new Hashtable<String, Double>(codes.length, 1);
-		seenCodes = new Hashtable<String, Boolean>(codes.length, 1);
 
 		// init our offset
 		currentOffset = new Point3d();
@@ -205,6 +197,9 @@ public class GCodeParser {
 		currentOffset = driver.getOffset(0);
 		
 		pointQueue = new LinkedList< Point5d >();
+		
+		// TODO: who uses this before it's initialized?
+		gcode = new GCode("");
 	}
 
 	/**
@@ -216,36 +211,12 @@ public class GCodeParser {
 	public boolean parse(String cmd) {
 		// get ready for last one.
 		cleanup();
-
-		// save our command
-		command = cmd;
-
-		// handle comments.
-		parseComments();
-		stripComments();
-
-		// load all codes
-		for (int i = 0; i < codes.length; i++) {
-			double value = parseCode(codes[i]);
-			codeValues.put(new String(codes[i]), new Double(value));
-		}
-
-		// if no command was seen, but parameters were,
-		// then use the last G code as the current command
-		if (!(hasCode("G") || hasCode("M")) && (hasCode("X") || hasCode("Y") || hasCode("Z"))) {
-			seenCodes.put(new String("G"), new Boolean(true));
-			codeValues.put(new String("G"), new Double(lastGCode));
-		}
+		
+		gcode = new GCode(cmd);
 
 		return true;
 	}
 
-	private boolean findCode(String code) {
-		if (command.indexOf(code) >= 0)
-			return true;
-		else
-			return false;
-	}
 
 	public double convertToMM(double value, int units) {
 		if (units == UNITS_INCHES) {
@@ -254,89 +225,8 @@ public class GCodeParser {
 		return value;
 	}
 
-	public double getCodeValue(String c) {
-		Double d = (Double) codeValues.get(c);
-
-		if (d != null)
-			return d.doubleValue();
-		else
-			return 0.0;
-	}
-
-	/**
-	 * Checks to see if our current line of GCode has this particular code
-	 * 
-	 * @param char
-	 *            code the code to check for (G, M, X, etc.)
-	 * @return boolean if the code was found or not
-	 */
-	private boolean hasCode(String code) {
-		Boolean b = (Boolean) seenCodes.get(code);
-
-		if (b != null)
-			return b.booleanValue();
-		else
-			return false;
-	}
-
-	/**
-	 * Finds out the value of the code we're looking for
-	 * 
-	 * @param char
-	 *            code the code whose value we're looking up
-	 * @return double the value of the code, -1 if not found.
-	 */
-	private double parseCode(String code) {
-		Pattern myPattern = Pattern.compile(code + "([0-9.+-]+)");
-		Matcher myMatcher = myPattern.matcher(command);
-
-		if (findCode(code)) {
-			seenCodes.put(code, new Boolean(true));
-
-			if (myMatcher.find()) {
-				String match = myMatcher.group(1);
-				double number = Double.parseDouble(match);
-
-				return number;
-			}
-			// send a 0 to that its noted somewhere.
-			else
-				return 0.0;
-		}
-
-		// bail with something relatively harmless
-		return 0.0;
-	}
-
-	private void parseComments() {
-		Matcher parenMatcher = parenPattern.matcher(command);
-		Matcher semiMatcher = semiPattern.matcher(command);
-
-		if (parenMatcher.find())
-			comment = parenMatcher.group(1);
-
-		if (semiMatcher.find())
-			comment = semiMatcher.group(1);
-
-		// clean it up.
-		comment = comment.trim();
-		comment = comment.replace('|', '\n');
-
-		// echo it?
-		// if (comment.length() > 0)
-		// System.out.println(comment);
-	}
-
-	private void stripComments() {
-		Matcher parenMatcher = parenPattern.matcher(command);
-		command = parenMatcher.replaceAll("");
-
-		Matcher semiMatcher = semiPattern.matcher(command);
-		command = semiMatcher.replaceAll("");
-	}
-
 	public String getCommand() {
-		return new String(command);
+		return gcode.getCommand();
 	}
 
 	/**
@@ -346,8 +236,8 @@ public class GCodeParser {
 	public void execute() throws GCodeException, RetryException {
 		// TODO: is this the proper way?
 		// Set spindle speed?
-		// if (hasCode("S"))
-		// driver.setSpindleRPM(getCodeValue("S"));
+		// if (gcode.hasCode('S'))
+		// driver.setSpindleRPM(gcode.getCodeValue('S'));
 
 		// TODO: This is a hack, fix it.
 		// We have two states here- it is possible that the previous command
@@ -367,8 +257,8 @@ public class GCodeParser {
 			executeGCodes();
 	
 			// Select our tool?
-			int tempTool = (int) getCodeValue("T");
-			if (hasCode("T")) {
+			int tempTool = (int) gcode.getCodeValue('T');
+			if (gcode.hasCode('T')) {
 				if (tempTool != tool)
 					driver.selectTool(tempTool);
 	
@@ -379,17 +269,17 @@ public class GCodeParser {
 
 	private void executeMCodes() throws GCodeException, RetryException {
 		// find us an m code.
-		if (hasCode("M")) {
+		if (gcode.hasCode('M')) {
 			// If this machine handles multiple active toolheads, we always honor a T code
 			// as being a annotation to send the given command to the given toolheads.  Be
 			// aware that appending a T code to an M code will not necessarily generate a
 			// change tool request!  Use M6 for that.
 			// M6 was historically used to wait for toolheads to get up to temperature, so
 			// you may wish to avoid using M6.
-			if (hasCode("T") && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {
-				driver.getMachine().selectTool((int) getCodeValue("T"));
+			if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {
+				driver.getMachine().selectTool((int) gcode.getCodeValue('T'));
 			}
-			switch ((int) getCodeValue("M")) {
+			switch ((int) gcode.getCodeValue('M')) {
 			// stop codes... handled by getStops();
 			case 0:
 			case 1:
@@ -416,11 +306,11 @@ public class GCodeParser {
 			// tool change.
 			case 6:
 				int timeout = 65535;
-				if (hasCode("P")) {
-					timeout = (int)getCodeValue("P");
+				if (gcode.hasCode('P')) {
+					timeout = (int)gcode.getCodeValue('P');
 				}
-				if (hasCode("T")) {
-					driver.requestToolChange((int) getCodeValue("T"), timeout);
+				if (gcode.hasCode('T')) {
+					driver.requestToolChange((int) gcode.getCodeValue('T'), timeout);
 				}
 				else {
 					throw new GCodeException("The T parameter is required for tool changes. (M6)");
@@ -445,8 +335,8 @@ public class GCodeParser {
 
 			// close clamp
 			case 10:
-				if (hasCode("Q"))
-					driver.closeClamp((int) getCodeValue("Q"));
+				if (gcode.hasCode('Q'))
+					driver.closeClamp((int) gcode.getCodeValue('Q'));
 				else
 					throw new GCodeException(
 							"The Q parameter is required for clamp operations. (M10)");
@@ -454,8 +344,8 @@ public class GCodeParser {
 
 			// open clamp
 			case 11:
-				if (hasCode("Q"))
-					driver.openClamp((int) getCodeValue("Q"));
+				if (gcode.hasCode('Q'))
+					driver.openClamp((int) gcode.getCodeValue('Q'));
 				else
 					throw new GCodeException(
 							"The Q parameter is required for clamp operations. (M11)");
@@ -516,8 +406,6 @@ public class GCodeParser {
 				driver.changeGearRatio(6);
 				break;
 
-			// M48, M49: i dont understand them yet.
-
 			// read spindle speed
 			case 50:
 				driver.getSpindleRPM();
@@ -546,8 +434,8 @@ public class GCodeParser {
 
 			// custom code for temperature control
 			case 104:
-				if (hasCode("S"))
-					driver.setTemperature(getCodeValue("S"));
+				if (gcode.hasCode('S'))
+					driver.setTemperature(gcode.getCodeValue('S'));
 				break;
 
 			// custom code for temperature reading
@@ -567,21 +455,21 @@ public class GCodeParser {
 
 			// set max extruder speed, RPM
 			case 108:
-				if (hasCode("S"))
-					driver.setMotorSpeedPWM((int)Math.round(getCodeValue("S")));
-				else if (hasCode("R"))
-					driver.setMotorRPM(getCodeValue("R"));
+				if (gcode.hasCode('S'))
+					driver.setMotorSpeedPWM((int)Math.round(gcode.getCodeValue('S')));
+				else if (gcode.hasCode('R'))
+					driver.setMotorRPM(gcode.getCodeValue('R'));
 				break;
 
 			// set build platform temperature
 			case 109:
-				if (hasCode("S"))
-					driver.setPlatformTemperature(getCodeValue("S"));
+				if (gcode.hasCode('S'))
+					driver.setPlatformTemperature(gcode.getCodeValue('S'));
 				break;
 
 			// set build chamber temperature
 			case 110:
-				driver.setChamberTemperature(getCodeValue("S"));
+				driver.setChamberTemperature(gcode.getCodeValue('S'));
 				
 			// valve open
 			case 126:
@@ -613,11 +501,11 @@ public class GCodeParser {
 			{
 				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(AxisId.X);
-				if (hasCode("Y")) axes.add(AxisId.Y);
-				if (hasCode("Z")) axes.add(AxisId.Z);
-				if (hasCode("A")) axes.add(AxisId.A);
-				if (hasCode("B")) axes.add(AxisId.B);
+				if (gcode.hasCode('X')) axes.add(AxisId.X);
+				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+				if (gcode.hasCode('A')) axes.add(AxisId.A);
+				if (gcode.hasCode('B')) axes.add(AxisId.B);
 				
 				driver.storeHomePositions(axes);
 			}
@@ -628,11 +516,11 @@ public class GCodeParser {
 			{
 				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(AxisId.X);
-				if (hasCode("Y")) axes.add(AxisId.Y);
-				if (hasCode("Z")) axes.add(AxisId.Z);
-				if (hasCode("A")) axes.add(AxisId.A);
-				if (hasCode("B")) axes.add(AxisId.B);
+				if (gcode.hasCode('X')) axes.add(AxisId.X);
+				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+				if (gcode.hasCode('A')) axes.add(AxisId.A);
+				if (gcode.hasCode('B')) axes.add(AxisId.B);
 				
 				driver.recallHomePositions(axes);
 			}
@@ -665,18 +553,18 @@ public class GCodeParser {
 			
 			// set servo 1 position
 			case 300:
-				if (hasCode("S")) {
+				if (gcode.hasCode('S')) {
 					if (driver instanceof PenPlotter) {
-						((PenPlotter)driver).setServoPos(0, getCodeValue("S"));
+						((PenPlotter)driver).setServoPos(0, gcode.getCodeValue('S'));
 					}
 				}
 				break;
 
 			// set servo 2 position
 			case 301:
-				if (hasCode("S")) {
+				if (gcode.hasCode('S')) {
 					if (driver instanceof PenPlotter) {
-						((PenPlotter)driver).setServoPos(1, getCodeValue("S"));
+						((PenPlotter)driver).setServoPos(1, gcode.getCodeValue('S'));
 					}
 				}
 				break;
@@ -690,7 +578,7 @@ public class GCodeParser {
 			//To do: should be more general purpose
 
                try {
-                   String params[] = command.split(" ");                       
+                   String params[] = gcode.getCommand().split(" ");                       
 
                    extClass = Class.forName(params[1]); //class name
                    objExtClass = extClass.newInstance();
@@ -709,8 +597,8 @@ public class GCodeParser {
 				// To do: clean up, should be more flexible
 
                 try {
-                    String params[] = command.split(" "); //method is param[1]
-                    String params2[] = command.split("\\'"); //params to pass are params2[1]
+                    String params[] = gcode.getCommand().split(" "); //method is param[1]
+                    String params2[] = gcode.getCommand().split("\\'"); //params to pass are params2[1]
 
                     String methParam = params2[1]; //params to pass
                     Method extMethod = extClass.getMethod(params[1], new Class[] {String.class});  //method to call
@@ -728,7 +616,7 @@ public class GCodeParser {
                 break;
 			default:
 				throw new GCodeException("Unknown M code: M"
-						+ (int) getCodeValue("M"));
+						+ (int) gcode.getCodeValue('M'));
 			}
 		}
 	}
@@ -738,25 +626,25 @@ public class GCodeParser {
 		Point5d temp = driver.getCurrentPosition();
 
 		// initialize our points, etc.
-		double iVal = convertToMM(getCodeValue("I"), units); // / X offset
+		double iVal = convertToMM(gcode.getCodeValue('I'), units); // / X offset
 																// for arcs
-		double jVal = convertToMM(getCodeValue("J"), units); // / Y offset
-																// for arcs
-		@SuppressWarnings("unused")
-		double kVal = convertToMM(getCodeValue("K"), units); // / Z offset
+		double jVal = convertToMM(gcode.getCodeValue('J'), units); // / Y offset
 																// for arcs
 		@SuppressWarnings("unused")
-		double qVal = convertToMM(getCodeValue("Q"), units); // / feed
+		double kVal = convertToMM(gcode.getCodeValue('K'), units); // / Z offset
+																// for arcs
+		@SuppressWarnings("unused")
+		double qVal = convertToMM(gcode.getCodeValue('Q'), units); // / feed
 																// increment for
 																// G83
-		double rVal = convertToMM(getCodeValue("R"), units); // / arc radius
-		double xVal = convertToMM(getCodeValue("X"), units); // / X units
-		double yVal = convertToMM(getCodeValue("Y"), units); // / Y units
-		double zVal = convertToMM(getCodeValue("Z"), units); // / Z units
-		double aVal = convertToMM(getCodeValue("A"), units); // / A units
-		double bVal = convertToMM(getCodeValue("B"), units); // / B units
+		double rVal = convertToMM(gcode.getCodeValue('R'), units); // / arc radius
+		double xVal = convertToMM(gcode.getCodeValue('X'), units); // / X units
+		double yVal = convertToMM(gcode.getCodeValue('Y'), units); // / Y units
+		double zVal = convertToMM(gcode.getCodeValue('Z'), units); // / Z units
+		double aVal = convertToMM(gcode.getCodeValue('A'), units); // / A units
+		double bVal = convertToMM(gcode.getCodeValue('B'), units); // / B units
 		// Note: The E axis is treated internally as the A or B axis
-		double eVal = convertToMM(getCodeValue("E"), units); // / E units
+		double eVal = convertToMM(gcode.getCodeValue('E'), units); // / E units
 
 		// adjust for our offsets
 		xVal += currentOffset.x;
@@ -765,53 +653,53 @@ public class GCodeParser {
 
 		// absolute just specifies the new position
 		if (absoluteMode) {
-			if (hasCode("X"))
+			if (gcode.hasCode('X'))
 				temp.setX(xVal);
-			if (hasCode("Y"))
+			if (gcode.hasCode('Y'))
 				temp.setY(yVal);
-			if (hasCode("Z"))
+			if (gcode.hasCode('Z'))
 				temp.setZ(zVal);
-			if (hasCode("A"))
+			if (gcode.hasCode('A'))
 				temp.setA(aVal);
-			if (hasCode("E")) {
+			if (gcode.hasCode('E')) {
 				if (tool == 0)
 					temp.setA(eVal);
 				else if (tool == 1)
 					temp.setB(eVal);
 			}
-			if (hasCode("B"))
+			if (gcode.hasCode('B'))
 				temp.setB(bVal);
 		}
 		// relative specifies a delta
 		else {
-			if (hasCode("X"))
+			if (gcode.hasCode('X'))
 				temp.setX(temp.x() + xVal);
-			if (hasCode("Y"))
+			if (gcode.hasCode('Y'))
 				temp.setY(temp.y() + yVal);
-			if (hasCode("Z"))
+			if (gcode.hasCode('Z'))
 				temp.setZ(temp.z() + zVal);
-			if (hasCode("A"))
+			if (gcode.hasCode('A'))
 				temp.setA(temp.a() + aVal);
-			if (hasCode("E")) {
+			if (gcode.hasCode('E')) {
 				if (tool == 0)
 					temp.setA(temp.a() + eVal);
 				else if (tool == 1)
 					temp.setB(temp.b() + eVal);
 			}
-			if (hasCode("B"))
+			if (gcode.hasCode('B'))
 				temp.setB(temp.b() + bVal);
 		}
 
 		// Get feedrate if supplied
-		if (hasCode("F")) {
+		if (gcode.hasCode('F')) {
 			// Read feedrate in mm/min.
-			feedrate = getCodeValue("F");
+			feedrate = gcode.getCodeValue('F');
 			driver.setFeedrate(feedrate);
 		}
 
 		// did we get a gcode?
-		if (hasCode("G")) {
-			int gCode = (int) getCodeValue("G");
+		if (gcode.hasCode('G')) {
+			int gCode = (int) gcode.getCodeValue('G');
 
 			switch (gCode) {
 			// Linear Interpolation
@@ -834,7 +722,7 @@ public class GCodeParser {
 			case 3: {
 				// call our arc drawing function.
 				// Note: We don't support 5D
-				if (hasCode("I") || hasCode("J")) {
+				if (gcode.hasCode('I') || gcode.hasCode('J')) {
 					// our centerpoint
 					Point5d center = new Point5d();
 					Point5d current = driver.getCurrentPosition();
@@ -848,7 +736,7 @@ public class GCodeParser {
 						pointQueue.addAll(drawArc(center, temp, false));
 				}
 				// or we want a radius based one
-				else if (hasCode("R")) {
+				else if (gcode.hasCode('R')) {
 					Base.logger.warning("G02/G03 arcs with (R)adius parameter are not supported yet.");
 					if (gCode == 2)
 						pointQueue.addAll(drawRadius(temp, rVal, true));
@@ -866,15 +754,15 @@ public class GCodeParser {
 
 			// dwell
 			case 4:
-				driver.delay((long) getCodeValue("P"));
+				driver.delay((long) gcode.getCodeValue('P'));
 				break;
 			case 10:
-				if (hasCode("P")) {
-					int offsetSystemNum = ((int)getCodeValue("P"));
+				if (gcode.hasCode('P')) {
+					int offsetSystemNum = ((int)gcode.getCodeValue('P'));
 					if (offsetSystemNum >= 1 && offsetSystemNum <= 6) {
-						if (hasCode("X")) driver.setOffsetX(offsetSystemNum, getCodeValue("X"));
-						if (hasCode("Y")) driver.setOffsetY(offsetSystemNum, getCodeValue("Y"));
-						if (hasCode("Z")) driver.setOffsetZ(offsetSystemNum, getCodeValue("Z"));
+						if (gcode.hasCode('X')) driver.setOffsetX(offsetSystemNum, gcode.getCodeValue('X'));
+						if (gcode.hasCode('Y')) driver.setOffsetY(offsetSystemNum, gcode.getCodeValue('Y'));
+						if (gcode.hasCode('Z')) driver.setOffsetZ(offsetSystemNum, gcode.getCodeValue('Z'));
 					}
 				}
 				else 
@@ -914,10 +802,10 @@ public class GCodeParser {
 				// home all axes?
 				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(AxisId.X);
-				if (hasCode("Y")) axes.add(AxisId.Y);
-				if (hasCode("Z")) axes.add(AxisId.Z);
-				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
+				if (gcode.hasCode('X')) axes.add(AxisId.X);
+				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
 			}
 				break;
 
@@ -927,10 +815,10 @@ public class GCodeParser {
 				// home all axes?
 				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(AxisId.X);
-				if (hasCode("Y")) axes.add(AxisId.Y);
-				if (hasCode("Z")) axes.add(AxisId.Z);
-				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
+				if (gcode.hasCode('X')) axes.add(AxisId.X);
+				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
 			}
 				break;
 
@@ -940,10 +828,10 @@ public class GCodeParser {
 				// home all axes?
 				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (hasCode("X")) axes.add(AxisId.X);
-				if (hasCode("Y")) axes.add(AxisId.Y);
-				if (hasCode("Z")) axes.add(AxisId.Z);
-				driver.homeAxes(axes, true, hasCode("F")?feedrate:0);
+				if (gcode.hasCode('X')) axes.add(AxisId.X);
+				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+				driver.homeAxes(axes, true, gcode.hasCode('F')?feedrate:0);
 			}
 				break;
 
@@ -1025,15 +913,15 @@ public class GCodeParser {
 				boolean speedPeck = false;
 
 				// setup our parameters
-				if (hasCode("X"))
+				if (gcode.hasCode('X'))
 					drillTarget.x = temp.x();
-				if (hasCode("Y"))
+				if (gcode.hasCode('Y'))
 					drillTarget.y = temp.y();
-				if (hasCode("Z"))
+				if (gcode.hasCode('Z'))
 					drillTarget.z = temp.z();
-				if (hasCode("F"))
-					drillFeedrate = getCodeValue("F");
-				if (hasCode("R"))
+				if (gcode.hasCode('F'))
+					drillFeedrate = gcode.getCodeValue('F');
+				if (gcode.hasCode('R'))
 					drillRetract = rVal;
 
 				// set our vars for normal drilling
@@ -1043,16 +931,16 @@ public class GCodeParser {
 				}
 				// they want a dwell
 				else if (gCode == 82) {
-					if (hasCode("P"))
-						drillDwell = (int) getCodeValue("P");
+					if (gcode.hasCode('P'))
+						drillDwell = (int) gcode.getCodeValue('P');
 					drillPecksize = 0.0;
 				}
 				// fancy schmancy 'pecking' motion.
 				else if (gCode == 83 || gCode == 183) {
-					if (hasCode("P"))
-						drillDwell = (int) getCodeValue("P");
-					if (hasCode("Q"))
-						drillPecksize = Math.abs(getCodeValue("Q"));
+					if (gcode.hasCode('P'))
+						drillDwell = (int) gcode.getCodeValue('P');
+					if (gcode.hasCode('Q'))
+						drillPecksize = Math.abs(gcode.getCodeValue('Q'));
 
 					// oooh... do it fast!
 					if (gCode == 183)
@@ -1077,18 +965,18 @@ public class GCodeParser {
 
 				Point5d current = driver.getCurrentPosition();
 
-				if (hasCode("X"))
+				if (gcode.hasCode('X'))
 					current.setX(xVal);
-				if (hasCode("Y"))
+				if (gcode.hasCode('Y'))
 					current.setY(yVal);
-				if (hasCode("Z"))
+				if (gcode.hasCode('Z'))
 					current.setZ(zVal);
-				if (hasCode("A"))
+				if (gcode.hasCode('A'))
 					current.setA(aVal);
 				// Note: The E axis is treated internally as the A axis
-				if (hasCode("E"))
+				if (gcode.hasCode('E'))
 					current.setA(eVal);
-				if (hasCode("B"))
+				if (gcode.hasCode('B'))
 					current.setB(bVal);
 				
 				driver.setCurrentPosition(current);
@@ -1106,13 +994,13 @@ public class GCodeParser {
 
 			// spindle speed rate
 			case 97:
-				driver.setSpindleRPM((int) getCodeValue("S"));
+				driver.setSpindleRPM((int) gcode.getCodeValue('S'));
 				break;
 				
 			// error, error!
 			default:
 				throw new GCodeException("Unknown G code: G"
-						+ (int) getCodeValue("G"));
+						+ (int) gcode.getCodeValue('G'));
 			}
 			
 		}
@@ -1330,16 +1218,15 @@ public class GCodeParser {
 	 * @return stop information
 	 */
 	public StopInfo getStops()  {
-		String message = null;
-		if (comment.length() > 0)
-			message = comment;
+		String message = gcode.getComment();
+		
 		int mCode;
 
-		if (hasCode("M")) {
+		if (gcode.hasCode('M')) {
 			// we wanna do this after its finished whatever was before.
 			driver.waitUntilBufferEmpty();
 
-			mCode = (int) getCodeValue("M");
+			mCode = (int) gcode.getCodeValue('M');
 
 			if (mCode == 0) {
 				// M0 == unconditional halt
@@ -1380,15 +1267,6 @@ public class GCodeParser {
 		// move us to our target.
 		delta = new Point5d();
 
-		// save our gcode
-		if (hasCode("G"))
-			lastGCode = (int) getCodeValue("G");
-
-		// clear our gcodes.
-		codeValues.clear();
-		seenCodes.clear();
-
-		// empty comments
-		comment = "";
+		gcode = null;
 	}
 }
