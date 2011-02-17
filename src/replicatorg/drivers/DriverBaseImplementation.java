@@ -33,16 +33,14 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
-import replicatorg.app.exceptions.GCodeException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.util.Point5d;
 
 public class DriverBaseImplementation implements Driver {
-	// our gcode parser
-	private GCodeParser parser;
+//	// our gcode parser
+//	private GCodeParser parser;
 
 	// models for our machine
 	protected MachineModel machine;
@@ -59,9 +57,6 @@ public class DriverBaseImplementation implements Driver {
 
 	// are we initialized?
 	private AtomicBoolean isInitialized = new AtomicBoolean(false);
-
-	// the length of our last move.
-	private double moveLength = 0.0;
 
 	// our error variable.
 	private String error = "";
@@ -80,16 +75,11 @@ public class DriverBaseImplementation implements Driver {
 	 * Creates the driver object.
 	 */
 	public DriverBaseImplementation() {
-		// create our parser object
-		parser = new GCodeParser();
 
 		// initialize our offsets
 		offsets = new Point3d[7];
 		for (int i = 0; i < 7; i++)
 			offsets[i] = new Point3d();  // Constructs and initializes a Point3d to (0,0,0)
-
-		// initialize our driver
-		parser.init(this);
 
 		// TODO: do this properly.
 		machine = new MachineModel();
@@ -102,12 +92,24 @@ public class DriverBaseImplementation implements Driver {
 	{
 		
 	}
+	
+	public boolean isPassthroughDriver() {
+		return false;
+	}
+	
+	/**
+	 * Execute a line of GCode directly (ie, don't use the parser)
+	 * @param code The line of GCode that we should execute
+	 */
+	public void executeGCodeLine(String code) {
+		Base.logger.severe("Ignoring executeGCode command: " + code);
+	}
 
 	public void dispose() {
 		if (Base.logger.isLoggable(Level.FINE)) {
 			Base.logger.fine("Disposing of driver " + getDriverName());
 		}
-		parser = null;
+//		parser = null;
 	}
 
 	/***************************************************************************
@@ -147,25 +149,6 @@ public class DriverBaseImplementation implements Driver {
 			throw new BuildFailureException(error);
 	}
 
-	/***************************************************************************
-	 * Parser handling functions
-	 **************************************************************************/
-
-	public void parse(String cmd) {
-		// reset our values.
-		moveLength = 0.0;
-
-		parser.parse(cmd);
-	}
-
-	public GCodeParser getParser() {
-		return parser;
-	}
-
-	public void execute() throws GCodeException, InterruptedException, RetryException {
-		assert (parser != null);
-		parser.execute();
-	}
 
 	public boolean isFinished() {
 		return true;
@@ -281,17 +264,6 @@ public class DriverBaseImplementation implements Driver {
 	 * @throws RetryException 
 	 */
 	public void queuePoint(Point5d p) throws RetryException {
-		Point5d delta = getDelta(p);
-
-		// add to the total length
-		moveLength += delta.get3D().distance(new Point3d());
-
-		// Calculate the feedrate. This is the speed that the toolhead will
-		// be traveling at.
-		double feedrate = getSafeFeedrate(delta);
-
-		// mostly for estimation driver.
-		queuePoint(p, feedrate);
 		setInternalPosition(p);
 	}
 
@@ -299,14 +271,6 @@ public class DriverBaseImplementation implements Driver {
 		currentPosition.set(position);
 	}
 	
-	protected void queuePoint(Point5d p, Double feedrate) {
-		// do nothing here.
-	}
-
-	public double getMoveLength() {
-		return moveLength;
-	}
-
 	/**
 	 * sets the feedrate in mm/minute
 	 */

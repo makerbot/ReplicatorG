@@ -48,7 +48,6 @@
 
 package replicatorg.app;
 
-import java.lang.reflect.Method;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -376,6 +375,13 @@ public class GCodeParser {
 	 * @throws RetryException 
 	 */
 	public void execute() throws GCodeException, RetryException {
+		
+		// TODO: The parser should never see this.
+		if (driver.isPassthroughDriver()) {
+			driver.executeGCodeLine(gcode.getCommand());
+			return;
+		}
+		
 		// TODO: is this the proper way?
 		// Set spindle speed?
 		// if (gcode.hasCode('S'))

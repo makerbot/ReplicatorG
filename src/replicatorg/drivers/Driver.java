@@ -29,9 +29,7 @@ import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
-import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
-import replicatorg.app.exceptions.GCodeException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.util.Point5d;
@@ -49,16 +47,18 @@ public interface Driver {
 	 * parse and load configuration data from XML
 	 */
 	public void loadXML(Node xml);
-
+	
 	/**
-	 * parse a command. usually passes it through to the parser.
+	 * Should we bypass the parser?
+	 * @return true if this driver executes GCodes directly, false if the parser should be used to exercise it's interface. 
 	 */
-	public void parse(String cmd);
-
+	public boolean isPassthroughDriver();
+	
 	/**
-	 * get our parser object
+	 * Execute a line of GCode directly (ie, don't use the parser)
+	 * @param code The line of GCode that we should execute
 	 */
-	public GCodeParser getParser();
+	public void executeGCodeLine(String code);
 
 	/**
 	 * are we finished with the last command?
@@ -108,13 +108,6 @@ public interface Driver {
 	public MachineModel getMachine();
 
 	public void setMachine(MachineModel m);
-
-	/**
-	 * execute the recently parsed GCode
-	 * 
-	 * @throws InterruptedException
-	 */
-	public void execute() throws GCodeException, InterruptedException, RetryException;
 
 	/**
 	 * get version information from the driver

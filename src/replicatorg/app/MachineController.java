@@ -112,6 +112,7 @@ public class MachineController {
 	private int linesTotal = -1;
 	private double startTimeMillis = -1;
 	
+	
 	/**
 	 * The MachineThread is responsible for communicating with the machine.
 	 * 
@@ -123,6 +124,8 @@ public class MachineController {
 		private boolean pollingEnabled = false;
 		private long pollIntervalMs = 1000;
 
+		GCodeSource currentSource;
+		
 		/**
 		 * Start polling the machine for its current status (temperatures, etc.)
 		 * @param interval The interval, in ms, between polls
@@ -139,21 +142,6 @@ public class MachineController {
 			pollingEnabled = false;
 		}
 		
-		/**
-		 * Run the warmup commands.
-		 * 
-		 * @throws BuildFailureException
-		 * @throws InterruptedException
-		 */
-		private void runWarmupCommands() throws BuildFailureException, InterruptedException {
-			Base.logger.info("Running warmup commands.");
-			buildCodesInternal(new StringListSource(warmupCommands));
-		}
-
-		private void runCooldownCommands() throws BuildFailureException, InterruptedException {
-			Base.logger.info("Running cooldown commands.");
-			buildCodesInternal(new StringListSource(cooldownCommands));
-		}
 		
 		// Interrupt the machine controller thread.
 		// The driver implementation should be smart enough to check for interrupted status when not blocking
@@ -173,6 +161,7 @@ public class MachineController {
 		 * @throws InterruptedException
 		 */
 		private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
+			
 			if (!state.isBuilding()) {
 				// Do not build if the machine is not building or paused
 				return false;
@@ -183,14 +172,18 @@ public class MachineController {
 				Base.logger.severe("Machinecontroller driver is null, can't print");
 				return false;
 			}
-			if (driver.getParser() == null) {
-				Base.logger.severe("GCode parser is null, can't print");
-				return false;
-			}
 			
-			driver.getParser().init(driver);
+			// Set up a parser to talk to the driver
+			GCodeParser parser = new GCodeParser();
+			parser.init(driver);
 			
+			// And the one for the simulator
+			GCodeParser simulationParser = new GCodeParser();
+			simulationParser.init(simulator);
+			
+			// Initialize our gcode provider
 			Iterator<String> i = source.iterator();
+			
 			boolean retry = false;
 			// Iterate over all the lines in the gcode source.
 			while (i.hasNext()) {
@@ -204,17 +197,18 @@ public class MachineController {
 					
 					if (simulator.isSimulating()) {
 						// Parse a line for the simulator
-						simulator.parse(line);
+						simulationParser.parse(line);
 					}
+					
 					if (!state.isSimulating()) {
 						// Parse a line for the actual machine
-						driver.parse(line); 
+						parser.parse(line);
 					}
 				}
 				try {
 					// Check if there are any interactive stops on this line; if so,
 					// wait for user response.
-					GCodeParser.StopInfo info = driver.getParser().getStops();
+					GCodeParser.StopInfo info = parser.getStops();
 					if (info != null &&
 							Base.preferences.getBoolean("machine.optionalstops",true) &&
 							state.isBuilding() &&
@@ -250,8 +244,10 @@ public class MachineController {
 				// simulate the command.
 				if (retry == false && simulator.isSimulating()) {
 					try {
-						simulator.execute();
+						simulationParser.execute();
 					} catch (RetryException r) {
+						// Ignore.
+					} catch (GCodeException e) {
 						// Ignore.
 					}
 				}
@@ -260,21 +256,18 @@ public class MachineController {
 				try {
 					if (!state.isSimulating()) {
 						// Run the command on the machine.
-						driver.execute();
+						parser.execute();
 					}
 					retry = false;
 				} catch (RetryException r) {
 					// Indicate that we should retry the current line, rather
 					// than proceeding to the next, on the next go-round.
-//					Base.logger.fine("Message delivery failed, retrying");
 					Base.logger.log(Level.FINE,"Message delivery failed, retrying");
 					retry = true;
 				} catch (GCodeException e) {
 					// This is severe, but not fatal; ordinarily it means there's an
 					// unrecognized gcode in the source.
 					Base.logger.severe("Error: " + e.getMessage());
-				} catch (InterruptedException ie) {
-					// We're in the middle of a stop or shutdown
 				}
 				
 				// did we get any errors?
@@ -371,7 +364,6 @@ public class MachineController {
 			setState(new MachineState(MachineState.State.CONNECTING));
 		}
 
-		GCodeSource currentSource;
 		
 		// Build the gcode source, bracketing it with warmup and cooldown commands.
 		// 
@@ -381,15 +373,22 @@ public class MachineController {
 			linesTotal = warmupCommands.size() + 
 				cooldownCommands.size() +
 				source.getLineCount();
+			
 			startStatusPolling(1000); // Will not send commands if temp mon. turned off
 			try {
 				if (!state.isSimulating()) {
 					driver.getCurrentPosition(); // reconcile position
 				}
-				runWarmupCommands();
+				
+				Base.logger.info("Running warmup commands");
+				buildCodesInternal(new StringListSource(warmupCommands));
+				
 				Base.logger.info("Running build.");
 				buildCodesInternal(source);
-				runCooldownCommands();
+				
+				Base.logger.info("Running cooldown commands");
+				buildCodesInternal(new StringListSource(cooldownCommands));
+				
 				if (!state.isSimulating()) {
 					driver.invalidatePosition();
 				}
@@ -495,7 +494,8 @@ public class MachineController {
 		}
 
 		/**
-		 * Run the remote build with the given filename.
+		 * Run the remote build with the given filename. This is used for instructing
+		 * the machine to run a build from its internal storage, such as an SD card.
 		 * @param remoteName
 		 */
 		public void buildRemote(String remoteName) {
@@ -812,31 +812,34 @@ public class MachineController {
 
 	public void estimate() {
 		if (source == null) { return; }
-		try {
-			EstimationDriver estimator = new EstimationDriver();
-			estimator.setMachine(loadModel());
 
-			// run each line through the estimator
-			for (String line : source) {
-				// TODO: Hooks for plugins to add estimated time?
-				estimator.parse(line);
-				estimator.execute();
-			}
+		EstimationDriver estimator = new EstimationDriver();
+		estimator.setMachine(loadModel());
+		
+		GCodeParser estimatorParser = new GCodeParser();
+		estimatorParser.init(estimator);
 
-			if (simulator != null) {
-				simulator.setSimulationBounds(estimator.getBounds());
+		// run each line through the estimator
+		for (String line : source) {
+			// TODO: Hooks for plugins to add estimated time?
+			estimatorParser.parse(line);
+			try {
+				estimatorParser.execute();
+			} catch (GCodeException e) {
+			} catch (RetryException e) {
 			}
-			// oh, how this needs to be cleaned up...
-			if (driver instanceof SimulationDriver) {
-				((SimulationDriver)driver).setSimulationBounds(estimator.getBounds());
-			}
-			estimatedBuildTime = estimator.getBuildTime();
-			Base.logger.info("Estimated build time is: "
-					+ EstimationDriver.getBuildTimeString(estimatedBuildTime));
-		} catch (InterruptedException e) {
-			assert (false);
-			// Should never happen
 		}
+
+		if (simulator != null) {
+			simulator.setSimulationBounds(estimator.getBounds());
+		}
+		// oh, how this needs to be cleaned up...
+		if (driver instanceof SimulationDriver) {
+			((SimulationDriver)driver).setSimulationBounds(estimator.getBounds());
+		}
+		estimatedBuildTime = estimator.getBuildTime();
+		Base.logger.info("Estimated build time is: "
+				+ EstimationDriver.getBuildTimeString(estimatedBuildTime));
 	}
 
 	private MachineModel loadModel() {

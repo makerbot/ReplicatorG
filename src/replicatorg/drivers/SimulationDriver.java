@@ -25,7 +25,6 @@ package replicatorg.drivers;
 
 import java.awt.geom.Rectangle2D;
 
-import replicatorg.app.exceptions.GCodeException;
 import replicatorg.app.ui.SimulationWindow;
 import replicatorg.app.ui.SimulationWindow2D;
 import replicatorg.util.Point5d;
@@ -64,14 +63,6 @@ public class SimulationDriver extends DriverBaseImplementation {
 	public void dispose() {
 		destroyWindow();
 		super.dispose();
-	}
-
-	public void execute() throws InterruptedException, RetryException {
-		// suppress any errors
-		try {
-			super.execute();
-		} catch (GCodeException e) {
-		}
 	}
 
 	public void queuePoint(Point5d p) throws RetryException {

@@ -326,10 +326,14 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		}
 	}
 
+	public boolean isPassthroughDriver() {
+		return true;
+	}
+	
 	/**
 	 * Actually execute the GCode we just parsed.
 	 */
-	public void execute() {
+	public void executeGCodeLine(String code) {
 		//If we're not initialized (ie. disconnected) do not execute commands on the disconnected machine.
 		if(!isInitialized()) return;
 
@@ -337,7 +341,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		// as that will call all sorts of misc functions.
 		// we'll simply pass it along.
 		// super.execute();
-		sendCommand(getParser().getCommand());
+		sendCommand(code);
 	}
 	
 	/**
