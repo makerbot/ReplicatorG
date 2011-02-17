@@ -302,14 +302,6 @@ public class GCodeParser {
 	public static int UNITS_INCHES = 1;
 
 	protected int units;
-
-	// TwitterBot extension variables
-    protected Class<?> extClass;
-    protected Object objExtClass;
-	public static final String TB_CODE = "M";
-	public static final int TB_INIT = 997;
-	public static final int TB_MESSAGE = 998;
-	public static final int TB_CLEANUP = 999;
 	
 	/**
 	 * Creates the driver object.
@@ -719,51 +711,7 @@ public class GCodeParser {
 				}
 				break;
 				
-           case TB_INIT:
-               // initialize extension
-			// Syntax: M997 ClassName param,param,param,etc
-			// your class needs to know how to process the params as it will just
-			//receive a string.
-			//This code uses a space delimiter
-			//To do: should be more general purpose
 
-               try {
-                   String params[] = gcode.getCommand().split(" ");                       
-
-                   extClass = Class.forName(params[1]); //class name
-                   objExtClass = extClass.newInstance();
-                   String methParam = params[2];  //initialization params
-                   Method extMethod = extClass.getMethod("initialize", new Class[] {String.class});
-                   extMethod.invoke(objExtClass, new Object[] {methParam});
-               } catch (Exception e) {
-                   e.printStackTrace();
-               }
-               break;
-
-            case TB_MESSAGE:
-                // call extension
-				// Syntax: M998 Method_name 'Content goes here'
-				// passed content is single quote delimited
-				// To do: clean up, should be more flexible
-
-                try {
-                    String params[] = gcode.getCommand().split(" "); //method is param[1]
-                    String params2[] = gcode.getCommand().split("\\'"); //params to pass are params2[1]
-
-                    String methParam = params2[1]; //params to pass
-                    Method extMethod = extClass.getMethod(params[1], new Class[] {String.class});  //method to call
-                    extMethod.invoke(objExtClass, new Object[] {methParam});
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-
-            case TB_CLEANUP:
-                // cleanup extension
-				// are explicit nulls needed?
-                extClass = null;
-                objExtClass = null;
-                break;
 			default:
 				throw new GCodeException("Unknown M code: M"
 						+ (int) gcode.getCodeValue('M'));

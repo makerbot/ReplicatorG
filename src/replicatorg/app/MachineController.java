@@ -818,14 +818,9 @@ public class MachineController {
 
 			// run each line through the estimator
 			for (String line : source) {
-				// parse only if line is NOT a Twitterbot M code
-				if ((line.indexOf(GCodeParser.TB_CODE + Integer.toString(GCodeParser.TB_INIT)) == -1) &&
-					(line.indexOf(GCodeParser.TB_CODE + Integer.toString(GCodeParser.TB_MESSAGE)) == -1) &&
-					(line.indexOf(GCodeParser.TB_CODE + Integer.toString(GCodeParser.TB_CLEANUP)) == -1)) {
-					// use our parser to handle the stuff.
-					estimator.parse(line);
-					estimator.execute();
-				}
+				// TODO: Hooks for plugins to add estimated time?
+				estimator.parse(line);
+				estimator.execute();
 			}
 
 			if (simulator != null) {
