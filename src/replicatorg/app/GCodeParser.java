@@ -50,11 +50,8 @@ package replicatorg.app;
 
 import java.lang.reflect.Method;
 import java.util.EnumSet;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.vecmath.Point3d;
 
@@ -77,12 +74,197 @@ public class GCodeParser {
 	protected Driver driver;
 	
 	// The code that we are currently executing
-	// TODO: do we actually need to keep this?
 	GCode gcode;
+	
+	// Convenience class to execute drill routines (untested)
+	DrillCycle drillCycle;
 	
 	// Queue of points that we need to run. Yaay for dangerous state info!
 	// TODO: Drop this!
 	Queue< Point5d > pointQueue;
+	
+	
+	// Canned drilling cycle engine
+	private class DrillCycle {
+		private Point5d target;
+		private double retract = 0.0;
+		private double feedrate = 0.0;
+		private int dwell = 0;
+		private double pecksize = 0.0;
+		
+		DrillCycle() {
+			target = new Point5d();
+		}
+		
+		public void setTarget(Point5d temp) {
+			this.target = temp;
+		}
+		
+		public void setRetract(double retract) {
+			this.retract = retract;
+		}
+		
+		public void setFeedrate(double feedrate) {
+			this.feedrate = feedrate;
+		}
+		
+		public void setDwell(int dwell) {
+			this.dwell = dwell;
+		}
+		
+		public void setPecksize(double pecksize) {
+			this.pecksize = pecksize;
+		}
+		
+		/*
+		 * drillTarget = new Point3d(); drillRetract = 0.0; drillFeedrate = 0.0;
+		 * drillDwell = 0.0; drillPecksize = 0.0;
+		 */
+		public void doDrill(boolean speedPeck) throws RetryException {
+			Base.logger.warning("Warning: Drill Cycle code is untested");
+			// Retract to R position if Z is currently below this
+			Point5d current = driver.getCurrentPosition();
+			if (current.z() < retract) {
+				driver.setFeedrate(getMaxFeedrate());
+				driver.queuePoint(new Point5d(current.x(), current.y(), retract, current.a(), current.b()));
+			}
+
+			// Move to start XY
+			driver.setFeedrate(getMaxFeedrate());
+			driver.queuePoint(new Point5d(target.x(), target.y(), current.z(), current.a(), current.b()));
+
+			// Do the actual drilling
+			double targetZ = retract;
+			double deltaZ;
+
+			// For G83/G183 move in increments specified by Q code
+			if (pecksize > 0)
+				deltaZ = pecksize;
+			// otherwise do in one pass
+			else
+				deltaZ = retract - target.z();
+
+			do // the drilling
+			{
+				// only move there if we're not at top
+				if (targetZ != retract && !speedPeck) {
+					// TODO: move this to 10% of the bottom.
+					driver.setFeedrate(getMaxFeedrate());
+					driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
+				}
+
+				// set our plunge depth
+				targetZ -= deltaZ;
+				// make sure we dont go too deep.
+				if (targetZ < target.z())
+					targetZ = target.z();
+
+				// Move with controlled feed rate
+				driver.setFeedrate(feedrate);
+
+				// do it!
+				driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
+
+				// Dwell if doing a G82
+				if (dwell > 0)
+					driver.delay(dwell);
+
+				// Retract unless we're speed pecking.
+				if (!speedPeck) {
+					driver.setFeedrate(getMaxFeedrate());
+					driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
+				}
+
+			} while (targetZ > target.z());
+
+			// double check for final speedpeck retract
+			if (current.z() < retract) {
+				driver.setFeedrate(getMaxFeedrate());
+				driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
+			}
+		}
+	}
+
+	// Arc drawing routine
+	// Note: 5D is not supported
+	Queue< Point5d > drawArc(Point5d center, Point5d endpoint, boolean clockwise) {
+		// System.out.println("Arc from " + current.toString() + " to " +
+		// endpoint.toString() + " with center " + center);
+
+		Queue< Point5d > points = new LinkedList< Point5d >();
+		
+		// angle variables.
+		double angleA;
+		double angleB;
+		double angle;
+		double radius;
+		double length;
+
+		// delta variables.
+		double aX;
+		double aY;
+		double bX;
+		double bY;
+
+		// figure out our deltas
+		Point5d current = driver.getCurrentPosition();
+		aX = current.x() - center.x();
+		aY = current.y() - center.y();
+		bX = endpoint.x() - center.x();
+		bY = endpoint.y() - center.y();
+
+		// Clockwise
+		if (clockwise) {
+			angleA = Math.atan2(bY, bX);
+			angleB = Math.atan2(aY, aX);
+		}
+		// Counterclockwise
+		else {
+			angleA = Math.atan2(aY, aX);
+			angleB = Math.atan2(bY, bX);
+		}
+
+		// Make sure angleB is always greater than angleA
+		// and if not add 2PI so that it is (this also takes
+		// care of the special case of angleA == angleB,
+		// ie we want a complete circle)
+		if (angleB <= angleA)
+			angleB += 2 * Math.PI;
+		angle = angleB - angleA;
+		// calculate a couple useful things.
+		radius = Math.sqrt(aX * aX + aY * aY);
+		length = radius * angle;
+
+		// for doing the actual move.
+		int steps;
+		int s;
+		int step;
+
+		// Maximum of either 2.4 times the angle in radians
+		// or the length of the curve divided by the curve section constant
+		steps = (int) Math.ceil(Math.max(angle * 2.4, length / curveSection));
+
+		// this is the real draw action.
+		Point5d newPoint = new Point5d(current);
+		double arcStartZ = current.z();
+		for (s = 1; s <= steps; s++) {
+			// Forwards for CCW, backwards for CW
+			if (!clockwise)
+				step = s;
+			else
+				step = steps - s;
+
+			// calculate our waypoint.
+			newPoint.setX(center.x() + radius * Math.cos(angleA + angle * ((double) step / steps)));
+			newPoint.setY(center.y() + radius * Math.sin(angleA + angle * ((double) step / steps)));
+			newPoint.setZ(arcStartZ + (endpoint.z() - arcStartZ) * s / steps);
+
+			// start the move
+			points.add(new Point5d(newPoint));
+		}
+		
+		return points;
+	}
 	
 	// our curve section variables.
 	public static double curveSectionMM = Base.preferences.getDouble("replicatorg.parser.curve_segment_mm", 1.0);
@@ -102,12 +284,6 @@ public class GCodeParser {
 	// our offset variables 0 = master, 1-6 = offsets 1-6
 	protected Point3d currentOffset;
 
-	// machine state varibles
-	//protected Point3d current;
-
-	protected Point5d target;
-	protected Point5d delta;
-
 	// false = incremental; true = absolute
 	boolean absoluteMode = false;
 
@@ -116,7 +292,6 @@ public class GCodeParser {
 	 * Feedrate in mm/minute.
 	 */
 	double feedrate = 0.0;
-
 
 	// current selected tool
 	protected int tool = -1;
@@ -128,17 +303,6 @@ public class GCodeParser {
 
 	protected int units;
 
-	// canned drilling cycle variables
-	protected Point3d drillTarget;
-
-	protected double drillRetract = 0.0;
-
-	protected double drillFeedrate = 0.0;
-
-	protected int drillDwell = 0;
-
-	protected double drillPecksize = 0.0;
-
 	// TwitterBot extension variables
     protected Class<?> extClass;
     protected Object objExtClass;
@@ -147,11 +311,6 @@ public class GCodeParser {
 	public static final int TB_MESSAGE = 998;
 	public static final int TB_CLEANUP = 999;
 	
-	// Replicate old behavior of breaking out Z moves into seperate setTarget
-	// calls.
-	
-	private boolean breakoutZMoves = Base.preferences.getBoolean("replicatorg.parser.breakzmoves", false);
-	
 	/**
 	 * Creates the driver object.
 	 */
@@ -159,13 +318,6 @@ public class GCodeParser {
 		// we default to millimeters
 		units = UNITS_MM;
 		curveSection = curveSectionMM;
-
-		// setup our points.
-//		current = new Point3d();
-//		System.err.println("-CURRENT "+current.toString());
-		target = new Point5d();
-		delta = new Point5d();
-		drillTarget = new Point3d();
 
 		// init our offset
 		currentOffset = new Point3d();
@@ -191,8 +343,7 @@ public class GCodeParser {
 	public void init(Driver drv) {
 		// our driver class
 		driver = drv;
-		// reload breakout
-		breakoutZMoves = Base.preferences.getBoolean("replicatorg.parser.breakzmoves", false);
+		
 		// init our offset variables
 		currentOffset = driver.getOffset(0);
 		
@@ -200,6 +351,8 @@ public class GCodeParser {
 		
 		// TODO: who uses this before it's initialized?
 		gcode = new GCode("");
+		
+		drillCycle = new DrillCycle();
 	}
 
 	/**
@@ -209,9 +362,6 @@ public class GCodeParser {
 	 *            cmd a line of GCode to parse
 	 */
 	public boolean parse(String cmd) {
-		// get ready for last one.
-		cleanup();
-		
 		gcode = new GCode(cmd);
 
 		return true;
@@ -246,7 +396,7 @@ public class GCodeParser {
 		if (!pointQueue.isEmpty()) {
 			while( !pointQueue.isEmpty()) {
 				Base.logger.fine("dequeueing!");
-				setTarget(pointQueue.peek());
+				driver.queuePoint(pointQueue.peek());
 				pointQueue.remove();
 			}
 		}
@@ -706,14 +856,14 @@ public class GCodeParser {
 			// these are basically the same thing.
 			case 0:
 				driver.setFeedrate(getMaxFeedrate());
-				setTarget(temp);
+				driver.queuePoint(temp);
 				break;
 
 			// Rapid Positioning
 			case 1:
 				// set our target.
 				driver.setFeedrate(feedrate);
-				setTarget(temp);
+				driver.queuePoint(temp);
 				break;
 
 			// Clockwise arc
@@ -737,16 +887,12 @@ public class GCodeParser {
 				}
 				// or we want a radius based one
 				else if (gcode.hasCode('R')) {
-					Base.logger.warning("G02/G03 arcs with (R)adius parameter are not supported yet.");
-					if (gCode == 2)
-						pointQueue.addAll(drawRadius(temp, rVal, true));
-					else
-						pointQueue.addAll(drawRadius(temp, rVal, false));
+					throw new GCodeException("G02/G03 arcs with (R)adius parameter are not supported yet.");
 				}
 				
 				// now play them back
 				while( !pointQueue.isEmpty()) {
-					setTarget(pointQueue.peek());
+					driver.queuePoint(pointQueue.peek());
 					pointQueue.remove();
 				}
 			}
@@ -835,31 +981,6 @@ public class GCodeParser {
 			}
 				break;
 
-			// single probe
-			case 31:
-				Base.logger.warning("Single point probes not yet supported.");
-
-				// set our target.
-				setTarget(temp);
-				// eventually add code to support reading value
-				break;
-
-			// probe area
-			case 32:
-
-				Base.logger.warning("Area probes not yet supported.");
-				{
-					Point5d current = driver.getCurrentPosition();
-					double minX = current.x();
-					double minY = current.y();
-					double maxX = xVal;
-					double maxY = yVal;
-					double increment = iVal;
-	
-					probeArea(minX, minY, maxX, maxY, increment);
-				}
-				break;
-
 			// master offset
 			case 53:
 				currentOffset = driver.getOffset(0);
@@ -896,11 +1017,10 @@ public class GCodeParser {
 
 			// Cancel drill cycle
 			case 80:
-				drillTarget = new Point3d();
-				drillRetract = 0.0;
-				drillFeedrate = 0.0;
-				drillDwell = 0;
-				drillPecksize = 0.0;
+				drillCycle.setRetract(0);
+				drillCycle.setFeedrate(0);
+				drillCycle.setDwell(0);
+				drillCycle.setPecksize(0);
 				break;
 
 			// Drilling canned cycles
@@ -913,41 +1033,40 @@ public class GCodeParser {
 				boolean speedPeck = false;
 
 				// setup our parameters
-				if (gcode.hasCode('X'))
-					drillTarget.x = temp.x();
-				if (gcode.hasCode('Y'))
-					drillTarget.y = temp.y();
-				if (gcode.hasCode('Z'))
-					drillTarget.z = temp.z();
+				drillCycle.setTarget(temp);
+				
 				if (gcode.hasCode('F'))
-					drillFeedrate = gcode.getCodeValue('F');
+					drillCycle.setFeedrate(gcode.getCodeValue('F'));
 				if (gcode.hasCode('R'))
-					drillRetract = rVal;
+					drillCycle.setFeedrate(rVal);
 
 				// set our vars for normal drilling
 				if (gCode == 81) {
-					drillDwell = 0;
-					drillPecksize = 0.0;
+					drillCycle.setDwell(0);
+					drillCycle.setPecksize(0);
 				}
 				// they want a dwell
 				else if (gCode == 82) {
-					if (gcode.hasCode('P'))
-						drillDwell = (int) gcode.getCodeValue('P');
-					drillPecksize = 0.0;
+					if (gcode.hasCode('P')) {
+						drillCycle.setDwell((int) gcode.getCodeValue('P'));
+					}
+					drillCycle.setPecksize(0);
 				}
 				// fancy schmancy 'pecking' motion.
 				else if (gCode == 83 || gCode == 183) {
-					if (gcode.hasCode('P'))
-						drillDwell = (int) gcode.getCodeValue('P');
-					if (gcode.hasCode('Q'))
-						drillPecksize = Math.abs(gcode.getCodeValue('Q'));
-
+					if (gcode.hasCode('P')) {
+						drillCycle.setDwell((int) gcode.getCodeValue('P'));
+					}
+					
+					if (gcode.hasCode('Q')) {
+						drillCycle.setPecksize(Math.abs(gcode.getCodeValue('Q')));
+					}
 					// oooh... do it fast!
 					if (gCode == 183)
 						speedPeck = true;
 				}
 
-				drillingCycle(speedPeck);
+				drillCycle.doDrill(speedPeck);
 				break;
 
 			// Absolute Positioning
@@ -980,9 +1099,6 @@ public class GCodeParser {
 					current.setB(bVal);
 				
 				driver.setCurrentPosition(current);
-//				this.current = current;
-//				System.err.println("-CURRENT "+current.toString());
-				this.target = current;
 				break;
 
 			// feed rate mode
@@ -1006,171 +1122,6 @@ public class GCodeParser {
 		}
 	}
 
-	/*
-	 * drillTarget = new Point3d(); drillRetract = 0.0; drillFeedrate = 0.0;
-	 * drillDwell = 0.0; drillPecksize = 0.0;
-	 */
-	private void drillingCycle(boolean speedPeck) throws RetryException {
-		// Retract to R position if Z is currently below this
-		Point5d current = driver.getCurrentPosition();
-		if (current.z() < drillRetract) {
-			driver.setFeedrate(getMaxFeedrate());
-			setTarget(new Point5d(current.x(), current.y(), drillRetract, current.a(), current.b()));
-		}
-
-		// Move to start XY
-		driver.setFeedrate(getMaxFeedrate());
-		setTarget(new Point5d(drillTarget.x, drillTarget.y, current.z(), current.a(), current.b()));
-
-		// Do the actual drilling
-		double targetZ = drillRetract;
-		double deltaZ;
-
-		// For G83/G183 move in increments specified by Q code
-		if (drillPecksize > 0)
-			deltaZ = drillPecksize;
-		// otherwise do in one pass
-		else
-			deltaZ = drillRetract - drillTarget.z;
-
-		do // the drilling
-		{
-			// only move there if we're not at top
-			if (targetZ != drillRetract && !speedPeck) {
-				// TODO: move this to 10% of the bottom.
-				driver.setFeedrate(getMaxFeedrate());
-				setTarget(new Point5d(drillTarget.x, drillTarget.y, targetZ, current.a(), current.b()));
-			}
-
-			// set our plunge depth
-			targetZ -= deltaZ;
-			// make sure we dont go too deep.
-			if (targetZ < drillTarget.z)
-				targetZ = drillTarget.z;
-
-			// Move with controlled feed rate
-			driver.setFeedrate(drillFeedrate);
-
-			// do it!
-			setTarget(new Point5d(drillTarget.x, drillTarget.y, targetZ, current.a(), current.b()));
-
-			// Dwell if doing a G82
-			if (drillDwell > 0)
-				driver.delay(drillDwell);
-
-			// Retract unless we're speed pecking.
-			if (!speedPeck) {
-				driver.setFeedrate(getMaxFeedrate());
-				setTarget(new Point5d(drillTarget.x, drillTarget.y, drillRetract, current.a(), current.b()));
-			}
-
-		} while (targetZ > drillTarget.z);
-
-		// double check for final speedpeck retract
-		if (current.z() < drillRetract) {
-			driver.setFeedrate(getMaxFeedrate());
-			setTarget(new Point5d(drillTarget.x, drillTarget.y, drillRetract, current.a(), current.b()));
-		}
-	}
-
-	// Note: 5D is not supported
-	Queue< Point5d > drawArc(Point5d center, Point5d endpoint, boolean clockwise) {
-		// System.out.println("Arc from " + current.toString() + " to " +
-		// endpoint.toString() + " with center " + center);
-
-		Queue< Point5d > points = new LinkedList< Point5d >();
-		
-		// angle variables.
-		double angleA;
-		double angleB;
-		double angle;
-		double radius;
-		double length;
-
-		// delta variables.
-		double aX;
-		double aY;
-		double bX;
-		double bY;
-
-		// figure out our deltas
-		Point5d current = driver.getCurrentPosition();
-		aX = current.x() - center.x();
-		aY = current.y() - center.y();
-		bX = endpoint.x() - center.x();
-		bY = endpoint.y() - center.y();
-
-		// Clockwise
-		if (clockwise) {
-			angleA = Math.atan2(bY, bX);
-			angleB = Math.atan2(aY, aX);
-		}
-		// Counterclockwise
-		else {
-			angleA = Math.atan2(aY, aX);
-			angleB = Math.atan2(bY, bX);
-		}
-
-		// Make sure angleB is always greater than angleA
-		// and if not add 2PI so that it is (this also takes
-		// care of the special case of angleA == angleB,
-		// ie we want a complete circle)
-		if (angleB <= angleA)
-			angleB += 2 * Math.PI;
-		angle = angleB - angleA;
-		// calculate a couple useful things.
-		radius = Math.sqrt(aX * aX + aY * aY);
-		length = radius * angle;
-
-		// for doing the actual move.
-		int steps;
-		int s;
-		int step;
-
-		// Maximum of either 2.4 times the angle in radians
-		// or the length of the curve divided by the curve section constant
-		steps = (int) Math.ceil(Math.max(angle * 2.4, length / curveSection));
-
-		// this is the real draw action.
-		Point5d newPoint = new Point5d(current);
-		double arcStartZ = current.z();
-		for (s = 1; s <= steps; s++) {
-			// Forwards for CCW, backwards for CW
-			if (!clockwise)
-				step = s;
-			else
-				step = steps - s;
-
-			// calculate our waypoint.
-			newPoint.setX(center.x() + radius * Math.cos(angleA + angle * ((double) step / steps)));
-			newPoint.setY(center.y() + radius * Math.sin(angleA + angle * ((double) step / steps)));
-			newPoint.setZ(arcStartZ + (endpoint.z() - arcStartZ) * s / steps);
-
-			// start the move
-			points.add(new Point5d(newPoint));
-		}
-		
-		return points;
-	}
-
-	private Queue< Point5d > drawRadius(Point5d endpoint, double r, boolean clockwise) throws GCodeException {
-		// not supported!
-		throw new GCodeException("The drawRadius command is not supported");
-	}
-
-	private void setTarget(Point5d p) throws RetryException {
-		// If you really want two separate moves, do it when you generate your
-		// toolpath.
-		// move z first
-		Point5d current = driver.getCurrentPosition();
-		if (breakoutZMoves) {
-			if (p.z() != current.z()) {
-				driver.queuePoint(new Point5d(current.x(), current.y(), p.z(), current.a(), current.b()));
-			}
-		}
-		driver.queuePoint(new Point5d(p));
-		current = new Point5d(p);
-	}
 
 	/**
 	 * StopInfo defines an optional or mandatory stop, the message to display with
@@ -1243,30 +1194,5 @@ public class GCodeParser {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * probe the Z depth of the point
-	 */
-	public void probePoint(Point3d point) {
-
-	}
-
-	/**
-	 * probe the area specified
-	 */
-	public void probeArea(double minX, double minY, double maxX, double maxY,
-			double increment) {
-
-	}
-
-	/**
-	 * Prepare us for the next gcode command to come in.
-	 */
-	public void cleanup() {
-		// move us to our target.
-		delta = new Point5d();
-
-		gcode = null;
 	}
 }

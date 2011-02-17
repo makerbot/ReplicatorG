@@ -71,10 +71,6 @@ public class GCode {
 		
 		semiMatcher = semiPattern.matcher(command);
 		command = semiMatcher.replaceAll("");
-		
-		
-		Base.logger.severe("comment: " + comment);
-		Base.logger.severe("Remaining command: " + command);
 	}
 
 	// Find any codes, and store them
