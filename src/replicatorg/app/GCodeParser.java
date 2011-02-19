@@ -270,15 +270,6 @@ public class GCodeParser {
 
 	protected double curveSection = 0.0;
 
-	// our plane selection variables
-	protected static int XY_PLANE = 0;
-
-	protected static int ZX_PLANE = 1;
-
-	protected static int ZY_PLANE = 2;
-
-	protected int currentPlane = 0;
-
 	// our offset variables 0 = master, 1-6 = offsets 1-6
 	protected Point3d currentOffset;
 
@@ -516,7 +507,7 @@ public class GCodeParser {
 			break;
 		case REQUEST_TOOL_CHANGE:
 			// TODO: Handle timeout value here!
-			driver.requestToolChange(command.getInt(), 65535);
+			driver.requestToolChange(command.getInt(), (int)command.getDouble());
 			break;
 		case SET_FEEDRATE:
 			driver.setFeedrate(command.getDouble());
@@ -604,15 +595,14 @@ public class GCodeParser {
 
 		// tool change.
 		case 6:
-			int timeout = 65535;
+			double timeout = 65535;
 			if (gcode.hasCode('P')) {
-				timeout = (int)gcode.getCodeValue('P');
+				timeout = gcode.getCodeValue('P');
 			}
 			if (gcode.hasCode('T')) {
 //					driver.requestToolChange((int) gcode.getCodeValue('T'), timeout);
-				// TODO: Send timeout value here!
 				commands.add(new DriverCommand(DriverCommand.Command.REQUEST_TOOL_CHANGE,
-						(int) gcode.getCodeValue('T')));
+						(int) gcode.getCodeValue('T'), timeout));
 			}
 			else {
 				throw new GCodeException("The T parameter is required for tool changes. (M6)");
@@ -983,295 +973,278 @@ public class GCodeParser {
 			// Read feedrate in mm/min.
 			feedrate = gcode.getCodeValue('F');
 //			driver.setFeedrate(feedrate);
-			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
 		}
 
-		// did we get a gcode?
-		if (gcode.hasCode('G')) {
-			int gCode = (int) gcode.getCodeValue('G');
+		
+		int gCode = (int) gcode.getCodeValue('G');
 
-			switch (gCode) {
-			// Linear Interpolation
-			// these are basically the same thing.
-			case 0:
+		switch (gCode) {
+		// Linear Interpolation
+		// these are basically the same thing.
+		case 0:
 //				driver.setFeedrate(getMaxFeedrate());
 //				driver.queuePoint(temp);
-				commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, getMaxFeedrate()));
-				commands.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, temp));
-				break;
+			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, getMaxFeedrate()));
+			commands.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, temp));
+			break;
 
-			// Rapid Positioning
-			case 1:
-				// set our target.
+		// Rapid Positioning
+		case 1:
+			// set our target.
 //				driver.setFeedrate(feedrate);
 //				driver.queuePoint(temp);
-				commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
-				commands.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, temp));
-				break;
+			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
+			commands.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, temp));
+			break;
 
-			// Clockwise arc
-			case 2:
-				// Counterclockwise arc
-			case 3: {
-				// call our arc drawing function.
-				// Note: We don't support 5D
-				if (gcode.hasCode('I') || gcode.hasCode('J')) {
-					// our centerpoint
-					Point5d center = new Point5d();
-					Point5d current = driver.getCurrentPosition();
-					center.setX(current.x() + iVal);
-					center.setY(current.y() + jVal);
+		// Clockwise arc
+		case 2:
+			// Counterclockwise arc
+		case 3: {
+			// call our arc drawing function.
+			// Note: We don't support 5D
+			if (gcode.hasCode('I') || gcode.hasCode('J')) {
+				// our centerpoint
+				Point5d center = new Point5d();
+				Point5d current = driver.getCurrentPosition();
+				center.setX(current.x() + iVal);
+				center.setY(current.y() + jVal);
 
-					// Get the points for the arc
-					if (gCode == 2)
-						commands.addAll(drawArc(center, temp, true));
-					else
-						commands.addAll(drawArc(center, temp, false));
-				}
-				// or we want a radius based one
-				else if (gcode.hasCode('R')) {
-					throw new GCodeException("G02/G03 arcs with (R)adius parameter are not supported yet.");
-				}
+				// Get the points for the arc
+				if (gCode == 2)
+					commands.addAll(drawArc(center, temp, true));
+				else
+					commands.addAll(drawArc(center, temp, false));
 			}
-				break;
+			// or we want a radius based one
+			else if (gcode.hasCode('R')) {
+				throw new GCodeException("G02/G03 arcs with (R)adius parameter are not supported yet.");
+			}
+		}
+			break;
 
-			// dwell
-			case 4:
+		// dwell
+		case 4:
 //				driver.delay((long) gcode.getCodeValue('P'));
-				commands.add(new DriverCommand(DriverCommand.Command.DELAY, gcode.getCodeValue('P')));
-				break;
-			case 10:
-				if (gcode.hasCode('P')) {
-					// TODO: This seems wrong. At least make into a generic SET_OFFSET command. Does anyone use this?
-					int offsetSystemNum = ((int)gcode.getCodeValue('P'));
-					if (offsetSystemNum >= 1 && offsetSystemNum <= 6) {
+			commands.add(new DriverCommand(DriverCommand.Command.DELAY, gcode.getCodeValue('P')));
+			break;
+		case 10:
+			if (gcode.hasCode('P')) {
+				// TODO: This seems wrong. At least make into a generic SET_OFFSET command. Does anyone use this?
+				int offsetSystemNum = ((int)gcode.getCodeValue('P'));
+				if (offsetSystemNum >= 1 && offsetSystemNum <= 6) {
 //						if (gcode.hasCode('X')) driver.setOffsetX(offsetSystemNum, gcode.getCodeValue('X'));
 //						if (gcode.hasCode('Y')) driver.setOffsetY(offsetSystemNum, gcode.getCodeValue('Y'));
 //						if (gcode.hasCode('Z')) driver.setOffsetZ(offsetSystemNum, gcode.getCodeValue('Z'));
-						if (gcode.hasCode('X')) 
-							commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_X,
-								offsetSystemNum, gcode.getCodeValue('X')));
-						if (gcode.hasCode('Y')) 
-							commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_Y,
-								offsetSystemNum, gcode.getCodeValue('Y')));
-						if (gcode.hasCode('Z')) 
-							commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_Z,								offsetSystemNum, gcode.getCodeValue('Z')));
-					}
+					if (gcode.hasCode('X')) 
+						commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_X,
+							offsetSystemNum, gcode.getCodeValue('X')));
+					if (gcode.hasCode('Y')) 
+						commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_Y,
+							offsetSystemNum, gcode.getCodeValue('Y')));
+					if (gcode.hasCode('Z')) 
+						commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_Z,								offsetSystemNum, gcode.getCodeValue('Z')));
 				}
-				else 
-					Base.logger.warning("No coordinate system indicated use G10 Pn, where n is 0-6.");
-				break;
-
-			// plane selection codes
-			case 17:
-				currentPlane = XY_PLANE;
-				break;
-			case 18:
-				//Base.logger.warning("ZX Plane moves are not supported yet.");
-				currentPlane = ZX_PLANE;
-				break;
-			case 19:
-				//Base.logger.warning("ZY Plane moves are not supported yet.");
-				currentPlane = ZY_PLANE;
-				break;
-
-			// Inches for Units
-			case 20:
-			case 70:
-				units = UNITS_INCHES;
-				curveSection = curveSectionInches;
-				break;
-
-			// mm for Units
-			case 21:
-			case 71:
-				units = UNITS_MM;
-				curveSection = curveSectionMM;
-				break;
-
-			// This should be "return to home".  We need to introduce new GCodes for homing.
-			case 28:
-			{
-				// home all axes?
-				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-				if (gcode.hasCode('X')) axes.add(AxisId.X);
-				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-//				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
-				commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_NEGATIVE, axes, gcode.hasCode('F')?feedrate:0));
 			}
-				break;
+			else 
+				Base.logger.warning("No coordinate system indicated use G10 Pn, where n is 0-6.");
+			break;
 
-			// New code: home negative.
-			case 161:
-			{
-				// home all axes?
-				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+		// Inches for Units
+		case 20:
+		case 70:
+			units = UNITS_INCHES;
+			curveSection = curveSectionInches;
+			break;
 
-				if (gcode.hasCode('X')) axes.add(AxisId.X);
-				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+		// mm for Units
+		case 21:
+		case 71:
+			units = UNITS_MM;
+			curveSection = curveSectionMM;
+			break;
+
+		// This should be "return to home".  We need to introduce new GCodes for homing.
+		case 28:
+		{
+			// home all axes?
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
 //				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
-				commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_NEGATIVE, axes, gcode.hasCode('F')?feedrate:0));
-			}
-				break;
+			commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_NEGATIVE, axes, gcode.hasCode('F')?feedrate:0));
+		}
+			break;
 
-				// New code: home positive.
-			case 162:
-			{
-				// home all axes?
-				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+		// New code: home negative.
+		case 161:
+		{
+			// home all axes?
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
-				if (gcode.hasCode('X')) axes.add(AxisId.X);
-				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+//				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
+			commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_NEGATIVE, axes, gcode.hasCode('F')?feedrate:0));
+		}
+			break;
+
+			// New code: home positive.
+		case 162:
+		{
+			// home all axes?
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
 //				driver.homeAxes(axes, true, gcode.hasCode('F')?feedrate:0);
-				commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_POSITIVE, axes, gcode.hasCode('F')?feedrate:0));
-			}
-				break;
+			commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_POSITIVE, axes, gcode.hasCode('F')?feedrate:0));
+		}
+			break;
 
-			// master offset
-			case 53:
-				currentOffset = driver.getOffset(0);
-				break;
-			// fixture offset 1
-			case 54:
-				currentOffset = driver.getOffset(1);
-				break;
-			// fixture offset 2
-			case 55:
-				currentOffset = driver.getOffset(2);
-				break;
-			// fixture offset 3
-			case 56:
-				currentOffset = driver.getOffset(3);
-				break;
-			// fixture offset 4
-			case 57:
-				currentOffset = driver.getOffset(4);
-				break;
-			// fixture offset 5
-			case 58:
-				currentOffset = driver.getOffset(5);
-				break;
-			// fixture offset 6
-			case 59:
-				currentOffset = driver.getOffset(6);
-				break;
+		// master offset
+		case 53:
+			currentOffset = driver.getOffset(0);
+			break;
+		// fixture offset 1
+		case 54:
+			currentOffset = driver.getOffset(1);
+			break;
+		// fixture offset 2
+		case 55:
+			currentOffset = driver.getOffset(2);
+			break;
+		// fixture offset 3
+		case 56:
+			currentOffset = driver.getOffset(3);
+			break;
+		// fixture offset 4
+		case 57:
+			currentOffset = driver.getOffset(4);
+			break;
+		// fixture offset 5
+		case 58:
+			currentOffset = driver.getOffset(5);
+			break;
+		// fixture offset 6
+		case 59:
+			currentOffset = driver.getOffset(6);
+			break;
 
-			// Peck Motion Cycle
-			// case 178: //speed peck motion
-			// case 78:
-			// TODO: make this
+		// Peck Motion Cycle
+		// case 178: //speed peck motion
+		// case 78:
+		// TODO: make this
 
-			// Cancel drill cycle
-			case 80:
-				drillCycle.setRetract(0);
-				drillCycle.setFeedrate(0);
+		// Cancel drill cycle
+		case 80:
+			drillCycle.setRetract(0);
+			drillCycle.setFeedrate(0);
+			drillCycle.setDwell(0);
+			drillCycle.setPecksize(0);
+			break;
+
+		// Drilling canned cycles
+		case 81: // Without dwell
+		case 82: // With dwell
+		case 83: // Peck drilling (w/ optional dwell)
+		case 183: // Speed peck drilling (w/ optional dwell)
+
+			// we dont want no stinkin speedpeck
+			boolean speedPeck = false;
+
+			// setup our parameters
+			drillCycle.setTarget(temp);
+			
+			if (gcode.hasCode('F'))
+				drillCycle.setFeedrate(gcode.getCodeValue('F'));
+			if (gcode.hasCode('R'))
+				drillCycle.setFeedrate(rVal);
+
+			// set our vars for normal drilling
+			if (gCode == 81) {
 				drillCycle.setDwell(0);
 				drillCycle.setPecksize(0);
-				break;
-
-			// Drilling canned cycles
-			case 81: // Without dwell
-			case 82: // With dwell
-			case 83: // Peck drilling (w/ optional dwell)
-			case 183: // Speed peck drilling (w/ optional dwell)
-
-				// we dont want no stinkin speedpeck
-				boolean speedPeck = false;
-
-				// setup our parameters
-				drillCycle.setTarget(temp);
-				
-				if (gcode.hasCode('F'))
-					drillCycle.setFeedrate(gcode.getCodeValue('F'));
-				if (gcode.hasCode('R'))
-					drillCycle.setFeedrate(rVal);
-
-				// set our vars for normal drilling
-				if (gCode == 81) {
-					drillCycle.setDwell(0);
-					drillCycle.setPecksize(0);
-				}
-				// they want a dwell
-				else if (gCode == 82) {
-					if (gcode.hasCode('P')) {
-						drillCycle.setDwell((int) gcode.getCodeValue('P'));
-					}
-					drillCycle.setPecksize(0);
-				}
-				// fancy schmancy 'pecking' motion.
-				else if (gCode == 83 || gCode == 183) {
-					if (gcode.hasCode('P')) {
-						drillCycle.setDwell((int) gcode.getCodeValue('P'));
-					}
-					
-					if (gcode.hasCode('Q')) {
-						drillCycle.setPecksize(Math.abs(gcode.getCodeValue('Q')));
-					}
-					// oooh... do it fast!
-					if (gCode == 183)
-						speedPeck = true;
-				}
-
-				drillCycle.doDrill(speedPeck);
-				break;
-
-			// Absolute Positioning
-			case 90:
-				absoluteMode = true;
-				break;
-
-			// Incremental Positioning
-			case 91:
-				absoluteMode = false;
-				break;
-
-			// Set position
-			case 92:
-
-				Point5d current = driver.getCurrentPosition();
-
-				if (gcode.hasCode('X'))
-					current.setX(xVal);
-				if (gcode.hasCode('Y'))
-					current.setY(yVal);
-				if (gcode.hasCode('Z'))
-					current.setZ(zVal);
-				if (gcode.hasCode('A'))
-					current.setA(aVal);
-				// Note: The E axis is treated internally as the A axis
-				if (gcode.hasCode('E'))
-					current.setA(eVal);
-				if (gcode.hasCode('B'))
-					current.setB(bVal);
-				
-//				driver.setCurrentPosition(current);
-				commands.add(new DriverCommand(DriverCommand.Command.SET_CURRENT_POSITION, current));
-				break;
-
-			// feed rate mode
-			// case 93: //inverse time feed rate
-			case 94: // IPM feed rate (our default)
-				// case 95: //IPR feed rate
-				// TODO: make this work.
-				break;
-
-			// spindle speed rate
-			case 97:
-//				driver.setSpindleRPM((int) gcode.getCodeValue('S'));
-				commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_RPM, (int) gcode.getCodeValue('S')));
-
-				break;
-				
-			// error, error!
-			default:
-				throw new GCodeException("Unknown G code: G"
-						+ (int) gcode.getCodeValue('G'));
 			}
+			// they want a dwell
+			else if (gCode == 82) {
+				if (gcode.hasCode('P')) {
+					drillCycle.setDwell((int) gcode.getCodeValue('P'));
+				}
+				drillCycle.setPecksize(0);
+			}
+			// fancy schmancy 'pecking' motion.
+			else if (gCode == 83 || gCode == 183) {
+				if (gcode.hasCode('P')) {
+					drillCycle.setDwell((int) gcode.getCodeValue('P'));
+				}
+				
+				if (gcode.hasCode('Q')) {
+					drillCycle.setPecksize(Math.abs(gcode.getCodeValue('Q')));
+				}
+				// oooh... do it fast!
+				if (gCode == 183)
+					speedPeck = true;
+			}
+
+			drillCycle.doDrill(speedPeck);
+			break;
+
+		// Absolute Positioning
+		case 90:
+			absoluteMode = true;
+			break;
+
+		// Incremental Positioning
+		case 91:
+			absoluteMode = false;
+			break;
+
+		// Set position
+		case 92:
+
+			Point5d current = driver.getCurrentPosition();
+
+			if (gcode.hasCode('X'))
+				current.setX(xVal);
+			if (gcode.hasCode('Y'))
+				current.setY(yVal);
+			if (gcode.hasCode('Z'))
+				current.setZ(zVal);
+			if (gcode.hasCode('A'))
+				current.setA(aVal);
+			// Note: The E axis is treated internally as the A axis
+			if (gcode.hasCode('E'))
+				current.setA(eVal);
+			if (gcode.hasCode('B'))
+				current.setB(bVal);
 			
+//				driver.setCurrentPosition(current);
+			commands.add(new DriverCommand(DriverCommand.Command.SET_CURRENT_POSITION, current));
+			break;
+
+		// feed rate mode
+		// case 93: //inverse time feed rate
+		case 94: // IPM feed rate (our default)
+			// case 95: //IPR feed rate
+			// TODO: make this work.
+			break;
+
+		// spindle speed rate
+		case 97:
+//				driver.setSpindleRPM((int) gcode.getCodeValue('S'));
+			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_RPM, (int) gcode.getCodeValue('S')));
+
+			break;
+			
+		// error, error!
+		default:
+			throw new GCodeException("Unknown G code: G"
+					+ (int) gcode.getCodeValue('G'));
 		}
 	}
 

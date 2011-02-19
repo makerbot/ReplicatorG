@@ -248,7 +248,14 @@ public class MachineController {
 					try {
 						// Debug: Print all of the commands in the command queue
 						for (DriverCommand command : simulationParser.commandQueue)
-								Base.logger.severe("Running command: " + command.getCommand().name());
+								Base.logger.severe("Running command: "
+													+ command.getCommand().name()
+													+ " i=" + command.getInt()
+													+ " d=" + command.getDouble()
+//													+ " axes=" + command.getAxes()
+//													+ " dir=" + (command.getDirection() == null)?command.getDirection().name():""
+//													+ " p=" + command.getPoint() != null?command.getPoint().toString():"" );//  .toString()
+													);
 						
 						simulationParser.execute(simulator);
 					} catch (RetryException r) {

@@ -79,7 +79,7 @@ public class EstimationDriver extends DriverBaseImplementation {
 		// add it in!
 		if (millis > 0) {
 			buildTime = buildTime + millis;
-			System.out.println(moveLength + "mm at " + feedrate + " takes " + Math.round(millis) + " millis (" + buildTime + "	total).");
+//			System.out.println(moveLength + "mm at " + feedrate + " takes " + Math.round(millis) + " millis (" + buildTime + "	total).");
 		}
 		
 		setInternalPosition(p);
