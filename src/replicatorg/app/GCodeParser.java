@@ -60,6 +60,7 @@ import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobException;
 import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.drivers.Driver;
+import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.PenPlotter;
 import replicatorg.drivers.RetryException;
@@ -70,19 +71,17 @@ import replicatorg.util.Point5d;
 
 public class GCodeParser {
 	// our driver we use.
-	protected Driver driver;
+	protected DriverQueryInterface driver;
 	
 	// The code that we are currently executing
 	GCode gcode;
 	
 	// Convenience class to execute drill routines (untested)
 	DrillCycle drillCycle;
-	
-	// Queue of points that we need to run. Yaay for dangerous state info!
-	// TODO: Drop this!
-	Queue< Point5d > pointQueue;
-	
-	
+		
+	// Queue of commands that we have to run.
+	public Queue< DriverCommand > commandQueue;
+		
 	// Canned drilling cycle engine
 	private class DrillCycle {
 		private Point5d target;
@@ -119,78 +118,78 @@ public class GCodeParser {
 		 * drillTarget = new Point3d(); drillRetract = 0.0; drillFeedrate = 0.0;
 		 * drillDwell = 0.0; drillPecksize = 0.0;
 		 */
-		public void doDrill(boolean speedPeck) throws RetryException {
-			Base.logger.warning("Warning: Drill Cycle code is untested");
-			// Retract to R position if Z is currently below this
-			Point5d current = driver.getCurrentPosition();
-			if (current.z() < retract) {
-				driver.setFeedrate(getMaxFeedrate());
-				driver.queuePoint(new Point5d(current.x(), current.y(), retract, current.a(), current.b()));
-			}
-
-			// Move to start XY
-			driver.setFeedrate(getMaxFeedrate());
-			driver.queuePoint(new Point5d(target.x(), target.y(), current.z(), current.a(), current.b()));
-
-			// Do the actual drilling
-			double targetZ = retract;
-			double deltaZ;
-
-			// For G83/G183 move in increments specified by Q code
-			if (pecksize > 0)
-				deltaZ = pecksize;
-			// otherwise do in one pass
-			else
-				deltaZ = retract - target.z();
-
-			do // the drilling
-			{
-				// only move there if we're not at top
-				if (targetZ != retract && !speedPeck) {
-					// TODO: move this to 10% of the bottom.
-					driver.setFeedrate(getMaxFeedrate());
-					driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
-				}
-
-				// set our plunge depth
-				targetZ -= deltaZ;
-				// make sure we dont go too deep.
-				if (targetZ < target.z())
-					targetZ = target.z();
-
-				// Move with controlled feed rate
-				driver.setFeedrate(feedrate);
-
-				// do it!
-				driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
-
-				// Dwell if doing a G82
-				if (dwell > 0)
-					driver.delay(dwell);
-
-				// Retract unless we're speed pecking.
-				if (!speedPeck) {
-					driver.setFeedrate(getMaxFeedrate());
-					driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
-				}
-
-			} while (targetZ > target.z());
-
-			// double check for final speedpeck retract
-			if (current.z() < retract) {
-				driver.setFeedrate(getMaxFeedrate());
-				driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
-			}
+		public void doDrill(boolean speedPeck) {
+			Base.logger.severe("Drill Cycle code is untested and has therefore been disabled.");
+//			// Retract to R position if Z is currently below this
+//			Point5d current = driver.getCurrentPosition();
+//			if (current.z() < retract) {
+//				driver.setFeedrate(getMaxFeedrate());
+//				driver.queuePoint(new Point5d(current.x(), current.y(), retract, current.a(), current.b()));
+//			}
+//
+//			// Move to start XY
+//			driver.setFeedrate(getMaxFeedrate());
+//			driver.queuePoint(new Point5d(target.x(), target.y(), current.z(), current.a(), current.b()));
+//
+//			// Do the actual drilling
+//			double targetZ = retract;
+//			double deltaZ;
+//
+//			// For G83/G183 move in increments specified by Q code
+//			if (pecksize > 0)
+//				deltaZ = pecksize;
+//			// otherwise do in one pass
+//			else
+//				deltaZ = retract - target.z();
+//
+//			do // the drilling
+//			{
+//				// only move there if we're not at top
+//				if (targetZ != retract && !speedPeck) {
+//					// TODO: move this to 10% of the bottom.
+//					driver.setFeedrate(getMaxFeedrate());
+//					driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
+//				}
+//
+//				// set our plunge depth
+//				targetZ -= deltaZ;
+//				// make sure we dont go too deep.
+//				if (targetZ < target.z())
+//					targetZ = target.z();
+//
+//				// Move with controlled feed rate
+//				driver.setFeedrate(feedrate);
+//
+//				// do it!
+//				driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
+//
+//				// Dwell if doing a G82
+//				if (dwell > 0)
+//					driver.delay(dwell);
+//
+//				// Retract unless we're speed pecking.
+//				if (!speedPeck) {
+//					driver.setFeedrate(getMaxFeedrate());
+//					driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
+//				}
+//
+//			} while (targetZ > target.z());
+//
+//			// double check for final speedpeck retract
+//			if (current.z() < retract) {
+//				driver.setFeedrate(getMaxFeedrate());
+//				driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
+//			}
 		}
 	}
 
 	// Arc drawing routine
 	// Note: 5D is not supported
-	Queue< Point5d > drawArc(Point5d center, Point5d endpoint, boolean clockwise) {
+	Queue< DriverCommand > drawArc(Point5d center, Point5d endpoint, boolean clockwise) {
 		// System.out.println("Arc from " + current.toString() + " to " +
 		// endpoint.toString() + " with center " + center);
 
-		Queue< Point5d > points = new LinkedList< Point5d >();
+		Queue< DriverCommand > points = new LinkedList< DriverCommand >();
 		
 		// angle variables.
 		double angleA;
@@ -259,7 +258,7 @@ public class GCodeParser {
 			newPoint.setZ(arcStartZ + (endpoint.z() - arcStartZ) * s / steps);
 
 			// start the move
-			points.add(new Point5d(newPoint));
+			points.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, newPoint));
 		}
 		
 		return points;
@@ -313,8 +312,8 @@ public class GCodeParser {
 		// init our offset
 		currentOffset = new Point3d();
 		
-		// make a queue to store future point moves in
-		pointQueue = new LinkedList< Point5d >();
+		// And build a command queue.
+		commandQueue = new LinkedList< DriverCommand >();
 	}
 
 	/**
@@ -325,21 +324,19 @@ public class GCodeParser {
 		// eventually check for z-axis motions and use that feedrate. We should
 		// also either alter the model, or post a warning when the x and y
 		// feedrates differ.
-		return driver.getMachine().getMaximumFeedrates().x();
+		return driver.getMaximumFeedrates().x();
 	}
 
 	/**
 	 * initialize parser with values from the driver
 	 */
-	public void init(Driver drv) {
+	public void init(DriverQueryInterface drv) {
 		// our driver class
 		driver = drv;
 		
 		// init our offset variables
 		currentOffset = driver.getOffset(0);
-		
-		pointQueue = new LinkedList< Point5d >();
-		
+				
 		// TODO: who uses this before it's initialized?
 		gcode = new GCode("");
 		
@@ -353,8 +350,32 @@ public class GCodeParser {
 	 *            cmd a line of GCode to parse
 	 */
 	public boolean parse(String cmd) {
+		
+		// First, parse the GCode string into an object we can query.
 		gcode = new GCode(cmd);
 
+		// Now, convert the GCode instruction into a series of driver commands,
+		// that will be executed by execute()
+		
+		// If our driver is in pass-through mode, just put the string in a buffer and we are done.
+		if (driver.isPassthroughDriver()) {
+			commandQueue.add(new DriverCommand(DriverCommand.Command.EXECUTE_GCODE_LINE, gcode.getCommand()));
+		}
+		else {
+			try {
+				// TODO:
+				if (gcode.hasCode('G')) {
+					buildGCodes(commandQueue);
+				}
+				else if (gcode.hasCode('M')) {
+					buildMCodes(commandQueue);
+				}
+			} catch (GCodeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		return true;
 	}
 
@@ -374,358 +395,521 @@ public class GCodeParser {
 	 * Actually execute the GCode we just parsed.
 	 * @throws RetryException 
 	 */
-	public void execute() throws GCodeException, RetryException {
-		
-		// TODO: The parser should never see this.
-		if (driver.isPassthroughDriver()) {
-			driver.executeGCodeLine(gcode.getCommand());
-			return;
-		}
-		
-		// TODO: is this the proper way?
-		// Set spindle speed?
-		// if (gcode.hasCode('S'))
-		// driver.setSpindleRPM(gcode.getCodeValue('S'));
+	public void execute(Driver driver) throws RetryException {
+		// TODO: Move this out of the GCodeParser
+		// While there are commands in the queue, run them
+		while( !commandQueue.isEmpty()) {
+			// Pull the current command and attempt to run it.
+			runDriverCommand(driver, commandQueue.peek());
 
-		// TODO: This is a hack, fix it.
-		// We have two states here- it is possible that the previous command
-		// created a series of point motions, then encountered a retry.
-		// If that is the case, then we should just keep trying to queue them.
-		if (!pointQueue.isEmpty()) {
-			while( !pointQueue.isEmpty()) {
-				Base.logger.fine("dequeueing!");
-				driver.queuePoint(pointQueue.peek());
-				pointQueue.remove();
-			}
+			// If we get here, the command was run successfully, so dequeue
+			commandQueue.remove();
 		}
-		else {
 		
-			// execute our other codes
-			executeMCodes();
-			executeGCodes();
+//		// Select our tool?
+//		int tempTool = (int) gcode.getCodeValue('T');
+//		if (gcode.hasCode('T')) {
+//			if (tempTool != tool)
+//				driver.selectTool(tempTool);
+//
+//			tool = tempTool;
+//		}
+	}
 	
-			// Select our tool?
-			int tempTool = (int) gcode.getCodeValue('T');
+	// TODO: Keep the driver out of here.
+	private void runDriverCommand(Driver driver, DriverCommand command) throws RetryException {
+		switch(command.getCommand()) {
+		case SET_SPINDLE_DIRECTION:
+			driver.setSpindleDirection((command.getDirection()==DriverCommand.Direction.CLOCKWISE)
+										?ToolModel.MOTOR_CLOCKWISE:ToolModel.MOTOR_CLOCKWISE);
+			break;
+		case ENABLE_SPINDLE:
+			driver.enableSpindle();
+			break;
+		case DISABLE_SPINDLE:
+			driver.disableSpindle();
+			break;
+		case ENABLE_FLOOD_COOLANT:
+			driver.enableFloodCoolant();
+			break;
+		case DISABLE_FLOOD_COOLANT:
+			driver.disableFloodCoolant();
+			break;
+		case ENABLE_MIST_COOLANT:
+			driver.enableMistCoolant();
+			break;
+		case DISABLE_MIST_COOLANT:
+			driver.disableMistCoolant();
+			break;
+		case OPEN_CLAMP:
+			driver.openClamp(command.getInt());
+			break;
+		case CLOSE_CLAMP:
+			driver.closeClamp(command.getInt());
+			break;
+		case OPEN_VALVE:
+			driver.openValve();
+			break;
+		case CLOSE_VALVE:
+			driver.closeValve();
+			break;
+		case ENABLE_DRIVES:
+			driver.enableDrives();
+			break;
+		case DISABLE_DRIVES:
+			driver.disableDrives();
+			break;
+		case OPEN_COLLET:
+			driver.openCollet();
+			break;
+		case CLOSE_COLLET:
+			driver.closeCollet();
+			break;
+		case CHANGE_GEAR_RATIO:
+			driver.changeGearRatio(command.getInt());
+			break;
+		case SET_MOTOR_DIRECTION:
+			driver.setMotorDirection((command.getDirection()==DriverCommand.Direction.CLOCKWISE)
+					?ToolModel.MOTOR_CLOCKWISE:ToolModel.MOTOR_CLOCKWISE);
+			break;
+		case ENABLE_MOTOR:
+			driver.enableMotor();
+			break;
+		case DISABLE_MOTOR:
+			driver.disableMotor();
+			break;
+		case ENABLE_FAN:
+			driver.enableFan();
+			break;
+		case DISABLE_FAN:
+			driver.disableFan();
+			break;
+		case SET_TEMPERATURE:
+			driver.setTemperature(command.getDouble());
+			break;
+		case READ_TEMPERATURE:
+			driver.readTemperature();
+			break;
+		case SET_PLATFORM_TEMPERATURE:
+			driver.setPlatformTemperature(command.getDouble());
+			break;
+		case SET_CHAMBER_TEMPERATURE:
+			driver.setChamberTemperature(command.getDouble());
+			break;
+		case SET_MOTOR_SPEED_PWM:
+			driver.setMotorSpeedPWM(command.getInt());
+			break;
+		case SET_MOTOR_RPM:
+			driver.setMotorRPM(command.getInt());
+			break;
+		case GET_POSITION:
+			driver.getPosition();
+			break;
+		case STORE_HOME_POSITIONS:
+			driver.storeHomePositions(command.getAxes());
+			break;
+		case RECALL_HOME_POSITIONS:
+			driver.recallHomePositions(command.getAxes());
+			break;
+		case INITIALIZE:
+			driver.initialize();
+			break;
+		case REQUEST_TOOL_CHANGE:
+			// TODO: Handle timeout value here!
+			driver.requestToolChange(command.getInt(), 65535);
+			break;
+		case SET_FEEDRATE:
+			driver.setFeedrate(command.getDouble());
+			break;
+		case QUEUE_POINT:
+			driver.queuePoint(command.getPoint());
+			break;
+		case DELAY:
+			driver.delay((long)command.getDouble());
+			break;
+		case SET_CURRENT_POSITION:
+			driver.setCurrentPosition(command.getPoint());
+			break;
+		case SET_SPINDLE_RPM:
+			driver.setSpindleRPM(command.getInt());
+			break;
+		case EXECUTE_GCODE_LINE:
+			driver.executeGCodeLine(command.getString());
+			break;
+		case SELECT_TOOL:
+			driver.getMachine().selectTool((int) gcode.getCodeValue('T'));
+			break;
+		case HOME_AXIS_POSITIVE:
+			driver.homeAxes(command.getAxes(), true, command.getDouble());
+			break;
+		case HOME_AXIS_NEGATIVE:
+			driver.homeAxes(command.getAxes(), false, command.getDouble());
+			break;
+		case SET_OFFSET_X:
+			driver.setOffsetX(command.getInt(), command.getDouble());
+			break;
+		case SET_OFFSET_Y:
+			driver.setOffsetY(command.getInt(), command.getDouble());
+			break;
+		case SET_OFFSET_Z:
+			driver.setOffsetZ(command.getInt(), command.getDouble());
+			break;
+		default:
+			Base.logger.severe("Didn't understand command!");
+		}
+	}
+
+	private void buildMCodes(Queue< DriverCommand > commands) throws GCodeException {
+		// If this machine handles multiple active toolheads, we always honor a T code
+		// as being a annotation to send the given command to the given toolheads.  Be
+		// aware that appending a T code to an M code will not necessarily generate a
+		// change tool request!  Use M6 for that.
+		// M6 was historically used to wait for toolheads to get up to temperature, so
+		// you may wish to avoid using M6.
+		if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {
+//				driver.getMachine().selectTool((int) gcode.getCodeValue('T'));
+			commands.add(new DriverCommand(DriverCommand.Command.SELECT_TOOL,
+					(int) gcode.getCodeValue('T')));
+		}
+		switch ((int) gcode.getCodeValue('M')) {
+		// stop codes... handled by getStops();
+		case 0:
+		case 1:
+		case 2:
+			break;
+
+		// spindle on, CW
+		case 3:
+//				driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
+//				driver.enableSpindle();
+			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_DIRECTION,
+					 						DriverCommand.Direction.CLOCKWISE));
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_SPINDLE));
+			break;
+
+		// spindle on, CCW
+		case 4:
+//				driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
+//				driver.enableSpindle();
+			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_DIRECTION,
+											DriverCommand.Direction.COUNTERCLOCKWISE));
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_SPINDLE));
+			break;
+
+		// spindle off
+		case 5:
+//				driver.disableSpindle();
+			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_SPINDLE));
+			break;
+
+		// tool change.
+		case 6:
+			int timeout = 65535;
+			if (gcode.hasCode('P')) {
+				timeout = (int)gcode.getCodeValue('P');
+			}
 			if (gcode.hasCode('T')) {
-				if (tempTool != tool)
-					driver.selectTool(tempTool);
-	
-				tool = tempTool;
+//					driver.requestToolChange((int) gcode.getCodeValue('T'), timeout);
+				// TODO: Send timeout value here!
+				commands.add(new DriverCommand(DriverCommand.Command.REQUEST_TOOL_CHANGE,
+						(int) gcode.getCodeValue('T')));
 			}
-		}
-	}
-
-	private void executeMCodes() throws GCodeException, RetryException {
-		// find us an m code.
-		if (gcode.hasCode('M')) {
-			// If this machine handles multiple active toolheads, we always honor a T code
-			// as being a annotation to send the given command to the given toolheads.  Be
-			// aware that appending a T code to an M code will not necessarily generate a
-			// change tool request!  Use M6 for that.
-			// M6 was historically used to wait for toolheads to get up to temperature, so
-			// you may wish to avoid using M6.
-			if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {
-				driver.getMachine().selectTool((int) gcode.getCodeValue('T'));
+			else {
+				throw new GCodeException("The T parameter is required for tool changes. (M6)");
 			}
-			switch ((int) gcode.getCodeValue('M')) {
-			// stop codes... handled by getStops();
-			case 0:
-			case 1:
-			case 2:
-				break;
+			break;
 
-			// spindle on, CW
-			case 3:
-				driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
-				driver.enableSpindle();
-				break;
+		// coolant A on (flood coolant)
+		case 7:
+//				driver.enableFloodCoolant();
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_FLOOD_COOLANT));
+			break;
 
-			// spindle on, CCW
-			case 4:
-				driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
-				driver.enableSpindle();
-				break;
+		// coolant B on (mist coolant)
+		case 8:
+//				driver.enableMistCoolant();
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_MIST_COOLANT));
+			break;
 
-			// spindle off
-			case 5:
-				driver.disableSpindle();
-				break;
+		// all coolants off
+		case 9:
+//				driver.disableFloodCoolant();
+//				driver.disableMistCoolant();
+			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_FLOOD_COOLANT));
+			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_MIST_COOLANT));
+			break;
 
-			// tool change.
-			case 6:
-				int timeout = 65535;
-				if (gcode.hasCode('P')) {
-					timeout = (int)gcode.getCodeValue('P');
-				}
-				if (gcode.hasCode('T')) {
-					driver.requestToolChange((int) gcode.getCodeValue('T'), timeout);
-				}
-				else {
-					throw new GCodeException("The T parameter is required for tool changes. (M6)");
-				}
-				break;
+		// close clamp
+		case 10:
+			if (gcode.hasCode('Q'))
+//					driver.closeClamp((int) gcode.getCodeValue('Q'));
+				commands.add(new DriverCommand(DriverCommand.Command.CLOSE_CLAMP,
+												(int) gcode.getCodeValue('Q')));
+			else
+				throw new GCodeException(
+						"The Q parameter is required for clamp operations. (M10)");
+			break;
 
-			// coolant A on (flood coolant)
-			case 7:
-				driver.enableFloodCoolant();
-				break;
+		// open clamp
+		case 11:
+			if (gcode.hasCode('Q'))
+//					driver.openClamp((int) gcode.getCodeValue('Q'));
+				commands.add(new DriverCommand(DriverCommand.Command.OPEN_CLAMP,
+												(int) gcode.getCodeValue('Q')));
+			else
+				throw new GCodeException(
+						"The Q parameter is required for clamp operations. (M11)");
+			break;
 
-			// coolant B on (mist coolant)
-			case 8:
-				driver.enableMistCoolant();
-				break;
+		// spindle CW and coolant A on
+		case 13:
+//				driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
+//				driver.enableSpindle();
+//				driver.enableFloodCoolant();
+			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_DIRECTION,
+											DriverCommand.Direction.CLOCKWISE));
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_SPINDLE));
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_FLOOD_COOLANT));
+			break;
 
-			// all coolants off
-			case 9:
-				driver.disableFloodCoolant();
-				driver.disableMistCoolant();
-				break;
+		// spindle CW and coolant A on
+		case 14:
+//				driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
+//				driver.enableSpindle();
+//				driver.enableFloodCoolant();
+			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_DIRECTION,
+											DriverCommand.Direction.COUNTERCLOCKWISE));
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_SPINDLE));
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_FLOOD_COOLANT));
+			break;
 
-			// close clamp
-			case 10:
-				if (gcode.hasCode('Q'))
-					driver.closeClamp((int) gcode.getCodeValue('Q'));
-				else
-					throw new GCodeException(
-							"The Q parameter is required for clamp operations. (M10)");
-				break;
+		// enable drives
+		case 17:
+//				driver.enableDrives();
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_DRIVES));
+			break;
 
-			// open clamp
-			case 11:
-				if (gcode.hasCode('Q'))
-					driver.openClamp((int) gcode.getCodeValue('Q'));
-				else
-					throw new GCodeException(
-							"The Q parameter is required for clamp operations. (M11)");
-				break;
+		// disable drives
+		case 18:
+//				driver.disableDrives();
+			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_DRIVES));
+			break;
 
-			// spindle CW and coolant A on
-			case 13:
-				driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
-				driver.enableSpindle();
-				driver.enableFloodCoolant();
-				break;
-
-			// spindle CW and coolant A on
-			case 14:
-				driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
-				driver.enableSpindle();
-				driver.enableFloodCoolant();
-				break;
-
-			// enable drives
-			case 17:
-				driver.enableDrives();
-				break;
-
-			// disable drives
-			case 18:
-				driver.disableDrives();
-				break;
-
+		// open collet
+		case 21:
+//				driver.openCollet();
+			commands.add(new DriverCommand(DriverCommand.Command.OPEN_COLLET));
+			break;
 			// open collet
-			case 21:
-				driver.openCollet();
-				break;
-				// open collet
-			case 22:
-				driver.closeCollet();
-				break;
-				// M40-M46 = change gear ratios
-			case 40:
-				driver.changeGearRatio(0);
-				break;
-			case 41:
-				driver.changeGearRatio(1);
-				break;
-			case 42:
-				driver.changeGearRatio(2);
-				break;
-			case 43:
-				driver.changeGearRatio(3);
-				break;
-			case 44:
-				driver.changeGearRatio(4);
-				break;
-			case 45:
-				driver.changeGearRatio(5);
-				break;
-			case 46:
-				driver.changeGearRatio(6);
-				break;
+		case 22:
+//				driver.closeCollet();
+			commands.add(new DriverCommand(DriverCommand.Command.CLOSE_COLLET));
+			break;
+			// M40-M46 = change gear ratios
+		case 40:
+//				driver.changeGearRatio(0);
+			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 0));
+			break;
+		case 41:
+//				driver.changeGearRatio(1);
+			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 1));
+			break;
+		case 42:
+//				driver.changeGearRatio(2);
+			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 2));
+			break;
+		case 43:
+//				driver.changeGearRatio(3);
+			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 3));
+			break;
+		case 44:
+//				driver.changeGearRatio(4);
+			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 4));
+			break;
+		case 45:
+//				driver.changeGearRatio(5);
+			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 5));
+			break;
+		case 46:
+//				driver.changeGearRatio(6);
+			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 6));
+			break;
 
-			// read spindle speed
-			case 50:
-				driver.getSpindleRPM();
-				break;
-				// subroutine functions... will implement later
-				// case 97: jump
-				// case 98: jump to subroutine
-				// case 99: return from sub
+		// read spindle speed
+		case 50:
+			driver.getSpindleRPM();
+			break;
+			// subroutine functions... will implement later
+			// case 97: jump
+			// case 98: jump to subroutine
+			// case 99: return from sub
 
-				// turn extruder on, forward
-			case 101:
-				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
-				driver.enableMotor();
-				break;
+			// turn extruder on, forward
+		case 101:
+//				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
+//				driver.enableMotor();
+			commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_DIRECTION,
+											DriverCommand.Direction.CLOCKWISE));
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_MOTOR));
+			break;
 
-			// turn extruder on, reverse
-			case 102:
-				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
-				driver.enableMotor();
-				break;
+		// turn extruder on, reverse
+		case 102:
+//				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
+//				driver.enableMotor();
+			commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_DIRECTION,
+											DriverCommand.Direction.COUNTERCLOCKWISE));
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_MOTOR));
+			break;
 
-			// turn extruder off
-			case 103:
-				driver.disableMotor();
-				break;
+		// turn extruder off
+		case 103:
+//				driver.disableMotor();
+			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_MOTOR));
+			break;
 
-			// custom code for temperature control
-			case 104:
-				if (gcode.hasCode('S'))
-					driver.setTemperature(gcode.getCodeValue('S'));
-				break;
+		// custom code for temperature control
+		case 104:
+			if (gcode.hasCode('S'))
+//					driver.setTemperature(gcode.getCodeValue('S'));
+				commands.add(new DriverCommand(DriverCommand.Command.SET_TEMPERATURE,
+						gcode.getCodeValue('S')));
+			break;
 
-			// custom code for temperature reading
-			case 105:
-				driver.readTemperature();
-				break;
+		// custom code for temperature reading
+		case 105:
+//				driver.readTemperature();
+			commands.add(new DriverCommand(DriverCommand.Command.READ_TEMPERATURE));
+			break;
 
-			// turn fan on
-			case 106:
-				driver.enableFan();
-				break;
+		// turn fan on
+		case 106:
+//				driver.enableFan();
+			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_FAN));
+			break;
 
-			// turn fan off
-			case 107:
-				driver.disableFan();
-				break;
+		// turn fan off
+		case 107:
+//				driver.disableFan();
+			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_FAN));
+			break;
 
-			// set max extruder speed, RPM
-			case 108:
-				if (gcode.hasCode('S'))
-					driver.setMotorSpeedPWM((int)Math.round(gcode.getCodeValue('S')));
-				else if (gcode.hasCode('R'))
-					driver.setMotorRPM(gcode.getCodeValue('R'));
-				break;
+		// set max extruder speed, RPM
+		case 108:
+			if (gcode.hasCode('S'))
+//					driver.setMotorSpeedPWM((int)Math.round(gcode.getCodeValue('S')));
+				commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_SPEED_PWM,
+						(int)Math.round(gcode.getCodeValue('S'))));
+			else if (gcode.hasCode('R'))
+//					driver.setMotorRPM(gcode.getCodeValue('R'));
+				commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_RPM,
+						(int)Math.round(gcode.getCodeValue('R'))));
+			break;
 
-			// set build platform temperature
-			case 109:
-				if (gcode.hasCode('S'))
-					driver.setPlatformTemperature(gcode.getCodeValue('S'));
-				break;
+		// set build platform temperature
+		case 109:
+			if (gcode.hasCode('S'))
+//					driver.setPlatformTemperature(gcode.getCodeValue('S'));
+				commands.add(new DriverCommand(DriverCommand.Command.SET_PLATFORM_TEMPERATURE,
+						gcode.getCodeValue('S')));
+			break;
 
-			// set build chamber temperature
-			case 110:
-				driver.setChamberTemperature(gcode.getCodeValue('S'));
-				
-			// valve open
-			case 126:
-				driver.openValve();
-				break;
-
-			// valve close
-			case 127:
-				driver.closeValve();
-				break;
-
-			// where are we?
-			case 128:
-				driver.getPosition();
-				break;
-
-			// how far can we go?
-			case 129:
-				// driver.getRange();
-				break;
-
-			// you must know your limits
-			case 130:
-				// driver.setRange();
-				break;
-
-			// Instruct the machine to store it's current position to EEPROM
-			case 131:
-			{
-				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-				if (gcode.hasCode('X')) axes.add(AxisId.X);
-				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-				if (gcode.hasCode('A')) axes.add(AxisId.A);
-				if (gcode.hasCode('B')) axes.add(AxisId.B);
-				
-				driver.storeHomePositions(axes);
-			}
-				break;
-
-			// Instruct the machine to restore it's current position from EEPROM
-			case 132:
-			{
-				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-				if (gcode.hasCode('X')) axes.add(AxisId.X);
-				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-				if (gcode.hasCode('A')) axes.add(AxisId.A);
-				if (gcode.hasCode('B')) axes.add(AxisId.B);
-				
-				driver.recallHomePositions(axes);
-			}
-				break;
-				
-			// initialize to default state.
-			case 200:
-				driver.initialize();
-				break;
-
-			// buffer info
-			case 201:
-				// driver.getBufferSize();
-				break;
-
-			// buffer management
-			case 202:
-				// driver.clearBuffer();
-				break;
-
-			// for killing jobs
-			case 203:
-				// driver.abort();
-				break;
-
-			// temporarily stop printing.
-			case 204:
-				// driver.pause();
-				break;
+		// set build chamber temperature
+		case 110:
+//				driver.setChamberTemperature(gcode.getCodeValue('S'));
+			commands.add(new DriverCommand(DriverCommand.Command.SET_CHAMBER_TEMPERATURE,
+					gcode.getCodeValue('S')));
 			
-			// set servo 1 position
-			case 300:
-				if (gcode.hasCode('S')) {
-					if (driver instanceof PenPlotter) {
-						((PenPlotter)driver).setServoPos(0, gcode.getCodeValue('S'));
-					}
-				}
-				break;
+		// valve open
+		case 126:
+//				driver.openValve();
+			commands.add(new DriverCommand(DriverCommand.Command.OPEN_VALVE));
+			break;
 
-			// set servo 2 position
-			case 301:
-				if (gcode.hasCode('S')) {
-					if (driver instanceof PenPlotter) {
-						((PenPlotter)driver).setServoPos(1, gcode.getCodeValue('S'));
-					}
-				}
-				break;
-				
+		// valve close
+		case 127:
+//				driver.closeValve();
+			commands.add(new DriverCommand(DriverCommand.Command.OPEN_VALVE));
+			break;
 
-			default:
-				throw new GCodeException("Unknown M code: M"
-						+ (int) gcode.getCodeValue('M'));
+		// where are we?
+		case 128:
+//				driver.getPosition();
+			commands.add(new DriverCommand(DriverCommand.Command.GET_POSITION));
+			break;
+			
+		// Instruct the machine to store it's current position to EEPROM
+		case 131:
+		{
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			if (gcode.hasCode('A')) axes.add(AxisId.A);
+			if (gcode.hasCode('B')) axes.add(AxisId.B);
+			
+//				driver.storeHomePositions(axes);
+			commands.add(new DriverCommand(DriverCommand.Command.STORE_HOME_POSITIONS, axes));
+		}
+			break;
+
+		// Instruct the machine to restore it's current position from EEPROM
+		case 132:
+		{
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			if (gcode.hasCode('A')) axes.add(AxisId.A);
+			if (gcode.hasCode('B')) axes.add(AxisId.B);
+			
+//				driver.recallHomePositions(axes);
+			commands.add(new DriverCommand(DriverCommand.Command.RECALL_HOME_POSITIONS, axes));
+		}
+			break;
+			
+		// initialize to default state.
+		case 200:
+//				driver.initialize();
+			commands.add(new DriverCommand(DriverCommand.Command.INITIALIZE));
+			break;
+		
+		// set servo 1 position
+		case 300:
+			if (gcode.hasCode('S')) {
+				if (driver instanceof PenPlotter) {
+//						((PenPlotter)driver).setServoPos(0, gcode.getCodeValue('S'));
+					//TODO: Implement this
+					Base.logger.severe("Ignoring M 300 command.");
+				}
 			}
+			break;
+
+		// set servo 2 position
+		case 301:
+			if (gcode.hasCode('S')) {
+				if (driver instanceof PenPlotter) {
+//						((PenPlotter)driver).setServoPos(1, gcode.getCodeValue('S'));
+					//TODO: Implement this
+					Base.logger.severe("Ignoring M 301 command.");
+				}
+			}
+			break;
+			
+
+		default:
+			throw new GCodeException("Unknown M code: M"
+					+ (int) gcode.getCodeValue('M'));
 		}
 	}
 
-	private void executeGCodes() throws GCodeException, RetryException {
+	private void buildGCodes(Queue< DriverCommand > commands) throws GCodeException {
+		if (! gcode.hasCode('G')) {
+			throw new GCodeException("Not a G code!");
+		}
+		
 		// start us off at our current position...
 		Point5d temp = driver.getCurrentPosition();
 
@@ -798,7 +982,8 @@ public class GCodeParser {
 		if (gcode.hasCode('F')) {
 			// Read feedrate in mm/min.
 			feedrate = gcode.getCodeValue('F');
-			driver.setFeedrate(feedrate);
+//			driver.setFeedrate(feedrate);
+			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
 		}
 
 		// did we get a gcode?
@@ -809,15 +994,19 @@ public class GCodeParser {
 			// Linear Interpolation
 			// these are basically the same thing.
 			case 0:
-				driver.setFeedrate(getMaxFeedrate());
-				driver.queuePoint(temp);
+//				driver.setFeedrate(getMaxFeedrate());
+//				driver.queuePoint(temp);
+				commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, getMaxFeedrate()));
+				commands.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, temp));
 				break;
 
 			// Rapid Positioning
 			case 1:
 				// set our target.
-				driver.setFeedrate(feedrate);
-				driver.queuePoint(temp);
+//				driver.setFeedrate(feedrate);
+//				driver.queuePoint(temp);
+				commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
+				commands.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, temp));
 				break;
 
 			// Clockwise arc
@@ -835,34 +1024,38 @@ public class GCodeParser {
 
 					// Get the points for the arc
 					if (gCode == 2)
-						pointQueue.addAll(drawArc(center, temp, true));
+						commands.addAll(drawArc(center, temp, true));
 					else
-						pointQueue.addAll(drawArc(center, temp, false));
+						commands.addAll(drawArc(center, temp, false));
 				}
 				// or we want a radius based one
 				else if (gcode.hasCode('R')) {
 					throw new GCodeException("G02/G03 arcs with (R)adius parameter are not supported yet.");
-				}
-				
-				// now play them back
-				while( !pointQueue.isEmpty()) {
-					driver.queuePoint(pointQueue.peek());
-					pointQueue.remove();
 				}
 			}
 				break;
 
 			// dwell
 			case 4:
-				driver.delay((long) gcode.getCodeValue('P'));
+//				driver.delay((long) gcode.getCodeValue('P'));
+				commands.add(new DriverCommand(DriverCommand.Command.DELAY, gcode.getCodeValue('P')));
 				break;
 			case 10:
 				if (gcode.hasCode('P')) {
+					// TODO: This seems wrong. At least make into a generic SET_OFFSET command. Does anyone use this?
 					int offsetSystemNum = ((int)gcode.getCodeValue('P'));
 					if (offsetSystemNum >= 1 && offsetSystemNum <= 6) {
-						if (gcode.hasCode('X')) driver.setOffsetX(offsetSystemNum, gcode.getCodeValue('X'));
-						if (gcode.hasCode('Y')) driver.setOffsetY(offsetSystemNum, gcode.getCodeValue('Y'));
-						if (gcode.hasCode('Z')) driver.setOffsetZ(offsetSystemNum, gcode.getCodeValue('Z'));
+//						if (gcode.hasCode('X')) driver.setOffsetX(offsetSystemNum, gcode.getCodeValue('X'));
+//						if (gcode.hasCode('Y')) driver.setOffsetY(offsetSystemNum, gcode.getCodeValue('Y'));
+//						if (gcode.hasCode('Z')) driver.setOffsetZ(offsetSystemNum, gcode.getCodeValue('Z'));
+						if (gcode.hasCode('X')) 
+							commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_X,
+								offsetSystemNum, gcode.getCodeValue('X')));
+						if (gcode.hasCode('Y')) 
+							commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_Y,
+								offsetSystemNum, gcode.getCodeValue('Y')));
+						if (gcode.hasCode('Z')) 
+							commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_Z,								offsetSystemNum, gcode.getCodeValue('Z')));
 					}
 				}
 				else 
@@ -905,7 +1098,8 @@ public class GCodeParser {
 				if (gcode.hasCode('X')) axes.add(AxisId.X);
 				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
 				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
+//				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
+				commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_NEGATIVE, axes, gcode.hasCode('F')?feedrate:0));
 			}
 				break;
 
@@ -918,7 +1112,8 @@ public class GCodeParser {
 				if (gcode.hasCode('X')) axes.add(AxisId.X);
 				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
 				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
+//				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
+				commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_NEGATIVE, axes, gcode.hasCode('F')?feedrate:0));
 			}
 				break;
 
@@ -931,7 +1126,8 @@ public class GCodeParser {
 				if (gcode.hasCode('X')) axes.add(AxisId.X);
 				if (gcode.hasCode('Y')) axes.add(AxisId.Y);
 				if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-				driver.homeAxes(axes, true, gcode.hasCode('F')?feedrate:0);
+//				driver.homeAxes(axes, true, gcode.hasCode('F')?feedrate:0);
+				commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_POSITIVE, axes, gcode.hasCode('F')?feedrate:0));
 			}
 				break;
 
@@ -1052,7 +1248,8 @@ public class GCodeParser {
 				if (gcode.hasCode('B'))
 					current.setB(bVal);
 				
-				driver.setCurrentPosition(current);
+//				driver.setCurrentPosition(current);
+				commands.add(new DriverCommand(DriverCommand.Command.SET_CURRENT_POSITION, current));
 				break;
 
 			// feed rate mode
@@ -1064,7 +1261,9 @@ public class GCodeParser {
 
 			// spindle speed rate
 			case 97:
-				driver.setSpindleRPM((int) gcode.getCodeValue('S'));
+//				driver.setSpindleRPM((int) gcode.getCodeValue('S'));
+				commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_RPM, (int) gcode.getCodeValue('S')));
+
 				break;
 				
 			// error, error!
@@ -1129,7 +1328,9 @@ public class GCodeParser {
 
 		if (gcode.hasCode('M')) {
 			// we wanna do this after its finished whatever was before.
-			driver.waitUntilBufferEmpty();
+//			driver.waitUntilBufferEmpty();
+			// TODO: Implement this
+			Base.logger.severe("Not waiting for buffer to clear before displaying message");
 
 			mCode = (int) gcode.getCodeValue('M');
 

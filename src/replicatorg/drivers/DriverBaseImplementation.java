@@ -38,7 +38,7 @@ import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.util.Point5d;
 
-public class DriverBaseImplementation implements Driver {
+public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 //	// our gcode parser
 //	private GCodeParser parser;
 
@@ -630,5 +630,10 @@ public class DriverBaseImplementation implements Driver {
 	}
 
 	public void recallHomePositions(EnumSet<AxisId> axes) {
+	}
+
+	@Override
+	public Point5d getMaximumFeedrates() {
+		return (getMachine().getMaximumFeedrates());
 	}
 }

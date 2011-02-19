@@ -31,7 +31,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.exceptions.BuildFailureException;
-import replicatorg.app.exceptions.GCodeException;
 import replicatorg.app.exceptions.JobCancelledException;
 import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobException;
@@ -40,6 +39,7 @@ import replicatorg.app.tools.XML;
 import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
+import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
@@ -175,11 +175,11 @@ public class MachineController {
 			
 			// Set up a parser to talk to the driver
 			GCodeParser parser = new GCodeParser();
-			parser.init(driver);
+			parser.init((DriverQueryInterface) driver);
 			
 			// And the one for the simulator
 			GCodeParser simulationParser = new GCodeParser();
-			simulationParser.init(simulator);
+			simulationParser.init((DriverQueryInterface) simulator);
 			
 			// Initialize our gcode provider
 			Iterator<String> i = source.iterator();
@@ -198,6 +198,8 @@ public class MachineController {
 					if (simulator.isSimulating()) {
 						// Parse a line for the simulator
 						simulationParser.parse(line);
+						
+						Base.logger.severe("Parsed GCode string: >" + line + "< results in " + simulationParser.commandQueue.size() + " instructions");
 					}
 					
 					if (!state.isSimulating()) {
@@ -244,19 +246,20 @@ public class MachineController {
 				// simulate the command.
 				if (retry == false && simulator.isSimulating()) {
 					try {
-						simulationParser.execute();
+						// Debug: Print all of the commands in the command queue
+						for (DriverCommand command : simulationParser.commandQueue)
+								Base.logger.severe("Running command: " + command.getCommand().name());
+						
+						simulationParser.execute(simulator);
 					} catch (RetryException r) {
-						// Ignore.
-					} catch (GCodeException e) {
 						// Ignore.
 					}
 				}
 				
-				
 				try {
 					if (!state.isSimulating()) {
 						// Run the command on the machine.
-						parser.execute();
+						parser.execute(driver);
 					}
 					retry = false;
 				} catch (RetryException r) {
@@ -264,10 +267,6 @@ public class MachineController {
 					// than proceeding to the next, on the next go-round.
 					Base.logger.log(Level.FINE,"Message delivery failed, retrying");
 					retry = true;
-				} catch (GCodeException e) {
-					// This is severe, but not fatal; ordinarily it means there's an
-					// unrecognized gcode in the source.
-					Base.logger.severe("Error: " + e.getMessage());
 				}
 				
 				// did we get any errors?
@@ -824,8 +823,7 @@ public class MachineController {
 			// TODO: Hooks for plugins to add estimated time?
 			estimatorParser.parse(line);
 			try {
-				estimatorParser.execute();
-			} catch (GCodeException e) {
+				estimatorParser.execute(estimator);
 			} catch (RetryException e) {
 			}
 		}
