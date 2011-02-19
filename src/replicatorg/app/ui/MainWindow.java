@@ -448,40 +448,23 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	public void applyPreferences() {
 
-		// apply the setting for 'use external editor'
-		boolean external = Base.preferences.getBoolean("editor.external",false);
-
-		textarea.setEditable(!external);
-		saveMenuItem.setEnabled(!external);
-		saveAsMenuItem.setEnabled(!external);
-		// beautifyMenuItem.setEnabled(!external);
+		textarea.setEditable(true);
+		saveMenuItem.setEnabled(true);
+		saveAsMenuItem.setEnabled(true);
 
 		TextAreaPainter painter = textarea.getPainter();
-		if (external) {
-			// disable line highlight and turn off the caret when disabling
-			Color color = Base.getColorPref("editor.external.bgcolor","#168299");
-			painter.setBackground(color);
-			painter.setLineHighlightEnabled(false);
-			textarea.setCaretVisible(false);
-
-		} else {
-			Color color = Base.getColorPref("editor.bgcolor","#ffffff");
-			painter.setBackground(color);
-			boolean highlight = Base.preferences.getBoolean("editor.linehighlight",true);
-			painter.setLineHighlightEnabled(highlight);
-			textarea.setCaretVisible(true);
-		}
+		
+		Color color = Base.getColorPref("editor.bgcolor","#ffffff");
+		painter.setBackground(color);
+		boolean highlight = Base.preferences.getBoolean("editor.linehighlight",true);
+		painter.setLineHighlightEnabled(highlight);
+		textarea.setCaretVisible(true);
 
 		// apply changes to the font size for the editor
 		// TextAreaPainter painter = textarea.getPainter();
 		painter.setFont(Base.getFontPref("editor.font","Monospaced,plain,10"));
 		// Font font = painter.getFont();
 		// textarea.getPainter().setFont(new Font("Courier", Font.PLAIN, 36));
-
-		// in case moved to a new location
-		// For 0125, changing to async version (to be implemented later)
-		// sketchbook.rebuildMenus();
-		//sketchbook.rebuildMenusAsync();
 	}
 
 	/**
