@@ -33,9 +33,11 @@ import javax.vecmath.Point3d;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
+import replicatorg.app.DriverCommand;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
+import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
 public class DriverBaseImplementation implements Driver, DriverQueryInterface{
@@ -85,6 +87,163 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		machine = new MachineModel();
 	}
 
+	
+	// Message-style interface to the driver. This could possibly be made into a serialization library
+	// that sits on top of Driver.
+	//
+	// As with the regular driver interface, calls here should either completely succeed or have no effect.
+	// TODO: That's probably not true yet.
+	//
+	public void runCommand(DriverCommand command) throws RetryException {
+		switch(command.getCommand()) {
+		case SET_SPINDLE_DIRECTION:
+			setSpindleDirection((command.getDirection()==DriverCommand.Direction.CLOCKWISE)
+										?ToolModel.MOTOR_CLOCKWISE:ToolModel.MOTOR_CLOCKWISE);
+			break;
+		case ENABLE_SPINDLE:
+			enableSpindle();
+			break;
+		case DISABLE_SPINDLE:
+			disableSpindle();
+			break;
+		case ENABLE_FLOOD_COOLANT:
+			enableFloodCoolant();
+			break;
+		case DISABLE_FLOOD_COOLANT:
+			disableFloodCoolant();
+			break;
+		case ENABLE_MIST_COOLANT:
+			enableMistCoolant();
+			break;
+		case DISABLE_MIST_COOLANT:
+			disableMistCoolant();
+			break;
+		case OPEN_CLAMP:
+			openClamp(command.getInt());
+			break;
+		case CLOSE_CLAMP:
+			closeClamp(command.getInt());
+			break;
+		case OPEN_VALVE:
+			openValve();
+			break;
+		case CLOSE_VALVE:
+			closeValve();
+			break;
+		case ENABLE_DRIVES:
+			enableDrives();
+			break;
+		case DISABLE_DRIVES:
+			disableDrives();
+			break;
+		case OPEN_COLLET:
+			openCollet();
+			break;
+		case CLOSE_COLLET:
+			closeCollet();
+			break;
+		case CHANGE_GEAR_RATIO:
+			changeGearRatio(command.getInt());
+			break;
+		case SET_MOTOR_DIRECTION:
+			setMotorDirection((command.getDirection()==DriverCommand.Direction.CLOCKWISE)
+					?ToolModel.MOTOR_CLOCKWISE:ToolModel.MOTOR_CLOCKWISE);
+			break;
+		case ENABLE_MOTOR:
+			enableMotor();
+			break;
+		case DISABLE_MOTOR:
+			disableMotor();
+			break;
+		case ENABLE_FAN:
+			enableFan();
+			break;
+		case DISABLE_FAN:
+			disableFan();
+			break;
+		case SET_TEMPERATURE:
+			setTemperature(command.getDouble());
+			break;
+		case READ_TEMPERATURE:
+			readTemperature();
+			break;
+		case SET_PLATFORM_TEMPERATURE:
+			setPlatformTemperature(command.getDouble());
+			break;
+		case SET_CHAMBER_TEMPERATURE:
+			setChamberTemperature(command.getDouble());
+			break;
+		case SET_MOTOR_SPEED_PWM:
+			setMotorSpeedPWM((int)command.getDouble());
+			break;
+		case SET_MOTOR_RPM:
+			setMotorRPM(command.getDouble());
+			break;
+		case GET_POSITION:
+			getPosition();
+			break;
+		case STORE_HOME_POSITIONS:
+			storeHomePositions(command.getAxes());
+			break;
+		case RECALL_HOME_POSITIONS:
+			recallHomePositions(command.getAxes());
+			break;
+		case INITIALIZE:
+			initialize();
+			break;
+		case REQUEST_TOOL_CHANGE:
+			// TODO: Handle timeout value here!
+			requestToolChange(command.getInt(), (int)command.getDouble());
+			break;
+		case SET_FEEDRATE:
+			setFeedrate(command.getDouble());
+			break;
+		case QUEUE_POINT:
+			queuePoint(command.getPoint());
+			break;
+		case DELAY:
+			delay((long)command.getDouble());
+			break;
+		case SET_CURRENT_POSITION:
+			setCurrentPosition(command.getPoint());
+			break;
+		case SET_SPINDLE_RPM:
+			setSpindleRPM(command.getInt());
+			break;
+		case EXECUTE_GCODE_LINE:
+			executeGCodeLine(command.getString());
+			break;
+		case SELECT_TOOL:
+			getMachine().selectTool(command.getInt());
+			break;
+		case HOME_AXIS_POSITIVE:
+			homeAxes(command.getAxes(), true, command.getDouble());
+			break;
+		case HOME_AXIS_NEGATIVE:
+			homeAxes(command.getAxes(), false, command.getDouble());
+			break;
+		case SET_OFFSET_X:
+			setOffsetX(command.getInt(), command.getDouble());
+			break;
+		case SET_OFFSET_Y:
+			setOffsetY(command.getInt(), command.getDouble());
+			break;
+		case SET_OFFSET_Z:
+			setOffsetZ(command.getInt(), command.getDouble());
+			break;
+		case WAIT_UNTIL_BUFFER_EMPTY:
+			if (!isBufferEmpty()) {
+				throw new RetryException();
+			}
+		case RECONCILE_POSITION:
+			reconcilePosition();
+			break;
+		default:
+			Base.logger.severe("Didn't understand command!");
+		}
+	}
+	
+	
 	public void loadXML(Node xml) {
 	}
 	
@@ -165,19 +324,6 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		return true;
 	}
 
-	/**
-	 * Wait until we've finished all commands.
-	 */
-	public void waitUntilBufferEmpty() {
-		// sleep until we're empty.
-		while (!isBufferEmpty()) {
-			try {
-				Thread.sleep(50);
-			} catch (Exception e) {
-			}
-		}
-	}
-
 	/***************************************************************************
 	 * Firmware information functions
 	 **************************************************************************/
@@ -238,7 +384,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	 * Drivers should override this method to get the actual position as recorded by the machine.
 	 * This is useful, for example, after stopping a print, to ask the machine where it is.
 	 */
-	protected Point5d reconcilePosition() {
+	protected Point5d reconcilePosition() throws RetryException {
 		throw new RuntimeException("Position reconcilliation requested, but not implemented for this driver");
 	}
 	
@@ -248,7 +394,12 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 			// Explicit null check; otherwise reconcilePosition, a potentially expensive call (including a packet
 			// transaction) will be called every time.
 			if (currentPosition.get() == null) {
-				currentPosition.compareAndSet(null, reconcilePosition());
+				try {
+					currentPosition.compareAndSet(null, reconcilePosition());
+				}
+				catch (RetryException e) {
+					// TODO: does this make sense?
+				}
 			}
 			return new Point5d(currentPosition.get());
 		}
@@ -626,10 +777,10 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		return machine.currentTool().getTargetTemperature();
 	}
 
-	public void storeHomePositions(EnumSet<AxisId> axes) {
+	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
 	}
 
-	public void recallHomePositions(EnumSet<AxisId> axes) {
+	public void recallHomePositions(EnumSet<AxisId> axes) throws RetryException {
 	}
 
 	@Override

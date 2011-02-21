@@ -332,6 +332,24 @@ public class Sanguino3GDriver extends SerialDriver
 		return finished;
 	}
 
+	public boolean isBufferEmpty() {
+		// TODO: Make sure this is right
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.IS_FINISHED.getCode());
+		PacketResponse pr = runQuery(pb.getPacket());
+		if (!pr.isOK()) { return false; }
+		int v = pr.get8();
+		if (pr.getResponseCode() == PacketResponse.ResponseCode.UNSUPPORTED) {
+			if (!isNotifiedFinishedFeature) {
+				Base.logger.severe("IsFinished not supported by this firmware. Update your firmware.");
+				isNotifiedFinishedFeature = true;
+			}
+			return true;
+		}
+		boolean finished = (v != 0);
+		Base.logger.log(Level.FINE,"Buffer empty: " + Boolean.toString(finished));
+		return finished;
+	}
+	
 	public void dispose() {
 		super.dispose();
 	}
@@ -1286,12 +1304,12 @@ public class Sanguino3GDriver extends SerialDriver
 		invalidatePosition();
 	}
 
-	protected Point5d reconcilePosition() {
+	protected Point5d reconcilePosition() throws RetryException {
 		if (fileCaptureOstream != null) {
 			return new Point5d();
 		}
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION.getCode());
-		PacketResponse pr = runQuery(pb.getPacket());
+		PacketResponse pr = runCommand(pb.getPacket());
 		Point5d steps = new Point5d(pr.get32(), pr.get32(), pr.get32(), 0, 0);
 		// Useful quickie debugs
 //		System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
@@ -1523,7 +1541,7 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToEEPROM(EEPROM_AXIS_HOME_POSITIONS_OFFSET + axis*4,intToLE(offset));
 	}
 	
-	public void storeHomePositions(EnumSet<AxisId> axes) {
+	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
 		byte b = 0;
 		if (axes.contains(AxisId.X)) b = (byte)(b | (0x01 << 0));
 		if (axes.contains(AxisId.Y)) b = (byte)(b | (0x01 << 1));
@@ -1542,10 +1560,10 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.STORE_HOME_POSITIONS.getCode());
 		pb.add8(b);
 		
-		runQuery(pb.getPacket());
+		runCommand(pb.getPacket());
 	}
 
-	public void recallHomePositions(EnumSet<AxisId> axes) {
+	public void recallHomePositions(EnumSet<AxisId> axes) throws RetryException {
 		byte b = 0;
 		if (axes.contains(AxisId.X)) b = (byte)(b | (0x01 << 0));
 		if (axes.contains(AxisId.Y)) b = (byte)(b | (0x01 << 1));
@@ -1564,9 +1582,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.RECALL_HOME_POSITIONS.getCode());
 		pb.add8(b);
 		
-		runQuery(pb.getPacket());
-
-		reconcilePosition();
+		runCommand(pb.getPacket());
 	}
 	
 	

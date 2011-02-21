@@ -66,6 +66,7 @@ public class DriverCommand {
 		SET_SPINDLE_RPM,
 		WAIT_UNTIL_BUFFER_EMPTY,
 		SET_CURRENT_POSITION,
+		RECONCILE_POSITION,
 	}
 	
 	
@@ -167,5 +168,23 @@ public class DriverCommand {
 		this.command = command;
 		this.axesParam = param;
 		this.doubleParam = d;
+	}
+	
+	public String contentsToString() {
+		String contents = new String();
+		
+		contents += "command=" + command.name();
+		contents += " i=" + intParam;
+		contents += " d=" + doubleParam;
+		if (stringParam != null)
+			contents += " s=" + stringParam;
+		if (pointParam != null)
+			contents += " p=" + pointParam.toString();
+		if (directionParam != null)
+			contents += " dir=" + directionParam.name();
+		if (axesParam != null)
+			contents += " a=" + axesParam.toString();
+				
+		return contents;
 	}
 }

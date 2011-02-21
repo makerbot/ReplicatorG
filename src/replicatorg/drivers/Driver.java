@@ -29,6 +29,7 @@ import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
+import replicatorg.app.DriverCommand;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
@@ -55,6 +56,13 @@ public interface Driver {
 	public boolean isPassthroughDriver();
 	
 	/**
+	 * Message-style interface to the driver
+	 * @param command
+	 * @throws RetryException
+	 */
+	public void runCommand(DriverCommand command) throws RetryException;
+	
+	/**
 	 * Execute a line of GCode directly (ie, don't use the parser)
 	 * @param code The line of GCode that we should execute
 	 */
@@ -69,11 +77,6 @@ public interface Driver {
 	 * Is our buffer empty? If don't have a buffer, its always true.
 	 */
 	public boolean isBufferEmpty();
-
-	/**
-	 * Wait until we've finished all commands.
-	 */
-	public void waitUntilBufferEmpty();
 
 	/**
 	 * do we have any errors? this method handles them.
@@ -144,12 +147,12 @@ public interface Driver {
 	/** 
 	 * Tell the machine to record it's current position into storage 
 	 */
-	public void storeHomePositions(EnumSet<AxisId> axes);
+	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException;
 	
 	/** 
 	 * Tell the machine to restore it's current position from storage 
 	 */
-	public void recallHomePositions(EnumSet<AxisId> axes);
+	public void recallHomePositions(EnumSet<AxisId> axes) throws RetryException;
 
 	public Point5d getCurrentPosition();
 

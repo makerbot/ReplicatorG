@@ -19,9 +19,14 @@
 
 package replicatorg.app;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Vector;
 import java.util.logging.Level;
 
@@ -175,11 +180,28 @@ public class MachineController {
 			
 			// Set up a parser to talk to the driver
 			GCodeParser parser = new GCodeParser();
+			
+			// Queue of commands that we get from the parser, and run on the driver.
+			Queue< DriverCommand > driverQueue = new LinkedList< DriverCommand >();
+			
 			parser.init((DriverQueryInterface) driver);
 			
 			// And the one for the simulator
 			GCodeParser simulationParser = new GCodeParser();
+			
+			// Queue of commands that we get from the parser, and run on the driver.
+			Queue< DriverCommand > simulatorQueue = new LinkedList< DriverCommand >();
+			
 			simulationParser.init((DriverQueryInterface) simulator);
+			
+			// And make a file to write simulation commands out from
+			BufferedWriter out = null;
+			try{
+				FileWriter fstream = new FileWriter("driver_codes.txt");
+    	        out = new BufferedWriter(fstream);
+    	    }catch (Exception e){//Catch exception if any
+	    	      System.err.println("Error opening file for output: " + e.getMessage());
+			}
 			
 			// Initialize our gcode provider
 			Iterator<String> i = source.iterator();
@@ -196,15 +218,20 @@ public class MachineController {
 					}
 					
 					if (simulator.isSimulating()) {
-						// Parse a line for the simulator
-						simulationParser.parse(line);
-						
-						Base.logger.severe("Parsed GCode string: >" + line + "< results in " + simulationParser.commandQueue.size() + " instructions");
+						simulationParser.parse(line, simulatorQueue);
 					}
 					
 					if (!state.isSimulating()) {
 						// Parse a line for the actual machine
-						parser.parse(line);
+						parser.parse(line, driverQueue);
+						
+						try {
+							out.write(line + ": " + simulatorQueue.size() + " instructions\n");
+							for (DriverCommand command : simulatorQueue) {
+								out.write("  " + command.contentsToString() + "\n");
+							}
+							out.flush();
+						} catch (IOException e1) {}
 					}
 				}
 				try {
@@ -243,30 +270,25 @@ public class MachineController {
 					Base.logger.severe("Unknown job exception emitted");
 				}
 				
-				// simulate the command.
+				// Simulate the command. Just run everything against the simulator, and ignore errors.
 				if (retry == false && simulator.isSimulating()) {
-					try {
-						// Debug: Print all of the commands in the command queue
-						for (DriverCommand command : simulationParser.commandQueue)
-								Base.logger.severe("Running command: "
-													+ command.getCommand().name()
-													+ " i=" + command.getInt()
-													+ " d=" + command.getDouble()
-//													+ " axes=" + command.getAxes()
-//													+ " dir=" + (command.getDirection() == null)?command.getDirection().name():""
-//													+ " p=" + command.getPoint() != null?command.getPoint().toString():"" );//  .toString()
-													);
-						
-						simulationParser.execute(simulator);
-					} catch (RetryException r) {
-						// Ignore.
+					for (DriverCommand command : simulatorQueue) {
+						try {
+							simulator.runCommand(command);
+						} catch (RetryException r) {
+							// Ignore.
+						}
 					}
+					simulatorQueue.clear();
 				}
 				
 				try {
 					if (!state.isSimulating()) {
 						// Run the command on the machine.
-						parser.execute(driver);
+						while(!driverQueue.isEmpty()) {
+							driver.runCommand(driverQueue.peek());
+							driverQueue.remove();
+						}
 					}
 					retry = false;
 				} catch (RetryException r) {
@@ -822,17 +844,25 @@ public class MachineController {
 		EstimationDriver estimator = new EstimationDriver();
 		estimator.setMachine(loadModel());
 		
+		Queue< DriverCommand > estimatorQueue = new LinkedList< DriverCommand >();
+		
 		GCodeParser estimatorParser = new GCodeParser();
 		estimatorParser.init(estimator);
 
 		// run each line through the estimator
 		for (String line : source) {
 			// TODO: Hooks for plugins to add estimated time?
-			estimatorParser.parse(line);
-			try {
-				estimatorParser.execute(estimator);
-			} catch (RetryException e) {
+			estimatorParser.parse(line, estimatorQueue);
+			
+			
+			for (DriverCommand command : estimatorQueue) {
+				try {
+					estimator.runCommand(command);
+				} catch (RetryException r) {
+					// Ignore.
+				}
 			}
+			estimatorQueue.clear();
 		}
 
 		if (simulator != null) {

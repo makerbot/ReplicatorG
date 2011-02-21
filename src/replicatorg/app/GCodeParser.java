@@ -59,13 +59,10 @@ import replicatorg.app.exceptions.JobCancelledException;
 import replicatorg.app.exceptions.JobEndException;
 import replicatorg.app.exceptions.JobException;
 import replicatorg.app.exceptions.JobRewindException;
-import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.PenPlotter;
-import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.AxisId;
-import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
 
@@ -78,9 +75,6 @@ public class GCodeParser {
 	
 	// Convenience class to execute drill routines (untested)
 	DrillCycle drillCycle;
-		
-	// Queue of commands that we have to run.
-	public Queue< DriverCommand > commandQueue;
 		
 	// Canned drilling cycle engine
 	private class DrillCycle {
@@ -302,9 +296,6 @@ public class GCodeParser {
 
 		// init our offset
 		currentOffset = new Point3d();
-		
-		// And build a command queue.
-		commandQueue = new LinkedList< DriverCommand >();
 	}
 
 	/**
@@ -340,7 +331,7 @@ public class GCodeParser {
 	 * @param String
 	 *            cmd a line of GCode to parse
 	 */
-	public boolean parse(String cmd) {
+	public boolean parse(String cmd, Queue< DriverCommand > commandQueue) {
 		
 		// First, parse the GCode string into an object we can query.
 		gcode = new GCode(cmd);
@@ -382,173 +373,6 @@ public class GCodeParser {
 		return gcode.getCommand();
 	}
 
-	/**
-	 * Actually execute the GCode we just parsed.
-	 * @throws RetryException 
-	 */
-	public void execute(Driver driver) throws RetryException {
-		// TODO: Move this out of the GCodeParser
-		// While there are commands in the queue, run them
-		while( !commandQueue.isEmpty()) {
-			// Pull the current command and attempt to run it.
-			runDriverCommand(driver, commandQueue.peek());
-
-			// If we get here, the command was run successfully, so dequeue
-			commandQueue.remove();
-		}
-		
-//		// Select our tool?
-//		int tempTool = (int) gcode.getCodeValue('T');
-//		if (gcode.hasCode('T')) {
-//			if (tempTool != tool)
-//				driver.selectTool(tempTool);
-//
-//			tool = tempTool;
-//		}
-	}
-	
-	// TODO: Keep the driver out of here.
-	private void runDriverCommand(Driver driver, DriverCommand command) throws RetryException {
-		switch(command.getCommand()) {
-		case SET_SPINDLE_DIRECTION:
-			driver.setSpindleDirection((command.getDirection()==DriverCommand.Direction.CLOCKWISE)
-										?ToolModel.MOTOR_CLOCKWISE:ToolModel.MOTOR_CLOCKWISE);
-			break;
-		case ENABLE_SPINDLE:
-			driver.enableSpindle();
-			break;
-		case DISABLE_SPINDLE:
-			driver.disableSpindle();
-			break;
-		case ENABLE_FLOOD_COOLANT:
-			driver.enableFloodCoolant();
-			break;
-		case DISABLE_FLOOD_COOLANT:
-			driver.disableFloodCoolant();
-			break;
-		case ENABLE_MIST_COOLANT:
-			driver.enableMistCoolant();
-			break;
-		case DISABLE_MIST_COOLANT:
-			driver.disableMistCoolant();
-			break;
-		case OPEN_CLAMP:
-			driver.openClamp(command.getInt());
-			break;
-		case CLOSE_CLAMP:
-			driver.closeClamp(command.getInt());
-			break;
-		case OPEN_VALVE:
-			driver.openValve();
-			break;
-		case CLOSE_VALVE:
-			driver.closeValve();
-			break;
-		case ENABLE_DRIVES:
-			driver.enableDrives();
-			break;
-		case DISABLE_DRIVES:
-			driver.disableDrives();
-			break;
-		case OPEN_COLLET:
-			driver.openCollet();
-			break;
-		case CLOSE_COLLET:
-			driver.closeCollet();
-			break;
-		case CHANGE_GEAR_RATIO:
-			driver.changeGearRatio(command.getInt());
-			break;
-		case SET_MOTOR_DIRECTION:
-			driver.setMotorDirection((command.getDirection()==DriverCommand.Direction.CLOCKWISE)
-					?ToolModel.MOTOR_CLOCKWISE:ToolModel.MOTOR_CLOCKWISE);
-			break;
-		case ENABLE_MOTOR:
-			driver.enableMotor();
-			break;
-		case DISABLE_MOTOR:
-			driver.disableMotor();
-			break;
-		case ENABLE_FAN:
-			driver.enableFan();
-			break;
-		case DISABLE_FAN:
-			driver.disableFan();
-			break;
-		case SET_TEMPERATURE:
-			driver.setTemperature(command.getDouble());
-			break;
-		case READ_TEMPERATURE:
-			driver.readTemperature();
-			break;
-		case SET_PLATFORM_TEMPERATURE:
-			driver.setPlatformTemperature(command.getDouble());
-			break;
-		case SET_CHAMBER_TEMPERATURE:
-			driver.setChamberTemperature(command.getDouble());
-			break;
-		case SET_MOTOR_SPEED_PWM:
-			driver.setMotorSpeedPWM(command.getInt());
-			break;
-		case SET_MOTOR_RPM:
-			driver.setMotorRPM(command.getInt());
-			break;
-		case GET_POSITION:
-			driver.getPosition();
-			break;
-		case STORE_HOME_POSITIONS:
-			driver.storeHomePositions(command.getAxes());
-			break;
-		case RECALL_HOME_POSITIONS:
-			driver.recallHomePositions(command.getAxes());
-			break;
-		case INITIALIZE:
-			driver.initialize();
-			break;
-		case REQUEST_TOOL_CHANGE:
-			// TODO: Handle timeout value here!
-			driver.requestToolChange(command.getInt(), (int)command.getDouble());
-			break;
-		case SET_FEEDRATE:
-			driver.setFeedrate(command.getDouble());
-			break;
-		case QUEUE_POINT:
-			driver.queuePoint(command.getPoint());
-			break;
-		case DELAY:
-			driver.delay((long)command.getDouble());
-			break;
-		case SET_CURRENT_POSITION:
-			driver.setCurrentPosition(command.getPoint());
-			break;
-		case SET_SPINDLE_RPM:
-			driver.setSpindleRPM(command.getInt());
-			break;
-		case EXECUTE_GCODE_LINE:
-			driver.executeGCodeLine(command.getString());
-			break;
-		case SELECT_TOOL:
-			driver.getMachine().selectTool((int) gcode.getCodeValue('T'));
-			break;
-		case HOME_AXIS_POSITIVE:
-			driver.homeAxes(command.getAxes(), true, command.getDouble());
-			break;
-		case HOME_AXIS_NEGATIVE:
-			driver.homeAxes(command.getAxes(), false, command.getDouble());
-			break;
-		case SET_OFFSET_X:
-			driver.setOffsetX(command.getInt(), command.getDouble());
-			break;
-		case SET_OFFSET_Y:
-			driver.setOffsetY(command.getInt(), command.getDouble());
-			break;
-		case SET_OFFSET_Z:
-			driver.setOffsetZ(command.getInt(), command.getDouble());
-			break;
-		default:
-			Base.logger.severe("Didn't understand command!");
-		}
-	}
 
 	private void buildMCodes(Queue< DriverCommand > commands) throws GCodeException {
 		// If this machine handles multiple active toolheads, we always honor a T code
@@ -789,11 +613,11 @@ public class GCodeParser {
 			if (gcode.hasCode('S'))
 //					driver.setMotorSpeedPWM((int)Math.round(gcode.getCodeValue('S')));
 				commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_SPEED_PWM,
-						(int)Math.round(gcode.getCodeValue('S'))));
+						gcode.getCodeValue('S')));
 			else if (gcode.hasCode('R'))
 //					driver.setMotorRPM(gcode.getCodeValue('R'));
 				commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_RPM,
-						(int)Math.round(gcode.getCodeValue('R'))));
+						gcode.getCodeValue('R')));
 			break;
 
 		// set build platform temperature
@@ -857,6 +681,9 @@ public class GCodeParser {
 			
 //				driver.recallHomePositions(axes);
 			commands.add(new DriverCommand(DriverCommand.Command.RECALL_HOME_POSITIONS, axes));
+			// Note that we are now in an invalid state!
+			commands.add(new DriverCommand(DriverCommand.Command.WAIT_UNTIL_BUFFER_EMPTY));
+			commands.add(new DriverCommand(DriverCommand.Command.RECONCILE_POSITION));
 		}
 			break;
 			
@@ -972,7 +799,10 @@ public class GCodeParser {
 		if (gcode.hasCode('F')) {
 			// Read feedrate in mm/min.
 			feedrate = gcode.getCodeValue('F');
+			
+			// TODO: Why do we do this here, and not in individual commands?
 //			driver.setFeedrate(feedrate);
+			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
 		}
 
 		
@@ -993,7 +823,7 @@ public class GCodeParser {
 			// set our target.
 //				driver.setFeedrate(feedrate);
 //				driver.queuePoint(temp);
-			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
+//			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
 			commands.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, temp));
 			break;
 
@@ -1303,7 +1133,7 @@ public class GCodeParser {
 			// we wanna do this after its finished whatever was before.
 //			driver.waitUntilBufferEmpty();
 			// TODO: Implement this
-			Base.logger.severe("Not waiting for buffer to clear before displaying message");
+			//Base.logger.severe("Not waiting for buffer to clear before displaying message");
 
 			mCode = (int) gcode.getCodeValue('M');
 
