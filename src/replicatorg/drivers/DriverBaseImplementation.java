@@ -147,7 +147,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 			break;
 		case SET_MOTOR_DIRECTION:
 			setMotorDirection((command.getDirection()==DriverCommand.Direction.CLOCKWISE)
-					?ToolModel.MOTOR_CLOCKWISE:ToolModel.MOTOR_CLOCKWISE);
+					?ToolModel.MOTOR_CLOCKWISE:ToolModel.MOTOR_COUNTER_CLOCKWISE);
 			break;
 		case ENABLE_MOTOR:
 			enableMotor();
