@@ -964,14 +964,14 @@ public class Base {
 	/**
 	 * our singleton interface to get our machine.
 	 */
-	static public MachineController loadMachine(String name) {
+	static public MachineControllerInterface loadMachine(String name) {
 		if (machine == null || !machine.getDescriptorName().equals(name)) {
 			machine = MachineFactory.load(name);
 		}
 		return machine;
 	}
 
-	static public MachineController getMachine() {
+	static public MachineControllerInterface getMachine() {
 		return machine;
 	}
 

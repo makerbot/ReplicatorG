@@ -50,13 +50,14 @@ import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
+import replicatorg.app.MachineControllerInterface;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.ToolModel;
 
 public class ExtruderPanel extends JPanel implements FocusListener, ActionListener, ItemListener {
 	private ToolModel toolModel;
-	private MachineController machine;
+	private MachineControllerInterface machine;
 
 	public ToolModel getTool() { return toolModel; }
 	
@@ -177,13 +178,13 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}		
 	}
 	
-	public ExtruderPanel(MachineController machine, ToolModel t) {
-		this.machine = machine;
+	public ExtruderPanel(MachineControllerInterface machine2, ToolModel t) {
+		this.machine = machine2;
 		this.toolModel = t;
 		
 		int textBoxWidth = 75;
 		Dimension panelSize = new Dimension(420, 30);
-		driver = machine.getDriver();
+		driver = machine2.getDriver();
 
 		extrudeTimePattern = Pattern.compile("([.0-9]+)");
 		

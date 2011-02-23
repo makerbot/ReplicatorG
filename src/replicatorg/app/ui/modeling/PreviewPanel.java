@@ -47,6 +47,7 @@ import javax.vecmath.Vector3f;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.MachineController;
+import replicatorg.app.MachineControllerInterface;
 import replicatorg.app.ui.MainWindow;
 import replicatorg.machine.model.BuildVolume;
 import replicatorg.machine.model.MachineModel;
@@ -107,7 +108,7 @@ public class PreviewPanel extends JPanel {
 	
 	private void getBuildVolume(){
 		Base.logger.fine("Resetting the build volume!");
-		MachineController mc = this.mainWindow.getMachine(); 
+		MachineControllerInterface mc = this.mainWindow.getMachine(); 
 		if(mc instanceof MachineController){
 			MachineModel mm = mc.getModel();
 			buildVol = mm.getBuildVolume();

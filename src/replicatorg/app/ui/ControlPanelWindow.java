@@ -55,7 +55,7 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.app.MachineController;
+import replicatorg.app.MachineControllerInterface;
 import replicatorg.app.ui.controlpanel.ExtruderPanel;
 import replicatorg.app.ui.controlpanel.JogPanel;
 import replicatorg.drivers.Driver;
@@ -81,7 +81,7 @@ public class ControlPanelWindow extends JFrame implements
 
 	protected JTabbedPane toolsPane;
 
-	protected MachineController machine;
+	protected MachineControllerInterface machine;
 
 	protected Driver driver;
 
@@ -91,26 +91,26 @@ public class ControlPanelWindow extends JFrame implements
 
 	private static ControlPanelWindow instance = null;
 
-	public static synchronized ControlPanelWindow getControlPanel(MachineController m) {
+	public static synchronized ControlPanelWindow getControlPanel(MachineControllerInterface machine2) {
 		if (instance == null) {
-			instance = new ControlPanelWindow(m);
+			instance = new ControlPanelWindow(machine2);
 		} else {
-			if (instance.machine != m) {
+			if (instance.machine != machine2) {
 				instance.dispose();
-				instance = new ControlPanelWindow(m);
+				instance = new ControlPanelWindow(machine2);
 			}
 		}
 		return instance;
 	}
 	
-	private ControlPanelWindow(MachineController m) {
+	private ControlPanelWindow(MachineControllerInterface machine2) {
 		super("Control Panel");
 
 		Image icon = Base.getImage("images/icon.gif", this);
 		setIconImage(icon);
 		
 		// save our machine!
-		machine = m;
+		machine = machine2;
 		driver = machine.getDriver();
 		driver.invalidatePosition(); // Always force a query when we open the panel
 

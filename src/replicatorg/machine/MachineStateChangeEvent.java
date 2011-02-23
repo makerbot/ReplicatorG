@@ -1,14 +1,15 @@
 package replicatorg.machine;
 
 import replicatorg.app.MachineController;
+import replicatorg.app.MachineControllerInterface;
 
 public class MachineStateChangeEvent {
-	private MachineController source;
+	private MachineControllerInterface source;
 	private MachineState previous = null;
 	private MachineState current;
 	
-	public MachineStateChangeEvent(MachineController source, MachineState current) {
-		this.source = source;
+	public MachineStateChangeEvent(MachineControllerInterface machine2, MachineState current) {
+		this.source = machine2;
 		this.current = current;
 	}
 
@@ -19,7 +20,7 @@ public class MachineStateChangeEvent {
 		this.previous = previous;
 	}
 	
-	public MachineController getSource() { return source; }
+	public MachineControllerInterface getSource() { return source; }
 	
 	public MachineState getState() { return current; }
 	

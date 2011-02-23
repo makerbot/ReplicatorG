@@ -45,7 +45,7 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.app.MachineController;
+import replicatorg.app.MachineControllerInterface;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -268,7 +268,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		});
 	}
 	
-	private void updateFromState(final MachineState s, final MachineController machine) {
+	private void updateFromState(final MachineState s, final MachineControllerInterface machine) {
 		boolean ready = s.isReady();
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();
@@ -276,9 +276,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			editor.getBuild().getCode() != null;
 		boolean hasMachine = machine != null;
 		boolean hasPlayback = hasMachine && 
-			(machine.driver != null) &&
-			(machine.driver instanceof SDCardCapture) &&
-			(((SDCardCapture)machine.driver).hasFeatureSDCardCapture());
+			(machine.getDriver() != null) &&
+			(machine.getDriver() instanceof SDCardCapture) &&
+			(((SDCardCapture)machine.getDriver()).hasFeatureSDCardCapture());
 		simButton.setEnabled(hasMachine && !building && hasGcode);
 		fileButton.setEnabled(hasMachine && !building && hasGcode);
 		buildButton.setEnabled(ready && hasGcode);
@@ -315,7 +315,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		
 	}
 
-	public void updateFromMachine(final MachineController machine) {
+	public void updateFromMachine(final MachineControllerInterface machine) {
 		MachineState s = new MachineState(MachineState.State.NOT_ATTACHED);
 		if (machine != null) {
 			s = machine.getMachineState();
@@ -325,7 +325,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 	public void machineStateChangedInternal(final MachineStateChangeEvent evt) {
 		MachineState s = evt.getState();
-		MachineController machine = evt.getSource();
+		MachineControllerInterface machine = evt.getSource();
 		updateFromState(s,machine);
 	}
 

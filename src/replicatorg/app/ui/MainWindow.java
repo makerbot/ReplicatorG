@@ -110,7 +110,7 @@ import javax.swing.undo.UndoManager;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.MRUList;
-import replicatorg.app.MachineController;
+import replicatorg.app.MachineControllerInterface;
 import replicatorg.app.MachineFactory;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.exceptions.SerialException;
@@ -170,7 +170,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	// p5 icon for the window
 	Image icon;
 
-	MachineController machine;
+	MachineControllerInterface machine;
 
 	static public final KeyStroke WINDOW_CLOSE_KEYSTROKE = KeyStroke
 			.getKeyStroke('W', Toolkit.getDefaultToolkit()
@@ -536,7 +536,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			item.setEnabled(false);
 			serialMenu.add(item);
 			return;
-		} else if (!(machine.driver instanceof UsesSerial))  {
+		} else if (!(machine.getDriver() instanceof UsesSerial))  {
 			JMenuItem item = new JMenuItem("Currently selected machine does not use a serial port.");
 			item.setEnabled(false);
 			serialMenu.add(item);
@@ -544,7 +544,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 		
 		String currentName = null;
-		UsesSerial us = (UsesSerial)machine.driver;
+		UsesSerial us = (UsesSerial)machine.getDriver();
 		if (us.getSerial() != null) {
 			currentName = us.getSerial().getName();
 		}
@@ -564,7 +564,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 					Thread t = new Thread() {
 						public void run() {
 							try {
-								UsesSerial us = (UsesSerial)machine.driver;
+								UsesSerial us = (UsesSerial)machine.getDriver();
 								if (us != null) synchronized(us) {
 										us.setSerial(new Serial(portName, us));
 										Base.preferences.put("serial.last_selected", portName);
@@ -914,7 +914,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 		});
 		if (machine != null && 
-				(machine.driver instanceof RealtimeControl))
+				(machine.getDriver() instanceof RealtimeControl))
 		{
 			realtimeControlItem.setVisible(false);
 			menu.add(realtimeControlItem);
@@ -933,19 +933,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	protected void handleToolheadIndexing() {
 		if (machine == null || 
-				!(machine.driver instanceof MultiTool)) {
+				!(machine.getDriver() instanceof MultiTool)) {
 			JOptionPane.showMessageDialog(
 					this,
 					"ReplicatorG can't connect to your machine or toolhead index setting is not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run toolhead indexing", JOptionPane.ERROR_MESSAGE);
 		} else {
-			ToolheadIndexer indexer = new ToolheadIndexer(this,machine.driver);
+			ToolheadIndexer indexer = new ToolheadIndexer(this,machine.getDriver());
 			indexer.setVisible(true);
 		}
 	}
 	public boolean supportsRealTimeControl() {
 		if (machine == null || 
-				!(machine.driver instanceof RealtimeControl)) {
+				!(machine.getDriver() instanceof RealtimeControl)) {
 			return false;
 		}
 		Base.logger.info("Supports RC");
@@ -1358,26 +1358,26 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	
 	public void handleOnboardPrefs() {
 		if (machine == null || 
-				!(machine.driver instanceof OnboardParameters)) {
+				!(machine.getDriver() instanceof OnboardParameters)) {
 			JOptionPane.showMessageDialog(
 					this,
 					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
 		} else {
-			MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machine.driver,machine.driver);
+			MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machine.getDriver(),machine.getDriver());
 			moo.setVisible(true);
 		}
 	}
 
 	public void handleExtruderPrefs() {
 		if (machine == null || 
-				!(machine.driver instanceof OnboardParameters)) {
+				!(machine.getDriver() instanceof OnboardParameters)) {
 			JOptionPane.showMessageDialog(
 					this,
 					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
 		} else {
-			ExtruderOnboardParameters eop = new ExtruderOnboardParameters((OnboardParameters)machine.driver);
+			ExtruderOnboardParameters eop = new ExtruderOnboardParameters((OnboardParameters)machine.getDriver());
 			eop.setVisible(true);
 		}
 	}
@@ -1551,8 +1551,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (simulating)
 			return;
 
-		if (machine == null || machine.driver == null ||
-				!(machine.driver instanceof SDCardCapture)) {
+		if (machine == null || machine.getDriver() == null ||
+				!(machine.getDriver() instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
 		} else {
 			BuildNamingDialog bsd = new BuildNamingDialog(this,build.getName());
@@ -1630,8 +1630,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			return;
 		if (simulating)
 			return;
-		if (machine == null || machine.driver == null ||
-				!(machine.driver instanceof SDCardCapture)) {
+		if (machine == null || machine.getDriver() == null ||
+				!(machine.getDriver() instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
 		} else {
 			String sourceName = build.getName() + ".s3g";
@@ -1657,11 +1657,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (simulating)
 			return;
 
-		if (machine == null || machine.driver == null ||
-				!(machine.driver instanceof SDCardCapture)) {
+		if (machine == null || machine.getDriver() == null ||
+				!(machine.getDriver() instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
 		} else {
-			SDCardCapture sdcc = (SDCardCapture)machine.driver;
+			SDCardCapture sdcc = (SDCardCapture)machine.getDriver();
 			List<String> files = sdcc.getFileList();
 			//for (String filename : files) { System.out.println("File "+filename); }
 			BuildSelectionDialog bsd = new BuildSelectionDialog(this,files);
@@ -2520,7 +2520,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 	}
 
-	protected void setMachine(MachineController machine) {
+	protected void setMachine(MachineControllerInterface machine) {
 		if (this.machine != machine) {
 			if (this.machine != null) {
 				this.machine.dispose();
@@ -2542,7 +2542,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// TODO: PreviewPanel: update with new machine
 	}
 	
-	public MachineController getMachine(){
+	public MachineControllerInterface getMachine(){
 		return this.machine;
 	}
 
@@ -2569,8 +2569,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		
 		if (!connect) return;
 
-		if (machine.driver instanceof UsesSerial) {
-			UsesSerial us = (UsesSerial)machine.driver;
+		if (machine.getDriver() instanceof UsesSerial) {
+			UsesSerial us = (UsesSerial)machine.getDriver();
 			String targetPort;
 			
 			if (Base.preferences.getBoolean("serial.use_machines",true) &&

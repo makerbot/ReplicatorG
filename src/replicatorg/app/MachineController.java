@@ -76,9 +76,10 @@ import replicatorg.model.StringListSource;
  * @author phooky
  * 
  */
-public class MachineController {
+public class MachineController implements MachineControllerInterface {
 
 	private MachineState state = new MachineState();
+	
 	/**
 	 * Get the machine state.  This is a snapshot of the state when the method was called, not a live object.
 	 * @return a copy of the machine's state object
@@ -693,7 +694,7 @@ public class MachineController {
 	public String getName() { return name; }
 	
 	// Our driver object. Null when no driver is selected.
-	public Driver driver = null;
+	protected Driver driver = null;
 	
 	// the simulator driver
 	protected SimulationDriver simulator;

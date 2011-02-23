@@ -28,7 +28,7 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.app.MachineController;
+import replicatorg.app.MachineControllerInterface;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.AxisId;
@@ -50,7 +50,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	protected EnumMap<AxisId,JTextField> positionFields = new EnumMap<AxisId,JTextField>(AxisId.class);
 
-	protected MachineController machine;
+	protected MachineControllerInterface machine;
 	protected Driver driver;
 
 	public class JogButton extends JButton {
@@ -240,11 +240,11 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		return panel;
 	}
 	
-	public JogPanel(MachineController machine) {
+	public JogPanel(MachineControllerInterface machine2) {
 		feedrate = new Point5d();
-		this.machine = machine;
-		this.driver = machine.getDriver();
-		Set<AxisId> axes = machine.getModel().getAvailableAxes();
+		this.machine = machine2;
+		this.driver = machine2.getDriver();
+		Set<AxisId> axes = machine2.getModel().getAvailableAxes();
 		
 		setLayout(new MigLayout());
 		
