@@ -8,7 +8,6 @@ M109 S125 T0 (set heated-build-platform temperature)
 (**** end initilization commands ****)
 (**** begin homing ****)
 G1 F2400.0
-G161 Z (Home down on Z)
 G92 X0 Y0 Z0 E0 (You are now at 0,0,0)
 G1 F2400.0
 G1 Z15 F2400.0 (Move up for warmup)
