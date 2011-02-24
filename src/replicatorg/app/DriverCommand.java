@@ -2,7 +2,6 @@ package replicatorg.app;
 
 import java.util.EnumSet;
 
-import replicatorg.app.DriverCommand.Command;
 import replicatorg.machine.model.AxisId;
 import replicatorg.util.Point5d;
 

@@ -49,7 +49,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
-import replicatorg.app.MachineController;
 import replicatorg.app.MachineControllerInterface;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
@@ -477,7 +476,6 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	public void updateStatus() {
 		
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
-		int toolStatus = machine.getDriver().getToolStatus();
 		
 		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeater()) {
 			double temperature = machine.getDriver().getTemperature();

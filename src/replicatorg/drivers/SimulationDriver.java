@@ -49,7 +49,6 @@ public class SimulationDriver extends DriverBaseImplementation {
 	public void createWindow() {
 		simulation = new SimulationWindow2D();
 		simulation.setVisible(true);
-		simulation.setAlwaysOnTop(true);
 	}
 
 	public void destroyWindow() {
