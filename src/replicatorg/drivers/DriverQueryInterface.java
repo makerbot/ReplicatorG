@@ -5,7 +5,8 @@ import javax.vecmath.Point3d;
 import replicatorg.util.Point5d;
 
 /**
- * Interface for querying a Driver about its current state.
+ * Interface for querying a Driver about its current state. This is used by
+ * the parser when devolving GCodes into DriverCommands.
  * 
  * @author matt.mets
  */
