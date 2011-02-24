@@ -62,6 +62,8 @@ import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.PenPlotter;
+import replicatorg.drivers.commands.DriverCommand;
+import replicatorg.drivers.commands.DriverCommand.LinearDirection;
 import replicatorg.machine.model.AxisId;
 import replicatorg.util.Point5d;
 
@@ -252,7 +254,7 @@ public class GCodeParser {
 			newPoint.setZ(arcStartZ + (endpoint.z() - arcStartZ) * s / steps);
 
 			// start the move
-			points.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, newPoint));
+			points.add(new replicatorg.drivers.commands.QueuePoint(newPoint));
 		}
 		
 		return points;
@@ -341,7 +343,7 @@ public class GCodeParser {
 		
 		// If our driver is in pass-through mode, just put the string in a buffer and we are done.
 		if (driver.isPassthroughDriver()) {
-			commandQueue.add(new DriverCommand(DriverCommand.Command.EXECUTE_GCODE_LINE, gcode.getCommand()));
+			commandQueue.add(new replicatorg.drivers.commands.GCodePassthrough(gcode.getCommand()));
 		}
 		else {
 			try {
@@ -383,8 +385,7 @@ public class GCodeParser {
 		// you may wish to avoid using M6.
 		if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {
 //				driver.getMachine().selectTool((int) gcode.getCodeValue('T'));
-			commands.add(new DriverCommand(DriverCommand.Command.SELECT_TOOL,
-					(int) gcode.getCodeValue('T')));
+			commands.add(new replicatorg.drivers.commands.SelectTool((int) gcode.getCodeValue('T')));
 		}
 		switch ((int) gcode.getCodeValue('M')) {
 		// stop codes... handled by getStops();
@@ -397,36 +398,33 @@ public class GCodeParser {
 		case 3:
 //				driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
 //				driver.enableSpindle();
-			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_DIRECTION,
-					 						DriverCommand.Direction.CLOCKWISE));
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_SPINDLE));
+			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.CLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableSpindle());
 			break;
 
 		// spindle on, CCW
 		case 4:
 //				driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 //				driver.enableSpindle();
-			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_DIRECTION,
-											DriverCommand.Direction.COUNTERCLOCKWISE));
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_SPINDLE));
+			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableSpindle());
 			break;
 
 		// spindle off
 		case 5:
 //				driver.disableSpindle();
-			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_SPINDLE));
+			commands.add(new replicatorg.drivers.commands.DisableSpindle());
 			break;
 
 		// tool change.
 		case 6:
-			double timeout = 65535;
+			int timeout = 65535;
 			if (gcode.hasCode('P')) {
-				timeout = gcode.getCodeValue('P');
+				timeout = (int)gcode.getCodeValue('P');
 			}
 			if (gcode.hasCode('T')) {
 //					driver.requestToolChange((int) gcode.getCodeValue('T'), timeout);
-				commands.add(new DriverCommand(DriverCommand.Command.REQUEST_TOOL_CHANGE,
-						(int) gcode.getCodeValue('T'), timeout));
+				commands.add(new replicatorg.drivers.commands.RequestToolChange((int) gcode.getCodeValue('T'), timeout));
 			}
 			else {
 				throw new GCodeException("The T parameter is required for tool changes. (M6)");
@@ -436,29 +434,28 @@ public class GCodeParser {
 		// coolant A on (flood coolant)
 		case 7:
 //				driver.enableFloodCoolant();
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_FLOOD_COOLANT));
+			commands.add(new replicatorg.drivers.commands.EnableFloodCoolant());
 			break;
 
 		// coolant B on (mist coolant)
 		case 8:
 //				driver.enableMistCoolant();
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_MIST_COOLANT));
+			commands.add(new replicatorg.drivers.commands.EnableMistCoolant());
 			break;
 
 		// all coolants off
 		case 9:
 //				driver.disableFloodCoolant();
 //				driver.disableMistCoolant();
-			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_FLOOD_COOLANT));
-			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_MIST_COOLANT));
+			commands.add(new replicatorg.drivers.commands.DisableFloodCoolant());
+			commands.add(new replicatorg.drivers.commands.DisableMistCoolant());
 			break;
 
 		// close clamp
 		case 10:
 			if (gcode.hasCode('Q'))
 //					driver.closeClamp((int) gcode.getCodeValue('Q'));
-				commands.add(new DriverCommand(DriverCommand.Command.CLOSE_CLAMP,
-												(int) gcode.getCodeValue('Q')));
+				commands.add(new replicatorg.drivers.commands.CloseClamp((int) gcode.getCodeValue('Q')));
 			else
 				throw new GCodeException(
 						"The Q parameter is required for clamp operations. (M10)");
@@ -468,8 +465,7 @@ public class GCodeParser {
 		case 11:
 			if (gcode.hasCode('Q'))
 //					driver.openClamp((int) gcode.getCodeValue('Q'));
-				commands.add(new DriverCommand(DriverCommand.Command.OPEN_CLAMP,
-												(int) gcode.getCodeValue('Q')));
+				commands.add(new replicatorg.drivers.commands.OpenClamp((int) gcode.getCodeValue('Q')));
 			else
 				throw new GCodeException(
 						"The Q parameter is required for clamp operations. (M11)");
@@ -480,10 +476,9 @@ public class GCodeParser {
 //				driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
 //				driver.enableSpindle();
 //				driver.enableFloodCoolant();
-			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_DIRECTION,
-											DriverCommand.Direction.CLOCKWISE));
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_SPINDLE));
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_FLOOD_COOLANT));
+			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.CLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableSpindle());
+			commands.add(new replicatorg.drivers.commands.EnableFloodCoolant());
 			break;
 
 		// spindle CW and coolant A on
@@ -491,62 +486,61 @@ public class GCodeParser {
 //				driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 //				driver.enableSpindle();
 //				driver.enableFloodCoolant();
-			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_DIRECTION,
-											DriverCommand.Direction.COUNTERCLOCKWISE));
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_SPINDLE));
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_FLOOD_COOLANT));
+			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableSpindle());
+			commands.add(new replicatorg.drivers.commands.EnableFloodCoolant());
 			break;
 
 		// enable drives
 		case 17:
 //				driver.enableDrives();
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_DRIVES));
+			commands.add(new replicatorg.drivers.commands.EnableDrives());
 			break;
 
 		// disable drives
 		case 18:
 //				driver.disableDrives();
-			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_DRIVES));
+			commands.add(new replicatorg.drivers.commands.DisableDrives());
 			break;
 
 		// open collet
 		case 21:
 //				driver.openCollet();
-			commands.add(new DriverCommand(DriverCommand.Command.OPEN_COLLET));
+			commands.add(new replicatorg.drivers.commands.OpenCollet());
 			break;
 			// open collet
 		case 22:
 //				driver.closeCollet();
-			commands.add(new DriverCommand(DriverCommand.Command.CLOSE_COLLET));
+			commands.add(new replicatorg.drivers.commands.CloseCollet());
 			break;
 			// M40-M46 = change gear ratios
 		case 40:
 //				driver.changeGearRatio(0);
-			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 0));
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(0));
 			break;
 		case 41:
 //				driver.changeGearRatio(1);
-			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 1));
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(1));
 			break;
 		case 42:
 //				driver.changeGearRatio(2);
-			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 2));
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(2));
 			break;
 		case 43:
 //				driver.changeGearRatio(3);
-			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 3));
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(3));
 			break;
 		case 44:
 //				driver.changeGearRatio(4);
-			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 4));
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(4));
 			break;
 		case 45:
 //				driver.changeGearRatio(5);
-			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 5));
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(5));
 			break;
 		case 46:
 //				driver.changeGearRatio(6);
-			commands.add(new DriverCommand(DriverCommand.Command.CHANGE_GEAR_RATIO, 6));
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(6));
 			break;
 
 		// read spindle speed
@@ -562,94 +556,88 @@ public class GCodeParser {
 		case 101:
 //				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
 //				driver.enableMotor();
-			commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_DIRECTION,
-											DriverCommand.Direction.CLOCKWISE));
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_MOTOR));
+			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.CLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableMotor());
 			break;
 
 		// turn extruder on, reverse
 		case 102:
 //				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 //				driver.enableMotor();
-			commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_DIRECTION,
-											DriverCommand.Direction.COUNTERCLOCKWISE));
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_MOTOR));
+			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableMotor());
 			break;
 
 		// turn extruder off
 		case 103:
 //				driver.disableMotor();
-			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_MOTOR));
+			commands.add(new replicatorg.drivers.commands.DisableMotor());
 			break;
 
 		// custom code for temperature control
 		case 104:
 			if (gcode.hasCode('S'))
 //					driver.setTemperature(gcode.getCodeValue('S'));
-				commands.add(new DriverCommand(DriverCommand.Command.SET_TEMPERATURE,
-						gcode.getCodeValue('S')));
+				commands.add(new replicatorg.drivers.commands.SetTemperature(gcode.getCodeValue('S')));
 			break;
 
 		// custom code for temperature reading
+		// TODO: What is the purpose of this command?
 		case 105:
 //				driver.readTemperature();
-			commands.add(new DriverCommand(DriverCommand.Command.READ_TEMPERATURE));
+			commands.add(new replicatorg.drivers.commands.ReadTemperature());
 			break;
 
 		// turn fan on
 		case 106:
 //				driver.enableFan();
-			commands.add(new DriverCommand(DriverCommand.Command.ENABLE_FAN));
+			commands.add(new replicatorg.drivers.commands.EnableFan());
 			break;
 
 		// turn fan off
 		case 107:
 //				driver.disableFan();
-			commands.add(new DriverCommand(DriverCommand.Command.DISABLE_FAN));
+			commands.add(new replicatorg.drivers.commands.DisableFan());
 			break;
 
 		// set max extruder speed, RPM
 		case 108:
 			if (gcode.hasCode('S'))
 //					driver.setMotorSpeedPWM((int)Math.round(gcode.getCodeValue('S')));
-				commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_SPEED_PWM,
-						gcode.getCodeValue('S')));
+				commands.add(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)gcode.getCodeValue('S')));
 			else if (gcode.hasCode('R'))
 //					driver.setMotorRPM(gcode.getCodeValue('R'));
-				commands.add(new DriverCommand(DriverCommand.Command.SET_MOTOR_RPM,
-						gcode.getCodeValue('R')));
+				commands.add(new replicatorg.drivers.commands.SetMotorSpeedRPM(gcode.getCodeValue('R')));
 			break;
 
 		// set build platform temperature
 		case 109:
 			if (gcode.hasCode('S'))
 //					driver.setPlatformTemperature(gcode.getCodeValue('S'));
-				commands.add(new DriverCommand(DriverCommand.Command.SET_PLATFORM_TEMPERATURE,
-						gcode.getCodeValue('S')));
+				commands.add(new replicatorg.drivers.commands.SetPlatformTemperature(gcode.getCodeValue('S')));
 			break;
 
 		// set build chamber temperature
 		case 110:
 //				driver.setChamberTemperature(gcode.getCodeValue('S'));
-			commands.add(new DriverCommand(DriverCommand.Command.SET_CHAMBER_TEMPERATURE,
-					gcode.getCodeValue('S')));
+			commands.add(new replicatorg.drivers.commands.SetChamberTemperature(gcode.getCodeValue('S')));
 			
 		// valve open
 		case 126:
 //				driver.openValve();
-			commands.add(new DriverCommand(DriverCommand.Command.OPEN_VALVE));
+			commands.add(new replicatorg.drivers.commands.OpenValve());
 			break;
 
 		// valve close
 		case 127:
 //				driver.closeValve();
-			commands.add(new DriverCommand(DriverCommand.Command.OPEN_VALVE));
+			commands.add(new replicatorg.drivers.commands.CloseValve());
 			break;
 
 		// where are we?
 		case 128:
 //				driver.getPosition();
-			commands.add(new DriverCommand(DriverCommand.Command.GET_POSITION));
+			commands.add(new replicatorg.drivers.commands.GetPosition());
 			break;
 			
 		// Instruct the machine to store it's current position to EEPROM
@@ -664,7 +652,7 @@ public class GCodeParser {
 			if (gcode.hasCode('B')) axes.add(AxisId.B);
 			
 //				driver.storeHomePositions(axes);
-			commands.add(new DriverCommand(DriverCommand.Command.STORE_HOME_POSITIONS, axes));
+			commands.add(new replicatorg.drivers.commands.StoreHomePositions(axes));
 		}
 			break;
 
@@ -679,18 +667,15 @@ public class GCodeParser {
 			if (gcode.hasCode('A')) axes.add(AxisId.A);
 			if (gcode.hasCode('B')) axes.add(AxisId.B);
 			
-//				driver.recallHomePositions(axes);
-			commands.add(new DriverCommand(DriverCommand.Command.RECALL_HOME_POSITIONS, axes));
-			// Note that we are now in an invalid state!
-			commands.add(new DriverCommand(DriverCommand.Command.WAIT_UNTIL_BUFFER_EMPTY));
-			commands.add(new DriverCommand(DriverCommand.Command.RECONCILE_POSITION));
+			commands.add(new replicatorg.drivers.commands.RecallHomePositions(axes));
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 		}
 			break;
 			
 		// initialize to default state.
 		case 200:
 //				driver.initialize();
-			commands.add(new DriverCommand(DriverCommand.Command.INITIALIZE));
+			commands.add(new replicatorg.drivers.commands.Initialize());
 			break;
 		
 		// set servo 1 position
@@ -802,7 +787,7 @@ public class GCodeParser {
 			
 			// TODO: Why do we do this here, and not in individual commands?
 //			driver.setFeedrate(feedrate);
-			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
+			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
 		}
 
 		
@@ -814,8 +799,9 @@ public class GCodeParser {
 		case 0:
 //				driver.setFeedrate(getMaxFeedrate());
 //				driver.queuePoint(temp);
-			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, getMaxFeedrate()));
-			commands.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, temp));
+			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
+			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
+			
 			break;
 
 		// Rapid Positioning
@@ -823,8 +809,8 @@ public class GCodeParser {
 			// set our target.
 //				driver.setFeedrate(feedrate);
 //				driver.queuePoint(temp);
-//			commands.add(new DriverCommand(DriverCommand.Command.SET_FEEDRATE, feedrate));
-			commands.add(new DriverCommand(DriverCommand.Command.QUEUE_POINT, temp));
+			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
+			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
 			break;
 
 		// Clockwise arc
@@ -856,7 +842,7 @@ public class GCodeParser {
 		// dwell
 		case 4:
 //				driver.delay((long) gcode.getCodeValue('P'));
-			commands.add(new DriverCommand(DriverCommand.Command.DELAY, gcode.getCodeValue('P')));
+			commands.add(new replicatorg.drivers.commands.Delay((long)gcode.getCodeValue('P')));
 			break;
 		case 10:
 			if (gcode.hasCode('P')) {
@@ -867,13 +853,11 @@ public class GCodeParser {
 //						if (gcode.hasCode('Y')) driver.setOffsetY(offsetSystemNum, gcode.getCodeValue('Y'));
 //						if (gcode.hasCode('Z')) driver.setOffsetZ(offsetSystemNum, gcode.getCodeValue('Z'));
 					if (gcode.hasCode('X')) 
-						commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_X,
-							offsetSystemNum, gcode.getCodeValue('X')));
+						commands.add(new replicatorg.drivers.commands.SetAxisOffset(AxisId.X, offsetSystemNum, gcode.getCodeValue('X')));
 					if (gcode.hasCode('Y')) 
-						commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_Y,
-							offsetSystemNum, gcode.getCodeValue('Y')));
+						commands.add(new replicatorg.drivers.commands.SetAxisOffset(AxisId.Y, offsetSystemNum, gcode.getCodeValue('Y')));
 					if (gcode.hasCode('Z')) 
-						commands.add(new DriverCommand(DriverCommand.Command.SET_OFFSET_Z,								offsetSystemNum, gcode.getCodeValue('Z')));
+						commands.add(new replicatorg.drivers.commands.SetAxisOffset(AxisId.Z, offsetSystemNum, gcode.getCodeValue('Z')));
 				}
 			}
 			else 
@@ -895,16 +879,23 @@ public class GCodeParser {
 			break;
 
 		// This should be "return to home".  We need to introduce new GCodes for homing.
+		// TODO: Should this be deleted?
 		case 28:
 		{
 			// home all axes?
 			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
+			
 			if (gcode.hasCode('X')) axes.add(AxisId.X);
 			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
 			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
 //				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
-			commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_NEGATIVE, axes, gcode.hasCode('F')?feedrate:0));
+			
+			if (gcode.hasCode('F')) {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
+			}
+			else {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE));
+			}
 		}
 			break;
 
@@ -918,7 +909,12 @@ public class GCodeParser {
 			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
 			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
 //				driver.homeAxes(axes, false, gcode.hasCode('F')?feedrate:0);
-			commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_NEGATIVE, axes, gcode.hasCode('F')?feedrate:0));
+			if (gcode.hasCode('F')) {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.NEGATIVE, feedrate));
+			}
+			else {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.NEGATIVE));
+			}
 		}
 			break;
 
@@ -932,7 +928,12 @@ public class GCodeParser {
 			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
 			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
 //				driver.homeAxes(axes, true, gcode.hasCode('F')?feedrate:0);
-			commands.add(new DriverCommand(DriverCommand.Command.HOME_AXIS_POSITIVE, axes, gcode.hasCode('F')?feedrate:0));
+			if (gcode.hasCode('F')) {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
+			}
+			else {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE));
+			}
 		}
 			break;
 
@@ -1054,7 +1055,7 @@ public class GCodeParser {
 				current.setB(bVal);
 			
 //				driver.setCurrentPosition(current);
-			commands.add(new DriverCommand(DriverCommand.Command.SET_CURRENT_POSITION, current));
+			commands.add(new replicatorg.drivers.commands.SetCurrentPosition(current));
 			break;
 
 		// feed rate mode
@@ -1067,7 +1068,7 @@ public class GCodeParser {
 		// spindle speed rate
 		case 97:
 //				driver.setSpindleRPM((int) gcode.getCodeValue('S'));
-			commands.add(new DriverCommand(DriverCommand.Command.SET_SPINDLE_RPM, (int) gcode.getCodeValue('S')));
+			commands.add(new replicatorg.drivers.commands.SetSpindleRPM(gcode.getCodeValue('S')));
 
 			break;
 			

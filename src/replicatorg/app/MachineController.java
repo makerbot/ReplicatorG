@@ -19,9 +19,6 @@
 
 package replicatorg.app;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -51,6 +48,7 @@ import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.UsesSerial;
+import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -183,7 +181,7 @@ public class MachineController implements MachineControllerInterface {
 			GCodeParser parser = new GCodeParser();
 			
 			// Queue of commands that we get from the parser, and run on the driver.
-			Queue< DriverCommand > driverQueue = new LinkedList< DriverCommand >();
+			Queue<DriverCommand> driverQueue = new LinkedList< DriverCommand >();
 			
 			parser.init((DriverQueryInterface) driver);
 			
@@ -191,18 +189,18 @@ public class MachineController implements MachineControllerInterface {
 			GCodeParser simulationParser = new GCodeParser();
 			
 			// Queue of commands that we get from the parser, and run on the driver.
-			Queue< DriverCommand > simulatorQueue = new LinkedList< DriverCommand >();
+			Queue<DriverCommand> simulatorQueue = new LinkedList< DriverCommand >();
 			
 			simulationParser.init((DriverQueryInterface) simulator);
 			
 			// And make a file to write simulation commands out from
-			BufferedWriter out = null;
-			try{
-				FileWriter fstream = new FileWriter("driver_codes.txt");
-    	        out = new BufferedWriter(fstream);
-    	    }catch (Exception e){//Catch exception if any
-	    	      System.err.println("Error opening file for output: " + e.getMessage());
-			}
+//			BufferedWriter out = null;
+//			try{
+//				FileWriter fstream = new FileWriter("driver_codes.txt");
+//    	        out = new BufferedWriter(fstream);
+//    	    }catch (Exception e){//Catch exception if any
+//	    	      System.err.println("Error opening file for output: " + e.getMessage());
+//			}
 			
 			// Initialize our gcode provider
 			Iterator<String> i = source.iterator();
@@ -226,13 +224,13 @@ public class MachineController implements MachineControllerInterface {
 						// Parse a line for the actual machine
 						parser.parse(line, driverQueue);
 						
-						try {
-							out.write(line + ": " + simulatorQueue.size() + " instructions\n");
-							for (DriverCommand command : simulatorQueue) {
-								out.write("  " + command.contentsToString() + "\n");
-							}
-							out.flush();
-						} catch (IOException e1) {}
+//						try {
+//							out.write(line + ": " + simulatorQueue.size() + " instructions\n");
+//							for (DriverCommand command : simulatorQueue) {
+//								out.write("  " + command.contentsToString() + "\n");
+//							}
+//							out.flush();
+//						} catch (IOException e1) {}
 					}
 				}
 				try {
@@ -275,7 +273,7 @@ public class MachineController implements MachineControllerInterface {
 				if (retry == false && simulator.isSimulating()) {
 					for (DriverCommand command : simulatorQueue) {
 						try {
-							simulator.runCommand(command);
+							command.run(simulator);
 						} catch (RetryException r) {
 							// Ignore.
 						}
@@ -287,7 +285,7 @@ public class MachineController implements MachineControllerInterface {
 					if (!state.isSimulating()) {
 						// Run the command on the machine.
 						while(!driverQueue.isEmpty()) {
-							driver.runCommand(driverQueue.peek());
+							driverQueue.peek().run(driver);
 							driverQueue.remove();
 						}
 					}
@@ -845,7 +843,7 @@ public class MachineController implements MachineControllerInterface {
 		EstimationDriver estimator = new EstimationDriver();
 		estimator.setMachine(loadModel());
 		
-		Queue< DriverCommand > estimatorQueue = new LinkedList< DriverCommand >();
+		Queue<DriverCommand> estimatorQueue = new LinkedList< DriverCommand >();
 		
 		GCodeParser estimatorParser = new GCodeParser();
 		estimatorParser.init(estimator);
@@ -855,10 +853,9 @@ public class MachineController implements MachineControllerInterface {
 			// TODO: Hooks for plugins to add estimated time?
 			estimatorParser.parse(line, estimatorQueue);
 			
-			
 			for (DriverCommand command : estimatorQueue) {
 				try {
-					estimator.runCommand(command);
+					command.run(estimator);
 				} catch (RetryException r) {
 					// Ignore.
 				}

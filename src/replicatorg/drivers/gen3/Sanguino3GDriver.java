@@ -1625,6 +1625,8 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8(b);
 		
 		runCommand(pb.getPacket());
+		
+		invalidatePosition();
 	}
 	
 	

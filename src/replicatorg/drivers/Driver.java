@@ -29,7 +29,6 @@ import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
-import replicatorg.app.DriverCommand;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
@@ -54,13 +53,6 @@ public interface Driver {
 	 * @return true if this driver executes GCodes directly, false if the parser should be used to exercise it's interface. 
 	 */
 	public boolean isPassthroughDriver();
-	
-	/**
-	 * Message-style interface to the driver
-	 * @param command
-	 * @throws RetryException
-	 */
-	public void runCommand(DriverCommand command) throws RetryException;
 	
 	/**
 	 * Execute a line of GCode directly (ie, don't use the parser)
