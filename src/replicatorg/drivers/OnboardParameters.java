@@ -11,8 +11,8 @@ public interface OnboardParameters {
 	String getMachineName();
 	void setMachineName(String machineName);
 	
-	int getAxisHomeOffset(int axis);
-	void setAxisHomeOffset(int axis, int offset);
+	double getAxisHomeOffset(int axis);
+	void setAxisHomeOffset(int axis, double d);
 	
 	public enum EndstopType {
 		NOT_PRESENT((byte)0x00),

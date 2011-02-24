@@ -80,11 +80,11 @@ public class MachineOnboardParameters extends JFrame {
 			OnboardParameters.EndstopType.values()[idx]; 
 		target.setInvertedEndstops(endstops);
 		
-		target.setAxisHomeOffset(0, Integer.parseInt(xAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(1, Integer.parseInt(yAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(2, Integer.parseInt(zAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(3, Integer.parseInt(aAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(4, Integer.parseInt(bAxisHomeOffsetField.getText()));
+		target.setAxisHomeOffset(0, Double.parseDouble(xAxisHomeOffsetField.getText()));
+		target.setAxisHomeOffset(1, Double.parseDouble(yAxisHomeOffsetField.getText()));
+		target.setAxisHomeOffset(2, Double.parseDouble(zAxisHomeOffsetField.getText()));
+		target.setAxisHomeOffset(3, Double.parseDouble(aAxisHomeOffsetField.getText()));
+		target.setAxisHomeOffset(4, Double.parseDouble(bAxisHomeOffsetField.getText()));
 		
 		resetDialog();
 	}
@@ -107,11 +107,11 @@ public class MachineOnboardParameters extends JFrame {
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
 		endstopInversionSelection.setSelectedIndex(endstops.ordinal());
 		
-		xAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(0)));
-		yAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(1)));
-		zAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(2)));
-		aAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(3)));
-		bAxisHomeOffsetField.setText(Integer.toString(this.target.getAxisHomeOffset(4)));
+		xAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(0)));
+		yAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(1)));
+		zAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(2)));
+		aAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(3)));
+		bAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(4)));
 	}
 
 	private JPanel makeButtonPanel() {

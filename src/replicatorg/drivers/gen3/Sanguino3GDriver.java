@@ -1515,7 +1515,7 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToEEPROM(EEPROM_MACHINE_NAME_OFFSET,b);
 	}
 	
-	public int getAxisHomeOffset(int axis) {
+	public double getAxisHomeOffset(int axis) {
 		if ((axis < 0) || (axis > 4)) {
 			// TODO: handle this
 			return 0;
@@ -1524,21 +1524,63 @@ public class Sanguino3GDriver extends SerialDriver
 		checkEEPROM();
 		byte[] r = readFromEEPROM(EEPROM_AXIS_HOME_POSITIONS_OFFSET + axis*4, 4);
 		
-		int val = 0;
+		double val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
 		}
+		
+		Point5d stepsPerMM = getMachine().getStepsPerMM();
+		switch(axis) {
+			case 0:
+				val = val/stepsPerMM.x();
+				break;
+			case 1:
+				val = val/stepsPerMM.y();
+				break;
+			case 2:
+				val = val/stepsPerMM.z();
+				break;
+			case 3:
+				val = val/stepsPerMM.a();
+				break;
+			case 4:
+				val = val/stepsPerMM.b();
+				break;
+		}
+		
+		
 		return val;
 	}
 
 	
-	public void setAxisHomeOffset(int axis, int offset) {
+	public void setAxisHomeOffset(int axis, double offset) {
 		if ((axis < 0) || (axis > 4)) {
 			// TODO: handle this
 			return;
 		}
 		
-		writeToEEPROM(EEPROM_AXIS_HOME_POSITIONS_OFFSET + axis*4,intToLE(offset));
+		int offsetSteps = 0;
+		
+		Point5d stepsPerMM = getMachine().getStepsPerMM();
+		switch(axis) {
+			case 0:
+				offsetSteps = (int)(offset*stepsPerMM.x());
+				break;
+			case 1:
+				offsetSteps = (int)(offset*stepsPerMM.y());
+				break;
+			case 2:
+				offsetSteps = (int)(offset*stepsPerMM.z());
+				break;
+			case 3:
+				offsetSteps = (int)(offset*stepsPerMM.a());
+				break;
+			case 4:
+				offsetSteps = (int)(offset*stepsPerMM.b());
+				break;
+		}
+		
+		writeToEEPROM(EEPROM_AXIS_HOME_POSITIONS_OFFSET + axis*4,intToLE(offsetSteps));
 	}
 	
 	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
