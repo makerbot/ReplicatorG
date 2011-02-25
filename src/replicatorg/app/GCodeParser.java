@@ -55,13 +55,8 @@ import java.util.Queue;
 import javax.vecmath.Point3d;
 
 import replicatorg.app.exceptions.GCodeException;
-import replicatorg.app.exceptions.JobCancelledException;
-import replicatorg.app.exceptions.JobEndException;
-import replicatorg.app.exceptions.JobException;
-import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.MultiTool;
-import replicatorg.drivers.PenPlotter;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.drivers.commands.DriverCommand.LinearDirection;
 import replicatorg.machine.model.AxisId;
@@ -71,9 +66,6 @@ import replicatorg.util.Point5d;
 public class GCodeParser {
 	// our driver we use.
 	protected DriverQueryInterface driver;
-	
-	// The code that we are currently executing
-	GCode gcode;
 	
 	// Convenience class to execute drill routines (untested)
 	DrillCycle drillCycle;
@@ -320,9 +312,6 @@ public class GCodeParser {
 		
 		// init our offset variables
 		currentOffset = driver.getOffset(0);
-				
-		// TODO: who uses this before it's initialized?
-		gcode = new GCode("");
 		
 		drillCycle = new DrillCycle();
 	}
@@ -330,13 +319,12 @@ public class GCodeParser {
 	/**
 	 * Parses a line of GCode, sets up the variables, etc.
 	 * 
-	 * @param String
-	 *            cmd a line of GCode to parse
+	 * @param String cmd a line of GCode to parse
 	 */
 	public boolean parse(String cmd, Queue< DriverCommand > commandQueue) {
 		
 		// First, parse the GCode string into an object we can query.
-		gcode = new GCode(cmd);
+		GCode gcode = new GCode(cmd);
 
 		// Now, convert the GCode instruction into a series of driver commands,
 		// that will be executed by execute()
@@ -349,10 +337,10 @@ public class GCodeParser {
 			try {
 				// TODO:
 				if (gcode.hasCode('G')) {
-					buildGCodes(commandQueue);
+					buildGCodes(gcode, commandQueue);
 				}
 				else if (gcode.hasCode('M')) {
-					buildMCodes(commandQueue);
+					buildMCodes(gcode, commandQueue);
 				}
 			} catch (GCodeException e) {
 				// TODO Auto-generated catch block
@@ -364,19 +352,14 @@ public class GCodeParser {
 	}
 
 
-	public double convertToMM(double value, int units) {
+	private double convertToMM(double value, int units) {
 		if (units == UNITS_INCHES) {
 			return value * 25.4;
 		}
 		return value;
 	}
 
-	public String getCommand() {
-		return gcode.getCommand();
-	}
-
-
-	private void buildMCodes(Queue< DriverCommand > commands) throws GCodeException {
+	private void buildMCodes(GCode gcode, Queue< DriverCommand > commands) throws GCodeException {
 		// If this machine handles multiple active toolheads, we always honor a T code
 		// as being a annotation to send the given command to the given toolheads.  Be
 		// aware that appending a T code to an M code will not necessarily generate a
@@ -387,10 +370,24 @@ public class GCodeParser {
 			commands.add(new replicatorg.drivers.commands.SelectTool((int) gcode.getCodeValue('T')));
 		}
 		switch ((int) gcode.getCodeValue('M')) {
-		// stop codes... handled by getStops();
 		case 0:
+			// M0 == unconditional halt
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.UnconditionalHalt(gcode.getComment()));
+			break;
 		case 1:
+			// M1 == optional halt
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.OptionalHalt(gcode.getComment()));
+			break;
 		case 2:
+			// M2 == program end
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.ProgramEnd(gcode.getComment()));
+			break;
+		case 30:
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.ProgramRewind(gcode.getComment()));
 			break;
 
 		// spindle on, CW
@@ -495,7 +492,7 @@ public class GCodeParser {
 			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(0));
 			break;
 		case 41:
-//				driver.changeGearRatio(1);
+			// driver.changeGearRatio(1);
 			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(1));
 			break;
 		case 42:
@@ -542,7 +539,8 @@ public class GCodeParser {
 			break;
 
 		// custom code for temperature reading
-		// TODO: What is the purpose of this command?
+		// TODO: This command seems like a hack, it would be better for the driver to poll temperature rather than
+		//       have the gcode ask for it.
 		case 105:
 			commands.add(new replicatorg.drivers.commands.ReadTemperature());
 			break;
@@ -629,25 +627,16 @@ public class GCodeParser {
 		// set servo 1 position
 		case 300:
 			if (gcode.hasCode('S')) {
-				if (driver instanceof PenPlotter) {
-//						((PenPlotter)driver).setServoPos(0, gcode.getCodeValue('S'));
-					//TODO: Implement this
-					Base.logger.severe("Ignoring M 300 command.");
-				}
+				commands.add(new replicatorg.drivers.commands.SetServo(0, gcode.getCodeValue('S')));
 			}
 			break;
 
 		// set servo 2 position
 		case 301:
 			if (gcode.hasCode('S')) {
-				if (driver instanceof PenPlotter) {
-//						((PenPlotter)driver).setServoPos(1, gcode.getCodeValue('S'));
-					//TODO: Implement this
-					Base.logger.severe("Ignoring M 301 command.");
-				}
+				commands.add(new replicatorg.drivers.commands.SetServo(1, gcode.getCodeValue('S')));
 			}
 			break;
-			
 
 		default:
 			throw new GCodeException("Unknown M code: M"
@@ -655,7 +644,7 @@ public class GCodeParser {
 		}
 	}
 
-	private void buildGCodes(Queue< DriverCommand > commands) throws GCodeException {
+	private void buildGCodes(GCode gcode, Queue< DriverCommand > commands) throws GCodeException {
 		if (! gcode.hasCode('G')) {
 			throw new GCodeException("Not a G code!");
 		}
@@ -788,7 +777,6 @@ public class GCodeParser {
 			break;
 		case 10:
 			if (gcode.hasCode('P')) {
-				// TODO: This seems wrong. At least make into a generic SET_OFFSET command. Does anyone use this?
 				int offsetSystemNum = ((int)gcode.getCodeValue('P'));
 				if (offsetSystemNum >= 1 && offsetSystemNum <= 6) {
 					if (gcode.hasCode('X')) 
@@ -818,7 +806,6 @@ public class GCodeParser {
 			break;
 
 		// This should be "return to home".  We need to introduce new GCodes for homing.
-		// TODO: Should this be deleted?
 		case 28:
 		{
 			// home all axes?
@@ -1013,81 +1000,5 @@ public class GCodeParser {
 			throw new GCodeException("Unknown G code: G"
 					+ (int) gcode.getCodeValue('G'));
 		}
-	}
-
-
-	/**
-	 * StopInfo defines an optional or mandatory stop, the message to display with
-	 * said stop, and the exceptions to be triggered on success of failure of the
-	 * optional stop.
-	 * @author phooky
-	 *
-	 */
-	public class StopInfo {
-		private final JobException exception;
-		private final JobException cancelException;
-		private final String message;
-		private final boolean optional;
-		/**
-		 * Create a mandatory stop.
-		 * @param message the message to display to the user
-		 * @param exception the exception to throw
-		 */
-		public StopInfo(String message, JobException exception) {
-			this.message = message;
-			this.optional = false;
-			this.exception = this.cancelException = exception;
-		}
-		/**
-		 * Create an optional stop.
-		 * @param message the message to display to the user
-		 * @param exception the exception to throw if the user confirms the stop
-		 * @param cancelException the exception to throw if the user cancels the stop
-		 */
-		public StopInfo(String message, JobException exception, JobException cancelException) {
-			this.message = message;
-			this.optional = true;
-			this.exception = exception;
-			this.cancelException = cancelException;
-		}
-		public String getMessage() { return message; }
-		public JobException getException() { return exception; }
-		public JobException getCancelException() { return cancelException; }
-		public boolean isOptional() { return optional; }
-	}
-	
-	/**
-	 * Return a StopInfo object describing the stop defined by the current code, or null if the
-	 * code is not a stop code. 
-	 * @return stop information
-	 */
-	public StopInfo getStops()  {
-		String message = gcode.getComment();
-		
-		int mCode;
-
-		if (gcode.hasCode('M')) {
-			// we wanna do this after its finished whatever was before.
-//			driver.waitUntilBufferEmpty();
-			// TODO: Implement this
-			//Base.logger.severe("Not waiting for buffer to clear before displaying message");
-
-			mCode = (int) gcode.getCodeValue('M');
-
-			if (mCode == 0) {
-				// M0 == unconditional halt
-				return new StopInfo(message,new JobCancelledException());
-			} else if (mCode == 1) {
-				// M1 == optional halt
-				return new StopInfo(message,null,new JobCancelledException());
-			} else if (mCode == 2) {
-				// M2 == program end
-				return new StopInfo(message,new JobEndException());
-			} else if (mCode == 30) {
-				if (message.length() == 0) { message = "Program Rewind"; }
-				return new StopInfo(message,new JobRewindException(),new JobCancelledException());
-			}
-		}
-		return null;
 	}
 }

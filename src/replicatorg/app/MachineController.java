@@ -33,10 +33,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.exceptions.BuildFailureException;
-import replicatorg.app.exceptions.JobCancelledException;
-import replicatorg.app.exceptions.JobEndException;
-import replicatorg.app.exceptions.JobException;
-import replicatorg.app.exceptions.JobRewindException;
 import replicatorg.app.tools.XML;
 import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
@@ -47,6 +43,7 @@ import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
+import replicatorg.drivers.StopException;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.MachineListener;
@@ -233,41 +230,7 @@ public class MachineController implements MachineControllerInterface {
 //						} catch (IOException e1) {}
 					}
 				}
-				try {
-					// Check if there are any interactive stops on this line; if so,
-					// wait for user response.
-					GCodeParser.StopInfo info = parser.getStops();
-					if (info != null &&
-							Base.preferences.getBoolean("machine.optionalstops",true) &&
-							state.isBuilding() &&
-							state.isInteractiveTarget()) {
-						JobException e = info.getException(); 
-						if (info.isOptional()) {
-							int result = JOptionPane.showConfirmDialog(null, info.getMessage(),
-									"Continue Build?", JOptionPane.YES_NO_OPTION);
-							if (result != JOptionPane.YES_OPTION) {
-								e = info.getCancelException();
-							}
-						} else {
-							JOptionPane.showMessageDialog(null, info.getMessage(), 
-									"Build stop", JOptionPane.INFORMATION_MESSAGE);
-						}
-						if (e != null) {
-							throw e;
-						}
-					}
-				} catch (JobEndException e) {
-					// M2 codes indicate job done
-					return true;
-				} catch (JobCancelledException e) {
-					throw new BuildFailureException("Job cancelled by user.");
-				} catch (JobRewindException e) {
-					// Rewind the job to start of source
-					i = source.iterator();
-					continue;
-				} catch (JobException e) {
-					Base.logger.severe("Unknown job exception emitted");
-				}
+				
 				
 				// Simulate the command. Just run everything against the simulator, and ignore errors.
 				if (retry == false && simulator.isSimulating()) {
@@ -276,6 +239,8 @@ public class MachineController implements MachineControllerInterface {
 							command.run(simulator);
 						} catch (RetryException r) {
 							// Ignore.
+						} catch (StopException e) {
+							// TODO: stop the simulator at this point?
 						}
 					}
 					simulatorQueue.clear();
@@ -295,6 +260,34 @@ public class MachineController implements MachineControllerInterface {
 					// than proceeding to the next, on the next go-round.
 					Base.logger.log(Level.FINE,"Message delivery failed, retrying");
 					retry = true;
+				} catch (StopException e) {
+					// TODO: Just returning here seems dangerous, better to notify the state machine.
+					
+					switch (e.getType()) {
+					case UNCONDITIONAL_HALT:
+						JOptionPane.showMessageDialog(null, e.getMessage(), 
+								"Unconditional halt: build ended", JOptionPane.INFORMATION_MESSAGE);
+						return true;
+					case PROGRAM_END:
+						JOptionPane.showMessageDialog(null, e.getMessage(),
+								"Program end: Build ended", JOptionPane.INFORMATION_MESSAGE);
+						return true;
+					case OPTIONAL_HALT:
+						int result = JOptionPane.showConfirmDialog(null, e.getMessage(),
+								"Optional halt: Continue build?", JOptionPane.YES_NO_OPTION);
+						
+						if (result == JOptionPane.YES_OPTION) {
+							driverQueue.remove();
+						} else {
+							return true;
+						}
+						break;
+					case PROGRAM_REWIND:
+						// TODO: Implement rewind; for now, just stop the build.
+						JOptionPane.showMessageDialog(null, e.getMessage(),
+								"Program rewind: Build ended", JOptionPane.INFORMATION_MESSAGE);
+						return true;
+					}
 				}
 				
 				// did we get any errors?
@@ -858,6 +851,8 @@ public class MachineController implements MachineControllerInterface {
 					command.run(estimator);
 				} catch (RetryException r) {
 					// Ignore.
+				} catch (StopException e) {
+					// TODO: Should we stop the estimator when we get a stop???
 				}
 			}
 			estimatorQueue.clear();
