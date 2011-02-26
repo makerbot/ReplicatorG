@@ -13,10 +13,10 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
-import replicatorg.app.MachineControllerInterface;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.Version;
+import replicatorg.machine.MachineControllerInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;

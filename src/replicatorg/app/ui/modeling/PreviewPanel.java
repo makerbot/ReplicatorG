@@ -46,9 +46,9 @@ import javax.vecmath.Vector3f;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.app.MachineController;
-import replicatorg.app.MachineControllerInterface;
 import replicatorg.app.ui.MainWindow;
+import replicatorg.machine.MachineController;
+import replicatorg.machine.MachineControllerInterface;
 import replicatorg.machine.model.BuildVolume;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.BuildModel;

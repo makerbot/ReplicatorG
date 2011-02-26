@@ -27,9 +27,9 @@ import javax.swing.event.ChangeListener;
 import net.miginfocom.swing.MigLayout;
 
 import replicatorg.app.Base;
-import replicatorg.app.MachineControllerInterface;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RealtimeControl;
+import replicatorg.machine.MachineControllerInterface;
 
 public class RealtimePanel extends JFrame implements ChangeListener, WindowListener {
 	

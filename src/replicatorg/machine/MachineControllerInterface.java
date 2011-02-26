@@ -1,10 +1,8 @@
-package replicatorg.app;
+package replicatorg.machine;
 
 import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.SimulationDriver;
-import replicatorg.machine.MachineListener;
-import replicatorg.machine.MachineState;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 

@@ -21,7 +21,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app;
+package replicatorg.machine;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +42,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import replicatorg.app.Base;
 
 public class MachineFactory {
 	// private constructor: static access only!!!

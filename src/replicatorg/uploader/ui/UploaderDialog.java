@@ -21,7 +21,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
-import replicatorg.app.MachineControllerInterface;
+import replicatorg.machine.MachineControllerInterface;
 import replicatorg.uploader.AbstractFirmwareUploader;
 import replicatorg.uploader.AvrdudeUploader;
 import replicatorg.uploader.FirmwareUploader;

@@ -1,6 +1,5 @@
 package replicatorg.machine;
 
-import replicatorg.app.MachineController;
 import replicatorg.machine.model.ToolModel;
 
 public class MachineToolStatusEvent {

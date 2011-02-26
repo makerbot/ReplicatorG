@@ -17,7 +17,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app;
+package replicatorg.machine;
 
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -32,6 +32,8 @@ import javax.swing.JOptionPane;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import replicatorg.app.Base;
+import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.tools.XML;
 import replicatorg.app.ui.MainWindow;
@@ -46,11 +48,6 @@ import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.commands.DriverCommand;
-import replicatorg.machine.MachineListener;
-import replicatorg.machine.MachineProgressEvent;
-import replicatorg.machine.MachineState;
-import replicatorg.machine.MachineStateChangeEvent;
-import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;
@@ -73,6 +70,35 @@ import replicatorg.model.StringListSource;
  */
 public class MachineController implements MachineControllerInterface {
 
+	public enum RequestType {
+		UPLOAD,
+		BUILD_DIRECT,
+		BUILD_TO_FILE,
+		BUILD_REMOTE,
+		PAUSE,
+		UNPAUSE,
+		STOP,
+		RESET,
+		CONNECT,
+		SHUTDOWN,
+	}
+	
+	// Test idea for a request interface between the thread and the controller
+	class JobRequest {
+
+		RequestType type;
+		GCodeSource source;
+		String remoteName;
+		
+		public JobRequest(RequestType type,
+							GCodeSource source,
+							String remoteName) {
+			this.type = type;
+			this.source = source;
+			this.remoteName = remoteName;
+		}
+	}
+	
 	private MachineState state = new MachineState();
 	
 	/**
@@ -127,6 +153,9 @@ public class MachineController implements MachineControllerInterface {
 
 		GCodeSource currentSource;
 		
+		// If this isn't null, someone requested for us to do something.
+		private JobRequest pendingRequest;
+		
 		/**
 		 * Start polling the machine for its current status (temperatures, etc.)
 		 * @param interval The interval, in ms, between polls
@@ -141,6 +170,67 @@ public class MachineController implements MachineControllerInterface {
 		 */
 		synchronized void stopStatusPolling() {
 			pollingEnabled = false;
+		}
+		
+		private void runRequest(JobRequest request) {
+			switch(request.type) {
+			case UPLOAD:
+				currentSource = request.source;
+				this.remoteName = request.remoteName;
+				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SD_UPLOAD));
+				break;
+			case BUILD_DIRECT:
+				currentSource = request.source;
+				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.MACHINE));
+				break;
+			case BUILD_TO_FILE:
+				currentSource = request.source;
+				this.remoteName = request.remoteName;
+				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.FILE));
+				break;
+			case BUILD_REMOTE:
+				this.remoteName = request.remoteName;
+				setState(MachineState.State.PLAYBACK);
+				break;
+			case PAUSE:
+				if (state.isBuilding() && !state.isPaused()) {
+					MachineState newState = getMachineState();
+					newState.setPaused(true);
+					setState(newState);
+				}
+				break;
+			case UNPAUSE:
+				resumeBuild();
+				break;
+			case STOP:
+				driver.getMachine().currentTool().setTargetTemperature(0);
+				driver.getMachine().currentTool().setPlatformTargetTemperature(0);
+				if (state.isBuilding()) {
+					setState(MachineState.State.STOPPING);
+				}
+				break;
+			case RESET:
+				if (state.isConnected()) {
+					setState(new MachineState(MachineState.State.RESET));
+				}
+				break;
+			case CONNECT:
+				setState(new MachineState(MachineState.State.CONNECTING));
+				break;
+			}
+		}
+		
+		synchronized public boolean scheduleRequest(JobRequest request) {
+			if (pendingRequest == null) {
+				pendingRequest = request;
+				
+				synchronized(machineThread) {
+					machineThread.notify(); // wake up paused machines
+				}
+				
+				return true;
+			}
+			return false;
 		}
 		
 		
@@ -371,20 +461,7 @@ public class MachineController implements MachineControllerInterface {
 				}
 			}
 		}
-		
-		// Enter the reset state
-		public void reset() {
-			if (state.isConnected()) {
-				setState(new MachineState(MachineState.State.RESET));
-			}
-		}
-		
-		// Begin connecting to the machine
-		public void connect() {
-			setState(new MachineState(MachineState.State.CONNECTING));
-		}
 
-		
 		// Build the gcode source, bracketing it with warmup and cooldown commands.
 		// 
 		private void buildInternal(GCodeSource source) {
@@ -472,15 +549,7 @@ public class MachineController implements MachineControllerInterface {
 			driver.invalidatePosition();
 			setState(new MachineState(MachineState.State.READY));
 		}
-		
-		/**
-		 * Run an ordinary gcode build directly on the machine.
-		 * @param source
-		 */
-		public void build(GCodeSource source) {
-			currentSource = source;
-			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.MACHINE));
-		}
+
 		
 		/**
 		 * Simulate a gcode build without running it on the machine.
@@ -491,48 +560,6 @@ public class MachineController implements MachineControllerInterface {
 			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SIMULATOR));
 		}
 
-		/**
-		 * Upload the gcode to the given remote SD name.
-		 * @param source
-		 * @param remoteName
-		 */
-		public void upload(GCodeSource source, String remoteName) {
-			currentSource = source;
-			this.remoteName = remoteName;
-			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SD_UPLOAD));
-		}
-
-		/**
-		 * Build to the given file.
-		 * @param source
-		 * @param path
-		 */
-		public void buildToFile(GCodeSource source, String path) {
-			currentSource = source;
-			this.remoteName = path;
-			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.FILE));
-		}
-
-		/**
-		 * Run the remote build with the given filename. This is used for instructing
-		 * the machine to run a build from its internal storage, such as an SD card.
-		 * @param remoteName
-		 */
-		public void buildRemote(String remoteName) {
-			this.remoteName = remoteName;
-			setState(MachineState.State.PLAYBACK);
-		}
-		
-		/**
-		 * Pause a running build.
-		 */
-		public void pauseBuild() {
-			if (state.isBuilding() && !state.isPaused()) {
-				MachineState newState = getMachineState();
-				newState.setPaused(true);
-				setState(newState);
-			}
-		}
 		
 		/**
 		 * Resume a paused build.
@@ -542,17 +569,6 @@ public class MachineController implements MachineControllerInterface {
 				MachineState newState = getMachineState();
 				newState.setPaused(false);
 				setState(newState);
-			}
-		}
-		
-		/**
-		 * Stop a running build.
-		 */
-		public void stopBuild() {
-			driver.getMachine().currentTool().setTargetTemperature(0);
-			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
-			if (state.isBuilding()) {
-				setState(MachineState.State.STOPPING);
 			}
 		}
 		
@@ -585,6 +601,11 @@ public class MachineController implements MachineControllerInterface {
 		 * Main machine thread loop.
 		 */
 		public void run() {
+			// TODO: Handle this in all appropriate state machine contexts.
+			if(pendingRequest != null) {
+				runRequest(pendingRequest);
+			}
+			
 			while (isRunning()) {
 				try {
 					if (state.getState() == MachineState.State.BUILDING) {
@@ -792,7 +813,7 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	public boolean buildRemote(String remoteName) {
-		machineThread.buildRemote(remoteName);
+		machineThread.scheduleRequest(new JobRequest(RequestType.BUILD_REMOTE, null, remoteName));
 		return true;
 	}
 	
@@ -810,7 +831,8 @@ public class MachineController implements MachineControllerInterface {
 
 		// do that build!
 		Base.logger.info("Beginning build.");
-		machineThread.build(source);
+		
+		machineThread.scheduleRequest(new JobRequest(RequestType.BUILD_DIRECT, source, null));
 		return true;
 	}
 
@@ -942,42 +964,48 @@ public class MachineController implements MachineControllerInterface {
 		return cachedModel;
 	}
 
-	synchronized public void stop() {
-		machineThread.stopBuild();
+	public void stop() {
+		machineThread.scheduleRequest(new JobRequest(RequestType.STOP, null, null));
 	}
 
 	synchronized public boolean isInitialized() {
 		return (driver != null && driver.isInitialized());
 	}
 
-	synchronized public void pause() {
-		machineThread.pauseBuild();
+	public void pause() {
+		machineThread.scheduleRequest(new JobRequest(RequestType.PAUSE, null, null));
 	}
 
-	synchronized public void upload(String remoteName) {
-		machineThread.upload(source, remoteName);
+	public void upload(String remoteName) {
+		/**
+		 * Upload the gcode to the given remote SD name.
+		 * @param source
+		 * @param remoteName
+		 */
+		machineThread.scheduleRequest(new JobRequest(RequestType.UPLOAD, source, null));
 	}
 
-	synchronized public void buildToFile(String path) {
-		machineThread.buildToFile(source, path);
+	public void buildToFile(String path) {
+		
 	}
 
 	
-	synchronized public void unpause() {
-		machineThread.resumeBuild();
+	public void unpause() {
+		machineThread.scheduleRequest(new JobRequest(RequestType.UNPAUSE, null, null));
 	}
 
-	synchronized public void reset() {
-		machineThread.reset();
+	public void reset() {
+		
 	}
 
-	synchronized public void connect() {
+	public void connect() {
 		// recreate thread if stopped
+		// TODO: Evaluate this!
 		if (!machineThread.isAlive()) {
 			machineThread = new MachineThread();
 			machineThread.start();
 		}
-		machineThread.connect();
+		machineThread.scheduleRequest(new JobRequest(RequestType.CONNECT, null, null));
 	}
 
 	synchronized public void disconnect() {

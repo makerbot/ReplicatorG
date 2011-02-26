@@ -1,7 +1,5 @@
 package replicatorg.machine;
 
-import replicatorg.app.MachineController;
-import replicatorg.app.MachineControllerInterface;
 
 public class MachineStateChangeEvent {
 	private MachineControllerInterface source;
