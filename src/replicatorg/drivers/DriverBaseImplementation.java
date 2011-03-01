@@ -88,7 +88,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	public void loadXML(Node xml) {
 	}
 	
-	public void updateManualControl() throws InterruptedException {
+	public void updateManualControl() {
 	}
 	
 	public boolean isPassthroughDriver() {

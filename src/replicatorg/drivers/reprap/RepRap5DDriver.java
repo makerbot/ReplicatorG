@@ -209,9 +209,14 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
         }
     }
 
-	public void updateManualControl() throws InterruptedException
+	public void updateManualControl()
 	{
-		extrusionUpdater.update();
+		try {
+			extrusionUpdater.update();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 

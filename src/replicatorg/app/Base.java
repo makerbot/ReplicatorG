@@ -771,8 +771,6 @@ public class Base {
 		System.exit(1);
 	}
 
-	// ...................................................................
-
 	static public String getContents(String what) {
 		String basePath = System.getProperty("user.dir");
 		return basePath + File.separator + what;

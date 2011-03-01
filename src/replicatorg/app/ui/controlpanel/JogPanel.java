@@ -51,7 +51,6 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	protected EnumMap<AxisId,JTextField> positionFields = new EnumMap<AxisId,JTextField>(AxisId.class);
 
 	protected MachineControllerInterface machine;
-	protected Driver driver;
 
 	public class JogButton extends JButton {
 		public JogButton(String root, String tooltip) {
@@ -127,7 +126,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		} else {
 			// If we were in continuous jog mode, send a stop to be safe
 			if (continuousJogMode) {
-				this.driver.stop(false);			
+				this.machine.stop();			
 			}
 			continuousJogMode = false;
 			Matcher jogMatcher = jogPattern.matcher(mode);
@@ -240,11 +239,10 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		return panel;
 	}
 	
-	public JogPanel(MachineControllerInterface machine2) {
+	public JogPanel(MachineControllerInterface machine) {
 		feedrate = new Point5d();
-		this.machine = machine2;
-		this.driver = machine2.getDriver();
-		Set<AxisId> axes = machine2.getModel().getAvailableAxes();
+		this.machine = machine;
+		Set<AxisId> axes = machine.getModel().getAvailableAxes();
 		
 		setLayout(new MigLayout());
 		
@@ -312,7 +310,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	DecimalFormat positionFormatter = new DecimalFormat("###.#");
 
 	synchronized public void updateStatus() {
-		Point5d current = driver.getCurrentPosition();
+		Point5d current = machine.getDriverQueryInterface().getCurrentPosition();
 
 		for (AxisId axis : machine.getModel().getAvailableAxes()) {
 			double v = current.axis(axis);
@@ -324,53 +322,49 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	Pattern centerActionParser = Pattern.compile("Center ([XYZAB])");
 	
 	public void actionPerformed(ActionEvent e) {
-		Point5d current = driver.getCurrentPosition();
+		Point5d current = machine.getDriverQueryInterface().getCurrentPosition();
 		String s = e.getActionCommand();
 
-		try {
-			Matcher jogMatch = jogActionParser.matcher(s);
-			Matcher centerMatch = centerActionParser.matcher(s);
-			if (jogMatch.matches()) {
-				// If continuous jog mode, let the mouse listener interface handle it.
-				if (!continuousJogMode) {
-					AxisId axis = AxisId.valueOf(jogMatch.group(1));
-					boolean positive = jogMatch.group(2).equals("+");
-					current.setAxis(axis, current.axis(axis) + (positive?jogRate:-jogRate));
-					double f = feedrate.axis(axis);
-					// Exception: XY feedrate is assumed to be X feedrate (symmetrical)
-					if (axis.equals(AxisId.Y)) { f = feedrate.axis(AxisId.X); }
-					driver.setFeedrate(f);
-					driver.queuePoint(current);
-				}
-			} else if (s.equals("Stop")) {
-				this.driver.stop(false);
-				// FIXME: If we reenable the control panel while printing, 
-				// we should check this, call this.machine.stop(),
-				// plus communicate this action back to the main window
-			} else if (centerMatch.matches()) {
-				AxisId axis = AxisId.valueOf(centerMatch.group(1));
-				current.setAxis(axis, 0);
+		Matcher jogMatch = jogActionParser.matcher(s);
+		Matcher centerMatch = centerActionParser.matcher(s);
+		if (jogMatch.matches()) {
+			// If continuous jog mode, let the mouse listener interface handle it.
+			if (!continuousJogMode) {
+				AxisId axis = AxisId.valueOf(jogMatch.group(1));
+				boolean positive = jogMatch.group(2).equals("+");
+				current.setAxis(axis, current.axis(axis) + (positive?jogRate:-jogRate));
 				double f = feedrate.axis(axis);
 				// Exception: XY feedrate is assumed to be X feedrate (symmetrical)
 				if (axis.equals(AxisId.Y)) { f = feedrate.axis(AxisId.X); }
-				driver.setFeedrate(f);
-				driver.queuePoint(current);
-			} else if (s.equals("Zero")) {
-				// "Zero" tells the machine to calibrate its
-				// current position as zero, not to move to its
-				// currently-set zero position.
-				driver.setCurrentPosition(new Point5d());
+				machine.runCommand(new replicatorg.drivers.commands.SetFeedrate(f));
+				machine.runCommand(new replicatorg.drivers.commands.QueuePoint(current));
 			}
-			// get our new jog rate
-			else if (s.equals("jog size")) {
-				JComboBox cb = (JComboBox) e.getSource();
-				String jogText = (String) cb.getSelectedItem();
-				setJogMode(jogText);
-			} else {
-				Base.logger.warning("Unknown Action Event: " + s);
-			}
-		} catch (RetryException e1) {
-			Base.logger.severe("Could not execute command; machine busy.");
+		} else if (s.equals("Stop")) {
+			machine.stop();
+			// FIXME: If we reenable the control panel while printing, 
+			// we should check this, call this.machine.stop(),
+			// plus communicate this action back to the main window
+		} else if (centerMatch.matches()) {
+			AxisId axis = AxisId.valueOf(centerMatch.group(1));
+			current.setAxis(axis, 0);
+			double f = feedrate.axis(axis);
+			// Exception: XY feedrate is assumed to be X feedrate (symmetrical)
+			if (axis.equals(AxisId.Y)) { f = feedrate.axis(AxisId.X); }
+			machine.runCommand(new replicatorg.drivers.commands.SetFeedrate(f));
+			machine.runCommand(new replicatorg.drivers.commands.QueuePoint(current));
+		} else if (s.equals("Zero")) {
+			// "Zero" tells the machine to calibrate its
+			// current position as zero, not to move to its
+			// currently-set zero position.
+			machine.runCommand(new replicatorg.drivers.commands.SetCurrentPosition(new Point5d()));
+		}
+		// get our new jog rate
+		else if (s.equals("jog size")) {
+			JComboBox cb = (JComboBox) e.getSource();
+			String jogText = (String) cb.getSelectedItem();
+			setJogMode(jogText);
+		} else {
+			Base.logger.warning("Unknown Action Event: " + s);
 		}
 	}
 
@@ -388,7 +382,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	public void mousePressed(MouseEvent e) {
 		if (continuousJogMode) {
-			Point5d current = driver.getCurrentPosition();
+			Point5d current = machine.getDriverQueryInterface().getCurrentPosition();
 			String s = ((JButton)e.getSource()).getActionCommand();
 			Matcher jogMatch = jogActionParser.matcher(s);
 			if (jogMatch.matches()) {
@@ -399,19 +393,15 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 				double f = feedrate.axis(axis);
 				// Exception: XY feedrate is assumed to be X feedrate (symmetrical)
 				if (axis.equals(AxisId.Y)) { f = feedrate.axis(AxisId.X); }
-				driver.setFeedrate(f);
-				try {
-					driver.queuePoint(current);
-				} catch (RetryException e1) {
-					Base.logger.severe("Could not execute command; machine busy.");
-				}
+				machine.runCommand(new replicatorg.drivers.commands.SetFeedrate(f));
+				machine.runCommand(new replicatorg.drivers.commands.QueuePoint(current));
 			}
 		}
 	}
 
 	public void mouseReleased(MouseEvent arg0) {
 		if (continuousJogMode) {
-			driver.stop(false);
+			machine.stop();
 		}
 	}
 }

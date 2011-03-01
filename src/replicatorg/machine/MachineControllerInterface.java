@@ -2,7 +2,9 @@ package replicatorg.machine;
 
 import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
+import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.SimulationDriver;
+import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 
@@ -27,12 +29,16 @@ import replicatorg.model.GCodeSource;
 public interface MachineControllerInterface {
 
 	/**
-	 * Get the machine state.  This is a snapshot of the state when the method was called.
+	 * The machine state tells whether it is running or not, and what it's target is.
 	 */
 	public MachineState getMachineState();
 	
 	public Driver getDriver();
+	
+	public void runCommand(DriverCommand command);
 
+	public DriverQueryInterface getDriverQueryInterface();
+	
 	public SimulationDriver getSimulatorDriver();
 	
 	public void buildToFile(String path);

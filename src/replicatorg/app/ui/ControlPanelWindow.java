@@ -59,6 +59,10 @@ import replicatorg.app.ui.controlpanel.ExtruderPanel;
 import replicatorg.app.ui.controlpanel.JogPanel;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
+import replicatorg.drivers.commands.HomeAxes;
+import replicatorg.drivers.commands.InvalidatePosition;
+import replicatorg.drivers.commands.DriverCommand.LinearDirection;
+import replicatorg.machine.MachineController;
 import replicatorg.machine.MachineControllerInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -83,7 +87,7 @@ public class ControlPanelWindow extends JFrame implements
 
 	protected MachineControllerInterface machine;
 
-	protected Driver driver;
+//	protected Driver driver;
 
 	protected UpdateThread updateThread;
 
@@ -103,16 +107,17 @@ public class ControlPanelWindow extends JFrame implements
 		return instance;
 	}
 	
-	private ControlPanelWindow(MachineControllerInterface machine2) {
+	private ControlPanelWindow(MachineControllerInterface machine) {
 		super("Control Panel");
 
 		Image icon = Base.getImage("images/icon.gif", this);
 		setIconImage(icon);
 		
 		// save our machine!
-		machine = machine2;
-		driver = machine.getDriver();
-		driver.invalidatePosition(); // Always force a query when we open the panel
+		this.machine = machine;
+//		driver = machine.getDriver();
+		
+		machine.runCommand(new InvalidatePosition());
 
 		// Listen to it-- stop and close if we're in build mode.
 		machine.addMachineStateListener(this);
@@ -141,19 +146,21 @@ public class ControlPanelWindow extends JFrame implements
 		// start our various threads.
 		updateThread = new UpdateThread(this);
 		updateThread.start();
-		pollThread = new PollThread(driver);
+		pollThread = new PollThread(machine);
 		pollThread.start();
 	}
 
-	private JMenuItem makeHomeItem(String name,final EnumSet<AxisId> set,final boolean positive) {
+	private JMenuItem makeHomeItem(String name,final EnumSet<AxisId> axes,final boolean positive) {
 		JMenuItem item = new JMenuItem(name);
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					driver.homeAxes(set,positive,0);
-				} catch (RetryException e1) {
-					Base.logger.severe("Can't home axis; machine busy");
+				LinearDirection direction;
+				if (positive) {
+					direction = LinearDirection.POSITIVE;
+				} else {
+					direction = LinearDirection.NEGATIVE;
 				}
+				machine.runCommand(new HomeAxes(axes, direction));
 			}
 		});
 		return item;
@@ -167,7 +174,7 @@ public class ControlPanelWindow extends JFrame implements
 		//adding the appropriate homing options for your endstop configuration
 		for (AxisId axis : AxisId.values())
 		{
-			Endstops endstops = driver.getMachine().getEndstops(axis);
+			Endstops endstops = machine.getDriver().getMachine().getEndstops(axis);
 			if (endstops != null)
 			{
 				if (endstops.hasMin == true)
@@ -220,11 +227,7 @@ public class ControlPanelWindow extends JFrame implements
 		JButton enableButton = new JButton("Enable");
 		enableButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					driver.enableDrives();
-				} catch (RetryException e1) {
-					Base.logger.severe("Can't change stepper state; machine busy");
-				}
+				machine.runCommand(new replicatorg.drivers.commands.EnableDrives());
 			}
 		});
 		activationPanel.add(enableButton);
@@ -232,11 +235,7 @@ public class ControlPanelWindow extends JFrame implements
 		JButton disableButton = new JButton("Disable");
 		disableButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					driver.disableDrives();
-				} catch (RetryException e1) {
-					Base.logger.severe("Can't change stepper state; machine busy");
-				}
+				machine.runCommand(new replicatorg.drivers.commands.DisableDrives());
 			}
 		});
 		activationPanel.add(disableButton);
@@ -314,19 +313,19 @@ public class ControlPanelWindow extends JFrame implements
 	}
 
 	class PollThread extends Thread {
-		Driver driver;
+		MachineControllerInterface machine;
 
-		public PollThread(Driver d) {
+		public PollThread(MachineControllerInterface machine) {
 			super("Control Panel Poll Thread");
 
-			driver = d;
+			this.machine = machine;
 		}
 
 		public void run() {
 			// we'll break on interrupts
 			try {
 				while (true) {
-					driver.updateManualControl();
+					machine.runCommand(new replicatorg.drivers.commands.UpdateManualControl());
 					// driver.readTemperature();
 					Thread.sleep(700);  // update every .7 s
 				}
@@ -373,7 +372,7 @@ public class ControlPanelWindow extends JFrame implements
 			if (pollThread != null) { pollThread.interrupt(); }
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					dispose();
+//					dispose();
 				}
 			});
 		}

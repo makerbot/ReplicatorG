@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
@@ -71,16 +72,21 @@ import replicatorg.model.StringListSource;
 public class MachineController implements MachineControllerInterface {
 
 	public enum RequestType {
-		UPLOAD,
-		BUILD_DIRECT,
-		BUILD_TO_FILE,
-		BUILD_REMOTE,
-		PAUSE,
-		UNPAUSE,
-		STOP,
-		RESET,
-		CONNECT,
-		SHUTDOWN,
+		CONNECT,			// Establish connection with the driver
+		SHUTDOWN,			// ??
+		RESET,				// ??
+
+		SIMULATE,			// Build to the simulator
+		BUILD_DIRECT,		// Build in real time on the machine
+		BUILD_TO_FILE,		// Build, but instruct the machine to save it to the local filesystem
+		UPLOAD,				// Build, but instruct the machine to save it to the machine's filesystem
+		BUILD_REMOTE,		// Instruct the machine to run a build from it's filesystem
+		
+		PAUSE,				// Pause the current build
+		UNPAUSE,			// Unpause the current build
+		STOP,				// Abort the current build
+		
+		RUN_COMMAND,		// Run a single command on the driver, interleaved with the build.
 	}
 	
 	// Test idea for a request interface between the thread and the controller
@@ -89,6 +95,7 @@ public class MachineController implements MachineControllerInterface {
 		RequestType type;
 		GCodeSource source;
 		String remoteName;
+		DriverCommand command;
 		
 		public JobRequest(RequestType type,
 							GCodeSource source,
@@ -96,6 +103,12 @@ public class MachineController implements MachineControllerInterface {
 			this.type = type;
 			this.source = source;
 			this.remoteName = remoteName;
+		}
+		
+		public JobRequest(RequestType type,
+							DriverCommand command) {
+			this.type = type;
+			this.command = command;
 		}
 	}
 	
@@ -153,8 +166,12 @@ public class MachineController implements MachineControllerInterface {
 
 		GCodeSource currentSource;
 		
-		// If this isn't null, someone requested for us to do something.
-		private JobRequest pendingRequest;
+		// Link of job requests to run
+		ConcurrentLinkedQueue<JobRequest> pendingQueue;
+		
+		public MachineThread() {
+			pendingQueue = new ConcurrentLinkedQueue<JobRequest>();
+		}
 		
 		/**
 		 * Start polling the machine for its current status (temperatures, etc.)
@@ -174,10 +191,28 @@ public class MachineController implements MachineControllerInterface {
 		
 		private void runRequest(JobRequest request) {
 			switch(request.type) {
-			case UPLOAD:
-				currentSource = request.source;
-				this.remoteName = request.remoteName;
-				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SD_UPLOAD));
+			case CONNECT:
+				setState(new MachineState(MachineState.State.CONNECTING));
+				break;
+			case SHUTDOWN:
+				if (state.getState() == MachineState.State.PLAYBACK) {
+					running = false;
+					return; // send no further packets to machine; let it go on its own
+				}
+				
+				if (state.isBuilding()) {
+					setState(MachineState.State.STOPPING);
+				}
+				running = false;
+				break;
+			case RESET:
+				if (state.isConnected()) {
+					setState(new MachineState(MachineState.State.RESET));
+				}
+				break;
+			case SIMULATE:
+				currentSource = source;
+				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SIMULATOR));
 				break;
 			case BUILD_DIRECT:
 				currentSource = request.source;
@@ -187,6 +222,11 @@ public class MachineController implements MachineControllerInterface {
 				currentSource = request.source;
 				this.remoteName = request.remoteName;
 				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.FILE));
+				break;
+			case UPLOAD:
+				currentSource = request.source;
+				this.remoteName = request.remoteName;
+				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SD_UPLOAD));
 				break;
 			case BUILD_REMOTE:
 				this.remoteName = request.remoteName;
@@ -200,7 +240,11 @@ public class MachineController implements MachineControllerInterface {
 				}
 				break;
 			case UNPAUSE:
-				resumeBuild();
+				if (state.isBuilding() && state.isPaused()) {
+					MachineState newState = getMachineState();
+					newState.setPaused(false);
+					setState(newState);
+				}
 				break;
 			case STOP:
 				driver.getMachine().currentTool().setTargetTemperature(0);
@@ -209,39 +253,34 @@ public class MachineController implements MachineControllerInterface {
 					setState(MachineState.State.STOPPING);
 				}
 				break;
-			case RESET:
-				if (state.isConnected()) {
-					setState(new MachineState(MachineState.State.RESET));
+			case RUN_COMMAND:
+				{
+					boolean completed = false;
+					// TODO: provide feedback to the caller rather than eating it.
+					
+					while(!completed) {
+						try {
+							request.command.run(driver);
+							completed = true;
+						} catch (RetryException e) {
+						} catch (StopException e) {
+						}
+					}
 				}
-				break;
-			case CONNECT:
-				setState(new MachineState(MachineState.State.CONNECTING));
 				break;
 			}
 		}
 		
 		synchronized public boolean scheduleRequest(JobRequest request) {
-			if (pendingRequest == null) {
-				pendingRequest = request;
+			pendingQueue.add(request);
 				
-				synchronized(machineThread) {
-					machineThread.notify(); // wake up paused machines
-				}
-				
-				return true;
+			synchronized(machineThread) {
+				machineThread.notify(); // wake up paused machines
 			}
-			return false;
+			
+			return true;
 		}
 		
-		
-		// Interrupt the machine controller thread.
-		// The driver implementation should be smart enough to check for interrupted status when not blocking
-		// on IO, and handle interrupt exceptions by dumping out.
-		public void interruptDriver() {
-			this.interrupt();
-		}
-	
-
 		/**
 		 * Build the provided gcodes.  This method does not return until the build is complete or has been terminated.
 		 * The build target need not be an actual machine; it can be a file as well.  An "upload" is considered a build
@@ -425,6 +464,10 @@ public class MachineController implements MachineControllerInterface {
 							linesProcessed,
 							linesTotal);
 				emitProgress(progress);
+				
+				while (!pendingQueue.isEmpty()) {
+					runRequest(pendingQueue.remove());
+				}
 			}
 			
 			// wait for driver to finish up.
@@ -545,53 +588,18 @@ public class MachineController implements MachineControllerInterface {
 					// bail if we got interrupted.
 					if (state.getState() != MachineState.State.PLAYBACK) return;
 				}
+				
+				while (!pendingQueue.isEmpty()) {
+					runRequest(pendingQueue.remove());
+				}
 			}
 			driver.invalidatePosition();
 			setState(new MachineState(MachineState.State.READY));
 		}
 
-		
-		/**
-		 * Simulate a gcode build without running it on the machine.
-		 * @param source
-		 */
-		public void simulate(GCodeSource source) {
-			currentSource = source;
-			setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SIMULATOR));
-		}
-
-		
-		/**
-		 * Resume a paused build.
-		 */
-		public void resumeBuild() {
-			if (state.isBuilding() && state.isPaused()) {
-				MachineState newState = getMachineState();
-				newState.setPaused(false);
-				setState(newState);
-			}
-		}
-		
-		/**
-		 * Shutdown: abort the running build IF the current build is not an SD build.
-		 * SD builds are allowed to continue.
-		 */
-		public void shutdown() {
-			if (state.getState() == MachineState.State.PLAYBACK) {
-				running = false;
-				return; // send no further packets to machine; let it go on its own
-			}
-			
-			if (state.isBuilding()) {
-				setState(MachineState.State.STOPPING);
-			}
-			running = false;
-			synchronized(this) { notify(); }
-		}
-
 		private boolean running = true;
 		
-		protected boolean isRunning() {
+		private boolean isRunning() {
 			// If we're in stopping mode, we don't want to terminate until the stop
 			// packet is sent!
 			return running ||
@@ -601,12 +609,12 @@ public class MachineController implements MachineControllerInterface {
 		 * Main machine thread loop.
 		 */
 		public void run() {
-			// TODO: Handle this in all appropriate state machine contexts.
-			if(pendingRequest != null) {
-				runRequest(pendingRequest);
-			}
-			
 			while (isRunning()) {
+				// TODO: Handle this in all appropriate state machine contexts.
+				while (!pendingQueue.isEmpty()) {
+					runRequest(pendingQueue.remove());
+				}
+				
 				try {
 					if (state.getState() == MachineState.State.BUILDING) {
 						// Capture build to a card
@@ -847,7 +855,7 @@ public class MachineController implements MachineControllerInterface {
 
 		// do that build!
 		Base.logger.info("Beginning simulation.");
-		machineThread.simulate(source);
+		machineThread.scheduleRequest(new JobRequest(RequestType.SIMULATE, source, null));
 		return true;
 	}
 
@@ -949,6 +957,11 @@ public class MachineController implements MachineControllerInterface {
 		}
 	}
 
+	public DriverQueryInterface getDriverQueryInterface() {
+		Base.logger.severe("The driver should not be referenced directly!");
+		return (DriverQueryInterface)driver;
+	}
+	
 	public Driver getDriver() {
 		return driver;
 	}
@@ -986,7 +999,7 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	public void buildToFile(String path) {
-		
+		// TODO: what happened to this?
 	}
 
 	
@@ -995,7 +1008,7 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	public void reset() {
-		
+		// TODO: what happened to this?
 	}
 
 	public void connect() {
@@ -1017,9 +1030,15 @@ public class MachineController implements MachineControllerInterface {
 		return getMachineState().isPaused();
 	}
 	
+	public void runCommand(DriverCommand command) {
+		machineThread.scheduleRequest(new JobRequest(RequestType.RUN_COMMAND, command));
+	}
+	
 	public void dispose() {
 		if (machineThread != null) {
-			machineThread.shutdown();
+			machineThread.scheduleRequest(new JobRequest(RequestType.SHUTDOWN, null, null));
+			
+			// Wait 5 seconds for the thread to stop.
 			try {
 				machineThread.join(5000);
 			} catch (Exception e) { e.printStackTrace(); }

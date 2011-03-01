@@ -117,7 +117,7 @@ public interface Driver {
 	/** Called at regular intervals when under manual control. Allows insertion of 
 	 * machine-specific logic into each manual control panel update. 
 	 * @throws InterruptedException */
-	public void updateManualControl() throws InterruptedException;
+	public void updateManualControl();
 
 	public Version getMinimumVersion();
 	

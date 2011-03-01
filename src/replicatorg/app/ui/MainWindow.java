@@ -1354,8 +1354,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			}
 		}
 	}
-
-	
 	public void handleOnboardPrefs() {
 		if (machine == null || 
 				!(machine.getDriver() instanceof OnboardParameters)) {
@@ -1677,7 +1675,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				setEditorBusy(true);
 
 				// start our building thread.
-
 				message("Building...");
 				buildStart = new Date();
 				machine.buildRemote(path);
@@ -1744,7 +1741,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 		
 		// enable the control panel menu item when the machine is ready
-		controlPanelItem.setEnabled(evt.getState().isReady());
+//		controlPanelItem.setEnabled(evt.getState().isReady());
+		// TODO: Always the control panel is accessible
+		controlPanelItem.setEnabled(true);
+		
 		// enable the build menu item when the machine is ready and there is gcode in the editor
 		buildMenuItem.setEnabled(hasGcode && evt.getState().isReady());
 		onboardParamsItem.setVisible(showParams);

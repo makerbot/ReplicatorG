@@ -95,27 +95,27 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	private boolean firmwareWarningIssued = false;
 
 	
-	protected String getMachineStateMessage(MachineControllerInterface machine2) {
-		if (machine2 == null) { return "No machine selected"; }
-		MachineState state = machine2.getMachineState();
+	protected String getMachineStateMessage(MachineControllerInterface machine) {
+		if (machine == null) { return "No machine selected"; }
+		MachineState state = machine.getMachineState();
 		if (state.getState() == MachineState.State.NOT_ATTACHED) {
-			if (machine2.getDriver() == null) {
+			if (machine.getDriver() == null) {
 				return "No machine selected";
 			} else {
 				return "Disconnected";
 			}
 		}
 		if (state.getState() == MachineState.State.CONNECTING) {
-			StringBuffer buf = new StringBuffer("Connecting to "+machine2.getName());
-			if (machine2.getDriver() instanceof UsesSerial) {
+			StringBuffer buf = new StringBuffer("Connecting to "+machine.getName());
+			if (machine.getDriver() instanceof UsesSerial) {
 				buf.append(" on ");
-				buf.append(((UsesSerial)machine2.getDriver()).getSerial().getName());
+				buf.append(((UsesSerial)machine.getDriver()).getSerial().getName());
 			}
 			buf.append("...");
 			return buf.toString();
 		}
-		StringBuffer message = new StringBuffer("Machine "+machine2.getName());
-		message.append(" ("+machine2.getDriver().getDriverName()+") ");
+		StringBuffer message = new StringBuffer("Machine "+machine.getName());
+		message.append(" ("+machine.getDriver().getDriverName()+") ");
 		if (state.getState() == MachineState.State.READY) { message.append("ready"); }
 		else if (state.isPaused()) { message.append("paused"); }
 		else if (state.isBuilding()) { 
@@ -131,12 +131,13 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	/**
 	 * Display the current status of this machine.
 	 */
+	// TODO: Clean this up just ask the machine for all of this info.
 	protected synchronized void updateMachineStatus(MachineStateChangeEvent evt) {
 		// update background to indicate high-level status
 		Color bgColor = Color.WHITE;
 		MachineControllerInterface machine = evt.getSource();
 		String text = getMachineStateMessage(machine);
-		if (machine == null || machine.getDriver() == null) {
+		if (machine == null ) {
 			bgColor = BG_NO_MACHINE;
 		} else {
 			boolean initialized = machine.isInitialized() &&
@@ -152,14 +153,14 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 				}
 				currentTemperature = -1;
 				// Check version
-				Version v = machine.getDriver().getVersion();
-				if (v != null && v.compareTo(machine.getDriver().getPreferredVersion()) < 0) {
+				Version v = machine.getDriverQueryInterface().getVersion();
+				if (v != null && v.compareTo(machine.getDriverQueryInterface().getPreferredVersion()) < 0) {
 					if (!firmwareWarningIssued) {
 						firmwareWarningIssued = true;
 						JOptionPane.showMessageDialog(
 								this,
 								"Firmware version "+v+" was detected on your machine.  Firmware version "+
-								machine.getDriver().getPreferredVersion() + " is recommended.\n" +
+								machine.getDriverQueryInterface().getPreferredVersion() + " is recommended.\n" +
 								"Please update your firmware and restart ReplicatorG.",
 								"Old firmware detected", JOptionPane.WARNING_MESSAGE);
 
