@@ -49,6 +49,7 @@ import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.commands.DriverCommand;
+import replicatorg.machine.MachineState.State;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;
@@ -73,21 +74,35 @@ public class MachineController implements MachineControllerInterface {
 
 	public enum RequestType {
 		CONNECT,			// Establish connection with the driver
-		SHUTDOWN,			// ??
 		RESET,				// ??
 
 		SIMULATE,			// Build to the simulator
 		BUILD_DIRECT,		// Build in real time on the machine
 		BUILD_TO_FILE,		// Build, but instruct the machine to save it to the local filesystem
-		UPLOAD,				// Build, but instruct the machine to save it to the machine's filesystem
+		BUILD_TO_REMOTE_FILE,				// Build, but instruct the machine to save it to the machine's filesystem
 		BUILD_REMOTE,		// Instruct the machine to run a build from it's filesystem
 		
 		PAUSE,				// Pause the current build
 		UNPAUSE,			// Unpause the current build
 		STOP,				// Abort the current build
+		DISCONNECT_REMOTE_BUILD,	// Disconnect from a remote build without stopping it.
 		
 		RUN_COMMAND,		// Run a single command on the driver, interleaved with the build.
 	}
+	
+	public enum JobTarget {
+		/** No target selected. */
+		NONE,
+		/** Operations are performed on a physical machine. */
+		MACHINE,
+		/** Operations are being simulated. */
+		SIMULATOR,
+		/** Operations are being captured to an SD card on the machine. */
+		REMOTE_FILE,
+		/** Operations are being captured to a file. */
+		FILE
+	};
+	
 	
 	// Test idea for a request interface between the thread and the controller
 	class JobRequest {
@@ -104,11 +119,21 @@ public class MachineController implements MachineControllerInterface {
 			this.source = source;
 			this.remoteName = remoteName;
 		}
-		
+
 		public JobRequest(RequestType type,
 							DriverCommand command) {
 			this.type = type;
 			this.command = command;
+		}
+	}
+	
+	// Test idea for a print job: specifies a gcode source and a target
+	class JobInformation {
+		JobTarget target;
+		GCodeSource source;
+		
+		public JobInformation(JobTarget target, GCodeSource source) {
+			
 		}
 	}
 	
@@ -165,6 +190,11 @@ public class MachineController implements MachineControllerInterface {
 		private long pollIntervalMs = 1000;
 
 		GCodeSource currentSource;
+		JobTarget currentTarget;
+		
+		private boolean running = true;
+		
+		String remoteName = null;
 		
 		// Link of job requests to run
 		ConcurrentLinkedQueue<JobRequest> pendingQueue;
@@ -172,115 +202,7 @@ public class MachineController implements MachineControllerInterface {
 		public MachineThread() {
 			pendingQueue = new ConcurrentLinkedQueue<JobRequest>();
 		}
-		
-		/**
-		 * Start polling the machine for its current status (temperatures, etc.)
-		 * @param interval The interval, in ms, between polls
-		 */
-		synchronized void startStatusPolling(long interval) {
-			pollingEnabled = true;
-			pollIntervalMs = interval;
-		}
 
-		/**
-		 * Turn off status polling.
-		 */
-		synchronized void stopStatusPolling() {
-			pollingEnabled = false;
-		}
-		
-		private void runRequest(JobRequest request) {
-			switch(request.type) {
-			case CONNECT:
-				setState(new MachineState(MachineState.State.CONNECTING));
-				break;
-			case SHUTDOWN:
-				if (state.getState() == MachineState.State.PLAYBACK) {
-					running = false;
-					return; // send no further packets to machine; let it go on its own
-				}
-				
-				if (state.isBuilding()) {
-					setState(MachineState.State.STOPPING);
-				}
-				running = false;
-				break;
-			case RESET:
-				if (state.isConnected()) {
-					setState(new MachineState(MachineState.State.RESET));
-				}
-				break;
-			case SIMULATE:
-				currentSource = source;
-				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SIMULATOR));
-				break;
-			case BUILD_DIRECT:
-				currentSource = request.source;
-				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.MACHINE));
-				break;
-			case BUILD_TO_FILE:
-				currentSource = request.source;
-				this.remoteName = request.remoteName;
-				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.FILE));
-				break;
-			case UPLOAD:
-				currentSource = request.source;
-				this.remoteName = request.remoteName;
-				setState(new MachineState(MachineState.State.BUILDING,MachineState.Target.SD_UPLOAD));
-				break;
-			case BUILD_REMOTE:
-				this.remoteName = request.remoteName;
-				setState(MachineState.State.PLAYBACK);
-				break;
-			case PAUSE:
-				if (state.isBuilding() && !state.isPaused()) {
-					MachineState newState = getMachineState();
-					newState.setPaused(true);
-					setState(newState);
-				}
-				break;
-			case UNPAUSE:
-				if (state.isBuilding() && state.isPaused()) {
-					MachineState newState = getMachineState();
-					newState.setPaused(false);
-					setState(newState);
-				}
-				break;
-			case STOP:
-				driver.getMachine().currentTool().setTargetTemperature(0);
-				driver.getMachine().currentTool().setPlatformTargetTemperature(0);
-				if (state.isBuilding()) {
-					setState(MachineState.State.STOPPING);
-				}
-				break;
-			case RUN_COMMAND:
-				{
-					boolean completed = false;
-					// TODO: provide feedback to the caller rather than eating it.
-					
-					while(!completed) {
-						try {
-							request.command.run(driver);
-							completed = true;
-						} catch (RetryException e) {
-						} catch (StopException e) {
-						}
-					}
-				}
-				break;
-			}
-		}
-		
-		synchronized public boolean scheduleRequest(JobRequest request) {
-			pendingQueue.add(request);
-				
-			synchronized(machineThread) {
-				machineThread.notify(); // wake up paused machines
-			}
-			
-			return true;
-		}
-		
 		/**
 		 * Build the provided gcodes.  This method does not return until the build is complete or has been terminated.
 		 * The build target need not be an actual machine; it can be a file as well.  An "upload" is considered a build
@@ -346,7 +268,7 @@ public class MachineController implements MachineControllerInterface {
 						simulationParser.parse(line, simulatorQueue);
 					}
 					
-					if (!state.isSimulating()) {
+					if (!isSimulating()) {
 						// Parse a line for the actual machine
 						parser.parse(line, driverQueue);
 						
@@ -376,7 +298,7 @@ public class MachineController implements MachineControllerInterface {
 				}
 				
 				try {
-					if (!state.isSimulating()) {
+					if (!isSimulating()) {
 						// Run the command on the machine.
 						while(!driverQueue.isEmpty()) {
 							driverQueue.peek().run(driver);
@@ -420,26 +342,26 @@ public class MachineController implements MachineControllerInterface {
 				}
 				
 				// did we get any errors?
-				if (!state.isSimulating()) {
+				if (!isSimulating()) {
 					driver.checkErrors();
 				}
 				
 				// are we paused?
 				if (state.isPaused()) {
 					// Tell machine to enter pause mode
-					if (!state.isSimulating()) driver.pause();
+					if (!isSimulating()) driver.pause();
 					while (state.isPaused()) {
 						// Sleep until notified
 						synchronized(this) { wait(); }
 					}
 					// Notified; tell machine to wake up.
-					if (!state.isSimulating()) driver.unpause();
+					if (!isSimulating()) driver.unpause();
 				}
 				
 				// Send a stop command if we're stopping.
 				if (state.getState() == MachineState.State.STOPPING ||
 						state.getState() == MachineState.State.RESET) {
-					if (!state.isSimulating()) {
+					if (!isSimulating()) {
 						driver.stop(true);
 					}
 					throw new BuildFailureException("Build manually aborted");
@@ -471,7 +393,7 @@ public class MachineController implements MachineControllerInterface {
 			}
 			
 			// wait for driver to finish up.
-			if (!state.isSimulating()) {
+			if (!isSimulating()) {
 				while (!driver.isFinished()) {
 					// We're checking for stop/reset here as well. This will catch stops occurring
 					// after all lines have been queued on the motherboard.
@@ -479,7 +401,7 @@ public class MachineController implements MachineControllerInterface {
 					// Send a stop command if we're stopping.
 					if (state.getState() == MachineState.State.STOPPING ||
 						state.getState() == MachineState.State.RESET) {
-						if (!state.isSimulating()) {
+						if (!isSimulating()) {
 							driver.stop(true);
 						}
 						throw new BuildFailureException("Build manually aborted");
@@ -494,17 +416,6 @@ public class MachineController implements MachineControllerInterface {
 			return true;
 		}
 
-		public boolean isReady() { return state.isReady(); }
-
-		public void pollStatus() {
-			if (state.isBuilding() && !state.isSimulating()) {
-				if (Base.preferences.getBoolean("build.monitor_temp",false)) {
-					driver.readTemperature();
-					emitToolStatus(driver.getMachine().currentTool());
-				}
-			}
-		}
-
 		// Build the gcode source, bracketing it with warmup and cooldown commands.
 		// 
 		private void buildInternal(GCodeSource source) {
@@ -516,7 +427,7 @@ public class MachineController implements MachineControllerInterface {
 			
 			startStatusPolling(1000); // Will not send commands if temp mon. turned off
 			try {
-				if (!state.isSimulating()) {
+				if (!isSimulating()) {
 					driver.getCurrentPosition(); // reconcile position
 				}
 				
@@ -529,7 +440,7 @@ public class MachineController implements MachineControllerInterface {
 				Base.logger.info("Running cooldown commands");
 				buildCodesInternal(new StringListSource(cooldownCommands));
 				
-				if (!state.isSimulating()) {
+				if (!isSimulating()) {
 					driver.invalidatePosition();
 				}
 				setState(new MachineState(driver.isInitialized()?
@@ -537,7 +448,7 @@ public class MachineController implements MachineControllerInterface {
 						MachineState.State.NOT_ATTACHED
 					));
 			} catch (BuildFailureException e) {
-				if (state.isSimulating()) {
+				if (isSimulating()) {
 					// If simulating, return to connected or
 					// disconnected state.
 					setState(new MachineState(driver.isInitialized()?
@@ -555,14 +466,12 @@ public class MachineController implements MachineControllerInterface {
 				stopStatusPolling();
 			}
 		}
-
-		String remoteName = null;
 		
 		// Run a remote SD card build on the machine.
 		private void buildRemoteInternal(String remoteName) {
 			// Dump out if SD builds are unsupported on this machine
 			if (remoteName == null || !(driver instanceof SDCardCapture)) return;
-			if (state.getState() != MachineState.State.PLAYBACK) return;
+			if (state.getState() != MachineState.State.BUILDING_REMOTE) return;
 			driver.getCurrentPosition(); // reconcile position
 			SDCardCapture sdcc = (SDCardCapture)driver;
 			if (!processSDResponse(sdcc.playback(remoteName))) {
@@ -582,72 +491,177 @@ public class MachineController implements MachineControllerInterface {
 					}
 
 					// bail if we got interrupted.
-					if (state.getState() != MachineState.State.PLAYBACK) return;
+					if (state.getState() != MachineState.State.BUILDING_REMOTE) return;
 					synchronized(this) { wait(1000); }// wait one second.  A pause will notify us to check the pause state.
 				} catch (InterruptedException e) {
 					// bail if we got interrupted.
-					if (state.getState() != MachineState.State.PLAYBACK) return;
-				}
-				
-				while (!pendingQueue.isEmpty()) {
-					runRequest(pendingQueue.remove());
+					if (state.getState() != MachineState.State.BUILDING_REMOTE) return;
 				}
 			}
 			driver.invalidatePosition();
 			setState(new MachineState(MachineState.State.READY));
 		}
-
-		private boolean running = true;
 		
-		private boolean isRunning() {
-			// If we're in stopping mode, we don't want to terminate until the stop
-			// packet is sent!
-			return running ||
-				state.getState() == MachineState.State.STOPPING;
+		private boolean startBuildToRemoteFile() {
+			if (!(driver instanceof SDCardCapture)) {
+				return false;
+			}
+			
+			SDCardCapture sdcc = (SDCardCapture)driver;
+			if (processSDResponse(sdcc.beginCapture(remoteName))) { 
+				buildInternal(currentSource);
+				Base.logger.info("Captured bytes: " +Integer.toString(sdcc.endCapture()));
+				return true;
+			}
+
+			return false;
 		}
+		
+		private boolean startBuildToFile() {
+			if (!(driver instanceof SDCardCapture)) {
+				return false;
+			}
+			
+			SDCardCapture sdcc = (SDCardCapture)driver;
+			try {
+				sdcc.beginFileCapture(remoteName); 
+				buildInternal(currentSource);
+				sdcc.endFileCapture();
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			return false;
+		}
+		
+		
+		private void runRequest(JobRequest request) {
+			switch(request.type) {
+			case CONNECT:
+				if (state.getState() == MachineState.State.NOT_ATTACHED) {
+					setState(new MachineState(MachineState.State.CONNECTING));
+				}
+				break;
+			case RESET:
+				if (state.isConnected()) {
+					setState(new MachineState(MachineState.State.RESET));
+				}
+				break;
+			case SIMULATE:
+				currentSource = source;
+				currentTarget = JobTarget.SIMULATOR;
+				setState(new MachineState(MachineState.State.BUILDING));
+				break;
+			case BUILD_DIRECT:
+				currentSource = request.source;
+				currentTarget = JobTarget.MACHINE;
+				setState(new MachineState(MachineState.State.BUILDING));
+				break;
+			case BUILD_TO_FILE:
+				currentSource = request.source;
+				this.remoteName = request.remoteName;
+				currentTarget = JobTarget.FILE;
+				setState(new MachineState(MachineState.State.BUILDING));
+				break;
+			case BUILD_TO_REMOTE_FILE:
+				currentSource = request.source;
+				this.remoteName = request.remoteName;
+				currentTarget = JobTarget.REMOTE_FILE;
+				setState(new MachineState(MachineState.State.BUILDING));
+				break;
+			case BUILD_REMOTE:
+				this.remoteName = request.remoteName;
+				setState(MachineState.State.BUILDING_REMOTE);
+				break;
+			case PAUSE:
+				if (state.isBuilding() && !state.isPaused()) {
+					MachineState newState = getMachineState();
+					newState.setPaused(true);
+					setState(newState);
+				}
+				break;
+			case UNPAUSE:
+				if (state.isBuilding() && state.isPaused()) {
+					MachineState newState = getMachineState();
+					newState.setPaused(false);
+					setState(newState);
+				}
+				break;
+			case STOP:
+				// TODO: Do more than just turn off the heaters here?
+				driver.getMachine().currentTool().setTargetTemperature(0);
+				driver.getMachine().currentTool().setPlatformTargetTemperature(0);
+				if (state.isBuilding()) {
+					setState(MachineState.State.STOPPING);
+				}
+				break;
+			case DISCONNECT_REMOTE_BUILD:
+				if (state.getState() == MachineState.State.BUILDING_REMOTE) {
+					running = false;
+					return; // send no further packets to machine; let it go on its own
+				}
+				
+				if (state.isBuilding()) {
+					setState(MachineState.State.STOPPING);
+				}
+				running = false;
+				break;
+			case RUN_COMMAND:
+				{
+					boolean completed = false;
+					// TODO: provide feedback to the caller rather than eating it.
+					
+					while(!completed) {
+						try {
+							request.command.run(driver);
+							completed = true;
+						} catch (RetryException e) {
+						} catch (StopException e) {
+						}
+					}
+				}
+				break;
+			}
+		}
+		
+		
 		/**
 		 * Main machine thread loop.
 		 */
 		public void run() {
-			while (isRunning()) {
-				// TODO: Handle this in all appropriate state machine contexts.
+			// This is our main loop.
+			while (running || state.getState() == MachineState.State.STOPPING) {
+ 
+				// First, check for and run any control requests that might be in the queue.
 				while (!pendingQueue.isEmpty()) {
 					runRequest(pendingQueue.remove());
 				}
 				
 				try {
 					if (state.getState() == MachineState.State.BUILDING) {
-						// Capture build to a card
-						if (state.getTarget() == MachineState.Target.SD_UPLOAD) {
-							if (driver instanceof SDCardCapture) {
-								SDCardCapture sdcc = (SDCardCapture)driver;
-								if (processSDResponse(sdcc.beginCapture(remoteName))) { 
-									buildInternal(currentSource);
-									Base.logger.info("Captured bytes: " +Integer.toString(sdcc.endCapture()));
-								} else { setState(MachineState.State.STOPPING); }
-							} else {
+						// Build to remote file
+						if (currentTarget == JobTarget.REMOTE_FILE) {
+							
+							if (!startBuildToRemoteFile()) {
 								setState(MachineState.State.STOPPING);
 							}
-						} else if (state.getTarget() == MachineState.Target.FILE) {
-							// Output build to a file
-							if (driver instanceof SDCardCapture) {
-								SDCardCapture sdcc = (SDCardCapture)driver;
-								try {
-									sdcc.beginFileCapture(remoteName); 
-									buildInternal(currentSource);
-									sdcc.endFileCapture();
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							} else {
+						
+						// Build to local file
+						} else if (currentTarget == JobTarget.FILE) {
+
+							if (!startBuildToFile()) {
 								setState(MachineState.State.STOPPING);
 							}
+
+						// Ordinary build
 						} else {
-							// Ordinary build
 							buildInternal(currentSource);
 						}
-					} else if (state.getState() == MachineState.State.PLAYBACK) {
+						
+					} else if (state.getState() == MachineState.State.BUILDING_REMOTE) {
 						buildRemoteInternal(remoteName);
+						
 					} else if (state.getState() == MachineState.State.CONNECTING) {
 						driver.initialize();
 						if (driver.isInitialized()) {
@@ -656,13 +670,16 @@ public class MachineController implements MachineControllerInterface {
 						} else {
 							setState(MachineState.State.NOT_ATTACHED);
 						}
+						
 					} else if (state.getState() == MachineState.State.STOPPING) {
 						driver.stop(true);
-						setState(MachineState.State.READY);						
+						setState(MachineState.State.READY);
+						
 					} else if (state.getState() == MachineState.State.RESET) {
 						driver.reset();
 						readName();
-						setState(MachineState.State.READY);		
+						setState(MachineState.State.READY);
+						
 					} else {
 						if (state.getState() == MachineState.State.NOT_ATTACHED) {
 							// Kill serial port connection when not attached, to make it safe to unplug
@@ -686,6 +703,56 @@ public class MachineController implements MachineControllerInterface {
 					e.printStackTrace();
 				}
 			}
+		}
+		
+		/**
+		 * Start polling the machine for its current status (temperatures, etc.)
+		 * @param interval The interval, in ms, between polls
+		 */
+		private void startStatusPolling(long interval) {
+			pollingEnabled = true;
+			pollIntervalMs = interval;
+		}
+
+		/**
+		 * Turn off status polling.
+		 */
+		private void stopStatusPolling() {
+			pollingEnabled = false;
+		}
+
+		private void pollStatus() {
+			if (state.isBuilding() && !isSimulating()) {
+				if (Base.preferences.getBoolean("build.monitor_temp",false)) {
+					driver.readTemperature();
+					emitToolStatus(driver.getMachine().currentTool());
+				}
+			}
+		}
+		
+		synchronized public boolean scheduleRequest(JobRequest request) {
+			pendingQueue.add(request);
+				
+			synchronized(machineThread) {
+				machineThread.notify(); // wake up paused machines
+			}
+			
+			return true;
+		}
+		
+		public boolean isReady() { return state.isReady(); }
+		
+		// TODO: Put this somewhere else
+		/** True if the machine's build is going to the simulator. */
+		public boolean isSimulating() {
+			return (state.getState() == MachineState.State.BUILDING
+					&& currentTarget == JobTarget.SIMULATOR);
+		}
+		
+		// TODO: Put this somewhere else
+		public boolean isInteractiveTarget() {
+			return currentTarget == JobTarget.MACHINE ||
+				currentTarget == JobTarget.SIMULATOR; 	
 		}
 	}
 	
@@ -752,8 +819,9 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	// TODO: hide this behind an API
-	private MainWindow window; // for responses to errors, etc.
-	public void setMainWindow(MainWindow window) { this.window = window; }
+//	private MainWindow window; // for responses to errors, etc.
+//	public void setMainWindow(MainWindow window) { this.window = window; }
+	public void setMainWindow(MainWindow window) {  }
 
 	static Map<SDCardCapture.ResponseCode,String> sdErrorMap =
 		new EnumMap<SDCardCapture.ResponseCode,String>(SDCardCapture.ResponseCode.class);
@@ -793,7 +861,8 @@ public class MachineController implements MachineControllerInterface {
 		if (code == SDCardCapture.ResponseCode.SUCCESS) return true;
 		String message = sdErrorMap.get(code);
 		JOptionPane.showMessageDialog(
-				window,
+//				window,
+				null,
 				message,
 				"SD card error",
 				JOptionPane.ERROR_MESSAGE);
@@ -958,11 +1027,11 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	public DriverQueryInterface getDriverQueryInterface() {
-		Base.logger.severe("The driver should not be referenced directly!");
 		return (DriverQueryInterface)driver;
 	}
 	
 	public Driver getDriver() {
+		Base.logger.severe("The driver should not be referenced directly!");
 		return driver;
 	}
 
@@ -995,7 +1064,7 @@ public class MachineController implements MachineControllerInterface {
 		 * @param source
 		 * @param remoteName
 		 */
-		machineThread.scheduleRequest(new JobRequest(RequestType.UPLOAD, source, null));
+		machineThread.scheduleRequest(new JobRequest(RequestType.BUILD_TO_REMOTE_FILE, source, remoteName));
 	}
 
 	public void buildToFile(String path) {
@@ -1008,7 +1077,7 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	public void reset() {
-		// TODO: what happened to this?
+		machineThread.scheduleRequest(new JobRequest(RequestType.RESET, null, null));
 	}
 
 	public void connect() {
@@ -1036,7 +1105,7 @@ public class MachineController implements MachineControllerInterface {
 	
 	public void dispose() {
 		if (machineThread != null) {
-			machineThread.scheduleRequest(new JobRequest(RequestType.SHUTDOWN, null, null));
+			machineThread.scheduleRequest(new JobRequest(RequestType.DISCONNECT_REMOTE_BUILD, null, null));
 			
 			// Wait 5 seconds for the thread to stop.
 			try {
@@ -1088,5 +1157,20 @@ public class MachineController implements MachineControllerInterface {
 		/* This is for jumping to the right line when aborting or pausing. 
 		 * This way you'll have the ability to track down where to continue printing. */
 		return linesProcessed;
+	}
+	
+	// TODO: Drop this
+	public boolean isSimulating() {
+		return machineThread.isSimulating();
+	}
+
+	// TODO: Drop this
+	public boolean isInteractiveTarget() {
+		return machineThread.isInteractiveTarget();
+	}
+	
+	// TODO: Drop this
+	public JobTarget getTarget() {
+		return machineThread.currentTarget;
 	}
 }

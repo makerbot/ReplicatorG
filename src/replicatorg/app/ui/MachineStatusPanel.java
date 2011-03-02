@@ -16,6 +16,7 @@ import replicatorg.app.Base;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.Version;
+import replicatorg.machine.MachineController;
 import replicatorg.machine.MachineControllerInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -119,7 +120,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		if (state.getState() == MachineState.State.READY) { message.append("ready"); }
 		else if (state.isPaused()) { message.append("paused"); }
 		else if (state.isBuilding()) { 
-			if (state.isSimulating()) {
+			if (machine.isSimulating()) {
 				message.append("simulating");
 			} else {
 				message.append("building");
@@ -192,8 +193,8 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		double remaining;
 		double proportion = (double)event.getLines()/(double)event.getTotalLines();
 
-		if (machine.getMachineState().getTarget() == MachineState.Target.SD_UPLOAD) {
-			if (event.getLines() == 0) { 
+		if (machine.getTarget() == MachineController.JobTarget.REMOTE_FILE) {
+			if (event.getLines() == 0) {
 				remaining = 0; // avoid NaN
 			}
 			remaining = event.getElapsed() * ((1.0/proportion)-1.0);

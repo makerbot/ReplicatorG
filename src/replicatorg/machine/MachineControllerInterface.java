@@ -5,6 +5,7 @@ import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.commands.DriverCommand;
+import replicatorg.machine.MachineController.JobTarget;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 
@@ -23,65 +24,54 @@ import replicatorg.model.GCodeSource;
  * @author matt.mets
  *
  */
-// 
-// 
 
 public interface MachineControllerInterface {
-
-	/**
-	 * The machine state tells whether it is running or not, and what it's target is.
-	 */
-	public MachineState getMachineState();
 	
 	public Driver getDriver();
-	
-	public void runCommand(DriverCommand command);
-
-	public DriverQueryInterface getDriverQueryInterface();
-	
 	public SimulationDriver getSimulatorDriver();
-	
-	public void buildToFile(String path);
-	
-	public int getLinesProcessed();
-	
-	public void reset();
-	
-	public boolean isInitialized();
-	
-	public void dispose();
-	
-	public void setCodeSource(GCodeSource source);
-	
 	public void setMainWindow(MainWindow window);
-	
+
+	// Register to receive notifications when the machine changes state
 	public void addMachineStateListener(MachineListener listener);
-	
 	public void removeMachineStateListener(MachineListener listener);
 	
-	public boolean buildRemote(String remoteName);
+	// Reset the state of the machine controller, or dispose of it.
+	public void reset();
+	public void dispose();
 	
-	public MachineModel getModel();
-	
+	// Connect or disconnect from the physical machine
 	public void connect();
-	
 	public void disconnect();
-	
-	public void estimate();
-	
-	public void stop();
-	
-	public boolean execute();
-	
-	public boolean simulate();
-	
+
+	// Get information about the physical machine
+	public MachineModel getModel();
 	public String getName();
 	
-	public boolean isPaused();
+	// Control the state machine
+	public void estimate();
+	public boolean simulate();
+	public boolean execute();
+	public boolean buildRemote(String remoteName);
+	public void buildToFile(String path);
+	public void upload(String remoteName);
+	public void setCodeSource(GCodeSource source);
 	
 	public void pause();
-	
 	public void unpause();
+	public void stop();
 	
-	public void upload(String remoteName);
+	// Run a command on the driver 
+	public void runCommand(DriverCommand command);
+	
+	// Query the machine controller
+	public int getLinesProcessed();
+	public MachineState getMachineState();
+	public JobTarget getTarget();
+	public boolean isPaused();
+	public boolean isInitialized();
+	public boolean isSimulating();
+	public boolean isInteractiveTarget();
+	
+	// Query the driver
+	public DriverQueryInterface getDriverQueryInterface();
 }

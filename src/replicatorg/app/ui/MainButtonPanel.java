@@ -46,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.drivers.SDCardCapture;
+import replicatorg.machine.MachineController;
 import replicatorg.machine.MachineControllerInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -290,13 +291,13 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		pauseButton.setSelected(paused);
 		rcButton.setEnabled(building);
 
-		MachineState.Target runningTarget = s.isBuilding()?s.getTarget():null;
+		MachineController.JobTarget runningTarget = s.isBuilding()?machine.getTarget():null;
 		
-		simButton.setSelected(runningTarget == MachineState.Target.SIMULATOR);
-		buildButton.setSelected(runningTarget == MachineState.Target.MACHINE);
-		uploadButton.setSelected(runningTarget == MachineState.Target.SD_UPLOAD);
-		fileButton.setSelected(runningTarget == MachineState.Target.FILE);
-		playbackButton.setSelected(runningTarget == MachineState.Target.NONE);
+		simButton.setSelected(runningTarget == MachineController.JobTarget.SIMULATOR);
+		buildButton.setSelected(runningTarget == MachineController.JobTarget.MACHINE);
+		uploadButton.setSelected(runningTarget == MachineController.JobTarget.REMOTE_FILE);
+		fileButton.setSelected(runningTarget == MachineController.JobTarget.FILE);
+		playbackButton.setSelected(runningTarget == MachineController.JobTarget.NONE);
 
 		boolean connected = s.isConnected() && hasMachine && machine.isInitialized();
 		resetButton.setEnabled(connected); 
