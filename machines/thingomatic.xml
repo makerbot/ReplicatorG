@@ -97,6 +97,33 @@ M18
 		</cooldown>
 	</machine>
 
+	<machine>
+		<name>Thingomatic w/ Frostruder</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="106" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="106" maxfeedrate="1000" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+		</geometry>
+		<tools>
+			<tool name="Frostruder v1.0" type="extruder" material="abs" motor="false" fan="true" valve="true" heater="false">
+				<remap port="fan" name="Pressure Valve" actuated="open"/>
+				<remap port="valve" name="Relief Valve" actuated="open"/>
+			</tool>
+		</tools>
+		<clamps></clamps>[]
+		<driver name="sanguino3g">
+			<!-- optional: <portname>COM1</portname> -->
+			<rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+(Turn off steppers after a build.)
+M18
+		</cooldown>
+	</machine>
+
 	<machine experimental="1">
 		<name>EXPERIMENTAL - Thingomatic - 4 axes</name>
 		<geometry type="cartesian">
