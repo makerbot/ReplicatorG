@@ -77,6 +77,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			}
 			
 			// okay, send it off!
+			// TODO: bug: We move all axes (even ones that shouldn't be moved) How to avoid?
 			queueAbsolutePoint(machine.mmToSteps(filteredPoint), longestDDA);
 			
 			// Finally, recored the position, and mark it as valid.
