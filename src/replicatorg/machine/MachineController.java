@@ -49,7 +49,6 @@ import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.commands.DriverCommand;
-import replicatorg.machine.MachineState.State;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;

@@ -27,7 +27,9 @@ def printToolAction(tuple):
 #            a string
 
 # REMINDER: all values are little-endian. Struct strings with multibyte
-# types shoudl begin with "<".
+# types should begin with "<".
+# For a refresher on Python struct syntax, see here:
+# http://docs.python.org/library/struct.html
 commandTable = {
     129: ("<iiiI","Absolute move to (%i,%i,%i) at DDA %i"),
     130: ("<iii","Machine position set as (%i,%i,%i)"),
@@ -42,7 +44,9 @@ commandTable = {
     139: ("<iiiiiI","Absolute move to (%i,%i,%i,%i,%i) at DDA %i"),
     140: ("<iiiii","Machine position set as (%i,%i,%i,%i,%i)"),
     141: ("<BHH","Wait for platform %i (%i ms between polls, %i s timeout)"),
-    142: ("<iiiiiIB","Move to (%i,%i,%i,%i,%i) in %i us (relative: %X)")
+    142: ("<iiiiiIB","Move to (%i,%i,%i,%i,%i) in %i us (relative: %X)"),
+    143: ("<b","Store home position for axes %d"),
+    144: ("<b","Recall home position for axes %d"),
 }
 
 def parseNextCommand():

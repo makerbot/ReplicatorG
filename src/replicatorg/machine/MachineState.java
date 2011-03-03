@@ -31,7 +31,7 @@ public class MachineState extends Object implements Cloneable {
 		RESET
 	};
 	
-	private State state = State.NOT_ATTACHED;
+	private State state;
 	
 	/** True if the machine is paused. */
 	private boolean paused;
