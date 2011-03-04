@@ -185,11 +185,19 @@ class ConfigurationDialog extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
 				Profile p = getListedProfile(idx);
-				boolean result = new ProfileUtils().delete(p);
-				loadList(prefList);
-				pack();
-				Base.logger.log(Level.INFO, "Profile " + p.getFullPath()
-						+ " deleted: " + result);
+				
+				int userResponse = JOptionPane.showConfirmDialog(null,
+						"Are you sure you want to delete profile " 
+						+ p.toString() + "? This cannot be undone.",
+						"Delete Profile", JOptionPane.YES_NO_OPTION);
+				if (userResponse == JOptionPane.YES_OPTION) {
+
+					boolean result = new ProfileUtils().delete(p);
+					loadList(prefList);
+					pack();
+					Base.logger.log(Level.INFO, "Profile " + p.getFullPath()
+							+ " deleted: " + result);
+				}
 			}
 		});
 
