@@ -62,8 +62,6 @@ public class MachineState extends Object implements Cloneable {
 			state == State.BUILDING_REMOTE; 
 	}
 
-
-
 	public void setPaused(boolean paused) {
 		this.paused = paused;
 	}

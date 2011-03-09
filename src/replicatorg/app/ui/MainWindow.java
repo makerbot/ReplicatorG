@@ -1766,7 +1766,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// Advertise machine name
 		String name = "Not Connected";
 		if (evt.getState().isConnected() && machine != null) {
-			name = machine.getName();
+			name = machine.getMachineName();
 		}
 		if (name != null) {
 			this.setTitle(name + " - " + WINDOW_TITLE);
@@ -2528,7 +2528,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			this.machine = machine;
 			if (machine != null) {
 				machine.setCodeSource(new JEditTextAreaSource(textarea));
-				machine.setMainWindow(this);
 				machine.addMachineStateListener(this);
 				machine.addMachineStateListener(machineStatusPanel);
 				machine.addMachineStateListener(buttons);

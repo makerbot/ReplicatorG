@@ -107,7 +107,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			}
 		}
 		if (state.getState() == MachineState.State.CONNECTING) {
-			StringBuffer buf = new StringBuffer("Connecting to "+machine.getName());
+			StringBuffer buf = new StringBuffer("Connecting to "+machine.getMachineName());
 			if (machine.getDriver() instanceof UsesSerial) {
 				buf.append(" on ");
 				buf.append(((UsesSerial)machine.getDriver()).getSerial().getName());
@@ -115,7 +115,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			buf.append("...");
 			return buf.toString();
 		}
-		StringBuffer message = new StringBuffer("Machine "+machine.getName());
+		StringBuffer message = new StringBuffer("Machine "+machine.getMachineName());
 		message.append(" ("+machine.getDriver().getDriverName()+") ");
 		if (state.getState() == MachineState.State.READY) { message.append("ready"); }
 		else if (state.isPaused()) { message.append("paused"); }

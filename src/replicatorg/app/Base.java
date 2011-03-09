@@ -966,7 +966,8 @@ public class Base {
 	 * our singleton interface to get our machine.
 	 */
 	static public MachineControllerInterface loadMachine(String name) {
-		if (machine == null || !machine.getDescriptorName().equals(name)) {
+		// TODO: We're ignoring the case !machine.getDescriptorName().equals(name)
+		if (machine == null) {
 			machine = MachineFactory.load(name);
 		}
 		return machine;

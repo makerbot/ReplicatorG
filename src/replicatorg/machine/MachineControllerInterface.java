@@ -29,7 +29,6 @@ public interface MachineControllerInterface {
 	
 	public Driver getDriver();
 	public SimulationDriver getSimulatorDriver();
-	public void setMainWindow(MainWindow window);
 
 	// Register to receive notifications when the machine changes state
 	public void addMachineStateListener(MachineListener listener);
@@ -45,7 +44,7 @@ public interface MachineControllerInterface {
 
 	// Get information about the physical machine
 	public MachineModel getModel();
-	public String getName();
+	public String getMachineName();
 	
 	// Control the state machine
 	public void estimate();
@@ -58,8 +57,10 @@ public interface MachineControllerInterface {
 	
 	public void pause();
 	public void unpause();
-	public void stop();
 	
+	// Halt the machine immediately
+	public void stop();
+		
 	// Run a command on the driver 
 	public void runCommand(DriverCommand command);
 	
