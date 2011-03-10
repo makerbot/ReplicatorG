@@ -156,6 +156,7 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	MachineThread machineThread;
+	MachineCallbackHandler machineCallbackHandler;
 
 	// TODO: WTF is this here for.
 	// this is the xml config for this machine.
@@ -177,8 +178,11 @@ public class MachineController implements MachineControllerInterface {
 	 */
 	public MachineController(Node mNode) {
 		machineNode = mNode;
-		machineThread = new MachineThread(mNode);
+		machineThread = new MachineThread(this, mNode);
 		machineThread.start();
+		
+		machineCallbackHandler = new MachineCallbackHandler();
+		machineCallbackHandler.start();
 	}
 
 	public void setCodeSource(GCodeSource source) {
@@ -337,7 +341,7 @@ public class MachineController implements MachineControllerInterface {
 		// recreate thread if stopped
 		// TODO: Evaluate this!
 		if (!machineThread.isAlive()) {
-			machineThread = new MachineThread(machineNode);
+			machineThread = new MachineThread(this, machineNode);
 			machineThread.start();
 		}
 		machineThread.scheduleRequest(new MachineCommand(RequestType.CONNECT,
@@ -375,40 +379,33 @@ public class MachineController implements MachineControllerInterface {
 		}
 	}
 
-	private Vector<MachineListener> listeners = new Vector<MachineListener>();
-
+	
+	// Pass these on to our handler
 	public void addMachineStateListener(MachineListener listener) {
-		listeners.add(listener);
-		listener.machineStateChanged(new MachineStateChangeEvent(this,
-				getMachineState()));
+		machineCallbackHandler.addMachineStateListener(listener);
 	}
 
 	public void removeMachineStateListener(MachineListener listener) {
-		listeners.remove(listener);
+		machineCallbackHandler.removeMachineStateListener(listener);
 	}
 
 	protected void emitStateChange(MachineState prev, MachineState current) {
 		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current,
 				prev);
-		Vector<MachineListener> lclone = new Vector<MachineListener>(listeners);
-		for (MachineListener l : lclone) {
-			l.machineStateChanged(e);
-		}
+		
+		machineCallbackHandler.schedule(e);
 	}
 
 	protected void emitProgress(MachineProgressEvent progress) {
-		for (MachineListener l : listeners) {
-			l.machineProgress(progress);
-		}
+		machineCallbackHandler.schedule(progress);
 	}
 
 	protected void emitToolStatus(ToolModel tool) {
 		MachineToolStatusEvent e = new MachineToolStatusEvent(this, tool);
-		for (MachineListener l : listeners) {
-			l.toolStatusChanged(e);
-		}
+		machineCallbackHandler.schedule(e);
 	}
 
+	
 	public int getLinesProcessed() {
 		/*
 		 * This is for jumping to the right line when aborting or pausing. This

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
@@ -51,28 +52,29 @@ class MachineThread extends Thread {
 	JobTarget currentTarget;
 
 	// Link of machine commands to run
-	ConcurrentLinkedQueue<MachineCommand> pendingQueue;
+	LinkedBlockingQueue<MachineCommand> pendingQueue;
 	
 	// this is the xml config for this machine.
-	protected Node machineNode;
+	private Node machineNode;
+	
+	private MachineController controller;
 	
 	// our warmup/cooldown commands
-	protected Vector<String> warmupCommands;
-	protected Vector<String> cooldownCommands;
+	private Vector<String> warmupCommands;
+	private Vector<String> cooldownCommands;
 	
 	// The name of our machine.
-	protected String name;
+	private String name;
 	
 	// Things that belong to a job
 		// estimated build time in millis
-		protected double estimatedBuildTime = 0;
+		private double estimatedBuildTime = 0;
 	
 		// Build statistics
 		private int linesProcessed = -1;
 		private int linesTotal = -1;
 		private double startTimeMillis = -1;
 	
-	private boolean running = true;
 	
 	String remoteName = null;
 	
@@ -87,11 +89,58 @@ class MachineThread extends Thread {
 	// ???
 	MachineModel cachedModel = null;
 	
-	public MachineThread(Node mNode) {
-		pendingQueue = new ConcurrentLinkedQueue<MachineCommand>();
+	static Map<SDCardCapture.ResponseCode,String> sdErrorMap =
+		new EnumMap<SDCardCapture.ResponseCode,String>(SDCardCapture.ResponseCode.class);
+	{
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_CARD,
+				"No SD card was detected.  Please make sure you have a working, formatted\n" +
+				"SD card in the motherboard's SD slot and try again.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_INIT,
+				"ReplicatorG was unable to initialize the SD card.  Please make sure that\n" +
+				"the SD card works properly.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_PARTITION,
+				"ReplicatorG was unable to read the SD card's partition table.  Please check\n" +
+				"that the card is partitioned properly.\n" +
+				"If you believe your SD card is OK, try resetting your device and restarting\n" +
+				"ReplicatorG."
+				);
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_FS,
+				"ReplicatorG was unable to open the filesystem on the SD card.  Please make sure\n" +
+				"that the SD card has a single partition formatted with a FAT16 filesystem.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_ROOT_DIR,
+				"ReplicatorG was unable to read the root directory on the SD card.  Please\n"+
+				"check to see if the SD card was formatted properly.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_LOCKED,
+				"The SD card cannot be written to because it is locked.  Remove the card,\n" +
+				"switch the lock off, and try again.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_FILE,
+				"ReplicatorG could not find the build file on the SD card.");
+		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_GENERIC,"Unknown SD card error.");
+	}
+	
+	/**
+	 * Process an SD response code and throw up an appropriate dialog for the user.
+	 * @param code the response from the SD request
+	 * @return true if the code indicates success; false if the operation should be aborted
+	 */
+	public boolean processSDResponse(SDCardCapture.ResponseCode code) {
+		if (code == SDCardCapture.ResponseCode.SUCCESS) return true;
+		String message = sdErrorMap.get(code);
+		JOptionPane.showMessageDialog(
+//				window,
+				null,
+				message,
+				"SD card error",
+				JOptionPane.ERROR_MESSAGE);
+		return false;
+	}
+	
+	public MachineThread(MachineController controller, Node machineNode) {
+		pendingQueue = new LinkedBlockingQueue<MachineCommand>();
 		
 		// save our XML
-		machineNode = mNode;
+		this.machineNode = machineNode;
+		this.controller = controller;
 		
 		// load our various objects
 		loadDriver();
@@ -129,6 +178,8 @@ class MachineThread extends Thread {
 		}
 	}
 	
+	private MachineBuilder machineBuilder;
+	
 	/**
 	 * Build the provided gcodes.  This method does not return until the build is complete or has been terminated.
 	 * The build target need not be an actual machine; it can be a file as well.  An "upload" is considered a build
@@ -151,120 +202,15 @@ class MachineThread extends Thread {
 			return false;
 		}
 		
-		// Set up a parser to talk to the driver
-		GCodeParser parser = new GCodeParser();
+		machineBuilder = new MachineBuilderDirect(driver, simulator, source);
 		
-		// Queue of commands that we get from the parser, and run on the driver.
-		Queue<DriverCommand> driverQueue = new LinkedList< DriverCommand >();
-		
-		parser.init((DriverQueryInterface) driver);
-		
-		// And the one for the simulator
-		GCodeParser simulationParser = new GCodeParser();
-		
-		// Queue of commands that we get from the parser, and run on the driver.
-		Queue<DriverCommand> simulatorQueue = new LinkedList< DriverCommand >();
-		
-		simulationParser.init((DriverQueryInterface) simulator);
-		
-		// And make a file to write simulation commands out from
-//		BufferedWriter out = null;
-//		try{
-//			FileWriter fstream = new FileWriter("driver_codes.txt");
-//	        out = new BufferedWriter(fstream);
-//	    }catch (Exception e){//Catch exception if any
-//    	      System.err.println("Error opening file for output: " + e.getMessage());
-//		}
-		
-		// Initialize our gcode provider
-		Iterator<String> i = source.iterator();
-		
-		boolean retry = false;
-		// Iterate over all the lines in the gcode source.
-		while (i.hasNext()) {
-			// Read and process next line
-			if (retry == false) {
-				String line = i.next();
-				linesProcessed++;
-				if (Thread.currentThread().isInterrupted()) {
-					throw new BuildFailureException("Build was interrupted");
-				}
-				
-				if (simulator.isSimulating()) {
-					simulationParser.parse(line, simulatorQueue);
-				}
-				
-				if (!isSimulating()) {
-					// Parse a line for the actual machine
-					parser.parse(line, driverQueue);
-					
-//					try {
-//						out.write(line + ": " + simulatorQueue.size() + " instructions\n");
-//						for (DriverCommand command : simulatorQueue) {
-//							out.write("  " + command.contentsToString() + "\n");
-//						}
-//						out.flush();
-//					} catch (IOException e1) {}
-				}
-			}
-			
-			
-			// Simulate the command. Just run everything against the simulator, and ignore errors.
-			if (retry == false && simulator.isSimulating()) {
-				for (DriverCommand command : simulatorQueue) {
-					try {
-						command.run(simulator);
-					} catch (RetryException r) {
-						// Ignore.
-					} catch (StopException e) {
-						// TODO: stop the simulator at this point?
-					}
-				}
-				simulatorQueue.clear();
-			}
-			
-			try {
-				if (!isSimulating()) {
-					// Run the command on the machine.
-					while(!driverQueue.isEmpty()) {
-						driverQueue.peek().run(driver);
-						driverQueue.remove();
-					}
-				}
-				retry = false;
-			} catch (RetryException r) {
-				// Indicate that we should retry the current line, rather
-				// than proceeding to the next, on the next go-round.
-				Base.logger.log(Level.FINE,"Message delivery failed, retrying");
-				retry = true;
-			} catch (StopException e) {
-				// TODO: Just returning here seems dangerous, better to notify the state machine.
-				
-				switch (e.getType()) {
-				case UNCONDITIONAL_HALT:
-					JOptionPane.showMessageDialog(null, e.getMessage(), 
-							"Unconditional halt: build ended", JOptionPane.INFORMATION_MESSAGE);
-					return true;
-				case PROGRAM_END:
-					JOptionPane.showMessageDialog(null, e.getMessage(),
-							"Program end: Build ended", JOptionPane.INFORMATION_MESSAGE);
-					return true;
-				case OPTIONAL_HALT:
-					int result = JOptionPane.showConfirmDialog(null, e.getMessage(),
-							"Optional halt: Continue build?", JOptionPane.YES_NO_OPTION);
-					
-					if (result == JOptionPane.YES_OPTION) {
-						driverQueue.remove();
-					} else {
-						return true;
-					}
-					break;
-				case PROGRAM_REWIND:
-					// TODO: Implement rewind; for now, just stop the build.
-					JOptionPane.showMessageDialog(null, e.getMessage(),
-							"Program rewind: Build ended", JOptionPane.INFORMATION_MESSAGE);
-					return true;
-				}
+		while (!machineBuilder.finished()) {
+			// Run the next command
+			machineBuilder.runNext();
+
+	// This section handles state machine changes.
+			if (Thread.currentThread().isInterrupted()) {
+				throw new BuildFailureException("Build was interrupted");
 			}
 			
 			// did we get any errors?
@@ -311,13 +257,12 @@ class MachineThread extends Thread {
 						estimatedBuildTime,
 						linesProcessed,
 						linesTotal);
-			emitProgress(progress);
 			
-			while (!pendingQueue.isEmpty()) {
-				runRequest(pendingQueue.remove());
-			}
+			controller.emitProgress(progress);
 		}
+	
 		
+	// This block happens at the end of the 
 		// wait for driver to finish up.
 		if (!isSimulating()) {
 			while (!driver.isFinished()) {
@@ -397,35 +342,11 @@ class MachineThread extends Thread {
 	private void buildRemoteInternal(String remoteName) {
 		// Dump out if SD builds are unsupported on this machine
 		if (remoteName == null || !(driver instanceof SDCardCapture)) return;
-		if (state.getState() != MachineState.State.BUILDING_REMOTE) return;
+		
+		machineBuilder = new MachineBuilderRemote((SDCardCapture)driver, remoteName);
+		
+		// TODO: what about this?
 		driver.getCurrentPosition(); // reconcile position
-		SDCardCapture sdcc = (SDCardCapture)driver;
-		if (!processSDResponse(sdcc.playback(remoteName))) {
-			setState(MachineState.State.STOPPING);
-			return;
-		}
-		// Poll for completion until done.  Check for pause states as well.
-		while (running && !driver.isFinished()) {
-			try {
-				// are we paused?
-				if (state.isPaused()) {
-					driver.pause();
-					while (state.isPaused()) {
-						synchronized(this) { wait(); }
-					}
-					driver.unpause();
-				}
-
-				// bail if we got interrupted.
-				if (state.getState() != MachineState.State.BUILDING_REMOTE) return;
-				synchronized(this) { wait(1000); }// wait one second.  A pause will notify us to check the pause state.
-			} catch (InterruptedException e) {
-				// bail if we got interrupted.
-				if (state.getState() != MachineState.State.BUILDING_REMOTE) return;
-			}
-		}
-		driver.invalidatePosition();
-		setState(new MachineState(MachineState.State.READY));
 	}
 	
 	private boolean startBuildToRemoteFile() {
@@ -460,178 +381,177 @@ class MachineThread extends Thread {
 		
 		return false;
 	}
-	
-	private void runRequest(MachineCommand request) {
-		switch(request.type) {
+
+	// Respond to a command from the machine controller
+	void runCommand(MachineCommand command) {
+		switch(command.type) {
 		case CONNECT:
 			if (state.getState() == MachineState.State.NOT_ATTACHED) {
+				// TODO: Break this out so we wait for connection in the main loop.
 				setState(new MachineState(MachineState.State.CONNECTING));
-			}
-			break;
-		case DISCONNECT:
-			driver.uninitialize();
-			setState(new MachineState(MachineState.State.NOT_ATTACHED));
-			break;
-		case RESET:
-			if (state.isConnected()) {
-				setState(new MachineState(MachineState.State.RESET));
-			}
-			break;
-		case SIMULATE:
-			currentSource = request.source;
-			currentTarget = JobTarget.SIMULATOR;
-			setState(new MachineState(MachineState.State.BUILDING));
-			break;
-		case BUILD_DIRECT:
-			currentSource = request.source;
-			currentTarget = JobTarget.MACHINE;
-			setState(new MachineState(MachineState.State.BUILDING));
-			break;
-		case BUILD_TO_FILE:
-			currentSource = request.source;
-			this.remoteName = request.remoteName;
-			currentTarget = JobTarget.FILE;
-			setState(new MachineState(MachineState.State.BUILDING));
-			break;
-		case BUILD_TO_REMOTE_FILE:
-			currentSource = request.source;
-			this.remoteName = request.remoteName;
-			currentTarget = JobTarget.REMOTE_FILE;
-			setState(new MachineState(MachineState.State.BUILDING));
-			break;
-		case BUILD_REMOTE:
-			this.remoteName = request.remoteName;
-			setState(MachineState.State.BUILDING_REMOTE);
-			break;
-		case PAUSE:
-			if (state.isBuilding() && !state.isPaused()) {
-				MachineState newState = getMachineState();
-				newState.setPaused(true);
-				setState(newState);
-			}
-			break;
-		case UNPAUSE:
-			if (state.isBuilding() && state.isPaused()) {
-				MachineState newState = getMachineState();
-				newState.setPaused(false);
-				setState(newState);
-			}
-			break;
-		case STOP:
-			// TODO: Do more than just turn off the heaters here?
-			driver.getMachine().currentTool().setTargetTemperature(0);
-			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
-			if (state.isBuilding()) {
-				setState(MachineState.State.STOPPING);
-			}
-			break;
-		case DISCONNECT_REMOTE_BUILD:
-			if (state.getState() == MachineState.State.BUILDING_REMOTE) {
-				running = false;
-				return; // send no further packets to machine; let it go on its own
-			}
-			
-			if (state.isBuilding()) {
-				setState(MachineState.State.STOPPING);
-			}
-			running = false;
-			break;
-		case RUN_COMMAND:
-			{
-				boolean completed = false;
-				// TODO: provide feedback to the caller rather than eating it.
 				
-				while(!completed) {
-					try {
-						request.command.run(driver);
-						completed = true;
-					} catch (RetryException e) {
-					} catch (StopException e) {
-					}
+				driver.initialize();
+				if (driver.isInitialized()) {
+					readName();
+					setState(MachineState.State.READY);
+				} else {
+					setState(MachineState.State.NOT_ATTACHED);
 				}
 			}
 			break;
+		case DISCONNECT:
+			// TODO: This seems wrong
+			if (state.isConnected()) {
+				driver.uninitialize();
+				setState(new MachineState(MachineState.State.NOT_ATTACHED));
+			
+				if (driver instanceof UsesSerial) {
+					UsesSerial us = (UsesSerial)driver;
+					us.setSerial(null);
+				}
+			}
+			
+			break;
+//		case RESET:
+//			if (state.isConnected()) {
+//				driver.reset();
+//				readName();
+//				setState(MachineState.State.READY);
+//			}
+//			break;
+//		case BUILD_DIRECT:
+//			currentSource = command.source;
+//			currentTarget = JobTarget.MACHINE;
+//			
+//			buildInternal(currentSource);
+//			
+//			setState(new MachineState(MachineState.State.BUILDING));
+//			break;	
+//		case SIMULATE:
+//			// TODO: Implement this.
+//			currentSource = command.source;
+//			currentTarget = JobTarget.SIMULATOR;
+//			setState(new MachineState(MachineState.State.BUILDING));
+//			break;
+//		case BUILD_TO_FILE:
+//			currentSource = command.source;
+//			this.remoteName = command.remoteName;
+//			currentTarget = JobTarget.FILE;
+//			
+//			if (!startBuildToFile()) {
+//				setState(MachineState.State.STOPPING);
+//			}
+//			
+//			setState(new MachineState(MachineState.State.BUILDING));
+//			break;
+//		case BUILD_TO_REMOTE_FILE:
+//			currentSource = command.source;
+//			this.remoteName = command.remoteName;
+//			currentTarget = JobTarget.REMOTE_FILE;
+//			
+//			if (!startBuildToRemoteFile()) {
+//				setState(MachineState.State.STOPPING);
+//			}
+//			
+//			setState(new MachineState(MachineState.State.BUILDING));
+//			break;
+//		case BUILD_REMOTE:
+//			this.remoteName = command.remoteName;
+//			
+//			buildRemoteInternal(remoteName);
+//			
+//			setState(MachineState.State.BUILDING_REMOTE);
+//			break;
+//		case PAUSE:
+//			if (state.isBuilding() && !state.isPaused()) {
+//				MachineState newState = getMachineState();
+//				newState.setPaused(true);
+//				setState(newState);
+//			}
+//			break;
+//		case UNPAUSE:
+//			if (state.isBuilding() && state.isPaused()) {
+//				MachineState newState = getMachineState();
+//				newState.setPaused(false);
+//				setState(newState);
+//			}
+//			break;
+//		case STOP:
+//			// TODO: Do more than just turn off the heaters here?
+//			driver.getMachine().currentTool().setTargetTemperature(0);
+//			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
+//			
+//			if (state.isBuilding()) {
+//				driver.stop(true);
+//				setState(MachineState.State.READY);
+//			}
+//			
+//			break;
+//		case DISCONNECT_REMOTE_BUILD:
+//			// TODO: This is wrong.
+//			
+//			if (state.getState() == MachineState.State.BUILDING_REMOTE) {
+//				return; // send no further packets to machine; let it go on its own
+//			}
+//			
+//			if (state.isBuilding()) {
+//				setState(MachineState.State.STOPPING);
+//			}
+//			break;
+//		case RUN_COMMAND:
+//			{
+//				boolean completed = false;
+//				// TODO: provide feedback to the caller rather than eating it.
+//				
+//				while(!completed) {
+//					try {
+//						command.command.run(driver);
+//						completed = true;
+//					} catch (RetryException e) {
+//					} catch (StopException e) {
+//					}
+//				}
+//			}
+//			break;
+		default:
+			Base.logger.severe("Ignored command: " + command.type.toString());
 		}
 	}
-	
 	
 	/**
 	 * Main machine thread loop.
 	 */
 	public void run() {
 		// This is our main loop.
-		while (running || state.getState() == MachineState.State.STOPPING) {
+		while (true) {
+			// If we are building, run another instruction on the machine.
+			if ( state.getState() == MachineState.State.BUILDING ) {
+				if (machineBuilder != null) {
+					machineBuilder.runNext();
+				}
+			}
 
-			// First, check for and run any control requests that might be in the queue.
+			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
-				runRequest(pendingQueue.remove());
+				runCommand(pendingQueue.remove());
 			}
 			
-			try {
-				if (state.getState() == MachineState.State.BUILDING) {
-					// Build to remote file
-					if (currentTarget == JobTarget.REMOTE_FILE) {
-						
-						if (!startBuildToRemoteFile()) {
-							setState(MachineState.State.STOPPING);
-						}
-					
-					// Build to local file
-					} else if (currentTarget == JobTarget.FILE) {
-
-						if (!startBuildToFile()) {
-							setState(MachineState.State.STOPPING);
-						}
-
-					// Ordinary build
-					} else {
-						buildInternal(currentSource);
-					}
-					
-				} else if (state.getState() == MachineState.State.BUILDING_REMOTE) {
-					buildRemoteInternal(remoteName);
-					
-				} else if (state.getState() == MachineState.State.CONNECTING) {
-					driver.initialize();
-					if (driver.isInitialized()) {
-						readName();
-						setState(MachineState.State.READY);
-					} else {
-						setState(MachineState.State.NOT_ATTACHED);
-					}
-					
-				} else if (state.getState() == MachineState.State.STOPPING) {
-					driver.stop(true);
-					setState(MachineState.State.READY);
-					
-				} else if (state.getState() == MachineState.State.RESET) {
-					driver.reset();
-					readName();
-					setState(MachineState.State.READY);
-					
-				} else {
-					if (state.getState() == MachineState.State.NOT_ATTACHED) {
-						// Kill serial port connection when not attached, to make it safe to unplug
-						if (driver instanceof UsesSerial) {
-							UsesSerial us = (UsesSerial)driver;
-							us.setSerial(null);
-						}
-					}
-					synchronized(this) {
-						if (state.getState() == MachineState.State.READY ||
-								state.getState() == MachineState.State.NOT_ATTACHED ||
-								state.isPaused()) {
-							wait();
-						} else {
-						}
-					}
+			// If there is nothing to do, sleep.
+			if ( state.getState() != MachineState.State.BUILDING ) {
+				try {
+					pendingQueue.wait(1000);
+				} catch(InterruptedException e) {
+					break;
 				}
-			} catch (InterruptedException ie) {
-				return;
-			} catch (Exception e) {
-				e.printStackTrace();
+			}
+			
+			// If we get interrupted, break out of the main loop.
+			if (Thread.interrupted()) {
+		        break;
 			}
 		}
+		
+		Base.logger.warning("MachineThread interrupted, terminating.");
 	}
 	
 	/**
@@ -654,7 +574,7 @@ class MachineThread extends Thread {
 		if (state.isBuilding() && !isSimulating()) {
 			if (Base.preferences.getBoolean("build.monitor_temp",false)) {
 				driver.readTemperature();
-				emitToolStatus(driver.getMachine().currentTool());
+				controller.emitToolStatus(driver.getMachine().currentTool());
 			}
 		}
 	}
@@ -699,9 +619,7 @@ class MachineThread extends Thread {
 		MachineState oldState = this.state;
 		this.state = state;
 		if (!oldState.equals(state)) {
-			emitStateChange(oldState,state);
-			// wake up machine thread
-			notify(); // wake up paused machines
+			controller.emitStateChange(oldState,state);
 		}
 	}
 
@@ -791,52 +709,6 @@ class MachineThread extends Thread {
 //	private MainWindow window; // for responses to errors, etc.
 //	public void setMainWindow(MainWindow window) { this.window = window; }
 	public void setMainWindow(MainWindow window) {  }
-
-	static Map<SDCardCapture.ResponseCode,String> sdErrorMap =
-		new EnumMap<SDCardCapture.ResponseCode,String>(SDCardCapture.ResponseCode.class);
-	{
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_CARD,
-				"No SD card was detected.  Please make sure you have a working, formatted\n" +
-				"SD card in the motherboard's SD slot and try again.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_INIT,
-				"ReplicatorG was unable to initialize the SD card.  Please make sure that\n" +
-				"the SD card works properly.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_PARTITION,
-				"ReplicatorG was unable to read the SD card's partition table.  Please check\n" +
-				"that the card is partitioned properly.\n" +
-				"If you believe your SD card is OK, try resetting your device and restarting\n" +
-				"ReplicatorG."
-				);
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_FS,
-				"ReplicatorG was unable to open the filesystem on the SD card.  Please make sure\n" +
-				"that the SD card has a single partition formatted with a FAT16 filesystem.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_ROOT_DIR,
-				"ReplicatorG was unable to read the root directory on the SD card.  Please\n"+
-				"check to see if the SD card was formatted properly.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_LOCKED,
-				"The SD card cannot be written to because it is locked.  Remove the card,\n" +
-				"switch the lock off, and try again.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_FILE,
-				"ReplicatorG could not find the build file on the SD card.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_GENERIC,"Unknown SD card error.");
-	}
-	
-	/**
-	 * Process an SD response code and throw up an appropriate dialog for the user.
-	 * @param code the response from the SD request
-	 * @return true if the code indicates success; false if the operation should be aborted
-	 */
-	public boolean processSDResponse(SDCardCapture.ResponseCode code) {
-		if (code == SDCardCapture.ResponseCode.SUCCESS) return true;
-		String message = sdErrorMap.get(code);
-		JOptionPane.showMessageDialog(
-//				window,
-				null,
-				message,
-				"SD card error",
-				JOptionPane.ERROR_MESSAGE);
-		return false;
-	}
 	
 	private MachineModel loadModel() {
 		MachineModel model = new MachineModel();
