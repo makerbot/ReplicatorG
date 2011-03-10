@@ -1,14 +1,10 @@
 package replicatorg.machine;
 
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 
@@ -16,23 +12,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
-import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.tools.XML;
 import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
-import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.UsesSerial;
-import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.MachineController.JobTarget;
 import replicatorg.machine.MachineController.MachineCommand;
-import replicatorg.machine.MachineController.RequestType;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
@@ -52,7 +44,7 @@ class MachineThread extends Thread {
 	JobTarget currentTarget;
 
 	// Link of machine commands to run
-	LinkedBlockingQueue<MachineCommand> pendingQueue;
+	Queue<MachineCommand> pendingQueue;
 	
 	// this is the xml config for this machine.
 	private Node machineNode;
@@ -136,7 +128,9 @@ class MachineThread extends Thread {
 	}
 	
 	public MachineThread(MachineController controller, Node machineNode) {
-		pendingQueue = new LinkedBlockingQueue<MachineCommand>();
+		super("Machine Thread");
+		
+		pendingQueue = new LinkedList<MachineCommand>();
 		
 		// save our XML
 		this.machineNode = machineNode;
@@ -384,6 +378,8 @@ class MachineThread extends Thread {
 
 	// Respond to a command from the machine controller
 	void runCommand(MachineCommand command) {
+		Base.logger.fine("Got command: " + command.type.toString());
+		
 		switch(command.type) {
 		case CONNECT:
 			if (state.getState() == MachineState.State.NOT_ATTACHED) {
@@ -476,17 +472,17 @@ class MachineThread extends Thread {
 //				setState(newState);
 //			}
 //			break;
-//		case STOP:
-//			// TODO: Do more than just turn off the heaters here?
-//			driver.getMachine().currentTool().setTargetTemperature(0);
-//			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
-//			
-//			if (state.isBuilding()) {
-//				driver.stop(true);
-//				setState(MachineState.State.READY);
-//			}
-//			
-//			break;
+		case STOP:
+			// TODO: Sometimes we only want to stop motion; how to specify just that?
+			driver.getMachine().currentTool().setTargetTemperature(0);
+			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
+			
+			if (state.isBuilding()) {
+				driver.stop(true);
+				setState(MachineState.State.READY);
+			}
+			
+			break;
 //		case DISCONNECT_REMOTE_BUILD:
 //			// TODO: This is wrong.
 //			
@@ -498,21 +494,21 @@ class MachineThread extends Thread {
 //				setState(MachineState.State.STOPPING);
 //			}
 //			break;
-//		case RUN_COMMAND:
-//			{
-//				boolean completed = false;
-//				// TODO: provide feedback to the caller rather than eating it.
-//				
-//				while(!completed) {
-//					try {
-//						command.command.run(driver);
-//						completed = true;
-//					} catch (RetryException e) {
-//					} catch (StopException e) {
-//					}
-//				}
-//			}
-//			break;
+		case RUN_COMMAND:
+			if (state.isConnected()) {
+				boolean completed = false;
+				// TODO: Don't get stuck in a loop here!
+				
+				while(!completed) {
+					try {
+						command.command.run(driver);
+						completed = true;
+					} catch (RetryException e) {
+					} catch (StopException e) {
+					}
+				}
+			}
+			break;
 		default:
 			Base.logger.severe("Ignored command: " + command.type.toString());
 		}
@@ -533,13 +529,13 @@ class MachineThread extends Thread {
 
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
-				runCommand(pendingQueue.remove());
+				synchronized(pendingQueue) { runCommand(pendingQueue.remove()); }
 			}
 			
 			// If there is nothing to do, sleep.
 			if ( state.getState() != MachineState.State.BUILDING ) {
 				try {
-					pendingQueue.wait(1000);
+					synchronized(this) { wait(); }
 				} catch(InterruptedException e) {
 					break;
 				}
@@ -579,9 +575,9 @@ class MachineThread extends Thread {
 		}
 	}
 	
-	synchronized public boolean scheduleRequest(MachineCommand request) {
-		pendingQueue.add(request);
-		notify(); // wake up if we were paused
+	public boolean scheduleRequest(MachineCommand request) {
+		synchronized(pendingQueue) { pendingQueue.add(request); }
+		synchronized(this) { notify(); }
 		
 		return true;
 	}
@@ -704,11 +700,6 @@ class MachineThread extends Thread {
 
 		name = "Unknown";
 	}
-	
-	// TODO: hide this behind an API
-//	private MainWindow window; // for responses to errors, etc.
-//	public void setMainWindow(MainWindow window) { this.window = window; }
-	public void setMainWindow(MainWindow window) {  }
 	
 	private MachineModel loadModel() {
 		MachineModel model = new MachineModel();

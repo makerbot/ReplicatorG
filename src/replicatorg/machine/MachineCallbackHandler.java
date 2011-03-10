@@ -23,6 +23,8 @@ public class MachineCallbackHandler extends Thread {
 	ConcurrentLinkedQueue<MachineToolStatusEvent> machineToolStatusEventQueue;
 	
 	public MachineCallbackHandler() {
+		super("Machine Callback Handler");
+		
 		machineStateChangeEventQueue = new ConcurrentLinkedQueue<MachineStateChangeEvent>();
 		machineProgressEventQueue = new ConcurrentLinkedQueue<MachineProgressEvent>();
 		machineToolStatusEventQueue = new ConcurrentLinkedQueue<MachineToolStatusEvent>();
