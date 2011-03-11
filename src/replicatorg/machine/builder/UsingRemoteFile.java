@@ -1,4 +1,4 @@
-package replicatorg.machine;
+package replicatorg.machine.builder;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 
 import replicatorg.drivers.SDCardCapture;
+import replicatorg.machine.MachineController.JobTarget;
 
 
 /** Helper class to build on a machine from a remote file.
@@ -13,27 +14,42 @@ import replicatorg.drivers.SDCardCapture;
  * @author mattmets
  *
  */
-public class MachineBuilderRemote implements MachineBuilder{
+public class UsingRemoteFile implements MachineBuilder{
 
-	SDCardCapture driver;
+	SDCardCapture sdcc;
 	
 	boolean finished = false;
 	
-	public MachineBuilderRemote(SDCardCapture driver, String remoteName) {
-		if (!processSDResponse(driver.playback(remoteName))) {
+	public UsingRemoteFile(SDCardCapture sdcc, String remoteName) {
+		
+		// TODO: we might fail here.
+		this.sdcc = sdcc;
+		
+		if (!processSDResponse(sdcc.playback(remoteName))) {
 			finished = true;
 		}
 	}
 	
 	@Override
 	public boolean finished() {
-		return (driver.isFinished());
+		return (sdcc.isFinished());
 	}
 
 	@Override
 	public void runNext() {
 	}
 	
+	@Override
+	public int getLinesProcessed() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getLinesTotal() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 	
 	// TODO: Where does this go?
 	static Map<SDCardCapture.ResponseCode,String> sdErrorMap =
@@ -74,7 +90,6 @@ public class MachineBuilderRemote implements MachineBuilder{
 		if (code == SDCardCapture.ResponseCode.SUCCESS) return true;
 		String message = sdErrorMap.get(code);
 		JOptionPane.showMessageDialog(
-//				window,
 				null,
 				message,
 				"SD card error",
@@ -83,14 +98,13 @@ public class MachineBuilderRemote implements MachineBuilder{
 	}
 
 	@Override
-	public int getLinesProcessed() {
-		// TODO Auto-generated method stub
-		return 0;
+	public boolean isInteractive() {
+		return true;
 	}
-
+	
+	
 	@Override
-	public int getLinesTotal() {
-		// TODO Auto-generated method stub
-		return 0;
+	public JobTarget getTarget() {
+		return JobTarget.MACHINE;
 	}
 }

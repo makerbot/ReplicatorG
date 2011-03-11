@@ -1,4 +1,4 @@
-package replicatorg.machine;
+package replicatorg.machine.builder;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -15,6 +15,7 @@ import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.commands.DriverCommand;
+import replicatorg.machine.MachineController.JobTarget;
 import replicatorg.model.GCodeSource;
 
 /**
@@ -23,7 +24,7 @@ import replicatorg.model.GCodeSource;
  * @author mattmets
  *
  */
-public class MachineBuilderDirect implements MachineBuilder{
+public class Direct implements MachineBuilder{
 	
 	public enum State {
 		RUNNING_GCODE,
@@ -51,7 +52,7 @@ public class MachineBuilderDirect implements MachineBuilder{
 	
 	State state;
 	
-	MachineBuilderDirect(Driver driver, SimulationDriver simulator, GCodeSource source) {
+	public Direct(Driver driver, SimulationDriver simulator, GCodeSource source) {
 		this.driver = driver;
 		this.source = source;
 	
@@ -93,6 +94,7 @@ public class MachineBuilderDirect implements MachineBuilder{
 	
 		state = State.RUNNING_GCODE;
 	}
+	
 	
 	@Override
 	public boolean finished() {
@@ -195,5 +197,15 @@ public class MachineBuilderDirect implements MachineBuilder{
 	}
 	public int getLinesProcessed() {
 		return linesProcessed;
+	}
+
+	@Override
+	public boolean isInteractive() {
+		return true;
+	}
+
+	@Override
+	public JobTarget getTarget() {
+		return JobTarget.MACHINE;
 	}
 }

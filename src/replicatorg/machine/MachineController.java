@@ -126,10 +126,10 @@ public class MachineController implements MachineControllerInterface {
 	public enum JobTarget {
 		/** No target selected. */
 		NONE,
-		/** Operations are performed on a physical machine. */
-		MACHINE,
 		/** Operations are being simulated. */
 		SIMULATOR,
+		/** Operations are performed on a physical machine. */
+		MACHINE,
 		/** Operations are being captured to an SD card on the machine. */
 		REMOTE_FILE,
 		/** Operations are being captured to a file. */
@@ -432,6 +432,6 @@ public class MachineController implements MachineControllerInterface {
 
 	// TODO: Drop this
 	public JobTarget getTarget() {
-		return machineThread.currentTarget;
+		return machineThread.getTarget();
 	}
 }

@@ -24,6 +24,11 @@ import replicatorg.drivers.StopException;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.machine.MachineController.JobTarget;
 import replicatorg.machine.MachineController.MachineCommand;
+import replicatorg.machine.builder.MachineBuilder;
+import replicatorg.machine.builder.Direct;
+import replicatorg.machine.builder.ToLocalFile;
+import replicatorg.machine.builder.ToRemoteFile;
+import replicatorg.machine.builder.UsingRemoteFile;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.GCodeSourceCollection;
@@ -68,8 +73,6 @@ class MachineThread extends Thread {
 	}
 	
 	private Timer pollingTimer;
-	
-	JobTarget currentTarget;
 
 	// Link of machine commands to run
 	Queue<MachineCommand> pendingQueue;
@@ -93,9 +96,6 @@ class MachineThread extends Thread {
 		// Build statistics
 		private double startTimeMillis = -1;
 	
-	
-	String remoteName = null;
-	
 	// Our driver object. Null when no driver is selected.
 	private Driver driver = null;
 	
@@ -107,50 +107,7 @@ class MachineThread extends Thread {
 	// ???
 	MachineModel cachedModel = null;
 	
-	static Map<SDCardCapture.ResponseCode,String> sdErrorMap =
-		new EnumMap<SDCardCapture.ResponseCode,String>(SDCardCapture.ResponseCode.class);
-	{
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_CARD,
-				"No SD card was detected.  Please make sure you have a working, formatted\n" +
-				"SD card in the motherboard's SD slot and try again.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_INIT,
-				"ReplicatorG was unable to initialize the SD card.  Please make sure that\n" +
-				"the SD card works properly.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_PARTITION,
-				"ReplicatorG was unable to read the SD card's partition table.  Please check\n" +
-				"that the card is partitioned properly.\n" +
-				"If you believe your SD card is OK, try resetting your device and restarting\n" +
-				"ReplicatorG."
-				);
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_FS,
-				"ReplicatorG was unable to open the filesystem on the SD card.  Please make sure\n" +
-				"that the SD card has a single partition formatted with a FAT16 filesystem.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_ROOT_DIR,
-				"ReplicatorG was unable to read the root directory on the SD card.  Please\n"+
-				"check to see if the SD card was formatted properly.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_LOCKED,
-				"The SD card cannot be written to because it is locked.  Remove the card,\n" +
-				"switch the lock off, and try again.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_NO_FILE,
-				"ReplicatorG could not find the build file on the SD card.");
-		sdErrorMap.put(SDCardCapture.ResponseCode.FAIL_GENERIC,"Unknown SD card error.");
-	}
-	
-	/**
-	 * Process an SD response code and throw up an appropriate dialog for the user.
-	 * @param code the response from the SD request
-	 * @return true if the code indicates success; false if the operation should be aborted
-	 */
-	public boolean processSDResponse(SDCardCapture.ResponseCode code) {
-		if (code == SDCardCapture.ResponseCode.SUCCESS) return true;
-		String message = sdErrorMap.get(code);
-		JOptionPane.showMessageDialog(
-				null,
-				message,
-				"SD card error",
-				JOptionPane.ERROR_MESSAGE);
-		return false;
-	}
+
 	
 	public MachineThread(MachineController controller, Node machineNode) {
 		super("Machine Thread");
@@ -222,19 +179,13 @@ class MachineThread extends Thread {
 
 		return true;
 	}
-
-	// Build the gcode source, bracketing it with warmup and cooldown commands.
-	// 
-	private void buildInternal(GCodeSource source) {
-
-	}
 	
 	// Run a remote SD card build on the machine.
 	private void buildRemoteInternal(String remoteName) {
 		// Dump out if SD builds are unsupported on this machine
-		if (remoteName == null || !(driver instanceof SDCardCapture)) return;
+		if (!(driver instanceof SDCardCapture)) return;
 		
-		machineBuilder = new MachineBuilderRemote((SDCardCapture)driver, remoteName);
+		machineBuilder = new UsingRemoteFile((SDCardCapture)driver, remoteName);
 		
 		// TODO: what about this?
 		driver.getCurrentPosition(); // reconcile position
@@ -314,11 +265,9 @@ class MachineThread extends Thread {
 			break;
 		case BUILD_DIRECT:
 			if (state.isReady()) {
-				// Queue the next 
-				currentTarget = JobTarget.MACHINE;
-			
 				startTimeMillis = System.currentTimeMillis();
 				
+				// TODO: When does this stop?
 				pollingTimer.start(1000);
 
 				if (!isSimulating()) {
@@ -333,7 +282,7 @@ class MachineThread extends Thread {
 				sources.add(new StringListSource(cooldownCommands));
 				GCodeSource combinedSource = new GCodeSourceCollection(sources);
 				
-				machineBuilder = new MachineBuilderDirect(driver, simulator, combinedSource);
+				machineBuilder = new Direct(driver, simulator, combinedSource);
 				
 				// TODO: This shouldn't be done here?
 				driver.invalidatePosition();
@@ -342,39 +291,82 @@ class MachineThread extends Thread {
 			break;
 //		case SIMULATE:
 //			// TODO: Implement this.
-//			currentSource = command.source;
-//			currentTarget = JobTarget.SIMULATOR;
 //			setState(new MachineState(MachineState.State.BUILDING));
 //			break;
-//		case BUILD_TO_FILE:
-//			currentSource = command.source;
-//			this.remoteName = command.remoteName;
-//			currentTarget = JobTarget.FILE;
-//			
-//			if (!startBuildToFile()) {
-//				setState(MachineState.State.STOPPING);
-//			}
-//			
-//			setState(new MachineState(MachineState.State.BUILDING));
-//			break;
-//		case BUILD_TO_REMOTE_FILE:
-//			currentSource = command.source;
-//			this.remoteName = command.remoteName;
-//			currentTarget = JobTarget.REMOTE_FILE;
-//			
-//			if (!startBuildToRemoteFile()) {
-//				setState(MachineState.State.STOPPING);
-//			}
-//			
-//			setState(new MachineState(MachineState.State.BUILDING));
-//			break;
-//		case BUILD_REMOTE:
-//			this.remoteName = command.remoteName;
-//			
-//			buildRemoteInternal(remoteName);
-//			
-//			setState(MachineState.State.BUILDING_REMOTE);
-//			break;
+		case BUILD_TO_REMOTE_FILE:
+			if (state.isReady()) {
+				if (!(driver instanceof SDCardCapture)) {
+					break;
+				}
+				
+				startTimeMillis = System.currentTimeMillis();
+				
+				// TODO: When does this stop?
+				pollingTimer.start(1000);
+
+				if (!isSimulating()) {
+					driver.getCurrentPosition(); // reconcile position
+				}
+				
+				// Eventually, we want to be able to build just the job,
+				// but for now send warmup + job + cooldown.
+				Vector<GCodeSource> sources = new Vector<GCodeSource>();
+				sources.add(new StringListSource(warmupCommands));
+				sources.add(command.source);
+				sources.add(new StringListSource(cooldownCommands));
+				GCodeSource combinedSource = new GCodeSourceCollection(sources);
+				
+				machineBuilder = new ToRemoteFile(driver, simulator,
+											combinedSource, command.remoteName);
+
+				// TODO: This shouldn't be done here?
+				driver.invalidatePosition();
+				setState(new MachineState(MachineState.State.BUILDING));
+			}
+			break;
+		case BUILD_TO_FILE:
+			if (state.isReady()) {
+				if (!(driver instanceof SDCardCapture)) {
+					break;
+				}
+				
+				startTimeMillis = System.currentTimeMillis();
+				
+				// TODO: When does this stop?
+				pollingTimer.start(1000);
+
+				if (!isSimulating()) {
+					driver.getCurrentPosition(); // reconcile position
+				}
+				
+				// Eventually, we want to be able to build just the job,
+				// but for now send warmup + job + cooldown.
+				Vector<GCodeSource> sources = new Vector<GCodeSource>();
+				sources.add(new StringListSource(warmupCommands));
+				sources.add(command.source);
+				sources.add(new StringListSource(cooldownCommands));
+				GCodeSource combinedSource = new GCodeSourceCollection(sources);
+				
+				machineBuilder = new ToLocalFile(driver, simulator,
+											combinedSource, command.remoteName);
+
+				// TODO: This shouldn't be done here?
+				driver.invalidatePosition();
+				setState(new MachineState(MachineState.State.BUILDING));
+			}
+			break;
+		case BUILD_REMOTE:
+			if (state.isReady()) {
+				if (!(driver instanceof SDCardCapture)) break;
+			
+				machineBuilder = new UsingRemoteFile((SDCardCapture)driver, command.remoteName);
+			
+				// TODO: what about this?
+				driver.getCurrentPosition(); // reconcile position
+			
+				setState(MachineState.State.BUILDING);
+			}
+			break;
 //		case PAUSE:
 //			if (state.isBuilding() && !state.isPaused()) {
 //				MachineState newState = getMachineState();
@@ -504,14 +496,23 @@ class MachineThread extends Thread {
 	// TODO: Put this somewhere else
 	/** True if the machine's build is going to the simulator. */
 	public boolean isSimulating() {
-		return (state.getState() == MachineState.State.BUILDING
-				&& currentTarget == JobTarget.SIMULATOR);
+		// TODO: implement this.
+		return false;
 	}
 	
 	// TODO: Put this somewhere else
 	public boolean isInteractiveTarget() {
-		return currentTarget == JobTarget.MACHINE ||
-			currentTarget == JobTarget.SIMULATOR; 	
+		if (machineBuilder != null) {
+			return machineBuilder.isInteractive();
+		}
+		return false;
+	}
+	
+	public JobTarget getTarget() {
+		if (machineBuilder != null) {
+			return machineBuilder.getTarget();
+		}
+		return JobTarget.NONE;
 	}
 	
 	public int getLinesProcessed() {

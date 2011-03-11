@@ -24,8 +24,6 @@ public class MachineState extends Object implements Cloneable {
 		/** The machine is building from a driver-provide source */
 		BUILDING,
 		/** The machine is building from it's internal memory. */
-		BUILDING_REMOTE,
-		/** The machine is stopping operation. */
 		STOPPING,
 		/** The machine is being reset */
 		RESET
@@ -58,8 +56,7 @@ public class MachineState extends Object implements Cloneable {
 	/** True if the machine is actively building, either over the connection or
 	 * from a file on the SD card. */
 	public boolean isBuilding() {
-		return state == State.BUILDING ||
-			state == State.BUILDING_REMOTE; 
+		return state == State.BUILDING; 
 	}
 
 	public void setPaused(boolean paused) {
