@@ -19,40 +19,24 @@
 
 package replicatorg.machine;
 
-import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
 
-import javax.swing.JOptionPane;
 
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.GCodeParser;
-import replicatorg.app.exceptions.BuildFailureException;
-import replicatorg.app.tools.XML;
-import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
-import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.EstimationDriver;
-import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
-import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
-import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;
-import replicatorg.model.StringListSource;
 
 /**
  * The MachineController object controls a single machine. It contains a single
@@ -77,7 +61,8 @@ public class MachineController implements MachineControllerInterface {
 		// Set up the connection to the machine
 		CONNECT, // Establish connection with the driver
 		DISCONNECT, // Detach from driver
-		RESET, // ??
+		DISCONNECT_REMOTE_BUILD, // Disconnect from a remote build without stopping it.
+		RESET, // Reset the driver
 
 		// Start a build
 		SIMULATE, // Build to the simulator
@@ -94,8 +79,6 @@ public class MachineController implements MachineControllerInterface {
 		UNPAUSE, // Unpause the current build
 		STOP_MOTION, // Stop all motion and abort the current build
 		STOP_ALL, // Stop everything (motion and actuators) and abort the current build
-		DISCONNECT_REMOTE_BUILD, // Disconnect from a remote build without
-									// stopping it.
 
 		// Interactive command
 		RUN_COMMAND, // Run a single command on the driver, interleaved with the

@@ -1,7 +1,5 @@
 package replicatorg.machine.builder;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -61,15 +59,6 @@ public class ToRemoteFile implements MachineBuilder {
 				JOptionPane.ERROR_MESSAGE);
 		return false;
 	}
-//	if (driver instanceof SDCardCapture) {
-//		SDCardCapture sdcc = (SDCardCapture)driver;
-//		if (processSDResponse(sdcc.beginCapture(remoteName))) {
-//		buildInternal(currentSource);
-//		Base.logger.info("Captured bytes: " +Integer.toString(sdcc.endCapture()));
-//		} else { setState(MachineState.State.STOPPING); }
-//		} else {
-//		setState(MachineState.State.STOPPING);
-//		}
 	
 	Direct directBuilder;
 	

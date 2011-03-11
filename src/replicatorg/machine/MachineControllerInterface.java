@@ -1,6 +1,5 @@
 package replicatorg.machine;
 
-import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.SimulationDriver;
@@ -65,8 +64,9 @@ public interface MachineControllerInterface {
 	public void runCommand(DriverCommand command);
 	
 	// Query the machine controller
-	public int getLinesProcessed();
 	public MachineState getMachineState();
+	
+	public int getLinesProcessed();
 	public JobTarget getTarget();
 	public boolean isPaused();
 	public boolean isInitialized();

@@ -1,18 +1,14 @@
 package replicatorg.machine;
 
-import java.util.EnumMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Vector;
 
-import javax.swing.JOptionPane;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
-import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.tools.XML;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
@@ -36,9 +32,6 @@ import replicatorg.model.StringListSource;
 
 /**
  * The MachineThread is responsible for communicating with the machine.
- * 
- * @author phooky
- * 
  */
 class MachineThread extends Thread {
 
@@ -107,7 +100,7 @@ class MachineThread extends Thread {
 	// ???
 	MachineModel cachedModel = null;
 	
-
+	private MachineBuilder machineBuilder;
 	
 	public MachineThread(MachineController controller, Node machineNode) {
 		super("Machine Thread");
@@ -125,7 +118,6 @@ class MachineThread extends Thread {
 		loadExtraPrefs();
 		parseName();
 	}
-
 
 	private void loadExtraPrefs() {
 		String[] commands = null;
@@ -154,74 +146,6 @@ class MachineThread extends Thread {
 				// System.out.println("Added cooldown: " + command);
 			}
 		}
-	}
-	
-	private MachineBuilder machineBuilder;
-	
-	/**
-	 * Build the provided gcodes.  This method does not return until the build is complete or has been terminated.
-	 * The build target need not be an actual machine; it can be a file as well.  An "upload" is considered a build
-	 * to a machine.  
-	 * @param source The gcode to build.
-	 * @return true if build terminated normally
-	 * @throws BuildFailureException
-	 * @throws InterruptedException
-	 */
-	private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
-				
-		// did we get any errors?
-		if (!isSimulating()) {
-			driver.checkErrors();
-		}
-		
-		// This block happens at the end of the 
-		// wait for driver to finish up.
-
-		return true;
-	}
-	
-	// Run a remote SD card build on the machine.
-	private void buildRemoteInternal(String remoteName) {
-		// Dump out if SD builds are unsupported on this machine
-		if (!(driver instanceof SDCardCapture)) return;
-		
-		machineBuilder = new UsingRemoteFile((SDCardCapture)driver, remoteName);
-		
-		// TODO: what about this?
-		driver.getCurrentPosition(); // reconcile position
-	}
-	
-	private boolean startBuildToRemoteFile() {
-//		if (!(driver instanceof SDCardCapture)) {
-//			return false;
-//		}
-//		
-//		SDCardCapture sdcc = (SDCardCapture)driver;
-//		if (processSDResponse(sdcc.beginCapture(remoteName))) { 
-//			buildInternal(currentSource);
-//			Base.logger.info("Captured bytes: " +Integer.toString(sdcc.endCapture()));
-//			return true;
-//		}
-
-		return false;
-	}
-	
-	private boolean startBuildToFile() {
-//		if (!(driver instanceof SDCardCapture)) {
-//			return false;
-//		}
-//		
-//		SDCardCapture sdcc = (SDCardCapture)driver;
-//		try {
-//			sdcc.beginFileCapture(remoteName); 
-//			buildInternal(currentSource);
-//			sdcc.endFileCapture();
-//			return true;
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-		
-		return false;
 	}
 
 	// Respond to a command from the machine controller
@@ -303,7 +227,7 @@ class MachineThread extends Thread {
 				
 				// TODO: When does this stop?
 				pollingTimer.start(1000);
-
+	
 				if (!isSimulating()) {
 					driver.getCurrentPosition(); // reconcile position
 				}
@@ -318,7 +242,7 @@ class MachineThread extends Thread {
 				
 				machineBuilder = new ToRemoteFile(driver, simulator,
 											combinedSource, command.remoteName);
-
+	
 				// TODO: This shouldn't be done here?
 				driver.invalidatePosition();
 				setState(new MachineState(MachineState.State.BUILDING));
@@ -433,6 +357,11 @@ class MachineThread extends Thread {
 	public void run() {
 		// This is our main loop.
 		while (true) {
+			// Check for and run any control requests that might be in the queue.
+			while (!pendingQueue.isEmpty()) {
+				synchronized(pendingQueue) { runCommand(pendingQueue.remove()); }
+			}
+			
 			// If we are building
 			if ( state.getState() == MachineState.State.BUILDING ) {
 				//run another instruction on the machine.
@@ -459,11 +388,6 @@ class MachineThread extends Thread {
 							machineBuilder.getLinesProcessed(),
 							machineBuilder.getLinesTotal());
 				controller.emitProgress(progress);
-			}
-
-			// Check for and run any control requests that might be in the queue.
-			while (!pendingQueue.isEmpty()) {
-				synchronized(pendingQueue) { runCommand(pendingQueue.remove()); }
 			}
 			
 			// If there is nothing to do, sleep.

@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
 import replicatorg.app.GCodeParser;
+import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.RetryException;
@@ -112,6 +113,17 @@ public class Direct implements MachineBuilder{
 				state = State.WAITING_FOR_MACHINE_FINISH;
 			}
 			return;
+		}
+		
+		// Check for any driver errors
+		if (building) {
+			try {
+				driver.checkErrors();
+			} catch (BuildFailureException e) {
+				Base.logger.severe("Build failure: " + e.getMessage());
+				state = State.FINISHED;
+				return;
+			}
 		}
 		
 		// Read and process next line
