@@ -1,14 +1,14 @@
 package replicatorg.machine;
 
 /**
- * Helper objects that makes a build onto a target, such as simulating to screen, building to a machine, or building to file.
+ * Object responsible for managing a build on a machine.
  * @author mattmets
  *
  */
 public interface MachineBuilder {
-	// True if the job has finished.
+	// True if the build has finished.
 	public boolean finished();
 
-	// Run the next 
+	// Run the next command on the machine, if possible.
 	public void runNext();
 }

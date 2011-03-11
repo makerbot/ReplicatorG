@@ -460,7 +460,7 @@ class MachineThread extends Thread {
 				}
 				
 				// Check the status poll machine.
-				if (pollingTimer.elapsed() {
+				if (pollingTimer.elapsed()) {
 					if (Base.preferences.getBoolean("build.monitor_temp",false)) {
 						driver.readTemperature();
 						controller.emitToolStatus(driver.getMachine().currentTool());

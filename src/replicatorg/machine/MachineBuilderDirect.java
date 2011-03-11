@@ -9,7 +9,6 @@ import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
 import replicatorg.app.GCodeParser;
-import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.RetryException;
@@ -19,12 +18,19 @@ import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.model.GCodeSource;
 
 /**
- * Object responsible for building a gcode source on a machine
- * TODO: Drop this in favor of something more generic. 
+ * Machine builder for building a GCodeSource on a Driver
+ * TODO: Break the simulator out of this!
  * @author mattmets
  *
  */
 public class MachineBuilderDirect implements MachineBuilder{
+	
+	public enum State {
+		RUNNING_GCODE,
+		WAITING_FOR_MACHINE_FINISH,
+		FINISHED,
+	}
+	
 	GCodeSource source;
 	Iterator<String> i;
 	
@@ -39,15 +45,15 @@ public class MachineBuilderDirect implements MachineBuilder{
 	GCodeParser simulationParser;
 	Queue<DriverCommand> simulatorQueue;
 	boolean simulating;		// True if we are running to the simulator
-
-	boolean finished = false;
 	
 	boolean retry = false;
+	
+	State state;
 	
 	MachineBuilderDirect(Driver driver, SimulationDriver simulator, GCodeSource source) {
 		this.driver = driver;
 		this.source = source;
-		
+	
 		linesProcessed = 0;
 		
 		// Initialize our gcode provider
@@ -82,35 +88,25 @@ public class MachineBuilderDirect implements MachineBuilder{
 		}
 		
 		simulating = false;
-		
+	
+		state = State.RUNNING_GCODE;
 	}
 	
 	@Override
 	public boolean finished() {
-		// We aren't done 
-		return finished;
-		
-		if (building) {
-			// Send a stop command if we're stopping.
-			if (state.getState() == MachineState.State.STOPPING ||
-				state.getState() == MachineState.State.RESET) {
-				if (!isSimulating()) {
-					driver.stop(true);
-				}
-				throw new BuildFailureException("Build manually aborted");
-			}
-			// bail if we're no longer building
-			if (state.getState() != MachineState.State.BUILDING) {
-				return false;
-			}
-		}
+		return (state == State.FINISHED);
 	}
 	
 	// Run the next command on the driver
 	@Override
-	public void runNext() {		
+	public void runNext() { 
 		if (!i.hasNext()) {
-			finished = true;
+			// TODO: This is clunky.
+			if (driver.isFinished()) {
+				state = State.FINISHED;
+			} else {
+				state = State.WAITING_FOR_MACHINE_FINISH;
+			}
 			return;
 		}
 		
@@ -129,7 +125,6 @@ public class MachineBuilderDirect implements MachineBuilder{
 				simulationParser.parse(line, simulatorQueue);
 			}
 		}
-		
 		
 		// Simulate the command. Just run everything against the simulator, and ignore errors.
 		if (retry == false && simulating) {
@@ -167,12 +162,12 @@ public class MachineBuilderDirect implements MachineBuilder{
 			case UNCONDITIONAL_HALT:
 				JOptionPane.showMessageDialog(null, e.getMessage(), 
 						"Unconditional halt: build ended", JOptionPane.INFORMATION_MESSAGE);
-				finished = true;
+				state = State.FINISHED;
 				break;
 			case PROGRAM_END:
 				JOptionPane.showMessageDialog(null, e.getMessage(),
 						"Program end: Build ended", JOptionPane.INFORMATION_MESSAGE);
-				finished = true;
+				state = State.FINISHED;
 				break;
 			case OPTIONAL_HALT:
 				int result = JOptionPane.showConfirmDialog(null, e.getMessage(),
@@ -181,14 +176,13 @@ public class MachineBuilderDirect implements MachineBuilder{
 				if (result == JOptionPane.YES_OPTION) {
 					driverQueue.remove();
 				} else {
-					finished = true;
+					state = State.FINISHED;
 				}
 				break;
 			case PROGRAM_REWIND:
-				// TODO: Implement rewind; for now, just stop the build.
 				JOptionPane.showMessageDialog(null, e.getMessage(),
 						"Program rewind: Build ended", JOptionPane.INFORMATION_MESSAGE);
-				finished = true;
+				state = State.FINISHED;
 				break;
 			}
 		}
