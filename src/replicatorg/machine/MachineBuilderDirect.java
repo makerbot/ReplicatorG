@@ -35,6 +35,7 @@ public class MachineBuilderDirect implements MachineBuilder{
 	Iterator<String> i;
 	
 	int linesProcessed;
+	int linesTotal;
 	
 	Driver driver;
 	GCodeParser parser;
@@ -55,6 +56,7 @@ public class MachineBuilderDirect implements MachineBuilder{
 		this.source = source;
 	
 		linesProcessed = 0;
+		linesTotal = source.getLineCount();
 		
 		// Initialize our gcode provider
 		i = source.iterator();
@@ -186,5 +188,12 @@ public class MachineBuilderDirect implements MachineBuilder{
 				break;
 			}
 		}
+	}
+	
+	public int getLinesTotal() {
+		return linesTotal;
+	}
+	public int getLinesProcessed() {
+		return linesProcessed;
 	}
 }

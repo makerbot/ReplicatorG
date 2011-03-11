@@ -81,4 +81,16 @@ public class MachineBuilderRemote implements MachineBuilder{
 				JOptionPane.ERROR_MESSAGE);
 		return false;
 	}
+
+	@Override
+	public int getLinesProcessed() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getLinesTotal() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

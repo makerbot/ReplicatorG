@@ -91,8 +91,6 @@ class MachineThread extends Thread {
 		private double estimatedBuildTime = 0;
 	
 		// Build statistics
-		private int linesProcessed = -1;
-		private int linesTotal = -1;
 		private double startTimeMillis = -1;
 	
 	
@@ -320,10 +318,6 @@ class MachineThread extends Thread {
 				currentTarget = JobTarget.MACHINE;
 			
 				startTimeMillis = System.currentTimeMillis();
-				linesProcessed = 0;
-				linesTotal = warmupCommands.size() + 
-					command.source.getLineCount() +
-					cooldownCommands.size();
 				
 				pollingTimer.start(1000);
 
@@ -450,13 +444,11 @@ class MachineThread extends Thread {
 			// If we are building
 			if ( state.getState() == MachineState.State.BUILDING ) {
 				//run another instruction on the machine.
-				if (machineBuilder != null) {
-					machineBuilder.runNext();
-					
-					if (machineBuilder.finished()) {
-						// TODO: Exit correctly.
-						setState(MachineState.State.READY);
-					}
+				machineBuilder.runNext();
+				
+				if (machineBuilder.finished()) {
+					// TODO: Exit correctly.
+					setState(MachineState.State.READY);
 				}
 				
 				// Check the status poll machine.
@@ -472,8 +464,8 @@ class MachineThread extends Thread {
 				MachineProgressEvent progress = 
 					new MachineProgressEvent((double)System.currentTimeMillis()-startTimeMillis,
 							estimatedBuildTime,
-							linesProcessed,
-							linesTotal);
+							machineBuilder.getLinesProcessed(),
+							machineBuilder.getLinesTotal());
 				controller.emitProgress(progress);
 			}
 
@@ -523,7 +515,10 @@ class MachineThread extends Thread {
 	}
 	
 	public int getLinesProcessed() {
-		return linesProcessed;
+		if (machineBuilder != null) {
+			return machineBuilder.getLinesProcessed();
+		}
+		return -1;
 	}
 	
 	public MachineState getMachineState() {

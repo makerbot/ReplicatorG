@@ -51,7 +51,6 @@ public class GCodeSourceCollection implements GCodeSource {
 		}
 	}
 	
-//	@SuppressWarnings("unchecked")
 	public GCodeSourceCollection(Vector<GCodeSource> sources) {
 		this.sources = sources;
 		
