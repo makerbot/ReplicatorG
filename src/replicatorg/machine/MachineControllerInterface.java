@@ -59,7 +59,7 @@ public interface MachineControllerInterface {
 	public void unpause();
 	
 	// Halt the machine immediately
-	public void stop();
+	public void stopMotion();
 		
 	// Run a command on the driver 
 	public void runCommand(DriverCommand command);

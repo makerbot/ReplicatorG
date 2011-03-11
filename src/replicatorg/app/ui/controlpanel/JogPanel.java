@@ -126,7 +126,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		} else {
 			// If we were in continuous jog mode, send a stop to be safe
 			if (continuousJogMode) {
-				this.machine.stop();			
+				this.machine.stopMotion();			
 			}
 			continuousJogMode = false;
 			Matcher jogMatcher = jogPattern.matcher(mode);
@@ -340,7 +340,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 				machine.runCommand(new replicatorg.drivers.commands.QueuePoint(current));
 			}
 		} else if (s.equals("Stop")) {
-			machine.stop();
+			machine.stopMotion();
 			// FIXME: If we reenable the control panel while printing, 
 			// we should check this, call this.machine.stop(),
 			// plus communicate this action back to the main window
@@ -401,7 +401,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	public void mouseReleased(MouseEvent arg0) {
 		if (continuousJogMode) {
-			machine.stop();
+			machine.stopMotion();
 		}
 	}
 }

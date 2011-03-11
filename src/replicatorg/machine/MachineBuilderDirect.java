@@ -52,11 +52,11 @@ public class MachineBuilderDirect implements MachineBuilder{
 		
 		// Initialize our gcode provider
 		i = source.iterator();
-
 		
 		if (driver == null) {
 			building = false;
 		} else {
+			building = true;
 			// Set up a parser to talk to the driver
 			parser = new GCodeParser();
 			
@@ -81,16 +81,34 @@ public class MachineBuilderDirect implements MachineBuilder{
 			simulationParser.init((DriverQueryInterface) simulator);
 		}
 		
+		simulating = false;
+		
 	}
 	
 	@Override
 	public boolean finished() {
+		// We aren't done 
 		return finished;
+		
+		if (building) {
+			// Send a stop command if we're stopping.
+			if (state.getState() == MachineState.State.STOPPING ||
+				state.getState() == MachineState.State.RESET) {
+				if (!isSimulating()) {
+					driver.stop(true);
+				}
+				throw new BuildFailureException("Build manually aborted");
+			}
+			// bail if we're no longer building
+			if (state.getState() != MachineState.State.BUILDING) {
+				return false;
+			}
+		}
 	}
 	
 	// Run the next command on the driver
 	@Override
-	public void runNext() {
+	public void runNext() {		
 		if (!i.hasNext()) {
 			finished = true;
 			return;
@@ -100,9 +118,11 @@ public class MachineBuilderDirect implements MachineBuilder{
 		if (retry == false) {
 			String line = i.next();
 			linesProcessed++;
-			
+
 			// Parse a line for the actual machine
-			parser.parse(line, driverQueue);
+			if (building) {
+				parser.parse(line, driverQueue);
+			}
 			
 			// If we're simulating, parse a line to feed to the simulator 
 			if (simulating) {

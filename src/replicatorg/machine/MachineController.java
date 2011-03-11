@@ -92,7 +92,8 @@ public class MachineController implements MachineControllerInterface {
 		// Control a build
 		PAUSE, // Pause the current build
 		UNPAUSE, // Unpause the current build
-		STOP, // Abort the current build
+		STOP_MOTION, // Stop all motion and abort the current build
+		STOP_ALL, // Stop everything (motion and actuators) and abort the current build
 		DISCONNECT_REMOTE_BUILD, // Disconnect from a remote build without
 									// stopping it.
 
@@ -298,8 +299,13 @@ public class MachineController implements MachineControllerInterface {
 		return machineThread.getModel();
 	}
 
-	public void stop() {
-		machineThread.scheduleRequest(new MachineCommand(RequestType.STOP,
+	public void stopMotion() {
+		machineThread.scheduleRequest(new MachineCommand(RequestType.STOP_MOTION,
+				null, null));
+	}
+	
+	public void stopAll() {
+		machineThread.scheduleRequest(new MachineCommand(RequestType.STOP_ALL,
 				null, null));
 	}
 

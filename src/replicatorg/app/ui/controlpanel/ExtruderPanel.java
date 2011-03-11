@@ -167,7 +167,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		} else {
 			// If we were in continuous jog mode, send a stop to be safe
 			if (continuousJogMode) {
-				this.machine.stop();			
+				this.machine.stopMotion();			
 			}
 			continuousJogMode = false;
 			Matcher jogMatcher = extrudeTimePattern.matcher(mode);
@@ -673,7 +673,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
 			
 			if (this.toolModel.getMotorStepperAxis() != null) {
-				machine.stop();
+				machine.stopMotion();
 			}
 		}
 	}

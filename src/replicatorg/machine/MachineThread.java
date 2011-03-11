@@ -14,7 +14,6 @@ import org.w3c.dom.NodeList;
 import replicatorg.app.Base;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.tools.XML;
-import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.OnboardParameters;
@@ -27,6 +26,7 @@ import replicatorg.machine.MachineController.JobTarget;
 import replicatorg.machine.MachineController.MachineCommand;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
+import replicatorg.model.GCodeSourceCollection;
 import replicatorg.model.StringListSource;
 
 /**
@@ -36,16 +36,44 @@ import replicatorg.model.StringListSource;
  * 
  */
 class MachineThread extends Thread {
-	private long lastPolled = 0;
-	private boolean pollingEnabled = false;
-	private long pollIntervalMs = 1000;
 
-	GCodeSource currentSource;
+	// TODO: Rethink this.
+	class Timer {
+		private long lastEventTime = 0;
+		private boolean enabled = false;
+		private long intervalMs = 1000;
+		
+		public void start(long interval) {
+			enabled = true;
+			intervalMs = interval;
+		}
+		
+		public void stop() {
+			enabled = false;
+		}
+		
+		// send out updates
+		public boolean elapsed() {
+			if (!enabled) {
+				return false;
+			}
+			long curMillis = System.currentTimeMillis();
+			if (lastEventTime + intervalMs <= curMillis) {
+				lastEventTime = curMillis;
+				
+				return true;
+			}
+			return false;
+		}
+	}
+	
+	private Timer pollingTimer;
+	
 	JobTarget currentTarget;
 
 	// Link of machine commands to run
 	Queue<MachineCommand> pendingQueue;
-	
+		
 	// this is the xml config for this machine.
 	private Node machineNode;
 	
@@ -119,7 +147,6 @@ class MachineThread extends Thread {
 		if (code == SDCardCapture.ResponseCode.SUCCESS) return true;
 		String message = sdErrorMap.get(code);
 		JOptionPane.showMessageDialog(
-//				window,
 				null,
 				message,
 				"SD card error",
@@ -129,6 +156,8 @@ class MachineThread extends Thread {
 	
 	public MachineThread(MachineController controller, Node machineNode) {
 		super("Machine Thread");
+		
+		pollingTimer = new Timer();
 		
 		pendingQueue = new LinkedList<MachineCommand>();
 		
@@ -184,152 +213,22 @@ class MachineThread extends Thread {
 	 * @throws InterruptedException
 	 */
 	private boolean buildCodesInternal(GCodeSource source) throws BuildFailureException, InterruptedException {
-		
-		if (!state.isBuilding()) {
-			// Do not build if the machine is not building or paused
-			return false;
-		}
-		
-		// Flush any parser cached data
-		if (driver == null) {
-			Base.logger.severe("Machinecontroller driver is null, can't print");
-			return false;
-		}
-		
-		machineBuilder = new MachineBuilderDirect(driver, simulator, source);
-		
-		while (!machineBuilder.finished()) {
-			// Run the next command
-			machineBuilder.runNext();
-
-	// This section handles state machine changes.
-			if (Thread.currentThread().isInterrupted()) {
-				throw new BuildFailureException("Build was interrupted");
-			}
-			
-			// did we get any errors?
-			if (!isSimulating()) {
-				driver.checkErrors();
-			}
-			
-			// are we paused?
-			if (state.isPaused()) {
-				// Tell machine to enter pause mode
-				if (!isSimulating()) driver.pause();
-				while (state.isPaused()) {
-					// Sleep until notified
-					synchronized(this) { wait(); }
-				}
-				// Notified; tell machine to wake up.
-				if (!isSimulating()) driver.unpause();
-			}
-			
-			// Send a stop command if we're stopping.
-			if (state.getState() == MachineState.State.STOPPING ||
-					state.getState() == MachineState.State.RESET) {
-				if (!isSimulating()) {
-					driver.stop(true);
-				}
-				throw new BuildFailureException("Build manually aborted");
-			}
-
-			// bail if we're no longer building
-			if (state.getState() != MachineState.State.BUILDING) {
-				return false;
-			}
-			
-			// send out updates
-			if (pollingEnabled) {
-				long curMillis = System.currentTimeMillis();
-				if (lastPolled + pollIntervalMs <= curMillis) {
-					lastPolled = curMillis;
-					pollStatus();
-				}
-			}
-			MachineProgressEvent progress = 
-				new MachineProgressEvent((double)System.currentTimeMillis()-startTimeMillis,
-						estimatedBuildTime,
-						linesProcessed,
-						linesTotal);
-			
-			controller.emitProgress(progress);
-		}
-	
-		
-	// This block happens at the end of the 
-		// wait for driver to finish up.
-		if (!isSimulating()) {
-			while (!driver.isFinished()) {
-				// We're checking for stop/reset here as well. This will catch stops occurring
-				// after all lines have been queued on the motherboard.
 				
-				// Send a stop command if we're stopping.
-				if (state.getState() == MachineState.State.STOPPING ||
-					state.getState() == MachineState.State.RESET) {
-					if (!isSimulating()) {
-						driver.stop(true);
-					}
-					throw new BuildFailureException("Build manually aborted");
-				}
-				// bail if we're no longer building
-				if (state.getState() != MachineState.State.BUILDING) {
-					return false;
-				}
-				Thread.sleep(100);
-			}
+		// did we get any errors?
+		if (!isSimulating()) {
+			driver.checkErrors();
 		}
+		
+		// This block happens at the end of the 
+		// wait for driver to finish up.
+
 		return true;
 	}
 
 	// Build the gcode source, bracketing it with warmup and cooldown commands.
 	// 
 	private void buildInternal(GCodeSource source) {
-		startTimeMillis = System.currentTimeMillis();
-		linesProcessed = 0;
-		linesTotal = warmupCommands.size() + 
-			cooldownCommands.size() +
-			source.getLineCount();
-		
-		startStatusPolling(1000); // Will not send commands if temp mon. turned off
-		try {
-			if (!isSimulating()) {
-				driver.getCurrentPosition(); // reconcile position
-			}
-			
-			Base.logger.info("Running warmup commands");
-			buildCodesInternal(new StringListSource(warmupCommands));
-			
-			Base.logger.info("Running build.");
-			buildCodesInternal(source);
-			
-			Base.logger.info("Running cooldown commands");
-			buildCodesInternal(new StringListSource(cooldownCommands));
-			
-			if (!isSimulating()) {
-				driver.invalidatePosition();
-			}
-			setState(new MachineState(driver.isInitialized()?
-					MachineState.State.READY:
-					MachineState.State.NOT_ATTACHED
-				));
-		} catch (BuildFailureException e) {
-			if (isSimulating()) {
-				// If simulating, return to connected or
-				// disconnected state.
-				setState(new MachineState(driver.isInitialized()?
-						MachineState.State.READY:
-						MachineState.State.NOT_ATTACHED));
-			} else {
-				// If a real interrupted build,
-				// Attempt to reestablish connection to check state on an abort
-				// or failure
-				setState(new MachineState(MachineState.State.CONNECTING));
-			}
-		} catch (InterruptedException e) {
-			Base.logger.warning("MachineController interrupted");
-		} finally {
-			stopStatusPolling();
-		}
+
 	}
 	
 	// Run a remote SD card build on the machine.
@@ -344,34 +243,34 @@ class MachineThread extends Thread {
 	}
 	
 	private boolean startBuildToRemoteFile() {
-		if (!(driver instanceof SDCardCapture)) {
-			return false;
-		}
-		
-		SDCardCapture sdcc = (SDCardCapture)driver;
-		if (processSDResponse(sdcc.beginCapture(remoteName))) { 
-			buildInternal(currentSource);
-			Base.logger.info("Captured bytes: " +Integer.toString(sdcc.endCapture()));
-			return true;
-		}
+//		if (!(driver instanceof SDCardCapture)) {
+//			return false;
+//		}
+//		
+//		SDCardCapture sdcc = (SDCardCapture)driver;
+//		if (processSDResponse(sdcc.beginCapture(remoteName))) { 
+//			buildInternal(currentSource);
+//			Base.logger.info("Captured bytes: " +Integer.toString(sdcc.endCapture()));
+//			return true;
+//		}
 
 		return false;
 	}
 	
 	private boolean startBuildToFile() {
-		if (!(driver instanceof SDCardCapture)) {
-			return false;
-		}
-		
-		SDCardCapture sdcc = (SDCardCapture)driver;
-		try {
-			sdcc.beginFileCapture(remoteName); 
-			buildInternal(currentSource);
-			sdcc.endFileCapture();
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		if (!(driver instanceof SDCardCapture)) {
+//			return false;
+//		}
+//		
+//		SDCardCapture sdcc = (SDCardCapture)driver;
+//		try {
+//			sdcc.beginFileCapture(remoteName); 
+//			buildInternal(currentSource);
+//			sdcc.endFileCapture();
+//			return true;
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 		
 		return false;
 	}
@@ -408,21 +307,45 @@ class MachineThread extends Thread {
 			}
 			
 			break;
-//		case RESET:
-//			if (state.isConnected()) {
-//				driver.reset();
-//				readName();
-//				setState(MachineState.State.READY);
-//			}
-//			break;
-//		case BUILD_DIRECT:
-//			currentSource = command.source;
-//			currentTarget = JobTarget.MACHINE;
-//			
-//			buildInternal(currentSource);
-//			
-//			setState(new MachineState(MachineState.State.BUILDING));
-//			break;	
+		case RESET:
+			if (state.isConnected()) {
+				driver.reset();
+				readName();
+				setState(MachineState.State.READY);
+			}
+			break;
+		case BUILD_DIRECT:
+			if (state.isReady()) {
+				// Queue the next 
+				currentTarget = JobTarget.MACHINE;
+			
+				startTimeMillis = System.currentTimeMillis();
+				linesProcessed = 0;
+				linesTotal = warmupCommands.size() + 
+					command.source.getLineCount() +
+					cooldownCommands.size();
+				
+				pollingTimer.start(1000);
+
+				if (!isSimulating()) {
+					driver.getCurrentPosition(); // reconcile position
+				}
+				
+				// Eventually, we want to be able to build just the job,
+				// but for now send warmup + job + cooldown.
+				Vector<GCodeSource> sources = new Vector<GCodeSource>();
+				sources.add(new StringListSource(warmupCommands));
+				sources.add(command.source);
+				sources.add(new StringListSource(cooldownCommands));
+				GCodeSource combinedSource = new GCodeSourceCollection(sources);
+				
+				machineBuilder = new MachineBuilderDirect(driver, simulator, combinedSource);
+				
+				// TODO: This shouldn't be done here?
+				driver.invalidatePosition();
+				setState(new MachineState(MachineState.State.BUILDING));
+			}
+			break;
 //		case SIMULATE:
 //			// TODO: Implement this.
 //			currentSource = command.source;
@@ -472,17 +395,21 @@ class MachineThread extends Thread {
 //				setState(newState);
 //			}
 //			break;
-		case STOP:
-			// TODO: Sometimes we only want to stop motion; how to specify just that?
+		case STOP_MOTION:
+			if (state.isConnected()) {
+				driver.stop(false);
+				setState(MachineState.State.READY);
+			}
+			break;
+		case STOP_ALL:
+			// TODO: This should be handled at the driver level?
 			driver.getMachine().currentTool().setTargetTemperature(0);
 			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			
-			if (state.isBuilding()) {
-				driver.stop(true);
-				setState(MachineState.State.READY);
-			}
+			driver.stop(true);
+			setState(MachineState.State.READY);
 			
-			break;
+			break;			
 //		case DISCONNECT_REMOTE_BUILD:
 //			// TODO: This is wrong.
 //			
@@ -520,11 +447,34 @@ class MachineThread extends Thread {
 	public void run() {
 		// This is our main loop.
 		while (true) {
-			// If we are building, run another instruction on the machine.
+			// If we are building
 			if ( state.getState() == MachineState.State.BUILDING ) {
+				//run another instruction on the machine.
 				if (machineBuilder != null) {
 					machineBuilder.runNext();
+					
+					if (machineBuilder.finished()) {
+						// TODO: Exit correctly.
+						setState(MachineState.State.READY);
+					}
 				}
+				
+				// Check the status poll machine.
+				if (pollingTimer.elapsed() {
+					if (Base.preferences.getBoolean("build.monitor_temp",false)) {
+						driver.readTemperature();
+						controller.emitToolStatus(driver.getMachine().currentTool());
+					}
+				}
+				
+				// And send out a progress event
+				// TODO: Should this be done here??
+				MachineProgressEvent progress = 
+					new MachineProgressEvent((double)System.currentTimeMillis()-startTimeMillis,
+							estimatedBuildTime,
+							linesProcessed,
+							linesTotal);
+				controller.emitProgress(progress);
 			}
 
 			// Check for and run any control requests that might be in the queue.
@@ -548,31 +498,6 @@ class MachineThread extends Thread {
 		}
 		
 		Base.logger.warning("MachineThread interrupted, terminating.");
-	}
-	
-	/**
-	 * Start polling the machine for its current status (temperatures, etc.)
-	 * @param interval The interval, in ms, between polls
-	 */
-	private void startStatusPolling(long interval) {
-		pollingEnabled = true;
-		pollIntervalMs = interval;
-	}
-
-	/**
-	 * Turn off status polling.
-	 */
-	private void stopStatusPolling() {
-		pollingEnabled = false;
-	}
-
-	private void pollStatus() {
-		if (state.isBuilding() && !isSimulating()) {
-			if (Base.preferences.getBoolean("build.monitor_temp",false)) {
-				driver.readTemperature();
-				controller.emitToolStatus(driver.getMachine().currentTool());
-			}
-		}
 	}
 	
 	public boolean scheduleRequest(MachineCommand request) {
