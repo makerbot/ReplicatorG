@@ -49,9 +49,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
-import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
-import replicatorg.drivers.commands.SetTemperature;
 import replicatorg.drivers.commands.DriverCommand.AxialDirection;
 import replicatorg.machine.MachineControllerInterface;
 import replicatorg.machine.model.ToolModel;

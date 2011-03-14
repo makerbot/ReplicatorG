@@ -28,8 +28,6 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.drivers.Driver;
-import replicatorg.drivers.RetryException;
 import replicatorg.machine.MachineControllerInterface;
 import replicatorg.machine.model.AxisId;
 import replicatorg.util.Point5d;

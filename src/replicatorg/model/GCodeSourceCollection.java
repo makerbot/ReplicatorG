@@ -3,7 +3,6 @@ package replicatorg.model;
 import java.util.Iterator;
 import java.util.Vector;
 
-import replicatorg.app.Base;
 
 /**
  * A collection of GCode sources that act as a single source
