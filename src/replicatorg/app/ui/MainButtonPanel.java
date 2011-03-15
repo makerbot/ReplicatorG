@@ -208,7 +208,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		setPreferredSize(new Dimension(700,60));
 		
 		// Update initial state
-		machineStateChangedInternal(new MachineStateChangeEvent(null, new MachineState()));
+		machineStateChangedInternal(new MachineStateChangeEvent(null, new MachineState(MachineState.State.NOT_ATTACHED)));
 	}
 
 	public MainButton makeButton(String rolloverText, String source) {

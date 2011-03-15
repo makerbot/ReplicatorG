@@ -1691,8 +1691,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 		boolean hasGcode = getBuild().getCode() != null;
 		if (building) {
-			if (evt.getState().isReady() ||
-				evt.getState().getState() == MachineState.State.STOPPING) {
+			if (evt.getState().isReady()) {
 				final MachineState endState = evt.getState();
         		building = false;
                 SwingUtilities.invokeLater(new Runnable() {
@@ -1741,9 +1740,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 		
 		// enable the control panel menu item when the machine is ready
-//		controlPanelItem.setEnabled(evt.getState().isReady());
-		// TODO: Always the control panel is accessible
-		controlPanelItem.setEnabled(true);
+		controlPanelItem.setEnabled(evt.getState().isReady());
 		
 		// enable the build menu item when the machine is ready and there is gcode in the editor
 		buildMenuItem.setEnabled(hasGcode && evt.getState().isReady());
@@ -2535,7 +2532,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 		if (machine == null) {
 			// Buttons will need an explicit null state notification
-			buttons.machineStateChanged(new MachineStateChangeEvent(null, new MachineState()));
+			buttons.machineStateChanged(new MachineStateChangeEvent(null, new MachineState(MachineState.State.NOT_ATTACHED)));
 		}
 		machineStatusPanel.setMachine(this.machine);
 		// TODO: PreviewPanel: update with new machine

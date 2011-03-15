@@ -95,7 +95,7 @@ class MachineThread extends Thread {
 	// the simulator driver
 	private SimulationDriver simulator;
 	
-	private MachineState state = new MachineState();
+	private MachineState state = new MachineState(MachineState.State.NOT_ATTACHED);
 
 	// ???
 	MachineModel cachedModel = null;
@@ -161,9 +161,9 @@ class MachineThread extends Thread {
 				driver.initialize();
 				if (driver.isInitialized()) {
 					readName();
-					setState(MachineState.State.READY);
+					setState(new MachineState(MachineState.State.READY));
 				} else {
-					setState(MachineState.State.NOT_ATTACHED);
+					setState(new MachineState(MachineState.State.NOT_ATTACHED));
 				}
 			}
 			break;
@@ -184,7 +184,7 @@ class MachineThread extends Thread {
 			if (state.isConnected()) {
 				driver.reset();
 				readName();
-				setState(MachineState.State.READY);
+				setState(new MachineState(MachineState.State.READY));
 			}
 			break;
 		case BUILD_DIRECT:
@@ -288,7 +288,7 @@ class MachineThread extends Thread {
 				// TODO: what about this?
 				driver.getCurrentPosition(); // reconcile position
 			
-				setState(MachineState.State.BUILDING);
+				setState(new MachineState(MachineState.State.BUILDING));
 			}
 			break;
 //		case PAUSE:
@@ -308,7 +308,7 @@ class MachineThread extends Thread {
 		case STOP_MOTION:
 			if (state.isConnected()) {
 				driver.stop(false);
-				setState(MachineState.State.READY);
+				setState(new MachineState(MachineState.State.READY));
 			}
 			break;
 		case STOP_ALL:
@@ -317,7 +317,7 @@ class MachineThread extends Thread {
 			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			
 			driver.stop(true);
-			setState(MachineState.State.READY);
+			setState(new MachineState(MachineState.State.READY));
 			
 			break;			
 //		case DISCONNECT_REMOTE_BUILD:
@@ -367,11 +367,6 @@ class MachineThread extends Thread {
 				//run another instruction on the machine.
 				machineBuilder.runNext();
 				
-				if (machineBuilder.finished()) {
-					// TODO: Exit correctly.
-					setState(MachineState.State.READY);
-				}
-				
 				// Check the status poll machine.
 				if (pollingTimer.elapsed()) {
 					if (Base.preferences.getBoolean("build.monitor_temp",false)) {
@@ -380,14 +375,19 @@ class MachineThread extends Thread {
 					}
 				}
 				
-				// And send out a progress event
-				// TODO: Should this be done here??
+				// Send out a progress event
+				// TODO: Should these be rate limited?
 				MachineProgressEvent progress = 
 					new MachineProgressEvent((double)System.currentTimeMillis()-startTimeMillis,
 							estimatedBuildTime,
 							machineBuilder.getLinesProcessed(),
 							machineBuilder.getLinesTotal());
 				controller.emitProgress(progress);
+				
+				if (machineBuilder.finished()) {
+					// TODO: Exit correctly.
+					setState(new MachineState(MachineState.State.READY));
+				}
 			}
 			
 			// If there is nothing to do, sleep.
@@ -405,7 +405,7 @@ class MachineThread extends Thread {
 			}
 		}
 		
-		Base.logger.warning("MachineThread interrupted, terminating.");
+		Base.logger.fine("MachineThread interrupted, terminating.");
 	}
 	
 	public boolean scheduleRequest(MachineCommand request) {
@@ -468,11 +468,11 @@ class MachineThread extends Thread {
 	 * A helper for setting the machine state to a simple state.
 	 * @param state The new state.
 	 */
-	private void setState(MachineState.State state) {
-		MachineState newState = getMachineState();
-		newState.setState(state);
-		setState(newState);
-	}
+//	private void setState(MachineState.State state) {
+//		MachineState newState = getMachineState();
+//		newState.setState(state);
+//		setState(newState);
+//	}
 	
 	
 	public Driver getDriver() {

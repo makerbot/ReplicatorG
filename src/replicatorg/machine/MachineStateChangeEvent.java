@@ -11,7 +11,7 @@ public class MachineStateChangeEvent {
 		this.current = current;
 	}
 
-	public MachineStateChangeEvent(MachineController source, MachineState current, 
+	public MachineStateChangeEvent(MachineControllerInterface source, MachineState current, 
 			MachineState previous) {
 		this.source = source;
 		this.current = current;
