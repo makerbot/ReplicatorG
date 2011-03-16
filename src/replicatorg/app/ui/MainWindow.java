@@ -1899,7 +1899,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	 */
 	public void doStop() {
 		if (machine != null) {
-			machine.stopMotion();
+			machine.stopAll();
 		}
 		building = false;
 		simulating = false;
