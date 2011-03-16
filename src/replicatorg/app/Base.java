@@ -343,6 +343,9 @@ public class Base {
     		}
     	}
 
+		// Use the default system proxy settinds
+		System.setProperty("java.net.useSystemProxies", "true");
+    	
 		// Start the firmware check thread.
 		FirmwareUploader.checkFirmware();
 		
