@@ -193,7 +193,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		statusLabel = new JLabel();
 		statusLabel.setFont(statusFont);
 		statusLabel.setForeground(statusColor);
-		add(statusLabel, "gap unrelated,growx");
+		add(statusLabel, "gap unrelated");
 
 		simButton.setToolTipText("This will open a window showing a rapid simulation of what toolpaths the machine is going to perform.");
 		buildButton.setToolTipText("This will start building the object on the machine.");
@@ -205,7 +205,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		connectButton.setToolTipText("Connect to the machine.");
 		disconnectButton.setToolTipText("Disconnect from the machine.");
 
-		setPreferredSize(new Dimension(700,60));
+		setPreferredSize(new Dimension(750,60));
 		
 		// Update initial state
 		machineStateChangedInternal(new MachineStateChangeEvent(null, new MachineState(MachineState.State.NOT_ATTACHED)));

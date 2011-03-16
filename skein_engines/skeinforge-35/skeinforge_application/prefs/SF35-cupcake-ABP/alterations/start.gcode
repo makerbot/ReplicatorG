@@ -18,11 +18,6 @@ M101 (Extruder on, forward)
 G04 P6500 (Wait t/1000 seconds)
 M103 (Extruder off)
 (**** end pre-wipe commands ****)
-(**** begin wipe ****)
-G1 X-54 Y-30 Z6 F2000.0
-G1 X-54 Y-12.5 Z6 F2000.0
-G1 X-54 Y4 Z6 F2000.0
-(**** end wipe ****)
 G1 X-30 Y30 Z6 F3300.0 (move to initial position)
 G1 Z0 F3300.0 (Go back down)
 M101 (start extruder, fwd)

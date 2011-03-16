@@ -419,6 +419,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			// skip empty commands.
 			if (next.length() == 0)
 			{
+				sendCommandLock.unlock();
 				return;
 			}
 	

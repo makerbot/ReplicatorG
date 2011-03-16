@@ -764,7 +764,8 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) machine.currentTool().getIndex());
 		pb.add8(ToolCommandCode.GET_MOTOR_1_PWM.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
-
+		
+		pr.printDebug();
 		// get it
 		int pwm = pr.get8();
 
@@ -947,7 +948,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) pwm);
 		runCommand(pb.getPacket());
 
-		super.setMotorSpeedPWM(pwm);
+		super.setSpindleSpeedPWM(pwm);
 	}
 
 	public void enableSpindle() throws RetryException {

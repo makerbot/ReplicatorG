@@ -9,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 
@@ -81,22 +82,28 @@ class FirmwareRetriever {
 			}
 		}
 		try {
-			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-			connection.setIfModifiedSince(timestamp);
-			connection.setConnectTimeout(TIMEOUT_MS);
-			connection.connect();
-			if (connection instanceof HttpURLConnection) {
-				int rc = ((HttpURLConnection)connection).getResponseCode();
-				if (rc == HttpURLConnection.HTTP_NOT_MODIFIED) {
-					return UpdateStatus.NO_NEW_UPDATES;
-				}
-				if (rc != HttpURLConnection.HTTP_OK) {
-					// Do not attempt to pull down the file if the connection failed.
-					return UpdateStatus.NETWORK_UNAVAILABLE;
-				}
+			URLConnection urlConnection = url.openConnection();
+
+			// If this is an HTTP url, check if it has been updated (otherwise, we always assume it has been updated)
+			if ((urlConnection instanceof HttpURLConnection)) {
+				HttpURLConnection connection = (HttpURLConnection)urlConnection;
+				connection.setIfModifiedSince(timestamp);
+				connection.setConnectTimeout(TIMEOUT_MS);
+				connection.connect();
+				if (connection instanceof HttpURLConnection) {
+					int rc = ((HttpURLConnection)connection).getResponseCode();
+					if (rc == HttpURLConnection.HTTP_NOT_MODIFIED) {
+						return UpdateStatus.NO_NEW_UPDATES;
+					}
+					if (rc != HttpURLConnection.HTTP_OK) {
+						// Do not attempt to pull down the file if the connection failed.
+						return UpdateStatus.NETWORK_UNAVAILABLE;
+					}
+				}	
 			}
+			
 			// Pull down the file.  The content should be an input stream.
-			InputStream content = (InputStream)connection.getContent();
+			InputStream content = (InputStream)urlConnection.getContent();
 			FileOutputStream out = new FileOutputStream(file);
 			// Welcome to 1994!  Seriously, there's no standard util for this?  Lame.
 			final int BUF_SIZE=2048; 
