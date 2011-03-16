@@ -26,15 +26,20 @@ import replicatorg.model.GCodeSource;
 
 public interface MachineControllerInterface {
 	
+	/** Get the driver instance. Note that this interface will not be supported in the future; instead use getDriverQueryInterface() **/
 	public Driver getDriver();
+	
+	/** Get the simulation driver instance. Note that this interface will not be supported in the future **/
 	public SimulationDriver getSimulatorDriver();
 
 	// Register to receive notifications when the machine changes state
 	public void addMachineStateListener(MachineListener listener);
 	public void removeMachineStateListener(MachineListener listener);
 	
-	// Reset the state of the machine controller, or dispose of it.
+	/** Reset the driver?? **/
 	public void reset();
+	
+	/** Dispose of this machine controller **/
 	public void dispose();
 	
 	// Connect or disconnect from the physical machine
@@ -57,10 +62,13 @@ public interface MachineControllerInterface {
 	public void pause();
 	public void unpause();
 	
-	// Halt the machine immediately
+	/** Halt all machine motion, but leave other systems (e.g., temperature) running **/
 	public void stopMotion();
+	
+	/** Stop the machine. **/
+	public void stopAll();
 		
-	// Run a command on the driver 
+	/** Run a command on the driver **/ 
 	public void runCommand(DriverCommand command);
 	
 	// Query the machine controller
@@ -73,6 +81,6 @@ public interface MachineControllerInterface {
 	public boolean isSimulating();
 	public boolean isInteractiveTarget();
 	
-	// Query the driver
+	/** Get an interface to use to query the driver **/
 	public DriverQueryInterface getDriverQueryInterface();
 }

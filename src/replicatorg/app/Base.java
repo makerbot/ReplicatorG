@@ -343,7 +343,7 @@ public class Base {
     		}
     	}
 
-		// Use the default system proxy settinds
+		// Use the default system proxy settings
 		System.setProperty("java.net.useSystemProxies", "true");
     	
 		// Start the firmware check thread.

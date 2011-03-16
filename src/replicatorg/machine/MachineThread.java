@@ -178,7 +178,6 @@ class MachineThread extends Thread {
 					us.setSerial(null);
 				}
 			}
-			
 			break;
 		case RESET:
 			if (state.isConnected()) {
@@ -291,20 +290,16 @@ class MachineThread extends Thread {
 				setState(new MachineState(MachineState.State.BUILDING));
 			}
 			break;
-//		case PAUSE:
-//			if (state.isBuilding() && !state.isPaused()) {
-//				MachineState newState = getMachineState();
-//				newState.setPaused(true);
-//				setState(newState);
-//			}
-//			break;
-//		case UNPAUSE:
-//			if (state.isBuilding() && state.isPaused()) {
-//				MachineState newState = getMachineState();
-//				newState.setPaused(false);
-//				setState(newState);
-//			}
-//			break;
+		case PAUSE:
+			if (state.getState() == MachineState.State.BUILDING) {
+				setState(new MachineState(MachineState.State.PAUSED));
+			}
+			break;
+		case UNPAUSE:
+			if (state.getState() == MachineState.State.PAUSED) {
+				setState(new MachineState(MachineState.State.BUILDING));
+			}
+			break;
 		case STOP_MOTION:
 			if (state.isConnected()) {
 				driver.stop(false);
