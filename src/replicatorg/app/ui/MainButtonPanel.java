@@ -299,12 +299,13 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		fileButton.setSelected(runningTarget == MachineController.JobTarget.FILE);
 		playbackButton.setSelected(runningTarget == MachineController.JobTarget.NONE);
 
-		boolean connected = s.isConnected() && hasMachine && machine.isInitialized();
+		boolean connected = s.isConnected();
 		resetButton.setEnabled(connected); 
 		disconnectButton.setEnabled(connected);
-		connectButton.setEnabled(hasMachine && !connected);
+		connectButton.setEnabled(!connected);
 		cpButton.setEnabled(ready);
 		rcButton.setVisible(editor.supportsRealTimeControl());
+		
 //		if (!editor.supportsRealTimeControl()) 
 //		{
 			// how to hide this button without taking up any space???
@@ -313,7 +314,6 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			// FIXME: this changes the ordering of the buttons
 //			add(rcButton);
 //		}
-		
 	}
 
 	public void updateFromMachine(final MachineControllerInterface machine) {

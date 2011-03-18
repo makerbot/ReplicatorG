@@ -83,6 +83,8 @@ public class MachineController implements MachineControllerInterface {
 		// Interactive command
 		RUN_COMMAND, // Run a single command on the driver, interleaved with the
 						// build.
+		
+		SHUTDOWN,	// Stop build (disconnect if building remotely), and stop the thread. 
 	}
 
 	// Test idea for a request interface between the thread and the controller
@@ -354,7 +356,7 @@ public class MachineController implements MachineControllerInterface {
 	public void dispose() {
 		if (machineThread != null) {
 			machineThread.scheduleRequest(new MachineCommand(
-					RequestType.DISCONNECT_REMOTE_BUILD, null, null));
+					RequestType.SHUTDOWN, null, null));
 
 			// Wait 5 seconds for the thread to stop.
 			try {
@@ -362,9 +364,6 @@ public class MachineController implements MachineControllerInterface {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
-			// TODO: Is this correct?
-			machineThread.dispose();
 		}
 	}
 

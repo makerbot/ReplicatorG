@@ -151,21 +151,6 @@ public class JEditTextArea extends JComponent
     // We don't seem to get the initial focus event?
     focusedComponent = this;
 
-    // no more need for reflection, pde requires use of java 1.4
-    /*
-    if (System.getProperty("java.version").startsWith("1.4")) {
-    try {
-        Class kWheelHandler =
-          Class.forName("replicatorg.app.syntax.WheelHandler");
-        java.lang.reflect.Constructor konstructor =
-          kWheelHandler.getConstructor(new Class[] { getClass() });
-        konstructor.newInstance(new Object[] { this });
-      } catch (Exception e) {
-        System.err.println(e);
-      }
-    }
-    */
-    //new WheelHandler(this);
     addMouseWheelListener(new MouseWheelListener() {
         public void mouseWheelMoved(MouseWheelEvent e) {
           if (!scrollBarsInitialized) return;
@@ -1622,8 +1607,6 @@ public class JEditTextArea extends JComponent
         setSelectedText(selection);
 
       } catch(Exception e) {
-        getToolkit().beep();
-        System.err.println("Clipboard does not contain a string");
       }
     }
   }

@@ -74,6 +74,8 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void initialize() {
+		Base.logger.fine("Attempting to initialize device");
+		
 		// Assert: serial port present.
 		// TODO: Handle this better
 		assert serial != null : "No serial port found.";
@@ -136,7 +138,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// Wait >2.6s -- 2s for the arduino reset; .6 seconds for the rest of the
 			// system to come up.
 			try {
-				Thread.sleep(2600);
+				Thread.sleep(timeoutMillis);
 			} catch (InterruptedException ie) {
 				// Assume we're shutting down the app or aborting the
 				// attempt.  Reassert interrupted status and let
@@ -151,7 +153,7 @@ public class Sanguino3GDriver extends SerialDriver
 			// Wait >2.6s -- 2s for the arduino reset; .6 seconds for the rest of the
 			// system to come up.
 			try {
-				Thread.sleep(2600);
+				Thread.sleep(timeoutMillis);
 			} catch (InterruptedException ie) {
 				// Assume we're shutting down the app or aborting the
 				// attempt.  Reassert interrupted status and let

@@ -424,8 +424,14 @@ public class Base {
 				});
 				// load up our default machine
 				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
-				String machineName = preferences.get("machine.name",null); 
-				editor.loadMachine(machineName, autoconnect);
+				String machineName = preferences.get("machine.name",null);
+				
+				if (autoconnect) {
+					editor.loadMachine(machineName);
+				} else {
+					editor.setMachine(null);
+				}
+				
 				// show the window
 				editor.setVisible(true);
 				UpdateChecker.checkLatestVersion(editor);
@@ -547,33 +553,6 @@ public class Base {
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 
-	// .................................................................
-
-	static public void showReference(String referenceFile) {
-		openURL(Base.getContents("reference" + File.separator + referenceFile));
-	}
-
-	static public void showReference() {
-		showReference("index.html");
-	}
-
-	static public void showEnvironment() {
-		showReference("Guide_Environment.html");
-	}
-
-	static public void showTroubleshooting() {
-		showReference("Guide_Troubleshooting.html");
-	}
-
-	/**
-	 * Opens the local copy of the FAQ that's included with the Processing
-	 * download.
-	 */
-	static public void showFAQ() {
-		showReference("faq.html");
-	}
-
-	// .................................................................
 
 	/**
 	 * Implements the cross-platform headache of opening URLs TODO This code
@@ -962,17 +941,17 @@ public class Base {
 		}
 	}
 
-	/**
-	 * our singleton interface to get our machine.
-	 */
+	/** Load a new machine with the given name **/
 	static public MachineControllerInterface loadMachine(String name) {
-		// TODO: We're ignoring the case !machine.getDescriptorName().equals(name)
-		if (machine == null) {
-			machine = MachineFactory.load(name);
+		if (machine!=null) {
+			machine.dispose();
 		}
+		
+		machine = MachineFactory.load(name);
 		return machine;
 	}
 
+	/** Get a reference to the currently selected machine **/
 	static public MachineControllerInterface getMachine() {
 		return machine;
 	}

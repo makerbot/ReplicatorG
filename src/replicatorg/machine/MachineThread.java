@@ -341,6 +341,11 @@ class MachineThread extends Thread {
 				}
 			}
 			break;
+		case SHUTDOWN:
+			//TODO: Dispose of everything here.
+			setState(new MachineState(MachineState.State.SHUTTING_DOWN));
+			interrupt();
+			break;
 		default:
 			Base.logger.severe("Ignored command: " + command.type.toString());
 		}
@@ -401,6 +406,7 @@ class MachineThread extends Thread {
 		}
 		
 		Base.logger.fine("MachineThread interrupted, terminating.");
+		dispose();
 	}
 	
 	public boolean scheduleRequest(MachineCommand request) {
@@ -504,7 +510,7 @@ class MachineThread extends Thread {
 		// is placed in a connecting state.
 	}
 	
-	public void dispose() {
+	private void dispose() {
 		if (driver != null) {
 			driver.dispose();
 		}

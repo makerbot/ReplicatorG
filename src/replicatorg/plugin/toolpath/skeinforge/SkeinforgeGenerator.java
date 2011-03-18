@@ -191,7 +191,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			if (optionsMap.containsKey(chosen)) {
 				List<SkeinforgeOption> l = optionsMap.get(chosen);
 				for (SkeinforgeOption o : l) {
-					System.err.println(o.getArgument());
+					Base.logger.fine(o.getArgument());
 				}
 				return optionsMap.get(chosen);
 			}

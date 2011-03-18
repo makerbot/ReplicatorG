@@ -158,6 +158,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		MachineListener, ChangeListener,
 		ToolpathGenerator.GeneratorListener
 {
+	/** Maintains a connection to one machine **/ 
+	private class MachineLoader {
+		MachineControllerInterface machine;
+		
+		void MachineLoader() {
+		}
+	}
+	
+	
 	/**
 	 * 
 	 */
@@ -228,6 +237,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	JMenu machineMenu;
 	MachineMenuListener machineMenuListener;
+	SerialMenuListener serialMenuListener;
 
 	public boolean building;
 	public boolean simulating;
@@ -524,69 +534,55 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		tgt.addListener(this);
 		tgt.start();
 	}
-		
-	// ...................................................................
+	
 
 	private JMenu serialMenu = null;
 	
 	private void reloadSerialMenu() {
 		if (serialMenu == null) return;
+		
+		serialMenuListener = new SerialMenuListener(); 
+		
 		serialMenu.removeAll();
-		if (machine == null) {
-			JMenuItem item = new JMenuItem("No machine selected.");
-			item.setEnabled(false);
-			serialMenu.add(item);
-			return;
-		} else if (!(machine.getDriver() instanceof UsesSerial))  {
-			JMenuItem item = new JMenuItem("Currently selected machine does not use a serial port.");
-			item.setEnabled(false);
-			serialMenu.add(item);
-			return;
-		}
+//		if (machine == null) {
+//			JMenuItem item = new JMenuItem("No machine selected.");
+//			item.setEnabled(false);
+//			serialMenu.add(item);
+//			return;
+//		} else if (!(machine.getDriver() instanceof UsesSerial))  {
+//			JMenuItem item = new JMenuItem("Currently selected machine does not use a serial port.");
+//			item.setEnabled(false);
+//			serialMenu.add(item);
+//			return;
+//		}
 		
 		String currentName = null;
-		UsesSerial us = (UsesSerial)machine.getDriver();
-		if (us.getSerial() != null) {
-			currentName = us.getSerial().getName();
-		}
-		else {
+//		UsesSerial us = (UsesSerial)machine.getDriver();
+//		if (us.getSerial() != null) {
+//			currentName = us.getSerial().getName();
+//		}
+//		else {
 			currentName = Base.preferences.get("serial.last_selected", null);
-		}
+//		}
 		Vector<Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
 		ButtonGroup radiogroup = new ButtonGroup();
 		for (Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.toString());
 			item.setEnabled(name.isAvailable());
+			
 			item.setSelected(name.getName().equals(currentName));
-			final String portName = name.getName();
-			item.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					Thread t = new Thread() {
-						public void run() {
-							try {
-								UsesSerial us = (UsesSerial)machine.getDriver();
-								if (us != null) synchronized(us) {
-										us.setSerial(new Serial(portName, us));
-										Base.preferences.put("serial.last_selected", portName);
-										machine.reset();
-								}
-							} catch (SerialException se) {
-								se.printStackTrace();
-							}
-
-						}
-					};
-					t.start();
-				}
-			});
+//			final String portName = name.getName();
+//			Base.preferences.put("serial.last_selected", portName);
+			
+			item.addActionListener(serialMenuListener);
 			radiogroup.add(item);
 			serialMenu.add(item);
 		}
 		if (names.isEmpty()) {
 			JMenuItem item = new JMenuItem("No serial ports detected");
 			item.setEnabled(false);
-			serialMenu.add(item);			
+			serialMenu.add(item);
 		}
 		serialMenu.addSeparator();
 		JMenuItem item = new JMenuItem("Rescan serial ports");
@@ -857,20 +853,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		populateMachineMenu();
 		menu.add(machineMenu);
 
-		menu.addMenuListener(new MenuListener() {
-			public void menuCanceled(MenuEvent e) {
-			}
-
-			public void menuDeselected(MenuEvent e) {
-			}
-
-			public void menuSelected(MenuEvent e) {
-				populateMachineMenu();
-			}
-		});
-
-		machineMenuListener = new MachineMenuListener();
-
 		serialMenu = new JMenu("Serial Port");
 		reloadSerialMenu();
 		menu.add(serialMenu);
@@ -974,50 +956,59 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				return;
 			}
 
-			int count = machineMenu.getItemCount();
-			for (int i = 0; i < count; i++) {
-				((JCheckBoxMenuItem) machineMenu.getItem(i)).setState(false);
+//			int count = machineMenu.getItemCount();
+//			for (int i = 0; i < count; i++) {
+//				((JCheckBoxMenuItem) machineMenu.getItem(i)).setState(false);
+//			}
+
+//			item.setState(true);
+			if (e.getSource() instanceof JRadioButtonMenuItem) {
+				JRadioButtonMenuItem item = (JRadioButtonMenuItem) e.getSource();
+				final String name = item.getText();
+				Base.preferences.put("machine.name", name);
 			}
-
-			JCheckBoxMenuItem item = (JCheckBoxMenuItem) e.getSource();
-			item.setState(true);
-			final String name = item.getText();
-			Base.preferences.put("machine.name", name);
-
-			// load it and set it.
-			Thread t = new Thread() {
-				public void run() {
-					loadMachine(name, (machine != null) && machine.getMachineState().isConnected());
-				}
-			};
-			t.start();
 		}
 	}
+	class SerialMenuListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			if (serialMenu == null) {
+				System.out.println("serialMenu is null");
+				return;
+			}
 
+			if (e.getSource() instanceof JRadioButtonMenuItem) {
+				JRadioButtonMenuItem item = (JRadioButtonMenuItem) e.getSource();
+				final String name = item.getText().split(" ")[0];
+				Base.preferences.put("serial.last_selected", name);
+			}
+		}
+	}
+	
 	protected void populateMachineMenu() {
 		machineMenu.removeAll();
-		boolean empty = true;
-
+		machineMenuListener = new MachineMenuListener();
+		
+		Vector<String> names = new Vector<String>();
 		try {
 			for (String name : MachineFactory.getMachineNames() ) {
-				JMenuItem rbMenuItem = new JCheckBoxMenuItem(name,
-						name.equals(Base.preferences
-								.get("machine.name",null)));
-				rbMenuItem.addActionListener(machineMenuListener);
-				machineMenu.add(rbMenuItem);
-				empty = false;
-			}
-			if (!empty) {
-				// System.out.println("enabling the machineMenu");
-				machineMenu.setEnabled(true);
+				names.add(name);
 			}
 		} catch (Exception exception) {
 			System.out.println("error retrieving machine list");
 			exception.printStackTrace();
 		}
+		
+		Collections.sort(names);
+		ButtonGroup radiogroup = new ButtonGroup();
+		for (String name : names ) {
+						
+			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
+			item.setSelected(name.equals(Base.preferences.get("machine.name",null)));
+			item.addActionListener(machineMenuListener);			
 
-		if (machineMenu.getItemCount() == 0)
-			machineMenu.setEnabled(false);
+			radiogroup.add(item);
+			machineMenu.add(item);
+		}
 	}
 
 	protected JMenu buildHelpMenu() {
@@ -1351,10 +1342,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		} else {
 			String name = Base.preferences.get("machine.name", null);
 			if ( name != null ) {
-				loadMachine(name, true);
+				loadMachine(name);
 			}
 		}
 	}
+	
 	public void handleOnboardPrefs() {
 		if (machine == null || 
 				!(machine.getDriver() instanceof OnboardParameters)) {
@@ -1574,7 +1566,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 	}
 
-	// We can drop this in Java 6, which already has an equivalent
 	private class ExtensionFilter extends FileFilter {
 		private LinkedList<String> extensions = new LinkedList<String>();
 		private String description;
@@ -1686,7 +1677,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	private Date buildStart = null;
 	
 	public void machineStateChanged(MachineStateChangeEvent evt) {
-
+		
 		if (Base.logger.isLoggable(Level.FINE)) {
 			Base.logger.finest("Machine state changed to " + evt.getState().getState());
 		}
@@ -1739,6 +1730,24 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				}
 			}
 		}
+		
+		// Enable the machine select and serial select menus only when the machine is not connected
+		for (int itemIndex = 0; itemIndex < serialMenu.getItemCount(); itemIndex++) { 
+			JMenuItem item = serialMenu.getItem(itemIndex);
+			if  (item!= null) {
+				item.setEnabled(!evt.getState().isConnected());
+			}
+		}
+		
+		for (int itemIndex = 0; itemIndex < machineMenu.getItemCount(); itemIndex++) { 
+			JMenuItem item = machineMenu.getItem(itemIndex);
+			if  (item!= null) {
+				item.setEnabled(!evt.getState().isConnected());
+			}
+		}
+		
+//		serialMenu.setEnabled(!evt.getState().isConnected());
+//		machineMenu.setEnabled(!evt.getState().isConnected());
 		
 		// enable the control panel menu item when the machine is ready
 		controlPanelItem.setEnabled(evt.getState().isReady());
@@ -2333,23 +2342,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		console.handleQuit();
 	}
 
-	protected void handleReference() {
-		String text = textarea.getSelectedText().trim();
-
-		if (text.length() == 0) {
-			message("First select a word to find in the reference.");
-
-		} else {
-			String referenceFile = PdeKeywords.getReference(text);
-			// System.out.println("reference file is " + referenceFile);
-			if (referenceFile == null) {
-				message("No reference available for \"" + text + "\"");
-			} else {
-				Base.showReference(referenceFile + ".html");
-			}
-		}
-	}
-
 	public void highlightLine(int lnum) {
 		if (lnum < 0) {
 			textarea.select(0, 0);
@@ -2486,17 +2478,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				}
 			});
 			this.add(item);
-
-			this.addSeparator();
-
-			referenceItem = new JMenuItem("Find in Reference");
-			referenceItem.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					// Base.showReference(referenceFile + ".html");
-					handleReference(); // textarea.getSelectedText());
-				}
-			});
-			this.add(referenceItem);
 		}
 
 		// if no text is selected, disable copy and cut menu items
@@ -2518,7 +2499,8 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 	}
 
-	protected void setMachine(MachineControllerInterface machine) {
+	/** Assign a machine to the main window **/
+	public void setMachine(MachineControllerInterface machine) {
 		if (this.machine != machine) {
 			if (this.machine != null) {
 				this.machine.dispose();
@@ -2536,7 +2518,14 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			buttons.machineStateChanged(new MachineStateChangeEvent(null, new MachineState(MachineState.State.NOT_ATTACHED)));
 		}
 		machineStatusPanel.setMachine(this.machine);
+		
 		// TODO: PreviewPanel: update with new machine
+		if(previewPanel != null)
+		{
+			getPreviewPanel().rebuildScene();
+			updateBuild();
+		}
+
 	}
 	
 	public MachineControllerInterface getMachine(){
@@ -2544,27 +2533,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	/**
-	 * 
 	 * @param name       name of the machine
-	 * @param connect	 auto-connect on load. Usually true, but can be set to false to avoid talking on the serial port
 	 */
-	public void loadMachine(String name, Boolean connect) {
-		setMachine(Base.loadMachine(name));
-		if (getMachine() == null) return; // abort on no selected machine
-		reloadSerialMenu();
+	public void loadMachine(String name) {
+		MachineControllerInterface machine = Base.loadMachine(name);
 		
-		if(previewPanel != null)
-		{
-			/* FIXME: This is probably not the best place to do the reload. We need
-			 * the BuildVolume information (through MachineModel) which apparently
-			 * isn't initialized yet when this is called...
-			 */
-			Base.logger.fine("RELOADING the machine... removing previewPanel...");
-			getPreviewPanel().rebuildScene();
-			updateBuild();
+		if (machine == null) {
+			Base.logger.severe("Unable to connect to machine!");
+			return;
 		}
-		
-		if (!connect) return;
 
 		if (machine.getDriver() instanceof UsesSerial) {
 			UsesSerial us = (UsesSerial)machine.getDriver();
@@ -2576,25 +2553,33 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			} else {
 				targetPort = Base.preferences.get("serial.last_selected", null);
 			}
-			if (targetPort != null) {
-				try {
-					synchronized(us) {
-						Serial current = us.getSerial();
-						System.err.println("Current serial port: "+((current==null)?"null":current.getName())+", specified "+targetPort);
-						if (current == null || !current.getName().equals(targetPort)) {
-							us.setSerial(new Serial(targetPort,us));
-						}
-						machine.connect();
-					}
-				} catch (SerialException e) {
-					String msg = e.getMessage();
-					if (msg == null) { msg = "."; }
-					else { msg = ": "+msg; }
-					Base.logger.log(Level.WARNING,
-							"Could not use specified serial port ("+targetPort+")"+ msg);
+			
+			if (targetPort == null) {
+				Base.logger.severe("Couldn't find a port to use!");
+				return;
+			}
+			
+			try {
+				synchronized(us) {
+					Base.logger.severe("Connecting to port " + targetPort);
+//					Serial current = us.getSerial();
+//						Base.logger.fine("Current serial port: "+((current==null)?"null":current.getName())+", specified "+targetPort);
+//						if (current == null || !current.getName().equals(targetPort)) {
+						us.setSerial(new Serial(targetPort,us));
+//						}
+					machine.connect();
 				}
+			} catch (SerialException e) {
+				String msg = e.getMessage();
+				if (msg == null) { msg = "."; }
+				else { msg = ": "+msg; }
+				Base.logger.log(Level.WARNING,
+						"Could not use specified serial port ("+targetPort+")"+ msg);
 			}
 		}
+		
+		// Hook the machine up to the gui.
+		setMachine(machine);
 	}
 
 	public void machineProgress(MachineProgressEvent event) {

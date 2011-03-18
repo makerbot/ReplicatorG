@@ -14,19 +14,21 @@ public class MachineState extends Object implements Cloneable {
 	 * The state of a machine controller abstraction.
 	 */
 	public enum State {
-		/** There is no connection to the machine, and no attempt is in progress. */ 
+		/** There is no connection to the machine, and no attempt is in progress. **/ 
 		NOT_ATTACHED,
-		/** An attempt to contact the machine is in progress. */
+		/** An attempt to contact the machine is in progress. **/
 		CONNECTING,
-		/** The machine is being reset */
+		/** The machine is being reset **/
 		RESET,
 		/** The controller has successfully contacted the machine, and is ready
-		 * for input. */
+		 * for input. **/
 		READY,
-		/** The machine is building from a driver-provide source */
+		/** The machine is building from a driver-provide source **/
 		BUILDING,
-		/** The machine is building, but is currently paused. */
+		/** The machine is building, but is currently paused. **/
 		PAUSED,
+		/** The machine is being shut down **/
+		SHUTTING_DOWN,
 	};
 	
 	private State state;

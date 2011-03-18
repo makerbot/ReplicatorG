@@ -42,8 +42,10 @@ public interface MachineControllerInterface {
 	/** Dispose of this machine controller **/
 	public void dispose();
 	
-	// Connect or disconnect from the physical machine
+	/** Connect to the machine using a separately configured communication channel **/
 	public void connect();
+	
+	/** Disconnect the machine from the separately configured communication channel **/
 	public void disconnect();
 
 	// Get information about the physical machine
