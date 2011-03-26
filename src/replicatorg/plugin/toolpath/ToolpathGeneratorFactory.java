@@ -121,6 +121,77 @@ public class ToolpathGeneratorFactory {
 				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
 				
 				prefs.add(supportPref);
+				
+				SkeinforgeBooleanPreference printOMaticPref =
+					new SkeinforgeBooleanPreference("Use Print-O-Matic",
+							"replicatorg.skeinforge.printOMaticPref", true,
+							"If this option is checked, skeinforge will use the values below to control the print");
+				printOMaticPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
+				prefs.add(printOMaticPref);
+				
+				PrintOMatic printOMatic = new PrintOMatic();
+				prefs.add(printOMatic);
+					
+//				SkeinforgeValuePreference desiredFeedrate = 
+//					new SkeinforgeValuePreference("Desired Feedrate (mm/s)",
+//							"replicatorg.skeinforge.printOMatic.desiredFeedrate", "30",
+//							"slow: 0-20, default: 30, Fast: 40+");
+//				prefs.add(desiredFeedrate);
+//				
+//				SkeinforgeValuePreference desiredLayerHeight = 
+//					new SkeinforgeValuePreference("Desired Layer Height (mm)",
+//							"replicatorg.skeinforge.printOMatic.desiredLayerHeight", "0.35",
+//							"Set the desired feedrate");
+//				prefs.add(desiredFeedrate);
+//				
+//				SkeinforgeValuePreference filamentDiameter = 
+//					new SkeinforgeValuePreference("Filament Diameter (mm)",
+//							"replicatorg.skeinforge.printOMatic.filamentDiameter", "2.98",
+//							"measure feedstock");
+//				prefs.add(filamentDiameter);
+//				
+//				SkeinforgeValuePreference nozzleDiameter = 
+//					new SkeinforgeValuePreference("Nozzle Diameter (mm)",
+//							"replicatorg.skeinforge.printOMatic.nozzleDiameter", "0.5",
+//							"exit hole diameter");
+//				prefs.add(nozzleDiameter);
+//				
+//				SkeinforgeValuePreference driveGearDiameter = 
+//					new SkeinforgeValuePreference("Drive Gear Diameter (mm)",
+//							"replicatorg.skeinforge.printOMatic.driveGearDiameter", "10.58",
+//							"measure at teeth");
+//				prefs.add(driveGearDiameter);
+//
+//				SkeinforgeValuePreference driveGearFudgeFactor = 
+//					new SkeinforgeValuePreference("GEAR DIAMETER FUDGE FACTOR",
+//							"replicatorg.skeinforge.printOMatic.driveGearFudgeFactor", "0.85",
+//							"ABS = 0.85, PLA = 1");
+//				prefs.add(driveGearFudgeFactor);
+//				
+//				SkeinforgeValuePreference modelHasThinFeatures = 
+//					new SkeinforgeValuePreference("No thin features",
+//							"replicatorg.skeinforge.printOMatic.modelHasThinFeatures", "1",
+//							"Model does not contain any thin features (<2.5mm) (1=true, 0=false)");
+//				prefs.add(modelHasThinFeatures);
+//				
+//				SkeinforgeValuePreference reversalDistance = 
+//					new SkeinforgeValuePreference("Extruder Reversal Distance (mm)",
+//							"replicatorg.skeinforge.printOMatic.reversalDistance", "1.235",
+//							"input distance");
+//				prefs.add(reversalDistance);
+//				
+//				SkeinforgeValuePreference reversalPushBack = 
+//					new SkeinforgeValuePreference("Extruder Push Back Distance (mm)",
+//							"replicatorg.skeinforge.printOMatic.reversalPushBack", "1.285",
+//							"input distance (Push back should be slightly longer to overcome nozzle pressure)");
+//				prefs.add(reversalPushBack);
+//				
+//				SkeinforgeValuePreference reversalSpeed = 
+//					new SkeinforgeValuePreference("Reversal Speed (RPM)",
+//							"replicatorg.skeinforge.printOMatic.reversalSpeed", "35",
+//							"35 is default for 3mm, 60 is default for 1.75");
+//				prefs.add(reversalSpeed);
+				
 				return prefs;
 			}
 		};

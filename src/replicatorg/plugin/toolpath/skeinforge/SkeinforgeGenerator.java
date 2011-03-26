@@ -18,6 +18,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -240,6 +241,133 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 	
+	
+	public static class PrintOMatic implements SkeinforgePreference {
+		private Map<String,List<SkeinforgeOption>> optionsMap = new HashMap<String,List<SkeinforgeOption>>();
+		private JPanel component;
+		private JTextField input; 
+		private String value;
+		
+		private void addParameter(String name, final String preferenceName, String defaultValue, String toolTip) {
+			if (preferenceName != null) {
+				value = Base.preferences.get(preferenceName, defaultValue);
+			}
+			component.add(new JLabel(name));
+			
+			input = new JTextField(value, 10);
+			component.add(input, "wrap");
+			input.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					value = (String)input.getText();
+					if (preferenceName != null) {
+						Base.preferences.put(preferenceName,value);
+					}
+				}
+			});
+			if (toolTip != null) {
+				component.setToolTipText(toolTip);
+			}
+		}
+		
+		public PrintOMatic() {
+			component = new JPanel(new MigLayout());
+			addParameter("Desired Feedrate (mm/s)",
+						"replicatorg.skeinforge.printOMatic.desiredFeedrate", "30",
+						"slow: 0-20, default: 30, Fast: 40+");
+			
+			addParameter("Desired Layer Height (mm)",
+						"replicatorg.skeinforge.printOMatic.desiredLayerHeight", "0.35",
+						"Set the desired feedrate");
+
+			addParameter("Filament Diameter (mm)",
+					"replicatorg.skeinforge.printOMatic.filamentDiameter", "2.98",
+					"measure feedstock");
+
+			addParameter("Nozzle Diameter (mm)",
+					"replicatorg.skeinforge.printOMatic.nozzleDiameter", "0.5",
+					"exit hole diameter");
+			
+			addParameter("Drive Gear Diameter (mm)",
+					"replicatorg.skeinforge.printOMatic.driveGearDiameter", "10.58",
+					"measure at teeth");
+			
+			addParameter("GEAR DIAMETER FUDGE FACTOR",
+					"replicatorg.skeinforge.printOMatic.driveGearFudgeFactor", "0.85",
+					"ABS = 0.85, PLA = 1");
+			
+			addParameter("No thin features",
+					"replicatorg.skeinforge.printOMatic.modelHasThinFeatures", "1",
+					"Model does not contain any thin features (<2.5mm) (1=true, 0=false)");
+			
+			addParameter("Extruder Reversal Distance (mm)",
+					"replicatorg.skeinforge.printOMatic.reversalDistance", "1.235",
+					"input distance");
+
+			addParameter("Extruder Push Back Distance (mm)",
+					"replicatorg.skeinforge.printOMatic.reversalPushBack", "1.285",
+					"input distance (Push back should be slightly longer to overcome nozzle pressure)");
+
+			addParameter("Reversal Speed (RPM)",
+					"replicatorg.skeinforge.printOMatic.reversalSpeed", "35",
+					"35 is default for 3mm, 60 is default for 1.75");
+			
+		}
+		
+		public JComponent getUI() { return component; }
+		
+		public List<SkeinforgeOption> getOptions() {
+//			if (optionsMap.containsKey(chosen)) {
+//				List<SkeinforgeOption> l = optionsMap.get(chosen);
+//				for (SkeinforgeOption o : l) {
+//					System.err.println(o.getArgument());
+//				}
+//				return optionsMap.get(chosen);
+//			}
+			return new LinkedList<SkeinforgeOption>();
+		}
+	}
+
+	public static class SkeinforgeValuePreference implements SkeinforgePreference {
+		private Map<String,List<SkeinforgeOption>> optionsMap = new HashMap<String,List<SkeinforgeOption>>();
+		private JPanel component;
+		private JTextField input; 
+		private String value;
+		
+		public SkeinforgeValuePreference(String name, final String preferenceName, String defaultValue, String toolTip) {
+			component = new JPanel(new MigLayout());
+			if (preferenceName != null) {
+				value = Base.preferences.get(preferenceName, defaultValue);
+			}
+			component.add(new JLabel(name));
+			
+			input = new JTextField(value, 10);
+			component.add(input);
+			input.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					value = (String)input.getText();
+					if (preferenceName != null) {
+						Base.preferences.put(preferenceName,value);
+					}
+				}
+			});
+			if (toolTip != null) {
+				component.setToolTipText(toolTip);
+			}
+		}
+		public JComponent getUI() { return component; }
+	
+		public List<SkeinforgeOption> getOptions() {
+//			if (optionsMap.containsKey(chosen)) {
+//				List<SkeinforgeOption> l = optionsMap.get(chosen);
+//				for (SkeinforgeOption o : l) {
+//					System.err.println(o.getArgument());
+//				}
+//				return optionsMap.get(chosen);
+//			}
+			return new LinkedList<SkeinforgeOption>();
+		}
+	
+	}
 
 	public boolean visualConfigure(Frame parent) {
 		// First check for Python.
