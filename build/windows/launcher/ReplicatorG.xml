@@ -2,7 +2,7 @@
   <dontWrapJar>true</dontWrapJar>
   <headerType>gui</headerType>
   <jar>lib\ReplicatorG.jar</jar>
-  <outfile>C:\Users\phooky\makerbot\ReplicatorG\build\windows\launcher\ReplicatorG.exe</outfile>
+  <outfile>C:\Users\matt\repg-workspace\ReplicatorG\build\windows\launcher\ReplicatorG.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -12,7 +12,7 @@
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
   <manifest></manifest>
-  <icon>C:\Users\phooky\makerbot\ReplicatorG\build\windows\launcher\application.ico</icon>
+  <icon>C:\Users\matt\repg-workspace\ReplicatorG\build\windows\launcher\application.ico</icon>
   <classPath>
     <mainClass>replicatorg.app.Base</mainClass>
     <cp>./lib</cp>
