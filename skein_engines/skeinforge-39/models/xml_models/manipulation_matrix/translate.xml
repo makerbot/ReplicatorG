@@ -1,5 +1,0 @@
-<?xml version='1.0' ?>
-<fabmetheus>
-	<sphere id='Sphere5' radius='5.0'/>
-	<translate id='translateSphere' target='=document.getElementByID(Sphere5)' rectangular.x='15' rectangular.y='3' />
-</fabmetheus>

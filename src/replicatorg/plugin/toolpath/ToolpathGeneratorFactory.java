@@ -125,16 +125,6 @@ public class ToolpathGeneratorFactory {
 			}
 		};
 
-		class Skeinforge39 extends Skeinforge35 {
-			public File getDefaultSkeinforgeDir() {
-		    	return Base.getApplicationFile("skein_engines/skeinforge-39/skeinforge_application");
-			}
-			public File getUserProfilesDir() {
-		    	return Base.getUserFile("sf_39_profiles");
-				
-			}
-		};
-
 		class Skeinforge40 extends SkeinforgeGenerator {
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-40/skeinforge_application");
@@ -181,8 +171,6 @@ public class ToolpathGeneratorFactory {
 				"ReplicatorG since 0016.", Skeinforge6.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (40)", 
 				"This is the experimental version of skeinforge.", Skeinforge40.class));
-		list.add(new ToolpathGeneratorDescriptor("Skeinforge (39)", 
-				"This is the latest version of skeinforge.", Skeinforge39.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (35)", 
 				"This a recent version of skeinforge.", Skeinforge35.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (31)", 

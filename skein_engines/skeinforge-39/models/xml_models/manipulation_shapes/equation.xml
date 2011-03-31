@@ -1,8 +1,0 @@
-<?xml version='1.0' ?>
-<fabmetheus>
-	<circle id='circle' equation.polar.radius='radius+0.1*distance' radius='9' />
-	<extrude target='=document.getElementByID(circle)' />
-	<!--
-	<circle id='circle' equation.rectangular.x='x*2' radius='9' />
-	-->
-</fabmetheus>

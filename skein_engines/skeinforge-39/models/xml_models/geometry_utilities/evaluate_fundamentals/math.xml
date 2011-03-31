@@ -1,8 +1,0 @@
-<?xml version='1.0' ?>
-<fabmetheus>
-	<dictionary pi='=math.pi' e='=math.e' euler='=math.euler' golden='=math.golden' />
-	<dictionary name='power' pow4minus3='=math.pow(4, -3)' />
-	<dictionary name='sin' sinpoint1='=math.sin(0.1)' />
-	<dictionary accessibleFunctionabs='=math.abs(-3)' />
-	<dictionary accessibleFunctionHex='=math.hex(-3)' />
-</fabmetheus>

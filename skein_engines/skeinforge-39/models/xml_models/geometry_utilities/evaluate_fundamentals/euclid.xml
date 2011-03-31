@@ -1,6 +1,0 @@
-<?xml version='1.0' ?>
-<fabmetheus>
-	<dictionary complex='=euclid.complex(1,2)'/>
-	<dictionary Vector3='=euclid.Vector3(1,2,3)'/>
-	<dictionary Vector3Index='=euclid.Vector3Index(1,2,3,4)'/>
-</fabmetheus>
