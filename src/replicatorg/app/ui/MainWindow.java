@@ -119,6 +119,7 @@ import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
 import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
+import replicatorg.app.ui.controlpanel.ControlPanelWindow;
 import replicatorg.app.ui.modeling.PreviewPanel;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
