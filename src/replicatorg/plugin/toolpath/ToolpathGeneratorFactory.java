@@ -134,9 +134,53 @@ public class ToolpathGeneratorFactory {
 				
 			}
 		};
+
+		class Skeinforge40 extends SkeinforgeGenerator {
+			public File getDefaultSkeinforgeDir() {
+		    	return Base.getApplicationFile("skein_engines/skeinforge-40/skeinforge_application");
+			}
+			public File getUserProfilesDir() {
+		    	return Base.getUserFile("sf_40_profiles");
+			}
+			public List<SkeinforgePreference> getPreferences() {
+				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				SkeinforgeBooleanPreference raftPref = 			
+					new SkeinforgeBooleanPreference("Use raft",
+						"replicatorg.skeinforge.useRaft", true,
+						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
+						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit:", "true"));
+				prefs.add(raftPref);
+				SkeinforgeChoicePreference supportPref =
+					new SkeinforgeChoicePreference("Use support material",
+							"replicatorg.skeinforge.choiceSupport", "None",
+							"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
+							"structure that you can later remove.");
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","None", "true"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","None", "false"));
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Exterior Only", "true"));
+
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","None", "false"));
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Everywhere", "true"));
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+				
+				prefs.add(supportPref);
+				return prefs;
+			}
+		};
+
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (standard)", 
 				"This is the standard version of skeinforge that has shipped with "+
 				"ReplicatorG since 0016.", Skeinforge6.class));
+		list.add(new ToolpathGeneratorDescriptor("Skeinforge (40)", 
+				"This is the experimental version of skeinforge.", Skeinforge40.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (39)", 
 				"This is the latest version of skeinforge.", Skeinforge39.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (35)", 
