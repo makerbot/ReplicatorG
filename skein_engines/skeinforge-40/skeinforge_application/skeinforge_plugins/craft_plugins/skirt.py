@@ -139,6 +139,8 @@ class SkirtSkein:
 		'Initialize variables.'
 		self.distanceFeedRate = gcodec.DistanceFeedRate()
 		self.feedRateMinute = 961.0
+		self.isExtruderActive = False
+		self.isSupportLayer = False
 		self.layerCount = settings.LayerCount()
 		self.layerIndex = -1
 		self.lineIndex = 0
@@ -146,8 +148,8 @@ class SkirtSkein:
 		self.oldFlowRateInput = None
 		self.oldLocation = None
 		self.oldTemperatureInput = None
-		self.operatingFlowRate = None
-		self.operatingTemperature = None
+		self.skirtFlowRate = None
+		self.skirtTemperature = None
 		self.travelFeedRateMinute = 957.0
 		self.unifiedLoop = LoopCrossDictionary()
 
@@ -160,11 +162,12 @@ class SkirtSkein:
 
 	def addSkirt(self, z):
 		'At skirt at z to gcode output.'
+		self.setSkirtFeedFlowTemperature()
 		self.distanceFeedRate.addLine('(<skirt>)')
 		oldFlowRate = self.oldFlowRateInput
 		oldTemperature = self.oldTemperatureInput
-		self.addTemperatureLineIfDifferent(self.operatingTemperature)
-		self.addFlowRateLineIfDifferent(self.operatingFlowRate)
+		self.addTemperatureLineIfDifferent(self.skirtTemperature)
+		self.addFlowRateLineIfDifferent(self.skirtFlowRate)
 		for outsetLoop in self.outsetLoops:
 			closedLoop = outsetLoop + [outsetLoop[0]]
 			self.distanceFeedRate.addGcodeFromFeedRateThreadZ(self.feedRateMinute, closedLoop, self.travelFeedRateMinute, z)
@@ -201,7 +204,8 @@ class SkirtSkein:
 		self.parseInitialization()
 		self.parseBoundaries()
 		self.createSkirtLoops()
-		for line in self.lines[self.lineIndex :]:
+		for self.lineIndex in xrange(self.lineIndex, len(self.lines)):
+			line = self.lines[self.lineIndex]
 			self.parseLine(line)
 		return self.distanceFeedRate.output.getvalue()
 
@@ -248,12 +252,12 @@ class SkirtSkein:
 				return
 			elif firstWord == '(<objectNextLayersTemperature>':
 				self.oldTemperatureInput = float(splitLine[1])
-				self.operatingTemperature = self.oldTemperatureInput
+				self.skirtTemperature = self.oldTemperatureInput
 			elif firstWord == '(<operatingFeedRatePerSecond>':
 				self.feedRateMinute = 60.0 * float(splitLine[1])
 			elif firstWord == '(<operatingFlowRate>':
 				self.oldFlowRateInput = float(splitLine[1])
-				self.operatingFlowRate = self.oldFlowRateInput
+				self.skirtFlowRate = self.oldFlowRateInput
 			elif firstWord == '(<perimeterWidth>':
 				self.perimeterWidth = float(splitLine[1])
 				self.skirtOutset = (self.repository.gapOverPerimeterWidth.value + 0.5) * self.perimeterWidth
@@ -275,10 +279,44 @@ class SkirtSkein:
 			self.layerIndex += 1
 			if self.layerIndex < self.repository.layersTo.value:
 				self.addSkirt(float(splitLine[1]))
+		elif firstWord == 'M101':
+			self.isExtruderActive = True
+		elif firstWord == 'M103':
+			self.isExtruderActive = False
 		elif firstWord == 'M104':
 			self.oldTemperatureInput = gcodec.getDoubleAfterFirstLetter(splitLine[1])
 		elif firstWord == 'M108':
 			self.oldFlowRateInput = gcodec.getDoubleAfterFirstLetter(splitLine[1])
+		elif firstWord == '(<supportLayer>)':
+			self.isSupportLayer = True
+		elif firstWord == '(</supportLayer>)':
+			self.isSupportLayer = False
+
+	def setSkirtFeedFlowTemperature(self):
+		'Set the skirt feed rate, flow rate and temperature to that of the next extrusion.'
+		isExtruderActive = self.isExtruderActive
+		isSupportLayer = self.isSupportLayer
+		for lineIndex in xrange(self.lineIndex, len(self.lines)):
+			line = self.lines[lineIndex]
+			splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
+			firstWord = gcodec.getFirstWord(splitLine)
+			if firstWord == 'G1':
+				self.feedRateMinute = gcodec.getFeedRateMinute(self.feedRateMinute, splitLine)
+				if isExtruderActive:
+					if not isSupportLayer:
+						return
+			elif firstWord == 'M101':
+				isExtruderActive = True
+			elif firstWord == 'M103':
+				isExtruderActive = False
+			elif firstWord == 'M104':
+				self.skirtTemperature = gcodec.getDoubleAfterFirstLetter(splitLine[1])
+			elif firstWord == 'M108':
+				self.skirtFlowRate = gcodec.getDoubleAfterFirstLetter(splitLine[1])
+			elif firstWord == '(<supportLayer>)':
+				isSupportLayer = True
+			elif firstWord == '(</supportLayer>)':
+				isSupportLayer = False
 
 	def unifyLayer(self, loopCrossDictionary):
 		'Union the loopCrossDictionary with the unifiedLoop.'
