@@ -16,6 +16,11 @@ public class Point5d {
 		values[0] = x; values[1] = y; values[2] = z;
 		values[3] = a; values[4] = b;
 	}
+	
+	public Point5d(double x, double y, double z) {
+		values[0] = x; values[1] = y; values[2] = z;
+		values[3] = 0; values[4] = 0;
+	}
 
 	public Point5d(Point5d p) {
 		System.arraycopy(p.values,0,values,0,DIMENSIONS);
