@@ -465,6 +465,12 @@ public class DriverBaseImplementation implements Driver {
 		machine.currentTool().enableMotor();
 	}
 
+	public void enableMotor(long millis) throws RetryException {
+		enableMotor();
+		delay(millis);
+		disableMotor();
+	}
+
 	public void disableMotor() throws RetryException {
 		machine.currentTool().disableMotor();
 	}

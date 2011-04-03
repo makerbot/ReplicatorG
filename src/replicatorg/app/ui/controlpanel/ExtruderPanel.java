@@ -664,16 +664,12 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if (s.equals("forward")) {
 				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
 			if (this.toolModel.getMotorStepperAxis() != null) {
-					driver.enableMotor();
-					driver.delay(extrudeTime*1000);
-					driver.disableMotor();
+					driver.enableMotor(extrudeTime*1000);
 				}
 			} else if (s.equals("reverse")) {
 				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
 				if (this.toolModel.getMotorStepperAxis() != null) {
-					driver.enableMotor();
-					driver.delay(extrudeTime*1000);
-					driver.disableMotor();
+					driver.enableMotor(extrudeTime*1000);
 				}
 			} else if (s.equals("stop")) {
 				driver.disableMotor();
