@@ -18,6 +18,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
@@ -243,87 +244,158 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	
 	
 	public static class PrintOMatic implements SkeinforgePreference {
-		private Map<String,List<SkeinforgeOption>> optionsMap = new HashMap<String,List<SkeinforgeOption>>();
 		private JPanel component;
-		private JTextField input; 
-		private String value;
+		private String baseName;
 		
-		private void addParameter(String name, final String preferenceName, String defaultValue, String toolTip) {
-			if (preferenceName != null) {
-				value = Base.preferences.get(preferenceName, defaultValue);
-			}
-			component.add(new JLabel(name));
+		private class StoringActionListener implements ActionListener {
+			final String name;
+			final JTextField input;
 			
-			input = new JTextField(value, 10);
-			component.add(input, "wrap");
-			input.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					value = (String)input.getText();
-					if (preferenceName != null) {
-						Base.preferences.put(preferenceName,value);
-					}
-				}
-			});
-			if (toolTip != null) {
-				component.setToolTipText(toolTip);
+			public StoringActionListener(JTextField input, String name) {
+				this.input = input;
+				this.name = name;
 			}
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				String value = (String)input.getText();
+				
+				if (name != null) {
+					Base.logger.fine("here: " + name + "=" + value);
+					Base.preferences.put(name, value);
+				}
+			}
+		}
+		
+		private void addParameter(JComponent target, String name, String description, String defaultValue, String toolTip) {
+			String fullName = baseName + name;
+			String value = null;
+			
+			if (fullName != null) {
+				value = Base.preferences.get(fullName, defaultValue);
+			}
+			target.add(new JLabel(description));
+			
+			JTextField input = new JTextField(value, 10);
+			target.add(input, "wrap");
+			
+			input.addActionListener(new StoringActionListener(input, fullName));
+			if (toolTip != null) {
+				// TODO: This is wrong.
+				input.setToolTipText(toolTip);
+			}
+		}
+		
+		private double getValue(String optionName) {
+			// TODO: record the default values somewhere, so that we can retrieve them here!
+			String value = Base.preferences.get(baseName + optionName, null);
+			
+			Base.logger.fine("Getting preference for " + baseName + optionName);
+			
+			return Double.valueOf(value);
 		}
 		
 		public PrintOMatic() {
 			component = new JPanel(new MigLayout());
-			addParameter("Desired Feedrate (mm/s)",
-						"replicatorg.skeinforge.printOMatic.desiredFeedrate", "30",
+			
+			baseName = "replicatorg.skeinforge.printOMatic.";
+			
+			// Make a tabbed pane to 
+			JTabbedPane tabbedPane = new JTabbedPane();
+			
+			JComponent basicPanel = new JPanel(new MigLayout());
+			JComponent advancedPanel = new JPanel(new MigLayout());
+			
+			addParameter(basicPanel, "desiredFeedrate",
+						"Desired Feedrate (mm/s)", "30",
 						"slow: 0-20, default: 30, Fast: 40+");
 			
-			addParameter("Desired Layer Height (mm)",
-						"replicatorg.skeinforge.printOMatic.desiredLayerHeight", "0.35",
+			addParameter(basicPanel, "desiredLayerHeight",
+						"Desired Layer Height (mm)", "0.35",
 						"Set the desired feedrate");
 
-			addParameter("Filament Diameter (mm)",
-					"replicatorg.skeinforge.printOMatic.filamentDiameter", "2.98",
+			addParameter(advancedPanel, "filamentDiameter",
+					"Filament Diameter (mm)", "2.98",
 					"measure feedstock");
 
-			addParameter("Nozzle Diameter (mm)",
-					"replicatorg.skeinforge.printOMatic.nozzleDiameter", "0.5",
+			addParameter(advancedPanel, "nozzleDiameter",
+					"Nozzle Diameter (mm)", "0.5",
 					"exit hole diameter");
 			
-			addParameter("Drive Gear Diameter (mm)",
-					"replicatorg.skeinforge.printOMatic.driveGearDiameter", "10.58",
+			addParameter(advancedPanel, "driveGearDiameter",
+					"Drive Gear Diameter (mm)", "10.58",
 					"measure at teeth");
 			
-			addParameter("GEAR DIAMETER FUDGE FACTOR",
-					"replicatorg.skeinforge.printOMatic.driveGearFudgeFactor", "0.85",
+			addParameter(advancedPanel, "driveGearScalingFactor",
+					"Gear Diameter Scaling Factor", "0.85",
 					"ABS = 0.85, PLA = 1");
 			
-			addParameter("No thin features",
-					"replicatorg.skeinforge.printOMatic.modelHasThinFeatures", "1",
+			addParameter(advancedPanel, "retractedVolumeScalingFactor",
+					"Retracted Volume Scaling Factor", "1",
+					"Nominally 1");
+			
+			addParameter(advancedPanel, "modelHasThinFeatures",
+					"No thin features", "1",
 					"Model does not contain any thin features (<2.5mm) (1=true, 0=false)");
 			
-			addParameter("Extruder Reversal Distance (mm)",
-					"replicatorg.skeinforge.printOMatic.reversalDistance", "1.235",
+			addParameter(advancedPanel, "reversalDistance",
+					"Extruder Reversal Distance (mm)", "1.235",
 					"input distance");
 
-			addParameter("Extruder Push Back Distance (mm)",
-					"replicatorg.skeinforge.printOMatic.reversalPushBack", "1.285",
+			addParameter(advancedPanel, "reversalPushBack",
+					"Extruder Push Back Distance (mm)", "1.285",
 					"input distance (Push back should be slightly longer to overcome nozzle pressure)");
 
-			addParameter("Reversal Speed (RPM)",
-					"replicatorg.skeinforge.printOMatic.reversalSpeed", "35",
+			addParameter(advancedPanel, "reversalSpeed",
+					"Reversal Speed (RPM)", "35",
 					"35 is default for 3mm, 60 is default for 1.75");
-			
+
+			tabbedPane.addTab("Basic", basicPanel);
+			tabbedPane.addTab("Advanced", advancedPanel);
+			component.add(tabbedPane);
 		}
 		
 		public JComponent getUI() { return component; }
 		
 		public List<SkeinforgeOption> getOptions() {
-//			if (optionsMap.containsKey(chosen)) {
-//				List<SkeinforgeOption> l = optionsMap.get(chosen);
-//				for (SkeinforgeOption o : l) {
-//					System.err.println(o.getArgument());
-//				}
-//				return optionsMap.get(chosen);
-//			}
-			return new LinkedList<SkeinforgeOption>();
+			List<SkeinforgeOption> options = new LinkedList<SkeinforgeOption>();
+
+			double flowRate = Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI*getValue("desiredFeedrate")*60/(Math.pow(getValue("filamentDiameter")/2,2)*Math.PI*(getValue("driveGearScalingFactor")*getValue("driveGearDiameter")*Math.PI));
+			double perimeterWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
+			double infillWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
+			double feedRate =getValue("desiredFeedrate");
+			double layerHeight =getValue("desiredLayerHeight");
+			double extraShellsOnAlternatingSolidLayer =getValue("modelHasThinFeatures");
+			double extraShellsOnSparseLayer =getValue("modelHasThinFeatures");
+			double reversalSpeed =getValue("reversalSpeed");
+			double reversalTime =(((getValue("retractedVolumeScalingFactor")*getValue("reversalDistance")*Math.PI*Math.pow(2.88/2,2))/(Math.PI*Math.pow(getValue("filamentDiameter")/2,2)))/(((getValue("driveGearDiameter")*getValue("driveGearScalingFactor")*Math.PI)*getValue("reversalSpeed"))/60))*Math.pow(10,3);
+			double pushbackTime =(((getValue("retractedVolumeScalingFactor")*getValue("reversalPushBack")*Math.PI*Math.pow(2.88/2,2))/(Math.PI*Math.pow(getValue("filamentDiameter")/2,2)))/(((getValue("driveGearDiameter")*getValue("driveGearScalingFactor")*Math.PI)*getValue("reversalSpeed"))/60))*Math.pow(10,3);
+			
+			Base.logger.fine("Print-O-Matic settings:"
+					+ "\n flowRate=" + flowRate
+					+ "\n perimeterWidthOverThickness=" + perimeterWidthOverThickness
+					+ "\n infillWidthOverThickness=" + infillWidthOverThickness
+					+ "\n feedRate=" + feedRate
+					+ "\n layerHeight=" + layerHeight
+					+ "\n extraShellsOnAlternatingSolidLayer=" + extraShellsOnAlternatingSolidLayer
+					+ "\n extraShellsOnSparseLayer=" + extraShellsOnSparseLayer
+					+ "\n reversalSpeed=" + reversalSpeed
+					+ "\n reversalTime=" + reversalTime
+					+ "\n pushbackTime=" + pushbackTime
+					);
+						
+			options.add(new SkeinforgeOption("speed.csv", "Flow Rate Setting (float):", Double.toString(flowRate)));
+			options.add(new SkeinforgeOption("carve.csv", "Perimeter Width over Thickness (ratio):", Double.toString(perimeterWidthOverThickness)));
+			options.add(new SkeinforgeOption("fill.csv", "Infill Width over Thickness (ratio):", Double.toString(infillWidthOverThickness)));
+			options.add(new SkeinforgeOption("speed.csv", "Feed Rate (mm/s):", Double.toString(feedRate)));
+			options.add(new SkeinforgeOption("carve.csv", "Layer Thickness (mm):", Double.toString(layerHeight)));
+			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Alternating Solid Layer (layers):", Double.toString(extraShellsOnAlternatingSolidLayer)));
+			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Sparse Layer (layers):", Double.toString(extraShellsOnSparseLayer)));
+			options.add(new SkeinforgeOption("reversal.csv", "Reversal speed (RPM):", Double.toString(reversalSpeed)));
+			options.add(new SkeinforgeOption("reversal.csv", "Reversal time (milliseconds):", Double.toString(reversalTime)));
+			options.add(new SkeinforgeOption("reversal.csv", "Push-back time (milliseconds):", Double.toString(pushbackTime)));
+			
+			return options;
 		}
 	}
 
