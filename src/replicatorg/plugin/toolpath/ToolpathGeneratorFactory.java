@@ -122,13 +122,6 @@ public class ToolpathGeneratorFactory {
 				
 				prefs.add(supportPref);
 				
-				SkeinforgeBooleanPreference printOMaticPref =
-					new SkeinforgeBooleanPreference("Use Print-O-Matic",
-							"replicatorg.skeinforge.printOMaticPref", true,
-							"If this option is checked, skeinforge will use the values below to control the print");
-				printOMaticPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
-				prefs.add(printOMaticPref);
-				
 				PrintOMatic printOMatic = new PrintOMatic();
 				prefs.add(printOMatic);
 				

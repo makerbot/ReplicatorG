@@ -245,6 +245,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	
 	public static class PrintOMatic implements SkeinforgePreference {
 		private JPanel component;
+		private JCheckBox enabled;
 		private String baseName;
 		
 		private class StoringActionListener implements ActionListener {
@@ -273,6 +274,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			
 			if (fullName != null) {
 				value = Base.preferences.get(fullName, defaultValue);
+				
+				// Store it back so that we can be assured that it is set.
+				Base.preferences.put(fullName, value);
 			}
 			target.add(new JLabel(description));
 			
@@ -300,12 +304,33 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			
 			baseName = "replicatorg.skeinforge.printOMatic.";
 			
-			// Make a tabbed pane to 
+
+//			SkeinforgeBooleanPreference printOMaticPref =
+//				new SkeinforgeBooleanPreference("Use Print-O-Matic",
+//						"replicatorg.skeinforge.printOMaticPref", true,
+//						"If this option is checked, skeinforge will use the values below to control the print");
+//			printOMaticPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
+//			prefs.add(printOMaticPref);
+
+			// Add a checkbox to switch print-o-matic on and off
+			final String enabledName = baseName + "enabled";
+			enabled = new JCheckBox("Use Print-O-Matic", Base.preferences.getBoolean(enabledName,true));
+			enabled.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if (enabledName != null) {
+						Base.preferences.putBoolean(enabledName,enabled.isSelected());
+					}
+				}
+			});
+			
+			component.add(enabled, "wrap, spanx");
+			
+			// Make a tabbed pane to sort basic and advanced components 
 			JTabbedPane tabbedPane = new JTabbedPane();
 			
 			JComponent basicPanel = new JPanel(new MigLayout());
 			JComponent advancedPanel = new JPanel(new MigLayout());
-			
+			 
 			addParameter(basicPanel, "desiredFeedrate",
 						"Desired Feedrate (mm/s)", "30",
 						"slow: 0-20, default: 30, Fast: 40+");
@@ -360,41 +385,44 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		public List<SkeinforgeOption> getOptions() {
 			List<SkeinforgeOption> options = new LinkedList<SkeinforgeOption>();
 
-			double flowRate = Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI*getValue("desiredFeedrate")*60/(Math.pow(getValue("filamentDiameter")/2,2)*Math.PI*(getValue("driveGearScalingFactor")*getValue("driveGearDiameter")*Math.PI));
-			double perimeterWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
-			double infillWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
-			double feedRate =getValue("desiredFeedrate");
-			double layerHeight =getValue("desiredLayerHeight");
-			double extraShellsOnAlternatingSolidLayer =getValue("modelHasThinFeatures");
-			double extraShellsOnSparseLayer =getValue("modelHasThinFeatures");
-			double reversalSpeed =getValue("reversalSpeed");
-			double reversalTime =(((getValue("retractedVolumeScalingFactor")*getValue("reversalDistance")*Math.PI*Math.pow(2.88/2,2))/(Math.PI*Math.pow(getValue("filamentDiameter")/2,2)))/(((getValue("driveGearDiameter")*getValue("driveGearScalingFactor")*Math.PI)*getValue("reversalSpeed"))/60))*Math.pow(10,3);
-			double pushbackTime =(((getValue("retractedVolumeScalingFactor")*getValue("reversalPushBack")*Math.PI*Math.pow(2.88/2,2))/(Math.PI*Math.pow(getValue("filamentDiameter")/2,2)))/(((getValue("driveGearDiameter")*getValue("driveGearScalingFactor")*Math.PI)*getValue("reversalSpeed"))/60))*Math.pow(10,3);
+			if (enabled.isSelected()) {
 			
-			Base.logger.fine("Print-O-Matic settings:"
-					+ "\n flowRate=" + flowRate
-					+ "\n perimeterWidthOverThickness=" + perimeterWidthOverThickness
-					+ "\n infillWidthOverThickness=" + infillWidthOverThickness
-					+ "\n feedRate=" + feedRate
-					+ "\n layerHeight=" + layerHeight
-					+ "\n extraShellsOnAlternatingSolidLayer=" + extraShellsOnAlternatingSolidLayer
-					+ "\n extraShellsOnSparseLayer=" + extraShellsOnSparseLayer
-					+ "\n reversalSpeed=" + reversalSpeed
-					+ "\n reversalTime=" + reversalTime
-					+ "\n pushbackTime=" + pushbackTime
-					);
-						
-			options.add(new SkeinforgeOption("speed.csv", "Flow Rate Setting (float):", Double.toString(flowRate)));
-			options.add(new SkeinforgeOption("carve.csv", "Perimeter Width over Thickness (ratio):", Double.toString(perimeterWidthOverThickness)));
-			options.add(new SkeinforgeOption("fill.csv", "Infill Width over Thickness (ratio):", Double.toString(infillWidthOverThickness)));
-			options.add(new SkeinforgeOption("speed.csv", "Feed Rate (mm/s):", Double.toString(feedRate)));
-			options.add(new SkeinforgeOption("carve.csv", "Layer Thickness (mm):", Double.toString(layerHeight)));
-			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Alternating Solid Layer (layers):", Double.toString(extraShellsOnAlternatingSolidLayer)));
-			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Sparse Layer (layers):", Double.toString(extraShellsOnSparseLayer)));
-			options.add(new SkeinforgeOption("reversal.csv", "Reversal speed (RPM):", Double.toString(reversalSpeed)));
-			options.add(new SkeinforgeOption("reversal.csv", "Reversal time (milliseconds):", Double.toString(reversalTime)));
-			options.add(new SkeinforgeOption("reversal.csv", "Push-back time (milliseconds):", Double.toString(pushbackTime)));
-			
+				double flowRate = Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI*getValue("desiredFeedrate")*60/(Math.pow(getValue("filamentDiameter")/2,2)*Math.PI*(getValue("driveGearScalingFactor")*getValue("driveGearDiameter")*Math.PI));
+				double perimeterWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
+				double infillWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
+				double feedRate =getValue("desiredFeedrate");
+				double layerHeight =getValue("desiredLayerHeight");
+				double extraShellsOnAlternatingSolidLayer =getValue("modelHasThinFeatures");
+				double extraShellsOnSparseLayer =getValue("modelHasThinFeatures");
+				double reversalSpeed =getValue("reversalSpeed");
+				double reversalTime =(((getValue("retractedVolumeScalingFactor")*getValue("reversalDistance")*Math.PI*Math.pow(2.88/2,2))/(Math.PI*Math.pow(getValue("filamentDiameter")/2,2)))/(((getValue("driveGearDiameter")*getValue("driveGearScalingFactor")*Math.PI)*getValue("reversalSpeed"))/60))*Math.pow(10,3);
+				double pushbackTime =(((getValue("retractedVolumeScalingFactor")*getValue("reversalPushBack")*Math.PI*Math.pow(2.88/2,2))/(Math.PI*Math.pow(getValue("filamentDiameter")/2,2)))/(((getValue("driveGearDiameter")*getValue("driveGearScalingFactor")*Math.PI)*getValue("reversalSpeed"))/60))*Math.pow(10,3);
+				
+				Base.logger.fine("Print-O-Matic settings:"
+						+ "\n flowRate=" + flowRate
+						+ "\n perimeterWidthOverThickness=" + perimeterWidthOverThickness
+						+ "\n infillWidthOverThickness=" + infillWidthOverThickness
+						+ "\n feedRate=" + feedRate
+						+ "\n layerHeight=" + layerHeight
+						+ "\n extraShellsOnAlternatingSolidLayer=" + extraShellsOnAlternatingSolidLayer
+						+ "\n extraShellsOnSparseLayer=" + extraShellsOnSparseLayer
+						+ "\n reversalSpeed=" + reversalSpeed
+						+ "\n reversalTime=" + reversalTime
+						+ "\n pushbackTime=" + pushbackTime
+						);
+							
+				options.add(new SkeinforgeOption("speed.csv", "Flow Rate Setting (float):", Double.toString(flowRate)));
+				options.add(new SkeinforgeOption("carve.csv", "Perimeter Width over Thickness (ratio):", Double.toString(perimeterWidthOverThickness)));
+				options.add(new SkeinforgeOption("fill.csv", "Infill Width over Thickness (ratio):", Double.toString(infillWidthOverThickness)));
+				options.add(new SkeinforgeOption("speed.csv", "Feed Rate (mm/s):", Double.toString(feedRate)));
+				options.add(new SkeinforgeOption("carve.csv", "Layer Thickness (mm):", Double.toString(layerHeight)));
+				options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Alternating Solid Layer (layers):", Double.toString(extraShellsOnAlternatingSolidLayer)));
+				options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Sparse Layer (layers):", Double.toString(extraShellsOnSparseLayer)));
+				options.add(new SkeinforgeOption("reversal.csv", "Reversal speed (RPM):", Double.toString(reversalSpeed)));
+				options.add(new SkeinforgeOption("reversal.csv", "Reversal time (milliseconds):", Double.toString(reversalTime)));
+				options.add(new SkeinforgeOption("reversal.csv", "Push-back time (milliseconds):", Double.toString(pushbackTime)));
+			}
+				
 			return options;
 		}
 	}
