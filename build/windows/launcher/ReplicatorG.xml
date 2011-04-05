@@ -23,7 +23,6 @@
     <cp>./lib/jfreechart-1.0.13.jar</cp>
     <cp>./lib/miglayout-3.7.4.jar</cp>
     <cp>./lib/mrj.jar</cp>
-    <cp>./lib/quaqua.jar</cp>
     <cp>./lib/RXTXcomm.jar</cp>
     <cp>./lib/twitter4j-2.0.10.jar</cp>
     <cp>./lib/vecmath.jar</cp>
