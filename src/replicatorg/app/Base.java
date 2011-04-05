@@ -382,7 +382,7 @@ public class Base {
 
 		         // set the Quaqua Look and Feel in the UIManager
 		         UIManager.setLookAndFeel("ch.randelshofer.quaqua.QuaquaLookAndFeel");
-		         
+		         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
 			} else if (Base.isLinux()) {
 				// For 0120, trying out the gtk+ look and feel as the default.
