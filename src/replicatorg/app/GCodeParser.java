@@ -705,7 +705,7 @@ public class GCodeParser {
 
 	private void executeGCodes() throws GCodeException, RetryException {
 		// start us off at our current position...
-		Point5d temp = driver.getCurrentPosition();
+		Point5d temp = driver.getCurrentPosition(false);
 
 		// initialize our points, etc.
 		double iVal = convertToMM(getCodeValue("I"), units); // / X offset
@@ -807,7 +807,7 @@ public class GCodeParser {
 				if (hasCode("I") || hasCode("J")) {
 					// our centerpoint
 					Point5d center = new Point5d();
-					Point5d current = driver.getCurrentPosition();
+					Point5d current = driver.getCurrentPosition(false);
 					center.setX(current.x() + iVal);
 					center.setY(current.y() + jVal);
 
@@ -931,7 +931,7 @@ public class GCodeParser {
 
 				Base.logger.warning("Area probes not yet supported.");
 				{
-					Point5d current = driver.getCurrentPosition();
+					Point5d current = driver.getCurrentPosition(false);
 					double minX = current.x();
 					double minY = current.y();
 					double maxX = xVal;
@@ -1045,7 +1045,7 @@ public class GCodeParser {
 			// Set position
 			case 92:
 
-				Point5d current = driver.getCurrentPosition();
+				Point5d current = driver.getCurrentPosition(false);
 
 				if (hasCode("X"))
 					current.setX(xVal);
@@ -1094,7 +1094,7 @@ public class GCodeParser {
 	 */
 	private void drillingCycle(boolean speedPeck) throws RetryException {
 		// Retract to R position if Z is currently below this
-		Point5d current = driver.getCurrentPosition();
+		Point5d current = driver.getCurrentPosition(false);
 		if (current.z() < drillRetract) {
 			driver.setFeedrate(getMaxFeedrate());
 			setTarget(new Point5d(current.x(), current.y(), drillRetract, current.a(), current.b()));
@@ -1176,7 +1176,7 @@ public class GCodeParser {
 		double bY;
 
 		// figure out our deltas
-		Point5d current = driver.getCurrentPosition();
+		Point5d current = driver.getCurrentPosition(false);
 		aX = current.x() - center.x();
 		aY = current.y() - center.y();
 		bX = endpoint.x() - center.x();
@@ -1244,7 +1244,7 @@ public class GCodeParser {
 		// If you really want two separate moves, do it when you generate your
 		// toolpath.
 		// move z first
-		Point5d current = driver.getCurrentPosition();
+		Point5d current = driver.getCurrentPosition(false);
 		if (breakoutZMoves) {
 			if (p.z() != current.z()) {
 				driver.queuePoint(new Point5d(current.x(), current.y(), p.z(), current.a(), current.b()));

@@ -35,9 +35,6 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	}
 
 	public void setCurrentPosition(Point5d p) throws RetryException {
-//		System.err.println("   SCP: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
-//		if (super.getCurrentPosition().equals(p)) return;
-//		System.err.println("COMMIT: "+p.toString()+ " (current "+getCurrentPosition().toString()+")");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_POSITION_EXT.getCode());
 
 		Point5d steps = machine.mmToSteps(p);
@@ -62,8 +59,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION_EXT.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
 		Point5d steps = new Point5d(pr.get32(), pr.get32(), pr.get32(), pr.get32(), pr.get32());
-		// Useful quickie debugs
-//		System.err.println("Reconciling : "+machine.stepsToMM(steps).toString());
+//		Base.logger.fine("Reconciling : "+machine.stepsToMM(steps).toString());
 		return machine.stepsToMM(steps);
 	}
 

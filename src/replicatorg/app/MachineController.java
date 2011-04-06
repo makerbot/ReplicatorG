@@ -384,7 +384,7 @@ public class MachineController {
 			startStatusPolling(1000); // Will not send commands if temp mon. turned off
 			try {
 				if (!state.isSimulating()) {
-					driver.getCurrentPosition(); // reconcile position
+					driver.getCurrentPosition(false); // reconcile position
 				}
 				runWarmupCommands();
 				Base.logger.info("Running build.");
@@ -424,7 +424,7 @@ public class MachineController {
 			// Dump out if SD builds are unsupported on this machine
 			if (remoteName == null || !(driver instanceof SDCardCapture)) return;
 			if (state.getState() != MachineState.State.PLAYBACK) return;
-			driver.getCurrentPosition(); // reconcile position
+			driver.getCurrentPosition(false); // reconcile position
 			SDCardCapture sdcc = (SDCardCapture)driver;
 			if (!processSDResponse(sdcc.playback(remoteName))) {
 				setState(MachineState.State.STOPPING);

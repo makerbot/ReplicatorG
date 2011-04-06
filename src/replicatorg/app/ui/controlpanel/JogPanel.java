@@ -312,7 +312,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	DecimalFormat positionFormatter = new DecimalFormat("###.#");
 
 	synchronized public void updateStatus() {
-		Point5d current = driver.getCurrentPosition();
+		Point5d current = driver.getCurrentPosition(true);
 
 		for (AxisId axis : machine.getModel().getAvailableAxes()) {
 			double v = current.axis(axis);
@@ -324,7 +324,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	Pattern centerActionParser = Pattern.compile("Center ([XYZAB])");
 	
 	public void actionPerformed(ActionEvent e) {
-		Point5d current = driver.getCurrentPosition();
+		Point5d current = driver.getCurrentPosition(false);
 		String s = e.getActionCommand();
 
 		try {
@@ -388,7 +388,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	public void mousePressed(MouseEvent e) {
 		if (continuousJogMode) {
-			Point5d current = driver.getCurrentPosition();
+			Point5d current = driver.getCurrentPosition(false);
 			String s = ((JButton)e.getSource()).getActionCommand();
 			Matcher jogMatch = jogActionParser.matcher(s);
 			if (jogMatch.matches()) {

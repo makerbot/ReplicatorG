@@ -42,7 +42,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		// compare the relative p coordinate (usually 0) with the absolute 
 		// currentPosition (which we get from the Motherboard).
 		Point5d filteredpoint = new Point5d(p);
-		Point5d filteredcurrent = new Point5d(getCurrentPosition());
+		Point5d filteredcurrent = new Point5d(getCurrentPosition(false));
 		int relative = 0;
 		for (AxisId axis : getHijackedAxes()) {
 			filteredpoint.setAxis(axis, 0d);

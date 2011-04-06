@@ -259,20 +259,20 @@ public class DriverBaseImplementation implements Driver {
 		throw new RuntimeException("Position reconcilliation requested, but not implemented for this driver");
 	}
 	
-	public Point5d getCurrentPosition() {
+	public Point5d getCurrentPosition(boolean update) {
 		synchronized(currentPosition)
 		{
 			// Explicit null check; otherwise reconcilePosition, a potentially expensive call (including a packet
 			// transaction) will be called every time.
-			if (currentPosition.get() == null) {
-				currentPosition.compareAndSet(null, reconcilePosition());
+			if (currentPosition.get() == null || update) {
+				currentPosition.set(reconcilePosition());
 			}
 			return new Point5d(currentPosition.get());
 		}
 	}
 
 	public Point5d getPosition() {
-		return getCurrentPosition();
+		return getCurrentPosition(false);
 	}
 
 	/**
@@ -365,7 +365,7 @@ public class DriverBaseImplementation implements Driver {
 
 	public Point5d getDelta(Point5d p) {
 		Point5d delta = new Point5d();
-		Point5d current = getCurrentPosition();
+		Point5d current = getCurrentPosition(false);
 
 		delta.sub(p, current); // delta = p - current
 		delta.absolute(); // absolute value of each component
