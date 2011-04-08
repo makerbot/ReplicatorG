@@ -17,17 +17,6 @@ import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
 public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
-
-	// True if the current position is unknown. If it is, we don't want to send a command with a baked-in time.
-	// This is for cases where we are building to a file. 
-	Boolean position_invalid = true;
-
-	@Override
-	public void invalidatePosition() {
-		super.invalidatePosition();
-		
-		position_invalid = true;
-	}
 	
 	private boolean stepperExtruderFanEnabled = false;
 
@@ -39,7 +28,6 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		// We should poll the machine for it's state here, but it is more important to have the
 		// fan on than off.
 		stepperExtruderFanEnabled = false;
-		position_invalid = true;
 
 		super.reset();
 	}
@@ -49,7 +37,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 */
 	public void queuePoint(Point5d p) throws RetryException {
 		// If we don't know our current position, make this move as an old-style move, ignoring any hijacked axes. 
-		if (position_invalid) {
+		if (currentPosition.get() == null) {
 			// Filter away any hijacked axes from the given point.
 			Point5d filteredPoint = new Point5d(p);
 			long longestDDA = 0;
@@ -81,7 +69,6 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			
 			// Finally, recored the position, and mark it as valid.
 			setInternalPosition(filteredPoint);
-			position_invalid = false;
 		} else {
 			// Filter away any hijacked axes from the given point.
 			// This is necessary to avoid taking deltas into account where we 
