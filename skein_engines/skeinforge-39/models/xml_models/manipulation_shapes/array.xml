@@ -1,8 +1,0 @@
-<?xml version='1.0' ?>
-<fabmetheus version="2010-04-04">
-	<polygon id="polygontest" radius="20.0" sides="3" />
-	<cylinder id="Cylinder5" height="10" radiusx="5" radiusy="5" visible="False">
-		<matrix x="5" y="-5" />
-	</cylinder>
-	<array id="array test" target="=document.getElementByID(Cylinder5)" vertexes="=document.getElementByID(polygontest)" />
-</fabmetheus>

@@ -53,6 +53,7 @@ public class MachineModel
 	
 	//feedrate information
 	private Point5d maximumFeedrates;
+	private Point5d homingFeedrates;
 	private Point5d stepsPerMM;
 	
 	//our drive status
@@ -83,6 +84,7 @@ public class MachineModel
 		minimum = new Point5d();
 		maximum = new Point5d();
 		maximumFeedrates = new Point5d();
+		homingFeedrates = new Point5d();
 		stepsPerMM = new Point5d(1, 1, 1, 1, 1); //use ones, because we divide by this!
 		
 		currentTool.set(nullTool);
@@ -123,6 +125,7 @@ public class MachineModel
 						//initialize values
 						double length = 0.0;
 						double maxFeedrate = 0.0;
+						double homingFeedrate = 0.0;
 						double stepspermm = 1.0;
 						Endstops endstops = Endstops.NONE;
 						//if values are missing, ignore them.
@@ -132,6 +135,12 @@ public class MachineModel
 						try {
 						 	maxFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "maxfeedrate"));
 						} catch (Exception e) {}
+						try {
+							homingFeedrate = Double.parseDouble(XML.getAttributeValue(axis, "homingfeedrate"));
+						} catch (Exception e) {
+							// If the homing feedrate is not available, use the maximum feedrate instead
+							homingFeedrate = maxFeedrate;
+						}
 						try {
 						 	String spmm = XML.getAttributeValue(axis, "stepspermm");
 						 	if (spmm == null) spmm = XML.getAttributeValue(axis, "scale"); // Backwards compatibility
@@ -147,10 +156,14 @@ public class MachineModel
 						}
 						maximum.setAxis(id,length);
 						maximumFeedrates.setAxis(id,maxFeedrate);
+						homingFeedrates.setAxis(id,homingFeedrate);
 						stepsPerMM.setAxis(id,stepspermm);
 						this.endstops.put(id, endstops);
-						Base.logger.fine("Loaded axis " + id.name() + ": (Length: " + 
-								length + "mm, max feedrate: " + maxFeedrate + " mm/min, scale: " + 
+						Base.logger.fine("Loaded axis " + id.name()
+								+ ": (Length: " + length 
+								+ "mm, max feedrate: " + maxFeedrate 
+								+ " mm/min, homing feedrate: " + homingFeedrate
+								+ " mm/min, scale: " + 
 								stepspermm + " steps/mm)");
 					} catch (IllegalArgumentException iae) {
 						// Unrecognized axis!
@@ -420,6 +433,10 @@ public class MachineModel
   public Point5d getMaximumFeedrates() {
     return maximumFeedrates;
   }
+
+  public Point5d getHomingFeedrates() {
+	    return homingFeedrates;
+	  }
   
   /** returns the endstop configuration for the givin axis */
   public Endstops getEndstops(AxisId axis)

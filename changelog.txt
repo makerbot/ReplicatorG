@@ -1,3 +1,14 @@
+0025 ReplicatorG technology beta
+* Print-O-Matic support
+* Updates to most core libraries
+* Fix menu bar location on Mac for better look and feel.
+* New launch4j loader for Windows
+* Support for local firmware.xml files (file:// urls)
+* Resize main window so tooltips don't refresh the whole view
+* Add frostruder support for Thingomatic
+* Bugfix for cupcake profiles: disable wipe
+* Some fixes for Ramps 5D
+
 0024 ReplicatorG
 * Support for stepper-based extruders on G4 hardware
 * Early reversal for stepper-driven extruders

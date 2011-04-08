@@ -273,6 +273,7 @@ public class Base {
 		return false;
 	}
 	
+
 	static public void main(String args[]) {
 
 		// make sure that this is running on java 1.5 or better.
@@ -287,6 +288,8 @@ public class Base {
 	         // Default to sun's XML parser, PLEASE.  Some apps are installing some janky-ass xerces.
 	         System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
 	        		 "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+		 System.setProperty("com.apple.mrj.application.apple.menu.about.name",
+				    "ReplicatorG");
 		}
 		
 		// parse command line input
@@ -385,7 +388,7 @@ public class Base {
 
 		         // set the Quaqua Look and Feel in the UIManager
 		         UIManager.setLookAndFeel("ch.randelshofer.quaqua.QuaquaLookAndFeel");
-		         
+		         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
 			} else if (Base.isLinux()) {
 				// For 0120, trying out the gtk+ look and feel as the default.

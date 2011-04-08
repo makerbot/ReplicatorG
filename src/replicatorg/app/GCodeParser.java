@@ -193,7 +193,7 @@ public class GCodeParser {
 		double bY;
 
 		// figure out our deltas
-		Point5d current = driver.getCurrentPosition();
+		Point5d current = driver.getCurrentPosition(false);
 		aX = current.x() - center.x();
 		aY = current.y() - center.y();
 		bX = endpoint.x() - center.x();
@@ -650,7 +650,7 @@ public class GCodeParser {
 		}
 		
 		// start us off at our current position...
-		Point5d temp = driver.getCurrentPosition();
+		Point5d temp = driver.getCurrentPosition(false);
 
 		// initialize our points, etc.
 		double iVal = convertToMM(gcode.getCodeValue('I'), units); // / X offset
@@ -725,7 +725,6 @@ public class GCodeParser {
 			// TODO: Why do we do this here, and not in individual commands?
 			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
 		}
-
 		
 		int gCode = (int) gcode.getCodeValue('G');
 
@@ -754,7 +753,7 @@ public class GCodeParser {
 			if (gcode.hasCode('I') || gcode.hasCode('J')) {
 				// our centerpoint
 				Point5d center = new Point5d();
-				Point5d current = driver.getCurrentPosition();
+				Point5d current = driver.getCurrentPosition(false);
 				center.setX(current.x() + iVal);
 				center.setY(current.y() + jVal);
 
@@ -829,7 +828,7 @@ public class GCodeParser {
 		{
 			// home all axes?
 			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
+			
 			if (gcode.hasCode('X')) axes.add(AxisId.X);
 			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
 			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
@@ -852,7 +851,6 @@ public class GCodeParser {
 			if (gcode.hasCode('X')) axes.add(AxisId.X);
 			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
 			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-
 			if (gcode.hasCode('F')) {
 				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
 			}
@@ -963,7 +961,7 @@ public class GCodeParser {
 		// Set position
 		case 92:
 
-			Point5d current = driver.getCurrentPosition();
+			Point5d current = driver.getCurrentPosition(false);
 
 			if (gcode.hasCode('X'))
 				current.setX(xVal);

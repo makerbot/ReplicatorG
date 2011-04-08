@@ -48,7 +48,6 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 * Overloaded to manage a hijacked axis and run this axis in relative mode instead of the extruder DC motor
 	 */
 	public void queuePoint(Point5d p) throws RetryException {
-		
 		// If we don't know our current position, make this move as an old-style move, ignoring any hijacked axes. 
 		if (position_invalid) {
 			// Filter away any hijacked axes from the given point.
@@ -89,7 +88,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			// compare the relative p coordinate (usually 0) with the absolute 
 			// currentPosition (which we get from the Motherboard).
 			Point5d filteredpoint = new Point5d(p);
-			Point5d filteredcurrent = new Point5d(getCurrentPosition());
+			Point5d filteredcurrent = new Point5d(getCurrentPosition(false));
 			int relative = 0;
 			for (AxisId axis : getHijackedAxes()) {
 				filteredpoint.setAxis(axis, 0d);

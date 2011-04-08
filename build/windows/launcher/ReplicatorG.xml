@@ -2,7 +2,7 @@
   <dontWrapJar>true</dontWrapJar>
   <headerType>gui</headerType>
   <jar>lib\ReplicatorG.jar</jar>
-  <outfile>C:\Users\phooky\makerbot\ReplicatorG\build\windows\launcher\ReplicatorG.exe</outfile>
+  <outfile>C:\Users\matt\repg-workspace\ReplicatorG\build\windows\launcher\ReplicatorG.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -10,24 +10,22 @@
   <downloadUrl>http://java.com/download</downloadUrl>
   <supportUrl></supportUrl>
   <customProcName>false</customProcName>
-  <stayAlive>false</stayAlive>
+  <stayAlive>true</stayAlive>
   <manifest></manifest>
-  <icon>C:\Users\phooky\makerbot\ReplicatorG\build\windows\launcher\application.ico</icon>
+  <icon>C:\Users\matt\repg-workspace\ReplicatorG\build\windows\launcher\application.ico</icon>
   <classPath>
     <mainClass>replicatorg.app.Base</mainClass>
     <cp>./lib</cp>
     <cp>./lib/build</cp>
-    <cp>./lib/mrj.jar</cp>
-    <cp>./lib/vecmath.jar</cp>
     <cp>./lib/j3dcore.jar</cp>
     <cp>./lib/j3dutils.jar</cp>
-    <cp>./lib/RXTXcomm.jar</cp>
-    <cp>./lib/oro.jar</cp>
-    <cp>./lib/registry.jar</cp>
-    <cp>./lib/antlr.jar</cp>
-    <cp>./lib/miglayout-3.7.jar</cp>
-    <cp>./lib/jfreechart-1.0.13.jar</cp>
     <cp>./lib/jcommon-1.0.16.jar</cp>
+    <cp>./lib/jfreechart-1.0.13.jar</cp>
+    <cp>./lib/miglayout-3.7.4.jar</cp>
+    <cp>./lib/mrj.jar</cp>
+    <cp>./lib/RXTXcomm.jar</cp>
+    <cp>./lib/twitter4j-2.0.10.jar</cp>
+    <cp>./lib/vecmath.jar</cp>
   </classPath>
   <jre>
     <path></path>

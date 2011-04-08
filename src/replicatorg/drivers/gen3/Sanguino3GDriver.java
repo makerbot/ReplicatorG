@@ -459,7 +459,7 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.log(Level.FINE,"Queued point " + p);
 
 		// is this point even step-worthy?
-		Point5d deltaSteps = getAbsDeltaSteps(getCurrentPosition(), p);
+		Point5d deltaSteps = getAbsDeltaSteps(getCurrentPosition(false), p);
 		double masterSteps = getLongestLength(deltaSteps);
 
 		// okay, we need at least one step.
@@ -471,7 +471,7 @@ public class Sanguino3GDriver extends SerialDriver
 			double feedrate = getSafeFeedrate(delta);
 			
 			// how fast are we doing it?
-			long micros = convertFeedrateToMicros(getCurrentPosition(),
+			long micros = convertFeedrateToMicros(getCurrentPosition(false),
 					p, feedrate);
 
 			//System.err.println("Steps :"+steps.toString()+" micros "+Long.toString(micros));
@@ -556,13 +556,13 @@ public class Sanguino3GDriver extends SerialDriver
 
 		invalidatePosition();
 
-		Point5d maxFeedrates = machine.getMaximumFeedrates();
+		Point5d homingFeedrates = machine.getHomingFeedrates();
 
 		if (feedrate <= 0) {
 			// figure out our fastest feedrate.
 			feedrate = 0;
 			for (AxisId axis : machine.getAvailableAxes()) {
-				feedrate = Math.max(maxFeedrates.axis(axis),feedrate);
+				feedrate = Math.max(homingFeedrates.axis(axis),feedrate);
 			}
 		}
 		
@@ -570,7 +570,7 @@ public class Sanguino3GDriver extends SerialDriver
 		
 		for (AxisId axis : axes) {
 			flags += 1 << axis.getIndex();
-			feedrate = Math.min(feedrate, maxFeedrates.axis(axis));
+			feedrate = Math.min(feedrate, homingFeedrates.axis(axis));
 			target.setAxis(axis, 1);
 		}
 		

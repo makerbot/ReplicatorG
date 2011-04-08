@@ -75,7 +75,7 @@ public class SimulationDriver extends DriverBaseImplementation {
 	}
 
 	public void homeXY() throws RetryException {
-		Point5d pos = getCurrentPosition();
+		Point5d pos = getCurrentPosition(false);
 		pos.setX(0);
 		pos.setY(0);
 
@@ -83,21 +83,21 @@ public class SimulationDriver extends DriverBaseImplementation {
 	}
 
 	public void homeX() throws RetryException {
-		Point5d pos = getCurrentPosition();
+		Point5d pos = getCurrentPosition(false);
 		pos.setX(0);
 
 		queuePoint(pos);
 	}
 
 	public void homeY() throws RetryException {
-		Point5d pos = getCurrentPosition();
+		Point5d pos = getCurrentPosition(false);
 		pos.setY(0);
 
 		queuePoint(pos);
 	}
 
 	public void homeZ() throws RetryException {
-		Point5d pos = getCurrentPosition();
+		Point5d pos = getCurrentPosition(false);
 		pos.setZ(0);
 
 		queuePoint(pos);

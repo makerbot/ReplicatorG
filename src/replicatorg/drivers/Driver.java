@@ -146,7 +146,13 @@ public interface Driver {
 	 */
 	public void recallHomePositions(EnumSet<AxisId> axes) throws RetryException;
 
-	public Point5d getCurrentPosition();
+	/**
+	 * Get the current machine position
+	 * @param update True if the driver should be forced to query the machine
+	 * for its position, instead of using the cached value.
+	 * @return
+	 */
+	public Point5d getCurrentPosition(boolean update);
 
 	/**
 	 * Indicate that the currently maintained position may no longer be the machine's position,

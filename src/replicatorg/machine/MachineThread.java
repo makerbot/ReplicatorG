@@ -194,7 +194,7 @@ class MachineThread extends Thread {
 				pollingTimer.start(1000);
 
 				if (!isSimulating()) {
-					driver.getCurrentPosition(); // reconcile position
+					driver.getCurrentPosition(false); // reconcile position
 				}
 				
 				// Eventually, we want to be able to build just the job,
@@ -228,7 +228,7 @@ class MachineThread extends Thread {
 				pollingTimer.start(1000);
 	
 				if (!isSimulating()) {
-					driver.getCurrentPosition(); // reconcile position
+					driver.getCurrentPosition(false); // reconcile position
 				}
 				
 				// Eventually, we want to be able to build just the job,
@@ -259,7 +259,7 @@ class MachineThread extends Thread {
 				pollingTimer.start(1000);
 
 				if (!isSimulating()) {
-					driver.getCurrentPosition(); // reconcile position
+					driver.getCurrentPosition(false); // reconcile position
 				}
 				
 				// Eventually, we want to be able to build just the job,
@@ -285,7 +285,7 @@ class MachineThread extends Thread {
 				machineBuilder = new UsingRemoteFile((SDCardCapture)driver, command.remoteName);
 			
 				// TODO: what about this?
-				driver.getCurrentPosition(); // reconcile position
+				driver.getCurrentPosition(false); // reconcile position
 			
 				setState(new MachineState(MachineState.State.BUILDING));
 			}

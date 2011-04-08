@@ -980,6 +980,12 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	public double getPlatformTemperature(){
 		return machine.currentTool().getPlatformCurrentTemperature();
 	}
+
+	public void setPlatformTemperature(double temperature) throws RetryException {
+		sendCommand(_getToolCode() + "M140 S" + df.format(temperature));
+		
+		super.setPlatformTemperature(temperature);
+	}
 	/***************************************************************************
 	 * Flood Coolant interface functions
 	 **************************************************************************/

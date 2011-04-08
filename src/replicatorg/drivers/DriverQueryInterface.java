@@ -27,7 +27,7 @@ public interface DriverQueryInterface {
 	public double getPlatformTemperature();
 	public double getPlatformTemperatureSetting();
 
-	public Point5d getCurrentPosition();
+	public Point5d getCurrentPosition(boolean b);
 
 	public boolean isPassthroughDriver();
 	
