@@ -133,8 +133,6 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	 */
 	// TODO: Clean this up just ask the machine for all of this info.
 	public void updateMachineStatus(MachineStateChangeEvent evt) {
-		Base.logger.fine("Got update machine status event");
-		
 		// If we don't have a machine, its a no-go.
 		if (machine == null || !(machine.isInitialized())) {
 			updatePanel(BG_NO_MACHINE, "No machine selected", null, null);
@@ -217,7 +215,6 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	
 	public void updateBuildStatus(MachineProgressEvent event) {
 		if (isBuilding) {
-			
 			double remaining;
 			double proportion = (double)event.getLines()/(double)event.getTotalLines();
 	
@@ -236,11 +233,8 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 					Math.round(proportion*10000.0)/100.0,
 					EstimationDriver.getBuildTimeString(event.getElapsed(), true),
 					EstimationDriver.getBuildTimeString(remaining, true));
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					smallLabel.setText(s);
-				}
-			});
+			
+			smallLabel.setText(s);
 		}
 	}
 	

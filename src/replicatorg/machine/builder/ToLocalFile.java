@@ -3,6 +3,7 @@ package replicatorg.machine.builder;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
@@ -29,6 +30,7 @@ public class ToLocalFile implements MachineBuilder {
 		try {
 			sdcc.beginFileCapture(remoteName);
 		} catch (FileNotFoundException e) {
+			Base.logger.fine("error!");
 			// TODO: Report an error and finish.
 		}
 		
@@ -46,6 +48,8 @@ public class ToLocalFile implements MachineBuilder {
 		} catch (IOException e) {
 			// TODO: Report an error here?
 		}
+		
+		Base.logger.info("Finished writing to file!");
 		return true;
 	}
 	
@@ -71,6 +75,6 @@ public class ToLocalFile implements MachineBuilder {
 
 	@Override
 	public JobTarget getTarget() {
-		return JobTarget.REMOTE_FILE;
+		return JobTarget.FILE;
 	}
 }

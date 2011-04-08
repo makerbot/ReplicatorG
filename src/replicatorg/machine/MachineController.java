@@ -315,7 +315,14 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	public void buildToFile(String path) {
-		// TODO: what happened to this?
+		/**
+		 * Upload the gcode to the given file.
+		 * 
+		 * @param source
+		 * @param remoteName
+		 */
+		machineThread.scheduleRequest(new MachineCommand(
+				RequestType.BUILD_TO_FILE, source, path));
 	}
 
 	public void unpause() {
