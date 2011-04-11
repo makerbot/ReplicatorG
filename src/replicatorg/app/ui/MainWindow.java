@@ -1620,6 +1620,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			return;
 		if (simulating)
 			return;
+		if (machine == null) {
+			// TODO: Start an unconnected machine here.
+			
+		}
+		
 		if (machine == null || machine.getDriver() == null ||
 				!(machine.getDriver() instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
