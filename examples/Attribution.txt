@@ -38,6 +38,11 @@ The models included here are:
   Released into the public domain
   http://www.thingiverse.com/thing:5031
 
+* 20mmbox.stl: 20 mm calibration box by Spacexula (Derivative of 40mm cube by bre)
+  Shared under the CC BY-SA 3.0 license
+  http://creativecommons.org/licenses/by-sa/3.0/
+  http://www.thingiverse.com/thing:2064
+
 * wfu_cbi_skull.stl: Skull by bothacker
   Shared under the CC BY-SA 3.0 license
   http://creativecommons.org/licenses/by-sa/3.0/
