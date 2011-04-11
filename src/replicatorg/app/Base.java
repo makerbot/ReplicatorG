@@ -73,9 +73,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import replicatorg.app.ui.MainWindow;
-import replicatorg.machine.MachineController;
 import replicatorg.machine.MachineControllerInterface;
-import replicatorg.machine.MachineFactory;
+import replicatorg.machine.MachineLoader;
 import replicatorg.uploader.FirmwareUploader;
 import ch.randelshofer.quaqua.QuaquaManager;
 
@@ -106,7 +105,7 @@ public class Base {
 	/**
 	 * The machine controller in use.
 	 */
-	private static MachineController machine = null;
+	private static MachineLoader machineLoader;
 	
 	/**
 	 * The user preferences store.
@@ -425,14 +424,12 @@ public class Base {
 						w.onShutdown();
 					}
 				});
-				// load up our default machine
+				
 				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
 				String machineName = preferences.get("machine.name",null);
 				
 				if (autoconnect) {
 					editor.loadMachine(machineName);
-				} else {
-					editor.setMachine(null);
 				}
 				
 				// show the window
@@ -943,20 +940,12 @@ public class Base {
 			}
 		}
 	}
-
-	/** Load a new machine with the given name **/
-	static public MachineControllerInterface loadMachine(String name) {
-		if (machine!=null) {
-			machine.dispose();
-		}
-		
-		machine = MachineFactory.load(name);
-		return machine;
-	}
-
+	
 	/** Get a reference to the currently selected machine **/
-	static public MachineControllerInterface getMachine() {
-		return machine;
+	static public MachineLoader getMachineLoader() {
+		if (machineLoader == null) {
+			machineLoader = new MachineLoader();
+		}
+		return machineLoader;
 	}
-
 }

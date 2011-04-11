@@ -39,7 +39,6 @@ public class MachineCallbackHandler extends Thread {
 					for (MachineListener l : listeners) {
 						l.machineStateChanged(machineStateChangeEventQueue.peek());
 					}
-					Base.logger.fine("Sent state change event");
 					machineStateChangeEventQueue.remove();
 				}
 				
@@ -47,7 +46,6 @@ public class MachineCallbackHandler extends Thread {
 					for (MachineListener l : listeners) {
 						l.machineProgress(machineProgressEventQueue.peek());
 					}
-					Base.logger.fine("Sent progress event");
 					machineProgressEventQueue.remove();
 				}
 				
@@ -55,7 +53,6 @@ public class MachineCallbackHandler extends Thread {
 					for (MachineListener l : listeners) {
 						l.toolStatusChanged(machineToolStatusEventQueue.peek());
 					}
-					Base.logger.fine("Sent tool status event");
 					machineToolStatusEventQueue.remove();
 				}
 					
@@ -82,19 +79,13 @@ public class MachineCallbackHandler extends Thread {
 
 	synchronized public void schedule(MachineStateChangeEvent status) {
 		machineStateChangeEventQueue.add(status);
-		Base.logger.fine("Queued state change event");
-//		notifyAll();
 	}
 
 	synchronized public void schedule(MachineProgressEvent progress) {
 		machineProgressEventQueue.add(progress);
-		Base.logger.fine("Queued progress event");
-//		notifyAll();
 	}
 
 	synchronized public void schedule(MachineToolStatusEvent e) {
 		machineToolStatusEventQueue.add(e);
-		Base.logger.fine("Queued tool status event");
-//		notifyAll();
 	}
 }
