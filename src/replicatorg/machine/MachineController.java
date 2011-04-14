@@ -121,15 +121,15 @@ public class MachineController implements MachineControllerInterface {
 		FILE
 	};
 
-	// Test idea for a print job: specifies a gcode source and a target
-	class JobInformation {
-		JobTarget target;
-		GCodeSource source;
-
-		public JobInformation(JobTarget target, GCodeSource source) {
-
-		}
-	}
+//	// Test idea for a print job: specifies a gcode source and a target
+//	class JobInformation {
+//		JobTarget target;
+//		GCodeSource source;
+//
+//		public JobInformation(JobTarget target, GCodeSource source) {
+//
+//		}
+//	}
 
 	/**
 	 * Get the machine state. This is a snapshot of the state when the method
@@ -150,14 +150,11 @@ public class MachineController implements MachineControllerInterface {
 
 	// The GCode source of the current build source.
 	// TODO: We shouldn't keep something like this around here.
-	protected GCodeSource source;
+//	protected GCodeSource source;
 
 	public String getMachineName() {
 		return machineThread.getMachineName();
 	}
-
-	// our current thread.
-	protected Thread thread;
 
 	/**
 	 * Creates the machine object.
@@ -171,10 +168,6 @@ public class MachineController implements MachineControllerInterface {
 		machineCallbackHandler.start();
 	}
 
-	public void setCodeSource(GCodeSource source) {
-		this.source = source;
-	}
-
 	public boolean buildRemote(String remoteName) {
 		machineThread.scheduleRequest(new MachineCommand(
 				RequestType.BUILD_REMOTE, null, remoteName));
@@ -184,7 +177,7 @@ public class MachineController implements MachineControllerInterface {
 	/**
 	 * Begin running a job.
 	 */
-	public boolean execute() {
+	public boolean buildDirect(GCodeSource source) {
 		// start simulator
 
 		// TODO: Re-enable the simulator.
@@ -194,7 +187,7 @@ public class MachineController implements MachineControllerInterface {
 
 		// estimate build time.
 		Base.logger.info("Estimating build time...");
-		estimate();
+		estimate(source);
 
 		// do that build!
 		Base.logger.info("Beginning build.");
@@ -204,14 +197,14 @@ public class MachineController implements MachineControllerInterface {
 		return true;
 	}
 
-	public boolean simulate() {
+	public boolean simulate(GCodeSource source) {
 		// start simulator
 		// if (simulator != null)
 		// simulator.createWindow();
 
 		// estimate build time.
 		Base.logger.info("Estimating build time...");
-		estimate();
+		estimate(source);
 
 		// do that build!
 		Base.logger.info("Beginning simulation.");
@@ -220,7 +213,8 @@ public class MachineController implements MachineControllerInterface {
 		return true;
 	}
 
-	public void estimate() {
+	// TODO: Spawn a new thread to handle this for us?
+	public void estimate(GCodeSource source) {
 		if (source == null) {
 			return;
 		}
@@ -303,7 +297,7 @@ public class MachineController implements MachineControllerInterface {
 				null, null));
 	}
 
-	public void upload(String remoteName) {
+	public void upload(GCodeSource source, String remoteName) {
 		/**
 		 * Upload the gcode to the given remote SD name.
 		 * 
@@ -314,7 +308,7 @@ public class MachineController implements MachineControllerInterface {
 				RequestType.BUILD_TO_REMOTE_FILE, source, remoteName));
 	}
 
-	public void buildToFile(String path) {
+	public void buildToFile(GCodeSource source, String path) {
 		/**
 		 * Upload the gcode to the given file.
 		 * 

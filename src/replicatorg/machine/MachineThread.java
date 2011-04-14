@@ -148,6 +148,14 @@ class MachineThread extends Thread {
 		}
 	}
 
+	GCodeSource buildGCodeJob(GCodeSource source) {
+		Vector<GCodeSource> sources = new Vector<GCodeSource>();
+		sources.add(new StringListSource(warmupCommands));
+		sources.add(source);
+		sources.add(new StringListSource(cooldownCommands));
+		return new GCodeSourceCollection(sources);
+	}
+	
 	// Respond to a command from the machine controller
 	void runCommand(MachineCommand command) {
 		Base.logger.fine("Got command: " + command.type.toString());
@@ -196,13 +204,8 @@ class MachineThread extends Thread {
 					driver.getCurrentPosition(false); // reconcile position
 				}
 				
-				// Eventually, we want to be able to build just the job,
-				// but for now send warmup + job + cooldown.
-				Vector<GCodeSource> sources = new Vector<GCodeSource>();
-				sources.add(new StringListSource(warmupCommands));
-				sources.add(command.source);
-				sources.add(new StringListSource(cooldownCommands));
-				GCodeSource combinedSource = new GCodeSourceCollection(sources);
+				// Pad the job with start and end code
+				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
 				machineBuilder = new Direct(driver, simulator, combinedSource);
 				
@@ -229,13 +232,8 @@ class MachineThread extends Thread {
 					driver.getCurrentPosition(false); // reconcile position
 				}
 				
-				// Eventually, we want to be able to build just the job,
-				// but for now send warmup + job + cooldown.
-				Vector<GCodeSource> sources = new Vector<GCodeSource>();
-				sources.add(new StringListSource(warmupCommands));
-				sources.add(command.source);
-				sources.add(new StringListSource(cooldownCommands));
-				GCodeSource combinedSource = new GCodeSourceCollection(sources);
+				// Pad the job with start and end code
+				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
 				machineBuilder = new ToRemoteFile(driver, simulator,
 											combinedSource, command.remoteName);
@@ -259,13 +257,8 @@ class MachineThread extends Thread {
 					driver.getCurrentPosition(false); // reconcile position
 				}
 				
-				// Eventually, we want to be able to build just the job,
-				// but for now send warmup + job + cooldown.
-				Vector<GCodeSource> sources = new Vector<GCodeSource>();
-				sources.add(new StringListSource(warmupCommands));
-				sources.add(command.source);
-				sources.add(new StringListSource(cooldownCommands));
-				GCodeSource combinedSource = new GCodeSourceCollection(sources);
+				// Pad the job with start and end code
+				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
 				machineBuilder = new ToLocalFile(driver, simulator,
 											combinedSource, command.remoteName);
@@ -489,6 +482,7 @@ class MachineThread extends Thread {
 			Node kid = kids.item(j);
 			if (kid.getNodeName().equals("driver")) {
 				driverXml = kid;
+				
 			}
 		}
 		driver = DriverFactory.factory(driverXml);

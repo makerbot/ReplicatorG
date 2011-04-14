@@ -917,18 +917,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	protected void handleToolheadIndexing() {
-		if (machineLoader.getDriver() instanceof MultiTool) {
+		if (!(machineLoader.getDriver() instanceof MultiTool)) {
 			JOptionPane.showMessageDialog(
 					this,
 					"ReplicatorG can't connect to your machine or toolhead index setting is not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run toolhead indexing", JOptionPane.ERROR_MESSAGE);
+			return;
 		} else {
 			ToolheadIndexer indexer = new ToolheadIndexer(this,machineLoader.getDriver());
 			indexer.setVisible(true);
 		}
 	}
 	public boolean supportsRealTimeControl() {
-		if (machineLoader.getDriver() instanceof RealtimeControl) {
+		if (!(machineLoader.getDriver() instanceof RealtimeControl)) {
 			return false;
 		}
 		Base.logger.info("Supports RC");
@@ -1349,27 +1350,29 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 	
 	public void handleOnboardPrefs() {
-		if (machineLoader.getDriver() instanceof OnboardParameters) {
+		if (!(machineLoader.getDriver() instanceof OnboardParameters)) {
 			JOptionPane.showMessageDialog(
 					this,
 					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
-		} else {
-			MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machineLoader.getDriver(),machineLoader.getDriver());
-			moo.setVisible(true);
+			return;
 		}
+		
+		MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machineLoader.getDriver(),machineLoader.getDriver());
+		moo.setVisible(true);
 	}
 
 	public void handleExtruderPrefs() {
-		if (machineLoader.getDriver() instanceof OnboardParameters) {
+		if (!(machineLoader.getDriver() instanceof OnboardParameters)) {
 			JOptionPane.showMessageDialog(
 					this,
 					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
-		} else {
-			ExtruderOnboardParameters eop = new ExtruderOnboardParameters((OnboardParameters)machineLoader.getDriver());
-			eop.setVisible(true);
+			return;
 		}
+		
+		ExtruderOnboardParameters eop = new ExtruderOnboardParameters((OnboardParameters)machineLoader.getDriver());
+		eop.setVisible(true);
 	}
 
 	/**
@@ -1531,7 +1534,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 			message("Building...");
 			buildStart = new Date();
-			machineLoader.getMachine().execute();
+			machineLoader.getMachine().buildDirect(new JEditTextAreaSource(textarea));
 		}
 	}
 
@@ -1541,26 +1544,27 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (simulating)
 			return;
 
-		if (machineLoader.getDriver() instanceof SDCardCapture) {
+		if (! (machineLoader.getDriver() instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
-		} else {
-			BuildNamingDialog bsd = new BuildNamingDialog(this,build.getName());
-			bsd.setVisible(true);
-			String path = bsd.getPath();
-			if (path != null) {
-	
-				// build specific stuff
-				building = true;
-				//buttons.activate(MainButtonPanel.BUILD);
-	
-				setEditorBusy(true);
-	
-				// start our building thread.
-	
-				message("Uploading...");
-				buildStart = new Date();
-				machineLoader.getMachine().upload(path);
-			}
+			return;
+		}
+		
+		BuildNamingDialog bsd = new BuildNamingDialog(this,build.getName());
+		bsd.setVisible(true);
+		String path = bsd.getPath();
+		if (path != null) {
+
+			// build specific stuff
+			building = true;
+			//buttons.activate(MainButtonPanel.BUILD);
+
+			setEditorBusy(true);
+
+			// start our building thread.
+
+			message("Uploading...");
+			buildStart = new Date();
+			machineLoader.getMachine().upload(new JEditTextAreaSource(textarea), path);
 		}
 	}
 
@@ -1641,7 +1645,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 			// start our building thread.
 			buildStart = new Date();
-			machineLoader.getMachine().buildToFile(path);
+			machineLoader.getMachine().buildToFile(new JEditTextAreaSource(textarea), path);
 		}
 	}
 
@@ -1651,29 +1655,30 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (simulating)
 			return;
 
-		if (machineLoader.getDriver() instanceof SDCardCapture) {
+		if (! (machineLoader.getDriver() instanceof SDCardCapture)) {
 			Base.logger.severe("Not ready to build yet.");
-		} else {
-			SDCardCapture sdcc = (SDCardCapture)machineLoader.getDriver();
-			List<String> files = sdcc.getFileList();
-			//for (String filename : files) { System.out.println("File "+filename); }
-			BuildSelectionDialog bsd = new BuildSelectionDialog(this,files);
-			bsd.setVisible(true);
-			String path = bsd.getSelectedPath();
-			Base.logger.info("Selected path is "+path);
-			if (path != null)
-			{
-				// build specific stuff
-				building = true;
-				//buttons.activate(MainButtonPanel.BUILD);
+			return;
+		}
+		
+		SDCardCapture sdcc = (SDCardCapture)machineLoader.getDriver();
+		List<String> files = sdcc.getFileList();
+		//for (String filename : files) { System.out.println("File "+filename); }
+		BuildSelectionDialog bsd = new BuildSelectionDialog(this,files);
+		bsd.setVisible(true);
+		String path = bsd.getSelectedPath();
+		Base.logger.info("Selected path is "+path);
+		if (path != null)
+		{
+			// build specific stuff
+			building = true;
+			//buttons.activate(MainButtonPanel.BUILD);
 
-				setEditorBusy(true);
+			setEditorBusy(true);
 
-				// start our building thread.
-				message("Building...");
-				buildStart = new Date();
-				machineLoader.getMachine().buildRemote(path);
-			}
+			// start our building thread.
+			message("Building...");
+			buildStart = new Date();
+			machineLoader.getMachine().buildRemote(path);
 		}
 	}
 	
@@ -1865,7 +1870,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		public void run() {
 			message("Simulating...");
-			machineLoader.getMachine().simulate();
+			machineLoader.getMachine().simulate(new JEditTextAreaSource(textarea));
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
 					simulationOver();
@@ -1892,7 +1897,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		public void run() {
 			message("Estimating...");
-			machineLoader.getMachine().estimate();
+			machineLoader.getMachine().estimate(new JEditTextAreaSource(textarea));
 			editor.estimationOver();
 		}
 	}
@@ -2534,7 +2539,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machineLoader.connect();
 		
 		if(machineLoader.isLoaded()) {
-			machineLoader.getMachine().setCodeSource(new JEditTextAreaSource(textarea));
+//			machineLoader.getMachine().setCodeSource(new JEditTextAreaSource(textarea));
 			machineLoader.getMachine().addMachineStateListener(this);
 			machineLoader.getMachine().addMachineStateListener(machineStatusPanel);
 			machineLoader.getMachine().addMachineStateListener(buttons);			

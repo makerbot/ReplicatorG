@@ -53,14 +53,12 @@ public interface MachineControllerInterface {
 	public String getMachineName();
 	
 	// Control the state machine
-	public void estimate();
-	public boolean simulate();
-	public boolean execute();
+	public void estimate(GCodeSource source);
+	public boolean simulate(GCodeSource source);
+	public boolean buildDirect(GCodeSource source);
 	public boolean buildRemote(String remoteName);
-	public void buildToFile(String path);
-	public void upload(String remoteName);
-	public void setCodeSource(GCodeSource source);
-	
+	public void buildToFile(GCodeSource source, String path);
+	public void upload(GCodeSource source, String remoteName);
 	public void pause();
 	public void unpause();
 	
