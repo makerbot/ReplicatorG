@@ -2229,6 +2229,22 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			JOptionPane.showMessageDialog(this, "The file "+path+" could not be found.", "File not found", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+		if (path != null) {
+			boolean extensionValid = false;
+			
+			// Note: Duplication of extension list from selectFile()
+			String[] extensions = {".gcode",".ngc",".stl",".obj",".dae"};
+			String lowercasePath = path.toLowerCase();
+			for (String  extension : extensions) {
+				if (lowercasePath.endsWith(extension)) {
+					extensionValid = true;
+				}
+			}
+			
+			if (!extensionValid) {
+				return;
+			}
+		}
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			// loading may take a few moments for large files
