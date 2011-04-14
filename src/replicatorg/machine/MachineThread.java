@@ -190,7 +190,6 @@ class MachineThread extends Thread {
 			if (state.isReady()) {
 				startTimeMillis = System.currentTimeMillis();
 				
-				// TODO: When does this stop?
 				pollingTimer.start(1000);
 
 				if (!isSimulating()) {
@@ -223,8 +222,7 @@ class MachineThread extends Thread {
 				}
 				
 				startTimeMillis = System.currentTimeMillis();
-				
-				// TODO: When does this stop?
+
 				pollingTimer.start(1000);
 	
 				if (!isSimulating()) {
@@ -254,8 +252,7 @@ class MachineThread extends Thread {
 				}
 				
 				startTimeMillis = System.currentTimeMillis();
-				
-				// TODO: When does this stop?
+
 				pollingTimer.start(1000);
 
 				if (!isSimulating()) {
@@ -286,7 +283,6 @@ class MachineThread extends Thread {
 			
 				// TODO: what about this?
 				driver.getCurrentPosition(false); // reconcile position
-			
 				setState(new MachineState(MachineState.State.BUILDING));
 			}
 			break;
@@ -387,6 +383,8 @@ class MachineThread extends Thread {
 				if (machineBuilder.finished()) {
 					// TODO: Exit correctly.
 					setState(new MachineState(MachineState.State.READY));
+					
+					pollingTimer.stop();
 				}
 			}
 			
@@ -418,7 +416,7 @@ class MachineThread extends Thread {
 	
 	public boolean isReady() { return state.isReady(); }
 	
-	// TODO: Put this somewhere else
+
 	/** True if the machine's build is going to the simulator. */
 	public boolean isSimulating() {
 		// TODO: implement this.
@@ -464,17 +462,6 @@ class MachineThread extends Thread {
 			controller.emitStateChange(oldState,state);
 		}
 	}
-
-	/**
-	 * A helper for setting the machine state to a simple state.
-	 * @param state The new state.
-	 */
-//	private void setState(MachineState.State state) {
-//		MachineState newState = getMachineState();
-//		newState.setState(state);
-//		setState(newState);
-//	}
-	
 	
 	public Driver getDriver() {
 		return driver;

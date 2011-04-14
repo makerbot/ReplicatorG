@@ -1605,7 +1605,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (simulating)
 			return;
 		if (!machineLoader.isLoaded()) {
-			
+			String name = Base.preferences.get("machine.name", null);
+			if ( name != null ) {
+				machineLoader.load(name);
+			}
 		}
 		
 		if (!(machineLoader.getDriver() instanceof SDCardCapture)) {
