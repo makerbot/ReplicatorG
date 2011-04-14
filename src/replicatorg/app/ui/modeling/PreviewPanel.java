@@ -183,6 +183,7 @@ public class PreviewPanel extends JPanel {
 	}
 	
 	public PreviewPanel(final MainWindow mainWindow) {
+		
 		this.mainWindow = mainWindow;
 		//setLayout(new MigLayout()); 
 		setLayout(new MigLayout("fill,ins 0,gap 0"));

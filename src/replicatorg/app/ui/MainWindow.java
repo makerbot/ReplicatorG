@@ -107,6 +107,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 
+import net.iharder.dnd.FileDrop;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.MRUList;
@@ -324,6 +325,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, cardPanel,
 				console);
+		
+        new FileDrop( System.out, cardPanel, /*dragBorder,*/ new FileDrop.Listener()
+        {   public void filesDropped( java.io.File[] files )
+            {   
+        		// for( java.io.File file : files )
+        		// We can really only handle opening one file, so just try the first one.
+        		try {
+					Base.logger.fine( files[0].getCanonicalPath() + "\n" );
+					handleOpen(files[0].getCanonicalPath());
+				} catch (IOException e) {
+				}
+            }   // end filesDropped
+        }); // end FileDrop.Listener
 
 		//splitPane.setOneTouchExpandable(true);
 		// repaint child panes while resizing: a little heavyweight
@@ -347,61 +361,61 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		pane.add(splitPane,"growx,growy,shrinkx,shrinky");
 		pack();
 		
-		textarea.setTransferHandler(new TransferHandler() {
-			private static final long serialVersionUID = 2093323078348794384L;
-
-			public boolean canImport(JComponent dest, DataFlavor[] flavors) {
-				// claim that we can import everything
-				return true;
-			}
-
-			public boolean importData(JComponent src, Transferable transferable) {
-				DataFlavor[] flavors = transferable.getTransferDataFlavors();
-
-				int successful = 0;
-
-				for (int i = 0; i < flavors.length; i++) {
-					try {
-						// System.out.println(flavors[i]);
-						// System.out.println(transferable.getTransferData(flavors[i]));
-						Object stuff = transferable.getTransferData(flavors[i]);
-						if (!(stuff instanceof java.util.List<?>))
-							continue;
-						java.util.List<?> list = (java.util.List<?>) stuff;
-
-						for (int j = 0; j < list.size(); j++) {
-							Object item = list.get(j);
-							if (item instanceof File) {
-								File file = (File) item;
-
-								// see if this is a .gcode file to be opened
-								String filename = file.getName();
-								// FIXME: where did this come from?  Need case insensitivity.
-								if (filename.endsWith(".gcode") || filename.endsWith(".ngc")) {
-									handleOpenFile(file);
-									return true;
-								}
-							}
-						}
-
-					} catch (Exception e) {
-						e.printStackTrace();
-						return false;
-					}
-				}
-
-				if (successful == 0) {
-					error("No files were added to the sketch.");
-
-				} else if (successful == 1) {
-					message("One file added to the sketch.");
-
-				} else {
-					message(successful + " files added to the sketch.");
-				}
-				return true;
-			}
-		});
+//		textarea.setTransferHandler(new TransferHandler() {
+//			private static final long serialVersionUID = 2093323078348794384L;
+//
+//			public boolean canImport(JComponent dest, DataFlavor[] flavors) {
+//				// claim that we can import everything
+//				return true;
+//			}
+//
+//			public boolean importData(JComponent src, Transferable transferable) {
+//				DataFlavor[] flavors = transferable.getTransferDataFlavors();
+//
+//				int successful = 0;
+//
+//				for (int i = 0; i < flavors.length; i++) {
+//					try {
+//						// System.out.println(flavors[i]);
+//						// System.out.println(transferable.getTransferData(flavors[i]));
+//						Object stuff = transferable.getTransferData(flavors[i]);
+//						if (!(stuff instanceof java.util.List<?>))
+//							continue;
+//						java.util.List<?> list = (java.util.List<?>) stuff;
+//
+//						for (int j = 0; j < list.size(); j++) {
+//							Object item = list.get(j);
+//							if (item instanceof File) {
+//								File file = (File) item;
+//
+//								// see if this is a .gcode file to be opened
+//								String filename = file.getName();
+//								// FIXME: where did this come from?  Need case insensitivity.
+//								if (filename.endsWith(".gcode") || filename.endsWith(".ngc")) {
+//									handleOpenFile(file);
+//									return true;
+//								}
+//							}
+//						}
+//
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//						return false;
+//					}
+//				}
+//
+//				if (successful == 0) {
+//					error("No files were added to the sketch.");
+//
+//				} else if (successful == 1) {
+//					message("One file added to the sketch.");
+//
+//				} else {
+//					message(successful + " files added to the sketch.");
+//				}
+//				return true;
+//			}
+//		});
 	}
 
 	// ...................................................................
@@ -2214,6 +2228,22 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (path != null && !new File(path).exists()) {
 			JOptionPane.showMessageDialog(this, "The file "+path+" could not be found.", "File not found", JOptionPane.ERROR_MESSAGE);
 			return;
+		}
+		if (path != null) {
+			boolean extensionValid = false;
+			
+			// Note: Duplication of extension list from selectFile()
+			String[] extensions = {".gcode",".ngc",".stl",".obj",".dae"};
+			String lowercasePath = path.toLowerCase();
+			for (String  extension : extensions) {
+				if (lowercasePath.endsWith(extension)) {
+					extensionValid = true;
+				}
+			}
+			
+			if (!extensionValid) {
+				return;
+			}
 		}
 		try {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
