@@ -78,7 +78,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -93,7 +92,6 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
@@ -326,7 +324,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, cardPanel,
 				console);
 		
-        new FileDrop( System.out, cardPanel, /*dragBorder,*/ new FileDrop.Listener()
+        new FileDrop( null, cardPanel, /*dragBorder,*/ new FileDrop.Listener()
         {   public void filesDropped( java.io.File[] files )
             {   
         		// for( java.io.File file : files )
