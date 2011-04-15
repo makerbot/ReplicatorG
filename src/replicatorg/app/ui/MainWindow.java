@@ -583,6 +583,23 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 		Vector<Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
+		
+		// Filter /dev/cu. devices on OS X, since they work the same as .tty for our purposes.
+		if (Base.isMacOS()) {
+			Vector<Name> filteredNames = new Vector<Name>();
+			
+			for (Name name : names) {
+				if(!(name.getName().startsWith("/dev/cu")
+					|| name.getName().equals("/dev/tty.Bluetooth-Modem")
+					|| name.getName().equals("/dev/tty.Bluetooth-PDA-Sync"))) {
+					filteredNames.add(name);
+				}
+			}
+			
+			names = filteredNames;
+		}
+
+		
 		ButtonGroup radiogroup = new ButtonGroup();
 		for (Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.toString());
