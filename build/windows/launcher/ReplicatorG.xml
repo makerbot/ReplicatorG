@@ -2,7 +2,7 @@
   <dontWrapJar>true</dontWrapJar>
   <headerType>gui</headerType>
   <jar>lib\ReplicatorG.jar</jar>
-  <outfile>C:\Users\matt\repg-workspace\ReplicatorG\build\windows\launcher\ReplicatorG.exe</outfile>
+  <outfile>ReplicatorG.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -12,7 +12,7 @@
   <customProcName>false</customProcName>
   <stayAlive>true</stayAlive>
   <manifest></manifest>
-  <icon>C:\Users\matt\repg-workspace\ReplicatorG\build\windows\launcher\application.ico</icon>
+  <icon>application.ico</icon>
   <classPath>
     <mainClass>replicatorg.app.Base</mainClass>
     <cp>./lib</cp>
@@ -26,6 +26,7 @@
     <cp>./lib/RXTXcomm.jar</cp>
     <cp>./lib/twitter4j-2.0.10.jar</cp>
     <cp>./lib/vecmath.jar</cp>
+    <cp>./lib/filedrop.jar</cp>
   </classPath>
   <jre>
     <path></path>

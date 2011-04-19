@@ -294,7 +294,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	{
 		//Wait for the RepRap to respond
 		try {
-			notifier.wait(waitForStartTimeout);
+			notifier.wait(timeout);					// Bug fix: not using timeout value from machine xml file
 		} catch (InterruptedException e) {
 			//Presumably we're shutting down
 			Thread.currentThread().interrupt();
@@ -651,24 +651,24 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					//if echo is turned on relay it to the user for debugging
 					Base.logger.info(line);
 			}
-			else if (line.startsWith("ok t:")||line.startsWith("t:")) {
+			else if (line.startsWith("ok t:")||line.startsWith("t:")||line.startsWith("T:")) {   // GEN6 return uppercase line as per reprep GCode page
 				Pattern r = Pattern.compile("t:([0-9\\.]+)");
-			    Matcher m = r.matcher(line);
+			    Matcher m = r.matcher(line.toLowerCase());  // Force line to LC
 			    if (m.find( )) {
 			    	String temp = m.group(1);
 					
 					machine.currentTool().setCurrentTemperature(
 							Double.parseDouble(temp));
 			    }
-				r = Pattern.compile("^ok.*b:([0-9\\.]+)$");
-			    m = r.matcher(line);
+				r = Pattern.compile(".*b:([0-9\\.]+)$");    // GEN6 does not return ok at start of M105 temperature respone
+			    m = r.matcher(line.toLowerCase());  // Force line to LC
 			    if (m.find( )) {
 			    	String bedTemp = m.group(1);
 					machine.currentTool().setPlatformCurrentTemperature(
 							Double.parseDouble(bedTemp));
 			    }
 			}
-			if (line.startsWith("ok")) {
+			else if (line.startsWith("ok")) {     // without else code drops through and gives data error for lines that have been handled.
 				
 				synchronized(okReceived)
 				{

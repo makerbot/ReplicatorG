@@ -78,6 +78,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -92,7 +93,6 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
@@ -325,7 +325,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, cardPanel,
 				console);
 		
-        new FileDrop( System.out, cardPanel, /*dragBorder,*/ new FileDrop.Listener()
+        new FileDrop( null, cardPanel, /*dragBorder,*/ new FileDrop.Listener()
         {   public void filesDropped( java.io.File[] files )
             {   
         		// for( java.io.File file : files )
@@ -569,6 +569,23 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 //		}
 		Vector<Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
+		
+		// Filter /dev/cu. devices on OS X, since they work the same as .tty for our purposes.
+		if (Base.isMacOS()) {
+			Vector<Name> filteredNames = new Vector<Name>();
+			
+			for (Name name : names) {
+				if(!(name.getName().startsWith("/dev/cu")
+					|| name.getName().equals("/dev/tty.Bluetooth-Modem")
+					|| name.getName().equals("/dev/tty.Bluetooth-PDA-Sync"))) {
+					filteredNames.add(name);
+				}
+			}
+			
+			names = filteredNames;
+		}
+
+		
 		ButtonGroup radiogroup = new ButtonGroup();
 		for (Name name : names) {
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name.toString());
