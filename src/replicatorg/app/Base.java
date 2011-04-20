@@ -418,7 +418,7 @@ public class Base {
 				// other programs decide how to size themselves.
 				editor.restorePreferences();
 				// add shutdown hook to store preferences
-				Runtime.getRuntime().addShutdownHook(new Thread() {
+				Runtime.getRuntime().addShutdownHook(new Thread("Shutdown Hook") {
 					final private MainWindow w = editor; 
 					public void run() {
 						w.onShutdown();

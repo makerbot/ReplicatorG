@@ -44,7 +44,7 @@ public class UpdateChecker {
 	final private static int TIMEOUT_MS = 10 * 1000;
 
 	public static void checkLatestVersion(final Component parent) {
-		Thread t = new Thread() {
+		Thread t = new Thread("ReplicatorG Version Checker") {
 			public void run() {
 				doCheckVersion(parent);
 			}
