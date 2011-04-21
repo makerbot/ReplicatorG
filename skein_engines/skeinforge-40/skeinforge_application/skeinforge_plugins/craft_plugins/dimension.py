@@ -258,10 +258,11 @@ class DimensionSkein:
 		elif firstWord == 'G91':
 			self.absoluteDistanceMode = False
 		elif firstWord == 'M101':
-			self.addLinearMoveExtrusionDistanceLine( self.restartDistance )
-			if not self.repository.relativeExtrusionDistance.value:
-				self.distanceFeedRate.addLine('G92 E0')
-				self.totalExtrusionDistance = 0.0
+#			self.addLinearMoveExtrusionDistanceLine( self.restartDistance )
+			if self.totalExtrusionDistance > 99000.0:
+				if not self.repository.relativeExtrusionDistance.value:
+					self.distanceFeedRate.addLine('G92 E0')
+					self.totalExtrusionDistance = 0.0
 			self.isExtruderActive = True
 		elif firstWord == 'M103':
 			self.addLinearMoveExtrusionDistanceLine( - self.repository.retractionDistance.value )
