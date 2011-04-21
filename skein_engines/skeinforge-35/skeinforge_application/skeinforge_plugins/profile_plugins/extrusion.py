@@ -39,7 +39,7 @@ __license__ = 'GPL 3.0'
 
 def getCraftSequence():
 	'Get the extrusion craft sequence.'
-	return 'carve,bottom,preface,widen,inset,fill,multiply,speed,temperature,raft,chamber,tower,jitter,clip,stretch,comb,cool,hop,wipe,oozebane,splodge,home,lash,fillet,limit,dimension,unpause,outline,reversal,export'.split(',')
+	return 'carve,bottom,preface,widen,inset,fill,multiply,speed,temperature,raft,chamber,tower,jitter,clip,stretch,comb,cool,hop,wipe,oozebane,outline,splodge,home,lash,fillet,limit,reversal,dimension,unpause,export'.split(',')
 
 def getNewRepository():
 	'Get the repository constructor.'
