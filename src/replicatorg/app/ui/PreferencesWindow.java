@@ -6,6 +6,7 @@ package replicatorg.app.ui;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -132,7 +133,10 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 	public PreferencesWindow() {
 		super("Preferences");
 		setResizable(true);
-
+		
+		Image icon = Base.getImage("images/icon.gif", this);
+		setIconImage(icon);
+		
 		Container content = this.getContentPane();
 		content.setLayout(new MigLayout("fill"));
 
