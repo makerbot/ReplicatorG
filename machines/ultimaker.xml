@@ -9,7 +9,7 @@
                         <axis id="z" length="210" maxfeedrate="150" stepspermm="160" endstops="min"/> <!-- quarter-step driver -->
                 </geometry>
                 <tools>
-                        <tool name="Stepper-based pinch extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" heatedplatform="true" motor_steps="200" default_rpm="1000" />
+                        <tool name="Stepper-based pinch extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" heatedplatform="true" motor_steps="1800" default_rpm="1000" />
                 </tools>
                 <clamps></clamps>
                 <firmware url="http://firmware.ultimaker.com/latest" autoupgrade="false"></firmware>

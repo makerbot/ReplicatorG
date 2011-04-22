@@ -477,6 +477,10 @@ public class DriverBaseImplementation implements Driver {
 		return machine.currentTool().getMotorSpeedReadingPWM();
 	}
 
+	public double getMotorSteps() {
+		return machine.currentTool().getMotorSteps();
+	}
+
 	// TODO: These are backwards?
 	public void readToolStatus() {
 	}
