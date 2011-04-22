@@ -470,7 +470,7 @@ public class DriverBaseImplementation implements Driver {
 	}
 
 	public double getMotorRPM() {
-		return machine.currentTool().getMotorSpeedReadingRPM();
+		return machine.currentTool().getMotorSpeedRPM();
 	}
 
 	public int getMotorSpeedPWM() {

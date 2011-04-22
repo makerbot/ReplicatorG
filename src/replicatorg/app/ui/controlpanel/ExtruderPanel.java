@@ -194,7 +194,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder.
-			if (t.getMotorStepperAxis() == null) {
+			if ((t.getMotorStepperAxis() == null) && !(t.motorHasEncoder() || t.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
 				JTextField field = new JTextField();
@@ -591,9 +591,13 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				/* Handle DC extruder commands */
 				if (name.equals("motor-forward")) {
 					driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
+					// Ensure that default RPM from ToolModel is sent the the machine by the driver. Dirty hack, but gets the job done.
+					driver.setMotorRPM(driver.getMotorRPM());
 					driver.enableMotor();
 				} else if (name.equals("motor-reverse")) {
 					driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
+					// Ensure that default RPM from ToolModel is sent the the machine by the driver. Dirty hack, but gets the job done.
+					driver.setMotorRPM(driver.getMotorRPM());
 					driver.enableMotor();
 				} else if (name.equals("motor-stop")) {
 					driver.disableMotor();
