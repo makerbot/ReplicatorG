@@ -3,12 +3,34 @@ package replicatorg.machine;
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.UsesSerial;
+import replicatorg.machine.Machine.MachineCommand;
+import replicatorg.machine.Machine.RequestType;
 
 /** Maintains a connection to one machine **/ 
 	public class MachineLoader {
-		private MachineControllerInterface machine;
+		private MachineInterface machine;
 		
-		public MachineControllerInterface getMachine() {
+		MachineCallbackHandler callbackHandler;
+		
+		public MachineLoader() {
+			callbackHandler = new MachineCallbackHandler();
+			callbackHandler.start();
+		}
+		
+		public void dispose() {
+			if (callbackHandler != null) {
+				callbackHandler.interrupt();
+
+				// Wait 5 seconds for the thread to stop.
+				try {
+					callbackHandler.join(5000);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		public MachineInterface getMachine() {
 			return machine;
 		}
 		
@@ -34,7 +56,7 @@ import replicatorg.drivers.UsesSerial;
 				machine.dispose();
 			}
 			
-			machine = MachineFactory.load(machineType);
+			machine = MachineFactory.load(machineType, callbackHandler);
 			
 			if (machine == null) {
 				Base.logger.severe("Unable to connect to machine!");
@@ -67,5 +89,14 @@ import replicatorg.drivers.UsesSerial;
 			if (isLoaded()) {
 				machine.disconnect();
 			}
+		}
+		
+		// Pass these on to our handler
+		public void addMachineStateListener(MachineListener listener) {
+			callbackHandler.addMachineStateListener(listener);
+		}
+
+		public void removeMachineStateListener(MachineListener listener) {
+			callbackHandler.removeMachineStateListener(listener);
 		}
 	}

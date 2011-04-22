@@ -1,6 +1,6 @@
 package replicatorg.machine.builder;
 
-import replicatorg.machine.MachineController.JobTarget;
+import replicatorg.machine.Machine.JobTarget;
 
 /**
  * Object responsible for managing a build on a machine.

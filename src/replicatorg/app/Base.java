@@ -73,7 +73,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import replicatorg.app.ui.MainWindow;
-import replicatorg.machine.MachineControllerInterface;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineLoader;
 import replicatorg.uploader.FirmwareUploader;
 import ch.randelshofer.quaqua.QuaquaManager;

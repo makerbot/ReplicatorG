@@ -60,7 +60,7 @@ import replicatorg.app.ui.controlpanel.JogPanel;
 import replicatorg.drivers.commands.HomeAxes;
 import replicatorg.drivers.commands.InvalidatePosition;
 import replicatorg.drivers.commands.DriverCommand.LinearDirection;
-import replicatorg.machine.MachineControllerInterface;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -82,7 +82,7 @@ public class ControlPanelWindow extends JFrame implements
 
 	protected JTabbedPane toolsPane;
 
-	protected MachineControllerInterface machine;
+	protected MachineInterface machine;
 
 //	protected Driver driver;
 
@@ -92,7 +92,7 @@ public class ControlPanelWindow extends JFrame implements
 
 	private static ControlPanelWindow instance = null;
 
-	public static synchronized ControlPanelWindow getControlPanel(MachineControllerInterface machine2) {
+	public static synchronized ControlPanelWindow getControlPanel(MachineInterface machine2) {
 		if (instance == null) {
 			instance = new ControlPanelWindow(machine2);
 		} else {
@@ -104,7 +104,7 @@ public class ControlPanelWindow extends JFrame implements
 		return instance;
 	}
 	
-	private ControlPanelWindow(MachineControllerInterface machine) {
+	private ControlPanelWindow(MachineInterface machine) {
 		super("Control Panel");
 
 		Image icon = Base.getImage("images/icon.gif", this);
@@ -117,7 +117,8 @@ public class ControlPanelWindow extends JFrame implements
 		machine.runCommand(new InvalidatePosition());
 
 		// Listen to it-- stop and close if we're in build mode.
-		machine.addMachineStateListener(this);
+		// TODO: add this back in.
+//		machine.addMachineStateListener(this);
 		
 		// default behavior
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -287,7 +288,8 @@ public class ControlPanelWindow extends JFrame implements
 
 	public void windowClosed(WindowEvent e) {
 		synchronized(getClass()) {
-			machine.removeMachineStateListener(this);
+			// TODO: add this back in.
+//			machine.removeMachineStateListener(this);
 			if (instance == this) {
 				instance = null;
 			}
@@ -310,9 +312,9 @@ public class ControlPanelWindow extends JFrame implements
 	}
 
 	class PollThread extends Thread {
-		MachineControllerInterface machine;
+		MachineInterface machine;
 
-		public PollThread(MachineControllerInterface machine) {
+		public PollThread(MachineInterface machine) {
 			super("Control Panel Poll Thread");
 
 			this.machine = machine;

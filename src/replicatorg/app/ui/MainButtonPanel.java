@@ -46,8 +46,8 @@ import javax.swing.event.ChangeListener;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.drivers.SDCardCapture;
-import replicatorg.machine.MachineController;
-import replicatorg.machine.MachineControllerInterface;
+import replicatorg.machine.Machine;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -269,7 +269,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		});
 	}
 	
-	private void updateFromState(final MachineState s, final MachineControllerInterface machine) {
+	private void updateFromState(final MachineState s, final MachineInterface machine) {
 		boolean ready = s.isReady();
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();
@@ -292,13 +292,13 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		pauseButton.setSelected(paused);
 		rcButton.setEnabled(building);
 
-		MachineController.JobTarget runningTarget = s.isBuilding()?machine.getTarget():null;
+		Machine.JobTarget runningTarget = s.isBuilding()?machine.getTarget():null;
 		
-		simButton.setSelected(runningTarget == MachineController.JobTarget.SIMULATOR);
-		buildButton.setSelected(runningTarget == MachineController.JobTarget.MACHINE);
-		uploadButton.setSelected(runningTarget == MachineController.JobTarget.REMOTE_FILE);
-		fileButton.setSelected(runningTarget == MachineController.JobTarget.FILE);
-		playbackButton.setSelected(runningTarget == MachineController.JobTarget.NONE);
+		simButton.setSelected(runningTarget == Machine.JobTarget.SIMULATOR);
+		buildButton.setSelected(runningTarget == Machine.JobTarget.MACHINE);
+		uploadButton.setSelected(runningTarget == Machine.JobTarget.REMOTE_FILE);
+		fileButton.setSelected(runningTarget == Machine.JobTarget.FILE);
+		playbackButton.setSelected(runningTarget == Machine.JobTarget.NONE);
 
 		boolean connected = s.isConnected();
 		resetButton.setEnabled(connected); 
@@ -317,7 +317,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 //		}
 	}
 
-	public void updateFromMachine(final MachineControllerInterface machine) {
+	public void updateFromMachine(final MachineInterface machine) {
 		MachineState s = new MachineState(MachineState.State.NOT_ATTACHED);
 		if (machine != null) {
 			s = machine.getMachineState();
@@ -327,7 +327,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 	public void machineStateChangedInternal(final MachineStateChangeEvent evt) {
 		MachineState s = evt.getState();
-		MachineControllerInterface machine = evt.getSource();
+		MachineInterface machine = evt.getSource();
 		updateFromState(s,machine);
 	}
 

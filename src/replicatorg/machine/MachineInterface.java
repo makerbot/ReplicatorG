@@ -4,7 +4,7 @@ import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.commands.DriverCommand;
-import replicatorg.machine.MachineController.JobTarget;
+import replicatorg.machine.Machine.JobTarget;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 
@@ -24,17 +24,8 @@ import replicatorg.model.GCodeSource;
  *
  */
 
-public interface MachineControllerInterface {
-	
-	// Interface level commands
-	
-	/** Register to receive machine state change events **/ 
-	public void addMachineStateListener(MachineListener listener);
-	
-	/** De-register from the machine state change event list **/
-	public void removeMachineStateListener(MachineListener listener);
-	
-	/** Get the driver instance. Note that this interface will not be supported in the future; instead use getDriverQueryInterface() **/
+public interface MachineInterface {
+		/** Get the driver instance. Note that this interface will not be supported in the future; instead use getDriverQueryInterface() **/
 	@Deprecated
 	public Driver getDriver();
 	

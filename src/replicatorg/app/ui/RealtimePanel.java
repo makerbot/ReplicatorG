@@ -29,13 +29,13 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RealtimeControl;
-import replicatorg.machine.MachineControllerInterface;
+import replicatorg.machine.MachineInterface;
 
 public class RealtimePanel extends JFrame implements ChangeListener, WindowListener {
 	
 	private static final long serialVersionUID = -6193762098842247273L;
 
-	protected MachineControllerInterface machine;
+	protected MachineInterface machine;
 
 	protected Driver driver;
 
@@ -45,7 +45,7 @@ public class RealtimePanel extends JFrame implements ChangeListener, WindowListe
 	JPanel mainPanel;
 	ControlSlider feedrateControl, travelFeedrateControl, extrusionControl;
 
-	public RealtimePanel(MachineControllerInterface machine2) {
+	public RealtimePanel(MachineInterface machine2) {
 		super("Real time control and tuning");
 		Image icon = Base.getImage("images/icon.gif", this);
 		setIconImage(icon);
@@ -109,7 +109,7 @@ public class RealtimePanel extends JFrame implements ChangeListener, WindowListe
 		add(mainPanel);
 	}
 	
-	public static synchronized RealtimePanel getRealtimePanel(MachineControllerInterface machine2) {
+	public static synchronized RealtimePanel getRealtimePanel(MachineInterface machine2) {
 		if (instance == null) {
 			instance = new RealtimePanel(machine2);
 		} else {

@@ -16,7 +16,7 @@ import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.commands.DriverCommand;
-import replicatorg.machine.MachineController.JobTarget;
+import replicatorg.machine.Machine.JobTarget;
 import replicatorg.model.GCodeSource;
 
 /**

@@ -9,7 +9,7 @@ import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
-import replicatorg.machine.MachineController.JobTarget;
+import replicatorg.machine.Machine.JobTarget;
 import replicatorg.model.GCodeSource;
 
 public class ToRemoteFile implements MachineBuilder {

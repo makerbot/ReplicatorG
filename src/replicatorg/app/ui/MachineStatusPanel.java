@@ -16,8 +16,8 @@ import replicatorg.app.Base;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.UsesSerial;
 import replicatorg.drivers.Version;
-import replicatorg.machine.MachineController;
-import replicatorg.machine.MachineControllerInterface;
+import replicatorg.machine.Machine;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -34,7 +34,7 @@ import replicatorg.machine.MachineToolStatusEvent;
 public class MachineStatusPanel extends BGPanel implements MachineListener {
 	private static final long serialVersionUID = -6944931245041870574L;
 
-	protected MachineControllerInterface machine = null;
+	protected MachineInterface machine = null;
 
 	protected JLabel label = new JLabel();
 	protected JLabel smallLabel = new JLabel();
@@ -86,7 +86,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	 * @param machine
 	 *            the machine's controller, or null if no machine is attached.
 	 */
-	public void setMachine(MachineControllerInterface machine) {
+	public void setMachine(MachineInterface machine) {
 		if (machine != null && this.machine == machine) {
 			return;
 		}
@@ -141,7 +141,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 //		}
 		
 		// TODO: Should we verify we're on the right machine???
-		MachineControllerInterface machine = evt.getSource();
+		MachineInterface machine = evt.getSource();
 		MachineState.State state = evt.getState().getState();
 		
 		// Determine what color to use
@@ -228,7 +228,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			double remaining;
 			double proportion = (double)event.getLines()/(double)event.getTotalLines();
 	
-			if (machine.getTarget() == MachineController.JobTarget.REMOTE_FILE) {
+			if (machine.getTarget() == Machine.JobTarget.REMOTE_FILE) {
 				if (event.getLines() == 0) {
 					remaining = 0; // avoid NaN
 				}

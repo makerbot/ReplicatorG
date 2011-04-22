@@ -18,8 +18,8 @@ import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.UsesSerial;
-import replicatorg.machine.MachineController.JobTarget;
-import replicatorg.machine.MachineController.MachineCommand;
+import replicatorg.machine.Machine.JobTarget;
+import replicatorg.machine.Machine.MachineCommand;
 import replicatorg.machine.builder.MachineBuilder;
 import replicatorg.machine.builder.Direct;
 import replicatorg.machine.builder.ToLocalFile;
@@ -73,7 +73,7 @@ class MachineThread extends Thread {
 	// this is the xml config for this machine.
 	private Node machineNode;
 	
-	private MachineController controller;
+	private Machine controller;
 	
 	// our warmup/cooldown commands
 	private Vector<String> warmupCommands;
@@ -102,7 +102,7 @@ class MachineThread extends Thread {
 	
 	private MachineBuilder machineBuilder;
 	
-	public MachineThread(MachineController controller, Node machineNode) {
+	public MachineThread(Machine controller, Node machineNode) {
 		super("Machine Thread");
 		
 		pollingTimer = new Timer();

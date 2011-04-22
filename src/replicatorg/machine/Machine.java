@@ -55,7 +55,7 @@ import replicatorg.model.GCodeSource;
  * @author phooky
  * 
  */
-public class MachineController implements MachineControllerInterface {
+public class Machine implements MachineInterface {
 
 	public enum RequestType {
 		// Set up the connection to the machine
@@ -142,8 +142,8 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	MachineThread machineThread;
-	MachineCallbackHandler machineCallbackHandler;
-
+	final MachineCallbackHandler callbackHandler;
+	
 	// TODO: WTF is this here for.
 	// this is the xml config for this machine.
 	protected Node machineNode;
@@ -156,13 +156,12 @@ public class MachineController implements MachineControllerInterface {
 	/**
 	 * Creates the machine object.
 	 */
-	public MachineController(Node mNode) {
+	public Machine(Node mNode, MachineCallbackHandler callbackHandler) {
+		this.callbackHandler = callbackHandler; 
+		
 		machineNode = mNode;
 		machineThread = new MachineThread(this, mNode);
 		machineThread.start();
-		
-		machineCallbackHandler = new MachineCallbackHandler();
-		machineCallbackHandler.start();
 	}
 
 	public boolean buildRemote(String remoteName) {
@@ -363,43 +362,23 @@ public class MachineController implements MachineControllerInterface {
 				e.printStackTrace();
 			}
 		}
-		
-		if (machineCallbackHandler != null) {
-			machineCallbackHandler.interrupt();
-
-			// Wait 5 seconds for the thread to stop.
-			try {
-				machineCallbackHandler.join(5000);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
-	
-	// Pass these on to our handler
-	public void addMachineStateListener(MachineListener listener) {
-		machineCallbackHandler.addMachineStateListener(listener);
-	}
-
-	public void removeMachineStateListener(MachineListener listener) {
-		machineCallbackHandler.removeMachineStateListener(listener);
-	}
 
 	protected void emitStateChange(MachineState prev, MachineState current) {
 		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current,
 				prev);
 		
-		machineCallbackHandler.schedule(e);
+		callbackHandler.schedule(e);
 	}
 
 	protected void emitProgress(MachineProgressEvent progress) {
-		machineCallbackHandler.schedule(progress);
+		callbackHandler.schedule(progress);
 	}
 
 	protected void emitToolStatus(ToolModel tool) {
 		MachineToolStatusEvent e = new MachineToolStatusEvent(this, tool);
-		machineCallbackHandler.schedule(e);
+		callbackHandler.schedule(e);
 	}
 
 	

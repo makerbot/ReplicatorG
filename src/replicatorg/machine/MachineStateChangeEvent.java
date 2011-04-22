@@ -2,23 +2,23 @@ package replicatorg.machine;
 
 
 public class MachineStateChangeEvent {
-	private MachineControllerInterface source;
+	private MachineInterface source;
 	private MachineState previous = null;
 	private MachineState current;
 	
-	public MachineStateChangeEvent(MachineControllerInterface machine2, MachineState current) {
+	public MachineStateChangeEvent(MachineInterface machine2, MachineState current) {
 		this.source = machine2;
 		this.current = current;
 	}
 
-	public MachineStateChangeEvent(MachineControllerInterface source, MachineState current, 
+	public MachineStateChangeEvent(MachineInterface source, MachineState current, 
 			MachineState previous) {
 		this.source = source;
 		this.current = current;
 		this.previous = previous;
 	}
 	
-	public MachineControllerInterface getSource() { return source; }
+	public MachineInterface getSource() { return source; }
 	
 	public MachineState getState() { return current; }
 	

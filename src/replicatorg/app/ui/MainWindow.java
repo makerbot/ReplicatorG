@@ -126,7 +126,7 @@ import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RealtimeControl;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.UsesSerial;
-import replicatorg.machine.MachineControllerInterface;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineFactory;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineLoader;
@@ -2536,7 +2536,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	
-	public MachineControllerInterface getMachine(){
+	public MachineInterface getMachine(){
 		return this.machineLoader.getMachine();
 	}
 
@@ -2566,10 +2566,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machineLoader.connect(targetPort);
 		
 		if(machineLoader.isLoaded()) {
-//			machineLoader.getMachine().setCodeSource(new JEditTextAreaSource(textarea));
-			machineLoader.getMachine().addMachineStateListener(this);
-			machineLoader.getMachine().addMachineStateListener(machineStatusPanel);
-			machineLoader.getMachine().addMachineStateListener(buttons);			
+			machineLoader.addMachineStateListener(this);
+			machineLoader.addMachineStateListener(machineStatusPanel);
+			machineLoader.addMachineStateListener(buttons);			
 		}
 		
 		// TODO: This needs to be run at program start

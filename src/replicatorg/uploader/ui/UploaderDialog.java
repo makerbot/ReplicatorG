@@ -21,7 +21,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
-import replicatorg.machine.MachineControllerInterface;
+import replicatorg.machine.MachineInterface;
 import replicatorg.uploader.AbstractFirmwareUploader;
 import replicatorg.uploader.AvrdudeUploader;
 import replicatorg.uploader.FirmwareUploader;
@@ -136,7 +136,7 @@ public class UploaderDialog extends JDialog implements ActionListener {
 	}
 
 	AbstractFirmwareUploader createUploader() {
-		MachineControllerInterface machine = Base.getMachineLoader().getMachine();
+		MachineInterface machine = Base.getMachineLoader().getMachine();
 		
 		if (machine != null) { machine.dispose(); }
 		NodeList nl = selectedBoard.getChildNodes();

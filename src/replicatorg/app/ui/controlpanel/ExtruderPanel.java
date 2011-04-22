@@ -51,12 +51,12 @@ import org.w3c.dom.NodeList;
 import replicatorg.app.Base;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.commands.DriverCommand.AxialDirection;
-import replicatorg.machine.MachineControllerInterface;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.ToolModel;
 
 public class ExtruderPanel extends JPanel implements FocusListener, ActionListener, ItemListener {
 	private ToolModel toolModel;
-	private MachineControllerInterface machine;
+	private MachineInterface machine;
 
 	public ToolModel getTool() { return toolModel; }
 	
@@ -177,7 +177,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}		
 	}
 	
-	public ExtruderPanel(MachineControllerInterface machine, ToolModel t) {
+	public ExtruderPanel(MachineInterface machine, ToolModel t) {
 		this.machine = machine;
 		this.toolModel = t;
 		

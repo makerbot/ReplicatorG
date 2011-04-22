@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 
 import replicatorg.drivers.SDCardCapture;
-import replicatorg.machine.MachineController.JobTarget;
+import replicatorg.machine.Machine.JobTarget;
 
 
 /** Helper class to build on a machine from a remote file.
