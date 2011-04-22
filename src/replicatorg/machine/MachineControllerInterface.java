@@ -26,35 +26,64 @@ import replicatorg.model.GCodeSource;
 
 public interface MachineControllerInterface {
 	
+	// Interface level commands
+	
+	/** Register to receive machine state change events **/ 
+	public void addMachineStateListener(MachineListener listener);
+	
+	/** De-register from the machine state change event list **/
+	public void removeMachineStateListener(MachineListener listener);
+	
 	/** Get the driver instance. Note that this interface will not be supported in the future; instead use getDriverQueryInterface() **/
+	@Deprecated
 	public Driver getDriver();
+	
+	/** Get an interface to use to query the driver **/
+	public DriverQueryInterface getDriverQueryInterface();
 	
 	/** Get the simulation driver instance. Note that this interface will not be supported in the future **/
 	public SimulationDriver getSimulatorDriver();
 
-	// Register to receive notifications when the machine changes state
-	public void addMachineStateListener(MachineListener listener);
-	public void removeMachineStateListener(MachineListener listener);
-	
-	/** Reset the driver?? **/
-	public void reset();
-	
 	/** Dispose of this machine controller **/
 	public void dispose();
 	
+	
+	// Machine level commands
+	/** Tell the driver to reset **/
+	public void reset();
+	
 	/** Connect to the machine using a separately configured communication channel **/
-	public void connect();
+	// TODO: generic interface for non-serial machines.
+	public void connect(String portName);
 	
 	/** Disconnect the machine from the separately configured communication channel **/
 	public void disconnect();
 
-	// Get information about the physical machine
+	/** Get information about the machine configuration, which also happens to be a control interface to the machine. 
+	 * 
+	 * @return a Machine
+	 */
 	public MachineModel getModel();
+	
+	
 	public String getMachineName();
 	
-	// Control the state machine
+	
+	// Job level commands
+	
+	/** Estimate the time required to process a job
+	 * @param source GCode source of job to estimate
+	 */
 	public void estimate(GCodeSource source);
-	public boolean simulate(GCodeSource source);
+	
+	/** Run the job in a simulator */
+	
+	/** Simulate the job on screen
+	 * TODO: Pull this out of the driver and let the UI handle it.
+	 * @param source 
+	 */
+	public void simulate(GCodeSource source);
+	
 	public boolean buildDirect(GCodeSource source);
 	public boolean buildRemote(String remoteName);
 	public void buildToFile(GCodeSource source, String path);
@@ -77,10 +106,7 @@ public interface MachineControllerInterface {
 	public int getLinesProcessed();
 	public JobTarget getTarget();
 	public boolean isPaused();
-	public boolean isInitialized();
+	public boolean isConnected();
 	public boolean isSimulating();
 	public boolean isInteractiveTarget();
-	
-	/** Get an interface to use to query the driver **/
-	public DriverQueryInterface getDriverQueryInterface();
 }

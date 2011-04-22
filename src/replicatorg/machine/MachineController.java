@@ -59,8 +59,8 @@ public class MachineController implements MachineControllerInterface {
 
 	public enum RequestType {
 		// Set up the connection to the machine
-		CONNECT, // Establish connection with the driver
-		DISCONNECT, // Detach from driver
+		CONNECT, // Establish connection with the target
+		DISCONNECT, // Detach from target
 		DISCONNECT_REMOTE_BUILD, // Disconnect from a remote build without stopping it.
 		RESET, // Reset the driver
 
@@ -148,9 +148,6 @@ public class MachineController implements MachineControllerInterface {
 	// this is the xml config for this machine.
 	protected Node machineNode;
 
-	// The GCode source of the current build source.
-	// TODO: We shouldn't keep something like this around here.
-//	protected GCodeSource source;
 
 	public String getMachineName() {
 		return machineThread.getMachineName();
@@ -197,7 +194,7 @@ public class MachineController implements MachineControllerInterface {
 		return true;
 	}
 
-	public boolean simulate(GCodeSource source) {
+	public void simulate(GCodeSource source) {
 		// start simulator
 		// if (simulator != null)
 		// simulator.createWindow();
@@ -210,7 +207,6 @@ public class MachineController implements MachineControllerInterface {
 		Base.logger.info("Beginning simulation.");
 		machineThread.scheduleRequest(new MachineCommand(RequestType.SIMULATE,
 				source, null));
-		return true;
 	}
 
 	// TODO: Spawn a new thread to handle this for us?
@@ -266,7 +262,6 @@ public class MachineController implements MachineControllerInterface {
 	}
 
 	public Driver getDriver() {
-		Base.logger.severe("The driver should not be referenced directly!");
 		return machineThread.getDriver();
 	}
 
@@ -288,8 +283,8 @@ public class MachineController implements MachineControllerInterface {
 				null, null));
 	}
 
-	synchronized public boolean isInitialized() {
-		return machineThread.isInitialized();
+	synchronized public boolean isConnected() {
+		return machineThread.isConnected();
 	}
 
 	public void pause() {
@@ -329,15 +324,17 @@ public class MachineController implements MachineControllerInterface {
 				null, null));
 	}
 
-	public void connect() {
+	// TODO: make this more generic to handle non-serial connections.
+	public void connect(String portName) {
 		// recreate thread if stopped
 		// TODO: Evaluate this!
 		if (!machineThread.isAlive()) {
 			machineThread = new MachineThread(this, machineNode);
 			machineThread.start();
 		}
+		
 		machineThread.scheduleRequest(new MachineCommand(RequestType.CONNECT,
-				null, null));
+				null, portName));
 	}
 
 	synchronized public void disconnect() {
@@ -362,6 +359,17 @@ public class MachineController implements MachineControllerInterface {
 			// Wait 5 seconds for the thread to stop.
 			try {
 				machineThread.join(5000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		if (machineCallbackHandler != null) {
+			machineCallbackHandler.interrupt();
+
+			// Wait 5 seconds for the thread to stop.
+			try {
+				machineCallbackHandler.join(5000);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

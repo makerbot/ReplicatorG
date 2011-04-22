@@ -106,26 +106,27 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		tempLabel.setText(tempText);
 	}
 	
-	private boolean checkVersionCompatibility() {
-		Version v = machine.getDriverQueryInterface().getVersion();
-		
-		 if (v == null) {
-			return false;
-		}
-		
-		if (v.compareTo(machine.getDriverQueryInterface().getPreferredVersion()) < 0) {
-			if (!firmwareWarningIssued) {
-				firmwareWarningIssued = true;
-				JOptionPane.showMessageDialog(
-						this,
-						"Firmware version "+v+" was detected on your machine.  Firmware version "+
-						machine.getDriverQueryInterface().getPreferredVersion() + " is recommended.\n" +
-						"Please update your firmware and restart ReplicatorG.",
-						"Old firmware detected", JOptionPane.WARNING_MESSAGE);
-			}
-		}
-		return true;
-	}
+// TODO: this has no business being here.
+//	private boolean checkVersionCompatibility() {
+//		Version v = machine.getDriverQueryInterface().getVersion();
+//		
+//		 if (v == null) {
+//			return false;
+//		}
+//		
+//		if (v.compareTo(machine.getDriverQueryInterface().getPreferredVersion()) < 0) {
+//			if (!firmwareWarningIssued) {
+//				firmwareWarningIssued = true;
+//				JOptionPane.showMessageDialog(
+//						this,
+//						"Firmware version "+v+" was detected on your machine.  Firmware version "+
+//						machine.getDriverQueryInterface().getPreferredVersion() + " is recommended.\n" +
+//						"Please update your firmware and restart ReplicatorG.",
+//						"Old firmware detected", JOptionPane.WARNING_MESSAGE);
+//			}
+//		}
+//		return true;
+//	}
 	
 	
 	/**
@@ -134,10 +135,10 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	// TODO: Clean this up just ask the machine for all of this info.
 	public void updateMachineStatus(MachineStateChangeEvent evt) {
 		// If we don't have a machine, its a no-go.
-		if (machine == null || !(machine.isInitialized())) {
-			updatePanel(BG_NO_MACHINE, "No machine selected", null, null);
-			return;
-		}
+//		if (machine == null || !(machine.isInitialized())) {
+//			updatePanel(BG_NO_MACHINE, "No machine selected", null, null);
+//			return;
+//		}
 		
 		// TODO: Should we verify we're on the right machine???
 		MachineControllerInterface machine = evt.getSource();
@@ -174,7 +175,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			StringBuffer buf = new StringBuffer("Connecting to "+machine.getMachineName());
 			if (machine.getDriver() instanceof UsesSerial) {
 				buf.append(" on ");
-				buf.append(((UsesSerial)machine.getDriver()).getSerial().getName());
+				buf.append(((UsesSerial)machine.getDriver()).getPortName());
 			}
 			buf.append("...");
 			text = buf.toString();
@@ -182,6 +183,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		case READY:
 		case BUILDING:
 		case PAUSED:
+		{
 			StringBuffer message = new StringBuffer("Machine "+machine.getMachineName());
 			message.append(" ("+machine.getDriver().getDriverName()+") ");
 
@@ -190,6 +192,14 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 				//message.append("simulating");
 				//message.append("building");
 			text = message.toString();
+		}
+			break;
+		case ERROR:
+		{
+			StringBuffer message = new StringBuffer();
+			message.append("Error!");
+			text = message.toString();
+		}
 			break;
 		}
 		
@@ -206,9 +216,9 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		
 		
 		// This is all good, but if the version is bad, give a warning color 
-		if (!checkVersionCompatibility()) {
-			bgColor = BG_NO_MACHINE;
-		}
+//		if (!checkVersionCompatibility()) {
+//			bgColor = BG_NO_MACHINE;
+//		}
 		
 		updatePanel(bgColor, text, null, null);
 	}

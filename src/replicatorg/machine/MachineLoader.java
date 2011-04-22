@@ -1,10 +1,6 @@
 package replicatorg.machine;
 
-import java.util.logging.Level;
-
 import replicatorg.app.Base;
-import replicatorg.app.exceptions.SerialException;
-import replicatorg.app.util.serial.Serial;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.UsesSerial;
 
@@ -22,7 +18,7 @@ import replicatorg.drivers.UsesSerial;
 		}
 		
 		public boolean isConnected() {
-			return (isLoaded() && machine.getMachineState().getState() != MachineState.State.NOT_ATTACHED);
+			return (isLoaded() && machine.isConnected());
 		}
 		
 		public Driver getDriver() {
@@ -45,8 +41,6 @@ import replicatorg.drivers.UsesSerial;
 				return false;
 			}
 			
-			// TODO: tell the base class about this new machine???
-			
 			return true;
 		}
 		
@@ -60,46 +54,12 @@ import replicatorg.drivers.UsesSerial;
 		
 		// Tell the machine to start a connection
 		// TODO: This should be pushed into a separate class for managing connections.
-		public void connect() {
+		public void connect(String port) {
 			if (!isLoaded()) {
 				return;
 			}
 			
-			// do connection!
-			if (machine.getDriver() instanceof UsesSerial) {
-				UsesSerial us = (UsesSerial)machine.getDriver();
-				String targetPort;
-				
-				if (Base.preferences.getBoolean("serial.use_machines",true) &&
-						us.isExplicit()) {
-					targetPort = us.getPortName();
-				} else {
-					targetPort = Base.preferences.get("serial.last_selected", null);
-				}
-				
-				if (targetPort == null) {
-					Base.logger.severe("Couldn't find a port to use!");
-					return;
-				}
-				
-				try {
-					synchronized(us) {
-						Base.logger.severe("Connecting to port " + targetPort);
-//						Serial current = us.getSerial();
-//							Base.logger.fine("Current serial port: "+((current==null)?"null":current.getName())+", specified "+targetPort);
-//							if (current == null || !current.getName().equals(targetPort)) {
-							us.setSerial(new Serial(targetPort,us));
-//							}
-						machine.connect();
-					}
-				} catch (SerialException e) {
-					String msg = e.getMessage();
-					if (msg == null) { msg = "."; }
-					else { msg = ": "+msg; }
-					Base.logger.log(Level.WARNING,
-							"Could not use specified serial port ("+targetPort+")"+ msg);
-				}
-			}
+			machine.connect(port);
 		}
 		
 		// tell the machine to drop its connection

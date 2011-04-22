@@ -363,8 +363,8 @@ public class ControlPanelWindow extends JFrame implements
 
 	public void machineStateChanged(MachineStateChangeEvent evt) {
 		MachineState state = evt.getState();
-		if (state.isBuilding() || !state.isConnected() || 
-				state.getState() == MachineState.State.RESET) {
+		// TODO: Do we handle reset correctly?
+		if (state.isBuilding() || !state.isConnected()) {
 			if (updateThread != null) { updateThread.interrupt(); }
 			if (pollThread != null) { pollThread.interrupt(); }
 			SwingUtilities.invokeLater(new Runnable() {

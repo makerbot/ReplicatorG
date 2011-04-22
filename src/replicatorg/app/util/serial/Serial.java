@@ -46,7 +46,6 @@ import java.util.regex.Pattern;
 import replicatorg.app.Base;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.exceptions.UnknownSerialPortException;
-import replicatorg.drivers.UsesSerial;
 
 public class Serial implements SerialPortEventListener {
 	/**
@@ -132,13 +131,8 @@ public class Serial implements SerialPortEventListener {
 	private InputStream input;
 	private OutputStream output;
 
-	public Serial(String name, int rate, char parity, int data, float stop) throws SerialException {
-		init(name, rate, parity, data, stop);
-	}
-
-	public Serial(String name, UsesSerial us) throws SerialException {
-		if (name == null) { name = us.getPortName(); }
-		init(name,us.getRate(),us.getParity(),us.getDataBits(),us.getStopBits());
+	public Serial(String portName, int baudRate, char parity, int dataBits, int stopBits) throws SerialException {
+		init(portName, baudRate, parity, dataBits, stopBits);
 	}
 	
 	public Serial(String name) throws SerialException {
@@ -392,7 +386,7 @@ public class Serial implements SerialPortEventListener {
 	/**
 	 * Indicates if we've received 
 	 */
-	public boolean isDisconnected() { return disconnected.get(); }
+	public boolean isConnected() { return !(disconnected.get()); }
 
 	public void serialEvent(SerialPortEvent event) {
 		if (event.getEventType() != SerialPortEvent.DATA_AVAILABLE) return;
@@ -425,7 +419,7 @@ public class Serial implements SerialPortEventListener {
 				// we have a plan for how to respond to the user when the
 				// connection drops, we'll just let this silently fail, and set
 				// a fail bit.
-				Base.logger.warning("Serial IO exception. Printer communication may be disrupted.");
+				Base.logger.warning("Serial IO exception:" + event.toString() + ". Printer communication may be disrupted.");
 				disconnected.set(true);
 			}
 		}

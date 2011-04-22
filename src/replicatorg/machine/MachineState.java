@@ -18,8 +18,6 @@ public class MachineState extends Object implements Cloneable {
 		NOT_ATTACHED,
 		/** An attempt to contact the machine is in progress. **/
 		CONNECTING,
-		/** The machine is being reset **/
-		RESET,
 		/** The controller has successfully contacted the machine, and is ready
 		 * for input. **/
 		READY,
@@ -27,8 +25,8 @@ public class MachineState extends Object implements Cloneable {
 		BUILDING,
 		/** The machine is building, but is currently paused. **/
 		PAUSED,
-		/** The machine is being shut down **/
-		SHUTTING_DOWN,
+		/** The machine reported a fatal error, and is halted. **/
+		ERROR,
 	};
 	
 	private State state;
@@ -50,9 +48,11 @@ public class MachineState extends Object implements Cloneable {
 		return state == State.BUILDING || state == State.PAUSED; 
 	}
 	
+	// TODO: Error state could possibly be considered connected???
 	public boolean isConnected() {
-		return state != State.NOT_ATTACHED &&
-			state != State.CONNECTING;
+		return state == State.READY
+			|| state == State.BUILDING
+			|| state == State.PAUSED;
 	}
 	
 	public boolean isPaused() {
@@ -68,9 +68,7 @@ public class MachineState extends Object implements Cloneable {
 		}
 	}
 	
-	public boolean equals(Object o) {
-		if (!(o instanceof MachineState)) return false;
-		MachineState other = (MachineState)o;
+	public boolean equals(MachineState other) {
 		return other.state == state;
 	}
 }

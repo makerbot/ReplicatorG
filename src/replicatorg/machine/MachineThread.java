@@ -166,12 +166,35 @@ class MachineThread extends Thread {
 				// TODO: Break this out so we wait for connection in the main loop.
 				setState(new MachineState(MachineState.State.CONNECTING));
 				
-				driver.initialize();
-				if (driver.isInitialized()) {
-					readName();
-					setState(new MachineState(MachineState.State.READY));
-				} else {
-					setState(new MachineState(MachineState.State.NOT_ATTACHED));
+				boolean connected = false;
+				
+				// First, try to open the serial port
+				if (driver instanceof UsesSerial) {
+					UsesSerial us = (UsesSerial)driver;
+					
+					String targetPort = command.remoteName;
+					
+					if (us.isExplicit()) {
+						targetPort = us.getPortName();
+					}
+					
+					us.openSerial(targetPort);
+					connected = us.isConnected();
+				}
+				
+				if (!connected) {
+					// If we couldn't connect, move back to being detached.
+					setState(new MachineState(MachineState.State.ERROR));
+				}
+				else {
+					// If the port is open, try to talk to the machine over it.
+					driver.initialize();
+					if (driver.isInitialized()) {
+						readName();
+						setState(new MachineState(MachineState.State.READY));
+					} else {
+						setState(new MachineState(MachineState.State.NOT_ATTACHED));
+					}
 				}
 			}
 			break;
@@ -183,7 +206,7 @@ class MachineThread extends Thread {
 			
 				if (driver instanceof UsesSerial) {
 					UsesSerial us = (UsesSerial)driver;
-					us.setSerial(null);
+					us.closeSerial();
 				}
 			}
 			break;
@@ -214,10 +237,10 @@ class MachineThread extends Thread {
 				setState(new MachineState(MachineState.State.BUILDING));
 			}
 			break;
-//		case SIMULATE:
+		case SIMULATE:
 //			// TODO: Implement this.
 //			setState(new MachineState(MachineState.State.BUILDING));
-//			break;
+			break;
 		case BUILD_TO_REMOTE_FILE:
 			if (state.isReady()) {
 				if (!(driver instanceof SDCardCapture)) {
@@ -332,7 +355,7 @@ class MachineThread extends Thread {
 			break;
 		case SHUTDOWN:
 			//TODO: Dispose of everything here.
-			setState(new MachineState(MachineState.State.SHUTTING_DOWN));
+			setState(new MachineState(MachineState.State.NOT_ATTACHED));
 			interrupt();
 			break;
 		default:
@@ -464,7 +487,7 @@ class MachineThread extends Thread {
 		return simulator;
 	}
 	
-	synchronized public boolean isInitialized() {
+	synchronized public boolean isConnected() {
 		return (driver != null && driver.isInitialized());
 	}
 	

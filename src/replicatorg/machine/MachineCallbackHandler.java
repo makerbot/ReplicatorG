@@ -39,6 +39,8 @@ public class MachineCallbackHandler extends Thread {
 					for (MachineListener l : listeners) {
 						l.machineStateChanged(machineStateChangeEventQueue.peek());
 					}
+					Base.logger.fine("Sending machine state change event: "
+							+ machineStateChangeEventQueue.peek().getState().getState().toString());
 					machineStateChangeEventQueue.remove();
 				}
 				
@@ -61,6 +63,8 @@ public class MachineCallbackHandler extends Thread {
 			}
 		} catch (InterruptedException e) {
 			// Terminate!
+			Base.logger.fine("taking callback handler down, state change queue: "
+					+ machineStateChangeEventQueue.size());
 		}
 	}
 	
@@ -79,6 +83,8 @@ public class MachineCallbackHandler extends Thread {
 
 	synchronized public void schedule(MachineStateChangeEvent status) {
 		machineStateChangeEventQueue.add(status);
+		Base.logger.fine("Scheduling machine state change event: "
+				+ status.getState().getState().toString());
 	}
 
 	synchronized public void schedule(MachineProgressEvent progress) {

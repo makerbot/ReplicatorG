@@ -125,6 +125,7 @@ import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RealtimeControl;
 import replicatorg.drivers.SDCardCapture;
+import replicatorg.drivers.UsesSerial;
 import replicatorg.machine.MachineControllerInterface;
 import replicatorg.machine.MachineFactory;
 import replicatorg.machine.MachineListener;
@@ -2552,8 +2553,17 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machineLoader.load(name);
 		// TODO: Check if the machine failed to load, and bail here if necessary?
 		
+		String targetPort;
+	
+		targetPort = Base.preferences.get("serial.last_selected", null);
+		
+		if (targetPort == null) {
+			Base.logger.severe("Couldn't find a port to use!");
+			return;
+		}
+		
 		// Do we always want to connect here?
-		machineLoader.connect();
+		machineLoader.connect(targetPort);
 		
 		if(machineLoader.isLoaded()) {
 //			machineLoader.getMachine().setCodeSource(new JEditTextAreaSource(textarea));
