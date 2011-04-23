@@ -110,9 +110,7 @@ public class ExtrusionUpdater {
 				Thread.sleep(extrudeQueueEnd-currentTime);
 			}
 			do {
-				synchronized (driver.commands) {
-					queueSize = driver.commands.size();
-				}
+				queueSize = driver.queueSize();
 				if (queueSize > maxQueuedExtrudeTime) Thread.sleep(100);
 			} while (queueSize > maxQueuedExtrudeTime);
 				
