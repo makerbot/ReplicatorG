@@ -76,6 +76,17 @@ public class DriverBaseImplementation implements Driver {
 
 	static public int INCREMENTAL = 1;
 
+	
+	/**
+	 * Support for emergency stop is not assumed until it is detected. Detection of this feature should be in initialization.
+	 */
+	protected boolean hasEmergencyStop = false;
+	
+	/**
+	 * Support for soft stop (e.g. for continuous jog) is not assumed until it is detected. Detection of this feature should be in initialization.
+	 */
+	protected boolean hasSoftStop = false;
+	
 	/**
 	 * Creates the driver object.
 	 */
@@ -670,5 +681,13 @@ public class DriverBaseImplementation implements Driver {
 
 	public double getTemperatureSetting() {
 		return machine.currentTool().getTargetTemperature();
+	}
+	
+	public boolean hasSoftStop() {
+		return hasSoftStop;
+	}
+
+	public boolean hasEmergencyStop() {
+		return hasEmergencyStop;
 	}
 }

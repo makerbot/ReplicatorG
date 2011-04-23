@@ -72,7 +72,6 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/** true if a line containing the ok keyword has been received from the firmware*/
 	private final AtomicBoolean okReceived = new AtomicBoolean(false);
 	
-
 	/**
 	 * An above zero level shows more info
 	 */
@@ -166,6 +165,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 	public RepRap5DDriver() {
 		super();
+		// Support for emergency stop is not assumed until it is detected. Detection of this feature should be in initialization.
+		hasEmergencyStop = false;
+		
+		// Support for soft stop is not assumed until it is detected. Detection of this feature should be in initialization.
+		hasSoftStop = false;
 		
 		// init our variables.
 		setInitialized(false);
@@ -220,6 +224,12 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	if (XML.hasChildNode(xml, "alwaysRelativeE")) {
 		alwaysRelativeE = Boolean.parseBoolean(XML.getChildNodeValue(xml, "alwaysRelativeE"));
 	}
+    if (XML.hasChildNode(xml, "hasEmergencyStop")) {
+    	hasEmergencyStop = Boolean.parseBoolean(XML.getChildNodeValue(xml, "hasEmergencyStop"));
+    }
+    if (XML.hasChildNode(xml, "hasSoftStop")) {
+    	hasSoftStop = Boolean.parseBoolean(XML.getChildNodeValue(xml, "hasSoftStop"));
+    }
         
         if (XML.hasChildNode(xml, "introduceNoise")) {
         	double introduceNoise = Double.parseDouble(XML.getChildNodeValue(xml, "introduceNoise"));

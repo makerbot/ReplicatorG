@@ -365,6 +365,10 @@ public interface Driver {
 	 */
 	public void stop(boolean abort);
 
+	public boolean hasSoftStop();
+
+	public boolean hasEmergencyStop();
+	
 	public void reset();
 
 	/***************************************************************************
