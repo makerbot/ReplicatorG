@@ -702,7 +702,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			    }
 			}
 			else if (line.startsWith("ok c:")||line.startsWith("c:")) {
-				Pattern r = Pattern.compile("c: *x([-0-9\\.]+) *y([-0-9\\.]+) *z([-0-9\\.]+)");
+				Pattern r = Pattern.compile("c: *x:?([-0-9\\.]+) *y:?([-0-9\\.]+) *z:?([-0-9\\.]+)");
 				Matcher m = r.matcher(line);
 				if (m.find()) {
 					double x = Double.parseDouble(m.group(1));
@@ -711,6 +711,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					// super to avoid parroting back a G92
 					try {
 						super.setCurrentPosition(new Point5d(x, y, z));
+						//Base.logger.fine("setting currentposition to:"+x+","+y+","+z+".");
 					} catch (RetryException e) {
 						// do or do not, there is no retry
 					}
@@ -1235,7 +1236,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		// If the firmware returned a position then the reply parser
 		// already set the current position and our caller is actually
 		// going to end up ignoring what we return.
-		return new Point5d();
+		//
+		//return new Point5d();
+		return super.getCurrentPosition(false);
 	}
 
 	/* ===============
