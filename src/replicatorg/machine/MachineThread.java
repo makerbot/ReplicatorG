@@ -9,6 +9,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
+import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.tools.XML;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
@@ -25,6 +26,7 @@ import replicatorg.machine.builder.Direct;
 import replicatorg.machine.builder.ToLocalFile;
 import replicatorg.machine.builder.ToRemoteFile;
 import replicatorg.machine.builder.UsingRemoteFile;
+import replicatorg.machine.builder.Direct.State;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.GCodeSourceCollection;
@@ -369,6 +371,14 @@ class MachineThread extends Thread {
 	public void run() {
 		// This is our main loop.
 		while (true) {
+			// First, check if the driver is ok.
+			try {
+				driver.checkErrors();
+			} catch (BuildFailureException e) {
+				Base.logger.severe("Build failure: " + e.getMessage());
+				setState(new MachineState(MachineState.State.ERROR));
+			}
+			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
 				synchronized(pendingQueue) { runCommand(pendingQueue.remove()); }

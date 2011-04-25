@@ -121,7 +121,7 @@ public class Direct implements MachineBuilder{
 				driver.checkErrors();
 			} catch (BuildFailureException e) {
 				Base.logger.severe("Build failure: " + e.getMessage());
-				state = State.FINISHED;
+				state = State.ERRROR;
 				return;
 			}
 		}
