@@ -2566,9 +2566,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		machineLoader.connect(targetPort);
 		
 		if(machineLoader.isLoaded()) {
-			machineLoader.addMachineStateListener(this);
-			machineLoader.addMachineStateListener(machineStatusPanel);
-			machineLoader.addMachineStateListener(buttons);			
+			machineLoader.addMachineListener(this);
+			machineLoader.addMachineListener(machineStatusPanel);
+			machineLoader.addMachineListener(buttons);			
 		}
 		
 		// TODO: This needs to be run at program start

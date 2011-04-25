@@ -43,6 +43,7 @@ import replicatorg.machine.Machine.RequestType;
 			return (isLoaded() && machine.isConnected());
 		}
 		
+		@Deprecated
 		public Driver getDriver() {
 			if(!isLoaded()) {
 				return null;
@@ -92,11 +93,11 @@ import replicatorg.machine.Machine.RequestType;
 		}
 		
 		// Pass these on to our handler
-		public void addMachineStateListener(MachineListener listener) {
-			callbackHandler.addMachineStateListener(listener);
+		public void addMachineListener(MachineListener listener) {
+			callbackHandler.addMachineListener(listener);
 		}
 
-		public void removeMachineStateListener(MachineListener listener) {
-			callbackHandler.removeMachineStateListener(listener);
+		public void removeMachineListener(MachineListener listener) {
+			callbackHandler.removeMachineListener(listener);
 		}
 	}

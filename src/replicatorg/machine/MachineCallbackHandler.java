@@ -71,7 +71,7 @@ public class MachineCallbackHandler extends Thread {
 		}
 	}
 	
-	synchronized public void addMachineStateListener(MachineListener listener) {
+	synchronized public void addMachineListener(MachineListener listener) {
 		// TODO: Is this thread safe?
 		listeners.add(listener);
 		// TODO: Was this important?
@@ -79,7 +79,7 @@ public class MachineCallbackHandler extends Thread {
 //				getMachineState()));
 	}
 
-	synchronized public void removeMachineStateListener(MachineListener listener) {
+	synchronized public void removeMachineListener(MachineListener listener) {
 		// TODO: Is this thread safe?
 		listeners.remove(listener);
 	}
