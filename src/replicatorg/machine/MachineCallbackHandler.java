@@ -30,45 +30,48 @@ public class MachineCallbackHandler extends Thread {
 		machineToolStatusEventQueue = new ConcurrentLinkedQueue<MachineToolStatusEvent>();
 	}
 	
-	@Override
-	public void run() {
-		// If we have any messages to send out, do so, otherwise wait.
-		try {
-			while(true) {
-				while (!machineStateChangeEventQueue.isEmpty()) {
-					for (MachineListener l : listeners) {
-						l.machineStateChanged(machineStateChangeEventQueue.peek());
-					}
-					Base.logger.fine("Sending machine state change event: "
-							+ machineStateChangeEventQueue.peek().getState().getState().toString());
-					machineStateChangeEventQueue.remove();
-				}
-				
-				while (!machineProgressEventQueue.isEmpty()) {
-					for (MachineListener l : listeners) {
-						l.machineProgress(machineProgressEventQueue.peek());
-					}
-					machineProgressEventQueue.remove();
-				}
-				
-				while (!machineToolStatusEventQueue.isEmpty()) {
-					for (MachineListener l : listeners) {
-						l.toolStatusChanged(machineToolStatusEventQueue.peek());
-					}
-					machineToolStatusEventQueue.remove();
-				}
-					
-				sleep(100);
-//				wait();
+	private synchronized void sendMessages() {
+		while (!machineStateChangeEventQueue.isEmpty()) {
+			for (MachineListener l : listeners) {
+				l.machineStateChanged(machineStateChangeEventQueue.peek());
 			}
-		} catch (InterruptedException e) {
-			// Terminate!
-			Base.logger.fine("taking callback handler down, state change queue: "
-					+ machineStateChangeEventQueue.size());
+			Base.logger.fine("Sending machine state change event: "
+					+ machineStateChangeEventQueue.peek().getState().getState().toString());
+			machineStateChangeEventQueue.remove();
+		}
+		
+		while (!machineProgressEventQueue.isEmpty()) {
+			for (MachineListener l : listeners) {
+				l.machineProgress(machineProgressEventQueue.peek());
+			}
+			machineProgressEventQueue.remove();
+		}
+		
+		while (!machineToolStatusEventQueue.isEmpty()) {
+			for (MachineListener l : listeners) {
+				l.toolStatusChanged(machineToolStatusEventQueue.peek());
+			}
+			machineToolStatusEventQueue.remove();
 		}
 	}
 	
-	public void addMachineStateListener(MachineListener listener) {
+	@Override
+	public void run() {
+		while(true) {
+			// If we have any messages to send out, do so, otherwise wait.
+			try {
+				sendMessages();
+	
+				sleep(100);
+			} catch (InterruptedException e) {
+				// Terminate!
+				Base.logger.fine("taking callback handler down, state change queue: "
+						+ machineStateChangeEventQueue.size());
+			}
+		}
+	}
+	
+	synchronized public void addMachineStateListener(MachineListener listener) {
 		// TODO: Is this thread safe?
 		listeners.add(listener);
 		// TODO: Was this important?
@@ -76,7 +79,7 @@ public class MachineCallbackHandler extends Thread {
 //				getMachineState()));
 	}
 
-	public void removeMachineStateListener(MachineListener listener) {
+	synchronized public void removeMachineStateListener(MachineListener listener) {
 		// TODO: Is this thread safe?
 		listeners.remove(listener);
 	}
