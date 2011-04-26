@@ -106,7 +106,7 @@ public class MachineLoaderTest {
 		assertFalse(loader.load("fake machine"));
 		
 		// Now try loading a known good machine
-		assertTrue(loader.load("3-Axis Simulator"));
+		assertTrue(loader.load("Cupcake Basic"));
 		
 		// Test that the isLoaded() function actually works 
 		assertTrue(loader.isLoaded());
@@ -115,13 +115,13 @@ public class MachineLoaderTest {
 		assertFalse(loader.load("fake machine"));
 		
 		// Finally, load the good one again to make sure it can recover.
-		assertTrue(loader.load("3-Axis Simulator"));
+		assertTrue(loader.load("Cupcake Basic"));
 	}
 
 	@Test
 	public void testUnload() {
 		// See if we can bring up and then dispose of a machine
-		assertTrue(loader.load("3-Axis Simulator"));
+		assertTrue(loader.load("Cupcake Basic"));
 		
 		loader.unload();
 		
