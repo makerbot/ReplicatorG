@@ -9,14 +9,10 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.EstimationDriver;
-import replicatorg.drivers.UsesSerial;
-import replicatorg.drivers.Version;
-import replicatorg.machine.Machine;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -34,8 +30,6 @@ import replicatorg.machine.MachineToolStatusEvent;
 public class MachineStatusPanel extends BGPanel implements MachineListener {
 	private static final long serialVersionUID = -6944931245041870574L;
 
-//	protected MachineInterface machine = null;
-
 	protected JLabel label = new JLabel();
 	protected JLabel smallLabel = new JLabel();
 	protected JLabel tempLabel = new JLabel();
@@ -48,8 +42,6 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	static final private Color BG_READY = new Color(0x80, 0xff, 0x60);
 	static final private Color BG_BUILDING = new Color(0xff, 0xef, 0x00); // process yellow
 
-	// static final private Color BG_WAIT = new Color(0xff,0xff,0x60);
-
 	MachineStatusPanel() {
 		Font smallFont = Base.getFontPref("status.font","SansSerif,plain,10");
 		smallLabel.setFont(smallFont);
@@ -57,6 +49,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
+		label.setText("Welcome to ReplicatorG");
 		label.setAlignmentX(LEFT_ALIGNMENT);
 		add(label);
 		smallLabel.setAlignmentX(LEFT_ALIGNMENT);
@@ -80,26 +73,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		setPreferredSize(new Dimension(prefWidth, height));
 	}
 
-	/**
-	 * Indicate which machine, if any, the status panel should attach to.
-	 * 
-	 * @param machine
-	 *            the machine's controller, or null if no machine is attached.
-	 */
-	public void setMachine(MachineInterface machine) {
-//		if (machine != null && this.machine == machine) {
-//			return;
-//		}
-//		
-//		this.machine = machine;
-		
-		// Manufacture a machine state event so that we update properly
-		// TODO: This doesn't look right.
-		MachineState state = (machine!=null)?machine.getMachineState():new MachineState(MachineState.State.NOT_ATTACHED);
-		MachineStateChangeEvent e = new MachineStateChangeEvent(machine,state);
-		updateMachineStatus(e);
-	}
-	
+
 	private void updatePanel(Color panelColor, String text, String smallText, String tempText) {
 		setBackground(panelColor);
 		label.setText(text);
@@ -133,16 +107,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	/**
 	 * Display the current status of this machine.
 	 */
-	// TODO: Clean this up just ask the machine for all of this info.
 	public void updateMachineStatus(MachineStateChangeEvent evt) {
-		// If we don't have a machine, its a no-go.
-//		if (machine == null || !(machine.isInitialized())) {
-//			updatePanel(BG_NO_MACHINE, "No machine selected", null, null);
-//			return;
-//		}
-		
-		// TODO: Should we verify we're on the right machine???
-//		MachineInterface machine = evt.getSource();
 		MachineState.State state = evt.getState().getState();
 		
 		// Determine what color to use
@@ -178,12 +143,6 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			isBuilding = false;
 			break;
 		}
-		
-		
-		// This is all good, but if the version is bad, give a warning color 
-//		if (!checkVersionCompatibility()) {
-//			bgColor = BG_NO_MACHINE;
-//		}
 		
 		updatePanel(bgColor, text, null, null);
 	}
