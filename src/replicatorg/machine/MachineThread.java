@@ -3,6 +3,7 @@ package replicatorg.machine;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 import org.w3c.dom.Node;
@@ -26,7 +27,6 @@ import replicatorg.machine.builder.Direct;
 import replicatorg.machine.builder.ToLocalFile;
 import replicatorg.machine.builder.ToRemoteFile;
 import replicatorg.machine.builder.UsingRemoteFile;
-import replicatorg.machine.builder.Direct.State;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.GCodeSourceCollection;
@@ -70,7 +70,7 @@ class MachineThread extends Thread {
 	private Timer pollingTimer;
 
 	// Link of machine commands to run
-	Queue<MachineCommand> pendingQueue;
+	ConcurrentLinkedQueue<MachineCommand> pendingQueue;
 		
 	// this is the xml config for this machine.
 	private Node machineNode;
@@ -109,7 +109,7 @@ class MachineThread extends Thread {
 		
 		pollingTimer = new Timer();
 		
-		pendingQueue = new LinkedList<MachineCommand>();
+		pendingQueue = new ConcurrentLinkedQueue<MachineCommand>();
 		
 		// save our XML
 		this.machineNode = machineNode;
@@ -158,6 +158,10 @@ class MachineThread extends Thread {
 		return new GCodeSourceCollection(sources);
 	}
 	
+	private String buildReadyMessage() {
+		return "Machine " + getMachineName() + " ready";
+	}
+	
 	// Respond to a command from the machine controller
 	void runCommand(MachineCommand command) {
 		Base.logger.fine("Got command: " + command.type.toString());
@@ -204,7 +208,7 @@ class MachineThread extends Thread {
 					if (driver.isInitialized()) {
 						readName();
 						setState(new MachineState(MachineState.State.READY),
-								"Machine " + getMachineName() + " (" + ")" + " ready");
+								buildReadyMessage());
 					} else {
 						setState(new MachineState(MachineState.State.NOT_ATTACHED));
 					}
@@ -215,7 +219,7 @@ class MachineThread extends Thread {
 			// TODO: This seems wrong
 			if (state.isConnected()) {
 				driver.uninitialize();
-				setState(new MachineState(MachineState.State.NOT_ATTACHED));
+				setState(new MachineState(MachineState.State.NOT_ATTACHED), "Not Connected");
 			
 				if (driver instanceof UsesSerial) {
 					UsesSerial us = (UsesSerial)driver;
@@ -227,7 +231,8 @@ class MachineThread extends Thread {
 			if (state.isConnected()) {
 				driver.reset();
 				readName();
-				setState(new MachineState(MachineState.State.READY));
+				setState(new MachineState(MachineState.State.READY),
+						buildReadyMessage());
 			}
 			break;
 		case BUILD_DIRECT:
@@ -247,7 +252,9 @@ class MachineThread extends Thread {
 				
 				// TODO: This shouldn't be done here?
 				driver.invalidatePosition();
-				setState(new MachineState(MachineState.State.BUILDING));
+				
+				// TODO: Where should the build name be specified?
+				setState(new MachineState(MachineState.State.BUILDING), "Building");
 			}
 			break;
 		case SIMULATE:
@@ -306,8 +313,14 @@ class MachineThread extends Thread {
 			break;
 		case BUILD_REMOTE:
 			if (state.isReady()) {
-				if (!(driver instanceof SDCardCapture)) break;
-			
+				if (!(driver instanceof SDCardCapture)) {
+					break;
+				}
+				
+				startTimeMillis = System.currentTimeMillis();
+				
+				pollingTimer.start(1000);
+				
 				machineBuilder = new UsingRemoteFile((SDCardCapture)driver, command.remoteName);
 			
 				// TODO: what about this?
@@ -328,7 +341,8 @@ class MachineThread extends Thread {
 		case STOP_MOTION:
 			if (state.isConnected()) {
 				driver.stop(false);
-				setState(new MachineState(MachineState.State.READY));
+				setState(new MachineState(MachineState.State.READY),
+						buildReadyMessage());
 			}
 			break;
 		case STOP_ALL:
@@ -337,7 +351,7 @@ class MachineThread extends Thread {
 			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			
 			driver.stop(true);
-			setState(new MachineState(MachineState.State.READY));
+			setState(new MachineState(MachineState.State.READY), buildReadyMessage());
 			
 			break;			
 //		case DISCONNECT_REMOTE_BUILD:
@@ -385,7 +399,7 @@ class MachineThread extends Thread {
 			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
-				synchronized(pendingQueue) { runCommand(pendingQueue.remove()); }
+				runCommand(pendingQueue.remove());
 			}
 			
 			// If we are building
@@ -412,7 +426,8 @@ class MachineThread extends Thread {
 				
 				if (machineBuilder.finished()) {
 					// TODO: Exit correctly.
-					setState(new MachineState(MachineState.State.READY));
+					setState(new MachineState(MachineState.State.READY),
+							buildReadyMessage());
 					
 					pollingTimer.stop();
 				}
@@ -438,7 +453,7 @@ class MachineThread extends Thread {
 	}
 	
 	public boolean scheduleRequest(MachineCommand request) {
-		synchronized(pendingQueue) { pendingQueue.add(request); }
+		pendingQueue.add(request);
 		synchronized(this) { notify(); }
 		
 		return true;
