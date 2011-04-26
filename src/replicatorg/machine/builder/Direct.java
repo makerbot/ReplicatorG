@@ -30,7 +30,7 @@ public class Direct implements MachineBuilder{
 	public enum State {
 		RUNNING_GCODE,
 		WAITING_FOR_MACHINE_FINISH,
-		FINISHED,
+		FINISHED
 	}
 	
 	GCodeSource source;
@@ -121,7 +121,6 @@ public class Direct implements MachineBuilder{
 				driver.checkErrors();
 			} catch (BuildFailureException e) {
 				Base.logger.severe("Build failure: " + e.getMessage());
-				state = State.ERRROR;
 				return;
 			}
 		}

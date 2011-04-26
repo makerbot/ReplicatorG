@@ -34,7 +34,7 @@ import replicatorg.machine.MachineToolStatusEvent;
 public class MachineStatusPanel extends BGPanel implements MachineListener {
 	private static final long serialVersionUID = -6944931245041870574L;
 
-	protected MachineInterface machine = null;
+//	protected MachineInterface machine = null;
 
 	protected JLabel label = new JLabel();
 	protected JLabel smallLabel = new JLabel();
@@ -87,13 +87,14 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	 *            the machine's controller, or null if no machine is attached.
 	 */
 	public void setMachine(MachineInterface machine) {
-		if (machine != null && this.machine == machine) {
-			return;
-		}
-		
-		this.machine = machine;
+//		if (machine != null && this.machine == machine) {
+//			return;
+//		}
+//		
+//		this.machine = machine;
 		
 		// Manufacture a machine state event so that we update properly
+		// TODO: This doesn't look right.
 		MachineState state = (machine!=null)?machine.getMachineState():new MachineState(MachineState.State.NOT_ATTACHED);
 		MachineStateChangeEvent e = new MachineStateChangeEvent(machine,state);
 		updateMachineStatus(e);
@@ -141,7 +142,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 //		}
 		
 		// TODO: Should we verify we're on the right machine???
-		MachineInterface machine = evt.getSource();
+//		MachineInterface machine = evt.getSource();
 		MachineState.State state = evt.getState().getState();
 		
 		// Determine what color to use
@@ -160,47 +161,11 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			break;
 		}
 		
-		String text = null;
+		String text = evt.getMessage();
 		
 		// Make up some text to describe the state
-		switch (state) {
-		case NOT_ATTACHED:
-			if (machine.getDriver() == null) {
-				text = "No machine selected";
-			} else {
-				text = "Disconnected";
-			}
-			break;
-		case CONNECTING:
-			StringBuffer buf = new StringBuffer("Connecting to "+machine.getMachineName());
-			if (machine.getDriver() instanceof UsesSerial) {
-				buf.append(" on ");
-				buf.append(((UsesSerial)machine.getDriver()).getPortName());
-			}
-			buf.append("...");
-			text = buf.toString();
-			break;
-		case READY:
-		case BUILDING:
-		case PAUSED:
-		{
-			StringBuffer message = new StringBuffer("Machine "+machine.getMachineName());
-			message.append(" ("+machine.getDriver().getDriverName()+") ");
-
-				//message.append("ready");
-				//mmessage.append("paused");
-				//message.append("simulating");
-				//message.append("building");
-			text = message.toString();
-		}
-			break;
-		case ERROR:
-		{
-			StringBuffer message = new StringBuffer();
-			message.append("Error!");
-			text = message.toString();
-		}
-			break;
+		if (text == null ) {
+			text = state.toString();
 		}
 		
 		// And mark which state we are in.
@@ -225,22 +190,19 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	
 	public void updateBuildStatus(MachineProgressEvent event) {
 		if (isBuilding) {
-			double remaining;
+			/** Calculate the % of the build that is complete **/
 			double proportion = (double)event.getLines()/(double)event.getTotalLines();
+			double percentComplete = Math.round(proportion*10000.0)/100.0;
 	
-			if (machine.getTarget() == Machine.JobTarget.REMOTE_FILE) {
-				if (event.getLines() == 0) {
-					remaining = 0; // avoid NaN
-				}
-				remaining = event.getElapsed() * ((1.0/proportion)-1.0);
-			} else {
-				remaining = event.getEstimated() * (1.0 - proportion);
+			double remaining= event.getEstimated() * (1.0 - proportion);;
+			if (event.getTotalLines() == 0) {
+				remaining = 0;
 			}
 				
 			final String s = String.format(
 					"Commands:  %1$7d / %2$7d  (%3$3.2f%%)   |   Elapsed:  %4$s  |  Estimated Remaining:  %5$s",
 					event.getLines(), event.getTotalLines(), 
-					Math.round(proportion*10000.0)/100.0,
+					percentComplete,
 					EstimationDriver.getBuildTimeString(event.getElapsed(), true),
 					EstimationDriver.getBuildTimeString(remaining, true));
 			

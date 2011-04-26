@@ -165,8 +165,10 @@ class MachineThread extends Thread {
 		switch(command.type) {
 		case CONNECT:
 			if (state.getState() == MachineState.State.NOT_ATTACHED) {
-				// TODO: Break this out so we wait for connection in the main loop.
-				setState(new MachineState(MachineState.State.CONNECTING));
+				
+				// TODO: This doesn't take an explicit override into account.
+				setState(new MachineState(MachineState.State.CONNECTING),
+						"Connecting to " + getMachineName() + " on " + command.remoteName);
 				
 				boolean connected = false;
 				
@@ -185,15 +187,24 @@ class MachineThread extends Thread {
 				}
 				
 				if (!connected) {
+					String errorMessage = "";
+					try {
+						driver.checkErrors();
+					} catch (BuildFailureException e) {
+						errorMessage = e.getMessage();
+					}
+					
 					// If we couldn't connect, move back to being detached.
-					setState(new MachineState(MachineState.State.ERROR));
+					setState(new MachineState(MachineState.State.ERROR), errorMessage);
 				}
 				else {
+					
 					// If the port is open, try to talk to the machine over it.
 					driver.initialize();
 					if (driver.isInitialized()) {
 						readName();
-						setState(new MachineState(MachineState.State.READY));
+						setState(new MachineState(MachineState.State.READY),
+								"Machine " + getMachineName() + " (" + ")" + " ready");
 					} else {
 						setState(new MachineState(MachineState.State.NOT_ATTACHED));
 					}
@@ -371,13 +382,6 @@ class MachineThread extends Thread {
 	public void run() {
 		// This is our main loop.
 		while (true) {
-			// First, check if the driver is ok.
-			try {
-				driver.checkErrors();
-			} catch (BuildFailureException e) {
-				Base.logger.severe("Build failure: " + e.getMessage());
-				setState(new MachineState(MachineState.State.ERROR));
-			}
 			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
@@ -482,10 +486,14 @@ class MachineThread extends Thread {
 	 * @param state the new state of the machine.
 	 */
 	private void setState(MachineState state) {
+		setState(state, null);
+	}
+	
+	private void setState(MachineState state, String message) {
 		MachineState oldState = this.state;
 		this.state = state;
 		if (!oldState.equals(state)) {
-			controller.emitStateChange(oldState,state);
+			controller.emitStateChange(state, message);
 		}
 	}
 	

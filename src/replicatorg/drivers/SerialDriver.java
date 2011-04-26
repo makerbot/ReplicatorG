@@ -78,9 +78,8 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 			newConnection = new Serial(portName, rate, parity, databits, stopbits);
 		} catch (SerialException e) {
 			String msg = e.getMessage();
-			if (msg == null) { msg = "."; }
-			else { msg = ": "+msg; }
-			Base.logger.severe("Could not use specified serial port (" + portName + ")" + msg);
+			Base.logger.severe("Connection error: " + msg);
+			setError("Connection error: " + msg);
 		}
 
 		if (newConnection != null) {

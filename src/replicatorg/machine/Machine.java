@@ -365,9 +365,8 @@ public class Machine implements MachineInterface {
 	}
 
 
-	protected void emitStateChange(MachineState prev, MachineState current) {
-		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current,
-				prev);
+	protected void emitStateChange(MachineState current, String message) {
+		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current, message);
 		
 		callbackHandler.schedule(e);
 	}

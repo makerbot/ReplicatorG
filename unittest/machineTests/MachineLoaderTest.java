@@ -255,7 +255,7 @@ public class MachineLoaderTest {
 		Base.logger.severe("Unplug the USB port!");
 		
 		// Now, wait for the user to disconnect the machine
-		event = listener.getMachineStateChangedEvent(10000);
+		event = listener.getMachineStateChangedEvent(5000);
 		assertNotNull(event);
 		assertTrue(event.getState().getState() == MachineState.State.ERROR);
 		
