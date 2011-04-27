@@ -1,7 +1,5 @@
 package replicatorg.machine;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -10,7 +8,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
-import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.app.tools.XML;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverFactory;
@@ -20,8 +17,10 @@ import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.UsesSerial;
+import replicatorg.drivers.commands.AssessState;
+import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.Machine.JobTarget;
-import replicatorg.machine.Machine.MachineCommand;
+import replicatorg.machine.Machine.RequestType;
 import replicatorg.machine.builder.MachineBuilder;
 import replicatorg.machine.builder.Direct;
 import replicatorg.machine.builder.ToLocalFile;
@@ -37,6 +36,40 @@ import replicatorg.model.StringListSource;
  */
 class MachineThread extends Thread {
 
+	AssessStatusThread statusThread;
+	
+	// TODO: Should this be here?
+	class AssessStatusThread extends Thread {
+		
+		MachineThread machineThread;
+		
+		public AssessStatusThread(MachineThread machineThread) {
+			super("Assess Status");
+			this.machineThread = machineThread;
+		}
+		
+		public void run() {
+			while (true) {
+				try {
+					synchronized(this) {
+						// Send out a request, then sleep for a bit, then start over.
+						Base.logger.severe("Status!!");
+						
+						DriverCommand assessCommand = new AssessState();
+						
+						machineThread.scheduleRequest(new MachineCommand(
+								RequestType.RUN_COMMAND, assessCommand));
+						
+						sleep(1000);
+					}
+				} catch(InterruptedException e) {
+					Base.logger.fine("taking assess status thread down");
+					break;
+				}
+			}
+		}
+	}
+	
 	// TODO: Rethink this.
 	class Timer {
 		private long lastEventTime = 0;
@@ -119,6 +152,9 @@ class MachineThread extends Thread {
 		loadDriver();
 		loadExtraPrefs();
 		parseName();
+		
+		statusThread = new AssessStatusThread(this);
+		statusThread.start();
 	}
 
 	private void loadExtraPrefs() {
@@ -191,11 +227,10 @@ class MachineThread extends Thread {
 				}
 				
 				if (!connected) {
-					String errorMessage = "";
-					try {
-						driver.checkErrors();
-					} catch (BuildFailureException e) {
-						errorMessage = e.getMessage();
+					String errorMessage = null;
+					
+					if (driver.hasError()) {
+						errorMessage = driver.getError();
 					}
 					
 					// If we couldn't connect, move back to being detached.
@@ -397,6 +432,16 @@ class MachineThread extends Thread {
 		// This is our main loop.
 		while (true) {
 			
+			// First, check if the driver registered any errors
+			if (driver.hasError()) {
+				// TODO: Exit correctly.
+				
+				setState(new MachineState(MachineState.State.ERROR),
+						driver.getError());
+			}
+			
+			//
+			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
 				runCommand(pendingQueue.remove());
@@ -436,7 +481,9 @@ class MachineThread extends Thread {
 			// If there is nothing to do, sleep.
 			if ( state.getState() != MachineState.State.BUILDING ) {
 				try {
-					synchronized(this) { wait(); }
+					synchronized(this) {
+						wait();
+					}
 				} catch(InterruptedException e) {
 					break;
 				}
@@ -520,7 +567,7 @@ class MachineThread extends Thread {
 		return simulator;
 	}
 	
-	synchronized public boolean isConnected() {
+	 public boolean isConnected() {
 		return (driver != null && driver.isInitialized());
 	}
 	
@@ -554,6 +601,15 @@ class MachineThread extends Thread {
 		if (simulator != null) {
 			simulator.dispose();
 		}
+		
+		if (statusThread != null) {
+			try {
+				statusThread.interrupt();
+				statusThread.join(1000);
+			} catch (InterruptedException e) {
+			}
+		}
+		
 		setState(new MachineState(MachineState.State.NOT_ATTACHED));
 	}
 	

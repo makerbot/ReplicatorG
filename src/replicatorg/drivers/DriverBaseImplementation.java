@@ -24,6 +24,7 @@
 package replicatorg.drivers;
 
 import java.util.EnumSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -59,7 +60,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
 	// our error variable.
-	private String error = "";
+	ConcurrentLinkedQueue<String> errorList;
 
 	// how fast are we moving in mm/minute
 	private double currentFeedrate;
@@ -75,6 +76,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	 * Creates the driver object.
 	 */
 	public DriverBaseImplementation() {
+		errorList = new ConcurrentLinkedQueue<String>();
 
 		// initialize our offsets
 		offsets = new Point3d[7];
@@ -138,13 +140,27 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	 * Error handling functions
 	 **************************************************************************/
 
+	public void assessState() {
+	}
+	
 	protected void setError(String e) {
-		error = e;
+		errorList.add(e);
 	}
 
+	
+	public boolean hasError() {
+		return (errorList.size() > 0);
+	}
+	
+	public String getError() {
+		return errorList.remove();
+	}
+
+	@Deprecated
 	public void checkErrors() throws BuildFailureException {
-		if (error.length() > 0)
-			throw new BuildFailureException(error);
+		if (errorList.size() > 0) {
+			throw new BuildFailureException(getError());
+		}
 	}
 
 

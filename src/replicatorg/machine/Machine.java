@@ -87,27 +87,6 @@ public class Machine implements MachineInterface {
 		SHUTDOWN,	// Stop build (disconnect if building remotely), and stop the thread. 
 	}
 
-	// Test idea for a request interface between the thread and the controller
-	class MachineCommand {
-
-		RequestType type;
-		GCodeSource source;
-		String remoteName;
-		DriverCommand command;
-
-		public MachineCommand(RequestType type, GCodeSource source,
-				String remoteName) {
-			this.type = type;
-			this.source = source;
-			this.remoteName = remoteName;
-		}
-
-		public MachineCommand(RequestType type, DriverCommand command) {
-			this.type = type;
-			this.command = command;
-		}
-	}
-
 	public enum JobTarget {
 		/** No target selected. */
 		NONE,
@@ -363,7 +342,6 @@ public class Machine implements MachineInterface {
 			}
 		}
 	}
-
 
 	protected void emitStateChange(MachineState current, String message) {
 		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current, message);

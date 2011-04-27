@@ -54,6 +54,31 @@ public class Serial implements SerialPortEventListener {
 	 */
 	private static Set<Serial> portsInUse = new HashSet<Serial>();
 
+	/** True if the device is connected **/
+	private AtomicBoolean connected = new AtomicBoolean(false);
+	
+	// Properties can be passed in for default values.
+	// Otherwise, we default to 9600 N81
+	private SerialPort port;
+	private String name;
+	private int rate;
+	private int parity;
+	private int data;
+	private int stop;
+	
+	/**
+	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 500ms.
+	 */
+	private int timeoutMillis = 500;
+	
+	private ByteFifo readFifo = new ByteFifo();
+	
+	public final AtomicReference<SerialFifoEventListener> listener =
+		new AtomicReference<SerialFifoEventListener>();
+	
+	private InputStream input;
+	private OutputStream output;
+	
 	/**
 	 * Scan the port ids for a list of potential serial ports that we can use.
 	 * @return A vector of serial port names and availability information.
@@ -112,24 +137,8 @@ public class Serial implements SerialPortEventListener {
 
 		return v;
 	}
-	
-	// Properties can be passed in for default values.
-	// Otherwise, we default to 9600 N81
-
-	private SerialPort port;
-	private String name;
-	private int rate;
-	private int parity;
-	private int data;
-	private int stop;
 
 	public String getName() { return name; }
-
-	public final AtomicReference<SerialFifoEventListener> listener =
-		new AtomicReference<SerialFifoEventListener>();
-	
-	private InputStream input;
-	private OutputStream output;
 
 	public Serial(String portName, int baudRate, char parity, int dataBits, int stopBits) throws SerialException {
 		init(portName, baudRate, parity, dataBits, stopBits);
@@ -190,6 +199,8 @@ public class Serial implements SerialPortEventListener {
 					+ "'.", e);
 		}
 		portsInUse.add(this);
+		
+		connected.set(true);
 	}
 
 	/**
@@ -230,8 +241,6 @@ public class Serial implements SerialPortEventListener {
 		port.setDTR(true);
 		port.setRTS(true);
 	}
-	
-	private ByteFifo readFifo = new ByteFifo();
 	
 	/**
 	 * polls the readFifo for new bytes. If numberOfBytes bytes are received or the 
@@ -304,13 +313,17 @@ public class Serial implements SerialPortEventListener {
 	}
 
 	public void write(byte bytes[]) {
-		if (disconnected.get() == true) Base.logger.warning("serial disconnected");
+		if (!connected.get()) {
+			Base.logger.severe("serial disconnected");
+			return;
+		}
+		
 		try {
 			output.write(bytes);
 			output.flush(); // Reconsider?
 
 		} catch (Exception e) { // null pointer or serial port dead
-			Base.logger.warning( "serial error: \n" + e.getMessage() );
+			Base.logger.severe( "serial error: \n" + e.getMessage() );
 		}
 	}
 
@@ -329,10 +342,6 @@ public class Serial implements SerialPortEventListener {
 		write(what.getBytes());
 	}
 
-	/**
-	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 500ms.
-	 */
-	private int timeoutMillis = 500;
 
 	/**
 	 * Set the amount of time we're willing to wait for a read to timeout.
@@ -371,7 +380,7 @@ public class Serial implements SerialPortEventListener {
 				// we have a plan for how to respond to the user when the
 				// connection drops, we'll just let this silently fail, and set
 				// a fail bit.
-				disconnected.set(true);
+				connected.set(false);
 			} catch (InterruptedException e) {
 			}
 			readFifo.clear();
@@ -382,11 +391,10 @@ public class Serial implements SerialPortEventListener {
 		}
 	}
 	
-	private AtomicBoolean disconnected = new AtomicBoolean(false);
 	/**
 	 * Indicates if we've received 
 	 */
-	public boolean isConnected() { return !(disconnected.get()); }
+	public boolean isConnected() { return (connected.get()); }
 
 	public void serialEvent(SerialPortEvent event) {
 		if (event.getEventType() != SerialPortEvent.DATA_AVAILABLE) return;
@@ -419,8 +427,10 @@ public class Serial implements SerialPortEventListener {
 				// we have a plan for how to respond to the user when the
 				// connection drops, we'll just let this silently fail, and set
 				// a fail bit.
-				Base.logger.warning("Serial IO exception:" + event.toString() + ". Printer communication may be disrupted.");
-				disconnected.set(true);
+				if (connected.get()) {
+					Base.logger.severe("Serial IO exception:" + event.toString() + ". Printer communication may be disrupted.");
+					connected.set(false);
+				}
 			}
 		}
 	}

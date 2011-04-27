@@ -69,7 +69,27 @@ public interface Driver {
 	 * Is our buffer empty? If don't have a buffer, its always true.
 	 */
 	public boolean isBufferEmpty();
+	
+	
+	/**
+	 * Check that the communication line is still up, the machine is still connected,
+	 * and that the machine state is still good.
+	 * TODO: Rename this? 
+	 */
+	public void assessState();
+	
+	/**
+	 * Check if the device has reported an error
+	 * @return True if there is an error waiting.
+	 */
+	public boolean hasError();
 
+	/**
+	 * Get a string message for the first driver error.
+	 * @return
+	 */
+	public String getError();
+	
 	/**
 	 * do we have any errors? this method handles them.
 	 */

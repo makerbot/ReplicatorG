@@ -67,6 +67,7 @@ public class MachineCallbackHandler extends Thread {
 				// Terminate!
 				Base.logger.fine("taking callback handler down, state change queue: "
 						+ machineStateChangeEventQueue.size());
+				break;
 			}
 		}
 	}

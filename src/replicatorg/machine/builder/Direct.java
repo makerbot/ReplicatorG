@@ -116,13 +116,10 @@ public class Direct implements MachineBuilder{
 		}
 		
 		// Check for any driver errors
-		if (building) {
-			try {
-				driver.checkErrors();
-			} catch (BuildFailureException e) {
-				Base.logger.severe("Build failure: " + e.getMessage());
-				return;
-			}
+		// TODO: Do we need to check if we are building?
+		if (building && driver.hasError()) {
+			Base.logger.severe("Driver reported an error, aborting build");
+			return;
 		}
 		
 		// Read and process next line
