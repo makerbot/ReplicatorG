@@ -148,7 +148,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	MainButton uploadButton, playbackButton, fileButton;
 	
 	public MainButtonPanel(MainWindow editor) {
-		setLayout(new MigLayout("gap 5"));
+		setLayout(new MigLayout("gap 5, ins 5"));
 		this.editor = editor;
 
 		// hardcoding new blue color scheme for consistency with images,
