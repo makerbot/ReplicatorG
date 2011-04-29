@@ -296,7 +296,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		menubar.add(buildEditMenu());
 		menubar.add(buildGCodeMenu());
 		menubar.add(buildMachineMenu());
-		menubar.add(buildHelpMenu());
 
 		setJMenuBar(menubar);
 		
@@ -1065,74 +1064,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		if (machineMenu.getItemCount() == 0)
 			machineMenu.setEnabled(false);
 	}
-
-	protected JMenu buildHelpMenu() {
-		JMenu menu = new JMenu("Help");
-		JMenuItem item;
-
-		if (!Base.isLinux()) {
-			item = newJMenuItem("Getting Started", '1');
-			item.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					Base.openURL("http://www.replicat.org/getting-started");
-				}
-			});
-			menu.add(item);
-		}
-
-		item = newJMenuItem("Hardware Setup", '2');
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Base.openURL("http://www.replicat.org/hardware");
-			}
-		});
-		menu.add(item);
-
-		item = newJMenuItem("Troubleshooting", '3');
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Base.openURL("http://www.replicat.org/troubleshooting");
-			}
-		});
-		menu.add(item);
-
-		item = newJMenuItem("Reference", '4');
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Base.openURL("http://www.replicat.org/reference");
-			}
-		});
-		menu.add(item);
-
-		item = newJMenuItem("Frequently Asked Questions", '5');
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Base.openURL("http://www.replicat.org/faq");
-			}
-		});
-		menu.add(item);
-
-		item = newJMenuItem("Visit Replicat.orG", '6');
-		item.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Base.openURL("http://www.replicat.org/");
-			}
-		});
-		menu.add(item);
-
-		// macosx already has its own about menu
-		menu.addSeparator();
-		JMenuItem aboutitem = new JMenuItem("About ReplicatorG");
-		aboutitem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				handleAbout();
-			}
-		});
-		menu.add(aboutitem);
-
-		return menu;
-	}
-
 
 	public JMenu buildEditMenu() {
 		JMenu menu = new JMenu("Edit");
