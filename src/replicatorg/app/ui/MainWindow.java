@@ -707,11 +707,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		menu.addSeparator();
 		menu.add(buildExamplesMenu()); 
 		menu.add(buildScriptsMenu()); 
-		menu.addSeparator();
 
 		// macosx already has its own preferences and quit menu
 		if (!Base.isMacOS()) {
-
+			menu.addSeparator();
+			
 			item = newJMenuItem("Preferences", ',');
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

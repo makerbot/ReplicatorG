@@ -128,9 +128,9 @@ public class ControlPanelWindow extends JFrame implements
 
 		// create all our GUI interfaces
 		mainPanel = new JPanel();
-		mainPanel.setLayout(new MigLayout());
-		mainPanel.add(createJogPanel(),"split 2,flowy");
-		mainPanel.add(createActivationPanel(),"flowy,growx");
+		mainPanel.setLayout(new MigLayout("gap 5, ins 5"));
+		mainPanel.add(createJogPanel(),"split 2,flowy, growx");
+		mainPanel.add(createActivationPanel(),"flowy, growx");
 		mainPanel.add(createToolsPanel(),"spany,grow");
 		
 		this.setResizable(false);

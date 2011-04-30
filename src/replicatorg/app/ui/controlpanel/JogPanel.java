@@ -248,7 +248,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		this.machine = machine;
 		Set<AxisId> axes = machine.getModel().getAvailableAxes();
 		
-		setLayout(new MigLayout());
+		setLayout(new MigLayout("gap 0, ins 0"));
 		
 		// compile our regexes
 		jogRate = 10.0;
@@ -268,8 +268,8 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		JButton yMinusButton = createJogButton("jog/Y-", "Jog Y axis in negative direction", "Y-");
 		JButton panicButton = createJogButton("jog/panic","Emergency stop","Stop");
 
-		JPanel jogButtonPanel = new JPanel(new MigLayout("nogrid"));
-		JPanel xyPanel = new JPanel(new MigLayout("","[]2[]2[]","[]2[]2[]"));
+		JPanel jogButtonPanel = new JPanel(new MigLayout("nogrid, ins 0"));
+		JPanel xyPanel = new JPanel(new MigLayout("ins 0","[]2[]2[]","[]2[]2[]"));
         //xyzPanel.add(zCenterButton, );
 		xyPanel.add(yPlusButton, "skip 1,wrap,growx,growy");
 		xyPanel.add(xMinusButton,"growx,growy");
