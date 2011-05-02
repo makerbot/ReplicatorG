@@ -270,22 +270,25 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	}
 	
 	private void updateFromState(final MachineState s, final MachineInterface machine) {
-		boolean ready = s.isReady();
+		boolean connected = s.isConnected();
+		boolean readyToPrint = s.isReadyToPrint();
+		boolean configurable = s.isConfigurable();
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();
-		boolean hasGcode = (editor != null) && (editor.getBuild() != null) &&
-			editor.getBuild().getCode() != null;
+
 		boolean hasMachine = machine != null;
 		boolean hasPlayback = hasMachine && 
 			(machine.getDriver() != null) &&
 			(machine.getDriver() instanceof SDCardCapture) &&
 			(((SDCardCapture)machine.getDriver()).hasFeatureSDCardCapture());
+		boolean hasGcode = (editor != null) && (editor.getBuild() != null) &&
+		editor.getBuild().getCode() != null;
 		
 		simButton.setEnabled(hasMachine && !building && hasGcode);
 		fileButton.setEnabled(!building && hasGcode);
-		buildButton.setEnabled(ready && hasGcode);
-		uploadButton.setEnabled(ready && hasPlayback && hasGcode);
-		playbackButton.setEnabled(ready && hasPlayback);
+		buildButton.setEnabled(readyToPrint && hasGcode);
+		uploadButton.setEnabled(readyToPrint && hasPlayback && hasGcode);
+		playbackButton.setEnabled(readyToPrint && hasPlayback);
 		pauseButton.setEnabled(building);
 		stopButton.setEnabled(building);
 
@@ -300,11 +303,10 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		fileButton.setSelected(runningTarget == Machine.JobTarget.FILE);
 		playbackButton.setSelected(runningTarget == Machine.JobTarget.NONE);
 
-		boolean connected = s.isConnected();
 		resetButton.setEnabled(connected); 
 		disconnectButton.setEnabled(connected);
 		connectButton.setEnabled(!connected);
-		cpButton.setEnabled(ready);
+		cpButton.setEnabled(configurable);
 		rcButton.setVisible(editor.supportsRealTimeControl());
 		
 //		if (!editor.supportsRealTimeControl()) 

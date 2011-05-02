@@ -119,8 +119,12 @@ public class Sanguino3GDriver extends SerialDriver
 		return isInitialized();
 	}
 	
-	public void assessState() {
-		
+	public void assessState() {		
+		// If we are supposed to have a serial connection, see if it is still active
+		if(isInitialized() && !serial.isConnected()) {
+			setError("Serial disconnected");
+			setInitialized(false);
+		}
 	}
 	
 	/**

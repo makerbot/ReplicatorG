@@ -10,6 +10,7 @@ import org.w3c.dom.NodeList;
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
 import replicatorg.drivers.Driver;
+import replicatorg.drivers.DriverError;
 import replicatorg.drivers.DriverFactory;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
@@ -53,8 +54,6 @@ class MachineThread extends Thread {
 				try {
 					synchronized(this) {
 						// Send out a request, then sleep for a bit, then start over.
-						Base.logger.severe("Status!!");
-						
 						DriverCommand assessCommand = new AssessState();
 						
 						machineThread.scheduleRequest(new MachineCommand(
@@ -206,7 +205,7 @@ class MachineThread extends Thread {
 		case CONNECT:
 			if (state.getState() == MachineState.State.NOT_ATTACHED) {
 				
-				// TODO: This doesn't take an explicit override into account.
+				// TODO: This message doesn't take an explicit override into account.
 				setState(new MachineState(MachineState.State.CONNECTING),
 						"Connecting to " + getMachineName() + " on " + command.remoteName);
 				
@@ -227,14 +226,14 @@ class MachineThread extends Thread {
 				}
 				
 				if (!connected) {
+					// If we couldn't connect, move back to being detached.
 					String errorMessage = null;
 					
 					if (driver.hasError()) {
-						errorMessage = driver.getError();
+						errorMessage = driver.getError().getMessage();
 					}
 					
-					// If we couldn't connect, move back to being detached.
-					setState(new MachineState(MachineState.State.ERROR), errorMessage);
+					setState(new MachineState(MachineState.State.NOT_ATTACHED), errorMessage);
 				}
 				else {
 					
@@ -271,7 +270,7 @@ class MachineThread extends Thread {
 			}
 			break;
 		case BUILD_DIRECT:
-			if (state.isReady()) {
+			if (state.isReadyToPrint()) {
 				startTimeMillis = System.currentTimeMillis();
 				
 				pollingTimer.start(1000);
@@ -297,7 +296,7 @@ class MachineThread extends Thread {
 //			setState(new MachineState(MachineState.State.BUILDING));
 			break;
 		case BUILD_TO_REMOTE_FILE:
-			if (state.isReady()) {
+			if (state.isReadyToPrint()) {
 				if (!(driver instanceof SDCardCapture)) {
 					break;
 				}
@@ -322,7 +321,7 @@ class MachineThread extends Thread {
 			}
 			break;
 		case BUILD_TO_FILE:
-			if (state.isReady()) {
+			if (state.isReadyToPrint()) {
 				if (!(driver instanceof SDCardCapture)) {
 					break;
 				}
@@ -347,7 +346,7 @@ class MachineThread extends Thread {
 			}
 			break;
 		case BUILD_REMOTE:
-			if (state.isReady()) {
+			if (state.isReadyToPrint()) {
 				if (!(driver instanceof SDCardCapture)) {
 					break;
 				}
@@ -434,10 +433,20 @@ class MachineThread extends Thread {
 			
 			// First, check if the driver registered any errors
 			if (driver.hasError()) {
-				// TODO: Exit correctly.
-				
-				setState(new MachineState(MachineState.State.ERROR),
-						driver.getError());
+				DriverError error = driver.getError();
+
+				if(state.isConnected() && error.getDisconnected()) {
+					// If we were connected, but this error causes us to disconnect,
+					// transition to a disconnected state
+					setState(new MachineState(MachineState.State.NOT_ATTACHED),
+							error.getMessage());
+				}
+				else {
+					// Otherwise, transition to an error state, where we can still
+					// configure the machine, but can't print.
+					setState(new MachineState(MachineState.State.ERROR),
+							error.getMessage());
+				}
 			}
 			
 			//
@@ -506,7 +515,7 @@ class MachineThread extends Thread {
 		return true;
 	}
 	
-	public boolean isReady() { return state.isReady(); }
+	public boolean isReadyToPrint() { return state.isReadyToPrint(); }
 	
 
 	/** True if the machine's build is going to the simulator. */
@@ -567,7 +576,7 @@ class MachineThread extends Thread {
 		return simulator;
 	}
 	
-	 public boolean isConnected() {
+	public boolean isConnected() {
 		return (driver != null && driver.isInitialized());
 	}
 	

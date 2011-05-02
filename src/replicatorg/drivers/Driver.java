@@ -88,7 +88,7 @@ public interface Driver {
 	 * Get a string message for the first driver error.
 	 * @return
 	 */
-	public String getError();
+	public DriverError getError();
 	
 	/**
 	 * do we have any errors? this method handles them.

@@ -60,7 +60,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
 	// our error variable.
-	ConcurrentLinkedQueue<String> errorList;
+	ConcurrentLinkedQueue<DriverError> errorList;
 
 	// how fast are we moving in mm/minute
 	private double currentFeedrate;
@@ -71,12 +71,12 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	static public int ABSOLUTE = 0;
 
 	static public int INCREMENTAL = 1;
-
+	
 	/**
 	 * Creates the driver object.
 	 */
 	public DriverBaseImplementation() {
-		errorList = new ConcurrentLinkedQueue<String>();
+		errorList = new ConcurrentLinkedQueue<DriverError>();
 
 		// initialize our offsets
 		offsets = new Point3d[7];
@@ -144,7 +144,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	}
 	
 	protected void setError(String e) {
-		errorList.add(e);
+		errorList.add(new DriverError(e, true));
 	}
 
 	
@@ -152,14 +152,14 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		return (errorList.size() > 0);
 	}
 	
-	public String getError() {
+	public DriverError getError() {
 		return errorList.remove();
 	}
 
 	@Deprecated
 	public void checkErrors() throws BuildFailureException {
 		if (errorList.size() > 0) {
-			throw new BuildFailureException(getError());
+			throw new BuildFailureException(getError().getMessage());
 		}
 	}
 

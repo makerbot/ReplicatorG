@@ -25,7 +25,7 @@ public class MachineState extends Object implements Cloneable {
 		BUILDING,
 		/** The machine is building, but is currently paused. **/
 		PAUSED,
-		/** The machine reported a fatal error, and is halted. **/
+		/** The machine reported a fatal error, and is halted (but still connected). **/
 		ERROR,
 	};
 	
@@ -37,11 +37,6 @@ public class MachineState extends Object implements Cloneable {
 	}
 	
 	public State getState() { return state; }
-
-	
-	public boolean isReady() {
-		return state == State.READY;
-	}
 	
 	/** True if the machine is actively building */
 	public boolean isBuilding() {
@@ -52,11 +47,25 @@ public class MachineState extends Object implements Cloneable {
 	public boolean isConnected() {
 		return state == State.READY
 			|| state == State.BUILDING
+			|| state == State.PAUSED
+			|| state == State.ERROR;
+	}
+	
+	public boolean isReadyToPrint() {
+		return state == State.READY;
+	}
+	
+	public boolean isPrinting() {
+		return state == State.BUILDING
 			|| state == State.PAUSED;
 	}
 	
 	public boolean isPaused() {
 		return (state == State.PAUSED);
+	}
+	
+	public boolean isConfigurable() {
+		return (isConnected() && !isPrinting());
 	}
 	
 	public MachineState clone() {

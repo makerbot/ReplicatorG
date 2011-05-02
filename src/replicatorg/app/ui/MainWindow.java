@@ -1709,12 +1709,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 		boolean hasGcode = getBuild().getCode() != null;
 		if (building) {
-			if (evt.getState().isReady()) {
+			if (evt.getState().isReadyToPrint()) {
 				final MachineState endState = evt.getState();
         		building = false;
                 SwingUtilities.invokeLater(new Runnable() {
+                	// TODO: Does this work?
                     public void run() {
-                    	if (endState.isReady()) {
+                    	if (endState.isReadyToPrint()) {
                     		notifyBuildComplete(buildStart, new Date());
                     	} else {
                     		notifyBuildAborted(buildStart, new Date());
@@ -1727,18 +1728,18 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				building = false; // Don't keep the building state when disconnecting from the machine
 			}
 		}
-		if (evt.getState().isReady()) {
+		if (evt.getState().isReadyToPrint()) {
+			// TODO: What?
 			reloadSerialMenu();
 		}
-		boolean showParams = 
-				evt.getState().isReady() &&
-				machineLoader.getDriver() instanceof OnboardParameters &&
-				((OnboardParameters)machineLoader.getDriver()).hasFeatureOnboardParameters();
+		boolean showParams = evt.getState().isConfigurable()
+				&& machineLoader.getDriver() instanceof OnboardParameters
+				&& ((OnboardParameters)machineLoader.getDriver()).hasFeatureOnboardParameters();
 
 		if (Base.logger.isLoggable(Level.FINE)) {
 			if (!showParams) {
 				String cause = new String();
-				if (evt.getState().isReady()) {
+				if (evt.getState().isConfigurable()) {
 					if (!machineLoader.isLoaded()) cause += "[no machine] ";
 					else {
 						if (!(machineLoader.getDriver() instanceof OnboardParameters)) {
@@ -1775,20 +1776,20 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 //		machineMenu.setEnabled(!evt.getState().isConnected());
 		
 		// enable the control panel menu item when the machine is ready
-		controlPanelItem.setEnabled(evt.getState().isReady());
+		controlPanelItem.setEnabled(evt.getState().isConfigurable());
 		
 		// enable the build menu item when the machine is ready and there is gcode in the editor
-		buildMenuItem.setEnabled(hasGcode && evt.getState().isReady());
+		buildMenuItem.setEnabled(hasGcode && evt.getState().isConfigurable());
 		onboardParamsItem.setVisible(showParams);
 		extruderParamsItem.setVisible(showParams);
 		boolean showIndexing = 
-			evt.getState().isReady() &&
+			evt.getState().isConfigurable() &&
 			machineLoader.getDriver() instanceof MultiTool &&
 			((MultiTool)machineLoader.getDriver()).toolsCanBeReindexed();
 		toolheadIndexingItem.setVisible(showIndexing);
 		
 		boolean showRealtimeTuning = 
-			evt.getState().isReady() &&
+			evt.getState().isConnected() &&
 			machineLoader.getDriver() instanceof RealtimeControl &&
 			((RealtimeControl)machineLoader.getDriver()).hasFeatureRealtimeControl();
 		realtimeControlItem.setVisible(showRealtimeTuning);
