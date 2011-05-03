@@ -33,6 +33,7 @@ class ConfigurationDialog extends JDialog {
 	final String profilePref = "replicatorg.skeinforge.profilePref";
 	JButton editButton = new JButton("Edit...");
 	JButton duplicateButton = new JButton("Duplicate...");
+	JButton locateButton = new JButton("Locate...");
 	JButton deleteButton = new JButton("Delete");
 	JButton generate = new JButton("Generate...");
 	private WeakReference<SkeinforgeGenerator> parentGenerator;
@@ -87,6 +88,7 @@ class ConfigurationDialog extends JDialog {
 
 		editButton.setToolTipText("Click to edit this profile's properties.");
 		deleteButton.setToolTipText("Click to remove this profile. Note that this can not be undone.");
+		locateButton.setToolTipText("Click to find the folder for this profile, e.g. to make backups or to share your settings.");
 		duplicateButton.setToolTipText("This will make a copy of the currently selected profile, with a new name that you provide.");
 		
 		// have to set this. Something wrong with the initial use of the
@@ -94,6 +96,7 @@ class ConfigurationDialog extends JDialog {
 		generate.setEnabled(false);
 				
 		editButton.setEnabled(false);
+		locateButton.setEnabled(false);
 		deleteButton.setEnabled(false);
 		duplicateButton.setEnabled(false);
 
@@ -107,6 +110,7 @@ class ConfigurationDialog extends JDialog {
 						.isSelectionEmpty();
 				generate.setEnabled(selected);
 				editButton.setEnabled(selected);
+				locateButton.setEnabled(selected);
 				deleteButton.setEnabled(selected);
 				duplicateButton.setEnabled(selected);
 			}
@@ -148,7 +152,6 @@ class ConfigurationDialog extends JDialog {
 			}
 	     }
 		);
-		
 		add(editButton, "split,flowy,growx");
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -179,6 +182,22 @@ class ConfigurationDialog extends JDialog {
 				}
 			}
 		});
+		
+		add(locateButton, "split,flowy,growx");
+		locateButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int idx = prefList.getSelectedIndex();
+				if (idx == -1) {
+				} else {
+					Profile p = (Profile) prefList.getModel().getElementAt(
+							idx);
+					boolean result = new ProfileUtils().openFolder(p);
+					Base.logger.log(Level.FINEST,
+							"Opening directory for profile: "+ result);
+				}
+			}
+		});
+
 
 		add(deleteButton, "wrap,growx");
 		deleteButton.addActionListener(new ActionListener() {

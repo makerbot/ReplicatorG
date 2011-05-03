@@ -247,7 +247,17 @@ public interface Driver {
 
 	public int getMotorSpeedPWM();
 
+	/**
+	 * Enable motor until stopped by disableMotor
+	 * @throws RetryException 
+	 */
 	public void enableMotor() throws RetryException;
+
+	/**
+	 * Enable motor for a fixed duration, then disable
+	 * @throws RetryException 
+	 */
+	public void enableMotor(long millis) throws RetryException;
 
 	public void disableMotor() throws RetryException;
 
@@ -355,6 +365,10 @@ public interface Driver {
 	 */
 	public void stop(boolean abort);
 
+	public boolean hasSoftStop();
+
+	public boolean hasEmergencyStop();
+	
 	public void reset();
 
 	/***************************************************************************

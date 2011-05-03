@@ -6,6 +6,8 @@ package replicatorg.drivers.reprap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
+import replicatorg.app.Base;
+
 /**
  * The extrusion thread provides 5D extrude commands at a regular frequency so that manual 
  * extruder control will work with the RepRap 5D firmware.
@@ -22,11 +24,14 @@ public class ExtrusionUpdater {
 	/** the time (ms) the last extrude command will complete or zero if unset */
 	private long extrudeQueueEnd = 0;
 
-	/** the time length of each extrusion command */
+	/** the time length of each extrusion command 
+	 *  will be overriden if motor_steps is configured, and is set to a 
+	 *  different value than 200 steps.
+	 * */
 	private long commandPeriod = 100; //ms
 	/** queue this many commands into the future. Larger = smoother extrusion, 
 	 * smaller = more responsive manual extrusion. */
-	private int maxQueuedExtrudeTime = 500; //ms
+	private int maxQueuedExtrudeTime = 200; //ms
 	
 	
 	
@@ -41,10 +46,24 @@ public class ExtrusionUpdater {
 		this.driver = driver;
 	}
 	
+	private void determineCommandPeriod() {
+		// override with motor_steps from tool model (uses machine's XML file)
+		// should be initialized elsewhere, but somehow the driver/tool_model isn't initialized yet.
+		double motorSteps = driver.getMotorSteps();
+		if(motorSteps == 0.0) {
+			motorSteps = 200;
+		}
+		Base.logger.info("motorSteps="+motorSteps);
+		this.commandPeriod = (long) (motorSteps/2); //ms
+		Base.logger.info("commandPeriod="+this.commandPeriod);
+		
+	}
 	
 
 	private void sendExtrudeCommand(double distance, double feedrate) {
+		determineCommandPeriod();
 		String feedrateString = driver.df.format(feedrate);
+//		Base.logger.info("commandPeriod="+this.commandPeriod);
 		if (driver.feedrate.get() != feedrate)
 		{
 			driver.sendCommand(driver._getToolCode() + "G1 F"+feedrateString);
@@ -91,9 +110,7 @@ public class ExtrusionUpdater {
 				Thread.sleep(extrudeQueueEnd-currentTime);
 			}
 			do {
-				synchronized (driver.commands) {
-					queueSize = driver.commands.size();
-				}
+				queueSize = driver.queueSize();
 				if (queueSize > maxQueuedExtrudeTime) Thread.sleep(100);
 			} while (queueSize > maxQueuedExtrudeTime);
 				

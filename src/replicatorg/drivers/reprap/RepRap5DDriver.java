@@ -72,7 +72,6 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/** true if a line containing the ok keyword has been received from the firmware*/
 	private final AtomicBoolean okReceived = new AtomicBoolean(false);
 	
-
 	/**
 	 * An above zero level shows more info
 	 */
@@ -99,6 +98,27 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * Enables pulsing RTS to restart the RepRap on connect.
 	 */
 	private boolean pulseRTS = true;
+
+	/**
+	 * if true the firmware sends "resend: 1234" and then "ok" for
+	 * the same line and we need to eat that extra "ok".  Teacup does
+	 * not do this but Tonokip, Klimentkip and FiveD do
+	 */
+	private boolean okAfterResend = true;
+
+	/**
+	 * if true the firmware sends "start" followed by "ok" on reset
+	 * and we need to eat that extra "ok".  Teacup is the only known
+	 * firmware with this behavior.
+	 */
+	private boolean okAfterStart = false;
+
+	/**
+	 * if true all E moves are relative, so there's no need to snoop
+	 * E moves and ePosition stays at 0.0 all the time.  Teacup has
+	 * always relative E.
+	 */
+	private boolean alwaysRelativeE = false;
 	
 	/**
 	 * if true the driver will wait for a "start" signal when pulsing rts low 
@@ -125,20 +145,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	private final ExtrusionUpdater extrusionUpdater = new ExtrusionUpdater(this);
 
 	/**
-	 * To keep track of outstanding commands
-	 */
-	protected final Queue<Integer> commands;
-
-	/**
 	 * the size of the buffer on the GCode host
 	 */
 	private int maxBufferSize = 128;
 
-	/**
-	 * the amount of data we've sent and is in the buffer.
-	 */
-	private int bufferSize = 0;
-	
 	/**
 	 * The commands sent but not yet acknowledged by the firmware. Stored so they can be resent 
 	 * if there is a checksum problem.
@@ -155,14 +165,21 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 	public RepRap5DDriver() {
 		super();
+		// Support for emergency stop is not assumed until it is detected. Detection of this feature should be in initialization.
+		hasEmergencyStop = false;
+		
+		// Support for soft stop is not assumed until it is detected. Detection of this feature should be in initialization.
+		hasSoftStop = false;
 		
 		// init our variables.
-		commands = new LinkedList<Integer>();
-		bufferSize = 0;
 		setInitialized(false);
 
 		df = new DecimalFormat("#.######");
 	}
+
+        public String getDriverName() {
+                return "RepRap5D";
+        }
 
 	public synchronized void loadXML(Node xml) {
 		super.loadXML(xml);
@@ -198,6 +215,21 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
         if (XML.hasChildNode(xml, "limitFeedrate")) {
         	rcFeedrateLimit = Double.parseDouble(XML.getChildNodeValue(xml, "limitFeedrate"));
         }
+	if (XML.hasChildNode(xml, "okAfterResend")) {
+		okAfterResend = Boolean.parseBoolean(XML.getChildNodeValue(xml, "okAfterResend"));
+	}
+	if (XML.hasChildNode(xml, "okAfterStart")) {
+		okAfterStart = Boolean.parseBoolean(XML.getChildNodeValue(xml, "okAfterStart"));
+	}
+	if (XML.hasChildNode(xml, "alwaysRelativeE")) {
+		alwaysRelativeE = Boolean.parseBoolean(XML.getChildNodeValue(xml, "alwaysRelativeE"));
+	}
+    if (XML.hasChildNode(xml, "hasEmergencyStop")) {
+    	hasEmergencyStop = Boolean.parseBoolean(XML.getChildNodeValue(xml, "hasEmergencyStop"));
+    }
+    if (XML.hasChildNode(xml, "hasSoftStop")) {
+    	hasSoftStop = Boolean.parseBoolean(XML.getChildNodeValue(xml, "hasSoftStop"));
+    }
         
         if (XML.hasChildNode(xml, "introduceNoise")) {
         	double introduceNoise = Double.parseDouble(XML.getChildNodeValue(xml, "introduceNoise"));
@@ -214,6 +246,17 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		extrusionUpdater.update();
 	}
 
+	/**
+	 * Send any gcode needed to synchronize the driver state and
+	 * the firmware state.  Sent on startup and if we see "start"
+	 * indicating an uncommanded firmware reset.
+	 */
+	public void sendInitializationGcode(boolean synchronous) {
+		sendCommand("M110", synchronous);  // may be duplicate, that's ok
+		// default us to absolute positioning
+		sendCommand("G90", synchronous);
+		sendCommand("G92 X0 Y0 Z0 E0", synchronous);
+	}
 
 	public synchronized void initialize() {
 		// declare our serial guy.
@@ -224,6 +267,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		// wait till we're initialised
 		if (!isInitialized()) {
 			Base.logger.info("Initializing Serial.");
+
+			flushBuffer();
 
 			if (pulseRTS)
 			{
@@ -240,7 +285,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					}
 					if (retriesRemaining == 0)
 					{
-						this.dispose();
+						this.disconnect();
 						Base.logger.warning("RepRap not responding to RTS reset. Failed to connect.");
 						return;
 					}
@@ -254,42 +299,44 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 
 
-			//Send a line # reset command, this allows us to catch the "ok" response in 
-			//case we missed the "start" response which we seem to often miss. (also it 
-			//resets the line number which is good)
+			// Send a line # reset command, this allows us to catch the "ok" response.
+			// If we get a "start" while trying this we'll go again.
 			synchronized(okReceived)
 			{
-				sendCommand("M110", false);
-				Base.logger.fine("GCode sent. waiting for response..");
-				
-				try
+				okReceived.set(false);
+				while (!okReceived.get())
 				{
-					waitForNotification(okReceived, 3000);
-				}
-				catch (TimeoutException e)
-				{
-					this.dispose();
-					Base.logger.warning(
-							"RepRap not responding to gcode. Failed to connect.");
-					return;
+					sendCommand("M110", false);
+					Base.logger.info("GCode sent. waiting for response..");
+					
+					try
+					{
+						waitForNotification(okReceived, 10000);
+					}
+					catch (RetryException e)
+					{ }
+					catch (TimeoutException e)
+					{
+						this.disconnect();
+						Base.logger.warning("Firmware not responding to gcode. Failed to connect.");
+						return;
+					}
 				}
 			}
 
 			Base.logger.fine("GCode response received. RepRap connected.");
 
-			// default us to absolute positioning
-			sendCommand("G90");
-			sendCommand("G92 X0 Y0 Z0 E0");
+			sendInitializationGcode(true);
 			Base.logger.info("Ready.");
 			this.setInitialized(true);
 		}
 	}
 	
-	private void waitForNotification(AtomicBoolean notifier, long timeout) throws TimeoutException
+	private void waitForNotification(AtomicBoolean notifier, long timeout) throws TimeoutException, RetryException
 	{
 		//Wait for the RepRap to respond
 		try {
-			notifier.wait(timeout);					// Bug fix: not using timeout value from machine xml file
+			notifier.wait(timeout);
 		} catch (InterruptedException e) {
 			//Presumably we're shutting down
 			Thread.currentThread().interrupt();
@@ -302,10 +349,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		}
 		else
 		{
-			throw new TimeoutException();
+			throw new RetryException();
 		}
-
-		
 	}
 	
 	private void pulseRTS() throws TimeoutException
@@ -316,13 +361,20 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		Base.logger.info("Attempting to reset RepRap (pulsing RTS)");
 		
 		synchronized (startReceived) {
+			startReceived.set(false);
 			serial.pulseRTSLow();
 			
 			if (waitForStart == false) return;
 	
 			// Wait for the RepRap to respond to the RTS pulse attempt 
 			// or for this to timeout.
-			waitForNotification(startReceived, waitForStartTimeout);
+			while (!startReceived.get()) {
+				try {
+					waitForNotification(startReceived, waitForStartTimeout);
+				} catch (RetryException e) {
+					continue;
+				}
+			}
 		}
 	}
 
@@ -374,20 +426,13 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	}
 
 	
-	protected void resendCommand(String command, String originalCmd) {
-		numResends++;
+	protected void resendCommand(String command) {
 		synchronized (sendCommandLock)
 		{
+			numResends++;
 			if(debugLevel > 0)
 				Base.logger.warning("Resending: \"" + command + "\". Resends in "+ numResends + " of "+lineIterator+" lines.");
 			_sendCommand(command, false, true);
-			if (originalCmd != null)
-			{
-				synchronized(originalCmd)
-				{
-					originalCmd.notifyAll();
-				}
-			}
 		}
 	}
 
@@ -417,13 +462,17 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			//update the current feedrate
 			String feedrate = getRegexMatch("F(-[0-9\\.]+)", next, 1);
 			if (feedrate!=null) this.feedrate.set(Double.parseDouble(feedrate));
-	
-			//update the current extruder position
-			String e = getRegexMatch("E([-0-9\\.]+)", next, 1);
-			if (e!=null) this.ePosition.set(Double.parseDouble(e));
-	
+
+			if (!alwaysRelativeE) {
+				//update the current extruder position
+				String e = getRegexMatch("E([-0-9\\.]+)", next, 1);
+				if (e!=null) this.ePosition.set(Double.parseDouble(e));
+			} else {
+				ePosition.set(0.0);
+			}
+
 			// applychecksum replaces the line that was to be retransmitted, into the next line.
-			if (hasChecksums) next = applyChecksum(next);
+			if (hasChecksums) next = applyNandChecksum(next);
 			
 			Base.logger.finest("sending: "+next);
 		}
@@ -436,6 +485,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		{
 			//wait for the number of commands queued in the buffer to shrink before 
 			//adding the next command to it.
+                        // NOTE: must compute bufferSize from buffer elements now
 			while(bufferSize + next.length() + 1 > maxBufferSize)
 			{
 				Base.logger.warning("reprap driver buffer full. gcode write slowed.");
@@ -462,7 +512,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				// do the actual send.
 				serialInUse.lock();
 				bufferLock.lock();
-				assert (serial != null);
+
+				// record it in our buffer tracker.
+				buffer.addFirst(next);
 				
 				if((introduceNoiseEveryN != -1) && (lineIterator++) >= introduceNoiseEveryN) {
 					Base.logger.info("Introducing noise (lineIterator=="
@@ -473,14 +525,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				} else {
 					serial.write(next + "\n");
 				}
-				serialInUse.unlock();
-
-				// record it in our buffer tracker.
-				int cmdlen = next.length() + 1;
-				commands.add(cmdlen);
-				bufferSize += cmdlen;
-				buffer.addFirst(next);
 				bufferLock.unlock();
+				serialInUse.unlock();
 
 				// Synchronous gcode transfer. Waits for the 'ok' ack to be received.
 				if (synchronous) next.wait();
@@ -488,6 +534,8 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		} catch (InterruptedException e1) {
 			//Presumably we're shutting down
 			Thread.currentThread().interrupt();
+			if (!resending) 
+				sendCommandLock.unlock();
 			return;
 		}
 
@@ -543,12 +591,12 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 	    if(realtimeControl) {
 		    // Rescale F value
-			r = Pattern.compile("(.*)F([0-9\\.]*)(.*)");
+		    r = Pattern.compile("(.*)F([0-9\\.]*)(.*)");
 		    m = r.matcher(fixed);
 		    if (m.find( )) {
 		    	double newvalue = Double.valueOf(m.group(2).trim()).doubleValue();
 		    	// FIXME: kind of an ugly way to test for extrusionless "travel" versus extrusion.
-		    	if(fixed.contains("E"))
+		    	if (!fixed.contains("E"))
 		    	{
 		    		newvalue *= rcTravelFeedrateMultiply;
 		    	} else {
@@ -579,7 +627,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/**
 	 * takes a line of gcode and returns that gcode with a line number and checksum
 	 */
-	public String applyChecksum(String gcode) {
+	public String applyNandChecksum(String gcode) {
 		// RepRap Syntax: N<linenumber> <cmd> *<chksum>\n
 
 		if (gcode.contains("M110"))
@@ -594,7 +642,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		{ // only add a line number if it is not already specified
 			gcode = "N"+lineNumber.incrementAndGet()+' '+gcode+' ';
 		}
+		return applyChecksum(gcode);
+	}
 
+	public String applyChecksum(String gcode) {
 		// chksum = 0 xor each byte of the gcode (including the line number and trailing space)
 		byte checksum = 0;
 		byte[] gcodeBytes = gcode.getBytes();
@@ -618,6 +669,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		if (responseLength < 0) {
 			// This signifies EOF. FIXME: How do we handle this?
 			Base.logger.severe("SerialPassthroughDriver.readResponse(): EOF occured");
+			readResponseLock.unlock();
 			return;
 		} else if(responseLength!=0) {
 			String line;
@@ -628,13 +680,13 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 							.trim().toLowerCase();
 			} catch (UnsupportedEncodingException e) {
 				Base.logger.severe("US-ASCII required. Terminating.");
+				readResponseLock.unlock();
 				throw new RuntimeException(e);
 			}
 
 			//System.out.println("received: " + line);
-			//Base.logger.finest("received: " + line);
 			if(debugLevel > 1)
-				Base.logger.info("received: " + line);
+				Base.logger.info("<< " + line);
 
 			if (line.length() == 0)
 				Base.logger.fine("empty line received");
@@ -642,95 +694,165 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					//if echo is turned on relay it to the user for debugging
 					Base.logger.info(line);
 			}
-			else if (line.startsWith("ok t:")||line.startsWith("t:")||line.startsWith("T:")) {   // GEN6 return uppercase line as per reprep GCode page
+			else if (line.startsWith("ok t:")||line.startsWith("t:")) {
 				Pattern r = Pattern.compile("t:([0-9\\.]+)");
-			    Matcher m = r.matcher(line.toLowerCase());  // Force line to LC
+			    Matcher m = r.matcher(line);
 			    if (m.find( )) {
 			    	String temp = m.group(1);
 					
 					machine.currentTool().setCurrentTemperature(
 							Double.parseDouble(temp));
 			    }
-				r = Pattern.compile(".*b:([0-9\\.]+)$");    // GEN6 does not return ok at start of M105 temperature respone
-			    m = r.matcher(line.toLowerCase());  // Force line to LC
+				r = Pattern.compile("^ok.*b:([0-9\\.]+)$");
+			    m = r.matcher(line);
 			    if (m.find( )) {
 			    	String bedTemp = m.group(1);
 					machine.currentTool().setPlatformCurrentTemperature(
 							Double.parseDouble(bedTemp));
 			    }
 			}
-			else if (line.startsWith("ok")) {     // without else code drops through and gives data error for lines that have been handled.
+			else if (line.startsWith("ok c:")||line.startsWith("c:")) {
+				Pattern r = Pattern.compile("c: *x:?([-0-9\\.]+) *y:?([-0-9\\.]+) *z:?([-0-9\\.]+)");
+				Matcher m = r.matcher(line);
+				if (m.find()) {
+					double x = Double.parseDouble(m.group(1));
+					double y = Double.parseDouble(m.group(2));
+					double z = Double.parseDouble(m.group(3));
+					// super to avoid parroting back a G92
+					try {
+						super.setCurrentPosition(new Point5d(x, y, z));
+						//Base.logger.fine("setting currentposition to:"+x+","+y+","+z+".");
+					} catch (RetryException e) {
+						// do or do not, there is no retry
+					}
+				}
+			}
+			if (line.startsWith("ok")) {
 				
 				synchronized(okReceived)
 				{
 					okReceived.set(true);
 					okReceived.notifyAll();
 				}
-				bufferSize -= commands.remove();
 
 				bufferLock.lock();
 				//Notify the thread waitining in this gcode's sendCommand method that the gcode has been received.
-				String notifier = buffer.removeLast();
-				synchronized(notifier) { notifier.notifyAll(); }
+				if (buffer.isEmpty()) {
+					Base.logger.severe("Received OK with nothing queued!");
+				} else {
+					String notifier = buffer.removeLast();
+					if(debugLevel > 1)
+						Base.logger.info("FW Accepted: " + notifier);
+					synchronized(notifier) { notifier.notifyAll(); }
+				}
+				bufferLock.unlock();
 				
 				synchronized(bufferLock)
 				{ /*let any sendCommand method waiting to send know that the buffer is 
 					now smaller and may be able to fit their command.*/
 					bufferLock.notifyAll();
 				}
-				bufferLock.unlock();
 			}
 
 			// old arduino firmware sends "start"
 			else if (line.contains("start")) {
+				// Reset line number first in case gcode is sent below
+				lineNumber.set(-1);
+
+				boolean active = !buffer.isEmpty();
+				flushBuffer();
+
+				if (isInitialized()) {
+					sendInitializationGcode(false);
+
+					// If there were outstanding commands try to abort any print in progress.
+					// This is a poor test:  but do we know if we're printing at this level?
+					// tried setInitialized(false); but that didn't work well
+					if (active) {
+						Base.logger.severe("Firmware reset with active commands!");
+						setError("Firmware reset with active commands!");
+					}
+				}
+				if (okAfterStart) {
+					// firmware sends "ok" after start, put something here to consume it:
+					bufferLock.lock();
+					buffer.addLast(";start-ok");
+					bufferLock.unlock();
+				}
+
 				// todo: set version
-				// TODO: check if this was supposed to happen, otherwise report unexpected reset! 
 				synchronized (startReceived) {
 					startReceived.set(true);
 					startReceived.notifyAll();
 				}
-				lineNumber.set(-1);
+
+				// Wake up connect task to try again
+				synchronized (okReceived) {
+					okReceived.set(false);
+					okReceived.notifyAll();
+				}
 
 			} else if (line.startsWith("extruder fail")) {
 				setError("Extruder failed:  cannot extrude as this rate.");
 
 			} else if (line.startsWith("resend:")||line.startsWith("rs ")) {
-				//Getting the correct line from our buffer
-				bufferLock.lock();
-				String bufferedLine = buffer.removeLast();
-				bufferSize -= commands.remove();
-				bufferLock.unlock();
-
-				//Is it a Dud M or G code? If so write a warning and return.
-				String letter = getRegexMatch("dud ([a-z]) code", line, 1);
-				if ( (letter)!=null)
-				{
-					Base.logger.info("Dud "+letter+" code received. ignoring.");
-					synchronized (bufferedLine) {
-						bufferedLine.notifyAll();
-					}
-					readResponseLock.unlock();
-					return;
-				}
-				
 				// Bad checksum, resend requested
-
-				int bufferedLineNumber = Integer.parseInt( getRegexMatch(
-						gcodeLineNumberPattern, bufferedLine.toLowerCase(), 1) );
-
 				Matcher badLineMatch = resendLinePattern.matcher(line);
+
+				// Is it a Dud M or G code?
+				String dudLetter = getRegexMatch("dud ([a-z]) code", line, 1);
+
 				if (badLineMatch.find())
 				{
 					int badLineNumber = Integer.parseInt(
 							badLineMatch.group(1) );
 					if(debugLevel > 1)
-						Base.logger.severe("Bad line number: " + badLineNumber + ", bufferedLineNumber: "+bufferedLineNumber + ", bufferedLine: \""+bufferedLine+"\"");
+						Base.logger.warning("Received resend request for line " + badLineNumber);
 
-					if (bufferedLineNumber != badLineNumber)
+					Queue<String> resend = new LinkedList<String>();
+					boolean found = false;
+					// Search backwards for the bad line in our buffer.
+					// Firmware flushed everything after this line, so
+					// build a queue of lines to resend.
+					bufferLock.lock();
+					lineSearch: while (!buffer.isEmpty())
 					{
-						Base.logger.warning("unexpected line number, resetting line number");
-						// reset the line number if it does not match the buffered line
-						 this.resendCommand("N"+(bufferedLineNumber-1)+" M110", null);
+						String bufferedLine = buffer.removeLast();
+						if(debugLevel > 1)
+							Base.logger.info("Searching: " + bufferedLine);
+						int bufferedLineNumber = Integer.parseInt( getRegexMatch(
+								gcodeLineNumberPattern, bufferedLine.toLowerCase(), 1) );
+						if (dudLetter != null && bufferedLineNumber == badLineNumber) {
+							Base.logger.info("Dud "+dudLetter+" code: Dropping " + bufferedLine);
+							synchronized (bufferedLine) {
+								bufferedLine.notifyAll();
+							}
+							found = true;
+							break lineSearch;
+						}
+						resend.add(bufferedLine);
+						if (bufferedLineNumber == badLineNumber) {
+							found = true;
+							break lineSearch;
+						}
+					}
+					if (okAfterResend) {
+						// firmware sends "ok" after resend, put something here to consume it:
+						buffer.addLast(";resend-ok");
+					}
+					bufferLock.unlock();
+
+					if (!found) {
+						int restartLineNumber = Integer.parseInt( getRegexMatch(
+								gcodeLineNumberPattern, resend.element().toLowerCase(), 1) );
+						Base.logger.severe("resend for line " + badLineNumber + " not in our buffer.  Resuming from " + restartLineNumber);
+						this.resendCommand(applyChecksum("N"+(restartLineNumber-1)+" M110"));
+					}
+					// resend the lines
+					while (!resend.isEmpty())
+					{
+						String bufferedLine = resend.remove();
+						this.resendCommand(bufferedLine);
 					}
 				}
 				else
@@ -738,12 +860,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					// Malformed resend line request received. Resetting the line number
 					Base.logger.warning("malformed line resend request, "
 							+"resetting line number. Malformed Data: \n"+line);
-					this.resendCommand("N"+(bufferedLineNumber-1)+" M110", null);
+					this.resendCommand(applyChecksum("N"+(lineNumber.get()-1)+" M110"));
 				}
 
-				// resend the line
-				this.resendCommand(bufferedLine, bufferedLine);
-
+			} else if (line.startsWith("t:") || line.startsWith("c:")) {
+				// temperature, position handled above
 			} else {
 				Base.logger.severe("Unknown: " + line);
 			}
@@ -757,23 +878,52 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	}
 
 	/**
+	 * Clear the command buffer and send notifications to everyone
+	 * waiting for their completion.
+	 */
+	private void flushBuffer() {
+		bufferLock.lock();
+		while (!buffer.isEmpty())
+		{
+			String notifier = buffer.removeLast();
+			if(debugLevel > 1)
+				Base.logger.fine("Flushing dead command: " + notifier);
+			synchronized(notifier) { notifier.notifyAll(); }
+		}
+		bufferLock.unlock();
+	}
+
+	/**
 	 * Is our buffer empty? If don't have a buffer, its always true.
 	 */
 	public boolean isBufferEmpty() {
-//		try {
-//			readResponse();
-//		} catch (Exception e) {
-//		}
 		bufferLock.lock();
-		boolean isEmpty = (bufferSize == 0);
+		boolean isEmpty = buffer.isEmpty();
 		bufferLock.unlock();
 		return isEmpty;
 	}
 
+	/**
+	 * What is our queue size?  Used by extrusion driver
+	 */
+	public int queueSize() {
+		bufferLock.lock();
+		int queueSize = buffer.size();
+		bufferLock.unlock();
+		return queueSize;
+	}
+
+	private synchronized void disconnect() {
+		bufferLock.lock();
+		flushBuffer();
+		setSerial(null);
+		bufferLock.unlock();
+	}
+
 	public synchronized void dispose() {
 		bufferLock.lock();
+		flushBuffer();
 		super.dispose();
-		commands.clear();
 		bufferLock.unlock();
 	}
 
@@ -812,6 +962,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		}
 		sendCommand(buf.toString());
 
+		invalidatePosition();
 		super.homeAxes(axes,false,0);
 	}
 
@@ -843,6 +994,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 	public void disableDrives() throws RetryException {
 		sendCommand("M18");
+		sendCommand("M84");     // Klimentkip
 
 		super.disableDrives();
 	}
@@ -908,6 +1060,27 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		}
 
 		super.enableMotor();
+	}
+
+	/**
+	 * Unified enable+delay+disable to allow us to use G1 E
+	 */
+	public synchronized void enableMotor(long millis) throws RetryException {
+		if (fiveD == false)
+		{
+			super.enableMotor(millis);
+		}
+		else
+		{
+			super.enableMotor();
+			double feedrate = machine.currentTool().getMotorSpeedRPM();
+			double distance = millis * feedrate / 60 / 1000;
+			if (machine.currentTool().getMotorDirection() != 1) {
+				distance *= -1;
+			}
+			sendCommand(_getToolCode() + "G1 E" + (ePosition.get() + distance) + " F" + feedrate);
+			super.disableMotor();
+		}
 	}
 
 	public void disableMotor() throws RetryException {
@@ -1054,25 +1227,28 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		super.closeCollet();
 	}
 
-	public synchronized void reset() {
+	public void reset() {
 		Base.logger.info("Reset.");
 		setInitialized(false);
-		// resetting the serial port + command queue
-		//this.serial.clear();
-		//commands = null;
-
 		initialize();
 	}
 
-	public synchronized void stop() {
+	public void stop(boolean abort) {
 		// No implementation needed for synchronous machines.
 		//sendCommand("M0");
 		// M0 is the same as emergency stop: will hang all communications. You don't really want that...
+		invalidatePosition();
 		Base.logger.info("RepRap/Ultimaker Machine stop called.");
 	}
 
-        protected Point5d reconcilePosition() {
-		return new Point5d();
+	protected Point5d reconcilePosition() {
+		sendCommand("M114");
+		// If the firmware returned a position then the reply parser
+		// already set the current position and our caller is actually
+		// going to end up ignoring what we return.
+		//
+		//return new Point5d();
+		return super.getCurrentPosition(false);
 	}
 
 	/* ===============
