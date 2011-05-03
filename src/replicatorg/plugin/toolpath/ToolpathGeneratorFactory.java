@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Vector;
 
 import replicatorg.app.Base;
+import replicatorg.plugin.toolpath.skeinforge.PrintOMatic;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
 
 public class ToolpathGeneratorFactory {
