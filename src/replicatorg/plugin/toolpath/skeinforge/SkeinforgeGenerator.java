@@ -299,6 +299,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			return Double.valueOf(value);
 		}
 		
+		JTabbedPane printOMatic;
+		
 		public PrintOMatic() {
 			component = new JPanel(new MigLayout());
 			
@@ -319,6 +321,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				public void actionPerformed(ActionEvent e) {
 					if (enabledName != null) {
 						Base.preferences.putBoolean(enabledName,enabled.isSelected());
+						
+						printOMatic.setVisible(enabled.isSelected());
 					}
 				}
 			});
@@ -326,7 +330,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			component.add(enabled, "wrap, spanx");
 			
 			// Make a tabbed pane to sort basic and advanced components 
-			JTabbedPane tabbedPane = new JTabbedPane();
+			printOMatic = new JTabbedPane();
 			
 			JComponent basicPanel = new JPanel(new MigLayout());
 			JComponent advancedPanel = new JPanel(new MigLayout());
@@ -354,30 +358,15 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			addParameter(advancedPanel, "driveGearScalingFactor",
 					"Gear Diameter Scaling Factor", "0.85",
 					"ABS = 0.85, PLA = 1");
-			
-			addParameter(advancedPanel, "retractedVolumeScalingFactor",
-					"Retracted Volume Scaling Factor", "1",
-					"Nominally 1");
-			
+
 			addParameter(advancedPanel, "modelHasThinFeatures",
 					"No thin features", "1",
 					"Model does not contain any thin features (<2.5mm) (1=true, 0=false)");
-			
-			addParameter(advancedPanel, "reversalDistance",
-					"Extruder Reversal Distance (mm)", "1.235",
-					"input distance");
 
-			addParameter(advancedPanel, "reversalPushBack",
-					"Extruder Push Back Distance (mm)", "1.285",
-					"input distance (Push back should be slightly longer to overcome nozzle pressure)");
-
-			addParameter(advancedPanel, "reversalSpeed",
-					"Reversal Speed (RPM)", "35",
-					"35 is default for 3mm, 60 is default for 1.75");
-
-			tabbedPane.addTab("Basic", basicPanel);
-			tabbedPane.addTab("Advanced", advancedPanel);
-			component.add(tabbedPane);
+			printOMatic.addTab("Basic", basicPanel);
+			printOMatic.addTab("Advanced", advancedPanel);
+			component.add(printOMatic);
+			printOMatic.setVisible(enabled.isSelected());
 		}
 		
 		public JComponent getUI() { return component; }
@@ -394,10 +383,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				double layerHeight =getValue("desiredLayerHeight");
 				double extraShellsOnAlternatingSolidLayer =getValue("modelHasThinFeatures");
 				double extraShellsOnSparseLayer =getValue("modelHasThinFeatures");
-				double reversalSpeed =getValue("reversalSpeed");
-				double reversalTime =(((getValue("retractedVolumeScalingFactor")*getValue("reversalDistance")*Math.PI*Math.pow(2.88/2,2))/(Math.PI*Math.pow(getValue("filamentDiameter")/2,2)))/(((getValue("driveGearDiameter")*getValue("driveGearScalingFactor")*Math.PI)*getValue("reversalSpeed"))/60))*Math.pow(10,3);
-				double pushbackTime =(((getValue("retractedVolumeScalingFactor")*getValue("reversalPushBack")*Math.PI*Math.pow(2.88/2,2))/(Math.PI*Math.pow(getValue("filamentDiameter")/2,2)))/(((getValue("driveGearDiameter")*getValue("driveGearScalingFactor")*Math.PI)*getValue("reversalSpeed"))/60))*Math.pow(10,3);
-				
+
 				Base.logger.fine("Print-O-Matic settings:"
 						+ "\n flowRate=" + flowRate
 						+ "\n perimeterWidthOverThickness=" + perimeterWidthOverThickness
@@ -406,9 +392,6 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 						+ "\n layerHeight=" + layerHeight
 						+ "\n extraShellsOnAlternatingSolidLayer=" + extraShellsOnAlternatingSolidLayer
 						+ "\n extraShellsOnSparseLayer=" + extraShellsOnSparseLayer
-						+ "\n reversalSpeed=" + reversalSpeed
-						+ "\n reversalTime=" + reversalTime
-						+ "\n pushbackTime=" + pushbackTime
 						);
 							
 				options.add(new SkeinforgeOption("speed.csv", "Flow Rate Setting (float):", Double.toString(flowRate)));
@@ -418,9 +401,6 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				options.add(new SkeinforgeOption("carve.csv", "Layer Thickness (mm):", Double.toString(layerHeight)));
 				options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Alternating Solid Layer (layers):", Double.toString(extraShellsOnAlternatingSolidLayer)));
 				options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Sparse Layer (layers):", Double.toString(extraShellsOnSparseLayer)));
-				options.add(new SkeinforgeOption("reversal.csv", "Reversal speed (RPM):", Double.toString(reversalSpeed)));
-				options.add(new SkeinforgeOption("reversal.csv", "Reversal time (milliseconds):", Double.toString(reversalTime)));
-				options.add(new SkeinforgeOption("reversal.csv", "Push-back time (milliseconds):", Double.toString(pushbackTime)));
 			}
 				
 			return options;
