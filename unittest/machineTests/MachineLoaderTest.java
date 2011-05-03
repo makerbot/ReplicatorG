@@ -146,16 +146,20 @@ public class MachineLoaderTest {
 
 		event = listener.getMachineStateChangedEvent(commTimeout);
 		assertNotNull(event);
-		assertTrue(event.getState().getState() == MachineState.State.ERROR);
+		assertTrue(event.getState().getState() == MachineState.State.NOT_ATTACHED);
 		
 		// Finally, make sure that the query interface agrees we aren't connected
 		assertFalse(loader.isConnected());
 		
 		// Unload the machine, 
 		loader.unload();
+		
+		// Make sure that it actually unloaded
+		assertFalse(loader.isLoaded());
+		
+		// And make sure we don't get any more errors from it.
 		event = listener.getMachineStateChangedEvent(commTimeout);
-		assertNotNull(event);
-		assertTrue(event.getState().getState() == MachineState.State.NOT_ATTACHED);
+		assertNull(event);
 	}
 
 	// TODO: This requires a Thing-O-Matic on a specific serial port.
@@ -255,16 +259,17 @@ public class MachineLoaderTest {
 		Base.logger.severe("Unplug the USB port!");
 		
 		// Now, wait for the user to disconnect the machine
-		event = listener.getMachineStateChangedEvent(5000);
+		event = listener.getMachineStateChangedEvent(commTimeout);
 		assertNotNull(event);
-		assertTrue(event.getState().getState() == MachineState.State.ERROR);
+		assertTrue(event.getState().getState() == MachineState.State.NOT_ATTACHED);
 		
 		assertFalse(loader.isConnected());
 		
 		// Unload the machine. Since we're not attached, there shouldn't be another message. 
 		loader.unload();
-		assertNotNull(event);
-		assertTrue(event.getState().getState() == MachineState.State.NOT_ATTACHED);
+		
+		event = listener.getMachineStateChangedEvent(500);
+		assertNull(event);
 	}
 
 }

@@ -138,8 +138,6 @@ public class Serial implements SerialPortEventListener {
 		return v;
 	}
 
-	public String getName() { return name; }
-
 	public Serial(String portName, int baudRate, char parity, int dataBits, int stopBits) throws SerialException {
 		init(portName, baudRate, parity, dataBits, stopBits);
 	}
@@ -147,6 +145,9 @@ public class Serial implements SerialPortEventListener {
 	public Serial(String name) throws SerialException {
 		init(name,38400,'N',8,1);
 	}
+	
+	public String getName() { return name; }
+	
 
 	private CommPortIdentifier findPortIdentifier(String name) {
 		Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
@@ -207,24 +208,36 @@ public class Serial implements SerialPortEventListener {
 	 * Unregister and close the port.
 	 */
 	public synchronized void dispose() {
-		if (port != null) port.removeEventListener();
-		if (input != null)
+		connected.set(false);
+		
+		if (port != null) {
+			port.removeEventListener();
+		}
+		
+		if (input != null) {
 			try {
 				input.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		input = null;
-		if (output != null)
+			input = null;
+		}
+		
+		if (output != null) {
 			try {
 				output.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		output = null;
-		if (port != null) port.close();
+			output = null;
+		}
+		
+		if (port != null) {
+			port.close();
+			port = null;
+		}
+		
 		portsInUse.remove(this);
-		port = null;
 	}
 
 	/**
@@ -350,14 +363,6 @@ public class Serial implements SerialPortEventListener {
 		this.timeoutMillis = timeoutMillis;
 	}
 
-	/**
-	 * General error reporting, all corraled here just in case I think of
-	 * something slightly more intelligent to do.
-	 */
-	static public void errorMessage(String where, Throwable e) {
-		e.printStackTrace();
-		throw new RuntimeException("Error inside Serial." + where + "()");
-	}
 
 	public void clear() {
 		synchronized (readFifo) {
@@ -429,7 +434,9 @@ public class Serial implements SerialPortEventListener {
 				// a fail bit.
 				if (connected.get()) {
 					Base.logger.severe("Serial IO exception:" + event.toString() + ". Printer communication may be disrupted.");
-					connected.set(false);
+//					connected.set(false);
+					// TODO: How do we tell rxtx that we're done using this port?
+					dispose();
 				}
 			}
 		}

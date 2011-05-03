@@ -107,7 +107,6 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	// TODO: Move all of this to a new object that causes this when it is destroyed.
 	public void closeSerial() {
 		serialLock.writeLock().lock();
-		super.dispose();
 		if (serial != null)
 			serial.dispose();
 		serial = null;
@@ -144,5 +143,6 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	
 	public void dispose() {
 		closeSerial();
+		super.dispose();
 	}
 }
