@@ -159,12 +159,12 @@ public class PrintOMatic implements SkeinforgePreference {
 		JComponent materialPanel = new JPanel(new MigLayout("fillx"));
 		JComponent machinePanel = new JPanel(new MigLayout("fillx"));
 		
-		addTextParameter(printPanel, "infillRatio",
-				"Infill ratio", "0.3",
-				"0= hollow object, 1=solid object");
+		addTextParameter(printPanel, "infillPercent",
+				"Object infill (%)", "30",
+				"0= hollow object, 100=solid object");
 		
 		addTextParameter(printPanel, "desiredLayerHeight",
-					"Desired Layer Height (mm)", "0.35",
+					"Layer Height (mm)", "0.35",
 					"Set the desired feedrate");
 
 		addTextParameter(printPanel, "numberOfShells",
@@ -172,7 +172,7 @@ public class PrintOMatic implements SkeinforgePreference {
 				"Number of shells to add to the perimeter of an object. Set this to 0 if you are printing a model with thin features.");
 		
 		addTextParameter(printPanel, "desiredFeedrate",
-				"Desired Feedrate (mm/s)", "30",
+				"Feedrate (mm/s)", "30",
 				"slow: 0-20, default: 30, Fast: 40+");
 		
 		
@@ -206,16 +206,34 @@ public class PrintOMatic implements SkeinforgePreference {
 
 	public JComponent getUI() { return component; }
 	
+	// Check the options to determine if they are in an acceptable range. Return null if
+	// everything is ok, or a string describing the error if they are not ok.
+	public String valueSanityCheck() {
+		// Check that width/thickness is ok
+		if (calculateWidthOverThickness() > 1.8) {
+			return "Layer height is smaller than recommended for the specified nozzle. Try increasing the layer height, or changing to a smaller nozzle.";
+		}
+		if (calculateWidthOverThickness() < 1.2) {
+			return "Layer height is larger than recommended for the specified nozzle. Try decreasing the layer height, or changing to a larger nozzle.";
+		}
+		
+		return null;
+	}
+	
+	public double calculateWidthOverThickness() {
+		return ((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
+	}
+	
 	public List<SkeinforgeOption> getOptions() {
 		
 		List<SkeinforgeOption> options = new LinkedList<SkeinforgeOption>();
 
 		if (enabled.isSelected()) {
 		
-			double infillRatio = getValue("infillRatio");
+			double infillRatio = getValue("infillPercent")/100;
 			double flowRate = Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI*getValue("desiredFeedrate")*60/(Math.pow(getValue("filamentDiameter")/2,2)*Math.PI*(getValue("driveGearScalingFactor")*getValue("driveGearDiameter")*Math.PI));
-			double perimeterWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
-			double infillWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
+			double perimeterWidthOverThickness = calculateWidthOverThickness();
+			double infillWidthOverThickness = calculateWidthOverThickness();
 			double feedRate =getValue("desiredFeedrate");
 			double layerHeight =getValue("desiredLayerHeight");
 			double extraShellsOnAlternatingSolidLayer =getValue("numberOfShells");

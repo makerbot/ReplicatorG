@@ -90,7 +90,7 @@ class ConfigurationDialog extends JDialog {
 	public ConfigurationDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
 		super(parent, true);
 		parentGenerator = new WeakReference<SkeinforgeGenerator>(parentGeneratorIn);
-		setTitle("Configure GCode Generation Settings");
+		setTitle("GCode Generator");
 		setLayout(new MigLayout("aligny, top, ins 5, fill"));
 
 		editButton.setToolTipText("Click to edit this profile's properties.");
@@ -240,6 +240,10 @@ class ConfigurationDialog extends JDialog {
 		add(cancelButton, "tag cancel");
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				if(!parentGenerator.get().runSanityChecks()) {
+					return;
+				}
+				
 				int idx = prefList.getSelectedIndex();
 				Profile p = getListedProfile(idx);
 				Base.preferences.put("lastGeneratorProfileSelected",p.toString());

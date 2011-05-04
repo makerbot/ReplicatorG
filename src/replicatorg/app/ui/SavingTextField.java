@@ -1,5 +1,7 @@
 package replicatorg.app.ui;
 
+import replicatorg.app.Base;
+
 public class SavingTextField extends ActionTextField {
 	final String parameterName;
 	
@@ -12,5 +14,8 @@ public class SavingTextField extends ActionTextField {
 	@Override
 	public void doSaveEvent() {
 		String value = getText();
+		Base.logger.fine("here: " + parameterName + "=" + value);
+		Base.preferences.put(parameterName, value);
 	}
+
 }

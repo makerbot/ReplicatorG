@@ -9,7 +9,6 @@ import java.awt.event.KeyListener;
 
 import javax.swing.JTextField;
 
-import replicatorg.app.Base;
 
 // Text field that keeps track of whether it's data has been modified, and calls a function
 // when it loses focus or gets an ENTER key to allow the subclasser to handle the event.
@@ -29,14 +28,10 @@ public abstract class ActionTextField extends JTextField {
 		
 		@Override
 		public void focusGained(FocusEvent arg0) {
-			// TODO Auto-generated method stub
-			Base.logger.fine("Got focus!");
 		}
 
 		@Override
 		public void focusLost(FocusEvent arg0) {
-			// TODO Auto-generated method stub
-			Base.logger.fine("Lost focus!");
 			textField.notifyDoneModifying();
 		}
 	}
@@ -59,15 +54,12 @@ public abstract class ActionTextField extends JTextField {
 		@Override
 		public void keyTyped(KeyEvent arg0) {
 			if (arg0.getKeyChar() == KeyEvent.VK_ENTER) {
-				Base.logger.fine("save key, time to save!");
 				textField.notifyDoneModifying();
 			}
 			else if (arg0.getKeyChar() == KeyEvent.VK_ESCAPE) {
-				Base.logger.fine("escape key, abort changes!");
 				textField.notifyRestoreOriginalValue();
 			}
 			else {
-				Base.logger.fine("new key, exciting");
 				textField.notifyValueModified();
 			}
 		}
@@ -75,8 +67,6 @@ public abstract class ActionTextField extends JTextField {
 	
 	public void notifyRestoreOriginalValue() {
 		if (valueModified) {
-			Base.logger.fine("Resetting to orignal value");
-			
 			valueModified = false;
 			setText(originalValue);
 			originalValue = null;
@@ -86,8 +76,6 @@ public abstract class ActionTextField extends JTextField {
 	
 	public void notifyValueModified() {
 		if (!valueModified) {
-			Base.logger.fine("New data, needs to be saved");
-			
 			valueModified = true;
 			originalValue = getText();
 			setBackground(modifiedColor);
@@ -96,8 +84,6 @@ public abstract class ActionTextField extends JTextField {
 	
 	public void notifyDoneModifying() {
 		if (valueModified) {
-			Base.logger.fine("New data being saved");
-			
 			valueModified = false;
 			originalValue = null;
 			setBackground(defaultColor);

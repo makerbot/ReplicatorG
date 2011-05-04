@@ -17,6 +17,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -38,6 +39,29 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		preferences = getPreferences();
 	}
 
+	public boolean runSanityChecks() {
+		String errors = "";
+		
+		for (SkeinforgePreference preference : preferences) {
+			String error = preference.valueSanityCheck();
+			if( error != null) {
+				errors += error;
+			}
+		}
+		
+		if (errors.equals("")) {
+			return true;
+		}
+		
+		int result = JOptionPane.showConfirmDialog(null,
+				"The following non-optimal profile settings were detected:\n\n"
+				+ errors + "\n\n"
+				+ "Press OK to attempt to generate profile anyway, or Cancel to go back and correct the settings.",
+				"Profile warnings", JOptionPane.OK_CANCEL_OPTION);
+		
+		return (result == JOptionPane.OK_OPTION);
+	}
+	
 	static public String getSelectedProfile() {
 		String name = Base.preferences.get("replicatorg.skeinforge.profile", "");
 		return name;
@@ -143,6 +167,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	protected interface SkeinforgePreference {
 		public JComponent getUI();
 		public List<SkeinforgeOption> getOptions();
+		public String valueSanityCheck();
 	}
 	
 	public static class SkeinforgeChoicePreference implements SkeinforgePreference {
@@ -198,6 +223,10 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			}
 			return new LinkedList<SkeinforgeOption>();
 		}
+		@Override
+		public String valueSanityCheck() {
+			return null;
+		}
 
 	}
 	
@@ -239,6 +268,11 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		public List<SkeinforgeOption> getOptions() {
 			return isSet?trueOptions:falseOptions;
 		}
+
+		@Override
+		public String valueSanityCheck() {
+			return null;
+		}
 	}
 
 	public static class SkeinforgeValuePreference implements SkeinforgePreference {
@@ -279,6 +313,10 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 //				return optionsMap.get(chosen);
 //			}
 			return new LinkedList<SkeinforgeOption>();
+		}
+		@Override
+		public String valueSanityCheck() {
+			return null;
 		}
 	
 	}
