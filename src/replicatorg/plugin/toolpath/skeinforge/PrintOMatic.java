@@ -1,5 +1,6 @@
 package replicatorg.plugin.toolpath.skeinforge;
 
+import java.awt.AWTEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
@@ -17,6 +18,8 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.app.ui.ActionTextField;
+import replicatorg.app.ui.SavingTextField;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeOption;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
@@ -24,26 +27,6 @@ public class PrintOMatic implements SkeinforgePreference {
 	private JPanel component;
 	private JCheckBox enabled;
 	private String baseName;
-	
-	private class StoringActionListener implements ActionListener {
-		final String name;
-		final JTextField input;
-		
-		public StoringActionListener(JTextField input, String name) {
-			this.input = input;
-			this.name = name;
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent arg0) {
-			String value = (String)input.getText();
-			
-			if (name != null) {
-				Base.logger.fine("here: " + name + "=" + value);
-				Base.preferences.put(name, value);
-			}
-		}
-	}
 	
 	private class ComboListener implements ActionListener {
 		final String name;
@@ -79,10 +62,9 @@ public class PrintOMatic implements SkeinforgePreference {
 		}
 		target.add(new JLabel(description));
 		
-		JTextField input = new JTextField(value, 10);
+		JTextField input = new SavingTextField(fullName, value, 10);
 		target.add(input, "wrap");
 		
-		input.addActionListener(new StoringActionListener(input, fullName));
 		if (toolTip != null) {
 			// TODO: This is wrong.
 			input.setToolTipText(toolTip);
@@ -144,11 +126,10 @@ public class PrintOMatic implements SkeinforgePreference {
 	JTabbedPane printOMatic;
 	
 	public PrintOMatic() {
-		component = new JPanel(new MigLayout("ins 0"));
+		component = new JPanel(new MigLayout("ins 0, fillx, hidemode 1"));
 		
 		baseName = "replicatorg.skeinforge.printOMatic.";
 		
-
 //		SkeinforgeBooleanPreference printOMaticPref =
 //			new SkeinforgeBooleanPreference("Use Print-O-Matic",
 //					"replicatorg.skeinforge.printOMaticPref", true,
@@ -174,48 +155,51 @@ public class PrintOMatic implements SkeinforgePreference {
 		// Make a tabbed pane to sort basic and advanced components 
 		printOMatic = new JTabbedPane();
 		
-		JComponent basicPanel = new JPanel(new MigLayout());
-		JComponent advancedPanel = new JPanel(new MigLayout());
-		 
-		addTextParameter(basicPanel, "desiredFeedrate",
-					"Desired Feedrate (mm/s)", "30",
-					"slow: 0-20, default: 30, Fast: 40+");
+		JComponent printPanel = new JPanel(new MigLayout("fillx"));
+		JComponent materialPanel = new JPanel(new MigLayout("fillx"));
+		JComponent machinePanel = new JPanel(new MigLayout("fillx"));
 		
-		addTextParameter(basicPanel, "desiredLayerHeight",
+		addTextParameter(printPanel, "infillRatio",
+				"Infill ratio", "0.3",
+				"0= hollow object, 1=solid object");
+		
+		addTextParameter(printPanel, "desiredLayerHeight",
 					"Desired Layer Height (mm)", "0.35",
 					"Set the desired feedrate");
 
-		addTextParameter(basicPanel, "filamentDiameter",
-				"Filament Diameter (mm)", "2.98",
-				"measure feedstock");
-
-		addTextParameter(advancedPanel, "nozzleDiameter",
-				"Nozzle Diameter (mm)", "0.5",
-				"exit hole diameter");
+		addTextParameter(printPanel, "numberOfShells",
+				"Number of shells:", "1",
+				"Number of shells to add to the perimeter of an object. Set this to 0 if you are printing a model with thin features.");
 		
-		addTextParameter(advancedPanel, "driveGearDiameter",
-				"Drive Gear Diameter (mm)", "10.58",
-				"measure at teeth");
+		addTextParameter(printPanel, "desiredFeedrate",
+				"Desired Feedrate (mm/s)", "30",
+				"slow: 0-20, default: 30, Fast: 40+");
 		
-//		addTextParameter(advancedPanel, "driveGearScalingFactor",
-//				"Gear Diameter Scaling Factor", "0.85",
-//				"ABS = 0.85, PLA = 1");
 		
 		Vector<String> scalingOptions = new Vector<String>();
 		scalingOptions.add("0.85 (ABS)");
 		scalingOptions.add("1 (PLA)");
 		
-		addDropDownParameter(advancedPanel, "driveGearScalingFactor",
-				"Gear Diameter Scaling Factor", scalingOptions,
+		addDropDownParameter(materialPanel, "driveGearScalingFactor",
+				"Material type:", scalingOptions,
 				"0.85 (ABS), 1 (PLA)");
 		
+		addTextParameter(materialPanel, "filamentDiameter",
+				"Filament Diameter (mm)", "2.98",
+				"measure feedstock");
+		
+		
+		addTextParameter(machinePanel, "nozzleDiameter",
+				"Nozzle Diameter (mm)", "0.5",
+				"exit hole diameter");
+		
+		addTextParameter(machinePanel, "driveGearDiameter",
+				"Drive Gear Diameter (mm)", "10.58",
+				"measure at teeth");
 
-		addTextParameter(advancedPanel, "modelHasThinFeatures",
-				"No thin features", "1",
-				"Model does not contain any thin features (<2.5mm) (1=true, 0=false)");
-
-		printOMatic.addTab("Basic", basicPanel);
-		printOMatic.addTab("Advanced", advancedPanel);
+		printOMatic.addTab("Print Settings", printPanel);
+		printOMatic.addTab("Material", materialPanel);
+		printOMatic.addTab("Machine", machinePanel);
 		component.add(printOMatic, "spanx");
 		printOMatic.setVisible(enabled.isSelected());
 	}
@@ -223,19 +207,22 @@ public class PrintOMatic implements SkeinforgePreference {
 	public JComponent getUI() { return component; }
 	
 	public List<SkeinforgeOption> getOptions() {
+		
 		List<SkeinforgeOption> options = new LinkedList<SkeinforgeOption>();
 
 		if (enabled.isSelected()) {
 		
+			double infillRatio = getValue("infillRatio");
 			double flowRate = Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI*getValue("desiredFeedrate")*60/(Math.pow(getValue("filamentDiameter")/2,2)*Math.PI*(getValue("driveGearScalingFactor")*getValue("driveGearDiameter")*Math.PI));
 			double perimeterWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
 			double infillWidthOverThickness =((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
 			double feedRate =getValue("desiredFeedrate");
 			double layerHeight =getValue("desiredLayerHeight");
-			double extraShellsOnAlternatingSolidLayer =getValue("modelHasThinFeatures");
-			double extraShellsOnSparseLayer =getValue("modelHasThinFeatures");
+			double extraShellsOnAlternatingSolidLayer =getValue("numberOfShells");
+			double extraShellsOnSparseLayer =getValue("numberOfShells");
 
 			Base.logger.fine("Print-O-Matic settings:"
+					+ "\n infillRatio=" + infillRatio
 					+ "\n flowRate=" + flowRate
 					+ "\n perimeterWidthOverThickness=" + perimeterWidthOverThickness
 					+ "\n infillWidthOverThickness=" + infillWidthOverThickness
@@ -244,7 +231,8 @@ public class PrintOMatic implements SkeinforgePreference {
 					+ "\n extraShellsOnAlternatingSolidLayer=" + extraShellsOnAlternatingSolidLayer
 					+ "\n extraShellsOnSparseLayer=" + extraShellsOnSparseLayer
 					);
-						
+			
+			options.add(new SkeinforgeOption("fill.csv", "Infill Solidity (ratio):", Double.toString(infillRatio)));
 			options.add(new SkeinforgeOption("speed.csv", "Flow Rate Setting (float):", Double.toString(flowRate)));
 			options.add(new SkeinforgeOption("carve.csv", "Perimeter Width over Thickness (ratio):", Double.toString(perimeterWidthOverThickness)));
 			options.add(new SkeinforgeOption("fill.csv", "Infill Width over Thickness (ratio):", Double.toString(infillWidthOverThickness)));

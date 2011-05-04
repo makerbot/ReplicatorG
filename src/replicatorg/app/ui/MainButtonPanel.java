@@ -180,7 +180,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		cpButton = makeButton("Control panel", "images/button-control-panel.png");
 		rcButton = makeButton("Live tuning", "images/button-realtime-panel.png");
 		add(cpButton,"gap unrelated");
-		add(rcButton);
+		add(rcButton, "hidemode 1");
 		
 		resetButton = makeButton("Reset machine", "images/button-reset.png");
 		add(resetButton,"gap unrelated");

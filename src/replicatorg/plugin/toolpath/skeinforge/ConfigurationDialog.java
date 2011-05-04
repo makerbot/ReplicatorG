@@ -90,8 +90,8 @@ class ConfigurationDialog extends JDialog {
 	public ConfigurationDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
 		super(parent, true);
 		parentGenerator = new WeakReference<SkeinforgeGenerator>(parentGeneratorIn);
-		setTitle("Configure Print Settings");
-		setLayout(new MigLayout("aligny, top, ins 5, debug"));
+		setTitle("Configure GCode Generation Settings");
+		setLayout(new MigLayout("aligny, top, ins 5, fill"));
 
 		editButton.setToolTipText("Click to edit this profile's properties.");
 		deleteButton.setToolTipText("Click to remove this profile. Note that this can not be undone.");
@@ -107,7 +107,7 @@ class ConfigurationDialog extends JDialog {
 		deleteButton.setEnabled(false);
 		duplicateButton.setEnabled(false);
 
-		profilePanel.setLayout(new MigLayout("top, ins 0, debug"));
+		profilePanel.setLayout(new MigLayout("top, ins 0, fillx"));
 		profilePanel.add(new JLabel("Select a Skeinforge profile:"), "wrap");
 
 		prefList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -139,7 +139,7 @@ class ConfigurationDialog extends JDialog {
 		    }
 		});
 		loadList(prefList);
-		profilePanel.add(prefList, "growy");
+		profilePanel.add(prefList, "growx, growy");
 
 		prefList.addKeyListener( new KeyAdapter() {
 			public void keyPressed ( KeyEvent e ) {
@@ -234,9 +234,9 @@ class ConfigurationDialog extends JDialog {
 			add(preference.getUI(), "wrap");
 		}
 
-		buttonPanel.setLayout(new MigLayout("aligny, top, ins 0, debug"));
+		buttonPanel.setLayout(new MigLayout("aligny, top, ins 0"));
 		
-		add(generateButton, "tag ok");
+		add(generateButton, "tag ok, split 2");
 		add(cancelButton, "tag cancel");
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -255,7 +255,7 @@ class ConfigurationDialog extends JDialog {
 				setVisible(false);
 			}
 		});
-//		add(buttonPanel, "wrap, growx");
+		//add(buttonPanel, "wrap, growx");
 		
 		addWindowListener( new WindowAdapter() {
 			@Override
