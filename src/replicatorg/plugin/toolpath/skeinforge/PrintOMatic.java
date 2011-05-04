@@ -124,16 +124,27 @@ public class PrintOMatic implements SkeinforgePreference {
 		// TODO: record the default values somewhere, so that we can retrieve them here!
 		String value = Base.preferences.get(baseName + optionName, null);
 		
-		Base.logger.fine("Getting preference for " + baseName + optionName);
+		value = value.split(" ")[0];
+
+		Base.logger.fine("Saved value for preference " + baseName + optionName + " is " + value);
 		
-		return Double.valueOf(value);
+		Double number = null;
+		
+		try {
+			number = Double.valueOf(value);
+		}
+		catch (java.lang.NumberFormatException e) {
+			Base.logger.severe("Print-O-Matic setting " + optionName + "does not contain a valid number, please correct this!");
+		}
+		
+		return number;
 	}
 	
 	
 	JTabbedPane printOMatic;
 	
 	public PrintOMatic() {
-		component = new JPanel(new MigLayout());
+		component = new JPanel(new MigLayout("ins 0"));
 		
 		baseName = "replicatorg.skeinforge.printOMatic.";
 		
@@ -191,8 +202,8 @@ public class PrintOMatic implements SkeinforgePreference {
 //				"ABS = 0.85, PLA = 1");
 		
 		Vector<String> scalingOptions = new Vector<String>();
-		scalingOptions.add("ABS = 0.85");
-		scalingOptions.add("PLA = 1");
+		scalingOptions.add("0.85 (ABS)");
+		scalingOptions.add("1 (PLA)");
 		
 		addDropDownParameter(advancedPanel, "driveGearScalingFactor",
 				"Gear Diameter Scaling Factor", scalingOptions,
@@ -205,7 +216,7 @@ public class PrintOMatic implements SkeinforgePreference {
 
 		printOMatic.addTab("Basic", basicPanel);
 		printOMatic.addTab("Advanced", advancedPanel);
-		component.add(printOMatic);
+		component.add(printOMatic, "spanx");
 		printOMatic.setVisible(enabled.isSelected());
 	}
 

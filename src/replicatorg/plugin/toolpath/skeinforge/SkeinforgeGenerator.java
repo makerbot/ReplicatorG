@@ -153,7 +153,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		private String chosen;
 		
 		public SkeinforgeChoicePreference(String name, final String preferenceName, String defaultState, String toolTip) {
-			component = new JPanel(new MigLayout());
+			component = new JPanel(new MigLayout("ins 5"));
 			chosen = defaultState;
 			if (preferenceName != null) {
 				chosen = Base.preferences.get(preferenceName, defaultState);

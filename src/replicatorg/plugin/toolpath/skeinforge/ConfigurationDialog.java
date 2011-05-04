@@ -19,6 +19,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -35,9 +36,15 @@ class ConfigurationDialog extends JDialog {
 	JButton duplicateButton = new JButton("Duplicate...");
 	JButton locateButton = new JButton("Locate...");
 	JButton deleteButton = new JButton("Delete");
-	JButton generate = new JButton("Generate...");
+	
+	JButton generateButton = new JButton("Generate Gcode");
+	JButton cancelButton = new JButton("Cancel");
+	
 	private WeakReference<SkeinforgeGenerator> parentGenerator;
 	private List<Profile> profiles = null; // NB: must explicitly deallocate at close time
+	
+	JPanel profilePanel = new JPanel();
+	JPanel buttonPanel = new JPanel();
 	
 	private void loadList(JList list) {
 		list.removeAll();
@@ -58,9 +65,9 @@ class ConfigurationDialog extends JDialog {
 		list.clearSelection();
 		if(foundLastProfile != -1) {
 			list.setSelectedIndex(foundLastProfile);	
-			generate.setEnabled(true);
-			generate.requestFocusInWindow();
-			generate.setFocusPainted(true);
+			generateButton.setEnabled(true);
+			generateButton.requestFocusInWindow();
+			generateButton.setFocusPainted(true);
 		}			
 	}
 
@@ -83,8 +90,8 @@ class ConfigurationDialog extends JDialog {
 	public ConfigurationDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
 		super(parent, true);
 		parentGenerator = new WeakReference<SkeinforgeGenerator>(parentGeneratorIn);
-		setTitle("Choose a skeinforge profile");
-		setLayout(new MigLayout("aligny top"));
+		setTitle("Configure Print Settings");
+		setLayout(new MigLayout("aligny, top, ins 5, debug"));
 
 		editButton.setToolTipText("Click to edit this profile's properties.");
 		deleteButton.setToolTipText("Click to remove this profile. Note that this can not be undone.");
@@ -93,14 +100,15 @@ class ConfigurationDialog extends JDialog {
 		
 		// have to set this. Something wrong with the initial use of the
 		// ListSelectionListener
-		generate.setEnabled(false);
+		generateButton.setEnabled(false);
 				
 		editButton.setEnabled(false);
 		locateButton.setEnabled(false);
 		deleteButton.setEnabled(false);
 		duplicateButton.setEnabled(false);
 
-		add(new JLabel("Select a printing profile:"), "wrap");
+		profilePanel.setLayout(new MigLayout("top, ins 0, debug"));
+		profilePanel.add(new JLabel("Select a Skeinforge profile:"), "wrap");
 
 		prefList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		prefList.addListSelectionListener(new ListSelectionListener() {
@@ -108,7 +116,7 @@ class ConfigurationDialog extends JDialog {
 			public void valueChanged(ListSelectionEvent selectionEvent) {
 				boolean selected = !((JList) selectionEvent.getSource())
 						.isSelectionEmpty();
-				generate.setEnabled(selected);
+				generateButton.setEnabled(selected);
 				editButton.setEnabled(selected);
 				locateButton.setEnabled(selected);
 				deleteButton.setEnabled(selected);
@@ -131,7 +139,7 @@ class ConfigurationDialog extends JDialog {
 		    }
 		});
 		loadList(prefList);
-		add(prefList, "growy");
+		profilePanel.add(prefList, "growy");
 
 		prefList.addKeyListener( new KeyAdapter() {
 			public void keyPressed ( KeyEvent e ) {
@@ -152,7 +160,7 @@ class ConfigurationDialog extends JDialog {
 			}
 	     }
 		);
-		add(editButton, "split,flowy,growx");
+		profilePanel.add(editButton, "split,flowy,growx");
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
@@ -166,7 +174,7 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 
-		add(duplicateButton, "growx,flowy");
+		profilePanel.add(duplicateButton, "growx,flowy");
 		duplicateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
@@ -183,7 +191,7 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 		
-		add(locateButton, "split,flowy,growx");
+		profilePanel.add(locateButton, "split,flowy,growx");
 		locateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
@@ -199,7 +207,7 @@ class ConfigurationDialog extends JDialog {
 		});
 
 
-		add(deleteButton, "wrap,growx");
+		profilePanel.add(deleteButton, "wrap,growx");
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
@@ -219,15 +227,18 @@ class ConfigurationDialog extends JDialog {
 				}
 			}
 		});
+		
+		add(profilePanel, "wrap, growx");
 
 		for (SkeinforgePreference preference: parentGenerator.get().preferences) {
 			add(preference.getUI(), "wrap");
 		}
 
-		add(generate, "tag ok");
-		JButton cancel = new JButton("Cancel");
-		add(cancel, "tag cancel");
-		generate.addActionListener(new ActionListener() {
+		buttonPanel.setLayout(new MigLayout("aligny, top, ins 0, debug"));
+		
+		add(generateButton, "tag ok");
+		add(cancelButton, "tag cancel");
+		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				int idx = prefList.getSelectedIndex();
 				Profile p = getListedProfile(idx);
@@ -238,12 +249,13 @@ class ConfigurationDialog extends JDialog {
 				SkeinforgeGenerator.setSelectedProfile(p.toString());
 			}
 		});
-		cancel.addActionListener(new ActionListener() {
+		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parentGenerator.get().configSuccess = false;
 				setVisible(false);
 			}
 		});
+//		add(buttonPanel, "wrap, growx");
 		
 		addWindowListener( new WindowAdapter() {
 			@Override
