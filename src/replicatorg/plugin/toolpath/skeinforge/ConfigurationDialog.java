@@ -197,8 +197,7 @@ class ConfigurationDialog extends JDialog {
 				int idx = prefList.getSelectedIndex();
 				if (idx == -1) {
 				} else {
-					Profile p = (Profile) prefList.getModel().getElementAt(
-							idx);
+					Profile p = getListedProfile(idx);
 					boolean result = new ProfileUtils().openFolder(p);
 					Base.logger.log(Level.FINEST,
 							"Opening directory for profile: "+ result);
