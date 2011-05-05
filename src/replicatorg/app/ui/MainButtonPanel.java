@@ -199,7 +199,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		buildButton.setToolTipText("This will start building the object on the machine.");
 		pauseButton.setToolTipText("This will pause or resume the build.");
 		stopButton.setToolTipText("This will abort the build in progress.");
-		cpButton.setToolTipText("Here you'll find manually controls for the machine.");
+		cpButton.setToolTipText("Here you'll find manual controls for the machine.");
 		rcButton.setToolTipText("This can be used to tune the process, in real time, during a print job.");
 		resetButton.setToolTipText("This will restart the firmware on the machine.");
 		connectButton.setToolTipText("Connect to the machine.");
