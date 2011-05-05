@@ -2,6 +2,6 @@ Format is tab separated bottom settings.
 Name                          	Value
 WindowPosition	700+0
 Open File for Bottom	
-Activate Bottom:	False
+Activate Bottom:	True
 Altitude (mm):	0.3
 SVG Viewer:	webbrowser

@@ -10,6 +10,9 @@ M109 S125 T0 (set heated-build-platform temperature)
 (**** end initialization commands ****)
 (**** begin homing ****)
 G162 Z F500 (home Z axis maximum)
+G92 Z10 (set Z to 0)
+G1 Z0 (move z down 10)
+G162 Z F100 (home Z axis maximum)
 G161 X Y F2500 (home XY axes minimum)
 M132 X Y Z A B (Recall stored home offsets for XYZAB axis)
 (**** end homing ****)
@@ -18,6 +21,7 @@ G1 X52 Y-57.0 Z10 F3300.0 (move to waiting position)
 M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
 G04 P60000 (Wait t/1000 seconds)
 (**** Start Acceleration ****)
+(Note: nozzles smaller than 0.5mm might require adjustments to this acceleration routine)
 M108 R1.0
 G04 P15000
 M101

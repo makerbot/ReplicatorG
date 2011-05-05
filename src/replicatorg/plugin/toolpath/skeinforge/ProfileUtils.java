@@ -3,6 +3,8 @@ package replicatorg.plugin.toolpath.skeinforge;
 import java.io.File;
 import java.io.IOException;
 
+import replicatorg.app.Base;
+
 /**
  * Helper utilities for profiles.
  * 
@@ -46,6 +48,33 @@ public class ProfileUtils {
 		else {
 			return false;
 		}
+	}
+	public boolean openFolder(SkeinforgeGenerator.Profile p) {
+		return openFolder(new File(p.getFullPath()));
+		
+	}
+
+	private boolean openFolder(File file) {
+		if(Base.openFolderAvailable() != true) 
+		{
+				Base.logger.info("The profile can be found in this directory: \""+file+"\".");
+				return false;
+		}
+		if (file.exists()) {
+			if (file.isDirectory()) {
+				Base.logger.fine("The profile can be found in this directory: "+file);
+				try {
+					Base.openFolder(file);
+				} finally {
+					
+				}
+				return true;
+			}
+		}
+		else {
+			return false;
+		}
+		return false;
 	}
 
 }

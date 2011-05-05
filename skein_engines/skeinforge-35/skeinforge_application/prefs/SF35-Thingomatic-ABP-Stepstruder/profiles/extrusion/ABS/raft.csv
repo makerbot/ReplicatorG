@@ -18,9 +18,9 @@ Interface Infill Density (ratio):	0.65
 Interface Layer Thickness over Layer Thickness:	1.2
 Interface Layers (integer):	1
 Interface Nozzle Lift over Interface Layer Thickness (ratio):	0.2
-Object First Layer Feed Rate Infill Multiplier (ratio):	0.4
-Object First Layer Feed Rate Perimeter Multiplier (ratio):	0.35
-Object First Layer Flow Rate Multiplier (ratio):	0.4
+Object First Layer Feed Rate Infill Multiplier (ratio):	0.75
+Object First Layer Feed Rate Perimeter Multiplier (ratio):	0.6
+Object First Layer Flow Rate Multiplier (ratio):	1.0
 Operating Nozzle Lift over Layer Thickness (ratio):	1.0
 Raft Additional Margin over Length (%):	1.2
 Raft Margin (mm):	4.0

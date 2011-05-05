@@ -194,7 +194,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder.
-			if (t.getMotorStepperAxis() == null) {
+			if ((t.getMotorStepperAxis() == null) && !(t.motorHasEncoder() || t.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
 				JTextField field = new JTextField();
@@ -582,14 +582,17 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	public void itemStateChanged(ItemEvent e) {
 		Component source = (Component) e.getItemSelectable();
 		String name = source.getName();
-		
 		if (e.getStateChange() == ItemEvent.SELECTED) {
 			/* Handle DC extruder commands */
 			if (name.equals("motor-forward")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
+				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
 				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
 			} else if (name.equals("motor-reverse")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
+				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
 				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
 			} else if (name.equals("motor-stop")) {
 				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
@@ -656,6 +659,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		if (s.equals("forward")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
+				// TODO: Reverted to separate commands for enable + extrude + disable. This probably breaks 5D
 				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
 				machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
 				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
@@ -663,6 +667,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		} else if (s.equals("reverse")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
+				// TODO: Reverted to separate commands for enable + extrude + disable. This probably breaks 5D
 				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
 				machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
 				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());

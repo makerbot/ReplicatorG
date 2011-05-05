@@ -98,6 +98,9 @@ public class EstimationDriver extends DriverBaseImplementation {
 
 		String val = new String();
 
+		if (!useSeconds)
+			tempTime = tempTime + 59999; // round to nearest minutes
+
 		// figure out days
 		int days = (int) Math.floor(tempTime / 86400000.0);
 		if (days > 0) {
@@ -124,8 +127,6 @@ public class EstimationDriver extends DriverBaseImplementation {
 
 		// figure out minutes
 		int minutes = (int) Math.floor(tempTime / 60000.0);
-		if (!useSeconds)
-			minutes++; // lets just round up the remainder...
 		if (minutes > 0) {
 			tempTime = tempTime - (minutes * 60000);
 

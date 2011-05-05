@@ -81,6 +81,10 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		df = new DecimalFormat("#.######");
 	}
 
+	public String getDriverName() {
+		return "SimpleRepRap5D";
+	}
+
 	public void loadXML(Node xml) {
 		super.loadXML(xml);
 	}

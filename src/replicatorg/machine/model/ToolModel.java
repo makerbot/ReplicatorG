@@ -58,7 +58,7 @@ public class ToolModel
 	protected boolean motorHasEncoder;
 	protected int motorEncoderPPR;
 	protected boolean motorIsStepper;
-	protected int motorSteps; // motor steps per full rotation
+	protected double motorSteps; // motor steps per full rotation
 	protected String motorStepperAxis;    // Stepper axis this motor is connected to
 
 	//spindle stuff
@@ -200,10 +200,10 @@ public class ToolModel
 			// Get number of steps per full rotation of the toolhead motor.
 			n = XML.getAttributeValue(xml, "motor_steps");
 			try{
-				if (n != null && Integer.parseInt(n) > 0)
+				if (n != null && Double.parseDouble(n) > 0.0)
 				{
 					motorIsStepper = true;
-					motorSteps = Integer.parseInt(n);
+					motorSteps = Double.parseDouble(n);
 				}
 			} catch (Exception e) {} // ignore parse errors.
 
@@ -378,7 +378,8 @@ public class ToolModel
 	/**
 	 * Get number of steps per revolution
 	 */
-	public double getMotorSteps() {
+	public double getMotorSteps()
+	{
 		return motorSteps;
 	}
 
