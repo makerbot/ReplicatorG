@@ -1586,8 +1586,17 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	private String selectOutputFile(String defaultName) {
 		File directory = null;
 		String loadDir = Base.preferences.get("ui.open_output_dir", null);
-		if (loadDir != null) { directory = new File(loadDir); }
-		JFileChooser fc = new JFileChooser(directory);
+		if (loadDir != null) {
+			directory = new File(loadDir);
+		}
+		JFileChooser fc;
+		if (directory != null) {
+			fc = new JFileChooser(directory);
+		}
+		else {
+			fc = new JFileChooser();
+		}
+		
 		fc.setFileFilter(new ExtensionFilter(".s3g","Makerbot build file"));
 		fc.setDialogTitle("Save Makerbot build as...");
 		fc.setDialogType(JFileChooser.SAVE_DIALOG);
