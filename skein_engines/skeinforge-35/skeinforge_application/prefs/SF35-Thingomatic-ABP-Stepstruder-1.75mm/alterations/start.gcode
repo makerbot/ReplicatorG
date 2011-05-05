@@ -22,6 +22,7 @@ G1 X52 Y-57.0 Z10 F3300.0 (move to waiting position)
 M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
 G04 P60000 (Wait t/1000 seconds)
 (**** Start Acceleration ****)
+(Note: nozzles smaller than 0.5mm might require adjustments to this acceleration routine)
 M108 R1.0
 G04 P15000
 M101

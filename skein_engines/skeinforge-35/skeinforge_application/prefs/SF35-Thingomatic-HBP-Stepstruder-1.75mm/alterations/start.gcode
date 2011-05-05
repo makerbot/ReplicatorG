@@ -11,14 +11,15 @@ M109 S110 T0 (set heated-build-platform temperature)
 (**** begin homing ****)
 G162 Z F500 (home Z axis maximum)
 G161 X Y F2500 (home XY axes minimum)
-G92 80 ( ---=== Set Z axis maximum ===--- )
+G92 Z80 ( ---=== Set Z axis maximum ===--- )
 G92 X-57.5 Y-57 (set zero for X and Y)
 (**** end homing ****)
 (**** begin pre-wipe commands ****)
 G1 X52 Y-57.0 Z10 F3300.0 (move to waiting position)
 M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
 G04 P60000 (Wait t/1000 seconds)
-(**** Start Pring Acceleration ****)
+(**** Start Acceleration ****)
+(Note: nozzles smaller than 0.5mm might require adjustments to this acceleration routine)
 M108 R1.0
 G04 P15000
 M101
@@ -33,7 +34,7 @@ G04 P5000
 M101
 M108 R5.0
 G04 P2500
-(**** End Pring Acceleration ****)
+(**** End Acceleration ****)
 M101 (Extruder on, forward)
 G04 P5000 (Wait t/1000 seconds)
 M103 (Extruder off)
