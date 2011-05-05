@@ -106,8 +106,6 @@ public class PrintOMatic implements SkeinforgePreference {
 		// TODO: record the default values somewhere, so that we can retrieve them here!
 		String value = Base.preferences.get(baseName + optionName, null);
 		
-		value = value.split(" ")[0];
-
 		Base.logger.fine("Saved value for preference " + baseName + optionName + " is " + value);
 		
 		Double number = null;
@@ -122,6 +120,25 @@ public class PrintOMatic implements SkeinforgePreference {
 		return number;
 	}
 	
+	private double getScalingFactor() {
+		// TODO: record the default values somewhere, so that we can retrieve them here!
+		String value = Base.preferences.get(baseName + "materialType", null);
+		
+		double scalingFactor = 1;
+		
+		if (value.equals("ABS")) {
+			scalingFactor = .85;
+		}
+		else if (value.equals("PLA")) {
+			scalingFactor = 1;
+		}
+		else {
+			Base.logger.severe("Couldn't determine scaling factor for material " + value + ", defaulting to 1");
+		}
+		
+		return scalingFactor;
+	}
+	
 	
 	JTabbedPane printOMatic;
 	
@@ -129,13 +146,6 @@ public class PrintOMatic implements SkeinforgePreference {
 		component = new JPanel(new MigLayout("ins 0, fillx, hidemode 1"));
 		
 		baseName = "replicatorg.skeinforge.printOMatic.";
-		
-//		SkeinforgeBooleanPreference printOMaticPref =
-//			new SkeinforgeBooleanPreference("Use Print-O-Matic",
-//					"replicatorg.skeinforge.printOMaticPref", true,
-//					"If this option is checked, skeinforge will use the values below to control the print");
-//		printOMaticPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
-//		prefs.add(printOMaticPref);
 
 		// Add a checkbox to switch print-o-matic on and off
 		final String enabledName = baseName + "enabled";
@@ -176,16 +186,16 @@ public class PrintOMatic implements SkeinforgePreference {
 				"slow: 0-20, default: 30, Fast: 40+");
 		
 		
-		Vector<String> scalingOptions = new Vector<String>();
-		scalingOptions.add("0.85 (ABS)");
-		scalingOptions.add("1 (PLA)");
+		Vector<String> materialTypes = new Vector<String>();
+		materialTypes.add("ABS");
+		materialTypes.add("PLA");
 		
-		addDropDownParameter(materialPanel, "driveGearScalingFactor",
-				"Material type:", scalingOptions,
-				"0.85 (ABS), 1 (PLA)");
+		addDropDownParameter(materialPanel, "materialType",
+				"Material type:", materialTypes,
+				"Select the type of plastic to use during print");
 		
 		addTextParameter(materialPanel, "filamentDiameter",
-				"Filament Diameter (mm)", "2.98",
+				"Filament Diameter (mm)", "2.94",
 				"measure feedstock");
 		
 		
@@ -197,9 +207,9 @@ public class PrintOMatic implements SkeinforgePreference {
 				"Drive Gear Diameter (mm)", "10.58",
 				"measure at teeth");
 
-		printOMatic.addTab("Print Settings", printPanel);
-		printOMatic.addTab("Material", materialPanel);
-		printOMatic.addTab("Machine", machinePanel);
+		printOMatic.addTab("Settings", printPanel);
+		printOMatic.addTab("Plastic", materialPanel);
+		printOMatic.addTab("Extruder", machinePanel);
 		component.add(printOMatic, "spanx");
 		printOMatic.setVisible(enabled.isSelected());
 	}
@@ -209,12 +219,16 @@ public class PrintOMatic implements SkeinforgePreference {
 	// Check the options to determine if they are in an acceptable range. Return null if
 	// everything is ok, or a string describing the error if they are not ok.
 	public String valueSanityCheck() {
-		// Check that width/thickness is ok
-		if (calculateWidthOverThickness() > 1.8) {
-			return "Layer height is smaller than recommended for the specified nozzle. Try increasing the layer height, or changing to a smaller nozzle.";
-		}
-		if (calculateWidthOverThickness() < 1.2) {
-			return "Layer height is larger than recommended for the specified nozzle. Try decreasing the layer height, or changing to a larger nozzle.";
+		
+		if (enabled.isSelected()) {
+			// Check that width/thickness is ok
+			if (calculateWidthOverThickness() > 1.8) {
+				return "Layer height is smaller than recommended for the specified nozzle. Try increasing the layer height, or changing to a smaller nozzle.";
+			}
+			if (calculateWidthOverThickness() < 1.2) {
+				return "Layer height is larger than recommended for the specified nozzle. Try decreasing the layer height, or changing to a larger nozzle.";
+			}
+			
 		}
 		
 		return null;
@@ -231,7 +245,7 @@ public class PrintOMatic implements SkeinforgePreference {
 		if (enabled.isSelected()) {
 		
 			double infillRatio = getValue("infillPercent")/100;
-			double flowRate = Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI*getValue("desiredFeedrate")*60/(Math.pow(getValue("filamentDiameter")/2,2)*Math.PI*(getValue("driveGearScalingFactor")*getValue("driveGearDiameter")*Math.PI));
+			double flowRate = Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI*getValue("desiredFeedrate")*60/(Math.pow(getValue("filamentDiameter")/2,2)*Math.PI*(getScalingFactor()*getValue("driveGearDiameter")*Math.PI));
 			double perimeterWidthOverThickness = calculateWidthOverThickness();
 			double infillWidthOverThickness = calculateWidthOverThickness();
 			double feedRate =getValue("desiredFeedrate");
@@ -259,7 +273,7 @@ public class PrintOMatic implements SkeinforgePreference {
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Alternating Solid Layer (layers):", Double.toString(extraShellsOnAlternatingSolidLayer)));
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Sparse Layer (layers):", Double.toString(extraShellsOnSparseLayer)));
 		}
-			
+		
 		return options;
 	}
 }
