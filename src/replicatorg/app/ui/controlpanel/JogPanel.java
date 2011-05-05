@@ -10,7 +10,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -119,8 +122,11 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	
 	private void setJogMode(String mode) {
 		if ("Continuous Jog".equals(mode)) {
-			continuousJogMode = true;
-			jogRate = 0;
+			if(this.machine.getDriver().hasSoftStop())
+			{
+				continuousJogMode = true;
+				jogRate = 0;
+			}
 		} else {
 			// If we were in continuous jog mode, send a stop to be safe
 			if (continuousJogMode) {
@@ -247,7 +253,15 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		// compile our regexes
 		jogRate = 10.0;
 		jogPattern = Pattern.compile("([.0-9]+)");
-
+		
+		// If it does have soft stops, happy continuous jogging!!
+		if(!this.machine.getDriver().hasSoftStop())
+		{
+			List<String> list = new ArrayList<String>(Arrays.asList(jogStrings));
+			list.removeAll(Arrays.asList("Continuous Jog"));
+			jogStrings = list.toArray(jogStrings);
+		}
+		
 		JButton xPlusButton = createJogButton("jog/X+", "Jog X axis in positive direction", "X+");
 		JButton xMinusButton = createJogButton("jog/X-", "Jog X axis in negative direction", "X-");
 		JButton yPlusButton = createJogButton("jog/Y+", "Jog Y axis in positive direction", "Y+");
@@ -259,7 +273,13 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
         //xyzPanel.add(zCenterButton, );
 		xyPanel.add(yPlusButton, "skip 1,wrap,growx,growy");
 		xyPanel.add(xMinusButton,"growx,growy");
-		xyPanel.add(panicButton,"growx,growy");
+		if(this.machine.getDriver().hasEmergencyStop()) {
+			xyPanel.add(panicButton,"growx,growy");
+		} else
+		{
+			JButton dummyButton = createJogButton("jog/dummy","");
+			xyPanel.add(dummyButton,"growx,growy");
+		}
 		xyPanel.add(xPlusButton,"growx,growy,wrap");
 		xyPanel.add(yMinusButton, "skip 1,growx,growy,wrap");
 		jogButtonPanel.add(xyPanel);

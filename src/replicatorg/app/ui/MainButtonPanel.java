@@ -149,7 +149,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	MainButton uploadButton, playbackButton, fileButton;
 	
 	public MainButtonPanel(MainWindow editor) {
-		setLayout(new MigLayout("gap 5"));
+		setLayout(new MigLayout("gap 5, ins 5"));
 		this.editor = editor;
 
 		// hardcoding new blue color scheme for consistency with images,
@@ -181,7 +181,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		cpButton = makeButton("Control panel", "images/button-control-panel.png");
 		rcButton = makeButton("Live tuning", "images/button-realtime-panel.png");
 		add(cpButton,"gap unrelated");
-		add(rcButton);
+		add(rcButton, "hidemode 1");
 		
 		resetButton = makeButton("Reset machine", "images/button-reset.png");
 		add(resetButton,"gap unrelated");

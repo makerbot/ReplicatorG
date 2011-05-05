@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Vector;
 
 import replicatorg.app.Base;
+import replicatorg.plugin.toolpath.skeinforge.PrintOMatic;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
 
 public class ToolpathGeneratorFactory {
@@ -185,7 +186,7 @@ public class ToolpathGeneratorFactory {
 	}
 
 	static public String getSelectedName() {
-		String name = Base.preferences.get("replicatorg.generator.name", "Skeinforge (standard)");
+		String name = Base.preferences.get("replicatorg.generator.name", "Skeinforge (35)");
 		return name;
 	}
 

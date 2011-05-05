@@ -555,13 +555,13 @@ public class PreviewPanel extends JPanel {
 	}
 	
 	public void viewYZ() {
-		turntableAngle = 0d;
+		turntableAngle = Math.PI/2;
 		elevationAngle = Math.PI/2;
 		updateVP();	
 	}
 	public void viewXZ() {
+		turntableAngle = 0d;
 		elevationAngle = Math.PI/2;
-		turntableAngle = Math.PI/2;
 		updateVP();	
 	}
 	
