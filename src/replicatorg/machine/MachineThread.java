@@ -321,18 +321,15 @@ class MachineThread extends Thread {
 			}
 			break;
 		case BUILD_TO_FILE:
-			if (state.isReadyToPrint()) {
+			/** We will accept a disconnected machine or a ready machine. */
+			if (state.isReadyToPrint() || state.getState() == MachineState.State.NOT_ATTACHED) {
 				if (!(driver instanceof SDCardCapture)) {
 					break;
 				}
 				
 				startTimeMillis = System.currentTimeMillis();
 
-				pollingTimer.start(1000);
-
-				if (!isSimulating()) {
-					driver.getCurrentPosition(false); // reconcile position
-				}
+				// There is no need to reconcile the position or poll the machine.
 				
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
@@ -340,8 +337,6 @@ class MachineThread extends Thread {
 				machineBuilder = new ToLocalFile(driver, simulator,
 											combinedSource, command.remoteName);
 
-				// TODO: This shouldn't be done here?
-				driver.invalidatePosition();
 				setState(new MachineState(MachineState.State.BUILDING));
 			}
 			break;
