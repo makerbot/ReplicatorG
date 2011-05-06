@@ -415,6 +415,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 //				return true;
 //			}
 //		});
+
+		// Have UI elements listen to machine state.
+		machineLoader.addMachineListener(this);
+		machineLoader.addMachineListener(machineStatusPanel);
+		machineLoader.addMachineListener(buttons);			
 	}
 
 	// ...................................................................
@@ -2505,13 +2510,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		
 		// Do we always want to connect here?
 		machineLoader.connect(targetPort);
-		
-		if(machineLoader.isLoaded()) {
-			machineLoader.addMachineListener(this);
-			machineLoader.addMachineListener(machineStatusPanel);
-			machineLoader.addMachineListener(buttons);			
-		}
-		
+				
 		// TODO: This needs to be run at program start
 		if (!machineLoader.isLoaded()) {
 			// Buttons will need an explicit null state notification
