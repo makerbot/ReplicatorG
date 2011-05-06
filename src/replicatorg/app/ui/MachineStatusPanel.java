@@ -118,6 +118,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			bgColor = BG_READY;
 			break;
 		case BUILDING:
+		case BUILDING_OFFLINE:
 		case PAUSED:
 			bgColor = BG_BUILDING;
 			break;
@@ -136,6 +137,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		// And mark which state we are in.
 		switch (state) {
 		case BUILDING:
+		case BUILDING_OFFLINE:
 		case PAUSED:
 			isBuilding = true;
 			break;

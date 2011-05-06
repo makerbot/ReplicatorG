@@ -23,6 +23,8 @@ public class MachineState extends Object implements Cloneable {
 		READY,
 		/** The machine is building from a driver-provide source **/
 		BUILDING,
+		/** There is no physically connected machine, but an offline build is in process. **/
+		BUILDING_OFFLINE,
 		/** The machine is building, but is currently paused. **/
 		PAUSED,
 		/** The machine reported a fatal error, and is halted (but still connected). **/
@@ -40,7 +42,7 @@ public class MachineState extends Object implements Cloneable {
 	
 	/** True if the machine is actively building */
 	public boolean isBuilding() {
-		return state == State.BUILDING || state == State.PAUSED; 
+		return state == State.BUILDING || state == State.PAUSED || state == State.BUILDING_OFFLINE; 
 	}
 	
 	// TODO: Error state could possibly be considered connected???
@@ -57,6 +59,7 @@ public class MachineState extends Object implements Cloneable {
 	
 	public boolean isPrinting() {
 		return state == State.BUILDING
+			|| state == State.BUILDING_OFFLINE
 			|| state == State.PAUSED;
 	}
 	

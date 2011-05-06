@@ -329,15 +329,19 @@ class MachineThread extends Thread {
 				
 				startTimeMillis = System.currentTimeMillis();
 
-				// There is no need to reconcile the position or poll the machine.
+				// There is no need to reconcile the position.
+				pollingTimer.start(1000);
 				
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
 				machineBuilder = new ToLocalFile(driver, simulator,
 											combinedSource, command.remoteName);
-
-				setState(new MachineState(MachineState.State.BUILDING));
+				if (state.isReadyToPrint()) {
+					setState(new MachineState(MachineState.State.BUILDING));
+				} else {
+					setState(new MachineState(MachineState.State.BUILDING_OFFLINE));					
+				}
 			}
 			break;
 		case BUILD_REMOTE:
@@ -452,7 +456,7 @@ class MachineThread extends Thread {
 			}
 			
 			// If we are building
-			if ( state.getState() == MachineState.State.BUILDING ) {
+			if ( state.isBuilding() && !state.isPaused() ) {
 				//run another instruction on the machine.
 				machineBuilder.runNext();
 				
@@ -475,15 +479,19 @@ class MachineThread extends Thread {
 				
 				if (machineBuilder.finished()) {
 					// TODO: Exit correctly.
-					setState(new MachineState(MachineState.State.READY),
-							buildReadyMessage());
+					if (state.getState() == MachineState.State.BUILDING) {
+						setState(new MachineState(MachineState.State.READY),
+								buildReadyMessage());
+					} else {
+						setState(new MachineState(MachineState.State.NOT_ATTACHED));
+					}
 					
 					pollingTimer.stop();
 				}
 			}
 			
 			// If there is nothing to do, sleep.
-			if ( state.getState() != MachineState.State.BUILDING ) {
+			if ( !state.isBuilding() ) {
 				try {
 					synchronized(this) {
 						wait();

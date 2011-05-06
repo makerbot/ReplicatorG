@@ -289,7 +289,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		buildButton.setEnabled(readyToPrint && hasGcode);
 		uploadButton.setEnabled(readyToPrint && hasPlayback && hasGcode);
 		playbackButton.setEnabled(readyToPrint && hasPlayback);
-		pauseButton.setEnabled(building);
+		pauseButton.setEnabled(building && connected);
 		stopButton.setEnabled(building);
 
 		pauseButton.setSelected(paused);

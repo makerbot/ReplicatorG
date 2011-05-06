@@ -1997,7 +1997,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 
 	protected boolean confirmBuildAbort() {
-		if (machineLoader.isLoaded() && machineLoader.getMachine().getMachineState().getState() == MachineState.State.BUILDING) {
+		if (machineLoader.isLoaded() && machineLoader.getMachine().getMachineState().isBuilding()) {
 			final String message = "<html>You are currently printing from ReplicatorG! Your build will be stopped.<br>" +
 				"Continue and abort print?</html>";
 			int option = JOptionPane.showConfirmDialog(this, message, "Abort print?", 
