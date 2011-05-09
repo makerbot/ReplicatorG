@@ -114,16 +114,19 @@ public class SerialPassthroughDriver extends SerialDriver {
 		sendCommand("G90");
 	}
 
+	public boolean isPassthroughDriver() {
+		return true;
+	}
+	
 	/**
 	 * Actually execute the GCode we just parsed.
 	 */
-	public void execute() {
+	public void executeGCodeLine(String code) {
 		// we *DONT* want to use the parents one,
 		// as that will call all sorts of misc functions.
 		// we'll simply pass it along.
 		// super.execute();
-
-		sendCommand(getParser().getCommand());
+		sendCommand(code);
 	}
 
 	/**

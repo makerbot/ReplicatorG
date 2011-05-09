@@ -25,9 +25,10 @@ package replicatorg.drivers;
 
 import org.w3c.dom.Node;
 
-import replicatorg.app.exceptions.GCodeException;
 import replicatorg.app.tools.XML;
 
+
+//TODO: why do we have this?
 public class NullDriver extends DriverBaseImplementation {
 	private double speedup;
 
@@ -42,25 +43,5 @@ public class NullDriver extends DriverBaseImplementation {
 
 		if (XML.hasChildNode(xml, "speedup"))
 			speedup = Double.parseDouble(XML.getChildNodeValue(xml, "speedup"));
-	}
-
-	public void execute() throws InterruptedException {
-		// suppress errors.
-		try {
-			super.execute();
-		} catch (GCodeException e) {
-		} catch (RetryException e) {
-		}
-
-		String command = getParser().getCommand();
-
-		if (command.length() > 0 && speedup > 0) {
-			// calculate our delay speed.
-			int millis = (int) Math.round(getMoveLength()
-					/ getCurrentFeedrate() * 60000.0 / speedup);
-
-			if (millis > 0)
-				Thread.sleep(millis);
-		}
 	}
 }

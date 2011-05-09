@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface SDCardCapture {
+	
 	enum ResponseCode {
 		SUCCESS,
 		FAIL_NO_CARD,
@@ -39,4 +40,10 @@ public interface SDCardCapture {
 	 * Return a list of the file paths of printable files.
 	 */
 	List<String> getFileList();
+	
+	/** 
+	 * True if a playback is finished.
+	 * TODO: Why does this cover playback in the first place??
+	 */
+	public boolean isFinished();
 }

@@ -1,4 +1,4 @@
-package replicatorg.app;
+package replicatorg.app.exceptions;
 
 import replicatorg.app.util.serial.Serial;
 

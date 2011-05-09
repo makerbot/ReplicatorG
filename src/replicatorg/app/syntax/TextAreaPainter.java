@@ -418,7 +418,7 @@ public void setFont(Font font)
       }
     } catch (Exception e) {
       // FIXME: This has triggered once printing the metalab-motor-adapter. kintel 20081104.
-      System.err.println("Error repainting line"
+      Base.logger.severe("Error repainting line"
                          + " range {" + firstInvalid + ","
                          + lastInvalid + "}:");
       e.printStackTrace();

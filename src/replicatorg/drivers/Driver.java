@@ -29,9 +29,7 @@ import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
-import replicatorg.app.GCodeParser;
 import replicatorg.app.exceptions.BuildFailureException;
-import replicatorg.app.exceptions.GCodeException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.util.Point5d;
@@ -49,16 +47,18 @@ public interface Driver {
 	 * parse and load configuration data from XML
 	 */
 	public void loadXML(Node xml);
-
+	
 	/**
-	 * parse a command. usually passes it through to the parser.
+	 * Should we bypass the parser?
+	 * @return true if this driver executes GCodes directly, false if the parser should be used to exercise it's interface. 
 	 */
-	public void parse(String cmd);
-
+	public boolean isPassthroughDriver();
+	
 	/**
-	 * get our parser object
+	 * Execute a line of GCode directly (ie, don't use the parser)
+	 * @param code The line of GCode that we should execute
 	 */
-	public GCodeParser getParser();
+	public void executeGCodeLine(String code);
 
 	/**
 	 * are we finished with the last command?
@@ -69,12 +69,27 @@ public interface Driver {
 	 * Is our buffer empty? If don't have a buffer, its always true.
 	 */
 	public boolean isBufferEmpty();
+	
+	
+	/**
+	 * Check that the communication line is still up, the machine is still connected,
+	 * and that the machine state is still good.
+	 * TODO: Rename this? 
+	 */
+	public void assessState();
+	
+	/**
+	 * Check if the device has reported an error
+	 * @return True if there is an error waiting.
+	 */
+	public boolean hasError();
 
 	/**
-	 * Wait until we've finished all commands.
+	 * Get a string message for the first driver error.
+	 * @return
 	 */
-	public void waitUntilBufferEmpty();
-
+	public DriverError getError();
+	
 	/**
 	 * do we have any errors? this method handles them.
 	 */
@@ -110,13 +125,6 @@ public interface Driver {
 	public void setMachine(MachineModel m);
 
 	/**
-	 * execute the recently parsed GCode
-	 * 
-	 * @throws InterruptedException
-	 */
-	public void execute() throws GCodeException, InterruptedException, RetryException;
-
-	/**
 	 * get version information from the driver
 	 */
 	public String getDriverName(); // A human-readable name for the machine
@@ -129,7 +137,7 @@ public interface Driver {
 	/** Called at regular intervals when under manual control. Allows insertion of 
 	 * machine-specific logic into each manual control panel update. 
 	 * @throws InterruptedException */
-	public void updateManualControl() throws InterruptedException;
+	public void updateManualControl();
 
 	public Version getMinimumVersion();
 	
@@ -147,6 +155,16 @@ public interface Driver {
 	 * @throws RetryException 
 	 */
 	public void setCurrentPosition(Point5d p) throws RetryException;
+
+	/** 
+	 * Tell the machine to record it's current position into storage 
+	 */
+	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException;
+	
+	/** 
+	 * Tell the machine to restore it's current position from storage 
+	 */
+	public void recallHomePositions(EnumSet<AxisId> axes) throws RetryException;
 
 	/**
 	 * Get the current machine position
