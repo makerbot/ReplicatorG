@@ -38,6 +38,7 @@ import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.BadFirmwareVersionException;
+import replicatorg.drivers.DriverError;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.PenPlotter;
@@ -447,7 +448,7 @@ public class Sanguino3GDriver extends SerialDriver
 			String message = "Toolhead " + Integer.toString(toolIndex)
 			+ ": Not found.\nMake sure the toolhead is connected, the power supply is plugged in and turned on, and the power switch on the motherboard is on.";
 			
-			setError(message);
+			setError(new DriverError(message, false));
 			Base.logger.severe(message);
 		}
         else {

@@ -271,7 +271,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	
 	private void updateFromState(final MachineState s, final MachineInterface machine) {
 		boolean connected = s.isConnected();
-		boolean readyToPrint = s.isReadyToPrint();
+		boolean readyToPrint = s.canPrint();
 		boolean configurable = s.isConfigurable();
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();

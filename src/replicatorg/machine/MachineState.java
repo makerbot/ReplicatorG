@@ -53,10 +53,13 @@ public class MachineState extends Object implements Cloneable {
 			|| state == State.ERROR;
 	}
 	
-	public boolean isReadyToPrint() {
+	/**
+	 * @return True if the machine is ready to start printing
+	 */
+	public boolean canPrint() {
 		return state == State.READY;
 	}
-	
+		
 	public boolean isPrinting() {
 		return state == State.BUILDING
 			|| state == State.BUILDING_OFFLINE
@@ -70,6 +73,8 @@ public class MachineState extends Object implements Cloneable {
 	public boolean isConfigurable() {
 		return (isConnected() && !isPrinting());
 	}
+	
+	
 	
 	public MachineState clone() {
 		try {

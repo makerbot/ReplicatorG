@@ -276,7 +276,7 @@ class MachineThread extends Thread {
 			}
 			break;
 		case BUILD_DIRECT:
-			if (state.isReadyToPrint()) {
+			if (state.canPrint()) {
 				startTimeMillis = System.currentTimeMillis();
 				
 				pollingTimer.start(1000);
@@ -302,7 +302,7 @@ class MachineThread extends Thread {
 //			setState(new MachineState(MachineState.State.BUILDING));
 			break;
 		case BUILD_TO_REMOTE_FILE:
-			if (state.isReadyToPrint()) {
+			if (state.canPrint()) {
 				if (!(driver instanceof SDCardCapture)) {
 					break;
 				}
@@ -324,7 +324,7 @@ class MachineThread extends Thread {
 			break;
 		case BUILD_TO_FILE:
 			/** We will accept a disconnected machine or a ready machine. */
-			if (state.isReadyToPrint() || state.getState() == MachineState.State.NOT_ATTACHED) {
+			if (state.canPrint() || state.getState() == MachineState.State.NOT_ATTACHED) {
 				if (!(driver instanceof SDCardCapture)) {
 					break;
 				}
@@ -339,7 +339,7 @@ class MachineThread extends Thread {
 				
 				machineBuilder = new ToLocalFile(driver, simulator,
 											combinedSource, command.remoteName);
-				if (state.isReadyToPrint()) {
+				if (state.canPrint()) {
 					setState(new MachineState(MachineState.State.BUILDING), buildingMessage());
 				} else {
 					setState(new MachineState(MachineState.State.BUILDING_OFFLINE), buildingMessage());
@@ -347,7 +347,7 @@ class MachineThread extends Thread {
 			}
 			break;
 		case BUILD_REMOTE:
-			if (state.isReadyToPrint()) {
+			if (state.canPrint()) {
 				if (!(driver instanceof SDCardCapture)) {
 					break;
 				}
@@ -374,8 +374,9 @@ class MachineThread extends Thread {
 			}
 			break;
 		case STOP_MOTION:
-			if (state.isConnected()) {
-				driver.stop(false);
+			driver.stop(false);
+			
+			if (state.isBuilding()) {
 				setState(new MachineState(MachineState.State.READY),
 						readyMessage());
 			}
@@ -386,7 +387,11 @@ class MachineThread extends Thread {
 			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			
 			driver.stop(true);
-			setState(new MachineState(MachineState.State.READY), readyMessage());
+			
+			if (state.isBuilding()) {
+				setState(new MachineState(MachineState.State.READY),
+						readyMessage());
+			}
 			
 			break;			
 //		case DISCONNECT_REMOTE_BUILD:
@@ -521,7 +526,7 @@ class MachineThread extends Thread {
 		return true;
 	}
 	
-	public boolean isReadyToPrint() { return state.isReadyToPrint(); }
+	public boolean isReadyToPrint() { return state.canPrint(); }
 	
 
 	/** True if the machine's build is going to the simulator. */

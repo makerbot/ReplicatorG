@@ -153,8 +153,12 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	public void assessState() {
 	}
 	
+	protected void setError(DriverError newError) {
+		errorList.add(newError);
+	}
+	
 	protected void setError(String e) {
-		errorList.add(new DriverError(e, true));
+		setError(new DriverError(e, true));
 	}
 
 	

@@ -1667,13 +1667,13 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		}
 		boolean hasGcode = getBuild().getCode() != null;
 		if (building) {
-			if (evt.getState().isReadyToPrint()) {
+			if (evt.getState().canPrint()) {
 				final MachineState endState = evt.getState();
         		building = false;
                 SwingUtilities.invokeLater(new Runnable() {
                 	// TODO: Does this work?
                     public void run() {
-                    	if (endState.isReadyToPrint()) {
+                    	if (endState.canPrint()) {
                     		notifyBuildComplete(buildStart, new Date());
                     	} else {
                     		notifyBuildAborted(buildStart, new Date());
@@ -1686,7 +1686,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				building = false; // Don't keep the building state when disconnecting from the machine
 			}
 		}
-		if (evt.getState().isReadyToPrint()) {
+		if (evt.getState().canPrint()) {
 			// TODO: What?
 			reloadSerialMenu();
 		}
