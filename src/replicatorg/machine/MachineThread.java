@@ -193,8 +193,16 @@ class MachineThread extends Thread {
 		return new GCodeSourceCollection(sources);
 	}
 	
-	private String buildReadyMessage() {
+	private String readyMessage() {
 		return "Machine " + getMachineName() + " ready";
+	}
+	
+	private String notConnectedMessage() {
+		return "Not Connected";
+	}
+	
+	private String buildingMessage() {
+		return "Building...";
 	}
 	
 	// Respond to a command from the machine controller
@@ -242,7 +250,7 @@ class MachineThread extends Thread {
 					if (driver.isInitialized()) {
 						readName();
 						setState(new MachineState(MachineState.State.READY),
-								buildReadyMessage());
+								readyMessage());
 					} else {
 						setState(new MachineState(MachineState.State.NOT_ATTACHED));
 					}
@@ -253,7 +261,7 @@ class MachineThread extends Thread {
 			// TODO: This seems wrong
 			if (state.isConnected()) {
 				driver.uninitialize();
-				setState(new MachineState(MachineState.State.NOT_ATTACHED), "Not Connected");
+				setState(new MachineState(MachineState.State.NOT_ATTACHED), notConnectedMessage());
 			
 				if (driver instanceof UsesSerial) {
 					UsesSerial us = (UsesSerial)driver;
@@ -266,7 +274,7 @@ class MachineThread extends Thread {
 				driver.reset();
 				readName();
 				setState(new MachineState(MachineState.State.READY),
-						buildReadyMessage());
+						readyMessage());
 			}
 			break;
 		case BUILD_DIRECT:
@@ -288,7 +296,7 @@ class MachineThread extends Thread {
 				driver.invalidatePosition();
 				
 				// TODO: Where should the build name be specified?
-				setState(new MachineState(MachineState.State.BUILDING), "Building");
+				setState(new MachineState(MachineState.State.BUILDING), buildingMessage());
 			}
 			break;
 		case SIMULATE:
@@ -338,9 +346,9 @@ class MachineThread extends Thread {
 				machineBuilder = new ToLocalFile(driver, simulator,
 											combinedSource, command.remoteName);
 				if (state.isReadyToPrint()) {
-					setState(new MachineState(MachineState.State.BUILDING));
+					setState(new MachineState(MachineState.State.BUILDING), buildingMessage());
 				} else {
-					setState(new MachineState(MachineState.State.BUILDING_OFFLINE));					
+					setState(new MachineState(MachineState.State.BUILDING_OFFLINE), buildingMessage());
 				}
 			}
 			break;
@@ -358,24 +366,24 @@ class MachineThread extends Thread {
 			
 				// TODO: what about this?
 				driver.getCurrentPosition(false); // reconcile position
-				setState(new MachineState(MachineState.State.BUILDING));
+				setState(new MachineState(MachineState.State.BUILDING), buildingMessage());
 			}
 			break;
 		case PAUSE:
 			if (state.getState() == MachineState.State.BUILDING) {
-				setState(new MachineState(MachineState.State.PAUSED));
+				setState(new MachineState(MachineState.State.PAUSED), "Build paused");
 			}
 			break;
 		case UNPAUSE:
 			if (state.getState() == MachineState.State.PAUSED) {
-				setState(new MachineState(MachineState.State.BUILDING));
+				setState(new MachineState(MachineState.State.BUILDING), buildingMessage());
 			}
 			break;
 		case STOP_MOTION:
 			if (state.isConnected()) {
 				driver.stop(false);
 				setState(new MachineState(MachineState.State.READY),
-						buildReadyMessage());
+						readyMessage());
 			}
 			break;
 		case STOP_ALL:
@@ -384,7 +392,7 @@ class MachineThread extends Thread {
 			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			
 			driver.stop(true);
-			setState(new MachineState(MachineState.State.READY), buildReadyMessage());
+			setState(new MachineState(MachineState.State.READY), readyMessage());
 			
 			break;			
 //		case DISCONNECT_REMOTE_BUILD:
@@ -415,7 +423,7 @@ class MachineThread extends Thread {
 			break;
 		case SHUTDOWN:
 			//TODO: Dispose of everything here.
-			setState(new MachineState(MachineState.State.NOT_ATTACHED));
+			setState(new MachineState(MachineState.State.NOT_ATTACHED), notConnectedMessage());
 			interrupt();
 			break;
 		default:
@@ -481,9 +489,10 @@ class MachineThread extends Thread {
 					// TODO: Exit correctly.
 					if (state.getState() == MachineState.State.BUILDING) {
 						setState(new MachineState(MachineState.State.READY),
-								buildReadyMessage());
+								readyMessage());
 					} else {
-						setState(new MachineState(MachineState.State.NOT_ATTACHED));
+						setState(new MachineState(MachineState.State.NOT_ATTACHED),
+								notConnectedMessage());
 					}
 					
 					pollingTimer.stop();
