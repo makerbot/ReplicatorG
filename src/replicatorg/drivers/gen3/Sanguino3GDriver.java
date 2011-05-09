@@ -45,6 +45,7 @@ import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
+import replicatorg.drivers.OnboardParameters.EstopType;
 import replicatorg.drivers.gen3.PacketProcessor.CRCException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
@@ -1455,6 +1456,7 @@ public class Sanguino3GDriver extends SerialDriver
 	final private static int EEPROM_AXIS_HOME_POSITIONS_OFFSET = 96;
 	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
 	final private static int EEPROM_ENDSTOP_INVERSION_OFFSET = 3;
+	final private static int EEPROM_ESTOP_CONFIGURATION_OFFSET = 116;
 	final static class ECThermistorOffsets {
 		final private static int[] TABLE_OFFSETS = {
 			0x00f0,
@@ -1957,7 +1959,18 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToToolEEPROM(EC_EEPROM_EXTRA_FEATURES,intToLE(efdat,2));
 	}
 
-	
+	public EstopType getEstopConfig() {
+		checkEEPROM();
+		byte[] b = readFromEEPROM(EEPROM_ESTOP_CONFIGURATION_OFFSET,1);
+		return EstopType.estopTypeForValue(b[0]);
+	}
+
+	public void setEstopConfig(EstopType estop) {
+		byte b[] = new byte[1];
+		b[0] = estop.getValue();
+		writeToEEPROM(EEPROM_ESTOP_CONFIGURATION_OFFSET,b);
+	}
+
 	public double getPlatformTemperatureSetting() {
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2,3))) {
