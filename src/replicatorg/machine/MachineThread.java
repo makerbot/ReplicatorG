@@ -206,9 +206,7 @@ class MachineThread extends Thread {
 	}
 	
 	// Respond to a command from the machine controller
-	void runCommand(MachineCommand command) {
-		Base.logger.fine("Got command: " + command.type.toString());
-		
+	void runCommand(MachineCommand command) {		
 		switch(command.type) {
 		case CONNECT:
 			if (state.getState() == MachineState.State.NOT_ATTACHED) {
@@ -312,10 +310,6 @@ class MachineThread extends Thread {
 				startTimeMillis = System.currentTimeMillis();
 
 				pollingTimer.start(1000);
-	
-				if (!isSimulating()) {
-					driver.getCurrentPosition(false); // reconcile position
-				}
 				
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);

@@ -471,6 +471,8 @@ public class Sanguino3GDriver extends SerialDriver
 	 **************************************************************************/
 
 	public void queuePoint(Point5d p) throws RetryException {
+		// TODO: check if our current position is valid?
+		
 		Base.logger.fine("Queued point " + p);
 
 		// is this point even step-worthy?
@@ -565,9 +567,7 @@ public class Sanguino3GDriver extends SerialDriver
 	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.fine("Homing axes "+axes.toString());
 		byte flags = 0x00;
-
-		invalidatePosition();
-
+		
 		Point5d homingFeedrates = machine.getHomingFeedrates();
 
 		if (feedrate <= 0) {
@@ -597,6 +597,8 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add32((int) micros);
 		pb.add16(20); // default to 20 seconds
 		runCommand(pb.getPacket());
+		
+		invalidatePosition();
 	}
 		
 
@@ -1318,8 +1320,9 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	protected Point5d reconcilePosition() throws RetryException {
+		// If we're writing to a file, we can't actually know what the current position is.
 		if (fileCaptureOstream != null) {
-			return new Point5d();
+			return null;
 		}
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());

@@ -260,12 +260,21 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 			// transaction) will be called every time.
 			if (currentPosition.get() == null || update) {
 				try {
-					currentPosition.set(reconcilePosition());
+					// Try to reconcile our position. If it's not possible, then return a zero point, but don't save it. 
+					Point5d newPoint = reconcilePosition();
+					
+					if (newPoint == null) {
+						return new Point5d();
+					}
+					
+					currentPosition.set(newPoint);
+					
 				} catch (RetryException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
+			
 			return new Point5d(currentPosition.get());
 		}
 	}
