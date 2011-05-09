@@ -45,6 +45,12 @@ public class MachineOnboardParameters extends JFrame {
 		"Non-inverted (H21LOI-based endstops)"
 	};
 	private JComboBox endstopInversionSelection = new JComboBox(endstopInversionChoices);
+	private static final String[]  estopChoices = {
+		"No emergency stop installed",
+		"Active high emergency stop (safety cutoff kit)",
+		"Active low emergency stop (custom solution)"
+	};
+	private JComboBox estopSelection = new JComboBox(estopChoices);
 	private static final int MAX_NAME_LENGTH = 16;
 	private JTextField xAxisHomeOffsetField = new JTextField();
 	private JTextField yAxisHomeOffsetField = new JTextField();
@@ -75,10 +81,18 @@ public class MachineOnboardParameters extends JFrame {
 		if (aAxisInvertBox.isSelected()) axesInverted.add(AxisId.A);
 		if (bAxisInvertBox.isSelected()) axesInverted.add(AxisId.B);
 		target.setInvertedParameters(axesInverted);
-		int idx = endstopInversionSelection.getSelectedIndex();
-		OnboardParameters.EndstopType endstops = 
-			OnboardParameters.EndstopType.values()[idx]; 
-		target.setInvertedEndstops(endstops);
+		{
+			int idx = endstopInversionSelection.getSelectedIndex();
+			OnboardParameters.EndstopType endstops = 
+				OnboardParameters.EndstopType.values()[idx]; 
+			target.setInvertedEndstops(endstops);
+		}
+		{
+			int idx = estopSelection.getSelectedIndex();
+			OnboardParameters.EstopType estop = 
+				OnboardParameters.EstopType.estopTypeForValue((byte)idx); 
+			target.setEstopConfig(estop);
+		}
 		
 		target.setAxisHomeOffset(0, Double.parseDouble(xAxisHomeOffsetField.getText()));
 		target.setAxisHomeOffset(1, Double.parseDouble(yAxisHomeOffsetField.getText()));
@@ -106,6 +120,9 @@ public class MachineOnboardParameters extends JFrame {
 		// 0 == inverted, 1 == not inverted
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
 		endstopInversionSelection.setSelectedIndex(endstops.ordinal());
+
+		OnboardParameters.EstopType estop = this.target.getEstopConfig();
+		estopSelection.setSelectedIndex(estop.ordinal());
 		
 		xAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(0)));
 		yAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(1)));
@@ -154,6 +171,8 @@ public class MachineOnboardParameters extends JFrame {
 		panel.add(bAxisInvertBox,"wrap");
 		panel.add(new JLabel("Invert endstops"));
 		panel.add(endstopInversionSelection,"wrap");
+		panel.add(new JLabel("Emergency stop"));
+		panel.add(estopSelection,"wrap");
 		
 		xAxisHomeOffsetField.setColumns(10);
 		yAxisHomeOffsetField.setColumns(10);
