@@ -19,10 +19,12 @@ The models included here are:
   http://creativecommons.org/licenses/BSD/
   http://www.thingiverse.com/thing:5504
 
-* Whistle_v2.stl: Whistle by Zaggo
+* Whistle_v1.stl: Whistle by Zaggo
   Shared under CC-BY-NC 3.0 license
   http://creativecommons.org/licenses/by-nc/3.0/
   http://www.thingiverse.com/thing:1046
+  Cleaned up by Cibomahto:
+  http://www.thingiverse.com/thing:8391
 
 * Antique_Car.stl: Antique Car by RobbinsvilleHighSchool
   Shared under CC-BY-NC-SA 3.0 license
