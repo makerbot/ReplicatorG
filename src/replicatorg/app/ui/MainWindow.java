@@ -524,6 +524,19 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	}
 	
 	public void runToolpathGenerator() {
+		// Check if the model is on the platform
+		if (!getPreviewPanel().getModel().isOnPlatform()) {
+			String message = "The bottom of the model doesn't appear to be touching the build surface, and attempting to print it could damage your machine. Ok to move it to the build platform?";
+			int option = JOptionPane.showConfirmDialog(this, message , "Place model on build surface?", 
+					JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (option == JOptionPane.CANCEL_OPTION) { return; }
+			if (option == JOptionPane.YES_OPTION) {
+				// put the model on the platform.
+				getPreviewPanel().getModel().putOnPlatform();
+			}
+				
+		}
+		
 		// Check for modified STL
 		if (build.getModel().isModified()) {
 			final String message = "<html>You have made changes to this model.  Any unsaved changes will<br>" +
