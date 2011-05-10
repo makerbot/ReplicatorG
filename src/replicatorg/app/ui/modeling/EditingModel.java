@@ -105,7 +105,7 @@ public class EditingModel {
 		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
 		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
 		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_NORMAL_READ);
-		Color3f color = new Color3f(1.0f,1.0f,1.0f); 
+		Color3f color = new Color3f(1.0f,.7f,.3f); 
 		Material m = new Material();
 		m.setAmbientColor(color);
 		m.setDiffuseColor(color);

@@ -11,6 +11,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
+import java.util.Random;
 import java.util.logging.Level;
 
 import javax.media.j3d.AmbientLight;
@@ -30,6 +31,8 @@ import javax.media.j3d.LineAttributes;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.OrientedShape3D;
+import javax.media.j3d.PointArray;
+import javax.media.j3d.PointAttributes;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
@@ -41,6 +44,7 @@ import javax.media.j3d.View;
 import javax.swing.JPanel;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
+import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
@@ -53,6 +57,7 @@ import replicatorg.machine.model.BuildVolume;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.BuildModel;
 
+import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**
@@ -231,7 +236,8 @@ public class PreviewPanel extends JPanel {
 
 	public Node makeAmbientLight() {
 		AmbientLight ambient = new AmbientLight();
-		ambient.setColor(new Color3f(0.3f,0.3f,0.9f));
+//		ambient.setColor(new Color3f(0.3f,0.3f,0.9f));
+		ambient.setColor(new Color3f(1f,1f,1f));
 		ambient.setInfluencingBounds(bounds);
 		return ambient;
 	}
@@ -246,7 +252,7 @@ public class PreviewPanel extends JPanel {
 
 	public Node makeDirectedLight2() {
 		Color3f color = new Color3f(0.5f,0.5f,0.5f);
-		Vector3f direction = new Vector3f(-1f,-0.7f,0.2f);
+		Vector3f direction = new Vector3f(-1f,-0.7f,-0.2f);
 		DirectionalLight light = new DirectionalLight(color,direction);
 		light.setInfluencingBounds(bounds);
 		return light;
@@ -270,10 +276,9 @@ public class PreviewPanel extends JPanel {
 	};
 
 	public Shape3D makeBoxFrame(Point3d ll, Vector3d dim) {
-		Appearance edges = new Appearance();
-		edges.setLineAttributes(new LineAttributes(0.9f,LineAttributes.PATTERN_SOLID,false));
-		edges.setPolygonAttributes(new PolygonAttributes(PolygonAttributes.POLYGON_LINE,
-				PolygonAttributes.CULL_NONE,0));
+        Appearance edges = new Appearance();
+        edges.setLineAttributes(new LineAttributes(3,LineAttributes.PATTERN_SOLID,true));
+        edges.setColoringAttributes(new ColoringAttributes(.9f,1f,1f,ColoringAttributes.NICEST));
 		double[] coords = new double[wireBoxCoordinates.length];
 		for (int i = 0; i < wireBoxCoordinates.length;) {
 			coords[i] = (wireBoxCoordinates[i] * dim.x) + ll.x; i++;
@@ -321,13 +326,13 @@ public class PreviewPanel extends JPanel {
 	}
 		
 	private Shape3D makePlatform(Point3d lower, Point3d upper) {
-		Color3f color = new Color3f(1.0f,1.0f,1.0f); 
-		Material m = new Material();
-		m.setAmbientColor(color);
-		m.setDiffuseColor(color);
+		Color3f color = new Color3f(.05f,.35f,.70f); 
+		ColoringAttributes ca = new ColoringAttributes();
+		ca.setColor(color);
 		Appearance solid = new Appearance();
-		solid.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST,0.6f));
-		solid.setMaterial(m);
+		solid.setTransparencyAttributes(new TransparencyAttributes(TransparencyAttributes.NICEST,0.13f));
+		//solid.setMaterial(m);
+		solid.setColoringAttributes(ca);
 		PolygonAttributes pa = new PolygonAttributes();
 		pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
 		pa.setCullFace(PolygonAttributes.CULL_NONE);
@@ -383,7 +388,7 @@ public class PreviewPanel extends JPanel {
 	}
 
 	public Node makeBackground() {
-		Background bg = new Background(0.5f,0.5f,0.6f);
+		Background bg = new Background(0f,0f,0f);
 		bg.setApplicationBounds(bounds);
 		return bg;
 	}
@@ -393,8 +398,8 @@ public class PreviewPanel extends JPanel {
     	{
     		int gridSpacing = 10;
 	        Appearance edges = new Appearance();
-	        edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
-	        edges.setColoringAttributes(new ColoringAttributes(0.6f,0.6f,0.8f,ColoringAttributes.FASTEST));
+	        edges.setLineAttributes(new LineAttributes(3,LineAttributes.PATTERN_SOLID,true));
+	        edges.setColoringAttributes(new ColoringAttributes(.9f,1f,1f,ColoringAttributes.NICEST));
 	        int lineCountX = (int) 1+(buildVol.getX()/gridSpacing);
 	        int lineCountY = (int) 1+(buildVol.getY()/gridSpacing);
 	        LineArray gridX = new LineArray(4*(lineCountX),GeometryArray.COORDINATES);
@@ -421,6 +426,44 @@ public class PreviewPanel extends JPanel {
     		else
     			return new Shape3D(gridY,edges);
     	} return null;
+    }
+    
+    public Node makeStarField(int pointCount, int pointSize) {    	
+    	// Oh! I feel it! I feel the Cosmos!
+        BranchGroup bg = new BranchGroup();
+
+        PointArray pointArray = new PointArray(pointCount * pointCount,
+            GeometryArray.COORDINATES | GeometryArray.COLOR_3);
+
+        int nPoint = 0;
+
+        Random rand = new Random();
+        
+        for (int n = 0; n < pointCount; n++) {
+        	// Choose a random point in the cosmos.
+        	double r = 1000;
+        	double theta = rand.nextFloat()*2*Math.PI;
+        	double phi = rand.nextFloat()*2*Math.PI;
+        	
+        	double x = r * Math.sin(theta) * Math.cos(phi);
+        	double y = r * Math.sin(theta) * Math.sin(phi);
+        	double z = r * Math.cos(theta);
+
+            Point3f point = new Point3f((float)x, (float)y, (float)z);
+            pointArray.setCoordinate(nPoint, point);
+            pointArray.setColor(nPoint++, new Color3f(1f, 1f, 1f));
+        }
+
+        // create the material for the points
+        Appearance pointApp = new Appearance();
+
+        // enlarge the points
+        pointApp.setPointAttributes(new PointAttributes(pointSize, true));
+
+        Shape3D pointShape = new Shape3D(pointArray, pointApp);
+
+        bg.addChild(pointShape);
+        return bg;
     }
 	
 	BranchGroup sceneGroup;
@@ -451,6 +494,7 @@ public class PreviewPanel extends JPanel {
 		sceneGroup.addChild(makeBackground());
 		sceneGroup.addChild(makeBaseGrid(true));
 		sceneGroup.addChild(makeBaseGrid(false));
+		sceneGroup.addChild(makeStarField(500, 2));
 
 		objRoot.addChild(sceneGroup);
 
@@ -470,6 +514,8 @@ public class PreviewPanel extends JPanel {
 
 		return objRoot;
 	}
+	
+	
 
 	// These values were determined experimentally to look pretty dang good.
 	final static Vector3d CAMERA_TRANSLATION_DEFAULT = new Vector3d(0,0,290);
