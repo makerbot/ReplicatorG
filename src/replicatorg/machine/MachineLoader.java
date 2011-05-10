@@ -2,8 +2,6 @@ package replicatorg.machine;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
-import replicatorg.drivers.UsesSerial;
-import replicatorg.machine.Machine.RequestType;
 
 /** Maintains a connection to one machine **/ 
 	public class MachineLoader {

@@ -51,9 +51,7 @@ public class RealtimePanel extends JFrame implements ChangeListener, WindowListe
 		setIconImage(icon);
 		
 		machine = machine2;
-//		driver = machine.getDriver();
-		Base.logger.severe("Direct driver access disallowed, use interface instead");
-		driver = null;
+		driver = machine.getDriver();
 
 		((RealtimeControl) driver).enableRealtimeControl(true);
 		

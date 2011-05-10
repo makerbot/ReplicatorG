@@ -13,7 +13,6 @@ import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.EstimationDriver;
-import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -36,7 +35,6 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	
 	// Keep track of whether we are in a building state or not.
 	private boolean isBuilding = false;
-	private boolean firmwareWarningIssued = false;
 	
 	static final private Color BG_NO_MACHINE = new Color(0xff, 0x80, 0x60);
 	static final private Color BG_READY = new Color(0x80, 0xff, 0x60);

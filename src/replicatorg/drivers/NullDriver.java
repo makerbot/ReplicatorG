@@ -30,7 +30,6 @@ import replicatorg.app.tools.XML;
 
 //TODO: why do we have this?
 public class NullDriver extends DriverBaseImplementation {
-	private double speedup;
 
 	public NullDriver() {
 		super();

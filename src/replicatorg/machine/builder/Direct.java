@@ -9,7 +9,6 @@ import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
 import replicatorg.app.GCodeParser;
-import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.RetryException;

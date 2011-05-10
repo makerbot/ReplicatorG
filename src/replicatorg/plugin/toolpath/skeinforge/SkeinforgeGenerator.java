@@ -275,51 +275,6 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
-	public static class SkeinforgeValuePreference implements SkeinforgePreference {
-		private Map<String,List<SkeinforgeOption>> optionsMap = new HashMap<String,List<SkeinforgeOption>>();
-		private JPanel component;
-		private JTextField input; 
-		private String value;
-		
-		public SkeinforgeValuePreference(String name, final String preferenceName, String defaultValue, String toolTip) {
-			component = new JPanel(new MigLayout());
-			if (preferenceName != null) {
-				value = Base.preferences.get(preferenceName, defaultValue);
-			}
-			component.add(new JLabel(name));
-			
-			input = new JTextField(value, 10);
-			component.add(input);
-			input.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					value = (String)input.getText();
-					if (preferenceName != null) {
-						Base.preferences.put(preferenceName,value);
-					}
-				}
-			});
-			if (toolTip != null) {
-				component.setToolTipText(toolTip);
-			}
-		}
-		public JComponent getUI() { return component; }
-	
-		public List<SkeinforgeOption> getOptions() {
-//			if (optionsMap.containsKey(chosen)) {
-//				List<SkeinforgeOption> l = optionsMap.get(chosen);
-//				for (SkeinforgeOption o : l) {
-//					System.err.println(o.getArgument());
-//				}
-//				return optionsMap.get(chosen);
-//			}
-			return new LinkedList<SkeinforgeOption>();
-		}
-		@Override
-		public String valueSanityCheck() {
-			return null;
-		}
-	
-	}
 
 	public boolean visualConfigure(Frame parent) {
 		// First check for Python.
