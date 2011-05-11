@@ -53,6 +53,7 @@ import replicatorg.drivers.RetryException;
 import replicatorg.drivers.commands.DriverCommand.AxialDirection;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.ToolModel;
+import replicatorg.app.ui.CallbackTextField;
 
 public class ExtruderPanel extends JPanel implements FocusListener, ActionListener, ItemListener {
 	private ToolModel toolModel;
@@ -197,16 +198,12 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if ((t.getMotorStepperAxis() == null) && !(t.motorHasEncoder() || t.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
-				JTextField field = new JTextField();
-
-				field.setMaximumSize(new Dimension(textBoxWidth, 25));
-				field.setMinimumSize(new Dimension(textBoxWidth, 25));
-				field.setPreferredSize(new Dimension(textBoxWidth, 25));
-				field.setName("motor-speed-pwm");
-				field.addFocusListener(this);
-				field.setActionCommand("handleTextfield");
+				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 25);
 				field.setText(Integer.toString(machine.getDriverQueryInterface().getMotorSpeedPWM()));
-				field.addActionListener(this);
+				
+//				field.setMaximumSize(new Dimension(textBoxWidth, 25));
+//				field.setMinimumSize(new Dimension(textBoxWidth, 25));
+//				field.setPreferredSize(new Dimension(textBoxWidth, 25));
 
 				add(label);
 				add(field,"wrap");
@@ -215,15 +212,17 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if (t.motorHasEncoder() || t.motorIsStepper()) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (RPM)");
-				JTextField field = new JTextField();
-
-				field.setMaximumSize(new Dimension(textBoxWidth, 25));
-				field.setMinimumSize(new Dimension(textBoxWidth, 25));
-				field.setPreferredSize(new Dimension(textBoxWidth, 25));
-				field.setName("motor-speed");
-				field.addFocusListener(this);
-				field.setActionCommand("handleTextfield");
+				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 25);
 				field.setText(Double.toString(machine.getDriverQueryInterface().getMotorRPM()));
+//				JTextField field = new JTextField();
+//
+//				field.setMaximumSize(new Dimension(textBoxWidth, 25));
+//				field.setMinimumSize(new Dimension(textBoxWidth, 25));
+//				field.setPreferredSize(new Dimension(textBoxWidth, 25));
+//				field.setName("motor-speed");
+//				field.addFocusListener(this);
+//				field.setActionCommand("handleTextfield");
+				
 				field.addActionListener(this);
 
 				add(label);
@@ -636,11 +635,11 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				machine.runCommand(new replicatorg.drivers.commands.CloseCollet());
 		}
 	}
-
+	
 	public void actionPerformed(ActionEvent e) {
 		String s = e.getActionCommand();
 		
-		if(s.equals("handleTextfield"))
+		if(s.equals("handleTextField"))
 		{
 			JTextField source = (JTextField) e.getSource();
 			try {
