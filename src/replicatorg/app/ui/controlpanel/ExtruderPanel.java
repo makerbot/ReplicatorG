@@ -198,13 +198,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if ((t.getMotorStepperAxis() == null) && !(t.motorHasEncoder() || t.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
-				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 25);
+				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9);
 				field.setText(Integer.toString(machine.getDriverQueryInterface().getMotorSpeedPWM()));
-				
-//				field.setMaximumSize(new Dimension(textBoxWidth, 25));
-//				field.setMinimumSize(new Dimension(textBoxWidth, 25));
-//				field.setPreferredSize(new Dimension(textBoxWidth, 25));
-
 				add(label);
 				add(field,"wrap");
 			}
@@ -212,19 +207,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if (t.motorHasEncoder() || t.motorIsStepper()) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (RPM)");
-				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 25);
+				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9);
 				field.setText(Double.toString(machine.getDriverQueryInterface().getMotorRPM()));
-//				JTextField field = new JTextField();
-//
-//				field.setMaximumSize(new Dimension(textBoxWidth, 25));
-//				field.setMinimumSize(new Dimension(textBoxWidth, 25));
-//				field.setPreferredSize(new Dimension(textBoxWidth, 25));
-//				field.setName("motor-speed");
-//				field.addFocusListener(this);
-//				field.setActionCommand("handleTextfield");
-				
-				field.addActionListener(this);
-
 				add(label);
 				add(field,"wrap");
 
@@ -300,22 +284,12 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		// our temperature fields
 		if (t.hasHeater()) {
 			JLabel targetTempLabel = makeKeyLabel("Target Temperature (C)",targetColor);
-			JTextField targetTempField = new JTextField();
-			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
-			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
-			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
-			targetTempField.setName("target-temp");
-			targetTempField.addFocusListener(this);
+			JTextField targetTempField = new CallbackTextField(this, "handleTextField", "target-temp", 9);
 			targetTemperature = machine.getDriverQueryInterface().getTemperatureSetting();
 			targetTempField.setText(Double.toString(targetTemperature));
-			targetTempField.setActionCommand("handleTextfield");
-			targetTempField.addActionListener(this);
 
 			JLabel currentTempLabel = makeKeyLabel("Current Temperature (C)",measuredColor);
-			currentTempField = new JTextField();
-			currentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
-			currentTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
-			currentTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			currentTempField = new JTextField("",9);
 			currentTempField.setEnabled(false);
 
 			add(targetTempLabel);
@@ -327,24 +301,12 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		// our heated platform fields
 		if (t.hasHeatedPlatform()) {
 			JLabel targetTempLabel = makeKeyLabel("Platform Target Temp (C)",targetPlatformColor);
-			JTextField targetTempField = new JTextField();
-			targetTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
-			targetTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
-			targetTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
-			targetTempField.setName("platform-target-temp");
-			targetTempField.addFocusListener(this);
-			double temperature = machine.getDriverQueryInterface().getPlatformTemperatureSetting();
-			targetPlatformTemperature = temperature;
-			targetTempField.setText(Double.toString(temperature));
-			targetTempField.setActionCommand("handleTextfield");
-			targetTempField.addActionListener(this);
+			JTextField targetTempField = new CallbackTextField(this, "handleTextField", "platform-target-temp", 9);
+			targetPlatformTemperature = machine.getDriverQueryInterface().getPlatformTemperatureSetting();
+			targetTempField.setText(Double.toString(targetPlatformTemperature));
 
 			JLabel currentTempLabel = makeKeyLabel("Platform Current Temp (C)",measuredPlatformColor);
-
-			platformCurrentTempField = new JTextField();
-			platformCurrentTempField.setMaximumSize(new Dimension(textBoxWidth, 25));
-			platformCurrentTempField.setMinimumSize(new Dimension(textBoxWidth, 25));
-			platformCurrentTempField.setPreferredSize(new Dimension(textBoxWidth, 25));
+			platformCurrentTempField = new JTextField("",9);
 			platformCurrentTempField.setEnabled(false);
 
 			add(targetTempLabel);

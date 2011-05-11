@@ -99,7 +99,7 @@ public abstract class ActionTextField extends JTextField {
 		super(text, columns);
 		
 		Toolkit tk = Toolkit.getDefaultToolkit();
-		defaultColor = (Color)tk.getDesktopProperty("text");
+		defaultColor = this.getBackground();
 		modifiedColor = new Color(128, 128, 255);
 		
 		valueModified = false;

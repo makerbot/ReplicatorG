@@ -1,5 +1,6 @@
 package replicatorg.app.ui;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
 import replicatorg.app.ui.controlpanel.ExtruderPanel;
@@ -11,7 +12,10 @@ public class CallbackTextField extends ActionTextField {
 	public CallbackTextField(ExtruderPanel panel, String actionCommand, String name, int columns) {
 		super("", columns);
 		
-//		setName(name);
+//		setMaximumSize(new Dimension(textBoxWidth, 25));
+//		setMinimumSize(new Dimension(textBoxWidth, 25));
+//		setPreferredSize(new Dimension(textBoxWidth, 25));
+		setName(name);
 		this.panel = panel;
 		this.actionCommand = actionCommand;
 	}
