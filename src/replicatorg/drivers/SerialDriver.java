@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
+import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.tools.XML;
 import replicatorg.app.util.serial.Serial;
 import replicatorg.app.util.serial.SerialFifoEventListener;
@@ -25,7 +26,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
     private int rate;
     private char parity;
     private int databits;
-    private float stopbits;
+    private int stopbits;
 
     private boolean explicit = false;
 	
@@ -45,7 +46,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
     		parity = parityStr.charAt(0);
     	}
         databits = Base.preferences.getInt("serial.databits",8);
-        stopbits = Base.preferences.getFloat("serial.stopbits",1f);
+        stopbits = Base.preferences.getInt("serial.stopbits",1);
     }
     
 	public void loadXML(Node xml) {
@@ -64,38 +65,57 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
         if (XML.hasChildNode(xml, "stopbits"))
                 stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
 	}
-
-// diplo1d: see this fix by kintel that conflicted when merging. You also fixed it but differently:
-// https://github.com/makerbot/ReplicatorG/commit/899c7c8e059d986ac0744ca4ab1f2f44efaae4b5
-// your fix:
-//	public void setSerial(Serial serial) {
-//		serialLock.writeLock().lock();
-// kintel had just changed it to "synchronized".
-	public synchronized void setSerial(Serial serial) {
+	
+	public synchronized void openSerial(String portName) {
+		// Grab a lock
 		serialLock.writeLock().lock();
-		if (this.serial == serial)
-		{
-			serialLock.writeLock().unlock();
-			return;
+		
+		// Now, try to create the new serial device
+		Serial newConnection = null;
+		try {
+
+			Base.logger.info("Connecting to machine using serial port: " + portName);
+			newConnection = new Serial(portName, rate, parity, databits, stopbits);
+		} catch (SerialException e) {
+			String msg = e.getMessage();
+			Base.logger.severe("Connection error: " + msg);
+			setError("Connection error: " + msg);
 		}
-		if (this.serial != null) {
-			synchronized(this.serial) {
-				this.serial.dispose();
-				this.serial = null;
+
+		if (newConnection != null) {
+			// TODO: Do we need to explicitly dispose this?
+			if (this.serial != null) {
+				synchronized(this.serial) {
+					this.serial.dispose();
+					this.serial = null;
+				}
+			}
+			
+			// Finally, set the new serial port
+			setInitialized(false);
+			this.serial = newConnection;
+
+			// asynch option: the serial port forwards all received data in FIFO format via 
+			// serialByteReceivedEvent if the driver implements SerialFifoEventListener.
+			if (this instanceof SerialFifoEventListener && serial != null) {
+				serial.listener.set( (SerialFifoEventListener) this );
 			}
 		}
-		setInitialized(false);
-		this.serial = serial;
-
-		// asynch option: the serial port forwards all received data in FIFO format via 
-		// serialByteReceivedEvent if the driver implements SerialFifoEventListener.
-		if (this instanceof SerialFifoEventListener && serial != null)
-			serial.listener.set( (SerialFifoEventListener) this );
-
+		serialLock.writeLock().unlock();
+	}
+	
+	// TODO: Move all of this to a new object that causes this when it is destroyed.
+	public void closeSerial() {
+		serialLock.writeLock().lock();
+		if (serial != null)
+			serial.dispose();
+		serial = null;
 		serialLock.writeLock().unlock();
 	}
 
-	public Serial getSerial() { return serial; }
+	public boolean isConnected() {
+		return (this.serial != null && this.serial.isConnected());
+	}
 	
 	public char getParity() {
 		return parity;
@@ -117,14 +137,12 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 		return stopbits;
 	}
 		
-	public boolean isExplicit() { return explicit; }
+	public boolean isExplicit() {
+		return explicit;
+	}
 	
 	public void dispose() {
-		serialLock.writeLock().lock();
+		closeSerial();
 		super.dispose();
-		if (serial != null)
-			serial.dispose();
-		serial = null;
-		serialLock.writeLock().unlock();
 	}
 }

@@ -1,13 +1,26 @@
-0025 ReplicatorG technology beta
-* Print-O-Matic support
-* Updates to most core libraries
-* Fix menu bar location on Mac for better look and feel.
-* New launch4j loader for Windows
+
+
+0025 ReplicatorG
+New features:
+* Print-O-Matic integrated and enabled by default
+* Store/recall home position support: No more need to modify start.gcode when your Z height changes.
+* Drag & Drop support: drop .stl or .gcode files into ReplicatorG to open them.
+* Frostruder support for Thing-O-Matic
 * Support for local firmware.xml files (file:// urls)
+* Support for internet proxies, using the default Java proxy configuration.
+* Added Skeinforge 40, for experimental purposes
+* Updates to most core libraries
+* Skeinforge 35 is now default
+* Wipe commands removed from cupcake profiles
+* HPB default temperature lowered to 110 degrees
+
+Bug fixes:
+* Rewritten gcode execution engine: fixes many bugs, such as 'gcode parser is null'
+* Homing feedrate specified in machine profile
+* Numerous Ultimaker, RaMPS, and RepRap improvements
+* Numerous UI tweaks to improve look&feel on OS X
 * Resize main window so tooltips don't refresh the whole view
-* Add frostruder support for Thingomatic
-* Bugfix for cupcake profiles: disable wipe
-* Some fixes for Ramps 5D
+
 
 0024 ReplicatorG
 * Support for stepper-based extruders on G4 hardware

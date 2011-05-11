@@ -9,14 +9,10 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import replicatorg.app.Base;
-import replicatorg.app.MachineController;
 import replicatorg.drivers.EstimationDriver;
-import replicatorg.drivers.UsesSerial;
-import replicatorg.drivers.Version;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -33,19 +29,16 @@ import replicatorg.machine.MachineToolStatusEvent;
 public class MachineStatusPanel extends BGPanel implements MachineListener {
 	private static final long serialVersionUID = -6944931245041870574L;
 
-	protected MachineController machine = null;
-
 	protected JLabel label = new JLabel();
 	protected JLabel smallLabel = new JLabel();
 	protected JLabel tempLabel = new JLabel();
-
-	protected double currentTemperature = -1;
 	
-	static final private Color BG_NO_MACHINE = new Color(0xff, 0x80, 0x60);
+	// Keep track of whether we are in a building state or not.
+	private boolean isBuilding = false;
+	
+	static final private Color BG_ERROR = new Color(0xff, 0x80, 0x60);
 	static final private Color BG_READY = new Color(0x80, 0xff, 0x60);
 	static final private Color BG_BUILDING = new Color(0xff, 0xef, 0x00); // process yellow
-
-	// static final private Color BG_WAIT = new Color(0xff,0xff,0x60);
 
 	MachineStatusPanel() {
 		Font smallFont = Base.getFontPref("status.font","SansSerif,plain,10");
@@ -54,6 +47,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
+		label.setText("Not Connected");
 		label.setAlignmentX(LEFT_ALIGNMENT);
 		add(label);
 		smallLabel.setAlignmentX(LEFT_ALIGNMENT);
@@ -75,109 +69,109 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		setMinimumSize(new Dimension(0, height));
 		int prefWidth = 80 * smallMetrics.charWidth('n');
 		setPreferredSize(new Dimension(prefWidth, height));
+		setBackground(BG_ERROR);
 	}
 
-	/**
-	 * Indicate which machine, if any, the status panel should attach to.
-	 * 
-	 * @param machine
-	 *            the machine's controller, or null if no machine is attached.
-	 */
-	public void setMachine(MachineController machine) {
-		if (machine != null && this.machine == machine)
-			return;
-		this.machine = machine;
-		MachineState state = (machine!=null)?machine.getMachineState():new MachineState();
-		MachineStateChangeEvent e = new MachineStateChangeEvent(machine,state);
-		updateMachineStatus(e);
+
+	private void updatePanel(Color panelColor, String text, String smallText, String tempText) {
+		setBackground(panelColor);
+		label.setText(text);
+		smallLabel.setText(smallText);
+		tempLabel.setText(tempText);
 	}
-
-	private boolean firmwareWarningIssued = false;
-
 	
-	protected String getMachineStateMessage(MachineController machine) {
-		if (machine == null) { return "No machine selected"; }
-		MachineState state = machine.getMachineState();
-		if (state.getState() == MachineState.State.NOT_ATTACHED) {
-			if (machine.getDriver() == null) {
-				return "No machine selected";
-			} else {
-				return "Disconnected";
-			}
-		}
-		if (state.getState() == MachineState.State.CONNECTING) {
-			StringBuffer buf = new StringBuffer("Connecting to "+machine.getName());
-			if (machine.driver instanceof UsesSerial) {
-				buf.append(" on ");
-				buf.append(((UsesSerial)machine.driver).getSerial().getName());
-			}
-			buf.append("...");
-			return buf.toString();
-		}
-		StringBuffer message = new StringBuffer("Machine "+machine.getName());
-		message.append(" ("+machine.getDriver().getDriverName()+") ");
-		if (state.getState() == MachineState.State.READY) { message.append("ready"); }
-		else if (state.isPaused()) { message.append("paused"); }
-		else if (state.isBuilding()) { 
-			if (state.isSimulating()) {
-				message.append("simulating");
-			} else {
-				message.append("building");
-			}
-		}
-		return message.toString();
-	}
+// TODO: this has no business being here.
+//	private boolean checkVersionCompatibility() {
+//		Version v = machine.getDriverQueryInterface().getVersion();
+//		
+//		 if (v == null) {
+//			return false;
+//		}
+//		
+//		if (v.compareTo(machine.getDriverQueryInterface().getPreferredVersion()) < 0) {
+//			if (!firmwareWarningIssued) {
+//				firmwareWarningIssued = true;
+//				JOptionPane.showMessageDialog(
+//						this,
+//						"Firmware version "+v+" was detected on your machine.  Firmware version "+
+//						machine.getDriverQueryInterface().getPreferredVersion() + " is recommended.\n" +
+//						"Please update your firmware and restart ReplicatorG.",
+//						"Old firmware detected", JOptionPane.WARNING_MESSAGE);
+//			}
+//		}
+//		return true;
+//	}
+	
 	
 	/**
 	 * Display the current status of this machine.
 	 */
-	protected synchronized void updateMachineStatus(MachineStateChangeEvent evt) {
-		// update background to indicate high-level status
-		Color bgColor = Color.WHITE;
-		MachineController machine = evt.getSource();
-		String text = getMachineStateMessage(machine);
-		if (machine == null || machine.driver == null) {
-			bgColor = BG_NO_MACHINE;
-		} else {
-			boolean initialized = machine.isInitialized() &&
-				evt.getState().getState() != MachineState.State.NOT_ATTACHED &&
-				evt.getState().getState() != MachineState.State.CONNECTING;
-			if (!initialized) {
-				bgColor = BG_NO_MACHINE;
-			} else {
-				if (evt.getState().isBuilding()) {
-					bgColor = BG_BUILDING;
-				} else {
-					bgColor = BG_READY;
-				}
-				currentTemperature = -1;
-				// Check version
-				Version v = machine.driver.getVersion();
-				if (v != null && v.compareTo(machine.driver.getPreferredVersion()) < 0) {
-					if (!firmwareWarningIssued) {
-						firmwareWarningIssued = true;
-						JOptionPane.showMessageDialog(
-								this,
-								"Firmware version "+v+" was detected on your machine.  Firmware version "+
-								machine.driver.getPreferredVersion() + " is recommended.\n" +
-								"Please update your firmware and restart ReplicatorG.",
-								"Old firmware detected", JOptionPane.WARNING_MESSAGE);
-
-					}
-				} else if (v == null) {
-					bgColor = BG_NO_MACHINE;
-					// TODO: notify 
-					text = "Machine connection timed out";
-				}
-			}
-			
+	public void updateMachineStatus(MachineStateChangeEvent evt) {
+		MachineState.State state = evt.getState().getState();
+		
+		// Determine what color to use
+		Color bgColor = null;
+		
+		switch (state) {
+		case READY:
+			bgColor = BG_READY;
+			break;
+		case BUILDING:
+		case BUILDING_OFFLINE:
+		case PAUSED:
+			bgColor = BG_BUILDING;
+			break;
+		case NOT_ATTACHED:	
+		case ERROR:
+		default:
+			bgColor = BG_ERROR;
+			break;
 		}
-		label.setText(text);
-		smallLabel.setText(null);
-		tempLabel.setText(null);
-		setBackground(bgColor);
+		
+		String text = evt.getMessage();
+		
+		// Make up some text to describe the state
+		if (text == null ) {
+			text = state.toString();
+		}
+		
+		// And mark which state we are in.
+		switch (state) {
+		case BUILDING:
+		case BUILDING_OFFLINE:
+		case PAUSED:
+			isBuilding = true;
+			break;
+		default:
+			isBuilding = false;
+			break;
+		}
+		
+		updatePanel(bgColor, text, null, null);
 	}
-
+	
+	public void updateBuildStatus(MachineProgressEvent event) {
+		if (isBuilding) {
+			/** Calculate the % of the build that is complete **/
+			double proportion = (double)event.getLines()/(double)event.getTotalLines();
+			double percentComplete = Math.round(proportion*10000.0)/100.0;
+	
+			double remaining= event.getEstimated() * (1.0 - proportion);;
+			if (event.getTotalLines() == 0) {
+				remaining = 0;
+			}
+				
+			final String s = String.format(
+					"Commands:  %1$7d / %2$7d  (%3$3.2f%%)   |   Elapsed:  %4$s  |  Estimated Remaining:  %5$s",
+					event.getLines(), event.getTotalLines(), 
+					percentComplete,
+					EstimationDriver.getBuildTimeString(event.getElapsed(), true),
+					EstimationDriver.getBuildTimeString(remaining, true));
+			
+			smallLabel.setText(s);
+		}
+	}
+	
 	public void machineStateChanged(MachineStateChangeEvent evt) {
 		final MachineStateChangeEvent e = evt;
 		SwingUtilities.invokeLater(new Runnable() {
@@ -188,39 +182,21 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	}
 
 	public void machineProgress(MachineProgressEvent event) {
-		double remaining;
-		double proportion = (double)event.getLines()/(double)event.getTotalLines();
-
-		if (machine.getMachineState().getTarget() == MachineState.Target.SD_UPLOAD) {
-			if (event.getLines() == 0) { 
-				remaining = 0; // avoid NaN
-			}
-			remaining = event.getElapsed() * ((1.0/proportion)-1.0);
-		} else {
-			remaining = event.getEstimated() * (1.0 - proportion);
-		}
-			
-		final String s = String.format(
-				"Commands:  %1$7d / %2$7d  (%3$3.2f%%)   |   Elapsed:  %4$s  |  Estimated Remaining:  %5$s",
-				event.getLines(), event.getTotalLines(), 
-				Math.round(proportion*10000.0)/100.0,
-				EstimationDriver.getBuildTimeString(event.getElapsed(), true),
-				EstimationDriver.getBuildTimeString(remaining, true));
+		final MachineProgressEvent e = event;
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				smallLabel.setText(s);
+				updateBuildStatus(e);
 			}
 		});
 	}
 
 	public void toolStatusChanged(MachineToolStatusEvent event) {
-		currentTemperature = event.getTool().getCurrentTemperature();
-		if (currentTemperature != -1) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					tempLabel.setText(String.format("Temp: %1$3.1f\u00B0C", currentTemperature));
-				}
-			});
-		}
+		final MachineToolStatusEvent e = event;
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				double temperature = e.getTool().getCurrentTemperature();
+				tempLabel.setText(String.format("Temp: %1$3.1f\u00B0C", temperature));
+			}
+		});
 	}
 }

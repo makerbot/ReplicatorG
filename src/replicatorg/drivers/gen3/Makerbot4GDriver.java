@@ -53,8 +53,9 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	}
 
 	protected Point5d reconcilePosition() {
+		// If we're writing to a file, we can't actually know what the current position is.
 		if (fileCaptureOstream != null) {
-			return new Point5d();
+			return null;
 		}
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION_EXT.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());

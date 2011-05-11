@@ -4,6 +4,7 @@
 dist-all
 build/jar
 build/classes
+examples/*.gcode
 *.pyc
 *.class
 \#*\#

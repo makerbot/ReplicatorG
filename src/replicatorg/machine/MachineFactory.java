@@ -21,7 +21,7 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package replicatorg.app;
+package replicatorg.machine;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +43,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import replicatorg.app.Base;
+
 public class MachineFactory {
 	// private constructor: static access only!!!
 	private MachineFactory() {
@@ -56,14 +58,14 @@ public class MachineFactory {
 	 * @param name The name of the machine descriptor in one of the machine XML files.
 	 * @return the machine controller, or null if no descriptor with the given name could be found.
 	 */
-	public static MachineController load(String name) {
+	public static Machine load(String name, MachineCallbackHandler callbackHandler) {
 		Node machineNode = getMachineNode(name);
 		if (machineNode == null) { return null; }
-		return new MachineController(machineNode);
+		return new Machine(machineNode, callbackHandler);
 	}
 
-	public static MachineController loadSimulator() {
-		return load("3-Axis Simulator");
+	public static Machine loadSimulator() {
+		return load("3-Axis Simulator", new MachineCallbackHandler());
 	}
 	
 	public static Vector<String> getMachineNames() {

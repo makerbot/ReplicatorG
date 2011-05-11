@@ -17,7 +17,7 @@ import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
 public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
-
+	
 	private boolean stepperExtruderFanEnabled = false;
 
 	public String getDriverName() {
@@ -36,40 +36,76 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 * Overloaded to manage a hijacked axis and run this axis in relative mode instead of the extruder DC motor
 	 */
 	public void queuePoint(Point5d p) throws RetryException {
-
-		// Filter away any hijacked axes from the given point.
-		// This is necessary to avoid taking deltas into account where we 
-		// compare the relative p coordinate (usually 0) with the absolute 
-		// currentPosition (which we get from the Motherboard).
-		Point5d filteredpoint = new Point5d(p);
-		Point5d filteredcurrent = new Point5d(getCurrentPosition(false));
-		int relative = 0;
-		for (AxisId axis : getHijackedAxes()) {
-			filteredpoint.setAxis(axis, 0d);
-			filteredcurrent.setAxis(axis, 0d);
-			relative |= 1 << axis.getIndex();
-		}
-		
-		// is this point even step-worthy? Only compute nonzero moves
-		Point5d deltaSteps = getAbsDeltaSteps(filteredcurrent, filteredpoint);
-		if (deltaSteps.length() > 0.0) {
-			Point5d delta = new Point5d();
-			delta.sub(filteredpoint, filteredcurrent); // delta = p - current
-			delta.absolute(); // absolute value of each component
+		// If we don't know our current position, make this move as an old-style move, ignoring any hijacked axes. 
+		if (currentPosition.get() == null) {
+			Base.logger.fine("Position invalid, reverting to default speed for next motion");
+			// Filter away any hijacked axes from the given point.
+			Point5d filteredPoint = new Point5d(p);
+			long longestDDA = 0;
 			
-			Point5d axesmovement = calcHijackedAxesMovement(delta);
-			delta.add(axesmovement);
-			filteredpoint.add(axesmovement);
+			for (AxisId axis : getHijackedAxes()) {
+				filteredPoint.setAxis(axis, 0d);
+			}
 			
-			// Calculate time for move in usec
-			Point5d steps = machine.mmToSteps(filteredpoint);		
-
+			// Find the slowest DDA of all motion axes
+			Point5d maxFeedrates = machine.getMaximumFeedrates();
+			Point5d stepsPerMM = machine.getStepsPerMM();
+			for (AxisId axis : machine.getAvailableAxes()) {
+				long axisDDA = (long) (60*1000000/(maxFeedrates.axis(axis)*stepsPerMM.axis(axis)));
+				
+				Base.logger.info("For axis " + axis.getIndex()
+						+ ", maxFeedrate="
+						+ maxFeedrates.axis(axis)
+						+ ", stepsPerMM=" + stepsPerMM.axis(axis)
+						+ "DDA:" + axisDDA);
+				
+				if (axisDDA > longestDDA) {
+					longestDDA = axisDDA;
+				}
+			}
+			
 			// okay, send it off!
-			// The 4. and 5. dimensions doesn't have a spatial interpretation. Calculate time in 3D space
-			double minutes = delta.get3D().distance(new Point3d())/ getSafeFeedrate(delta);
-			queueNewPoint(steps, (long) (60 * 1000 * 1000 * minutes), relative);
-
-			setInternalPosition(filteredpoint);
+			// TODO: bug: We move all axes (even ones that shouldn't be moved) How to avoid?
+			queueAbsolutePoint(machine.mmToSteps(filteredPoint), longestDDA);
+			
+			// Finally, recored the position, and mark it as valid.
+			setInternalPosition(filteredPoint);
+		} else {
+			// Filter away any hijacked axes from the given point.
+			// This is necessary to avoid taking deltas into account where we 
+			// compare the relative p coordinate (usually 0) with the absolute 
+			// currentPosition (which we get from the Motherboard).
+			Point5d filteredpoint = new Point5d(p);
+			Point5d filteredcurrent = new Point5d(getCurrentPosition(false));
+			int relative = 0;
+			for (AxisId axis : getHijackedAxes()) {
+				filteredpoint.setAxis(axis, 0d);
+				filteredcurrent.setAxis(axis, 0d);
+				relative |= 1 << axis.getIndex();
+			}
+		
+			// is this point even step-worthy? Only compute nonzero moves
+			Point5d deltaSteps = getAbsDeltaSteps(filteredcurrent, filteredpoint);
+			if (deltaSteps.length() > 0.0) {
+				Point5d delta = new Point5d();
+				delta.sub(filteredpoint, filteredcurrent); // delta = p - current
+				delta.absolute(); // absolute value of each component
+				
+				Point5d axesmovement = calcHijackedAxesMovement(delta);
+				delta.add(axesmovement);
+				filteredpoint.add(axesmovement);
+				
+				// Calculate time for move in usec
+				Point5d steps = machine.mmToSteps(filteredpoint);		
+	
+				// okay, send it off!
+				// The 4. and 5. dimensions doesn't have a spatial interpretation. Calculate time in 3D space
+				double minutes = delta.get3D().distance(new Point3d())/ getSafeFeedrate(delta);
+				
+				queueNewPoint(steps, (long) (60 * 1000 * 1000 * minutes), relative);
+				
+				setInternalPosition(filteredpoint);
+			}
 		}
 	}
 
@@ -166,7 +202,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 
 		super.stop(abort);
 	}
-	
+
 	protected void queueNewPoint(Point5d steps, long us, int relative) throws RetryException {
 
 		// Turn on fan if necessary

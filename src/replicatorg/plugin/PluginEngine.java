@@ -2,9 +2,8 @@ package replicatorg.plugin;
 
 import java.util.Iterator;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import replicatorg.app.GCode;
 import replicatorg.model.GCodeSource;
 
 public class PluginEngine implements GCodeSource {
@@ -23,20 +22,18 @@ public class PluginEngine implements GCodeSource {
 		return parent.getLineCount();
 	}
 
-	Pattern mPattern = Pattern.compile("(^M([0-9]+))");
-
-	private void processCodes(String s) {
-		s = s.trim();
-		Matcher match = mPattern.matcher(s);
-		if (match.matches()) {
-			int code = Integer.parseInt(match.group(1));
+	private void processLine(String line) {
+		GCode mcode = new GCode(line);
+		if( mcode.hasCode('M')) {
+			double code = mcode.getCodeValue('M');
+		
 			for (PluginEntry plugin : plugins) {
 				if (plugin instanceof MCodePlugin) {
 					MCodePlugin mcp = (MCodePlugin)plugin;
 					int codes[] = mcp.getAcceptedMCodes();
 					for (int acceptedCode : codes) {
 						if (code == acceptedCode) {
-							mcp.processMCode(s);
+							mcp.processMCode(mcode);
 						}
 					}
 				}
@@ -55,7 +52,7 @@ public class PluginEngine implements GCodeSource {
 
 		public String next() {
 			String next = parent.next();
-			processCodes(next);
+			processLine(next);
 			return next;
 		}
 

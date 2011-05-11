@@ -11,6 +11,9 @@ public interface OnboardParameters {
 	String getMachineName();
 	void setMachineName(String machineName);
 	
+	double getAxisHomeOffset(int axis);
+	void setAxisHomeOffset(int axis, double d);
+	
 	public enum EndstopType {
 		NOT_PRESENT((byte)0x00),
 		INVERTED((byte)0x9F),
@@ -77,6 +80,29 @@ public interface OnboardParameters {
 	ExtraFeatures getExtraFeatures();
 	void setExtraFeatures(ExtraFeatures features);
 	
+	public enum EstopType {
+		NOT_PRESENT((byte)0x00),
+		ACTIVE_HIGH((byte)0x01),
+		ACTIVE_LOW((byte)0x02);
+		
+		final byte value;
+		
+		EstopType(byte value) {
+			this.value = value;
+		}
+		
+		public byte getValue() { return value; }
+		
+		public static EstopType estopTypeForValue(byte value) {
+			if (value == ACTIVE_HIGH.value) { return ACTIVE_HIGH; }
+			if (value == ACTIVE_LOW.value) { return ACTIVE_LOW; }
+			return NOT_PRESENT;
+		}
+	}
+
+	EstopType getEstopConfig();
+	void setEstopConfig(EstopType estop);
+
 	/** Reset the onboard parameters on the motherboard to factory settings. */ 
 	void resetToFactory();
 

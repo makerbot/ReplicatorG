@@ -21,1146 +21,163 @@
  Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/* ___________________________________________________
+ * @@@@@@@@@@@@@@@@@@@@@**^^""~~~"^@@^*@*@@**@@@@@@@@@
+ * @@@@@@@@@@@@@*^^'"~   , - ' '; ,@@b. '  -e@@@@@@@@@
+ * @@@@@@@@*^"~      . '     . ' ,@@@@(  e@*@@@@@@@@@@
+ * @@@@@^~         .       .   ' @@@@@@, ~^@@@@@@@@@@@
+ * @@@~ ,e**@@*e,  ,e**e, .    ' '@@@@@@e,  "*@@@@@'^@
+ * @',e@@@@@@@@@@ e@@@@@@       ' '*@@@@@@    @@@'   0
+ * @@@@@@@@@@@@@@@@@@@@@',e,     ;  ~^*^'    ;^~   ' 0
+ * @@@@@@@@@@@@@@@^""^@@e@@@   .'           ,'   .'  @
+ * @@@@@@@@@@@@@@'    '@@@@@ '         ,  ,e'  .    ;@
+ * @@@@@@@@@@@@@' ,&&,  ^@*'     ,  .  i^"@e, ,e@e  @@
+ * @@@@@@@@@@@@' ,@@@@,          ;  ,& !,,@@@e@@@@ e@@
+ * @@@@@,~*@@*' ,@@@@@@e,   ',   e^~^@,   ~'@@@@@@,@@@
+ * @@@@@@, ~" ,e@@@@@@@@@*e*@*  ,@e  @@""@e,,@@@@@@@@@
+ * @@@@@@@@ee@@@@@@@@@@@@@@@" ,e@' ,e@' e@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@" ,@" ,e@@e,,@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@~ ,@@@,,0@@@@@@@@@@@@@@@@@@@
+ * @@@@@@@@@@@@@@@@@@@@@@@@,,@@@@@@@@@@@@@@@@@@@@@@@@@
+ * """""""""""""""""""""""""""""""""""""""""""""""""""
+ * ~~~~~~~~~~~~WARNING: HERE BE DRAGONS ~~~~~~~~~~~~~~
+ * 
+ * Dragon from:
+ * http://www.textfiles.com/artscene/asciiart/castles
+ */
+
 package replicatorg.app;
 
-import java.lang.reflect.Method;
 import java.util.EnumSet;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.vecmath.Point3d;
 
 import replicatorg.app.exceptions.GCodeException;
-import replicatorg.app.exceptions.JobCancelledException;
-import replicatorg.app.exceptions.JobEndException;
-import replicatorg.app.exceptions.JobException;
-import replicatorg.app.exceptions.JobRewindException;
-import replicatorg.drivers.Driver;
+import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.MultiTool;
-import replicatorg.drivers.PenPlotter;
-import replicatorg.drivers.RetryException;
+import replicatorg.drivers.commands.DriverCommand;
+import replicatorg.drivers.commands.DriverCommand.LinearDirection;
 import replicatorg.machine.model.AxisId;
-import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
 
 public class GCodeParser {
-	// command to parse
-	protected String command;
-
 	// our driver we use.
-	protected Driver driver;
+	protected DriverQueryInterface driver;
 	
-	// Queue of points that we need to run. Yaay for dangerous state info!
-	Queue< Point5d > pointQueue;
-	
-	// Pen Plotter Driver 
-	//protected PenPlotter penPlotter;
-
-	// our code data storage guys.
-	protected Hashtable<String, Double> codeValues;
-
-	protected Hashtable<String, Boolean> seenCodes;
-
-	static protected String[] codes = { "A", "B", "D", "E", "F", "G", "H", "I", "J", "K", "L",
-			"M", "P", "Q", "R", "S", "T", "X", "Y", "Z" };
-
-	// our curve section variables.
-	public static double curveSectionMM = Base.preferences.getDouble("replicatorg.parser.curve_segment_mm", 1.0);
-	public static double curveSectionInches = curveSectionMM / 25.4;
-
-	protected double curveSection = 0.0;
-
-	// our plane selection variables
-	protected static int XY_PLANE = 0;
-
-	protected static int ZX_PLANE = 1;
-
-	protected static int ZY_PLANE = 2;
-
-	protected int currentPlane = 0;
-
-	// our offset variables 0 = master, 1-6 = offsets 1-6
-	protected Point3d currentOffset;
-
-	// machine state varibles
-	//protected Point3d current;
-
-	protected Point5d target;
-	protected Point5d delta;
-
-	// false = incremental; true = absolute
-	boolean absoluteMode = false;
-
-	// our feedrate variables.
-	/**
-	 * Feedrate in mm/minute.
-	 */
-	double feedrate = 0.0;
-
-	/*
-	 * keep track of the last G code - this is the command mode to use if there
-	 * is no command in the current string
-	 */
-	int lastGCode = -1;
-
-	// current selected tool
-	protected int tool = -1;
-
-	// a comment passed in
-	protected String comment = "";
-
-	// pattern matchers.
-	Pattern parenPattern;
-
-	Pattern semiPattern;
-
-	Pattern deleteBlockPattern;
-
-	// unit variables.
-	public static int UNITS_MM = 0;
-
-	public static int UNITS_INCHES = 1;
-
-	protected int units;
-
-	// canned drilling cycle variables
-	protected Point3d drillTarget;
-
-	protected double drillRetract = 0.0;
-
-	protected double drillFeedrate = 0.0;
-
-	protected int drillDwell = 0;
-
-	protected double drillPecksize = 0.0;
-
-	// TwitterBot extension variables
-        protected Class<?> extClass;
-        protected Object objExtClass;
-	public static final String TB_CODE = "M";
-	public static final int TB_INIT = 997;
-	public static final int TB_MESSAGE = 998;
-	public static final int TB_CLEANUP = 999;
-	
-	// Replicate old behavior of breaking out Z moves into seperate setTarget
-	// calls.
-	
-	private boolean breakoutZMoves = Base.preferences.getBoolean("replicatorg.parser.breakzmoves", false);
-	
-	/**
-	 * Creates the driver object.
-	 */
-	public GCodeParser() {
-		// we default to millimeters
-		units = UNITS_MM;
-		curveSection = curveSectionMM;
-
-		// precompile regexes for speed
-		parenPattern = Pattern.compile("\\((.*)\\)");
-		semiPattern = Pattern.compile(";(.*)");
-		deleteBlockPattern = Pattern.compile("^(\\.*)");
-
-		// setup our points.
-//		current = new Point3d();
-//		System.err.println("-CURRENT "+current.toString());
-		target = new Point5d();
-		delta = new Point5d();
-		drillTarget = new Point3d();
-
-		// init our value tables.
-		codeValues = new Hashtable<String, Double>(codes.length, 1);
-		seenCodes = new Hashtable<String, Boolean>(codes.length, 1);
-
-		// init our offset
-		currentOffset = new Point3d();
+	// Convenience class to execute drill routines (untested)
+	DrillCycle drillCycle;
 		
-		// make a queue to store future point moves in
-		pointQueue = new LinkedList< Point5d >();
-	}
-
-	/**
-	 * Get the maximum feed rate from the driver's model.
-	 */
-	protected double getMaxFeedrate() {
-		// TODO: right now this is defaulting to the x feedrate. We should
-		// eventually check for z-axis motions and use that feedrate. We should
-		// also either alter the model, or post a warning when the x and y
-		// feedrates differ.
-		return driver.getMachine().getMaximumFeedrates().x();
-	}
-
-	/**
-	 * initialize parser with values from the driver
-	 */
-	public void init(Driver drv) {
-		// our driver class
-		driver = drv;
-		// reload breakout
-		breakoutZMoves = Base.preferences.getBoolean("replicatorg.parser.breakzmoves", false);
-		// init our offset variables
-		currentOffset = driver.getOffset(0);
+	// Canned drilling cycle engine
+	private class DrillCycle {
+		private Point5d target;
+		private double retract = 0.0;
+		private double feedrate = 0.0;
+		private int dwell = 0;
+		private double pecksize = 0.0;
 		
-		pointQueue = new LinkedList< Point5d >();
-	}
-
-	/**
-	 * Parses a line of GCode, sets up the variables, etc.
-	 * 
-	 * @param String
-	 *            cmd a line of GCode to parse
-	 */
-	public boolean parse(String cmd) {
-		// get ready for last one.
-		cleanup();
-
-		// save our command
-		command = cmd;
-
-		// handle comments.
-		parseComments();
-		stripComments();
-
-		// load all codes
-		for (int i = 0; i < codes.length; i++) {
-			double value = parseCode(codes[i]);
-			codeValues.put(new String(codes[i]), new Double(value));
+		DrillCycle() {
+			target = new Point5d();
 		}
-
-		// if no command was seen, but parameters were,
-		// then use the last G code as the current command
-		if (!hasCode("G") && (hasCode("X") || hasCode("Y") || hasCode("Z"))) {
-			seenCodes.put(new String("G"), new Boolean(true));
-			codeValues.put(new String("G"), new Double(lastGCode));
-		}
-
-		return true;
-	}
-
-	private boolean findCode(String code) {
-		if (command.indexOf(code) >= 0)
-			return true;
-		else
-			return false;
-	}
-
-	public double convertToMM(double value, int units) {
-		if (units == UNITS_INCHES) {
-			return value * 25.4;
-		}
-		return value;
-	}
-
-	public double getCodeValue(String c) {
-		Double d = (Double) codeValues.get(c);
-
-		if (d != null)
-			return d.doubleValue();
-		else
-			return 0.0;
-	}
-
-	/**
-	 * Checks to see if our current line of GCode has this particular code
-	 * 
-	 * @param char
-	 *            code the code to check for (G, M, X, etc.)
-	 * @return boolean if the code was found or not
-	 */
-	private boolean hasCode(String code) {
-		Boolean b = (Boolean) seenCodes.get(code);
-
-		if (b != null)
-			return b.booleanValue();
-		else
-			return false;
-	}
-
-	/**
-	 * Finds out the value of the code we're looking for
-	 * 
-	 * @param char
-	 *            code the code whose value we're looking up
-	 * @return double the value of the code, -1 if not found.
-	 */
-	private double parseCode(String code) {
-		Pattern myPattern = Pattern.compile(code + "([0-9.+-]+)");
-		Matcher myMatcher = myPattern.matcher(command);
-
-		if (findCode(code)) {
-			seenCodes.put(code, new Boolean(true));
-
-			if (myMatcher.find()) {
-				String match = myMatcher.group(1);
-				double number = Double.parseDouble(match);
-
-				return number;
-			}
-			// send a 0 to that its noted somewhere.
-			else
-				return 0.0;
-		}
-
-		// bail with something relatively harmless
-		return 0.0;
-	}
-
-	private void parseComments() {
-		Matcher parenMatcher = parenPattern.matcher(command);
-		Matcher semiMatcher = semiPattern.matcher(command);
-
-		if (parenMatcher.find())
-			comment = parenMatcher.group(1);
-
-		if (semiMatcher.find())
-			comment = semiMatcher.group(1);
-
-		// clean it up.
-		comment = comment.trim();
-		comment = comment.replace('|', '\n');
-
-		// echo it?
-		// if (comment.length() > 0)
-		// System.out.println(comment);
-	}
-
-	private void stripComments() {
-		Matcher parenMatcher = parenPattern.matcher(command);
-		command = parenMatcher.replaceAll("");
-
-		Matcher semiMatcher = semiPattern.matcher(command);
-		command = semiMatcher.replaceAll("");
-	}
-
-	public String getCommand() {
-		return new String(command);
-	}
-
-	/**
-	 * Actually execute the GCode we just parsed.
-	 * @throws RetryException 
-	 */
-	public void execute() throws GCodeException, RetryException {
-		// TODO: is this the proper way?
-		// Set spindle speed?
-		// if (hasCode("S"))
-		// driver.setSpindleRPM(getCodeValue("S"));
-
-		// TODO: This is a hack, fix it.
-		// We have two states here- it is possible that the previous command
-		// created a series of point motions, then encountered a retry.
-		// If that is the case, then we should just keep trying to queue them.
-		if (!pointQueue.isEmpty()) {
-			while( !pointQueue.isEmpty()) {
-				Base.logger.fine("dequeueing!");
-				setTarget(pointQueue.peek());
-				pointQueue.remove();
-			}
-		}
-		else {
 		
-			// execute our other codes
-			executeMCodes();
-			executeGCodes();
-	
-			// Select our tool?
-			int tempTool = (int) getCodeValue("T");
-			if (hasCode("T")) {
-				if (tempTool != tool)
-					driver.selectTool(tempTool);
-	
-				tool = tempTool;
-			}
+		public void setTarget(Point5d temp) {
+			this.target = temp;
+		}
+		
+		public void setRetract(double retract) {
+			this.retract = retract;
+		}
+		
+		public void setFeedrate(double feedrate) {
+			this.feedrate = feedrate;
+		}
+		
+		public void setDwell(int dwell) {
+			this.dwell = dwell;
+		}
+		
+		public void setPecksize(double pecksize) {
+			this.pecksize = pecksize;
+		}
+		
+		/*
+		 * drillTarget = new Point3d(); drillRetract = 0.0; drillFeedrate = 0.0;
+		 * drillDwell = 0.0; drillPecksize = 0.0;
+		 */
+		public void doDrill(boolean speedPeck) {
+			Base.logger.severe("Drill Cycle code is untested and has therefore been disabled.");
+//			// Retract to R position if Z is currently below this
+//			Point5d current = driver.getCurrentPosition();
+//			if (current.z() < retract) {
+//				driver.setFeedrate(getMaxFeedrate());
+//				driver.queuePoint(new Point5d(current.x(), current.y(), retract, current.a(), current.b()));
+//			}
+//
+//			// Move to start XY
+//			driver.setFeedrate(getMaxFeedrate());
+//			driver.queuePoint(new Point5d(target.x(), target.y(), current.z(), current.a(), current.b()));
+//
+//			// Do the actual drilling
+//			double targetZ = retract;
+//			double deltaZ;
+//
+//			// For G83/G183 move in increments specified by Q code
+//			if (pecksize > 0)
+//				deltaZ = pecksize;
+//			// otherwise do in one pass
+//			else
+//				deltaZ = retract - target.z();
+//
+//			do // the drilling
+//			{
+//				// only move there if we're not at top
+//				if (targetZ != retract && !speedPeck) {
+//					// TODO: move this to 10% of the bottom.
+//					driver.setFeedrate(getMaxFeedrate());
+//					driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
+//				}
+//
+//				// set our plunge depth
+//				targetZ -= deltaZ;
+//				// make sure we dont go too deep.
+//				if (targetZ < target.z())
+//					targetZ = target.z();
+//
+//				// Move with controlled feed rate
+//				driver.setFeedrate(feedrate);
+//
+//				// do it!
+//				driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
+//
+//				// Dwell if doing a G82
+//				if (dwell > 0)
+//					driver.delay(dwell);
+//
+//				// Retract unless we're speed pecking.
+//				if (!speedPeck) {
+//					driver.setFeedrate(getMaxFeedrate());
+//					driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
+//				}
+//
+//			} while (targetZ > target.z());
+//
+//			// double check for final speedpeck retract
+//			if (current.z() < retract) {
+//				driver.setFeedrate(getMaxFeedrate());
+//				driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
+//			}
 		}
 	}
 
-	private void executeMCodes() throws GCodeException, RetryException {
-		// find us an m code.
-		if (hasCode("M")) {
-			// If this machine handles multiple active toolheads, we always honor a T code
-			// as being a annotation to send the given command to the given toolheads.  Be
-			// aware that appending a T code to an M code will not necessarily generate a
-			// change tool request!  Use M6 for that.
-			// M6 was historically used to wait for toolheads to get up to temperature, so
-			// you may wish to avoid using M6.
-			if (hasCode("T") && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {
-				driver.getMachine().selectTool((int) getCodeValue("T"));
-			}
-			switch ((int) getCodeValue("M")) {
-			// stop codes... handled by getStops();
-			case 0:
-			case 1:
-			case 2:
-				break;
-
-			// spindle on, CW
-			case 3:
-				driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
-				driver.enableSpindle();
-				break;
-
-			// spindle on, CCW
-			case 4:
-				driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
-				driver.enableSpindle();
-				break;
-
-			// spindle off
-			case 5:
-				driver.disableSpindle();
-				break;
-
-			// tool change.
-			case 6:
-				int timeout = 65535;
-				if (hasCode("P")) {
-					timeout = (int)getCodeValue("P");
-				}
-				if (hasCode("T")) {
-					driver.requestToolChange((int) getCodeValue("T"), timeout);
-				}
-				else {
-					throw new GCodeException("The T parameter is required for tool changes. (M6)");
-				}
-				break;
-
-			// coolant A on (flood coolant)
-			case 7:
-				driver.enableFloodCoolant();
-				break;
-
-			// coolant B on (mist coolant)
-			case 8:
-				driver.enableMistCoolant();
-				break;
-
-			// all coolants off
-			case 9:
-				driver.disableFloodCoolant();
-				driver.disableMistCoolant();
-				break;
-
-			// close clamp
-			case 10:
-				if (hasCode("Q"))
-					driver.closeClamp((int) getCodeValue("Q"));
-				else
-					throw new GCodeException(
-							"The Q parameter is required for clamp operations. (M10)");
-				break;
-
-			// open clamp
-			case 11:
-				if (hasCode("Q"))
-					driver.openClamp((int) getCodeValue("Q"));
-				else
-					throw new GCodeException(
-							"The Q parameter is required for clamp operations. (M11)");
-				break;
-
-			// spindle CW and coolant A on
-			case 13:
-				driver.setSpindleDirection(ToolModel.MOTOR_CLOCKWISE);
-				driver.enableSpindle();
-				driver.enableFloodCoolant();
-				break;
-
-			// spindle CW and coolant A on
-			case 14:
-				driver.setSpindleDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
-				driver.enableSpindle();
-				driver.enableFloodCoolant();
-				break;
-
-			// enable drives
-			case 17:
-				driver.enableDrives();
-				break;
-
-			// disable drives
-			case 18:
-				driver.disableDrives();
-				break;
-
-			// open collet
-			case 21:
-				driver.openCollet();
-				break;
-				// open collet
-			case 22:
-				driver.closeCollet();
-				break;
-				// M40-M46 = change gear ratios
-			case 40:
-				driver.changeGearRatio(0);
-				break;
-			case 41:
-				driver.changeGearRatio(1);
-				break;
-			case 42:
-				driver.changeGearRatio(2);
-				break;
-			case 43:
-				driver.changeGearRatio(3);
-				break;
-			case 44:
-				driver.changeGearRatio(4);
-				break;
-			case 45:
-				driver.changeGearRatio(5);
-				break;
-			case 46:
-				driver.changeGearRatio(6);
-				break;
-
-			// M48, M49: i dont understand them yet.
-
-			// read spindle speed
-			case 50:
-				driver.getSpindleRPM();
-				break;
-				// subroutine functions... will implement later
-				// case 97: jump
-				// case 98: jump to subroutine
-				// case 99: return from sub
-
-				// turn extruder on, forward
-			case 101:
-				driver.setMotorDirection(ToolModel.MOTOR_CLOCKWISE);
-				driver.enableMotor();
-				break;
-
-			// turn extruder on, reverse
-			case 102:
-				driver.setMotorDirection(ToolModel.MOTOR_COUNTER_CLOCKWISE);
-				driver.enableMotor();
-				break;
-
-			// turn extruder off
-			case 103:
-				driver.disableMotor();
-				break;
-
-			// custom code for temperature control
-			case 104:
-				if (hasCode("S"))
-					driver.setTemperature(getCodeValue("S"));
-				break;
-
-			// custom code for temperature reading
-			case 105:
-				driver.readTemperature();
-				break;
-
-			// turn fan on
-			case 106:
-				driver.enableFan();
-				break;
-
-			// turn fan off
-			case 107:
-				driver.disableFan();
-				break;
-
-			// set max extruder speed, RPM
-			case 108:
-				if (hasCode("S"))
-					driver.setMotorSpeedPWM((int)Math.round(getCodeValue("S")));
-				else if (hasCode("R"))
-					driver.setMotorRPM(getCodeValue("R"));
-				break;
-
-			// set build platform temperature
-			case 109:
-				if (hasCode("S"))
-					driver.setPlatformTemperature(getCodeValue("S"));
-				break;
-
-			// set build chamber temperature
-			case 110:
-				driver.setChamberTemperature(getCodeValue("S"));
-				
-			// valve open
-			case 126:
-				driver.openValve();
-				break;
-
-			// valve close
-			case 127:
-				driver.closeValve();
-				break;
-
-			// where are we?
-			case 128:
-				driver.getPosition();
-				break;
-
-			// how far can we go?
-			case 129:
-				// driver.getRange();
-				break;
-
-			// you must know your limits
-			case 130:
-				// driver.setRange();
-				break;
-
-			// initialize to default state.
-			case 200:
-				driver.initialize();
-				break;
-
-			// buffer info
-			case 201:
-				// driver.getBufferSize();
-				break;
-
-			// buffer management
-			case 202:
-				// driver.clearBuffer();
-				break;
-
-			// for killing jobs
-			case 203:
-				// driver.abort();
-				break;
-
-			// temporarily stop printing.
-			case 204:
-				// driver.pause();
-				break;
-			
-			// set servo 1 position
-			case 300:
-				if (hasCode("S")) {
-					if (driver instanceof PenPlotter) {
-						((PenPlotter)driver).setServoPos(0, getCodeValue("S"));
-					}
-				}
-				break;
-
-			// set servo 2 position
-			case 301:
-				if (hasCode("S")) {
-					if (driver instanceof PenPlotter) {
-						((PenPlotter)driver).setServoPos(1, getCodeValue("S"));
-					}
-				}
-				break;
-				
-           case TB_INIT:
-               // initialize extension
-			// Syntax: M997 ClassName param,param,param,etc
-			// your class needs to know how to process the params as it will just
-			//receive a string.
-			//This code uses a space delimiter
-			//To do: should be more general purpose
-
-               try {
-                   String params[] = command.split(" ");                       
-
-                   extClass = Class.forName(params[1]); //class name
-                   objExtClass = extClass.newInstance();
-                   String methParam = params[2];  //initialization params
-                   Method extMethod = extClass.getMethod("initialize", new Class[] {String.class});
-                   extMethod.invoke(objExtClass, new Object[] {methParam});
-               } catch (Exception e) {
-                   e.printStackTrace();
-               }
-               break;
-
-            case TB_MESSAGE:
-                // call extension
-				// Syntax: M998 Method_name 'Content goes here'
-				// passed content is single quote delimited
-				// To do: clean up, should be more flexible
-
-                try {
-                    String params[] = command.split(" "); //method is param[1]
-                    String params2[] = command.split("\\'"); //params to pass are params2[1]
-
-                    String methParam = params2[1]; //params to pass
-                    Method extMethod = extClass.getMethod(params[1], new Class[] {String.class});  //method to call
-                    extMethod.invoke(objExtClass, new Object[] {methParam});
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-
-            case TB_CLEANUP:
-                // cleanup extension
-				// are explicit nulls needed?
-                extClass = null;
-                objExtClass = null;
-                break;
-			default:
-				throw new GCodeException("Unknown M code: M"
-						+ (int) getCodeValue("M"));
-			}
-		}
-	}
-
-	private void executeGCodes() throws GCodeException, RetryException {
-		// start us off at our current position...
-		Point5d temp = driver.getCurrentPosition(false);
-
-		// initialize our points, etc.
-		double iVal = convertToMM(getCodeValue("I"), units); // / X offset
-																// for arcs
-		double jVal = convertToMM(getCodeValue("J"), units); // / Y offset
-																// for arcs
-		@SuppressWarnings("unused")
-		double kVal = convertToMM(getCodeValue("K"), units); // / Z offset
-																// for arcs
-		@SuppressWarnings("unused")
-		double qVal = convertToMM(getCodeValue("Q"), units); // / feed
-																// increment for
-																// G83
-		double rVal = convertToMM(getCodeValue("R"), units); // / arc radius
-		double xVal = convertToMM(getCodeValue("X"), units); // / X units
-		double yVal = convertToMM(getCodeValue("Y"), units); // / Y units
-		double zVal = convertToMM(getCodeValue("Z"), units); // / Z units
-		double aVal = convertToMM(getCodeValue("A"), units); // / A units
-		double bVal = convertToMM(getCodeValue("B"), units); // / B units
-		// Note: The E axis is treated internally as the A or B axis
-		double eVal = convertToMM(getCodeValue("E"), units); // / E units
-
-		// adjust for our offsets
-		xVal += currentOffset.x;
-		yVal += currentOffset.y;
-		zVal += currentOffset.z;
-
-		// absolute just specifies the new position
-		if (absoluteMode) {
-			if (hasCode("X"))
-				temp.setX(xVal);
-			if (hasCode("Y"))
-				temp.setY(yVal);
-			if (hasCode("Z"))
-				temp.setZ(zVal);
-			if (hasCode("A"))
-				temp.setA(aVal);
-			if (hasCode("E")) {
-				if (tool == 0)
-					temp.setA(eVal);
-				else if (tool == 1)
-					temp.setB(eVal);
-			}
-			if (hasCode("B"))
-				temp.setB(bVal);
-		}
-		// relative specifies a delta
-		else {
-			if (hasCode("X"))
-				temp.setX(temp.x() + xVal);
-			if (hasCode("Y"))
-				temp.setY(temp.y() + yVal);
-			if (hasCode("Z"))
-				temp.setZ(temp.z() + zVal);
-			if (hasCode("A"))
-				temp.setA(temp.a() + aVal);
-			if (hasCode("E")) {
-				if (tool == 0)
-					temp.setA(temp.a() + eVal);
-				else if (tool == 1)
-					temp.setB(temp.b() + eVal);
-			}
-			if (hasCode("B"))
-				temp.setB(temp.b() + bVal);
-		}
-
-		// Get feedrate if supplied
-		if (hasCode("F")) {
-			// Read feedrate in mm/min.
-			feedrate = getCodeValue("F");
-			driver.setFeedrate(feedrate);
-		}
-
-		// did we get a gcode?
-		if (hasCode("G")) {
-			int gCode = (int) getCodeValue("G");
-
-			switch (gCode) {
-			// Linear Interpolation
-			// these are basically the same thing.
-			case 0:
-				driver.setFeedrate(getMaxFeedrate());
-				setTarget(temp);
-				break;
-
-			// Rapid Positioning
-			case 1:
-				// set our target.
-				driver.setFeedrate(feedrate);
-				setTarget(temp);
-				break;
-
-			// Clockwise arc
-			case 2:
-				// Counterclockwise arc
-			case 3: {
-				// call our arc drawing function.
-				// Note: We don't support 5D
-				if (hasCode("I") || hasCode("J")) {
-					// our centerpoint
-					Point5d center = new Point5d();
-					Point5d current = driver.getCurrentPosition(false);
-					center.setX(current.x() + iVal);
-					center.setY(current.y() + jVal);
-
-					// Get the points for the arc
-					if (gCode == 2)
-						pointQueue.addAll(drawArc(center, temp, true));
-					else
-						pointQueue.addAll(drawArc(center, temp, false));
-				}
-				// or we want a radius based one
-				else if (hasCode("R")) {
-					Base.logger.warning("G02/G03 arcs with (R)adius parameter are not supported yet.");
-					if (gCode == 2)
-						pointQueue.addAll(drawRadius(temp, rVal, true));
-					else
-						pointQueue.addAll(drawRadius(temp, rVal, false));
-				}
-				
-				// now play them back
-				while( !pointQueue.isEmpty()) {
-					setTarget(pointQueue.peek());
-					pointQueue.remove();
-				}
-			}
-				break;
-
-			// dwell
-			case 4:
-				driver.delay((long) getCodeValue("P"));
-				break;
-			case 10:
-				if (hasCode("P")) {
-					int offsetSystemNum = ((int)getCodeValue("P"));
-					if (offsetSystemNum >= 1 && offsetSystemNum <= 6) {
-						if (hasCode("X")) driver.setOffsetX(offsetSystemNum, getCodeValue("X"));
-						if (hasCode("Y")) driver.setOffsetY(offsetSystemNum, getCodeValue("Y"));
-						if (hasCode("Z")) driver.setOffsetZ(offsetSystemNum, getCodeValue("Z"));
-					}
-				}
-				else 
-					Base.logger.warning("No coordinate system indicated use G10 Pn, where n is 0-6.");
-				break;
-
-			// plane selection codes
-			case 17:
-				currentPlane = XY_PLANE;
-				break;
-			case 18:
-				//Base.logger.warning("ZX Plane moves are not supported yet.");
-				currentPlane = ZX_PLANE;
-				break;
-			case 19:
-				//Base.logger.warning("ZY Plane moves are not supported yet.");
-				currentPlane = ZY_PLANE;
-				break;
-
-			// Inches for Units
-			case 20:
-			case 70:
-				units = UNITS_INCHES;
-				curveSection = curveSectionInches;
-				break;
-
-			// mm for Units
-			case 21:
-			case 71:
-				units = UNITS_MM;
-				curveSection = curveSectionMM;
-				break;
-
-			// This should be "return to home".  We need to introduce new GCodes for homing.
-			case 28:
-			{
-				// home all axes?
-				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-				if (hasCode("X")) axes.add(AxisId.X);
-				if (hasCode("Y")) axes.add(AxisId.Y);
-				if (hasCode("Z")) axes.add(AxisId.Z);
-				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
-			}
-				break;
-
-			// New code: home negative.
-			case 161:
-			{
-				// home all axes?
-				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-				if (hasCode("X")) axes.add(AxisId.X);
-				if (hasCode("Y")) axes.add(AxisId.Y);
-				if (hasCode("Z")) axes.add(AxisId.Z);
-				driver.homeAxes(axes, false, hasCode("F")?feedrate:0);
-			}
-				break;
-
-				// New code: home positive.
-			case 162:
-			{
-				// home all axes?
-				EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-				if (hasCode("X")) axes.add(AxisId.X);
-				if (hasCode("Y")) axes.add(AxisId.Y);
-				if (hasCode("Z")) axes.add(AxisId.Z);
-				driver.homeAxes(axes, true, hasCode("F")?feedrate:0);
-			}
-				break;
-
-			// single probe
-			case 31:
-				Base.logger.warning("Single point probes not yet supported.");
-
-				// set our target.
-				setTarget(temp);
-				// eventually add code to support reading value
-				break;
-
-			// probe area
-			case 32:
-
-				Base.logger.warning("Area probes not yet supported.");
-				{
-					Point5d current = driver.getCurrentPosition(false);
-					double minX = current.x();
-					double minY = current.y();
-					double maxX = xVal;
-					double maxY = yVal;
-					double increment = iVal;
-	
-					probeArea(minX, minY, maxX, maxY, increment);
-				}
-				break;
-
-			// master offset
-			case 53:
-				currentOffset = driver.getOffset(0);
-				break;
-			// fixture offset 1
-			case 54:
-				currentOffset = driver.getOffset(1);
-				break;
-			// fixture offset 2
-			case 55:
-				currentOffset = driver.getOffset(2);
-				break;
-			// fixture offset 3
-			case 56:
-				currentOffset = driver.getOffset(3);
-				break;
-			// fixture offset 4
-			case 57:
-				currentOffset = driver.getOffset(4);
-				break;
-			// fixture offset 5
-			case 58:
-				currentOffset = driver.getOffset(5);
-				break;
-			// fixture offset 6
-			case 59:
-				currentOffset = driver.getOffset(6);
-				break;
-
-			// Peck Motion Cycle
-			// case 178: //speed peck motion
-			// case 78:
-			// TODO: make this
-
-			// Cancel drill cycle
-			case 80:
-				drillTarget = new Point3d();
-				drillRetract = 0.0;
-				drillFeedrate = 0.0;
-				drillDwell = 0;
-				drillPecksize = 0.0;
-				break;
-
-			// Drilling canned cycles
-			case 81: // Without dwell
-			case 82: // With dwell
-			case 83: // Peck drilling (w/ optional dwell)
-			case 183: // Speed peck drilling (w/ optional dwell)
-
-				// we dont want no stinkin speedpeck
-				boolean speedPeck = false;
-
-				// setup our parameters
-				if (hasCode("X"))
-					drillTarget.x = temp.x();
-				if (hasCode("Y"))
-					drillTarget.y = temp.y();
-				if (hasCode("Z"))
-					drillTarget.z = temp.z();
-				if (hasCode("F"))
-					drillFeedrate = getCodeValue("F");
-				if (hasCode("R"))
-					drillRetract = rVal;
-
-				// set our vars for normal drilling
-				if (gCode == 81) {
-					drillDwell = 0;
-					drillPecksize = 0.0;
-				}
-				// they want a dwell
-				else if (gCode == 82) {
-					if (hasCode("P"))
-						drillDwell = (int) getCodeValue("P");
-					drillPecksize = 0.0;
-				}
-				// fancy schmancy 'pecking' motion.
-				else if (gCode == 83 || gCode == 183) {
-					if (hasCode("P"))
-						drillDwell = (int) getCodeValue("P");
-					if (hasCode("Q"))
-						drillPecksize = Math.abs(getCodeValue("Q"));
-
-					// oooh... do it fast!
-					if (gCode == 183)
-						speedPeck = true;
-				}
-
-				drillingCycle(speedPeck);
-				break;
-
-			// Absolute Positioning
-			case 90:
-				absoluteMode = true;
-				break;
-
-			// Incremental Positioning
-			case 91:
-				absoluteMode = false;
-				break;
-
-			// Set position
-			case 92:
-
-				Point5d current = driver.getCurrentPosition(false);
-
-				if (hasCode("X"))
-					current.setX(xVal);
-				if (hasCode("Y"))
-					current.setY(yVal);
-				if (hasCode("Z"))
-					current.setZ(zVal);
-				if (hasCode("A"))
-					current.setA(aVal);
-				// Note: The E axis is treated internally as the A axis
-				if (hasCode("E"))
-					current.setA(eVal);
-				if (hasCode("B"))
-					current.setB(bVal);
-				
-				driver.setCurrentPosition(current);
-//				this.current = current;
-//				System.err.println("-CURRENT "+current.toString());
-				this.target = current;
-				break;
-
-			// feed rate mode
-			// case 93: //inverse time feed rate
-			case 94: // IPM feed rate (our default)
-				// case 95: //IPR feed rate
-				// TODO: make this work.
-				break;
-
-			// spindle speed rate
-			case 97:
-				driver.setSpindleRPM((int) getCodeValue("S"));
-				break;
-				
-			// error, error!
-			default:
-				throw new GCodeException("Unknown G code: G"
-						+ (int) getCodeValue("G"));
-			}
-			
-		}
-	}
-
-	/*
-	 * drillTarget = new Point3d(); drillRetract = 0.0; drillFeedrate = 0.0;
-	 * drillDwell = 0.0; drillPecksize = 0.0;
-	 */
-	private void drillingCycle(boolean speedPeck) throws RetryException {
-		// Retract to R position if Z is currently below this
-		Point5d current = driver.getCurrentPosition(false);
-		if (current.z() < drillRetract) {
-			driver.setFeedrate(getMaxFeedrate());
-			setTarget(new Point5d(current.x(), current.y(), drillRetract, current.a(), current.b()));
-		}
-
-		// Move to start XY
-		driver.setFeedrate(getMaxFeedrate());
-		setTarget(new Point5d(drillTarget.x, drillTarget.y, current.z(), current.a(), current.b()));
-
-		// Do the actual drilling
-		double targetZ = drillRetract;
-		double deltaZ;
-
-		// For G83/G183 move in increments specified by Q code
-		if (drillPecksize > 0)
-			deltaZ = drillPecksize;
-		// otherwise do in one pass
-		else
-			deltaZ = drillRetract - drillTarget.z;
-
-		do // the drilling
-		{
-			// only move there if we're not at top
-			if (targetZ != drillRetract && !speedPeck) {
-				// TODO: move this to 10% of the bottom.
-				driver.setFeedrate(getMaxFeedrate());
-				setTarget(new Point5d(drillTarget.x, drillTarget.y, targetZ, current.a(), current.b()));
-			}
-
-			// set our plunge depth
-			targetZ -= deltaZ;
-			// make sure we dont go too deep.
-			if (targetZ < drillTarget.z)
-				targetZ = drillTarget.z;
-
-			// Move with controlled feed rate
-			driver.setFeedrate(drillFeedrate);
-
-			// do it!
-			setTarget(new Point5d(drillTarget.x, drillTarget.y, targetZ, current.a(), current.b()));
-
-			// Dwell if doing a G82
-			if (drillDwell > 0)
-				driver.delay(drillDwell);
-
-			// Retract unless we're speed pecking.
-			if (!speedPeck) {
-				driver.setFeedrate(getMaxFeedrate());
-				setTarget(new Point5d(drillTarget.x, drillTarget.y, drillRetract, current.a(), current.b()));
-			}
-
-		} while (targetZ > drillTarget.z);
-
-		// double check for final speedpeck retract
-		if (current.z() < drillRetract) {
-			driver.setFeedrate(getMaxFeedrate());
-			setTarget(new Point5d(drillTarget.x, drillTarget.y, drillRetract, current.a(), current.b()));
-		}
-	}
-
+	// Arc drawing routine
 	// Note: 5D is not supported
-	Queue< Point5d > drawArc(Point5d center, Point5d endpoint, boolean clockwise) {
+	Queue< DriverCommand > drawArc(Point5d center, Point5d endpoint, boolean clockwise) {
 		// System.out.println("Arc from " + current.toString() + " to " +
 		// endpoint.toString() + " with center " + center);
 
-		Queue< Point5d > points = new LinkedList< Point5d >();
+		Queue< DriverCommand > points = new LinkedList< DriverCommand >();
 		
 		// angle variables.
 		double angleA;
@@ -1229,136 +246,757 @@ public class GCodeParser {
 			newPoint.setZ(arcStartZ + (endpoint.z() - arcStartZ) * s / steps);
 
 			// start the move
-			points.add(new Point5d(newPoint));
+			points.add(new replicatorg.drivers.commands.QueuePoint(newPoint));
 		}
 		
 		return points;
 	}
+	
+	// our curve section variables.
+	public static double curveSectionMM = Base.preferences.getDouble("replicatorg.parser.curve_segment_mm", 1.0);
+	public static double curveSectionInches = curveSectionMM / 25.4;
 
-	private Queue< Point5d > drawRadius(Point5d endpoint, double r, boolean clockwise) throws GCodeException {
-		// not supported!
-		throw new GCodeException("The drawRadius command is not supported");
-	}
+	protected double curveSection = 0.0;
 
-	private void setTarget(Point5d p) throws RetryException {
-		// If you really want two separate moves, do it when you generate your
-		// toolpath.
-		// move z first
-		Point5d current = driver.getCurrentPosition(false);
-		if (breakoutZMoves) {
-			if (p.z() != current.z()) {
-				driver.queuePoint(new Point5d(current.x(), current.y(), p.z(), current.a(), current.b()));
-			}
-		}
-		driver.queuePoint(new Point5d(p));
-		current = new Point5d(p);
-	}
+	// our offset variables 0 = master, 1-6 = offsets 1-6
+	protected Point3d currentOffset;
 
+	// false = incremental; true = absolute
+	boolean absoluteMode = false;
+
+	// our feedrate variables.
 	/**
-	 * StopInfo defines an optional or mandatory stop, the message to display with
-	 * said stop, and the exceptions to be triggered on success of failure of the
-	 * optional stop.
-	 * @author phooky
-	 *
+	 * Feedrate in mm/minute.
 	 */
-	public class StopInfo {
-		private final JobException exception;
-		private final JobException cancelException;
-		private final String message;
-		private final boolean optional;
-		/**
-		 * Create a mandatory stop.
-		 * @param message the message to display to the user
-		 * @param exception the exception to throw
-		 */
-		public StopInfo(String message, JobException exception) {
-			this.message = message;
-			this.optional = false;
-			this.exception = this.cancelException = exception;
-		}
-		/**
-		 * Create an optional stop.
-		 * @param message the message to display to the user
-		 * @param exception the exception to throw if the user confirms the stop
-		 * @param cancelException the exception to throw if the user cancels the stop
-		 */
-		public StopInfo(String message, JobException exception, JobException cancelException) {
-			this.message = message;
-			this.optional = true;
-			this.exception = exception;
-			this.cancelException = cancelException;
-		}
-		public String getMessage() { return message; }
-		public JobException getException() { return exception; }
-		public JobException getCancelException() { return cancelException; }
-		public boolean isOptional() { return optional; }
-	}
+	double feedrate = 0.0;
+
+	// current selected tool
+	protected int tool = -1;
+
+	// unit variables.
+	public static int UNITS_MM = 0;
+
+	public static int UNITS_INCHES = 1;
+
+	protected int units;
 	
 	/**
-	 * Return a StopInfo object describing the stop defined by the current code, or null if the
-	 * code is not a stop code. 
-	 * @return stop information
+	 * Creates the driver object.
 	 */
-	public StopInfo getStops()  {
-		String message = null;
-		if (comment.length() > 0)
-			message = comment;
-		int mCode;
+	public GCodeParser() {
+		// we default to millimeters
+		units = UNITS_MM;
+		curveSection = curveSectionMM;
 
-		if (hasCode("M")) {
-			// we wanna do this after its finished whatever was before.
-			driver.waitUntilBufferEmpty();
+		// init our offset
+		currentOffset = new Point3d();
+	}
 
-			mCode = (int) getCodeValue("M");
+	/**
+	 * Get the maximum feed rate from the driver's model.
+	 */
+	protected double getMaxFeedrate() {
+		// TODO: right now this is defaulting to the x feedrate. We should
+		// eventually check for z-axis motions and use that feedrate. We should
+		// also either alter the model, or post a warning when the x and y
+		// feedrates differ.
+		return driver.getMaximumFeedrates().x();
+	}
 
-			if (mCode == 0) {
-				// M0 == unconditional halt
-				return new StopInfo(message,new JobCancelledException());
-			} else if (mCode == 1) {
-				// M1 == optional halt
-				return new StopInfo(message,null,new JobCancelledException());
-			} else if (mCode == 2) {
-				// M2 == program end
-				return new StopInfo(message,new JobEndException());
-			} else if (mCode == 30) {
-				if (message.length() == 0) { message = "Program Rewind"; }
-				return new StopInfo(message,new JobRewindException(),new JobCancelledException());
+	/**
+	 * initialize parser with values from the driver
+	 */
+	public void init(DriverQueryInterface drv) {
+		// our driver class
+		driver = drv;
+		
+		// init our offset variables
+		currentOffset = driver.getOffset(0);
+		
+		drillCycle = new DrillCycle();
+	}
+
+	/**
+	 * Parses a line of GCode, sets up the variables, etc.
+	 * 
+	 * @param String cmd a line of GCode to parse
+	 */
+	public boolean parse(String cmd, Queue< DriverCommand > commandQueue) {
+		
+		// First, parse the GCode string into an object we can query.
+		GCode gcode = new GCode(cmd);
+
+		// Now, convert the GCode instruction into a series of driver commands,
+		// that will be executed by execute()
+		
+		// If our driver is in pass-through mode, just put the string in a buffer and we are done.
+		if (driver.isPassthroughDriver()) {
+			commandQueue.add(new replicatorg.drivers.commands.GCodePassthrough(gcode.getCommand()));
+		}
+		else {
+			try {
+				// TODO:
+				if (gcode.hasCode('G')) {
+					buildGCodes(gcode, commandQueue);
+				}
+				else if (gcode.hasCode('M')) {
+					buildMCodes(gcode, commandQueue);
+				}
+			} catch (GCodeException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
-		return null;
+		
+		return true;
 	}
 
-	/**
-	 * probe the Z depth of the point
-	 */
-	public void probePoint(Point3d point) {
 
+	private double convertToMM(double value, int units) {
+		if (units == UNITS_INCHES) {
+			return value * 25.4;
+		}
+		return value;
 	}
 
-	/**
-	 * probe the area specified
-	 */
-	public void probeArea(double minX, double minY, double maxX, double maxY,
-			double increment) {
+	private void buildMCodes(GCode gcode, Queue< DriverCommand > commands) throws GCodeException {
+		// If this machine handles multiple active toolheads, we always honor a T code
+		// as being a annotation to send the given command to the given toolheads.  Be
+		// aware that appending a T code to an M code will not necessarily generate a
+		// change tool request!  Use M6 for that.
+		// M6 was historically used to wait for toolheads to get up to temperature, so
+		// you may wish to avoid using M6.
+		if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {
+			commands.add(new replicatorg.drivers.commands.SelectTool((int) gcode.getCodeValue('T')));
+		}
+		switch ((int) gcode.getCodeValue('M')) {
+		case 0:
+			// M0 == unconditional halt
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.UnconditionalHalt(gcode.getComment()));
+			break;
+		case 1:
+			// M1 == optional halt
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.OptionalHalt(gcode.getComment()));
+			break;
+		case 2:
+			// M2 == program end
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.ProgramEnd(gcode.getComment()));
+			break;
+		case 30:
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.ProgramRewind(gcode.getComment()));
+			break;
 
+		// spindle on, CW
+		case 3:
+			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.CLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableSpindle());
+			break;
+
+		// spindle on, CCW
+		case 4:
+			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableSpindle());
+			break;
+
+		// spindle off
+		case 5:
+			commands.add(new replicatorg.drivers.commands.DisableSpindle());
+			break;
+
+		// tool change.
+		case 6:
+			int timeout = 65535;
+			if (gcode.hasCode('P')) {
+				timeout = (int)gcode.getCodeValue('P');
+			}
+			if (gcode.hasCode('T')) {
+				commands.add(new replicatorg.drivers.commands.RequestToolChange((int) gcode.getCodeValue('T'), timeout));
+			}
+			else {
+				throw new GCodeException("The T parameter is required for tool changes. (M6)");
+			}
+			break;
+
+		// coolant A on (flood coolant)
+		case 7:
+			commands.add(new replicatorg.drivers.commands.EnableFloodCoolant());
+			break;
+
+		// coolant B on (mist coolant)
+		case 8:
+			commands.add(new replicatorg.drivers.commands.EnableMistCoolant());
+			break;
+
+		// all coolants off
+		case 9:
+			commands.add(new replicatorg.drivers.commands.DisableFloodCoolant());
+			commands.add(new replicatorg.drivers.commands.DisableMistCoolant());
+			break;
+
+		// close clamp
+		case 10:
+			if (gcode.hasCode('Q'))
+				commands.add(new replicatorg.drivers.commands.CloseClamp((int) gcode.getCodeValue('Q')));
+			else
+				throw new GCodeException(
+						"The Q parameter is required for clamp operations. (M10)");
+			break;
+
+		// open clamp
+		case 11:
+			if (gcode.hasCode('Q'))
+				commands.add(new replicatorg.drivers.commands.OpenClamp((int) gcode.getCodeValue('Q')));
+			else
+				throw new GCodeException(
+						"The Q parameter is required for clamp operations. (M11)");
+			break;
+
+		// spindle CW and coolant A on
+		case 13:
+			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.CLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableSpindle());
+			commands.add(new replicatorg.drivers.commands.EnableFloodCoolant());
+			break;
+
+		// spindle CW and coolant A on
+		case 14:
+			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableSpindle());
+			commands.add(new replicatorg.drivers.commands.EnableFloodCoolant());
+			break;
+
+		// enable drives
+		case 17:
+			commands.add(new replicatorg.drivers.commands.EnableDrives());
+			break;
+
+		// disable drives
+		case 18:
+			commands.add(new replicatorg.drivers.commands.DisableDrives());
+			break;
+
+		// open collet
+		case 21:
+			commands.add(new replicatorg.drivers.commands.OpenCollet());
+			break;
+			// open collet
+		case 22:
+			commands.add(new replicatorg.drivers.commands.CloseCollet());
+			break;
+			// M40-M46 = change gear ratios
+		case 40:
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(0));
+			break;
+		case 41:
+			// driver.changeGearRatio(1);
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(1));
+			break;
+		case 42:
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(2));
+			break;
+		case 43:
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(3));
+			break;
+		case 44:
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(4));
+			break;
+		case 45:
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(5));
+			break;
+		case 46:
+			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(6));
+			break;
+
+		// read spindle speed
+		case 50:
+			driver.getSpindleRPM();
+			break;
+			// turn extruder on, forward
+		case 101:
+			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.CLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableMotor());
+			break;
+
+		// turn extruder on, reverse
+		case 102:
+			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
+			commands.add(new replicatorg.drivers.commands.EnableMotor());
+			break;
+
+		// turn extruder off
+		case 103:
+			commands.add(new replicatorg.drivers.commands.DisableMotor());
+			break;
+
+		// custom code for temperature control
+		case 104:
+			if (gcode.hasCode('S'))
+				commands.add(new replicatorg.drivers.commands.SetTemperature(gcode.getCodeValue('S')));
+			break;
+
+		// custom code for temperature reading
+		// TODO: This command seems like a hack, it would be better for the driver to poll temperature rather than
+		//       have the gcode ask for it.
+		case 105:
+			commands.add(new replicatorg.drivers.commands.ReadTemperature());
+			break;
+
+		// turn fan on
+		case 106:
+			commands.add(new replicatorg.drivers.commands.EnableFan());
+			break;
+
+		// turn fan off
+		case 107:
+			commands.add(new replicatorg.drivers.commands.DisableFan());
+			break;
+
+		// set max extruder speed, RPM
+		case 108:
+			if (gcode.hasCode('S'))
+				commands.add(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)gcode.getCodeValue('S')));
+			else if (gcode.hasCode('R'))
+				commands.add(new replicatorg.drivers.commands.SetMotorSpeedRPM(gcode.getCodeValue('R')));
+			break;
+
+		// set build platform temperature
+		case 109:
+			if (gcode.hasCode('S'))
+				commands.add(new replicatorg.drivers.commands.SetPlatformTemperature(gcode.getCodeValue('S')));
+			break;
+
+		// set build chamber temperature
+		case 110:
+			commands.add(new replicatorg.drivers.commands.SetChamberTemperature(gcode.getCodeValue('S')));
+			
+		// valve open
+		case 126:
+			commands.add(new replicatorg.drivers.commands.OpenValve());
+			break;
+
+		// valve close
+		case 127:
+			commands.add(new replicatorg.drivers.commands.CloseValve());
+			break;
+
+		// where are we?
+		case 128:
+			commands.add(new replicatorg.drivers.commands.GetPosition());
+			break;
+			
+		// Instruct the machine to store it's current position to EEPROM
+		case 131:
+		{
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			if (gcode.hasCode('A')) axes.add(AxisId.A);
+			if (gcode.hasCode('B')) axes.add(AxisId.B);
+			
+			commands.add(new replicatorg.drivers.commands.StoreHomePositions(axes));
+		}
+			break;
+
+		// Instruct the machine to restore it's current position from EEPROM
+		case 132:
+		{
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			if (gcode.hasCode('A')) axes.add(AxisId.A);
+			if (gcode.hasCode('B')) axes.add(AxisId.B);
+			
+			commands.add(new replicatorg.drivers.commands.RecallHomePositions(axes));
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+		}
+			break;
+			
+		// initialize to default state.
+		case 200:
+			commands.add(new replicatorg.drivers.commands.Initialize());
+			break;
+		
+		// set servo 1 position
+		case 300:
+			if (gcode.hasCode('S')) {
+				commands.add(new replicatorg.drivers.commands.SetServo(0, gcode.getCodeValue('S')));
+			}
+			break;
+
+		// set servo 2 position
+		case 301:
+			if (gcode.hasCode('S')) {
+				commands.add(new replicatorg.drivers.commands.SetServo(1, gcode.getCodeValue('S')));
+			}
+			break;
+
+		default:
+			throw new GCodeException("Unknown M code: M"
+					+ (int) gcode.getCodeValue('M'));
+		}
 	}
 
-	/**
-	 * Prepare us for the next gcode command to come in.
-	 */
-	public void cleanup() {
-		// move us to our target.
-		delta = new Point5d();
+	private void buildGCodes(GCode gcode, Queue< DriverCommand > commands) throws GCodeException {
+		if (! gcode.hasCode('G')) {
+			throw new GCodeException("Not a G code!");
+		}
+		
+		// start us off at our current position...
+		Point5d temp = driver.getCurrentPosition(false);
 
-		// save our gcode
-		if (hasCode("G"))
-			lastGCode = (int) getCodeValue("G");
+		// initialize our points, etc.
+		double iVal = convertToMM(gcode.getCodeValue('I'), units); // / X offset
+																// for arcs
+		double jVal = convertToMM(gcode.getCodeValue('J'), units); // / Y offset
+																// for arcs
+		@SuppressWarnings("unused")
+		double kVal = convertToMM(gcode.getCodeValue('K'), units); // / Z offset
+																// for arcs
+		@SuppressWarnings("unused")
+		double qVal = convertToMM(gcode.getCodeValue('Q'), units); // / feed
+																// increment for
+																// G83
+		double rVal = convertToMM(gcode.getCodeValue('R'), units); // / arc radius
+		double xVal = convertToMM(gcode.getCodeValue('X'), units); // / X units
+		double yVal = convertToMM(gcode.getCodeValue('Y'), units); // / Y units
+		double zVal = convertToMM(gcode.getCodeValue('Z'), units); // / Z units
+		double aVal = convertToMM(gcode.getCodeValue('A'), units); // / A units
+		double bVal = convertToMM(gcode.getCodeValue('B'), units); // / B units
+		// Note: The E axis is treated internally as the A or B axis
+		double eVal = convertToMM(gcode.getCodeValue('E'), units); // / E units
 
-		// clear our gcodes.
-		codeValues.clear();
-		seenCodes.clear();
+		// adjust for our offsets
+		xVal += currentOffset.x;
+		yVal += currentOffset.y;
+		zVal += currentOffset.z;
 
-		// empty comments
-		comment = "";
+		// absolute just specifies the new position
+		if (absoluteMode) {
+			if (gcode.hasCode('X'))
+				temp.setX(xVal);
+			if (gcode.hasCode('Y'))
+				temp.setY(yVal);
+			if (gcode.hasCode('Z'))
+				temp.setZ(zVal);
+			if (gcode.hasCode('A'))
+				temp.setA(aVal);
+			if (gcode.hasCode('E')) {
+				if (tool == 0)
+					temp.setA(eVal);
+				else if (tool == 1)
+					temp.setB(eVal);
+			}
+			if (gcode.hasCode('B'))
+				temp.setB(bVal);
+		}
+		// relative specifies a delta
+		else {
+			if (gcode.hasCode('X'))
+				temp.setX(temp.x() + xVal);
+			if (gcode.hasCode('Y'))
+				temp.setY(temp.y() + yVal);
+			if (gcode.hasCode('Z'))
+				temp.setZ(temp.z() + zVal);
+			if (gcode.hasCode('A'))
+				temp.setA(temp.a() + aVal);
+			if (gcode.hasCode('E')) {
+				if (tool == 0)
+					temp.setA(temp.a() + eVal);
+				else if (tool == 1)
+					temp.setB(temp.b() + eVal);
+			}
+			if (gcode.hasCode('B'))
+				temp.setB(temp.b() + bVal);
+		}
+
+		// Get feedrate if supplied
+		if (gcode.hasCode('F')) {
+			// Read feedrate in mm/min.
+			feedrate = gcode.getCodeValue('F');
+			
+			// TODO: Why do we do this here, and not in individual commands?
+			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
+		}
+		
+		int gCode = (int) gcode.getCodeValue('G');
+
+		switch (gCode) {
+		// Linear Interpolation
+		// these are basically the same thing.
+		case 0:
+			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
+			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
+			
+			break;
+
+		// Rapid Positioning
+		case 1:
+			// set our target.
+			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
+			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
+			break;
+
+		// Clockwise arc
+		case 2:
+			// Counterclockwise arc
+		case 3: {
+			// call our arc drawing function.
+			// Note: We don't support 5D
+			if (gcode.hasCode('I') || gcode.hasCode('J')) {
+				// our centerpoint
+				Point5d center = new Point5d();
+				Point5d current = driver.getCurrentPosition(false);
+				center.setX(current.x() + iVal);
+				center.setY(current.y() + jVal);
+
+				// Get the points for the arc
+				if (gCode == 2)
+					commands.addAll(drawArc(center, temp, true));
+				else
+					commands.addAll(drawArc(center, temp, false));
+			}
+			// or we want a radius based one
+			else if (gcode.hasCode('R')) {
+				throw new GCodeException("G02/G03 arcs with (R)adius parameter are not supported yet.");
+			}
+		}
+			break;
+
+		// dwell
+		case 4:
+			commands.add(new replicatorg.drivers.commands.Delay((long)gcode.getCodeValue('P')));
+			break;
+		case 10:
+			if (gcode.hasCode('P')) {
+				int offsetSystemNum = ((int)gcode.getCodeValue('P'));
+				if (offsetSystemNum >= 1 && offsetSystemNum <= 6) {
+					if (gcode.hasCode('X')) 
+						commands.add(new replicatorg.drivers.commands.SetAxisOffset(AxisId.X, offsetSystemNum, gcode.getCodeValue('X')));
+					if (gcode.hasCode('Y')) 
+						commands.add(new replicatorg.drivers.commands.SetAxisOffset(AxisId.Y, offsetSystemNum, gcode.getCodeValue('Y')));
+					if (gcode.hasCode('Z')) 
+						commands.add(new replicatorg.drivers.commands.SetAxisOffset(AxisId.Z, offsetSystemNum, gcode.getCodeValue('Z')));
+				}
+			}
+			else 
+				Base.logger.warning("No coordinate system indicated use G10 Pn, where n is 0-6.");
+			break;
+
+		// Inches for Units
+		case 20:
+		case 70:
+			units = UNITS_INCHES;
+			curveSection = curveSectionInches;
+			break;
+
+		// mm for Units
+		case 21:
+		case 71:
+			units = UNITS_MM;
+			curveSection = curveSectionMM;
+			break;
+
+		// This should be "return to home".  We need to introduce new GCodes for homing.
+		case 28:
+		{
+			// home all axes?
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+			
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			
+			if (gcode.hasCode('F')) {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
+			}
+			else {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE));
+			}
+		}
+			break;
+
+		// New code: home negative.
+		case 161:
+		{
+			// home all axes?
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+			
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			
+			if (gcode.hasCode('F')) {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.NEGATIVE, feedrate));
+			}
+			else {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.NEGATIVE));
+			}
+		}
+			break;
+
+			// New code: home positive.
+		case 162:
+		{
+			// home all axes?
+			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+			if (gcode.hasCode('X')) axes.add(AxisId.X);
+			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			if (gcode.hasCode('F')) {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
+			}
+			else {
+				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE));
+			}
+		}
+			break;
+
+		// master offset
+		case 53:
+			currentOffset = driver.getOffset(0);
+			break;
+		// fixture offset 1
+		case 54:
+			currentOffset = driver.getOffset(1);
+			break;
+		// fixture offset 2
+		case 55:
+			currentOffset = driver.getOffset(2);
+			break;
+		// fixture offset 3
+		case 56:
+			currentOffset = driver.getOffset(3);
+			break;
+		// fixture offset 4
+		case 57:
+			currentOffset = driver.getOffset(4);
+			break;
+		// fixture offset 5
+		case 58:
+			currentOffset = driver.getOffset(5);
+			break;
+		// fixture offset 6
+		case 59:
+			currentOffset = driver.getOffset(6);
+			break;
+
+		// Peck Motion Cycle
+		// case 178: //speed peck motion
+		// case 78:
+		// TODO: make this
+
+		// Cancel drill cycle
+		case 80:
+			drillCycle.setRetract(0);
+			drillCycle.setFeedrate(0);
+			drillCycle.setDwell(0);
+			drillCycle.setPecksize(0);
+			break;
+
+		// Drilling canned cycles
+		case 81: // Without dwell
+		case 82: // With dwell
+		case 83: // Peck drilling (w/ optional dwell)
+		case 183: // Speed peck drilling (w/ optional dwell)
+
+			// we dont want no stinkin speedpeck
+			boolean speedPeck = false;
+
+			// setup our parameters
+			drillCycle.setTarget(temp);
+			
+			if (gcode.hasCode('F'))
+				drillCycle.setFeedrate(gcode.getCodeValue('F'));
+			if (gcode.hasCode('R'))
+				drillCycle.setFeedrate(rVal);
+
+			// set our vars for normal drilling
+			if (gCode == 81) {
+				drillCycle.setDwell(0);
+				drillCycle.setPecksize(0);
+			}
+			// they want a dwell
+			else if (gCode == 82) {
+				if (gcode.hasCode('P')) {
+					drillCycle.setDwell((int) gcode.getCodeValue('P'));
+				}
+				drillCycle.setPecksize(0);
+			}
+			// fancy schmancy 'pecking' motion.
+			else if (gCode == 83 || gCode == 183) {
+				if (gcode.hasCode('P')) {
+					drillCycle.setDwell((int) gcode.getCodeValue('P'));
+				}
+				
+				if (gcode.hasCode('Q')) {
+					drillCycle.setPecksize(Math.abs(gcode.getCodeValue('Q')));
+				}
+				// oooh... do it fast!
+				if (gCode == 183)
+					speedPeck = true;
+			}
+
+			drillCycle.doDrill(speedPeck);
+			break;
+
+		// Absolute Positioning
+		case 90:
+			absoluteMode = true;
+			break;
+
+		// Incremental Positioning
+		case 91:
+			absoluteMode = false;
+			break;
+
+		// Set position
+		case 92:
+
+			Point5d current = driver.getCurrentPosition(false);
+
+			if (gcode.hasCode('X'))
+				current.setX(xVal);
+			if (gcode.hasCode('Y'))
+				current.setY(yVal);
+			if (gcode.hasCode('Z'))
+				current.setZ(zVal);
+			if (gcode.hasCode('A'))
+				current.setA(aVal);
+			// Note: The E axis is treated internally as the A axis
+			if (gcode.hasCode('E'))
+				current.setA(eVal);
+			if (gcode.hasCode('B'))
+				current.setB(bVal);
+			
+			commands.add(new replicatorg.drivers.commands.SetCurrentPosition(current));
+			break;
+
+		// feed rate mode
+		// case 93: //inverse time feed rate
+		case 94: // IPM feed rate (our default)
+			// case 95: //IPR feed rate
+			// TODO: make this work.
+			break;
+
+		// spindle speed rate
+		case 97:
+			commands.add(new replicatorg.drivers.commands.SetSpindleRPM(gcode.getCodeValue('S')));
+
+			break;
+			
+		// error, error!
+		default:
+			throw new GCodeException("Unknown G code: G"
+					+ (int) gcode.getCodeValue('G'));
+		}
 	}
 }

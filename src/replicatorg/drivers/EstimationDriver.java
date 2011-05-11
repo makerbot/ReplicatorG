@@ -25,13 +25,17 @@ package replicatorg.drivers;
 
 import java.awt.geom.Rectangle2D;
 
-import replicatorg.app.exceptions.GCodeException;
+import javax.vecmath.Point3d;
+
 import replicatorg.util.Point5d;
 
 public class EstimationDriver extends DriverBaseImplementation {
 	// build time in milliseconds
 	private double buildTime = 0.0;
 
+	// the length of our last move.
+	private double moveLength = 0.0;
+	
 	private Rectangle2D.Double bounds = new Rectangle2D.Double();
 	
 	public EstimationDriver() {
@@ -51,30 +55,34 @@ public class EstimationDriver extends DriverBaseImplementation {
 		return new Point5d();
 	}
 
-	public void execute() throws InterruptedException {
-		// suppress errors.
-		try {
-			super.execute();
-		} catch (GCodeException e) {
-		} catch (ArrayIndexOutOfBoundsException e) {
-		} catch (RetryException e) {
-		}
-	}
+	/**
+	 * Queue the given point.
+	 * @param p The point, in mm.
+	 * @throws RetryException 
+	 */
+	public void queuePoint(Point5d p) throws RetryException {
+		Point5d delta = getDelta(p);
 
-	protected void queuePoint(Point5d p, Double feedrate) {
-		// our speed is feedrate * distance * 60000 (milliseconds in 1 minute)
-		// feedrate is mm per minute
-		double millis = getMoveLength() / feedrate * 60000.0;
+		// add to the total length
+		moveLength = delta.get3D().distance(new Point3d());
+
+		// Calculate the feedrate. This is the speed that the toolhead will
+		// be traveling at.
+		double feedrate = getSafeFeedrate(delta);
+
+		// mostly for estimation driver.
+		
+		double millis = moveLength / feedrate * 60000.0;
 
 		bounds.add(p.x(),p.y());
 		
 		// add it in!
 		if (millis > 0) {
 			buildTime = buildTime + millis;
-			// System.out.println(getMoveLength() + "mm at " + feedrate + "
-			// takes " + Math.round(millis) + " millis (" + buildTime + "
-			// total).");
+//			System.out.println(moveLength + "mm at " + feedrate + " takes " + Math.round(millis) + " millis (" + buildTime + "	total).");
 		}
+		
+		setInternalPosition(p);
 	}
 
 	public double getBuildTime() {

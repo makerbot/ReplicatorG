@@ -11,5 +11,4 @@ public interface GCodeSource extends Iterable<String> {
 	Iterator<String> iterator();
 	
 	int getLineCount();
-
 }

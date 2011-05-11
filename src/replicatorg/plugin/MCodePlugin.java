@@ -1,5 +1,7 @@
 package replicatorg.plugin;
 
+import replicatorg.app.GCode;
+
 public interface MCodePlugin {
 	/**
 	 * Returns an array of integers indicating which M-codes this plugin is capable of processing.
@@ -15,5 +17,5 @@ public interface MCodePlugin {
 	 * In general, this function should return quickly, to avoid blocking replicatorG.
 	 * @param mcode the full line of m-code
 	 */
-	public void processMCode(String mcode);
+	public void processMCode(GCode mcode);
 }

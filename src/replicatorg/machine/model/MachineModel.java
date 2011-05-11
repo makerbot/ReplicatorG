@@ -21,6 +21,8 @@
   Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+// TODO: Separate the configuration portion of this from the machine control portion!
+
 package replicatorg.machine.model;
 
 import java.util.EnumMap;

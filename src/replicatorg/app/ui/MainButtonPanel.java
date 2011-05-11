@@ -45,8 +45,9 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.app.MachineController;
 import replicatorg.drivers.SDCardCapture;
+import replicatorg.machine.Machine;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
@@ -198,7 +199,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		buildButton.setToolTipText("This will start building the object on the machine.");
 		pauseButton.setToolTipText("This will pause or resume the build.");
 		stopButton.setToolTipText("This will abort the build in progress.");
-		cpButton.setToolTipText("Here you'll find manually controls for the machine.");
+		cpButton.setToolTipText("Here you'll find manual controls for the machine.");
 		rcButton.setToolTipText("This can be used to tune the process, in real time, during a print job.");
 		resetButton.setToolTipText("This will restart the firmware on the machine.");
 		connectButton.setToolTipText("Connect to the machine.");
@@ -207,7 +208,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		setPreferredSize(new Dimension(750,60));
 		
 		// Update initial state
-		machineStateChangedInternal(new MachineStateChangeEvent(null, new MachineState()));
+		machineStateChangedInternal(new MachineStateChangeEvent(null, new MachineState(MachineState.State.NOT_ATTACHED)));
 	}
 
 	public MainButton makeButton(String rolloverText, String source) {
@@ -268,42 +269,46 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		});
 	}
 	
-	private void updateFromState(final MachineState s, final MachineController machine) {
-		boolean ready = s.isReady();
+	private void updateFromState(final MachineState s, final MachineInterface machine) {
+		boolean connected = s.isConnected();
+		boolean readyToPrint = s.canPrint();
+		boolean configurable = s.isConfigurable();
 		boolean building = s.isBuilding();
 		boolean paused = s.isPaused();
-		boolean hasGcode = (editor != null) && (editor.getBuild() != null) &&
-			editor.getBuild().getCode() != null;
+
 		boolean hasMachine = machine != null;
 		boolean hasPlayback = hasMachine && 
-			(machine.driver != null) &&
-			(machine.driver instanceof SDCardCapture) &&
-			(((SDCardCapture)machine.driver).hasFeatureSDCardCapture());
+			(machine.getDriver() != null) &&
+			(machine.getDriver() instanceof SDCardCapture) &&
+			(((SDCardCapture)machine.getDriver()).hasFeatureSDCardCapture());
+		boolean hasGcode = (editor != null) && (editor.getBuild() != null) &&
+		editor.getBuild().getCode() != null;
+		
 		simButton.setEnabled(hasMachine && !building && hasGcode);
-		fileButton.setEnabled(hasMachine && !building && hasGcode);
-		buildButton.setEnabled(ready && hasGcode);
-		uploadButton.setEnabled(ready && hasPlayback && hasGcode);
-		playbackButton.setEnabled(ready && hasPlayback);
-		pauseButton.setEnabled(building);
+		fileButton.setEnabled(!building && hasGcode);
+		buildButton.setEnabled(readyToPrint && hasGcode);
+		uploadButton.setEnabled(readyToPrint && hasPlayback && hasGcode);
+		playbackButton.setEnabled(readyToPrint && hasPlayback);
+		pauseButton.setEnabled(building && connected);
 		stopButton.setEnabled(building);
 
 		pauseButton.setSelected(paused);
 		rcButton.setEnabled(building);
 
-		MachineState.Target runningTarget = s.isBuilding()?s.getTarget():null;
+		Machine.JobTarget runningTarget = s.isBuilding()?machine.getTarget():null;
 		
-		simButton.setSelected(runningTarget == MachineState.Target.SIMULATOR);
-		buildButton.setSelected(runningTarget == MachineState.Target.MACHINE);
-		uploadButton.setSelected(runningTarget == MachineState.Target.SD_UPLOAD);
-		fileButton.setSelected(runningTarget == MachineState.Target.FILE);
-		playbackButton.setSelected(runningTarget == MachineState.Target.NONE);
+		simButton.setSelected(runningTarget == Machine.JobTarget.SIMULATOR);
+		buildButton.setSelected(runningTarget == Machine.JobTarget.MACHINE);
+		uploadButton.setSelected(runningTarget == Machine.JobTarget.REMOTE_FILE);
+		fileButton.setSelected(runningTarget == Machine.JobTarget.FILE);
+		playbackButton.setSelected(runningTarget == Machine.JobTarget.NONE);
 
-		boolean connected = s.isConnected() && hasMachine && machine.isInitialized();
 		resetButton.setEnabled(connected); 
 		disconnectButton.setEnabled(connected);
-		connectButton.setEnabled(hasMachine && !connected);
-		cpButton.setEnabled(ready);
+		connectButton.setEnabled(!connected);
+		cpButton.setEnabled(configurable);
 		rcButton.setVisible(editor.supportsRealTimeControl());
+		
 //		if (!editor.supportsRealTimeControl()) 
 //		{
 			// how to hide this button without taking up any space???
@@ -312,10 +317,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			// FIXME: this changes the ordering of the buttons
 //			add(rcButton);
 //		}
-		
 	}
 
-	public void updateFromMachine(final MachineController machine) {
+	public void updateFromMachine(final MachineInterface machine) {
 		MachineState s = new MachineState(MachineState.State.NOT_ATTACHED);
 		if (machine != null) {
 			s = machine.getMachineState();
@@ -325,7 +329,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 	public void machineStateChangedInternal(final MachineStateChangeEvent evt) {
 		MachineState s = evt.getState();
-		MachineController machine = evt.getSource();
+		MachineInterface machine = evt.getSource();
 		updateFromState(s,machine);
 	}
 

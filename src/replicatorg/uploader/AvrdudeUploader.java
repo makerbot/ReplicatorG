@@ -80,6 +80,7 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
 	  InputStream in;
 	  OutputStream out;
 	  public StreamDumper(InputStream in, OutputStream out) {
+		  super("AVR uploader Stream Dumper");
 		  this.in = in; this.out = out;
 	  }
 	  public void run() {

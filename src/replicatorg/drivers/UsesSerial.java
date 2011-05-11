@@ -1,14 +1,11 @@
 package replicatorg.drivers;
 
-import replicatorg.app.util.serial.Serial;
-
 public interface UsesSerial {
 	
-	// Set the serial port to be used.
-	public void setSerial(Serial serial);
+	// Open the specified serial port
+	public void openSerial(String portName);
 	
-	// Get the serial port in use, if any.
-	public Serial getSerial();
+	public void closeSerial();
 	
 	/**
 	 * Retrieves the port name specified by the driver.  This may not
@@ -44,6 +41,11 @@ public interface UsesSerial {
 	 * to find out the actual stop bits.
 	 */
 	public float getStopBits();
+	
+	/**
+	 * @return True if a serial port has been opened
+	 */
+	public boolean isConnected();
 	
 	// Indicates that the serial port is explicitly specified in machines.xml
 	public boolean isExplicit();

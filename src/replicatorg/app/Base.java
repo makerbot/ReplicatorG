@@ -58,11 +58,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -76,6 +73,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import replicatorg.app.ui.MainWindow;
+import replicatorg.machine.MachineLoader;
 import replicatorg.uploader.FirmwareUploader;
 import ch.randelshofer.quaqua.QuaquaManager;
 
@@ -97,7 +95,7 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 24;
+	public static final int VERSION = 25;
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */
@@ -106,7 +104,7 @@ public class Base {
 	/**
 	 * The machine controller in use.
 	 */
-	private static MachineController machine = null;
+	private static MachineLoader machineLoader;
 	
 	/**
 	 * The user preferences store.
@@ -346,6 +344,9 @@ public class Base {
     		}
     	}
 
+		// Use the default system proxy settings
+		System.setProperty("java.net.useSystemProxies", "true");
+    	
 		// Start the firmware check thread.
 		FirmwareUploader.checkFirmware();
 		
@@ -416,16 +417,20 @@ public class Base {
 				// other programs decide how to size themselves.
 				editor.restorePreferences();
 				// add shutdown hook to store preferences
-				Runtime.getRuntime().addShutdownHook(new Thread() {
+				Runtime.getRuntime().addShutdownHook(new Thread("Shutdown Hook") {
 					final private MainWindow w = editor; 
 					public void run() {
 						w.onShutdown();
 					}
 				});
-				// load up our default machine
+				
 				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
-				String machineName = preferences.get("machine.name",null); 
-				editor.loadMachine(machineName, autoconnect);
+				String machineName = preferences.get("machine.name",null);
+				
+				if (autoconnect) {
+					editor.loadMachine(machineName);
+				}
+				
 				// show the window
 				editor.setVisible(true);
 				UpdateChecker.checkLatestVersion(editor);
@@ -547,33 +552,6 @@ public class Base {
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 
-	// .................................................................
-
-	static public void showReference(String referenceFile) {
-		openURL(Base.getContents("reference" + File.separator + referenceFile));
-	}
-
-	static public void showReference() {
-		showReference("index.html");
-	}
-
-	static public void showEnvironment() {
-		showReference("Guide_Environment.html");
-	}
-
-	static public void showTroubleshooting() {
-		showReference("Guide_Troubleshooting.html");
-	}
-
-	/**
-	 * Opens the local copy of the FAQ that's included with the Processing
-	 * download.
-	 */
-	static public void showFAQ() {
-		showReference("faq.html");
-	}
-
-	// .................................................................
 
 	/**
 	 * Implements the cross-platform headache of opening URLs TODO This code
@@ -771,8 +749,6 @@ public class Base {
 		System.exit(1);
 	}
 
-	// ...................................................................
-
 	static public String getContents(String what) {
 		String basePath = System.getProperty("user.dir");
 		return basePath + File.separator + what;
@@ -963,19 +939,12 @@ public class Base {
 			}
 		}
 	}
-
-	/**
-	 * our singleton interface to get our machine.
-	 */
-	static public MachineController loadMachine(String name) {
-		if (machine == null || !machine.getDescriptorName().equals(name)) {
-			machine = MachineFactory.load(name);
+	
+	/** Get a reference to the currently selected machine **/
+	static public MachineLoader getMachineLoader() {
+		if (machineLoader == null) {
+			machineLoader = new MachineLoader();
 		}
-		return machine;
+		return machineLoader;
 	}
-
-	static public MachineController getMachine() {
-		return machine;
-	}
-
 }
