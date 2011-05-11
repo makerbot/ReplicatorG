@@ -36,7 +36,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	// Keep track of whether we are in a building state or not.
 	private boolean isBuilding = false;
 	
-	static final private Color BG_NO_MACHINE = new Color(0xff, 0x80, 0x60);
+	static final private Color BG_ERROR = new Color(0xff, 0x80, 0x60);
 	static final private Color BG_READY = new Color(0x80, 0xff, 0x60);
 	static final private Color BG_BUILDING = new Color(0xff, 0xef, 0x00); // process yellow
 
@@ -47,7 +47,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-		label.setText("Welcome to ReplicatorG");
+		label.setText("Not Connected");
 		label.setAlignmentX(LEFT_ALIGNMENT);
 		add(label);
 		smallLabel.setAlignmentX(LEFT_ALIGNMENT);
@@ -69,6 +69,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		setMinimumSize(new Dimension(0, height));
 		int prefWidth = 80 * smallMetrics.charWidth('n');
 		setPreferredSize(new Dimension(prefWidth, height));
+		setBackground(BG_ERROR);
 	}
 
 
@@ -120,8 +121,10 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		case PAUSED:
 			bgColor = BG_BUILDING;
 			break;
+		case NOT_ATTACHED:	
+		case ERROR:
 		default:
-			bgColor = BG_NO_MACHINE;
+			bgColor = BG_ERROR;
 			break;
 		}
 		
