@@ -823,6 +823,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 				handleSimulate();
 			}
 		});
+		item.setEnabled(false);
 		menu.add(item);
 
 		buildMenuItem = newJMenuItem("Build", 'B');

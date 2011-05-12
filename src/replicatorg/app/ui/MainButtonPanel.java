@@ -284,7 +284,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		boolean hasGcode = (editor != null) && (editor.getBuild() != null) &&
 		editor.getBuild().getCode() != null;
 		
-		simButton.setEnabled(hasMachine && !building && hasGcode);
+//		simButton.setEnabled(hasMachine && !building && hasGcode);
+		simButton.setEnabled(false);
 		fileButton.setEnabled(!building && hasGcode);
 		buildButton.setEnabled(readyToPrint && hasGcode);
 		uploadButton.setEnabled(readyToPrint && hasPlayback && hasGcode);
