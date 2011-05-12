@@ -376,9 +376,13 @@ class MachineThread extends Thread {
 		case STOP_MOTION:
 			driver.stop(false);
 			
-			if (state.isBuilding()) {
+			if (state.getState() == MachineState.State.BUILDING) {
 				setState(new MachineState(MachineState.State.READY),
 						readyMessage());
+			}
+			else if (state.getState() == MachineState.State.BUILDING_OFFLINE) {
+				setState(new MachineState(MachineState.State.NOT_ATTACHED),
+						notConnectedMessage());
 			}
 			break;
 		case STOP_ALL:
@@ -388,11 +392,14 @@ class MachineThread extends Thread {
 			
 			driver.stop(true);
 			
-			if (state.isBuilding()) {
+			if (state.getState() == MachineState.State.BUILDING) {
 				setState(new MachineState(MachineState.State.READY),
 						readyMessage());
 			}
-			
+			else if (state.getState() == MachineState.State.BUILDING_OFFLINE) {
+				setState(new MachineState(MachineState.State.NOT_ATTACHED),
+						notConnectedMessage());
+			}
 			break;			
 //		case DISCONNECT_REMOTE_BUILD:
 //			// TODO: This is wrong.
