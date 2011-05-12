@@ -195,7 +195,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		statusLabel.setForeground(statusColor);
 		add(statusLabel, "gap unrelated");
 
-		simButton.setToolTipText("This will open a window showing a rapid simulation of what toolpaths the machine is going to perform.");
+		simButton.setToolTipText("The simulation feature is disabled in this release, please stand by!");
 		buildButton.setToolTipText("This will start building the object on the machine.");
 		pauseButton.setToolTipText("This will pause or resume the build.");
 		stopButton.setToolTipText("This will abort the build in progress.");
