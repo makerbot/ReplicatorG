@@ -494,7 +494,10 @@ public class PreviewPanel extends JPanel {
 		sceneGroup.addChild(makeBackground());
 		sceneGroup.addChild(makeBaseGrid(true));
 		sceneGroup.addChild(makeBaseGrid(false));
-		sceneGroup.addChild(makeStarField(500, 2));
+		
+		if(Base.preferences.getBoolean("ui.show_starfield", false)) {
+			sceneGroup.addChild(makeStarField(400, 2));
+		}
 
 		objRoot.addChild(sceneGroup);
 
