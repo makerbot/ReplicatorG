@@ -1,5 +1,84 @@
 <?xml version="1.1" encoding="utf-8"?>
 <machines>
+	<machine experimental="0">
+		<name>Klimentkip (115200 Baud)</name>
+		<geometry type="cartesian">
+			<axis id="x" length="205" maxfeedrate="5000" stepspermm="31.496" endstops="min"/>
+			<axis id="y" length="195" maxfeedrate="5000" stepspermm="31.496" endstops="min"/>
+			<axis id="z" length="140" maxfeedrate="200" stepspermm="1133.858" endstops="min"/>
+		</geometry>
+		<tools>
+			<tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" stepper_axis="a" motor_steps="1000" heatedplatform="true" />
+		</tools>
+		<clamps></clamps>
+		<firmware url="???" autoupgrade="false"></firmware>
+		<help name="Gcode Help" url="http://reprap.org/wiki/Gcode"></help>
+		<driver name="reprap5d">
+		    <okAfterResend>true</okAfterResend>
+		    <pulserts>false</pulserts>
+		    <waitforstart enabled="false"></waitforstart>
+		    <debugLevel>0</debugLevel>
+		    <fived>true</fived>
+		    <rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+		</cooldown>
+	</machine>
+	<machine experimental="0">
+		<name>RepRap5d (76800 Baud)</name>
+		<geometry type="cartesian">
+			<axis id="x" length="205" maxfeedrate="5000" stepspermm="31.496" endstops="min"/>
+			<axis id="y" length="195" maxfeedrate="5000" stepspermm="31.496" endstops="min"/>
+			<axis id="z" length="140" maxfeedrate="200" stepspermm="1133.858" endstops="min"/>
+		</geometry>
+		<tools>
+			<tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" stepper_axis="a" motor_steps="1000" heatedplatform="true" />
+		</tools>
+		<clamps></clamps>
+		<firmware url="???" autoupgrade="false"></firmware>
+		<help name="Gcode Help" url="http://reprap.org/wiki/Gcode"></help>
+		<driver name="reprap5d">
+		    <okAfterResend>true</okAfterResend>
+		    <pulserts>false</pulserts>
+		    <waitforstart enabled="false"></waitforstart>
+		    <debugLevel>0</debugLevel>
+		    <fived>true</fived>
+		    <rate>76800</rate> <!-- higher and fw drops too many chars -->
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+		</cooldown>
+	</machine>
+	<machine experimental="0">
+		<name>Teacup (115200 Baud)</name>
+		<geometry type="cartesian">
+			<axis id="x" length="205" maxfeedrate="5000" stepspermm="31.496" endstops="min"/>
+			<axis id="y" length="195" maxfeedrate="5000" stepspermm="31.496" endstops="min"/>
+			<axis id="z" length="140" maxfeedrate="200" stepspermm="1133.858" endstops="min"/>
+		</geometry>
+		<tools>
+			<tool name="Stepper-based extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" stepper_axis="a" motor_steps="1000" heatedplatform="true" />
+		</tools>
+		<clamps></clamps>
+		<firmware url="???" autoupgrade="false"></firmware>
+		<help name="Teacup Help" url="http://reprap.org/wiki/Teacup_Firmware"></help>
+		<driver name="reprap5d">
+		    <okAfterResend>false</okAfterResend> <!-- Teacup option for reprap5d driver -->
+		    <alwaysRelativeE>true</alwaysRelativeE> <!-- Teacup option for reprap5d driver -->
+		    <pulserts>false</pulserts>
+		    <waitforstart enabled="false"></waitforstart>
+		    <debugLevel>0</debugLevel>
+		    <fived>true</fived>
+		    <rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+		</cooldown>
+	</machine>
         <machine experimental="1">
                 <name>Mendel with Gen 3 Electronics (19200 Baud)</name>
                 <geometry type="cartesian">
