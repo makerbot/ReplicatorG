@@ -257,17 +257,19 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		throw new RuntimeException("Position reconcilliation requested, but not implemented for this driver");
 	}
 	
-	public Point5d getCurrentPosition(boolean update) {
+	public Point5d getCurrentPosition(boolean forceUpdate) {
 		synchronized(currentPosition)
 		{
 			// Explicit null check; otherwise reconcilePosition, a potentially expensive call (including a packet
 			// transaction) will be called every time.
-			if (currentPosition.get() == null || update) {
+			boolean lost = (currentPosition.get() == null);
+			
+			if (lost || forceUpdate) {
 				try {
 					// Try to reconcile our position. If it's not possible, then return a zero point, but don't save it. 
 					Point5d newPoint = reconcilePosition();
 					
-					if (newPoint == null) {
+					if (newPoint == null && !forceUpdate) {
 						return new Point5d();
 					}
 					

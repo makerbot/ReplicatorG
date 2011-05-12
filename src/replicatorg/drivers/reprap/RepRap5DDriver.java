@@ -1253,11 +1253,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	protected Point5d reconcilePosition() {
 		sendCommand("M114");
 		// If the firmware returned a position then the reply parser
-		// already set the current position and our caller is actually
-		// going to end up ignoring what we return.
-		//
-		//return new Point5d();
-		return super.getCurrentPosition(false);
+		// already set the current position.  Return null to tell
+		// caller not to touch the position if it is now known.
+		// DO NOT RECURSE into getCurrentPosition() or this is an
+		// infinite loop!
+		return null;
 	}
 
 	/* ===============
