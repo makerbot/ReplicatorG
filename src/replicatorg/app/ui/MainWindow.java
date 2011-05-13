@@ -1308,7 +1308,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		
 		String name = Base.preferences.get("machine.name", null);
 		if ( name != null ) {
-			loadMachine(name);
+			loadMachine(name, true);
 		}
 	}
 	
@@ -2497,8 +2497,9 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	/**
 	 * @param name       name of the machine
+	 * @param doConnect  perform the connect
 	 */
-	public void loadMachine(String name) {
+	public void loadMachine(String name, boolean doConnect) {
 		// Here we want to:
 		// 1. Create a new machine using the given profile name
 		// 2. If the new machine uses a serial port, connect to the serial port
@@ -2517,16 +2518,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			return;
 		}
 		
-		// Do we always want to connect here?
-		machineLoader.connect(targetPort);
+		if (doConnect) {
+			machineLoader.connect(targetPort);
+		}
 				
-		// TODO: This needs to be run at program start
 		if (!machineLoader.isLoaded()) {
 			// Buttons will need an explicit null state notification
 			buttons.machineStateChanged(new MachineStateChangeEvent(null, new MachineState(MachineState.State.NOT_ATTACHED)));
 		}
 		
-		// TODO: PreviewPanel: update with new machine
 		if(previewPanel != null)
 		{
 			getPreviewPanel().rebuildScene();

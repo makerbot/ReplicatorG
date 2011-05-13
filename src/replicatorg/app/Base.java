@@ -427,9 +427,7 @@ public class Base {
 				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
 				String machineName = preferences.get("machine.name",null);
 				
-				if (autoconnect) {
-					editor.loadMachine(machineName);
-				}
+				editor.loadMachine(machineName, autoconnect);
 				
 				// show the window
 				editor.setVisible(true);
