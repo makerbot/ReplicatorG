@@ -194,7 +194,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		if (t.hasMotor()) {
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
-			// cases. This shouldn't be necessary for a Gen4 stepper extruder.
+			// cases. This shouldn't be necessary for a Gen4 stepper extruder. (it's not!)
 			if ((t.getMotorStepperAxis() == null) && !(t.motorHasEncoder() || t.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
@@ -548,12 +548,16 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if (name.equals("motor-forward")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
 				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
+				if (toolModel.motorHasEncoder() || toolModel.motorIsStepper()) {
+					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
+				}
 				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
 			} else if (name.equals("motor-reverse")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
 				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
+				if (toolModel.motorHasEncoder() || toolModel.motorIsStepper()) {
+					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
+				}
 				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
 			} else if (name.equals("motor-stop")) {
 				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
