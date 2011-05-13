@@ -393,38 +393,55 @@ public class PreviewPanel extends JPanel {
 		return bg;
 	}
 	
-    public Node makeBaseGrid(boolean xOrY) {
+    public Node makeBaseGrid() {
     	if(buildVol instanceof BuildVolume)
     	{
-    		int gridSpacing = 10;
-	        Appearance edges = new Appearance();
-	        edges.setLineAttributes(new LineAttributes(3,LineAttributes.PATTERN_SOLID,true));
-	        edges.setColoringAttributes(new ColoringAttributes(.9f,1f,1f,ColoringAttributes.NICEST));
-	        int lineCountX = (int) 1+(buildVol.getX()/gridSpacing);
-	        int lineCountY = (int) 1+(buildVol.getY()/gridSpacing);
-	        LineArray gridX = new LineArray(4*(lineCountX),GeometryArray.COORDINATES);
-	        LineArray gridY = new LineArray(4*(lineCountY),GeometryArray.COORDINATES);
-	        int idx;
-	        for (int i = 1; i < lineCountX-1; i++) {
-	        	double offsetX = -buildVol.getX()/2 + (buildVol.getX()/(lineCountX-1))*i;
-                idx = (i-1)*4;
-                // Along x axis
-                gridX.setCoordinate(idx++, new Point3d(offsetX,-buildVol.getY()/2,0));
-                gridX.setCoordinate(idx++, new Point3d(offsetX,buildVol.getY()/2,0));
+    		Group baseGroup = new Group();
+    		double gridSpacing = 10.0; // Dim grid has hash marks at 10mm intervals.
+    		// Set up the appearance object for the central crosshairs.
+	        Appearance crosshairAppearance = new Appearance();
+	        crosshairAppearance.setLineAttributes(new LineAttributes(3,LineAttributes.PATTERN_SOLID,true));
+	        crosshairAppearance.setColoringAttributes(new ColoringAttributes(.9f,1f,1f,ColoringAttributes.NICEST));
+	        // Set up the crosshair lines
+	        LineArray crosshairLines = new LineArray(2*2,GeometryArray.COORDINATES);
+	        crosshairLines.setCoordinate(0, new Point3d(0,-buildVol.getY()/2,0));
+	        crosshairLines.setCoordinate(1, new Point3d(0,buildVol.getY()/2,0));
+	        crosshairLines.setCoordinate(2, new Point3d(-buildVol.getX()/2,0,0));
+	        crosshairLines.setCoordinate(3, new Point3d(buildVol.getX()/2,0,0));
+	        Shape3D crosshairs = new Shape3D(crosshairLines,crosshairAppearance);
+
+    		// Set up the appearance object for the measurement hash marks.
+	        Appearance hashAppearance = new Appearance();
+	        hashAppearance.setLineAttributes(new LineAttributes(2f,LineAttributes.PATTERN_SOLID,true));
+	        hashAppearance.setColoringAttributes(new ColoringAttributes(.475f,.72f,.85f,ColoringAttributes.NICEST));
+	        // hashes in each direction on x axis
+	        int xHashes = (int)((buildVol.getX() - 0.0001)/(2*gridSpacing));
+	        // hashes in each direction on y axis
+	        int yHashes = (int)((buildVol.getY() - 0.0001)/(2*gridSpacing));
+	        // Set up hash lines
+	        LineArray hashLines = new LineArray(2*(2*xHashes + 2*yHashes),GeometryArray.COORDINATES);
+	        int idx = 0;
+        	double offset = 0;
+	        for (int i = 0; i < xHashes; i++) {
+	        	offset += gridSpacing;
+                hashLines.setCoordinate(idx++, new Point3d(offset,-buildVol.getY()/2,0));
+                hashLines.setCoordinate(idx++, new Point3d(offset,buildVol.getY()/2,0));             
+                hashLines.setCoordinate(idx++, new Point3d(-offset,-buildVol.getY()/2,0));
+                hashLines.setCoordinate(idx++, new Point3d(-offset,buildVol.getY()/2,0));
 	        }
-	        for (int i = 1; i < lineCountY-1; i++) {
-	            double offsetY = -buildVol.getY()/2 + (buildVol.getY()/(lineCountY-1))*i;
-            	idx = (i-1)*4;
-                // Along y axis
-                gridY.setCoordinate(idx++, new Point3d(-buildVol.getX()/2,offsetY,0));
-                gridY.setCoordinate(idx++, new Point3d(buildVol.getX()/2,offsetY,0));
+	        offset = 0;
+	        for (int i = 0; i < yHashes; i++) {
+	        	offset += gridSpacing;
+                hashLines.setCoordinate(idx++, new Point3d(-buildVol.getX()/2,offset,0));
+                hashLines.setCoordinate(idx++, new Point3d(buildVol.getX()/2,offset,0));
+                hashLines.setCoordinate(idx++, new Point3d(-buildVol.getX()/2,-offset,0));
+                hashLines.setCoordinate(idx++, new Point3d(buildVol.getX()/2,-offset,0));
 	        }
+	        Shape3D hashes = new Shape3D(hashLines,hashAppearance);
 	        
-	    	Base.logger.finer("LineCountX,Y:"+lineCountX+','+lineCountY);
-    		if(xOrY==true)
-    			return new Shape3D(gridX,edges);
-    		else
-    			return new Shape3D(gridY,edges);
+	        baseGroup.addChild(hashes);
+	        baseGroup.addChild(crosshairs);
+	        return baseGroup;
     	} return null;
     }
     
@@ -492,8 +509,7 @@ public class PreviewPanel extends JPanel {
 		sceneGroup.addChild(makeDirectedLight2());
 		sceneGroup.addChild(makeBoundingBox());
 		sceneGroup.addChild(makeBackground());
-		sceneGroup.addChild(makeBaseGrid(true));
-		sceneGroup.addChild(makeBaseGrid(false));
+		sceneGroup.addChild(makeBaseGrid());
 		
 		if(Base.preferences.getBoolean("ui.show_starfield", false)) {
 			sceneGroup.addChild(makeStarField(400, 2));

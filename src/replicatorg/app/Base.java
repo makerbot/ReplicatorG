@@ -346,7 +346,9 @@ public class Base {
 
 		// Use the default system proxy settings
 		System.setProperty("java.net.useSystemProxies", "true");
-    	
+    	// Use antialiasing implicitly
+		System.setProperty("j3d.implicitAntialiasing", "true");
+		
 		// Start the firmware check thread.
 		FirmwareUploader.checkFirmware();
 		
