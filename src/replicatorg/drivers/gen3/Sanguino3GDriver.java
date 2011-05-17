@@ -560,7 +560,7 @@ public class Sanguino3GDriver extends SerialDriver
 
 		runCommand(pb.getPacket());
 
-		this.currentPosition.set(p);
+		super.setCurrentPosition(p);
 	}
 
 	// Homes the three first axes

@@ -49,7 +49,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 
 		runCommand(pb.getPacket());
 		
-		this.currentPosition.set(p);
+		super.setCurrentPosition(p);
 	}
 
 	protected Point5d reconcilePosition() {

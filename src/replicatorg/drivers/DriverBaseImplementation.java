@@ -257,28 +257,39 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		throw new RuntimeException("Position reconcilliation requested, but not implemented for this driver");
 	}
 	
+	/**
+	 * @return true if the machine position is unknown
+	 */
+	public boolean positionLost() {
+		return (currentPosition.get() == null);
+	}
+	
+	/** 
+	 * Gets the current machine position. If forceUpdate is false, then the cached position is returned if available,
+	 * otherwise the machine is polled for it's current position.
+	 * 
+	 * If a valid position can be determined, then it is returned. Otherwise, a zero position is returned.
+	 * 
+	 * Side effects: currentPosition will be updated with the current position if the machine position is successfully polled.
+	 */
 	public Point5d getCurrentPosition(boolean forceUpdate) {
 		synchronized(currentPosition)
 		{
-			// Explicit null check; otherwise reconcilePosition, a potentially expensive call (including a packet
-			// transaction) will be called every time.
-			boolean lost = (currentPosition.get() == null);
-			
-			if (lost || forceUpdate) {
+			// If we are lost, or an explicit update has been requested, poll the machine for it's state. 
+			if (positionLost() || forceUpdate) {
 				try {
-					// Try to reconcile our position. If it's not possible, then return a zero point, but don't save it. 
+					// Try to reconcile our position. 
 					Point5d newPoint = reconcilePosition();
-					
-					if (newPoint == null && !forceUpdate) {
-						return new Point5d();
-					}
-					
 					currentPosition.set(newPoint);
 					
 				} catch (RetryException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Base.logger.severe("Attempt to reconcile machine position failed, due to Retry Exception");
 				}
+			}
+			
+			// If we are still lost, just return a zero position.
+			if (positionLost()) {
+				return new Point5d();
 			}
 			
 			return new Point5d(currentPosition.get());

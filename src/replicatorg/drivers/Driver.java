@@ -165,7 +165,12 @@ public interface Driver {
 	 * Tell the machine to restore it's current position from storage 
 	 */
 	public void recallHomePositions(EnumSet<AxisId> axes) throws RetryException;
-
+	
+	/**
+	 * @return true if the machine position is unknown
+	 */
+	public boolean positionLost();
+	
 	/**
 	 * Get the current machine position
 	 * @param update True if the driver should be forced to query the machine

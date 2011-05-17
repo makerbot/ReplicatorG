@@ -37,7 +37,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 */
 	public void queuePoint(Point5d p) throws RetryException {
 		// If we don't know our current position, make this move as an old-style move, ignoring any hijacked axes. 
-		if (currentPosition.get() == null) {
+		if (positionLost()) {
 			Base.logger.fine("Position invalid, reverting to default speed for next motion");
 			// Filter away any hijacked axes from the given point.
 			Point5d filteredPoint = new Point5d(p);
