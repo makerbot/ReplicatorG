@@ -1,5 +1,3 @@
-
-
 0025 ReplicatorG
 New features:
 * Print-O-Matic integrated and enabled by default

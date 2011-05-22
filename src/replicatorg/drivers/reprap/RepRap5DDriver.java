@@ -71,6 +71,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 	/** true if a line containing the ok keyword has been received from the firmware*/
 	private final AtomicBoolean okReceived = new AtomicBoolean(false);
+
+	/** set by the reply thread to pass the result to reconcilePosition() */
+	protected final AtomicReference<Point5d> lastFirmwarePosition =
+			new AtomicReference<Point5d>(null);
 	
 	/**
 	 * An above zero level shows more info
@@ -727,13 +731,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					double x = Double.parseDouble(m.group(1));
 					double y = Double.parseDouble(m.group(2));
 					double z = Double.parseDouble(m.group(3));
-					// super to avoid parroting back a G92
-					try {
-						super.setCurrentPosition(new Point5d(x, y, z));
-						//Base.logger.fine("setting currentposition to:"+x+","+y+","+z+".");
-					} catch (RetryException e) {
-						// do or do not, there is no retry
-					}
+					// pass result to reconcilePosition()
+					lastFirmwarePosition.set(new Point5d(x, y, z));
+					//Base.logger.fine("setting currentposition to:"+x+","+y+","+z+".");
 				}
 			}
 			if (line.startsWith("ok")) {
@@ -1253,11 +1253,16 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	protected Point5d reconcilePosition() {
 		sendCommand("M114");
 		// If the firmware returned a position then the reply parser
-		// already set the current position.  Return null to tell
-		// caller not to touch the position if it is now known.
-		// DO NOT RECURSE into getCurrentPosition() or this is an
-		// infinite loop!
-		return null;
+		// captured it in lastFirmwarePosition for us to return here:
+		Point5d firmwarePosition = lastFirmwarePosition.getAndSet(null);
+		if (firmwarePosition == null) {
+			// No response to M114, just coast on SW estimated
+			// position.  DO NOT RECURSE into getCurrentPosition()
+			// or we'll infinite loop:
+			return currentPosition.get();
+		} else {
+			return firmwarePosition;
+		}
 	}
 
 	/* ===============
