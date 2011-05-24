@@ -5,9 +5,9 @@ Open File for Fill
 Activate Fill:	True
 Diaphragm Period (layers):	100
 Diaphragm Thickness (layers):	0
-Extra Shells on Alternating Solid Layer (layers):	2
-Extra Shells on Base (layers):	2
-Extra Shells on Sparse Layer (layers):	2
+Extra Shells on Alternating Solid Layer (layers):	1
+Extra Shells on Base (layers):	1
+Extra Shells on Sparse Layer (layers):	1
 Grid Circle Separation over Perimeter Width (ratio):	0.2
 Grid Extra Overlap (ratio):	0.1
 Grid Junction Separation Band Height (layers):	10
