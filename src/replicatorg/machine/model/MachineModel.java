@@ -324,6 +324,21 @@ public class MachineModel
 	}
 
 	/*************************************
+	*  Convert millimeters to machine steps,
+	*  factoring in previous rounding error
+	*  and providing carryover error
+	*************************************/
+
+	public Point5d mmToSteps(Point5d mm, Point5d excess)
+	{
+		Point5d temp = new Point5d();
+		temp.mul(mm,stepsPerMM);
+		temp.add(excess);
+		temp.round(excess); // integer step counts please
+		return temp;
+	}
+
+	/*************************************
 	* Drive interface functions
 	*************************************/
 	public void enableDrives()
