@@ -117,8 +117,7 @@ public class ControlPanelWindow extends JFrame implements
 		machine.runCommand(new InvalidatePosition());
 
 		// Listen to it-- stop and close if we're in build mode.
-		// TODO: add this back in.
-//		machine.addMachineStateListener(this);
+		Base.getMachineLoader().addMachineListener(this);
 		
 		// default behavior
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -371,7 +370,7 @@ public class ControlPanelWindow extends JFrame implements
 			if (pollThread != null) { pollThread.interrupt(); }
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-//					dispose();
+					dispose();
 				}
 			});
 		}
