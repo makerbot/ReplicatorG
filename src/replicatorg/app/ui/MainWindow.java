@@ -2018,7 +2018,11 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			int option = JOptionPane.showConfirmDialog(this, message, "Abort print?", 
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 			if (option == JOptionPane.CANCEL_OPTION) { return false; }
+			
+			// Stop the build.
+			doStop();
 		}
+		
 		return true;
 	}
 	/**
@@ -2029,9 +2033,6 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		// This is as good a place as any to check that we don't have an in-progress manual build
 		// that could be killed.
 		if (!confirmBuildAbort()) return;
-		
-		// Abort the build
-		doStop();
 		
 		switch (checkModifiedMode) {
 		case HANDLE_NEW:
