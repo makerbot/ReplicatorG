@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 import java.util.EnumSet;
 
 import javax.swing.JButton;
@@ -108,6 +109,11 @@ public class MachineOnboardParameters extends JFrame {
 		resetDialog();
 		loadParameters();
 	}
+	
+	double roundDouble(double number) {
+    	DecimalFormat twoDForm = new DecimalFormat("#.###");
+    	return Double.valueOf(twoDForm.format(number));
+	}
 
 	private void loadParameters() {
 		machineNameField.setText(this.target.getMachineName());
@@ -124,11 +130,11 @@ public class MachineOnboardParameters extends JFrame {
 		OnboardParameters.EstopType estop = this.target.getEstopConfig();
 		estopSelection.setSelectedIndex(estop.ordinal());
 		
-		xAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(0)));
-		yAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(1)));
-		zAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(2)));
-		aAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(3)));
-		bAxisHomeOffsetField.setText(Double.toString(this.target.getAxisHomeOffset(4)));
+		xAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(0))));
+		yAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(1))));
+		zAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(2))));
+		aAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(3))));
+		bAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(4))));
 	}
 
 	private JPanel makeButtonPanel() {
@@ -180,15 +186,15 @@ public class MachineOnboardParameters extends JFrame {
 		aAxisHomeOffsetField.setColumns(10);
 		bAxisHomeOffsetField.setColumns(10);
 		
-		panel.add(new JLabel("X home offset"));
+		panel.add(new JLabel("X home offset (mm)"));
 		panel.add(xAxisHomeOffsetField,"wrap");
-		panel.add(new JLabel("Y home offset"));
+		panel.add(new JLabel("Y home offset (mm)"));
 		panel.add(yAxisHomeOffsetField,"wrap");
-		panel.add(new JLabel("Z home offset"));
+		panel.add(new JLabel("Z home offset (mm)"));
 		panel.add(zAxisHomeOffsetField,"wrap");
-		panel.add(new JLabel("A home offset"));
+		panel.add(new JLabel("A home offset (mm)"));
 		panel.add(aAxisHomeOffsetField,"wrap");
-		panel.add(new JLabel("B home offset"));
+		panel.add(new JLabel("B home offset (mm)"));
 		panel.add(bAxisHomeOffsetField,"wrap");
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {
