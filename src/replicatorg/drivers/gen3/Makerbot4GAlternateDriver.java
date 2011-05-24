@@ -32,11 +32,14 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		super.reset();
 	}
 	
+	/** The excess, in steps, from previous operations. */ 
+	private Point5d stepExcess = new Point5d();
+	
 	/**
 	 * Overloaded to manage a hijacked axis and run this axis in relative mode instead of the extruder DC motor
 	 */
 	public void queuePoint(Point5d p) throws RetryException {
-		// If we don't know our current position, make this move as an old-style move, ignoring any hijacked axes. 
+		// If we don't know our current position, make this move an old-style move, ignoring any hijacked axes. 
 		if (positionLost()) {
 			Base.logger.fine("Position invalid, reverting to default speed for next motion");
 			// Filter away any hijacked axes from the given point.
@@ -66,8 +69,10 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			
 			// okay, send it off!
 			// TODO: bug: We move all axes (even ones that shouldn't be moved) How to avoid?
-			queueAbsolutePoint(machine.mmToSteps(filteredPoint), longestDDA);
-			
+			Point5d excess = new Point5d(stepExcess);
+			queueAbsolutePoint(machine.mmToSteps(filteredPoint, excess), longestDDA);
+			// Only update excess if no retry was thrown.
+			stepExcess = excess;
 			// Finally, recored the position, and mark it as valid.
 			setInternalPosition(filteredPoint);
 		} else {
@@ -95,15 +100,19 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 				delta.add(axesmovement);
 				filteredpoint.add(axesmovement);
 				
+				Point5d excess = new Point5d(stepExcess);
 				// Calculate time for move in usec
-				Point5d steps = machine.mmToSteps(filteredpoint);		
+				Point5d steps = machine.mmToSteps(filteredpoint,excess);		
 	
 				// okay, send it off!
 				// The 4. and 5. dimensions doesn't have a spatial interpretation. Calculate time in 3D space
 				double minutes = delta.get3D().distance(new Point3d())/ getSafeFeedrate(delta);
 				
 				queueNewPoint(steps, (long) (60 * 1000 * 1000 * minutes), relative);
-				
+
+				// Only update excess if no retry was thrown.
+				stepExcess = excess;
+
 				setInternalPosition(filteredpoint);
 			}
 		}
@@ -184,7 +193,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			ToolModel curTool = machine.currentTool();
 			if (curTool.isMotorEnabled()) {
 				double maxrpm = machine.getMaximumFeedrates().axis(axis) * machine.getStepsPerMM().axis(axis) / curTool.getMotorSteps();
-				double rpm = curTool.getMotorSpeedRPM() > maxrpm ? maxrpm :  curTool.getMotorSpeedRPM();
+				double rpm = (curTool.getMotorSpeedRPM() > maxrpm) ? maxrpm : curTool.getMotorSpeedRPM();
 				boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
 				extruderSteps = rpm * curTool.getMotorSteps() * minutes * (clockwise?-1d:1d);
 			}
