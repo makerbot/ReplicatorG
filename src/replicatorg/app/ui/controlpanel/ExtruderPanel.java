@@ -207,7 +207,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if (t.motorHasEncoder() || t.motorIsStepper()) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (RPM)");
-				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9);
+				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed", 9);
 				field.setText(Double.toString(machine.getDriverQueryInterface().getMotorRPM()));
 				add(label);
 				add(field,"wrap");
