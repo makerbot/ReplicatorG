@@ -214,7 +214,9 @@ public class BuildModel extends BuildElement {
 		}
 		else {
 			// Otherwise, assume we have a non-stl model file, and save it out to an stl instead.
-			String newFileName = file.getParent() + File.separatorChar + getFileBase(file) + ".stl"; 
+			String newFileName = file.getParent() + File.separatorChar + getFileBase(file) + ".stl";
+			
+			Base.logger.info("Exporting modified model as .stl file: " + newFileName);
 			
 			File newFile = new File(newFileName);
 			
