@@ -24,7 +24,30 @@ public class StopException extends Exception {
 		return type;
 	}
 	
+	private String getFormattedMessage(String message) {
+		StringBuilder output = new StringBuilder();
+		
+		output.append("<html>");
+
+		String[] words = message.split("\\s+");
+		int charCount = 0;
+		
+		for (String word : words) {
+			charCount += word.length();
+			if (charCount > 60) {
+				output.append("<br />");
+				charCount = word.length();
+			}
+			output.append(word);
+			output.append(" ");
+		}
+		
+		output.append("</html>");
+		
+		return output.toString();
+	}
+	
 	public String getMessage() {
-		return message;
+		return getFormattedMessage(message);
 	}
 }
