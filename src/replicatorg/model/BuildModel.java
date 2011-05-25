@@ -183,9 +183,45 @@ public class BuildModel extends BuildElement {
 		setModified(undo.canUndo());
 		editListener.modelTransformChanged();
 	}
+	
+	private String getFileExtension(File file) {
+		int dotExtension = (file.getName()).lastIndexOf('.');
+		
+		if (dotExtension == -1) {
+			return "";
+		}
+		
+		return (file.getName()).substring(dotExtension+1).toLowerCase();
+	}
 
+	private String getFileBase(File file) {
+		int dotExtension = (file.getName()).lastIndexOf('.');
+		
+		
+		if (dotExtension == -1) {
+			return file.getName();
+		}
+		
+		return (file.getName()).substring(0,dotExtension);
+	}
+	
 	public void save() {
-		saveInternal(file);
+
+		// If we already have a gcode or stl file, just save it.
+		if (getFileExtension(file).equals("gcode")
+				|| getFileExtension(file).equals("stl")) {
+			saveInternal(file);
+		}
+		else {
+			// Otherwise, assume we have a non-stl model file, and save it out to an stl instead.
+			String newFileName = file.getParent() + File.separatorChar + getFileBase(file) + ".stl"; 
+			
+			File newFile = new File(newFileName);
+			
+			if (saveInternal(newFile)) {
+				file = newFile;
+			}
+		}
 	}
 
 	public void saveAs(File f) {
