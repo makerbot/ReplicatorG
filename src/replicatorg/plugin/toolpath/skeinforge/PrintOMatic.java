@@ -249,6 +249,7 @@ public class PrintOMatic implements SkeinforgePreference {
 			double feedRate =getValue("desiredFeedrate");
 			double layerHeight =getValue("desiredLayerHeight");
 			double extraShellsOnAlternatingSolidLayer =getValue("numberOfShells");
+			double extraShellsOnBase =getValue("numberOfShells");
 			double extraShellsOnSparseLayer =getValue("numberOfShells");
 
 			Base.logger.fine("Print-O-Matic settings:"
@@ -259,6 +260,7 @@ public class PrintOMatic implements SkeinforgePreference {
 					+ "\n feedRate=" + feedRate
 					+ "\n layerHeight=" + layerHeight
 					+ "\n extraShellsOnAlternatingSolidLayer=" + extraShellsOnAlternatingSolidLayer
+					+ "\n extraShellsOnBase=" + extraShellsOnBase
 					+ "\n extraShellsOnSparseLayer=" + extraShellsOnSparseLayer
 					);
 			
@@ -269,6 +271,7 @@ public class PrintOMatic implements SkeinforgePreference {
 			options.add(new SkeinforgeOption("speed.csv", "Feed Rate (mm/s):", Double.toString(feedRate)));
 			options.add(new SkeinforgeOption("carve.csv", "Layer Thickness (mm):", Double.toString(layerHeight)));
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Alternating Solid Layer (layers):", Double.toString(extraShellsOnAlternatingSolidLayer)));
+			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Base (layers):", Double.toString(extraShellsOnBase)));
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Sparse Layer (layers):", Double.toString(extraShellsOnSparseLayer)));
 		}
 		
