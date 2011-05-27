@@ -1,7 +1,6 @@
 #!/bin/sh
 
-#REVISION=`head -c 4 todo.txt`
-REVISION=`head -n 1 changelog.txt | sed 's/[^0-9]//g'`
+REVISION=`head -n 1 changelog.txt | cut -f 1 -d " "`
 
 rm -rf dist
 ant clean
