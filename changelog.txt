@@ -1,4 +1,4 @@
-0025_RC2 ReplicatorG
+0025 ReplicatorG
 New features:
 * Print-O-Matic integrated and enabled by default
 * Store/recall home position support: No more need to modify start.gcode when your Z height changes.
