@@ -147,7 +147,7 @@ public class PrintOMatic implements SkeinforgePreference {
 
 		// Add a checkbox to switch print-o-matic on and off
 		final String enabledName = baseName + "enabled";
-		enabled = new JCheckBox("Use Print-O-Matic", Base.preferences.getBoolean(enabledName,true));
+		enabled = new JCheckBox("Use Print-O-Matic (stepper extruders only)", Base.preferences.getBoolean(enabledName,false));
 		enabled.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (enabledName != null) {
