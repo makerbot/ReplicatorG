@@ -149,7 +149,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		positionPanel.add(new JLabel("Jog Mode"),"growx");
 		// create our jog size dropdown
 		JComboBox jogList = new JComboBox(jogStrings);
-		jogList.setSelectedItem(Base.preferences.get(JOGMODE_PREF_NAME,"10mm"));
+		jogList.setSelectedItem(Base.preferences.get(JOGMODE_PREF_NAME,"Continuous Jog"));
 		jogList.setActionCommand("jog size");
 		jogList.addActionListener(this);
 		setJogMode((String)jogList.getSelectedItem());
