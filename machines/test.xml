@@ -1,0 +1,22 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+	<machine>
+		<name>Virtual Printer</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="5000" stepspermm="11.767463" endstops="min"/> 
+			<axis id="y" length="100" maxfeedrate="5000" stepspermm="11.767463" endstops="min"/>
+			<axis id="z" length="100" maxfeedrate="150" stepspermm="320" endstops="min"/>
+		</geometry>
+		<tools>
+			<tool name="Magic air extruder" type="extruder" material="abs" motor="true" fan="true" heater="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="virtualprinter">
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+		</cooldown>
+	</machine>
+</machines>

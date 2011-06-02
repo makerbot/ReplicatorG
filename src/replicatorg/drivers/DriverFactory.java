@@ -99,6 +99,8 @@ public class DriverFactory {
 			return loadClass("replicatorg.drivers.reprap.SimpleRepRap5DDriver", xml);
 		else if (driverName.equals("null"))
 			return loadClass("replicatorg.drivers.NullDriver", xml);
+		else if (driverName.equals("virtualprinter"))
+			return loadClass("replicatorg.drivers.VirtualPrinter", xml);
 		else {
 			// Load driver class 
 			Driver driver = loadClass(driverName, xml);

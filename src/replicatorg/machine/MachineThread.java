@@ -230,6 +230,14 @@ class MachineThread extends Thread {
 					us.openSerial(targetPort);
 					connected = us.isConnected();
 				}
+				// Next, just ask the driver if it is ready.
+				else {
+					if (!driver.isInitialized()) {
+						driver.initialize();
+					}
+					
+					connected = driver.isInitialized();
+				}
 				
 				if (!connected) {
 					// If we couldn't connect, move back to being detached.
