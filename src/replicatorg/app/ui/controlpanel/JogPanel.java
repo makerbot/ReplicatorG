@@ -44,8 +44,8 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	protected Pattern jogPattern;
 
-	protected String[] jogStrings = { "Continuous Jog", "0.01mm", "0.05mm", "0.1mm", "0.5mm",
-			"1mm", "5mm", "10mm", "20mm", "50mm" };
+	protected String[] jogStrings = { "0.01mm", "0.05mm", "0.1mm", "0.5mm",
+			"1mm", "5mm", "10mm", "20mm", "50mm", "Continuous Jog" };
 
 	protected final Point5d feedrate;
 
@@ -149,7 +149,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		positionPanel.add(new JLabel("Jog Mode"),"growx");
 		// create our jog size dropdown
 		JComboBox jogList = new JComboBox(jogStrings);
-		jogList.setSelectedItem(Base.preferences.get(JOGMODE_PREF_NAME,"Continuous Jog"));
+		jogList.setSelectedItem(Base.preferences.get(JOGMODE_PREF_NAME,"1mm"));
 		jogList.setActionCommand("jog size");
 		jogList.addActionListener(this);
 		setJogMode((String)jogList.getSelectedItem());
