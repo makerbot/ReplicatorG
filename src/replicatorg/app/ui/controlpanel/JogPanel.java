@@ -325,7 +325,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	}
 	
 
-	DecimalFormat positionFormatter = new DecimalFormat("###.#");
+	DecimalFormat positionFormatter = new DecimalFormat("###.##");
 
 	synchronized public void updateStatus() {
 		Point5d current = machine.getDriverQueryInterface().getCurrentPosition(true);
