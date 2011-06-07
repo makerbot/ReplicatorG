@@ -75,7 +75,34 @@ M18
 M18
 		</cooldown>
 	</machine>
-
+	<machine  experimental="1">
+		<name>Cupcake w/ heated build platform and stepper extruder</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="5000" stepspermm="11.767463" endstops="min"/> 
+			<axis id="y" length="100" maxfeedrate="5000" stepspermm="11.767463" endstops="min"/>
+			<axis id="z" length="96" maxfeedrate="150" stepspermm="320" endstops="min"/>
+		</geometry>
+		<tools>
+			<tool name="Pinch Wheel Extruder v1.1a" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" heater="true" motor_steps="3200"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="sanguino3g">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<debuglevel>0</debuglevel>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+(Turn off steppers after a build.)
+M18
+		</cooldown>
+	</machine>
 	<machine>
 		<name>Cupcake w/ Gen4 electronics and ABP</name>
 		<geometry type="cartesian">
@@ -85,7 +112,7 @@ M18
 			<axis id="z" length="100" maxfeedrate="150" stepspermm="1280"/>
 		</geometry>
 		<tools>
-			<tool name="Plastruder Mk5" type="extruder" material="abs" motor="true" automatedplatform="true" heatedplatform="true" heater="true"/>
+			<tool name="Plastruder Mk5" type="extruder" material="abs" motor="true" automatedplatform="true" fan="true" heatedplatform="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="sanguino3g">
