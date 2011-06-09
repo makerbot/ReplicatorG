@@ -48,8 +48,10 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 					+ ")");
 
 		runCommand(pb.getPacket());
-		
-		super.setCurrentPosition(p);
+	
+		// Set the current position explicitly instead of calling the super, to avoid sending the current position command twice.
+		currentPosition.set(p);
+//		super.setCurrentPosition(p);
 	}
 
 	protected Point5d reconcilePosition() {

@@ -46,7 +46,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			Point5d filteredPoint = new Point5d(p);
 			long longestDDA = 0;
 			
-			for (AxisId axis : getHijackedAxes()) {
+			for (AxisId axis : getAllHijackedAxes()) {
 				filteredPoint.setAxis(axis, 0d);
 			}
 			
@@ -83,7 +83,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			Point5d filteredpoint = new Point5d(p);
 			Point5d filteredcurrent = new Point5d(getCurrentPosition(false));
 			int relative = 0;
-			for (AxisId axis : getHijackedAxes()) {
+			for (AxisId axis : getAllHijackedAxes()) {
 				filteredpoint.setAxis(axis, 0d);
 				filteredcurrent.setAxis(axis, 0d);
 				relative |= 1 << axis.getIndex();
@@ -152,6 +152,18 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		return axes;
 	}
 
+	/** 
+	 * Returns the hijacked axes for all tools.
+	 */
+	private Iterable<AxisId> getAllHijackedAxes() {
+		Vector<AxisId> axes = new Vector<AxisId>();
+		for ( Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
+			AxisId axis = entry.getKey();
+			axes.add(axis);
+		}
+		return axes;
+	}
+	
 	/**
 	 * Calculate and return the corresponding movement of any hijacked axes where the extruder is on.
 	 * The returned movement is in mm of incoming filament (corresponding to mm in machines.xml)

@@ -6,7 +6,7 @@ toolCommandTable = {
     3: ("<H", "Set target temperature to %i"),
     4: ("B", "Set motor 1 speed (pwm): %i"),
     10: ("B", "Toggle motor 1: %d"),
-    31: ("<H", "Set built platform target temperature to %i"),
+    31: ("<H", "Set build platform target temperature to %i"),
     129: ("<iiiI","Absolute move to (%i,%i,%i) at DDA %i"),
 }
 
@@ -49,10 +49,7 @@ def printToolAction(tuple):
 # types should begin with "<".
 # For a refresher on Python struct syntax, see here:
 # http://docs.python.org/library/struct.html
-commandTable = {
-    1:   ("", "Initialize firmware to boot state"),
-    2:   ("", "Get Available Buffer Size"),
-    
+commandTable = {    
     129: ("<iiiI","Absolute move to (%i,%i,%i) at DDA %i"),
     130: ("<iii","Machine position set as (%i,%i,%i)"),
     131: ("<BIH","Home minimum on %X, feedrate %i, timeout %i s"),
@@ -64,7 +61,7 @@ commandTable = {
     137: ("<B", "Enable/disable axes %X"),
     138: ("<H", "User block on ID %i"),
     139: ("<iiiiiI","Absolute move to (%i,%i,%i,%i,%i) at DDA %i"),
-    140: ("<iiiii","Machine position set as (%i,%i,%i,%i,%i)"),
+    140: ("<iiiii","Extended Machine position set as (%i,%i,%i,%i,%i)"),
     141: ("<BHH","Wait for platform %i (%i ms between polls, %i s timeout)"),
     142: ("<iiiiiIB","Move to (%i,%i,%i,%i,%i) in %i us (relative: %X)"),
     143: ("<b","Store home position for axes %d"),

@@ -267,7 +267,8 @@ public class ControlPanelWindow extends JFrame implements
 			public void stateChanged(ChangeEvent ce) {
 				final JTabbedPane tp = (JTabbedPane)ce.getSource();
 				final ExtruderPanel ep = (ExtruderPanel)tp.getSelectedComponent();
-				machine.getModel().selectTool(ep.getTool().getIndex());
+//				machine.getModel().selectTool(ep.getTool().getIndex());
+				machine.runCommand(new replicatorg.drivers.commands.SelectTool(ep.getTool().getIndex()));
 			}
 		});
 		return toolsPane;
