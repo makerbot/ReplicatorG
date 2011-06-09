@@ -328,7 +328,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	DecimalFormat positionFormatter = new DecimalFormat("###.##");
 
 	synchronized public void updateStatus() {
-		Point5d current = machine.getDriverQueryInterface().getCurrentPosition(true);
+		Point5d current = machine.getDriverQueryInterface().getCurrentPosition(false);
 
 		for (AxisId axis : machine.getModel().getAvailableAxes()) {
 			double v = current.axis(axis);
