@@ -2,6 +2,14 @@
 import struct
 import sys
 
+toolCommandTable = {
+    3: ("<H", "Set target temperature to %i"),
+    4: ("B", "Set motor 1 speed (pwm): %i"),
+    10: ("B", "Toggle motor 1: %d"),
+    31: ("<H", "Set built platform target temperature to %i"),
+    129: ("<iiiI","Absolute move to (%i,%i,%i) at DDA %i"),
+}
+
 def parseToolAction():
     global s3gFile
     packetStr = s3gFile.read(3)
@@ -14,7 +22,19 @@ def parseToolAction():
     return (index,command,contents)
 
 def printToolAction(tuple):
-    return "Command %i for tool %i (len %i)" % (tuple[1],tuple[0],len(tuple[2]))
+    print "Tool %i: " % (tuple[0]),
+    # command - tuple[1]
+    # data - tuple[2]
+    (parse, disp) = toolCommandTable[tuple[1]]
+    if type(parse) == type(""):
+        packetLen = struct.calcsize(parse)
+        if len(tuple[2]) != packetLen:
+            raise "Packet incomplete"
+        parsed = struct.unpack(parse,tuple[2])
+    else:
+        parsed = parse()
+    if type(disp) == type(""):
+        print disp % parsed
 
 # Command table entries consist of:
 # * The key: the integer command code
@@ -25,12 +45,14 @@ def printToolAction(tuple):
 #   * idx 1: either a format string that will take the tuple of unpacked
 #            data, or a function that takes the tuple as input and returns
 #            a string
-
 # REMINDER: all values are little-endian. Struct strings with multibyte
 # types should begin with "<".
 # For a refresher on Python struct syntax, see here:
 # http://docs.python.org/library/struct.html
 commandTable = {
+    1:   ("", "Initialize firmware to boot state"),
+    2:   ("", "Get Available Buffer Size"),
+    
     129: ("<iiiI","Absolute move to (%i,%i,%i) at DDA %i"),
     130: ("<iii","Machine position set as (%i,%i,%i)"),
     131: ("<BIH","Home minimum on %X, feedrate %i, timeout %i s"),
