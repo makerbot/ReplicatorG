@@ -3,6 +3,7 @@
  */
 package replicatorg.app.ui;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -25,6 +26,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
@@ -151,6 +153,45 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",false);
 		addCheckboxForPref(content,"Break Z motion into seperate moves (normally false)","replicatorg.parser.breakzmoves",false);
 		addCheckboxForPref(content,"Show starfield in model preview window","ui.show_starfield",false);
+		
+		
+		JButton modelColorButton;
+		modelColorButton = new JButton("Choose model color");
+		modelColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Note that this color is also defined in EditingModel.java
+				Color modelColor = new Color(Base.preferences.getInt("ui.modelColor",-19635));
+				modelColor = JColorChooser.showDialog(
+						null,
+		                "Choose Model Color",
+		                modelColor);;
+		                
+		        Base.preferences.putInt("ui.modelColor", modelColor.getRGB());
+		        Base.getEditor().refreshPreviewPanel();
+			}
+		});
+		modelColorButton.setVisible(true);
+		content.add(modelColorButton,"wrap");
+		
+		
+		JButton backgroundColorButton;
+		backgroundColorButton = new JButton("Choose background color");
+		backgroundColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Note that this color is also defined in EditingModel.java
+				Color backgroundColor = new Color(Base.preferences.getInt("ui.backgroundColor", 0));
+				backgroundColor = JColorChooser.showDialog(
+						null,
+		                "Choose Background Color",
+		                backgroundColor);;
+		                
+		        Base.preferences.putInt("ui.backgroundColor", backgroundColor.getRGB());
+		        Base.getEditor().refreshPreviewPanel();
+			}
+		});
+		backgroundColorButton.setVisible(true);
+		content.add(backgroundColorButton,"wrap");
+		
 		
 		content.add(new JLabel("Firmware update URL: "),"split");
 		firmwareUpdateUrlField = new JTextField(34);

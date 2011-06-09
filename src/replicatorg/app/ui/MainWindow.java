@@ -247,6 +247,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 
 	public Build getBuild() { return build; }
 	
+	public void refreshPreviewPanel() {
+		if (previewPanel != null) {
+			previewPanel.rebuildScene();
+		}
+	}
+	
 	private PreviewPanel getPreviewPanel() {
 		if (previewPanel == null) {
 			previewPanel = new PreviewPanel(this);

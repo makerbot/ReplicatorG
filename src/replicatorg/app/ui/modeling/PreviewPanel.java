@@ -3,6 +3,7 @@
  */
 package replicatorg.app.ui.modeling;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsConfiguration;
@@ -388,7 +389,8 @@ public class PreviewPanel extends JPanel {
 	}
 
 	public Node makeBackground() {
-		Background bg = new Background(0f,0f,0f);
+		Color backgroundColor = new Color(Base.preferences.getInt("ui.backgroundColor", 0));
+		Background bg = new Background(backgroundColor.getRed()/255f, backgroundColor.getGreen()/255f, backgroundColor.getBlue()/255f);
 		bg.setApplicationBounds(bounds);
 		return bg;
 	}

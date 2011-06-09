@@ -1,5 +1,6 @@
 package replicatorg.app.ui.modeling;
 
+import java.awt.Color;
 import java.util.Enumeration;
 
 import javax.media.j3d.Appearance;
@@ -21,6 +22,7 @@ import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
 import replicatorg.model.BuildModel;
 
@@ -81,7 +83,7 @@ public class EditingModel {
 	 * Create the branchgroup that will display the object.
 	 */
 	private BranchGroup makeShape(BuildModel model) {
-		objectSwitch = new Switch();
+		objectSwitch = new Switch();		
 		originalShape = model.getShape();
 		if (originalShape.getGeometry() == null) {
 			BranchGroup wrapper = new BranchGroup();
@@ -105,10 +107,12 @@ public class EditingModel {
 		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
 		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
 		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_NORMAL_READ);
-		Color3f color = new Color3f(1.0f,.7f,.3f); 
+		
+		Color modelColor = new Color(Base.preferences.getInt("ui.modelColor",-19635));
+		 
 		Material m = new Material();
-		m.setAmbientColor(color);
-		m.setDiffuseColor(color);
+		m.setAmbientColor(new Color3f(modelColor));
+		m.setDiffuseColor(new Color3f(modelColor));
 		Appearance solid = new Appearance();
 		solid.setMaterial(m);
 		PolygonAttributes pa = new PolygonAttributes();
@@ -142,9 +146,9 @@ public class EditingModel {
 	public BuildModel getBuildModel() { return model; }
 	
 	public BranchGroup getGroup() {
-		if (group == null) {
-			group = makeShape(model); 
-		}
+		group = null;
+		group = makeShape(model);
+		
 		return group;
 	}
 	

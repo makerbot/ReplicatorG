@@ -53,9 +53,7 @@ public class BuildModel extends BuildElement {
 	}
 
 	public Shape3D getShape() {
-		if (shape == null) { 
-			loadShape();
-		}
+		loadShape();
 		return shape;
 	}
 

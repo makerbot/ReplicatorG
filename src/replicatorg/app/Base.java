@@ -247,7 +247,11 @@ public class Base {
 	/**
 	 * The main UI window.
 	 */
-	MainWindow editor = null;
+	static MainWindow editor = null;
+	
+	public static MainWindow getEditor() {
+		return editor;
+	}
 
 	private static final String[] supportedExtensions = {
 			"gcode", "ngc",
