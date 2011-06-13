@@ -48,6 +48,11 @@ public class EditingModel {
 	final protected BuildModel model;
 
 	/**
+	 * Material definition for the model, maintained so that we can update the color without reloading.
+	 */
+	Material objectMaterial = null;
+	
+	/**
 	 * The switch object that allows us to toggle between wireframe and solid modes.
 	 */
 	private Switch objectSwitch = null;
@@ -78,6 +83,7 @@ public class EditingModel {
 	 * Cache of the original shape from the model.
 	 */
 	Shape3D originalShape;
+
 	
 	/**
 	 * Create the branchgroup that will display the object.
@@ -108,13 +114,12 @@ public class EditingModel {
 		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
 		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_NORMAL_READ);
 		
-		Color modelColor = new Color(Base.preferences.getInt("ui.modelColor",-19635));
-		 
-		Material m = new Material();
-		m.setAmbientColor(new Color3f(modelColor));
-		m.setDiffuseColor(new Color3f(modelColor));
+		objectMaterial = new Material();
+		objectMaterial.setCapability(Material.ALLOW_COMPONENT_WRITE);
+		
+		updateModelColor();
 		Appearance solid = new Appearance();
-		solid.setMaterial(m);
+		solid.setMaterial(objectMaterial);
 		PolygonAttributes pa = new PolygonAttributes();
 		pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
 		pa.setCullFace(PolygonAttributes.CULL_NONE);
@@ -145,9 +150,19 @@ public class EditingModel {
 
 	public BuildModel getBuildModel() { return model; }
 	
+	public void updateModelColor() {
+		if (objectMaterial != null) {
+			Color modelColor = new Color(Base.preferences.getInt("ui.modelColor",-19635));
+			
+			objectMaterial.setAmbientColor(new Color3f(modelColor));
+			objectMaterial.setDiffuseColor(new Color3f(modelColor));
+		}
+	}
+	
 	public BranchGroup getGroup() {
-		group = null;
-		group = makeShape(model);
+		if (group == null) {
+			group = makeShape(model);
+		}
 		
 		return group;
 	}

@@ -107,6 +107,7 @@ public class PreviewPanel extends JPanel {
 		scene.detach();
 		scene = createSTLScene();
 		objectBranch = model.getGroup();
+		model.updateModelColor();
 		sceneGroup.addChild(objectBranch);
 		univ.addBranchGraph(scene);
 	}

@@ -53,7 +53,10 @@ public class BuildModel extends BuildElement {
 	}
 
 	public Shape3D getShape() {
-		loadShape();
+		if (shape == null) { 
+			loadShape();
+		}
+//		loadShape();
 		return shape;
 	}
 
