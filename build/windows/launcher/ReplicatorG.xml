@@ -16,7 +16,6 @@
   <classPath>
     <mainClass>replicatorg.app.Base</mainClass>
     <cp>./lib</cp>
-    <cp>./lib/build</cp>
     <cp>./lib/j3dcore.jar</cp>
     <cp>./lib/j3dutils.jar</cp>
     <cp>./lib/jcommon-1.0.16.jar</cp>
@@ -24,16 +23,17 @@
     <cp>./lib/miglayout-3.7.4.jar</cp>
     <cp>./lib/mrj.jar</cp>
     <cp>./lib/RXTXcomm.jar</cp>
-    <cp>./lib/twitter4j-2.0.10.jar</cp>
     <cp>./lib/vecmath.jar</cp>
     <cp>./lib/filedrop.jar</cp>
+    <cp>./lib/ReplicatorG.jar</cp>
   </classPath>
   <jre>
-    <path></path>
-    <minVersion>1.5.0</minVersion>
+    <path>java\</path>
+    <minVersion></minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <initialHeapSize>256</initialHeapSize>
     <maxHeapSize>256</maxHeapSize>
+    <opt>-D32</opt>
   </jre>
 </launch4jConfig>

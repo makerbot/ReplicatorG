@@ -278,6 +278,7 @@
       <fileset dir="${dist.dir}" includes="*.dll"/>
       <filelist dir="${dist.dir}" files="ReplicatorG.exe"/>
       <fileset dir="${dist.dir}" includes="drivers/**/*"/>
+      <fileset dir="${dist.dir}" includes="java/**/*"/>
     </copy>
     <copy todir="${target.dir}/tools">
       <fileset dir="${dist.dir}/tools"/>
