@@ -47,6 +47,10 @@ public interface OnboardParameters {
 	int getT0(int which);
 	int getBeta(int which);
 	
+	
+	boolean getCoolingFanEnabled();
+	int getCoolingFanSetpoint();
+	void setCoolingFanParameters(boolean enabled, int setpoint);
 
 	class BackoffParameters {
 		public int stopMs;
