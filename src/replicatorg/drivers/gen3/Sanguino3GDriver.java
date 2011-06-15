@@ -1701,6 +1701,26 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToToolEEPROM(ECThermistorOffsets.data(which),table);
 	}
 
+	public boolean getCoolingFanEnabled() {
+		byte[] a = readFromToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE, 1);
+		
+		return (a[0] == 1);
+	}
+	
+	public int getCoolingFanSetpoint() {
+		return read16FromToolEEPROM(CoolingFanOffsets.COOLING_FAN_SETPOINT_C, 50);
+	}
+	
+	public void setCoolingFanParameters(boolean enabled, int setpoint) {
+		if (enabled) {
+			writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE,new byte[] {0x1});
+		}
+		else {
+			writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE,new byte[] {0x0});	
+		}
+		writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_SETPOINT_C,intToLE(setpoint));
+	}
+	
 	private byte[] intToLE(int s, int sz) {
 		byte buf[] = new byte[sz];
 		for (int i = 0; i < sz; i++) {
@@ -1857,7 +1877,12 @@ public class Sanguino3GDriver extends SerialDriver
 		final static int P_TERM_OFFSET = 0x0000;
 		final static int I_TERM_OFFSET = 0x0002;
 		final static int D_TERM_OFFSET = 0x0004;
-	};	
+	};
+	
+	final static class CoolingFanOffsets {
+		final static int COOLING_FAN_ENABLE		= 0x001c;
+		final static int COOLING_FAN_SETPOINT_C	= 0x001d;
+	};
 	
 	private int read16FromToolEEPROM(int offset, int defaultValue) {
 		byte r[] = readFromToolEEPROM(offset,2);

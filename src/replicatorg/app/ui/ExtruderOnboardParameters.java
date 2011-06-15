@@ -234,6 +234,35 @@ public class ExtruderOnboardParameters extends JFrame {
 		}
 	}
 	
+	class RegulatedCoolingFan extends JPanel implements Commitable {
+		private static final long serialVersionUID = 7765098486598830410L;
+		private JCheckBox coolingFanEnabled;
+		private JTextField coolingFanSetpoint = new JTextField();
+		RegulatedCoolingFan() {
+			super(new MigLayout());			
+			coolingFanEnabled = new JCheckBox("Enable regulated cooling fan (stepper extruders only)",
+					target.getCoolingFanEnabled());
+			add(coolingFanEnabled,"growx,wrap");
+			
+			coolingFanSetpoint.setColumns(FIELD_WIDTH);
+	
+			coolingFanSetpoint.setText(Integer.toString((int)target.getCoolingFanSetpoint()));
+			add(new JLabel("Setpoint (C)"));
+			add(coolingFanSetpoint,"wrap");
+
+		}
+
+		public void commit() {
+			boolean enabled = coolingFanEnabled.isSelected();   
+			int setpoint = Integer.parseInt(coolingFanSetpoint.getText());
+			target.setCoolingFanParameters(enabled, setpoint);
+		}
+		
+		public boolean isCommitable() {
+			return true;
+		}
+	}
+	
 	private JPanel makeButtonPanel() {
 		JPanel panel = new JPanel(new MigLayout());
 		JButton commitButton = new JButton("Commit Changes");
@@ -287,10 +316,16 @@ public class ExtruderOnboardParameters extends JFrame {
 		commitList.add(pidPanel);
 		if (v.atLeast(new Version(2,4))) {
 			PIDPanel pp = new PIDPanel(1,"Heated build platform");
-			panel.add(pp,"growx");
+			panel.add(pp,"growx,wrap");
 			commitList.add(pp);
 		}
 
+		if (v.atLeast(new Version(2,9))) {
+			RegulatedCoolingFan rcf = new RegulatedCoolingFan();
+			panel.add(rcf,"span 2,growx,wrap");
+			commitList.add(rcf);
+		}
+		
 		panel.add(makeButtonPanel(),"span 2,newline");
 		add(panel);
 
