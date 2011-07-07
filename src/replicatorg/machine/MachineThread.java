@@ -28,6 +28,7 @@ import replicatorg.machine.builder.ToLocalFile;
 import replicatorg.machine.builder.ToRemoteFile;
 import replicatorg.machine.builder.UsingRemoteFile;
 import replicatorg.machine.model.MachineModel;
+import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.GCodeSourceCollection;
 import replicatorg.model.StringListSource;
@@ -486,7 +487,10 @@ class MachineThread extends Thread {
 				if (pollingTimer.elapsed()) {
 					if (Base.preferences.getBoolean("build.monitor_temp",false)) {
 						driver.readTemperature();
-						controller.emitToolStatus(driver.getMachine().currentTool());
+						Vector<ToolModel> tools = controller.getModel().getTools();
+						for (ToolModel t : tools) {
+							controller.emitToolStatus(t);
+						}
 					}
 				}
 				
