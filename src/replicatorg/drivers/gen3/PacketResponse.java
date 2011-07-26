@@ -146,7 +146,7 @@ public class PacketResponse {
 
 	public ResponseCode getResponseCode() {
 		if (payload != null && payload.length > 0)
-			return ResponseCode.fromInt(payload[0]);
+			return ResponseCode.fromInt(payload[0] & 0xff);
 		else return ResponseCode.GENERIC_ERROR;
 	}
 
