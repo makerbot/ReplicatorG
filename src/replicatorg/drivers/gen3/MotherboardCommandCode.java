@@ -32,6 +32,8 @@ public enum MotherboardCommandCode {
 	GET_POSITION_EXT(21),
 	EXTENDED_STOP(22),
 	
+	GET_COMMUNICATION_STATS(25),
+	
 	// QUEUE_POINT_INC(128) obsolete
 	QUEUE_POINT_ABS(129),
 	SET_POSITION(130),

@@ -113,4 +113,14 @@ public interface OnboardParameters {
 	/** Reset the onboard parameters on the extruder controller to factory settings. */ 
 	void resetToolToFactory();
 
+	
+	public class CommunicationStatistics {
+		public int packetCount;
+		public int sentPacketCount;
+		public int packetFailureCount;
+		public int packetRetryCount;
+		public int noiseByteCount;
+	}
+	
+	CommunicationStatistics getCommunicationStatistics();
 }

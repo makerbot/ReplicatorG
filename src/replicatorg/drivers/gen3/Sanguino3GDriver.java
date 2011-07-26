@@ -46,6 +46,7 @@ import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
+import replicatorg.drivers.OnboardParameters.CommunicationStatistics;
 import replicatorg.drivers.gen3.PacketProcessor.CRCException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
@@ -414,6 +415,24 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 		return v;
 	}
+	
+	
+	public CommunicationStatistics getCommunicationStatistics() {
+		CommunicationStatistics stats = new CommunicationStatistics();
+		
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_COMMUNICATION_STATS.getCode());
+
+		PacketResponse pr = runQuery(pb.getPacket(),1);
+		if (pr.isEmpty()) return null;
+		stats.packetCount = pr.get32();
+		stats.sentPacketCount = pr.get32();
+		stats.packetFailureCount = pr.get32();
+		stats.packetRetryCount = pr.get32();
+		stats.noiseByteCount = pr.get32();
+		
+		return stats;
+	}
+	
 	
 	private void initSlave(int toolIndex) {
 		PacketBuilder slavepb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());

@@ -101,7 +101,7 @@ public class MachineFactory {
 	}
 	
 	// look for machine configuration node.
-	private static Node getMachineNode(String name) {
+	public static Node getMachineNode(String name) {
 		MachineMap mm = getMachineMap();
 		if (mm.containsKey(name)) {
 			return mm.get(name);

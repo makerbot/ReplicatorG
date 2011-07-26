@@ -884,6 +884,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 	JMenuItem extruderParamsItem = new JMenuItem("Toolhead Onboard Preferences...");
 	JMenuItem toolheadIndexingItem = new JMenuItem("Set Toolhead Index...");
 	JMenuItem realtimeControlItem = new JMenuItem("Open real time controls window...");
+	JMenuItem infoPanelItem = new JMenuItem("Machine information...");
 	
 	protected JMenu buildMachineMenu() {
 		JMenuItem item;
@@ -950,6 +951,15 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		});
 		menu.add(item);
 		
+		infoPanelItem.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				handleInfoPanel();
+			}
+		});
+		
+		infoPanelItem.setVisible(true);
+		menu.add(infoPanelItem);
+		
 		return menu;
 	}
 
@@ -965,6 +975,12 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			indexer.setVisible(true);
 		}
 	}
+	
+	protected void handleInfoPanel() {
+		InfoPanel infoPanel = new InfoPanel();
+		infoPanel.setVisible(true);
+	}
+	
 	public boolean supportsRealTimeControl() {
 		if (!(machineLoader.getDriver() instanceof RealtimeControl)) {
 			return false;
@@ -972,6 +988,7 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 		Base.logger.info("Supports RC");
 		return true;
 	}
+	
 	protected void handleRealTimeControl() {
 		if(!this.supportsRealTimeControl()) {
 			JOptionPane.showMessageDialog(
@@ -1755,6 +1772,10 @@ public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandle
 			((RealtimeControl)machineLoader.getDriver()).hasFeatureRealtimeControl();
 		realtimeControlItem.setVisible(showRealtimeTuning);
 		realtimeControlItem.setEnabled(showRealtimeTuning);
+		
+		// TODO: When should this be enabled?
+		infoPanelItem.setEnabled(true);
+		
 		// Advertise machine name
 		String name = "Not Connected";
 		if (evt.getState().isConnected() && machineLoader.isLoaded()) {
