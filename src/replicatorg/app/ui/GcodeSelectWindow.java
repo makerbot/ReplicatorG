@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 
 public class GcodeSelectWindow  
 {
+	public static File lastdir;
 	public static File go(File f)
 	{
 		JFileChooser chooser = new JFileChooser();
@@ -19,12 +20,16 @@ public class GcodeSelectWindow
 		chooser.setFileFilter(filter);
 		chooser.showOpenDialog(chooseFramer);
 		File fr = chooser.getSelectedFile();
+		lastdir = fr.getParentFile();
 		return fr;
 	}
 	public static File go()
 	{
 		JFileChooser chooser = new JFileChooser();
-		
+		if(lastdir != null)
+		{
+		chooser.setCurrentDirectory(lastdir);
+		}
 		JFrame chooseFramer = new JFrame("Find Gcode...");
 		// Note: source for ExampleFileFilter can be found in FileChooserDemo,
 		// under the demo/jfc directory in the Java 2 SDK, Standard Edition.
@@ -32,6 +37,7 @@ public class GcodeSelectWindow
 		chooser.setFileFilter(filter);
 		chooser.showOpenDialog(chooseFramer);
 		File f = chooser.getSelectedFile();
+		lastdir = f.getParentFile();
 		return f;
 	}
 	public static String goString()
@@ -47,7 +53,7 @@ public class GcodeSelectWindow
 class myFileFilter extends javax.swing.filechooser.FileFilter {
 
 	private static final String gcode = "gcode";
-	//private static final String s3g = "s3g";
+	private static final String stl = "stl";
 	public boolean accept(File f)
 	{
 		//alexpong
@@ -59,7 +65,7 @@ class myFileFilter extends javax.swing.filechooser.FileFilter {
 			if (i > 0 &&  i < s.length() - 1) {
 				extension = s.substring(i+1).toLowerCase();
 			}
-			if(extension.equals(gcode))
+			if(extension.equals(gcode) || extension.equals(stl))
 			{
 				return true;
 			}

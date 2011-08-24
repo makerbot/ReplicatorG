@@ -138,12 +138,12 @@ public class Layer_Helper {
 			Layer b = getByHeight(i, secondary);//secondary
 			if(a != null || b != null)
 			{
-				System.out.println("non null layers at " + i);
+				//System.out.println("non null layers at " + i);
 				//DualStrusionWorker.printArrayList(a.getCommands());
 				//DualStrusionWorker.printArrayList(b.getCommands());
 				if(a != null && b != null)
 				{
-					System.out.println("this is called");
+				//	System.out.println("this is called");
 					merged.addAll(mergeLayer(a,b));
 				}
 				else if(a != null)
@@ -227,7 +227,7 @@ public class Layer_Helper {
 					if(readThis.get(a).equalsIgnoreCase("(</layer>)"))
 					{
 
-						System.out.println("reading in layer at height " + layerHeight);
+						//System.out.println("reading in layer at height " + layerHeight);
 						ArrayList<String> tempList = new ArrayList<String>(readThis.subList(i, a+1));
 						//DualStrusionWorker.printArrayList(tempList);
 						Layer l = new Layer(layerHeight, tempList);

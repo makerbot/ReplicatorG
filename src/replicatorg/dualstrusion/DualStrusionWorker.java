@@ -117,12 +117,15 @@ public class DualStrusionWorker {
 		primary_lines = replaceToolHeadReferences(primary_lines, Toolheads.Primary);
 		secondary_lines = replaceToolHeadReferences(secondary_lines, Toolheads.Secondary);
 		getTemps(primary_lines, secondary_lines);
+		
 		//writeArrayListtoFile(primary_lines, new File("/home/makerbot/baghandle/bh1stripped.gcode"));
 		//writeArrayListtoFile(secondary_lines, new File("/home/makerbot/baghandle/bh0stripped.gcode"));
 		checkCrashes(primary_lines);
 		checkCrashes(secondary_lines);
-
-		writeArrayListtoFile(replaceStartEnd(Layer_Helper.doMerge(primary_lines, secondary_lines)), dest);
+		master_layer = Layer_Helper.doMerge(primary_lines, secondary_lines);
+		modifyStartTemp();
+		replaceStartEnd(master_layer);
+		writeArrayListtoFile(master_layer, dest);
 		return dest;
 
 
@@ -135,7 +138,23 @@ public class DualStrusionWorker {
 	 * @param desired_toolhead an Enum representing the desired toolhead
 	 * @return
 	 */
+	private static void modifyStartTemp()
+	{
+		for(String s : startGcode)
+		{
+			if(s.matches("M104.*T1"))
+			{
+				System.out.println("replaced " + s + " with " + primaryTemp);
+				s = primaryTemp;	
+			}
+			else if(s.matches("M104.*T0"))
+			{
+				System.out.println("replaced " + s + " with " + secondaryTemp);
 
+			s = secondaryTemp;	
+			}
+		}
+	}
 	private static ArrayList<String> replaceToolHeadReferences(ArrayList<String> gcode, Toolheads desired_toolhead)
 	{
 		ArrayList<String> answer = new ArrayList<String>();
@@ -196,14 +215,14 @@ public class DualStrusionWorker {
 	/**
 	 * This method adds the start and end to the combined gcode, its probably named poorly.
 	 * @param gcode
-	 * @return
+	 * 
 	 */
-	private static ArrayList<String> replaceStartEnd(ArrayList<String> gcode)
+	private static void replaceStartEnd(ArrayList<String> gcode)
 	{
 
 		gcode.addAll(0, startGcode);
 		gcode.addAll(gcode.size(), endGcode);
-		return gcode;
+		//return gcode;
 
 	}
 	/**
