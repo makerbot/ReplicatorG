@@ -20,7 +20,8 @@ G162 Z F100 (home Z axis maximum)
 G161 X Y F2500 (home XY axes minimum)
 M132 X Y Z A B (Recall stored home offsets for XYZAB axis)
 (**** end homing ****)
-(M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
+M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
+M6 T1
 G54
 (**** end of start.gcode ****)
 (</alteration>)
