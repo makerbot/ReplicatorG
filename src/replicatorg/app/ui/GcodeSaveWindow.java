@@ -12,7 +12,7 @@ public class GcodeSaveWindow
 	{
 		JFileChooser chooser = new JFileChooser();
 		chooser.setCurrentDirectory(f);
-		JFrame chooseFramer = new JFrame("Find Gcode...");
+		JFrame chooseFramer = new JFrame("Save Gcode...");
 		// Note: source for ExampleFileFilter can be found in FileChooserDemo,
 		// under the demo/jfc directory in the Java 2 SDK, Standard Edition.
 		myFileFilter filter = new myFileFilter();
@@ -25,12 +25,12 @@ public class GcodeSaveWindow
 	{
 		JFileChooser chooser = new JFileChooser();
 		
-		JFrame chooseFramer = new JFrame("Find Gcode...");
+		JFrame chooseFramer = new JFrame("Save Gcode...");
 		// Note: source for ExampleFileFilter can be found in FileChooserDemo,
 		// under the demo/jfc directory in the Java 2 SDK, Standard Edition.
 		myFileFilter filter = new myFileFilter();
 		chooser.setFileFilter(filter);
-		chooser.showOpenDialog(chooseFramer);
+		chooser.showSaveDialog(chooseFramer);
 		File f = chooser.getSelectedFile();
 		return f;
 	}
