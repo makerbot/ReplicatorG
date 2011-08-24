@@ -36,9 +36,9 @@ reversal	False
 speed	False
 splodge	False
 stretch	False
-temperature	False
+temperature	True
 tower	False
 unpause	False
 whittle	False
 widen	False
-wipe	True
+wipe	False

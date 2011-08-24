@@ -273,11 +273,11 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 				String s = null;
 				if(!DestinationTextField.getText().equals(""))
 				{
-				s = GcodeSelectWindow.goString(new File(DestinationTextField.getText()));	
+				s = GcodeSaveWindow.goString(new File(DestinationTextField.getText()));	
 				}
 				else
 				{
-				s = GcodeSelectWindow.goString();
+				s = GcodeSaveWindow.goString();
 				}
 				if(s != null)
 				{

@@ -35,6 +35,8 @@ public class DualStrusionWorker {
 	 * Strips white space and carriage returns from gcode
 	 * @param gcode source gcode
 	 */
+	public static String primaryTemp = "";
+	public static String secondaryTemp = "";
 	public static void stripWhitespace(ArrayList<String> gcode)
 	{
 		for(String s : gcode)
@@ -43,6 +45,27 @@ public class DualStrusionWorker {
 			s = s.replaceAll("\n", "");  
 			s = s.replaceAll("\r", ""); 
 			s = s.trim();
+		}
+	}
+
+	private static void getTemps(ArrayList<String> primary, ArrayList<String> secondary)
+	{
+		for(String pt : primary)
+		{
+			if(pt.matches("M104.*"))
+			{
+				
+				primaryTemp = pt;
+				break; // We want the first mention of temp to avoid conflict with Skein cool
+			}
+		}
+		for(String st : secondary)
+		{
+			if(st.matches("M104.*"))
+			{
+				secondaryTemp = st;
+				break; // We want the first mention of temp to avoid conflict with Skein cool
+			}
 		}
 	}
 	/**
@@ -83,21 +106,22 @@ public class DualStrusionWorker {
 		//
 		startGcode = readFiletoArrayList(new File("/home/makerbot/Dropbox/Rep26Stuff/ReplicatorG/resources/DualStrusion_Snippets/start.gcode"));
 		endGcode = readFiletoArrayList(new File("/home/makerbot/Dropbox/Rep26Stuff/ReplicatorG/resources/DualStrusion_Snippets/end.gcode"));
-		
+
 		stripStartEnd(primary_lines, replaceStart, replaceEnd);
 		stripStartEnd(secondary_lines, true, true);
 
 		//if(checkVersion(primary_lines) &&  checkVersion(secondary_lines))
 		prepGcode(primary_lines);
 		prepGcode(secondary_lines);
-	
+
 		primary_lines = replaceToolHeadReferences(primary_lines, Toolheads.Primary);
 		secondary_lines = replaceToolHeadReferences(secondary_lines, Toolheads.Secondary);
+		getTemps(primary_lines, secondary_lines);
 		//writeArrayListtoFile(primary_lines, new File("/home/makerbot/baghandle/bh1stripped.gcode"));
 		//writeArrayListtoFile(secondary_lines, new File("/home/makerbot/baghandle/bh0stripped.gcode"));
 		checkCrashes(primary_lines);
 		checkCrashes(secondary_lines);
-		
+
 		writeArrayListtoFile(replaceStartEnd(Layer_Helper.doMerge(primary_lines, secondary_lines)), dest);
 		return dest;
 
@@ -105,12 +129,12 @@ public class DualStrusionWorker {
 
 
 	}
-/**
- * This method iterates through the Gcode and replaces Toolhead indexes, preserves post T0, T1 comments through blackmagic
- * @param gcode
- * @param desired_toolhead an Enum representing the desired toolhead
- * @return
- */
+	/**
+	 * This method iterates through the Gcode and replaces Toolhead indexes, preserves post T0, T1 comments through blackmagic
+	 * @param gcode
+	 * @param desired_toolhead an Enum representing the desired toolhead
+	 * @return
+	 */
 
 	private static ArrayList<String> replaceToolHeadReferences(ArrayList<String> gcode, Toolheads desired_toolhead)
 	{
@@ -176,11 +200,11 @@ public class DualStrusionWorker {
 	 */
 	private static ArrayList<String> replaceStartEnd(ArrayList<String> gcode)
 	{
-	
-			gcode.addAll(0, startGcode);
-			gcode.addAll(gcode.size(), endGcode);
-			return gcode;
-		
+
+		gcode.addAll(0, startGcode);
+		gcode.addAll(gcode.size(), endGcode);
+		return gcode;
+
 	}
 	/**
 	 * depending on user input strips out start and end and either does or does not save them
@@ -515,5 +539,5 @@ public class DualStrusionWorker {
 
 		return vect;
 	}
-	
+
 }
