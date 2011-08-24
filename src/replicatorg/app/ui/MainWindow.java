@@ -58,6 +58,7 @@ import java.awt.print.PageFormat;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.Collections;
@@ -1915,7 +1916,19 @@ ToolpathGenerator.GeneratorListener
 
 	public void handleDualStrusion()
 	{
-		if(getBuild().getCode().isModified())
+		if(getBuild().getCode() == null)
+		{
+			DualStrusionWindow dsw = new DualStrusionWindow();
+			dsw.go();
+
+			//File f = dsw.getCombined();
+
+			//if(f != null)
+			{
+				//handleOpenFile(f);
+			}
+		}
+		else if(getBuild().getCode().isModified())
 		{
 			final String message = "<html>In order to dualstrude you need to save<br>" +
 			"Save the model now?</html>";
@@ -1936,15 +1949,25 @@ ToolpathGenerator.GeneratorListener
 		{
 			DualStrusionWindow dsw = new DualStrusionWindow(getBuild().getMainFilePath());	
 			dsw.go();
+			//File f = dsw.getCombined();
+
+			//if(f != null)
+			{
+				//handleOpenFile(f);
+			}
 		}
 		else
 		{
 			DualStrusionWindow dsw = new DualStrusionWindow();
 			dsw.go();
-			//handleOpenFile(file)
 
-			
+			//File f = dsw.getCombined();
+			//if(f != null)
+			{
+				//handleOpenFile(f);
+			}
 		}
+
 	}
 
 	public void estimationOver() {

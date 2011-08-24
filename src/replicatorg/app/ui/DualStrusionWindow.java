@@ -17,6 +17,7 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -29,8 +30,10 @@ import javax.swing.JLabel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+import replicatorg.app.Base;
 import replicatorg.dualstrusion.DualStrusionConstruction;
 import replicatorg.model.BuildCode;
 import replicatorg.model.GCodeSource;
@@ -45,7 +48,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 public class DualStrusionWindow extends JFrame implements ActionListener, ItemListener{
-
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2548421042732389328L;
+	File result;
 	JFrame frame = new JFrame("DualStrusion Window");
 	boolean hasOneGcode;
 	String originalGcodePath;
@@ -265,16 +272,21 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 				DualStrusionConstruction dcs = new DualStrusionConstruction(primary, secondary, dest, replaceStart.isSelected(), replaceEnd.isSelected());
 				Thread th = new Thread(dcs);
 				th.run();
+				result = dcs.getCombinedFile();
+				Base.getEditor().handleOpenFile(result);
+				frame.removeAll();
+				frame.dispose();
 				
 			}
 			
 		});
 		cont.add(merge);
 		frame.add(cont);
-		//return gcs;
 
-
-
+	}
+	public File getCombined()
+	{
+		return result;
 	}
 	private static void saveGCodeSource(GCodeSource savethis)
 	{StringListSource slss = (StringListSource) savethis;

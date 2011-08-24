@@ -229,7 +229,7 @@ public class Layer_Helper {
 		
 		// define constants/parameters
 		// note: the array position corresponds to toolhead number (ie. purge_x[0] is the x purge location for toolhead 0)
-		float[] purge_x = {38.0f, -45.0f}, // purge location with respect to machine coordinates (G53) (pre-wipe)
+		float[] purge_x = {38.0f, -38.0f}, // purge location with respect to machine coordinates (G53) (pre-wipe)
 		purge_y = {55.0f, 55.0f},
 		purge_x_offset = {45.0f, -45.0f},  // post-wipe purge location
 		purge_y_offset = {55.0f, 55.0f},
@@ -237,20 +237,20 @@ public class Layer_Helper {
 		feedrate = {3000.0f, 3000.0f},
 		flowrate = {5.0f, 5.0f},  // pushback (purge) flowrate
 		full_reversal_flowrate = {25.0f, 25.0f},  // reversal flowrate for stopping extrusion
-		partial_reversal_flowrate = {2.0f, 2.0f}, // reversal flowrate for temporarily stopping extrusion
+		//partial_reversal_flowrate = {2.0f, 2.0f}, // reversal flowrate for temporarily stopping extrusion
 		hop_height = {3.0f, 3.0f}; // nozzle lift before returning to layer
 
-		int[] purge_duration = {2000, 2000},  // durations (in msec)
-		full_reversal_duration = {15, 15}, //TWEAK THIS!!!!
-		partial_reversal_duration = {7, 7};
+		int[] purge_duration = {1000, 1000},  // durations (in msec)
+		full_reversal_duration = {15, 15}; //TWEAK THIS!!!!
+		//partial_reversal_duration = {7, 7};
 
 		// reverse current toolhead
-		//.add("M108 R"+full_reversal_flowrate[nextToolnum]);
+		targetCode.add("M108 R"+full_reversal_flowrate[nextToolnum]);
 		//
-		//targetCode.add("M102");
+		targetCode.add("M102");
 		//
-		//targetCode.add("G04 P"+full_reversal_duration[nextToolnum]);
-		//targetCode.add("M103");
+		targetCode.add("G04 P"+full_reversal_duration[nextToolnum]);
+		targetCode.add("M103");
 		targetCode.add("M108 R"+flowrate[nextToolnum]);
 
 		// move to purge home
@@ -263,7 +263,7 @@ public class Layer_Helper {
 		} 
 		else {
 			// otherwise go up and then over
-			targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			//targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 			targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
 			targetCode.add("G1 X" + purge_x[nextToolnum] + " Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 		}
@@ -272,9 +272,9 @@ public class Layer_Helper {
 		targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 		targetCode.add("M101");
 		targetCode.add("G04 P"+purge_duration[nextToolnum]);
-		targetCode.add("M108 R"+partial_reversal_flowrate[nextToolnum]);
+		//targetCode.add("M108 R"+partial_reversal_flowrate[nextToolnum]);
 		targetCode.add("M102");
-		targetCode.add("G04 P"+partial_reversal_duration[nextToolnum]);
+		//targetCode.add("G04 P"+partial_reversal_duration[nextToolnum]);
 		targetCode.add("M103");
 		targetCode.add("M108 R"+flowrate[nextToolnum]);
 		targetCode.add("G04 P2000");
@@ -304,10 +304,10 @@ public class Layer_Helper {
 		float hop_height = 7.0f;
 		targetCode.add("(<toolchange>)");
 		float purge_z = 6.5f;
+		targetCode.add("M103");
 		targetCode.add("G1 Z" + (layer_height+hop_height));
 		targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
 		targetCode.add("M103");
-		targetCode.add("M103 T"+nextToolnum);
 		targetCode.add("G5"+(5-nextToolnum));
 	//	targetCode.add("M108 R"+currentFeedRate);
 

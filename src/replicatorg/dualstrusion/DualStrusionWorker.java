@@ -47,8 +47,8 @@ public class DualStrusionWorker implements Runnable{
 		ArrayList<String> secondary_lines = readFiletoArrayList(secondary);
 		ArrayList<String> master_layer = new ArrayList<String>();
 		//
-		startGcode = readFiletoArrayList(new File("skein_engines/skeinforge-35/skeinforge_application/prefs/SF35-Thingomatic-HBP-Stepstruder-1.75mm-DUAL/alterations/start.gcode"));
-		endGcode = readFiletoArrayList(new File("skein_engines/skeinforge-35/skeinforge_application/prefs/SF35-Thingomatic-HBP-Stepstruder-1.75mm-DUAL/alterations/end.gcode"));
+		startGcode = readFiletoArrayList(new File("/home/makerbot/Dropbox/Rep26Stuff/ReplicatorG/resources/DualStrusion_Snippets/start.gcode"));
+		endGcode = readFiletoArrayList(new File("/home/makerbot/Dropbox/Rep26Stuff/ReplicatorG/resources/DualStrusion_Snippets/end.gcode"));
 		
 		stripStartEnd(primary_lines, replaceStart, replaceEnd);
 		stripStartEnd(secondary_lines, true, true);
