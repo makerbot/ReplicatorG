@@ -54,7 +54,7 @@ public class DualStrusionWorker {
 		{
 			if(pt.matches("M104.*"))
 			{
-				
+
 				primaryTemp = pt;
 				break; // We want the first mention of temp to avoid conflict with Skein cool
 			}
@@ -117,15 +117,17 @@ public class DualStrusionWorker {
 		primary_lines = replaceToolHeadReferences(primary_lines, Toolheads.Primary);
 		secondary_lines = replaceToolHeadReferences(secondary_lines, Toolheads.Secondary);
 		getTemps(primary_lines, secondary_lines);
-		
+
 		//writeArrayListtoFile(primary_lines, new File("/home/makerbot/baghandle/bh1stripped.gcode"));
 		//writeArrayListtoFile(secondary_lines, new File("/home/makerbot/baghandle/bh0stripped.gcode"));
 		checkCrashes(primary_lines);
 		checkCrashes(secondary_lines);
 		master_layer = Layer_Helper.doMerge(primary_lines, secondary_lines);
-		modifyStartTemp();
+		modifyTempReferences(startGcode);
 		replaceStartEnd(master_layer);
+		
 		writeArrayListtoFile(master_layer, dest);
+		
 		return dest;
 
 
@@ -138,20 +140,19 @@ public class DualStrusionWorker {
 	 * @param desired_toolhead an Enum representing the desired toolhead
 	 * @return
 	 */
-	private static void modifyStartTemp()
+	private static void modifyTempReferences(ArrayList<String> gcode)
 	{
-		for(String s : startGcode)
+		for(int i = 0; i < gcode.size(); i++)
 		{
-			if(s.matches("M104.*T1"))
+			if(gcode.get(i).matches("M104.*T1.*"))
 			{
-				System.out.println("replaced " + s + " with " + primaryTemp);
-				s = primaryTemp;	
+				System.out.println("replaced " + gcode.get(i) + " with " + primaryTemp);
+				gcode.set(i, primaryTemp);	
 			}
-			else if(s.matches("M104.*T0"))
+			else if(gcode.get(i).matches("M104.*T0.*"))
 			{
-				System.out.println("replaced " + s + " with " + secondaryTemp);
-
-			s = secondaryTemp;	
+				System.out.println("replaced " + gcode.get(i) + " with " + secondaryTemp);
+				gcode.set(i, secondaryTemp);
 			}
 		}
 	}

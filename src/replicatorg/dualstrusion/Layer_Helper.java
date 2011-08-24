@@ -294,9 +294,9 @@ public class Layer_Helper {
 		// define constants/parameters
 		// note: the array position corresponds to toolhead number (ie. purge_x[0] is the x purge location for toolhead 0)
 		float[] purge_x = {38.0f, -38.0f}, // purge location with respect to machine coordinates (G53) (pre-wipe)
-		purge_y = {55.0f, 55.0f},
+		purge_y = {52.0f, 52.0f},
 		purge_x_offset = {45.0f, -45.0f},  // post-wipe purge location
-		purge_y_offset = {55.0f, 55.0f},
+		purge_y_offset = {52.0f, 52.0f},
 		purge_z = {6.5f, 6.5f},  
 		feedrate = {3000.0f, 3000.0f},
 		flowrate = {5.0f, 5.0f},  // pushback (purge) flowrate
