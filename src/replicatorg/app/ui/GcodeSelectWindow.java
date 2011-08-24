@@ -50,7 +50,7 @@ class myFileFilter extends javax.swing.filechooser.FileFilter {
 	//private static final String s3g = "s3g";
 	public boolean accept(File f)
 	{
-
+		//alexpong
 		String extension = "";
 		String s = f.getName();
 		if(s.contains("."))

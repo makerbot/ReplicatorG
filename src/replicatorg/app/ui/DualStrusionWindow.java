@@ -1,5 +1,35 @@
 package replicatorg.app.ui;
+/*
+Part of the ReplicatorG project - http://www.replicat.org
+Copyright (c) 2008 Zach Smith
 
+Forked from Arduino: http://www.arduino.cc
+
+Based on Processing http://www.processing.org
+Copyright (c) 2004-05 Ben Fry and Casey Reas
+Copyright (c) 2001-04 Massachusetts Institute of Technology
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software Foundation,
+Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+$Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
+*/
+/**
+ * @author Noah Levy
+ * 
+ * <class>DualStrusionWindow</class> is a Swing class designed to integrate DualStrusion into the existing ReplicatorG GUI
+ */
 
 
 import java.awt.Color;
@@ -51,27 +81,38 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 2548421042732389328L;
-	File result;
+	private static final long serialVersionUID = 2548421042732389328L; //Generated serial
+	File result; // final combined gcode will be saved here
 	JFrame frame = new JFrame("DualStrusion Window");
-	boolean hasOneGcode;
+	boolean hasOneGcode; //this boolean is true if the constructor is passed one gcode file to begin with, it later effect the layout of the Swing Window
 	String originalGcodePath;
 	/**
 	 * 
 	 */
 
+	/**
+	 * 
+	 * This is the default constructor, it is only invoked if the ReplicatorG window did not already have a piece of gcode open
+	 */
 	public DualStrusionWindow()
 	{
 		hasOneGcode = false;
 	}
-
+/**
+ * This is a constructor that takes the filepath of the gcode open currently in ReplicatorG
+ * @param s the path of the gcode currently open in RepG
+ */
 	public DualStrusionWindow(String s) {
 		// TODO Auto-generated constructor stub
 		hasOneGcode = true;
 		originalGcodePath = s;
 		
 	}
-
+/**
+ * This method creates and shows the DualStrusionWindow GUI, this window is a MigLayout with 3 JFileChooser-TextBox Pairs, the first two being source gcodes and the last being the combined gcode destination.
+ * It also links to online DualStrusion Documentation NOTE: This may be buggy, it uses getDesktop() which is JDK 1.6 and scary.
+ * This method also invokes the thread in which the gcode combining operations run in, I would like to turn this into a SwingWorker soon.
+ */
 	public void go()
 	{
 		
@@ -182,7 +223,6 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		JButton Toolhead0ChooserButton = new JButton("Browse...");
 		Toolhead0ChooserButton.addActionListener(new ActionListener()
 		{
-
 			
 			public void actionPerformed(ActionEvent arg0) {
 				String s = null;
@@ -202,7 +242,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			}
 			
 		});
-		JButton switchItem = new JButton("Switch Toolheads");
+		JButton switchItem = new JButton("Switch Toolheads"); //This button switches the contents of the two text fields in order to easily swap Primary and Secondary Toolheads
 		switchItem.addActionListener(new ActionListener()
 		{
 		
@@ -284,10 +324,18 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		frame.add(cont);
 
 	}
+	/**
+	 * This method returns the result of the gcode combining operation.
+	 * @return the combined gcode.
+	 */
 	public File getCombined()
 	{
 		return result;
 	}
+	/**
+	 * This method is unused and a prime canidate for deletion.
+	 * @param savethis
+	 */
 	private static void saveGCodeSource(GCodeSource savethis)
 	{StringListSource slss = (StringListSource) savethis;
 	Iterator<String> slit = slss.iterator();

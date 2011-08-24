@@ -9,14 +9,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayList;
 
+/**
+ * 
+ * @author Noah Levy, Ben Rockhold, Will Langford
+ * This class handles some of the processing of the two constituent gcodes to be combined.
+ * It mostly does preprocessing work such as checking what version of SkeinForge the gcode was rendered in and stripping empty layers and whiteSpace
+ *
+ */
+public class DualStrusionWorker {
 
-public class DualStrusionWorker implements Runnable{
-
+	/**
+	 * <code>endGCode</code> This object holds the end.gcode, it is either instantiated from reading a file or the primary GCodes end
+	 */
 	private static ArrayList<String>endGcode;
+	/**
+	 * <code>startGCode</code> This object holds the start.gcode, it is either instantiated from reading a file or the primary GCodes start
+	 */
 	private static ArrayList<String>startGcode;
+	/**
+	 * <code>yDanger</code> This is the maximum Y cooridnate that a makerbot can handle, checkCrashes consults this
+	 */
 	private static float yDanger = 80.0f;
-	private static ArrayList<String> MasterLayer;
 
+	/**
+	 * Strips white space and carriage returns from gcode
+	 * @param gcode source gcode
+	 */
 	public static void stripWhitespace(ArrayList<String> gcode)
 	{
 		for(String s : gcode)
@@ -27,7 +45,10 @@ public class DualStrusionWorker implements Runnable{
 			s = s.trim();
 		}
 	}
-	
+	/**
+	 * This method is a testing main for directly accessing DualStrusion
+	 * @param args
+	 */
 	public static void main(String[]args)
 	{
 		DualStrusionConstruction dsc = new DualStrusionConstruction(new File("/home/makerbot/baghandle/ergo_bag_handle_top.gcode"), new File("/home/makerbot/baghandle/ergo_bag_handle_bottom.gcode"), new File ("/home/makerbot/baghandle/ergocombine.gcode"), true, true);
@@ -35,12 +56,25 @@ public class DualStrusionWorker implements Runnable{
 		th.run();
 		File result = dsc.getCombinedFile();
 	}
+	/**
+	 * This is a method that calls all the preprocessing methods individually
+	 * @param gcode
+	 */
 	private static void prepGcode(ArrayList<String> gcode)
 	{
 		stripWhitespace(gcode);
 		stripEmptyLayers(gcode);
 		//stripSurroundingLoop(gcode);
 	}
+	/**
+	 * This method handles shuffling together two gcodes, it first executes preprocessing and then hands the gcodes off to Layer_Helper
+	 * @param primary The primary Gcode File
+	 * @param secondary The secondary Gcode File
+	 * @param dest The destination Gcode file
+	 * @param replaceStart A boolean determined by the user in GUI as to whether to use default start.gcode or strip it from primary gcode
+	 * @param replaceEnd A boolean determined by the user in GUI as to whether to use default start.gcode or strip it from primary gcode
+	 * @return A reference to the completed gcode File
+	 */
 	public static File shuffle(File primary, File secondary, File dest, boolean replaceStart, boolean replaceEnd)
 	{
 		ArrayList<String> primary_lines = readFiletoArrayList(primary);
@@ -71,7 +105,12 @@ public class DualStrusionWorker implements Runnable{
 
 
 	}
-
+/**
+ * This method iterates through the Gcode and replaces Toolhead indexes, preserves post T0, T1 comments through blackmagic
+ * @param gcode
+ * @param desired_toolhead an Enum representing the desired toolhead
+ * @return
+ */
 
 	private static ArrayList<String> replaceToolHeadReferences(ArrayList<String> gcode, Toolheads desired_toolhead)
 	{
@@ -106,12 +145,17 @@ public class DualStrusionWorker implements Runnable{
 				{
 					s = s + (" T1");
 				}
-				s = s + " " + comments;
+				s = s + " " + comments; //blackmagic
 			}
 			answer.add(s);
 		}
 		return answer;
 	}
+	/**
+	 * This method iterates through the gcode and checks it against <code>yDanger</code>
+	 * @param gcode
+	 * @return A boolean represents whether the gcode risks crashing
+	 */
 	private static boolean checkCrashes(ArrayList<String> gcode)
 	{
 		boolean crashes = false;
@@ -125,6 +169,11 @@ public class DualStrusionWorker implements Runnable{
 		return crashes;
 
 	}
+	/**
+	 * This method adds the start and end to the combined gcode, its probably named poorly.
+	 * @param gcode
+	 * @return
+	 */
 	private static ArrayList<String> replaceStartEnd(ArrayList<String> gcode)
 	{
 	
@@ -133,6 +182,12 @@ public class DualStrusionWorker implements Runnable{
 			return gcode;
 		
 	}
+	/**
+	 * depending on user input strips out start and end and either does or does not save them
+	 * @param gcode
+	 * @param replaceStart True = Dont save start False = save start
+	 * @param replaceEnd True = dont save end False = save end
+	 */
 	private static void stripStartEnd(ArrayList<String> gcode, boolean replaceStart, boolean replaceEnd)
 	{
 		if(replaceStart)
@@ -242,6 +297,11 @@ public class DualStrusionWorker implements Runnable{
 			}
 		}
 	}
+	/**
+	 * called by checkCrashes, checks individual lines
+	 * @param suspectLine
+	 * @return
+	 */
 	private static boolean checkCrash(String suspectLine)
 	{
 		if(suspectLine.matches("G1 .*"))
@@ -306,6 +366,10 @@ public class DualStrusionWorker implements Runnable{
 			}
 		}
 	}
+	/**
+	 * This method uses Regex to delete empty layers or layers filled only with comments
+	 * @param gcode
+	 */
 	private static void stripEmptyLayers(ArrayList<String> gcode)
 	{
 		//for(int i = 0; i < gcode.size()-2;  i++)
@@ -350,6 +414,11 @@ public class DualStrusionWorker implements Runnable{
 		}
 		//return gcode;
 	}
+	/**
+	 * This method checks what version of SkeinForge was used to create this gcode
+	 * @param gcode
+	 * @return A boolean of whether its an "acceptable" version of skeinforge
+	 */
 	private static boolean checkVersion(ArrayList<String> gcode)
 	{
 		boolean compliantSkein = false;
@@ -381,6 +450,11 @@ public class DualStrusionWorker implements Runnable{
 		}
 		return false;
 	}
+	/**
+	 * This method is used to write finished combinedGcode to a file
+	 * @param t writeThis arrayList
+	 * @param f to this Destination
+	 */
 	private static void writeArrayListtoFile(ArrayList<String> t, File f)
 	{
 		try{
@@ -398,6 +472,10 @@ public class DualStrusionWorker implements Runnable{
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * This is a debugging method for printing arrayLists of gcode, not invoked currently
+	 * @param s arrayList to print
+	 */
 	public static void printArrayList(ArrayList<String> s)
 	{
 		for(String t : s)
@@ -405,6 +483,11 @@ public class DualStrusionWorker implements Runnable{
 			System.out.println(t);
 		}
 	}
+	/**
+	 * This method is used to read in files
+	 * @param f
+	 * @return
+	 */
 	private static ArrayList<String> readFiletoArrayList(File f)
 	{
 		ArrayList<String> vect = new ArrayList<String>();
@@ -432,9 +515,5 @@ public class DualStrusionWorker implements Runnable{
 
 		return vect;
 	}
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		
-	}
+	
 }

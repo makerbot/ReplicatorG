@@ -3,13 +3,34 @@ package replicatorg.dualstrusion;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
+/**
+ * 
+ * @author Noah Levy, Ben Rockhold, Will Langford
+ * This class does operations related to Layer manipulation, it employs Will and Ben's layer merging logic but is a complete rewrite of Will's code inorder to utilize the Layer object
+ *
+ */
 public class Layer_Helper {
 
+	/**
+	 * <code>currentToolhead</code> holds a Toolheads enum representing the current Toolhead, this is checked to see whether a toolchange is necessary
+	 */
 	private static Toolheads currentToolhead = Toolheads.Primary;
+	/**
+	 * Holds the ArrayList of layers for the primary gcode
+	 */
 	public static ArrayList<Layer> PrimaryLayers = new ArrayList<Layer>();
+	/**
+	 * Holds the ArrayList of layers for the secondary gcode
+	 */
 	public static ArrayList<Layer> SecondaryLayers = new ArrayList<Layer>();
+	/**
+	 * This float represents the maximum difference that two floats can have to be considered equal, it should always be less than the smallest possible layer height
+	 */
 	private static float tolerance = .01f;
 	//private static String currentFeedRate; // good default start speed
+	/**
+	 * This method has all the method calls in order to merge two gcodes, it is the only method that "needs" to be public
+	 */
 	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second)
 	{
 		readLayers(prime, PrimaryLayers);
@@ -19,10 +40,12 @@ public class Layer_Helper {
 		return mergeLayers(PrimaryLayers, SecondaryLayers);
 
 	}
-	public static void replaceStart()
-	{
-		
-	}
+	/**
+	 * This method is used to search through an ArrayList of Layers to find a Layer with height x, it is used by mergeLayers to check whether both gcodes have layers at a specified height
+	 * @param height find layers within <code>tolerance</code> of this height
+	 * @param searchme an ArrayList of layers to search
+	 * @return if it finds something returns the layer, else returns null
+	 */
 	public static Layer getByHeight(float height, ArrayList<Layer> searchme)
 	{
 		for(Layer l : searchme)
@@ -34,6 +57,10 @@ public class Layer_Helper {
 		}
 		return null;
 	}
+	/**
+	 * Used for debugging
+	 * @param a
+	 */
 	private static void seeLayerHeights(ArrayList<Layer> a)
 	{
 		for(Layer l : a)
@@ -41,6 +68,12 @@ public class Layer_Helper {
 			System.out.println(l.getHeight());
 		}
 	}
+	/**
+	 * This method starts to execute a toolChange, very little actually happens here, mostly it just calls Will's toolchange
+	 * @param destinationTool a Toolheads enum of the tool to switch to
+	 * @param LayerHeight the layer height to return to, important so as not to run into the print toolchanging
+	 * @return
+	 */
 	public static ArrayList<String> toolChange(Toolheads destinationTool, float LayerHeight)
 	{
 		//ArrayList<String> tempToolChange;
@@ -76,6 +109,10 @@ public class Layer_Helper {
 		}
 	}
 	*/
+	/**
+	 * This method merges two layers, it does so by iterating through in increments of <code>tolerance</code> and calling getByHeight to see if both gcodes, one gcode, or no gcodes have layers at that height.
+	 * It then calls different methods to integrate the gcode in depending on the presence of layers at that height
+	 */
 	public static ArrayList<String> mergeLayers(ArrayList<Layer> primary, ArrayList<Layer> secondary)
 	{
 		ArrayList<String> merged = new ArrayList<String>();
@@ -123,6 +160,13 @@ public class Layer_Helper {
 		}
 		return merged;
 	}
+	/**
+	 * This method is called  to add gcode to the combined gcode if a layer is only present in one of the sources,
+	 * basically all it does  is check to see if it needs to toolchange, execute a toolchange if needed, and then add the gcode
+	 * @param a layer to be added
+	 * @param destTool Tool to add layer with
+	 * @return
+	 */
 	private static ArrayList<String> parseLayer(Layer a, Toolheads destTool)
 	{
 	//	setCurrentFeedRate(a.getCommands());
@@ -154,6 +198,11 @@ public class Layer_Helper {
 		}
 		return completeLayer;
 	}
+	/**
+	 * This method reads the arrayList of strings preprocessed in DualStrusionWorker into arrayLists of layers necessary for mergeLayers, it uses Regex
+	 * @param readThis source ArrayList of strings
+	 * @param dumphere destination ArrayList  of Layers
+	 */
 	public static void readLayers(ArrayList<String> readThis, ArrayList<Layer> dumphere)
 	{
 		//for(int i = 0; i < gcode.size()-2;  i++)
@@ -197,6 +246,13 @@ public class Layer_Helper {
 		}
 		//return gcode;
 	}
+	/**
+	 * This method is called when layers exist at the same height in both gcodes, it determines the current toolhead, prints that layer first, executes a toolchange, and then prints the second layer
+	 * This is different from will's code in that the two layers are actually merged and not just put at slightly different heights
+	 * @param a primary layer
+	 * @param b secodnary layer
+	 * @return
+	 */
 	private static ArrayList<String> mergeLayer(Layer a, Layer b) //This method makes it so that you dont switch toolheads unnessecarily a is primary layers b is secondary layers
 	{
 		NumberFormat nf = NumberFormat.getInstance();
@@ -223,6 +279,14 @@ public class Layer_Helper {
 		//Layer l = new Layer(a.getHeight(),cmds);
 		return cmds;
 	}
+	/**
+	 * This method is ported from Will's processing script, it was modified to reduce full reversal and eliminate partial reversal in order to reflect the MK7's tendency to pull its own filament out
+	 * This is the method that is passed ints based on Toolheads.ordinal() so please please  please dont change the order of the toolheads.
+	 * @param currentToolnum 0 if secondary 1 if primary, changing .ordinal() would change this.
+	 * @param nextToolnum 0 if secondary 1 if primary, changing .ordinal() would change this.
+	 * @param layer_height the layer height that the toolchange must start and end yet, this gives us the flexibility  to avoid smashing into the print
+	 * @return
+	 */
 	public static ArrayList<String> wipe(int currentToolnum, int nextToolnum, float layer_height) {
 		ArrayList<String> targetCode = new ArrayList<String>();
 		
@@ -290,6 +354,12 @@ public class Layer_Helper {
 
 		return targetCode;
 	}
+	/**
+	 * This is Will's toolchange method ported, it treats the actual wipe as a seperate method so in the future one could reduce the number of wipes by only making them happen every x number of toolchanges etc
+	 * @param nextTool this is the Tool we would like to change into
+	 * @param layer_height this is the layer height to do it at
+	 * @return
+	 */
 	public static ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
 		ArrayList<String> targetCode = new ArrayList<String>();
 		Toolheads currentTool = Toolheads.Secondary;
