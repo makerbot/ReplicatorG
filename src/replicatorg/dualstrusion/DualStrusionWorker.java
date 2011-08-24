@@ -104,8 +104,8 @@ public class DualStrusionWorker {
 		ArrayList<String> secondary_lines = readFiletoArrayList(secondary);
 		ArrayList<String> master_layer = new ArrayList<String>();
 		//
-		startGcode = readFiletoArrayList(new File("/home/makerbot/Dropbox/Rep26Stuff/ReplicatorG/resources/DualStrusion_Snippets/start.gcode"));
-		endGcode = readFiletoArrayList(new File("/home/makerbot/Dropbox/Rep26Stuff/ReplicatorG/resources/DualStrusion_Snippets/end.gcode"));
+		startGcode = readFiletoArrayList(new File("resources/DualStrusion_Snippets/start.gcode"));
+		endGcode = readFiletoArrayList(new File("resources/DualStrusion_Snippets/end.gcode"));
 
 		stripStartEnd(primary_lines, replaceStart, replaceEnd);
 		stripStartEnd(secondary_lines, true, true);
