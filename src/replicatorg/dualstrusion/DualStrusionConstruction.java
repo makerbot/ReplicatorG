@@ -2,6 +2,10 @@ package replicatorg.dualstrusion;
 
 import java.io.File;
 
+import replicatorg.app.Base;
+import replicatorg.app.ui.DualStrusionWindow;
+
+
 /**
  * This class is designed to give the functionality of DualStrusionWorker's shuffle in its own thread, therefore it basically just calls that and implements runnable
  * @author Noah Levy
@@ -12,6 +16,7 @@ public class DualStrusionConstruction implements Runnable {
 	private File result;
 	private File primary, secondary, dest;
 	private boolean replaceStart, replaceEnd;
+	//private Thread wait1, wait2;
 	/**
 	 * This constructor mimics the paramaters of shuffle
 	 * @param p primary file
@@ -27,6 +32,8 @@ public class DualStrusionConstruction implements Runnable {
 		dest = d;
 		replaceStart = rs;
 		replaceEnd = re;
+	//	wait1 = t1;
+		//wait2 = t2;
 	}
 	/**
 	 * This method is my attempt at making a thread safe way to get the file made by combining the gcode
@@ -42,7 +49,7 @@ public class DualStrusionConstruction implements Runnable {
 	 */
 	public void run() {
 		result = DualStrusionWorker.shuffle(primary, secondary, dest, replaceStart, replaceEnd);
-		
+		Base.getEditor().handleOpenFile(result);
 	}
 	
 }
