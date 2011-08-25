@@ -288,7 +288,18 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 				}
 				else
 				{
-					s = GcodeSaveWindow.goString();
+					if(!Toolhead1.getText().equals(""))
+					{
+						int i = Toolhead1.getText().lastIndexOf("/");
+						String a = Toolhead1.getText().substring(0, i + 1) + "untitled.gcode";
+						File untitled = new File(a);
+						System.out.println(a);
+						s = GcodeSaveWindow.goString(untitled);
+					}	
+					else
+					{
+						s = GcodeSaveWindow.goString();
+					}
 				}
 				if(s != null)
 				{
@@ -329,17 +340,17 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 				{
 					if(getExtension(primary.getName()).equalsIgnoreCase("stl") && getExtension(secondary.getName()).equalsIgnoreCase("stl"))
 					{
-						
+
 						startBoth();
 					}
 					else if(getExtension(primary.getName()).equalsIgnoreCase("stl"))
 					{
-						
+
 						startPrimary();
 					}
 					else if(getExtension(secondary.getName()).equalsIgnoreCase("stl"))
 					{
-						
+
 						startSecondary();
 					}
 				}
@@ -397,7 +408,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	private synchronized void startPrimary()
 	{
 		ToolpathGenerator generator1 = ToolpathGeneratorFactory.createSelectedGenerator();
-		
+
 		try{
 			Build p = new Build(primary.getAbsolutePath());
 			JFrame primaryProgress = new JFrame("Primary Progress");
@@ -462,7 +473,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	 * This method returns the result of the gcode combining operation.
 	 * @return the combined gcode.
 	 */
-	
+
 	public File getCombined()
 	{
 		return result;
