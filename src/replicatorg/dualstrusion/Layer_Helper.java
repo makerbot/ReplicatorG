@@ -14,7 +14,7 @@ public class Layer_Helper {
 	/**
 	 * <code>currentToolhead</code> holds a Toolheads enum representing the current Toolhead, this is checked to see whether a toolchange is necessary
 	 */
-	private static Toolheads currentToolhead = Toolheads.Primary;
+	private static Toolheads currentToolhead = Toolheads.Secondary;
 	/**
 	 * Holds the ArrayList of layers for the primary gcode
 	 */
@@ -129,7 +129,6 @@ public class Layer_Helper {
 			maxHeight = maxHeight0;
 		}
 	//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
-
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
