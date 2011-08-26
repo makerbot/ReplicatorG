@@ -313,11 +313,11 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		cont.add(DestinationChooserButton, "wrap");
 		final JCheckBox replaceStart = new JCheckBox();
 		replaceStart.setSelected(true);
-		cont.add(new JLabel("Replace start.gcode: "), "split");
+		cont.add(new JLabel("Use default start.gcode: "), "split");
 		cont.add(replaceStart,"wrap");
 		final JCheckBox replaceEnd = new JCheckBox();
 		replaceEnd.setSelected(true);
-		cont.add(new JLabel("Replace end.gcode: "), "split");
+		cont.add(new JLabel("Use default end.gcode: "), "split");
 		cont.add(replaceEnd,"wrap");
 		JButton merge = new JButton("Merge");
 
@@ -355,7 +355,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 				}
 				else
 				{
-					triggerNum = 0;
+					triggerNum = 1;
 					finish();
 				}
 
@@ -394,8 +394,8 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			ToolpathGeneratorThread tg2 = new ToolpathGeneratorThread(secondaryProgress, generator2, s);
 			tg1.addListener(this);
 			tg2.addListener(this);
-			tg1.setDualStrusionSupportFlag(true, 300, 300, "Primary");
-			tg2.setDualStrusionSupportFlag(true, 600, 600, "Secondary");
+			tg1.setDualStrusionSupportFlag(true, 200, 300, "Primary");
+			tg2.setDualStrusionSupportFlag(true, 650, 300, "Secondary");
 			tg1.start();
 			tg2.start();
 			triggerNum = 2;
