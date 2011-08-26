@@ -220,7 +220,7 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem pauseItem;
 	JMenuItem controlPanelItem;
 	JMenuItem buildMenuItem;
-
+	JMenuItem dualstrusionItem;
 	JMenu machineMenu;
 	MachineMenuListener machineMenuListener;
 	SerialMenuListener serialMenuListener;
@@ -878,7 +878,7 @@ ToolpathGenerator.GeneratorListener
 			genMenu.add(i);
 		}
 		menu.add(genMenu);
-		JMenuItem dualstrusionItem = newJMenuItem("DualStrusion Menu", 'M');
+		dualstrusionItem = newJMenuItem("DualStrusion Menu", 'M');
 		dualstrusionItem.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -1808,15 +1808,18 @@ ToolpathGenerator.GeneratorListener
 		if (isBusy && Base.preferences.getBoolean("console.auto_clear",true)) {
 			console.clear();
 		}
-
+		
 		// prepare editor window.
 		setVisible(true);
 		textarea.setEnabled(!isBusy);
 		textarea.setEditable(!isBusy);
 		if (isBusy) {
+			dualstrusionItem.setEnabled(false);
 			textarea.selectNone();
 			textarea.scrollTo(0, 0);
 		} else {
+			dualstrusionItem.setEnabled(true);
+
 			//buttons.clear();
 		}
 	}

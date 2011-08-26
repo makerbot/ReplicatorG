@@ -147,7 +147,6 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		cont.add(explanation, "wrap");
 		final JLabel linkage = new JLabel("<html><u>See documentation</u></html>");
 		linkage.setForeground(Color.BLUE);
-
 		linkage.addMouseListener(new MouseListener()
 		{
 
@@ -388,8 +387,8 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			JFrame primaryProgress = new JFrame("Primary Progress");
 			JFrame secondaryProgress = new JFrame("Secondary Progress");
 			//primaryProgress.setVisible(true);
-			primaryProgress.setLocation(200, 200);
-			secondaryProgress.setLocation(200+primaryProgress.getWidth(), 200+primaryProgress.getHeight());
+			//primaryProgress.setLocation(200, 200);
+			//secondaryProgress.setLocation(200+primaryProgress.getWidth(), 200+primaryProgress.getHeight());
 
 			ToolpathGeneratorThread tg1 = new ToolpathGeneratorThread(primaryProgress, generator1, p);
 			ToolpathGeneratorThread tg2 = new ToolpathGeneratorThread(secondaryProgress, generator2, s);
