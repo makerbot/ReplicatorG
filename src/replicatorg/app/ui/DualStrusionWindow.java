@@ -266,7 +266,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			}
 		});
 		cont.add(switchItem, "wrap");
-		cont.add(new JLabel("Toolhead 2 (Secondary)"), "split");
+		cont.add(new JLabel("Toolhead 0 (Secondary)"), "split");
 
 		cont.add(Toolhead0,"split");
 		cont.add(Toolhead0ChooserButton, "wrap");
@@ -394,6 +394,8 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			ToolpathGeneratorThread tg2 = new ToolpathGeneratorThread(secondaryProgress, generator2, s);
 			tg1.addListener(this);
 			tg2.addListener(this);
+			tg1.setDualStrusionSupportFlag(true, 300, 300, "Primary");
+			tg2.setDualStrusionSupportFlag(true, 600, 600, "Secondary");
 			tg1.start();
 			tg2.start();
 			triggerNum = 2;
