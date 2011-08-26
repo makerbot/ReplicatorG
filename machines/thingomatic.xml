@@ -148,7 +148,7 @@ M18
 M18
 		</cooldown>
 	</machine>
-	<machine experimental="1">
+	<machine experimental="0">
 		<name>Thingomatic w/ HBP and Dual Stepstruder MK7</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
