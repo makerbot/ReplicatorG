@@ -149,7 +149,7 @@ M18
 		</cooldown>
 	</machine>
 	<machine experimental="1">
-		<name>Thingomatic w/ HBP and Dual Stepstruder MK6</name>
+		<name>Thingomatic w/ HBP and Dual Stepstruder MK7</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="80" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
