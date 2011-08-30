@@ -57,8 +57,11 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -144,7 +147,8 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		explanation.setWrapStyleWord(true);
 		explanation.setSize(700, 200);
 		explanation.setLineWrap(true);
-		cont.add(explanation, "wrap");
+		//cont.add(explanation, "wrap");
+		/*
 		final JLabel linkage = new JLabel("<html><u>See documentation</u></html>");
 		linkage.setForeground(Color.BLUE);
 		linkage.addMouseListener(new MouseListener()
@@ -191,7 +195,8 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		});
 
 		cont.add(linkage, "wrap");
-		cont.add(new JLabel("Toolhead 1 (Primary)"), "split");
+		 */
+		cont.add(new JLabel("Left Extruder"), "split");
 
 		final JTextField Toolhead1 = new JTextField(60);
 		Toolhead1.setText("");
@@ -266,7 +271,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			}
 		});
 		cont.add(switchItem, "wrap");
-		cont.add(new JLabel("Toolhead 0 (Secondary)"), "split");
+		cont.add(new JLabel("Right Extruder"), "split");
 
 		cont.add(Toolhead0,"split");
 		cont.add(Toolhead0ChooserButton, "wrap");
@@ -300,8 +305,21 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 						s = GcodeSaveWindow.goString();
 					}
 				}
+
 				if(s != null)
 				{
+					if(s.contains("."))
+					{
+						int lastp = s.lastIndexOf(".");
+						if(!s.substring(lastp + 1, s.length()).equals("gcode"))
+						{
+							s = s.substring(0, lastp) + ".gcode";
+						}
+					}
+					else
+					{
+						s = s + ".gcode";
+					}
 					DestinationTextField.setText(s);
 				}
 
@@ -326,8 +344,24 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		{
 
 			public void actionPerformed(ActionEvent arg0) {
-
-				primary = new File(Toolhead1.getText());
+				boolean warning = false;
+				if(Toolhead1.getText().equals(Toolhead0.getText()))
+				{
+					//JFrame fr = new JFrame();
+					int option = JOptionPane.showConfirmDialog(null, "You are trying to combine two of the same file. Are you sure you want to do this?", "Continue?", 
+							JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+					System.out.println(option);
+					if(option == 0)
+					{
+						warning = false;
+					}
+					else if (option == 1)
+					{
+						warning = true;	
+					}
+				}
+				if(!warning)
+					primary = new File(Toolhead1.getText());
 				secondary = new File(Toolhead0.getText());
 				dest = new File(DestinationTextField.getText());
 				primarygcode = new File(replaceExtension(Toolhead1.getText(), "gcode"));
@@ -365,7 +399,25 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			}
 
 		});
-		cont.add(merge);
+		cont.add(merge, "split");
+		final JButton help = new JButton("Help");
+		help.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent arg0)
+			{
+				try {
+					Desktop.getDesktop().browse(new URI("http://goo.gl/DV5vn"));
+					//That goo.gl redirects to http://www.makerbot.com/docs/dualstrusion I just wanted to build in a convient to track how many press the help button
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (URISyntaxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		cont.add(help);
 		frame.add(cont);
 
 	}
@@ -389,9 +441,19 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			//primaryProgress.setVisible(true);
 			//primaryProgress.setLocation(200, 200);
 			//secondaryProgress.setLocation(200+primaryProgress.getWidth(), 200+primaryProgress.getHeight());
-
+			JFrame combinedWindow = new JFrame("Gcode Generator");
+			//Container cont = new Container();
+			JTabbedPane jtb = new JTabbedPane();
+			jtb.addTab("Left", primaryProgress);
+			jtb.addTab("Right", secondaryProgress);
+			//cont.add(jtb);
+			combinedWindow.add(jtb);
+			combinedWindow.pack();
+			combinedWindow.setVisible(true);
 			ToolpathGeneratorThread tg1 = new ToolpathGeneratorThread(primaryProgress, generator1, p);
 			ToolpathGeneratorThread tg2 = new ToolpathGeneratorThread(secondaryProgress, generator2, s);
+
+
 			tg1.addListener(this);
 			tg2.addListener(this);
 			tg1.setDualStrusionSupportFlag(true, 200, 300, "Primary");

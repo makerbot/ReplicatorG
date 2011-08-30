@@ -48,6 +48,7 @@ public class ToolpathGeneratorThread extends Thread {
 			if(supportDualStrusion)
 			{
 			if (!generator.visualConfigure(parent, x, y, name)) { return; }
+				//generator.visualC
 			}
 			generator.addListener(progressDialog);
 			// This actually works because it's a modal dialog;

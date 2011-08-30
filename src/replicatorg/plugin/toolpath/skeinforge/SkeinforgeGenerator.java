@@ -275,6 +275,18 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
+	public ConfigurationDialog visualConfiguregetCD(Frame parent, int x, int y, String name) {
+		// First check for Python.
+		parent.setName(name);
+		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
+		cd.setName(name);
+		cd.setTitle(name);
+		//cd.setSize(500, 760);
+		cd.pack();
+		cd.setLocation(x, y);
+		cd.setVisible(true);
+		return cd;
+	}
 	public boolean visualConfigure(Frame parent, int x, int y, String name) {
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,

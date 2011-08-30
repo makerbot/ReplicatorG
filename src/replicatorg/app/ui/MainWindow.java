@@ -878,7 +878,7 @@ ToolpathGenerator.GeneratorListener
 			genMenu.add(i);
 		}
 		menu.add(genMenu);
-		dualstrusionItem = newJMenuItem("DualStrusion Menu", 'M');
+		dualstrusionItem = newJMenuItem("Dual Extrusion", 'M');
 		dualstrusionItem.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
