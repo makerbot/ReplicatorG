@@ -83,8 +83,8 @@ M18
 			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
 		<tools>
-			<tool name="Stepstruder MK6 (Index 1)" index="1" type="extruder" material="abs" motor="true" fan="false" heatedplatform="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
-			<tool name="Stepstruder MK6 (Index 0)" index="0" type="extruder" material="abs" motor="true" fan="false" heatedplatform="false" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="b"/>
+			<tool name="Right (B)" index="0" type="extruder" motor="true" fan="false" heatedplatform="false" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="b"/>
+			<tool name="Left (A)" index="1" type="extruder" motor="true" fan="false" heatedplatform="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4ga">
