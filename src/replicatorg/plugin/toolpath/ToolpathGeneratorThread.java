@@ -22,7 +22,7 @@ public class ToolpathGeneratorThread extends Thread {
 		this.generator = generator;
 		this.build = build;
 	}
-	
+
 	public void addListener(ToolpathGenerator.GeneratorListener listener) {
 		this.generator.addListener(listener);
 	}
@@ -33,7 +33,7 @@ public class ToolpathGeneratorThread extends Thread {
 		y = loy;
 		name = loName;
 	}
-	
+
 	public void run() {
 		System.out.println("alexpong");
 		generator.setModel(build.getModel());
@@ -43,12 +43,11 @@ public class ToolpathGeneratorThread extends Thread {
 			progressDialog = new ProgressDialog(parent,build,this);
 			if(!supportDualStrusion)
 			{
-			if (!generator.visualConfigure(parent)) { return; }
+				if (!generator.visualConfigure(parent)) { return; }
 			}
 			if(supportDualStrusion)
 			{
-			if (!generator.visualConfigure(parent, x, y, name)) { return; }
-				//generator.visualC
+				if (!generator.visualConfigure(parent, x, y, name)) { return; }
 			}
 			generator.addListener(progressDialog);
 			// This actually works because it's a modal dialog;
@@ -56,27 +55,27 @@ public class ToolpathGeneratorThread extends Thread {
 			// that blocks other events.
 			if(!supportDualStrusion)
 			{
-			final ProgressDialog pdHandle = progressDialog;
-			
-			SwingUtilities.invokeLater(new Runnable() 
-			{ public void run() 
-			{
-				if (!pdHandle.isDone()) 
+				final ProgressDialog pdHandle = progressDialog;
+				
+				SwingUtilities.invokeLater(new Runnable() 
+				{ public void run() 
 				{
-					double xl = parent.getBounds().getCenterX();
-					double yl = parent.getBounds().getCenterY();
-					pdHandle.pack();
-					xl -= pdHandle.getWidth() / 2.0;
-					yl -= pdHandle.getHeight() / 2.0;
-					pdHandle.setLocation((int)xl,(int)yl);
-					pdHandle.setVisible(true);
-				}
-			}});
+					if (!pdHandle.isDone()) 
+					{
+						double xl = parent.getBounds().getCenterX();
+						double yl = parent.getBounds().getCenterY();
+						pdHandle.pack();
+						xl -= pdHandle.getWidth() / 2.0;
+						yl -= pdHandle.getHeight() / 2.0;
+						pdHandle.setLocation((int)xl,(int)yl);
+						pdHandle.setVisible(true);
+					}
+				}});
 			}
 			if(supportDualStrusion)
 			{
 				final ProgressDialog pdHandle = progressDialog;
-				
+				System.out.println("pd attempt start");
 				SwingUtilities.invokeLater(new Runnable() 
 				{ public void run() 
 				{
@@ -124,7 +123,7 @@ class SkeinStep {
 	public String stepName;
 	public int thisStepTime; 
 	public int incrementalStepTime; 
-	
+
 	public SkeinStep(String stepName, int thisStepTime){
 		SkeinStep.totalStepTime += thisStepTime;
 		this.stepName = stepName;

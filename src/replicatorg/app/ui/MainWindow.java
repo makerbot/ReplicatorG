@@ -122,6 +122,7 @@ import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RealtimeControl;
 import replicatorg.drivers.SDCardCapture;
+import replicatorg.dualstrusion.DualStrusionWorker;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineFactory;
 import replicatorg.machine.MachineListener;
@@ -321,7 +322,7 @@ ToolpathGenerator.GeneratorListener
 		textarea.setHorizontalOffset(6);
 
 		cardPanel.add(textarea,GCODE_TAB_KEY);
-
+		//cardPanel.add(test)
 		console = new MessagePanel(this);
 		console.setBorder(null);
 
@@ -878,6 +879,34 @@ ToolpathGenerator.GeneratorListener
 			genMenu.add(i);
 		}
 		menu.add(genMenu);
+
+		menu.addSeparator();
+		//Change Toolhead of GCode
+		JMenu changeToolheadMenu = new JMenu("Change Toolhead of GCode");
+		//ButtonGroup toolGroup = new ButtonGroup();
+		JMenuItem left = new JMenuItem("Extruder A");
+		left.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				DualStrusionWorker.changeToolHead(build.getCode().file, 1);
+				handleOpenFile(build.getCode().file);
+			}	
+		});
+		JMenuItem right = new JMenuItem("Extruder B");
+		right.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				DualStrusionWorker.changeToolHead(build.getCode().file, 0);
+
+				handleOpenFile(build.getCode().file);
+
+			}	
+		});
+		changeToolheadMenu.add(left);
+		changeToolheadMenu.add(right);
+		menu.add(changeToolheadMenu);
 		dualstrusionItem = newJMenuItem("Dual Extrusion", 'M');
 		dualstrusionItem.addActionListener(new ActionListener()
 		{
@@ -1808,7 +1837,7 @@ ToolpathGenerator.GeneratorListener
 		if (isBusy && Base.preferences.getBoolean("console.auto_clear",true)) {
 			console.clear();
 		}
-		
+
 		// prepare editor window.
 		setVisible(true);
 		textarea.setEnabled(!isBusy);

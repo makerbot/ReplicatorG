@@ -125,9 +125,9 @@ public class DualStrusionWorker {
 		master_layer = Layer_Helper.doMerge(primary_lines, secondary_lines);
 		modifyTempReferences(startGcode);
 		replaceStartEnd(master_layer);
-		
+
 		writeArrayListtoFile(master_layer, dest);
-		
+
 		return dest;
 
 
@@ -156,21 +156,36 @@ public class DualStrusionWorker {
 			}
 		}
 	}
+	public static void changeToolHead(File source, int Toolhead)
+	{
+		ArrayList<String> changeMe = readFiletoArrayList(source);
+		Toolheads t = Toolheads.Secondary;
+		if(Toolhead == 0)
+		{
+			t = Toolheads.Secondary;
+		}
+		else if(Toolhead == 1)
+		{
+			t = Toolheads.Primary;	
+		}
+		changeMe = replaceToolHeadReferences(changeMe, t);
+		writeArrayListtoFile(changeMe, source);
+	}
 	private static ArrayList<String> replaceToolHeadReferences(ArrayList<String> gcode, Toolheads desired_toolhead)
 	{
 		ArrayList<String> answer = new ArrayList<String>();
 		for(String s  : gcode)
 		{
-			if(s.matches("(M10[123456789]|M113).*"))
+			if(s.matches("(M10[12345678]|M113).*")) //STOP Dont change M109
 			{
 				//System.out.println("!");
 				int lastT0 = s.lastIndexOf("T0");
 				int lastT1 = s.lastIndexOf("T1");
 				String comments = "";
+				int firstparens = s.indexOf("(");
+				int lastparens = s.lastIndexOf(")");
 				if(s.contains("("))
 				{
-					int firstparens = s.indexOf("(");
-					int lastparens = s.lastIndexOf(")");
 					comments = s.substring(firstparens,lastparens+1);
 				}
 				if(lastT0 != -1)
@@ -181,13 +196,31 @@ public class DualStrusionWorker {
 				{
 					s = s.substring(0, lastT1);
 				}
+				if(lastT1 == -1 && lastT0 == -1 && !comments.equals(""))
+				{
+					s = s.substring(0, firstparens);
+				}
 				if(desired_toolhead.equals(Toolheads.Secondary))
 				{
-					s = s + (" T0"); //This works under the assumption that one space is not different from two spaces
+					if(s.matches(".* "))
+					{
+						s = s + ("T0");
+					}
+					else
+					{
+						s = s + (" T0");
+					}
 				}
 				else if(desired_toolhead.equals(Toolheads.Primary))
 				{
-					s = s + (" T1");
+					if(s.matches(".* "))
+					{
+						s = s + ("T0");
+					}
+					else
+					{
+						s = s + (" T0");
+					}
 				}
 				s = s + " " + comments; //blackmagic
 			}
