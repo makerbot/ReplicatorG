@@ -2,5 +2,5 @@ Format is tab separated outline settings.
 Name                          	Value
 WindowPosition	600+0
 Open File for Outline	
-Activate Outline	True
+Activate Outline	False
 Outline Margin:	3.0

@@ -1,5 +1,5 @@
 (**** beginning of start.gcode ****)
-(This file is for 1.75mm PLA in a Dual Extruder configuration)
+(This file is for 1.75mm PLA in a MK7 Extruder)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 G10 P2 X-16.5 Y0 Z0

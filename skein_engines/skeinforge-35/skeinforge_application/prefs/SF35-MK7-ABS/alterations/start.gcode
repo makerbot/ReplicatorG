@@ -1,12 +1,12 @@
 (**** beginning of start.gcode ****)
-(This file is for 1.75mm ABS in a Dual Extruder configuration)
+(This file is for 1.75mm ABS in a MK7 Extruder)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 G10 P2 X-16.5 Y0 Z0
 G10 P1 X16.55 Y0 Z0
-M104 S240 (set extruder temperature)
+M104 S225 (set extruder temperature)
 M109 S110 (set heated-build-platform temperature)
-M108 R1.98 (set extruder speed)
+M108 R5.0 (set extruder speed)
 M103 (Make sure extruder is off)
 (**** begin homing ****)
 G162 Z F500 (home Z axis maximum)
