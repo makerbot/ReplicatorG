@@ -196,7 +196,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 
 		cont.add(linkage, "wrap");
 		 */
-		cont.add(new JLabel("Left Extruder"), "split");
+		cont.add(new JLabel("Extruder A (Left)"), "split");
 
 		final JTextField Toolhead1 = new JTextField(60);
 		Toolhead1.setText("");
@@ -271,7 +271,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			}
 		});
 		cont.add(switchItem, "wrap");
-		cont.add(new JLabel("Right Extruder"), "split");
+		cont.add(new JLabel("Extruder B (Right)"), "split");
 
 		cont.add(Toolhead0,"split");
 		cont.add(Toolhead0ChooserButton, "wrap");
@@ -441,25 +441,27 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			//primaryProgress.setVisible(true);
 			//primaryProgress.setLocation(200, 200);
 			//secondaryProgress.setLocation(200+primaryProgress.getWidth(), 200+primaryProgress.getHeight());
-			JFrame combinedWindow = new JFrame("Gcode Generator");
+			//JFrame combinedWindow = new JFrame("Gcode Generator");
 			//Container cont = new Container();
-			JTabbedPane jtb = new JTabbedPane();
-			jtb.addTab("Left", primaryProgress);
-			jtb.addTab("Right", secondaryProgress);
+			//JTabbedPane jtb = new JTabbedPane();
+			//jtb.addTab("Left", primaryProgress);
+			//jtb.addTab("Right", secondaryProgress);
 			//cont.add(jtb);
-			combinedWindow.add(jtb);
-			combinedWindow.pack();
-			combinedWindow.setVisible(true);
+			//ombinedWindow.add(jtb);
+			//combinedWindow.pack();
+			//combinedWindow.setVisible(true);
 			ToolpathGeneratorThread tg1 = new ToolpathGeneratorThread(primaryProgress, generator1, p);
 			ToolpathGeneratorThread tg2 = new ToolpathGeneratorThread(secondaryProgress, generator2, s);
 
 
 			tg1.addListener(this);
 			tg2.addListener(this);
-			tg1.setDualStrusionSupportFlag(true, 200, 300, "Primary");
-			tg2.setDualStrusionSupportFlag(true, 650, 300, "Secondary");
-			tg1.start();
-			tg2.start();
+			tg1.setDualStrusionSupportFlag(true, 200, 300, "Extruder A (Left)");
+			tg2.setDualStrusionSupportFlag(true, 650, 300, "Extruder B (Right)");
+			//SwingUtilities.invokeLater(tg1);
+			//SwingUtilities.invokeLater(tg2);
+			runConcurrentToolPathGeneratorThreads runTogether = new runConcurrentToolPathGeneratorThreads(tg1, tg2);
+			SwingUtilities.invokeLater(runTogether);
 			triggerNum = 2;
 
 		}
@@ -587,6 +589,25 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	}
 
 }
+class runConcurrentToolPathGeneratorThreads implements Runnable
+{
+	ToolpathGeneratorThread tt1, tt2;
+	runConcurrentToolPathGeneratorThreads(ToolpathGeneratorThread t1, ToolpathGeneratorThread t2)
+	{
+		tt1 = t1;
+		tt2 = t2;
+	}
+	@Override
+	public void run() {
+		//SwingUtilities.invokeLater(tt1);
+		//SwingUtilities.invokeLater(tt2);
+		tt1.start();
+		tt2.start();
+
+		
+	}
+	
+}
 /*
 class genListener implements ToolpathGenerator.GeneratorListener
 {
@@ -634,4 +655,5 @@ class checkFinished implements Runnable
 	}
 
 }
+
  */
