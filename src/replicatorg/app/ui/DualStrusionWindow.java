@@ -542,6 +542,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			System.out.println(primarygcode.getName() + " and " + secondarygcode.getName());
 			DualStrusionConstruction dcs = new DualStrusionConstruction(primarygcode, secondarygcode, dest, repStart, repEnd);
 			dcs.run();
 			result = dcs.getCombinedFile();

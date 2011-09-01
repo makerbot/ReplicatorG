@@ -454,9 +454,9 @@ public class DualStrusionWorker {
 	private static void stripEmptyLayers(ArrayList<String> gcode)
 	{
 		//for(int i = 0; i < gcode.size()-2;  i++)
-		for(int i = 0; i < gcode.size()-2;  i++)
+		int max = gcode.size()-2;
+		for(int i = 0; i < max;  i++)
 		{
-
 			//if(gcode.get(i).matches("(<layer> .* ).*"))
 			if(gcode.get(i).matches("\\(\\<layer\\>.*\\)"))
 			{
@@ -485,13 +485,14 @@ public class DualStrusionWorker {
 				{
 
 					gcode.subList(i, a).clear(); // if you are stripping stuff out, resume iterating at  a spot that reflects ur removal
-					i = i - (a - i);
+					//i = i - (a - i);
 				}
 			}
 			else
 			{
 				//System.out.println(gcode.get(i) + " does not ");
 			}
+			max = gcode.size()-2;
 		}
 		//return gcode;
 	}
