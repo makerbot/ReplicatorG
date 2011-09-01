@@ -538,6 +538,7 @@ ToolpathGenerator.GeneratorListener
 				// put the model on the platform.
 				getPreviewPanel().getModel().putOnPlatform();
 			}
+			
 
 		}
 
@@ -558,6 +559,7 @@ ToolpathGenerator.GeneratorListener
 		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build);
 		tgt.addListener(this);
 		tgt.start();
+		
 	}
 
 
@@ -1367,6 +1369,18 @@ ToolpathGenerator.GeneratorListener
 	}
 
 	public void handleDisconnect() {
+		if(building)
+		{
+			int choice = JOptionPane.showConfirmDialog(this, "You are attempting to disconnect the printer while it is printing \n are you sure?", "Disconnect Warning", JOptionPane.YES_NO_OPTION);
+			if(choice == 0)
+			{
+				machineLoader.disconnect();
+			}
+			if(choice == 1)
+			{
+				//Do Nothing
+			}
+		}
 		machineLoader.disconnect();
 	}
 
@@ -2714,6 +2728,23 @@ ToolpathGenerator.GeneratorListener
 			}
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
+			System.out.println("Done?");
+			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
+			System.out.println(extruderChoice);
+			if(extruderChoice.equalsIgnoreCase("left"))
+			{
+				System.out.println("performing left ops");
+				DualStrusionWorker.changeToolHead(build.getCode().file, 1);
+					handleOpenFile(build.getCode().file);
+			
+			}
+			else if(extruderChoice.equalsIgnoreCase("right"))
+			{
+				System.out.println("performing right ops");
+				DualStrusionWorker.changeToolHead(build.getCode().file, 0);
+				handleOpenFile(build.getCode().file);
+
+			}
 		}
 	}
 
