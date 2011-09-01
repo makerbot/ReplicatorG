@@ -33,6 +33,7 @@ public class Layer_Helper {
 	 */
 	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second)
 	{
+		System.out.println("domerge");
 		readLayers(prime, PrimaryLayers);
 		readLayers(second, SecondaryLayers);
 		seeLayerHeights(SecondaryLayers);
