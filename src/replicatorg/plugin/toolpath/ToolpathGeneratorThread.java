@@ -33,7 +33,7 @@ public class ToolpathGeneratorThread extends Thread {
 		y = loy;
 		name = loName;
 	}
-
+	
 	public void run() {
 		System.out.println("alexpong");
 		generator.setModel(build.getModel());

@@ -162,13 +162,17 @@ public class DualStrusionWorker {
 		Toolheads t = Toolheads.Secondary;
 		if(Toolhead == 0)
 		{
+			System.out.println("hit0");
 			t = Toolheads.Secondary;
 		}
 		else if(Toolhead == 1)
 		{
+			System.out.println("hit1");
+
 			t = Toolheads.Primary;	
 		}
 		changeMe = replaceToolHeadReferences(changeMe, t);
+		printArrayList(new ArrayList(changeMe.subList(0,15)));
 		writeArrayListtoFile(changeMe, source);
 	}
 	private static ArrayList<String> replaceToolHeadReferences(ArrayList<String> gcode, Toolheads desired_toolhead)
@@ -215,11 +219,11 @@ public class DualStrusionWorker {
 				{
 					if(s.matches(".* "))
 					{
-						s = s + ("T0");
+						s = s + ("T1");
 					}
 					else
 					{
-						s = s + (" T0");
+						s = s + (" T1");
 					}
 				}
 				s = s + " " + comments; //blackmagic

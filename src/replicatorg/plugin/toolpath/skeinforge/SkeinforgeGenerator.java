@@ -308,6 +308,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		cd.pack();
 		cd.setLocation(x, y);
 		cd.setVisible(true);
+		emitUpdate("Config Done");
 		return configSuccess;
 	}
 	public boolean visualConfigure(Frame parent) {
