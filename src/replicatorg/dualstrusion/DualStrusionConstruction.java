@@ -48,6 +48,7 @@ public class DualStrusionConstruction implements Runnable {
 	 * once a DSC is constructed this method calls shuffle
 	 */
 	public void run() {
+		System.out.println("DSW primary " + primary.getName() + " secondary " + secondary.getName());
 		result = DualStrusionWorker.shuffle(primary, secondary, dest, replaceStart, replaceEnd);
 		Base.getEditor().handleOpenFile(result);
 	}

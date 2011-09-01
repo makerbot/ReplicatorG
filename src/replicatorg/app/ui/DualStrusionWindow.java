@@ -198,7 +198,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 
 		cont.add(linkage, "wrap");
 		 */
-		cont.add(new JLabel("Extruder A (Left)"), "split");
+		cont.add(new JLabel("Extruder A (Left)"), "split");//TOOLHEAD 1
 
 		final JTextField Toolhead1 = new JTextField(60);
 		Toolhead1.setText("");
@@ -535,7 +535,10 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	{
 		triggerNum--;
 		if(triggerNum == 0)
+			
 		{
+			System.out.println("Primary is" + primarygcode.getName() + " secondary is " + secondarygcode.getName());
+
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
