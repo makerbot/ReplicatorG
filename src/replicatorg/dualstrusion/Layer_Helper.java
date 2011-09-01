@@ -43,7 +43,7 @@ public class Layer_Helper {
 
 	}
 	/**
-	 * This method is used to search through an ArrayList of Layers to find a Layer with height x, it is used by mergeLayers to check whether both gcodes have layers at a specified height
+	 * This method is used to search through an ArrayList of Layers to find a Layer with height x, it is used by to check whether both gcodes have layers at a specified height
 	 * @param height find layers within <code>tolerance</code> of this height
 	 * @param searchme an ArrayList of layers to search
 	 * @return if it finds something returns the layer, else returns null
@@ -132,9 +132,10 @@ public class Layer_Helper {
 		}
 	//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
+		toolChange(Toolheads.Primary, 0.3f); //insures we start with right offset and nozzles start supaclean
+
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
-			toolChange(Toolheads.Primary, 0.3f); //insures we start with right offset and nozzles start supaclean
 			//System.out.println("checking " + i);
 			Layer a = getByHeight(i, primary); //primary
 			Layer b = getByHeight(i, secondary);//secondary
