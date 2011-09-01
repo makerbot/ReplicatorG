@@ -33,6 +33,7 @@ public class Layer_Helper {
 	 */
 	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second)
 	{
+		
 		System.out.println("domerge");
 		readLayers(prime, PrimaryLayers);
 		readLayers(second, SecondaryLayers);
@@ -95,7 +96,7 @@ public class Layer_Helper {
 		return null;
 	*/
 		currentToolhead = destinationTool;
-		return completeToolChange(destinationTool, LayerHeight);
+		return completeToolChange(destinationTool, LayerHeight); //calls will langfords toolchange
 	}
 	/*
 	public static void setCurrentFeedRate(ArrayList<String> commands)
@@ -133,6 +134,7 @@ public class Layer_Helper {
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
+			toolChange(Toolheads.Primary, 0.3f); //insures we start with right offset and nozzles start supaclean
 			//System.out.println("checking " + i);
 			Layer a = getByHeight(i, primary); //primary
 			Layer b = getByHeight(i, secondary);//secondary
@@ -375,9 +377,11 @@ public class Layer_Helper {
 		targetCode.add("(<toolchange>)");
 		float purge_z = 6.5f;
 		targetCode.add("M103");
+		
 		targetCode.add("G1 Z" + (layer_height+hop_height));
 		targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
 		targetCode.add("M103");
+		targetCode.add("M18"); //Added Ben's M18
 		targetCode.add("G5"+(5-nextToolnum));
 	//	targetCode.add("M108 R"+currentFeedRate);
 
