@@ -30,6 +30,7 @@ import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.Profile;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
 class ConfigurationDialog extends JDialog {
+	final boolean postProcessToolheadIndex = true;
 	final String manageStr = "Manage profiles...";
 	final String profilePref = "replicatorg.skeinforge.profilePref";
 	JButton editButton = new JButton("Edit...");

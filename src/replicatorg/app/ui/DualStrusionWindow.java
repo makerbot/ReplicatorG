@@ -97,6 +97,8 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	File primary, secondary, dest, result, primarygcode, secondarygcode;
 	JFrame frame = new JFrame("DualStrusion Window");
 	volatile short triggerNum;
+	private ToolpathGeneratorThread tpgt;
+	boolean start2nd = false;
 	boolean hasOneGcode; //this boolean is true if the constructor is passed one gcode file to begin with, it later effect the layout of the Swing Window
 	boolean repStart, repEnd;
 	String originalGcodePath;
@@ -456,12 +458,13 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 
 			tg1.addListener(this);
 			tg2.addListener(this);
-			tg1.setDualStrusionSupportFlag(true, 200, 300, "Extruder A (Left)");
+			tg1.setDualStrusionSupportFlag(true, 200, 300, "Extruder A (Left)"); //This preps all the toolpathGenerator stuff for dualstrusion and makes it deploy swing windows at given coordinates
 			tg2.setDualStrusionSupportFlag(true, 650, 300, "Extruder B (Right)");
 			//SwingUtilities.invokeLater(tg1);
 			//SwingUtilities.invokeLater(tg2);
-			runConcurrentToolPathGeneratorThreads runTogether = new runConcurrentToolPathGeneratorThreads(tg1, tg2);
-			SwingUtilities.invokeLater(runTogether);
+			tpgt = tg2;
+			tg1.start();
+			
 			triggerNum = 2;
 
 		}
@@ -469,6 +472,25 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		{
 			System.err.println("cannot read stl");
 		} 
+	}
+	private synchronized void start2ndGeneration()
+	{
+		System.out.println("Ill never let go jack!");
+		ToolpathGenerator generator2 = ToolpathGeneratorFactory.createSelectedGenerator();
+		try {
+			Build s = new Build(secondary.getAbsolutePath());
+		
+		JFrame secondaryProgress = new JFrame("Secondary Progress");
+		
+
+		ToolpathGeneratorThread tg2 = new ToolpathGeneratorThread(secondaryProgress, generator2, s);
+		tg2.addListener(this);
+		tg2.setDualStrusionSupportFlag(true, 650, 300, "Extruder B (Right)");
+		tg2.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	private synchronized void startPrimary()
 	{
@@ -584,11 +606,18 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	}
 	@Override
 	public void updateGenerator(String message) {
-		// TODO Auto-generated method stub
+		if(message.equals("Config Done") && !start2nd)
+		{
+			start2nd = true;
+			System.out.println("Message recieved");
+			start2ndGeneration();
+			
+		}
 
 	}
 
 }
+/*
 class runConcurrentToolPathGeneratorThreads implements Runnable
 {
 	ToolpathGeneratorThread tt1, tt2;
@@ -602,12 +631,21 @@ class runConcurrentToolPathGeneratorThreads implements Runnable
 		//SwingUtilities.invokeLater(tt1);
 		//SwingUtilities.invokeLater(tt2);
 		tt1.start();
+		
+		try {
+			tt1.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		tt2.start();
 
 		
 	}
 	
 }
+*/
 /*
 class genListener implements ToolpathGenerator.GeneratorListener
 {

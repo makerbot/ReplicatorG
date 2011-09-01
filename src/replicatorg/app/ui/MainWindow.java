@@ -891,6 +891,12 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				DualStrusionWorker.changeToolHead(build.getCode().file, 1);
 				handleOpenFile(build.getCode().file);
+				try {
+					build.getCode().load();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}	
 		});
 		JMenuItem right = new JMenuItem("Extruder B");
@@ -899,8 +905,13 @@ ToolpathGenerator.GeneratorListener
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				DualStrusionWorker.changeToolHead(build.getCode().file, 0);
-
 				handleOpenFile(build.getCode().file);
+				try {
+					build.getCode().load();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
 			}	
 		});
