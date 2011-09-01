@@ -3,8 +3,8 @@ Name                          	Value
 WindowPosition	700+0
 Open File for Cool	
 Activate Cool	False
-Orbit	False
-Slow Down	True
+Orbit	True
+Slow Down	False
 Maximum Cool (Celcius):	0.0
 Minimum Layer Time (seconds):	8.0
 Minimum Orbital Radius (millimeters):	10.0
