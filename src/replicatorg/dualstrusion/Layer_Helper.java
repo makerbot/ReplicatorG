@@ -3,6 +3,9 @@ package replicatorg.dualstrusion;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 
+import replicatorg.app.Base;
+import replicatorg.machine.model.WipeModel;
+
 /**
  * 
  * @author Noah Levy, Ben Rockhold, Will Langford
@@ -291,26 +294,33 @@ public class Layer_Helper {
 	 * @return
 	 */
 	public static ArrayList<String> wipe(int currentToolnum, int nextToolnum, float layer_height) {
+		System.out.println(Base.getMachineLoader().getMachine().getModel().getWipes().size());
+		WipeModel tool0Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(0);
+		WipeModel tool1Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(1);
 		ArrayList<String> targetCode = new ArrayList<String>();
-		
-		
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(0); //Min no decimals
+		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
+		nf.setGroupingUsed(false); //NO commas!
 		// define constants/parameters
 		// note: the array position corresponds to toolhead number (ie. purge_x[0] is the x purge location for toolhead 0)
-		float[] purge_x = {38.0f, -38.0f}, // purge location with respect to machine coordinates (G53) (pre-wipe)
-		purge_y = {52.0f, 52.0f},
-		purge_x_offset = {45.0f, -45.0f},  // post-wipe purge location
-		purge_y_offset = {52.0f, 52.0f},
-		purge_z = {6.5f, 6.5f},  
-		feedrate = {3000.0f, 3000.0f},
-		flowrate = {5.0f, 5.0f},  // pushback (purge) flowrate
-		full_reversal_flowrate = {25.0f, 25.0f},  // reversal flowrate for stopping extrusion
+		String[] purge_x = {nf.format(tool0Wipes.getX1()), nf.format(tool1Wipes.getX1())}, // purge location with respect to machine coordinates (G53) (pre-wipe)
+		purge_y = {nf.format(tool0Wipes.getY1()),nf.format(tool1Wipes.getY1())},
+		purge_x_offset = {nf.format(tool0Wipes.getX2()), nf.format(tool1Wipes.getX2())},  // post-wipe purge location
+		purge_y_offset = {nf.format(tool0Wipes.getY1()), nf.format(tool1Wipes.getY2())}, // purge y = purge y offset (no y change)
+		purge_z = {nf.format(tool0Wipes.getZ1()), nf.format(tool1Wipes.getZ1())},
+		purge_z_offset = {nf.format(tool0Wipes.getZ2()),nf.format(tool1Wipes.getZ2())},
+		wait_time = {nf.format(tool0Wipes.getWait()), nf.format(tool1Wipes.getWait())},
+		feedrate = {"3000.0", "3000.0"},
+		flowrate = {nf.format(tool0Wipes.getPurgeRPM()),nf.format(tool1Wipes.getPurgeRPM())},  // pushback (purge) flowrate
+		full_reversal_flowrate = {nf.format(tool0Wipes.getReverseRPM()), nf.format(tool1Wipes.getReverseRPM())},  // reversal flowrate for stopping extrusion
 		//partial_reversal_flowrate = {2.0f, 2.0f}, // reversal flowrate for temporarily stopping extrusion
-		hop_height = {3.0f, 3.0f}; // nozzle lift before returning to layer
+		hop_height = {"3.0", "3.0"}; // nozzle lift before returning to layer
 
-		int[] purge_duration = {1000, 1000},  // durations (in msec)
-		full_reversal_duration = {15, 15}; //TWEAK THIS!!!!
+		int[] purge_duration = {tool0Wipes.getPurgeDuration(), tool1Wipes.getPurgeDuration()},  // durations (in msec)
+		full_reversal_duration = {tool0Wipes.getReverseDuration(), tool1Wipes.getReverseDuration()}; //TWEAK THIS!!!!
 		//partial_reversal_duration = {7, 7};
-
+		
 		// reverse current toolhead
 		targetCode.add("M108 R"+full_reversal_flowrate[nextToolnum]);
 		//
@@ -322,7 +332,7 @@ public class Layer_Helper {
 
 		// move to purge home
 		targetCode.add("G53");
-		if (layer_height > purge_z[nextToolnum]) {
+		if (layer_height > Float.parseFloat(purge_z[nextToolnum])) {
 			// if we're higher than the purge height go over and then down
 			targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
 			targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
@@ -344,14 +354,14 @@ public class Layer_Helper {
 		//targetCode.add("G04 P"+partial_reversal_duration[nextToolnum]);
 		targetCode.add("M103");
 		targetCode.add("M108 R"+flowrate[nextToolnum]);
-		targetCode.add("G04 P2000");
+		targetCode.add("G04 P" +wait_time[nextToolnum]);
 		// wipe upcoming nozzle
 		targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 		targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y_offset[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 		// wipe current nozzle
 		targetCode.add("G1 X" + purge_x[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
 		targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
-		targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y_offset[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
+		targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y_offset[currentToolnum] + " Z" + purge_z_offset[currentToolnum] + " F" + feedrate[currentToolnum]);
 		// return to purge home
 		targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 

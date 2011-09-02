@@ -111,6 +111,10 @@ M18
 			<tool name="Left (A)" index="1" type="extruder" motor="true" fan="false" heatedplatform="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
 		
 		</tools>
+		<wipes>
+		<wipe index="0" X1="38.0" Y1="52.0" Z1="6.5" X2="45.0" Y2="52.0" Z2="6.5" wait="2000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
+		<wipe index="1" X1="-38.0" Y1="52.0" Z1="6.5" X2="-45.0" Y2="52.0" Z2="6.5" wait="2000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
+		</wipes>
 		<clamps></clamps>
 		<driver name="makerbot4ga">
 			<!-- optional: <portname>COM1</portname> -->
