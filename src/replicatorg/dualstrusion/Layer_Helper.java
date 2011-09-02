@@ -34,9 +34,10 @@ public class Layer_Helper {
 	/**
 	 * This method has all the method calls in order to merge two gcodes, it is the only method that "needs" to be public
 	 */
-	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second)
+	private static boolean mergeSupport;
+	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second, boolean mergeSup)
 	{
-		
+		mergeSupport = mergeSup;
 		System.out.println("domerge");
 		readLayers(prime, PrimaryLayers);
 		readLayers(second, SecondaryLayers);
@@ -139,6 +140,11 @@ public class Layer_Helper {
 
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
+			if(mergeSupport)
+			{
+				currentToolhead = Toolheads.Primary; //1=A=Primary=Left
+				//2=B=Primary=Right
+			}
 			//System.out.println("checking " + i);
 			Layer a = getByHeight(i, primary); //primary
 			Layer b = getByHeight(i, secondary);//secondary
