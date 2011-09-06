@@ -1074,6 +1074,10 @@ ToolpathGenerator.GeneratorListener
 				JRadioButtonMenuItem item = (JRadioButtonMenuItem) e.getSource();
 				final String name = item.getText();
 				Base.preferences.put("machine.name", name);
+				if(name.equals("Thingomatic w/ HBP and Dual Stepstruder MK7"))
+				{
+					
+				}
 			}
 		}
 	}

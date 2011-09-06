@@ -100,7 +100,34 @@ public class Layer_Helper {
 		return null;
 	*/
 		currentToolhead = destinationTool;
+		
 		return completeToolChange(destinationTool, LayerHeight); //calls will langfords toolchange
+	}
+	public static ArrayList<String> toolChange(Toolheads destinationTool, Layer a)
+	{
+		//ArrayList<String> tempToolChange;
+		/*
+		if(destinationTool == Toolheads.Primary)
+		{
+			currentToolhead = Toolheads.Primary;
+			return completeToolChange;
+		}
+		else if(destinationTool == Toolheads.Secondary)
+		{
+			currentToolhead = Toolheads.Secondary;
+			tempToolChange = new ArrayList<String>(ToolChangeToSecondary);
+			tempToolChange.add(currentFeedRate);
+			return tempToolChange;
+		}
+	
+		return null;
+	*/
+		currentToolhead = destinationTool;
+		ArrayList<String> cmds = new ArrayList<String>();
+		
+		cmds.addAll(completeToolChange(destinationTool, a.getHeight())); //calls will langfords toolchange
+		cmds.add(getFirstMove(a.getCommands()));
+		return cmds;
 	}
 	/*
 	public static void setCurrentFeedRate(ArrayList<String> commands)
@@ -179,6 +206,17 @@ public class Layer_Helper {
 	 * @param destTool Tool to add layer with
 	 * @return
 	 */
+	private static String getFirstMove(ArrayList<String> cmds)
+	{
+		for(String s : cmds)
+		{
+			if(s.matches("G1.*"))
+			{
+				return s + " (added by getFirstMove)";
+			}
+		}
+		return " ";
+	}
 	private static ArrayList<String> parseLayer(Layer a, Toolheads destTool)
 	{
 	//	setCurrentFeedRate(a.getCommands());
@@ -192,7 +230,7 @@ public class Layer_Helper {
 			}
 			else if(currentToolhead == Toolheads.Secondary)
 			{
-				completeLayer.addAll(toolChange(Toolheads.Primary, a.getHeight()));
+				completeLayer.addAll(toolChange(Toolheads.Primary, a));
 				completeLayer.addAll(a.getCommands());
 			}
 		}
@@ -204,7 +242,7 @@ public class Layer_Helper {
 			}
 			else if(currentToolhead == Toolheads.Primary)
 			{
-				completeLayer.addAll(toolChange(Toolheads.Secondary, a.getHeight()));
+				completeLayer.addAll(toolChange(Toolheads.Secondary, a));
 				completeLayer.addAll(a.getCommands());
 			}
 		}
@@ -277,14 +315,14 @@ public class Layer_Helper {
 		{
 			//setCurrentFeedRate(b.getCommands());
 			cmds.addAll(a.getCommandsWithoutLayerTag());
-			cmds.addAll(toolChange(Toolheads.Secondary, a.getHeight()));
+			cmds.addAll(toolChange(Toolheads.Secondary, a));
 			cmds.addAll(b.getCommandsWithoutLayerTag());
 		}
 		else if(currentToolhead == Toolheads.Secondary)
 		{
 			//setCurrentFeedRate(a.getCommands());
 			cmds.addAll(b.getCommandsWithoutLayerTag());
-			cmds.addAll(toolChange(Toolheads.Primary, b.getHeight()));
+			cmds.addAll(toolChange(Toolheads.Primary, b));
 			cmds.addAll(a.getCommandsWithoutLayerTag());
 		}
 		cmds.add("(</layer>)");
@@ -393,6 +431,7 @@ public class Layer_Helper {
 		float hop_height = 7.0f;
 		targetCode.add("(<toolchange>)");
 		float purge_z = 6.5f;
+		
 		targetCode.add("M103");
 		
 		targetCode.add("G1 Z" + (layer_height+hop_height));
