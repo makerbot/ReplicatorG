@@ -61,6 +61,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -161,6 +162,7 @@ ToolpathGenerator.GeneratorListener
 
 	static final String WINDOW_TITLE = "ReplicatorG" + " - "
 	+ Base.VERSION_NAME;
+	
 
 	final static String MODEL_TAB_KEY = "MODEL";
 	final static String GCODE_TAB_KEY = "GCODE";
@@ -222,6 +224,8 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem controlPanelItem;
 	JMenuItem buildMenuItem;
 	JMenuItem dualstrusionItem;
+	JMenu changeToolheadMenu = new JMenu("Change Toolhead of GCode");
+
 	JMenu machineMenu;
 	MachineMenuListener machineMenuListener;
 	SerialMenuListener serialMenuListener;
@@ -884,7 +888,6 @@ ToolpathGenerator.GeneratorListener
 
 		menu.addSeparator();
 		//Change Toolhead of GCode
-		JMenu changeToolheadMenu = new JMenu("Change Toolhead of GCode");
 		//ButtonGroup toolGroup = new ButtonGroup();
 		JMenuItem left = new JMenuItem("Extruder A");
 		left.addActionListener(new ActionListener()
@@ -929,6 +932,9 @@ ToolpathGenerator.GeneratorListener
 			}
 		});
 		menu.add(dualstrusionItem);
+		dualstrusionItem.setEnabled(false);
+		changeToolheadMenu.setEnabled(false);
+		setDualStrusionGUI();
 
 		return menu;
 	}
@@ -1057,6 +1063,23 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 	}
+	private void setDualStrusionGUI()
+	{
+		dualstrusionItem.setEnabled(false);
+		changeToolheadMenu.setEnabled(false);
+		
+		String mname = Base.preferences.get("machine.name", "error");
+		System.out.println(mname);
+		MachineLoader ml = new MachineLoader();
+		ml.load(mname);
+		System.out.println(ml.getMachine().getModel().getTools().size());
+		if(mname.toLowerCase().contains("dual"))
+		{
+			dualstrusionItem.setEnabled(true);
+			changeToolheadMenu.setEnabled(true);
+			
+		}
+	}
 	class MachineMenuListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			if (machineMenu == null) {
@@ -1074,10 +1097,7 @@ ToolpathGenerator.GeneratorListener
 				JRadioButtonMenuItem item = (JRadioButtonMenuItem) e.getSource();
 				final String name = item.getText();
 				Base.preferences.put("machine.name", name);
-				if(name.equals("Thingomatic w/ HBP and Dual Stepstruder MK7"))
-				{
-					
-				}
+				setDualStrusionGUI();
 			}
 		}
 	}
