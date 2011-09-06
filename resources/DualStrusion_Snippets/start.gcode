@@ -3,8 +3,8 @@
 (This file is for a MakerBot Thing-O-Matic with Dual Extruders)
 G21 (set units to mm)
 G90 (set positioning to absolute)
-G10 P2 X-16.5 Y0 Z0
-G10 P1 X16.55 Y0 Z0
+G10 P2 X-16.5 Y0 Z-0.3
+G10 P1 X16.55 Y0 Z-0.3
 M104 S225 T0 (set extruder temperature)
 M109 S110 T1 (set heated-build-platform temperature)
 M104 S225 T1 (set extruder temperature)
