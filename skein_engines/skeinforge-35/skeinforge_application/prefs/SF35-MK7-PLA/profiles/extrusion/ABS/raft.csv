@@ -2,7 +2,7 @@ Format is tab separated raft settings.
 Name                          	Value
 WindowPosition	700+0
 Open File for Raft	
-Activate Raft	True
+Activate Raft	False
 Add Raft, Elevate Nozzle, Orbit and Set Altitude:	False
 Base Feed Rate Multiplier (ratio):	0.45
 Base Flow Rate Multiplier (ratio):	1.0
