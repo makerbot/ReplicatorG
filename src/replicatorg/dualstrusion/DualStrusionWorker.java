@@ -31,6 +31,7 @@ public class DualStrusionWorker {
 	 */
 	private static float yDanger = 80.0f;
 
+	private static ArrayList<String>raftCode;
 	/**
 	 * Strips white space and carriage returns from gcode
 	 * @param gcode source gcode
@@ -56,6 +57,7 @@ public class DualStrusionWorker {
 			{
 
 				primaryTemp = pt;
+				System.out.println("primaryTemp" + pt);
 				break; // We want the first mention of temp to avoid conflict with Skein cool
 			}
 		}
@@ -106,10 +108,9 @@ public class DualStrusionWorker {
 		//
 		startGcode = readFiletoArrayList(new File("resources/DualStrusion_Snippets/start.gcode"));
 		endGcode = readFiletoArrayList(new File("resources/DualStrusion_Snippets/end.gcode"));
-
-		stripStartEnd(primary_lines, replaceStart, replaceEnd);
-		stripStartEnd(secondary_lines, true, true);
-
+		
+		
+		
 		//if(checkVersion(primary_lines) &&  checkVersion(secondary_lines))
 		prepGcode(primary_lines);
 		prepGcode(secondary_lines);
@@ -117,15 +118,16 @@ public class DualStrusionWorker {
 		primary_lines = replaceToolHeadReferences(primary_lines, Toolheads.Primary);
 		secondary_lines = replaceToolHeadReferences(secondary_lines, Toolheads.Secondary);
 		getTemps(primary_lines, secondary_lines);
-
+		stripStartEnd(primary_lines, replaceStart, replaceEnd);
+		stripStartEnd(secondary_lines, true, true);
 		//writeArrayListtoFile(primary_lines, new File("/home/makerbot/baghandle/bh1stripped.gcode"));
 		//writeArrayListtoFile(secondary_lines, new File("/home/makerbot/baghandle/bh0stripped.gcode"));
 		checkCrashes(primary_lines);
 		checkCrashes(secondary_lines);
 		master_layer = Layer_Helper.doMerge(primary_lines, secondary_lines, false);
-		modifyTempReferences(startGcode);
+		
 		replaceStartEnd(master_layer);
-
+		modifyTempReferences(startGcode);
 		writeArrayListtoFile(master_layer, dest);
 
 		return dest;
@@ -175,6 +177,21 @@ public class DualStrusionWorker {
 		printArrayList(new ArrayList(changeMe.subList(0,15)));
 		writeArrayListtoFile(changeMe, source);
 	}
+	/*
+	public static void stripRaft(ArrayList<String> gcode)
+	{
+		int length = gcode.size();
+		for(int i = 0; i < length; i++)
+		{
+			
+			if(s.equals("(<extrusion>)"))
+			{
+				for(int a = 0; length <)
+			}
+			
+		}
+	}
+	*/
 	private static ArrayList<String> replaceToolHeadReferences(ArrayList<String> gcode, Toolheads desired_toolhead)
 	{
 		ArrayList<String> answer = new ArrayList<String>();
@@ -455,7 +472,7 @@ public class DualStrusionWorker {
 	{
 		//for(int i = 0; i < gcode.size()-2;  i++)
 		int max = gcode.size()-2;
-		for(int i = 0; i < max;  i++)
+		for(int i = 0; i < gcode.size()-2;   i++)
 		{
 			//if(gcode.get(i).matches("(<layer> .* ).*"))
 			if(gcode.get(i).matches("\\(\\<layer\\>.*\\)"))
@@ -485,14 +502,14 @@ public class DualStrusionWorker {
 				{
 
 					gcode.subList(i, a).clear(); // if you are stripping stuff out, resume iterating at  a spot that reflects ur removal
-					//i = i - (a - i);
+					i = i - (a - i);
 				}
 			}
 			else
 			{
 				//System.out.println(gcode.get(i) + " does not ");
 			}
-			max = gcode.size()-2;
+			//max = gcode.size()-2;
 		}
 		//return gcode;
 	}

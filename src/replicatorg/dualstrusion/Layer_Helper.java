@@ -17,7 +17,7 @@ public class Layer_Helper {
 	/**
 	 * <code>currentToolhead</code> holds a Toolheads enum representing the current Toolhead, this is checked to see whether a toolchange is necessary
 	 */
-	private static Toolheads currentToolhead = Toolheads.Secondary;
+	private static Toolheads currentToolhead = Toolheads.Primary;
 	/**
 	 * Holds the ArrayList of layers for the primary gcode
 	 */
@@ -41,7 +41,7 @@ public class Layer_Helper {
 		System.out.println("domerge");
 		readLayers(prime, PrimaryLayers);
 		readLayers(second, SecondaryLayers);
-		seeLayerHeights(SecondaryLayers);
+		//seeLayerHeights(SecondaryLayers);
 		System.out.println(PrimaryLayers.size() + " " + SecondaryLayers.size());
 		return mergeLayers(PrimaryLayers, SecondaryLayers);
 
@@ -82,47 +82,17 @@ public class Layer_Helper {
 	 */
 	public static ArrayList<String> toolChange(Toolheads destinationTool, float LayerHeight)
 	{
-		//ArrayList<String> tempToolChange;
-		/*
-		if(destinationTool == Toolheads.Primary)
-		{
-			currentToolhead = Toolheads.Primary;
-			return completeToolChange;
-		}
-		else if(destinationTool == Toolheads.Secondary)
-		{
-			currentToolhead = Toolheads.Secondary;
-			tempToolChange = new ArrayList<String>(ToolChangeToSecondary);
-			tempToolChange.add(currentFeedRate);
-			return tempToolChange;
-		}
-	
-		return null;
-	*/
+		System.out.println("dest " + destinationTool + "cur " + currentToolhead);
+
 		currentToolhead = destinationTool;
 		
 		return completeToolChange(destinationTool, LayerHeight); //calls will langfords toolchange
 	}
 	public static ArrayList<String> toolChange(Toolheads destinationTool, Layer a)
 	{
-		//ArrayList<String> tempToolChange;
-		/*
-		if(destinationTool == Toolheads.Primary)
-		{
-			currentToolhead = Toolheads.Primary;
-			return completeToolChange;
-		}
-		else if(destinationTool == Toolheads.Secondary)
-		{
-			currentToolhead = Toolheads.Secondary;
-			tempToolChange = new ArrayList<String>(ToolChangeToSecondary);
-			tempToolChange.add(currentFeedRate);
-			return tempToolChange;
-		}
-	
-		return null;
-	*/
+		//System.out.println("dest " + destinationTool);
 		currentToolhead = destinationTool;
+		//System.out.println("new dest " + destinationTool);
 		ArrayList<String> cmds = new ArrayList<String>();
 		
 		cmds.addAll(completeToolChange(destinationTool, a.getHeight())); //calls will langfords toolchange
@@ -163,12 +133,13 @@ public class Layer_Helper {
 		}
 	//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
-		toolChange(Toolheads.Primary, 0.3f); //insures we start with right offset and nozzles start supaclean
+		merged.addAll(toolChange(Toolheads.Primary, 0.6f)); //insures we start with right offset and nozzles start supaclean
 
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
 			if(mergeSupport)
 			{
+				System.out.println("mergeSupport is: ON");
 				currentToolhead = Toolheads.Primary; //1=A=Primary=Left
 				//2=B=Primary=Right
 			}
@@ -180,18 +151,22 @@ public class Layer_Helper {
 				//System.out.println("non null layers at " + i);
 				//DualStrusionWorker.printArrayList(a.getCommands());
 				//DualStrusionWorker.printArrayList(b.getCommands());
+				System.out.println("curTool = " + currentToolhead);
 				if(a != null && b != null)
 				{
+					System.out.println("both real" + i);
 				//	System.out.println("this is called");
 					merged.addAll(mergeLayer(a,b));
 				}
 				else if(a != null)
 				{
+					System.out.println("a is real b is null" + i);
 					//setCurrentFeedRate(b.getCommands());
 					merged.addAll(parseLayer(a, Toolheads.Primary));
 				}
 				else if(b != null)
 				{
+					System.out.println("b is real a is null" + i);
 					//setCurrentFeedRate(a.getCommands());
 					merged.addAll(parseLayer(b, Toolheads.Secondary));
 				}
@@ -221,6 +196,7 @@ public class Layer_Helper {
 	{
 	//	setCurrentFeedRate(a.getCommands());
 		ArrayList<String> completeLayer = new ArrayList<String>();
+		System.out.println("curTool " + currentToolhead + " desttool " + destTool + "linenum " + a.getHeight());
 		if(destTool == Toolheads.Primary)
 		{
 			if(currentToolhead == Toolheads.Primary)
@@ -338,7 +314,7 @@ public class Layer_Helper {
 	 * @return
 	 */
 	public static ArrayList<String> wipe(int currentToolnum, int nextToolnum, float layer_height) {
-		System.out.println(Base.getMachineLoader().getMachine().getModel().getWipes().size());
+		//System.out.println(Base.getMachineLoader().getMachine().getModel().getWipes().size());
 		WipeModel tool0Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(0);
 		WipeModel tool1Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(1);
 		ArrayList<String> targetCode = new ArrayList<String>();
@@ -419,7 +395,7 @@ public class Layer_Helper {
 	 */
 	public static ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
 		ArrayList<String> targetCode = new ArrayList<String>();
-		Toolheads currentTool = Toolheads.Secondary;
+		Toolheads currentTool = null;
 
 		if (nextTool == Toolheads.Primary) { 
 			currentTool = Toolheads.Secondary;
