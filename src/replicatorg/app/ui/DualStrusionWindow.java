@@ -138,7 +138,6 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		//frame.setContentPane(this);
 		frame.setVisible(true);	
 		frame.setLocation(400, 0);
-		frame.setSize(800,500 );
 		Container cont = this.getContentPane();
 		cont.setLayout(new MigLayout("fill"));
 		cont.setVisible(true);
@@ -421,6 +420,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		});
 		cont.add(help);
 		frame.add(cont);
+		frame.pack();
 
 	}
 	private static String replaceExtension(String s, String newExtension)
