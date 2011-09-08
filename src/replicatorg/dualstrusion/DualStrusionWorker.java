@@ -106,8 +106,8 @@ public class DualStrusionWorker {
 		ArrayList<String> secondary_lines = readFiletoArrayList(secondary);
 		ArrayList<String> master_layer = new ArrayList<String>();
 		//
-		startGcode = readFiletoArrayList(new File("resources/DualStrusion_Snippets/start.gcode"));
-		endGcode = readFiletoArrayList(new File("resources/DualStrusion_Snippets/end.gcode"));
+		startGcode = readFiletoArrayList(new File("DualStrusion_Snippets/start.gcode"));
+		endGcode = readFiletoArrayList(new File("DualStrusion_Snippets/end.gcode"));
 		
 		
 		
