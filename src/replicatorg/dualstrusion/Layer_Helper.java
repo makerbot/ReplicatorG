@@ -85,7 +85,7 @@ public class Layer_Helper {
 		System.out.println("dest " + destinationTool + "cur " + currentToolhead);
 
 		currentToolhead = destinationTool;
-		
+
 		return completeToolChange(destinationTool, LayerHeight); //calls will langfords toolchange
 	}
 	public static ArrayList<String> toolChange(Toolheads destinationTool, Layer a)
@@ -94,7 +94,7 @@ public class Layer_Helper {
 		currentToolhead = destinationTool;
 		//System.out.println("new dest " + destinationTool);
 		ArrayList<String> cmds = new ArrayList<String>();
-		
+
 		cmds.addAll(completeToolChange(destinationTool, a.getHeight())); //calls will langfords toolchange
 		cmds.add(getFirstMove(a.getCommands()));
 		return cmds;
@@ -111,7 +111,7 @@ public class Layer_Helper {
 			}
 		}
 	}
-	*/
+	 */
 	/**
 	 * This method merges two layers, it does so by iterating through in increments of <code>tolerance</code> and calling getByHeight to see if both gcodes, one gcode, or no gcodes have layers at that height.
 	 * It then calls different methods to integrate the gcode in depending on the presence of layers at that height
@@ -131,7 +131,7 @@ public class Layer_Helper {
 		{
 			maxHeight = maxHeight0;
 		}
-	//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
+		//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
 		merged.addAll(toolChange(Toolheads.Primary, 0.6f)); //insures we start with right offset and nozzles start supaclean
 
@@ -155,7 +155,7 @@ public class Layer_Helper {
 				if(a != null && b != null)
 				{
 					System.out.println("both real" + i);
-				//	System.out.println("this is called");
+					//	System.out.println("this is called");
 					merged.addAll(mergeLayer(a,b));
 				}
 				else if(a != null)
@@ -187,14 +187,19 @@ public class Layer_Helper {
 		{
 			if(s.matches("G1.*"))
 			{
-				return s + " (added by getFirstMove)";
+				if(s.contains("F"))
+				{
+					int lastf = s.lastIndexOf("F");
+					s = s.substring(0, lastf);
+				}
+					return s + " F1700.0 (added by getFirstMove)";
 			}
 		}
 		return " ";
 	}
 	private static ArrayList<String> parseLayer(Layer a, Toolheads destTool)
 	{
-	//	setCurrentFeedRate(a.getCommands());
+		//	setCurrentFeedRate(a.getCommands());
 		ArrayList<String> completeLayer = new ArrayList<String>();
 		System.out.println("curTool " + currentToolhead + " desttool " + destTool + "linenum " + a.getHeight());
 		if(destTool == Toolheads.Primary)
@@ -340,7 +345,7 @@ public class Layer_Helper {
 		int[] purge_duration = {tool0Wipes.getPurgeDuration(), tool1Wipes.getPurgeDuration()},  // durations (in msec)
 		full_reversal_duration = {tool0Wipes.getReverseDuration(), tool1Wipes.getReverseDuration()}; //TWEAK THIS!!!!
 		//partial_reversal_duration = {7, 7};
-		
+
 		// reverse current toolhead
 		targetCode.add("M108 R"+full_reversal_flowrate[nextToolnum]);
 		//
@@ -407,15 +412,15 @@ public class Layer_Helper {
 		float hop_height = 7.0f;
 		targetCode.add("(<toolchange>)");
 		float purge_z = 6.5f;
-		
+
 		targetCode.add("M103");
-		
+
 		targetCode.add("G1 Z" + (layer_height+hop_height));
 		targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
 		targetCode.add("M103");
 		targetCode.add("M18"); //Added Ben's M18
 		targetCode.add("G5"+(5-nextToolnum));
-	//	targetCode.add("M108 R"+currentFeedRate);
+		//	targetCode.add("M108 R"+currentFeedRate);
 
 		// after the toolchange, go to the next position
 		/*
@@ -428,14 +433,14 @@ public class Layer_Helper {
 			targetCode.add("G1 Z" + h + " F2000");
 			targetCode.add(getNextPos(line_num,gcode).split("Z")[0]+"Z"+ h +" F2000");
 		}
-		*/
+		 */
 		float h = layer_height+hop_height;
 		targetCode.add("G1 Z"+ h +" F2000");
-		
+
 		targetCode.add("(</toolchange>)");
 		//System.out.println(currentFeedRate);
 		//targetCode.add(currentFeedRate);
 		return targetCode;
 	}
-	
+
 }
