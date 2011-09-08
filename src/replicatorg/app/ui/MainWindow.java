@@ -1070,13 +1070,20 @@ ToolpathGenerator.GeneratorListener
 		
 		String mname = Base.preferences.get("machine.name", "error");
 		System.out.println(mname);
+		try
+		{
 		MachineLoader ml = new MachineLoader();
 		ml.load(mname);
 		System.out.println(ml.getMachine().getModel().getTools().size());
-		if(mname.toLowerCase().contains("dual"))
+		if(ml.getMachine().getModel().getTools().size() > 1)
 		{
 			dualstrusionItem.setEnabled(true);
 			changeToolheadMenu.setEnabled(true);
+			
+		}
+		}
+		catch(NullPointerException e)
+		{
 			
 		}
 	}
