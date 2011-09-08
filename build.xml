@@ -88,7 +88,7 @@
 
   <target name="run" depends="jar">
     <java fork="true" classname="replicatorg.app.Base"> <!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
-      <jvmarg value="-ea"/>
+      <jvmarg value="-Xmx512m"/>
       <jvmarg value="-XX:+HeapDumpOnOutOfMemoryError"/>
       <jvmarg value="${native.java.flags}"/>
       <classpath>
