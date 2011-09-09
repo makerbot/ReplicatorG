@@ -3,7 +3,7 @@ Name                          	Value
 WindowPosition	700+0
 Open File for Raft	
 Activate Raft	True
-Add Raft, Elevate Nozzle, Orbit and Set Altitude:	False
+Add Raft, Elevate Nozzle, Orbit and Set Altitude:	True
 Base Feed Rate Multiplier (ratio):	0.45
 Base Flow Rate Multiplier (ratio):	1.0
 Base Infill Density (ratio):	0.4
