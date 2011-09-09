@@ -141,6 +141,11 @@ M18
 		<wipes>
 		<wipe index="0" X1="38.0" Y1="52.0" Z1="6.5" X2="45.0" Y2="52.0" Z2="6.5" wait="2000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
 		<wipe index="1" X1="-38.0" Y1="52.0" Z1="6.5" X2="-45.0" Y2="52.0" Z2="6.5" wait="2000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
+		<exclusion>
+		<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 1"/>
+		<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 2"/>
+		
+		</exclusion>
 		</wipes>
 		<clamps></clamps>
 		<driver name="makerbot4ga">
