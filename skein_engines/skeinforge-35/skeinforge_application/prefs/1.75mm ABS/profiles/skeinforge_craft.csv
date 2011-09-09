@@ -30,8 +30,8 @@ multiply	False
 oozebane	False
 outline	False
 outset	False
-preface	False
-raft	True
+preface	True
+raft	False
 reversal	False
 speed	False
 splodge	False
