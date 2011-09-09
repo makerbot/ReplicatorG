@@ -105,7 +105,25 @@ public class MachineModel
 		parseTools();
 		parseBuildVolume();
 		parseWipes();
-		
+		parseExclusion();
+	}
+	private void parseExclusion()
+	{
+		if(XML.hasChildNode(xml, "exclusion"))
+		{
+			Node exclusionNode = XML.getChildNodeByName(xml, "wipes");
+			NodeList exclusionKids = exclusionNode.getChildNodes();
+			for (int i=0; i<exclusionKids.getLength(); i++)
+			{
+				Node exclusionZoneNode = exclusionKids.item(i);
+				
+				if (exclusionZoneNode.getNodeName().equals("wipe"))
+				{
+					WipeModel wipe = new WipeModel(exclusionZoneNode);
+					wipes.add(wipe);
+				}
+			}
+		}
 	}
 	private void parseWipes()
 	{
