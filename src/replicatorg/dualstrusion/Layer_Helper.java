@@ -137,17 +137,19 @@ public class Layer_Helper {
 
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
-			if(mergeSupport)
-			{
-				System.out.println("mergeSupport is: ON");
-				currentToolhead = Toolheads.Primary; //1=A=Primary=Left
-				//2=B=Primary=Right
-			}
+			
 			//System.out.println("checking " + i);
 			Layer a = getByHeight(i, primary); //primary
 			Layer b = getByHeight(i, secondary);//secondary
 			if(a != null || b != null)
 			{
+				if(mergeSupport)
+				{
+					System.out.println("mergeSupport is: ON");
+					//currentToolhead = Toolheads.Primary; //1=A=Primary=Left
+					merged.addAll(toolChange(Toolheads.Primary, i));
+					//2=B=Primary=Right
+				}
 				//System.out.println("non null layers at " + i);
 				//DualStrusionWorker.printArrayList(a.getCommands());
 				//DualStrusionWorker.printArrayList(b.getCommands());
