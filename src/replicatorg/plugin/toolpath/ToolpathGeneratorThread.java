@@ -35,7 +35,7 @@ public class ToolpathGeneratorThread extends Thread {
 	}
 	
 	public void run() {
-		System.out.println("alexpong");
+		//System.out.println("alexpong");
 		generator.setModel(build.getModel());
 		ProgressDialog progressDialog = null;
 		if (parent != null) {

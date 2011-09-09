@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
 
 public class WipeModel {
@@ -14,13 +15,13 @@ public class WipeModel {
 	private int purgeDuration, reverseDuration;
 	private float purgeRPM;
 	private float reverseRPM;
-	
+
 	Node xml;
 	public WipeModel(Node n)
 	{
 		xml = n;
 		loadXML();
-	
+
 	}
 	public void loadXML()
 	{
@@ -92,10 +93,12 @@ public class WipeModel {
 			{
 				reverseRPM = Float.parseFloat(n);
 			}
-			
+
 		}
 		catch(NumberFormatException e)
 		{
+			Base.logger.severe("Could not parse your xml wipe, please make sure everything is formatted correctly");
+
 			System.err.println("Could not parse your xml wipe, please make sure everything is formatted correctly");
 			e.printStackTrace();
 		}
