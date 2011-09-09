@@ -122,12 +122,11 @@ public class DualStrusionWorker {
 		stripStartEnd(secondary_lines, true, true);
 		//writeArrayListtoFile(primary_lines, new File("/home/makerbot/baghandle/bh1stripped.gcode"));
 		//writeArrayListtoFile(secondary_lines, new File("/home/makerbot/baghandle/bh0stripped.gcode"));
-		checkCrashes(primary_lines);
-		checkCrashes(secondary_lines);
 		master_layer = Layer_Helper.doMerge(primary_lines, secondary_lines, false);
 		
 		replaceStartEnd(master_layer);
 		modifyTempReferences(startGcode);
+		checkCrashes(master_layer);
 		writeArrayListtoFile(master_layer, dest);
 
 		return dest;
@@ -261,6 +260,7 @@ public class DualStrusionWorker {
 		{
 			if(checkCrash(s))
 			{
+				
 				crashes = true;
 			}
 		}
