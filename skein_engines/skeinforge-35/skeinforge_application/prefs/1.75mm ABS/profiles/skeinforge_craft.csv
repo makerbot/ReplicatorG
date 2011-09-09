@@ -31,12 +31,12 @@ oozebane	False
 outline	False
 outset	False
 preface	False
-raft	False
+raft	True
 reversal	False
 speed	False
 splodge	False
 stretch	False
-temperature	True
+temperature	False
 tower	False
 unpause	False
 whittle	False
