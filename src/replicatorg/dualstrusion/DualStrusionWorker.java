@@ -100,8 +100,17 @@ public class DualStrusionWorker {
 	 * @param replaceEnd A boolean determined by the user in GUI as to whether to use default start.gcode or strip it from primary gcode
 	 * @return A reference to the completed gcode File
 	 */
+	//private static wipeArrays
 	public static File shuffle(File primary, File secondary, File dest, boolean replaceStart, boolean replaceEnd)
 	{
+		if(endGcode != null)
+		{
+		endGcode.clear(); //cleanse this just in case
+		}
+		if(startGcode != null)
+		{
+		startGcode.clear();
+		}
 		ArrayList<String> primary_lines = readFiletoArrayList(primary);
 		ArrayList<String> secondary_lines = readFiletoArrayList(secondary);
 		ArrayList<String> master_layer = new ArrayList<String>();
