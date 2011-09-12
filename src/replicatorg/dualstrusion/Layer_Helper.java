@@ -37,6 +37,17 @@ public class Layer_Helper {
 	private static boolean mergeSupport;
 	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second, boolean mergeSup)
 	{
+		currentToolhead = Toolheads.Primary;
+		if(PrimaryLayers != null)
+		{
+			PrimaryLayers.clear(); //cleanse these arrays just in case
+
+		}
+		if(SecondaryLayers != null)
+		{
+			SecondaryLayers.clear();
+
+		}
 		mergeSupport = mergeSup;
 		System.out.println("domerge");
 		readLayers(prime, PrimaryLayers);

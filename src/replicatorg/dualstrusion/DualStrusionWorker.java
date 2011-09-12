@@ -100,8 +100,17 @@ public class DualStrusionWorker {
 	 * @param replaceEnd A boolean determined by the user in GUI as to whether to use default start.gcode or strip it from primary gcode
 	 * @return A reference to the completed gcode File
 	 */
+	//private static wipeArrays
 	public static File shuffle(File primary, File secondary, File dest, boolean replaceStart, boolean replaceEnd)
 	{
+		if(endGcode != null)
+		{
+		endGcode.clear(); //cleanse this just in case
+		}
+		if(startGcode != null)
+		{
+		startGcode.clear();
+		}
 		ArrayList<String> primary_lines = readFiletoArrayList(primary);
 		ArrayList<String> secondary_lines = readFiletoArrayList(secondary);
 		ArrayList<String> master_layer = new ArrayList<String>();
@@ -122,12 +131,11 @@ public class DualStrusionWorker {
 		stripStartEnd(secondary_lines, true, true);
 		//writeArrayListtoFile(primary_lines, new File("/home/makerbot/baghandle/bh1stripped.gcode"));
 		//writeArrayListtoFile(secondary_lines, new File("/home/makerbot/baghandle/bh0stripped.gcode"));
-		checkCrashes(primary_lines);
-		checkCrashes(secondary_lines);
 		master_layer = Layer_Helper.doMerge(primary_lines, secondary_lines, false);
 		
 		replaceStartEnd(master_layer);
 		modifyTempReferences(startGcode);
+		checkCrashes(master_layer);
 		writeArrayListtoFile(master_layer, dest);
 
 		return dest;
@@ -261,6 +269,7 @@ public class DualStrusionWorker {
 		{
 			if(checkCrash(s))
 			{
+				
 				crashes = true;
 			}
 		}

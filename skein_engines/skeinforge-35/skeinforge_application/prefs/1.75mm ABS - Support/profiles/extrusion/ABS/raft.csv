@@ -24,7 +24,7 @@ Object First Layer Flow Rate Multiplier (ratio):	0.7
 Operating Nozzle Lift over Layer Thickness (ratio):	0.0
 Raft Additional Margin over Length (%):	1.2
 Raft Margin (mm):	4.0
-Support Cross Hatch	False
+Support Cross Hatch	True
 Support Flow Rate over Operating Flow Rate (ratio):	0.7
 Support Gap over Perimeter Extrusion Width (ratio):	0.005
 None	False
