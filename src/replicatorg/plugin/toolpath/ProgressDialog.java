@@ -131,115 +131,121 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 		SwingUtilities.invokeLater(new Runnable() {
 
 			public void run() {
-			    String newMessage = message;
-			    String processName = "";
-				boolean logIt = true;
-			    boolean showProgress = false;
-				int sub;
+				synchronized(ProgressDialog.this) {
+					String newMessage = message;
+					String processName = "";
+					boolean logIt = true;
+					boolean showProgress = false;
+					int sub;
 
-				if(newMessage.startsWith(""+'\033'))
-				{
-			    	newMessage = newMessage.substring(4);
-			    }
-			    // skeinforge 33 (and up) format: \033[1AFill layer count 28 of 35...
-			    Matcher m = patOfNum.matcher(newMessage);
-			    if (m.find( )) {
-	    			logIt = false;
-		    		layerTotal = Integer.parseInt(m.group(1));
-			    }
-			    // skeinforge 33 (and up)
-			    m = patLayerCount.matcher(newMessage);
-			    if (m.find( )) {
-			    	processName = m.group(1);
-		    		layerIndex = Integer.parseInt(m.group(2));
-	    			logIt = false;
-		    		if(layerTotal > 0) {
-		    			subProgressBar.setIndeterminate(false);
-		    			showProgress = true;
-				    	newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
-		    		} else {
-				    	newMessage = processName + " (layer " + layerIndex +")";
-		    			subProgressBar.setIndeterminate(true);
-		    		}
-			    }
-			    
-			    // Older skeinforge's
-			    m = patOldLayerTotal.matcher(newMessage);
-			    if (m.find( )) {
-		    		layerTotal = Integer.parseInt(m.group(1));
-			    }
-			    m = patFillingLayer.matcher(newMessage);
-			    if (m.find( ))
-			    {
-			    	layerIndex = Integer.parseInt(m.group(1));
-			    	showProgress = true;
-			    	logIt = false;
-			    	sub = (int) (55*((double) layerIndex)/ layerTotal);
-			    	totalProgressBar.setValue(10 + sub);				    	
-			    }
+					if(newMessage.startsWith(""+'\033'))
+					{
+						newMessage = newMessage.substring(4);
+					}
+					// skeinforge 33 (and up) format: \033[1AFill layer count 28 of 35...
+					Matcher m = patOfNum.matcher(newMessage);
+					if (m.find( )) {
+						logIt = false;
+						layerTotal = Integer.parseInt(m.group(1));
+					}
+					// skeinforge 33 (and up)
+					m = patLayerCount.matcher(newMessage);
+					if (m.find( )) {
+						processName = m.group(1);
+						layerIndex = Integer.parseInt(m.group(2));
+						logIt = false;
+						if(layerTotal > 0) {
+							subProgressBar.setIndeterminate(false);
+							showProgress = true;
+							newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
+						} else {
+							newMessage = processName + " (layer " + layerIndex +")";
+							subProgressBar.setIndeterminate(true);
+						}
+					}
 
-			    // THE ONE BELOW IS JUST FOR THE OLDER SKEINFORGE < 31!
-			    m = patOldFillingLayer.matcher(newMessage);
-			    if (m.find( )) {
-		    		layerIndex = Integer.parseInt(m.group(1));
-		    		layerTotal = Integer.parseInt(m.group(2));
-		    		showProgress = true;
-		    		logIt = false;
-			    	sub = (int) (55*((double) layerIndex)/ layerTotal);
-			    	totalProgressBar.setValue(10 + sub);
-			    }				    
-			    				    
-			    m = patSliceToGcode.matcher(newMessage);
-			    if (m.find( ))
-			    {
-			    	layerIndex = Integer.parseInt(m.group(1));
-			    	showProgress = true;
-			    	logIt = false;
-			    	sub = (int) (2*((double) layerIndex)/ layerTotal);
-			    	totalProgressBar.setValue(2 + sub);				    	
-			    }
-			    if(showProgress)
-			    {
-					String j = new Integer(layerTotal).toString();
-					double completion =  ((double) layerIndex/layerTotal);
-				    if((layerIndex>0) && (processName == ""))
-				    {
-				    	newMessage += " ("+j+" layers)";//
-				    }
-				    subProgressBar.setValue((int) (100*completion));
+					// Older skeinforge's
+					m = patOldLayerTotal.matcher(newMessage);
+					if (m.find( )) {
+						layerTotal = Integer.parseInt(m.group(1));
+					}
+					m = patFillingLayer.matcher(newMessage);
+					if (m.find( ))
+					{
+						layerIndex = Integer.parseInt(m.group(1));
+						showProgress = true;
+						logIt = false;
+						sub = (int) (55*((double) layerIndex)/ layerTotal);
+						totalProgressBar.setValue(10 + sub);				    	
+					}
+
+					// THE ONE BELOW IS JUST FOR THE OLDER SKEINFORGE < 31!
+					m = patOldFillingLayer.matcher(newMessage);
+					if (m.find( )) {
+						layerIndex = Integer.parseInt(m.group(1));
+						layerTotal = Integer.parseInt(m.group(2));
+						showProgress = true;
+						logIt = false;
+						sub = (int) (55*((double) layerIndex)/ layerTotal);
+						totalProgressBar.setValue(10 + sub);
+					}				    
+
+					m = patSliceToGcode.matcher(newMessage);
+					if (m.find( ))
+					{
+						layerIndex = Integer.parseInt(m.group(1));
+						showProgress = true;
+						logIt = false;
+						sub = (int) (2*((double) layerIndex)/ layerTotal);
+						totalProgressBar.setValue(2 + sub);				    	
+					}
+					if(showProgress)
+					{
+						String j = new Integer(layerTotal).toString();
+						double completion =  ((double) layerIndex/layerTotal);
+						if((layerIndex>0) && (processName == ""))
+						{
+							newMessage += " ("+j+" layers)";//
+						}
+						subProgressBar.setValue((int) (100*completion));
+					}
+					m = patProcedureTook.matcher(newMessage);
+					if (m.find( ))
+					{	
+						for(int i=0;i<5;i++)
+						{
+							if(steps[i].stepName.equals(m.group(1)))
+							{
+								currentProcessI = i;
+								subProgressBar.setIndeterminate(true);
+								//Base.logger.info("Step: "+steps[i].stepName+" = "+ steps[i].thisStepTime+" of "+steps[i].totalStepTime + " = "+steps[i].getStepPercentage(layerIndex,layerTotal)+"%");
+
+							}
+						}
+					}
+					if(currentProcessI >= 0)
+					{
+						totalProgressBar.setValue((int) steps[currentProcessI].getStepPercentage(layerIndex,layerTotal));
+					} else {
+						if(layerTotal > 0)
+						{
+							subProgressBar.setValue((int) (((double)layerIndex/layerTotal)*100));
+							subProgressBar.setIndeterminate(false);
+						}
+					}
+					if(logIt==true)
+						Base.logger.info(newMessage);
+
+					progressLabel.setText(newMessage);
 				}
-			    m = patProcedureTook.matcher(newMessage);
-			    if (m.find( ))
-			    {	
-				    for(int i=0;i<5;i++)
-				    {
-				    	if(steps[i].stepName.equals(m.group(1)))
-				    	{
-				    		currentProcessI = i;
-				    		subProgressBar.setIndeterminate(true);
-				    		//Base.logger.info("Step: "+steps[i].stepName+" = "+ steps[i].thisStepTime+" of "+steps[i].totalStepTime + " = "+steps[i].getStepPercentage(layerIndex,layerTotal)+"%");
-				    		
-				    	}
-				    }
-			    }
-			    if(currentProcessI >= 0)
-			    {
-			    	totalProgressBar.setValue((int) steps[currentProcessI].getStepPercentage(layerIndex,layerTotal));
-			    } else {
-			    	if(layerTotal > 0)
-			    	{
-			    	subProgressBar.setValue((int) (((double)layerIndex/layerTotal)*100));
-			    	subProgressBar.setIndeterminate(false);
-			    	}
-			    }
-			    if(logIt==true)
-			    	Base.logger.info(newMessage);
-			    	
-			    progressLabel.setText(newMessage);
 			}
 		});
 	}
 
 	public void generationComplete(Completion completion, Object details) {
+		synchronized(this) {
+			setVisible(false);
+			setDone(true);
+		}
 	}
 }
