@@ -9,12 +9,10 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Geometry;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
-import javax.media.j3d.LineAttributes;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.Shape3D;
-import javax.media.j3d.Switch;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.AxisAngle4d;
@@ -51,11 +49,6 @@ public class EditingModel {
 	 * Material definition for the model, maintained so that we can update the color without reloading.
 	 */
 	Material objectMaterial = null;
-	
-	/**
-	 * The switch object that allows us to toggle between wireframe and solid modes.
-	 */
-	private Switch objectSwitch = null;
 
 	/** The group which represents the displayable subtree.
 	 */
@@ -89,7 +82,6 @@ public class EditingModel {
 	 * Create the branchgroup that will display the object.
 	 */
 	private BranchGroup makeShape(BuildModel model) {
-		objectSwitch = new Switch();		
 		originalShape = model.getShape();
 		if (originalShape.getGeometry() == null) {
 			BranchGroup wrapper = new BranchGroup();
@@ -99,20 +91,10 @@ public class EditingModel {
 		}
 
 		Shape3D solidShape = (Shape3D)originalShape.cloneTree();
-		Shape3D edgeClone = (Shape3D)originalShape.cloneTree();
-		objectSwitch.addChild(solidShape);
-		objectSwitch.addChild(edgeClone);
-		objectSwitch.setWhichChild(0);
-		objectSwitch.setCapability(Switch.ALLOW_SWITCH_WRITE);
-		objectSwitch.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
 		solidShape.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
 		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
 		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
 		solidShape.getGeometry().setCapability(GeometryArray.ALLOW_NORMAL_READ);
-		edgeClone.setCapability(Shape3D.ALLOW_GEOMETRY_READ);
-		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COUNT_READ);
-		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_COORDINATE_READ);
-		edgeClone.getGeometry().setCapability(GeometryArray.ALLOW_NORMAL_READ);
 		
 		objectMaterial = new Material();
 		objectMaterial.setCapability(Material.ALLOW_COMPONENT_WRITE);
@@ -127,12 +109,6 @@ public class EditingModel {
 	    solid.setPolygonAttributes(pa);
 		solidShape.setAppearance(solid);
 
-		Appearance edges = new Appearance();
-		edges.setLineAttributes(new LineAttributes(1,LineAttributes.PATTERN_SOLID,true));
-		edges.setPolygonAttributes(new PolygonAttributes(PolygonAttributes.POLYGON_LINE,
-				PolygonAttributes.CULL_NONE,0));
-		edgeClone.setAppearance(edges);
-
 		BranchGroup wrapper = new BranchGroup();
 
 		shapeTransform = new TransformGroup();
@@ -142,7 +118,7 @@ public class EditingModel {
 
 		wrapper.addChild(shapeTransform);
 
-		shapeTransform.addChild(objectSwitch);
+		shapeTransform.addChild(solidShape);
 		wrapper.setCapability(BranchGroup.ALLOW_DETACH);
 		wrapper.compile();
 		return wrapper;
@@ -165,14 +141,6 @@ public class EditingModel {
 		}
 		
 		return group;
-	}
-	
-	public void showEdges(boolean showEdges) {
-		if (showEdges) {
-			objectSwitch.setWhichChild(1);
-		} else {
-			objectSwitch.setWhichChild(0);
-		}
 	}
 		
 	public ReferenceFrame getReferenceFrame() {

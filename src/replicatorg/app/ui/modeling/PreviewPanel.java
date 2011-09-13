@@ -29,7 +29,6 @@ import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
 import javax.media.j3d.LineAttributes;
-import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.OrientedShape3D;
 import javax.media.j3d.PointArray;
@@ -58,7 +57,6 @@ import replicatorg.machine.model.BuildVolume;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.model.BuildModel;
 
-import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 /**
@@ -210,12 +208,6 @@ public class PreviewPanel extends JPanel {
 		
 		canvas.addKeyListener( new KeyListener() {
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyChar() == 'e') {
-					showEdges = !showEdges;
-					model.showEdges(showEdges);
-				} else {
-					return;
-				}
 				updateVP();
 			}
 			public void keyReleased(KeyEvent e) {
@@ -230,12 +222,7 @@ public class PreviewPanel extends JPanel {
 
 
 	private SimpleUniverse univ = null;
-
-	/**
-	 * Indicates whether we're in edge (wireframe) mode.  False indicates a solid view. 
-	 */
-	private boolean showEdges = false;
-
+	
 	public Node makeAmbientLight() {
 		AmbientLight ambient = new AmbientLight();
 //		ambient.setColor(new Color3f(0.3f,0.3f,0.9f));
@@ -354,6 +341,7 @@ public class PreviewPanel extends JPanel {
 		
 	}
 
+	
 	public Node makeBoundingBox() {
 
 		Group boxGroup = new Group();
