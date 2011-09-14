@@ -58,8 +58,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -116,32 +118,48 @@ public class Base {
 	 * The general-purpose logging object.
 	 */
 	public static Logger logger = Logger.getLogger("replicatorg.log");
+	public static FileHandler logFileHandler = null;
+	public static String logFilePath = null;
+	
+	/**
+	 * Start logging on the given path. If the path is null, stop file logging.
+	 * @param path The path to log messages to
+	 */
+	public static void setLogFile(String path) {
+		boolean useLogFile = Base.preferences.getBoolean("replicatorg.useLogFile",false);
+
+		if (useLogFile && path.equals(logFilePath)) { return; }
+		
+		if (logFileHandler != null) {
+			logger.removeHandler(logFileHandler);
+			logFileHandler = null;
+		}
+		
+		logFilePath = path;
+		
+		if (useLogFile && logFilePath != null && logFilePath.length() > 0) {
+			boolean append = true;
+			try {
+				FileHandler fh = new FileHandler(logFilePath, append);
+				fh.setFormatter(new SimpleFormatter());
+				fh.setLevel(Level.ALL);
+				logFileHandler = fh;
+				logger.addHandler(fh);
+			} catch (IOException ioe) {
+				String msg = "LOG INIT ERROR: Could not open file.\n"+ioe.getMessage();
+				System.err.println(msg); // In case logging is not yet enabled
+				logger.log(Level.SEVERE,msg);
+			}
+		}
+	}
+	
 	{	
 		String levelName = Base.preferences.get("replicatorg.debuglevel", Level.INFO.getName());
 		Level l = Level.parse(levelName);
 		logger.setLevel(l);
 
-/*
- * 	TODO: Add log-to-file option to preferences.
-		// Add logfile handler
-	    try {
-	      boolean append = true;
-	      FileHandler fh = new FileHandler("RepG.log", append);
-	      //fh.setFormatter(new XMLFormatter());
-	      fh.setFormatter(new SimpleFormatter());
-	      logger.addHandler(fh);
-	    }
-	    catch (IOException e) {
-	      e.printStackTrace();
-	    }
-		
-		// Configure handlers to use selected level
-	    Handler[] handlers =
-	    logger.getHandlers();
-	    for ( int index = 0; index < handlers.length; index++ ) {
-	    	handlers[index].setLevel( l );
-	    }
-*/
+		String logPath = Base.preferences.get("replicatorg.logpath", "");
+		setLogFile(logPath);
 	}
 	/**
 	 * Path of filename opened on the command line, or via the MRJ open document

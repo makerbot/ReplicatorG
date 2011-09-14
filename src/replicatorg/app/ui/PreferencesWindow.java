@@ -55,12 +55,15 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 
 	JTextField fontSizeField;
 	JTextField firmwareUpdateUrlField;
+	JTextField logPathField;
 	
 	private void showCurrentSettings() {		
 		Font editorFont = Base.getFontPref("editor.font","Monospaced,plain,12");
 		fontSizeField.setText(String.valueOf(editorFont.getSize()));
 		String firmwareUrl = Base.preferences.get("replicatorg.updates.url", FirmwareUploader.DEFAULT_UPDATES_URL);
 		firmwareUpdateUrlField.setText(firmwareUrl);
+		String logPath = Base.preferences.get("replicatorg.logpath", "");
+		logPathField.setText(logPath);
 	}
 	
 	private JCheckBox addCheckboxForPref(Container c, String text, final String pref, boolean defaultVal) {
@@ -227,7 +230,25 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			content.add(new JLabel("Debugging level (default INFO):"),"split");
 			content.add(makeDebugLevelDropdown(),"wrap");
 		}
-		
+
+		{
+			final JCheckBox logCb = addCheckboxForPref(content,"Log to file","replicatorg.useLogFile",false);
+			final JLabel logPathLabel = new JLabel("Log file name: "); 
+			content.add(logPathLabel,"split");
+			logPathField = new JTextField(34);
+			content.add(logPathField,"wrap");
+			logPathField.setEnabled(logCb.isSelected());
+			logPathLabel.setEnabled(logCb.isSelected());
+
+			logCb.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					JCheckBox box = (JCheckBox)e.getSource();
+					logPathField.setEnabled(box.isSelected());
+					logPathLabel.setEnabled(box.isSelected());
+				}
+			});
+
+		}
 		{
 			JButton b = new JButton("Select Python interpreter...");
 			content.add(b,"spanx,wrap");
@@ -334,6 +355,11 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			Base.preferences.put("replicatorg.updates.url",firmwareUpdateUrlField.getText());
 			FirmwareUploader.checkFirmware(); // Initiate a new firmware check
 		}
+
+		String logPath = logPathField.getText();
+		Base.preferences.put("replicatorg.logpath", logPath);
+		Base.setLogFile(logPath);
+		
 		editor.applyPreferences();
 	}
 
