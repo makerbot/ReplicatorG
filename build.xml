@@ -224,9 +224,6 @@
     <copy todir="${target.dir}/DualStrusion_Snippets">
       <fileset dir="DualStrusion_Snippets"/>
     </copy>
-    <copy todir="${target.dir}/DualStrusion_Snippets">
-      <fileset dir="DualStrusion_Snippets"/>
-    </copy>
     <copy todir="${target.dir}/scripts">
       <fileset dir="scripts"/>
     </copy>
