@@ -24,6 +24,10 @@ the contributor's full name, I've listed their github handle instead.
 * Nick Starno
 * Matt Mets
 * Laurence Laycock
+* Noah Levy
+* Ben Rockhold
+* Far McKon
+
 
 If I've left you off this list, let me know ASAP and I'll add your
 name.
