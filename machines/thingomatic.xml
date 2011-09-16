@@ -71,10 +71,6 @@ M18
 M18
 		</cooldown>
 	</machine>
-<<<<<<< HEAD
-		<machine experimental="0">
-		<name>Thingomatic w/ HBP and Dual Stepstruder MK7</name>
-=======
 	<machine>
 		<name>Thingomatic w/ ABP and Stepstruder MK6</name>
 		<geometry type="cartesian">

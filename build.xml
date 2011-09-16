@@ -220,6 +220,7 @@
     </copy>
     <copy todir="${target.dir}/examples">
       <fileset dir="examples"/>
+    </copy>
     <copy todir="${target.dir}/DualStrusion_Snippets">
       <fileset dir="DualStrusion_Snippets"/>
     </copy>
