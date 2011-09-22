@@ -52,12 +52,13 @@ import replicatorg.drivers.Driver;
 		public boolean load(String machineType) {
 			if (isLoaded()) {
 				machine.dispose();
+				machine = null;
 			}
 			
 			machine = MachineFactory.load(machineType, callbackHandler);
 			
 			if (machine == null) {
-				Base.logger.severe("Unable to connect to machine!");
+				// no err,  the above load() function prints an error
 				return false;
 			}
 			

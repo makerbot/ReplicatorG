@@ -60,7 +60,10 @@ public class MachineFactory {
 	 */
 	public static Machine load(String name, MachineCallbackHandler callbackHandler) {
 		Node machineNode = getMachineNode(name);
-		if (machineNode == null) { return null; }
+		if (machineNode == null) { 
+			Base.logger.log(Level.SEVERE, "Could not load machine '" + name + "' no machineNode found");
+			return null; 
+		}
 		return new Machine(machineNode, callbackHandler);
 	}
 
@@ -74,11 +77,10 @@ public class MachineFactory {
 			Base.preferences.getBoolean("machine.showExperimental", false);
 		MachineMap mm = getMachineMap();
 		for (Entry<String, Element> entry : mm.entrySet()) {
+			// filter out experimental machines of needed
 			if (!showExperimental) {
-				// filter on experimental attribute.
 				String exp = entry.getValue().getAttribute("experimental");
 				if (exp.length() != 0 && !exp.equals("0")) {
-					// Hide name
 					continue;
 				}
 			}
