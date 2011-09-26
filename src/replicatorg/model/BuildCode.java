@@ -111,6 +111,11 @@ public class BuildCode extends BuildElement implements Comparable<BuildCode> {
 		return BuildElement.Type.GCODE;
 	}
 
+	public File getFile(){
+		return file;
+	}
+	
+	
 	@Override
 	void writeToStream(OutputStream ostream) {
 		// TODO Auto-generated method stub

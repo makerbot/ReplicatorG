@@ -31,6 +31,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Enumeration;
 
@@ -64,17 +65,17 @@ public class EditorHeader extends BGPanel implements ActionListener {
 		}
 		return null;
 	}
-	
+
 	static Color backgroundColor;
 
 	static Color textSelectedColor;
 	static Color textUnselectedColor;
- 
+
 	private ChangeListener changeListener;
 	void setChangeListener(ChangeListener listener) {
 		changeListener = listener;
 	}
-	
+
 	private class TabButtonUI extends BasicButtonUI {
 		public void paint(Graphics g,JComponent c) {
 			initTabImages();
@@ -99,7 +100,7 @@ public class EditorHeader extends BGPanel implements ActionListener {
 
 	static BufferedImage selectedTabBg;
 	static BufferedImage regularTabBg;
-	
+
 	protected void initTabImages() {
 		if (selectedTabBg == null) {
 			selectedTabBg = Base.getImage("images/tab-selected.png", this);
@@ -117,8 +118,8 @@ public class EditorHeader extends BGPanel implements ActionListener {
 		final WeakReference<BuildElement> element;
 		
 		public BuildElement getBuildElement() { return element.get(); }
-		
-		public TabButton(BuildElement element) {
+
+		public TabButton(BuildElement element, int linecount) {
 			buildElementUpdate(element); // set initial string
 			this.element = new WeakReference<BuildElement>(element);
 			setUI(new TabButtonUI());
@@ -126,22 +127,32 @@ public class EditorHeader extends BGPanel implements ActionListener {
 			tabGroup.add(this);
 			addActionListener(EditorHeader.this);
 			element.addListener(this);
+			editor.textarea.getLineCount();
 		}
 
 		public void buildElementUpdate(BuildElement element) {
 			if (element.isModified()) {
-				setText(element.getType().getDisplayString()+"*");
+				if(element.getType().getDisplayString().equals("gcode"))
+				{
+					setText(element.getType().getDisplayString()+"* : "+editor.textarea.getLineCount() + " lines.");
+				}
+				else setText(element.getType().getDisplayString()+"*");
 				setFont(getFont().deriveFont(Font.BOLD));
 			} else {
-				setText(element.getType().getDisplayString());
+				if(element.getType().getDisplayString().equals("gcode"))
+				{
+					setText(element.getType().getDisplayString()+" : "+editor.textarea.getLineCount() + " lines.");
+				}
+				else setText(element.getType().getDisplayString());
 				setFont(getFont().deriveFont(Font.PLAIN));
 			}
 			repaint();
 		}
+
 	}
-	
+
 	JLabel titleLabel = new JLabel("Untitled");
-	
+
 	MainWindow editor;
 
 	int fontAscent;
@@ -175,23 +186,39 @@ public class EditorHeader extends BGPanel implements ActionListener {
 		validate();
 	}
 
-	private void addTabForElement(Build build, BuildElement element) {
-		TabButton tb = new TabButton(element);
+	private void addTabForElement(int linecount, Build build, BuildElement element) {
+		TabButton tb = new TabButton(element, linecount);
 		add(tb);
 		if (build.getOpenedElement() == element) { tb.doClick(); } 
 	}
-	
+
 	void setBuild(Build build) {
 		removeTabs();
 		if (build.getModel() != null) {
-			addTabForElement(build,build.getModel());
+			addTabForElement(0,build,build.getModel());
 		}
 		if (build.getCode() != null) {
-			addTabForElement(build,build.getCode());
+			try {
+				addTabForElement(countLines(Base.loadFile(build.getCode().getFile())),build,build.getCode());
+			} catch (IOException e) {
+				addTabForElement(0,build,build.getCode());
+				e.printStackTrace();
+			}
 		}
 		titleLabel.setText(build.getName());
+
 		validate();
 		repaint();
+	}
+
+	protected int countLines(String what) {
+		char c[] = what.toCharArray();
+		int count = 0;
+		for (int i = 0; i < c.length; i++) {
+			if (c[i] == '\n')
+				count++;
+		}
+		return count;
 	}
 
 	public void actionPerformed(ActionEvent a) {
