@@ -168,7 +168,11 @@ public class DualStrusionWorker {
 	}
 	public static void changeToolHead(File source, int Toolhead)
 	{
+		startGcode = readFiletoArrayList(new File("DualStrusion_Snippets/start.gcode"));
+		endGcode = readFiletoArrayList(new File("DualStrusion_Snippets/end.gcode"));
 		ArrayList<String> changeMe = readFiletoArrayList(source);
+		stripStartEnd(changeMe, true, true);
+
 		Toolheads t = Toolheads.Secondary;
 		if(Toolhead == 0)
 		{
@@ -181,6 +185,7 @@ public class DualStrusionWorker {
 
 			t = Toolheads.Primary;	
 		}
+		replaceStartEnd(changeMe);
 		changeMe = replaceToolHeadReferences(changeMe, t);
 		printArrayList(new ArrayList(changeMe.subList(0,15)));
 		writeArrayListtoFile(changeMe, source);
