@@ -1,4 +1,22 @@
-0026_Alpha ReplicatorG
+0026 ReplicatorG
+* Add Machine information panel
+* Add support for control of a regulated cooling fan
+* Bugfix: save operation was broken by the color change feature.
+* Bugfix: Don't force refresh of machine position, because this caused
+problems with concurrent move requests.
+* Add color selector dialog to preferences, to allow model &
+background color to be configured.
+* Clarification: fix homing comments for thing-o-matic start.gcode
+* Bugfix: handle multiple stepper toolheads correctly
+* Add tool command recognition to the s3g decompiler.
+* Add virtual printer, to make testing easier
+* Add experimental cupcake profile for gen3 machines with stepper extruders.
+* display 2 digits of precision in the control panel's axis position indicator.
+* Revert "Update launch4j version. Need to build on a windows box to
+upgrade ReplicatorG.exe"
+* Actually, don't make continuous jog default, it would break printers
+that don't support it.
+* Make continuous jog mode the default preference.
 
 0025 ReplicatorG
 New features:
