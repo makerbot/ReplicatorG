@@ -34,9 +34,10 @@ public class Layer_Helper {
 	/**
 	 * This method has all the method calls in order to merge two gcodes, it is the only method that "needs" to be public
 	 */
-	private static boolean mergeSupport;
-	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second, boolean mergeSup)
+	private static boolean mergeSupport, useWipes;
+	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second, boolean mergeSup, boolean uW)
 	{
+		useWipes = uW;
 		currentToolhead = Toolheads.Primary;
 		if(PrimaryLayers != null)
 		{
@@ -148,7 +149,7 @@ public class Layer_Helper {
 
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
-			
+
 			//System.out.println("checking " + i);
 			Layer a = getByHeight(i, primary); //primary
 			Layer b = getByHeight(i, secondary);//secondary
@@ -205,7 +206,7 @@ public class Layer_Helper {
 					int lastf = s.lastIndexOf("F");
 					s = s.substring(0, lastf);
 				}
-					return s + " F1700.0 (added by getFirstMove)";
+				return s + " F1700.0 (added by getFirstMove)";
 			}
 		}
 		return " ";
@@ -428,8 +429,11 @@ public class Layer_Helper {
 
 		targetCode.add("M103");
 
-		targetCode.add("G1 Z" + (layer_height+hop_height));
-		targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
+		if(useWipes)
+		{
+			targetCode.add("G1 Z" + (layer_height+hop_height));
+			targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
+		}
 		targetCode.add("M103");
 		targetCode.add("M18"); //Added Ben's M18
 		targetCode.add("G5"+(5-nextToolnum));
