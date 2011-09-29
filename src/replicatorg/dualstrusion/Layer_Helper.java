@@ -369,41 +369,44 @@ public class Layer_Helper {
 		targetCode.add("M103");
 		targetCode.add("M108 R"+flowrate[nextToolnum]);
 
-		// move to purge home
-		targetCode.add("G53");
-		if (layer_height > Float.parseFloat(purge_z[nextToolnum])) {
-			// if we're higher than the purge height go over and then down
-			targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-		} 
-		else {
-			// otherwise go up and then over
-			//targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("G1 X" + purge_x[nextToolnum] + " Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+		if(useWipes)
+		{
+			// move to purge home
+			targetCode.add("G53");
+			if (layer_height > Float.parseFloat(purge_z[nextToolnum])) {
+				// if we're higher than the purge height go over and then down
+				targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
+				targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
+				targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			} 
+			else 
+			{
+				// otherwise go up and then over
+				//targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+				targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
+				targetCode.add("G1 X" + purge_x[nextToolnum] + " Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			}
+			// purge upcoming nozzle
+			targetCode.add("M103 T"+nextToolnum);
+			targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			targetCode.add("M101");
+			targetCode.add("G04 P"+purge_duration[nextToolnum]);
+			//targetCode.add("M108 R"+partial_reversal_flowrate[nextToolnum]);
+			targetCode.add("M102");
+			//targetCode.add("G04 P"+partial_reversal_duration[nextToolnum]);
+			targetCode.add("M103");
+			targetCode.add("M108 R"+flowrate[nextToolnum]);
+			targetCode.add("G04 P" +wait_time[nextToolnum]);
+			// wipe upcoming nozzle
+			targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y_offset[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			// wipe current nozzle
+			targetCode.add("G1 X" + purge_x[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
+			targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
+			targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y_offset[currentToolnum] + " Z" + purge_z_offset[currentToolnum] + " F" + feedrate[currentToolnum]);
+			// return to purge home
+			targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 		}
-		// purge upcoming nozzle
-		targetCode.add("M103 T"+nextToolnum);
-		targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-		targetCode.add("M101");
-		targetCode.add("G04 P"+purge_duration[nextToolnum]);
-		//targetCode.add("M108 R"+partial_reversal_flowrate[nextToolnum]);
-		targetCode.add("M102");
-		//targetCode.add("G04 P"+partial_reversal_duration[nextToolnum]);
-		targetCode.add("M103");
-		targetCode.add("M108 R"+flowrate[nextToolnum]);
-		targetCode.add("G04 P" +wait_time[nextToolnum]);
-		// wipe upcoming nozzle
-		targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-		targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y_offset[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-		// wipe current nozzle
-		targetCode.add("G1 X" + purge_x[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
-		targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
-		targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y_offset[currentToolnum] + " Z" + purge_z_offset[currentToolnum] + " F" + feedrate[currentToolnum]);
-		// return to purge home
-		targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-
 		return targetCode;
 	}
 	/**
@@ -429,13 +432,13 @@ public class Layer_Helper {
 
 		targetCode.add("M103");
 
-		if(useWipes)
-		{
-			targetCode.add("G1 Z" + (layer_height+hop_height));
-			targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
-		}
+
+
+		targetCode.add("G1 Z" + (layer_height+hop_height));
+		targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
+
 		targetCode.add("M103");
-		targetCode.add("M18"); //Added Ben's M18
+//		targetCode.add("M18"); //Added Ben's M18
 		targetCode.add("G5"+(5-nextToolnum));
 		//	targetCode.add("M108 R"+currentFeedRate);
 
