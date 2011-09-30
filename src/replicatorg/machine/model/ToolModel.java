@@ -99,6 +99,8 @@ public class ToolModel
 	protected boolean hasFan = false;
 	protected boolean hasValve = false;
 	protected boolean hasCollet = false;
+	
+	protected boolean automatedBuildPlatformEnabled;
 
 	/*************************************
 	*  Creates the model object.
@@ -638,28 +640,23 @@ public class ToolModel
 		return hasMistCoolant;
 	}
 
+	public void toggleAutomatedBuildPlatform(boolean state) {
+		automatedBuildPlatformEnabled = state;
+	}
+	public boolean isAutomatedBuildPlatformEnabled(boolean state) {
+		return automatedBuildPlatformEnabled;
+	}
+	
 	/*************************************
 	*  Fan interface functions
 	*************************************/
-	public void enableFan()
-	{
-		fanEnabled = true;
-	}
+	public void enableFan() { fanEnabled = true; }
 
-	public void disableFan()
-	{
-		fanEnabled = false;
-	}
+	public void disableFan() { fanEnabled = false; }
 	
-	public boolean isFanEnabled()
-	{
-		return fanEnabled;
-	}
+	public boolean isFanEnabled() { return fanEnabled; }
 	
-	public boolean hasFan()
-	{
-		return hasFan;
-	}
+	public boolean hasFan() { return hasFan; }
 	
 	/*************************************
 	*  Valve interface functions

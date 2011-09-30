@@ -493,7 +493,12 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 		// TODO Auto-generated method stub
 
 	}
-
+	
+	@Override 
+	public void toggleAutomatedBuildPlatform(boolean state) throws RetryException {
+		//TODO: manually added
+	}
+	
 	@Override
 	public void openValve() throws RetryException {
 		// TODO Auto-generated method stub

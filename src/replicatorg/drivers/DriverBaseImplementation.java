@@ -604,6 +604,10 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	public void disableFan() throws RetryException {
 		machine.currentTool().disableFan();
 	}
+	
+	public void toggleAutomatedBuildPlatform(boolean state) throws RetryException {
+		machine.currentTool().toggleAutomatedBuildPlatform(state);
+	}
 
 	/***************************************************************************
 	 * Valve interface functions
