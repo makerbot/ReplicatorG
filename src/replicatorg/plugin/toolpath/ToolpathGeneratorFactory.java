@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import replicatorg.app.Base;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic;
+import replicatorg.plugin.toolpath.skeinforge.PrintOMatic5D;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
 
 public class ToolpathGeneratorFactory {
@@ -167,6 +168,10 @@ public class ToolpathGeneratorFactory {
 				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
 				
 				prefs.add(supportPref);
+				
+				PrintOMatic5D printOMatic5D = new PrintOMatic5D();
+				prefs.add(printOMatic5D);
+				
 				return prefs;
 			}
 		};
