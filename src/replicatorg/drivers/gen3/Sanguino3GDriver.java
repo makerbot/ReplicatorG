@@ -1194,7 +1194,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.disableFan();
 	}
 	
-	public void toggleAutomatedBuildPlatform(boolean state) throws RetryException {
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException {
 		Base.logger.severe("Toggling ABP to " + state);
 		byte newState = state? (byte)1:(byte)0;
 		
@@ -1205,7 +1205,7 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) newState); // enable(1)disable(0)
 		runCommand(pb.getPacket());
 		
-		super.toggleAutomatedBuildPlatform(state);
+		super.setAutomatedBuildPlatformRunning(state);
 		
 	}
 

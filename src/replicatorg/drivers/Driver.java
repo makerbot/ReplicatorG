@@ -362,7 +362,7 @@ public interface Driver {
 	 * abp interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void toggleAutomatedBuildPlatform(boolean state) throws RetryException;
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException;
 	
 	/***************************************************************************
 	 * Valve interface functions

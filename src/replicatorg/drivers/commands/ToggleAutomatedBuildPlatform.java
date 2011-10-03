@@ -14,7 +14,7 @@ public class ToggleAutomatedBuildPlatform implements DriverCommand {
 
 	@Override
 	public void run(Driver driver) throws RetryException {
-		driver.toggleAutomatedBuildPlatform(state);
+		driver.setAutomatedBuildPlatformRunning(state);
 	}
 
 }

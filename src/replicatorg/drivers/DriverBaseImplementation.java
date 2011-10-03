@@ -605,8 +605,8 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		machine.currentTool().disableFan();
 	}
 	
-	public void toggleAutomatedBuildPlatform(boolean state) throws RetryException {
-		machine.currentTool().toggleAutomatedBuildPlatform(state);
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException {
+		machine.currentTool().setAutomatedBuildPlatformRunning(state);
 	}
 
 	/***************************************************************************

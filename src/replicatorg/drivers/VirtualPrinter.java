@@ -495,7 +495,7 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 	
 	@Override 
-	public void toggleAutomatedBuildPlatform(boolean state) throws RetryException {
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException {
 		//TODO: manually added
 	}
 	

@@ -640,7 +640,7 @@ public class ToolModel
 		return hasMistCoolant;
 	}
 
-	public void toggleAutomatedBuildPlatform(boolean state) {
+	public void setAutomatedBuildPlatformRunning(boolean state) {
 		automatedBuildPlatformEnabled = state;
 	}
 	public boolean isAutomatedBuildPlatformEnabled(boolean state) {
