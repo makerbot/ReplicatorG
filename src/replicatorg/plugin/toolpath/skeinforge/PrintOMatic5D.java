@@ -165,7 +165,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 		JComponent printPanel = new JPanel(new MigLayout("fillx"));
 		JComponent materialPanel = new JPanel(new MigLayout("fillx"));
-		JComponent machinePanel = new JPanel(new MigLayout("fillx"));
+                // JComponent machinePanel = new JPanel(new MigLayout("fillx"));
 		
 		addTextParameter(printPanel, "infillPercent",
 				"Object infill (%)", "30",
@@ -207,7 +207,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 		printOMatic5D.addTab("Settings", printPanel);
 		printOMatic5D.addTab("Plastic", materialPanel);
-		printOMatic5D.addTab("Extruder", machinePanel);
+                // printOMatic5D.addTab("Extruder", machinePanel);
 		component.add(printOMatic5D, "spanx");
 		printOMatic5D.setVisible(enabled.isSelected());
 	}
@@ -220,13 +220,15 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 		if (enabled.isSelected()) {
 			// Check that width/thickness is ok
-			double perimeterWidthOverThickness = getValue("desiredPathWidth")/getValue("desiredLayerHeight");
-			if (perimeterWidthOverThickness > 1.8) {
-				return "Layer height is smaller than recommended for the specified nozzle. Try increasing the layer height, or changing to a smaller nozzle.";
-			}
-			if (perimeterWidthOverThickness < 1.2) {
-				return "Layer height is larger than recommended for the specified nozzle. Try decreasing the layer height, or changing to a larger nozzle.";
-			}
+/*
+                        double perimeterWidthOverThickness = getValue("desiredPathWidth")/getValue("desiredLayerHeight");
+                        if (perimeterWidthOverThickness > 1.8) {
+                                return "Layer height is smaller than recommended for the specified nozzle. Try increasing the layer height, or changing to a smaller nozzle.";
+                        }
+                        if (perimeterWidthOverThickness < 1.2) {
+                                return "Layer height is larger than recommended for the specified nozzle. Try decreasing the layer height, or changing to a larger nozzle.";
+                        }
+*/
 			
 		}
 		
