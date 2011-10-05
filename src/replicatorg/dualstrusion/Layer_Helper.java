@@ -415,7 +415,16 @@ public class Layer_Helper {
 	 * @param layer_height this is the layer height to do it at
 	 * @return
 	 */
+	private static float getLayerIncrement()
+	{
+		System.out.println(PrimaryLayers.get(1).getHeight() - PrimaryLayers.get(0).getHeight());
+		return PrimaryLayers.get(1).getHeight() - PrimaryLayers.get(0).getHeight();
+	}
 	public static ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(0); //Min no decimals
+		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
+		nf.setGroupingUsed(false); //NO commas!
 		ArrayList<String> targetCode = new ArrayList<String>();
 		Toolheads currentTool = null;
 
@@ -426,7 +435,7 @@ public class Layer_Helper {
 		}
 		int nextToolnum = nextTool.ordinal();
 		int currentToolnum = currentTool.ordinal();
-		float hop_height = 7.0f;
+		float hop_height = getLayerIncrement()*10f;
 		targetCode.add("(<toolchange>)");
 		float purge_z = 6.5f;
 
@@ -434,7 +443,7 @@ public class Layer_Helper {
 
 
 
-		targetCode.add("G1 Z" + (layer_height+hop_height));
+		targetCode.add("G1 Z" + nf.format((layer_height+hop_height)) + (" (modified by HopMultipleofLayerHeight)"));
 		targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
 
 		targetCode.add("M103");
@@ -455,7 +464,7 @@ public class Layer_Helper {
 		}
 		 */
 		float h = layer_height+hop_height;
-		targetCode.add("G1 Z"+ h +" F2000");
+		targetCode.add("G1 Z"+ nf.format(h) +" F2000");
 
 		targetCode.add("(</toolchange>)");
 		//System.out.println(currentFeedRate);
