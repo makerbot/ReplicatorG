@@ -55,6 +55,9 @@ public class Layer_Helper {
 		readLayers(second, SecondaryLayers);
 		//seeLayerHeights(SecondaryLayers);
 		System.out.println(PrimaryLayers.size() + " " + SecondaryLayers.size());
+		//System.out.println("Tallest layer in primary is " + PrimaryLayers.get(PrimaryLayers.size() - 1).getHeight());
+		System.out.println("Tallest layer in secondary is " + SecondaryLayers.get(SecondaryLayers.size() - 1).getHeight());
+
 		return mergeLayers(PrimaryLayers, SecondaryLayers);
 
 	}
@@ -146,8 +149,9 @@ public class Layer_Helper {
 		//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
 		merged.addAll(toolChange(Toolheads.Primary, 0.6f)); //insures we start with right offset and nozzles start supaclean
-
-		for(float i = 0; i < maxHeight - .008; i += tolerance)
+		System.out.println("MH1 = " + maxHeight1 + " MH0 = " + maxHeight0 + "MH Totes = " + maxHeight);
+		//for(float i = 0; i < maxHeight - .008; i += tolerance)
+		for(float i = 0; i < maxHeight; i += tolerance)
 		{
 
 			//System.out.println("checking " + i);
