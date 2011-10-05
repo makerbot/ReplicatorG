@@ -206,6 +206,10 @@ class ChamberSkein:
 			if firstWord == '(</extruderInitialization>)':
 				self.distanceFeedRate.addTagBracketedProcedure('chamber')
 				return
+			elif firstWord == '(<perimeterWidth>':
+				self.distanceFeedRate.addTagBracketedLine('bedTemperature', self.repository.bedTemperature.value )
+				self.distanceFeedRate.addTagBracketedLine('chamberTemperature', self.repository.chamberTemperature.value )
+				self.distanceFeedRate.addTagBracketedLine('holdingForce', self.repository.holdingForce.value )
 			self.distanceFeedRate.addLine(line)
 
 	def parseLine(self, line):

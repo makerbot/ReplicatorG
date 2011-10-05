@@ -49,7 +49,7 @@ from skeinforge_application.skeinforge_utilities import skeinforge_craft
 from skeinforge_application.skeinforge_utilities import skeinforge_polyfile
 from skeinforge_application.skeinforge_utilities import skeinforge_profile
 import sys
-
+import re
 
 __author__ = 'Enrique Perez (perez_enrique@yahoo.com)'
 __date__ = '$Date: 2008/02/05 $'
@@ -104,14 +104,44 @@ class BookendSkein:
 		'Initialize.'
  		self.distanceFeedRate = gcodec.DistanceFeedRate()
 		self.lineIndex = 0
+		self.varHash = {}
+
+        def replaceKeyword(self, matchObj):
+                print "::%s::" % (matchObj.group(1))
+                if matchObj.group(1) in self.varHash:
+                        return self.varHash[matchObj.group(1)]
+                else:
+                        return ''
 
 	def addFromUpperLowerFile(self, fileName):
 		"Add lines of text from the fileName or the lowercase fileName, if there is no file by the original fileName in the directory."
-		self.distanceFeedRate.addLinesSetAbsoluteDistanceMode(settings.getLinesInAlterationsOrGivenDirectory(fileName))
+		newLines = settings.getLinesInAlterationsOrGivenDirectory(fileName)
+		for lineIndex in xrange(len(newLines)):
+		        newLines[lineIndex] = re.compile(r'\#<([^>]+)>').sub(self.replaceKeyword, newLines[lineIndex])
+		        
+		self.distanceFeedRate.addLinesSetAbsoluteDistanceMode(newLines)
 
 	def getCraftedGcode(self, gcodeText, repository):
 		"Parse gcode text and store the bevel gcode."
 		self.lines = archive.getTextLines(gcodeText)
+		
+		# Grab variables from the init
+		inInit = False
+		for lineIndex in xrange(len(self.lines)):
+			line = self.lines[lineIndex]
+			splitLine = gcodec.getSplitLineBeforeBracketSemicolon(line)
+			firstWord = gcodec.getFirstWord(splitLine)
+			self.distanceFeedRate.parseSplitLine(firstWord, splitLine)
+			if firstWord == '(<extruderInitialization>)':
+				inInit = True
+			elif firstWord == '(<settings>)':
+				inInit = False
+			elif firstWord == '(</extruderInitialization>)':
+                                break
+			elif inInit and firstWord != '(<procedureName>' and firstWord[0:2] == '(<' and len(splitLine) > 1:
+			        print "%s = %s" % (firstWord[2:-1], splitLine[1])
+				self.varHash[firstWord[2:-1]] = splitLine[1]
+
 		self.addFromUpperLowerFile(repository.nameOfStartFile.value) # Add a start file if it exists.
 		self.parseInitialization()
 		for self.lineIndex in xrange(self.lineIndex, len(self.lines)):
