@@ -12,3 +12,5 @@ examples/*.gcode
 *~
 RepG.log
 ReplicatorG.app
+.classpath
+.project
