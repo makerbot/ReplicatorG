@@ -1088,6 +1088,14 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 	class MachineMenuListener implements ActionListener {
+
+		/* a quick case insensitive match function. 
+		 * @returns true of subString is in baseString (case insensitive), false otherwise
+		 **/
+		public boolean containsIgnoreCase(String baseString, String subString) {
+			return Pattern.compile(Pattern.quote(subString), Pattern.CASE_INSENSITIVE).matcher(baseString).find();
+
+		}
 		public void actionPerformed(ActionEvent e) {
 			if (machineMenu == null) {
 				System.out.println("machineMenu is null");
@@ -1103,6 +1111,16 @@ ToolpathGenerator.GeneratorListener
 			if (e.getSource() instanceof JRadioButtonMenuItem) {
 				JRadioButtonMenuItem item = (JRadioButtonMenuItem) e.getSource();
 				final String name = item.getText();
+				
+				//if new machine driver name have "Mk5" and the previous driver name does not
+				if(containsIgnoreCase(name, "MK5" ) && 
+						(containsIgnoreCase( Base.preferences.get("machine.name", null), "MK5") ==  false ) )
+				{ 
+					String msg = new String("MK6 or newer  downgrading to MK5 requires manual changes.\n Search 'Mk5 Extruder Downgrade' on http://wiki.makerbot.com for instructions.");
+					JOptionPane.showMessageDialog(null, msg,  "Warning:Manual Downgrade to MK5 Needed", JOptionPane.WARNING_MESSAGE);
+
+				}
+
 				Base.preferences.put("machine.name", name);
 				setDualStrusionGUI();
 			}
@@ -1122,7 +1140,10 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 	}
-
+	
+	/* Function to generate a list of
+	 * supported machines to be displayed in the Driver menu item.
+	 */
 	protected void populateMachineMenu() {
 		machineMenu.removeAll();
 		machineMenuListener = new MachineMenuListener();
@@ -1136,8 +1157,8 @@ ToolpathGenerator.GeneratorListener
 			System.out.println("error retrieving machine list");
 			exception.printStackTrace();
 		}
-
 		Collections.sort(names);
+		
 		ButtonGroup radiogroup = new ButtonGroup();
 		for (String name : names ) {
 
@@ -1429,6 +1450,7 @@ ToolpathGenerator.GeneratorListener
 		if ( name != null ) {
 			loadMachine(name, true);
 		}
+
 	}
 
 	public void handleOnboardPrefs() {
@@ -2689,10 +2711,14 @@ ToolpathGenerator.GeneratorListener
 		// 2. If the new machine uses a serial port, connect to the serial port
 		// 3. If this is a new machine, record a reference to it
 		// 4. Hook the machine to the main window.
-
-		machineLoader.load(name);
-		// TODO: Check if the machine failed to load, and bail here if necessary?
-
+		
+		boolean loaded = machineLoader.load(name);
+		
+		if(loaded == false) {
+			Base.logger.severe("could not load machine '" + name + "' please check Driver-> <Machine Name> ");
+			return;
+		}
+		
 		String targetPort;
 
 		targetPort = Base.preferences.get("serial.last_selected", null);

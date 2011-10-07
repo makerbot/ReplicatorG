@@ -440,6 +440,14 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		machine.disableDrives();
 	}
 
+	public void enableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Not all drivers support this method.
+	}
+	
+	public void disableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Not all drivers support this method.
+	}
+
 	/***************************************************************************
 	 * Change our gear ratio.
 	 **************************************************************************/
