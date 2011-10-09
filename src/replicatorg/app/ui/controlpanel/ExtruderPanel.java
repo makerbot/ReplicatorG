@@ -571,7 +571,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			else if (name.equals("fan-check"))
 				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
 			else if (name.equals("abp-check")) {
-				// TODO: Say wha???
+				// TODO: Debugging. Run both!
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
 				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
 			}
 			else if (name.equals("valve-check"))
@@ -592,7 +593,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			else if (name.equals("fan-check"))
 				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
 			else if (name.equals("abp-check")) {
-				// TODO: Say wha???
+				// TODO: Debugging. Run both!
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
 				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
 			}
 			else if (name.equals("valve-check"))

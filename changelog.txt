@@ -1,3 +1,4 @@
+0027_ALPHA
 0026 ReplicatorG
 * Add Machine information panel
 * Add support for control of a regulated cooling fan
