@@ -87,7 +87,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
-public class DualStrusionWindow extends JFrame implements ActionListener, ItemListener, ToolpathGenerator.GeneratorListener{
+public class DualStrusionWindow extends JFrame implements ToolpathGenerator.GeneratorListener{
 	/**
 	 * 
 	 */
@@ -95,7 +95,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	private static final long serialVersionUID = 2548421042732389328L; //Generated serial
 	//File result; // final combined gcode will be saved here
 	File primary, secondary, dest, result, primarygcode, secondarygcode;
-	JFrame frame = new JFrame("DualStrusion Window");
+
 	volatile short triggerNum;
 	private ToolpathGeneratorThread tpgt;
 	boolean start2nd = false;
@@ -112,16 +112,22 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	 */
 	public DualStrusionWindow()
 	{
-		hasOneGcode = false;
+		this(null);
 	}
 	/**
 	 * This is a constructor that takes the filepath of the gcode open currently in ReplicatorG
 	 * @param s the path of the gcode currently open in RepG
 	 */
 	public DualStrusionWindow(String s) {
-		// TODO Auto-generated constructor stub
-		hasOneGcode = true;
-		originalGcodePath = s;
+		
+		super("DualStrusion Window");
+		
+		hasOneGcode = false;
+		
+		if(s != null){
+			hasOneGcode = true;
+			originalGcodePath = s;
+		}
 
 	}
 	/**
@@ -129,15 +135,13 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	 * It also links to online DualStrusion Documentation NOTE: This may be buggy, it uses getDesktop() which is JDK 1.6 and scary.
 	 * This method also invokes the thread in which the gcode combining operations run in, I would like to turn this into a SwingWorker soon.
 	 */
-	public void go()
+	public void createAndShow()
 	{
 		cdl = new CountDownLatch(1);
 		//JCheckBox useSD = new JCheckBox(false);
-		frame.dispose();
-		frame.setResizable(true);
+		setResizable(true);
 		//frame.setContentPane(this);
-		frame.setVisible(true);	
-		frame.setLocation(400, 0);
+		setLocation(400, 0);
 		Container cont = this.getContentPane();
 		cont.setLayout(new MigLayout("fill"));
 		cont.setVisible(true);
@@ -365,6 +369,8 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 					primary = new File(Toolhead1.getText());
 				secondary = new File(Toolhead0.getText());
 				dest = new File(DestinationTextField.getText());
+				
+				// creates files to dump gcode into if stl is passed
 				primarygcode = new File(replaceExtension(Toolhead1.getText(), "gcode"));
 				secondarygcode = new File(replaceExtension(Toolhead0.getText(), "gcode"));
 				repStart = replaceStart.isSelected();
@@ -374,12 +380,10 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 				{
 					if(getExtension(primary.getName()).equalsIgnoreCase("stl") && getExtension(secondary.getName()).equalsIgnoreCase("stl"))
 					{
-
 						startBoth();
 					}
 					else if(getExtension(primary.getName()).equalsIgnoreCase("stl"))
 					{
-
 						startPrimary();
 					}
 					else if(getExtension(secondary.getName()).equalsIgnoreCase("stl"))
@@ -419,10 +423,11 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			}
 		});
 		cont.add(help);
-		frame.add(cont);
-		frame.pack();
+		pack();
+		setVisible(true);	
 
 	}
+	
 	private static String replaceExtension(String s, String newExtension)
 	{
 		int i = s.lastIndexOf(".");
@@ -431,15 +436,13 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		System.out.println(s);
 		return s;
 	}
+	
 	private synchronized void startBoth()
 	{
 		ToolpathGenerator generator1 = ToolpathGeneratorFactory.createSelectedGenerator();
-		ToolpathGenerator generator2 = ToolpathGeneratorFactory.createSelectedGenerator();
 		try{
 			Build p = new Build(primary.getAbsolutePath());
-			Build s = new Build(secondary.getAbsolutePath());
 			JFrame primaryProgress = new JFrame("Primary Progress");
-			JFrame secondaryProgress = new JFrame("Secondary Progress");
 			//primaryProgress.setVisible(true);
 			//primaryProgress.setLocation(200, 200);
 			//secondaryProgress.setLocation(200+primaryProgress.getWidth(), 200+primaryProgress.getHeight());
@@ -449,20 +452,14 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			//jtb.addTab("Left", primaryProgress);
 			//jtb.addTab("Right", secondaryProgress);
 			//cont.add(jtb);
-			//ombinedWindow.add(jtb);
+			//combinedWindow.add(jtb);
 			//combinedWindow.pack();
 			//combinedWindow.setVisible(true);
 			ToolpathGeneratorThread tg1 = new ToolpathGeneratorThread(primaryProgress, generator1, p);
-			ToolpathGeneratorThread tg2 = new ToolpathGeneratorThread(secondaryProgress, generator2, s);
-
-
 			tg1.addListener(this);
-			tg2.addListener(this);
-			tg1.setDualStrusionSupportFlag(true, 200, 300, "Extruder A (Left)"); //This preps all the toolpathGenerator stuff for dualstrusion and makes it deploy swing windows at given coordinates
-			tg2.setDualStrusionSupportFlag(true, 650, 300, "Extruder B (Right)");
-			//SwingUtilities.invokeLater(tg1);
-			//SwingUtilities.invokeLater(tg2);
-			tpgt = tg2;
+			
+			//This preps all the toolpathGenerator stuff for dualstrusion and makes it deploy swing windows at given coordinates
+			tg1.setDualStrusionSupportFlag(true, 200, 300, "Extruder A (Left)");
 			tg1.start();
 			
 			triggerNum = 2;
@@ -473,6 +470,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			System.err.println("cannot read stl");
 		} 
 	}
+	
 	private synchronized void start2ndGeneration()
 	{
 		System.out.println("Ill never let go jack!");
@@ -492,6 +490,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			e.printStackTrace();
 		}
 	}
+	
 	private synchronized void startPrimary()
 	{
 		ToolpathGenerator generator1 = ToolpathGeneratorFactory.createSelectedGenerator();
@@ -511,6 +510,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			System.err.println("cannot read stl");
 		} 
 	}
+	
 	private synchronized void startSecondary()
 	{
 		ToolpathGenerator generator2 = ToolpathGeneratorFactory.createSelectedGenerator();
@@ -531,6 +531,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			System.err.println("cannot read stl");
 		} 
 	}
+	
 	private synchronized void finish()
 	{
 		triggerNum--;
@@ -549,8 +550,8 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 			DualStrusionConstruction dcs = new DualStrusionConstruction(primarygcode, secondarygcode, dest, repStart, repEnd);
 			dcs.run();
 			result = dcs.getCombinedFile();
-			frame.removeAll();
-			frame.dispose();
+			removeAll();
+			dispose();
 		}
 	}
 
@@ -569,38 +570,29 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	{
 		return result;
 	}
+	
 	/**
 	 * This method is unused and a prime canidate for deletion.
 	 * @param savethis
 	 */
 	private static void saveGCodeSource(GCodeSource savethis)
-	{StringListSource slss = (StringListSource) savethis;
-	Iterator<String> slit = slss.iterator();
-	try {
-		FileWriter fwr = new FileWriter(new File("/home/makerbot/Desktop/target.gcode"));
-		while(slit.hasNext())
-		{
-			fwr.write(slit.next());
-		}
-		fwr.close();
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}	
-
-	}
-	public void actionPerformed(ActionEvent arg0) 
 	{
-		// TODO Auto-generated method stub
+		StringListSource slss = (StringListSource) savethis;
+		Iterator<String> slit = slss.iterator();
+		try {
+			FileWriter fwr = new FileWriter(new File("/home/makerbot/Desktop/target.gcode"));
+			while(slit.hasNext())
+			{
+				fwr.write(slit.next());
+			}
+			fwr.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 
 	}
-
-	@Override
-	public void itemStateChanged(ItemEvent arg0) 
-	{
-		Object source = arg0.getItemSelectable();
-
-	}
+	
 	@Override
 	public void generationComplete(Completion completion, Object details) {
 		if (completion == Completion.SUCCESS) {
@@ -610,6 +602,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	}
 	@Override
 	public void updateGenerator(String message) {
+		System.out.println(message);
 		if(message.equals("Config Done") && !start2nd)
 		{
 			start2nd = true;
@@ -621,81 +614,3 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	}
 
 }
-/*
-class runConcurrentToolPathGeneratorThreads implements Runnable
-{
-	ToolpathGeneratorThread tt1, tt2;
-	runConcurrentToolPathGeneratorThreads(ToolpathGeneratorThread t1, ToolpathGeneratorThread t2)
-	{
-		tt1 = t1;
-		tt2 = t2;
-	}
-	@Override
-	public void run() {
-		//SwingUtilities.invokeLater(tt1);
-		//SwingUtilities.invokeLater(tt2);
-		tt1.start();
-		
-		try {
-			tt1.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		tt2.start();
-
-		
-	}
-	
-}
-*/
-/*
-class genListener implements ToolpathGenerator.GeneratorListener
-{
-	boolean finished = false;
-	public genListener()
-	{
-
-	}
-	public boolean getFinished()
-	{
-		return finished;
-	}
-	@Override
-	public void generationComplete(Completion completion, Object details) {
-		if (completion == Completion.SUCCESS) 
-		{
-			finished = true;
-		}
-
-
-	}
-	@Override
-	public void updateGenerator(String message) {
-		// TODO Auto-generated method stub
-
-	}
-}
-class checkFinished implements Runnable
-{
-	genListener gen1;
-	genListener gen2;
-	public checkFinished(genListener g1, genListener g2)
-	{
-		gen1 = g1;
-		gen2 = g2;
-	}
-	public void run() 
-	{
-		while(!(gen1.getFinished() && gen2.getFinished()))
-		{
-			//wait
-		}
-		DualStrusionWindow.cdl.countDown();
-
-	}
-
-}
-
- */

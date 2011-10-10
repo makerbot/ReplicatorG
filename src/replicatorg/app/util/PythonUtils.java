@@ -141,7 +141,7 @@ public class PythonUtils {
 			// The Windows python install does not add Python to the path by default.
 			// We look for the install in the standard locations (C:\Python26, etc.)
 			Pattern pythonPat = Pattern.compile("Python([0-9]+)");
-			File driveDir = new File("C:/");
+			File driveDir = new File("C:/Program Files/");
 			if (driveDir.exists() && driveDir.isDirectory()) {
 				for (String path : driveDir.list()) {
 					Matcher match = pythonPat.matcher(path);

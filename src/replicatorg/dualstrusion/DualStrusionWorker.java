@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayList;
 
+import replicatorg.combining.Layer_Helper;
+
 /**
  * 
  * @author Noah Levy, Ben Rockhold, Will Langford

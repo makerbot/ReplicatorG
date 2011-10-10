@@ -58,10 +58,8 @@ import java.awt.print.PageFormat;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -105,8 +103,8 @@ import javax.swing.undo.UndoManager;
 import net.iharder.dnd.FileDrop;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.app.MRUList;
 import replicatorg.app.Base.InitialOpenBehavior;
+import replicatorg.app.MRUList;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
@@ -124,8 +122,8 @@ import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RealtimeControl;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.dualstrusion.DualStrusionWorker;
-import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineFactory;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineLoader;
 import replicatorg.machine.MachineProgressEvent;
@@ -136,12 +134,11 @@ import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
 import replicatorg.model.BuildElement;
 import replicatorg.model.BuildModel;
-import replicatorg.model.GCodeSource;
 import replicatorg.model.JEditTextAreaSource;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
-import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory.ToolpathGeneratorDescriptor;
+import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
 import replicatorg.uploader.FirmwareUploader;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -224,6 +221,7 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem controlPanelItem;
 	JMenuItem buildMenuItem;
 	JMenuItem dualstrusionItem;
+	JMenuItem combineItem;
 	JMenu changeToolheadMenu = new JMenu("Change Toolhead of GCode");
 
 	JMenu machineMenu;
@@ -936,6 +934,16 @@ ToolpathGenerator.GeneratorListener
 		changeToolheadMenu.setEnabled(false);
 		setDualStrusionGUI();
 
+		combineItem = new JMenuItem("Quadrant combine");
+		combineItem.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				handleCombination();
+			}
+		});
+		menu.add(combineItem);
+		combineItem.setEnabled(true);
+		
 		return menu;
 	}
 
@@ -2026,19 +2034,7 @@ ToolpathGenerator.GeneratorListener
 
 	public void handleDualStrusion()
 	{
-		if(getBuild().getCode() == null)
-		{
-			DualStrusionWindow dsw = new DualStrusionWindow();
-			dsw.go();
-
-			//File f = dsw.getCombined();
-
-			//if(f != null)
-			{
-				//handleOpenFile(f);
-			}
-		}
-		else if(getBuild().getCode().isModified())
+		if(getBuild().getCode() != null && getBuild().getCode().isModified())
 		{
 			final String message = "<html>In order to dualstrude you need to save<br>" +
 			"Save the model now?</html>";
@@ -2055,29 +2051,30 @@ ToolpathGenerator.GeneratorListener
 				}
 			}
 		}
-		else if(getBuild().getCode() != null)
-		{
-			DualStrusionWindow dsw = new DualStrusionWindow(getBuild().getMainFilePath());	
-			dsw.go();
-			//File f = dsw.getCombined();
-
-			//if(f != null)
-			{
-				//handleOpenFile(f);
-			}
-		}
 		else
 		{
-			DualStrusionWindow dsw = new DualStrusionWindow();
-			dsw.go();
+			DualStrusionWindow dsw;
+			if(getBuild().getCode() != null)
+				dsw = new DualStrusionWindow(getBuild().getMainFilePath());	
+			else
+				dsw = new DualStrusionWindow();
+			dsw.createAndShow();
 
 			//File f = dsw.getCombined();
 			//if(f != null)
-			{
 				//handleOpenFile(f);
-			}
 		}
 
+	}
+	
+	public void handleCombination()
+	{
+		CombineWindow cw;
+
+		if(getBuild().getCode() != null)
+			cw = new CombineWindow(getBuild().getMainFilePath());	
+		else
+			cw = new CombineWindow();
 	}
 
 	public void estimationOver() {
