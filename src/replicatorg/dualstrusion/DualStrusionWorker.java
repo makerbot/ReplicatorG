@@ -1,15 +1,12 @@
 package replicatorg.dualstrusion;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.ArrayList;
 
-import replicatorg.combining.Layer_Helper;
 
 /**
  * 
@@ -87,7 +84,7 @@ public class DualStrusionWorker {
 	 * This is a method that calls all the preprocessing methods individually
 	 * @param gcode
 	 */
-	private static void prepGcode(ArrayList<String> gcode)
+	public static void prepGcode(ArrayList<String> gcode)
 	{
 		stripWhitespace(gcode);
 		stripEmptyLayers(gcode);
@@ -264,7 +261,7 @@ public class DualStrusionWorker {
 	 * @param gcode
 	 * @return A boolean represents whether the gcode risks crashing
 	 */
-	private static boolean checkCrashes(ArrayList<String> gcode)
+	public static boolean checkCrashes(ArrayList<String> gcode)
 	{
 		boolean crashes = false;
 		for(String s : gcode)
@@ -385,7 +382,7 @@ public class DualStrusionWorker {
 			}
 		}
 	}
-	private static void stripStartGcode(ArrayList<String> gcode)
+	public static void stripStartGcode(ArrayList<String> gcode)
 	{
 		for(int i = 0; i < gcode.size()-1; i++ ) //This starts 3/4 of the way thru to save time, tiny files may fail
 		{
@@ -565,7 +562,7 @@ public class DualStrusionWorker {
 	 * @param t writeThis arrayList
 	 * @param f to this Destination
 	 */
-	private static void writeArrayListtoFile(ArrayList<String> t, File f)
+	public static void writeArrayListtoFile(ArrayList<String> t, File f)
 	{
 		try{
 			FileWriter bwr = new FileWriter(f);
@@ -598,7 +595,7 @@ public class DualStrusionWorker {
 	 * @param f
 	 * @return
 	 */
-	private static ArrayList<String> readFiletoArrayList(File f)
+	public static ArrayList<String> readFiletoArrayList(File f)
 	{
 		ArrayList<String> vect = new ArrayList<String>();
 		String curline;	

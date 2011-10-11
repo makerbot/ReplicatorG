@@ -4,19 +4,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.vecmath.Point3d;
 
+import replicatorg.app.ui.modeling.EditingModel;
+import replicatorg.dualstrusion.CodeCombination;
 import replicatorg.model.Build;
+import replicatorg.model.BuildModel;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
@@ -49,52 +54,59 @@ $Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
  */
 
 /**
- * This window provides the user with a way to generate a gcode toolpath for four of the same object, using different 
- * skeinforge settings for each one. It offers a box for selecting an STL or gcode file and a place to store the generated gcode.
+ * This window provides the user with a way to generate a gcode toolpath for a few of the same object, using different 
+ * skeinforge settings for each one. It offers a box for selecting an STL file and a place to store the generated gcode.
  * Borrows somewhat from the DualStrusionWindow.
+ * 
+ * This is a tool intended for Makerbot's R&D team to do materials testing, it may have uses or hazards 
+ * that are documented only verbally. Use at your own risk.
  * @author Ted
  *
  */
-public class CombineWindow extends JFrame implements ToolpathGenerator.GeneratorListener
+public class CombineWindow extends JFrame
 {
-
-	// at some point we may want to have multiple files get combined
-	private File combineFile, saveFile;
-	private List<File> tmpFiles;
-	private boolean replaceStart, replaceEnd;
+	private File sourceFile;
+	private File destFile;
 	
-	private int numRepetitions;
-
-	private JLabel fileLabel, saveLabel;
-	private JLabel startCBoxLabel, endCBoxLabel;
+	// Setting these here is a secondary layer of protection, not strictly necessary
+	private int numRepetitions = 2;
+	private double availableSpace = 100;
 	
+	private List<File> combineFiles;
+	
+	private JLabel fileLabel;
+	private JLabel saveLabel;
+	private JLabel numLabel;
+	private JLabel spaceLabel;
+
 	private JTextField fileInput;
 	private JTextField saveInput;
-
-	private JCheckBox repStartCheckBox;
-	private JCheckBox repEndCheckBox;
+	private JTextField numInput;
+	private JTextField spaceInput;
 	
 	private JButton fileBrowseButton;
 	private JButton saveBrowseButton;
 	private JButton mergeButton;
 	private JButton cancelButton;
 	
-	public CombineWindow()
+	// With this we can manipulate the model!
+	private final MainWindow theMainWindow;
+	
+	public CombineWindow(final MainWindow mw)
 	{
-		this(null);
+		this(null, mw);
 	}
 	
-	public CombineWindow(String path)
+	public CombineWindow(String path, final MainWindow mw)
 	{
+		super("Scary EXPERIMENTAL functionality");
+		theMainWindow = mw;
 
-
-		// for now we're hard coding this as four repetitions
-		numRepetitions = 4;
-		
 		fileLabel = new JLabel("File:");
 		fileInput = new JTextField();
+		// TODO Danger! Danger! That gcode to stl thing could go wrong somewhere down the line, maybe I just shouldn't bother with pre-filling the field?
 		if(path != null)
-			fileInput.setText(path);
+			fileInput.setText(path.replace(".gcode", ".stl"));
 		fileBrowseButton = new JButton("Browse...");
 		fileBrowseButton.addActionListener(new ActionListener(){
 			// open a file chooser
@@ -140,10 +152,13 @@ public class CombineWindow extends JFrame implements ToolpathGenerator.Generator
 			}
 		});
 
-		startCBoxLabel = new JLabel("Use default start.gcode: ");
-		endCBoxLabel = new JLabel("Use default end.gcode: ");
-		repStartCheckBox = new JCheckBox();
-		repEndCheckBox = new JCheckBox();
+		numLabel = new JLabel("Number of copies:");
+		numInput = new JTextField();
+		numInput.setText("2");
+		
+		spaceLabel = new JLabel("Available Space:");
+		spaceInput = new JTextField();
+		spaceInput.setText("100");
 		
 		mergeButton = new JButton("Merge");
 		mergeButton.addActionListener(new ActionListener(){
@@ -151,13 +166,30 @@ public class CombineWindow extends JFrame implements ToolpathGenerator.Generator
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 
-				combineFile = new File(fileInput.getText());
-				saveFile = new File(saveInput.getText());
+				if(fileInput.getText().equals("") || saveInput.getText().equals("") ||
+					numInput.getText().equals("") || spaceInput.getText().equals(""))
+				{
+					JOptionPane.showConfirmDialog(CombineWindow.this, "Please fill in all fields.", 
+							"Oops!", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				sourceFile = new File(fileInput.getText());
+				destFile = new File(saveInput.getText());
 				
-				replaceStart = repStartCheckBox.isSelected();
-				replaceEnd = repEndCheckBox.isSelected();
+				numRepetitions = Integer.parseInt(numInput.getText());
+				availableSpace = Double.parseDouble(spaceInput.getText());
 				
-				if(combineFile.getName().endsWith(".stl")) 
+				if(numRepetitions < 2)
+				{
+					JOptionPane.showConfirmDialog(CombineWindow.this, "Number of copies must be greater than 2.", 
+							"Oops!", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				theMainWindow.handleOpenUnchecked(sourceFile.getAbsolutePath(), 0, 0, 0, 0);
+				// make sure we load up the file before doing all this, otherwise
+				//   we're always just operating on the open file. maybe that would be a good thing?
+				
+				if(sourceFile.getName().endsWith(".stl")) 
 				{
 					// creates some number of gcode files to be merged
 					createGcode();
@@ -165,13 +197,11 @@ public class CombineWindow extends JFrame implements ToolpathGenerator.Generator
 				else
 				{
 					final String message = "I know the file browser let you choose gcode, " +
-								"but this function only supports stl at the moment. Sorry about that.";
+								"but this function only supports .stl at the moment. Sorry about that.";
 					JOptionPane.showConfirmDialog(CombineWindow.this, message, "Oops!", 
-											JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE);
+											JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				
-				combineGcode(null);
 				
 			}
 			
@@ -190,54 +220,59 @@ public class CombineWindow extends JFrame implements ToolpathGenerator.Generator
 		GroupLayout layout = new GroupLayout(getContentPane());
 		getContentPane().setLayout(layout);
 		
-		layout.setVerticalGroup(
-			layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup()
-					// pair the labels, textfeilds, and browse buttons in three groups
-					.addGroup(layout.createSequentialGroup()
-						.addComponent(fileLabel)
-						.addComponent(saveLabel))
-					.addGroup(layout.createSequentialGroup()
-						.addComponent(fileInput)
-						.addComponent(saveInput))
-					.addGroup(layout.createSequentialGroup()
-						.addComponent(fileBrowseButton)
-						.addComponent(saveBrowseButton)))
-				// below that, pair the check boxes and their labels, one above the other (seq)
-				.addGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup()
-						.addComponent(startCBoxLabel)
-						.addComponent(repStartCheckBox))
-					.addGroup(layout.createParallelGroup()
-						.addComponent(endCBoxLabel)
-						.addComponent(repEndCheckBox)))
-				// then the cancel and merge next to each other (par)
-				.addGroup(layout.createParallelGroup()
-					.addComponent(cancelButton)
-					.addComponent(mergeButton)));
+		int fsLabelWidth = 45;
+		int fsInputMinW = 10, fsInputPrefW = 200;
+		
+		layout.setAutoCreateGaps(true);
+		layout.setAutoCreateContainerGaps(true);
+
 		layout.setHorizontalGroup(
 			layout.createParallelGroup()
-				.addGroup(layout.createSequentialGroup()
-					// lay out the three pairs in a row
-					.addGroup(layout.createParallelGroup()
-						.addComponent(fileLabel)
-						.addComponent(saveLabel))
-					.addGroup(layout.createParallelGroup()
-						.addComponent(fileInput)
-						.addComponent(saveInput))
-					.addGroup(layout.createParallelGroup()
-						.addComponent(fileBrowseButton)
-						.addComponent(saveBrowseButton)))
-				// the check boxes (paired with their labels) are on top of each other (par)
+				// add the two rows of label, box, browse button
 				.addGroup(layout.createParallelGroup()
 					.addGroup(layout.createSequentialGroup()
-						.addComponent(startCBoxLabel)
-						.addComponent(repStartCheckBox))
+						.addComponent(fileLabel, fsLabelWidth, fsLabelWidth, fsLabelWidth)
+						.addComponent(fileInput, fsInputMinW, fsInputPrefW, Short.MAX_VALUE)
+						.addComponent(fileBrowseButton))
 					.addGroup(layout.createSequentialGroup()
-						.addComponent(endCBoxLabel)
-						.addComponent(repEndCheckBox)))
+						.addComponent(saveLabel, fsLabelWidth, fsLabelWidth, fsLabelWidth)
+						.addComponent(saveInput, fsInputMinW, fsInputPrefW, Short.MAX_VALUE)
+						.addComponent(saveBrowseButton)))
+				// add the number settings
+				.addGroup(layout.createParallelGroup()
+					.addGroup(layout.createSequentialGroup()
+						.addComponent(numLabel)
+						.addComponent(numInput))
+					.addGroup(layout.createSequentialGroup()
+						.addComponent(spaceLabel)
+						.addComponent(spaceInput)))
 				// the merge and cancel buttons are adjacent (seq)
 				.addGroup(layout.createSequentialGroup()
+					.addComponent(cancelButton)
+					.addComponent(mergeButton)));
+		
+		layout.setVerticalGroup(
+			layout.createSequentialGroup()
+				// add the two rows of label, box, browse button
+				.addGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup()
+						.addComponent(fileLabel)
+						.addComponent(fileInput)
+						.addComponent(fileBrowseButton))
+					.addGroup(layout.createParallelGroup()
+						.addComponent(saveLabel)
+						.addComponent(saveInput)
+						.addComponent(saveBrowseButton)))
+				// add the number settings
+				.addGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup()
+						.addComponent(numLabel)
+						.addComponent(numInput))
+					.addGroup(layout.createParallelGroup()
+						.addComponent(spaceLabel)
+						.addComponent(spaceInput)))
+				// then the cancel and merge next to each other (par)
+				.addGroup(layout.createParallelGroup()
 					.addComponent(cancelButton)
 					.addComponent(mergeButton)));
 		
@@ -247,100 +282,127 @@ public class CombineWindow extends JFrame implements ToolpathGenerator.Generator
 		setVisible(true);
 	}
 	
-	// takes our stl and produces some number of temporary gcode files 
-	public void createGcode()
+	// takes our stl and produces some number of temporary gcode files
+	private void createGcode()
 	{
-		
-		try{
-			Build readFile = new Build(combineFile.getAbsolutePath());
-			ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
-			JFrame progressFrame = new JFrame("File " + numRepetitions);
+		// Here we can do some editing to the stl model, pushing it to the front center
+		EditingModel em = theMainWindow.previewPanel.getModel();
+		em.center();
+
+		Point3d bbUp = new Point3d();
+		em.getBoundingBox().getUpper(bbUp);
+
+		// this assumes that the center function leaves half of the object on the 
+		// far side of the y origin, and half on the near side. That's how it works, yeah?
+		double halfDepth = bbUp.y;
+		double halfSpace = availableSpace/2;
+		// move to the front (Y - availableSpace/2 + boundingbox.high)
+		em.translateObject(0, halfDepth - halfSpace , 0);
+
+		// calculate the offset from numReps, available space, and object size
+		double objDepth = halfDepth*2;
+		double spaceNeeded = objDepth*numRepetitions;
+		if(spaceNeeded > availableSpace)
+		{
+			JOptionPane.showConfirmDialog(CombineWindow.this, "Not enough space for that many objects.", "Oops!", 
+									JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 			
-			ToolpathGeneratorThread genThread = new ToolpathGeneratorThread(progressFrame, generator, readFile);
-
-			genThread.setDualStrusionSupportFlag(true, 200, 200, "File " + numRepetitions);
-			genThread.addListener(new ToolpathGenerator.GeneratorListener(){
-
-				@Override
-				public void updateGenerator(String message) {
-					// this is only received when genThread's DualStrusionSupportFlag is set to true
-					if(message.equals("Config Done"))
-					{
-						numRepetitions--;
-						createGcode();
+		double offset = availableSpace - spaceNeeded;
+		offset /= (numRepetitions-1);
+		offset += objDepth;
+		
+		BuildModel bm = em.getBuildModel();
+		String fileNameBase = sourceFile.getAbsolutePath();
+		fileNameBase = fileNameBase.substring(0, fileNameBase.lastIndexOf("."));
+		
+		// these allow us to call up each gcode generator in turn
+		final Queue<ToolpathGeneratorThread> generatorQueue = new LinkedList<ToolpathGeneratorThread>();
+		final CountDownLatch numLeft = new CountDownLatch(numRepetitions);
+		
+		combineFiles = new ArrayList<File>();
+		
+		for(int i = 0; i < numRepetitions; i++)
+		{
+			try
+			{
+				// save our shape in a new file
+				File tmpFile = new File(fileNameBase + "_tmp_" + i + ".stl");
+				bm.saveAs(tmpFile);
+				
+				combineFiles.add(new File(fileNameBase + "_tmp_" + i + ".gcode"));
+				
+				// generate gcode from our new file
+				final Build readFile = new Build(tmpFile.getAbsolutePath());
+				ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
+				JFrame progressFrame = new JFrame("File " + i);
+				
+				ToolpathGeneratorThread genThread = new ToolpathGeneratorThread(progressFrame, generator, readFile);
+	
+				// this makes sure we can be alerted when the config finishes
+				genThread.setDualStrusionSupportFlag(true, 200, 200, "File " + i);
+				
+				// this listener starts each remaining generator in turn, and grabs each gcode as it becomes available
+				genThread.addListener(new ToolpathGenerator.GeneratorListener(){
+	
+					private final Queue<ToolpathGeneratorThread> genQueue = generatorQueue;
+					
+					@Override
+					public void updateGenerator(String message) {
+						/* This is only received when genThread's DualStrusionSupportFlag is set to true.
+						 * We wait until Config is finished each time, because config boxes are modal.
+						 */
+						if(message.equals("Config Done"))
+						{
+							if(!genQueue.isEmpty())
+								genQueue.poll().start();
+						}
+						
+					}
+	
+					@Override
+					public void generationComplete(Completion completion, Object details) {
+						
+						if(completion == Completion.SUCCESS)
+						{
+							numLeft.countDown();
+							if(numLeft.getCount() == 0)
+							{
+								combineGcode();
+							}
+						}
 					}
 					
-				}
-
-				@Override
-				public void generationComplete(Completion completion, Object details) {
-					
-				}
+				});
 				
-			});
-			genThread.start();
-			
-//			
-//			Build build1 = new Build(combineFile.getAbsolutePath());
-//			Build build2 = new Build(combineFile.getAbsolutePath());
-//			Build build3 = new Build(combineFile.getAbsolutePath());
-//			Build build4 = new Build(combineFile.getAbsolutePath());
-//			ToolpathGenerator generator1 = ToolpathGeneratorFactory.createSelectedGenerator();
-//			ToolpathGenerator generator2 = ToolpathGeneratorFactory.createSelectedGenerator();
-//			ToolpathGenerator generator3 = ToolpathGeneratorFactory.createSelectedGenerator();
-//			ToolpathGenerator generator4 = ToolpathGeneratorFactory.createSelectedGenerator();
-//
-//			JFrame frame1 = new JFrame("Quadrant A");
-//			JFrame frame2 = new JFrame("Quadrant B");
-//			JFrame frame3 = new JFrame("Quadrant C");
-//			JFrame frame4 = new JFrame("Quadrant D");
-//			frame1.setLocation(200, 200);
-//			frame2.setLocation(500, 200);
-//			frame3.setLocation(500, 500);
-//			frame4.setLocation(200, 500);
-//
-//			ToolpathGeneratorThread thread1 = new ToolpathGeneratorThread(frame1, generator1, build1);
-//			ToolpathGeneratorThread thread2 = new ToolpathGeneratorThread(frame2, generator2, build2);
-//			ToolpathGeneratorThread thread3 = new ToolpathGeneratorThread(frame3, generator3, build3);
-//			ToolpathGeneratorThread thread4 = new ToolpathGeneratorThread(frame4, generator4, build4);
-//			thread1.addListener(this);
-//			thread2.addListener(this);
-//			thread3.addListener(this);
-//			thread4.addListener(this);
-//			thread1.start();
-//			thread2.start();
-//			thread3.start();
-//			thread4.start();
-			
+				generatorQueue.add(genThread);
+				
+				// Now we can move the shape for the next file
+				em.translateObject(0, offset, 0);
+			}
+			catch(IOException e)
+			{
+				System.err.println("cannot read stl");
+				close();
+			}
 		}
-		catch(IOException e)
-		{
-			System.err.println("cannot read stl");
-		} 
+		
+		// start the first generator in the queue
+		generatorQueue.poll().start();
 		
 	}
 	
-	public void combineGcode(Collection<File> tehCodez)
+	private void combineGcode()
 	{
-		//either we were given gcode from the start
-		//or we started with stl
+		CodeCombination.mergeGCodes(destFile, combineFiles);
+		close();
 	}
 	
-	public void close()
+	private void close()
 	{
 		setVisible(false);
 		dispose();
-	}
-
-	@Override
-	public void updateGenerator(String message) {
-		System.out.println(message);
-	}
-
-	@Override
-	public void generationComplete(Completion completion, Object details) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	

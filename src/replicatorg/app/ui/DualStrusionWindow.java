@@ -32,61 +32,34 @@ $Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
  */
 
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 
-import replicatorg.app.Base;
+import net.miginfocom.swing.MigLayout;
 import replicatorg.dualstrusion.DualStrusionConstruction;
 import replicatorg.model.Build;
-import replicatorg.model.BuildCode;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
-import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorListener.Completion;
-
-import net.miginfocom.swing.MigLayout;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.CountDownLatch;
 public class DualStrusionWindow extends JFrame implements ToolpathGenerator.GeneratorListener{
 	/**
 	 * 
@@ -97,7 +70,6 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 	File primary, secondary, dest, result, primarygcode, secondarygcode;
 
 	volatile short triggerNum;
-	private ToolpathGeneratorThread tpgt;
 	boolean start2nd = false;
 	boolean hasOneGcode; //this boolean is true if the constructor is passed one gcode file to begin with, it later effect the layout of the Swing Window
 	boolean repStart, repEnd;
@@ -547,6 +519,7 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 				e.printStackTrace();
 			}
 			System.out.println(primarygcode.getName() + " and " + secondarygcode.getName());
+			// Why is this wrapped as a Runnable? we're not running it in a different thread
 			DualStrusionConstruction dcs = new DualStrusionConstruction(primarygcode, secondarygcode, dest, repStart, repEnd);
 			dcs.run();
 			result = dcs.getCombinedFile();
