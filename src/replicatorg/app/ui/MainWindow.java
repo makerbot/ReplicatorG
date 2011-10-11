@@ -930,11 +930,9 @@ ToolpathGenerator.GeneratorListener
 			}
 		});
 		menu.add(dualstrusionItem);
-		dualstrusionItem.setEnabled(false);
-		changeToolheadMenu.setEnabled(false);
 		setDualStrusionGUI();
 
-		combineItem = new JMenuItem("Quadrant combine");
+		combineItem = new JMenuItem("Row combine");
 		combineItem.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -1073,7 +1071,7 @@ ToolpathGenerator.GeneratorListener
 	}
 	private void setDualStrusionGUI()
 	{
-		dualstrusionItem.setEnabled(false);
+		dualstrusionItem.setEnabled(true);
 		changeToolheadMenu.setEnabled(false);
 		
 		String mname = Base.preferences.get("machine.name", "error");
@@ -2072,9 +2070,9 @@ ToolpathGenerator.GeneratorListener
 		CombineWindow cw;
 
 		if(getBuild().getCode() != null)
-			cw = new CombineWindow(getBuild().getMainFilePath());	
+			cw = new CombineWindow(getBuild().getMainFilePath(), this);	
 		else
-			cw = new CombineWindow();
+			cw = new CombineWindow(this);
 	}
 
 	public void estimationOver() {

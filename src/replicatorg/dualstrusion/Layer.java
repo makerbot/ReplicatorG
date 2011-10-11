@@ -8,14 +8,13 @@ import java.util.ArrayList;
  * This object is used to represent individual layers in Gcode, this is a revision of Will Langford's design which had problems because he was unable to use objects
  */
 public class Layer {
-/**
- * <code>commands</code> holds the commands from given layer
- * 
- */
+	
+	/**
+	 * <code>commands</code> holds the commands from given layer
+	 */
 	private ArrayList<String> commands = new ArrayList<String>();
 	/**
 	 * <code>height</code> holds the height of the given layer, instantiated to -1 for debugging purposes
-	 *
 	 */
 	private float height =  - 1;
 	/**
@@ -27,15 +26,6 @@ public class Layer {
 	{
 		commands = cmds;	
 		height = h;
-		if(commands != null)
-		{
-			//System.out.println("has commands");
-			//DuaprintArrayList(commands);
-		}
-		if(commands == null)
-		{
-			//System.out.println("has  no commands");
-		}
 	}
 	/**
 	 * This method returns the Layers commands
@@ -47,20 +37,24 @@ public class Layer {
 	}
 	
 	/**
-	*This method returns the commands without the layer tags, this is used when merging layers
-	*/
+	 * This method returns the commands without the layer tags, this is used when merging layers
+	 */
 	public ArrayList<String> getCommandsWithoutLayerTag()
 	{	
-		if(commands.size() >= 3)
-		{
-		ArrayList<String> tList = new ArrayList<String>(commands.subList(1, commands.size()-2)); // This temporarylist was necessary because .subList returns a RandomAccessSubList which cant be casted to an arrayList
+		ArrayList<String> result;
 		
-		//DualStrusionWorker.printArrayList(commands);
-		return tList;
+		//TODO document why < 3 commands doesn't fly
+		if(commands.size() < 3)
+		{
+			result = new ArrayList<String>();
+			result.add("");
 		}
-		ArrayList<String> blankList = new ArrayList<String>();
-		blankList.add("");
-		return blankList;
+		else
+		{
+			result = new ArrayList<String>(commands.subList(1, commands.size()-2)); 
+		}
+		
+		return result;
 		
 	}
 	public float getHeight()
