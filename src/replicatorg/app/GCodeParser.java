@@ -359,6 +359,18 @@ public class GCodeParser {
 		return value;
 	}
 
+	private EnumSet<AxisId> getAxes(GCode gcode) {
+		EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+		if (gcode.hasCode('X')) axes.add(AxisId.X);
+		if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+		if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+		if (gcode.hasCode('A')) axes.add(AxisId.A);
+		if (gcode.hasCode('B')) axes.add(AxisId.B);
+		
+		return axes;
+	}
+
 	private void buildMCodes(GCode gcode, Queue< DriverCommand > commands) throws GCodeException {
 		// If this machine handles multiple active toolheads, we always honor a T code
 		// as being a annotation to send the given command to the given toolheads.  Be
@@ -472,14 +484,27 @@ public class GCodeParser {
 
 		// enable drives
 		case 17:
-			commands.add(new replicatorg.drivers.commands.EnableDrives());
+		{
+			EnumSet<AxisId> axes = getAxes(gcode);
+			if (axes.isEmpty()) {
+				commands.add(new replicatorg.drivers.commands.EnableDrives());
+			} else {
+				commands.add(new replicatorg.drivers.commands.EnableAxes(axes));
+			}
+		}
 			break;
 
 		// disable drives
 		case 18:
-			commands.add(new replicatorg.drivers.commands.DisableDrives());
+		{
+			EnumSet<AxisId> axes = getAxes(gcode);
+			if (axes.isEmpty()) {
+				commands.add(new replicatorg.drivers.commands.DisableDrives());
+			} else {
+				commands.add(new replicatorg.drivers.commands.DisableAxes(axes));
+			}
 			break;
-
+		}
 		// open collet
 		case 21:
 			commands.add(new replicatorg.drivers.commands.OpenCollet());
@@ -594,13 +619,7 @@ public class GCodeParser {
 		// Instruct the machine to store it's current position to EEPROM
 		case 131:
 		{
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-			if (gcode.hasCode('A')) axes.add(AxisId.A);
-			if (gcode.hasCode('B')) axes.add(AxisId.B);
+			EnumSet<AxisId> axes = getAxes(gcode);
 			
 			commands.add(new replicatorg.drivers.commands.StoreHomePositions(axes));
 		}
@@ -609,13 +628,7 @@ public class GCodeParser {
 		// Instruct the machine to restore it's current position from EEPROM
 		case 132:
 		{
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-			if (gcode.hasCode('A')) axes.add(AxisId.A);
-			if (gcode.hasCode('B')) axes.add(AxisId.B);
+			EnumSet<AxisId> axes = getAxes(gcode);
 			
 			commands.add(new replicatorg.drivers.commands.RecallHomePositions(axes));
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
@@ -811,11 +824,7 @@ public class GCodeParser {
 		case 28:
 		{
 			// home all axes?
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-			
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			EnumSet<AxisId> axes = getAxes(gcode);
 			
 			if (gcode.hasCode('F')) {
 				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
@@ -830,11 +839,7 @@ public class GCodeParser {
 		case 161:
 		{
 			// home all axes?
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-			
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			EnumSet<AxisId> axes = getAxes(gcode);
 			
 			if (gcode.hasCode('F')) {
 				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.NEGATIVE, feedrate));
@@ -849,11 +854,7 @@ public class GCodeParser {
 		case 162:
 		{
 			// home all axes?
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+			EnumSet<AxisId> axes = getAxes(gcode);
 			if (gcode.hasCode('F')) {
 				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
 			}
