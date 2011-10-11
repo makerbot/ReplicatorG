@@ -188,38 +188,7 @@ public class Layer_Helper {
 		return merged;
 	}
 	
-	/**
-	 * This method merges an arbitrary number of layers for the same toolhead
-	 * @param layers
-	 * @return
-	 */
-	@SafeVarargs
-	public static ArrayList<String> mergeLayers(ArrayList<Layer>... layers)
-	{
-		ArrayList<String> merged = new ArrayList<String>();
-		
-		float maxHeight = Float.MIN_VALUE;
-		
-		for(ArrayList<Layer> batch : layers)
-		{
-			float height = batch.get(batch.size()-1).getHeight();
-			if(height > maxHeight)
-				maxHeight = height;
-		}
-		
-		//What's with the magic number?
-		for(float i = 0; i < maxHeight - .008; i += tolerance)
-		{
-			for(ArrayList<Layer> batch : layers)
-			{
-				Layer toAdd = getByHeight(i, batch);
-				if(toAdd != null)
-					merged.addAll(toAdd.getCommands());
-			}
-		}
-		
-		return merged;
-	}
+	
 	/**
 	 * This method is called  to add gcode to the combined gcode if a layer is only present in one of the sources,
 	 * basically all it does  is check to see if it needs to toolchange, execute a toolchange if needed, and then add the gcode
