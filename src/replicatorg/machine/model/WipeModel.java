@@ -30,12 +30,14 @@ public class WipeModel {
 			//load our index.
 			String n = XML.getAttributeValue(xml, "index");
 			if (n != null)
+			{
 				index = Integer.parseInt(n);
-
+			}
 			//load our x1.
 			n = XML.getAttributeValue(xml, "X1");
 			if (n != null)
 			{
+				
 				x1 = Float.parseFloat(n);
 			}
 			//load our y1.
