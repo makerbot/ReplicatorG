@@ -6,6 +6,7 @@ toolCommandTable = {
     3: ("<H", "Set target temperature to %i"),
     4: ("B", "Set motor 1 speed (pwm): %i"),
     10: ("B", "Toggle motor 1: %d"),
+    12: ("B", "Turn fan on (1) or off (0): %d"),
     31: ("<H", "Set build platform target temperature to %i"),
     129: ("<iiiI","Absolute move to (%i,%i,%i) at DDA %i"),
 }
