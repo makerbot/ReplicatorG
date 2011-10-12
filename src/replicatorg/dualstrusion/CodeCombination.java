@@ -34,6 +34,7 @@ public class CodeCombination{
 	public static File mergeGCodes(File dest, List<File> files)
 	{
 		ArrayList<String> output = new ArrayList<String>();
+		ArrayList<String> tween = DualStrusionWorker.readFiletoArrayList(new File("DualStrusion_Snippets/rctween.gcode"));
 		
 		// Grab the code from each file
 		for(File f : files)
@@ -43,8 +44,10 @@ public class CodeCombination{
 			DualStrusionWorker.prepGcode(lines);
 			
 			// leave the first file's start untouched, remove the others'
+			// also, don't add stuff unless it's after the first
 			if(f != files.get(0))
 			{
+				
 				// This is a modified version of DualStrusionWorker's stripStartGcode()
 				int start = -1, end = -1;
 				for(int i = 0; i < lines.size(); i++)
@@ -73,12 +76,16 @@ public class CodeCombination{
 				// see if we found anything and remove it. 
 				// This check is not, I think, strictly necessary. A sublist from -1 of length 0 shouldn't be anything.
 				if(start != -1)
-					lines.subList(start, end).clear();
+					lines.subList(start, end+1).clear();
+				
+				// now we can add our in-between stuff at the top of the file, below the temperature change
+				output.addAll(tween);
 			}
 			
 			//leave the last file's end untouched
 			if(f != files.get(files.size()-1))
 			{
+				
 				int start = -1, end = -1;
 				for(int i = 0; i < lines.size(); i++)
 				{
@@ -97,17 +104,8 @@ public class CodeCombination{
 				// see if we found anything and remove it. 
 				// Again, I don't know that this needs to be conditional
 				if(start != -1)
-					lines.subList(start, end).clear();
+					lines.subList(start, end+1).clear();
 			}
-
-			// now we can add our in-between stuff at the top of the file
-			output.add("G162 Z F100 (home Z axis maximum)");
-			output.add("G161 X Y F2500 (home XY axes minimum)");
-			output.add("M132 X Y Z A B (Recall stored home offsets for XYZAB axis)");
-			output.add("M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)");
-			output.add("M101 T0 (Extruder on, forward)");
-			output.add("G04 P3000 (Wait 3 seconds)");
-			output.add("M103 T0 (Extruder off)");
 			
 			output.addAll(lines);
 		}

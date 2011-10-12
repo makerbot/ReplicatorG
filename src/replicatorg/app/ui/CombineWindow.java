@@ -104,9 +104,7 @@ public class CombineWindow extends JFrame
 
 		fileLabel = new JLabel("File:");
 		fileInput = new JTextField();
-		// TODO Danger! Danger! That gcode to stl thing could go wrong somewhere down the line, maybe I just shouldn't bother with pre-filling the field?
-		if(path != null)
-			fileInput.setText(path.replace(".gcode", ".stl"));
+		
 		fileBrowseButton = new JButton("Browse...");
 		fileBrowseButton.addActionListener(new ActionListener(){
 			// open a file chooser
@@ -151,6 +149,12 @@ public class CombineWindow extends JFrame
 
 			}
 		});
+
+		if(path != null)
+		{
+			fileInput.setText(path);
+			saveInput.setText(path.replace(".stl", ".gcode"));
+		}
 
 		numLabel = new JLabel("Number of copies:");
 		numInput = new JTextField();
@@ -396,6 +400,7 @@ public class CombineWindow extends JFrame
 	private void combineGcode()
 	{
 		CodeCombination.mergeGCodes(destFile, combineFiles);
+		theMainWindow.handleOpenUnchecked(destFile.getAbsolutePath(), 0, 0, 0, 0);
 		close();
 	}
 	

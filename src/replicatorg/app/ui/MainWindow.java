@@ -2068,9 +2068,8 @@ ToolpathGenerator.GeneratorListener
 	public void handleCombination()
 	{
 		CombineWindow cw;
-
-		if(getBuild().getCode() != null)
-			cw = new CombineWindow(getBuild().getMainFilePath(), this);	
+		if(getBuild() != null)
+			cw = new CombineWindow(getBuild().folder.getAbsolutePath() + File.separator + getBuild().getName() + ".stl", this);	
 		else
 			cw = new CombineWindow(this);
 	}
