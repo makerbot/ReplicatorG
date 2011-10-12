@@ -13,15 +13,7 @@ import java.util.List;
  */
 public class CodeCombination{
 
-	/* so, what's the plan right now?
-	 * we've got to take some number of gcode files with different skeinforge settings and put them one after another
-	 * but the temperature from one to the next may be different, and we need to make sure that the toolhead doesn't 
-	 * hit something that's already been printed.
-	 * 
-	 * So, we'll keep the initial start code, but for each file after the first we'll take out the starting gcode
-	 * leaving behind only the temperature and some code to bring the head all the way back and spit
-	 * 
-	 * 
+	/*
 	 * See, now I've got a single static method in a class, and the method relies heavily on another DualStrusionWorker. 
 	 * Shouldn't this method just be in dsw?
 	 */
@@ -34,6 +26,8 @@ public class CodeCombination{
 	public static File mergeGCodes(File dest, List<File> files)
 	{
 		ArrayList<String> output = new ArrayList<String>();
+		
+		
 		ArrayList<String> tween = DualStrusionWorker.readFiletoArrayList(new File("DualStrusion_Snippets/rctween.gcode"));
 		
 		// Grab the code from each file
