@@ -20,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -90,6 +91,7 @@ class ConfigurationDialog extends JDialog {
 
 	public ConfigurationDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
 		super(parent, true);
+		//add(new JScrollBar(JScrollBar.VERTICAL))
 		parentGenerator = new WeakReference<SkeinforgeGenerator>(parentGeneratorIn);
 		setTitle("GCode Generator");
 		setLayout(new MigLayout("aligny, top, ins 5, fill"));
@@ -260,7 +262,6 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 		//add(buttonPanel, "wrap, growx");
-		
 		addWindowListener( new WindowAdapter() {
 			@Override
 			public void windowClosed(WindowEvent e) {
@@ -268,5 +269,6 @@ class ConfigurationDialog extends JDialog {
 				super.windowClosed(e);
 			}
 		});
+		
 	}
 };

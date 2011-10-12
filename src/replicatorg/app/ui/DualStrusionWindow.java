@@ -100,7 +100,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 	private ToolpathGeneratorThread tpgt;
 	boolean start2nd = false;
 	boolean hasOneGcode; //this boolean is true if the constructor is passed one gcode file to begin with, it later effect the layout of the Swing Window
-	boolean repStart, repEnd;
+	boolean repStart, repEnd, uWipe;
 	String originalGcodePath;
 	/**
 	 * 
@@ -330,14 +330,25 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 		cont.add(new JLabel("Combined Gcode: "), "split");
 		cont.add(DestinationTextField, "split");
 		cont.add(DestinationChooserButton, "wrap");
+		
+		//Replace Start/End Checkboxes
 		final JCheckBox replaceStart = new JCheckBox();
 		replaceStart.setSelected(true);
 		cont.add(new JLabel("Use default start.gcode: "), "split");
 		cont.add(replaceStart,"wrap");
+		
 		final JCheckBox replaceEnd = new JCheckBox();
 		replaceEnd.setSelected(true);
 		cont.add(new JLabel("Use default end.gcode: "), "split");
 		cont.add(replaceEnd,"wrap");
+		
+		//Use Wipes	
+		final JCheckBox useWipes = new JCheckBox();
+		useWipes.setSelected(true);
+		cont.add(new JLabel("Use Wipes DANGER!(Don't disable this unless you know what your doing)"), "split");
+		cont.add(useWipes, "wrap");
+		
+		//Merge
 		JButton merge = new JButton("Merge");
 
 		merge.addActionListener(new ActionListener()
@@ -369,6 +380,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 				secondarygcode = new File(replaceExtension(Toolhead0.getText(), "gcode"));
 				repStart = replaceStart.isSelected();
 				repEnd = replaceEnd.isSelected();
+				uWipe = useWipes.isSelected();
 
 				if(getExtension(primary.getName()).equalsIgnoreCase("stl") || getExtension(secondary.getName()).equalsIgnoreCase("stl"))
 				{
@@ -546,7 +558,7 @@ public class DualStrusionWindow extends JFrame implements ActionListener, ItemLi
 				e.printStackTrace();
 			}
 			System.out.println(primarygcode.getName() + " and " + secondarygcode.getName());
-			DualStrusionConstruction dcs = new DualStrusionConstruction(primarygcode, secondarygcode, dest, repStart, repEnd);
+			DualStrusionConstruction dcs = new DualStrusionConstruction(primarygcode, secondarygcode, dest, repStart, repEnd, uWipe);
 			dcs.run();
 			result = dcs.getCombinedFile();
 			frame.removeAll();
