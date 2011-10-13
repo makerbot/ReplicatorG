@@ -75,10 +75,10 @@ public class DualStrusionWorker {
 	 */
 	public static void main(String[]args)
 	{
-		DualStrusionConstruction dsc = new DualStrusionConstruction(new File("/home/makerbot/baghandle/ergo_bag_handle_top.gcode"), new File("/home/makerbot/baghandle/ergo_bag_handle_bottom.gcode"), new File ("/home/makerbot/baghandle/ergocombine.gcode"), true, true);
-		Thread th = new Thread(dsc);
-		th.run();
-		File result = dsc.getCombinedFile();
+//		DualStrusionConstruction dsc = new DualStrusionConstruction(new File("/home/makerbot/baghandle/ergo_bag_handle_top.gcode"), new File("/home/makerbot/baghandle/ergo_bag_handle_bottom.gcode"), new File ("/home/makerbot/baghandle/ergocombine.gcode"), true, true);
+//		Thread th = new Thread(dsc);
+//		th.run();
+//		File result = dsc.getCombinedFile();
 	}
 	/**
 	 * This is a method that calls all the preprocessing methods individually
