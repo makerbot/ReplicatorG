@@ -64,9 +64,9 @@ public class Sanguino3GDriver extends SerialDriver
 		hasEmergencyStop = true;
 		hasSoftStop = true;
 		
-		// This driver handles v1.X and v2.X firmware
-		minimumVersion = new Version(1,1);
-		preferredVersion = new Version(2,0);
+		//Make sure this accurately reflects what versions this supports
+		minimumVersion = new Version(3,0);
+		preferredVersion = new Version(3,0);
 		// init our variables.
 		setInitialized(false);
 	}
