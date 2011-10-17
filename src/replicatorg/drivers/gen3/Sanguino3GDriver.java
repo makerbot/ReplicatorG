@@ -99,7 +99,10 @@ public class Sanguino3GDriver extends SerialDriver
 		if (isInitialized()) {
 			// okay, take care of version info /etc.
 			if (version.compareTo(getMinimumVersion()) < 0) {
-				throw new BadFirmwareVersionException(version,getMinimumVersion());
+				BadFirmwareVersionException bfe = new BadFirmwareVersionException(version,getMinimumVersion());
+				Base.logger.log(Level.WARNING, "This version of ReplicatorG is not compatible with the version " +
+						"of firmware currently on this bot, please update your firmware.", bfe);
+				throw bfe;
 			}
 			sendInit();
 			super.initialize();

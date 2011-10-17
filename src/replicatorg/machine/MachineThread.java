@@ -9,6 +9,7 @@ import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
+import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverError;
 import replicatorg.drivers.DriverFactory;
@@ -474,7 +475,16 @@ class MachineThread extends Thread {
 			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
-				runCommand(pendingQueue.remove());
+				try{
+					runCommand(pendingQueue.remove());
+				} catch(BadFirmwareVersionException e) {
+					// This is intended to catch the BadFirmwareVersionException 
+					// that can be thrown by an initialization call on the driver.
+					// At some point we may wish to do more with it.
+					setState(new MachineState(MachineState.State.ERROR),
+							"Incompatible firmware version. Please update your " +
+							"firmware to version " + e.getNeeds() + " or higher");
+				}
 			}
 			
 			// If we are building
