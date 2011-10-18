@@ -571,14 +571,16 @@ public class GCodeParser {
 			commands.add(new replicatorg.drivers.commands.ReadTemperature());
 			break;
 
-		// turn fan on
+		// turn AutomatedBuildPlatform on
 		case 106:
-			commands.add(new replicatorg.drivers.commands.EnableFan());
+			//was 			commands.add(new replicatorg.drivers.commands.EnableFan()); pre 0026
+			commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
 			break;
 
-		// turn fan off
+		// turn AutomatedBuildPlatform off
 		case 107:
-			commands.add(new replicatorg.drivers.commands.DisableFan());
+			//was 			commands.add(new replicatorg.drivers.commands.DisableFan()); pre 0026
+			commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
 			break;
 
 		// set max extruder speed, RPM

@@ -1212,12 +1212,11 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
 		runCommand(pb.getPacket());
-
 		super.enableFan();
 	}
 
 	public void disableFan() throws RetryException {
-		Base.logger.fine("Disabling fan");
+		Base.logger.severe("Disabling fan");
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
@@ -1227,6 +1226,21 @@ public class Sanguino3GDriver extends SerialDriver
 		runCommand(pb.getPacket());
 
 		super.disableFan();
+	}
+	
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException {
+		Base.logger.severe("Toggling ABP to " + state);
+		byte newState = state? (byte)1:(byte)0;
+		
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(ToolCommandCode.TOGGLE_ABP.getCode());
+		pb.add8((byte) 1); // payload length
+		pb.add8((byte) newState); // enable(1)disable(0)
+		runCommand(pb.getPacket());
+		
+		super.setAutomatedBuildPlatformRunning(state);
+		
 	}
 
 	/***************************************************************************

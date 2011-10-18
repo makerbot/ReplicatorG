@@ -1,5 +1,7 @@
-0027 ReplicatorG ALPHA
-	
+0027_ALPHA
+* Fan changes to support ABP on Mk7 hardware (using Firmware 3.1 or newer only)
+* Individual axis disable added
+
 0026 ReplicatorG
 * Add Machine information panel
 * Add support for control of a regulated cooling fan

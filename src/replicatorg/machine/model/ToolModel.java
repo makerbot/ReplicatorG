@@ -99,6 +99,8 @@ public class ToolModel
 	protected boolean hasFan = false;
 	protected boolean hasValve = false;
 	protected boolean hasCollet = false;
+	
+	protected boolean automatedBuildPlatformEnabled;
 
 	/*************************************
 	*  Creates the model object.
@@ -634,83 +636,50 @@ public class ToolModel
 	}
 	
 	public boolean hasMistCoolant()
-	{
-		return hasMistCoolant;
-	}
+	{ return hasMistCoolant; }
 
+	public void setAutomatedBuildPlatformRunning(boolean state) {
+		automatedBuildPlatformEnabled = state;
+	}
+	public boolean isAutomatedBuildPlatformEnabled(boolean state) {
+		return automatedBuildPlatformEnabled;
+	}
+	
 	/*************************************
 	*  Fan interface functions
 	*************************************/
-	public void enableFan()
-	{
-		fanEnabled = true;
-	}
+	public void enableFan() { fanEnabled = true; }
 
-	public void disableFan()
-	{
-		fanEnabled = false;
-	}
+	public void disableFan() { fanEnabled = false; }
 	
-	public boolean isFanEnabled()
-	{
-		return fanEnabled;
-	}
+	public boolean isFanEnabled() { return fanEnabled; }
 	
-	public boolean hasFan()
-	{
-		return hasFan;
-	}
+	public boolean hasFan() { return hasFan; }
 	
 	/*************************************
 	*  Valve interface functions
 	*************************************/
-	public void openValve()
-	{
-		valveOpen = true;
-	}
+	public void openValve() { valveOpen = true; }
 	
-	public void closeValve()
-	{
-		valveOpen = false;
-	}
+	public void closeValve() { valveOpen = false; }
 	
-	public boolean isValveOpen()
-	{
-		return valveOpen;
-	}
+	public boolean isValveOpen() {return valveOpen;	}
 	
-	public boolean hasValve()
-	{
-		return hasValve;
-	}
+	public boolean hasValve() { return hasValve; }
 	
 	/*************************************
 	*  Collet interface functions
 	*************************************/
-	public void openCollet()
-	{
-		colletOpen = true;
-	}
+	public void openCollet() { colletOpen = true; }
 	
-	public void closeCollet()
-	{
-		colletOpen = false;
-	}
+	public void closeCollet() { colletOpen = false;	}
 	
-	public boolean isColletOpen()
-	{
-		return colletOpen;
-	}
+	public boolean isColletOpen() {	return colletOpen; }
 	
-	public boolean hasCollet()
-	{
-		return hasCollet;
-	}
+	public boolean hasCollet() { return hasCollet;}
 	
 	/**
-	 * Retrieve XML node. A temporary hack until we have more robust tool models.
+	 * Retrieve XML node. A temporary hack until new  tool models.
 	 */
-	public Node getXml() {
-		return xml;
-	}
+	public Node getXml() { return xml; }
 }
