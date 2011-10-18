@@ -369,8 +369,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		File skeinforgeDir = getSkeinforgeDir();
 		pb.directory(skeinforgeDir);
 		Process process = null;
+		Base.logger.log(Level.FINEST, "Starting Skeinforge process...");
 		try {
-			Base.logger.log(Level.FINEST, "Starting Skeinforge process...");
 			process = pb.start();
 			int value = process.waitFor();
 			Base.logger.log(Level.FINEST, "Skeinforge process returned");
