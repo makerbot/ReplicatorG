@@ -372,9 +372,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		try {
 			process = pb.start();
 			int value = process.waitFor();
+			Base.logger.log(Level.FINEST, "Skeinforge process returned");
 			if (value != 0) {
-				Base.logger
-						.severe("Unrecognized error code returned by Skeinforge.");
+				Base.logger.severe("Unrecognized error code returned by Skeinforge.");
 			}
 			else
 			{
