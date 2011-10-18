@@ -370,6 +370,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		pb.directory(skeinforgeDir);
 		Process process = null;
 		try {
+			Base.logger.log(Level.FINEST, "Starting Skeinforge process...");
 			process = pb.start();
 			int value = process.waitFor();
 			Base.logger.log(Level.FINEST, "Skeinforge process returned");
@@ -378,7 +379,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			}
 			else
 			{
-				System.out.println("Normal Exit on Skeinforge close");
+				Base.logger.log(Level.FINEST, "Normal Exit on Skeinforge close");
 			}
 		} catch (IOException ioe) {
 			Base.logger.log(Level.SEVERE, "Could not run skeinforge.", ioe);
