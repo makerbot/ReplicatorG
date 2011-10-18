@@ -40,6 +40,11 @@ public abstract class ToolpathGenerator {
 		assert model != null;
 		return true;
 	}
+	public boolean visualConfigure(Frame parent, int x, int y, String name) {
+		assert parent != null;
+		assert model != null;
+		return true;
+	}
 	
 	public abstract BuildCode generateToolpath();
 	
@@ -54,4 +59,6 @@ public abstract class ToolpathGenerator {
 			listener.generationComplete(completion, details);
 		}
 	}
+
+
 }

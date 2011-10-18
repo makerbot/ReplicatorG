@@ -275,7 +275,42 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
-
+	public ConfigurationDialog visualConfiguregetCD(Frame parent, int x, int y, String name) {
+		// First check for Python.
+		parent.setName(name);
+		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
+		cd.setName(name);
+		cd.setTitle(name);
+		//cd.setSize(500, 760);
+		cd.pack();
+		cd.setLocation(x, y);
+		cd.setVisible(true);
+		return cd;
+	}
+	public boolean visualConfigure(Frame parent, int x, int y, String name) {
+		// First check for Python.
+		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
+				name, new PythonUtils.Version(2, 5, 0),
+				new PythonUtils.Version(3, 0, 0));
+		if (!hasPython) {
+			return false;
+		}
+		boolean hasTkInter = PythonUtils.interactiveCheckTkInter(parent,
+				name);
+		if (!hasTkInter) {
+			return false;
+		}
+		parent.setName(name);
+		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
+		cd.setName(name);
+		cd.setTitle(name);
+		//cd.setSize(500, 760);
+		cd.pack();
+		cd.setLocation(x, y);
+		cd.setVisible(true);
+		emitUpdate("Config Done");
+		return configSuccess;
+	}
 	public boolean visualConfigure(Frame parent) {
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
@@ -341,12 +376,17 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				Base.logger
 						.severe("Unrecognized error code returned by Skeinforge.");
 			}
+			else
+			{
+				System.out.println("Normal Exit on Skeinforge close");
+			}
 		} catch (IOException ioe) {
 			Base.logger.log(Level.SEVERE, "Could not run skeinforge.", ioe);
 		} catch (InterruptedException e) {
 			// We are most likely shutting down, or the process has been
 			// manually aborted.
 			// Kill the background process and bail out.
+			System.out.println("SkeinforgeGenerator.editProfile() interrupted: " + e);
 			if (process != null) {
 				process.destroy();
 			}

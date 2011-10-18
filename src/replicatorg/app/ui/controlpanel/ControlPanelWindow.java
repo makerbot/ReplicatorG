@@ -247,8 +247,7 @@ public class ControlPanelWindow extends JFrame implements
 	protected JComponent createToolsPanel() {
 		toolsPane = new JTabbedPane();
 
-		for (Enumeration<ToolModel> e = machine.getModel().getTools().elements(); e
-				.hasMoreElements();) {
+		for (Enumeration<ToolModel> e = machine.getModel().getTools().elements(); e.hasMoreElements();) {
 			ToolModel t = e.nextElement();
 			if (t == null) continue;
 			if (t.getType().equals("extruder")) {

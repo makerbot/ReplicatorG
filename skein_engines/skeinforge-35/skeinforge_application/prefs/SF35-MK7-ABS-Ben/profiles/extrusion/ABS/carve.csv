@@ -1,0 +1,16 @@
+Format is tab separated carve settings.
+Name                          	Value
+WindowPosition	700+0
+Open File for Carve	
+Add Layer Template to SVG	True
+Bridge Thickness Multiplier (ratio):	1.0
+Extra Decimal Places (float):	1.0
+Import Coarseness (ratio):	1.0
+Infill in Direction of Bridges	False
+Layer Thickness (mm):	0.22
+Layers From (index):	0
+Layers To (index):	912345678
+Correct Mesh	True
+Unproven Mesh	False
+Perimeter Width over Thickness (ratio):	1.46045
+SVG Viewer:	webbrowser

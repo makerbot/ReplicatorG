@@ -46,7 +46,6 @@ import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
-import replicatorg.drivers.OnboardParameters.CommunicationStatistics;
 import replicatorg.drivers.gen3.PacketProcessor.CRCException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
@@ -65,9 +64,9 @@ public class Sanguino3GDriver extends SerialDriver
 		hasEmergencyStop = true;
 		hasSoftStop = true;
 		
-		// This driver handles v1.X and v2.X firmware
-		minimumVersion = new Version(1,1);
-		preferredVersion = new Version(2,0);
+		//Make sure this accurately reflects what versions this supports
+		minimumVersion = new Version(3,0);
+		preferredVersion = new Version(3,0);
 		// init our variables.
 		setInitialized(false);
 	}
@@ -100,7 +99,10 @@ public class Sanguino3GDriver extends SerialDriver
 		if (isInitialized()) {
 			// okay, take care of version info /etc.
 			if (version.compareTo(getMinimumVersion()) < 0) {
-				throw new BadFirmwareVersionException(version,getMinimumVersion());
+				Base.logger.log(Level.WARNING, "\n********************************************************\n" +
+						"This version of ReplicatorG is not reccomended for use with firmware before version "
+						+ getMinimumVersion() + ". Either update your firmware or proceed with caution.\n" +
+						"********************************************************");
 			}
 			sendInit();
 			super.initialize();
@@ -656,6 +658,38 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8(0x1f); // disable all 5 axes
 		runCommand(pb.getPacket());
 		super.disableDrives();
+	}
+
+	/**
+	 * Convert a set of axes to a bitfield by index. For example, axes X and Z would
+	 * map to "5".
+	 * @param axes an enumset of axis to construct a bitfield for
+	 * @return an integer with a bit set corresponding to each axis in the input set
+	 */
+	private int axesToBitfield(EnumSet<AxisId> axes) {
+		int v = 0;
+		for (AxisId axis : axes) {
+			v += 1 << axis.getIndex();
+		}
+		return v;
+	}
+	
+	public void enableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Command machine to enable some steppers. Note that they are
+		// already automagically enabled by most commands and need
+		// not be explicitly enabled.
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
+		pb.add8(0x80 + (axesToBitfield(axes) & 0x1f)); // enable axes
+		runCommand(pb.getPacket());
+		super.enableAxes(axes);
+	}
+	
+	public void disableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Command machine to disable some steppers.
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
+		pb.add8(axesToBitfield(axes) & 0x1f); // disable axes
+		runCommand(pb.getPacket());
+		super.disableAxes(axes);
 	}
 
 	public void changeGearRatio(int ratioIndex) {

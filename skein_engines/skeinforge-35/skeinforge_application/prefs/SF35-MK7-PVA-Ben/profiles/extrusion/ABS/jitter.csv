@@ -1,0 +1,6 @@
+Format is tab separated jitter settings.
+Name                          	Value
+WindowPosition	700+0
+Open File for Jitter	
+Activate Jitter	False
+Jitter Over Perimeter Width (ratio):	2.0

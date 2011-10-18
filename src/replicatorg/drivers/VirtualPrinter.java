@@ -291,6 +291,15 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 
 	}
 
+
+	public void enableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Not all drivers support this method.
+	}
+	
+	public void disableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Not all drivers support this method.
+	}
+
 	@Override
 	public void changeGearRatio(int ratioIndex) {
 		// TODO Auto-generated method stub

@@ -1,0 +1,9 @@
+Format is tab separated skeinforge settings.
+Name                          	Value
+WindowPosition	574+22
+Open File for Skeinforge	
+analyze	False
+craft	True
+help	False
+meta	False
+profile	False
