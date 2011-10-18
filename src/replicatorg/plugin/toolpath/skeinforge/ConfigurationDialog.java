@@ -20,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -271,17 +272,5 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 		//add(buttonPanel, "wrap, growx");
-/*
- * This is being removed because the nulling of profiles and 
- * parentGenerator is being moved to setVisible()		
-		addWindowListener( new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				profiles = null;
-				parentGenerator = null;
-				super.windowClosed(e);
-			}
-		});
-*/
 	}
 };
