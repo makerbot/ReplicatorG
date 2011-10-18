@@ -376,12 +376,17 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				Base.logger
 						.severe("Unrecognized error code returned by Skeinforge.");
 			}
+			else
+			{
+				System.out.println("Normal Exit on Skeinforge close");
+			}
 		} catch (IOException ioe) {
 			Base.logger.log(Level.SEVERE, "Could not run skeinforge.", ioe);
 		} catch (InterruptedException e) {
 			// We are most likely shutting down, or the process has been
 			// manually aborted.
 			// Kill the background process and bail out.
+			System.out.println("SkeinforgeGenerator.editProfile() interrupted: " + e);
 			if (process != null) {
 				process.destroy();
 			}

@@ -323,12 +323,29 @@ class MachineThread extends Thread {
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
-				machineBuilder = new ToRemoteFile(driver, simulator,
-											combinedSource, command.remoteName);
-	
+				ToRemoteFile trf = new ToRemoteFile(driver, simulator,
+						combinedSource, command.remoteName);
+				if(trf.setupFailed)
+				{
+					//I am ashamed of this, but without adding a new state of "BUILD_CANCELLED"
+					// and making some changes to MainWindow.MachineStateChanged(), or by 
+					// changing the whole process by which this gets called, there is, apparently,
+					// no way to keep a "Build finished" dialog from popping up when this fails.
+					
+					//By calling not-attached we get the mainwindow to forget that it had started
+					// a print, so that the following call to ready doesn't pop up a message
+					// this may have unintended side effects>
+					setState(new MachineState(MachineState.State.NOT_ATTACHED));
+					setState(new MachineState(MachineState.State.READY));
+					break;
+				}
+				
+				machineBuilder = trf;
+
 				// TODO: This shouldn't be done here?
 				driver.invalidatePosition();
 				setState(new MachineState(MachineState.State.BUILDING));
+
 			}
 			break;
 		case BUILD_TO_FILE:
@@ -475,16 +492,17 @@ class MachineThread extends Thread {
 			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
-				try{
+//				try{
 					runCommand(pendingQueue.remove());
-				} catch(BadFirmwareVersionException e) {
-					// This is intended to catch the BadFirmwareVersionException 
-					// that can be thrown by an initialization call on the driver.
-					// At some point we may wish to do more with it.
-					setState(new MachineState(MachineState.State.ERROR),
-							"Incompatible firmware version. Please update your " +
-							"firmware to version " + e.getNeeds() + " or higher");
-				}
+					//The driver no longer throws a BFVE
+//				} catch(BadFirmwareVersionException e) {
+//					// This is intended to catch the BadFirmwareVersionException 
+//					// that can be thrown by an initialization call on the driver.
+//					// At some point we may wish to do more with it.
+//					setState(new MachineState(MachineState.State.ERROR),
+//							"Incompatible firmware version. Please update your " +
+//							"firmware to version " + e.getNeeds() + " or higher");
+//				}
 			}
 			
 			// If we are building
