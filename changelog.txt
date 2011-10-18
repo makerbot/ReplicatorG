@@ -1,6 +1,7 @@
 0027_ALPHA
 * Fan changes to support ABP on Mk7 hardware (using Firmware 3.1 or newer only)
 * Individual axis disable added
+* Merged dualstrusion branch tools, fixed some bugs in references
 
 0026 ReplicatorG
 * Add Machine information panel
