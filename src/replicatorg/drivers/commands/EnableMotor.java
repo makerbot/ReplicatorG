@@ -5,8 +5,25 @@ import replicatorg.drivers.RetryException;
 
 public class EnableMotor implements DriverCommand {
 	
+	long millis = 0;
+
+	public EnableMotor() {
+		this.millis = 0;
+	}
+	
+	public EnableMotor(long millis) {
+		this.millis = millis;
+	}
+	
 	@Override
 	public void run(Driver driver) throws RetryException {
-		driver.enableMotor();
+		if (this.millis != 0) {
+			driver.enableMotor(this.millis);
+		} else
+		{
+			driver.enableMotor();
+		}
 	}
+	
+	
 }
