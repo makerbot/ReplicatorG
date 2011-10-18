@@ -39,6 +39,7 @@ public class MachineOnboardParameters extends JFrame {
 	private JCheckBox zAxisInvertBox = new JCheckBox();
 	private JCheckBox aAxisInvertBox = new JCheckBox();
 	private JCheckBox bAxisInvertBox = new JCheckBox();
+	private JCheckBox zHoldBox = new JCheckBox();
 	private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
 	private static final String[]  endstopInversionChoices = {
 		"No endstops installed",
@@ -81,6 +82,7 @@ public class MachineOnboardParameters extends JFrame {
 		if (zAxisInvertBox.isSelected()) axesInverted.add(AxisId.Z);
 		if (aAxisInvertBox.isSelected()) axesInverted.add(AxisId.A);
 		if (bAxisInvertBox.isSelected()) axesInverted.add(AxisId.B);
+		if (!zHoldBox.isSelected())      axesInverted.add(AxisId.V); // V is in the 7th bit position, and it's set to NOT hold Z
 		target.setInvertedParameters(axesInverted);
 		{
 			int idx = endstopInversionSelection.getSelectedIndex();
@@ -123,6 +125,7 @@ public class MachineOnboardParameters extends JFrame {
 		zAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Z));
 		aAxisInvertBox.setSelected(invertedAxes.contains(AxisId.A));
 		bAxisInvertBox.setSelected(invertedAxes.contains(AxisId.B));
+		zHoldBox.setSelected(     !invertedAxes.contains(AxisId.V));
 		// 0 == inverted, 1 == not inverted
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
 		endstopInversionSelection.setSelectedIndex(endstops.ordinal());
@@ -175,6 +178,8 @@ public class MachineOnboardParameters extends JFrame {
 		panel.add(aAxisInvertBox,"wrap");
 		panel.add(new JLabel("Invert B axis"));
 		panel.add(bAxisInvertBox,"wrap");
+		panel.add(new JLabel("Hold Z axis"));
+		panel.add(zHoldBox,"wrap");
 		panel.add(new JLabel("Invert endstops"));
 		panel.add(endstopInversionSelection,"wrap");
 		panel.add(new JLabel("Emergency stop"));
