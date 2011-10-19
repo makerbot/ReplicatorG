@@ -109,7 +109,8 @@ public class ScalingTool extends Tool {
 		isOnPlatform = parent.getModel().isOnPlatform();
 	}
 	public void mouseReleased(MouseEvent e) {
-		scaleDragChange = 1;
+		//not sure why this was put here, makes each drag scale independently from the last
+//		scaleDragChange = 1;
 	}
 
 	public void mouseDragged(MouseEvent e) {
