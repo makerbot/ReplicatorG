@@ -69,7 +69,6 @@ public class DataCapture implements MachineListener {
 	*/
 	@Override
 	public void toolStatusChanged(MachineToolStatusEvent event) {
-		Base.logger.severe("Got machine tool status event!");
 		WriteMessage(
 				"{"
 				+ jsonString("time", event.getDateString())

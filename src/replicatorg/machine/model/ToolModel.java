@@ -99,6 +99,8 @@ public class ToolModel
 	protected boolean hasFan = false;
 	protected boolean hasValve = false;
 	protected boolean hasCollet = false;
+	protected boolean alwaysReadHBP = false;
+
 	
 	protected boolean automatedBuildPlatformEnabled;
 
@@ -184,9 +186,13 @@ public class ToolModel
 		if (n != null)
 			material = n;
 		
+		n = XML.getAttributeValue(xml, "log_hbp");
+		if (n != null && isTrueOrOne(n) )
+			alwaysReadHBP = true;
+
 		//our various capabilities
 		n = XML.getAttributeValue(xml, "motor");
-		if (isTrueOrOne(n))
+		if (n != null && isTrueOrOne(n))
 		{
 			hasMotor = true;
 
@@ -656,6 +662,8 @@ public class ToolModel
 	
 	public boolean hasFan() { return hasFan; }
 	
+	public boolean alwaysReadBuildPlatformTemp() { return  alwaysReadHBP; }
+
 	/*************************************
 	*  Valve interface functions
 	*************************************/

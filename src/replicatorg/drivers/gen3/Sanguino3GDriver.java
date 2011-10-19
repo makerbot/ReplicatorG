@@ -1131,6 +1131,10 @@ public class Sanguino3GDriver extends SerialDriver
 				Base.logger.fine("New Current temperature: "
 					+ machine.currentTool().getCurrentTemperature() + "C");
 			}
+			// Check if we should co-read platform temperatures when we read head temp.
+			if( machine.currentTool().alwaysReadBuildPlatformTemp() ) {
+				this.readPlatformTemperature();
+			}
 
 		}
 		super.readTemperature();
