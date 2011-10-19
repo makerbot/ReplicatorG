@@ -383,21 +383,22 @@ public class GCodeParser {
 			tool = (int) gcode.getCodeValue('T');
 		}
 		switch ((int) gcode.getCodeValue('M')) {
+		//M0 == unconditional halt
 		case 0:
-			// M0 == unconditional halt
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.UnconditionalHalt(gcode.getComment()));
 			break;
+		// M1 == optional halt
 		case 1:
-			// M1 == optional halt
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.OptionalHalt(gcode.getComment()));
 			break;
+		// M2 == program end
 		case 2:
-			// M2 == program end
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.ProgramEnd(gcode.getComment()));
 			break;
+		
 		case 30:
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.ProgramRewind(gcode.getComment()));
@@ -660,13 +661,13 @@ public class GCodeParser {
 			commands.add(new replicatorg.drivers.commands.StartDataCapture(gcode.getComment()));
 			break;
 			
-			// Start data capture
+		// Stop data capture
 		case 311:
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.StopDataCapture());
 			break;
 
-			// Log a note to the data capture store
+		// Log a note to the data capture store
 		case 312:
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.DataCaptureNote(gcode.getComment()));

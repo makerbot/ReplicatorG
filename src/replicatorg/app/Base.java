@@ -113,7 +113,9 @@ public class Base {
 	 */
 	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
 
-	// TODO: Make this nicer?
+	/**
+	*  Simple base data capture logger. So simple, but useful.
+	*/
 	static public DataCapture capture;
 	
 	/**
