@@ -212,6 +212,7 @@
     <copy todir="${target.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt"/>
     </copy>
+  	<copy todir="${target.dir}" failonerror="false" file="timeout.txt"/>
     <copy todir="${target.dir}/skein_engines">
       <fileset dir="skein_engines" excludes="*.pyc"/>
     </copy>
