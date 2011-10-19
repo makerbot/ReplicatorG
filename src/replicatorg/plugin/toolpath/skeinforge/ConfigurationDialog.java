@@ -7,9 +7,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -20,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -151,7 +149,7 @@ class ConfigurationDialog extends JDialog {
 		    }
 		});
 		loadList(prefList);
-		profilePanel.add(prefList, "growx, growy");
+		profilePanel.add(new JScrollPane(prefList), "growx, growy");
 
 		prefList.addKeyListener( new KeyAdapter() {
 			public void keyPressed ( KeyEvent e ) {
