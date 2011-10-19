@@ -653,7 +653,25 @@ public class GCodeParser {
 				commands.add(new replicatorg.drivers.commands.SetServo(1, gcode.getCodeValue('S')));
 			}
 			break;
+			
+		// Start data capture
+		case 310:
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.StartDataCapture(gcode.getComment()));
+			break;
+			
+			// Start data capture
+		case 311:
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.StopDataCapture());
+			break;
 
+			// Log a note to the data capture store
+		case 312:
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.DataCaptureNote(gcode.getComment()));
+			break;
+			
 		default:
 			throw new GCodeException("Unknown M code: M"
 					+ (int) gcode.getCodeValue('M'));

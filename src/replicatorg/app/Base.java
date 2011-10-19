@@ -113,6 +113,9 @@ public class Base {
 	 */
 	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
 
+	// TODO: Make this nicer?
+	static public DataCapture capture;
+	
 	/**
 	 * The general-purpose logging object.
 	 */
