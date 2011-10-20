@@ -780,6 +780,7 @@ public class GCodeParser {
 			curveSection = curveSectionMM;
 			break;
 		// This should be "return to home".  We need to introduce new GCodes for homing.
+			//replaced by G161, G162
 		case G28:
 			{
 				// home all axes?
