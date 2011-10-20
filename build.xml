@@ -213,6 +213,7 @@
       <filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt"/>
     </copy>
   	<copy todir="${target.dir}" failonerror="false" file="timeout.txt"/>
+  	<copy tofile="${target.dir}/GCodeDocumentation.txt" failonerror="false" file="docs/GCodeDocumentation.txt"/>
     <copy todir="${target.dir}/skein_engines">
       <fileset dir="skein_engines" excludes="*.pyc"/>
     </copy>
@@ -240,7 +241,6 @@
       <filelist dir="${lib.dir}" files="keywords.txt"/>
       <fileset dir="${jar.dir}" includes="*.jar"/>
     </copy>
-  	<javac srcdir="src/replicatorg/app/GCodeEnumeration"/>
   </target>
   
   <target name="dist-linux" depends="jar" description="Builds Linux ReplicatorG distribution">

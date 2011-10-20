@@ -7,10 +7,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
+/**
+ * After changing this, make sure to run it to re-generate the documentation file.
+ * @author Ted
+ *
+ */
 public enum GCodeEnumeration {
 	M0("M", 0, "Unconditional Halt"),
 	M1("M", 1, "Optional Halt"),
@@ -82,7 +87,7 @@ public enum GCodeEnumeration {
 	G92("G", 92, "Set Position"),
 	G97("G", 97, "Spindle speed rate");
 	
-	private static final Map<String, GCodeEnumeration> lookup = new HashMap<String, GCodeEnumeration>(100);
+	private static final Map<String, GCodeEnumeration> lookup = new TreeMap<String, GCodeEnumeration>();
 	static {
 		for(GCodeEnumeration e : EnumSet.allOf(GCodeEnumeration.class))
 			lookup.put(e.letter + e.number, e);
@@ -108,7 +113,7 @@ public enum GCodeEnumeration {
 	{
 		ArrayList<String> result = new ArrayList<String>();
 		for(GCodeEnumeration e : lookup.values())
-			result.add(e.letter + e.number + " " + e.documentation);
+			result.add(e.letter + e.number + ": " + e.documentation);
 		return result;
 	}
 
@@ -135,8 +140,12 @@ public enum GCodeEnumeration {
 			
 			BufferedWriter docs = new BufferedWriter(new FileWriter(docFile));
 			
+			docs.write("Auto-Generated documentation of supported GCodes\n");
 			for(String d : getDocumentation())
-				docs.write(d);
+				docs.write(d + '\n');
+			
+			docs.flush();
+			docs.close();
 		}
 		catch (IOException ioe)
 		{
