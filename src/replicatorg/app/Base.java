@@ -97,12 +97,11 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 26;
+	public static final int VERSION = 27;
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */
-	//public static final String VERSION_NAME = String.format("%04d",VERSION);
-	public static final String VERSION_NAME = String.format("%04d",VERSION);
+	public static final String VERSION_NAME = String.format("%04d ALPHA",VERSION);
 
 	/**
 	 * The machine controller in use.
@@ -114,6 +113,11 @@ public class Base {
 	 */
 	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
 
+	/**
+	*  Simple base data capture logger. So simple, but useful.
+	*/
+	static public DataCapture capture;
+	
 	/**
 	 * The general-purpose logging object.
 	 */

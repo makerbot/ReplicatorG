@@ -1115,18 +1115,28 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void readTemperature() {
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.GET_TEMP.getCode());
-		PacketResponse pr = runQuery(pb.getPacket());
-		if (pr.isEmpty()) return;
-		// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
-		int temp = pr.get16();
-		machine.currentTool().setCurrentTemperature(temp);
-
-		Base.logger.fine("Current temperature: "
+		Vector<ToolModel> tools = machine.getTools();
+		for (ToolModel t : tools) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+			pb.add8((byte) t.getIndex());
+			pb.add8(ToolCommandCode.GET_TEMP.getCode());
+			PacketResponse pr = runQuery(pb.getPacket());
+			if (pr.getResponseCode() == PacketResponse.ResponseCode.TIMEOUT) 
+				Base.logger.finer("timeout reading temp");
+			else if (pr.isEmpty()) 
+				Base.logger.finer("empty response, no temp");
+			else { 
+				int temp = pr.get16();
+				t.setCurrentTemperature(temp);
+				Base.logger.fine("New Current temperature: "
 					+ machine.currentTool().getCurrentTemperature() + "C");
+			}
+			// Check if we should co-read platform temperatures when we read head temp.
+			if( machine.currentTool().alwaysReadBuildPlatformTemp() ) {
+				this.readPlatformTemperature();
+			}
 
+		}
 		super.readTemperature();
 	}
 	
@@ -1212,12 +1222,11 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
 		runCommand(pb.getPacket());
-
 		super.enableFan();
 	}
 
 	public void disableFan() throws RetryException {
-		Base.logger.fine("Disabling fan");
+		Base.logger.severe("Disabling fan");
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
@@ -1227,6 +1236,21 @@ public class Sanguino3GDriver extends SerialDriver
 		runCommand(pb.getPacket());
 
 		super.disableFan();
+	}
+	
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException {
+		Base.logger.severe("Toggling ABP to " + state);
+		byte newState = state? (byte)1:(byte)0;
+		
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(ToolCommandCode.TOGGLE_ABP.getCode());
+		pb.add8((byte) 1); // payload length
+		pb.add8((byte) newState); // enable(1)disable(0)
+		runCommand(pb.getPacket());
+		
+		super.setAutomatedBuildPlatformRunning(state);
+		
 	}
 
 	/***************************************************************************
@@ -1543,6 +1567,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if ( (b[0] & (0x01 << 2)) != 0 ) r.add(AxisId.Z);
 		if ( (b[0] & (0x01 << 3)) != 0 ) r.add(AxisId.A);
 		if ( (b[0] & (0x01 << 4)) != 0 ) r.add(AxisId.B);
+		if ( (b[0] & (0x01 << 7)) != 0 ) r.add(AxisId.V);
 		return r;
 	}
 
@@ -1553,6 +1578,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if (axes.contains(AxisId.Z)) b[0] = (byte)(b[0] | (0x01 << 2));
 		if (axes.contains(AxisId.A)) b[0] = (byte)(b[0] | (0x01 << 3));
 		if (axes.contains(AxisId.B)) b[0] = (byte)(b[0] | (0x01 << 4));
+		if (axes.contains(AxisId.V)) b[0] = (byte)(b[0] | (0x01 << 7));
 		writeToEEPROM(EEPROM_AXIS_INVERSION_OFFSET,b);
 	}
 
