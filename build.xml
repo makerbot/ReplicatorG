@@ -240,6 +240,7 @@
       <filelist dir="${lib.dir}" files="keywords.txt"/>
       <fileset dir="${jar.dir}" includes="*.jar"/>
     </copy>
+  	<javac srcdir="src/replicatorg/app/GCodeEnumeration"/>
   </target>
   
   <target name="dist-linux" depends="jar" description="Builds Linux ReplicatorG distribution">
