@@ -1884,6 +1884,8 @@ ToolpathGenerator.GeneratorListener
 		buildMenuItem.setEnabled(hasGcode && evt.getState().isConfigurable());
 		onboardParamsItem.setVisible(showParams);
 		extruderParamsItem.setVisible(showParams);
+		onboardParamsItem.setEnabled(showParams);
+		extruderParamsItem.setEnabled(showParams);
 		boolean showIndexing = 
 			evt.getState().isConfigurable() &&
 			machineLoader.getDriver() instanceof MultiTool &&
