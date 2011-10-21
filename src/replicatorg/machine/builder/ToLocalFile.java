@@ -2,6 +2,7 @@ package replicatorg.machine.builder;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.logging.Level;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
@@ -22,6 +23,8 @@ public class ToLocalFile implements MachineBuilder {
 	Direct directBuilder;
 	
 	SDCardCapture sdcc;
+	
+	public boolean setupFailed = true;
 
 	public ToLocalFile(Driver driver, SimulationDriver simulator, GCodeSource source, String remoteName) {
 		// TODO: we might fail here.
@@ -29,12 +32,11 @@ public class ToLocalFile implements MachineBuilder {
 		
 		try {
 			sdcc.beginFileCapture(remoteName);
+			directBuilder = new Direct(driver, simulator, source);
+			setupFailed = false;
 		} catch (FileNotFoundException e) {
-			Base.logger.fine("error!");
-			// TODO: Report an error and finish.
+			Base.logger.fine("Build to file failed: File Not Found!");
 		}
-		
-		directBuilder = new Direct(driver, simulator, source);
 	}
 	
 	@Override
@@ -45,11 +47,11 @@ public class ToLocalFile implements MachineBuilder {
 		
 		try {
 			sdcc.endFileCapture();
+			Base.logger.info("Finished writing to file!");
 		} catch (IOException e) {
-			// TODO: Report an error here?
+			Base.logger.log(Level.WARNING, "Could not finish writing to file");
 		}
 		
-		Base.logger.info("Finished writing to file!");
 		return true;
 	}
 	

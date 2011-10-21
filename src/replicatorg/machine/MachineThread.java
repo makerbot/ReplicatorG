@@ -364,8 +364,18 @@ class MachineThread extends Thread {
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
-				machineBuilder = new ToLocalFile(driver, simulator,
+				ToLocalFile lf = new ToLocalFile(driver, simulator,
 											combinedSource, command.remoteName);
+				if(lf.setupFailed)
+				{
+					// see above (BUILD_TO_REMOTE_FILE) for explanation
+					setState(new MachineState(MachineState.State.NOT_ATTACHED));
+					setState(new MachineState(MachineState.State.READY));
+					break;
+				}
+				
+				machineBuilder = lf;
+				
 				if (state.canPrint()) {
 					setState(new MachineState(MachineState.State.BUILDING), buildingMessage());
 				} else {
