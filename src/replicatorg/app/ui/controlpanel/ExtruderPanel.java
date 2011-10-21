@@ -626,18 +626,26 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		if (s.equals("forward")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
-				// TODO: Reverted to separate commands for enable + extrude + disable. This probably breaks 5D
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
-				machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				// Reverted to one single command for RepRap5D driver
+				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
+				} else {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				}
 			}
 		} else if (s.equals("reverse")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
-				// TODO: Reverted to separate commands for enable + extrude + disable. This probably breaks 5D
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
-				machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				// Reverted to one single command for RepRap5D driver
+				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
+				} else {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				}
 			}
 		} else if (s.equals("stop")) {
 			machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
