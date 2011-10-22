@@ -2,6 +2,7 @@ package replicatorg.machine.builder;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 
@@ -52,6 +53,7 @@ public class ToRemoteFile implements MachineBuilder {
 	public boolean processSDResponse(SDCardCapture.ResponseCode code) {
 		if (code == SDCardCapture.ResponseCode.SUCCESS) return true;
 		String message = sdErrorMap.get(code);
+		Base.logger.log(Level.WARNING, message);
 		JOptionPane.showMessageDialog(
 				null,
 				message,
@@ -63,6 +65,8 @@ public class ToRemoteFile implements MachineBuilder {
 	Direct directBuilder;
 	
 	SDCardCapture sdcc;
+	
+	public boolean setupFailed = true;
 
 	public ToRemoteFile(Driver driver, SimulationDriver simulator, GCodeSource source, String remoteName) {
 		// TODO: we might fail here.
@@ -70,17 +74,17 @@ public class ToRemoteFile implements MachineBuilder {
 		
 		if (processSDResponse(sdcc.beginCapture(remoteName))) {
 			directBuilder = new Direct(driver, simulator, source);
-		}
-		else {
-			// TODO: Error here.
+			setupFailed = false;
 		}
 	}
 	
 	@Override
 	public boolean finished() {
-		if (!directBuilder.finished()) { 
+		// if we got an error response, we don't have any work to do, so just return
+		if(setupFailed)
+			return true;
+		if (!directBuilder.finished())
 			return false;
-		}
 		
 		int totalBytes = sdcc.endCapture();
 		Base.logger.info("Captured bytes: " +Integer.toString(totalBytes));
@@ -89,16 +93,21 @@ public class ToRemoteFile implements MachineBuilder {
 	
 	@Override
 	public void runNext() {
-		directBuilder.runNext();
+		if(directBuilder != null)
+			directBuilder.runNext();
 	}
 
 	@Override
 	public int getLinesTotal() {
+		if(directBuilder == null)
+			return -1;
 		return directBuilder.getLinesTotal();
 	}
 
 	@Override
 	public int getLinesProcessed() {
+		if(directBuilder == null)
+			return -1;
 		return directBuilder.getLinesProcessed();
 	}
 

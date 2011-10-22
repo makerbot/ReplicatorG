@@ -7,9 +7,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -20,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -30,6 +28,7 @@ import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.Profile;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
 class ConfigurationDialog extends JDialog {
+	final boolean postProcessToolheadIndex = true;
 	final String manageStr = "Manage profiles...";
 	final String profilePref = "replicatorg.skeinforge.profilePref";
 	JButton editButton = new JButton("Edit...");
@@ -40,15 +39,22 @@ class ConfigurationDialog extends JDialog {
 	JButton generateButton = new JButton("Generate Gcode");
 	JButton cancelButton = new JButton("Cancel");
 	
-	private WeakReference<SkeinforgeGenerator> parentGenerator;
-	private List<Profile> profiles = null; // NB: must explicitly deallocate at close time
+	/* these must be explicitly nulled at close because of a java bug:
+	 * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6497929
+	 * 
+	 * because JDialogs may never be garbage collected, anything they keep reference to 
+	 * may never be gc'd. By explicitly nulling these in the setVisible() function
+	 * we allow them to be removed.
+	 */
+	private SkeinforgeGenerator parentGenerator = null;
+	private List<Profile> profiles = null;
 	
 	JPanel profilePanel = new JPanel();
 	JPanel buttonPanel = new JPanel();
 	
 	private void loadList(JList list) {
 		list.removeAll();
-		profiles = parentGenerator.get().getProfiles();
+		profiles = parentGenerator.getProfiles();
 		DefaultListModel model = new DefaultListModel();
 		int i=0;
 		int foundLastProfile = -1;
@@ -73,12 +79,16 @@ class ConfigurationDialog extends JDialog {
 
 	/**
 	 * Help reduce effects of miserable memory leak.
-	 * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6497929
+	 * see declarations above.
 	 */
 	@Override
 	public void setVisible(boolean b) {
 		super.setVisible(b);
-		parentGenerator = null;
+		if(!b)
+		{
+			parentGenerator = null;
+			profiles = null;
+		}
 	}
 
 	final JList prefList = new JList();
@@ -89,7 +99,7 @@ class ConfigurationDialog extends JDialog {
 
 	public ConfigurationDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
 		super(parent, true);
-		parentGenerator = new WeakReference<SkeinforgeGenerator>(parentGeneratorIn);
+		parentGenerator = parentGeneratorIn;
 		setTitle("GCode Generator");
 		setLayout(new MigLayout("aligny, top, ins 5, fill"));
 
@@ -132,14 +142,14 @@ class ConfigurationDialog extends JDialog {
 		            int idx = list.locationToIndex(evt.getPoint());
 		            Profile p = getListedProfile(idx);
 					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
-					parentGenerator.get().configSuccess = true;
-					parentGenerator.get().profile = p.getFullPath();
+					parentGenerator.configSuccess = true;
+					parentGenerator.profile = p.getFullPath();
 					setVisible(false);
 		        }
 		    }
 		});
 		loadList(prefList);
-		profilePanel.add(prefList, "growx, growy");
+		profilePanel.add(new JScrollPane(prefList), "growx, growy");
 
 		prefList.addKeyListener( new KeyAdapter() {
 			public void keyPressed ( KeyEvent e ) {
@@ -150,8 +160,8 @@ class ConfigurationDialog extends JDialog {
 					Base.logger.fine("idx="+idx);
 					Profile p = getListedProfile(idx);
 					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
-					parentGenerator.get().configSuccess = true;
-					parentGenerator.get().profile = p.getFullPath();
+					parentGenerator.configSuccess = true;
+					parentGenerator.profile = p.getFullPath();
 					setVisible(false);
 				} else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 					setVisible(false);
@@ -169,7 +179,7 @@ class ConfigurationDialog extends JDialog {
 							"Select a profile to edit.");
 				} else {
 					Profile p = getListedProfile(idx);
-					parentGenerator.get().editProfile(p);
+					parentGenerator.editProfile(p);
 				}
 			}
 		});
@@ -182,7 +192,7 @@ class ConfigurationDialog extends JDialog {
 						"Name your new profile:");
 				if (newName != null) {
 					Profile p = getListedProfile(idx);
-					Profile newp = parentGenerator.get().duplicateProfile(p, newName);
+					Profile newp = parentGenerator.duplicateProfile(p, newName);
 					loadList(prefList);
 					// Select new profile
 					if (newp != null) prefList.setSelectedValue(newp.toString(), true);
@@ -229,7 +239,7 @@ class ConfigurationDialog extends JDialog {
 		
 		add(profilePanel, "wrap, growx");
 
-		for (SkeinforgePreference preference: parentGenerator.get().preferences) {
+		for (SkeinforgePreference preference: parentGenerator.preferences) {
 			add(preference.getUI(), "wrap");
 		}
 
@@ -239,33 +249,37 @@ class ConfigurationDialog extends JDialog {
 		add(cancelButton, "tag cancel");
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if(!parentGenerator.get().runSanityChecks()) {
+				if(!parentGenerator.runSanityChecks()) {
 					return;
 				}
 				
 				int idx = prefList.getSelectedIndex();
 				Profile p = getListedProfile(idx);
 				Base.preferences.put("lastGeneratorProfileSelected",p.toString());
-				parentGenerator.get().configSuccess = true;
-				parentGenerator.get().profile = p.getFullPath();
+				parentGenerator.configSuccess = true;
+				parentGenerator.profile = p.getFullPath();
 				setVisible(false);
 				SkeinforgeGenerator.setSelectedProfile(p.toString());
 			}
 		});
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				parentGenerator.get().configSuccess = false;
+					parentGenerator.configSuccess = false;
 				setVisible(false);
 			}
 		});
 		//add(buttonPanel, "wrap, growx");
-		
+/*
+ * This is being removed because the nulling of profiles and 
+ * parentGenerator is being moved to setVisible()		
 		addWindowListener( new WindowAdapter() {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				profiles = null;
+				parentGenerator = null;
 				super.windowClosed(e);
 			}
 		});
+*/
 	}
 };

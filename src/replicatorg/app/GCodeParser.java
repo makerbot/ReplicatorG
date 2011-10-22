@@ -359,6 +359,18 @@ public class GCodeParser {
 		return value;
 	}
 
+	private EnumSet<AxisId> getAxes(GCode gcode) {
+		EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+
+		if (gcode.hasCode('X')) axes.add(AxisId.X);
+		if (gcode.hasCode('Y')) axes.add(AxisId.Y);
+		if (gcode.hasCode('Z')) axes.add(AxisId.Z);
+		if (gcode.hasCode('A')) axes.add(AxisId.A);
+		if (gcode.hasCode('B')) axes.add(AxisId.B);
+		
+		return axes;
+	}
+
 	private void buildMCodes(GCode gcode, Queue< DriverCommand > commands) throws GCodeException {
 		// If this machine handles multiple active toolheads, we always honor a T code
 		// as being a annotation to send the given command to the given toolheads.  Be
@@ -370,46 +382,43 @@ public class GCodeParser {
 			commands.add(new replicatorg.drivers.commands.SelectTool((int) gcode.getCodeValue('T')));
 			tool = (int) gcode.getCodeValue('T');
 		}
-		switch ((int) gcode.getCodeValue('M')) {
-		case 0:
+		
+		switch (GCodeEnumeration.getGCode("M", (int)gcode.getCodeValue('M'))) {
+		case M0:
 			// M0 == unconditional halt
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.UnconditionalHalt(gcode.getComment()));
 			break;
-		case 1:
+		case M1:
 			// M1 == optional halt
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.OptionalHalt(gcode.getComment()));
 			break;
-		case 2:
+		case M2:
 			// M2 == program end
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.ProgramEnd(gcode.getComment()));
 			break;
-		case 30:
+		case M30:
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.ProgramRewind(gcode.getComment()));
 			break;
-
 		// spindle on, CW
-		case 3:
+		case M3:
 			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.CLOCKWISE));
 			commands.add(new replicatorg.drivers.commands.EnableSpindle());
 			break;
-
 		// spindle on, CCW
-		case 4:
+		case M4:
 			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
 			commands.add(new replicatorg.drivers.commands.EnableSpindle());
 			break;
-
 		// spindle off
-		case 5:
+		case M5:
 			commands.add(new replicatorg.drivers.commands.DisableSpindle());
 			break;
-
 		// tool change.
-		case 6:
+		case M6:
 			int timeout = 65535;
 			if (gcode.hasCode('P')) {
 				timeout = (int)gcode.getCodeValue('P');
@@ -421,229 +430,198 @@ public class GCodeParser {
 				throw new GCodeException("The T parameter is required for tool changes. (M6)");
 			}
 			break;
-
 		// coolant A on (flood coolant)
-		case 7:
+		case M7:
 			commands.add(new replicatorg.drivers.commands.EnableFloodCoolant());
 			break;
-
 		// coolant B on (mist coolant)
-		case 8:
+		case M8:
 			commands.add(new replicatorg.drivers.commands.EnableMistCoolant());
 			break;
-
 		// all coolants off
-		case 9:
+		case M9:
 			commands.add(new replicatorg.drivers.commands.DisableFloodCoolant());
 			commands.add(new replicatorg.drivers.commands.DisableMistCoolant());
 			break;
-
 		// close clamp
-		case 10:
+		case M10:
 			if (gcode.hasCode('Q'))
 				commands.add(new replicatorg.drivers.commands.CloseClamp((int) gcode.getCodeValue('Q')));
 			else
 				throw new GCodeException(
 						"The Q parameter is required for clamp operations. (M10)");
 			break;
-
 		// open clamp
-		case 11:
+		case M11:
 			if (gcode.hasCode('Q'))
 				commands.add(new replicatorg.drivers.commands.OpenClamp((int) gcode.getCodeValue('Q')));
 			else
 				throw new GCodeException(
 						"The Q parameter is required for clamp operations. (M11)");
 			break;
-
 		// spindle CW and coolant A on
-		case 13:
+		case M13:
 			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.CLOCKWISE));
 			commands.add(new replicatorg.drivers.commands.EnableSpindle());
 			commands.add(new replicatorg.drivers.commands.EnableFloodCoolant());
 			break;
-
-		// spindle CW and coolant A on
-		case 14:
+		// spindle CCW and coolant A on
+		case M14:
 			commands.add(new replicatorg.drivers.commands.SetSpindleDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
 			commands.add(new replicatorg.drivers.commands.EnableSpindle());
 			commands.add(new replicatorg.drivers.commands.EnableFloodCoolant());
 			break;
-
 		// enable drives
-		case 17:
-			commands.add(new replicatorg.drivers.commands.EnableDrives());
-			break;
-
+		case M17:
+			{ //these braces provide a new level of scope to avoid name clash on axes
+				EnumSet<AxisId> axes = getAxes(gcode);
+				if (axes.isEmpty()) {
+					commands.add(new replicatorg.drivers.commands.EnableDrives());
+				} else {
+					commands.add(new replicatorg.drivers.commands.EnableAxes(axes));
+				}
+			}
+				break;
 		// disable drives
-		case 18:
-			commands.add(new replicatorg.drivers.commands.DisableDrives());
+		case M18:
+			{ //these braces provide a new level of scope to avoid name clash on axes
+				EnumSet<AxisId> axes = getAxes(gcode);
+				if (axes.isEmpty()) {
+					commands.add(new replicatorg.drivers.commands.DisableDrives());
+				} else {
+					commands.add(new replicatorg.drivers.commands.DisableAxes(axes));
+				}
+			}
 			break;
-
 		// open collet
-		case 21:
+		case M21:
 			commands.add(new replicatorg.drivers.commands.OpenCollet());
 			break;
 			// open collet
-		case 22:
+		case M22:
 			commands.add(new replicatorg.drivers.commands.CloseCollet());
 			break;
 			// M40-M46 = change gear ratios
-		case 40:
+		case M40:
 			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(0));
 			break;
-		case 41:
+		case M41:
 			// driver.changeGearRatio(1);
 			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(1));
 			break;
-		case 42:
+		case M42:
 			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(2));
 			break;
-		case 43:
+		case M43:
 			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(3));
 			break;
-		case 44:
+		case M44:
 			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(4));
 			break;
-		case 45:
+		case M45:
 			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(5));
 			break;
-		case 46:
+		case M46:
 			commands.add(new replicatorg.drivers.commands.ChangeGearRatio(6));
 			break;
-
 		// read spindle speed
-		case 50:
+		case M50:
 			driver.getSpindleRPM();
 			break;
 			// turn extruder on, forward
-		case 101:
+		case M101:
 			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.CLOCKWISE));
 			commands.add(new replicatorg.drivers.commands.EnableMotor());
 			break;
-
 		// turn extruder on, reverse
-		case 102:
+		case M102:
 			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
 			commands.add(new replicatorg.drivers.commands.EnableMotor());
 			break;
-
 		// turn extruder off
-		case 103:
+		case M103:
 			commands.add(new replicatorg.drivers.commands.DisableMotor());
 			break;
-
 		// custom code for temperature control
-		case 104:
+		case M104:
 			if (gcode.hasCode('S'))
 				commands.add(new replicatorg.drivers.commands.SetTemperature(gcode.getCodeValue('S')));
 			break;
-
 		// custom code for temperature reading
 		// TODO: This command seems like a hack, it would be better for the driver to poll temperature rather than
 		//       have the gcode ask for it.
-		case 105:
+		case M105:
 			commands.add(new replicatorg.drivers.commands.ReadTemperature());
 			break;
-
 		// turn AutomatedBuildPlatform on
-		case 106:
-			//was 			commands.add(new replicatorg.drivers.commands.EnableFan()); pre 0026
+		case M106:
 			commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
 			break;
-
 		// turn AutomatedBuildPlatform off
-		case 107:
-			//was 			commands.add(new replicatorg.drivers.commands.DisableFan()); pre 0026
+		case M107:
 			commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
 			break;
-
 		// set max extruder speed, RPM
-		case 108:
+		case M108:
 			if (gcode.hasCode('S'))
 				commands.add(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)gcode.getCodeValue('S')));
 			else if (gcode.hasCode('R'))
 				commands.add(new replicatorg.drivers.commands.SetMotorSpeedRPM(gcode.getCodeValue('R')));
 			break;
-
 		// set build platform temperature
-		case 109:
+		case M109:
 			if (gcode.hasCode('S'))
 				commands.add(new replicatorg.drivers.commands.SetPlatformTemperature(gcode.getCodeValue('S')));
 			break;
-
 		// set build chamber temperature
-		case 110:
+		case M110:
 			commands.add(new replicatorg.drivers.commands.SetChamberTemperature(gcode.getCodeValue('S')));
-			
+			break;
 		// valve open
-		case 126:
+		case M126:
 			commands.add(new replicatorg.drivers.commands.OpenValve());
 			break;
-
 		// valve close
-		case 127:
+		case M127:
 			commands.add(new replicatorg.drivers.commands.CloseValve());
 			break;
-
 		// where are we?
-		case 128:
+		case M128:
 			commands.add(new replicatorg.drivers.commands.GetPosition());
 			break;
-			
 		// Instruct the machine to store it's current position to EEPROM
-		case 131:
-		{
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-			if (gcode.hasCode('A')) axes.add(AxisId.A);
-			if (gcode.hasCode('B')) axes.add(AxisId.B);
-			
-			commands.add(new replicatorg.drivers.commands.StoreHomePositions(axes));
-		}
+		case M131:
+			{ //these braces provide a new level of scope to avoid name clash on axes
+				EnumSet<AxisId> axes = getAxes(gcode);
+				commands.add(new replicatorg.drivers.commands.StoreHomePositions(axes));
+			}
 			break;
-
 		// Instruct the machine to restore it's current position from EEPROM
-		case 132:
-		{
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-			if (gcode.hasCode('A')) axes.add(AxisId.A);
-			if (gcode.hasCode('B')) axes.add(AxisId.B);
-			
-			commands.add(new replicatorg.drivers.commands.RecallHomePositions(axes));
-			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
-		}
+		case M132:
+			{ //these braces provide a new level of scope to avoid name clash on axes
+				EnumSet<AxisId> axes = getAxes(gcode);
+				commands.add(new replicatorg.drivers.commands.RecallHomePositions(axes));
+				commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			}
 			break;
-			
 		// initialize to default state.
-		case 200:
+		case M200:
 			commands.add(new replicatorg.drivers.commands.Initialize());
 			break;
-		
 		// set servo 1 position
-		case 300:
+		case M300:
 			if (gcode.hasCode('S')) {
 				commands.add(new replicatorg.drivers.commands.SetServo(0, gcode.getCodeValue('S')));
 			}
 			break;
-
 		// set servo 2 position
-		case 301:
+		case M301:
 			if (gcode.hasCode('S')) {
 				commands.add(new replicatorg.drivers.commands.SetServo(1, gcode.getCodeValue('S')));
 			}
 			break;
-
 		default:
-			throw new GCodeException("Unknown M code: M"
-					+ (int) gcode.getCodeValue('M'));
+			throw new GCodeException("Unknown M code: M" + (int) gcode.getCodeValue('M'));
 		}
 	}
 
@@ -729,28 +707,26 @@ public class GCodeParser {
 			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
 		}
 		
-		int gCode = (int) gcode.getCodeValue('G');
+
+		GCodeEnumeration gCode = GCodeEnumeration.getGCode("G", (int)gcode.getCodeValue('G'));
 
 		switch (gCode) {
 		// Linear Interpolation
 		// these are basically the same thing.
-		case 0:
+		case G0:
 			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
 			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
-			
 			break;
-
 		// Rapid Positioning
-		case 1:
+		case G1:
 			// set our target.
 			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
 			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
 			break;
-
 		// Clockwise arc
-		case 2:
+		case G2:
 			// Counterclockwise arc
-		case 3: {
+		case G3: {
 			// call our arc drawing function.
 			// Note: We don't support 5D
 			if (gcode.hasCode('I') || gcode.hasCode('J')) {
@@ -761,7 +737,7 @@ public class GCodeParser {
 				center.setY(current.y() + jVal);
 
 				// Get the points for the arc
-				if (gCode == 2)
+				if (gCode == GCodeEnumeration.G2)
 					commands.addAll(drawArc(center, temp, true));
 				else
 					commands.addAll(drawArc(center, temp, false));
@@ -772,12 +748,11 @@ public class GCodeParser {
 			}
 		}
 			break;
-
 		// dwell
-		case 4:
+		case G4:
 			commands.add(new replicatorg.drivers.commands.Delay((long)gcode.getCodeValue('P')));
 			break;
-		case 10:
+		case G10:
 			if (gcode.hasCode('P')) {
 				int offsetSystemNum = ((int)gcode.getCodeValue('P'));
 				if (offsetSystemNum >= 1 && offsetSystemNum <= 6) {
@@ -792,178 +767,98 @@ public class GCodeParser {
 			else 
 				Base.logger.warning("No coordinate system indicated use G10 Pn, where n is 0-6.");
 			break;
-
 		// Inches for Units
-		case 20:
-		case 70:
+		case G20:
+		case G70:
 			units = UNITS_INCHES;
 			curveSection = curveSectionInches;
 			break;
-
 		// mm for Units
-		case 21:
-		case 71:
+		case G21:
+		case G71:
 			units = UNITS_MM;
 			curveSection = curveSectionMM;
 			break;
-
 		// This should be "return to home".  We need to introduce new GCodes for homing.
-		case 28:
-		{
-			// home all axes?
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-			
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-			
-			if (gcode.hasCode('F')) {
-				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
+			//replaced by G161, G162
+		case G28:
+			{
+				// home all axes?
+				EnumSet<AxisId> axes = getAxes(gcode);
+				
+				if (gcode.hasCode('F')) {
+					commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
+				}
+				else {
+					commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE));
+				}
 			}
-			else {
-				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE));
-			}
-		}
 			break;
-
 		// New code: home negative.
-		case 161:
-		{
-			// home all axes?
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-			
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-			
-			if (gcode.hasCode('F')) {
-				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.NEGATIVE, feedrate));
+		case G161:
+			{
+				// home all axes?
+				EnumSet<AxisId> axes = getAxes(gcode);
+				
+				if (gcode.hasCode('F')) {
+					commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.NEGATIVE, feedrate));
+				}
+				else {
+					commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.NEGATIVE));
+				}
 			}
-			else {
-				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.NEGATIVE));
-			}
-		}
 			break;
-
 			// New code: home positive.
-		case 162:
-		{
-			// home all axes?
-			EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-
-			if (gcode.hasCode('X')) axes.add(AxisId.X);
-			if (gcode.hasCode('Y')) axes.add(AxisId.Y);
-			if (gcode.hasCode('Z')) axes.add(AxisId.Z);
-			if (gcode.hasCode('F')) {
-				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
+		case G162:
+			{
+				// home all axes?
+				EnumSet<AxisId> axes = getAxes(gcode);
+				if (gcode.hasCode('F')) {
+					commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE, feedrate));
+				}
+				else {
+					commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE));
+				}
 			}
-			else {
-				commands.add(new replicatorg.drivers.commands.HomeAxes(axes, LinearDirection.POSITIVE));
-			}
-		}
 			break;
-
 		// master offset
-		case 53:
+		case G53:
 			currentOffset = driver.getOffset(0);
 			break;
 		// fixture offset 1
-		case 54:
+		case G54:
 			currentOffset = driver.getOffset(1);
 			break;
 		// fixture offset 2
-		case 55:
+		case G55:
 			currentOffset = driver.getOffset(2);
 			break;
 		// fixture offset 3
-		case 56:
+		case G56:
 			currentOffset = driver.getOffset(3);
 			break;
 		// fixture offset 4
-		case 57:
+		case G57:
 			currentOffset = driver.getOffset(4);
 			break;
 		// fixture offset 5
-		case 58:
+		case G58:
 			currentOffset = driver.getOffset(5);
 			break;
 		// fixture offset 6
-		case 59:
+		case G59:
 			currentOffset = driver.getOffset(6);
 			break;
-
-		// Peck Motion Cycle
-		// case 178: //speed peck motion
-		// case 78:
-		// TODO: make this
-
-		// Cancel drill cycle
-		case 80:
-			drillCycle.setRetract(0);
-			drillCycle.setFeedrate(0);
-			drillCycle.setDwell(0);
-			drillCycle.setPecksize(0);
-			break;
-
-		// Drilling canned cycles
-		case 81: // Without dwell
-		case 82: // With dwell
-		case 83: // Peck drilling (w/ optional dwell)
-		case 183: // Speed peck drilling (w/ optional dwell)
-
-			// we dont want no stinkin speedpeck
-			boolean speedPeck = false;
-
-			// setup our parameters
-			drillCycle.setTarget(temp);
-			
-			if (gcode.hasCode('F'))
-				drillCycle.setFeedrate(gcode.getCodeValue('F'));
-			if (gcode.hasCode('R'))
-				drillCycle.setFeedrate(rVal);
-
-			// set our vars for normal drilling
-			if (gCode == 81) {
-				drillCycle.setDwell(0);
-				drillCycle.setPecksize(0);
-			}
-			// they want a dwell
-			else if (gCode == 82) {
-				if (gcode.hasCode('P')) {
-					drillCycle.setDwell((int) gcode.getCodeValue('P'));
-				}
-				drillCycle.setPecksize(0);
-			}
-			// fancy schmancy 'pecking' motion.
-			else if (gCode == 83 || gCode == 183) {
-				if (gcode.hasCode('P')) {
-					drillCycle.setDwell((int) gcode.getCodeValue('P'));
-				}
-				
-				if (gcode.hasCode('Q')) {
-					drillCycle.setPecksize(Math.abs(gcode.getCodeValue('Q')));
-				}
-				// oooh... do it fast!
-				if (gCode == 183)
-					speedPeck = true;
-			}
-
-			drillCycle.doDrill(speedPeck);
-			break;
-
 		// Absolute Positioning
-		case 90:
+		case G90:
 			absoluteMode = true;
 			break;
-
 		// Incremental Positioning
-		case 91:
+		case G91:
 			absoluteMode = false;
 			break;
-
 		// Set position
-		case 92:
-
+		case G92:
 			Point5d current = driver.getCurrentPosition(false);
 
 			if (gcode.hasCode('X'))
@@ -982,20 +877,16 @@ public class GCodeParser {
 			
 			commands.add(new replicatorg.drivers.commands.SetCurrentPosition(current));
 			break;
-
-		// feed rate mode
-		// case 93: //inverse time feed rate
-		case 94: // IPM feed rate (our default)
-			// case 95: //IPR feed rate
-			// TODO: make this work.
-			break;
-
+//		 feed rate mode
+//		 case G93: //inverse time feed rate
+//		case G94: // IPM feed rate (our default)
+//			 case G95: //IPR feed rate
+//			 TODO: make this work.
+//			break;
 		// spindle speed rate
-		case 97:
+		case G97:
 			commands.add(new replicatorg.drivers.commands.SetSpindleRPM(gcode.getCodeValue('S')));
-
 			break;
-			
 		// error, error!
 		default:
 			throw new GCodeException("Unknown G code: G"

@@ -88,7 +88,9 @@
 
   <target name="run" depends="jar">
     <java fork="true" classname="replicatorg.app.Base"> <!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
+
       <jvmarg value="-ea"/>
+            <jvmarg value="-Xmx512m"/>
       <jvmarg value="-XX:+HeapDumpOnOutOfMemoryError"/>
       <jvmarg value="${native.java.flags}"/>
       <classpath>
@@ -210,6 +212,8 @@
     <copy todir="${target.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt"/>
     </copy>
+  	<copy todir="${target.dir}" failonerror="false" file="timeout.txt"/>
+  	<copy tofile="${target.dir}/GCodeDocumentation.txt" failonerror="false" file="docs/GCodeDocumentation.txt"/>
     <copy todir="${target.dir}/skein_engines">
       <fileset dir="skein_engines" excludes="*.pyc"/>
     </copy>
@@ -218,6 +222,9 @@
     </copy>
     <copy todir="${target.dir}/examples">
       <fileset dir="examples"/>
+      </copy>
+    <copy todir="${target.dir}/DualStrusion_Snippets">
+      <fileset dir="DualStrusion_Snippets"/>
     </copy>
     <copy todir="${target.dir}/scripts">
       <fileset dir="scripts"/>

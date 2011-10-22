@@ -3,7 +3,9 @@ package replicatorg.plugin.toolpath.skeinforge;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +21,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -275,7 +276,42 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
-
+	public ConfigurationDialog visualConfiguregetCD(Frame parent, int x, int y, String name) {
+		// First check for Python.
+		parent.setName(name);
+		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
+		cd.setName(name);
+		cd.setTitle(name);
+		//cd.setSize(500, 760);
+		cd.pack();
+		cd.setLocation(x, y);
+		cd.setVisible(true);
+		return cd;
+	}
+	public boolean visualConfigure(Frame parent, int x, int y, String name) {
+		// First check for Python.
+		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
+				name, new PythonUtils.Version(2, 5, 0),
+				new PythonUtils.Version(3, 0, 0));
+		if (!hasPython) {
+			return false;
+		}
+		boolean hasTkInter = PythonUtils.interactiveCheckTkInter(parent,
+				name);
+		if (!hasTkInter) {
+			return false;
+		}
+		parent.setName(name);
+		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
+		cd.setName(name);
+		cd.setTitle(name);
+		//cd.setSize(500, 760);
+		cd.pack();
+		cd.setLocation(x, y);
+		cd.setVisible(true);
+		emitUpdate("Config Done");
+		return configSuccess;
+	}
 	public boolean visualConfigure(Frame parent) {
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
@@ -334,12 +370,64 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		File skeinforgeDir = getSkeinforgeDir();
 		pb.directory(skeinforgeDir);
 		Process process = null;
+		Base.logger.log(Level.FINEST, "Starting Skeinforge process...");
+		
+		/**
+		 * Run the process and wait for it to return. Because of an issue with process.waitfor() failing to
+		 * return, we now also do a busy wait with a timeout. The timeout value is loaded from timeout.txt
+		 */
 		try {
+			// force failure if something goes wrong
+			int value = 1;
+			File timeout = new File("timeout.txt");
+			long timeoutValue = -1;
+			
+			// This is not production code, grab the timeout value
+			if(timeout.exists())
+				timeoutValue = Long.parseLong(new BufferedReader(new FileReader(timeout)).readLine());
+			
 			process = pb.start();
-			int value = process.waitFor();
+			
+			//if no timeout set
+			if(timeoutValue == -1)
+			{
+				Base.logger.log(Level.FINEST, "\tRunning SF without a timeout");
+				value = process.waitFor();
+			}
+			else // run for timeoutValue cycles trying to get an exit value from the process
+			{
+				Base.logger.log(Level.FINEST, "\tRunning SF with a timeout");
+				while(timeoutValue > 0)
+				{
+					try
+					{
+						value = process.exitValue(); 
+						break;
+					}
+					catch (IllegalThreadStateException itse)
+					{
+						timeoutValue--;
+					}
+				}
+				if(timeoutValue == 0)
+				{
+					JOptionPane.showConfirmDialog(null, "\tSkeinforge has not returned, This may be due to a communication error\n" +
+							"between Skeinforge and ReplicatorG. If you are still editing a Skeinforge\n" +
+							"profile, ignore this message; any changes you make in the skeinforge window\n" +
+							"and save will be used when generating the gcode file.\n\n" +
+							"\tAdjusting the number in the \"timeout.txt\" file will affect how long ReplicatorG\n" +
+							"waits before assuming that Skeinforge has failed, if you frequently\n" +
+							"encounter this message you may want to increase the timeout.",
+							"SF Timeout", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+			Base.logger.log(Level.FINEST, "Skeinforge process returned");
 			if (value != 0) {
-				Base.logger
-						.severe("Unrecognized error code returned by Skeinforge.");
+				Base.logger.severe("Unrecognized error code returned by Skeinforge.");
+			}
+			else
+			{
+				Base.logger.log(Level.FINEST, "Normal Exit on Skeinforge close");
 			}
 		} catch (IOException ioe) {
 			Base.logger.log(Level.SEVERE, "Could not run skeinforge.", ioe);
@@ -347,6 +435,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			// We are most likely shutting down, or the process has been
 			// manually aborted.
 			// Kill the background process and bail out.
+			System.out.println("SkeinforgeGenerator.editProfile() interrupted: " + e);
 			if (process != null) {
 				process.destroy();
 			}

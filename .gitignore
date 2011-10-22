@@ -1,5 +1,6 @@
 # git ignore
 # no dist files
+/doc
 /dist
 dist-all
 build/jar
@@ -10,3 +11,6 @@ examples/*.gcode
 \#*\#
 *~
 RepG.log
+ReplicatorG.app
+.classpath
+.project
