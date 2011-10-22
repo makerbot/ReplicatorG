@@ -1,0 +1,46 @@
+diff -ru skeinforge-40-orig/fabmetheus_utilities/settings.py skeinforge-40/fabmetheus_utilities/settings.py
+--- skeinforge-40-orig/fabmetheus_utilities/settings.py	2011-02-22 02:28:20.000000000 -0600
++++ skeinforge-40/fabmetheus_utilities/settings.py	2011-03-08 17:08:15.000000000 -0600
+@@ -562,7 +562,7 @@
+ 		settingTable = {}
+ 		for setting in repository.preferences:
+ 			settingTable[ setting.name ] = setting
+-		for (name, value) in overrides[repository.baseName].items():
++		for (name, value) in globalTemporaryOverrides[repository.baseName].items():
+ 			if name in settingTable:
+ 				settingTable[name].setValueToString(value)
+ 			else:
+diff -ru skeinforge-40-orig/skeinforge_application/skeinforge.py skeinforge-40/skeinforge_application/skeinforge.py
+--- skeinforge-40-orig/skeinforge_application/skeinforge.py	2011-02-23 00:00:54.000000000 -0600
++++ skeinforge-40/skeinforge_application/skeinforge.py	2011-03-08 17:03:42.000000000 -0600
+@@ -538,8 +538,7 @@
+ 	'Craft a file, display dialog.'
+ 	repository = getNewRepository()
+ 	repository.fileNameInput.value = fileName
+-	repository.execute()
+-	settings.startMainLoopFromConstructor(repository)
++	settings.startMainLoopFromWindow(repository.execute())
+ 
+ 
+ class SkeinforgeRepository:
+@@ -567,8 +566,10 @@
+ 	def execute(self):
+ 		'Skeinforge button has been clicked.'
+ 		fileNames = skeinforge_polyfile.getFileOrDirectoryTypesUnmodifiedGcode(self.fileNameInput.value, fabmetheus_interpret.getImportPluginFileNames(), self.fileNameInput.wasCancelled)
++                window = None
+ 		for fileName in fileNames:
+-			skeinforge_craft.writeOutput(fileName)
++			window = skeinforge_craft.writeOutput(fileName)
++                return window
+ 
+ 	def save(self):
+ 		'Profile has been saved and profile menu should be updated.'
+@@ -598,7 +599,7 @@
+ 		for prefSpec in options.preferences:
+ 			(moduleName, prefSpec) = prefSpec.split(':', 1)
+ 			(prefName, valueName) = prefSpec.split('=', 1)
+-			settings.addPreferenceOverride(moduleName, prefName, valueName)
++			settings.temporaryAddPreferenceOverride(moduleName, prefName, valueName)
+ 	sys.argv = [sys.argv[0]] + args
+ 	if len( args ) > 0:
+ 		writeOutput( ' '.join(args) )

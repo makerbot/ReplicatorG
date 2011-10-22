@@ -593,7 +593,7 @@ def temporaryApplyOverrides(repository):
 		settingTable = {}
 		for setting in repository.preferences:
 			settingTable[ setting.name ] = setting
-		for (name, value) in overrides[repository.baseName].items():
+		for (name, value) in globalTemporaryOverrides[repository.baseName].items():
 			if name in settingTable:
 				settingTable[name].setValueToString(value)
 			else:
