@@ -1523,6 +1523,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if ( (b[0] & (0x01 << 2)) != 0 ) r.add(AxisId.Z);
 		if ( (b[0] & (0x01 << 3)) != 0 ) r.add(AxisId.A);
 		if ( (b[0] & (0x01 << 4)) != 0 ) r.add(AxisId.B);
+		if ( (b[0] & (0x01 << 7)) != 0 ) r.add(AxisId.V);
 		return r;
 	}
 
@@ -1533,6 +1534,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if (axes.contains(AxisId.Z)) b[0] = (byte)(b[0] | (0x01 << 2));
 		if (axes.contains(AxisId.A)) b[0] = (byte)(b[0] | (0x01 << 3));
 		if (axes.contains(AxisId.B)) b[0] = (byte)(b[0] | (0x01 << 4));
+		if (axes.contains(AxisId.V)) b[0] = (byte)(b[0] | (0x01 << 7));
 		writeToEEPROM(EEPROM_AXIS_INVERSION_OFFSET,b);
 	}
 
