@@ -2783,19 +2783,32 @@ ToolpathGenerator.GeneratorListener
 			updateBuild();
 			System.out.println("Done?");
 			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
-			System.out.println(extruderChoice);
-			if(extruderChoice.equalsIgnoreCase("left"))
+			String mname = Base.preferences.get("machine.name", "error");
+			System.out.println(mname);
+			try
 			{
-				System.out.println("performing left ops");
-				DualStrusionWorker.changeToolHead(build.getCode().file, 1);
-					handleOpenFile(build.getCode().file);
-			
+				System.out.println(machineLoader.getMachine().getModel().getTools().size());
+				if(machineLoader.getMachine().getModel().getTools().size() > 1)
+				{
+					System.out.println(extruderChoice);
+					if(extruderChoice.equalsIgnoreCase("left"))
+					{
+						System.out.println("performing left ops");
+						DualStrusionWorker.changeToolHead(build.getCode().file, 1);
+							handleOpenFile(build.getCode().file);
+
+					}
+					else if(extruderChoice.equalsIgnoreCase("right"))
+					{
+						System.out.println("performing right ops");
+						DualStrusionWorker.changeToolHead(build.getCode().file, 0);
+						handleOpenFile(build.getCode().file);
+
+					}
+				}
 			}
-			else if(extruderChoice.equalsIgnoreCase("right"))
+			catch(NullPointerException e)
 			{
-				System.out.println("performing right ops");
-				DualStrusionWorker.changeToolHead(build.getCode().file, 0);
-				handleOpenFile(build.getCode().file);
 
 			}
 		}
