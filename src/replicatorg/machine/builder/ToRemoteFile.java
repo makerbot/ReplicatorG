@@ -13,6 +13,11 @@ import replicatorg.drivers.SimulationDriver;
 import replicatorg.machine.Machine.JobTarget;
 import replicatorg.model.GCodeSource;
 
+/** 
+ * 
+ * 
+ *
+ */
 public class ToRemoteFile implements MachineBuilder {
 
 	// TODO: These are in multiple places.
@@ -69,7 +74,6 @@ public class ToRemoteFile implements MachineBuilder {
 	public boolean setupFailed = true;
 
 	public ToRemoteFile(Driver driver, SimulationDriver simulator, GCodeSource source, String remoteName) {
-		// TODO: we might fail here.
 		this.sdcc = (SDCardCapture)driver;
 		
 		if (processSDResponse(sdcc.beginCapture(remoteName))) {

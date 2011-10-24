@@ -324,8 +324,7 @@ class MachineThread extends Thread {
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
-				ToRemoteFile trf = new ToRemoteFile(driver, simulator,
-						combinedSource, command.remoteName);
+				ToRemoteFile trf = new ToRemoteFile(driver, simulator, combinedSource, command.remoteName);
 				if(trf.setupFailed)
 				{
 					//I am ashamed of this, but without adding a new state of "BUILD_CANCELLED"
@@ -364,8 +363,7 @@ class MachineThread extends Thread {
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
-				ToLocalFile lf = new ToLocalFile(driver, simulator,
-											combinedSource, command.remoteName);
+				ToLocalFile lf = new ToLocalFile(driver, simulator,	combinedSource, command.remoteName);
 				if(lf.setupFailed)
 				{
 					// see above (BUILD_TO_REMOTE_FILE) for explanation
@@ -395,8 +393,14 @@ class MachineThread extends Thread {
 				
 				machineBuilder = new UsingRemoteFile((SDCardCapture)driver, command.remoteName);
 			
-				// TODO: what about this?
-				driver.getCurrentPosition(false); // reconcile position
+//				// TODO: what about this?
+//				System.out.println("pre-");
+//				driver.getCurrentPosition(false); // reconcile position
+//				System.out.println("post-");
+				
+				// TODO: is this what we wanted?
+				driver.invalidatePosition();
+				
 				setState(new MachineState(MachineState.State.BUILDING), buildingMessage());
 			}
 			break;

@@ -41,9 +41,10 @@ public class ToLocalFile implements MachineBuilder {
 	
 	@Override
 	public boolean finished() {
-		if (!directBuilder.finished()) { 
+		if(setupFailed)
+			return true;
+		if(!directBuilder.finished()) 
 			return false;
-		}
 		
 		try {
 			sdcc.endFileCapture();
@@ -57,16 +58,21 @@ public class ToLocalFile implements MachineBuilder {
 	
 	@Override
 	public void runNext() {
-		directBuilder.runNext();
+		if(directBuilder != null)
+			directBuilder.runNext();
 	}
 
 	@Override
 	public int getLinesTotal() {
+		if(directBuilder == null)
+			return -1;
 		return directBuilder.getLinesTotal();
 	}
 
 	@Override
 	public int getLinesProcessed() {
+		if(directBuilder == null)
+			return -1;
 		return directBuilder.getLinesProcessed();
 	}
 
