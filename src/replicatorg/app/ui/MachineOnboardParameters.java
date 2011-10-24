@@ -8,6 +8,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.EnumSet;
 
 import javax.swing.JButton;
@@ -113,7 +114,9 @@ public class MachineOnboardParameters extends JFrame {
 	}
 	
 	double roundDouble(double number) {
-    	DecimalFormat twoDForm = new DecimalFormat("#.###");
+		DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+		dfs.setDecimalSeparator('.');
+    	DecimalFormat twoDForm = new DecimalFormat("#.###", dfs);
     	return Double.valueOf(twoDForm.format(number));
 	}
 

@@ -510,8 +510,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	{
 		String name = source.getName();
 		if (source.getText().length() > 0) {
+			double target = Double.parseDouble(source.getText());
 			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
-				double target = Double.parseDouble(source.getText());
+				
 				if(name.equals("target-temp")) {
 					target = confirmTemperature(target,"temperature.acceptedLimit",260.0);
 					if (target == Double.MIN_VALUE) {
@@ -527,12 +528,12 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(target));
 					targetPlatformTemperature = target;
 				}
-				// This gives some feedback by adding .0 it it wasn't typed.
+				// This gives some feedback by adding .0 if it wasn't typed.
 				source.setText(Double.toString(target));
 			} else if (name.equals("motor-speed")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(Double.parseDouble(source.getText())));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(target));
 			} else if (name.equals("motor-speed-pwm")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)Double.parseDouble(source.getText())));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)target));
 			} else {
 				Base.logger.warning("Unhandled text field: "+name);
 			}
