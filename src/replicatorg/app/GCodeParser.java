@@ -570,6 +570,7 @@ public class GCodeParser {
 			break;
 		// set build platform temperature
 		case M109:
+		case M140: // skeinforge chamber code for HBP
 			if (gcode.hasCode('S'))
 				commands.add(new replicatorg.drivers.commands.SetPlatformTemperature(gcode.getCodeValue('S')));
 			break;
@@ -604,6 +605,11 @@ public class GCodeParser {
 				commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			}
 			break;
+		//Silently ignore these
+		case M141: // skeinforge chamber plugin chamber temperature code
+		case M142: // skeinforge chamber plugin holding pressure code
+			break;
+		
 		// initialize to default state.
 		case M200:
 			commands.add(new replicatorg.drivers.commands.Initialize());
