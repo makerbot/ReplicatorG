@@ -75,7 +75,7 @@ public enum GCodeEnumeration {
 	M310("M", 310, "Start data capture"),
 	M311("M", 311, "Stop data capture"),
 	M312("M", 312, "Log a note to the data capture store"),
-	G0("G", 0, "Linear Interpolation"),
+	G0("G", 0, "Rapid Positioning"),
 	G1("G", 1, "Coordinated Motion"),
 	G2("G", 2, "Clockwise Arc"),
 	G3("G", 3, "Counter Clockwise Arc"),

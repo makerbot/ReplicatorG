@@ -728,13 +728,15 @@ public class GCodeParser {
 		GCodeEnumeration gCode = GCodeEnumeration.getGCode("G", (int)gcode.getCodeValue('G'));
 
 		switch (gCode) {
-		// Linear Interpolation
-		// these are basically the same thing.
+		// these are basically the same thing, but G0 is supposed to do it as quickly as possible.
+		// Rapid Positioning
 		case G0:
-			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
+			Point5d maxFR = driver.getMaximumFeedrates();
+			double safeFR = Math.min(Math.min(maxFR.x(), maxFR.y()), maxFR.z());
+			commands.add(new replicatorg.drivers.commands.SetFeedrate(safeFR));
 			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
 			break;
-		// Rapid Positioning
+		// Linear Interpolation
 		case G1:
 			// set our target.
 			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
