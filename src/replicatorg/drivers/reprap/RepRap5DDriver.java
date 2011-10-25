@@ -630,7 +630,9 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		    if (m.find( )) {
 		    	double newEvalue = Double.valueOf(m.group(2).trim()).doubleValue();
 		    	newEvalue = newEvalue * 0.040;
-		    	NumberFormat formatter = new DecimalFormat("#0.0");
+				DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+				dfs.setDecimalSeparator('.');
+		    	NumberFormat formatter = new DecimalFormat("#0.0", dfs);
 		    	fixed = m.group(1)+" E"+formatter.format(newEvalue)+" "+m.group(3);
 		    }
 	*/

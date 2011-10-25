@@ -306,6 +306,8 @@ public class Layer_Helper {
 	 */
 	private static ArrayList<String> mergeLayer(Layer a, Layer b) //This method makes it so that you dont switch toolheads unnessecarily a is primary layers b is secondary layers
 	{
+		//TODO: before releasing this code, make sure it's safe for localization.
+		// if this is printing floating point numbers, it has to make sure it's putting out '.'s and not ','s
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(2);
 		nf.setMinimumFractionDigits(2);
@@ -343,6 +345,7 @@ public class Layer_Helper {
 		WipeModel tool0Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(0);
 		WipeModel tool1Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(1);
 		ArrayList<String> targetCode = new ArrayList<String>();
+		//TODO: before releasing this code, make sure it's safe for localization.
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(0); //Min no decimals
 		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
@@ -427,6 +430,7 @@ public class Layer_Helper {
 		return PrimaryLayers.get(1).getHeight() - PrimaryLayers.get(0).getHeight();
 	}
 	public static ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
+		//TODO: before releasing this code, make sure it's safe for localization.
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(0); //Min no decimals
 		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
