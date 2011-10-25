@@ -2,12 +2,13 @@ package replicatorg.machine.builder;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 
+import replicatorg.app.Base;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.machine.Machine.JobTarget;
-
 
 /** Helper class to build on a machine from a remote file.
  * 
@@ -16,42 +17,7 @@ import replicatorg.machine.Machine.JobTarget;
  */
 public class UsingRemoteFile implements MachineBuilder{
 
-	SDCardCapture sdcc;
-	
-	boolean finished = false;
-	
-	public UsingRemoteFile(SDCardCapture sdcc, String remoteName) {
-		
-		// TODO: we might fail here.
-		this.sdcc = sdcc;
-		
-		if (!processSDResponse(sdcc.playback(remoteName))) {
-			finished = true;
-		}
-	}
-	
-	@Override
-	public boolean finished() {
-		return (sdcc.isFinished());
-	}
-
-	@Override
-	public void runNext() {
-	}
-	
-	@Override
-	public int getLinesProcessed() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getLinesTotal() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	
-	// TODO: Where does this go?
+	// TODO: These are in multiple places.
 	static Map<SDCardCapture.ResponseCode,String> sdErrorMap =
 		new EnumMap<SDCardCapture.ResponseCode,String>(SDCardCapture.ResponseCode.class);
 	{
@@ -89,6 +55,7 @@ public class UsingRemoteFile implements MachineBuilder{
 	public boolean processSDResponse(SDCardCapture.ResponseCode code) {
 		if (code == SDCardCapture.ResponseCode.SUCCESS) return true;
 		String message = sdErrorMap.get(code);
+		Base.logger.log(Level.WARNING, message);
 		JOptionPane.showMessageDialog(
 				null,
 				message,
@@ -96,12 +63,44 @@ public class UsingRemoteFile implements MachineBuilder{
 				JOptionPane.ERROR_MESSAGE);
 		return false;
 	}
+	
+	SDCardCapture sdcc;
+	
+	boolean finished = false;
+	
+	public UsingRemoteFile(SDCardCapture sdcc, String remoteName) {
+		
+		// TODO: we might fail here.
+		this.sdcc = sdcc;
+		
+		if (!processSDResponse(sdcc.playback(remoteName))) {
+			finished = true;
+		}
+	}
+	
+	@Override
+	public boolean finished() {
+		return (sdcc.isFinished() || finished);
+	}
+
+	@Override
+	public void runNext() {
+	}
+	
+	@Override
+	public int getLinesProcessed() {
+		return 0;
+	}
+
+	@Override
+	public int getLinesTotal() {
+		return 0;
+	}
 
 	@Override
 	public boolean isInteractive() {
 		return true;
 	}
-	
 	
 	@Override
 	public JobTarget getTarget() {

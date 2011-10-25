@@ -21,11 +21,14 @@ package replicatorg.machine;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.logging.Level;
 
+import javax.swing.JOptionPane;
 
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
+import replicatorg.app.GCode;
 import replicatorg.app.GCodeParser;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
@@ -37,6 +40,7 @@ import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;
+import replicatorg.util.Point5d;
 
 /**
  * The MachineController object controls a single machine. It contains a single
@@ -149,6 +153,17 @@ public class Machine implements MachineInterface {
 		return true;
 	}
 
+	private enum CodeCheckState
+	{
+		SAFE,
+		WARNING,
+		SEVERE;
+	}
+	
+	// The estimate function now checks for some sources of error
+	// needs a way to return failure
+	private CodeCheckState ccs;
+	
 	/**
 	 * Begin running a job.
 	 */
@@ -161,14 +176,35 @@ public class Machine implements MachineInterface {
 		// simulator.createWindow();
 
 		// estimate build time.
-		Base.logger.info("Estimating build time...");
+		Base.logger.info("Estimating build time and scanning code for errors...");
+		ccs = CodeCheckState.SAFE;
 		estimate(source);
 
+		if(ccs == CodeCheckState.WARNING)
+		{
+			int proceed = JOptionPane.showConfirmDialog(null, "The pre-run check has found some potentially problematic" +
+					" GCode (see console for details).\nWould you like to proceed with the build anyway?",
+					"GCode Check: Warning", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
+			
+			// I think this is the return value for "no"
+			if(proceed == 1)
+				return false;
+		}
+		else if(ccs == CodeCheckState.SEVERE)
+		{
+			JOptionPane.showConfirmDialog(null, "The pre-run check has found some problematic" +
+					" GCode (see the console for details).\nThis may be a result of trying to run code on" +
+					" a machine other than the one it's\nintended for (i.e. running dual headed GCode on " +
+					"a single headed machine).\n\nThe errors highlighted red must be fixed before it can be safely run.",
+					"GCode Check: Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
 		// do that build!
 		Base.logger.info("Beginning build.");
 
-		machineThread.scheduleRequest(new MachineCommand(
-				RequestType.BUILD_DIRECT, source, null));
+		machineThread.scheduleRequest(new MachineCommand(RequestType.BUILD_DIRECT, source, null));
+		
 		return true;
 	}
 
@@ -196,7 +232,10 @@ public class Machine implements MachineInterface {
 		EstimationDriver estimator = new EstimationDriver();
 		// TODO: Is this correct?
 		estimator.setMachine(machineThread.getModel());
-
+		
+		int nToolheads = machineThread.getModel().getTools().size();
+		Point5d maxRates = machineThread.getModel().getMaximumFeedrates();
+		
 		Queue<DriverCommand> estimatorQueue = new LinkedList<DriverCommand>();
 
 		GCodeParser estimatorParser = new GCodeParser();
@@ -207,6 +246,32 @@ public class Machine implements MachineInterface {
 			// TODO: Hooks for plugins to add estimated time?
 			estimatorParser.parse(line, estimatorQueue);
 
+			GCode gcLine = new GCode(line);
+			// we're going to check for the correct number of toolheads in each command
+			if(gcLine.getCodeValue('T') > nToolheads-1)
+			{
+				ccs = CodeCheckState.SEVERE;
+				Base.logger.log(Level.SEVERE, "Too Many Toolheads! " + line + 
+									" makes reference to a non-existent toolhead.");
+			}
+			
+			if(gcLine.hasCode('F'))
+			{
+				double fVal = gcLine.getCodeValue('F');
+				if( (gcLine.hasCode('X') && fVal > maxRates.x()) ||
+					(gcLine.hasCode('Y') && fVal > maxRates.y()) ||
+//					(gcLine.hasCode('Z') && fVal > maxRates.z()) ||  we're going to ignore this for now, since most of the time the z isn't actually moving 
+					(gcLine.hasCode('A') && fVal > maxRates.a()) ||
+					(gcLine.hasCode('B') && fVal > maxRates.b()))
+				{
+					Base.logger.log(Level.WARNING, "You're moving too fast! " +
+							 line + " Tries to turn an axis faster than its max rate.");
+					if(ccs != CodeCheckState.SEVERE)
+						ccs = CodeCheckState.WARNING;
+				}
+					
+			}
+			
 			for (DriverCommand command : estimatorQueue) {
 				try {
 					command.run(estimator);

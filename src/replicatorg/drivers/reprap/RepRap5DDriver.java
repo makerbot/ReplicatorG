@@ -29,6 +29,7 @@ package replicatorg.drivers.reprap;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -174,7 +175,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		// init our variables.
 		setInitialized(false);
 
-		df = new DecimalFormat("#.######");
+		//Thank you Alexey (http://replicatorg.lighthouseapp.com/users/166956)
+		DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+		dfs.setDecimalSeparator('.');
+		df = new DecimalFormat("#.######", dfs);
 	}
 
         public String getDriverName() {
@@ -613,8 +617,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		    	}
 		    	if(newvalue > rcFeedrateLimit)
 		    		newvalue = rcFeedrateLimit;
-		    	
-		    	NumberFormat formatter = new DecimalFormat("#0.0");
+
+				DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+				dfs.setDecimalSeparator('.');
+		    	NumberFormat formatter = new DecimalFormat("#0.0", dfs);
 		    	fixed = m.group(1)+" F"+formatter.format(newvalue)+" "+m.group(3);
 		    }
 		    

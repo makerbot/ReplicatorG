@@ -1,4 +1,12 @@
 0027_ALPHA
+* Fan changes to support ABP on Mk7 hardware (using Firmware 3.1 or newer only)
+* Individual axis disable added
+* Merged dualstrusion branch tools, fixed some bugs in references
+* Merged in temperature_log branch, for using M310 to start a temperature log, and M311 to end logging
+* Added fix for reading bed temperature to the current machine model. 
+* Added logging for HeatedBuildPlatform, to use add 'hbp_log=true' to the tool attributes in
+* your tool of choice within  machines/thingomatic.xml
+
 0026 ReplicatorG
 * Add Machine information panel
 * Add support for control of a regulated cooling fan

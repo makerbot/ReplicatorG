@@ -18,6 +18,8 @@ public class ToolpathGeneratorThread extends Thread {
 	int x, y;
 	String name;
 	public ToolpathGeneratorThread(Frame parent, ToolpathGenerator generator, Build build) {
+		// Naming the thread can ease debugging
+		super("ToolpathGeneratorThread");
 		this.parent = parent;
 		this.generator = generator;
 		this.build = build;

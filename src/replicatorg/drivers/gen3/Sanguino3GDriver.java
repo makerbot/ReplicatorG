@@ -64,9 +64,9 @@ public class Sanguino3GDriver extends SerialDriver
 		hasEmergencyStop = true;
 		hasSoftStop = true;
 		
-		// This driver handles v1.X and v2.X firmware
-		minimumVersion = new Version(1,1);
-		preferredVersion = new Version(2,0);
+		//Make sure this accurately reflects what versions this supports
+		minimumVersion = new Version(3,0);
+		preferredVersion = new Version(3,0);
 		// init our variables.
 		setInitialized(false);
 	}
@@ -99,7 +99,10 @@ public class Sanguino3GDriver extends SerialDriver
 		if (isInitialized()) {
 			// okay, take care of version info /etc.
 			if (version.compareTo(getMinimumVersion()) < 0) {
-				throw new BadFirmwareVersionException(version,getMinimumVersion());
+				Base.logger.log(Level.WARNING, "\n********************************************************\n" +
+						"This version of ReplicatorG is not reccomended for use with firmware before version "
+						+ getMinimumVersion() + ". Either update your firmware or proceed with caution.\n" +
+						"********************************************************");
 			}
 			sendInit();
 			super.initialize();
@@ -581,6 +584,7 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setCurrentPosition(p);
 	}
 
+	//TODO: this says it homes the first three axes, but it actually homes whatever's passed
 	// Homes the three first axes
 	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.fine("Homing axes "+axes.toString());
@@ -1112,18 +1116,28 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void readTemperature() {
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.GET_TEMP.getCode());
-		PacketResponse pr = runQuery(pb.getPacket());
-		if (pr.isEmpty()) return;
-		// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
-		int temp = pr.get16();
-		machine.currentTool().setCurrentTemperature(temp);
-
-		Base.logger.fine("Current temperature: "
+		Vector<ToolModel> tools = machine.getTools();
+		for (ToolModel t : tools) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+			pb.add8((byte) t.getIndex());
+			pb.add8(ToolCommandCode.GET_TEMP.getCode());
+			PacketResponse pr = runQuery(pb.getPacket());
+			if (pr.getResponseCode() == PacketResponse.ResponseCode.TIMEOUT) 
+				Base.logger.finer("timeout reading temp");
+			else if (pr.isEmpty()) 
+				Base.logger.finer("empty response, no temp");
+			else { 
+				int temp = pr.get16();
+				t.setCurrentTemperature(temp);
+				Base.logger.fine("New Current temperature: "
 					+ machine.currentTool().getCurrentTemperature() + "C");
+			}
+			// Check if we should co-read platform temperatures when we read head temp.
+			if( machine.currentTool().alwaysReadBuildPlatformTemp() ) {
+				this.readPlatformTemperature();
+			}
 
+		}
 		super.readTemperature();
 	}
 	
@@ -1554,6 +1568,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if ( (b[0] & (0x01 << 2)) != 0 ) r.add(AxisId.Z);
 		if ( (b[0] & (0x01 << 3)) != 0 ) r.add(AxisId.A);
 		if ( (b[0] & (0x01 << 4)) != 0 ) r.add(AxisId.B);
+		if ( (b[0] & (0x01 << 7)) != 0 ) r.add(AxisId.V);
 		return r;
 	}
 
@@ -1564,6 +1579,7 @@ public class Sanguino3GDriver extends SerialDriver
 		if (axes.contains(AxisId.Z)) b[0] = (byte)(b[0] | (0x01 << 2));
 		if (axes.contains(AxisId.A)) b[0] = (byte)(b[0] | (0x01 << 3));
 		if (axes.contains(AxisId.B)) b[0] = (byte)(b[0] | (0x01 << 4));
+		if (axes.contains(AxisId.V)) b[0] = (byte)(b[0] | (0x01 << 7));
 		writeToEEPROM(EEPROM_AXIS_INVERSION_OFFSET,b);
 	}
 

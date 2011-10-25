@@ -159,7 +159,7 @@ ToolpathGenerator.GeneratorListener
 
 	static final String WINDOW_TITLE = "ReplicatorG" + " - "
 	+ Base.VERSION_NAME;
-	
+
 
 	final static String MODEL_TAB_KEY = "MODEL";
 	final static String GCODE_TAB_KEY = "GCODE";
@@ -540,7 +540,7 @@ ToolpathGenerator.GeneratorListener
 				// put the model on the platform.
 				getPreviewPanel().getModel().putOnPlatform();
 			}
-			
+
 
 		}
 
@@ -561,7 +561,7 @@ ToolpathGenerator.GeneratorListener
 		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build);
 		tgt.addListener(this);
 		tgt.start();
-		
+
 	}
 
 
@@ -1069,28 +1069,49 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 	}
+	public boolean isDualDriver()
+	{
+		String mname = Base.preferences.get("machine.name", "error");
+
+		try
+		{
+			MachineLoader ml = new MachineLoader();
+			ml.load(mname);
+			System.out.println(ml.getMachine().getModel().getTools().size());
+			if(ml.getMachine().getModel().getTools().size() > 1)
+			{
+				return true;
+			}
+		}
+		catch(NullPointerException e)
+		{
+			System.err.println("Errorz");
+			e.printStackTrace();
+		}
+		return false;
+	}
 	private void setDualStrusionGUI()
 	{
 		dualstrusionItem.setEnabled(true);
 		changeToolheadMenu.setEnabled(false);
-		
+
 		String mname = Base.preferences.get("machine.name", "error");
 		System.out.println(mname);
 		try
 		{
-		MachineLoader ml = new MachineLoader();
-		ml.load(mname);
-		System.out.println(ml.getMachine().getModel().getTools().size());
-		if(ml.getMachine().getModel().getTools().size() > 1)
-		{
-			dualstrusionItem.setEnabled(true);
-			changeToolheadMenu.setEnabled(true);
-			
-		}
+			MachineLoader ml = new MachineLoader();
+			ml.load(mname);
+			System.out.println(ml.getMachine().getModel().getTools().size());
+			if(ml.getMachine().getModel().getTools().size() > 1)
+			{
+				dualstrusionItem.setEnabled(true);
+				changeToolheadMenu.setEnabled(true);
+
+			}
 		}
 		catch(NullPointerException e)
 		{
-			
+
 		}
 	}
 	class MachineMenuListener implements ActionListener {
@@ -1641,10 +1662,15 @@ ToolpathGenerator.GeneratorListener
 			setEditorBusy(true);
 
 			// start our building thread.
-
 			message("Building...");
 			buildStart = new Date();
-			machineLoader.getMachine().buildDirect(new JEditTextAreaSource(textarea));
+			//doing this check allows us to recover from pre-build stuff
+			if(machineLoader.getMachine().buildDirect(new JEditTextAreaSource(textarea)) == false)
+			{
+				buildStart = null;
+				setEditorBusy(false);
+				building = false;
+			}
 		}
 	}
 
@@ -1884,6 +1910,8 @@ ToolpathGenerator.GeneratorListener
 		buildMenuItem.setEnabled(hasGcode && evt.getState().isConfigurable());
 		onboardParamsItem.setVisible(showParams);
 		extruderParamsItem.setVisible(showParams);
+		onboardParamsItem.setEnabled(showParams);
+		extruderParamsItem.setEnabled(showParams);
 		boolean showIndexing = 
 			evt.getState().isConfigurable() &&
 			machineLoader.getDriver() instanceof MultiTool &&
@@ -2782,19 +2810,22 @@ ToolpathGenerator.GeneratorListener
 			System.out.println("Done?");
 			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
 			System.out.println(extruderChoice);
-			if(extruderChoice.equalsIgnoreCase("left"))
+			if(isDualDriver())
 			{
-				System.out.println("performing left ops");
-				DualStrusionWorker.changeToolHead(build.getCode().file, 1);
+				if(extruderChoice.equalsIgnoreCase("left"))
+				{
+					System.out.println("performing left ops");
+					DualStrusionWorker.changeToolHead(build.getCode().file, 1);
 					handleOpenFile(build.getCode().file);
-			
-			}
-			else if(extruderChoice.equalsIgnoreCase("right"))
-			{
-				System.out.println("performing right ops");
-				DualStrusionWorker.changeToolHead(build.getCode().file, 0);
-				handleOpenFile(build.getCode().file);
 
+				}
+				else if(extruderChoice.equalsIgnoreCase("right"))
+				{
+					System.out.println("performing right ops");
+					DualStrusionWorker.changeToolHead(build.getCode().file, 0);
+					handleOpenFile(build.getCode().file);
+
+				}
 			}
 		}
 	}
