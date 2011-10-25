@@ -731,9 +731,31 @@ public class GCodeParser {
 		// these are basically the same thing, but G0 is supposed to do it as quickly as possible.
 		// Rapid Positioning
 		case G0:
-			Point5d maxFR = driver.getMaximumFeedrates();
-			double safeFR = Math.min(Math.min(maxFR.x(), maxFR.y()), maxFR.z());
-			commands.add(new replicatorg.drivers.commands.SetFeedrate(safeFR));
+			if (gcode.hasCode('F')) {
+				// Allow user to explicitly override G0 feedrate if they so desire.
+				commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
+			} else {
+				// Compute the most rapid possible rate for this move.
+				Point5d diff = driver.getCurrentPosition(false);
+				diff.sub(temp);
+				diff.absolute();
+				double length = diff.length();
+				double selectedFR = Double.MAX_VALUE;
+				Point5d maxFR = driver.getMaximumFeedrates();
+				// Compute the feedrate using assuming maximum feed along each axis, and select
+				// the slowest option.
+				for (int idx = 0; idx < 3; idx++) {
+					double axisMove = diff.get(idx);
+					if (axisMove == 0) { continue; }
+					double candidate = maxFR.get(idx)*length/axisMove;
+					if (candidate < selectedFR) {
+						selectedFR = candidate;
+					}
+				}
+				// Add a sane default for the null move, just in case.
+				if (selectedFR == Double.MAX_VALUE) { selectedFR = maxFR.get(0); }  
+				commands.add(new replicatorg.drivers.commands.SetFeedrate(selectedFR));
+			}				
 			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
 			break;
 		// Linear Interpolation
