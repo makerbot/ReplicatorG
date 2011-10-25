@@ -220,6 +220,7 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem pauseItem;
 	JMenuItem controlPanelItem;
 	JMenuItem buildMenuItem;
+	JMenuItem profilesMenuItem;
 	JMenuItem dualstrusionItem;
 	JMenuItem combineItem;
 	JMenu changeToolheadMenu = new JMenu("Change Toolhead of GCode");
@@ -527,6 +528,11 @@ ToolpathGenerator.GeneratorListener
 			// trace.
 			bse.printStackTrace();
 		}
+	}
+
+	public void editProfiles() {
+		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
+		generator.editProfiles(this);
 	}
 
 	public void runToolpathGenerator() {
@@ -883,6 +889,16 @@ ToolpathGenerator.GeneratorListener
 			genMenu.add(i);
 		}
 		menu.add(genMenu);
+
+		// BASE PROFILES
+		profilesMenuItem = newJMenuItem("Edit Base Profiles...", 'R');
+		profilesMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				editProfiles();
+			}
+		});
+		profilesMenuItem.setEnabled(true);
+		menu.add(profilesMenuItem);
 
 		menu.addSeparator();
 		//Change Toolhead of GCode

@@ -97,6 +97,29 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		}
 		
 	}
+
+	
+	private void addBooleanParameter(JComponent target, String name, String description, boolean defaultValue, String toolTip) {
+		String fullName = baseName + name;
+		boolean isSet = false;
+		
+		if (fullName != null) {
+			isSet = Base.preferences.getBoolean(fullName, defaultValue);
+			
+			// Store it back so that we can be assured that it is set.
+			Base.preferences.putBoolean(fullName, isSet);
+		}
+		target.add(new JLabel(description));
+		
+		JCheckBox input = new JCheckBox("", isSet);
+		target.add(input, "wrap");
+		
+		if (toolTip != null) {
+			// TODO: This is wrong.
+			input.setToolTipText(toolTip);
+		}
+		
+	}
 	
 	
 	
@@ -116,6 +139,24 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		}
 		
 		return number;
+	}
+	
+	private boolean getBooleanValue(String optionName) {
+		// TODO: record the default values somewhere, so that we can retrieve them here!
+		boolean value = Base.preferences.getBoolean(baseName + optionName, true);
+		
+		Base.logger.fine("Saved value for preference " + baseName + optionName + " is " + value);
+		
+		return value;
+	}
+	
+	private String getStringValue(String optionName) {
+		// TODO: record the default values somewhere, so that we can retrieve them here!
+		String value = Base.preferences.get(baseName + optionName, null);
+		
+		Base.logger.fine("Saved value for preference " + baseName + optionName + " is " + value);
+		
+		return value;
 	}
 	
 	private double getScalingFactor() {
@@ -165,7 +206,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 		JComponent printPanel = new JPanel(new MigLayout("fillx"));
 		JComponent materialPanel = new JPanel(new MigLayout("fillx"));
-                // JComponent machinePanel = new JPanel(new MigLayout("fillx"));
+                JComponent supportPanel = new JPanel(new MigLayout("fillx"));
 		
 		addTextParameter(printPanel, "infillPercent",
 				"Object infill (%)", "30",
@@ -205,9 +246,56 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				"Final Volume (%)", "85",
 				"Between 85 and 100.");
 		
+		addBooleanParameter(supportPanel, "useRaft",
+				"Use raft", true,
+				"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
+				+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+		
+		/*
+		SkeinforgeBooleanPreference raftPref = 			
+			new SkeinforgeBooleanPreference("Use raft",
+				"replicatorg.skeinforge.useRaft", true,
+				"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
+				+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+		raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit:", "true"));
+		prefs.add(raftPref);
+		SkeinforgeChoicePreference supportPref =
+			new SkeinforgeChoicePreference("Use support material",
+					"replicatorg.skeinforge.choiceSupport", "None",
+					"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
+					"structure that you can later remove.");
+		supportPref.addOption("None", new SkeinforgeOption("raft.csv","None", "true"));
+		supportPref.addOption("None", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+		supportPref.addOption("None", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+		supportPref.addOption("None", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+
+		supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","None", "false"));
+		supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+		supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+		supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Exterior Only", "true"));
+
+		supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","None", "false"));
+		supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+		supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Everywhere", "true"));
+		supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+	
+		prefs.add(supportPref);
+		*/
+		
+		Vector<String> supportTypes = new Vector<String>();
+		supportTypes.add("None");
+		supportTypes.add("Exterior support");
+		supportTypes.add("Full support");
+
+		addDropDownParameter(supportPanel, "choiceSupport",
+				"Use support material:", supportTypes,
+				"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
+				"structure that you can later remove.");
+	
+		
 		printOMatic5D.addTab("Settings", printPanel);
 		printOMatic5D.addTab("Plastic", materialPanel);
-                // printOMatic5D.addTab("Extruder", machinePanel);
+                printOMatic5D.addTab("Support", supportPanel);
 		component.add(printOMatic5D, "spanx");
 		printOMatic5D.setVisible(enabled.isSelected());
 	}
@@ -241,16 +329,18 @@ public class PrintOMatic5D implements SkeinforgePreference {
 
 		if (enabled.isSelected()) {
 		
-			double infillRatio = getValue("infillPercent")/100;
-			double filamentDiameter = getValue("filamentDiameter");
-			double packingDensity = getValue("packingDensity")/100;
-			double perimeterWidthOverThickness = getValue("desiredPathWidth")/getValue("desiredLayerHeight");
-			double infillWidthOverThickness = perimeterWidthOverThickness;
-			double feedRate = getValue("desiredFeedrate");
-			double layerHeight = getValue("desiredLayerHeight");
-			double extraShellsOnAlternatingSolidLayer = getValue("numberOfShells");
-			double extraShellsOnBase = getValue("numberOfShells");
-			double extraShellsOnSparseLayer = getValue("numberOfShells");
+			double  infillRatio                        = getValue("infillPercent")/100;
+			double  filamentDiameter                   = getValue("filamentDiameter");
+			double  packingDensity                     = getValue("packingDensity")/100;
+			double  perimeterWidthOverThickness        = getValue("desiredPathWidth")/getValue("desiredLayerHeight");
+			double  infillWidthOverThickness           = perimeterWidthOverThickness;
+			double  feedRate                           = getValue("desiredFeedrate");
+			double  layerHeight                        = getValue("desiredLayerHeight");
+			double  extraShellsOnAlternatingSolidLayer = getValue("numberOfShells");
+			double  extraShellsOnBase                  = getValue("numberOfShells");
+			double  extraShellsOnSparseLayer           = getValue("numberOfShells");
+			boolean useRaft                            = getBooleanValue("useRaft");
+			String  supportType                        = getStringValue("choiceSupport");
 
 			Base.logger.fine("Print-O-Matic settings:"
 					+ "\n infillRatio=" + infillRatio
@@ -263,6 +353,8 @@ public class PrintOMatic5D implements SkeinforgePreference {
 					+ "\n extraShellsOnAlternatingSolidLayer=" + extraShellsOnAlternatingSolidLayer
 					+ "\n extraShellsOnBase=" + extraShellsOnBase
 					+ "\n extraShellsOnSparseLayer=" + extraShellsOnSparseLayer
+					+ "\n useRaft=" + useRaft
+					+ "\n supportType=" + supportType
 					);
 			
 			options.add(new SkeinforgeOption("fill.csv", "Infill Solidity (ratio):", Double.toString(infillRatio)));
@@ -276,6 +368,28 @@ public class PrintOMatic5D implements SkeinforgePreference {
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Alternating Solid Layer (layers):", Double.toString(extraShellsOnAlternatingSolidLayer)));
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Base (layers):", Double.toString(extraShellsOnBase)));
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Sparse Layer (layers):", Double.toString(extraShellsOnSparseLayer)));
+			options.add(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit:", useRaft ? "true" : "false"));
+			
+			if (supportType.equals("None")) {
+				options.add(new SkeinforgeOption("raft.csv","None", "true"));
+				options.add(new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				options.add(new SkeinforgeOption("raft.csv","Everywhere", "false"));
+				options.add(new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+			}
+			else
+			if (supportType.equals("Exterior support")) {
+				options.add(new SkeinforgeOption("raft.csv","None", "false"));
+				options.add(new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				options.add(new SkeinforgeOption("raft.csv","Everywhere", "false"));
+				options.add(new SkeinforgeOption("raft.csv","Exterior Only", "true"));
+			}
+			else
+			if (supportType.equals("Full support")) {
+				options.add(new SkeinforgeOption("raft.csv","None", "false"));
+				options.add(new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				options.add(new SkeinforgeOption("raft.csv","Everywhere", "true"));
+				options.add(new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+			}
 		}
 		
 		return options;

@@ -289,6 +289,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		return cd;
 	}
 	public boolean visualConfigure(Frame parent, int x, int y, String name) {
+		if (name == null)
+			name = "Generating gcode";
+		
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
 				name, new PythonUtils.Version(2, 5, 0),
@@ -306,34 +309,52 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		cd.setName(name);
 		cd.setTitle(name);
 		//cd.setSize(500, 760);
-		cd.pack();
+		
+		if (x == -1 || y == -1) {
+			double x2 = parent.getBounds().getCenterX();
+			double y2 = parent.getBounds().getCenterY();
+			cd.pack();
+			x2 -= cd.getWidth() / 2.0;
+			y2 -= cd.getHeight() / 2.0;
+			x = (int)x2;
+			y = (int)y2;
+		} else {
+			cd.pack();
+		}
+		
 		cd.setLocation(x, y);
 		cd.setVisible(true);
 		emitUpdate("Config Done");
 		return configSuccess;
 	}
+	
 	public boolean visualConfigure(Frame parent) {
+		return visualConfigure(parent, -1, -1, null);
+	}
+
+	public void editProfiles(Frame parent) {
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
-				"Generating gcode", new PythonUtils.Version(2, 5, 0),
+				"Editing Profiles", new PythonUtils.Version(2, 5, 0),
 				new PythonUtils.Version(3, 0, 0));
 		if (!hasPython) {
-			return false;
+			return;
 		}
 		boolean hasTkInter = PythonUtils.interactiveCheckTkInter(parent,
-				"Generating gcode");
+				"Editing Profiles");
 		if (!hasTkInter) {
-			return false;
+			return;
 		}
-		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
+		EditProfileDialog ep = new EditProfileDialog(parent, this);
+
 		double x = parent.getBounds().getCenterX();
 		double y = parent.getBounds().getCenterY();
-		cd.pack();
-		x -= cd.getWidth() / 2.0;
-		y -= cd.getHeight() / 2.0;
-		cd.setLocation((int) x, (int) y);
-		cd.setVisible(true);
-		return configSuccess;
+		ep.pack();
+		x -= ep.getWidth() / 2.0;
+		y -= ep.getHeight() / 2.0;
+		
+		ep.setLocation((int)x, (int)y);
+		ep.setVisible(true);
 	}
 
 	abstract public File getDefaultSkeinforgeDir();
