@@ -24,6 +24,8 @@ import java.util.Queue;
 import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import org.w3c.dom.Node;
 
@@ -155,14 +157,31 @@ public class Machine implements MachineInterface {
 
 	private enum CodeCheckState
 	{
-		SAFE,
-		WARNING,
-		SEVERE;
+		SAFE, //default
+		WARNING, //for gcode that has the potential to cause problems
+		SEVERE; // for gcode that will cause a build to fail
+		
+		private long numErrors = 0;
+		
+		private static void reset()
+		{
+			SAFE.numErrors = 0;
+			WARNING.numErrors = 0;
+			SEVERE.numErrors = 0;
+		}
+		
+		//we could also record messages for each error
+		private void increment()
+		{
+			numErrors++;
+		}
+		
 	}
 	
 	// The estimate function now checks for some sources of error
 	// needs a way to return failure
 	private CodeCheckState ccs;
+	private String message;
 	
 	/**
 	 * Begin running a job.
@@ -177,13 +196,22 @@ public class Machine implements MachineInterface {
 
 		// estimate build time.
 		Base.logger.info("Estimating build time and scanning code for errors...");
+		
+		// reset any old failures/initialize to a failure fee state
+		CodeCheckState.reset();
 		ccs = CodeCheckState.SAFE;
+		message = null;
+		
 		estimate(source);
-
+		
 		if(ccs == CodeCheckState.WARNING)
 		{
-			int proceed = JOptionPane.showConfirmDialog(null, "The pre-run check has found some potentially problematic" +
-					" GCode (see console for details).\nWould you like to proceed with the build anyway?",
+			int proceed = JOptionPane.showConfirmDialog(null, 
+					new Object[]{"The pre-run check has found some potentially problematic GCode.",
+					"This may be a result of trying to run code on a machine other than the one it's\n" +
+					"intended for (i.e. running dual headed GCode on a single headed machine).",
+					"\nWarning 1 of " + CodeCheckState.WARNING.numErrors + " (see console for more): " + message,
+					"\nWould you like to proceed with the build anyway?"},
 					"GCode Check: Warning", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
 			
 			// I think this is the return value for "no"
@@ -192,10 +220,12 @@ public class Machine implements MachineInterface {
 		}
 		else if(ccs == CodeCheckState.SEVERE)
 		{
-			JOptionPane.showConfirmDialog(null, "The pre-run check has found some problematic" +
-					" GCode (see the console for details).\nThis may be a result of trying to run code on" +
-					" a machine other than the one it's\nintended for (i.e. running dual headed GCode on " +
-					"a single headed machine).\n\nThe errors highlighted red must be fixed before it can be safely run.",
+			JOptionPane.showConfirmDialog(null, 
+					new Object[]{"The pre-run check has found some problematic GCode.",
+					"This may be a result of trying to run code on a machine other than the one it's\n" +
+					"intended for (i.e. running dual headed GCode on a single headed machine).",
+					"\nError 1 of " + CodeCheckState.SEVERE.numErrors + " (see console for more): " + message,
+					"\nErrors must be fixed before this build can be safely run."},
 					"GCode Check: Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
@@ -250,9 +280,16 @@ public class Machine implements MachineInterface {
 			// we're going to check for the correct number of toolheads in each command
 			if(gcLine.getCodeValue('T') > nToolheads-1)
 			{
+				String s = "Too Many Toolheads!\n" + line + 
+						" makes reference to a non-existent toolhead.";
+				
+				//only take the first message
+				if(message == null)
+					message = s + '\n';
+				
+				Base.logger.log(Level.SEVERE, s);
+				CodeCheckState.SEVERE.increment();
 				ccs = CodeCheckState.SEVERE;
-				Base.logger.log(Level.SEVERE, "Too Many Toolheads! " + line + 
-									" makes reference to a non-existent toolhead.");
 			}
 			
 			if(gcLine.hasCode('F'))
@@ -260,12 +297,20 @@ public class Machine implements MachineInterface {
 				double fVal = gcLine.getCodeValue('F');
 				if( (gcLine.hasCode('X') && fVal > maxRates.x()) ||
 					(gcLine.hasCode('Y') && fVal > maxRates.y()) ||
-//					(gcLine.hasCode('Z') && fVal > maxRates.z()) ||  we're going to ignore this for now, since most of the time the z isn't actually moving 
+// we're going to ignore this for now, since most of the time the z isn't actually moving 
+					(gcLine.hasCode('Z') && fVal > maxRates.z()) ||  
 					(gcLine.hasCode('A') && fVal > maxRates.a()) ||
 					(gcLine.hasCode('B') && fVal > maxRates.b()))
 				{
-					Base.logger.log(Level.WARNING, "You're moving too fast! " +
-							 line + " Tries to turn an axis faster than its max rate.");
+					String t = "You're moving too fast!\n" +
+							 line + " Tries to turn an axis faster than its max rate.";
+					
+					//only take the first message
+					if(message == null)
+						message = t + '\n';
+					
+					Base.logger.log(Level.WARNING, t);
+					CodeCheckState.WARNING.increment();
 					if(ccs != CodeCheckState.SEVERE)
 						ccs = CodeCheckState.WARNING;
 				}
