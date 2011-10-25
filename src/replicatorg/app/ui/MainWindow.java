@@ -1662,10 +1662,15 @@ ToolpathGenerator.GeneratorListener
 			setEditorBusy(true);
 
 			// start our building thread.
-
 			message("Building...");
 			buildStart = new Date();
-			machineLoader.getMachine().buildDirect(new JEditTextAreaSource(textarea));
+			//doing this check allows us to recover from pre-build stuff
+			if(machineLoader.getMachine().buildDirect(new JEditTextAreaSource(textarea)) == false)
+			{
+				buildStart = null;
+				setEditorBusy(false);
+				building = false;
+			}
 		}
 	}
 
