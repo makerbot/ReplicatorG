@@ -298,7 +298,7 @@ public class Machine implements MachineInterface {
 				if( (gcLine.hasCode('X') && fVal > maxRates.x()) ||
 					(gcLine.hasCode('Y') && fVal > maxRates.y()) ||
 // we're going to ignore this for now, since most of the time the z isn't actually moving 
-					(gcLine.hasCode('Z') && fVal > maxRates.z()) ||  
+//					(gcLine.hasCode('Z') && fVal > maxRates.z()) ||  
 					(gcLine.hasCode('A') && fVal > maxRates.a()) ||
 					(gcLine.hasCode('B') && fVal > maxRates.b()))
 				{

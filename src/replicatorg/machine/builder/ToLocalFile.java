@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 
+import javax.swing.JOptionPane;
+
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.SDCardCapture;
@@ -23,19 +25,24 @@ public class ToLocalFile implements MachineBuilder {
 	Direct directBuilder;
 	
 	SDCardCapture sdcc;
-	
 	public boolean setupFailed = true;
 
 	public ToLocalFile(Driver driver, SimulationDriver simulator, GCodeSource source, String remoteName) {
-		// TODO: we might fail here.
-		this.sdcc = (SDCardCapture)driver;
+		if(!(driver instanceof SDCardCapture))
+		{
+			Base.logger.log(Level.WARNING, 
+					"Build to a file requires a driver with SDCardCapture!");
+			return;
+		}
+		
+		sdcc = (SDCardCapture)driver;
 		
 		try {
 			sdcc.beginFileCapture(remoteName);
 			directBuilder = new Direct(driver, simulator, source);
 			setupFailed = false;
 		} catch (FileNotFoundException e) {
-			Base.logger.fine("Build to file failed: File Not Found!");
+			Base.logger.log(Level.WARNING, "Build to file failed: File Not Found!");
 		}
 	}
 	
