@@ -586,8 +586,10 @@ public class Sanguino3GDriver extends SerialDriver
 	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.fine("Homing axes "+axes.toString());
 		byte flags = 0x00;
+		double timeout = 0;
 		
 		Point5d homingFeedrates = machine.getHomingFeedrates();
+		Point5d timeOut = machine.getTimeOut();
 
 		if (feedrate <= 0) {
 			// figure out our fastest feedrate.
@@ -602,6 +604,7 @@ public class Sanguino3GDriver extends SerialDriver
 		for (AxisId axis : axes) {
 			flags += 1 << axis.getIndex();
 			feedrate = Math.min(feedrate, homingFeedrates.axis(axis));
+			timeout =  Math.max(timeout, timeOut.axis(axis));
 			target.setAxis(axis, 1);
 		}
 		
@@ -614,7 +617,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(code);
 		pb.add8(flags);
 		pb.add32((int) micros);
-		pb.add16(20); // default to 20 seconds
+		pb.add16((int)timeout); 
 		runCommand(pb.getPacket());
 		
 		invalidatePosition();
