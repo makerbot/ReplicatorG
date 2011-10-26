@@ -379,12 +379,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		try {
 			// force failure if something goes wrong
 			int value = 1;
-			File timeout = new File("timeout.txt");
-			long timeoutValue = -1;
 			
-			// This is not production code, grab the timeout value
-			if(timeout.exists())
-				timeoutValue = Long.parseLong(new BufferedReader(new FileReader(timeout)).readLine());
+			long timeoutValue = Base.preferences.getInt("replicatorg.skeinforge.timeout", -1);
 			
 			process = pb.start();
 			
@@ -399,6 +395,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				Base.logger.log(Level.FINEST, "\tRunning SF with a timeout");
 				while(timeoutValue > 0)
 				{
+					Thread.sleep(1000);
 					try
 					{
 						value = process.exitValue(); 
@@ -411,13 +408,14 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				}
 				if(timeoutValue == 0)
 				{
-					JOptionPane.showConfirmDialog(null, "\tSkeinforge has not returned, This may be due to a communication error\n" +
+					JOptionPane.showConfirmDialog(null, 
+							"\tSkeinforge has not returned, This may be due to a communication error\n" +
 							"between Skeinforge and ReplicatorG. If you are still editing a Skeinforge\n" +
 							"profile, ignore this message; any changes you make in the skeinforge window\n" +
 							"and save will be used when generating the gcode file.\n\n" +
-							"\tAdjusting the number in the \"timeout.txt\" file will affect how long ReplicatorG\n" +
-							"waits before assuming that Skeinforge has failed, if you frequently\n" +
-							"encounter this message you may want to increase the timeout.",
+							"\tAdjusting the \"Skeinforge timeout\" in the preferences window will affect how\n" +
+							"long ReplicatorG waits before assuming that Skeinforge has failed, if you\n" +
+							"frequently encounter this message you may want to increase the timeout.",
 							"SF Timeout", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
 				}
 			}
