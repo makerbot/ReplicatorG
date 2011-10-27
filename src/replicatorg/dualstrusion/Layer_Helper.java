@@ -34,9 +34,10 @@ public class Layer_Helper {
 	/**
 	 * This method has all the method calls in order to merge two gcodes, it is the only method that "needs" to be public
 	 */
-	private static boolean mergeSupport;
-	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second, boolean mergeSup)
+	private static boolean mergeSupport, useWipes;
+	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second, boolean mergeSup, boolean uW)
 	{
+		useWipes = uW;
 		currentToolhead = Toolheads.Primary;
 		if(PrimaryLayers != null)
 		{
@@ -54,6 +55,9 @@ public class Layer_Helper {
 		readLayers(second, SecondaryLayers);
 		//seeLayerHeights(SecondaryLayers);
 		System.out.println(PrimaryLayers.size() + " " + SecondaryLayers.size());
+		//System.out.println("Tallest layer in primary is " + PrimaryLayers.get(PrimaryLayers.size() - 1).getHeight());
+		System.out.println("Tallest layer in secondary is " + SecondaryLayers.get(SecondaryLayers.size() - 1).getHeight());
+
 		return mergeLayers(PrimaryLayers, SecondaryLayers);
 
 	}
@@ -145,10 +149,11 @@ public class Layer_Helper {
 		//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
 		merged.addAll(toolChange(Toolheads.Primary, 0.6f)); //insures we start with right offset and nozzles start supaclean
-
-		for(float i = 0; i < maxHeight - .008; i += tolerance)
+		System.out.println("MH1 = " + maxHeight1 + " MH0 = " + maxHeight0 + "MH Totes = " + maxHeight);
+		//for(float i = 0; i < maxHeight - .008; i += tolerance)
+		for(float i = 0; i < maxHeight; i += tolerance)
 		{
-			
+
 			//System.out.println("checking " + i);
 			Layer a = getByHeight(i, primary); //primary
 			Layer b = getByHeight(i, secondary);//secondary
@@ -207,7 +212,7 @@ public class Layer_Helper {
 					int lastf = s.lastIndexOf("F");
 					s = s.substring(0, lastf);
 				}
-					return s + " F1700.0 (added by getFirstMove)";
+				return s + " F1700.0 (added by getFirstMove)";
 			}
 		}
 		return " ";
@@ -301,6 +306,8 @@ public class Layer_Helper {
 	 */
 	private static ArrayList<String> mergeLayer(Layer a, Layer b) //This method makes it so that you dont switch toolheads unnessecarily a is primary layers b is secondary layers
 	{
+		//TODO: before releasing this code, make sure it's safe for localization.
+		// if this is printing floating point numbers, it has to make sure it's putting out '.'s and not ','s
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(2);
 		nf.setMinimumFractionDigits(2);
@@ -338,6 +345,7 @@ public class Layer_Helper {
 		WipeModel tool0Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(0);
 		WipeModel tool1Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(1);
 		ArrayList<String> targetCode = new ArrayList<String>();
+		//TODO: before releasing this code, make sure it's safe for localization.
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(0); //Min no decimals
 		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
@@ -370,41 +378,44 @@ public class Layer_Helper {
 		targetCode.add("M103");
 		targetCode.add("M108 R"+flowrate[nextToolnum]);
 
-		// move to purge home
-		targetCode.add("G53");
-		if (layer_height > Float.parseFloat(purge_z[nextToolnum])) {
-			// if we're higher than the purge height go over and then down
-			targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-		} 
-		else {
-			// otherwise go up and then over
-			//targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("G1 X" + purge_x[nextToolnum] + " Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+		if(useWipes)
+		{
+			// move to purge home
+			targetCode.add("G53");
+			if (layer_height > Float.parseFloat(purge_z[nextToolnum])) {
+				// if we're higher than the purge height go over and then down
+				targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
+				targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
+				targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			} 
+			else 
+			{
+				// otherwise go up and then over
+				//targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+				targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
+				targetCode.add("G1 X" + purge_x[nextToolnum] + " Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			}
+			// purge upcoming nozzle
+			targetCode.add("M103 T"+nextToolnum);
+			targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			targetCode.add("M101");
+			targetCode.add("G04 P"+purge_duration[nextToolnum]);
+			//targetCode.add("M108 R"+partial_reversal_flowrate[nextToolnum]);
+			targetCode.add("M102");
+			//targetCode.add("G04 P"+partial_reversal_duration[nextToolnum]);
+			targetCode.add("M103");
+			targetCode.add("M108 R"+flowrate[nextToolnum]);
+			targetCode.add("G04 P" +wait_time[nextToolnum]);
+			// wipe upcoming nozzle
+			targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y_offset[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			// wipe current nozzle
+			targetCode.add("G1 X" + purge_x[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
+			targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
+			targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y_offset[currentToolnum] + " Z" + purge_z_offset[currentToolnum] + " F" + feedrate[currentToolnum]);
+			// return to purge home
+			targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 		}
-		// purge upcoming nozzle
-		targetCode.add("M103 T"+nextToolnum);
-		targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-		targetCode.add("M101");
-		targetCode.add("G04 P"+purge_duration[nextToolnum]);
-		//targetCode.add("M108 R"+partial_reversal_flowrate[nextToolnum]);
-		targetCode.add("M102");
-		//targetCode.add("G04 P"+partial_reversal_duration[nextToolnum]);
-		targetCode.add("M103");
-		targetCode.add("M108 R"+flowrate[nextToolnum]);
-		targetCode.add("G04 P" +wait_time[nextToolnum]);
-		// wipe upcoming nozzle
-		targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-		targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y_offset[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-		// wipe current nozzle
-		targetCode.add("G1 X" + purge_x[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
-		targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
-		targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y_offset[currentToolnum] + " Z" + purge_z_offset[currentToolnum] + " F" + feedrate[currentToolnum]);
-		// return to purge home
-		targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-
 		return targetCode;
 	}
 	/**
@@ -413,7 +424,17 @@ public class Layer_Helper {
 	 * @param layer_height this is the layer height to do it at
 	 * @return
 	 */
+	private static float getLayerIncrement()
+	{
+		System.out.println(PrimaryLayers.get(1).getHeight() - PrimaryLayers.get(0).getHeight());
+		return PrimaryLayers.get(1).getHeight() - PrimaryLayers.get(0).getHeight();
+	}
 	public static ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
+		//TODO: before releasing this code, make sure it's safe for localization.
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(0); //Min no decimals
+		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
+		nf.setGroupingUsed(false); //NO commas!
 		ArrayList<String> targetCode = new ArrayList<String>();
 		Toolheads currentTool = null;
 
@@ -424,16 +445,19 @@ public class Layer_Helper {
 		}
 		int nextToolnum = nextTool.ordinal();
 		int currentToolnum = currentTool.ordinal();
-		float hop_height = 7.0f;
+		float hop_height = getLayerIncrement()*10f;
 		targetCode.add("(<toolchange>)");
 		float purge_z = 6.5f;
 
 		targetCode.add("M103");
 
-		targetCode.add("G1 Z" + (layer_height+hop_height));
+
+
+		targetCode.add("G1 Z" + nf.format((layer_height+hop_height)) + (" (modified by HopMultipleofLayerHeight)"));
 		targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
+
 		targetCode.add("M103");
-		targetCode.add("M18"); //Added Ben's M18
+//		targetCode.add("M18"); //Added Ben's M18
 		targetCode.add("G5"+(5-nextToolnum));
 		//	targetCode.add("M108 R"+currentFeedRate);
 
@@ -450,7 +474,7 @@ public class Layer_Helper {
 		}
 		 */
 		float h = layer_height+hop_height;
-		targetCode.add("G1 Z"+ h +" F2000");
+		targetCode.add("G1 Z"+ nf.format(h) +" F2000");
 
 		targetCode.add("(</toolchange>)");
 		//System.out.println(currentFeedRate);

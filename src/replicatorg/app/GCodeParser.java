@@ -621,6 +621,23 @@ public class GCodeParser {
 				commands.add(new replicatorg.drivers.commands.SetServo(1, gcode.getCodeValue('S')));
 			}
 			break;
+		// Start data capture
+		case M310:
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.StartDataCapture(gcode.getComment()));
+			break;
+			
+		// Stop data capture
+		case M311:
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.StopDataCapture());
+			break;
+
+		// Log a note to the data capture store
+		case M312:
+			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
+			commands.add(new replicatorg.drivers.commands.DataCaptureNote(gcode.getComment()));
+			break;
 		default:
 			throw new GCodeException("Unknown M code: M" + (int) gcode.getCodeValue('M'));
 		}
@@ -712,13 +729,37 @@ public class GCodeParser {
 		GCodeEnumeration gCode = GCodeEnumeration.getGCode("G", (int)gcode.getCodeValue('G'));
 
 		switch (gCode) {
-		// Linear Interpolation
-		// these are basically the same thing.
+		// these are basically the same thing, but G0 is supposed to do it as quickly as possible.
+		// Rapid Positioning
 		case G0:
-			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
+			if (gcode.hasCode('F')) {
+				// Allow user to explicitly override G0 feedrate if they so desire.
+				commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
+			} else {
+				// Compute the most rapid possible rate for this move.
+				Point5d diff = driver.getCurrentPosition(false);
+				diff.sub(temp);
+				diff.absolute();
+				double length = diff.length();
+				double selectedFR = Double.MAX_VALUE;
+				Point5d maxFR = driver.getMaximumFeedrates();
+				// Compute the feedrate using assuming maximum feed along each axis, and select
+				// the slowest option.
+				for (int idx = 0; idx < 3; idx++) {
+					double axisMove = diff.get(idx);
+					if (axisMove == 0) { continue; }
+					double candidate = maxFR.get(idx)*length/axisMove;
+					if (candidate < selectedFR) {
+						selectedFR = candidate;
+					}
+				}
+				// Add a sane default for the null move, just in case.
+				if (selectedFR == Double.MAX_VALUE) { selectedFR = maxFR.get(0); }  
+				commands.add(new replicatorg.drivers.commands.SetFeedrate(selectedFR));
+			}				
 			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
 			break;
-		// Rapid Positioning
+		// Linear Interpolation
 		case G1:
 			// set our target.
 			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));

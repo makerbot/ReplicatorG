@@ -269,17 +269,5 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 		//add(buttonPanel, "wrap, growx");
-/*
- * This is being removed because the nulling of profiles and 
- * parentGenerator is being moved to setVisible()		
-		addWindowListener( new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				profiles = null;
-				parentGenerator = null;
-				super.windowClosed(e);
-			}
-		});
-*/
 	}
 };

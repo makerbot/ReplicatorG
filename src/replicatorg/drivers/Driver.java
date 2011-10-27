@@ -366,6 +366,13 @@ public interface Driver {
 
 	public void disableFan() throws RetryException;
 
+	
+	/***************************************************************************
+	 * abp interface functions
+	 * @throws RetryException 
+	 **************************************************************************/
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException;
+	
 	/***************************************************************************
 	 * Valve interface functions
 	 * @throws RetryException 

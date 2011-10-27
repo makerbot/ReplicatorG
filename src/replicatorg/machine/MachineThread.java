@@ -29,6 +29,7 @@ import replicatorg.machine.builder.ToLocalFile;
 import replicatorg.machine.builder.ToRemoteFile;
 import replicatorg.machine.builder.UsingRemoteFile;
 import replicatorg.machine.model.MachineModel;
+import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.GCodeSourceCollection;
 import replicatorg.model.StringListSource;
@@ -323,8 +324,7 @@ class MachineThread extends Thread {
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
-				ToRemoteFile trf = new ToRemoteFile(driver, simulator,
-						combinedSource, command.remoteName);
+				ToRemoteFile trf = new ToRemoteFile(driver, simulator, combinedSource, command.remoteName);
 				if(trf.setupFailed)
 				{
 					//I am ashamed of this, but without adding a new state of "BUILD_CANCELLED"
@@ -363,8 +363,24 @@ class MachineThread extends Thread {
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
 				
-				machineBuilder = new ToLocalFile(driver, simulator,
-											combinedSource, command.remoteName);
+				ToLocalFile lf = new ToLocalFile(driver, simulator,	combinedSource, command.remoteName);
+				if(lf.setupFailed)
+				{
+					// This is even worse than above, because we might already be NOT_ATTACHED
+					// and we don't emit repeated changes for the same state, we have to switch
+					// to something other than NOT_ATTACHED which WILL NOT end the build,
+					// then back to NOT_ATTACHED, finally, because we don't want to end on READY
+					// if we were never attached, we switch to READY only if we had been able to print
+					boolean connected = state.canPrint();
+					setState(new MachineState(MachineState.State.ERROR));
+					setState(new MachineState(MachineState.State.NOT_ATTACHED));
+					if(connected)
+						setState(new MachineState(MachineState.State.READY));
+					break;
+				}
+				
+				machineBuilder = lf;
+				
 				if (state.canPrint()) {
 					setState(new MachineState(MachineState.State.BUILDING), buildingMessage());
 				} else {
@@ -382,10 +398,16 @@ class MachineThread extends Thread {
 				
 				pollingTimer.start(1000);
 				
-				machineBuilder = new UsingRemoteFile((SDCardCapture)driver, command.remoteName);
+				machineBuilder = new UsingRemoteFile(driver, command.remoteName);
 			
-				// TODO: what about this?
-				driver.getCurrentPosition(false); // reconcile position
+//				// TODO: what about this?
+//				System.out.println("pre-");
+//				driver.getCurrentPosition(false); // reconcile position
+//				System.out.println("post-");
+				
+				// TODO: is this what we wanted?
+				driver.invalidatePosition();
+				
 				setState(new MachineState(MachineState.State.BUILDING), buildingMessage());
 			}
 			break;
@@ -514,7 +536,10 @@ class MachineThread extends Thread {
 				if (pollingTimer.elapsed()) {
 					if (Base.preferences.getBoolean("build.monitor_temp",false)) {
 						driver.readTemperature();
-						controller.emitToolStatus(driver.getMachine().currentTool());
+						Vector<ToolModel> tools = controller.getModel().getTools();
+						for (ToolModel t : tools) {
+							controller.emitToolStatus(t);
+						}
 					}
 				}
 				

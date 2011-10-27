@@ -156,13 +156,15 @@ public class CombineWindow extends JFrame
 			saveInput.setText(path.replace(".stl", ".gcode"));
 		}
 
-		numLabel = new JLabel("Number of copies:");
+		numLabel = new JLabel("Rows of copies:");
 		numInput = new JTextField();
 		numInput.setText("2");
+		numLabel.setToolTipText("Number of rows of copies, 1 per row");
 		
-		spaceLabel = new JLabel("Available Space:");
+		spaceLabel = new JLabel("Build Depth(mm):");
 		spaceInput = new JTextField();
-		spaceInput.setText("100");
+		spaceInput.setText("100"); // -- default depth mm for TOM 
+		spaceLabel.setToolTipText("Depth of your build platform");
 		
 		mergeButton = new JButton("Merge");
 		mergeButton.addActionListener(new ActionListener(){

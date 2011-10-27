@@ -510,8 +510,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	{
 		String name = source.getName();
 		if (source.getText().length() > 0) {
+			double target = Double.parseDouble(source.getText());
 			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
-				double target = Double.parseDouble(source.getText());
+				
 				if(name.equals("target-temp")) {
 					target = confirmTemperature(target,"temperature.acceptedLimit",260.0);
 					if (target == Double.MIN_VALUE) {
@@ -527,12 +528,12 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(target));
 					targetPlatformTemperature = target;
 				}
-				// This gives some feedback by adding .0 it it wasn't typed.
+				// This gives some feedback by adding .0 if it wasn't typed.
 				source.setText(Double.toString(target));
 			} else if (name.equals("motor-speed")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(Double.parseDouble(source.getText())));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(target));
 			} else if (name.equals("motor-speed-pwm")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)Double.parseDouble(source.getText())));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)target));
 			} else {
 				Base.logger.warning("Unhandled text field: "+name);
 			}
@@ -571,7 +572,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			else if (name.equals("fan-check"))
 				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
 			else if (name.equals("abp-check")) {
-				// TODO: Say wha???
+				// TODO: Debugging. Run both!
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
 				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
 			}
 			else if (name.equals("valve-check"))
@@ -592,7 +594,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			else if (name.equals("fan-check"))
 				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
 			else if (name.equals("abp-check")) {
-				// TODO: Say wha???
+				// TODO: Debugging. Run both!
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
 				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
 			}
 			else if (name.equals("valve-check"))
@@ -624,18 +627,26 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		if (s.equals("forward")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
-				// TODO: Reverted to separate commands for enable + extrude + disable. This probably breaks 5D
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
-				machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				// Reverted to one single command for RepRap5D driver
+				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
+				} else {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				}
 			}
 		} else if (s.equals("reverse")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
-				// TODO: Reverted to separate commands for enable + extrude + disable. This probably breaks 5D
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
-				machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				// Reverted to one single command for RepRap5D driver
+				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
+				} else {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				}
 			}
 		} else if (s.equals("stop")) {
 			machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
