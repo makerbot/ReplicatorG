@@ -14,3 +14,6 @@ RepG.log
 ReplicatorG.app
 .classpath
 .project
+
+*.dll
+*.diff

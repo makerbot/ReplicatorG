@@ -553,24 +553,20 @@ public class GCodeParser {
 		case M105:
 			commands.add(new replicatorg.drivers.commands.ReadTemperature());
 			break;
-//<<<<<<< HEAD
-//		// turn fan on
-//		case M106:
-//			commands.add(new replicatorg.drivers.commands.EnableFan());
-//			break;
-//		// turn fan off
-//		case M107:
-//			commands.add(new replicatorg.drivers.commands.DisableFan());
-//=======
-//		// turn AutomatedBuildPlatform on
-//		case M106:
-//			commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
-//			break;
-//		// turn AutomatedBuildPlatform off
-//		case M107:
-//			commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
-//>>>>>>> pomg
-//			break;
+		// turn AutomatedBuildPlatform on
+		case M106:
+			if(driver.hasAutomatedBuildPlatform())
+				commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
+			else
+				commands.add(new replicatorg.drivers.commands.EnableFan());
+			break;
+		// turn AutomatedBuildPlatform off
+		case M107:
+			if(driver.hasAutomatedBuildPlatform())
+				commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
+			else
+				commands.add(new replicatorg.drivers.commands.DisableFan());
+			break;
 		// set max extruder speed, RPM
 		case M108:
 			if (gcode.hasCode('S'))
