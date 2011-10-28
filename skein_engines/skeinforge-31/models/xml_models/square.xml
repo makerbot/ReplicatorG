@@ -1,5 +1,0 @@
-<?xml version='1.0' ?>
-<fabmetheus version="2010-04-04" >
-	<square name="square" bottomwidth="60.0" height="60.0" />
-	<extrude id="extrude square" target="name.square" toz="2.0" />
-</fabmetheus>

@@ -1,7 +1,0 @@
-speed.csv:Feed Rate (mm/s):=28.0
-carve.csv:Layer Thickness (mm):=0.39
-fill.csv:Infill Perimeter Overlap (ratio):=0.4
-fill.csv:Infill Solidity (ratio):=0.4
-fill.csv:Extra Shells on Alternating Solid Layer (layers):=1
-fill.csv:Extra Shells on Base (layers):=1
-inset.csv:Overlap Removal Width over Perimeter Width (ratio):=0.7

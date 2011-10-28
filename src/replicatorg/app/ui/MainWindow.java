@@ -220,6 +220,7 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem pauseItem;
 	JMenuItem controlPanelItem;
 	JMenuItem buildMenuItem;
+	JMenuItem profilesMenuItem;
 	JMenuItem dualstrusionItem;
 	JMenuItem combineItem;
 	JMenu changeToolheadMenu = new JMenu("Change Toolhead of GCode");
@@ -527,6 +528,11 @@ ToolpathGenerator.GeneratorListener
 			// trace.
 			bse.printStackTrace();
 		}
+	}
+
+	public void editProfiles() {
+		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
+		generator.editProfiles(this);
 	}
 
 	public void runToolpathGenerator() {
@@ -883,6 +889,16 @@ ToolpathGenerator.GeneratorListener
 			genMenu.add(i);
 		}
 		menu.add(genMenu);
+
+		// BASE PROFILES
+		profilesMenuItem = newJMenuItem("Edit Base Profiles...", 'R');
+		profilesMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				editProfiles();
+			}
+		});
+		profilesMenuItem.setEnabled(true);
+		menu.add(profilesMenuItem);
 
 		menu.addSeparator();
 		//Change Toolhead of GCode
@@ -2808,24 +2824,38 @@ ToolpathGenerator.GeneratorListener
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
 			System.out.println("Done?");
+			
 			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
-			System.out.println(extruderChoice);
-			if(isDualDriver())
+			boolean pomOn = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
+			
+			try
 			{
-				if(extruderChoice.equalsIgnoreCase("left"))
+				System.out.println(machineLoader.getMachine().getModel().getTools().size());
+				if(machineLoader.getMachine().getModel().getTools().size() > 1 && pomOn)
 				{
-					System.out.println("performing left ops");
-					DualStrusionWorker.changeToolHead(build.getCode().file, 1);
-					handleOpenFile(build.getCode().file);
-
+					System.out.println(extruderChoice);
+					if(extruderChoice.equalsIgnoreCase("left"))
+					{
+						System.out.println("performing left ops");
+						DualStrusionWorker.changeToolHead(build.getCode().file, 1);
+						handleOpenFile(build.getCode().file);
+					}
+					else if(extruderChoice.equalsIgnoreCase("right"))
+					{
+						System.out.println("performing right ops");
+						DualStrusionWorker.changeToolHead(build.getCode().file, 0);
+						handleOpenFile(build.getCode().file);
+					}
 				}
-				else if(extruderChoice.equalsIgnoreCase("right"))
+				else if(pomOn)
 				{
-					System.out.println("performing right ops");
 					DualStrusionWorker.changeToolHead(build.getCode().file, 0);
 					handleOpenFile(build.getCode().file);
-
 				}
+			}
+			catch(NullPointerException e)
+			{
+				//we don't need a message here?
 			}
 		}
 	}
