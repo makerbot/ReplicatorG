@@ -197,7 +197,7 @@ public class Machine implements MachineInterface {
 		// estimate build time.
 		Base.logger.info("Estimating build time and scanning code for errors...");
 		
-		// reset any old failures/initialize to a failure fee state
+		// reset any old failures/initialize to a failure free state
 		CodeCheckState.reset();
 		ccs = CodeCheckState.SAFE;
 		message = null;
