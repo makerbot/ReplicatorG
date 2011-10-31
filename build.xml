@@ -221,7 +221,7 @@
     </copy>
     <copy todir="${target.dir}/examples">
       <fileset dir="examples"/>
-      </copy>
+    </copy>
     <copy todir="${target.dir}/DualStrusion_Snippets">
       <fileset dir="DualStrusion_Snippets"/>
     </copy>
@@ -230,6 +230,13 @@
     </copy>
   </target>
 
+	<!-- not sure about this:
+  <target name="wget-docs" description="Downloads the ReplicatorG documentation on replicat.org (and other websites?)">
+	<exec executable="wget">
+		<arg value="-r -k replicat.org"/>
+	</exec>
+  </target>
+	-->
   <target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">
     <antcall target="dist-common-plain"/>
     <copy todir="${target.dir}">

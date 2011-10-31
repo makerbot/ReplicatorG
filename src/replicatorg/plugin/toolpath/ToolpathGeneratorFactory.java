@@ -174,13 +174,26 @@ public class ToolpathGeneratorFactory {
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (standard)", 
 				"This is the standard version of skeinforge that has shipped with "+
 				"ReplicatorG since 0016.", Skeinforge6.class));
+<<<<<<< Updated upstream
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (40)", 
 				"This is the experimental version of skeinforge.", Skeinforge40.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (35)", 
 				"This a recent version of skeinforge.", Skeinforge35.class));
 		list.add(new ToolpathGeneratorDescriptor("Skeinforge (31)", 
+=======
+		if((new Skeinforge44()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor("Skeinforge (44)", 
+				"This is the most recent version of skeinforge.", Skeinforge44.class));
+		if((new Skeinforge40()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor("Skeinforge (40)", 
+				"This is a recent version of skeinforge.", Skeinforge40.class));
+		if((new Skeinforge35()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor("Skeinforge (35)", 
+				"This is a version of skeinforge.", Skeinforge35.class));
+		if((new Skeinforge31()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor("Skeinforge (31)", 
+>>>>>>> Stashed changes
 				"This is an old version of skeinforge.", Skeinforge31.class));
-		
 		
 		return list;
 	}

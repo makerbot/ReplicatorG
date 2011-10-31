@@ -207,12 +207,13 @@ public class PrintOMatic implements SkeinforgePreference {
 		addTextParameter(machinePanel, "driveGearDiameter",
 				"Drive Gear Diameter (mm)", "10.58",
 				"measure at teeth");
-		if(Base.getEditor().isDualDriver())
+		
+		if(Base.getEditor() != null && Base.getEditor().isDualDriver())
 		{
-		Vector<String> extruders = new Vector<String>();
-		extruders.add("Left");
-		extruders.add("Right");
-		addDropDownParameter(machinePanel, "toolheadOrientation", "Extruder: ", extruders, "select which extruder this gcode prints on");
+			Vector<String> extruders = new Vector<String>();
+			extruders.add("Left");
+			extruders.add("Right");
+			addDropDownParameter(machinePanel, "toolheadOrientation", "Extruder: ", extruders, "select which extruder this gcode prints on");
 		}
 		
 		printOMatic.addTab("Settings", printPanel);
