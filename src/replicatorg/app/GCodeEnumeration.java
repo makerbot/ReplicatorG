@@ -117,12 +117,12 @@ public enum GCodeEnumeration {
 		this.documentation = documentation;
 	}
 	
-	static Set<String> supportedCodes()
+	public static Set<String> supportedCodes()
 	{
 		return lookup.keySet();
 	}
 	
-	static Collection<String> getDocumentation()
+	public static Collection<String> getDocumentation()
 	{
 		ArrayList<String> result = new ArrayList<String>();
 		for(GCodeEnumeration e : lookup.values())
@@ -130,40 +130,13 @@ public enum GCodeEnumeration {
 		return result;
 	}
 
-	static GCodeEnumeration getGCode(String name)
+	public static GCodeEnumeration getGCode(String name)
 	{
 		return lookup.get(name);
 	}
 	
-	static GCodeEnumeration getGCode(String letter, Integer number)
+	public static GCodeEnumeration getGCode(String letter, Integer number)
 	{
 		return lookup.get(letter + number);
-	}
-
-	public static void main(String[] args)
-	{
-		File docFile = new File("docs/GCodeDocumentation.txt");
-		
-		try
-		{
-			// Clear the file. I feel like there's a better way to do this
-			if(docFile.exists())
-				docFile.delete();
-			docFile.createNewFile();
-			
-			BufferedWriter docs = new BufferedWriter(new FileWriter(docFile));
-			
-			docs.write("Auto-Generated documentation of supported GCodes\n");
-			for(String d : getDocumentation())
-				docs.write(d + '\n');
-			
-			docs.flush();
-			docs.close();
-		}
-		catch (IOException ioe)
-		{
-			System.out.println("Could not write to file!");
-		}
-		
 	}
 }

@@ -212,7 +212,6 @@
     <copy todir="${target.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt"/>
     </copy>
-  	<copy tofile="${target.dir}/GCodeDocumentation.txt" failonerror="false" file="docs/GCodeDocumentation.txt"/>
     <copy todir="${target.dir}/skein_engines">
       <fileset dir="skein_engines" excludes="*.pyc"/>
     </copy>
@@ -228,15 +227,30 @@
     <copy todir="${target.dir}/scripts">
       <fileset dir="scripts"/>
     </copy>
+  	
+	<exec executable="wget">
+		<arg value="-r"/>
+		<arg value="-k"/>
+		<arg value="--directory-prefix=./docs"/>
+		<arg value="--timestamping"/>
+		<arg value="replicat.org"/>
+	</exec>
+  	<copy todir="${target.dir}/docs">
+  		<fileset dir="docs/" excludes="HOWTO-add-new-skeinforge.txt,overview.odg"/>
+  	</copy>
   </target>
 
   <target name="wget-docs" description="Downloads the ReplicatorG documentation on replicat.org (and other websites?)">
 	<exec executable="wget">
 		<arg value="-r"/>
 		<arg value="-k"/>
-		<arg value="--directory-prefix=./docs/replicat.org"/>
+		<arg value="--directory-prefix=./docs"/>
+		<arg value="--timestamping"/>
 		<arg value="replicat.org"/>
 	</exec>
+  	<copy todir="${target.dir}">
+  		<filelist dir="." files="docs"/>
+  	</copy>
   </target>
 
   <target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">

@@ -79,6 +79,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -86,6 +87,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -104,6 +106,7 @@ import net.iharder.dnd.FileDrop;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.Base.InitialOpenBehavior;
+import replicatorg.app.GCodeEnumeration;
 import replicatorg.app.MRUList;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
@@ -304,6 +307,7 @@ ToolpathGenerator.GeneratorListener
 		menubar.add(buildEditMenu());
 		menubar.add(buildGCodeMenu());
 		menubar.add(buildMachineMenu());
+		menubar.add(buildHelpMenu());
 
 		setJMenuBar(menubar);
 
@@ -744,7 +748,46 @@ ToolpathGenerator.GeneratorListener
 		}
 		return menu;
 	}
-
+	
+	protected JMenu buildHelpMenu()
+	{
+		JMenuItem item;
+		JMenu menu = new JMenu("Help");
+		
+		item = new JMenuItem("Offline Documentation");
+		item.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// open up the local copy of replicat.org
+				if(java.awt.Desktop.isDesktopSupported())
+				{
+					try {
+						File toOpen = new File("docs/replicat.org/index.html");
+						java.awt.Desktop.getDesktop().browse(toOpen.toURI());
+					} catch (IOException e) {
+						Base.logger.log(Level.WARNING, "Could not load offline documentation.");
+					}
+				}
+			}
+		});
+		menu.add(item);
+		
+		item = new JMenuItem("Supported GCodes");
+		item.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				//Display the auto-generated list of codes our enumeration recognises
+				Object[] codes = GCodeEnumeration.getDocumentation().toArray();
+				JScrollPane displayPane = new JScrollPane(new JList(codes));
+				JOptionPane.showConfirmDialog(MainWindow.this, displayPane,
+						"Supported GCodes", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
+			}
+		});
+		menu.add(item);
+		
+		return menu;
+	}
+	
 	private JMenuItem buildMenuFromPath(File path, Pattern pattern) {
 		if (!path.exists()) { return null; }
 		if (path.isDirectory()) {
