@@ -1,0 +1,20 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE KDevPrjSession>
+<KDevPrjSession>
+ <DocsAndViews NumberOfDocuments="3" >
+  <Doc0 NumberOfViews="1" URL="file:///home/enrique/Desktop/backup/babbleold/script/reprap/fabmetheus/skeinforge_application/skeinforge.py" >
+   <View0 Encoding="UTF-8" Type="Source" />
+  </Doc0>
+  <Doc1 NumberOfViews="1" URL="file:///home/enrique/Desktop/backup/parking.txt" >
+   <View0 Encoding="" line="28" Type="Source" />
+  </Doc1>
+  <Doc2 NumberOfViews="1" URL="file:///home/enrique/Desktop/backup/babbleold/script/reprap/fabmetheus/skeinforge_application/skeinforge_plugins/craft_plugins/dimension.py" >
+   <View0 Encoding="" line="46" Type="Source" />
+  </Doc2>
+ </DocsAndViews>
+ <pluginList>
+  <kdevbookmarks>
+   <bookmarks/>
+  </kdevbookmarks>
+ </pluginList>
+</KDevPrjSession>
