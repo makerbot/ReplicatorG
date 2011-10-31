@@ -1,11 +1,8 @@
 package replicatorg.app;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -103,7 +100,23 @@ public enum GCodeEnumeration {
 	G161("G", 161, "Home given axes to minimum"),
 	G162("G", 162, "Home given axes to maximum");
 	
-	private static final Map<String, GCodeEnumeration> lookup = new TreeMap<String, GCodeEnumeration>();
+	private static final Map<String, GCodeEnumeration> lookup = new TreeMap<String, GCodeEnumeration>(
+			//providing this comparator makes sure that the ordering of the codes is what we'd expect it to be
+			new Comparator<String>(){
+				@Override
+				public int compare(String s, String t) {
+					Character l1 = s.charAt(0);
+					Character l2 = t.charAt(0);
+					Integer i1 = Integer.parseInt(s.substring(1));
+					Integer i2 = Integer.parseInt(t.substring(1));
+					
+					int cmp = l1.compareTo(l2);
+					
+					return cmp == 0 ? i1.compareTo(i2) : cmp;
+				}
+				
+			});
+	
 	static {
 		for(GCodeEnumeration e : EnumSet.allOf(GCodeEnumeration.class))
 			lookup.put(e.letter + e.number, e);

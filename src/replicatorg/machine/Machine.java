@@ -154,34 +154,12 @@ public class Machine implements MachineInterface {
 				RequestType.BUILD_REMOTE, null, remoteName));
 		return true;
 	}
-
-	private enum CodeCheckState
-	{
-		SAFE, //default
-		WARNING, //for gcode that has the potential to cause problems
-		SEVERE; // for gcode that will cause a build to fail
-		
-		private long numErrors = 0;
-		
-		private static void reset()
-		{
-			SAFE.numErrors = 0;
-			WARNING.numErrors = 0;
-			SEVERE.numErrors = 0;
-		}
-		
-		//we could also record messages for each error
-		private void increment()
-		{
-			numErrors++;
-		}
-		
-	}
 	
 	// The estimate function now checks for some sources of error
 	// needs a way to return failure
-	private CodeCheckState ccs;
 	private String message;
+	private long numWarnings;
+	private long numErrors;
 	
 	/**
 	 * Begin running a job.
@@ -198,19 +176,30 @@ public class Machine implements MachineInterface {
 		Base.logger.info("Estimating build time and scanning code for errors...");
 		
 		// reset any old failures/initialize to a failure free state
-		CodeCheckState.reset();
-		ccs = CodeCheckState.SAFE;
+		numWarnings = 0;
+		numErrors = 0;
 		message = null;
 		
 		estimate(source);
 		
-		if(ccs == CodeCheckState.WARNING)
+		if(numErrors > 0)
+		{
+			JOptionPane.showConfirmDialog(null, 
+					new Object[]{"The pre-run check has found some problematic GCode.",
+					"This may be a result of trying to run code on a machine other than the one it's\n" +
+					"intended for (i.e. running dual headed GCode on a single headed machine).",
+					"\nError 1 of " + numErrors + " (see console for more): " + message,
+					"\nErrors must be fixed before this build can be safely run."},
+					"GCode Check: Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		else if(numWarnings > 0)
 		{
 			int proceed = JOptionPane.showConfirmDialog(null, 
 					new Object[]{"The pre-run check has found some potentially problematic GCode.",
 					"This may be a result of trying to run code on a machine other than the one it's\n" +
 					"intended for (i.e. running dual headed GCode on a single headed machine).",
-					"\nWarning 1 of " + CodeCheckState.WARNING.numErrors + " (see console for more): " + message,
+					"\nWarning 1 of " + numWarnings + " (see console for more): " + message,
 					"\nWould you like to proceed with the build anyway?"},
 					"GCode Check: Warning", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
 			
@@ -218,17 +207,7 @@ public class Machine implements MachineInterface {
 			if(proceed == 1)
 				return false;
 		}
-		else if(ccs == CodeCheckState.SEVERE)
-		{
-			JOptionPane.showConfirmDialog(null, 
-					new Object[]{"The pre-run check has found some problematic GCode.",
-					"This may be a result of trying to run code on a machine other than the one it's\n" +
-					"intended for (i.e. running dual headed GCode on a single headed machine).",
-					"\nError 1 of " + CodeCheckState.SEVERE.numErrors + " (see console for more): " + message,
-					"\nErrors must be fixed before this build can be safely run."},
-					"GCode Check: Error", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
+		
 		
 		// do that build!
 		Base.logger.info("Beginning build.");
@@ -288,8 +267,7 @@ public class Machine implements MachineInterface {
 					message = s + '\n';
 				
 				Base.logger.log(Level.SEVERE, s);
-				CodeCheckState.SEVERE.increment();
-				ccs = CodeCheckState.SEVERE;
+				numErrors++;
 			}
 			
 			if(gcLine.hasCode('F'))
@@ -310,9 +288,7 @@ public class Machine implements MachineInterface {
 						message = t + '\n';
 					
 					Base.logger.log(Level.WARNING, t);
-					CodeCheckState.WARNING.increment();
-					if(ccs != CodeCheckState.SEVERE)
-						ccs = CodeCheckState.WARNING;
+					numWarnings++;
 				}
 					
 			}
