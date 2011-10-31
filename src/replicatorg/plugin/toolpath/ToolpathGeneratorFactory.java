@@ -169,6 +169,9 @@ public class ToolpathGeneratorFactory {
 				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
 				
 				prefs.add(supportPref);
+
+				PrintOMatic printOMatic = new PrintOMatic();
+				prefs.add(printOMatic);
 				
 				return prefs;
 			}
