@@ -1,6 +1,7 @@
 # git ignore
 # no dist files
-/doc
+/docs/html/*
+/docs/latex/*
 /dist
 dist-all
 build/jar
