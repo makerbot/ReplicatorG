@@ -44,6 +44,7 @@ public class ToolpathGeneratorFactory {
 	}
 	static private Vector<ToolpathGeneratorDescriptor> buildGeneratorList() {
 		Vector<ToolpathGeneratorDescriptor> list = new Vector<ToolpathGeneratorDescriptor>();
+		
 		class Skeinforge6 extends SkeinforgeGenerator {
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-0006");

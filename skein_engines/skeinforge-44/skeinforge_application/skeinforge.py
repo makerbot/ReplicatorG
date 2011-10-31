@@ -556,7 +556,6 @@ def writeOutput(fileName):
 	'Craft a file, display dialog.'
 	repository = getNewRepository()
 	repository.fileNameInput.value = fileName
-	repository.execute()
 	settings.startMainLoopFromWindow(repository.execute())
 
 

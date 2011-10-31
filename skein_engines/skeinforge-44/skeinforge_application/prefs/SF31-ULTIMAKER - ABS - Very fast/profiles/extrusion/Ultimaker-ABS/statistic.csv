@@ -1,0 +1,7 @@
+Format is tab separated statistic preferences.
+Name                          	Value
+Activate Statistic	True
+Open File to Generate Statistics for	/home/erik/RepRap/trunk/reprap/miscellaneous/python-beanshell-scripts/bishop.gcode
+Print Statistics	True
+Save Statistics	True
+windowPositionStatistic Preferences	486+61
