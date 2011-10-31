@@ -46,6 +46,10 @@ public abstract class ToolpathGenerator {
 		return true;
 	}
 	
+	public void editProfiles(Frame parent) {
+		assert parent != null;
+	}
+	
 	public abstract BuildCode generateToolpath();
 	
 	public void emitUpdate(String message) {
