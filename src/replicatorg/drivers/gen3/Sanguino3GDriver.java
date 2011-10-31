@@ -1149,11 +1149,17 @@ public class Sanguino3GDriver extends SerialDriver
 		// constrain our temperature.
 		int temp = (int) Math.round(temperature);
 		temp = Math.min(temp, 65535);
-		
 		Base.logger.fine("Setting platform temperature to " + temp + "C");
 		
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+
+		// This is intended to fix a problem where on dualstrusion 
+		// machines the heated build platform is hooked up to T1, not T0
+		if(machine.getTools().size() == 1)
+			pb.add8((byte) 0);
+		else
+			pb.add8((byte) 1);
+			
 		pb.add8(ToolCommandCode.SET_PLATFORM_TEMP.getCode());
 		pb.add8((byte) 2); // payload length
 		pb.add16(temp);
