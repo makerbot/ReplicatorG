@@ -1,10 +1,12 @@
 package replicatorg.plugin.toolpath.skeinforge;
 
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -14,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -195,6 +198,10 @@ public class PrintOMatic5D implements SkeinforgePreference {
 					Base.preferences.putBoolean(enabledName,enabled.isSelected());
 					
 					printOMatic5D.setVisible(enabled.isSelected());
+					printOMatic5D.invalidate();
+					Window w = SwingUtilities.getWindowAncestor(printOMatic5D);
+					w.pack();
+				
 				}
 			}
 		});
