@@ -230,13 +230,15 @@
     </copy>
   </target>
 
-	<!-- not sure about this:
   <target name="wget-docs" description="Downloads the ReplicatorG documentation on replicat.org (and other websites?)">
 	<exec executable="wget">
-		<arg value="-r -k replicat.org"/>
+		<arg value="-r"/>
+		<arg value="-k"/>
+		<arg value="--directory-prefix=./docs/replicat.org"/>
+		<arg value="replicat.org"/>
 	</exec>
   </target>
-	-->
+
   <target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">
     <antcall target="dist-common-plain"/>
     <copy todir="${target.dir}">
