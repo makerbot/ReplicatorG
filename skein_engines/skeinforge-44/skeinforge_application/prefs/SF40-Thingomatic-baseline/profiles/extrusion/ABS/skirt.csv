@@ -3,5 +3,5 @@ Name                          	Value
 WindowPosition	700+0
 Open File for Skirt	
 Activate Skirt:	False
-Gap over Perimeter Width (ratio):	1.05
-Layers To (index):	2
+Gap over Perimeter Width (ratio):	1.0
+Layers To (index):	1

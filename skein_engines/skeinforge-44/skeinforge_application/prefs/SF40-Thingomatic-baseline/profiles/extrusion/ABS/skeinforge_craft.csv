@@ -3,7 +3,7 @@ Name                          	Value
 WindowPosition	600+0
 Open File for Craft	
 bottom	False
-carve	True
+carve	False
 chamber	False
 chop	False
 cleave	False
@@ -34,7 +34,7 @@ raft	False
 reversal	False
 scale	False
 skirt	False
-speed	False
+speed	True
 splodge	False
 stretch	False
 temperature	False
