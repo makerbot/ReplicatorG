@@ -212,8 +212,6 @@
     <copy todir="${target.dir}">
       <filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt"/>
     </copy>
-  	<copy todir="${target.dir}" failonerror="false" file="timeout.txt"/>
-  	<copy tofile="${target.dir}/GCodeDocumentation.txt" failonerror="false" file="docs/GCodeDocumentation.txt"/>
     <copy todir="${target.dir}/skein_engines">
       <fileset dir="skein_engines" excludes="*.pyc"/>
     </copy>
@@ -222,13 +220,26 @@
     </copy>
     <copy todir="${target.dir}/examples">
       <fileset dir="examples"/>
-      </copy>
+    </copy>
     <copy todir="${target.dir}/DualStrusion_Snippets">
       <fileset dir="DualStrusion_Snippets"/>
     </copy>
     <copy todir="${target.dir}/scripts">
       <fileset dir="scripts"/>
     </copy>
+  	<copy todir="${target.dir}/docs">
+  		<fileset dir="docs/" excludes="HOWTO-add-new-skeinforge.txt,overview.odg"/>
+  	</copy>
+  </target>
+
+  <target name="cache-local-docs" description="Downloads the ReplicatorG documentation on replicat.org (and other websites?)">
+	<exec executable="wget">
+		<arg value="-r"/>
+		<arg value="-k"/>
+		<arg value="--directory-prefix=./docs"/>
+		<arg value="--timestamping"/>
+		<arg value="replicat.org"/>
+	</exec>
   </target>
 
   <target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">

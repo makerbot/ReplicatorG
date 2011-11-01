@@ -1,6 +1,7 @@
 package replicatorg.dualstrusion;
 
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 
 import replicatorg.app.Base;
@@ -306,7 +307,12 @@ public class Layer_Helper {
 	 */
 	private static ArrayList<String> mergeLayer(Layer a, Layer b) //This method makes it so that you dont switch toolheads unnessecarily a is primary layers b is secondary layers
 	{
-		NumberFormat nf = NumberFormat.getInstance();
+		//TODO: before releasing this code, make sure it's safe for localization.
+		// if this is printing floating point numbers, it has to make sure it's putting out '.'s and not ','s
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator('.');
+		DecimalFormat nf = new DecimalFormat();
+		nf.setDecimalFormatSymbols(dfs);
 		nf.setMaximumFractionDigits(2);
 		nf.setMinimumFractionDigits(2);
 		ArrayList<String> cmds = new ArrayList<String>();
@@ -343,7 +349,13 @@ public class Layer_Helper {
 		WipeModel tool0Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(0);
 		WipeModel tool1Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(1);
 		ArrayList<String> targetCode = new ArrayList<String>();
-		NumberFormat nf = NumberFormat.getInstance();
+		
+		//TODO: before releasing this code, make sure it's safe for localization.
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator('.');
+		DecimalFormat nf = new DecimalFormat();
+		nf.setDecimalFormatSymbols(dfs);
+		
 		nf.setMinimumFractionDigits(0); //Min no decimals
 		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
 		nf.setGroupingUsed(false); //NO commas!
@@ -427,7 +439,12 @@ public class Layer_Helper {
 		return PrimaryLayers.get(1).getHeight() - PrimaryLayers.get(0).getHeight();
 	}
 	public static ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
-		NumberFormat nf = NumberFormat.getInstance();
+		//TODO: before releasing this code, make sure it's safe for localization.
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator('.');
+		DecimalFormat nf = new DecimalFormat();
+		nf.setDecimalFormatSymbols(dfs);
+		
 		nf.setMinimumFractionDigits(0); //Min no decimals
 		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
 		nf.setGroupingUsed(false); //NO commas!

@@ -580,4 +580,10 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 		return maximumFeedrates;
 	}
 
+	@Override
+	public boolean hasAutomatedBuildPlatform() {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
 }

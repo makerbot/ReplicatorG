@@ -154,6 +154,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Automatically connect at startup","replicatorg.autoconnect",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
 		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",false);
+		addCheckboxForPref(content,"Check over GCode before building","build.safetyChecks",true);
 		addCheckboxForPref(content,"Break Z motion into seperate moves (normally false)","replicatorg.parser.breakzmoves",false);
 		addCheckboxForPref(content,"Show starfield in model preview window","ui.show_starfield",false);
 		addCheckboxForPref(content,"Notifications in System tray","ui.preferSystemTrayNotifications",false);
@@ -168,7 +169,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				modelColor = JColorChooser.showDialog(
 						null,
 		                "Choose Model Color",
-		                modelColor);;
+		                modelColor);
 		                
 		        Base.preferences.putInt("ui.modelColor", modelColor.getRGB());
 		        Base.getEditor().refreshPreviewPanel();
@@ -187,7 +188,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				backgroundColor = JColorChooser.showDialog(
 						null,
 		                "Choose Background Color",
-		                backgroundColor);;
+		                backgroundColor);
 		                
 		        Base.preferences.putInt("ui.backgroundColor", backgroundColor.getRGB());
 		        Base.getEditor().refreshPreviewPanel();
@@ -219,6 +220,33 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 							Double v = (Double)evt.getNewValue();
 							if (v == null) return;
 							Base.preferences.putDouble("replicatorg.parser.curve_segment_mm", v.doubleValue());
+						} catch (ClassCastException cce) {
+							Base.logger.warning("Unexpected value type: "+evt.getNewValue().getClass().toString());
+						}
+					}
+				}
+			});
+		}
+		
+		{
+			content.add(new JLabel("Skeinforge timeout: "),"split");
+			int value = Base.preferences.getInt("replicatorg.skeinforge.timeout", -1);
+			JFormattedTextField sfTimeoutField = new JFormattedTextField(new Integer(value));
+			content.add(sfTimeoutField,"wrap");
+			String sfTimeoutHelp = "<html><small><em>" +
+				"The Skeinforge timeout is the number of seconds that replicatorg will wait while the<br>" +
+				"Skeinforge preferences window is open. If you find that RepG freezes after editing profiles<br>" +
+				"you can set this number greater than -1 (-1 means no timeout)." +
+				"</em></small></html>";
+			content.add(new JLabel(sfTimeoutHelp),"growx,wrap");
+			sfTimeoutField.setColumns(10);
+			sfTimeoutField.addPropertyChangeListener(new PropertyChangeListener() {
+				public void propertyChange(PropertyChangeEvent evt) {
+					if (evt.getPropertyName() == "value") {
+						try {
+							Integer v = (Integer)evt.getNewValue();
+							if (v == null) return;
+							Base.preferences.putInt("replicatorg.skeinforge.timeout", v.intValue());
 						} catch (ClassCastException cce) {
 							Base.logger.warning("Unexpected value type: "+evt.getNewValue().getClass().toString());
 						}
@@ -274,8 +302,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				Base.resetPreferences();
 				showCurrentSettings();
 			}
-			
-			
 		});
 
 		// [ OK ] [ Cancel ] maybe these should be next to the message?

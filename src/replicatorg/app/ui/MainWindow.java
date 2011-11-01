@@ -79,6 +79,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -86,6 +87,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -104,6 +106,7 @@ import net.iharder.dnd.FileDrop;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.Base.InitialOpenBehavior;
+import replicatorg.app.GCodeEnumeration;
 import replicatorg.app.MRUList;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
@@ -220,6 +223,7 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem pauseItem;
 	JMenuItem controlPanelItem;
 	JMenuItem buildMenuItem;
+	JMenuItem profilesMenuItem;
 	JMenuItem dualstrusionItem;
 	JMenuItem combineItem;
 	JMenu changeToolheadMenu = new JMenu("Change Toolhead of GCode");
@@ -304,7 +308,9 @@ ToolpathGenerator.GeneratorListener
 		menubar.add(buildEditMenu());
 		menubar.add(buildGCodeMenu());
 		menubar.add(buildMachineMenu());
-
+		menubar.add(buildThingiverseMenu());
+		menubar.add(buildHelpMenu());
+		
 		setJMenuBar(menubar);
 
 		Container pane = getContentPane();
@@ -529,6 +535,11 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 
+	public void editProfiles() {
+		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
+		generator.editProfiles(this);
+	}
+
 	public void runToolpathGenerator() {
 		// Check if the model is on the platform
 		if (!getPreviewPanel().getModel().isOnPlatform()) {
@@ -745,6 +756,99 @@ ToolpathGenerator.GeneratorListener
 		return menu;
 	}
 
+	/* Creates a menu item 'Thingiverse' 
+	 * @returns a JMenu populated with Thingiverse items
+	 */
+	protected JMenu buildThingiverseMenu()
+	{
+		JMenuItem item;
+		JMenu menu = new JMenu("Thingiverse");
+		
+		item = new JMenuItem("What's New?");
+		item.addActionListener( new ActionListener(){
+			//do bare bones launch
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(java.awt.Desktop.isDesktopSupported())
+				{
+					try {
+							java.awt.Desktop.getDesktop().browse(new java.net.URI("http://www.thingiverse.com/newest?source=repg"));
+					} catch (IOException e) {
+						Base.logger.log(Level.WARNING, "Could not load URL.");
+					} catch (java.net.URISyntaxException e) {
+							Base.logger.log(Level.WARNING, "bad URI");
+					}
+				}
+			}
+		});
+		menu.add(item);
+		
+		item = new JMenuItem("What's Pouplar?");
+		item.addActionListener( new ActionListener(){
+			//do bare bones launch
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(java.awt.Desktop.isDesktopSupported())
+				{
+					try {
+						java.awt.Desktop.getDesktop().browse(new java.net.URI("http://www.thingiverse.com/popular?source=repg"));
+					} catch (IOException e) {
+						Base.logger.log(Level.WARNING, "Could not load URL.");
+					} catch (java.net.URISyntaxException e) {
+							Base.logger.log(Level.WARNING, "bad URI");
+					}
+				}
+			}
+		});
+		menu.add(item);
+		
+		
+		return menu;
+	}
+
+	/*
+	 * Creates a menu item 'Help'
+	 * @returrns a JMenu Item containing help items
+	 */
+	protected JMenu buildHelpMenu()
+	{
+		JMenuItem item;
+		JMenu menu = new JMenu("Help");
+		
+		item = new JMenuItem("Offline Documentation");
+		item.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// open up the local copy of replicat.org
+				if(java.awt.Desktop.isDesktopSupported())
+				{
+					try {
+						File toOpen = new File("docs/replicat.org/index.html");
+						java.awt.Desktop.getDesktop().browse(toOpen.toURI());
+					} catch (IOException e) {
+						Base.logger.log(Level.WARNING, "Could not load offline documentation.");
+					}
+				}
+			}
+		});
+		menu.add(item);
+		
+		item = new JMenuItem("Supported GCodes");
+		item.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				//Display the auto-generated list of codes our enumeration recognises
+				Object[] codes = GCodeEnumeration.getDocumentation().toArray();
+				JScrollPane displayPane = new JScrollPane(new JList(codes));
+				JOptionPane.showConfirmDialog(MainWindow.this, displayPane,
+						"Supported GCodes", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
+			}
+		});
+		menu.add(item);
+		
+		return menu;
+	}
+	
 	private JMenuItem buildMenuFromPath(File path, Pattern pattern) {
 		if (!path.exists()) { return null; }
 		if (path.isDirectory()) {
@@ -883,6 +987,16 @@ ToolpathGenerator.GeneratorListener
 			genMenu.add(i);
 		}
 		menu.add(genMenu);
+
+		// BASE PROFILES
+		profilesMenuItem = newJMenuItem("Edit Base Profiles...", 'R');
+		profilesMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				editProfiles();
+			}
+		});
+		profilesMenuItem.setEnabled(true);
+		menu.add(profilesMenuItem);
 
 		menu.addSeparator();
 		//Change Toolhead of GCode
@@ -2800,6 +2914,7 @@ ToolpathGenerator.GeneratorListener
 	}
 
 	public void generationComplete(Completion completion, Object details) {
+
 		// if success, update header and switch to code
 		if (completion == Completion.SUCCESS) {
 			if (build.getCode() != null) {
@@ -2807,25 +2922,40 @@ ToolpathGenerator.GeneratorListener
 			}
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
-			System.out.println("Done?");
+			
 			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
-			System.out.println(extruderChoice);
-			if(isDualDriver())
+			boolean pomOn = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
+			
+			try
 			{
-				if(extruderChoice.equalsIgnoreCase("left"))
+				int toolCount = machineLoader.getMachine().getModel().getTools().size();
+				Base.logger.finer("tool size" + toolCount );
+				if( toolCount > 1 && pomOn)
 				{
-					System.out.println("performing left ops");
-					DualStrusionWorker.changeToolHead(build.getCode().file, 1);
-					handleOpenFile(build.getCode().file);
-
+					Base.logger.fine(extruderChoice);
+					if(extruderChoice.equalsIgnoreCase("left"))
+					{
+						Base.logger.finer("performing left ops");
+						DualStrusionWorker.changeToolHead(build.getCode().file, 1);
+						handleOpenFile(build.getCode().file);
+					}
+					else if(extruderChoice.equalsIgnoreCase("right"))
+					{
+						Base.logger.finer("performing right ops");
+						DualStrusionWorker.changeToolHead(build.getCode().file, 0);
+						handleOpenFile(build.getCode().file);
+					}
 				}
-				else if(extruderChoice.equalsIgnoreCase("right"))
+				else if(pomOn)
 				{
-					System.out.println("performing right ops");
 					DualStrusionWorker.changeToolHead(build.getCode().file, 0);
 					handleOpenFile(build.getCode().file);
-
 				}
+			}
+			catch(NullPointerException e)
+			{
+				//we don't need a message here?
+				Base.logger.fine("error doing toolhead update in generationComplete" + e);
 			}
 		}
 	}

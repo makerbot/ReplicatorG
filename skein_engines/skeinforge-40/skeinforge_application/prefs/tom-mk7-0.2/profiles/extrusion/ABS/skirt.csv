@@ -1,0 +1,7 @@
+Format is tab separated skirt settings.
+Name                          	Value
+WindowPosition	700+0
+Open File for Skirt	
+Activate Skirt:	True
+Gap over Perimeter Width (ratio):	3.0
+Layers To (index):	1

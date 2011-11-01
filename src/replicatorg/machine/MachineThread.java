@@ -366,9 +366,16 @@ class MachineThread extends Thread {
 				ToLocalFile lf = new ToLocalFile(driver, simulator,	combinedSource, command.remoteName);
 				if(lf.setupFailed)
 				{
-					// see above (BUILD_TO_REMOTE_FILE) for explanation
+					// This is even worse than above, because we might already be NOT_ATTACHED
+					// and we don't emit repeated changes for the same state, we have to switch
+					// to something other than NOT_ATTACHED which WILL NOT end the build,
+					// then back to NOT_ATTACHED, finally, because we don't want to end on READY
+					// if we were never attached, we switch to READY only if we had been able to print
+					boolean connected = state.canPrint();
+					setState(new MachineState(MachineState.State.ERROR));
 					setState(new MachineState(MachineState.State.NOT_ATTACHED));
-					setState(new MachineState(MachineState.State.READY));
+					if(connected)
+						setState(new MachineState(MachineState.State.READY));
 					break;
 				}
 				
@@ -391,7 +398,7 @@ class MachineThread extends Thread {
 				
 				pollingTimer.start(1000);
 				
-				machineBuilder = new UsingRemoteFile((SDCardCapture)driver, command.remoteName);
+				machineBuilder = new UsingRemoteFile(driver, command.remoteName);
 			
 //				// TODO: what about this?
 //				System.out.println("pre-");

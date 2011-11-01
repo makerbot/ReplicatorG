@@ -1,19 +1,23 @@
 package replicatorg.plugin.toolpath.skeinforge;
 
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -154,8 +158,10 @@ public class PrintOMatic implements SkeinforgePreference {
 			public void actionPerformed(ActionEvent e) {
 				if (enabledName != null) {
 					Base.preferences.putBoolean(enabledName,enabled.isSelected());
-					
 					printOMatic.setVisible(enabled.isSelected());
+					printOMatic.invalidate();
+					Window w = SwingUtilities.getWindowAncestor(printOMatic);
+					w.pack();
 				}
 			}
 		});
@@ -207,18 +213,19 @@ public class PrintOMatic implements SkeinforgePreference {
 		addTextParameter(machinePanel, "driveGearDiameter",
 				"Drive Gear Diameter (mm)", "10.58",
 				"measure at teeth");
-		if(Base.getEditor().isDualDriver())
+		
+		if(Base.getEditor() != null && Base.getEditor().isDualDriver())
 		{
-		Vector<String> extruders = new Vector<String>();
-		extruders.add("Left");
-		extruders.add("Right");
-		addDropDownParameter(machinePanel, "toolheadOrientation", "Extruder: ", extruders, "select which extruder this gcode prints on");
+			Vector<String> extruders = new Vector<String>();
+			extruders.add("Left");
+			extruders.add("Right");
+			addDropDownParameter(machinePanel, "toolheadOrientation", "Extruder: ", extruders, "select which extruder this gcode prints on");
 		}
 		
 		printOMatic.addTab("Settings", printPanel);
 		printOMatic.addTab("Plastic", materialPanel);
 		printOMatic.addTab("Extruder", machinePanel);
-		component.add(printOMatic, "spanx");
+		component.add(printOMatic, "spanx,hidemode 1");
 		printOMatic.setVisible(enabled.isSelected());
 	}
 

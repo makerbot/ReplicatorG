@@ -27,10 +27,16 @@ package replicatorg.model;
 
 import java.awt.FileDialog;
 import java.awt.Frame;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
+
+import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
@@ -134,6 +140,7 @@ public class Build {
 			code.setModified(true);
 			elements.add(code);
 		} else {
+
 			File mainFile = new File(path);
 			mainFilename = mainFile.getName();
 			String suffix = "";
@@ -144,6 +151,21 @@ public class Build {
 			} else {
 				name = mainFilename;
 			}
+
+			//protect against loading files that may have caused a crash last time
+			File crashCheck = new File(name + ".crash");
+			if(crashCheck.exists())
+			{
+				crashCheck.delete();
+				int op = JOptionPane.showConfirmDialog(null, "It looks as though ReplicatorG may have crashed\n" +
+						"last time it tried to load this file.\nRe-loading the same file could cause another crash,\n" +
+						"would you like to load this file anyway?", "Remnants of a crash detected!", 
+						JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
+				if(op != 0)
+					return; 
+			}
+			crashCheck.createNewFile();
+			
 			String parentPath = new File(path).getParent(); 
 			if (parentPath == null) {
 				parentPath = ".";
@@ -159,6 +181,8 @@ public class Build {
 			} else {
 				openedElement = getModel();
 			}
+			
+			crashCheck.delete();
 		}
 	}
 
