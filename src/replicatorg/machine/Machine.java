@@ -265,7 +265,8 @@ public class Machine implements MachineInterface {
 				GCode gcLine = new GCode(line);
 				String s;
 
-				if(GCodeEnumeration.getGCode(gcLine.getCommand().split(" ")[0]) == null)
+				String mainCode = gcLine.getCommand().split(" ")[0];
+				if(!("").equals(mainCode) && GCodeEnumeration.getGCode(mainCode) == null)
 				{
 					s = "Unsupported GCode!\n" + line + 
 							" uses a code that ReplicatorG doesn't recognize.";

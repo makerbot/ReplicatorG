@@ -169,7 +169,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				modelColor = JColorChooser.showDialog(
 						null,
 		                "Choose Model Color",
-		                modelColor);;
+		                modelColor);
 		                
 		        Base.preferences.putInt("ui.modelColor", modelColor.getRGB());
 		        Base.getEditor().refreshPreviewPanel();
@@ -302,10 +302,17 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				Base.resetPreferences();
 				showCurrentSettings();
 			}
-			
-			
 		});
 
+
+		JButton advanced = new JButton("Advanced Prefs");
+		content.add(advanced);
+		advanced.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFrame advancedPrefs = new AdvancedPrefs();
+				advancedPrefs.setVisible(true);
+			}
+		});
 		// [ OK ] [ Cancel ] maybe these should be next to the message?
 
 		JButton button;

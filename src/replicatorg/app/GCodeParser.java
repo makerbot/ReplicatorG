@@ -51,6 +51,7 @@ package replicatorg.app;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.logging.Level;
 
 import javax.vecmath.Point3d;
 
@@ -381,6 +382,14 @@ public class GCodeParser {
 		if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {
 			commands.add(new replicatorg.drivers.commands.SelectTool((int) gcode.getCodeValue('T')));
 			tool = (int) gcode.getCodeValue('T');
+		}
+		
+		// handle unrecognised GCode
+		if(GCodeEnumeration.getGCode("M", (int)gcode.getCodeValue('M')) == null)
+		{
+			String message = "Unrecognized MCode! M" + (int)gcode.getCodeValue('M');
+			Base.logger.log(Level.SEVERE, message);
+			throw new GCodeException(message);
 		}
 		
 		switch (GCodeEnumeration.getGCode("M", (int)gcode.getCodeValue('M'))) {
@@ -737,9 +746,17 @@ public class GCodeParser {
 		}
 		
 
-		GCodeEnumeration gCode = GCodeEnumeration.getGCode("G", (int)gcode.getCodeValue('G'));
+		GCodeEnumeration codeEnum = GCodeEnumeration.getGCode("G", (int)gcode.getCodeValue('G'));
 
-		switch (gCode) {
+		// handle unrecognised GCode
+		if(codeEnum == null)
+		{
+			String message = "Unrecognized GCode! G" + (int)gcode.getCodeValue('G');
+			Base.logger.log(Level.SEVERE, message);
+			throw new GCodeException(message);
+		}
+		
+		switch (codeEnum) {
 		// these are basically the same thing, but G0 is supposed to do it as quickly as possible.
 		// Rapid Positioning
 		case G0:
@@ -790,7 +807,7 @@ public class GCodeParser {
 				center.setY(current.y() + jVal);
 
 				// Get the points for the arc
-				if (gCode == GCodeEnumeration.G2)
+				if (codeEnum == GCodeEnumeration.G2)
 					commands.addAll(drawArc(center, temp, true));
 				else
 					commands.addAll(drawArc(center, temp, false));

@@ -61,9 +61,6 @@ class ConfigurationDialog extends JDialog {
 		comboBox.setModel(model);
 		if(foundLastProfile != -1) {
 			comboBox.setSelectedIndex(foundLastProfile);
-			generateButton.setEnabled(true);
-			generateButton.requestFocusInWindow();
-			generateButton.setFocusPainted(true);
 		}
 	}
 
@@ -98,6 +95,17 @@ class ConfigurationDialog extends JDialog {
 		generateButton.setEnabled(false);
 				
 		add(new JLabel("Base Profile:"), "split 2");
+		
+		// This is intended to fix a bug where the "Generate Gcode" button doesn't get enabled 
+		prefPulldown.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				generateButton.setEnabled(true);
+				generateButton.requestFocusInWindow();
+				generateButton.setFocusPainted(true);
+			}
+			
+		});
 		loadList(prefPulldown);
 		prefPulldown.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
