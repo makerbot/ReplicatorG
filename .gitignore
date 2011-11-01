@@ -2,6 +2,7 @@
 # no dist files
 /docs/html/*
 /docs/latex/*
+/docs/replicat.org/*
 /dist
 dist-all
 build/jar
