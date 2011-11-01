@@ -150,6 +150,8 @@ import com.apple.mrj.MRJOpenDocumentHandler;
 import com.apple.mrj.MRJPrefsHandler;
 import com.apple.mrj.MRJQuitHandler;
 
+import com.centerkey.utils.BareBonesBrowserLaunch;
+
 public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 MRJPrefsHandler, MRJOpenDocumentHandler,
 MachineListener, ChangeListener,
@@ -308,8 +310,9 @@ ToolpathGenerator.GeneratorListener
 		menubar.add(buildEditMenu());
 		menubar.add(buildGCodeMenu());
 		menubar.add(buildMachineMenu());
+		menubar.add(buildThingiverseMenu());
 		menubar.add(buildHelpMenu());
-
+		
 		setJMenuBar(menubar);
 
 		Container pane = getContentPane();
@@ -752,6 +755,35 @@ ToolpathGenerator.GeneratorListener
 			});
 			menu.add(item);
 		}
+		return menu;
+	}
+
+	protected JMenu buildThingiverseMenu()
+	{
+		JMenuItem item;
+		JMenu menu = new JMenu("Thingiverse");
+		
+		item = new JMenuItem("What's New?");
+		item.addActionListener( new ActionListener(){
+			//do bare bones launch
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				BareBonesBrowserLaunch.openURL("http://www.thingiverse.com/newest");		
+			}
+		});
+		menu.add(item);
+		
+		item = new JMenuItem("What's Pouplar?");
+		item.addActionListener( new ActionListener(){
+			//do bare bones launch
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				BareBonesBrowserLaunch.openURL("http://www.thingiverse.com/popular");		
+			}
+		});
+		menu.add(item);
+		
+		
 		return menu;
 	}
 	
@@ -2859,6 +2891,7 @@ ToolpathGenerator.GeneratorListener
 	}
 
 	public void generationComplete(Completion completion, Object details) {
+
 		// if success, update header and switch to code
 		if (completion == Completion.SUCCESS) {
 			if (build.getCode() != null) {
@@ -2866,26 +2899,26 @@ ToolpathGenerator.GeneratorListener
 			}
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
-			System.out.println("Done?");
 			
 			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
 			boolean pomOn = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
 			
 			try
 			{
-				System.out.println(machineLoader.getMachine().getModel().getTools().size());
-				if(machineLoader.getMachine().getModel().getTools().size() > 1 && pomOn)
+				int toolCount = machineLoader.getMachine().getModel().getTools().size();
+				Base.logger.finer("tool size" + toolCount );
+				if( toolCount > 1 && pomOn)
 				{
-					System.out.println(extruderChoice);
+					Base.logger.fine(extruderChoice);
 					if(extruderChoice.equalsIgnoreCase("left"))
 					{
-						System.out.println("performing left ops");
+						Base.logger.finer("performing left ops");
 						DualStrusionWorker.changeToolHead(build.getCode().file, 1);
 						handleOpenFile(build.getCode().file);
 					}
 					else if(extruderChoice.equalsIgnoreCase("right"))
 					{
-						System.out.println("performing right ops");
+						Base.logger.finer("performing right ops");
 						DualStrusionWorker.changeToolHead(build.getCode().file, 0);
 						handleOpenFile(build.getCode().file);
 					}
@@ -2899,6 +2932,7 @@ ToolpathGenerator.GeneratorListener
 			catch(NullPointerException e)
 			{
 				//we don't need a message here?
+				Base.logger.fine("error doing toolhead update in generationComplete" + e);
 			}
 		}
 	}
