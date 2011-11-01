@@ -194,15 +194,15 @@ public class ToolpathGeneratorFactory {
 			}
 		};
 		
-		if((new Skeinforge40()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor("Skeinforge (40)", 
-				"This is a recent version of skeinforge.", Skeinforge40.class));
-		if((new Skeinforge44()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor("Skeinforge (44)", 
-				"This is the most recent version of skeinforge.", Skeinforge44.class));
 		if((new Skeinforge35()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor("Skeinforge (35)", 
 				"This is a decent version of skeinforge.", Skeinforge35.class));
+		if((new Skeinforge40()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor("Skeinforge (40) - experimental", 
+				"This is a recent version of skeinforge.", Skeinforge40.class));
+		if((new Skeinforge44()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor("Skeinforge (44) - experimental", 
+				"This is an experimental version of skeinforge.", Skeinforge44.class));
 		if((new Skeinforge31()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor("Skeinforge (31)", 
 				"This is an old version of skeinforge.", Skeinforge31.class));
