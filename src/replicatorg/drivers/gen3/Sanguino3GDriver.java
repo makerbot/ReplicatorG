@@ -1246,6 +1246,7 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 	
 	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException {
+		//why is this severe?
 		Base.logger.severe("Toggling ABP to " + state);
 		byte newState = state? (byte)1:(byte)0;
 		

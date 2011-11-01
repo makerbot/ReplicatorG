@@ -280,7 +280,11 @@ public class Machine implements MachineInterface {
 				}
 				
 				// we're going to check for the correct number of toolheads in each command
-				if(gcLine.getCodeValue('T') > nToolheads-1 && gcLine.getCodeValue('M') != 109)
+				// the list of exceptions keeps growing, do we really need to do this check?
+				// maybe we should just specify the things to check, rather than the reverse
+				if(gcLine.getCodeValue('T') > nToolheads-1 && gcLine.getCodeValue('M') != 109
+														   && gcLine.getCodeValue('M') != 106
+														   && gcLine.getCodeValue('M') != 107)
 				{
 					s = "Too Many Toolheads!\n" + line + 
 							" makes reference to a non-existent toolhead.";
