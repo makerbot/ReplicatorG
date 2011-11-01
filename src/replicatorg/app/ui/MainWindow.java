@@ -756,6 +756,9 @@ ToolpathGenerator.GeneratorListener
 		return menu;
 	}
 
+	/* Creates a menu item 'Thingiverse' 
+	 * @returns a JMenu populated with Thingiverse items
+	 */
 	protected JMenu buildThingiverseMenu()
 	{
 		JMenuItem item;
@@ -802,7 +805,11 @@ ToolpathGenerator.GeneratorListener
 		
 		return menu;
 	}
-	
+
+	/*
+	 * Creates a menu item 'Help'
+	 * @returrns a JMenu Item containing help items
+	 */
 	protected JMenu buildHelpMenu()
 	{
 		JMenuItem item;
