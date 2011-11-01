@@ -1,4 +1,4 @@
-0027 BETA ReplicatorG
+0027_BETA ReplicatorG
 * Fan changes to support ABP on Mk7 hardware (using Firmware 3.1 or newer only)
 * Individual axis disable added
 * Merged dualstrusion branch tools, fixed some bugs in references
