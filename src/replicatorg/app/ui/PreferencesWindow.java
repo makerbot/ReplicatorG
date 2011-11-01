@@ -304,15 +304,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			}
 		});
 
-
-		JButton advanced = new JButton("Advanced Prefs");
-		content.add(advanced);
-		advanced.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JFrame advancedPrefs = new AdvancedPrefs();
-				advancedPrefs.setVisible(true);
-			}
-		});
 		// [ OK ] [ Cancel ] maybe these should be next to the message?
 
 		JButton button;
