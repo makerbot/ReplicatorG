@@ -150,8 +150,6 @@ import com.apple.mrj.MRJOpenDocumentHandler;
 import com.apple.mrj.MRJPrefsHandler;
 import com.apple.mrj.MRJQuitHandler;
 
-import com.centerkey.utils.BareBonesBrowserLaunch;
-
 public class MainWindow extends JFrame implements MRJAboutHandler, MRJQuitHandler,
 MRJPrefsHandler, MRJOpenDocumentHandler,
 MachineListener, ChangeListener,
@@ -768,7 +766,16 @@ ToolpathGenerator.GeneratorListener
 			//do bare bones launch
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				BareBonesBrowserLaunch.openURL("http://www.thingiverse.com/newest");		
+				if(java.awt.Desktop.isDesktopSupported())
+				{
+					try {
+							java.awt.Desktop.getDesktop().browse(new java.net.URI("http://www.thingiverse.com/newest?source=repg"));
+					} catch (IOException e) {
+						Base.logger.log(Level.WARNING, "Could not load URL.");
+					} catch (java.net.URISyntaxException e) {
+							Base.logger.log(Level.WARNING, "bad URI");
+					}
+				}
 			}
 		});
 		menu.add(item);
@@ -778,7 +785,16 @@ ToolpathGenerator.GeneratorListener
 			//do bare bones launch
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				BareBonesBrowserLaunch.openURL("http://www.thingiverse.com/popular");		
+				if(java.awt.Desktop.isDesktopSupported())
+				{
+					try {
+						java.awt.Desktop.getDesktop().browse(new java.net.URI("http://www.thingiverse.com/popular?source=repg"));
+					} catch (IOException e) {
+						Base.logger.log(Level.WARNING, "Could not load URL.");
+					} catch (java.net.URISyntaxException e) {
+							Base.logger.log(Level.WARNING, "bad URI");
+					}
+				}
 			}
 		});
 		menu.add(item);
