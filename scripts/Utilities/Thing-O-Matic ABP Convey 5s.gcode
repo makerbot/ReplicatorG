@@ -6,6 +6,6 @@
 (   platform for 50 seconds.                )
 (**** begin eject ****)
 M106 (conveyor on)
-G04 P50000 (wait t/1000 seconds)
+G04 P5000 (wait t/1000 seconds)
 M107 (conveyor off)
 (**** end eject ****)
