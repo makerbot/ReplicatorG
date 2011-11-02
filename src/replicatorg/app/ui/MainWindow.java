@@ -2923,39 +2923,42 @@ ToolpathGenerator.GeneratorListener
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
 			
-			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
-			boolean pomOn = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
-			
-			try
+			if(isDualDriver())
 			{
-				int toolCount = machineLoader.getMachine().getModel().getTools().size();
-				Base.logger.finer("tool size" + toolCount );
-				if( toolCount > 1 && pomOn)
+				String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
+				boolean pomOn = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
+				
+				try
 				{
-					Base.logger.fine(extruderChoice);
-					if(extruderChoice.equalsIgnoreCase("left"))
+					int toolCount = machineLoader.getMachine().getModel().getTools().size();
+					Base.logger.finer("tool size" + toolCount );
+					if( toolCount > 1 && pomOn)
 					{
-						Base.logger.finer("performing left ops");
-						DualStrusionWorker.changeToolHead(build.getCode().file, 1);
-						handleOpenFile(build.getCode().file);
+						Base.logger.fine(extruderChoice);
+						if(extruderChoice.equalsIgnoreCase("left"))
+						{
+							Base.logger.finer("performing left ops");
+							DualStrusionWorker.changeToolHead(build.getCode().file, 1);
+							handleOpenFile(build.getCode().file);
+						}
+						else if(extruderChoice.equalsIgnoreCase("right"))
+						{
+							Base.logger.finer("performing right ops");
+							DualStrusionWorker.changeToolHead(build.getCode().file, 0);
+							handleOpenFile(build.getCode().file);
+						}
 					}
-					else if(extruderChoice.equalsIgnoreCase("right"))
+					else if(pomOn)
 					{
-						Base.logger.finer("performing right ops");
 						DualStrusionWorker.changeToolHead(build.getCode().file, 0);
 						handleOpenFile(build.getCode().file);
 					}
 				}
-				else if(pomOn)
+				catch(NullPointerException e)
 				{
-					DualStrusionWorker.changeToolHead(build.getCode().file, 0);
-					handleOpenFile(build.getCode().file);
+					//we don't need a message here?
+					Base.logger.fine("error doing toolhead update in generationComplete" + e);
 				}
-			}
-			catch(NullPointerException e)
-			{
-				//we don't need a message here?
-				Base.logger.fine("error doing toolhead update in generationComplete" + e);
 			}
 		}
 	}
