@@ -637,6 +637,8 @@ ToolpathGenerator.GeneratorListener
 			serialMenu.add(item);
 		}
 		if (names.isEmpty()) {
+			// Be aware that there is code in machineStateChanged that relies on this string
+			// I know it's a hack, but it works
 			JMenuItem item = new JMenuItem("No serial ports detected");
 			item.setEnabled(false);
 			serialMenu.add(item);
@@ -783,7 +785,7 @@ ToolpathGenerator.GeneratorListener
 		});
 		menu.add(item);
 		
-		item = new JMenuItem("What's Pouplar?");
+		item = new JMenuItem("What's Popular?");
 		item.addActionListener( new ActionListener(){
 			//do bare bones launch
 			@Override
@@ -2002,7 +2004,8 @@ ToolpathGenerator.GeneratorListener
 		// Enable the machine select and serial select menus only when the machine is not connected
 		for (int itemIndex = 0; itemIndex < serialMenu.getItemCount(); itemIndex++) { 
 			JMenuItem item = serialMenu.getItem(itemIndex);
-			if  (item!= null) {
+			// The ignore case is a little hacky, and is based on code in reloadSerialMenu()
+			if  (item != null && !("No serial ports detected".equals(item.getText()))) {
 				item.setEnabled(!evt.getState().isConnected());
 			}
 		}
@@ -2198,7 +2201,6 @@ ToolpathGenerator.GeneratorListener
 				dsw = new DualStrusionWindow(getBuild().getMainFilePath());	
 			else
 				dsw = new DualStrusionWindow();
-			dsw.createAndShow();
 
 			//File f = dsw.getCombined();
 			//if(f != null)
@@ -2319,7 +2321,7 @@ ToolpathGenerator.GeneratorListener
 					+ "b { font: 13pt \"Lucida Grande\" }"
 					+ "p { font: 11pt \"Lucida Grande\"; margin-top: 8px }"
 					+ "</style> </head>"
-					+ "<b>Do you want to save changes to this sketch<BR>"
+					+ "<b>Do you want to save changes to this file<BR>"
 					+ " before closing?</b>"
 					+ "<p>If you don't save, your changes will be lost.",
 					JOptionPane.QUESTION_MESSAGE);
@@ -2923,6 +2925,8 @@ ToolpathGenerator.GeneratorListener
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
 			
+			// So I've just discovered that this isDualDriver does the same check as we're doing with toolCount below
+			// This is a mess and should be tidied up. When is this used?
 			if(isDualDriver())
 			{
 				String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");

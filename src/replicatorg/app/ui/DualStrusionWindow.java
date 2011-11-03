@@ -31,7 +31,9 @@ $Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
  * <class>DualStrusionWindow</class> is a Swing class designed to integrate DualStrusion into the existing ReplicatorG GUI
  */
 
-
+/**
+ * 
+ */
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
@@ -40,9 +42,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -53,30 +57,37 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
+import replicatorg.app.Base;
 import replicatorg.dualstrusion.DualStrusionConstruction;
 import replicatorg.model.Build;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
+import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorListener;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
-public class DualStrusionWindow extends JFrame implements ToolpathGenerator.GeneratorListener{
-	/**
-	 * 
-	 */
-	public static CountDownLatch cdl;
-	private static final long serialVersionUID = 2548421042732389328L; //Generated serial
-	//File result; // final combined gcode will be saved here
-	File primary, secondary, dest, result, primarygcode, secondarygcode;
 
-	volatile short triggerNum;
-	boolean start2nd = false;
-	boolean hasOneGcode; //this boolean is true if the constructor is passed one gcode file to begin with, it later effect the layout of the Swing Window
+
+/**
+ * This is the window that shows you Dualstrusion options, and also prepares everything for combination
+ * I'd like to improve this in the future, adapting it prepare build plates, etc.
+ * 
+ * Also, because this is still very new (and potentially buggy) code, I've thrown a whole lot of logging calls in,
+ * Those can be removed in a future release.
+ */
+public class DualStrusionWindow extends JFrame{
+	private static final long serialVersionUID = 2548421042732389328L; //Generated serial
+
+	// why is there a dest and a result?
+	File dest, result;
+
 	boolean repStart, repEnd, uWipe;
-	String originalGcodePath;
-	/**
-	 * 
-	 */
+	
+	Queue<File> stls, gcodes;
+	
+	// I know for the current DualStrusion we'll always have two gcodes,
+	//   but that's just for now...
+	CountDownLatch numStls, numGcodes;
 
 	/**
 	 * 
@@ -90,29 +101,17 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 	 * This is a constructor that takes the filepath of the gcode open currently in ReplicatorG
 	 * @param s the path of the gcode currently open in RepG
 	 */
-	public DualStrusionWindow(String s) {
-		
-		super("DualStrusion Window");
-		
-		hasOneGcode = false;
-		
-		if(s != null){
-			hasOneGcode = true;
-			originalGcodePath = s;
-		}
-
-	}
 	/**
 	 * This method creates and shows the DualStrusionWindow GUI, this window is a MigLayout with 3 JFileChooser-TextBox Pairs, the first two being source gcodes and the last being the combined gcode destination.
 	 * It also links to online DualStrusion Documentation NOTE: This may be buggy, it uses getDesktop() which is JDK 1.6 and scary.
 	 * This method also invokes the thread in which the gcode combining operations run in, I would like to turn this into a SwingWorker soon.
 	 */
-	public void createAndShow()
-	{
-		cdl = new CountDownLatch(1);
-		//JCheckBox useSD = new JCheckBox(false);
+	public DualStrusionWindow(String path) {
+		super("DualStrusion Window");
+
+		Base.logger.log(Level.FINE, "Dualstrusion window booting up...");
+		
 		setResizable(true);
-		//frame.setContentPane(this);
 		setLocation(400, 0);
 		Container cont = this.getContentPane();
 		cont.setLayout(new MigLayout("fill"));
@@ -124,68 +123,17 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 		explanation.setWrapStyleWord(true);
 		explanation.setSize(700, 200);
 		explanation.setLineWrap(true);
-		//cont.add(explanation, "wrap");
-		/*
-		final JLabel linkage = new JLabel("<html><u>See documentation</u></html>");
-		linkage.setForeground(Color.BLUE);
-		linkage.addMouseListener(new MouseListener()
-		{
-
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-
-				try {
-					Desktop.getDesktop().browse(new URI("http://www.makerbot.com/docs/dualstrusion"));
-					linkage.setForeground(Color.MAGENTA);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent arg0) {
-				// TODO Auto-generated method stub
-
-			}
-		});
-
-		cont.add(linkage, "wrap");
-		 */
+		
 		cont.add(new JLabel("Extruder A (Left)"), "split");//TOOLHEAD 1
 
 		final JTextField Toolhead1 = new JTextField(60);
-		Toolhead1.setText("");
-		if(hasOneGcode)
-		{
-			Toolhead1.setText(originalGcodePath);
-		}
+		String loadFileName = Base.preferences.get("dualstrusionwindow.1file", path);
+		if(loadFileName != null)
+			Toolhead1.setText(loadFileName);
+		else
+			Toolhead1.setText("");
 		JButton Toolhead1ChooserButton = new JButton("Browse...");
-		Toolhead1ChooserButton.addActionListener(new ActionListener()
-		{
-
-
+		Toolhead1ChooserButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				String s = null;
 				if(!Toolhead1.getText().equals(""))
@@ -200,22 +148,20 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 				{
 					Toolhead1.setText(s);
 				}
-
 			}
-
 		});
 		cont.add(Toolhead1,"split");
 		cont.add(Toolhead1ChooserButton, "wrap");
 
-		//
-
 		final JTextField Toolhead0 = new JTextField(60);
-		Toolhead0.setText("");
+		loadFileName = Base.preferences.get("dualstrusionwindow.0file", path);
+		if(loadFileName != null)
+			Toolhead0.setText(loadFileName);
+		else
+			Toolhead0.setText("");
 
 		JButton Toolhead0ChooserButton = new JButton("Browse...");
-		Toolhead0ChooserButton.addActionListener(new ActionListener()
-		{
-
+		Toolhead0ChooserButton.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				String s = null;
 				if(!Toolhead0.getText().equals(""))
@@ -230,16 +176,11 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 				{
 					Toolhead0.setText(s);
 				}
-
 			}
-
 		});
 		JButton switchItem = new JButton("Switch Toolheads"); //This button switches the contents of the two text fields in order to easily swap Primary and Secondary Toolheads
 		switchItem.addActionListener(new ActionListener()
 		{
-
-
-
 			public void actionPerformed(ActionEvent arg0) {
 				String temp = Toolhead1.getText();
 				Toolhead1.setText(Toolhead0.getText());
@@ -254,13 +195,12 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 		cont.add(Toolhead0ChooserButton, "wrap");
 
 		final JTextField DestinationTextField = new JTextField(60);
-		DestinationTextField.setText("");
+		loadFileName = Base.preferences.get("dualstrusionwindow.destfile", "");
+		DestinationTextField.setText(loadFileName);
 
 		JButton DestinationChooserButton = new JButton("Browse...");
 		DestinationChooserButton.addActionListener(new ActionListener()
 		{
-
-
 			public void actionPerformed(ActionEvent arg0) {
 				String s = null;
 				if(!DestinationTextField.getText().equals(""))
@@ -303,7 +243,7 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 			}
 
 		});
-		cont.add(new JLabel("Combined Gcode: "), "split");
+		cont.add(new JLabel("Save As: "), "split");
 		cont.add(DestinationTextField, "split");
 		cont.add(DestinationChooserButton, "wrap");
 		
@@ -321,70 +261,85 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 		//Use Wipes	
 		final JCheckBox useWipes = new JCheckBox();
 		useWipes.setSelected(true);
-		cont.add(new JLabel("Use Wipes DANGER!(Don't disable this unless you know what your doing)"), "split");
+		cont.add(new JLabel("Use Wipes. (DANGER! Don't disable this unless you know what you're doing)"), "split");
 		cont.add(useWipes, "wrap");
 		
 		//Merge
 		JButton merge = new JButton("Merge");
 
-		merge.addActionListener(new ActionListener()
-
-		{
-
+		merge.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				boolean warning = false;
 				if(Toolhead1.getText().equals(Toolhead0.getText()))
 				{
-					//JFrame fr = new JFrame();
-					int option = JOptionPane.showConfirmDialog(null, "You are trying to combine two of the same file. Are you sure you want to do this?", "Continue?", 
-							JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+					int option = JOptionPane.showConfirmDialog(null, "You are trying to combine two of the same file. Are you sure you want to do this?",
+							"Continue?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 					System.out.println(option);
-					if(option == 0)
+					if(option == 1)
+						return;
+				}
+
+				Base.logger.log(Level.FINE, "Building lists of files to combine");
+				
+				// Note that these are bing used as queues
+				stls = new LinkedList<File>();
+				gcodes = new LinkedList<File>();
+				
+				File test = new File(Toolhead1.getText());
+				if(test.exists())
+				{
+					String ext = getExtension(test.getName());
+					if("stl".equalsIgnoreCase(ext))
+						stls.add(test);
+					else if("gcode".equalsIgnoreCase(ext))
+						gcodes.add(test);
+					else
 					{
-						warning = false;
-					}
-					else if (option == 1)
-					{
-						warning = true;	
+						JOptionPane.showConfirmDialog(null, "File for Extruder A not an stl or gcode. Please select something I can understand.",
+								"Select a different file.", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE);
+						return;
 					}
 				}
-				if(!warning)
-					primary = new File(Toolhead1.getText());
-				secondary = new File(Toolhead0.getText());
+				
+				test = new File(Toolhead0.getText());
+				if(test.exists())
+				{
+					String ext = getExtension(test.getName());
+					if("stl".equalsIgnoreCase(ext))
+						stls.add(test);
+					else if("gcode".equalsIgnoreCase(ext))
+						gcodes.add(test);
+					else
+					{
+						JOptionPane.showConfirmDialog(null, "File for Extruder B not an stl or gcode. Please select something I can understand.",
+								"Select a different file.", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+				}
+				
+				// Let's record the files and destination so they don't need to be entered every time
+				Base.preferences.put("dualstrusionwindow.1file", Toolhead1.getText());
+				Base.preferences.put("dualstrusionwindow.0file", Toolhead0.getText());
+				Base.preferences.put("dualstrusionwindow.destfile", DestinationTextField.getText());
+				
 				dest = new File(DestinationTextField.getText());
 				
-				// creates files to dump gcode into if stl is passed
-				primarygcode = new File(replaceExtension(Toolhead1.getText(), "gcode"));
-				secondarygcode = new File(replaceExtension(Toolhead0.getText(), "gcode"));
 				repStart = replaceStart.isSelected();
 				repEnd = replaceEnd.isSelected();
 				uWipe = useWipes.isSelected();
 
-				if(getExtension(primary.getName()).equalsIgnoreCase("stl") || getExtension(secondary.getName()).equalsIgnoreCase("stl"))
+				if(!stls.isEmpty())
 				{
-					if(getExtension(primary.getName()).equalsIgnoreCase("stl") && getExtension(secondary.getName()).equalsIgnoreCase("stl"))
-					{
-						startBoth();
-					}
-					else if(getExtension(primary.getName()).equalsIgnoreCase("stl"))
-					{
-						startPrimary();
-					}
-					else if(getExtension(secondary.getName()).equalsIgnoreCase("stl"))
-					{
-
-						startSecondary();
-					}
+					Base.logger.log(Level.FINE, "stls is not empty, converting STL files to gcode");
+					numStls = new CountDownLatch(stls.size());
+					stlsToGcode();
 				}
 				else
 				{
-					triggerNum = 1;
-					finish();
+					Base.logger.log(Level.FINE, "stls is empty, combining gcode files");
+					numGcodes = new CountDownLatch(gcodes.size());
+					combineGcodes();
 				}
-
-
-
-
 			}
 
 		});
@@ -396,13 +351,11 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 			{
 				try {
 					Desktop.getDesktop().browse(new URI("http://goo.gl/DV5vn"));
-					//That goo.gl redirects to http://www.makerbot.com/docs/dualstrusion I just wanted to build in a convient to track how many press the help button
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					//That goo.gl redirects to http://www.makerbot.com/docs/dualstrusion I just wanted to build in a convenient to track how many press the help button
+				} catch (Exception e)
+				{
+					Base.logger.log(Level.WARNING, "Could not load online help! See log level FINEST for more details");
+					Base.logger.log(Level.FINEST, ""+e);
 				}
 			}
 		});
@@ -410,6 +363,67 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 		pack();
 		setVisible(true);	
 
+		Base.logger.log(Level.FINE, "Finishing construction of Dualstrusion window");
+	}
+	
+	private void stlsToGcode()
+	{
+		try{
+			final File toBuild = stls.poll();
+			final File buildDest = new File(replaceExtension(toBuild.getAbsolutePath(), "gcode"));
+			
+			Base.logger.log(Level.FINE, "Initializing stl -> gcode " + toBuild.getAbsolutePath());
+			if(!buildDest.exists())
+				buildDest.createNewFile();
+			gcodes.add(buildDest);
+			
+			final JFrame progress = new JFrame("STL to GCode Progress");
+			final ToolpathGenerator gen = ToolpathGeneratorFactory.createSelectedGenerator();
+			final Build b = new Build(toBuild.getAbsolutePath());
+			final ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(progress, gen, b);
+			
+			tgt.addListener(new GeneratorListener(){
+				@Override
+				public void updateGenerator(String message) {
+					if(message.equals("Config Done") && !stls.isEmpty())
+					{
+						Base.logger.log(Level.FINE, "Starting next stl > gcode: " + stls.peek().getName());
+						stlsToGcode();
+					}
+				}
+
+				@Override
+				public void generationComplete(Completion completion, Object details) {
+					numStls.countDown();
+					if(numStls.getCount() == 0)
+					{
+						Base.logger.log(Level.FINE, "done converting stl files, on to gcode combination! " + numStls.getCount() + "==0?  " + buildDest.getName());
+						numGcodes = new CountDownLatch(gcodes.size());
+						combineGcodes();
+					}
+				}
+				
+			});
+			tgt.setDualStrusionSupportFlag(true, 200, 300, toBuild.getName());
+
+			Base.logger.log(Level.FINE, "Init finished, starting conversion");
+			
+			tgt.start();
+		}
+		catch(IOException e)
+		{
+			Base.logger.log(Level.SEVERE, "cannot read stl! Aborting dualstrusion generation, see log level FINEST for more details.");
+			Base.logger.log(Level.FINEST, ""+e);
+			
+		} 
+	}
+	
+
+	private static String getExtension(String path)
+	{
+		int i = path.lastIndexOf(".");
+		String ext = path.substring(i+1, path.length());
+		return ext;
 	}
 	
 	private static String replaceExtension(String s, String newExtension)
@@ -417,133 +431,38 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 		int i = s.lastIndexOf(".");
 		s = s.substring(0, i+1);
 		s = s + newExtension;
-		System.out.println(s);
 		return s;
 	}
 	
-	private synchronized void startBoth()
+	private void combineGcodes()
 	{
-		ToolpathGenerator generator1 = ToolpathGeneratorFactory.createSelectedGenerator();
-		try{
-			Build p = new Build(primary.getAbsolutePath());
-			JFrame primaryProgress = new JFrame("Primary Progress");
-			//primaryProgress.setVisible(true);
-			//primaryProgress.setLocation(200, 200);
-			//secondaryProgress.setLocation(200+primaryProgress.getWidth(), 200+primaryProgress.getHeight());
-			//JFrame combinedWindow = new JFrame("Gcode Generator");
-			//Container cont = new Container();
-			//JTabbedPane jtb = new JTabbedPane();
-			//jtb.addTab("Left", primaryProgress);
-			//jtb.addTab("Right", secondaryProgress);
-			//cont.add(jtb);
-			//combinedWindow.add(jtb);
-			//combinedWindow.pack();
-			//combinedWindow.setVisible(true);
-			ToolpathGeneratorThread tg1 = new ToolpathGeneratorThread(primaryProgress, generator1, p);
-			tg1.addListener(this);
-			
-			//This preps all the toolpathGenerator stuff for dualstrusion and makes it deploy swing windows at given coordinates
-			tg1.setDualStrusionSupportFlag(true, 200, 300, "Extruder A (Left)");
-			tg1.start();
-			
-			triggerNum = 2;
-
-		}
-		catch(IOException e)
+		//For now this should always be exactly two gcodes, let's just check that assumption
+		if(numGcodes.getCount() != 2)
 		{
-			System.err.println("cannot read stl");
-		} 
-	}
-	
-	private synchronized void start2ndGeneration()
-	{
-		System.out.println("Ill never let go jack!");
-		ToolpathGenerator generator2 = ToolpathGeneratorFactory.createSelectedGenerator();
-		try {
-			Build s = new Build(secondary.getAbsolutePath());
-		
-		JFrame secondaryProgress = new JFrame("Secondary Progress");
-		
+			Base.logger.log(Level.SEVERE, "Expected two gcode files, found " + 
+					numGcodes.getCount() + " cancelling Dualstrusion combination");
+			return;
+		}
 
-		ToolpathGeneratorThread tg2 = new ToolpathGeneratorThread(secondaryProgress, generator2, s);
-		tg2.addListener(this);
-		tg2.setDualStrusionSupportFlag(true, 650, 300, "Extruder B (Right)");
-		tg2.start();
-		} catch (IOException e) {
+		Base.logger.log(Level.FINE, "pre pause");
+		// Why is this here?
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	
-	private synchronized void startPrimary()
-	{
-		ToolpathGenerator generator1 = ToolpathGeneratorFactory.createSelectedGenerator();
-
-		try{
-			Build p = new Build(primary.getAbsolutePath());
-			JFrame primaryProgress = new JFrame("Primary Progress");
-			primaryProgress.setLocation(200, 200);
-			ToolpathGeneratorThread tg1 = new ToolpathGeneratorThread(primaryProgress, generator1, p);
-			tg1.addListener(this);
-			tg1.start();
-			triggerNum = 1;
-
-		}
-		catch(IOException e)
-		{
-			System.err.println("cannot read stl");
-		} 
-	}
-	
-	private synchronized void startSecondary()
-	{
-		ToolpathGenerator generator2 = ToolpathGeneratorFactory.createSelectedGenerator();
-		try{
-			Build s = new Build(secondary.getAbsolutePath());
-			JFrame secondaryProgress = new JFrame("Secondary Progress");
-			//primaryProgress.setVisible(true);
-			secondaryProgress.setLocation(200, 200);
-
-			ToolpathGeneratorThread tg2 = new ToolpathGeneratorThread(secondaryProgress, generator2, s);
-			tg2.addListener(this);
-			tg2.start();
-			triggerNum = 1;
-
-		}
-		catch(IOException e)
-		{
-			System.err.println("cannot read stl");
-		} 
-	}
-	
-	private synchronized void finish()
-	{
-		triggerNum--;
-		if(triggerNum == 0)
+		Base.logger.log(Level.FINE, "post pause");
 			
-		{
-			System.out.println("Primary is" + primarygcode.getName() + " secondary is " + secondarygcode.getName());
+		DualStrusionConstruction dcs = new DualStrusionConstruction(gcodes.poll(), gcodes.poll(), dest, repStart, repEnd, uWipe);
+		dcs.run();
+		result = dcs.getCombinedFile();
 
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			System.out.println(primarygcode.getName() + " and " + secondarygcode.getName());
-			DualStrusionConstruction dcs = new DualStrusionConstruction(primarygcode, secondarygcode, dest, repStart, repEnd, uWipe);
-			dcs.run();
-			result = dcs.getCombinedFile();
-			removeAll();
-			dispose();
-		}
-	}
-
-	private static String getExtension(String path)
-	{
-		int i = path.lastIndexOf(".");
-		String ext = path.substring(i+1, path.length());
-		return ext;
+		Base.logger.log(Level.FINE, "Finished DualStrusionWindow's part");
+		
+		removeAll();
+		dispose();
+		
 	}
 	/**
 	 * This method returns the result of the gcode combining operation.
@@ -553,48 +472,6 @@ public class DualStrusionWindow extends JFrame implements ToolpathGenerator.Gene
 	public File getCombined()
 	{
 		return result;
-	}
-	
-	/**
-	 * This method is unused and a prime canidate for deletion.
-	 * @param savethis
-	 */
-	private static void saveGCodeSource(GCodeSource savethis)
-	{
-		StringListSource slss = (StringListSource) savethis;
-		Iterator<String> slit = slss.iterator();
-		try {
-			FileWriter fwr = new FileWriter(new File("/home/makerbot/Desktop/target.gcode"));
-			while(slit.hasNext())
-			{
-				fwr.write(slit.next());
-			}
-			fwr.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
-
-	}
-	
-	@Override
-	public void generationComplete(Completion completion, Object details) {
-		if (completion == Completion.SUCCESS) {
-			finish();
-		}
-
-	}
-	@Override
-	public void updateGenerator(String message) {
-		System.out.println(message);
-		if(message.equals("Config Done") && !start2nd)
-		{
-			start2nd = true;
-			System.out.println("Message recieved");
-			start2ndGeneration();
-			
-		}
-
 	}
 
 }
