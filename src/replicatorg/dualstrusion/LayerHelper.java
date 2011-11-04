@@ -3,6 +3,7 @@ package replicatorg.dualstrusion;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 import replicatorg.app.Base;
 import replicatorg.machine.model.WipeModel;
@@ -13,54 +14,41 @@ import replicatorg.machine.model.WipeModel;
  * This class does operations related to Layer manipulation, it employs Will and Ben's layer merging logic but is a complete rewrite of Will's code inorder to utilize the Layer object
  *
  */
-public class Layer_Helper {
+public class LayerHelper {
 
 	/**
 	 * <code>currentToolhead</code> holds a Toolheads enum representing the current Toolhead, this is checked to see whether a toolchange is necessary
 	 */
-	private static Toolheads currentToolhead = Toolheads.Primary;
+	private Toolheads currentToolhead = Toolheads.PRIMARY;
 	/**
 	 * Holds the ArrayList of layers for the primary gcode
 	 */
-	public static ArrayList<Layer> PrimaryLayers = new ArrayList<Layer>();
+	private ArrayList<Layer> primaryLayers = new ArrayList<Layer>();
 	/**
 	 * Holds the ArrayList of layers for the secondary gcode
 	 */
-	public static ArrayList<Layer> SecondaryLayers = new ArrayList<Layer>();
+	private ArrayList<Layer> secondaryLayers = new ArrayList<Layer>();
 	/**
 	 * This float represents the maximum difference that two floats can have to be considered equal, it should always be less than the smallest possible layer height
 	 */
-	private static float tolerance = .01f;
-	//private static String currentFeedRate; // good default start speed
+	private float tolerance = .01f;
+	//private  String currentFeedRate; // good default start speed
 	/**
 	 * This method has all the method calls in order to merge two gcodes, it is the only method that "needs" to be public
 	 */
-	private static boolean mergeSupport, useWipes;
-	public static ArrayList<String> doMerge(ArrayList<String> prime, ArrayList<String> second, boolean mergeSup, boolean uW)
+	private boolean mergeSupport, useWipes;
+	
+	public LayerHelper(ArrayList<String> primary, ArrayList<String> secondary, boolean useWipes, boolean mergeSupport)
 	{
-		useWipes = uW;
-		currentToolhead = Toolheads.Primary;
-		if(PrimaryLayers != null)
-		{
-			PrimaryLayers.clear(); //cleanse these arrays just in case
-
-		}
-		if(SecondaryLayers != null)
-		{
-			SecondaryLayers.clear();
-
-		}
-		mergeSupport = mergeSup;
-		System.out.println("domerge");
-		readLayers(prime, PrimaryLayers);
-		readLayers(second, SecondaryLayers);
-		//seeLayerHeights(SecondaryLayers);
-		System.out.println(PrimaryLayers.size() + " " + SecondaryLayers.size());
-		//System.out.println("Tallest layer in primary is " + PrimaryLayers.get(PrimaryLayers.size() - 1).getHeight());
-		System.out.println("Tallest layer in secondary is " + SecondaryLayers.get(SecondaryLayers.size() - 1).getHeight());
-
-		return mergeLayers(PrimaryLayers, SecondaryLayers);
-
+		this.primaryLayers = readLayers(primary);
+		this.secondaryLayers = readLayers(secondary);
+		System.out.println("primary.size=" + primaryLayers.size() + " secondary.size=" + secondaryLayers.size());
+		
+		this.useWipes = useWipes;
+		this.mergeSupport = mergeSupport;
+		
+		currentToolhead = Toolheads.PRIMARY;
+		
 	}
 	/**
 	 * This method is used to search through an ArrayList of Layers to find a Layer with height x, it is used by to check whether both gcodes have layers at a specified height
@@ -68,7 +56,7 @@ public class Layer_Helper {
 	 * @param searchme an ArrayList of layers to search
 	 * @return if it finds something returns the layer, else returns null
 	 */
-	public static Layer getByHeight(float height, ArrayList<Layer> searchme)
+	public Layer getByHeight(float height, ArrayList<Layer> searchme)
 	{
 		for(Layer l : searchme)
 		{
@@ -83,7 +71,7 @@ public class Layer_Helper {
 	 * Used for debugging
 	 * @param a
 	 */
-	private static void seeLayerHeights(ArrayList<Layer> a)
+	private void seeLayerHeights(ArrayList<Layer> a)
 	{
 		for(Layer l : a)
 		{
@@ -96,15 +84,19 @@ public class Layer_Helper {
 	 * @param LayerHeight the layer height to return to, important so as not to run into the print toolchanging
 	 * @return
 	 */
-	public static ArrayList<String> toolChange(Toolheads destinationTool, float LayerHeight)
+	
+	//Why do these methods have different effects?
+	//why does the second add getFirstMove()?
+	public ArrayList<String> toolChange(Toolheads destinationTool, float LayerHeight)
 	{
-		System.out.println("dest " + destinationTool + "cur " + currentToolhead);
+		 //calls will langfords toolchange
+		System.out.println("destination toolhead " + destinationTool + "curent toolhead " + currentToolhead);
 
 		currentToolhead = destinationTool;
 
-		return completeToolChange(destinationTool, LayerHeight); //calls will langfords toolchange
+		return completeToolChange(destinationTool, LayerHeight);
 	}
-	public static ArrayList<String> toolChange(Toolheads destinationTool, Layer a)
+	public ArrayList<String> toolChange(Toolheads destinationTool, Layer a)
 	{
 		//System.out.println("dest " + destinationTool);
 		currentToolhead = destinationTool;
@@ -115,28 +107,15 @@ public class Layer_Helper {
 		cmds.add(getFirstMove(a.getCommands()));
 		return cmds;
 	}
-	/*
-	public static void setCurrentFeedRate(ArrayList<String> commands)
-	{
-		for(String s : commands)
-		{
-			if(s.matches("M108.*"))
-			{
-				System.out.println("hit, new feedrate : " + s);
-				currentFeedRate  = s;
-			}
-		}
-	}
-	 */
 	/**
 	 * This method merges two layers, it does so by iterating through in increments of <code>tolerance</code> and calling getByHeight to see if both gcodes, one gcode, or no gcodes have layers at that height.
 	 * It then calls different methods to integrate the gcode in depending on the presence of layers at that height
 	 */
-	public static ArrayList<String> mergeLayers(ArrayList<Layer> primary, ArrayList<Layer> secondary)
+	public ArrayList<String> mergeLayers()
 	{
 		ArrayList<String> merged = new ArrayList<String>();
-		float maxHeight1 = primary.get(primary.size()-1).getHeight();
-		float maxHeight0 = secondary.get(secondary.size()-1).getHeight();
+		float maxHeight1 = primaryLayers.get(primaryLayers.size()-1).getHeight();
+		float maxHeight0 = secondaryLayers.get(secondaryLayers.size()-1).getHeight();
 		float maxHeight;
 		//System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
 		if(maxHeight0 < maxHeight1)
@@ -149,22 +128,21 @@ public class Layer_Helper {
 		}
 		//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
-		merged.addAll(toolChange(Toolheads.Primary, 0.6f)); //insures we start with right offset and nozzles start supaclean
-		System.out.println("MH1 = " + maxHeight1 + " MH0 = " + maxHeight0 + "MH Totes = " + maxHeight);
-		//for(float i = 0; i < maxHeight - .008; i += tolerance)
-		for(float i = 0; i < maxHeight; i += tolerance)
+		merged.addAll(toolChange(Toolheads.PRIMARY, 0.6f)); //insures we start with right offset and nozzles start supaclean
+
+		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
 
 			//System.out.println("checking " + i);
-			Layer a = getByHeight(i, primary); //primary
-			Layer b = getByHeight(i, secondary);//secondary
+			Layer a = getByHeight(i, primaryLayers); //primary
+			Layer b = getByHeight(i, secondaryLayers);//secondary
 			if(a != null || b != null)
 			{
 				if(mergeSupport)
 				{
 					System.out.println("mergeSupport is: ON");
 					//currentToolhead = Toolheads.Primary; //1=A=Primary=Left
-					merged.addAll(toolChange(Toolheads.Primary, i));
+					merged.addAll(toolChange(Toolheads.PRIMARY, i));
 					//2=B=Primary=Right
 				}
 				//System.out.println("non null layers at " + i);
@@ -181,20 +159,18 @@ public class Layer_Helper {
 				{
 					System.out.println("a is real b is null" + i);
 					//setCurrentFeedRate(b.getCommands());
-					merged.addAll(parseLayer(a, Toolheads.Primary));
+					merged.addAll(parseLayer(a, Toolheads.PRIMARY));
 				}
 				else if(b != null)
 				{
 					System.out.println("b is real a is null" + i);
 					//setCurrentFeedRate(a.getCommands());
-					merged.addAll(parseLayer(b, Toolheads.Secondary));
+					merged.addAll(parseLayer(b, Toolheads.SECONDARY));
 				}
 			}
 		}
 		return merged;
 	}
-	
-	
 	/**
 	 * This method is called  to add gcode to the combined gcode if a layer is only present in one of the sources,
 	 * basically all it does  is check to see if it needs to toolchange, execute a toolchange if needed, and then add the gcode
@@ -202,7 +178,7 @@ public class Layer_Helper {
 	 * @param destTool Tool to add layer with
 	 * @return
 	 */
-	private static String getFirstMove(ArrayList<String> cmds)
+	private  String getFirstMove(ArrayList<String> cmds)
 	{
 		for(String s : cmds)
 		{
@@ -218,33 +194,33 @@ public class Layer_Helper {
 		}
 		return " ";
 	}
-	private static ArrayList<String> parseLayer(Layer a, Toolheads destTool)
+	private  ArrayList<String> parseLayer(Layer a, Toolheads destTool)
 	{
 		//	setCurrentFeedRate(a.getCommands());
 		ArrayList<String> completeLayer = new ArrayList<String>();
 		System.out.println("curTool " + currentToolhead + " desttool " + destTool + "linenum " + a.getHeight());
-		if(destTool == Toolheads.Primary)
+		if(destTool == Toolheads.PRIMARY)
 		{
-			if(currentToolhead == Toolheads.Primary)
+			if(currentToolhead == Toolheads.PRIMARY)
 			{
 				//System.out.println(a.getCommands());
 				completeLayer.addAll(a.getCommands());
 			}
-			else if(currentToolhead == Toolheads.Secondary)
+			else if(currentToolhead == Toolheads.SECONDARY)
 			{
-				completeLayer.addAll(toolChange(Toolheads.Primary, a));
+				completeLayer.addAll(toolChange(Toolheads.PRIMARY, a));
 				completeLayer.addAll(a.getCommands());
 			}
 		}
-		else if(destTool == Toolheads.Secondary)
+		else if(destTool == Toolheads.SECONDARY)
 		{
-			if(currentToolhead == Toolheads.Secondary)
+			if(currentToolhead == Toolheads.SECONDARY)
 			{
 				completeLayer.addAll(a.getCommands());
 			}
-			else if(currentToolhead == Toolheads.Primary)
+			else if(currentToolhead == Toolheads.PRIMARY)
 			{
-				completeLayer.addAll(toolChange(Toolheads.Secondary, a));
+				completeLayer.addAll(toolChange(Toolheads.SECONDARY, a));
 				completeLayer.addAll(a.getCommands());
 			}
 		}
@@ -255,14 +231,17 @@ public class Layer_Helper {
 	 * @param readThis source ArrayList of strings
 	 * @param dumphere destination ArrayList  of Layers
 	 */
-	public static void readLayers(ArrayList<String> readThis, ArrayList<Layer> dumphere)
+	public ArrayList<Layer> readLayers(ArrayList<String> readThis)
 	{
-		//for(int i = 0; i < gcode.size()-2;  i++)
+		ArrayList<Layer> result = new ArrayList<Layer>();
+		
+		System.out.println("readLayers - list size=" + readThis.size());
+		
 		for(int i = 0; i < readThis.size()-2;  i++)
 		{
 			if(readThis.get(i).matches("\\(\\<layer\\>.*\\)"))
 			{
-				//System.out.println("matched layer");
+				System.out.println("\t" + readThis.get(i));
 				float layerHeight = 0;
 				try
 				{
@@ -270,24 +249,19 @@ public class Layer_Helper {
 				}
 				catch(NumberFormatException e)
 				{
-					System.err.println("one of your layer heights was unparseable, please check and make sure all of them are in the format (<layer> 0.00)");
+					Base.logger.log(Level.SEVERE, "one of your layer heights was unparseable, " +
+							"please check and make sure all of them are in the format (<layer> 0.00)");
 				}
-				//System.out.println("height" + layerHeight);
+
 				int a = i + 1;
 				while(true)
 				{
 					if(readThis.get(a).equalsIgnoreCase("(</layer>)"))
 					{
-
-						//System.out.println("reading in layer at height " + layerHeight);
 						ArrayList<String> tempList = new ArrayList<String>(readThis.subList(i, a+1));
-						//DualStrusionWorker.printArrayList(tempList);
-						Layer l = new Layer(layerHeight, tempList);
-						dumphere.add(l); 
-						//a++;
+						result.add(new Layer(layerHeight, tempList)); 
 						break;
 					}
-
 					a++;
 				}
 			}
@@ -296,7 +270,8 @@ public class Layer_Helper {
 				//System.out.println(gcode.get(i) + " does not ");
 			}
 		}
-		//return gcode;
+		System.out.println("readLayers - result size=" + result.size());
+		return result;
 	}
 	/**
 	 * This method is called when layers exist at the same height in both gcodes, it determines the current toolhead, prints that layer first, executes a toolchange, and then prints the second layer
@@ -305,10 +280,8 @@ public class Layer_Helper {
 	 * @param b secodnary layer
 	 * @return
 	 */
-	private static ArrayList<String> mergeLayer(Layer a, Layer b) //This method makes it so that you dont switch toolheads unnessecarily a is primary layers b is secondary layers
+	private  ArrayList<String> mergeLayer(Layer a, Layer b) //This method makes it so that you dont switch toolheads unnessecarily a is primary layers b is secondary layers
 	{
-		//TODO: before releasing this code, make sure it's safe for localization.
-		// if this is printing floating point numbers, it has to make sure it's putting out '.'s and not ','s
 		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 		dfs.setDecimalSeparator('.');
 		DecimalFormat nf = new DecimalFormat();
@@ -318,18 +291,18 @@ public class Layer_Helper {
 		ArrayList<String> cmds = new ArrayList<String>();
 		//System.out.println(a.getHeight());
 		cmds.add("(<layer> " + nf.format(a.getHeight()) + " )");
-		if(currentToolhead == Toolheads.Primary)
+		if(currentToolhead == Toolheads.PRIMARY)
 		{
 			//setCurrentFeedRate(b.getCommands());
 			cmds.addAll(a.getCommandsWithoutLayerTag());
-			cmds.addAll(toolChange(Toolheads.Secondary, a));
+			cmds.addAll(toolChange(Toolheads.SECONDARY, a));
 			cmds.addAll(b.getCommandsWithoutLayerTag());
 		}
-		else if(currentToolhead == Toolheads.Secondary)
+		else if(currentToolhead == Toolheads.SECONDARY)
 		{
 			//setCurrentFeedRate(a.getCommands());
 			cmds.addAll(b.getCommandsWithoutLayerTag());
-			cmds.addAll(toolChange(Toolheads.Primary, b));
+			cmds.addAll(toolChange(Toolheads.PRIMARY, b));
 			cmds.addAll(a.getCommandsWithoutLayerTag());
 		}
 		cmds.add("(</layer>)");
@@ -344,13 +317,12 @@ public class Layer_Helper {
 	 * @param layer_height the layer height that the toolchange must start and end yet, this gives us the flexibility  to avoid smashing into the print
 	 * @return
 	 */
-	public static ArrayList<String> wipe(int currentToolnum, int nextToolnum, float layer_height) {
+	public  ArrayList<String> wipe(int currentToolnum, int nextToolnum, float layer_height) {
 		//System.out.println(Base.getMachineLoader().getMachine().getModel().getWipes().size());
 		WipeModel tool0Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(0);
 		WipeModel tool1Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(1);
 		ArrayList<String> targetCode = new ArrayList<String>();
 		
-		//TODO: before releasing this code, make sure it's safe for localization.
 		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 		dfs.setDecimalSeparator('.');
 		DecimalFormat nf = new DecimalFormat();
@@ -433,40 +405,24 @@ public class Layer_Helper {
 	 * @param layer_height this is the layer height to do it at
 	 * @return
 	 */
-	private static float getLayerIncrement()
-	{
-		System.out.println(PrimaryLayers.get(1).getHeight() - PrimaryLayers.get(0).getHeight());
-		return PrimaryLayers.get(1).getHeight() - PrimaryLayers.get(0).getHeight();
-	}
-	public static ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
-		//TODO: before releasing this code, make sure it's safe for localization.
-		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-		dfs.setDecimalSeparator('.');
-		DecimalFormat nf = new DecimalFormat();
-		nf.setDecimalFormatSymbols(dfs);
-		
-		nf.setMinimumFractionDigits(0); //Min no decimals
-		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
-		nf.setGroupingUsed(false); //NO commas!
+	public  ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
 		ArrayList<String> targetCode = new ArrayList<String>();
 		Toolheads currentTool = null;
 
-		if (nextTool == Toolheads.Primary) { 
-			currentTool = Toolheads.Secondary;
-		} else if (nextTool == Toolheads.Secondary) { 
-			currentTool = Toolheads.Primary;
+		if (nextTool == Toolheads.PRIMARY) { 
+			currentTool = Toolheads.SECONDARY;
+		} else if (nextTool == Toolheads.SECONDARY) { 
+			currentTool = Toolheads.PRIMARY;
 		}
 		int nextToolnum = nextTool.ordinal();
 		int currentToolnum = currentTool.ordinal();
-		float hop_height = getLayerIncrement()*10f;
+		float hop_height = 7.0f;
 		targetCode.add("(<toolchange>)");
 		float purge_z = 6.5f;
 
 		targetCode.add("M103");
 
-
-
-		targetCode.add("G1 Z" + nf.format((layer_height+hop_height)) + (" (modified by HopMultipleofLayerHeight)"));
+		targetCode.add("G1 Z" + (layer_height+hop_height));
 		targetCode.addAll(wipe(currentToolnum, nextToolnum,  layer_height));
 
 		targetCode.add("M103");
@@ -487,7 +443,7 @@ public class Layer_Helper {
 		}
 		 */
 		float h = layer_height+hop_height;
-		targetCode.add("G1 Z"+ nf.format(h) +" F2000");
+		targetCode.add("G1 Z"+ h +" F2000");
 
 		targetCode.add("(</toolchange>)");
 		//System.out.println(currentFeedRate);

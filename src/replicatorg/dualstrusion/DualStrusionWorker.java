@@ -127,14 +127,15 @@ public class DualStrusionWorker {
 		prepGcode(primary_lines);
 		prepGcode(secondary_lines);
 
-		primary_lines = replaceToolHeadReferences(primary_lines, Toolheads.Primary);
-		secondary_lines = replaceToolHeadReferences(secondary_lines, Toolheads.Secondary);
+		primary_lines = replaceToolHeadReferences(primary_lines, Toolheads.PRIMARY);
+		secondary_lines = replaceToolHeadReferences(secondary_lines, Toolheads.SECONDARY);
 		getTemps(primary_lines, secondary_lines);
 		stripStartEnd(primary_lines, replaceStart, replaceEnd);
 		stripStartEnd(secondary_lines, true, true);
 		//writeArrayListtoFile(primary_lines, new File("/home/makerbot/baghandle/bh1stripped.gcode"));
 		//writeArrayListtoFile(secondary_lines, new File("/home/makerbot/baghandle/bh0stripped.gcode"));
-		master_layer = Layer_Helper.doMerge(primary_lines, secondary_lines, false, useWipes);
+		LayerHelper helper = new LayerHelper(primary_lines, secondary_lines, false, useWipes); 
+		master_layer = helper.mergeLayers();
 		
 		replaceStartEnd(master_layer);
 		modifyTempReferences(startGcode);
@@ -176,17 +177,17 @@ public class DualStrusionWorker {
 		ArrayList<String> changeMe = readFiletoArrayList(source);
 		stripStartEnd(changeMe, true, true);
 
-		Toolheads t = Toolheads.Secondary;
+		Toolheads t = Toolheads.SECONDARY;
 		if(Toolhead == 0)
 		{
 			System.out.println("hit0");
-			t = Toolheads.Secondary;
+			t = Toolheads.SECONDARY;
 		}
 		else if(Toolhead == 1)
 		{
 			System.out.println("hit1");
 
-			t = Toolheads.Primary;	
+			t = Toolheads.PRIMARY;	
 		}
 		replaceStartEnd(changeMe);
 		changeMe = replaceToolHeadReferences(changeMe, t);
@@ -237,7 +238,7 @@ public class DualStrusionWorker {
 				{
 					s = s.substring(0, firstparens);
 				}
-				if(desired_toolhead.equals(Toolheads.Secondary))
+				if(desired_toolhead.equals(Toolheads.SECONDARY))
 				{
 					if(s.matches(".* "))
 					{
@@ -248,7 +249,7 @@ public class DualStrusionWorker {
 						s = s + (" T0");
 					}
 				}
-				else if(desired_toolhead.equals(Toolheads.Primary))
+				else if(desired_toolhead.equals(Toolheads.PRIMARY))
 				{
 					if(s.matches(".* "))
 					{
