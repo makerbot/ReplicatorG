@@ -99,7 +99,7 @@ public class CombineWindow extends JFrame
 	
 	public CombineWindow(String path, final MainWindow mw)
 	{
-		super("Scary EXPERIMENTAL functionality");
+		super("Row Combination (scary EXPERIMENTAL functionality)");
 		theMainWindow = mw;
 
 		fileLabel = new JLabel("File:");

@@ -3,12 +3,18 @@ package replicatorg.dualstrusion;
 /**
  * 
  * @author Noah Levy
- * This enum is a replacement for using an int or string to represent Tooheads, it is essential the order is not changed because Layer_Helper uses .ordinal() extensively
+ * This enum is a replacement for using an int or string to represent Tooheads
  * 
- * 
- *
  */
 public enum Toolheads
 {
-	SECONDARY, PRIMARY //DO NOT CHANGE THIS ORDER!!!!!!!!!! The code often depends on .ordinal() and you would cause a cataclysmic chain of events
+	SECONDARY(0),
+	PRIMARY(1);
+	
+	public final int number;
+	
+	private Toolheads(int n)
+	{
+		number = n;
+	}
 }

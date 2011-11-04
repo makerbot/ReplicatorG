@@ -1,9 +1,9 @@
 package replicatorg.dualstrusion;
 
 import java.io.File;
+import java.util.logging.Level;
 
 import replicatorg.app.Base;
-import replicatorg.app.ui.DualStrusionWindow;
 
 
 /**
@@ -50,8 +50,17 @@ public class DualStrusionConstruction implements Runnable {
 	 */
 	public void run() {
 		System.out.println("DSW primary " + primary.getName() + " secondary " + secondary.getName());
-		result = DualStrusionWorker.shuffle(primary, secondary, dest, replaceStart, replaceEnd, useWipes);
-		Base.getEditor().handleOpenFile(result);
+		try
+		{
+			result = DualStrusionWorker.shuffle(primary, secondary, dest, replaceStart, replaceEnd, useWipes);
+			Base.getEditor().handleOpenFile(result);
+		}
+		catch(Exception e)
+		{
+			Base.logger.log(Level.SEVERE, "Could not finish combining gcodes for dualstrusion, Sorry.\n" +
+					"Dualstrusion is still very new functionality and is currently being improved.");
+			e.printStackTrace();
+		}
 	}
 	
 }

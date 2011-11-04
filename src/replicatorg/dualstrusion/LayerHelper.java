@@ -5,6 +5,8 @@ import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
+import javax.swing.JOptionPane;
+
 import replicatorg.app.Base;
 import replicatorg.machine.model.WipeModel;
 
@@ -19,15 +21,15 @@ public class LayerHelper {
 	/**
 	 * <code>currentToolhead</code> holds a Toolheads enum representing the current Toolhead, this is checked to see whether a toolchange is necessary
 	 */
-	private Toolheads currentToolhead = Toolheads.PRIMARY;
+	private Toolheads currentToolhead;
 	/**
 	 * Holds the ArrayList of layers for the primary gcode
 	 */
-	private ArrayList<Layer> primaryLayers = new ArrayList<Layer>();
+	private ArrayList<Layer> primaryLayers;
 	/**
 	 * Holds the ArrayList of layers for the secondary gcode
 	 */
-	private ArrayList<Layer> secondaryLayers = new ArrayList<Layer>();
+	private ArrayList<Layer> secondaryLayers;
 	/**
 	 * This float represents the maximum difference that two floats can have to be considered equal, it should always be less than the smallest possible layer height
 	 */
@@ -280,7 +282,7 @@ public class LayerHelper {
 	 * @param b secodnary layer
 	 * @return
 	 */
-	private  ArrayList<String> mergeLayer(Layer a, Layer b) //This method makes it so that you dont switch toolheads unnessecarily a is primary layers b is secondary layers
+	private ArrayList<String> mergeLayer(Layer a, Layer b) //This method makes it so that you dont switch toolheads unnessecarily a is primary layers b is secondary layers
 	{
 		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 		dfs.setDecimalSeparator('.');
@@ -311,17 +313,23 @@ public class LayerHelper {
 	}
 	/**
 	 * This method is ported from Will's processing script, it was modified to reduce full reversal and eliminate partial reversal in order to reflect the MK7's tendency to pull its own filament out
-	 * This is the method that is passed ints based on Toolheads.ordinal() so please please  please dont change the order of the toolheads.
-	 * @param currentToolnum 0 if secondary 1 if primary, changing .ordinal() would change this.
-	 * @param nextToolnum 0 if secondary 1 if primary, changing .ordinal() would change this.
+	 * @param currentToolnum 0 if secondary 1 if primary
+	 * @param nextToolnum 0 if secondary 1 if primary
 	 * @param layer_height the layer height that the toolchange must start and end yet, this gives us the flexibility  to avoid smashing into the print
 	 * @return
 	 */
-	public  ArrayList<String> wipe(int currentToolnum, int nextToolnum, float layer_height) {
+	public ArrayList<String> wipe(int currentToolnum, int nextToolnum, float layer_height) {
 		//System.out.println(Base.getMachineLoader().getMachine().getModel().getWipes().size());
 		WipeModel tool0Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(0);
 		WipeModel tool1Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(1);
-		ArrayList<String> targetCode = new ArrayList<String>();
+		
+		if(tool0Wipes == null || tool1Wipes == null)
+		{
+			JOptionPane.showConfirmDialog(null, "Could not find wipes for the current machine, please select a dualstrusion machine in the drivers menu.", 
+					"Could not prepare Dualstrusion!", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+		}
+		
+		ArrayList<String> result = new ArrayList<String>();
 		
 		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 		dfs.setDecimalSeparator('.');
@@ -331,73 +339,76 @@ public class LayerHelper {
 		nf.setMinimumFractionDigits(0); //Min no decimals
 		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
 		nf.setGroupingUsed(false); //NO commas!
+		
 		// define constants/parameters
 		// note: the array position corresponds to toolhead number (ie. purge_x[0] is the x purge location for toolhead 0)
-		String[] purge_x = {nf.format(tool0Wipes.getX1()), nf.format(tool1Wipes.getX1())}, // purge location with respect to machine coordinates (G53) (pre-wipe)
-		purge_y = {nf.format(tool0Wipes.getY1()),nf.format(tool1Wipes.getY1())},
-		purge_x_offset = {nf.format(tool0Wipes.getX2()), nf.format(tool1Wipes.getX2())},  // post-wipe purge location
-		purge_y_offset = {nf.format(tool0Wipes.getY1()), nf.format(tool1Wipes.getY2())}, // purge y = purge y offset (no y change)
-		purge_z = {nf.format(tool0Wipes.getZ1()), nf.format(tool1Wipes.getZ1())},
-		purge_z_offset = {nf.format(tool0Wipes.getZ2()),nf.format(tool1Wipes.getZ2())},
-		wait_time = {nf.format(tool0Wipes.getWait()), nf.format(tool1Wipes.getWait())},
-		feedrate = {"3000.0", "3000.0"},
-		flowrate = {nf.format(tool0Wipes.getPurgeRPM()),nf.format(tool1Wipes.getPurgeRPM())},  // pushback (purge) flowrate
-		full_reversal_flowrate = {nf.format(tool0Wipes.getReverseRPM()), nf.format(tool1Wipes.getReverseRPM())},  // reversal flowrate for stopping extrusion
-		//partial_reversal_flowrate = {2.0f, 2.0f}, // reversal flowrate for temporarily stopping extrusion
-		hop_height = {"3.0", "3.0"}; // nozzle lift before returning to layer
+		String[] purge_x = 			{nf.format(tool0Wipes.getX1()), nf.format(tool1Wipes.getX1())}; 	// purge location with respect to machine coordinates (G53) (pre-wipe)
+		String[] purge_y = 			{nf.format(tool0Wipes.getY1()), nf.format(tool1Wipes.getY1())};
+		String[] purge_x_offset = 	{nf.format(tool0Wipes.getX2()), nf.format(tool1Wipes.getX2())}; 	// post-wipe purge location
+		String[] purge_y_offset = 	{nf.format(tool0Wipes.getY2()), nf.format(tool1Wipes.getY2())}; 	// purge y = purge y offset (no y change)
+		String[] purge_z = 			{nf.format(tool0Wipes.getZ1()), nf.format(tool1Wipes.getZ1())};
+		String[] purge_z_offset = 	{nf.format(tool0Wipes.getZ2()), nf.format(tool1Wipes.getZ2())};
+		String[] wait_time = 		{nf.format(tool0Wipes.getWait()), nf.format(tool1Wipes.getWait())};
+		String[] feedrate = 		{"3000.0", "3000.0"};
+		String[] flowrate = 		{nf.format(tool0Wipes.getPurgeRPM()), nf.format(tool1Wipes.getPurgeRPM())};  // pushback (purge) flowrate
+		String[] full_reversal_flowrate = {nf.format(tool0Wipes.getReverseRPM()), nf.format(tool1Wipes.getReverseRPM())};  // reversal flowrate for stopping extrusion
+//				 hop_height = 		{"3.0", "3.0"}, // nozzle lift before returning to layer
+//				 partial_reversal_flowrate = {2.0f, 2.0f}, // reversal flowrate for temporarily stopping extrusion
 
-		int[] purge_duration = {tool0Wipes.getPurgeDuration(), tool1Wipes.getPurgeDuration()},  // durations (in msec)
-		full_reversal_duration = {tool0Wipes.getReverseDuration(), tool1Wipes.getReverseDuration()}; //TWEAK THIS!!!!
-		//partial_reversal_duration = {7, 7};
+		
+		
+		int[]   purge_duration = 			{tool0Wipes.getPurgeDuration(), tool1Wipes.getPurgeDuration()};  // durations (in msec)
+		int[]   full_reversal_duration = 	{tool0Wipes.getReverseDuration(), tool1Wipes.getReverseDuration()}; //TWEAK THIS!!!!
+//				partial_reversal_duration = {7, 7};
 
 		// reverse current toolhead
-		targetCode.add("M108 R"+full_reversal_flowrate[nextToolnum]);
+		result.add("M108 R"+full_reversal_flowrate[nextToolnum]);
 		//
-		targetCode.add("M102");
+		result.add("M102");
 		//
-		targetCode.add("G04 P"+full_reversal_duration[nextToolnum]);
-		targetCode.add("M103");
-		targetCode.add("M108 R"+flowrate[nextToolnum]);
+		result.add("G04 P"+full_reversal_duration[nextToolnum]);
+		result.add("M103");
+		result.add("M108 R"+flowrate[nextToolnum]);
 
 		if(useWipes)
 		{
 			// move to purge home
-			targetCode.add("G53");
+			result.add("G53");
 			if (layer_height > Float.parseFloat(purge_z[nextToolnum])) {
 				// if we're higher than the purge height go over and then down
-				targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
-				targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
-				targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+				result.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
+				result.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
+				result.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 			} 
 			else 
 			{
 				// otherwise go up and then over
 				//targetCode.add("G1 Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-				targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
-				targetCode.add("G1 X" + purge_x[nextToolnum] + " Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+				result.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " F" + feedrate[nextToolnum]);
+				result.add("G1 X" + purge_x[nextToolnum] + " Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 			}
 			// purge upcoming nozzle
-			targetCode.add("M103 T"+nextToolnum);
-			targetCode.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("M101");
-			targetCode.add("G04 P"+purge_duration[nextToolnum]);
+			result.add("M103 T"+nextToolnum);
+			result.add("G1 X" + purge_x[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			result.add("M101");
+			result.add("G04 P"+purge_duration[nextToolnum]);
 			//targetCode.add("M108 R"+partial_reversal_flowrate[nextToolnum]);
-			targetCode.add("M102");
+			result.add("M102");
 			//targetCode.add("G04 P"+partial_reversal_duration[nextToolnum]);
-			targetCode.add("M103");
-			targetCode.add("M108 R"+flowrate[nextToolnum]);
-			targetCode.add("G04 P" +wait_time[nextToolnum]);
+			result.add("M103");
+			result.add("M108 R"+flowrate[nextToolnum]);
+			result.add("G04 P" +wait_time[nextToolnum]);
 			// wipe upcoming nozzle
-			targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
-			targetCode.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y_offset[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			result.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			result.add("G1 X" + purge_x_offset[nextToolnum] +" Y" + purge_y_offset[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 			// wipe current nozzle
-			targetCode.add("G1 X" + purge_x[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
-			targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
-			targetCode.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y_offset[currentToolnum] + " Z" + purge_z_offset[currentToolnum] + " F" + feedrate[currentToolnum]);
+			result.add("G1 X" + purge_x[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
+			result.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y[currentToolnum] + " Z" + purge_z[currentToolnum] + " F" + feedrate[currentToolnum]);
+			result.add("G1 X" + purge_x_offset[currentToolnum] +" Y" + purge_y_offset[currentToolnum] + " Z" + purge_z_offset[currentToolnum] + " F" + feedrate[currentToolnum]);
 			// return to purge home
-			targetCode.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
+			result.add("G1 X" + 0 +" Y" + purge_y[nextToolnum] + " Z" + purge_z[nextToolnum] + " F" + feedrate[nextToolnum]);
 		}
-		return targetCode;
+		return result;
 	}
 	/**
 	 * This is Will's toolchange method ported, it treats the actual wipe as a seperate method so in the future one could reduce the number of wipes by only making them happen every x number of toolchanges etc
@@ -414,8 +425,8 @@ public class LayerHelper {
 		} else if (nextTool == Toolheads.SECONDARY) { 
 			currentTool = Toolheads.PRIMARY;
 		}
-		int nextToolnum = nextTool.ordinal();
-		int currentToolnum = currentTool.ordinal();
+		int nextToolnum = nextTool.number;
+		int currentToolnum = currentTool.number;
 		float hop_height = 7.0f;
 		targetCode.add("(<toolchange>)");
 		float purge_z = 6.5f;

@@ -1037,7 +1037,7 @@ ToolpathGenerator.GeneratorListener
 		changeToolheadMenu.add(left);
 		changeToolheadMenu.add(right);
 		menu.add(changeToolheadMenu);
-		dualstrusionItem = newJMenuItem("Dual Extrusion", 'D');
+		dualstrusionItem = newJMenuItem("Dual Extrusion (experimental)", 'D');
 		dualstrusionItem.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
@@ -1048,7 +1048,7 @@ ToolpathGenerator.GeneratorListener
 		menu.add(dualstrusionItem);
 		setDualStrusionGUI();
 
-		combineItem = new JMenuItem("Row combine");
+		combineItem = new JMenuItem("Row combine (experimental)");
 		combineItem.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
