@@ -1,11 +1,8 @@
 package replicatorg.app;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
@@ -59,8 +56,8 @@ public enum GCodeEnumeration {
 	M103("M", 103, "Turn Extruder Off"),
 	M104("M", 104, "Set Temperature"),
 	M105("M", 105, "Get Temperature"),
-	M106("M", 106, "Turn Fan On"),
-	M107("M", 107, "Turn Fan Off"),
+	M106("M", 106, "Turn Automated Build Platform (or the Fan, on older models) On"),
+	M107("M", 107, "Turn Automated Build Platform (or the Fan, on older models) Off"),
 	M108("M", 108, "Set Extruder's Max Speed (R = RPM, P = PWM)"),
 	M109("M", 109, "Set Build Platform Temperature"),
 	M110("M", 110, "Set Build Chamber Temperature"),
@@ -69,6 +66,9 @@ public enum GCodeEnumeration {
 	M128("M", 128, "Get Position"),
 	M131("M", 131, "Store Current Position to EEPROM"),
 	M132("M", 132, "Load Current Position from EEPROM"),
+	M140("M", 140, "Set Build Platform Temperature"),
+	M141("M", 141, "Set Chamber Temperature (Ignored)"),
+	M142("M", 142, "Set Chamber Holding Pressure (Ignored)"),
 	M200("M", 200, "Reset driver"),
 	M300("M", 300, "Set Servo 1 Position"),
 	M301("M", 301, "Set Servo 2 Position"),
@@ -100,7 +100,23 @@ public enum GCodeEnumeration {
 	G161("G", 161, "Home given axes to minimum"),
 	G162("G", 162, "Home given axes to maximum");
 	
-	private static final Map<String, GCodeEnumeration> lookup = new TreeMap<String, GCodeEnumeration>();
+	private static final Map<String, GCodeEnumeration> lookup = new TreeMap<String, GCodeEnumeration>(
+			//providing this comparator makes sure that the ordering of the codes is what we'd expect it to be
+			new Comparator<String>(){
+				@Override
+				public int compare(String s, String t) {
+					Character l1 = s.charAt(0);
+					Character l2 = t.charAt(0);
+					Integer i1 = Integer.parseInt(s.substring(1));
+					Integer i2 = Integer.parseInt(t.substring(1));
+					
+					int cmp = l1.compareTo(l2);
+					
+					return cmp == 0 ? i1.compareTo(i2) : cmp;
+				}
+				
+			});
+	
 	static {
 		for(GCodeEnumeration e : EnumSet.allOf(GCodeEnumeration.class))
 			lookup.put(e.letter + e.number, e);
@@ -117,12 +133,12 @@ public enum GCodeEnumeration {
 		this.documentation = documentation;
 	}
 	
-	static Set<String> supportedCodes()
+	public static Set<String> supportedCodes()
 	{
 		return lookup.keySet();
 	}
 	
-	static Collection<String> getDocumentation()
+	public static Collection<String> getDocumentation()
 	{
 		ArrayList<String> result = new ArrayList<String>();
 		for(GCodeEnumeration e : lookup.values())
@@ -130,40 +146,13 @@ public enum GCodeEnumeration {
 		return result;
 	}
 
-	static GCodeEnumeration getGCode(String name)
+	public static GCodeEnumeration getGCode(String name)
 	{
 		return lookup.get(name);
 	}
 	
-	static GCodeEnumeration getGCode(String letter, Integer number)
+	public static GCodeEnumeration getGCode(String letter, Integer number)
 	{
 		return lookup.get(letter + number);
-	}
-
-	public static void main(String[] args)
-	{
-		File docFile = new File("docs/GCodeDocumentation.txt");
-		
-		try
-		{
-			// Clear the file. I feel like there's a better way to do this
-			if(docFile.exists())
-				docFile.delete();
-			docFile.createNewFile();
-			
-			BufferedWriter docs = new BufferedWriter(new FileWriter(docFile));
-			
-			docs.write("Auto-Generated documentation of supported GCodes\n");
-			for(String d : getDocumentation())
-				docs.write(d + '\n');
-			
-			docs.flush();
-			docs.close();
-		}
-		catch (IOException ioe)
-		{
-			System.out.println("Could not write to file!");
-		}
-		
 	}
 }

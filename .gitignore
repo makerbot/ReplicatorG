@@ -1,6 +1,8 @@
 # git ignore
 # no dist files
-/doc
+/docs/html/*
+/docs/latex/*
+/docs/replicat.org/*
 /dist
 dist-all
 build/jar
@@ -14,3 +16,4 @@ RepG.log
 ReplicatorG.app
 .classpath
 .project
+*.diff

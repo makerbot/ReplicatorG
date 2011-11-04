@@ -616,6 +616,11 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException {
 		machine.currentTool().setAutomatedBuildPlatformRunning(state);
 	}
+	
+	public boolean hasAutomatedBuildPlatform()
+	{
+		return machine.currentTool().hasAutomatedPlatform();
+	}
 
 	/***************************************************************************
 	 * Valve interface functions

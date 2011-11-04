@@ -31,7 +31,9 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
@@ -142,7 +144,12 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		Image icon = Base.getImage("images/icon.gif", this);
 		setIconImage(icon);
 		
-		Container content = this.getContentPane();
+		JTabbedPane basicVSadvanced = new JTabbedPane();
+		
+		JPanel basic = new JPanel();
+		
+//		Container content = this.getContentPane();
+		Container content = basic;
 		content.setLayout(new MigLayout("fill"));
 
 		content.add(new JLabel("MainWindow font size: "), "split");
@@ -154,10 +161,14 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Automatically connect at startup","replicatorg.autoconnect",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
 		addCheckboxForPref(content,"Show simulator during builds","build.showSimulator",false);
+		addCheckboxForPref(content,"Check over GCode before building","build.safetyChecks",true);
 		addCheckboxForPref(content,"Break Z motion into seperate moves (normally false)","replicatorg.parser.breakzmoves",false);
 		addCheckboxForPref(content,"Show starfield in model preview window","ui.show_starfield",false);
 		addCheckboxForPref(content,"Notifications in System tray","ui.preferSystemTrayNotifications",false);
 		
+		JPanel advanced = new JPanel();
+		content = advanced;
+		content.setLayout(new MigLayout("fill"));
 		
 		JButton modelColorButton;
 		modelColorButton = new JButton("Choose model color");
@@ -168,14 +179,14 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				modelColor = JColorChooser.showDialog(
 						null,
 		                "Choose Model Color",
-		                modelColor);;
+		                modelColor);
 		                
 		        Base.preferences.putInt("ui.modelColor", modelColor.getRGB());
 		        Base.getEditor().refreshPreviewPanel();
 			}
 		});
 		modelColorButton.setVisible(true);
-		content.add(modelColorButton,"wrap");
+		content.add(modelColorButton,"split");
 		
 		
 		JButton backgroundColorButton;
@@ -202,7 +213,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content.add(firmwareUpdateUrlField,"wrap");
 
 		{
-			content.add(new JLabel("Arc resolution (in mm): "),"split");
+			JLabel arcResolutionLabel = new JLabel("Arc resolution (in mm): ");
+			content.add(arcResolutionLabel,"split");
 			double value = Base.preferences.getDouble("replicatorg.parser.curve_segment_mm", 1.0);
 			JFormattedTextField arcResolutionField = new JFormattedTextField(new Double(value));
 			content.add(arcResolutionField,"wrap");
@@ -210,7 +222,9 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				"The arc resolution is the default segment length that the gcode parser will break arc codes <br>"+
 				"like G2 and G3 into.  Drivers that natively handle arcs will ignore this setting." +
 				"</em></small></html>";
-			content.add(new JLabel(arcResolutionHelp),"growx,wrap");
+			arcResolutionField.setToolTipText(arcResolutionHelp);
+			arcResolutionLabel.setToolTipText(arcResolutionHelp);
+//			content.add(new JLabel(arcResolutionHelp),"growx,wrap");
 			arcResolutionField.setColumns(10);
 			arcResolutionField.addPropertyChangeListener(new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -228,7 +242,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		}
 		
 		{
-			content.add(new JLabel("Skeinforge timeout: "),"split");
+			JLabel sfTimeoutLabel = new JLabel("Skeinforge timeout: ");
+			content.add(sfTimeoutLabel,"split");
 			int value = Base.preferences.getInt("replicatorg.skeinforge.timeout", -1);
 			JFormattedTextField sfTimeoutField = new JFormattedTextField(new Integer(value));
 			content.add(sfTimeoutField,"wrap");
@@ -237,7 +252,9 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				"Skeinforge preferences window is open. If you find that RepG freezes after editing profiles<br>" +
 				"you can set this number greater than -1 (-1 means no timeout)." +
 				"</em></small></html>";
-			content.add(new JLabel(sfTimeoutHelp),"growx,wrap");
+			sfTimeoutField.setToolTipText(sfTimeoutHelp);
+			sfTimeoutLabel.setToolTipText(sfTimeoutHelp);
+//			content.add(new JLabel(sfTimeoutHelp),"growx,wrap");
 			sfTimeoutField.setColumns(10);
 			sfTimeoutField.addPropertyChangeListener(new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -301,10 +318,17 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				Base.resetPreferences();
 				showCurrentSettings();
 			}
-			
-			
 		});
 
+
+		JButton allPrefs = new JButton("View All Prefs");
+		content.add(allPrefs);
+		allPrefs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFrame advancedPrefs = new AdvancedPrefs();
+				advancedPrefs.setVisible(true);
+			}
+		});
 		// [ OK ] [ Cancel ] maybe these should be next to the message?
 
 		JButton button;
@@ -318,6 +342,10 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		});
 		content.add(button, "tag ok");
 
+		basicVSadvanced.add(basic, "Basic");
+		basicVSadvanced.add(advanced, "advanced");
+		getContentPane().add(basicVSadvanced);
+		
 		showCurrentSettings();
 
 		// closing the window is same as hitting cancel button
@@ -342,7 +370,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 
 		// handle window closing commands for ctrl/cmd-W or hitting ESC.
 
-		content.addKeyListener(new KeyAdapter() {
+		getContentPane().addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				KeyStroke wc = MainWindow.WINDOW_CLOSE_KEYSTROKE;
 				if ((e.getKeyCode() == KeyEvent.VK_ESCAPE)

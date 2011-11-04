@@ -51,6 +51,7 @@ package replicatorg.app;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.logging.Level;
 
 import javax.vecmath.Point3d;
 
@@ -384,6 +385,14 @@ public class GCodeParser {
 			tool = (int) gcode.getCodeValue('T');
 		}
 		
+		// handle unrecognised GCode
+		if(GCodeEnumeration.getGCode("M", (int)gcode.getCodeValue('M')) == null)
+		{
+			String message = "Unrecognized MCode! M" + (int)gcode.getCodeValue('M');
+			Base.logger.log(Level.SEVERE, message);
+			throw new GCodeException(message);
+		}
+		
 		switch (GCodeEnumeration.getGCode("M", (int)gcode.getCodeValue('M'))) {
 		case M0:
 			// M0 == unconditional halt
@@ -554,13 +563,19 @@ public class GCodeParser {
 		case M105:
 			commands.add(new replicatorg.drivers.commands.ReadTemperature());
 			break;
-		// turn fan on
+		// turn AutomatedBuildPlatform on
 		case M106:
-			commands.add(new replicatorg.drivers.commands.EnableFan());
+			if(driver.hasAutomatedBuildPlatform())
+				commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
+			else
+				commands.add(new replicatorg.drivers.commands.EnableFan());
 			break;
-		// turn fan off
+		// turn AutomatedBuildPlatform off
 		case M107:
-			commands.add(new replicatorg.drivers.commands.DisableFan());
+			if(driver.hasAutomatedBuildPlatform())
+				commands.add(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
+			else
+				commands.add(new replicatorg.drivers.commands.DisableFan());
 			break;
 		// set max extruder speed, RPM
 		case M108:
@@ -571,6 +586,7 @@ public class GCodeParser {
 			break;
 		// set build platform temperature
 		case M109:
+		case M140: // skeinforge chamber code for HBP
 			if (gcode.hasCode('S'))
 				commands.add(new replicatorg.drivers.commands.SetPlatformTemperature(gcode.getCodeValue('S')));
 			break;
@@ -605,6 +621,11 @@ public class GCodeParser {
 				commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			}
 			break;
+		//Silently ignore these
+		case M141: // skeinforge chamber plugin chamber temperature code
+		case M142: // skeinforge chamber plugin holding pressure code
+			break;
+		
 		// initialize to default state.
 		case M200:
 			commands.add(new replicatorg.drivers.commands.Initialize());
@@ -726,9 +747,17 @@ public class GCodeParser {
 		}
 		
 
-		GCodeEnumeration gCode = GCodeEnumeration.getGCode("G", (int)gcode.getCodeValue('G'));
+		GCodeEnumeration codeEnum = GCodeEnumeration.getGCode("G", (int)gcode.getCodeValue('G'));
 
-		switch (gCode) {
+		// handle unrecognised GCode
+		if(codeEnum == null)
+		{
+			String message = "Unrecognized GCode! G" + (int)gcode.getCodeValue('G');
+			Base.logger.log(Level.SEVERE, message);
+			throw new GCodeException(message);
+		}
+		
+		switch (codeEnum) {
 		// these are basically the same thing, but G0 is supposed to do it as quickly as possible.
 		// Rapid Positioning
 		case G0:
@@ -779,7 +808,7 @@ public class GCodeParser {
 				center.setY(current.y() + jVal);
 
 				// Get the points for the arc
-				if (gCode == GCodeEnumeration.G2)
+				if (codeEnum == GCodeEnumeration.G2)
 					commands.addAll(drawArc(center, temp, true));
 				else
 					commands.addAll(drawArc(center, temp, false));

@@ -23,6 +23,8 @@ public interface DriverQueryInterface {
 	
 	public double getTemperature();
 	public double getTemperatureSetting();
+
+	public boolean hasAutomatedBuildPlatform();
 	
 	public double getPlatformTemperature();
 	public double getPlatformTemperatureSetting();

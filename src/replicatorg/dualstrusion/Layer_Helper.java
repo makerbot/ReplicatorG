@@ -1,6 +1,7 @@
 package replicatorg.dualstrusion;
 
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 
 import replicatorg.app.Base;
@@ -308,7 +309,10 @@ public class Layer_Helper {
 	{
 		//TODO: before releasing this code, make sure it's safe for localization.
 		// if this is printing floating point numbers, it has to make sure it's putting out '.'s and not ','s
-		NumberFormat nf = NumberFormat.getInstance();
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator('.');
+		DecimalFormat nf = new DecimalFormat();
+		nf.setDecimalFormatSymbols(dfs);
 		nf.setMaximumFractionDigits(2);
 		nf.setMinimumFractionDigits(2);
 		ArrayList<String> cmds = new ArrayList<String>();
@@ -345,8 +349,13 @@ public class Layer_Helper {
 		WipeModel tool0Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(0);
 		WipeModel tool1Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(1);
 		ArrayList<String> targetCode = new ArrayList<String>();
+		
 		//TODO: before releasing this code, make sure it's safe for localization.
-		NumberFormat nf = NumberFormat.getInstance();
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator('.');
+		DecimalFormat nf = new DecimalFormat();
+		nf.setDecimalFormatSymbols(dfs);
+		
 		nf.setMinimumFractionDigits(0); //Min no decimals
 		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
 		nf.setGroupingUsed(false); //NO commas!
@@ -431,7 +440,11 @@ public class Layer_Helper {
 	}
 	public static ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
 		//TODO: before releasing this code, make sure it's safe for localization.
-		NumberFormat nf = NumberFormat.getInstance();
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator('.');
+		DecimalFormat nf = new DecimalFormat();
+		nf.setDecimalFormatSymbols(dfs);
+		
 		nf.setMinimumFractionDigits(0); //Min no decimals
 		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
 		nf.setGroupingUsed(false); //NO commas!

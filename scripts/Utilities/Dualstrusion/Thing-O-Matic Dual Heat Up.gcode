@@ -9,7 +9,6 @@ M103 T0(Make sure extruder is off)
 M103 T1
 M104 S235 T0(set extruder temperature)
 M104 S235 T1
-M109 S125 T0(set heated-build-platform temperature)
-M109 S125 T1
+M109 S125 T1(set heated-build-platform temperature)
 M6 T0(wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
 M6 T1
