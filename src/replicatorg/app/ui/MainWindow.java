@@ -1208,7 +1208,7 @@ ToolpathGenerator.GeneratorListener
 	}
 	private void setDualStrusionGUI()
 	{
-		dualstrusionItem.setEnabled(true);
+		dualstrusionItem.setEnabled(false);
 		changeToolheadMenu.setEnabled(false);
 
 		String mname = Base.preferences.get("machine.name", "error");

@@ -107,7 +107,7 @@ public class DualStrusionWindow extends JFrame{
 	 * This method also invokes the thread in which the gcode combining operations run in, I would like to turn this into a SwingWorker soon.
 	 */
 	public DualStrusionWindow(String path) {
-		super("DualStrusion Window (scary EXPERIMENTAL functionality)");
+		super("DualStrusion Window (EXPERIMENTAL functionality)");
 
 		Base.logger.log(Level.FINE, "Dualstrusion window booting up...");
 		
