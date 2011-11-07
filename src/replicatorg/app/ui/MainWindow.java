@@ -2934,7 +2934,11 @@ ToolpathGenerator.GeneratorListener
 			}
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
-			
+		
+			/*
+			//NOTE: This section of code is removed, causing regular 'GCode Generation' when using a dual material machine
+			 * to create standard 1-machine gcode, and not do dual head replacement of code.
+
 			//ToDo: refactor this. Remove toolCount vs isDualDriver confusion.  Smarter check for it 'DualStrusionWorker' is null,
 			// test generation cases for Dual exrusion and single extrusion
 			if(isDualDriver())
@@ -2973,7 +2977,7 @@ ToolpathGenerator.GeneratorListener
 					// This case happens often when generating gcode and dual Mk7's are selected
 					Base.logger.severe("Error doing toolhead update in generationComplete" + e);
 				}
-			}
+			}*/
 		}
 	}
 
