@@ -7,6 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import replicatorg.app.Base;
+
 
 /**
  * 
@@ -175,6 +177,7 @@ public class DualStrusionWorker {
 		startGcode = readFiletoArrayList(new File("DualStrusion_Snippets/start.gcode"));
 		endGcode = readFiletoArrayList(new File("DualStrusion_Snippets/end.gcode"));
 		ArrayList<String> changeMe = readFiletoArrayList(source);
+		
 		stripStartEnd(changeMe, true, true);
 
 		Toolheads t = Toolheads.SECONDARY;
@@ -326,12 +329,12 @@ public class DualStrusionWorker {
 	}
 	private static void saveStartGcode(ArrayList<String> gcode)
 	{
-		for(int i = 0; i < gcode.size()-1; i++ ) //This starts 3/4 of the way thru to save time, tiny files may fail
+		for(int i = 0; i < gcode.size()-1; i++ )
 		{
 			//System.out.println(gcode.get(i));
 			if(gcode.get(i).equalsIgnoreCase("(**** beginning of start.gcode ****)"))
 			{
-				System.out.println("Stripping?");
+				Base.logger.finer("Saving start gcode");
 				int a = i;
 				while(true)
 				{
@@ -354,7 +357,7 @@ public class DualStrusionWorker {
 			//System.out.println(gcode.get(i));
 			if(gcode.get(i).equalsIgnoreCase("(**** Beginning of end.gcode ****)"))
 			{
-				System.out.println("Stripping?");
+				Base.logger.finer("saving end gcode");
 				int a = i;
 				while(true)
 				{
@@ -377,7 +380,7 @@ public class DualStrusionWorker {
 			//System.out.println(gcode.get(i));
 			if(gcode.get(i).equalsIgnoreCase("(**** Beginning of end.gcode ****)"))
 			{
-				System.out.println("Stripping?");
+				Base.logger.finer("Stripping end gcode");
 				int a = i;
 				while(true)
 				{
@@ -394,11 +397,11 @@ public class DualStrusionWorker {
 	}
 	public static void stripStartGcode(ArrayList<String> gcode)
 	{
-		for(int i = 0; i < gcode.size()-1; i++ ) //This starts 3/4 of the way thru to save time, tiny files may fail
+		for(int i = 0; i < gcode.size()-1; i++ ) 
 		{
 			if(gcode.get(i).equalsIgnoreCase("(**** beginning of start.gcode ****)"))
 			{
-				System.out.println("Stripping?");
+				System.out.println("stripping start gcode?");
 				int a = i;
 				while(true)
 				{
@@ -413,6 +416,8 @@ public class DualStrusionWorker {
 			}
 		}
 	}
+	
+	
 	/**
 	 * called by checkCrashes, checks individual lines
 	 * @param suspectLine
