@@ -537,7 +537,13 @@ ToolpathGenerator.GeneratorListener
 
 	public void editProfiles() {
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
-		generator.editProfiles(this);
+		if( generator != null)
+			generator.editProfiles(this);
+		else { // if no gcode generator is selected (or defaults changed) generator may be null
+			String message = "No Gcode Generator selected. Select a GCode generator \n in the GCode menu, under GCode Generator ";
+			int option = JOptionPane.showConfirmDialog(this, message , "No GCode Generator Selected.", 
+				JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE);
+		}
 	}
 
 	public void runToolpathGenerator() {
@@ -972,7 +978,7 @@ ToolpathGenerator.GeneratorListener
 		menu.add(stopItem);
 
 		// GENERATOR
-		JMenu genMenu = new JMenu("Choose GCode generator");
+		JMenu genMenu = new JMenu("GCode Generator");
 		Vector<ToolpathGeneratorDescriptor> generators = ToolpathGeneratorFactory.getGeneratorList();
 		String name = ToolpathGeneratorFactory.getSelectedName();
 		ButtonGroup group = new ButtonGroup();
@@ -1071,11 +1077,11 @@ ToolpathGenerator.GeneratorListener
 		JMenuItem item;
 		JMenu menu = new JMenu("Machine");
 
-		machineMenu = new JMenu("Driver");
+		machineMenu = new JMenu("Type (Driver)");
 		populateMachineMenu();
 		menu.add(machineMenu);
 
-		serialMenu = new JMenu("Serial Port");
+		serialMenu = new JMenu("Connection (Serial Port)");
 		reloadSerialMenu();
 		menu.add(serialMenu);
 
@@ -1185,6 +1191,8 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 	}
+	
+	/// Returns True of the selected machine has 2 or more toolheads
 	public boolean isDualDriver()
 	{
 		String mname = Base.preferences.get("machine.name", "error");
@@ -1194,18 +1202,20 @@ ToolpathGenerator.GeneratorListener
 			MachineLoader ml = new MachineLoader();
 			ml.load(mname);
 			System.out.println(ml.getMachine().getModel().getTools().size());
-			if(ml.getMachine().getModel().getTools().size() > 1)
+			if(ml.getMachine().getModel().getTools().size() == 2)
 			{
 				return true;
 			}
 		}
 		catch(NullPointerException e)
 		{
-			System.err.println("Errorz");
+			System.err.println("Error");
 			e.printStackTrace();
 		}
 		return false;
 	}
+	
+	
 	private void setDualStrusionGUI()
 	{
 		dualstrusionItem.setEnabled(false);
@@ -2925,18 +2935,18 @@ ToolpathGenerator.GeneratorListener
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
 			
-			// So I've just discovered that this isDualDriver does the same check as we're doing with toolCount below
-			// This is a mess and should be tidied up. When is this used?
+			//ToDo: refactor this. Remove toolCount vs isDualDriver confusion.  Smarter check for it 'DualStrusionWorker' is null,
+			// test generation cases for Dual exrusion and single extrusion
 			if(isDualDriver())
-			{
-				String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
-				boolean pomOn = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
-				
+			{				
 				try
 				{
+					String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
+					boolean printOMaticEnabled  = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
+
 					int toolCount = machineLoader.getMachine().getModel().getTools().size();
 					Base.logger.finer("tool size" + toolCount );
-					if( toolCount > 1 && pomOn)
+					if( toolCount > 1 && printOMaticEnabled )
 					{
 						Base.logger.fine(extruderChoice);
 						if(extruderChoice.equalsIgnoreCase("left"))
@@ -2952,7 +2962,7 @@ ToolpathGenerator.GeneratorListener
 							handleOpenFile(build.getCode().file);
 						}
 					}
-					else if(pomOn)
+					else if(printOMaticEnabled ) 
 					{
 						DualStrusionWorker.changeToolHead(build.getCode().file, 0);
 						handleOpenFile(build.getCode().file);
@@ -2960,8 +2970,8 @@ ToolpathGenerator.GeneratorListener
 				}
 				catch(NullPointerException e)
 				{
-					//we don't need a message here?
-					Base.logger.fine("error doing toolhead update in generationComplete" + e);
+					// This case happens often when generating gcode and dual Mk7's are selected
+					Base.logger.severe("Error doing toolhead update in generationComplete" + e);
 				}
 			}
 		}
