@@ -78,6 +78,8 @@ public class DualStrusionWorker {
 		{
 			if(line.matches("M104.*"))
 			{
+				System.out.println("** M104 **");
+				System.out.println(line);
 				return line;
 			}
 		}
@@ -118,6 +120,10 @@ public class DualStrusionWorker {
 		ArrayList<String> startGcode = readFiletoArrayList(new File("DualStrusion_Snippets/start.gcode")); 
 		ArrayList<String> endGcode = readFiletoArrayList(new File("DualStrusion_Snippets/end.gcode"));
 		
+		//		getTemps(primaryGcode, secondaryGcode);
+		String primaryTemp = 	getTemperatureCommand(primaryGcode);
+		String secondaryTemp =	getTemperatureCommand(secondaryGcode);
+
 		//preprocessForCombine(primaryGcode);
 		//preprocessForCombine(secondaryGcode);
 		
@@ -136,12 +142,7 @@ public class DualStrusionWorker {
 		stripEndGcode(secondaryGcode);
 
 		primaryGcode = replaceToolHeadReferences(primaryGcode, Toolheads.PRIMARY);
-		secondaryGcode = replaceToolHeadReferences(secondaryGcode, Toolheads.SECONDARY);
-
-		//		getTemps(primaryGcode, secondaryGcode);
-		String primaryTemp = 	getTemperatureCommand(primaryGcode);
-		String secondaryTemp =	getTemperatureCommand(secondaryGcode);
-		 
+		secondaryGcode = replaceToolHeadReferences(secondaryGcode, Toolheads.SECONDARY);	 
 
 		// interlace the layers for each toolhead
 		LayerHelper helper = new LayerHelper(primaryGcode, secondaryGcode, false, useWipes); 
@@ -174,10 +175,17 @@ public class DualStrusionWorker {
 		{
 			if(gcode.get(i).matches("M104.*T1.*"))
 			{
+				System.out.println("** M104 update T1**");
+				System.out.println(gcode.get(i));
+				System.out.println(primaryTemp);
+
 				gcode.set(i, primaryTemp);
 			}
 			else if(gcode.get(i).matches("M104.*T0.*"))
 			{
+				System.out.println("** M104 update T0**");
+				System.out.println(gcode.get(i));
+				System.out.println(secondaryTemp);
 				gcode.set(i, secondaryTemp);
 			}
 		}
