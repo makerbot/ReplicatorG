@@ -290,7 +290,7 @@ public class PythonUtils {
 	 * @param procedureName A string describing the procedure that requires python
 	 * @param min The minimum acceptable version of python, null if we don't care.
 	 * @param max The minimum <i>unacceptable</i> version of python, null if we don't care.
-	 * @return true if python was found and falls within acceptable boundries
+	 * @return true if python was found and falls within acceptable boundaries
 	 */
 	public static boolean interactiveCheckVersion(Frame parent, String procedureName, Version min, Version max) {
 		getPythonPath(min,max);
