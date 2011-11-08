@@ -46,13 +46,13 @@ public class DualStrusionConstruction implements Runnable {
 	}
 	@Override
 	/**
-	 * once a DSC is constructed this method calls shuffle
+	 * once a DSC is constructed this method calls combineGcode 
 	 */
 	public void run() {
 		System.out.println("DSW primary " + primary.getName() + " secondary " + secondary.getName());
 		try
 		{
-			result = DualStrusionWorker.shuffle(primary, secondary, dest, replaceStart, replaceEnd, useWipes);
+			result = DualStrusionWorker.combineGcode(primary, secondary, dest, replaceStart, replaceEnd, useWipes);
 			Base.getEditor().handleOpenFile(result);
 		}
 		catch(Exception e)

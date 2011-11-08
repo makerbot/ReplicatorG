@@ -35,7 +35,7 @@ public class CodeCombination{
 		{
 			ArrayList<String> lines = DualStrusionWorker.readFiletoArrayList(f);
 			// removes whitespace, empty layers
-			DualStrusionWorker.prepGcode(lines);
+			DualStrusionWorker.preprocessForCombine(lines);
 			
 			// leave the first file's start untouched, remove the others'
 			// also, don't add stuff unless it's after the first
@@ -104,7 +104,7 @@ public class CodeCombination{
 			output.addAll(lines);
 		}
 		
-		DualStrusionWorker.checkCrashes(output);
+		DualStrusionWorker.mayHaveWipeCrash(output);
 		
 		DualStrusionWorker.writeArrayListtoFile(output, dest);
 
