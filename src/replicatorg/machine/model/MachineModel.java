@@ -456,10 +456,9 @@ public class MachineModel
 		try {
 			return tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
-			Base.logger.severe("Cannot get non-existant tool (#" + index + ".");
-			e.printStackTrace();
+			Base.logger.severe("Cannot get nonexistent tool (#" + index + ".");
+			//e.printStackTrace();
 		}
-		
 		return null;
 	}
 	public BuildVolume getBuildVolume()
