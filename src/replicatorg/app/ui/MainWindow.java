@@ -1077,7 +1077,7 @@ ToolpathGenerator.GeneratorListener
 		JMenuItem item;
 		JMenu menu = new JMenu("Machine");
 
-		machineMenu = new JMenu("Type (Driver)");
+		machineMenu = new JMenu("Machine Type (Driver)");
 		populateMachineMenu();
 		menu.add(machineMenu);
 
