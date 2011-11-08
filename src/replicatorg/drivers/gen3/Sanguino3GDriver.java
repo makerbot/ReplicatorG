@@ -722,7 +722,8 @@ public class Sanguino3GDriver extends SerialDriver
 		// FIXME: We used to check for version here, but this will only work if we're connected. Atm., we'll rather
 		// require the latest firmware.
 		// getVersion().atLeast(new Version(2,4)) && toolVersion.atLeast(new Version(2,6))
-		if (this.machine.getTool(toolIndex).hasHeatedPlatform() && 
+		if (this.machine.getTool(toolIndex) != null &&
+			this.machine.getTool(toolIndex).hasHeatedPlatform() && 
 			this.machine.currentTool().getPlatformTargetTemperature() > 0.0) {
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
 			pb.add8((byte) toolIndex);
