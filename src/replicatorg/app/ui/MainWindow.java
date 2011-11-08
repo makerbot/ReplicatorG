@@ -1058,8 +1058,8 @@ ToolpathGenerator.GeneratorListener
 		});
 		menu.add(dualstrusionItem);
 		setDualStrusionGUI();
-
-		combineItem = new JMenuItem("Clone Object (experimental)");
+/*
+		combineItem = new JMenuItem("Row Combine (experimental)");
 		combineItem.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -1068,6 +1068,7 @@ ToolpathGenerator.GeneratorListener
 		});
 		menu.add(combineItem);
 		combineItem.setEnabled(true);
+*/
 		
 		return menu;
 	}
@@ -1317,6 +1318,7 @@ ToolpathGenerator.GeneratorListener
 			exception.printStackTrace();
 		}
 		Collections.sort(names);
+		
 		
 		ButtonGroup radiogroup = new ButtonGroup();
 		for (String name : names ) {
