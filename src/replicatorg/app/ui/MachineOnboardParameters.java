@@ -167,7 +167,11 @@ public class MachineOnboardParameters extends JFrame {
 		super("Update onboard machine options");
 		this.target = target;
 		this.driver = driver;
+
 		JPanel panel = new JPanel(new MigLayout());
+
+
+
 		panel.add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
 		machineNameField.setColumns(MAX_NAME_LENGTH);
 		panel.add(machineNameField,"wrap");
@@ -204,6 +208,9 @@ public class MachineOnboardParameters extends JFrame {
 		panel.add(aAxisHomeOffsetField,"wrap");
 		panel.add(new JLabel("B home offset (mm)"));
 		panel.add(bAxisHomeOffsetField,"wrap");
+				
+		panel.add(makeButtonPanel());
+		add(panel);
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -212,10 +219,8 @@ public class MachineOnboardParameters extends JFrame {
 				loadParameters();
 			}
 		});
-		panel.add(resetToFactoryButton,"wrap");
+		panel.add(resetToFactoryButton);
 		
-		panel.add(makeButtonPanel());
-		add(panel);
 		pack();
 		loadParameters();
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
