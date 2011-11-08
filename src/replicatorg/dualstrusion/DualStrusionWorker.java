@@ -16,8 +16,10 @@ import replicatorg.app.Base;
 /**
  * 
  * @author Noah Levy, Ben Rockhold, Will Langford
- * This class handles some of the processing of the two constituent gcodes to be combined.
- * It mostly does preprocessing work such as checking what version of SkeinForge the gcode was rendered in and stripping empty layers and whiteSpace
+ * @maintainer Far McKon (far@makerbot.com)
+ * Worker class to manage and  contain processing to create dual extrusion files, or single extrusion files 
+ * to run on a dual extrusion machine. 
+ *
  *
  */
 public class DualStrusionWorker {
@@ -25,19 +27,20 @@ public class DualStrusionWorker {
 	
 	/**
 	 * <code>yDanger</code> When 'wipes' are added, space must be reserved at the back of the 
-	 * machine for wipe action. yDanger indicates the start of that 'wipe zone' in the rear of the machine
+	 * machine for wipe action. yDanger indicates the start of that 'wipe zone' in the rear of the machine, 
+	 * which must be kept clear of build materials
 	 */
 	private static float yDanger = 80.0f;
 
 	/** 
-	 * Takes an array list of string, strips endlines and trailing whitespace from each string
-	 * @param gcode array list of string
+	 * Strips endlines and trailing whitespace from each string in the list
+	 * @param gcode strings to strip, in place
 	 */
 	public static void stripEndlines(ArrayList<String> gcode)
 	{
 		for(String s : gcode)
 		{
-			s = s.replaceAll("\n", "");  
+			s = s.replaceAll("(\n", "");  
 			s = s.replaceAll("\r", ""); 
 			s = s.trim();
 		}
@@ -45,7 +48,7 @@ public class DualStrusionWorker {
 
 	
 	/**
-	 * Function returns the comment section of a gcode command
+	 * Function returns the comment section of a gcode command.
 	 * @param line a line of gcode, may include a parens delimited comment
 	 * @param prefixSpace a boolean, to indicate to return a prefix ' ' in front of the found comment
 	 * @return a comment string (parens included) if a comment is found,  or an empty string if no comment was found
@@ -65,8 +68,9 @@ public class DualStrusionWorker {
 	}
 
 	
-	/** Searches gcode for M104 commands (temperature control) and returns themw
-	 * 
+	/** 
+	 * Searches gcode gcode for M104 commands (temperature control) and  the matching line
+	 * @param gcode
 	 */
 	private static String getTemperatureCommand(ArrayList<String> gcode)
 	{
@@ -296,48 +300,6 @@ public class DualStrusionWorker {
 	}
 	
 	
-	/**
-	 * This method iterates through the gcode and checks it against <code>yDanger</code>
-	 * @param gcode
-	 * @return A boolean represents whether the gcode risks crashing
-	 */
-	public static boolean mayHaveWipeCrash(ArrayList<String> gcode)
-	{
-		boolean crashes = false;
-		for(String s : gcode)
-		{
-			if(crashCheck(s))
-				crashes = true;
-		}
-		return crashes;
-
-	}
-
-	
-	
-	/**
-	 * depending on user input strips out start and end and either does or does not save them
-	 * @param gcode
-	 * @param replaceStart True = Dont save start False = save start
-	 * @param replaceEnd True = dont save end False = save end
-	 */
-	/*
-	private static void stripStartEnd(ArrayList<String> gcode, boolean replaceStart, boolean replaceEnd)
-	{
-		if(replaceStart) {
-			stripStartGcode(gcode);
-		} else	{
-			saveStartGcode(gcode);
-		}
-
-		if(replaceEnd) {
-			stripEndGcode(gcode);
-		}
-		else {
-			saveEndGcode(gcode);	
-		}
-	}
-*/
 	
 	private static ArrayList<String> saveStartGcode(ArrayList<String> gcode)
 	{
@@ -364,6 +326,7 @@ public class DualStrusionWorker {
 	
 	private static ArrayList<String> saveEndGcode(ArrayList<String> gcode)
 	{
+		//ToDo: refactor
 		ArrayList<String> endGcode = new ArrayList<String>();
  		for(int i = (gcode.size()/4*3); i < gcode.size()-1; i++ ) //This starts 3/4 of the way thru to save time, tiny files may fail
 		{
@@ -389,6 +352,7 @@ public class DualStrusionWorker {
 	
 	private static void stripEndGcode(ArrayList<String> gcode)
 	{
+		//ToDo: refactor
 		for(int i = (gcode.size()/4*3); i < gcode.size()-1; i++ ) //This starts 3/4 of the way thru to save time, tiny files may fail
 		{
 			//System.out.println(gcode.get(i));
@@ -411,6 +375,7 @@ public class DualStrusionWorker {
 	
 	public static void stripStartGcode(ArrayList<String> gcode)
 	{
+		//ToDo: refactor
 		for(int i = 0; i < gcode.size()-1; i++ ) 
 		{
 			if(gcode.get(i).equalsIgnoreCase("(**** beginning of start.gcode ****)"))
@@ -431,10 +396,29 @@ public class DualStrusionWorker {
 		}
 	}
 	
+	/**
+	 * This method iterates through the gcode and checks it against <code>yDanger</code>
+	 * @param gcode code to test for potential crashes
+	 * @return true if a wipe crash may happen due to gcode moving into the wipe zone
+	 */
+	public static boolean mayHaveWipeCrash(ArrayList<String> gcode)
+	{
+		for(String command : gcode)
+		{
+			if( command.matches("G1 .*") ) 
+			{
+				if( crashCheck(command) == true)
+					return true;		
+			}
+		}
+		return false;
+	}
+	
 	
 	/**
-	 * checks individual lines for command that will go outside of a safe build area
-	 * @param suspectLine
+	 * Checks individual G1 moves against yDanger value to catch moves that may interfere with 
+	 * wipe sone for dualstrusion
+	 * @param line a single line of Gcode to cheeck
 	 * 
 	 * @return true of any command on the passed line will go past the safe area for dualstrusion
 	 */
@@ -461,6 +445,7 @@ public class DualStrusionWorker {
 	
 	private static void stripSurroundingLoop(ArrayList<String> gcode)
 	{
+		//ToDo: refactor
 		for(int i = 0; i < gcode.size() -2; i++)
 		{
 			if(gcode.get(i).equals("(<surroundingLoop>)"))
@@ -499,32 +484,26 @@ public class DualStrusionWorker {
 	}
 	/**
 	 * This method uses Regex to delete empty layers or layers filled only with comments
-	 * @param gcode
+	 * @param gcode list of gcode to modify in place
 	 */
 	private static void stripEmptyLayers(ArrayList<String> gcode)
 	{
-		//for(int i = 0; i < gcode.size()-2;  i++)
 		int max = gcode.size()-2;
 		for(int i = 0; i < gcode.size()-2;   i++)
 		{
-			//if(gcode.get(i).matches("(<layer> .* ).*"))
 			if(gcode.get(i).matches("\\(\\<layer\\>.*\\)"))
 			{
-				//System.out.println("checking line: " + i);
-				//System.out.println(gcode.get(i) + "matches ");
 				boolean containsUsefulCode = false;
 				int a = i + 1;
 				while(true)
 				{
 					if(gcode.get(a).matches("\\(\\</layer\\>\\)"))
 					{
-						//System.out.println(gcode.get(i) + " was not followed by useful code");
 						a++;
 						break;
 					}
 					else if(!gcode.get(a).matches("\\(\\<.*\\>\\)"))
 					{
-						//System.out.println(gcode.get(i) + " was followed by useful code");
 						containsUsefulCode = true;
 						break;
 					}
@@ -542,10 +521,10 @@ public class DualStrusionWorker {
 			{
 				//System.out.println(gcode.get(i) + " does not ");
 			}
-			//max = gcode.size()-2;
 		}
-		//return gcode;
 	}
+
+	
 	/**
 	 * This method checks what version of SkeinForge was used to create this gcode
 	 * @param gcode
