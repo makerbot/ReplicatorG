@@ -1,4 +1,4 @@
-0027_BETA ReplicatorG
+0027 ReplicatorG
 * Fan changes to support ABP on Mk7 hardware (using Firmware 3.1 or newer only)
 * Individual axis disable added
 * Merged dualstrusion branch tools, fixed some bugs in references
@@ -23,6 +23,11 @@
 * Added a warning check for unrecognized GCode commands on print
 * Fixed misc. window resize problems
 * Fixed toolhead selection problems for some Heated Build Platform problems with dualstrusion
+* Renaming some features or clarity, removed some dead features/gui elements
+* Full testing of Dualstrusion, refactoring of DualStrusion codebase
+* Several bugfixes for null object cases
+* re-enabled right-click menu
+
 
 0026 ReplicatorG
 * Add Machine information panel
