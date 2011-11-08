@@ -40,7 +40,7 @@ public class DualStrusionWorker {
 	{
 		for(String s : gcode)
 		{
-			s = s.replaceAll("(\n", "");  
+			s = s.replaceAll("\n", "");  
 			s = s.replaceAll("\r", ""); 
 			s = s.trim();
 		}
