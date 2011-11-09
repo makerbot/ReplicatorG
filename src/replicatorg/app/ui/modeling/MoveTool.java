@@ -1,5 +1,6 @@
 package replicatorg.app.ui.modeling;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,14 +37,14 @@ public class MoveTool extends Tool {
 	JFormattedTextField transX, transY, transZ;
 	
 	public JPanel getControls() {
-		JPanel p = new JPanel(new MigLayout("fillx,filly"));
+		JPanel p = new JPanel(new MigLayout("fillx,filly,gap 0"));
 		JButton centerButton = createToolButton("Center","images/center-object.png");
 		centerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parent.getModel().center();
 			}
 		});
-		p.add(centerButton,"growx,wrap");
+		p.add(centerButton,"growx,wrap,spanx");
 
 		JButton lowerButton = createToolButton("Put on platform","images/center-object.png");
 		lowerButton.addActionListener(new ActionListener() {
@@ -51,8 +52,11 @@ public class MoveTool extends Tool {
 				parent.getModel().putOnPlatform();
 			}
 		});
-		p.add(lowerButton,"growx,wrap");
+		p.add(lowerButton,"growx,wrap,spanx");
 		transX = new JFormattedTextField(Base.getLocalFormat());
+		Dimension d = transX.getPreferredSize();
+		d.width = 800;
+		transX.setPreferredSize(d);
 		transY = new JFormattedTextField(Base.getLocalFormat());
 		transZ = new JFormattedTextField(Base.getLocalFormat());
 		transX.setValue(10);
@@ -153,7 +157,7 @@ public class MoveTool extends Tool {
 			}
 		});
 		lockZ = new JCheckBox("Lock height");
-		p.add(lockZ,"growx,wrap");
+		p.add(lockZ,"growx,wrap,spanx");
 		
 		return p;
 	}
