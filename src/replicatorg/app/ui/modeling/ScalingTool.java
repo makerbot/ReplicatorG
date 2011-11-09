@@ -69,10 +69,6 @@ public class ScalingTool extends Tool {
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parent.getModel().scale(25.4d,parent.getModel().isOnPlatform());
-//				double newScale = previousScale*25.4d;
-//				previousScale = newScale;
-				double currentScale = parent.getModel().model.getTransform().getScale();
-				scaleFactor.setText(String.valueOf((double) ((int)(100*currentScale))/100));
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -81,10 +77,6 @@ public class ScalingTool extends Tool {
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parent.getModel().scale(1d/25.4d,parent.getModel().isOnPlatform());
-//				double newScale = (double)((int) (previousScale*100*1d/25.4d))/100;
-//				previousScale = newScale;
-				double currentScale = parent.getModel().model.getTransform().getScale();
-				scaleFactor.setText(String.valueOf((double) ((int)(100*currentScale))/100));
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -106,10 +98,12 @@ public class ScalingTool extends Tool {
 	
 	public void mousePressed(MouseEvent e) {
 		super.mousePressed(e);
+		// Reset scale to current value (in case there have been undos, etc. since
+		// last update)
+		scaleDragChange = parent.getModel().model.getTransform().getScale();
 		isOnPlatform = parent.getModel().isOnPlatform();
 	}
 	public void mouseReleased(MouseEvent e) {
-		scaleDragChange = 1;
 	}
 
 	public void mouseDragged(MouseEvent e) {

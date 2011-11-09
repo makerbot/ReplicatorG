@@ -25,6 +25,7 @@ package replicatorg.drivers;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -70,7 +71,10 @@ public class SerialPassthroughDriver extends SerialDriver {
 		bufferSize = 0;
 		setInitialized(false);
 
-		df = new DecimalFormat("#.######");
+		//Thank you Alexey (http://replicatorg.lighthouseapp.com/users/166956)
+		DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+		dfs.setDecimalSeparator('.');
+		df = new DecimalFormat("#.######", dfs);
 	}
 
 	public void loadXML(Node xml) {

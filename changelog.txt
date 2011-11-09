@@ -1,3 +1,34 @@
+0027 ReplicatorG
+* Fan changes to support ABP on Mk7 hardware (using Firmware 3.1 or newer only)
+* Individual axis disable added
+* Merged dualstrusion branch tools, fixed some bugs in references
+* Merged in temperature_log branch, for using M310 to start a temperature log, and M311 to end logging
+* Added fix for reading bed temperature to the current machine model. 
+* Added logging for HeatedBuildPlatform, to use add 'hbp_log=true' to the tool attributes in
+* your tool of choice within machines/thingomatic.xml
+* Fixed localization problems for decimal formatting
+* Updated Replicat.org MCode and GCode documentation
+* Added off-line documentation from replicat.org
+* Added a Thingiverse menu item, just for fun!
+* Removed 'autoload last file' if replicatorG crashed (to avoid auto-crashing)
+* added 'Upgraded' TOM Filament guide to the upgrades menu
+* added production test scripts to File | Scripts | Utility
+* Added fixes for skeinforge lockups, where skeinforge timeout locks the main program
+* Added correct G0 behavior for MakerBot series machines
+* Added checks so build to SD card fails gracefully on error
+* Fixed lockup problem when a nonexistant toolhead is selected
+* Fixed problems for build to SD fallback defaults causing problems
+* Removed skeinforge 31 from toolpath options
+* Added skeinforge 40 (experimental) and skeinforge 44 (experimental) to toolpath options
+* Added a warning check for unrecognized GCode commands on print
+* Fixed misc. window resize problems
+* Fixed toolhead selection problems for some Heated Build Platform problems with dualstrusion
+* Renaming some features or clarity, removed some dead features/gui elements
+* Full testing of Dualstrusion, refactoring of DualStrusion codebase
+* Several bugfixes for null object cases
+* re-enabled right-click menu
+
+
 0026 ReplicatorG
 * Add Machine information panel
 * Add support for control of a regulated cooling fan

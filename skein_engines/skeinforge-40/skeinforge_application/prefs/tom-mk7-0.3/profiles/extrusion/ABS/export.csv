@@ -1,0 +1,18 @@
+Format is tab separated export settings.
+Name                          	Value
+WindowPosition	700+0
+Open File for Export	
+Activate Export	True
+Add Export Suffix	False
+Also Send Output To:	
+Do Not Delete Comments	True
+Delete Crafting Comments	False
+Delete All Comments	False
+Do Not Change Output	True
+binary_16_byte	False
+gcode_step	False
+gcode_time_segment	False
+gcode_small	False
+File Extension:	gcode
+Name of Replace File:	Value
+Save Penultimate Gcode	False

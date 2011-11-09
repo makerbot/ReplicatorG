@@ -5,11 +5,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+
+import replicatorg.app.Base;
+import replicatorg.dualstrusion.DualStrusionWorker;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -102,6 +106,7 @@ public class ToolPanel extends JPanel implements KeyListener {
 		sliceButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				preview.mainWindow.runToolpathGenerator();
+				
 			}
 		});
 		toolButtons.add(sliceButton,"growx,spanx,wrap");

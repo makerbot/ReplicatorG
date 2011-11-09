@@ -3,7 +3,9 @@ package replicatorg.plugin.toolpath.skeinforge;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +21,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -275,29 +276,85 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
-
-	public boolean visualConfigure(Frame parent) {
+	public ConfigurationDialog visualConfiguregetCD(Frame parent, int x, int y, String name) {
+		// First check for Python.
+		parent.setName(name);
+		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
+		cd.setName(name);
+		cd.setTitle(name);
+		//cd.setSize(500, 760);
+		cd.pack();
+		cd.setLocation(x, y);
+		cd.setVisible(true);
+		return cd;
+	}
+	public boolean visualConfigure(Frame parent, int x, int y, String name) {
+		if (name == null)
+			name = "Generating gcode";
+		
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
-				"Generating gcode", new PythonUtils.Version(2, 5, 0),
+				name, new PythonUtils.Version(2, 5, 0),
 				new PythonUtils.Version(3, 0, 0));
 		if (!hasPython) {
 			return false;
 		}
 		boolean hasTkInter = PythonUtils.interactiveCheckTkInter(parent,
-				"Generating gcode");
+				name);
 		if (!hasTkInter) {
 			return false;
 		}
+		parent.setName(name);
 		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
+		cd.setName(name);
+		cd.setTitle(name);
+		//cd.setSize(500, 760);
+		
+		if (x == -1 || y == -1) {
+			double x2 = parent.getBounds().getCenterX();
+			double y2 = parent.getBounds().getCenterY();
+			cd.pack();
+			x2 -= cd.getWidth() / 2.0;
+			y2 -= cd.getHeight() / 2.0;
+			x = (int)x2;
+			y = (int)y2;
+		} else {
+			cd.pack();
+		}
+		
+		cd.setLocation(x, y);
+		cd.setVisible(true);
+		emitUpdate("Config Done");
+		return configSuccess;
+	}
+	
+	public boolean visualConfigure(Frame parent) {
+		return visualConfigure(parent, -1, -1, null);
+	}
+
+	public void editProfiles(Frame parent) {
+		// First check for Python.
+		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
+				"Editing Profiles", new PythonUtils.Version(2, 5, 0),
+				new PythonUtils.Version(3, 0, 0));
+		if (!hasPython) {
+			return;
+		}
+		boolean hasTkInter = PythonUtils.interactiveCheckTkInter(parent,
+				"Editing Profiles");
+		if (!hasTkInter) {
+			return;
+		}
+		EditProfileDialog ep = new EditProfileDialog(parent, this);
+
 		double x = parent.getBounds().getCenterX();
 		double y = parent.getBounds().getCenterY();
-		cd.pack();
-		x -= cd.getWidth() / 2.0;
-		y -= cd.getHeight() / 2.0;
-		cd.setLocation((int) x, (int) y);
-		cd.setVisible(true);
-		return configSuccess;
+		ep.pack();
+		x -= ep.getWidth() / 2.0;
+		y -= ep.getHeight() / 2.0;
+		
+		ep.setLocation((int)x, (int)y);
+		ep.setVisible(true);
 	}
 
 	abstract public File getDefaultSkeinforgeDir();
@@ -334,12 +391,62 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		File skeinforgeDir = getSkeinforgeDir();
 		pb.directory(skeinforgeDir);
 		Process process = null;
+		Base.logger.log(Level.FINEST, "Starting Skeinforge process...");
+		
+		/**
+		 * Run the process and wait for it to return. Because of an issue with process.waitfor() failing to
+		 * return, we now also do a busy wait with a timeout. The timeout value is loaded from timeout.txt
+		 */
 		try {
+			// force failure if something goes wrong
+			int value = 1;
+			
+			long timeoutValue = Base.preferences.getInt("replicatorg.skeinforge.timeout", -1);
+			
 			process = pb.start();
-			int value = process.waitFor();
+			
+			//if no timeout set
+			if(timeoutValue == -1)
+			{
+				Base.logger.log(Level.FINEST, "\tRunning SF without a timeout");
+				value = process.waitFor();
+			}
+			else // run for timeoutValue cycles trying to get an exit value from the process
+			{
+				Base.logger.log(Level.FINEST, "\tRunning SF with a timeout");
+				while(timeoutValue > 0)
+				{
+					Thread.sleep(1000);
+					try
+					{
+						value = process.exitValue(); 
+						break;
+					}
+					catch (IllegalThreadStateException itse)
+					{
+						timeoutValue--;
+					}
+				}
+				if(timeoutValue == 0)
+				{
+					JOptionPane.showConfirmDialog(null, 
+							"\tSkeinforge has not returned, This may be due to a communication error\n" +
+							"between Skeinforge and ReplicatorG. If you are still editing a Skeinforge\n" +
+							"profile, ignore this message; any changes you make in the skeinforge window\n" +
+							"and save will be used when generating the gcode file.\n\n" +
+							"\tAdjusting the \"Skeinforge timeout\" in the preferences window will affect how\n" +
+							"long ReplicatorG waits before assuming that Skeinforge has failed, if you\n" +
+							"frequently encounter this message you may want to increase the timeout.",
+							"SF Timeout", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+			Base.logger.log(Level.FINEST, "Skeinforge process returned");
 			if (value != 0) {
-				Base.logger
-						.severe("Unrecognized error code returned by Skeinforge.");
+				Base.logger.severe("Unrecognized error code returned by Skeinforge.");
+			}
+			else
+			{
+				Base.logger.log(Level.FINEST, "Normal Exit on Skeinforge close");
 			}
 		} catch (IOException ioe) {
 			Base.logger.log(Level.SEVERE, "Could not run skeinforge.", ioe);
@@ -347,6 +454,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			// We are most likely shutting down, or the process has been
 			// manually aborted.
 			// Kill the background process and bail out.
+			System.out.println("SkeinforgeGenerator.editProfile() interrupted: " + e);
 			if (process != null) {
 				process.destroy();
 			}

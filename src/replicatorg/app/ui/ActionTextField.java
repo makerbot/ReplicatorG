@@ -1,7 +1,6 @@
 package replicatorg.app.ui;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;

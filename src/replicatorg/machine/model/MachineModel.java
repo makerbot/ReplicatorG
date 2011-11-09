@@ -70,6 +70,9 @@ public class MachineModel
 
 	//our clamp models	
 	protected Vector<ClampModel> clamps;
+
+	//our wipe models @Noah
+	protected  Vector<WipeModel> wipes = new Vector<WipeModel>();
 	
 	// our build volume
 	protected BuildVolume buildVolume;
@@ -103,9 +106,47 @@ public class MachineModel
 		parseClamps();
 		parseTools();
 		parseBuildVolume();
-		
+		parseWipes();
+		parseExclusion();
 	}
-	
+	private void parseExclusion()
+	{
+		if(XML.hasChildNode(xml, "exclusion"))
+		{
+			Node exclusionNode = XML.getChildNodeByName(xml, "wipes");
+			NodeList exclusionKids = exclusionNode.getChildNodes();
+			for (int i=0; i<exclusionKids.getLength(); i++)
+			{
+				Node exclusionZoneNode = exclusionKids.item(i);
+				
+				if (exclusionZoneNode.getNodeName().equals("wipe"))
+				{
+					WipeModel wipe = new WipeModel(exclusionZoneNode);
+					wipes.add(wipe);
+				}
+			}
+		}
+	}
+	private void parseWipes()
+	{
+		if(XML.hasChildNode(xml, "wipes"))
+		{
+			Node wipesNode = XML.getChildNodeByName(xml, "wipes");
+			
+			//look through the axes.
+			NodeList wipesKids = wipesNode.getChildNodes();
+			for (int i=0; i<wipesKids.getLength(); i++)
+			{
+				Node wipeNode = wipesKids.item(i);
+				
+				if (wipeNode.getNodeName().equals("wipe"))
+				{
+					WipeModel wipe = new WipeModel(wipeNode);
+					wipes.add(wipe);
+				}
+			}
+		}
+	}
 	//load axes configuration
 	private void parseAxes()
 	{
@@ -424,10 +465,9 @@ public class MachineModel
 		try {
 			return tools.get(index);
 		} catch (ArrayIndexOutOfBoundsException e) {
-			Base.logger.severe("Cannot get non-existant tool (#" + index + ".");
-			e.printStackTrace();
+			Base.logger.severe("Cannot get nonexistent tool (#" + index + ".");
+			//e.printStackTrace();
 		}
-		
 		return null;
 	}
 	public BuildVolume getBuildVolume()
@@ -439,7 +479,21 @@ public class MachineModel
 	{
 		return tools;
 	}
-
+	public Vector<WipeModel> getWipes()
+	{
+		return wipes;
+	}
+	public WipeModel getWipeByIndex(int index)
+	{
+		for(WipeModel wm : wipes)
+		{
+			if(wm.getIndex() == index)
+			{
+				return wm;
+			}
+		}
+		return null;
+	}
 	public void addTool(ToolModel t)
 	{
 		tools.add(t);

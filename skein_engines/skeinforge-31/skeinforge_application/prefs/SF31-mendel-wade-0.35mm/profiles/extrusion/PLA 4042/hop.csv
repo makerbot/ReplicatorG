@@ -1,7 +1,0 @@
-Format is tab separated hop settings.
-Name                          	Value
-WindowPosition	700+0
-Open File for Hop	
-Activate Hop	False
-Hop Over Layer Thickness (ratio):	1.0
-Minimum Hop Angle (degrees):	70.0
