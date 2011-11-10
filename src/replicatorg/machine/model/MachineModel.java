@@ -191,6 +191,11 @@ public class MachineModel
 							homingFeedrate = maxFeedrate;
 						}
 						try {
+							String spmm = XML.getAttributeValue(axis, "stepspermm");
+							if (spmm == null) spmm = XML.getAttributeValue(axis, "scale"); // Backwards compatibility
+							stepspermm = Double.parseDouble(spmm);
+						} catch (Exception e) {}
+						try {
 						        timeout = Double.parseDouble(XML.getAttributeValue(axis, "timeout"));
 						} catch (Exception e) {
 							// if no timeout is specified, used the default
