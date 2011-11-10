@@ -3,21 +3,14 @@ package replicatorg.plugin.toolpath.skeinforge;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.List;
-import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -90,10 +83,6 @@ class ConfigurationDialog extends JDialog {
 		setTitle("GCode Generator");
 		setLayout(new MigLayout("aligny, top, ins 5, fill"));
 		
-		// have to set this. Something wrong with the initial use of the
-		// ListSelectionListener
-		generateButton.setEnabled(false);
-				
 		add(new JLabel("Base Profile:"), "split 2");
 		
 		// This is intended to fix a bug where the "Generate Gcode" button doesn't get enabled 
