@@ -261,7 +261,7 @@ public class DualStrusionWindow extends JFrame{
 		//Use Wipes	
 		final JCheckBox useWipes = new JCheckBox();
 		useWipes.setSelected(true);
-		cont.add(new JLabel("Use Wipes. (DANGER! Don't disable this unless you know what you're doing)"), "split");
+		cont.add(new JLabel("Use wipes defined in machines.xml"), "split");
 		cont.add(useWipes, "wrap");
 		
 		//Merge
