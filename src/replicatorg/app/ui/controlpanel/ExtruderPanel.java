@@ -11,7 +11,10 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -510,7 +513,15 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	{
 		String name = source.getName();
 		if (source.getText().length() > 0) {
-			double target = Double.parseDouble(source.getText());
+			double target;
+			try {
+				NumberFormat nf = Base.getLocalFormat();
+				target = nf.parse(source.getText()).doubleValue();
+			} catch (ParseException pe) {
+				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
+				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
 				
 				if(name.equals("target-temp")) {

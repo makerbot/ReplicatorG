@@ -9,11 +9,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.EnumSet;
+import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -21,6 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
+import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.AxisId;
@@ -55,11 +60,11 @@ public class MachineOnboardParameters extends JFrame {
 	};
 	private JComboBox estopSelection = new JComboBox(estopChoices);
 	private static final int MAX_NAME_LENGTH = 16;
-	private JTextField xAxisHomeOffsetField = new JTextField();
-	private JTextField yAxisHomeOffsetField = new JTextField();
-	private JTextField zAxisHomeOffsetField = new JTextField();
-	private JTextField aAxisHomeOffsetField = new JTextField();
-	private JTextField bAxisHomeOffsetField = new JTextField();
+	private JTextField xAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+	private JTextField yAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+	private JTextField zAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+	private JTextField aAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+	private JTextField bAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
 	
 	private void resetDialog() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
@@ -98,12 +103,18 @@ public class MachineOnboardParameters extends JFrame {
 			target.setEstopConfig(estop);
 		}
 		
-		target.setAxisHomeOffset(0, Double.parseDouble(xAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(1, Double.parseDouble(yAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(2, Double.parseDouble(zAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(3, Double.parseDouble(aAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(4, Double.parseDouble(bAxisHomeOffsetField.getText()));
-		
+		try {
+			NumberFormat nf = Base.getLocalFormat();
+			target.setAxisHomeOffset(0, nf.parse(xAxisHomeOffsetField.getText()).doubleValue());
+			target.setAxisHomeOffset(1, nf.parse(yAxisHomeOffsetField.getText()).doubleValue());
+			target.setAxisHomeOffset(2, nf.parse(zAxisHomeOffsetField.getText()).doubleValue());
+			target.setAxisHomeOffset(3, nf.parse(aAxisHomeOffsetField.getText()).doubleValue());
+			target.setAxisHomeOffset(4, nf.parse(bAxisHomeOffsetField.getText()).doubleValue());
+		} catch (ParseException pe) {
+			Base.logger.log(Level.WARNING,"Could not parse value!",pe);
+			JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		resetDialog();
 	}
 

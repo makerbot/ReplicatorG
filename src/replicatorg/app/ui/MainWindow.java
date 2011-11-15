@@ -236,7 +236,9 @@ ToolpathGenerator.GeneratorListener
 	public boolean building;
 	public boolean simulating;
 	public boolean debugging;
-
+	
+	PreferencesWindow preferences;
+	
 	// boolean presenting;
 
 	// undo fellers
@@ -558,7 +560,6 @@ ToolpathGenerator.GeneratorListener
 				// put the model on the platform.
 				getPreviewPanel().getModel().putOnPlatform();
 			}
-
 
 		}
 
@@ -1057,7 +1058,7 @@ ToolpathGenerator.GeneratorListener
 			}
 		});
 		menu.add(dualstrusionItem);
-		setDualStrusionGUI();
+		setDualStrusionGUI(building);
 /*
 		combineItem = new JMenuItem("Row Combine (experimental)");
 		combineItem.addActionListener(new ActionListener(){
@@ -1222,30 +1223,12 @@ ToolpathGenerator.GeneratorListener
 	}
 	
 	
-	private void setDualStrusionGUI()
+	private void setDualStrusionGUI(boolean isBuilding)
 	{
+		boolean enable = isDualDriver() & !isBuilding;
 		
-		dualstrusionItem.setEnabled(false);
-		changeToolheadMenu.setEnabled(false);
-
-		String mname = Base.preferences.get("machine.name", "error");
-		System.out.println(mname);
-		try
-		{
-			MachineLoader ml = new MachineLoader();
-			ml.load(mname);
-			System.out.println(ml.getMachine().getModel().getTools().size());
-			if(ml.getMachine().getModel().getTools().size() > 1)
-			{
-				dualstrusionItem.setEnabled(true);
-				changeToolheadMenu.setEnabled(true);
-
-			}
-		}
-		catch(NullPointerException e)
-		{
-
-		}
+		dualstrusionItem.setEnabled(enable);
+		changeToolheadMenu.setEnabled(enable);
 	}
 
 	/**
@@ -1287,7 +1270,7 @@ ToolpathGenerator.GeneratorListener
 				}
 
 				Base.preferences.put("machine.name", name);
-				setDualStrusionGUI();
+				setDualStrusionGUI(building);
 			}
 		}
 	}
@@ -1649,7 +1632,9 @@ ToolpathGenerator.GeneratorListener
 	 * Show the preferences window.
 	 */
 	public void handlePrefs() {
-		PreferencesWindow preferences = new PreferencesWindow();
+		if(preferences == null)
+			preferences = new PreferencesWindow();
+
 		preferences.showFrame(this);
 	}
 
@@ -2094,14 +2079,13 @@ ToolpathGenerator.GeneratorListener
 		setVisible(true);
 		textarea.setEnabled(!isBusy);
 		textarea.setEditable(!isBusy);
+		
+		dualstrusionItem.setEnabled(!isBusy);
+		setDualStrusionGUI(isBusy);
+		
 		if (isBusy) {
-			dualstrusionItem.setEnabled(false);
 			textarea.selectNone();
 			textarea.scrollTo(0, 0);
-		} else {
-			dualstrusionItem.setEnabled(true);
-
-			//buttons.clear();
 		}
 	}
 
@@ -2219,11 +2203,10 @@ ToolpathGenerator.GeneratorListener
 		}
 		else
 		{
-			DualStrusionWindow dsw;
 			if(getBuild().getCode() != null)
-				dsw = new DualStrusionWindow(getBuild().getMainFilePath());	
+				new DualStrusionWindow(getBuild().getMainFilePath());	
 			else
-				dsw = new DualStrusionWindow();
+				new DualStrusionWindow();
 
 			//File f = dsw.getCombined();
 			//if(f != null)
@@ -2234,13 +2217,12 @@ ToolpathGenerator.GeneratorListener
 	
 	public void handleCombination()
 	{
-		CombineWindow cw;
 		if(getBuild() != null)
-			cw = new CombineWindow(getBuild().folder.getAbsolutePath() + File.separator + getBuild().getName() + ".stl", this);	
+			new CombineWindow(getBuild().folder.getAbsolutePath() + File.separator + getBuild().getName() + ".stl", this);	
 		else
-			cw = new CombineWindow(this);
+			new CombineWindow(this);
 	}
-
+	
 	public void estimationOver() {
 		// stopItem.setEnabled(false);
 		// pauseItem.setEnabled(false);
@@ -2997,7 +2979,7 @@ ToolpathGenerator.GeneratorListener
 			}
 			
 			/// a dual extruder machine is selected, start/end gcode must be updated accordingly
-			if( isDualDriver()) {
+			if (isDualDriver()) {
 				singleMaterialDualstrusionModifications(build.getCode().file);
 			}
 			
