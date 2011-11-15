@@ -1233,14 +1233,19 @@ ToolpathGenerator.GeneratorListener
 		dualstrusionItem.setEnabled(enable);
 		changeToolheadMenu.setEnabled(enable);
 	}
+
+	/**
+	 * Class for handling Machine Menu actions
+	 */	
 	class MachineMenuListener implements ActionListener {
 
 		/* a quick case insensitive match function. 
 		 * @returns true of subString is in baseString (case insensitive), false otherwise
 		 **/
 		public boolean containsIgnoreCase(String baseString, String subString) {
-			return Pattern.compile(Pattern.quote(subString), Pattern.CASE_INSENSITIVE).matcher(baseString).find();
-
+			if(baseString == null || subString == null)
+				return false;
+			return baseString.toLowerCase().contains( subString.toLowerCase() );
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (machineMenu == null) {
