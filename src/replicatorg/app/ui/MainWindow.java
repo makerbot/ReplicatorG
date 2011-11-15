@@ -75,6 +75,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -236,6 +237,8 @@ ToolpathGenerator.GeneratorListener
 	public boolean building;
 	public boolean simulating;
 	public boolean debugging;
+	
+	public boolean buildOnComplete = false;
 	
 	PreferencesWindow preferences;
 	
@@ -549,7 +552,7 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 
-	public void runToolpathGenerator() {
+	public void runToolpathGenerator(boolean skipConfig) {
 		// Check if the model is on the platform
 		if (!getPreviewPanel().getModel().isOnPlatform()) {
 			String message = "The bottom of the model doesn't appear to be touching the build surface, and attempting to print it could damage your machine. Ok to move it to the build platform?";
@@ -577,7 +580,7 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
-		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build);
+		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build, skipConfig);
 		tgt.addListener(this);
 		tgt.start();
 
@@ -1768,8 +1771,41 @@ ToolpathGenerator.GeneratorListener
 		if (simulating)
 			return;
 
+		if(header.getSelectedElement().getType() == BuildElement.Type.GCODE)
+		{
+			doBuild();
+		} 
+		else
+		{
+			 if(Base.preferences.getBoolean("build.showRegenCheck", true) &&
+					 getBuild() != null && getBuild().getCode() != null)
+			 {
+				 JCheckBox showCheck = new JCheckBox("Do not show this message again.");
+				 Object[] message = new Object[]{
+						 "Building from the model tab generates the gcode for this model before building,\n" +
+						 "but you already have open gcode.",
+						 "Would you like to continue and overwrite the gcode for this file?\n\n",
+						 showCheck
+				 };
+				 int option = JOptionPane.showConfirmDialog(this, message, "Re-generate Gcode?", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
+				 if(showCheck.isSelected())
+					 Base.preferences.putBoolean("build.showRegenCheck", false);
+				 
+				 if(option == 1)
+					 return;
+			 }
+			 
+			buildOnComplete = true;
+			runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
+		}
+		
+	}
+	public void doBuild()
+	{
 		if (!machineLoader.isLoaded()) {
 			Base.logger.severe("Not ready to build yet.");
+		} else if(!machineLoader.isConnected()) {
+			Base.logger.severe("Cannot build, not connected to a machine!");
 		} else {
 			// First, stop any leftover actions (for example, from the control panel)
 			doStop();
@@ -1779,10 +1815,12 @@ ToolpathGenerator.GeneratorListener
 			//buttons.activate(MainButtonPanel.BUILD);
 
 			setEditorBusy(true);
-
+			
 			// start our building thread.
+			
 			message("Building...");
 			buildStart = new Date();
+			
 			//doing this check allows us to recover from pre-build stuff
 			if(machineLoader.getMachine().buildDirect(new JEditTextAreaSource(textarea)) == false)
 			{
@@ -2974,13 +3012,24 @@ ToolpathGenerator.GeneratorListener
 			}
 			
 			/// a dual extruder machine is selected, start/end gcode must be updated accordingly
+			//TODO: this seems to be causing two gcode tabs containing the same gcode to appear
+			// but only when there is no gcode tab open already. they even seem to share the scrollbar?
 			if (isDualDriver()) {
 				singleMaterialDualstrusionModifications(build.getCode().file);
 			}
 			
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
-
+			
+			if(buildOnComplete)
+			{
+				buildOnComplete = false;
+				doBuild();
+			}
+		}
+		else if(buildOnComplete)
+		{
+			buildOnComplete = false;
 		}
 	}
 

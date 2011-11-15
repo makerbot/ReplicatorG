@@ -101,7 +101,7 @@ public class ToolPanel extends JPanel implements KeyListener {
 		JButton sliceButton = createToolButton("Generate GCode","images/model-to-gcode.png");
 		sliceButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				preview.mainWindow.runToolpathGenerator();
+				preview.mainWindow.runToolpathGenerator(false);
 				
 			}
 		});
