@@ -37,7 +37,6 @@ import java.util.logging.Level;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.DriverError;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
@@ -1521,7 +1520,8 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 		PacketResponse slavepr = runQuery(slavepb.getPacket());
 		slavepr.printDebug();
-		assert slavepr.get8() == data.length; 
+		// If the tool index is 127/255, we should not expect a response (it's a broadcast packet).
+		assert (toolIndex == 255) || (toolIndex == 127) || (slavepr.get8() == data.length); 
 	}
 
 	private byte[] readFromEEPROM(int offset, int len) {
@@ -2121,7 +2121,9 @@ public class Sanguino3GDriver extends SerialDriver
 	public boolean setConnectedToolIndex(int index) {
 		byte[] data = new byte[1];
 		data[0] = (byte) index;
+		// The broadcast address has changed. The safest solution is to try both.
 		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 255);
+		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 127);
 		return false;
 	}
 
