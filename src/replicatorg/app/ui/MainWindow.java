@@ -2752,6 +2752,9 @@ ToolpathGenerator.GeneratorListener
 			assert (false);
 		}
 
+		// bring down our machine temperature, don't want it to stay hot
+		doPreheat(false);
+
 		// cleanup our machine/driver.
 		machineLoader.unload();
 
