@@ -43,10 +43,13 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	static final private Color BG_BUILDING = new Color(0xff, 0xef, 0x00); // process yellow
 
 	MachineStatusPanel() {
-		Font smallFont = Base.getFontPref("status.font","SansSerif,plain,10");
+		Font statusFont = Base.getFontPref("status.font","SansSerif,plain,12");
+		Font smallFont = statusFont.deriveFont(10f);
 		smallLabel.setFont(smallFont);
 		tempLabel.setFont(smallFont);
 		machineLabel.setFont(smallFont);
+		label.setFont(statusFont);
+		
 		label.setText("Not Connected");
 		
 		setLayout(new MigLayout("fill"));
@@ -56,8 +59,10 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		add(tempLabel, "bottom, right");
 
 		FontMetrics smallMetrics = this.getFontMetrics(smallFont);
+		FontMetrics bigMetrics = this.getFontMetrics(statusFont);
 		// Height should be ~3 lines 
-		int height = (smallMetrics.getAscent() + smallMetrics.getDescent()) * 3;
+		int height = (smallMetrics.getAscent() + smallMetrics.getDescent()) * 2 +
+				bigMetrics.getAscent() + smallMetrics.getDescent();
 		setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
 		setMinimumSize(new Dimension(0, height));
 		int prefWidth = 80 * smallMetrics.charWidth('n');
