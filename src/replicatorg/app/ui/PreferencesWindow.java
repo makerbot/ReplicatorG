@@ -55,7 +55,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 	// the calling editor, so updates can be applied
 	MainWindow editor;
 
-	JTextField fontSizeField;
+	JFormattedTextField fontSizeField;
 	JTextField firmwareUpdateUrlField;
 	JTextField logPathField;
 	
@@ -153,7 +153,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content.setLayout(new MigLayout("fill"));
 
 		content.add(new JLabel("MainWindow font size: "), "split");
-		fontSizeField = new JTextField(4);
+		fontSizeField = new JFormattedTextField(Base.getLocalFormat());
+		fontSizeField.setColumns(4);
 		content.add(fontSizeField);
 		content.add(new JLabel("  (requires restart of ReplicatorG)"), "wrap");
 
@@ -220,7 +221,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			JLabel arcResolutionLabel = new JLabel("Arc resolution (in mm): ");
 			content.add(arcResolutionLabel,"split");
 			double value = Base.preferences.getDouble("replicatorg.parser.curve_segment_mm", 1.0);
-			JFormattedTextField arcResolutionField = new JFormattedTextField(new Double(value));
+			JFormattedTextField arcResolutionField = new JFormattedTextField(Base.getLocalFormat());
+			arcResolutionField.setValue(new Double(value));
 			content.add(arcResolutionField);
 			String arcResolutionHelp = "<html><small><em>" +
 				"The arc resolution is the default segment length that the gcode parser will break arc codes <br>"+
@@ -249,7 +251,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			JLabel sfTimeoutLabel = new JLabel("Skeinforge timeout: ");
 			content.add(sfTimeoutLabel,"split, gap unrelated");
 			int value = Base.preferences.getInt("replicatorg.skeinforge.timeout", -1);
-			JFormattedTextField sfTimeoutField = new JFormattedTextField(new Integer(value));
+			JFormattedTextField sfTimeoutField = new JFormattedTextField(Base.getLocalFormat());
+			sfTimeoutField.setValue(new Integer(value));
 			content.add(sfTimeoutField,"wrap 10px, growx");
 			String sfTimeoutHelp = "<html><small><em>" +
 				"The Skeinforge timeout is the number of seconds that replicatorg will wait while the<br>" +
@@ -325,9 +328,13 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			Integer t1Value = Base.preferences.getInt("build.preheatTool1", 75);
 			Integer pValue = Base.preferences.getInt("build.preheatPlatform", 75);
 			
-			final JFormattedTextField t0Field = new JFormattedTextField(t0Value);
-			final JFormattedTextField t1Field = new JFormattedTextField(t1Value);
-			final JFormattedTextField pField = new JFormattedTextField(pValue);
+			final JFormattedTextField t0Field = new JFormattedTextField(Base.getLocalFormat());
+			final JFormattedTextField t1Field = new JFormattedTextField(Base.getLocalFormat());
+			final JFormattedTextField pField = new JFormattedTextField(Base.getLocalFormat());
+
+			t0Field.setValue(t0Value);
+			t1Field.setValue(t1Value);
+			pField.setValue(pValue);
 			
 			// let's avoid creating too many ActionListeners, also is fewer lines (and just as clear)!
 			ActionListener a = new ActionListener(){
