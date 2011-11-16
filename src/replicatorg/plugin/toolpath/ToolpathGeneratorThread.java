@@ -18,6 +18,8 @@ public class ToolpathGeneratorThread extends Thread {
 	private boolean skipConfig = false;
 	int x, y;
 	String name;
+	
+	
 	public ToolpathGeneratorThread(Frame parent, ToolpathGenerator generator, Build build) {
 		// Naming the thread can ease debugging
 		super("ToolpathGeneratorThread");
@@ -25,13 +27,18 @@ public class ToolpathGeneratorThread extends Thread {
 		this.generator = generator;
 		this.build = build;
 	}
+	
 	public ToolpathGeneratorThread(Frame parent, ToolpathGenerator generator, Build build, boolean skipConfig) {
 		this(parent, generator, build);
 		this.skipConfig = skipConfig;
 	}
+	
+	
 	public void addListener(ToolpathGenerator.GeneratorListener listener) {
 		this.generator.addListener(listener);
 	}
+	
+	
 	public void setDualStrusionSupportFlag(boolean b, int lox, int loy, String loName)
 	{
 		supportDualStrusion = b;

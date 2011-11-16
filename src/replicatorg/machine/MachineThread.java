@@ -71,7 +71,8 @@ class MachineThread extends Thread {
 		}
 	}
 	
-	// TODO: Rethink this.
+	// TODO: The timeout/elapse behaivor of this is 
+	// a little wonky. It could be converted to some standard timer someday
 	class MachineTimer {
 		private long lastEventTime = 0;
 		private boolean enabled = false;
@@ -80,13 +81,14 @@ class MachineThread extends Thread {
 		public void start(long interval) {
 			enabled = true;
 			intervalMs = interval;
+			lastEventTime = System.currentTimeMillis();
 		}
 		
 		public void stop() {
 			enabled = false;
 		}
 		
-		// send out updates
+		// checks for timeout elapsing, and resets the time for a new interval
 		public boolean elapsed() {
 			if (!enabled) {
 				return false;
@@ -94,7 +96,6 @@ class MachineThread extends Thread {
 			long curMillis = System.currentTimeMillis();
 			if (lastEventTime + intervalMs <= curMillis) {
 				lastEventTime = curMillis;
-				
 				return true;
 			}
 			return false;
@@ -159,6 +160,9 @@ class MachineThread extends Thread {
 		statusThread.start();
 	}
 
+	/**
+	 * Loads create warmup and cooldown commands from xml file
+	 */
 	private void loadExtraPrefs() {
 		String[] commands = null;
 		String command = null;
@@ -188,6 +192,11 @@ class MachineThread extends Thread {
 		}
 	}
 
+	/**
+	 * Takes a GCodeSource, and adds warmup and cooldown code to it.
+	 * @param source GCodeSource to work from
+	 * @return a new GCodeSourceCollection including warmup/cooldown code (if it is loaded)
+	 */
 	GCodeSource buildGCodeJob(GCodeSource source) {
 		Vector<GCodeSource> sources = new Vector<GCodeSource>();
 		sources.add(new StringListSource(warmupCommands));
@@ -510,17 +519,7 @@ class MachineThread extends Thread {
 			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
-//				try{
-					runCommand(pendingQueue.remove());
-					//The driver no longer throws a BFVE
-//				} catch(BadFirmwareVersionException e) {
-//					// This is intended to catch the BadFirmwareVersionException 
-//					// that can be thrown by an initialization call on the driver.
-//					// At some point we may wish to do more with it.
-//					setState(new MachineState(MachineState.State.ERROR),
-//							"Incompatible firmware version. Please update your " +
-//							"firmware to version " + e.getNeeds() + " or higher");
-//				}
+				runCommand(pendingQueue.remove());
 			}
 			
 			if(state.isConnected())

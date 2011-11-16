@@ -754,7 +754,7 @@ ToolpathGenerator.GeneratorListener
 			item = newJMenuItem("Preferences", ',');
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					handlePrefs();
+					showPrefsWindow();
 				}
 			});
 			menu.add(item);
@@ -1160,7 +1160,7 @@ ToolpathGenerator.GeneratorListener
 		infoPanelItem.setVisible(true);
 		menu.add(infoPanelItem);
 		
-		preheatItem = new JMenuItem("");
+		preheatItem = new JMenuItem("preheat Not Set");
 		preheatItem.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -1170,18 +1170,23 @@ ToolpathGenerator.GeneratorListener
 		menu.add(preheatItem);
 		preheatItem.setEnabled(false);
 		
-		// to put the correct text in the menu, we'll call preheat here
-		doPreheat(true);
+		// call to put the correct text in the preheat menu item
+		doPreheat(false);
 
 		return menu;
 	}
 	
+	///  called when the preheat button is toggled
 	protected void handlePreheat()
 	{
 		preheatMachine = !preheatMachine;
 		doPreheat(preheatMachine);
 	}
 	
+	/**
+	 * Function enables/disables preheat and updates gui to reflect the state of preheat.
+	 * @param preheat true/false to indicate if we want preheat running
+	 */
 	protected void doPreheat(boolean preheat)
 	{
 		int tool0Target = 0;
@@ -1200,7 +1205,7 @@ ToolpathGenerator.GeneratorListener
 			preheatItem.setText("Preheat Machine");
 			preheatItem.setToolTipText("Tells the machine to begin warming up to the temperature specified in preferences");
 		}
-		preheatItem.setArmed(preheatMachine);
+		//preheatItem.setArmed(preheatMachine);
 		
 		MachineInterface machine = getMachine();
 		
@@ -1291,9 +1296,12 @@ ToolpathGenerator.GeneratorListener
 	}
 	
 	
+	/** 
+	 *  Enable dual extrusion items in the GUI
+	 */
 	private void setDualStrusionGUI(boolean isBuilding)
 	{
-		boolean enable = isDualDriver() & !isBuilding;
+		boolean enable = isDualDriver() & ! isBuilding;
 		
 		dualstrusionItem.setEnabled(enable);
 		changeToolheadMenu.setEnabled(enable);
@@ -1697,9 +1705,17 @@ ToolpathGenerator.GeneratorListener
 	}
 
 	/**
-	 * Show the preferences window.
+	 *  Function to handle apple stype prefernces access via MJRPrefsHandler. Opens preferences window. 
 	 */
-	public void handlePrefs() {
+	public void handlePrefs() 
+	{
+		showPrefsWindow();
+	}
+	
+	/**
+	 * Show the preferences window, creating a new copy of the window if necessassary.
+	 */
+	public void showPrefsWindow() {
 		if(preferences == null)
 			preferences = new PreferencesWindow();
 
@@ -1839,10 +1855,13 @@ ToolpathGenerator.GeneratorListener
 		if (simulating)
 			return;
 
+		// if we have gcode selected, simply build
 		if(header.getSelectedElement().getType() == BuildElement.Type.GCODE)
 		{
 			doBuild();
 		} 
+		// if we have anything else (stl) selected, check with user before we overwrite the gcode
+		//  pre-heat while we generate gcode, and sets buildOnComplete to auto fire build on gcode generation finish
 		else
 		{
 			 if(Base.preferences.getBoolean("build.showRegenCheck", true) &&
@@ -2188,7 +2207,6 @@ ToolpathGenerator.GeneratorListener
 		textarea.setEnabled(!isBusy);
 		textarea.setEditable(!isBusy);
 		
-		dualstrusionItem.setEnabled(!isBusy);
 		setDualStrusionGUI(isBusy);
 		
 		if (isBusy) {
@@ -2238,12 +2256,15 @@ ToolpathGenerator.GeneratorListener
 		// re-enable the gui and shit.
 		textarea.setEnabled(true);
 
+		// update buttons & menu's
+		doPreheat(false);
+
 		building = false;
 		if (machineLoader.isLoaded()) {
 			if (machineLoader.getMachine().getSimulatorDriver() != null)
 				machineLoader.getMachine().getSimulatorDriver().destroyWindow();
-		} else {
-		}
+		}	
+
 		setEditorBusy(false);
 	}
 
@@ -2312,9 +2333,9 @@ ToolpathGenerator.GeneratorListener
 		else
 		{
 			if(getBuild().getCode() != null)
-				new DualStrusionWindow(getBuild().getMainFilePath());	
+				new DualStrusionWindow(getBuild().getMainFilePath());	//TODO: Constructors shouldn't auto-display. Refactor that
 			else
-				new DualStrusionWindow();
+				new DualStrusionWindow(); //TODO: Constructorsshouldn't auto-display. Refactor that
 
 			//File f = dsw.getCombined();
 			//if(f != null)
@@ -2325,6 +2346,7 @@ ToolpathGenerator.GeneratorListener
 	
 	public void handleCombination()
 	{
+		//TODO: Constructors shouldn't auto-display. Refactor that
 		if(getBuild() != null)
 			new CombineWindow(getBuild().folder.getAbsolutePath() + File.separator + getBuild().getName() + ".stl", this);	
 		else
@@ -2344,6 +2366,7 @@ ToolpathGenerator.GeneratorListener
 		if (machineLoader.isLoaded()) {
 			machineLoader.getMachine().stopAll();
 		}
+		doPreheat(false);
 		building = false;
 		simulating = false;
 	}
@@ -2369,10 +2392,8 @@ ToolpathGenerator.GeneratorListener
 			machineLoader.getMachine().unpause();
 
 			if (simulating) {
-				//buttons.activate(MainButtonPanel.SIMULATE);
 				message("Simulating...");
 			} else if (building) {
-				//buttons.activate(MainButtonPanel.BUILD);
 				message("Building...");
 			}
 
@@ -3098,11 +3119,11 @@ ToolpathGenerator.GeneratorListener
 			
 			if(buildOnComplete)
 			{
-				buildOnComplete = false;
 				doBuild();
 			}
 		}
-		else if(buildOnComplete)
+		
+		if(buildOnComplete) // for safety, always reset this
 		{
 			buildOnComplete = false;
 		}

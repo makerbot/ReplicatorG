@@ -277,6 +277,12 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
+	/**
+	 * creates gui for configuration
+	 * @param parent parent window
+	 * @param name tkinter window name
+	 * @return true if a new ConfigurationDialog was created and stored to cd, false otherwise
+	 */
 	public boolean configure(Frame parent, String name)
 	{
 		if (name == null)
@@ -336,7 +342,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		cd.setLocation(x, y);
 		cd.setVisible(true);
 		emitUpdate("Config Done");
-		return configSuccess;
+		return configSuccess;//configSuccess is updated in the configuration dialog
 	}
 	
 	public boolean visualConfigure(Frame parent) {
@@ -346,9 +352,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	public boolean nonvisualConfigure()
 	{
 		configure(null, "");
-		cd.prepareGeneration();
-		
-		// prepareGeneration will set this to true
+		configSuccess = cd.configureGenerator();
 		return configSuccess;
 	}
 

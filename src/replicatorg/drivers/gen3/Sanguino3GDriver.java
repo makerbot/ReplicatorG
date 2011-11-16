@@ -2122,8 +2122,8 @@ public class Sanguino3GDriver extends SerialDriver
 		byte[] data = new byte[1];
 		data[0] = (byte) index;
 		// The broadcast address has changed. The safest solution is to try both.
-		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 255);
-		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 127);
+		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 255); //old firmware used 255, new fw ignores this
+		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 127); //new firmware used 127, old fw ignores this
 		return false;
 	}
 
