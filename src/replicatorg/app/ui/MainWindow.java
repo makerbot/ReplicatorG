@@ -1098,8 +1098,8 @@ ToolpathGenerator.GeneratorListener
 		reloadSerialMenu();
 		menu.add(serialMenu);
 
-		controlPanelItem = new JMenuItem("Control Panel", 'C');
-		controlPanelItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J,ActionEvent.CTRL_MASK));
+		controlPanelItem = newJMenuItem("Control Panel", 'C');
+//		controlPanelItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J,ActionEvent.CTRL_MASK));
 		controlPanelItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleControlPanel();
@@ -1171,7 +1171,7 @@ ToolpathGenerator.GeneratorListener
 		preheatItem.setEnabled(false);
 		
 		// to put the correct text in the menu, we'll call preheat here
-		doPreheat(true);
+		doPreheat(false);
 
 		return menu;
 	}
@@ -1208,10 +1208,10 @@ ToolpathGenerator.GeneratorListener
 		{
 			if(preheatMachine)
 			{
-				tool0Target = Base.preferences.getInt("build.preheatTool0", 100);
+				tool0Target = Base.preferences.getInt("build.preheatTool0", 75);
 				platTarget = Base.preferences.getInt("build.preheatPlatform", 75);
 				if(isDualDriver())
-					tool1Target = Base.preferences.getInt("build.preheatTool1", 100);
+					tool1Target = Base.preferences.getInt("build.preheatTool1", 75);
 			}
 			machine.runCommand(new replicatorg.drivers.commands.SelectTool(0));
 			machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool0Target));
