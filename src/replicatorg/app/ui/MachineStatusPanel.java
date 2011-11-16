@@ -93,13 +93,9 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	private String machineStatusString(String machineId, boolean connected)
 	{
 		String machineText = Base.preferences.get("machine.name", machineId);
-		if(machineText == null)
-			machineText = "(null machine)";
 		if( connected )
 		{
-			String connection = Base.preferences.get("serial.last_selected", "Connected");
-			if (connection == null)
-				connection = "(null connection)";
+			String connection = Base.preferences.get("serial.last_selected", "Unknown Connection");
 			machineText += " on " + connection;
 		} else {
 			machineText += " Not Connected";
