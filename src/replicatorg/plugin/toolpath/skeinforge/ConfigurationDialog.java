@@ -37,6 +37,10 @@ class ConfigurationDialog extends JDialog {
 	
 	JPanel profilePanel = new JPanel();
 	
+	/**
+	 * Fills a combo box with a list of skeinforge profiles
+	 * @param comboBox to fill with list of skeinforge profiles
+	 */
 	private void loadList(JComboBox comboBox) {
 		comboBox.removeAllItems();
 		profiles = parentGenerator.getProfiles();
@@ -117,7 +121,6 @@ class ConfigurationDialog extends JDialog {
 			public void actionPerformed(ActionEvent arg0) {
 				Base.preferences.putBoolean("build.autoGenerateGcode", autoGen.isSelected());
 			}
-			
 		});
 		autoGen.setSelected(Base.preferences.getBoolean("build.autoGenerateGcode", false));
 		
@@ -125,7 +128,8 @@ class ConfigurationDialog extends JDialog {
 		add(cancelButton, "tag cancel");
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				prepareGeneration();
+				parentGenerator.configSuccess = configureGenerator();
+				setVisible(false);
 			}
 		});
 		cancelButton.addActionListener(new ActionListener() {
@@ -149,18 +153,20 @@ class ConfigurationDialog extends JDialog {
 */
 	}
 	
-	protected void prepareGeneration()
+	/**
+	 * Does pre-skeinforge generation tasks
+	 */
+	protected boolean configureGenerator()
 	{
 		if(!parentGenerator.runSanityChecks()) {
-			return;
+			return false;
 		}
 		
 		int idx = prefPulldown.getSelectedIndex();
 		Profile p = getListedProfile(idx);
 		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
-		parentGenerator.configSuccess = true;
 		parentGenerator.profile = p.getFullPath();
-		setVisible(false);
 		SkeinforgeGenerator.setSelectedProfile(p.toString());
+		return true;
 	}
 };

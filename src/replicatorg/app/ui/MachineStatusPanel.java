@@ -23,6 +23,7 @@ import replicatorg.machine.model.ToolModel;
 /**
  * The MachineStatusPanel displays the current state of the connected machine,
  * or a message informing the user that no connected machine can be found.
+ * This is the big bar (usually Red or Light Green) with status text in it.
  * 
  * @author phooky
  * 
@@ -30,9 +31,16 @@ import replicatorg.machine.model.ToolModel;
 public class MachineStatusPanel extends BGPanel implements MachineListener {
 	private static final long serialVersionUID = -6944931245041870574L;
 
-	protected JLabel label = new JLabel();
+	
+	protected JLabel mainLabel= new JLabel();
+	
+	/// small text label for ongoing actions
 	protected JLabel smallLabel = new JLabel();
+	
+	/// Temperature status string
 	protected JLabel tempLabel = new JLabel();
+
+	/// Machine tyle/connection string
 	protected JLabel machineLabel = new JLabel();
 	
 	// Keep track of whether we are in a building state or not.
@@ -42,18 +50,18 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	static final private Color BG_READY = new Color(0x80, 0xff, 0x60);
 	static final private Color BG_BUILDING = new Color(0xff, 0xef, 0x00); // process yellow
 
+	
 	MachineStatusPanel() {
 		Font statusFont = Base.getFontPref("status.font","SansSerif,plain,12");
 		Font smallFont = statusFont.deriveFont(10f);
 		smallLabel.setFont(smallFont);
 		tempLabel.setFont(smallFont);
 		machineLabel.setFont(smallFont);
-		label.setFont(statusFont);
-		
-		label.setText("Not Connected");
-		
-		setLayout(new MigLayout("fill"));
-		add(label, "top, left");
+		mainLabel.setFont(statusFont);
+		mainLabel.setText("Not Connected");
+	
+		setLayout(new MigLayout("fill,novisualpadding"));
+		add(mainLabel, "top, left");
 		add(machineLabel, "top, right, wrap");
 		add(smallLabel, "bottom, left");
 		add(tempLabel, "bottom, right");
@@ -73,9 +81,30 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 
 	private void updatePanel(Color panelColor, String text, String smallText, String machineText) {
 		setBackground(panelColor);
-		label.setText(text);
+		mainLabel.setText(text);
 		smallLabel.setText(smallText);
 		machineLabel.setText(machineText);
+	}
+	
+	/**
+	 * Creatss a one line string of machine info
+	 * @return
+	 */
+	private String machineStatusString(String machineId, boolean connected)
+	{
+		String machineText = Base.preferences.get("machine.name", machineId);
+		if(machineText == null)
+			machineText = "(null machine)";
+		if( connected )
+		{
+			String connection = Base.preferences.get("serial.last_selected", "Connected");
+			if (connection == null)
+				connection = "(null connection)";
+			machineText += " on " + connection;
+		} else {
+			machineText += " Not Connected";
+		}
+		return machineText;
 	}
 	
 	/**
@@ -109,16 +138,11 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			text = state.toString();
 		}
 		
-		String machineText = Base.preferences.get("machine.name", evt.getSource().getMachineName());
-		machineText += " ";
-		if(evt.getState().isConnected())
-		{
-			machineText += "on ";
-			machineText += Base.preferences.get("serial.last_selected", "Connected");
-		} else {
-			machineText += "Not Connected";
+		String machineText = machineStatusString(evt.getSource().getMachineName(), evt.getState().isConnected()); 
+		
+		if( evt.getState().isConnected() == false )
 			tempLabel.setText("");
-		}
+
 		
 		// And mark which state we are in.
 		switch (state) {

@@ -36,18 +36,28 @@ public abstract class ToolpathGenerator {
 	 * Returns true if configuration successful; false if aborted.
 	 */
 	public boolean visualConfigure(Frame parent) {
-		assert parent != null;
-		assert model != null;
-		return true;
-	}
-	public boolean visualConfigure(Frame parent, int x, int y, String name) {
+		//TODO: Why does this exist? Test/refactor
 		assert parent != null;
 		assert model != null;
 		return true;
 	}
 	
+	/**
+	 * Returns true if configuration successful; false if aborted.
+	 */	
+	public boolean visualConfigure(Frame parent, int x, int y, String name) {
+		//TODO: Why does this exist? Test/refactor
+		assert parent != null;
+		assert model != null;
+		return true;
+	}
+	
+	/**
+	 * asserts model exists, Returns true.
+	 */
 	public boolean nonvisualConfigure()
 	{
+		//TODO: Why does this exist? Test/refactor
 		assert model != null;
 		return true;
 	}
