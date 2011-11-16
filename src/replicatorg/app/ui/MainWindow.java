@@ -597,26 +597,11 @@ ToolpathGenerator.GeneratorListener
 		serialMenuListener = new SerialMenuListener(); 
 
 		serialMenu.removeAll();
-		//		if (machine == null) {
-		//			JMenuItem item = new JMenuItem("No machine selected.");
-		//			item.setEnabled(false);
-		//			serialMenu.add(item);
-		//			return;
-		//		} else if (!(machine.getDriver() instanceof UsesSerial))  {
-		//			JMenuItem item = new JMenuItem("Currently selected machine does not use a serial port.");
-		//			item.setEnabled(false);
-		//			serialMenu.add(item);
-		//			return;
-		//		}
 
 		String currentName = null;
-		//		UsesSerial us = (UsesSerial)machine.getDriver();
-		//		if (us.getSerial() != null) {
-		//			currentName = us.getSerial().getName();
-		//		}
-		//		else {
+
 		currentName = Base.preferences.get("serial.last_selected", null);
-		//		}
+
 		Vector<Name> names = Serial.scanSerialNames();
 		Collections.sort(names);
 
@@ -1528,7 +1513,8 @@ ToolpathGenerator.GeneratorListener
 			boolean canUndo = undo.canUndo();
 			this.setEnabled(canUndo);
 			undoItem.setEnabled(canUndo);
-			currentElement.setModified(canUndo);
+			currentElement.setModified(canUndo);//[1]
+
 			if (canUndo) {
 				undoItem.setText(undo.getUndoPresentationName());
 				putValue(Action.NAME, undo.getUndoPresentationName());
@@ -1538,6 +1524,10 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 	}
+	//[1] this causes a BUG: This assumes your canUndo buffer is exatly as old as your last save, not older.
+	// which means you can't 'undo' into the past beyond a filesave. So if you change, save, change tabs, and return
+	// to a tab, that tab will (wrongly) throw up a 'modified' asterix on the name
+
 
 	class RedoAction extends AbstractAction {
 		private static final long serialVersionUID = -2427139178653072745L;
@@ -2083,7 +2073,7 @@ ToolpathGenerator.GeneratorListener
 		if (Base.logger.isLoggable(Level.FINE)) {
 			Base.logger.finest("Machine state changed to " + evt.getState().getState());
 		}
-		boolean hasGcode = getBuild().getCode() != null;
+
 		if (building) {
 			if (evt.getState().canPrint()) {
 				final MachineState endState = evt.getState();
@@ -2149,6 +2139,8 @@ ToolpathGenerator.GeneratorListener
 				item.setEnabled(!evt.getState().isConnected());
 			}
 		}
+
+		boolean hasGcode = getBuild().getCode() != null;
 
 		//		serialMenu.setEnabled(!evt.getState().isConnected());
 		//		machineMenu.setEnabled(!evt.getState().isConnected());
@@ -2582,7 +2574,6 @@ ToolpathGenerator.GeneratorListener
 	 * Windows XP open document will be routed through this too.
 	 */
 	public void handleOpenFile(File file) {
-		// System.out.println("handling open file: " + file);
 		handleOpen(file.getAbsolutePath());
 	}
 
@@ -3080,7 +3071,9 @@ ToolpathGenerator.GeneratorListener
 			{
 				Base.logger.finer("performing " + extruderChoice + " ops");
 				DualStrusionWorker.changeToolHead(build.getCode().file, extruderChoice);
-				handleOpenFile(build.getCode().file);
+				handleOpen2(build.getCode().file.getAbsolutePath() );
+				setCode(build.getCode());
+				//although we modified the file, we reloaded, so unset 'isModified'build.getCode().setModified(false); 
 			}
 			else {
 				Base.logger.finer("cannot use Dual Extrusion without Print-O-Matic");						
