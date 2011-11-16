@@ -3075,8 +3075,6 @@ ToolpathGenerator.GeneratorListener
 				Base.logger.finer("performing " + extruderChoice + " ops");
 				DualStrusionWorker.changeToolHead(build.getCode().file, extruderChoice);
 				handleOpen2(build.getCode().file.getAbsolutePath() );
-				setCode(build.getCode());
-				//although we modified the file, we reloaded, so unset 'isModified'build.getCode().setModified(false); 
 			}
 			else {
 				Base.logger.finer("cannot use Dual Extrusion without Print-O-Matic");						
