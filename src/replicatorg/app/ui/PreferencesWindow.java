@@ -100,17 +100,17 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		    	Base.preferences.putInt(prefName,behavior.ordinal());
 		    }
 		}
-		c.add(new JLabel("On ReplicatorG launch:"),"wrap");
+		c.add(new JLabel("On ReplicatorG launch:"),"split");
 		// We don't have SELECTED_KEY in Java 1.5, so we'll do things the old-fashioned, ugly way.
 		JRadioButton b;
 		b = new JRadioButton(new RadioAction("Open last opened or save file",InitialOpenBehavior.OPEN_LAST));
     	if (InitialOpenBehavior.OPEN_LAST == openBehavior) { b.setSelected(true); }
 		bg.add(b);
-		c.add(b,"wrap");
+		c.add(b,"split");
 		b = new JRadioButton(new RadioAction("Open new file",InitialOpenBehavior.OPEN_NEW));
     	if (InitialOpenBehavior.OPEN_NEW == openBehavior) { b.setSelected(true); }
 		bg.add(b);
-		c.add(b,"wrap");
+		c.add(b,"wrap 10px");
 	}
 
 	JComboBox makeDebugLevelDropdown() {
@@ -180,7 +180,9 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 						null,
 		                "Choose Model Color",
 		                modelColor);
-		                
+		        if(modelColor == null)
+		        	return;
+				
 		        Base.preferences.putInt("ui.modelColor", modelColor.getRGB());
 		        Base.getEditor().refreshPreviewPanel();
 			}
@@ -199,6 +201,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 						null,
 		                "Choose Background Color",
 		                backgroundColor);
+		        if(backgroundColor == null)
+		        	return;
 		                
 		        Base.preferences.putInt("ui.backgroundColor", backgroundColor.getRGB());
 		        Base.getEditor().refreshPreviewPanel();
@@ -210,14 +214,14 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		
 		content.add(new JLabel("Firmware update URL: "),"split");
 		firmwareUpdateUrlField = new JTextField(34);
-		content.add(firmwareUpdateUrlField,"wrap");
+		content.add(firmwareUpdateUrlField,"growx, wrap");
 
 		{
 			JLabel arcResolutionLabel = new JLabel("Arc resolution (in mm): ");
 			content.add(arcResolutionLabel,"split");
 			double value = Base.preferences.getDouble("replicatorg.parser.curve_segment_mm", 1.0);
 			JFormattedTextField arcResolutionField = new JFormattedTextField(new Double(value));
-			content.add(arcResolutionField,"wrap");
+			content.add(arcResolutionField);
 			String arcResolutionHelp = "<html><small><em>" +
 				"The arc resolution is the default segment length that the gcode parser will break arc codes <br>"+
 				"like G2 and G3 into.  Drivers that natively handle arcs will ignore this setting." +
@@ -243,10 +247,10 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		
 		{
 			JLabel sfTimeoutLabel = new JLabel("Skeinforge timeout: ");
-			content.add(sfTimeoutLabel,"split");
+			content.add(sfTimeoutLabel,"split, gap unrelated");
 			int value = Base.preferences.getInt("replicatorg.skeinforge.timeout", -1);
 			JFormattedTextField sfTimeoutField = new JFormattedTextField(new Integer(value));
-			content.add(sfTimeoutField,"wrap");
+			content.add(sfTimeoutField,"wrap 10px, growx");
 			String sfTimeoutHelp = "<html><small><em>" +
 				"The Skeinforge timeout is the number of seconds that replicatorg will wait while the<br>" +
 				"Skeinforge preferences window is open. If you find that RepG freezes after editing profiles<br>" +
@@ -273,15 +277,21 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		
 		{
 			content.add(new JLabel("Debugging level (default INFO):"),"split");
-			content.add(makeDebugLevelDropdown(),"wrap");
-		}
+			content.add(makeDebugLevelDropdown(), "wrap");
 
-		{
-			final JCheckBox logCb = addCheckboxForPref(content,"Log to file","replicatorg.useLogFile",false);
+			final JCheckBox logCb = new JCheckBox("Log to file");
+			logCb.setSelected(Base.preferences.getBoolean("replicatorg.useLogFile",false));
+			content.add(logCb, "split");
+			logCb.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					Base.preferences.putBoolean("replicatorg.useLogFile",logCb.isSelected());
+				}
+			});
+			
 			final JLabel logPathLabel = new JLabel("Log file name: "); 
 			content.add(logPathLabel,"split");
 			logPathField = new JTextField(34);
-			content.add(logPathField,"wrap");
+			content.add(logPathField,"growx, wrap 10px");
 			logPathField.setEnabled(logCb.isSelected());
 			logPathLabel.setEnabled(logCb.isSelected());
 
@@ -294,9 +304,58 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			});
 
 		}
+		
+		{
+			final JCheckBox preheatCb = new JCheckBox("Preheat builds");
+			content.add(preheatCb, "split");
+			
+			preheatCb.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					Base.preferences.putBoolean("build.doPreheat", preheatCb.isSelected());
+				}
+			});
+			preheatCb.setSelected(Base.preferences.getBoolean("build.doPreheat", false));
+			
+			final JLabel t0Label = new JLabel("Toolhead0:");
+			final JLabel t1Label = new JLabel("Toolhead1:");
+			final JLabel pLabel = new JLabel("Platform:");
+			
+			Integer t0Value = Base.preferences.getInt("build.preheatTool0", 75);
+			Integer t1Value = Base.preferences.getInt("build.preheatTool1", 75);
+			Integer pValue = Base.preferences.getInt("build.preheatPlatform", 75);
+			
+			final JFormattedTextField t0Field = new JFormattedTextField(t0Value);
+			final JFormattedTextField t1Field = new JFormattedTextField(t1Value);
+			final JFormattedTextField pField = new JFormattedTextField(pValue);
+			
+			// let's avoid creating too many ActionListeners, also is fewer lines (and just as clear)!
+			ActionListener a = new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					if(ae.getSource() == t0Field)
+						Base.preferences.putInt("build.preheatTool0", (Integer)t0Field.getValue());
+					else if(ae.getSource() == t1Field)
+						Base.preferences.putInt("build.preheatTool1", (Integer)t1Field.getValue());
+					else if(ae.getSource() == pField)
+						Base.preferences.putInt("build.preheatPlatform", (Integer)pField.getValue());
+				}
+			};
+			t0Field.addActionListener(a);
+			t1Field.addActionListener(a);
+			pField.addActionListener(a);
+
+			content.add(t0Label, "split, gap 20px");
+			content.add(t0Field, "split, growx");
+			content.add(t1Label, "split, gap unrelated");
+			content.add(t1Field, "split, growx");
+			content.add(pLabel, "split, gap unrelated");
+			content.add(pField, "split, growx, wrap 10px");
+		}
+		
 		{
 			JButton b = new JButton("Select Python interpreter...");
-			content.add(b,"spanx,wrap");
+			content.add(b,"spanx,wrap 10px");
 			b.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					SwingPythonSelector sps = new SwingPythonSelector(PreferencesWindow.this);
@@ -307,12 +366,20 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				}
 			});
 		}
-		//"replicatorg.parser.curve_segment_mm"
 
 		addInitialFilePrefs(content);
 
+		JButton allPrefs = new JButton("View All Prefs");
+		content.add(allPrefs, "split");
+		allPrefs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFrame advancedPrefs = new AdvancedPrefs();
+				advancedPrefs.setVisible(true);
+			}
+		});
+
 		JButton delPrefs = new JButton("Restore all defaults (includes driver choice, etc.)");
-		content.add(delPrefs,"wrap");
+		content.add(delPrefs);
 		delPrefs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				Base.resetPreferences();
@@ -320,19 +387,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			}
 		});
 
-
-		JButton allPrefs = new JButton("View All Prefs");
-		content.add(allPrefs);
-		allPrefs.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JFrame advancedPrefs = new AdvancedPrefs();
-				advancedPrefs.setVisible(true);
-			}
-		});
-		// [ OK ] [ Cancel ] maybe these should be next to the message?
-
 		JButton button;
-		
 		button = new JButton("Close");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

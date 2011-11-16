@@ -72,7 +72,7 @@ class MachineThread extends Thread {
 	}
 	
 	// TODO: Rethink this.
-	class Timer {
+	class MachineTimer {
 		private long lastEventTime = 0;
 		private boolean enabled = false;
 		private long intervalMs = 1000;
@@ -101,7 +101,7 @@ class MachineThread extends Thread {
 		}
 	}
 	
-	private Timer pollingTimer;
+	private MachineTimer pollingTimer;
 
 	// Link of machine commands to run
 	ConcurrentLinkedQueue<MachineCommand> pendingQueue;
@@ -141,7 +141,8 @@ class MachineThread extends Thread {
 	public MachineThread(Machine controller, Node machineNode) {
 		super("Machine Thread");
 		
-		pollingTimer = new Timer();
+		pollingTimer = new MachineTimer();
+		pollingTimer.start(1000);
 		
 		pendingQueue = new ConcurrentLinkedQueue<MachineCommand>();
 		
@@ -288,8 +289,6 @@ class MachineThread extends Thread {
 		case BUILD_DIRECT:
 			if (state.canPrint()) {
 				startTimeMillis = System.currentTimeMillis();
-				
-				pollingTimer.start(1000);
 
 				if (!isSimulating()) {
 					driver.getCurrentPosition(false); // reconcile position
@@ -318,8 +317,6 @@ class MachineThread extends Thread {
 				}
 				
 				startTimeMillis = System.currentTimeMillis();
-
-				pollingTimer.start(1000);
 				
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
@@ -358,7 +355,6 @@ class MachineThread extends Thread {
 				startTimeMillis = System.currentTimeMillis();
 
 				// There is no need to reconcile the position.
-				pollingTimer.start(1000);
 				
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
@@ -395,8 +391,6 @@ class MachineThread extends Thread {
 				}
 				
 				startTimeMillis = System.currentTimeMillis();
-				
-				pollingTimer.start(1000);
 				
 				machineBuilder = new UsingRemoteFile(driver, command.remoteName);
 			
@@ -489,6 +483,8 @@ class MachineThread extends Thread {
 	 * Main machine thread loop.
 	 */
 	public void run() {
+		
+		
 		// This is our main loop.
 		while (true) {
 			
@@ -527,14 +523,13 @@ class MachineThread extends Thread {
 //				}
 			}
 			
-			// If we are building
-			if ( state.isBuilding() && !state.isPaused() ) {
-				//run another instruction on the machine.
-				machineBuilder.runNext();
-				
+			if(state.isConnected())
+			{
 				// Check the status poll machine.
 				if (pollingTimer.elapsed()) {
-					if (Base.preferences.getBoolean("build.monitor_temp",false)) {
+					// if we're not building, check temp
+					// if we are, check preferences for whether we want to check temp
+					if ((!state.isBuilding()) || Base.preferences.getBoolean("build.monitor_temp",false)) {
 						driver.readTemperature();
 						Vector<ToolModel> tools = controller.getModel().getTools();
 						for (ToolModel t : tools) {
@@ -542,6 +537,12 @@ class MachineThread extends Thread {
 						}
 					}
 				}
+			}
+			
+			// If we are building
+			if ( state.isBuilding() && !state.isPaused() ) {
+				//run another instruction on the machine.
+				machineBuilder.runNext();
 				
 				// Send out a progress event
 				// TODO: Should these be rate limited?
@@ -561,8 +562,6 @@ class MachineThread extends Thread {
 						setState(new MachineState(MachineState.State.NOT_ATTACHED),
 								notConnectedMessage());
 					}
-					
-					pollingTimer.stop();
 				}
 			}
 			

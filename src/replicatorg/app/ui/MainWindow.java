@@ -240,6 +240,8 @@ ToolpathGenerator.GeneratorListener
 	
 	public boolean buildOnComplete = false;
 	
+	private boolean preheatMachine = false;
+	
 	PreferencesWindow preferences;
 	
 	// boolean presenting;
@@ -1082,6 +1084,7 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem toolheadIndexingItem = new JMenuItem("Set Toolhead Index...");
 	JMenuItem realtimeControlItem = new JMenuItem("Open real time controls window...");
 	JMenuItem infoPanelItem = new JMenuItem("Machine information...");
+	JMenuItem preheatItem;
 
 	protected JMenu buildMachineMenu() {
 		JMenuItem item;
@@ -1156,8 +1159,70 @@ ToolpathGenerator.GeneratorListener
 
 		infoPanelItem.setVisible(true);
 		menu.add(infoPanelItem);
+		
+		preheatItem = new JMenuItem("");
+		preheatItem.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				handlePreheat();
+			}
+		});
+		menu.add(preheatItem);
+		preheatItem.setEnabled(false);
+		
+		// to put the correct text in the menu, we'll call preheat here
+		doPreheat(true);
 
 		return menu;
+	}
+	
+	protected void handlePreheat()
+	{
+		preheatMachine = !preheatMachine;
+		doPreheat(preheatMachine);
+	}
+	
+	protected void doPreheat(boolean preheat)
+	{
+		int tool0Target = 0;
+		int tool1Target = 0;
+		int platTarget = 0;
+		
+		preheatMachine = preheat;
+		
+		if(preheatMachine)
+		{
+			preheatItem.setText("Turn off preheat");
+			preheatItem.setToolTipText("Allows the machine to cool down (i.e. not maintain temperature)");
+		}
+		else
+		{
+			preheatItem.setText("Preheat Machine");
+			preheatItem.setToolTipText("Tells the machine to begin warming up to the temperature specified in preferences");
+		}
+		preheatItem.setArmed(preheatMachine);
+		
+		MachineInterface machine = getMachine();
+		
+		if(machine != null && !building)
+		{
+			if(preheatMachine)
+			{
+				tool0Target = Base.preferences.getInt("build.preheatTool0", 100);
+				platTarget = Base.preferences.getInt("build.preheatPlatform", 75);
+				if(isDualDriver())
+					tool1Target = Base.preferences.getInt("build.preheatTool1", 100);
+			}
+			machine.runCommand(new replicatorg.drivers.commands.SelectTool(0));
+			machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool0Target));
+			machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(platTarget));
+			if(isDualDriver())
+			{
+				machine.runCommand(new replicatorg.drivers.commands.SelectTool(1));
+				machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool1Target));
+				machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(platTarget));
+			}
+		}
 	}
 
 	protected void handleToolheadIndexing() {
@@ -1762,14 +1827,12 @@ ToolpathGenerator.GeneratorListener
 		simulationThread.start();
 	}
 
-	// synchronized public void simulationOver()
 	public void simulationOver() {
 		message("Done simulating.");
 		simulating = false;
 		setEditorBusy(false);
 	}
 
-	// synchronized public void handleBuild()
 	public void handleBuild() {
 		if (building)
 			return;
@@ -1801,6 +1864,9 @@ ToolpathGenerator.GeneratorListener
 			 }
 			 
 			buildOnComplete = true;
+
+			doPreheat(Base.preferences.getBoolean("build.doPreheat", false));
+			
 			runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
 		}
 		
@@ -1820,6 +1886,8 @@ ToolpathGenerator.GeneratorListener
 			//buttons.activate(MainButtonPanel.BUILD);
 
 			setEditorBusy(true);
+			
+			doPreheat(true);
 			
 			// start our building thread.
 			
@@ -2075,6 +2143,8 @@ ToolpathGenerator.GeneratorListener
 		extruderParamsItem.setVisible(showParams);
 		onboardParamsItem.setEnabled(showParams);
 		extruderParamsItem.setEnabled(showParams);
+		preheatItem.setEnabled(evt.getState().isConnected() && !building);
+		
 		boolean showIndexing = 
 			evt.getState().isConfigurable() &&
 			machineLoader.getDriver() instanceof MultiTool &&
