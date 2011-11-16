@@ -75,6 +75,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -236,7 +237,11 @@ ToolpathGenerator.GeneratorListener
 	public boolean building;
 	public boolean simulating;
 	public boolean debugging;
-
+	
+	public boolean buildOnComplete = false;
+	
+	PreferencesWindow preferences;
+	
 	// boolean presenting;
 
 	// undo fellers
@@ -547,7 +552,7 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 
-	public void runToolpathGenerator() {
+	public void runToolpathGenerator(boolean skipConfig) {
 		// Check if the model is on the platform
 		if (!getPreviewPanel().getModel().isOnPlatform()) {
 			String message = "The bottom of the model doesn't appear to be touching the build surface, and attempting to print it could damage your machine. Ok to move it to the build platform?";
@@ -558,7 +563,6 @@ ToolpathGenerator.GeneratorListener
 				// put the model on the platform.
 				getPreviewPanel().getModel().putOnPlatform();
 			}
-
 
 		}
 
@@ -576,7 +580,7 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
-		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build);
+		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build, skipConfig);
 		tgt.addListener(this);
 		tgt.start();
 
@@ -1057,7 +1061,7 @@ ToolpathGenerator.GeneratorListener
 			}
 		});
 		menu.add(dualstrusionItem);
-		setDualStrusionGUI();
+		setDualStrusionGUI(building);
 /*
 		combineItem = new JMenuItem("Row Combine (experimental)");
 		combineItem.addActionListener(new ActionListener(){
@@ -1222,39 +1226,26 @@ ToolpathGenerator.GeneratorListener
 	}
 	
 	
-	private void setDualStrusionGUI()
+	private void setDualStrusionGUI(boolean isBuilding)
 	{
+		boolean enable = isDualDriver() & !isBuilding;
 		
-		dualstrusionItem.setEnabled(false);
-		changeToolheadMenu.setEnabled(false);
-
-		String mname = Base.preferences.get("machine.name", "error");
-		System.out.println(mname);
-		try
-		{
-			MachineLoader ml = new MachineLoader();
-			ml.load(mname);
-			System.out.println(ml.getMachine().getModel().getTools().size());
-			if(ml.getMachine().getModel().getTools().size() > 1)
-			{
-				dualstrusionItem.setEnabled(true);
-				changeToolheadMenu.setEnabled(true);
-
-			}
-		}
-		catch(NullPointerException e)
-		{
-
-		}
+		dualstrusionItem.setEnabled(enable);
+		changeToolheadMenu.setEnabled(enable);
 	}
+
+	/**
+	 * Class for handling Machine Menu actions
+	 */	
 	class MachineMenuListener implements ActionListener {
 
 		/* a quick case insensitive match function. 
 		 * @returns true of subString is in baseString (case insensitive), false otherwise
 		 **/
 		public boolean containsIgnoreCase(String baseString, String subString) {
-			return Pattern.compile(Pattern.quote(subString), Pattern.CASE_INSENSITIVE).matcher(baseString).find();
-
+			if(baseString == null || subString == null)
+				return false;
+			return baseString.toLowerCase().contains( subString.toLowerCase() );
 		}
 		public void actionPerformed(ActionEvent e) {
 			if (machineMenu == null) {
@@ -1282,7 +1273,7 @@ ToolpathGenerator.GeneratorListener
 				}
 
 				Base.preferences.put("machine.name", name);
-				setDualStrusionGUI();
+				setDualStrusionGUI(building);
 			}
 		}
 	}
@@ -1644,7 +1635,9 @@ ToolpathGenerator.GeneratorListener
 	 * Show the preferences window.
 	 */
 	public void handlePrefs() {
-		PreferencesWindow preferences = new PreferencesWindow();
+		if(preferences == null)
+			preferences = new PreferencesWindow();
+
 		preferences.showFrame(this);
 	}
 
@@ -1783,8 +1776,41 @@ ToolpathGenerator.GeneratorListener
 		if (simulating)
 			return;
 
+		if(header.getSelectedElement().getType() == BuildElement.Type.GCODE)
+		{
+			doBuild();
+		} 
+		else
+		{
+			 if(Base.preferences.getBoolean("build.showRegenCheck", true) &&
+					 getBuild() != null && getBuild().getCode() != null)
+			 {
+				 JCheckBox showCheck = new JCheckBox("Do not show this message again.");
+				 Object[] message = new Object[]{
+						 "Building from the model tab generates the gcode for this model before building,\n" +
+						 "but you already have open gcode.",
+						 "Would you like to continue and overwrite the gcode for this file?\n\n",
+						 showCheck
+				 };
+				 int option = JOptionPane.showConfirmDialog(this, message, "Re-generate Gcode?", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
+				 if(showCheck.isSelected())
+					 Base.preferences.putBoolean("build.showRegenCheck", false);
+				 
+				 if(option == 1)
+					 return;
+			 }
+			 
+			buildOnComplete = true;
+			runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
+		}
+		
+	}
+	public void doBuild()
+	{
 		if (!machineLoader.isLoaded()) {
 			Base.logger.severe("Not ready to build yet.");
+		} else if(!machineLoader.isConnected()) {
+			Base.logger.severe("Cannot build, not connected to a machine!");
 		} else {
 			// First, stop any leftover actions (for example, from the control panel)
 			doStop();
@@ -1794,10 +1820,12 @@ ToolpathGenerator.GeneratorListener
 			//buttons.activate(MainButtonPanel.BUILD);
 
 			setEditorBusy(true);
-
+			
 			// start our building thread.
+			
 			message("Building...");
 			buildStart = new Date();
+			
 			//doing this check allows us to recover from pre-build stuff
 			if(machineLoader.getMachine().buildDirect(new JEditTextAreaSource(textarea)) == false)
 			{
@@ -2089,14 +2117,13 @@ ToolpathGenerator.GeneratorListener
 		setVisible(true);
 		textarea.setEnabled(!isBusy);
 		textarea.setEditable(!isBusy);
+		
+		dualstrusionItem.setEnabled(!isBusy);
+		setDualStrusionGUI(isBusy);
+		
 		if (isBusy) {
-			dualstrusionItem.setEnabled(false);
 			textarea.selectNone();
 			textarea.scrollTo(0, 0);
-		} else {
-			dualstrusionItem.setEnabled(true);
-
-			//buttons.clear();
 		}
 	}
 
@@ -2214,11 +2241,10 @@ ToolpathGenerator.GeneratorListener
 		}
 		else
 		{
-			DualStrusionWindow dsw;
 			if(getBuild().getCode() != null)
-				dsw = new DualStrusionWindow(getBuild().getMainFilePath());	
+				new DualStrusionWindow(getBuild().getMainFilePath());	
 			else
-				dsw = new DualStrusionWindow();
+				new DualStrusionWindow();
 
 			//File f = dsw.getCombined();
 			//if(f != null)
@@ -2229,13 +2255,12 @@ ToolpathGenerator.GeneratorListener
 	
 	public void handleCombination()
 	{
-		CombineWindow cw;
 		if(getBuild() != null)
-			cw = new CombineWindow(getBuild().folder.getAbsolutePath() + File.separator + getBuild().getName() + ".stl", this);	
+			new CombineWindow(getBuild().folder.getAbsolutePath() + File.separator + getBuild().getName() + ".stl", this);	
 		else
-			cw = new CombineWindow(this);
+			new CombineWindow(this);
 	}
-
+	
 	public void estimationOver() {
 		// stopItem.setEnabled(false);
 		// pauseItem.setEnabled(false);
@@ -2992,13 +3017,24 @@ ToolpathGenerator.GeneratorListener
 			}
 			
 			/// a dual extruder machine is selected, start/end gcode must be updated accordingly
-			if( isDualDriver()) {
+			//TODO: this seems to be causing two gcode tabs containing the same gcode to appear
+			// but only when there is no gcode tab open already. they even seem to share the scrollbar?
+			if (isDualDriver()) {
 				singleMaterialDualstrusionModifications(build.getCode().file);
 			}
 			
 			buttons.updateFromMachine(machineLoader.getMachine());
 			updateBuild();
-
+			
+			if(buildOnComplete)
+			{
+				buildOnComplete = false;
+				doBuild();
+			}
+		}
+		else if(buildOnComplete)
+		{
+			buildOnComplete = false;
 		}
 	}
 

@@ -46,6 +46,12 @@ public abstract class ToolpathGenerator {
 		return true;
 	}
 	
+	public boolean nonvisualConfigure()
+	{
+		assert model != null;
+		return true;
+	}
+	
 	public void editProfiles(Frame parent) {
 		assert parent != null;
 	}

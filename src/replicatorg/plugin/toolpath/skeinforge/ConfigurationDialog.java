@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -107,21 +108,24 @@ class ConfigurationDialog extends JDialog {
 			add(preference.getUI(), "wrap");
 		}
 
+		final JCheckBox autoGen = new JCheckBox("Automatically generate when building.");
+		autoGen.setToolTipText("When building from the model view with this checked " +
+				"GCode will automatically be generated, bypassing this dialog.");
+		add(autoGen, "wrap");
+		autoGen.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Base.preferences.putBoolean("build.autoGenerateGcode", autoGen.isSelected());
+			}
+			
+		});
+		autoGen.setSelected(Base.preferences.getBoolean("build.autoGenerateGcode", false));
+		
 		add(generateButton, "tag ok, split 2");
 		add(cancelButton, "tag cancel");
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if(!parentGenerator.runSanityChecks()) {
-					return;
-				}
-				
-				int idx = prefPulldown.getSelectedIndex();
-				Profile p = getListedProfile(idx);
-				Base.preferences.put("lastGeneratorProfileSelected",p.toString());
-				parentGenerator.configSuccess = true;
-				parentGenerator.profile = p.getFullPath();
-				setVisible(false);
-				SkeinforgeGenerator.setSelectedProfile(p.toString());
+				prepareGeneration();
 			}
 		});
 		cancelButton.addActionListener(new ActionListener() {
@@ -143,5 +147,20 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 */
+	}
+	
+	protected void prepareGeneration()
+	{
+		if(!parentGenerator.runSanityChecks()) {
+			return;
+		}
+		
+		int idx = prefPulldown.getSelectedIndex();
+		Profile p = getListedProfile(idx);
+		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
+		parentGenerator.configSuccess = true;
+		parentGenerator.profile = p.getFullPath();
+		setVisible(false);
+		SkeinforgeGenerator.setSelectedProfile(p.toString());
 	}
 };
