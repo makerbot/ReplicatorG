@@ -1857,26 +1857,37 @@ ToolpathGenerator.GeneratorListener
 			 if(Base.preferences.getBoolean("build.showRegenCheck", true) &&
 					 getBuild() != null && getBuild().getCode() != null)
 			 {
-				 JCheckBox showCheck = new JCheckBox("Do not show this message again.");
+				 JCheckBox showCheck = new JCheckBox("Print from Model View always rewrites gcode.");
+				 Object[] choices = {"rewrite gcode", "use existing gcode"};
 				 Object[] message = new Object[]{
-						 "Building from the model tab generates the gcode for this model before building,\n" +
-						 "but you already have open gcode.",
-						 "Would you like to continue and overwrite the gcode for this file?\n\n",
+						 "WARNING: Printing from Model View. \n",
+						 "Overwrite existing gcode for this model?\n\n",
 						 showCheck
 				 };
-				 int option = JOptionPane.showConfirmDialog(this, message, "Re-generate Gcode?", JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
+				 int option = JOptionPane.showOptionDialog(this, message, "Re-generate Gcode?", 
+						 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+						 null,choices, choices[1]);
+
 				 if(showCheck.isSelected())
-					 Base.preferences.putBoolean("build.showRegenCheck", false);
+						 Base.preferences.putBoolean("build.showRegenCheck", false);
+					 
 				 
-				 if(option == 1)
-					 return;
+				 if(option == JOptionPane.CLOSED_OPTION) {
+					 return; //exit clicked
+				 }
+				 else if(option == 0 ) {
+					 //'rewrite' clicked
+					 buildOnComplete = true;
+					 doPreheat(Base.preferences.getBoolean("build.doPreheat", false));				
+					runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
+				 }
+				 else if (option == 1 ){
+					 //'use existing' clicked
+					 doBuild(); 
+				 }
+				 
 			 }
 			 
-			buildOnComplete = true;
-
-			doPreheat(Base.preferences.getBoolean("build.doPreheat", false));
-			
-			runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
 		}
 		
 	}
