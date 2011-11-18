@@ -98,14 +98,8 @@ class ConfigurationDialog extends JDialog {
 				generateButton.requestFocusInWindow();
 				generateButton.setFocusPainted(true);
 			}
-			
 		});
 		loadList(prefPulldown);
-		prefPulldown.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent arg0) {
-				String value = (String)prefPulldown.getSelectedItem().toString();
-			}
-		});
 		add(prefPulldown, "wrap, growx");
 
 		for (SkeinforgePreference preference: parentGenerator.preferences) {
@@ -129,7 +123,7 @@ class ConfigurationDialog extends JDialog {
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parentGenerator.configSuccess = configureGenerator();
-				setVisible(false);
+				setVisible(!parentGenerator.configSuccess);
 			}
 		});
 		cancelButton.addActionListener(new ActionListener() {
@@ -138,19 +132,7 @@ class ConfigurationDialog extends JDialog {
 				setVisible(false);
 			}
 		});
-		//add(buttonPanel, "wrap, growx");
-/*
- * This is being removed because the nulling of profiles and 
- * parentGenerator is being moved to setVisible()		
-		addWindowListener( new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				profiles = null;
-				parentGenerator = null;
-				super.windowClosed(e);
-			}
-		});
-*/
+
 	}
 	
 	/**
@@ -163,6 +145,11 @@ class ConfigurationDialog extends JDialog {
 		}
 		
 		int idx = prefPulldown.getSelectedIndex();
+		
+		if(idx == -1) {
+			return false;
+		}
+		
 		Profile p = getListedProfile(idx);
 		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 		parentGenerator.profile = p.getFullPath();
