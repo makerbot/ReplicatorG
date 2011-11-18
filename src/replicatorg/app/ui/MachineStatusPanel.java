@@ -60,7 +60,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		mainLabel.setFont(statusFont);
 		mainLabel.setText("Not Connected");
 	
-		setLayout(new MigLayout("fill,novisualpadding"));
+		setLayout(new MigLayout("fill,novisualpadding, ins 5 10 5 10"));
 		add(mainLabel, "top, left");
 		add(machineLabel, "top, right, wrap");
 		add(smallLabel, "bottom, left");
