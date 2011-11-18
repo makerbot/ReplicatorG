@@ -1635,19 +1635,18 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 
-	public void handleDisconnect() {
+	/**
+	 * Handles the functionality of 'disconnect' buttons
+	 */
+	public void handleDisconnect(boolean leavePreheatRunning) {
 		if(building)
 		{
 			int choice = JOptionPane.showConfirmDialog(this, "You are attempting to disconnect the printer while it is printing \n are you sure?", "Disconnect Warning", JOptionPane.YES_NO_OPTION);
-			if(choice == 0)
-			{
-				machineLoader.disconnect();
-			}
-			if(choice == 1)
-			{
-				//Do Nothing
+			if(choice == 1) {
+				return;
 			}
 		}
+		doPreheat(leavePreheatRunning);
 		machineLoader.disconnect();
 	}
 
@@ -1857,8 +1856,8 @@ ToolpathGenerator.GeneratorListener
 			 if(Base.preferences.getBoolean("build.showRegenCheck", true) &&
 					 getBuild() != null && getBuild().getCode() != null)
 			 {
-				 JCheckBox showCheck = new JCheckBox("Print from Model View always rewrites gcode.");
-				 Object[] choices = {"rewrite gcode", "use existing gcode"};
+				 JCheckBox showCheck = new JCheckBox("Print from Model View always regenerates gcode.");
+				 Object[] choices = {"Regenerate GCode", "Use existing GCode"};
 				 Object[] message = new Object[]{
 						 "WARNING: Printing from Model View. \n",
 						 "Overwrite existing gcode for this model?\n\n",
@@ -1898,15 +1897,14 @@ ToolpathGenerator.GeneratorListener
 		} else if(!machineLoader.isConnected()) {
 			Base.logger.severe("Cannot build, not connected to a machine!");
 		} else {
-			// First, stop any leftover actions (for example, from the control panel)
-			doStop();
-
+			// First, stop machines (but don't tweak gui states
+			if (machineLoader.isLoaded()) {
+				machineLoader.getMachine().stopAll();
+			}
+			
 			// build specific stuff
 			building = true;
-			//buttons.activate(MainButtonPanel.BUILD);
-
-			setEditorBusy(true);
-			
+			setEditorBusy(true);		
 			doPreheat(true);
 			
 			// start our building thread.
@@ -2291,9 +2289,12 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 
+	/**
+	 *  Stops the machine from running, and sets gui to 
+	 *  'no build running' mode
+	 */
 	public void handleStop() {
-		// if (building || simulating) // can also be called during panel ops
-		// called by menu or buttons
+		// called by menu or buttons or during panel ops
 		doStop();
 		setEditorBusy(false);
 	}
@@ -2363,7 +2364,8 @@ ToolpathGenerator.GeneratorListener
 	}
 
 	/**
-	 * Stop the build.
+	 *  Send stop commnad to loaded machine, 
+	 *  Disables pre-heating, and sets building values to false/off
 	 */
 	public void doStop() {
 		if (machineLoader.isLoaded()) {
@@ -2496,7 +2498,8 @@ ToolpathGenerator.GeneratorListener
 			"Continue and abort print?</html>";
 			int option = JOptionPane.showConfirmDialog(this, message, "Abort print?", 
 					JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-			if (option == JOptionPane.CANCEL_OPTION) { return false; }
+			if (option == JOptionPane.CANCEL_OPTION) 
+			{ return false; }
 
 			// Stop the build.
 			doStop();

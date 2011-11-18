@@ -150,7 +150,7 @@ public class ToolModel
 			return false;
 		}
 		if (Boolean.parseBoolean(s)) {
-			return true;
+			return true; 
 		}
 		try {
 			if (Integer.parseInt(s) == 1) {
