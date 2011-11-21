@@ -1083,7 +1083,7 @@ ToolpathGenerator.GeneratorListener
 		reloadSerialMenu();
 		menu.add(serialMenu);
 
-		controlPanelItem = newJMenuItem("Control Panel", 'C');
+		controlPanelItem = newJMenuItem("Control Panel", 'J');
 //		controlPanelItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J,ActionEvent.CTRL_MASK));
 		controlPanelItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
