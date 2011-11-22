@@ -1853,39 +1853,40 @@ ToolpathGenerator.GeneratorListener
 		//  pre-heat while we generate gcode, and sets buildOnComplete to auto fire build on gcode generation finish
 		else
 		{
-			 if(Base.preferences.getBoolean("build.showRegenCheck", true) &&
-					 getBuild() != null && getBuild().getCode() != null)
-			 {
-				 JCheckBox showCheck = new JCheckBox("Print from Model View always regenerates gcode.");
-				 Object[] choices = {"Regenerate GCode", "Use existing GCode"};
-				 Object[] message = new Object[]{
-						 "WARNING: Printing from Model View. \n",
-						 "Overwrite existing gcode for this model?\n\n",
-						 showCheck
-				 };
-				 int option = JOptionPane.showOptionDialog(this, message, "Re-generate Gcode?", 
-						 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-						 null,choices, choices[1]);
+			int option = 0;
+			if(Base.preferences.getBoolean("build.showRegenCheck", true) &&
+					getBuild() != null && getBuild().getCode() != null)
+			{
+				JCheckBox showCheck = new JCheckBox("Print from Model View always regenerates gcode.");
+				Object[] choices = {"Regenerate GCode", "Use existing GCode"};
+				Object[] message = new Object[]{
+						"WARNING: Printing from Model View. \n",
+						"Overwrite existing gcode for this model?\n\n",
+						showCheck
+				};
+				option = JOptionPane.showOptionDialog(this, message, "Re-generate Gcode?", 
+						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+						null,choices, choices[1]);
 
-				 if(showCheck.isSelected())
-						 Base.preferences.putBoolean("build.showRegenCheck", false);
+				if(showCheck.isSelected())
+					Base.preferences.putBoolean("build.showRegenCheck", false);
 					 
 				 
-				 if(option == JOptionPane.CLOSED_OPTION) {
-					 return; //exit clicked
-				 }
-				 else if(option == 0 ) {
-					 //'rewrite' clicked
-					 buildOnComplete = true;
-					 doPreheat(Base.preferences.getBoolean("build.doPreheat", false));				
-					runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
-				 }
-				 else if (option == 1 ){
-					 //'use existing' clicked
-					 doBuild(); 
-				 }
+				if(option == JOptionPane.CLOSED_OPTION) {
+					return; //exit clicked
+				}
 				 
-			 }
+			}
+			if(option == 0 ) {
+				//'rewrite' clicked or passthrough checked
+				buildOnComplete = true;
+				doPreheat(Base.preferences.getBoolean("build.doPreheat", false));				
+				runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
+			}
+			else if (option == 1 ){
+				//'use existing' clicked
+				doBuild(); 
+			}
 			 
 		}
 		
