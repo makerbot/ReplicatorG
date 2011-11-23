@@ -231,9 +231,11 @@ public class Base {
 	/** Local storage for gcode NumberFormat. */
 	static private NumberFormat gcodeNF;
 	{
-        DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+		// We don't use DFS.getInstance here to maintain compatibility with Java 5
+        DecimalFormatSymbols dfs;
+ 	 	gcodeNF = new DecimalFormat("#0.0");
+ 	 	dfs = ((DecimalFormat)gcodeNF).getDecimalFormatSymbols();
  	 	dfs.setDecimalSeparator('.');
- 	 	gcodeNF = new DecimalFormat("#0.0", dfs);
 	}
 	
 	/**
