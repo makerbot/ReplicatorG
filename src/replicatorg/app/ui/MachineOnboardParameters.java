@@ -60,11 +60,16 @@ public class MachineOnboardParameters extends JFrame {
 	};
 	private JComboBox estopSelection = new JComboBox(estopChoices);
 	private static final int MAX_NAME_LENGTH = 16;
-	private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
-	private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
-	private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
-	private JFormattedTextField aAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
-	private JFormattedTextField bAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+
+    private NumberFormat threePlaces = Base.getLocalFormat();
+    {
+        threePlaces.setMaximumFractionDigits(3);
+    }
+	private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(threePlaces );
+	private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(threePlaces );
+	private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(threePlaces );
+	private JFormattedTextField aAxisHomeOffsetField = new JFormattedTextField(threePlaces );
+	private JFormattedTextField bAxisHomeOffsetField = new JFormattedTextField(threePlaces );
 	
 	private void resetDialog() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
@@ -124,16 +129,11 @@ public class MachineOnboardParameters extends JFrame {
 		loadParameters();
 	}
 	
-	double roundDouble(double number) {
-		DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
-		dfs.setDecimalSeparator('.');
-    	DecimalFormat twoDForm = new DecimalFormat("#.###", dfs);
-    	return Double.valueOf(twoDForm.format(number));
-	}
 
 	private void loadParameters() {
 		machineNameField.setText(this.target.getMachineName());
 		EnumSet<AxisId> invertedAxes = this.target.getInvertedParameters();
+		
 		xAxisInvertBox.setSelected(invertedAxes.contains(AxisId.X));
 		yAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Y));
 		zAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Z));
@@ -146,12 +146,13 @@ public class MachineOnboardParameters extends JFrame {
 
 		OnboardParameters.EstopType estop = this.target.getEstopConfig();
 		estopSelection.setSelectedIndex(estop.ordinal());
+	   
 		
-		xAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(0)));
-		yAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(1)));
-		zAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(2)));
-		aAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(3)));
-		bAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(4)));
+		xAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(0));
+		yAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(1));
+		zAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(2));
+		aAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(3));
+		bAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(4));
 	}
 
 	private JPanel makeButtonPanel() {
