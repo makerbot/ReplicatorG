@@ -1216,13 +1216,21 @@ ToolpathGenerator.GeneratorListener
 
 	protected void handleToolheadIndexing() {
 		if (!(machineLoader.getDriver() instanceof MultiTool)) {
-			JOptionPane.showMessageDialog(
-					this,
+			JOptionPane.showMessageDialog( this,
 					"ReplicatorG can't connect to your machine or toolhead index setting is not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run toolhead indexing", JOptionPane.ERROR_MESSAGE);
 			return;
 		} else {
 			ToolheadIndexer indexer = new ToolheadIndexer(this,machineLoader.getDriver());
+			if(isDualDriver())
+			{
+				JOptionPane.showMessageDialog( this,
+						"WARNING: Toolhead Index must be set one at a time on DualStrusion machines.  " +
+						"See documentation at: http://www.makerbot.com/docs/dualstrusion for full instructions",
+						"Dualstrusion Extruder Board Warning:",
+						JOptionPane.WARNING_MESSAGE);
+			}
+
 			indexer.setVisible(true);
 		}
 	}
@@ -1666,11 +1674,15 @@ ToolpathGenerator.GeneratorListener
 
 	}
 
+	/**
+	 * Displays Machine Onboard Preferences dialog
+	 */
 	public void handleOnboardPrefs() {
 		if (!(machineLoader.getDriver() instanceof OnboardParameters)) {
 			JOptionPane.showMessageDialog(
 					this,
-					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
+					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\n"+
+					"Try checking your settings and resetting your machine.",
 					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
@@ -1679,16 +1691,28 @@ ToolpathGenerator.GeneratorListener
 		moo.setVisible(true);
 	}
 
+	/**
+	 * Displays Extruder Preferences dialog, with warnings for some edge cases
+	 */
 	public void handleExtruderPrefs() {
 		if (!(machineLoader.getDriver() instanceof OnboardParameters)) {
 			JOptionPane.showMessageDialog(
 					this,
-					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
-					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
+					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\n"+
+					"Try checking your settings and resetting your machine.",
+					"Can't run extruder prefs", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
 		ExtruderOnboardParameters eop = new ExtruderOnboardParameters((OnboardParameters)machineLoader.getDriver());
+		if(isDualDriver())
+		{
+			JOptionPane.showMessageDialog( this,
+					"WARNING: Extruder Preferences must be set one at a time for DualStrusion machines.  "+
+					"see documentation at: http://www.makerbot.com/docs/dualstrusion for full instructions",
+					"Dualstrusion Extruder Board Warning",
+					JOptionPane.WARNING_MESSAGE);
+		}
 		eop.setVisible(true);
 	}
 
