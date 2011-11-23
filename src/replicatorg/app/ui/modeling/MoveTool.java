@@ -1,10 +1,10 @@
 package replicatorg.app.ui.modeling;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.text.NumberFormat;
 
 import javax.media.j3d.Transform3D;
 import javax.swing.Icon;
@@ -37,14 +37,14 @@ public class MoveTool extends Tool {
 	JFormattedTextField transX, transY, transZ;
 	
 	public JPanel getControls() {
-		JPanel p = new JPanel(new MigLayout("fillx,filly"));
+		JPanel p = new JPanel(new MigLayout("fillx,filly,gap 0"));
 		JButton centerButton = createToolButton("Center","images/center-object.png");
 		centerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parent.getModel().center();
 			}
 		});
-		p.add(centerButton,"growx,wrap");
+		p.add(centerButton,"growx,wrap,spanx");
 
 		JButton lowerButton = createToolButton("Put on platform","images/center-object.png");
 		lowerButton.addActionListener(new ActionListener() {
@@ -52,10 +52,13 @@ public class MoveTool extends Tool {
 				parent.getModel().putOnPlatform();
 			}
 		});
-		p.add(lowerButton,"growx,wrap");
-		transX = new JFormattedTextField(NumberFormat.getInstance());
-		transY = new JFormattedTextField(NumberFormat.getInstance());
-		transZ = new JFormattedTextField(NumberFormat.getInstance());
+		p.add(lowerButton,"growx,wrap,spanx");
+		transX = new JFormattedTextField(Base.getLocalFormat());
+		Dimension d = transX.getPreferredSize();
+		d.width = 800;
+		transX.setPreferredSize(d);
+		transY = new JFormattedTextField(Base.getLocalFormat());
+		transZ = new JFormattedTextField(Base.getLocalFormat());
 		transX.setValue(10);
 		transY.setValue(10);
 		transZ.setValue(10);
@@ -80,7 +83,7 @@ public class MoveTool extends Tool {
 				String txt = transX.getText();
 				if (txt != null) {
 					try {
-						double transXval = Double.parseDouble(txt);
+						double transXval = Base.getLocalFormat().parse(txt).doubleValue();
 						parent.getModel().translateObject(transXval, 0, 0);
 					} catch (Exception e) {
 						Base.logger.fine("Problem parsing number or translating object.");
@@ -93,7 +96,7 @@ public class MoveTool extends Tool {
 				String txt = transX.getText();
 				if (txt != null) {
 					try {
-						double transXval = Double.parseDouble(txt);
+						double transXval = Base.getLocalFormat().parse(txt).doubleValue();
 						parent.getModel().translateObject(-transXval, 0, 0);
 					} catch (Exception e) {
 						Base.logger.fine("Problem parsing number or translating object.");
@@ -106,7 +109,7 @@ public class MoveTool extends Tool {
 				String txt = transY.getText();
 				if (txt != null) {
 					try {
-						double transYval = Double.parseDouble(txt);
+						double transYval = Base.getLocalFormat().parse(txt).doubleValue();
 						parent.getModel().translateObject(0,transYval, 0);
 					} catch (Exception e) {
 						Base.logger.fine("Problem parsing number or translating object.");
@@ -119,7 +122,7 @@ public class MoveTool extends Tool {
 				String txt = transY.getText();
 				if (txt != null) {
 					try {
-						double transYval = Double.parseDouble(txt);
+						double transYval = Base.getLocalFormat().parse(txt).doubleValue();
 						parent.getModel().translateObject(0,-transYval,0);
 					} catch (Exception e) {
 						Base.logger.fine("Problem parsing number or translating object.");
@@ -132,7 +135,7 @@ public class MoveTool extends Tool {
 				String txt = transZ.getText();
 				if (txt != null) {
 					try {
-						double transZval = Double.parseDouble(txt);
+						double transZval = Base.getLocalFormat().parse(txt).doubleValue();
 						parent.getModel().translateObject(0,0,transZval);
 					} catch (Exception e) {
 						Base.logger.fine("Problem parsing number or translating object.");
@@ -145,7 +148,7 @@ public class MoveTool extends Tool {
 				String txt = transZ.getText();
 				if (txt != null) {
 					try {
-						double transZval = Double.parseDouble(txt);
+						double transZval = Base.getLocalFormat().parse(txt).doubleValue();
 						parent.getModel().translateObject(0,0,-transZval);
 					} catch (Exception e) {
 						Base.logger.fine("Problem parsing number or translating object.");
@@ -154,7 +157,7 @@ public class MoveTool extends Tool {
 			}
 		});
 		lockZ = new JCheckBox("Lock height");
-		p.add(lockZ,"growx,wrap");
+		p.add(lockZ,"growx,wrap,spanx");
 		
 		return p;
 	}

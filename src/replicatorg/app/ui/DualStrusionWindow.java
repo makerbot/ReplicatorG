@@ -97,16 +97,17 @@ public class DualStrusionWindow extends JFrame{
 	{
 		this(null);
 	}
-	/**
-	 * This is a constructor that takes the filepath of the gcode open currently in ReplicatorG
-	 * @param s the path of the gcode currently open in RepG
-	 */
+	
 	/**
 	 * This method creates and shows the DualStrusionWindow GUI, this window is a MigLayout with 3 JFileChooser-TextBox Pairs, the first two being source gcodes and the last being the combined gcode destination.
 	 * It also links to online DualStrusion Documentation NOTE: This may be buggy, it uses getDesktop() which is JDK 1.6 and scary.
 	 * This method also invokes the thread in which the gcode combining operations run in, I would like to turn this into a SwingWorker soon.
-	 */
+
+	 * This is a constructor that takes the filepath of the gcode open currently in ReplicatorG
+	 * @param s the path of the gcode currently open in RepG
+	*/
 	public DualStrusionWindow(String path) {
+		//TODO: Constructors shouldn't auto-display. Refactor that
 		super("DualStrusion Window (EXPERIMENTAL functionality)");
 
 		Base.logger.log(Level.FINE, "Dualstrusion window booting up...");
@@ -261,7 +262,7 @@ public class DualStrusionWindow extends JFrame{
 		//Use Wipes	
 		final JCheckBox useWipes = new JCheckBox();
 		useWipes.setSelected(true);
-		cont.add(new JLabel("Use Wipes. (DANGER! Don't disable this unless you know what you're doing)"), "split");
+		cont.add(new JLabel("Use wipes defined in machines.xml"), "split");
 		cont.add(useWipes, "wrap");
 		
 		//Merge

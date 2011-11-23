@@ -71,8 +71,9 @@ class MachineThread extends Thread {
 		}
 	}
 	
-	// TODO: Rethink this.
-	class Timer {
+	// TODO: The timeout/elapse behaivor of this is 
+	// a little wonky. It could be converted to some standard timer someday
+	class MachineTimer {
 		private long lastEventTime = 0;
 		private boolean enabled = false;
 		private long intervalMs = 1000;
@@ -80,13 +81,14 @@ class MachineThread extends Thread {
 		public void start(long interval) {
 			enabled = true;
 			intervalMs = interval;
+			lastEventTime = System.currentTimeMillis();
 		}
 		
 		public void stop() {
 			enabled = false;
 		}
 		
-		// send out updates
+		// checks for timeout elapsing, and resets the time for a new interval
 		public boolean elapsed() {
 			if (!enabled) {
 				return false;
@@ -94,14 +96,13 @@ class MachineThread extends Thread {
 			long curMillis = System.currentTimeMillis();
 			if (lastEventTime + intervalMs <= curMillis) {
 				lastEventTime = curMillis;
-				
 				return true;
 			}
 			return false;
 		}
 	}
 	
-	private Timer pollingTimer;
+	private MachineTimer pollingTimer;
 
 	// Link of machine commands to run
 	ConcurrentLinkedQueue<MachineCommand> pendingQueue;
@@ -141,7 +142,8 @@ class MachineThread extends Thread {
 	public MachineThread(Machine controller, Node machineNode) {
 		super("Machine Thread");
 		
-		pollingTimer = new Timer();
+		pollingTimer = new MachineTimer();
+		pollingTimer.start(1000);
 		
 		pendingQueue = new ConcurrentLinkedQueue<MachineCommand>();
 		
@@ -158,6 +160,9 @@ class MachineThread extends Thread {
 		statusThread.start();
 	}
 
+	/**
+	 * Loads create warmup and cooldown commands from xml file
+	 */
 	private void loadExtraPrefs() {
 		String[] commands = null;
 		String command = null;
@@ -187,6 +192,11 @@ class MachineThread extends Thread {
 		}
 	}
 
+	/**
+	 * Takes a GCodeSource, and adds warmup and cooldown code to it.
+	 * @param source GCodeSource to work from
+	 * @return a new GCodeSourceCollection including warmup/cooldown code (if it is loaded)
+	 */
 	GCodeSource buildGCodeJob(GCodeSource source) {
 		Vector<GCodeSource> sources = new Vector<GCodeSource>();
 		sources.add(new StringListSource(warmupCommands));
@@ -288,8 +298,6 @@ class MachineThread extends Thread {
 		case BUILD_DIRECT:
 			if (state.canPrint()) {
 				startTimeMillis = System.currentTimeMillis();
-				
-				pollingTimer.start(1000);
 
 				if (!isSimulating()) {
 					driver.getCurrentPosition(false); // reconcile position
@@ -318,8 +326,6 @@ class MachineThread extends Thread {
 				}
 				
 				startTimeMillis = System.currentTimeMillis();
-
-				pollingTimer.start(1000);
 				
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
@@ -358,7 +364,6 @@ class MachineThread extends Thread {
 				startTimeMillis = System.currentTimeMillis();
 
 				// There is no need to reconcile the position.
-				pollingTimer.start(1000);
 				
 				// Pad the job with start and end code
 				GCodeSource combinedSource = buildGCodeJob(command.source);
@@ -395,8 +400,6 @@ class MachineThread extends Thread {
 				}
 				
 				startTimeMillis = System.currentTimeMillis();
-				
-				pollingTimer.start(1000);
 				
 				machineBuilder = new UsingRemoteFile(driver, command.remoteName);
 			
@@ -489,6 +492,8 @@ class MachineThread extends Thread {
 	 * Main machine thread loop.
 	 */
 	public void run() {
+		
+		
 		// This is our main loop.
 		while (true) {
 			
@@ -514,27 +519,16 @@ class MachineThread extends Thread {
 			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
-//				try{
-					runCommand(pendingQueue.remove());
-					//The driver no longer throws a BFVE
-//				} catch(BadFirmwareVersionException e) {
-//					// This is intended to catch the BadFirmwareVersionException 
-//					// that can be thrown by an initialization call on the driver.
-//					// At some point we may wish to do more with it.
-//					setState(new MachineState(MachineState.State.ERROR),
-//							"Incompatible firmware version. Please update your " +
-//							"firmware to version " + e.getNeeds() + " or higher");
-//				}
+				runCommand(pendingQueue.remove());
 			}
 			
-			// If we are building
-			if ( state.isBuilding() && !state.isPaused() ) {
-				//run another instruction on the machine.
-				machineBuilder.runNext();
-				
+			if(state.isConnected())
+			{
 				// Check the status poll machine.
 				if (pollingTimer.elapsed()) {
-					if (Base.preferences.getBoolean("build.monitor_temp",false)) {
+					// if we're not building, check temp
+					// if we are, check preferences for whether we want to check temp
+					if ((!state.isBuilding()) || Base.preferences.getBoolean("build.monitor_temp",false)) {
 						driver.readTemperature();
 						Vector<ToolModel> tools = controller.getModel().getTools();
 						for (ToolModel t : tools) {
@@ -542,6 +536,12 @@ class MachineThread extends Thread {
 						}
 					}
 				}
+			}
+			
+			// If we are building
+			if ( state.isBuilding() && !state.isPaused() ) {
+				//run another instruction on the machine.
+				machineBuilder.runNext();
 				
 				// Send out a progress event
 				// TODO: Should these be rate limited?
@@ -561,8 +561,6 @@ class MachineThread extends Thread {
 						setState(new MachineState(MachineState.State.NOT_ATTACHED),
 								notConnectedMessage());
 					}
-					
-					pollingTimer.stop();
 				}
 			}
 			
