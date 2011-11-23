@@ -1624,7 +1624,7 @@ ToolpathGenerator.GeneratorListener
 					this,
 					"ReplicatorG can't connect to your machine.\nTry checking your settings and resetting your machine.",
 					"Can't find machine", JOptionPane.ERROR_MESSAGE);
-		} else {
+		} else if(!building) {
 			ControlPanelWindow window = ControlPanelWindow.getControlPanel(machineLoader.getMachine());
 			if (window != null) {
 				window.pack();

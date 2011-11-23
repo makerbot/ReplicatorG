@@ -31,6 +31,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
@@ -135,6 +136,31 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			}
 		});
 		return cb;
+	}
+	
+	// Copied from app.ui.controlpanel.ExtruderPanel
+	private double confirmTemperature(double target, String limitPrefName, double defaultLimit) {
+		double limit = Base.preferences.getDouble("temperature.acceptedLimit", defaultLimit);
+		if (target > limit){
+			// Temperature warning dialog!
+			int n = JOptionPane.showConfirmDialog(this,
+					"<html>Setting the temperature to <b>" + Double.toString(target) + "\u00b0C</b> may<br>"+
+					"involve health and/or safety risks or cause damage to your machine!<br>"+
+					"The maximum recommended temperature is <b>"+Double.toString(limit)+"</b>.<br>"+
+					"Do you accept the risk and still want to set this temperature?",
+					"Danger",
+					JOptionPane.YES_NO_OPTION,
+					JOptionPane.WARNING_MESSAGE);
+			if (n == JOptionPane.YES_OPTION) {
+				return target;
+			} else if (n == JOptionPane.NO_OPTION) {
+				return Double.MIN_VALUE;
+			} else { // Cancel or whatnot
+				return Double.MIN_VALUE;
+			}
+		}  else {
+			return target;
+		}
 	}
 	
 	public PreferencesWindow() {
@@ -340,12 +366,37 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			ActionListener a = new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent ae) {
+					double target;
 					if(ae.getSource() == t0Field)
-						Base.preferences.putInt("build.preheatTool0", (Integer)t0Field.getValue());
+					{
+						// casting to long because that's what it is
+						target = (Long)t0Field.getValue();
+						target = confirmTemperature(target,"temperature.acceptedLimit",200.0);
+						if (target == Double.MIN_VALUE) {
+							return;
+						}
+						Base.preferences.putInt("build.preheatTool0", (int)target);
+					}
 					else if(ae.getSource() == t1Field)
-						Base.preferences.putInt("build.preheatTool1", (Integer)t1Field.getValue());
+					{
+						// casting to long because that's what it is
+						target = (Long)t1Field.getValue();
+						target = confirmTemperature(target,"temperature.acceptedLimit",200.0);
+						if (target == Double.MIN_VALUE) {
+							return;
+						}
+						Base.preferences.putInt("build.preheatTool1", (int)target);
+					}
 					else if(ae.getSource() == pField)
-						Base.preferences.putInt("build.preheatPlatform", (Integer)pField.getValue());
+					{
+						// casting to long because that's what it is
+						target = (Long)pField.getValue();
+						target = confirmTemperature(target,"temperature.acceptedLimit.bed",90.0);
+						if (target == Double.MIN_VALUE) {
+							return;
+						}
+						Base.preferences.putInt("build.preheatPlatform", (int)target);
+					}
 				}
 			};
 			t0Field.addActionListener(a);

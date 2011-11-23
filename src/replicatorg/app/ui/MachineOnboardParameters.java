@@ -49,7 +49,7 @@ public class MachineOnboardParameters extends JFrame {
 	private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
 	private static final String[]  endstopInversionChoices = {
 		"No endstops installed",
-		"Inverted (Default; H21LOB-based enstops)",
+		"Inverted (Default; Mechanical switch or H21LOB-based enstops)",
 		"Non-inverted (H21LOI-based endstops)"
 	};
 	private JComboBox endstopInversionSelection = new JComboBox(endstopInversionChoices);
