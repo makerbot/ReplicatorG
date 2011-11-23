@@ -1083,7 +1083,7 @@ ToolpathGenerator.GeneratorListener
 		reloadSerialMenu();
 		menu.add(serialMenu);
 
-		controlPanelItem = newJMenuItem("Control Panel", 'C');
+		controlPanelItem = newJMenuItem("Control Panel", 'J');
 //		controlPanelItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_J,ActionEvent.CTRL_MASK));
 		controlPanelItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -1837,59 +1837,92 @@ ToolpathGenerator.GeneratorListener
 		simulating = false;
 		setEditorBusy(false);
 	}
+	
+	/// Enum to indicate target build intention
+	/// generate-from-stl and build, cancel build, or siply build from gcode
+	enum BuildFlag
+	{
+		NONE(0), /// Canceled or software error
+		GEN_AND_BUILD(1), //genrate new gcode and build
+		JUST_BUILD(2); //expect someone checked for existing gcode, and build that
+		
+		public final int number;
+		
+		/// standard constructor. 
+		private BuildFlag(int n){
+			number = n;
+		}
+	};
 
+	/**
+	 * Checks some enviroment settings to detect the type of build desired
+	 * @return a build flag to indicate build type/settings/etc
+	 */
+	public BuildFlag detectBuildIntention()
+	{
+		BuildFlag flag = BuildFlag.NONE;
+
+		// if we have gcode selected, simply build
+		if(header.getSelectedElement().getType() == BuildElement.Type.GCODE)
+		{
+			flag = BuildFlag.JUST_BUILD;
+		}
+		else if(Base.preferences.getBoolean("build.showRegenCheck", true) && getBuild() != null)
+		{
+			//no code. Generate code and build
+			if(getBuild().getCode() == null)
+			{
+				flag = BuildFlag.GEN_AND_BUILD;
+			}
+			else
+			{
+				JCheckBox showCheck = new JCheckBox("Print from Model View always regenerates gcode.");
+				Object[] choices = {"Regenerate GCode", "Use existing GCode"};
+				Object[] message = new Object[]{
+						"WARNING: Printing from Model View. \n","Overwrite existing gcode for this model?\n\n",
+						showCheck
+						};
+				int option = JOptionPane.showOptionDialog(this, message, "Re-generate Gcode?", 
+					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+					null,choices, choices[1]);
+
+				if(showCheck.isSelected())
+					Base.preferences.putBoolean("build.showRegenCheck", false); 
+				 
+				if(option == JOptionPane.CLOSED_OPTION) 	
+					flag = BuildFlag.NONE; //exit clicked
+				else if(option == 0 )  
+					flag = BuildFlag.GEN_AND_BUILD; //gen and builld
+				else if (option == 1) 
+					flag = BuildFlag.JUST_BUILD; //build from old generation
+			}
+		}
+		return flag;
+	}
+	
 	public void handleBuild() {
 		if (building)
 			return;
 		if (simulating)
 			return;
 
-		// if we have gcode selected, simply build
-		if(header.getSelectedElement().getType() == BuildElement.Type.GCODE)
-		{
-			doBuild();
-		} 
-		// if we have anything else (stl) selected, check with user before we overwrite the gcode
-		//  pre-heat while we generate gcode, and sets buildOnComplete to auto fire build on gcode generation finish
-		else
-		{
-			 if(Base.preferences.getBoolean("build.showRegenCheck", true) &&
-					 getBuild() != null && getBuild().getCode() != null)
-			 {
-				 JCheckBox showCheck = new JCheckBox("Print from Model View always regenerates gcode.");
-				 Object[] choices = {"Regenerate GCode", "Use existing GCode"};
-				 Object[] message = new Object[]{
-						 "WARNING: Printing from Model View. \n",
-						 "Overwrite existing gcode for this model?\n\n",
-						 showCheck
-				 };
-				 int option = JOptionPane.showOptionDialog(this, message, "Re-generate Gcode?", 
-						 JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-						 null,choices, choices[1]);
-
-				 if(showCheck.isSelected())
-						 Base.preferences.putBoolean("build.showRegenCheck", false);
-					 
-				 
-				 if(option == JOptionPane.CLOSED_OPTION) {
-					 return; //exit clicked
-				 }
-				 else if(option == 0 ) {
-					 //'rewrite' clicked
-					 buildOnComplete = true;
-					 doPreheat(Base.preferences.getBoolean("build.doPreheat", false));				
-					runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
-				 }
-				 else if (option == 1 ){
-					 //'use existing' clicked
-					 doBuild(); 
-				 }
-				 
-			 }
-			 
+		BuildFlag buildFlag = detectBuildIntention();
+			
+		if(buildFlag == BuildFlag.NONE) {
+			return; //exit ro cancel clicked
 		}
-		
+		if(buildFlag == BuildFlag.GEN_AND_BUILD) {
+			//'rewrite' clicked
+			buildOnComplete = true;
+			doPreheat(Base.preferences.getBoolean("build.doPreheat", false));				
+			runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
+		}
+		if(buildFlag == BuildFlag.JUST_BUILD) {
+			//'use existing' clicked
+			doBuild(); 
+		}
 	}
+	
 	public void doBuild()
 	{
 		if (!machineLoader.isLoaded()) {
@@ -1897,7 +1930,7 @@ ToolpathGenerator.GeneratorListener
 		} else if(!machineLoader.isConnected()) {
 			Base.logger.severe("Cannot build, not connected to a machine!");
 		} else {
-			// First, stop machines (but don't tweak gui states
+			// First, stop machines (but don't tweak gui states)
 			if (machineLoader.isLoaded()) {
 				machineLoader.getMachine().stopAll();
 			}
