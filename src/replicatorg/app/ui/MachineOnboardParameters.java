@@ -60,11 +60,11 @@ public class MachineOnboardParameters extends JFrame {
 	};
 	private JComboBox estopSelection = new JComboBox(estopChoices);
 	private static final int MAX_NAME_LENGTH = 16;
-	private JTextField xAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
-	private JTextField yAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
-	private JTextField zAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
-	private JTextField aAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
-	private JTextField bAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+	private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+	private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+	private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+	private JFormattedTextField aAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
+	private JFormattedTextField bAxisHomeOffsetField = new JFormattedTextField(Base.getLocalFormat());
 	
 	private void resetDialog() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
@@ -147,11 +147,11 @@ public class MachineOnboardParameters extends JFrame {
 		OnboardParameters.EstopType estop = this.target.getEstopConfig();
 		estopSelection.setSelectedIndex(estop.ordinal());
 		
-		xAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(0))));
-		yAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(1))));
-		zAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(2))));
-		aAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(3))));
-		bAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(4))));
+		xAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(0)));
+		yAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(1)));
+		zAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(2)));
+		aAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(3)));
+		bAxisHomeOffsetField.setValue(roundDouble(this.target.getAxisHomeOffset(4)));
 	}
 
 	private JPanel makeButtonPanel() {

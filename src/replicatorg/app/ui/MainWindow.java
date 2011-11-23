@@ -172,9 +172,8 @@ ToolpathGenerator.GeneratorListener
 
 	MachineLoader machineLoader;
 
-	static public final KeyStroke WINDOW_CLOSE_KEYSTROKE = KeyStroke
-	.getKeyStroke('W', Toolkit.getDefaultToolkit()
-			.getMenuShortcutKeyMask());
+	static public final KeyStroke WINDOW_CLOSE_KEYSTROKE = 
+			KeyStroke.getKeyStroke('W', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
 
 	static final int HANDLE_NEW = 1;
 
