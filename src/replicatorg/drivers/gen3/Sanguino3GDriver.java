@@ -1155,14 +1155,14 @@ public class Sanguino3GDriver extends SerialDriver
 		Base.logger.fine("Setting platform temperature to " + temp + "C");
 
 		//Set the platform temperature for any & every tool with an HBP
-		ToolModel current = machine.currentTool();
+//		ToolModel current = machine.currentTool();
 		for(ToolModel t : machine.getTools())
 		{
 			// We select the tool so that the call to super.setPlatTemp() works as it should
-			if(t.hasHeatedPlatform())
-				machine.selectTool(t.getIndex());
-			else
-				continue;
+//			if(t.hasHeatedPlatform())
+//				machine.selectTool(t.getIndex());
+//			else
+//				continue;
 			
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 			pb.add8((byte) t.getIndex());
@@ -1171,20 +1171,21 @@ public class Sanguino3GDriver extends SerialDriver
 			pb.add16(temp);
 			runCommand(pb.getPacket());
 			
-			super.setPlatformTemperature(temperature);
+			t.setPlatformTargetTemperature(temperature);
+			//super.setPlatformTemperature(temperature);
 		}
-		machine.selectTool(current.getIndex());
+//		machine.selectTool(current.getIndex());
 	}
 	
 	public void readPlatformTemperature() {
-		ToolModel current = machine.currentTool();
+//		ToolModel current = machine.currentTool();
 		for(ToolModel t : machine.getTools())
 		{
 			// We select the tool so that the call to super.readPlatTemp() works as it should
-			if(t.hasHeatedPlatform())
-				machine.selectTool(t.getIndex());
-			else
-				continue;
+//			if(t.hasHeatedPlatform())
+//				machine.selectTool(t.getIndex());
+//			else
+//				continue;
 			
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 			pb.add8((byte) t.getIndex());
@@ -1198,9 +1199,9 @@ public class Sanguino3GDriver extends SerialDriver
 			Base.logger.fine("Current platform temperature (T" + t.getIndex() + "): "
 							+ machine.currentTool().getPlatformCurrentTemperature() + "C");
 			
-			super.readPlatformTemperature();
+//			super.readPlatformTemperature();
 		}
-		machine.selectTool(current.getIndex());
+//		machine.selectTool(current.getIndex());
 		
 	}
 
