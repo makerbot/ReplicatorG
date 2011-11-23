@@ -1210,7 +1210,6 @@ ToolpathGenerator.GeneratorListener
 			{
 				machine.runCommand(new replicatorg.drivers.commands.SelectTool(1));
 				machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool1Target));
-				machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(platTarget));
 			}
 		}
 	}

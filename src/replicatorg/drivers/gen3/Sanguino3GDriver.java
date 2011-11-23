@@ -1153,27 +1153,19 @@ public class Sanguino3GDriver extends SerialDriver
 		int temp = (int) Math.round(temperature);
 		temp = Math.min(temp, 65535);
 		Base.logger.fine("Setting platform temperature to " + temp + "C");
-		
-//		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 
-		// This is intended to fix a problem where on dualstrusion 
-		// machines the heated build platform is hooked up to T1, not T0
-//		if(machine.getTools().size() == 1)
-//			pb.add8((byte) 0);
-//		else
-//			pb.add8((byte) 1);
-		
-		//This is intended to fix the fact that the above code ignores what the user sets in xml
+		//Set the platform temperature for any & every tool with an HBP
 		ToolModel current = machine.currentTool();
 		for(ToolModel t : machine.getTools())
 		{
-			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-			
+			// We select the tool so that the call to super.setPlatTemp() works as it should
 			if(t.hasHeatedPlatform())
 				machine.selectTool(t.getIndex());
+			else
+				continue;
 			
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 			pb.add8((byte) t.getIndex());
-				
 			pb.add8(ToolCommandCode.SET_PLATFORM_TEMP.getCode());
 			pb.add8((byte) 2); // payload length
 			pb.add16(temp);
@@ -1185,18 +1177,31 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 	
 	public void readPlatformTemperature() {
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
-		PacketResponse pr = runQuery(pb.getPacket());
-		if (pr.isEmpty()) return;
-		int temp = pr.get16();
-		machine.currentTool().setPlatformCurrentTemperature(temp);
+		ToolModel current = machine.currentTool();
+		for(ToolModel t : machine.getTools())
+		{
+			// We select the tool so that the call to super.readPlatTemp() works as it should
+			if(t.hasHeatedPlatform())
+				machine.selectTool(t.getIndex());
+			else
+				continue;
+			
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+			pb.add8((byte) t.getIndex());
+			pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
+			
+			PacketResponse pr = runQuery(pb.getPacket());
+			if (pr.isEmpty()) return;
+			int temp = pr.get16();
+			machine.currentTool().setPlatformCurrentTemperature(temp);
+			
+			Base.logger.fine("Current platform temperature (T" + t.getIndex() + "): "
+							+ machine.currentTool().getPlatformCurrentTemperature() + "C");
+			
+			super.readPlatformTemperature();
+		}
+		machine.selectTool(current.getIndex());
 		
-		Base.logger.fine("Current platform temperature: "
-						+ machine.currentTool().getPlatformCurrentTemperature() + "C");
-		
-		super.readPlatformTemperature();
 	}
 
 	/***************************************************************************
