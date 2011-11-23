@@ -230,8 +230,13 @@ public class ExtruderOnboardParameters extends JFrame {
 	    {
 	        threePlaces.setMaximumFractionDigits(3);
 	    }
-		private JFormattedTextField pField = new JFormattedTextField(threePlaces);
-		private JFormattedTextField iField = new JFormattedTextField(threePlaces);
+	    private NumberFormat eightPlaces = Base.getLocalFormat();
+	    {
+	    	eightPlaces.setMaximumFractionDigits(8);
+	    }
+
+	    private JFormattedTextField pField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField iField = new JFormattedTextField(eightPlaces);
 		private JFormattedTextField dField = new JFormattedTextField(threePlaces);
 		private int which;
 		PIDPanel(int which, String name) {
