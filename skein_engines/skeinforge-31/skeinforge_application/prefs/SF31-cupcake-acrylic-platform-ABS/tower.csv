@@ -1,7 +1,0 @@
-Format is tab separated preferences.
-Activate Tower	False
-Extruder Possible Collision Cone Angle (degrees):	60.0
-Open File to be Towered	
-Maximum Tower Height (layers):	10
-Tower Start Layer (integer):	2
-windowPositionBehold Preferences	0+0

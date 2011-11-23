@@ -106,7 +106,7 @@ public class EditingModel {
 		pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
 		pa.setCullFace(PolygonAttributes.CULL_NONE);
 		pa.setBackFaceNormalFlip(true);
-	    solid.setPolygonAttributes(pa);
+		solid.setPolygonAttributes(pa);
 		solidShape.setAppearance(solid);
 
 		BranchGroup wrapper = new BranchGroup();

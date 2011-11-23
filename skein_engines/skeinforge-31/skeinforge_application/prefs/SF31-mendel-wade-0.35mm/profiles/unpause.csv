@@ -1,7 +1,0 @@
-Format is tab separated unpause settings.
-Name                          	Value
-WindowPosition	0+0
-Open File for Unpause	
-Activate Unpause	True
-Delay (milliseconds):	34.0
-Maximum Speed (ratio):	1.6

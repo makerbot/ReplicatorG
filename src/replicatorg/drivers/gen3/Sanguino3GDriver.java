@@ -46,7 +46,6 @@ import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
-import replicatorg.drivers.OnboardParameters.CommunicationStatistics;
 import replicatorg.drivers.gen3.PacketProcessor.CRCException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
@@ -65,9 +64,9 @@ public class Sanguino3GDriver extends SerialDriver
 		hasEmergencyStop = true;
 		hasSoftStop = true;
 		
-		// This driver handles v1.X and v2.X firmware
-		minimumVersion = new Version(1,1);
-		preferredVersion = new Version(2,0);
+		//Make sure this accurately reflects what versions this supports
+		minimumVersion = new Version(3,0);
+		preferredVersion = new Version(3,0);
 		// init our variables.
 		setInitialized(false);
 	}
@@ -100,7 +99,10 @@ public class Sanguino3GDriver extends SerialDriver
 		if (isInitialized()) {
 			// okay, take care of version info /etc.
 			if (version.compareTo(getMinimumVersion()) < 0) {
-				throw new BadFirmwareVersionException(version,getMinimumVersion());
+				Base.logger.log(Level.WARNING, "\n********************************************************\n" +
+						"This version of ReplicatorG is not reccomended for use with firmware before version "
+						+ getMinimumVersion() + ". Either update your firmware or proceed with caution.\n" +
+						"********************************************************");
 			}
 			sendInit();
 			super.initialize();
@@ -582,12 +584,15 @@ public class Sanguino3GDriver extends SerialDriver
 		super.setCurrentPosition(p);
 	}
 
+	//TODO: this says it homes the first three axes, but it actually homes whatever's passed
 	// Homes the three first axes
 	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate) throws RetryException {
 		Base.logger.fine("Homing axes "+axes.toString());
 		byte flags = 0x00;
+		double timeout = 0;
 		
 		Point5d homingFeedrates = machine.getHomingFeedrates();
+		Point5d timeOut = machine.getTimeOut();
 
 		if (feedrate <= 0) {
 			// figure out our fastest feedrate.
@@ -602,6 +607,7 @@ public class Sanguino3GDriver extends SerialDriver
 		for (AxisId axis : axes) {
 			flags += 1 << axis.getIndex();
 			feedrate = Math.min(feedrate, homingFeedrates.axis(axis));
+			timeout =  Math.max(timeout, timeOut.axis(axis));
 			target.setAxis(axis, 1);
 		}
 		
@@ -614,7 +620,7 @@ public class Sanguino3GDriver extends SerialDriver
 		PacketBuilder pb = new PacketBuilder(code);
 		pb.add8(flags);
 		pb.add32((int) micros);
-		pb.add16(20); // default to 20 seconds
+		pb.add16((int)timeout); 
 		runCommand(pb.getPacket());
 		
 		invalidatePosition();
@@ -658,6 +664,38 @@ public class Sanguino3GDriver extends SerialDriver
 		super.disableDrives();
 	}
 
+	/**
+	 * Convert a set of axes to a bitfield by index. For example, axes X and Z would
+	 * map to "5".
+	 * @param axes an enumset of axis to construct a bitfield for
+	 * @return an integer with a bit set corresponding to each axis in the input set
+	 */
+	private int axesToBitfield(EnumSet<AxisId> axes) {
+		int v = 0;
+		for (AxisId axis : axes) {
+			v += 1 << axis.getIndex();
+		}
+		return v;
+	}
+	
+	public void enableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Command machine to enable some steppers. Note that they are
+		// already automagically enabled by most commands and need
+		// not be explicitly enabled.
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
+		pb.add8(0x80 + (axesToBitfield(axes) & 0x1f)); // enable axes
+		runCommand(pb.getPacket());
+		super.enableAxes(axes);
+	}
+	
+	public void disableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Command machine to disable some steppers.
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.ENABLE_AXES.getCode());
+		pb.add8(axesToBitfield(axes) & 0x1f); // disable axes
+		runCommand(pb.getPacket());
+		super.disableAxes(axes);
+	}
+
 	public void changeGearRatio(int ratioIndex) {
 		// TODO: throw some sort of unsupported exception.
 		super.changeGearRatio(ratioIndex);
@@ -687,7 +725,8 @@ public class Sanguino3GDriver extends SerialDriver
 		// FIXME: We used to check for version here, but this will only work if we're connected. Atm., we'll rather
 		// require the latest firmware.
 		// getVersion().atLeast(new Version(2,4)) && toolVersion.atLeast(new Version(2,6))
-		if (this.machine.getTool(toolIndex).hasHeatedPlatform() && 
+		if (this.machine.getTool(toolIndex) != null &&
+			this.machine.getTool(toolIndex).hasHeatedPlatform() && 
 			this.machine.currentTool().getPlatformTargetTemperature() > 0.0) {
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
 			pb.add8((byte) toolIndex);
@@ -1081,18 +1120,28 @@ public class Sanguino3GDriver extends SerialDriver
 	}
 
 	public void readTemperature() {
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.GET_TEMP.getCode());
-		PacketResponse pr = runQuery(pb.getPacket());
-		if (pr.isEmpty()) return;
-		// FIXME: First, check that the result code is OK. We occasionally receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
-		int temp = pr.get16();
-		machine.currentTool().setCurrentTemperature(temp);
-
-		Base.logger.fine("Current temperature: "
+		Vector<ToolModel> tools = machine.getTools();
+		for (ToolModel t : tools) {
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+			pb.add8((byte) t.getIndex());
+			pb.add8(ToolCommandCode.GET_TEMP.getCode());
+			PacketResponse pr = runQuery(pb.getPacket());
+			if (pr.getResponseCode() == PacketResponse.ResponseCode.TIMEOUT) 
+				Base.logger.finer("timeout reading temp");
+			else if (pr.isEmpty()) 
+				Base.logger.finer("empty response, no temp");
+			else { 
+				int temp = pr.get16();
+				t.setCurrentTemperature(temp);
+				Base.logger.fine("New Current temperature: "
 					+ machine.currentTool().getCurrentTemperature() + "C");
+			}
+			// Check if we should co-read platform temperatures when we read head temp.
+			if( machine.currentTool().alwaysReadBuildPlatformTemp() ) {
+				this.readPlatformTemperature();
+			}
 
+		}
 		super.readTemperature();
 	}
 	
@@ -1104,11 +1153,17 @@ public class Sanguino3GDriver extends SerialDriver
 		// constrain our temperature.
 		int temp = (int) Math.round(temperature);
 		temp = Math.min(temp, 65535);
-		
 		Base.logger.fine("Setting platform temperature to " + temp + "C");
 		
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+
+		// This is intended to fix a problem where on dualstrusion 
+		// machines the heated build platform is hooked up to T1, not T0
+		if(machine.getTools().size() == 1)
+			pb.add8((byte) 0);
+		else
+			pb.add8((byte) 1);
+			
 		pb.add8(ToolCommandCode.SET_PLATFORM_TEMP.getCode());
 		pb.add8((byte) 2); // payload length
 		pb.add16(temp);
@@ -1178,12 +1233,11 @@ public class Sanguino3GDriver extends SerialDriver
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
 		runCommand(pb.getPacket());
-
 		super.enableFan();
 	}
 
 	public void disableFan() throws RetryException {
-		Base.logger.fine("Disabling fan");
+		Base.logger.severe("Disabling fan");
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) machine.currentTool().getIndex());
@@ -1193,6 +1247,22 @@ public class Sanguino3GDriver extends SerialDriver
 		runCommand(pb.getPacket());
 
 		super.disableFan();
+	}
+	
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException {
+		//why is this severe?
+		Base.logger.severe("Toggling ABP to " + state);
+		byte newState = state? (byte)1:(byte)0;
+		
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
+		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8(ToolCommandCode.TOGGLE_ABP.getCode());
+		pb.add8((byte) 1); // payload length
+		pb.add8((byte) newState); // enable(1)disable(0)
+		runCommand(pb.getPacket());
+		
+		super.setAutomatedBuildPlatformRunning(state);
+		
 	}
 
 	/***************************************************************************

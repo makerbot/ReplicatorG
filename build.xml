@@ -88,8 +88,13 @@
 
   <target name="run" depends="jar">
     <java fork="true" classname="replicatorg.app.Base"> <!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
+
       <jvmarg value="-ea"/>
+<<<<<<< HEAD
       <jvmarg value="-Xmx512m"/>
+=======
+            <jvmarg value="-Xmx512m"/>
+>>>>>>> upstream/master
       <jvmarg value="-XX:+HeapDumpOnOutOfMemoryError"/>
       <jvmarg value="${native.java.flags}"/>
       <classpath>
@@ -220,9 +225,25 @@
     <copy todir="${target.dir}/examples">
       <fileset dir="examples"/>
     </copy>
+    <copy todir="${target.dir}/DualStrusion_Snippets">
+      <fileset dir="DualStrusion_Snippets"/>
+    </copy>
     <copy todir="${target.dir}/scripts">
       <fileset dir="scripts"/>
     </copy>
+  	<copy todir="${target.dir}/docs">
+  		<fileset dir="docs/" excludes="HOWTO-add-new-skeinforge.txt,overview.odg"/>
+  	</copy>
+  </target>
+
+  <target name="cache-local-docs" description="Downloads the ReplicatorG documentation on replicat.org (and other websites?)">
+	<exec executable="wget">
+		<arg value="-r"/>
+		<arg value="-k"/>
+		<arg value="--directory-prefix=./docs"/>
+		<arg value="--timestamping"/>
+		<arg value="replicat.org"/>
+	</exec>
   </target>
 
   <target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">

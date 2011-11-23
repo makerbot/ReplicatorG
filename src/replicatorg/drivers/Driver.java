@@ -249,6 +249,15 @@ public interface Driver {
 	public void disableDrives() throws RetryException;
 
 	/**
+	 * enabling/disabling our drivers for individual axes. A disabled axis is
+	 * generally able to move freely, while an enabled axis is clamped.
+	 * @throws RetryException
+	 */
+	public void enableAxes(EnumSet<AxisId> axes) throws RetryException;
+	
+	public void disableAxes(EnumSet<AxisId> axes) throws RetryException;
+	
+	/**
 	 * change our gear ratio
 	 */
 	public void changeGearRatio(int ratioIndex);
@@ -357,6 +366,13 @@ public interface Driver {
 
 	public void disableFan() throws RetryException;
 
+	
+	/***************************************************************************
+	 * abp interface functions
+	 * @throws RetryException 
+	 **************************************************************************/
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException;
+	
 	/***************************************************************************
 	 * Valve interface functions
 	 * @throws RetryException 

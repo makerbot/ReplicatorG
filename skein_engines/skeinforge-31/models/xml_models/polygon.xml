@@ -1,7 +1,0 @@
-<?xml version='1.0' ?>
-<fabmetheus version="2010-04-04">
-	<polygon id="polygon test" apothem="20.0" />
-	<polygon id="polygon test" apothem="20.0" sides="3" />
-	<polygon id="polygon test" inradius="20.0" sides="4" />
-	<polygon id="polygon test" radius="20.0" sides="3" />
-</fabmetheus>

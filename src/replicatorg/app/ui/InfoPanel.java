@@ -4,6 +4,7 @@ import java.io.StringWriter;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -14,9 +15,10 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.w3c.dom.Node;
 
-import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
@@ -31,7 +33,8 @@ public class InfoPanel extends JFrame {
 		JPanel panel = new JPanel(new MigLayout());
 
 		infoArea = new JTextArea("ReplicatorG:",40,60);
-		panel.add(infoArea);
+		infoArea.setFont(infoArea.getFont().deriveFont(11f));
+		panel.add(new JScrollPane(infoArea));
 		
 		add(panel);
 		pack();

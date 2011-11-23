@@ -27,10 +27,16 @@ package replicatorg.model;
 
 import java.awt.FileDialog;
 import java.awt.Frame;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Vector;
+
+import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
@@ -39,16 +45,16 @@ import replicatorg.app.ui.MainWindow;
  * Stores information about files in the current build
  */
 public class Build {
-	
+
 	/** The editor window associated with this build.  We should remove this dependency or replace it with a
 	 * buildupdatelistener or the like. */
 	MainWindow editor;
 
 	private String name;
-
+	private boolean hasMainWindow;
 	/** Name of the build, which is the name of main file, sans extension. */
 	public String getName() { return name; }
-	
+
 	/** Name of source file, used by load().  Recognized types so far are:
 	 * .stl - model file
 	 * .obj - model file
@@ -78,13 +84,10 @@ public class Build {
 	 * initially display that gcode rather than the model, etc.
 	 */
 	public BuildElement getOpenedElement() { return openedElement; }
+
 	
-	/**
-	 * path is location of the main .gcode file, because this is also simplest
-	 * to use when opening the file from the finder/explorer.
-	 */
-	public Build(MainWindow editor, String path) throws IOException {
-		this.editor = editor;
+	public Build(String path) throws IOException {
+		hasMainWindow = false;
 		if (path == null) {
 			mainFilename = null;
 			name = "Untitled";
@@ -121,6 +124,67 @@ public class Build {
 			}
 		}
 	}
+	/**
+	 * path is location of the main .gcode file, because this is also simplest
+	 * to use when opening the file from the finder/explorer.
+	 */
+	public Build(MainWindow editor, String path) throws IOException {
+		hasMainWindow = true;
+		this.editor = editor;
+		if (path == null) {
+			mainFilename = null;
+			name = "Untitled";
+			folder = new File("~");
+			BuildElement code = new BuildCode(null,null);
+			openedElement = code;
+			code.setModified(true);
+			elements.add(code);
+		} else {
+
+			File mainFile = new File(path);
+			mainFilename = mainFile.getName();
+			String suffix = "";
+			int lastIdx = mainFilename.lastIndexOf('.');
+			if (lastIdx > 0) {
+				suffix = mainFilename.substring(lastIdx+1);
+				name = mainFilename.substring(0,lastIdx);
+			} else {
+				name = mainFilename;
+			}
+
+			//protect against loading files that may have caused a crash last time
+			File crashCheck = new File(name + ".crash");
+			if(crashCheck.exists())
+			{
+				crashCheck.delete();
+				int op = JOptionPane.showConfirmDialog(null, "It looks as though ReplicatorG may have crashed\n" +
+						"last time it tried to load this file.\nRe-loading the same file could cause another crash,\n" +
+						"would you like to load this file anyway?", "Remnants of a crash detected!", 
+						JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE);
+				if(op != 0)
+					return; 
+			}
+			crashCheck.createNewFile();
+			
+			String parentPath = new File(path).getParent(); 
+			if (parentPath == null) {
+				parentPath = ".";
+			}
+			folder = new File(parentPath);
+			if ("stl".equalsIgnoreCase(suffix) || "obj".equalsIgnoreCase(suffix) || "dae".equalsIgnoreCase(suffix)) {
+				modelFile = mainFile;
+			}
+			loadCode();
+			loadModel();
+			if (("gcode".equalsIgnoreCase(suffix) || "ngc".equalsIgnoreCase(suffix)) && getCode() != null) {
+				openedElement = getCode();
+			} else {
+				openedElement = getModel();
+			}
+			
+			crashCheck.delete();
+		}
+	}
 
 	public void reloadCode() {
 		Iterator<BuildElement> iterator = elements.iterator();
@@ -133,7 +197,7 @@ public class Build {
 		}
 		loadCode();
 	}
-	
+
 	public void loadCode() {
 		File codeFile = new File(folder, name + ".gcode");
 		if (codeFile.exists()) {
@@ -145,9 +209,9 @@ public class Build {
 			}
 		}
 	}
-	
+
 	File modelFile = null;
-	
+
 	public void loadModel() {
 		if (modelFile == null || !modelFile.exists()) {
 			modelFile = new File(folder, name + ".stl");
@@ -156,8 +220,8 @@ public class Build {
 			elements.add(new BuildModel(this, modelFile));
 		}		
 	}
-	
-	
+
+
 	/**
 	 * Save all code in the current sketch.
 	 */
@@ -180,9 +244,12 @@ public class Build {
 
 		BuildCode code = getCode();
 		if (code != null) {
-			if (code.isModified()) { 
-				code.program = editor.getText();
-				code.save();
+			if(hasMainWindow )
+			{
+				if (code.isModified()) { 
+					code.program = editor.getText();
+					code.save();
+				}
 			}
 		}
 		BuildModel model = getModel();
@@ -229,24 +296,27 @@ public class Build {
 		if (newName.toLowerCase().endsWith(".obj")) newName = newName.substring(0, newName.length()-4);
 		if (newName.toLowerCase().endsWith(".dae")) newName = newName.substring(0, newName.length()-4);
 
-		
+
 		BuildCode code = getCode();
 		if (code != null) {
 			// grab the contents of the current tab before saving
 			// first get the contents of the editor text area
-			if (code.isModified()) {
-				code.program = editor.getText();
+			if(hasMainWindow)
+			{
+				if (code.isModified()) {
+					code.program = editor.getText();
+				}
 			}
 			File newFile = new File(folder, newName+".gcode");
 			code.saveAs(newFile);
 		}
-		
+
 		BuildModel model = getModel();
 		if (model != null) {
 			File newFile = new File(folder, newName+".stl");
 			model.saveAs(newFile);
 		}
-		
+
 		this.name = newName;
 		this.mainFilename = fd.getFile();
 		this.folder = folder;
@@ -262,7 +332,7 @@ public class Build {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Return the model object.
 	 */
@@ -272,7 +342,7 @@ public class Build {
 		}
 		return null;
 	}
-	
+
 	protected int countLines(String what) {
 		char c[] = what.toCharArray();
 		int count = 0;
@@ -318,7 +388,7 @@ public class Build {
 				if (!endOfRainbow) {
 					throw new RuntimeException(
 							"Missing the */ from the end of a "
-									+ "/* comment */");
+							+ "/* comment */");
 				}
 			} else { // any old character, move along
 				index++;
