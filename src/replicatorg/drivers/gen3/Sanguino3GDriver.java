@@ -37,7 +37,6 @@ import java.util.logging.Level;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.DriverError;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
@@ -1154,37 +1153,56 @@ public class Sanguino3GDriver extends SerialDriver
 		int temp = (int) Math.round(temperature);
 		temp = Math.min(temp, 65535);
 		Base.logger.fine("Setting platform temperature to " + temp + "C");
-		
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
 
-		// This is intended to fix a problem where on dualstrusion 
-		// machines the heated build platform is hooked up to T1, not T0
-		if(machine.getTools().size() == 1)
-			pb.add8((byte) 0);
-		else
-			pb.add8((byte) 1);
+		//Set the platform temperature for any & every tool with an HBP
+//		ToolModel current = machine.currentTool();
+		for(ToolModel t : machine.getTools())
+		{
+			// We select the tool so that the call to super.setPlatTemp() works as it should
+//			if(t.hasHeatedPlatform())
+//				machine.selectTool(t.getIndex());
+//			else
+//				continue;
 			
-		pb.add8(ToolCommandCode.SET_PLATFORM_TEMP.getCode());
-		pb.add8((byte) 2); // payload length
-		pb.add16(temp);
-		runCommand(pb.getPacket());
-		
-		super.setPlatformTemperature(temperature);
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
+			pb.add8((byte) t.getIndex());
+			pb.add8(ToolCommandCode.SET_PLATFORM_TEMP.getCode());
+			pb.add8((byte) 2); // payload length
+			pb.add16(temp);
+			runCommand(pb.getPacket());
+			
+			t.setPlatformTargetTemperature(temperature);
+			//super.setPlatformTemperature(temperature);
+		}
+//		machine.selectTool(current.getIndex());
 	}
 	
 	public void readPlatformTemperature() {
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
-		PacketResponse pr = runQuery(pb.getPacket());
-		if (pr.isEmpty()) return;
-		int temp = pr.get16();
-		machine.currentTool().setPlatformCurrentTemperature(temp);
+//		ToolModel current = machine.currentTool();
+		for(ToolModel t : machine.getTools())
+		{
+			// We select the tool so that the call to super.readPlatTemp() works as it should
+//			if(t.hasHeatedPlatform())
+//				machine.selectTool(t.getIndex());
+//			else
+//				continue;
+			
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+			pb.add8((byte) t.getIndex());
+			pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
+			
+			PacketResponse pr = runQuery(pb.getPacket());
+			if (pr.isEmpty()) return;
+			int temp = pr.get16();
+			machine.currentTool().setPlatformCurrentTemperature(temp);
+			
+			Base.logger.fine("Current platform temperature (T" + t.getIndex() + "): "
+							+ machine.currentTool().getPlatformCurrentTemperature() + "C");
+			
+//			super.readPlatformTemperature();
+		}
+//		machine.selectTool(current.getIndex());
 		
-		Base.logger.fine("Current platform temperature: "
-						+ machine.currentTool().getPlatformCurrentTemperature() + "C");
-		
-		super.readPlatformTemperature();
 	}
 
 	/***************************************************************************
@@ -1521,7 +1539,8 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 		PacketResponse slavepr = runQuery(slavepb.getPacket());
 		slavepr.printDebug();
-		assert slavepr.get8() == data.length; 
+		// If the tool index is 127/255, we should not expect a response (it's a broadcast packet).
+		assert (toolIndex == 255) || (toolIndex == 127) || (slavepr.get8() == data.length); 
 	}
 
 	private byte[] readFromEEPROM(int offset, int len) {
@@ -2121,7 +2140,9 @@ public class Sanguino3GDriver extends SerialDriver
 	public boolean setConnectedToolIndex(int index) {
 		byte[] data = new byte[1];
 		data[0] = (byte) index;
-		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 255);
+		// The broadcast address has changed. The safest solution is to try both.
+		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 255); //old firmware used 255, new fw ignores this
+		writeToToolEEPROM(EC_EEPROM_SLAVE_ID, data, 127); //new firmware used 127, old fw ignores this
 		return false;
 	}
 

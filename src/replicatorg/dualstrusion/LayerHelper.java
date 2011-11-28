@@ -44,7 +44,7 @@ public class LayerHelper {
 	{
 		this.primaryLayers = readLayers(primary);
 		this.secondaryLayers = readLayers(secondary);
-		System.out.println("primary.size=" + primaryLayers.size() + " secondary.size=" + secondaryLayers.size());
+		//System.out.println("primary.size=" + primaryLayers.size() + " secondary.size=" + secondaryLayers.size());
 		
 		this.useWipes = useWipes;
 		this.mergeSupport = mergeSupport;
@@ -77,7 +77,7 @@ public class LayerHelper {
 	{
 		for(Layer l : a)
 		{
-			System.out.println(l.getHeight());
+			//System.out.println(l.getHeight());
 		}
 	}
 	/**
@@ -92,7 +92,7 @@ public class LayerHelper {
 	public ArrayList<String> toolChange(Toolheads destinationTool, float LayerHeight)
 	{
 		 //calls will langfords toolchange
-		System.out.println("destination toolhead " + destinationTool + "curent toolhead " + currentToolhead);
+		//System.out.println("destination toolhead " + destinationTool + "curent toolhead " + currentToolhead);
 
 		currentToolhead = destinationTool;
 
@@ -100,7 +100,7 @@ public class LayerHelper {
 	}
 	public ArrayList<String> toolChange(Toolheads destinationTool, Layer a)
 	{
-		//System.out.println("dest " + destinationTool);
+		////System.out.println("dest " + destinationTool);
 		currentToolhead = destinationTool;
 		//System.out.println("new dest " + destinationTool);
 		ArrayList<String> cmds = new ArrayList<String>();
@@ -150,22 +150,22 @@ public class LayerHelper {
 				//System.out.println("non null layers at " + i);
 				//DualStrusionWorker.printArrayList(a.getCommands());
 				//DualStrusionWorker.printArrayList(b.getCommands());
-				System.out.println("curTool = " + currentToolhead);
+				//System.out.println("curTool = " + currentToolhead);
 				if(a != null && b != null)
 				{
-					System.out.println("both real" + i);
+					//System.out.println("both real" + i);
 					//	System.out.println("this is called");
 					merged.addAll(mergeLayer(a,b));
 				}
 				else if(a != null)
 				{
-					System.out.println("a is real b is null" + i);
+					//System.out.println("a is real b is null" + i);
 					//setCurrentFeedRate(b.getCommands());
 					merged.addAll(parseLayer(a, Toolheads.PRIMARY));
 				}
 				else if(b != null)
 				{
-					System.out.println("b is real a is null" + i);
+					//System.out.println("b is real a is null" + i);
 					//setCurrentFeedRate(a.getCommands());
 					merged.addAll(parseLayer(b, Toolheads.SECONDARY));
 				}
@@ -200,7 +200,7 @@ public class LayerHelper {
 	{
 		//	setCurrentFeedRate(a.getCommands());
 		ArrayList<String> completeLayer = new ArrayList<String>();
-		System.out.println("curTool " + currentToolhead + " desttool " + destTool + "linenum " + a.getHeight());
+		//System.out.println("curTool " + currentToolhead + " desttool " + destTool + "linenum " + a.getHeight());
 		if(destTool == Toolheads.PRIMARY)
 		{
 			if(currentToolhead == Toolheads.PRIMARY)
@@ -237,13 +237,13 @@ public class LayerHelper {
 	{
 		ArrayList<Layer> result = new ArrayList<Layer>();
 		
-		System.out.println("readLayers - list size=" + readThis.size());
+		//System.out.println("readLayers - list size=" + readThis.size());
 		
 		for(int i = 0; i < readThis.size()-2;  i++)
 		{
 			if(readThis.get(i).matches("\\(\\<layer\\>.*\\)"))
 			{
-				System.out.println("\t" + readThis.get(i));
+				//System.out.println("\t" + readThis.get(i));
 				float layerHeight = 0;
 				try
 				{
@@ -272,7 +272,7 @@ public class LayerHelper {
 				//System.out.println(gcode.get(i) + " does not ");
 			}
 		}
-		System.out.println("readLayers - result size=" + result.size());
+		//System.out.println("readLayers - result size=" + result.size());
 		return result;
 	}
 	/**

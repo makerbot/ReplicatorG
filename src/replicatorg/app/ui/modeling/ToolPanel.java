@@ -5,15 +5,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-
-import replicatorg.app.Base;
-import replicatorg.dualstrusion.DualStrusionWorker;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -40,7 +36,7 @@ public class ToolPanel extends JPanel implements KeyListener {
 	}
 
 	final PreviewPanel preview;
-	final JPanel subPanel = new JPanel(new MigLayout("fillx,filly,ins 0, gap 0"));
+	final JPanel subPanel = new JPanel(new MigLayout("fillx,filly,ins 0,gap 0"));
 	
 	Tool[] tools = { 
 			new ViewTool(this),
@@ -105,7 +101,7 @@ public class ToolPanel extends JPanel implements KeyListener {
 		JButton sliceButton = createToolButton("Generate GCode","images/model-to-gcode.png");
 		sliceButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				preview.mainWindow.runToolpathGenerator();
+				preview.mainWindow.runToolpathGenerator(false);
 				
 			}
 		});

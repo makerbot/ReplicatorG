@@ -4,7 +4,12 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -14,9 +19,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.JFormattedTextField;
 
 import net.miginfocom.swing.MigLayout;
+import replicatorg.app.Base;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.Version;
 import replicatorg.drivers.gen3.Sanguino3GDriver;
@@ -36,9 +42,14 @@ public class ExtruderOnboardParameters extends JFrame {
 	
 	class ThermistorTablePanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 7765098486598830410L;
-		private JTextField betaField = new JTextField();
-		private JTextField r0Field = new JTextField();
-		private JTextField t0Field = new JTextField();
+	    private NumberFormat threePlaces = Base.getLocalFormat();
+	    {
+	        threePlaces.setMaximumFractionDigits(3);
+	    }
+
+		private JFormattedTextField betaField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField r0Field = new JFormattedTextField(threePlaces);
+		private JFormattedTextField t0Field = new JFormattedTextField(threePlaces);
 		private int which;
 		ThermistorTablePanel(int which, String titleText) {
 			super(new MigLayout());
@@ -50,28 +61,35 @@ public class ExtruderOnboardParameters extends JFrame {
 			
 			double beta = target.getBeta(which);
 			if (beta == -1) { beta = 4066; }
-			betaField.setText(Integer.toString((int)beta));
+			betaField.setValue((int)beta);
 			add(new JLabel("Beta"));
 			add(betaField,"wrap");
 
 			double r0 = target.getR0(which);
 			if (r0 == -1) { r0 = 100000; }
-			r0Field.setText(Integer.toString((int)r0));
+			r0Field.setValue((int)r0);
 			add(new JLabel("Thermistor Resistance"));
 			add(r0Field,"wrap");
 
 			double t0 = target.getT0(which);
 			if (t0 == -1) { t0 = 25; }
-			t0Field.setText(Integer.toString((int)t0));
+			t0Field.setValue((int)t0);
 			add(new JLabel("Base Temperature"));
 			add(t0Field,"wrap");
 		}
 
 		public void commit() {
-			int beta = Integer.parseInt(betaField.getText());
-			int r0 = Integer.parseInt(r0Field.getText());
-			int t0 = Integer.parseInt(t0Field.getText());
-			target.createThermistorTable(which,r0,t0,beta);
+			NumberFormat nf = Base.getLocalFormat();
+			try {
+				int beta = nf.parse(betaField.getText()).intValue();
+				int r0 = nf.parse(r0Field.getText()).intValue();
+				int t0 = nf.parse(t0Field.getText()).intValue();
+				target.createThermistorTable(which,r0,t0,beta);
+			} catch (ParseException pe) {
+				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
+				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 		}
 		
 		public boolean isCommitable() {
@@ -104,10 +122,14 @@ public class ExtruderOnboardParameters extends JFrame {
 
 	private class BackoffPanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 6593800743174557032L;
-		private JTextField stopMsField = new JTextField();
-		private JTextField reverseMsField = new JTextField();
-		private JTextField forwardMsField = new JTextField();
-		private JTextField triggerMsField = new JTextField();
+	    private NumberFormat threePlaces = Base.getLocalFormat();
+	    {
+	        threePlaces.setMaximumFractionDigits(3);
+	    }
+		private JFormattedTextField stopMsField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField reverseMsField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField forwardMsField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField triggerMsField = new JFormattedTextField(threePlaces);
 		BackoffPanel() {
 			setLayout(new MigLayout());
 			setBorder(BorderFactory.createTitledBorder("Reversal parameters"));
@@ -125,19 +147,26 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(new JLabel("Min. extrusion time before reversal (ms)"));
 			add(triggerMsField,"wrap");
 			OnboardParameters.BackoffParameters bp = target.getBackoffParameters();
-			stopMsField.setText(Integer.toString(bp.stopMs));
-			reverseMsField.setText(Integer.toString(bp.reverseMs));
-			forwardMsField.setText(Integer.toString(bp.forwardMs));
-			triggerMsField.setText(Integer.toString(bp.triggerMs));
+			stopMsField.setValue(bp.stopMs);
+			reverseMsField.setValue(bp.reverseMs);
+			forwardMsField.setValue(bp.forwardMs);
+			triggerMsField.setValue(bp.triggerMs);
 		}
 
 		public void commit() {
+			NumberFormat nf = Base.getLocalFormat();
 			OnboardParameters.BackoffParameters bp = new OnboardParameters.BackoffParameters();
-			bp.forwardMs = Integer.parseInt(forwardMsField.getText());
-			bp.reverseMs = Integer.parseInt(reverseMsField.getText());
-			bp.stopMs = Integer.parseInt(stopMsField.getText());
-			bp.triggerMs = Integer.parseInt(triggerMsField.getText());
-			target.setBackoffParameters(bp);
+			try {
+				bp.forwardMs = nf.parse(forwardMsField.getText()).intValue();
+				bp.reverseMs = nf.parse(reverseMsField.getText()).intValue();
+				bp.stopMs = nf.parse(stopMsField.getText()).intValue();
+				bp.triggerMs = nf.parse(triggerMsField.getText()).intValue();
+				target.setBackoffParameters(bp);
+			} catch (ParseException pe) {
+				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
+				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 		}
 		
 		public boolean isCommitable() {
@@ -197,9 +226,18 @@ public class ExtruderOnboardParameters extends JFrame {
 	}
 	
 	private class PIDPanel extends JPanel implements Commitable {
-		private JTextField pField = new JTextField();
-		private JTextField iField = new JTextField();
-		private JTextField dField = new JTextField();
+	    private NumberFormat threePlaces = Base.getLocalFormat();
+	    {
+	        threePlaces.setMaximumFractionDigits(3);
+	    }
+	    private NumberFormat eightPlaces = Base.getLocalFormat();
+	    {
+	    	eightPlaces.setMaximumFractionDigits(8);
+	    }
+
+	    private JFormattedTextField pField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField iField = new JFormattedTextField(eightPlaces);
+		private JFormattedTextField dField = new JFormattedTextField(threePlaces);
 		private int which;
 		PIDPanel(int which, String name) {
 			this.which = which;
@@ -216,17 +254,24 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(new JLabel("D parameter"));
 			add(dField,"wrap");
 			OnboardParameters.PIDParameters pp = target.getPIDParameters(which);
-			pField.setText(Float.toString(pp.p));
-			iField.setText(Float.toString(pp.i));
-			dField.setText(Float.toString(pp.d));
+			pField.setValue(pp.p);
+			iField.setValue(pp.i);
+			dField.setValue(pp.d);
 		}
 
 		public void commit() {
 			OnboardParameters.PIDParameters pp = new OnboardParameters.PIDParameters();
-			pp.p = Float.parseFloat(pField.getText());
-			pp.i = Float.parseFloat(iField.getText());
-			pp.d = Float.parseFloat(dField.getText());
-			target.setPIDParameters(which,pp);
+			NumberFormat nf = Base.getLocalFormat();
+			try{ 
+				pp.p = nf.parse(pField.getText()).floatValue();
+				pp.i = nf.parse(iField.getText()).floatValue();
+				pp.d = nf.parse(dField.getText()).floatValue();
+				target.setPIDParameters(which,pp);
+			} catch (ParseException pe) {
+				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
+				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 		}
 		
 		public boolean isCommitable() {
@@ -237,7 +282,11 @@ public class ExtruderOnboardParameters extends JFrame {
 	class RegulatedCoolingFan extends JPanel implements Commitable {
 		private static final long serialVersionUID = 7765098486598830410L;
 		private JCheckBox coolingFanEnabled;
-		private JTextField coolingFanSetpoint = new JTextField();
+	    private NumberFormat threePlaces = Base.getLocalFormat();
+	    {
+	        threePlaces.setMaximumFractionDigits(3);
+	    }
+		private JFormattedTextField coolingFanSetpoint = new JFormattedTextField(threePlaces);
 		RegulatedCoolingFan() {
 			super(new MigLayout());			
 			coolingFanEnabled = new JCheckBox("Enable regulated cooling fan (stepper extruders only)",
@@ -246,16 +295,23 @@ public class ExtruderOnboardParameters extends JFrame {
 			
 			coolingFanSetpoint.setColumns(FIELD_WIDTH);
 	
-			coolingFanSetpoint.setText(Integer.toString((int)target.getCoolingFanSetpoint()));
+			coolingFanSetpoint.setValue((int)target.getCoolingFanSetpoint());
 			add(new JLabel("Setpoint (C)"));
 			add(coolingFanSetpoint,"wrap");
 
 		}
 
 		public void commit() {
+			NumberFormat nf = Base.getLocalFormat();
 			boolean enabled = coolingFanEnabled.isSelected();   
-			int setpoint = Integer.parseInt(coolingFanSetpoint.getText());
-			target.setCoolingFanParameters(enabled, setpoint);
+			try {
+				int setpoint = nf.parse(coolingFanSetpoint.getText()).intValue();
+				target.setCoolingFanParameters(enabled, setpoint);
+			} catch (ParseException pe) {
+				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
+				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 		}
 		
 		public boolean isCommitable() {

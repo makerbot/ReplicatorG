@@ -9,11 +9,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.EnumSet;
+import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -21,6 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
+import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.AxisId;
@@ -44,7 +49,7 @@ public class MachineOnboardParameters extends JFrame {
 	private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
 	private static final String[]  endstopInversionChoices = {
 		"No endstops installed",
-		"Inverted (Default; H21LOB-based enstops)",
+		"Inverted (Default; Mechanical switch or H21LOB-based enstops)",
 		"Non-inverted (H21LOI-based endstops)"
 	};
 	private JComboBox endstopInversionSelection = new JComboBox(endstopInversionChoices);
@@ -55,11 +60,16 @@ public class MachineOnboardParameters extends JFrame {
 	};
 	private JComboBox estopSelection = new JComboBox(estopChoices);
 	private static final int MAX_NAME_LENGTH = 16;
-	private JTextField xAxisHomeOffsetField = new JTextField();
-	private JTextField yAxisHomeOffsetField = new JTextField();
-	private JTextField zAxisHomeOffsetField = new JTextField();
-	private JTextField aAxisHomeOffsetField = new JTextField();
-	private JTextField bAxisHomeOffsetField = new JTextField();
+
+    private NumberFormat threePlaces = Base.getLocalFormat();
+    {
+        threePlaces.setMaximumFractionDigits(3);
+    }
+	private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(threePlaces );
+	private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(threePlaces );
+	private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(threePlaces );
+	private JFormattedTextField aAxisHomeOffsetField = new JFormattedTextField(threePlaces );
+	private JFormattedTextField bAxisHomeOffsetField = new JFormattedTextField(threePlaces );
 	
 	private void resetDialog() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
@@ -98,12 +108,18 @@ public class MachineOnboardParameters extends JFrame {
 			target.setEstopConfig(estop);
 		}
 		
-		target.setAxisHomeOffset(0, Double.parseDouble(xAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(1, Double.parseDouble(yAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(2, Double.parseDouble(zAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(3, Double.parseDouble(aAxisHomeOffsetField.getText()));
-		target.setAxisHomeOffset(4, Double.parseDouble(bAxisHomeOffsetField.getText()));
-		
+		try {
+			NumberFormat nf = Base.getLocalFormat();
+			target.setAxisHomeOffset(0, nf.parse(xAxisHomeOffsetField.getText()).doubleValue());
+			target.setAxisHomeOffset(1, nf.parse(yAxisHomeOffsetField.getText()).doubleValue());
+			target.setAxisHomeOffset(2, nf.parse(zAxisHomeOffsetField.getText()).doubleValue());
+			target.setAxisHomeOffset(3, nf.parse(aAxisHomeOffsetField.getText()).doubleValue());
+			target.setAxisHomeOffset(4, nf.parse(bAxisHomeOffsetField.getText()).doubleValue());
+		} catch (ParseException pe) {
+			Base.logger.log(Level.WARNING,"Could not parse value!",pe);
+			JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		resetDialog();
 	}
 
@@ -113,16 +129,11 @@ public class MachineOnboardParameters extends JFrame {
 		loadParameters();
 	}
 	
-	double roundDouble(double number) {
-		DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
-		dfs.setDecimalSeparator('.');
-    	DecimalFormat twoDForm = new DecimalFormat("#.###", dfs);
-    	return Double.valueOf(twoDForm.format(number));
-	}
 
 	private void loadParameters() {
 		machineNameField.setText(this.target.getMachineName());
 		EnumSet<AxisId> invertedAxes = this.target.getInvertedParameters();
+		
 		xAxisInvertBox.setSelected(invertedAxes.contains(AxisId.X));
 		yAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Y));
 		zAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Z));
@@ -135,12 +146,13 @@ public class MachineOnboardParameters extends JFrame {
 
 		OnboardParameters.EstopType estop = this.target.getEstopConfig();
 		estopSelection.setSelectedIndex(estop.ordinal());
+	   
 		
-		xAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(0))));
-		yAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(1))));
-		zAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(2))));
-		aAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(3))));
-		bAxisHomeOffsetField.setText(Double.toString(roundDouble(this.target.getAxisHomeOffset(4))));
+		xAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(0));
+		yAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(1));
+		zAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(2));
+		aAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(3));
+		bAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(4));
 	}
 
 	private JPanel makeButtonPanel() {

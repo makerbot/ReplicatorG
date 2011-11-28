@@ -59,17 +59,9 @@ import replicatorg.machine.MachineToolStatusEvent;
  */
 public class MainButtonPanel extends BGPanel implements MachineListener, ActionListener {
 
-	// / height, width of the toolbar buttons
-	static final int BUTTON_WIDTH = 27;
-	static final int BUTTON_HEIGHT = 32;
-	
-	static final float disabledFactors[] = { 1.0f, 1.0f, 1.0f, 0.5f };
-	static final float disabledOffsets[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	static private RescaleOp disabledOp = new RescaleOp(disabledFactors,disabledOffsets,null);
-	static final float activeFactors[] = { -1.0f, -1.0f, -1.0f, 1.0f };
-	static final float activeOffsets[] = { 1.0f, 1.0f, 1.0f, 0.0f };
-	static private RescaleOp activeOp = new RescaleOp(activeFactors,activeOffsets,null);
-
+	/**
+	 * This button is a special button type for the top bar. 
+	 */
 	class MainButton extends JButton implements ChangeListener {
 		private String rolloverText; 
 		public MainButton(String rolloverText,
@@ -126,6 +118,20 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		}
 	}
 	
+	
+	// / height, width of the toolbar buttons
+	static final int BUTTON_WIDTH = 27;
+	static final int BUTTON_HEIGHT = 32;
+	
+	static final float disabledFactors[] = { 1.0f, 1.0f, 1.0f, 0.5f };
+	static final float disabledOffsets[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	static private RescaleOp disabledOp = new RescaleOp(disabledFactors,disabledOffsets,null);
+	static final float activeFactors[] = { -1.0f, -1.0f, -1.0f, 1.0f };
+	static final float activeOffsets[] = { 1.0f, 1.0f, 1.0f, 0.0f };
+	static private RescaleOp activeOp = new RescaleOp(activeFactors,activeOffsets,null);
+
+
+	
 
 	// / amount of space between groups of buttons on the toolbar
 	static final int BUTTON_GAP = 15;
@@ -144,7 +150,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	final static Color BACK_COLOR = new Color(0x5F, 0x73, 0x25); 
 	MainButton simButton, pauseButton, stopButton;
 	MainButton buildButton, resetButton, cpButton, rcButton;
-	MainButton disconnectButton, connectButton;
+	MainButton disconnectButton, connectButton, generateButton;
 	
 	MainButton uploadButton, playbackButton, fileButton;
 	
@@ -161,16 +167,15 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		Color statusColor = Base.getColorPref("buttons.status.color","#FFFFFF");
 
 
-		simButton = makeButton("Simulate", "images/button-simulate.png");
-		add(simButton);
 		buildButton = makeButton("Build", "images/button-build.png");
 		add(buildButton);
-		uploadButton = makeButton("Upload to SD card", "images/button-upload.png");
-		add(uploadButton);
+
 		playbackButton = makeButton("Build from SD card", "images/button-playback.png");
 		add(playbackButton);
 		fileButton = makeButton("Build to file", "images/button-to-file.png");
 		add(fileButton);
+		generateButton = makeButton("Model to GCode", "images/button-to-gcode.png");
+		add(generateButton);
 
 		pauseButton = makeButton("Pause", "images/button-pause.png");
 		add(pauseButton,"gap unrelated");
@@ -195,7 +200,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		statusLabel.setForeground(statusColor);
 		add(statusLabel, "gap unrelated");
 
-		simButton.setToolTipText("The simulation feature is disabled in this release, please stand by!");
+		generateButton.setToolTipText("This will generate gcode for the currently open model.");
 		buildButton.setToolTipText("This will start building the object on the machine.");
 		pauseButton.setToolTipText("This will pause or resume the build.");
 		stopButton.setToolTipText("This will abort the build in progress.");
@@ -233,8 +238,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == simButton) {
-			editor.handleSimulate();
+		if (e.getSource() == generateButton) {
+			editor.runToolpathGenerator(false);
 		} else if (e.getSource() == buildButton) {
 			editor.handleBuild();
 		} else if (e.getSource() == uploadButton) {
@@ -254,7 +259,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		} else if (e.getSource() == connectButton) {
 			editor.handleConnect();
 		} else if (e.getSource() == disconnectButton) {
-			editor.handleDisconnect();
+			editor.handleDisconnect(/*leavePreheatRunning=*/false);
 		} else if (e.getSource() == rcButton) {
 			editor.handleRealTimeControl();
 		}
@@ -269,6 +274,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		});
 	}
 	
+	/**
+	 * Update the available and enabled buttons based on the latest machine state
+	 */
 	private void updateFromState(final MachineState s, final MachineInterface machine) {
 		boolean connected = s.isConnected();
 		boolean readyToPrint = s.canPrint();
@@ -278,17 +286,17 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 		boolean hasMachine = machine != null;
 		boolean hasPlayback = hasMachine && 
-			(machine.getDriver() != null) &&
-			(machine.getDriver() instanceof SDCardCapture) &&
-			(((SDCardCapture)machine.getDriver()).hasFeatureSDCardCapture());
+				(machine.getDriver() != null) &&
+				(machine.getDriver() instanceof SDCardCapture) &&
+				(((SDCardCapture)machine.getDriver()).hasFeatureSDCardCapture());
 		boolean hasGcode = (editor != null) && (editor.getBuild() != null) &&
-		editor.getBuild().getCode() != null;
+				editor.getBuild().getCode() != null;
+		boolean hasModel = (editor != null) && (editor.getBuild() != null) &&
+				editor.getBuild().getModel() != null;
 		
-//		simButton.setEnabled(hasMachine && !building && hasGcode);
-		simButton.setEnabled(false);
 		fileButton.setEnabled(!building && hasGcode);
-		buildButton.setEnabled(readyToPrint && hasGcode);
-		uploadButton.setEnabled(readyToPrint && hasPlayback && hasGcode);
+		buildButton.setEnabled(readyToPrint);
+		generateButton.setEnabled(hasModel);
 		playbackButton.setEnabled(readyToPrint && hasPlayback);
 		pauseButton.setEnabled(building && connected);
 		stopButton.setEnabled(building);
@@ -298,9 +306,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 		Machine.JobTarget runningTarget = s.isBuilding()?machine.getTarget():null;
 		
-		simButton.setSelected(runningTarget == Machine.JobTarget.SIMULATOR);
 		buildButton.setSelected(runningTarget == Machine.JobTarget.MACHINE);
-		uploadButton.setSelected(runningTarget == Machine.JobTarget.REMOTE_FILE);
 		fileButton.setSelected(runningTarget == Machine.JobTarget.FILE);
 		playbackButton.setSelected(runningTarget == Machine.JobTarget.NONE);
 

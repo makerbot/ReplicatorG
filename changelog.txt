@@ -1,3 +1,29 @@
+0028 ReplicatorG
+* Fixed toolhead setting function to work with new and old firmware
+* Improvements to localization of decimal numbers
+* Fixed preferences window, only one can be open at any time
+* Fixed description of wipes in Dualstrusion window
+* Disabled 'swap toolhead' while build in progress
+* Removed 'Print to SD' button because it was slow, buggy, and rarely used
+* Removed various bits of old, unused code from the top bar
+* Added 'Generate GCode' button to top bar
+* Changed functionality of 'Build' button, it can now genrate gcode and build in one click
+* Improved temperature monitoring
+* Added machine info to the machine status bar (green/red info bar)
+* Added 'Preheat' function to bring bot up to temperature, 
+* Added preheat temperature settings to preferences
+* Extensive cleanup of some DualStrusion code
+* Fixed 'move' tool layout
+* Minor improvements to ConfirmationDialog code
+* Updates to Dualstrusion HBP behavior
+* Clarification of several text panels
+* Added Warnings on Extruder Dialogs that have side effects in Dualstrusion 
+* Fixed pre-heat temperature not setting in preferences panel
+* Added heat range warnings to pre-heat temperature setting
+* Fixed bug from Alpha that prevented print-from-stl use in some cases
+* Fixed bug in extruder and mobo preferences that caused float num errors
+* Updated so locale formats work in Java 5 
+
 0027 ReplicatorG
 * Fan changes to support ABP on Mk7 hardware (using Firmware 3.1 or newer only)
 * Individual axis disable added

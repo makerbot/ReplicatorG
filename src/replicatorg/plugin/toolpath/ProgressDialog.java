@@ -59,7 +59,7 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 		setLayout(new MigLayout());
 		add(topLabel,"wrap");
 		add(new JLabel("Generator: Skeinforge"),"wrap");
-		add(progressLabel,"wrap,growx");
+		add(progressLabel,"wrap,growx,wmax 400px");
 		add(subProgressBar,"wrap,wmin 400px");
 		add(totalProgressLabel,"wrap,growx");
 		add(totalProgressBar,"wrap,wmin 400px");

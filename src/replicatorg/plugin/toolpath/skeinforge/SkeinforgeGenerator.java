@@ -32,6 +32,7 @@ import replicatorg.plugin.toolpath.ToolpathGenerator;
 public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 	boolean configSuccess = false;
+	ConfigurationDialog cd;
 	String profile = null;
 	List <SkeinforgePreference> preferences;
 
@@ -276,19 +277,14 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
-	public ConfigurationDialog visualConfiguregetCD(Frame parent, int x, int y, String name) {
-		// First check for Python.
-		parent.setName(name);
-		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
-		cd.setName(name);
-		cd.setTitle(name);
-		//cd.setSize(500, 760);
-		cd.pack();
-		cd.setLocation(x, y);
-		cd.setVisible(true);
-		return cd;
-	}
-	public boolean visualConfigure(Frame parent, int x, int y, String name) {
+	/**
+	 * creates gui for configuration
+	 * @param parent parent window
+	 * @param name tkinter window name
+	 * @return true if a new ConfigurationDialog was created and stored to cd, false otherwise
+	 */
+	public boolean configure(Frame parent, String name)
+	{
 		if (name == null)
 			name = "Generating gcode";
 		
@@ -304,11 +300,32 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		if (!hasTkInter) {
 			return false;
 		}
+		if(parent != null)
+			parent.setName(name);
+		cd = new ConfigurationDialog(parent, this);
+		return true;
+	}
+	
+	public ConfigurationDialog visualConfiguregetCD(Frame parent, int x, int y, String name) {
+		// First check for Python.
 		parent.setName(name);
-		ConfigurationDialog cd = new ConfigurationDialog(parent, this);
+		cd = new ConfigurationDialog(parent, this);
 		cd.setName(name);
 		cd.setTitle(name);
 		//cd.setSize(500, 760);
+		cd.pack();
+		cd.setLocation(x, y);
+		cd.setVisible(true);
+		return cd;
+	}
+	
+	public boolean visualConfigure(Frame parent, int x, int y, String name) {
+
+		//cd.setSize(500, 760);
+		configure(parent, name);
+
+		cd.setName(name);
+		cd.setTitle(name);
 		
 		if (x == -1 || y == -1) {
 			double x2 = parent.getBounds().getCenterX();
@@ -325,11 +342,18 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		cd.setLocation(x, y);
 		cd.setVisible(true);
 		emitUpdate("Config Done");
-		return configSuccess;
+		return configSuccess;//configSuccess is updated in the configuration dialog
 	}
 	
 	public boolean visualConfigure(Frame parent) {
 		return visualConfigure(parent, -1, -1, null);
+	}
+	
+	public boolean nonvisualConfigure()
+	{
+		configure(null, "");
+		configSuccess = cd.configureGenerator();
+		return configSuccess;
 	}
 
 	public void editProfiles(Frame parent) {

@@ -4,13 +4,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.util.Vector;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.machine.MachineListener;
@@ -18,10 +18,12 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
+import replicatorg.machine.model.ToolModel;
 
 /**
  * The MachineStatusPanel displays the current state of the connected machine,
  * or a message informing the user that no connected machine can be found.
+ * This is the big bar (usually Red or Light Green) with status text in it.
  * 
  * @author phooky
  * 
@@ -29,9 +31,17 @@ import replicatorg.machine.MachineToolStatusEvent;
 public class MachineStatusPanel extends BGPanel implements MachineListener {
 	private static final long serialVersionUID = -6944931245041870574L;
 
-	protected JLabel label = new JLabel();
+	
+	protected JLabel mainLabel= new JLabel();
+	
+	/// small text label for ongoing actions
 	protected JLabel smallLabel = new JLabel();
+	
+	/// Temperature status string
 	protected JLabel tempLabel = new JLabel();
+
+	/// Machine tyle/connection string
+	protected JLabel machineLabel = new JLabel();
 	
 	// Keep track of whether we are in a building state or not.
 	private boolean isBuilding = false;
@@ -40,31 +50,27 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	static final private Color BG_READY = new Color(0x80, 0xff, 0x60);
 	static final private Color BG_BUILDING = new Color(0xff, 0xef, 0x00); // process yellow
 
+	
 	MachineStatusPanel() {
-		Font smallFont = Base.getFontPref("status.font","SansSerif,plain,10");
+		Font statusFont = Base.getFontPref("status.font","SansSerif,plain,12");
+		Font smallFont = statusFont.deriveFont(10f);
 		smallLabel.setFont(smallFont);
 		tempLabel.setFont(smallFont);
-		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-		label.setText("Not Connected");
-		label.setAlignmentX(LEFT_ALIGNMENT);
-		add(label);
-		smallLabel.setAlignmentX(LEFT_ALIGNMENT);
-		{
-			Box b = Box.createHorizontalBox();
-			b.add(smallLabel);
-			b.add(Box.createHorizontalGlue());
-			b.add(tempLabel);
-			b.setAlignmentX(LEFT_ALIGNMENT);
-			tempLabel.setAlignmentX(RIGHT_ALIGNMENT);
-			add(b);
-		}
-		add(Box.createVerticalGlue());
+		machineLabel.setFont(smallFont);
+		mainLabel.setFont(statusFont);
+		mainLabel.setText("Not Connected");
+	
+		setLayout(new MigLayout("fill,novisualpadding, ins 5 10 5 10"));
+		add(mainLabel, "top, left, growx, split");
+		add(machineLabel, "top, right, wrap");
+		add(smallLabel, "bottom, left, growx, split");
+		add(tempLabel, "bottom, right");
 
 		FontMetrics smallMetrics = this.getFontMetrics(smallFont);
+		FontMetrics bigMetrics = this.getFontMetrics(statusFont);
 		// Height should be ~3 lines 
-		int height = (smallMetrics.getAscent() + smallMetrics.getDescent()) * 3;
+		int height = (smallMetrics.getAscent() + smallMetrics.getDescent()) * 2 +
+				bigMetrics.getAscent() + smallMetrics.getDescent();
 		setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
 		setMinimumSize(new Dimension(0, height));
 		int prefWidth = 80 * smallMetrics.charWidth('n');
@@ -73,35 +79,29 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	}
 
 
-	private void updatePanel(Color panelColor, String text, String smallText, String tempText) {
+	private void updatePanel(Color panelColor, String text, String smallText, String machineText) {
 		setBackground(panelColor);
-		label.setText(text);
+		mainLabel.setText(text);
 		smallLabel.setText(smallText);
-		tempLabel.setText(tempText);
+		machineLabel.setText(machineText);
 	}
 	
-// TODO: this has no business being here.
-//	private boolean checkVersionCompatibility() {
-//		Version v = machine.getDriverQueryInterface().getVersion();
-//		
-//		 if (v == null) {
-//			return false;
-//		}
-//		
-//		if (v.compareTo(machine.getDriverQueryInterface().getPreferredVersion()) < 0) {
-//			if (!firmwareWarningIssued) {
-//				firmwareWarningIssued = true;
-//				JOptionPane.showMessageDialog(
-//						this,
-//						"Firmware version "+v+" was detected on your machine.  Firmware version "+
-//						machine.getDriverQueryInterface().getPreferredVersion() + " is recommended.\n" +
-//						"Please update your firmware and restart ReplicatorG.",
-//						"Old firmware detected", JOptionPane.WARNING_MESSAGE);
-//			}
-//		}
-//		return true;
-//	}
-	
+	/**
+	 * Creatss a one line string of machine info
+	 * @return
+	 */
+	private String machineStatusString(String machineId, boolean connected)
+	{
+		String machineText = Base.preferences.get("machine.name", machineId);
+		if( connected )
+		{
+			String connection = Base.preferences.get("serial.last_selected", "Unknown Connection");
+			machineText += " on " + connection;
+		} else {
+			machineText += " Not Connected";
+		}
+		return machineText;
+	}
 	
 	/**
 	 * Display the current status of this machine.
@@ -129,11 +129,19 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		}
 		
 		String text = evt.getMessage();
-		
 		// Make up some text to describe the state
 		if (text == null ) {
 			text = state.toString();
 		}
+		
+		String machineText = machineStatusString(evt.getSource().getMachineName(),
+												 evt.getState().isConnected()); 
+		
+		if( evt.getState().isConnected() == false )
+			tempLabel.setText("");
+
+		if( evt.getState().isBuilding() && !(Base.preferences.getBoolean("build.monitor_temp", false) ))
+			tempLabel.setText("Monitor build temp.: off");
 		
 		// And mark which state we are in.
 		switch (state) {
@@ -147,7 +155,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			break;
 		}
 		
-		updatePanel(bgColor, text, null, null);
+		updatePanel(bgColor, text, null, machineText);
 	}
 	
 	public void updateBuildStatus(MachineProgressEvent event) {
@@ -156,7 +164,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			double proportion = (double)event.getLines()/(double)event.getTotalLines();
 			double percentComplete = Math.round(proportion*10000.0)/100.0;
 	
-			double remaining= event.getEstimated() * (1.0 - proportion);;
+			double remaining= event.getEstimated() * (1.0 - proportion);
 			if (event.getTotalLines() == 0) {
 				remaining = 0;
 			}
@@ -194,8 +202,24 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		final MachineToolStatusEvent e = event;
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				double temperature = e.getTool().getCurrentTemperature();
-				tempLabel.setText(String.format("Temp: %1$3.1f\u00B0C", temperature));
+				Vector<ToolModel> tools = e.getSource().getModel().getTools();
+				String tempString = "";
+				
+				// This call makes sure our temperatures are up to date
+				e.getSource().getDriver().readPlatformTemperature();
+				
+				for(ToolModel t : tools)
+				{
+					double temp= t.getCurrentTemperature();
+					tempString += String.format("Toolhead "+t.getIndex()+": %1$3.1f\u00B0C  ", temp);
+					if(t.hasHeatedPlatform())
+					{
+						double ptemp = t.getPlatformCurrentTemperature();
+						tempString += String.format("Platform: %1$3.1f\u00B0C", ptemp);
+					}
+				}
+				
+				tempLabel.setText(tempString);
 			}
 		});
 	}
