@@ -1493,9 +1493,15 @@ public class Sanguino3GDriver extends SerialDriver
 		assert pr.get8() == data.length; 
 	}
 
-	private byte[] readFromToolEEPROM(int offset, int len) {
+
+	@SuppressWarnings("unused")
+	private byte[] readFromToolEEPROM(int offset, int len)
+	{
+		return readFromToolEEPROM(offset, len, machine.currentTool().getIndex());
+	}
+	private byte[] readFromToolEEPROM(int offset, int len, int toolIndex) {
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolIndex);
 		pb.add8(ToolCommandCode.READ_FROM_EEPROM.getCode());
 		pb.add16(offset);
 		pb.add8(len);
@@ -1514,6 +1520,7 @@ public class Sanguino3GDriver extends SerialDriver
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	private void writeToToolEEPROM(int offset, byte[] data) {
 		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
 	}
@@ -1762,7 +1769,7 @@ public class Sanguino3GDriver extends SerialDriver
 		return version.compareTo(new Version(1,2)) >= 0; 
 	}
 
-	public void createThermistorTable(int which, double r0, double t0, double beta) {
+	public void createThermistorTable(int which, double r0, double t0, double beta, int toolIndex) {
 		// Generate a thermistor table for r0 = 100K.
 		final int ADC_RANGE = 1024;
 		final int NUMTEMPS = 20;
@@ -1803,32 +1810,32 @@ public class Sanguino3GDriver extends SerialDriver
 		byte eepromIndicator[] = new byte[2];
 		eepromIndicator[0] = EEPROM_CHECK_LOW;
 		eepromIndicator[1] = EEPROM_CHECK_HIGH;
-		writeToToolEEPROM(0,eepromIndicator);
+		writeToToolEEPROM(0,eepromIndicator,toolIndex);
 
-		writeToToolEEPROM(ECThermistorOffsets.beta(which),intToLE((int)beta));
-		writeToToolEEPROM(ECThermistorOffsets.r0(which),intToLE((int)r0));
-		writeToToolEEPROM(ECThermistorOffsets.t0(which),intToLE((int)t0));
-		writeToToolEEPROM(ECThermistorOffsets.data(which),table);
+		writeToToolEEPROM(ECThermistorOffsets.beta(which),intToLE((int)beta),toolIndex);
+		writeToToolEEPROM(ECThermistorOffsets.r0(which),intToLE((int)r0),toolIndex);
+		writeToToolEEPROM(ECThermistorOffsets.t0(which),intToLE((int)t0),toolIndex);
+		writeToToolEEPROM(ECThermistorOffsets.data(which),table,toolIndex);
 	}
 
-	public boolean getCoolingFanEnabled() {
-		byte[] a = readFromToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE, 1);
+	public boolean getCoolingFanEnabled(int toolIndex) {
+		byte[] a = readFromToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE, 1, toolIndex);
 		
 		return (a[0] == 1);
 	}
 	
-	public int getCoolingFanSetpoint() {
-		return read16FromToolEEPROM(CoolingFanOffsets.COOLING_FAN_SETPOINT_C, 50);
+	public int getCoolingFanSetpoint(int toolIndex) {
+		return read16FromToolEEPROM(CoolingFanOffsets.COOLING_FAN_SETPOINT_C, 50, toolIndex);
 	}
 	
-	public void setCoolingFanParameters(boolean enabled, int setpoint) {
+	public void setCoolingFanParameters(boolean enabled, int setpoint, int toolIndex) {
 		if (enabled) {
-			writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE,new byte[] {0x1});
+			writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE,new byte[] {0x1}, toolIndex);
 		}
 		else {
-			writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE,new byte[] {0x0});	
+			writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE,new byte[] {0x0}, toolIndex);	
 		}
-		writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_SETPOINT_C,intToLE(setpoint));
+		writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_SETPOINT_C,intToLE(setpoint), toolIndex);
 	}
 	
 	private byte[] intToLE(int s, int sz) {
@@ -1943,8 +1950,8 @@ public class Sanguino3GDriver extends SerialDriver
 		return fileList;
 	}
 
-	public int getBeta(int which) {
-		byte r[] = readFromToolEEPROM(ECThermistorOffsets.beta(which),4);
+	public int getBeta(int which, int toolIndex) {
+		byte r[] = readFromToolEEPROM(ECThermistorOffsets.beta(which),4,toolIndex);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -1952,8 +1959,8 @@ public class Sanguino3GDriver extends SerialDriver
 		return val;
 	}
 
-	public int getR0(int which) {
-		byte r[] = readFromToolEEPROM(ECThermistorOffsets.r0(which),4);
+	public int getR0(int which, int toolIndex) {
+		byte r[] = readFromToolEEPROM(ECThermistorOffsets.r0(which),4,toolIndex);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -1961,8 +1968,8 @@ public class Sanguino3GDriver extends SerialDriver
 		return val;
 	}
 
-	public int getT0(int which) {
-		byte r[] = readFromToolEEPROM(ECThermistorOffsets.t0(which),4);
+	public int getT0(int which, int toolIndex) {
+		byte r[] = readFromToolEEPROM(ECThermistorOffsets.t0(which),4,toolIndex);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -1994,8 +2001,8 @@ public class Sanguino3GDriver extends SerialDriver
 		final static int COOLING_FAN_SETPOINT_C	= 0x001d;
 	};
 	
-	private int read16FromToolEEPROM(int offset, int defaultValue) {
-		byte r[] = readFromToolEEPROM(offset,2);
+	private int read16FromToolEEPROM(int offset, int defaultValue, int toolIndex) {
+		byte r[] = readFromToolEEPROM(offset,2, toolIndex);
 		int val = ((int)r[0])&0xff;
 		val += (((int)r[1])&0xff) << 8;
 		if (val == 0x0ffff) return defaultValue;
@@ -2004,42 +2011,42 @@ public class Sanguino3GDriver extends SerialDriver
 
 	private int byteToInt(byte b) { return ((int)b)&0xff; }
 	
-	private float readFloat16FromToolEEPROM(int offset, float defaultValue) {
-		byte r[] = readFromToolEEPROM(offset,2);
+	private float readFloat16FromToolEEPROM(int offset, float defaultValue, int toolIndex) {
+		byte r[] = readFromToolEEPROM(offset,2, toolIndex);
 		if (r[0] == (byte)0xff && r[1] == (byte)0xff) return defaultValue;
 		return (float)byteToInt(r[0]) + ((float)byteToInt(r[1]))/256.0f;
 	}
 
-	public BackoffParameters getBackoffParameters() {
+	public BackoffParameters getBackoffParameters(int toolIndex) {
 		BackoffParameters bp = new BackoffParameters();
-		bp.forwardMs = read16FromToolEEPROM(ECBackoffOffsets.FORWARD_MS, 300);
-		bp.stopMs = read16FromToolEEPROM(ECBackoffOffsets.STOP_MS, 5);
-		bp.reverseMs = read16FromToolEEPROM(ECBackoffOffsets.REVERSE_MS, 500);
-		bp.triggerMs = read16FromToolEEPROM(ECBackoffOffsets.TRIGGER_MS, 300);
+		bp.forwardMs = read16FromToolEEPROM(ECBackoffOffsets.FORWARD_MS, 300, toolIndex);
+		bp.stopMs = read16FromToolEEPROM(ECBackoffOffsets.STOP_MS, 5, toolIndex);
+		bp.reverseMs = read16FromToolEEPROM(ECBackoffOffsets.REVERSE_MS, 500, toolIndex);
+		bp.triggerMs = read16FromToolEEPROM(ECBackoffOffsets.TRIGGER_MS, 300, toolIndex);
 		return bp;
 	}
 	
-	public void setBackoffParameters(BackoffParameters bp) {
-		writeToToolEEPROM(ECBackoffOffsets.FORWARD_MS,intToLE(bp.forwardMs,2));
-		writeToToolEEPROM(ECBackoffOffsets.STOP_MS,intToLE(bp.stopMs,2));
-		writeToToolEEPROM(ECBackoffOffsets.REVERSE_MS,intToLE(bp.reverseMs,2));
-		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2));
+	public void setBackoffParameters(BackoffParameters bp, int toolIndex) {
+		writeToToolEEPROM(ECBackoffOffsets.FORWARD_MS,intToLE(bp.forwardMs,2), toolIndex);
+		writeToToolEEPROM(ECBackoffOffsets.STOP_MS,intToLE(bp.stopMs,2), toolIndex);
+		writeToToolEEPROM(ECBackoffOffsets.REVERSE_MS,intToLE(bp.reverseMs,2), toolIndex);
+		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2), toolIndex);
 	}
 
-	public PIDParameters getPIDParameters(int which) {
+	public PIDParameters getPIDParameters(int which, int toolIndex) {
 		PIDParameters pp = new PIDParameters();
 		int offset = (which == 0)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
-		pp.p = readFloat16FromToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET, 7.0f);
-		pp.i = readFloat16FromToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET, 0.325f);
-		pp.d = readFloat16FromToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET, 36.0f);
+		pp.p = readFloat16FromToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET, 7.0f, toolIndex);
+		pp.i = readFloat16FromToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET, 0.325f, toolIndex);
+		pp.d = readFloat16FromToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET, 36.0f, toolIndex);
 		return pp;
 	}
 	
-	public void setPIDParameters(int which, PIDParameters pp) {
+	public void setPIDParameters(int which, PIDParameters pp, int toolIndex) {
 		int offset = (which == 0)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
-		writeToToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET,floatToLE(pp.p));
-		writeToToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET,floatToLE(pp.i));
-		writeToToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET,floatToLE(pp.d));
+		writeToToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET,floatToLE(pp.p),toolIndex);
+		writeToToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET,floatToLE(pp.i),toolIndex);
+		writeToToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET,floatToLE(pp.d),toolIndex);
 	}
 
 	/** Reset to the factory state.  This ordinarily means writing 0xff over the
@@ -2053,11 +2060,11 @@ public class Sanguino3GDriver extends SerialDriver
 		}
 	}
 
-	public void resetToolToFactory() {
+	public void resetToolToFactory(int toolIndex) {
 		byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe,(byte)0xff);
 		for (int i = 0; i < 0x0200; i+=16) {
-			writeToToolEEPROM(i,eepromWipe);
+			writeToToolEEPROM(i,eepromWipe,toolIndex);
 		}
 	}
 
@@ -2073,8 +2080,8 @@ public class Sanguino3GDriver extends SerialDriver
 		writeToEEPROM(EEPROM_ENDSTOP_INVERSION_OFFSET,b);
 	}
 
-	public ExtraFeatures getExtraFeatures() {
-		int efdat = read16FromToolEEPROM(EC_EEPROM_EXTRA_FEATURES,0x4084);
+	public ExtraFeatures getExtraFeatures(int toolIndex) {
+		int efdat = read16FromToolEEPROM(EC_EEPROM_EXTRA_FEATURES,0x4084, toolIndex);
 		ExtraFeatures ef = new ExtraFeatures();
 		ef.swapMotorController = (efdat & 0x0001) != 0;
 		ef.heaterChannel = (efdat >> 2) & 0x0003;
@@ -2087,14 +2094,14 @@ public class Sanguino3GDriver extends SerialDriver
 		return ef;
 	}
 	
-	public void setExtraFeatures(ExtraFeatures features) {
+	public void setExtraFeatures(ExtraFeatures features, int toolIndex) {
 		int efdat = 0x4000;
 		if (features.swapMotorController) { efdat = efdat | 0x0001; }
 		efdat |= features.heaterChannel << 2;
 		efdat |= features.hbpChannel << 4;
 		efdat |= features.abpChannel << 6;
 		//System.err.println("Writing to EF: "+Integer.toHexString(efdat));
-		writeToToolEEPROM(EC_EEPROM_EXTRA_FEATURES,intToLE(efdat,2));
+		writeToToolEEPROM(EC_EEPROM_EXTRA_FEATURES,intToLE(efdat,2), toolIndex);
 	}
 
 	public EstopType getEstopConfig() {
@@ -2153,4 +2160,5 @@ public class Sanguino3GDriver extends SerialDriver
 	public boolean supportsSimultaneousTools() {
 		return true;
 	}
+
 }

@@ -4,10 +4,10 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 
@@ -15,21 +15,29 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JFormattedTextField;
+import javax.swing.JTabbedPane;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.Version;
 import replicatorg.drivers.gen3.Sanguino3GDriver;
+import replicatorg.machine.model.ToolModel;
 
 public class ExtruderOnboardParameters extends JFrame {
 	private static final long serialVersionUID = 6353987389397209816L;
 	private OnboardParameters target;
+	// We clone this because we don't want to set the precision globally
+    private static final NumberFormat threePlaces = (NumberFormat) Base.getLocalFormat().clone();
+    {
+        threePlaces.setMaximumFractionDigits(3);
+    }
 	
 	interface Commitable {
 		public void commit();
@@ -42,36 +50,35 @@ public class ExtruderOnboardParameters extends JFrame {
 	
 	class ThermistorTablePanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 7765098486598830410L;
-	    private NumberFormat threePlaces = Base.getLocalFormat();
-	    {
-	        threePlaces.setMaximumFractionDigits(3);
-	    }
 
 		private JFormattedTextField betaField = new JFormattedTextField(threePlaces);
 		private JFormattedTextField r0Field = new JFormattedTextField(threePlaces);
 		private JFormattedTextField t0Field = new JFormattedTextField(threePlaces);
-		private int which;
-		ThermistorTablePanel(int which, String titleText) {
+		// Toolhead or Heated Platform?
+		private final int which;
+		private final ToolModel tool;
+		ThermistorTablePanel(int which, String titleText, ToolModel tool) {
 			super(new MigLayout());
 			this.which = which;
+			this.tool = tool;
 			setBorder(BorderFactory.createTitledBorder(titleText));
 			betaField.setColumns(FIELD_WIDTH);
 			r0Field.setColumns(FIELD_WIDTH);
 			t0Field.setColumns(FIELD_WIDTH);
 			
-			double beta = target.getBeta(which);
+			double beta = target.getBeta(which, tool.getIndex());
 			if (beta == -1) { beta = 4066; }
 			betaField.setValue((int)beta);
 			add(new JLabel("Beta"));
 			add(betaField,"wrap");
 
-			double r0 = target.getR0(which);
+			double r0 = target.getR0(which, tool.getIndex());
 			if (r0 == -1) { r0 = 100000; }
 			r0Field.setValue((int)r0);
 			add(new JLabel("Thermistor Resistance"));
 			add(r0Field,"wrap");
 
-			double t0 = target.getT0(which);
+			double t0 = target.getT0(which, tool.getIndex());
 			if (t0 == -1) { t0 = 25; }
 			t0Field.setValue((int)t0);
 			add(new JLabel("Base Temperature"));
@@ -84,7 +91,7 @@ public class ExtruderOnboardParameters extends JFrame {
 				int beta = nf.parse(betaField.getText()).intValue();
 				int r0 = nf.parse(r0Field.getText()).intValue();
 				int t0 = nf.parse(t0Field.getText()).intValue();
-				target.createThermistorTable(which,r0,t0,beta);
+				target.createThermistorTable(which,r0,t0,beta,tool.getIndex());
 			} catch (ParseException pe) {
 				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
 				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
@@ -122,15 +129,13 @@ public class ExtruderOnboardParameters extends JFrame {
 
 	private class BackoffPanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 6593800743174557032L;
-	    private NumberFormat threePlaces = Base.getLocalFormat();
-	    {
-	        threePlaces.setMaximumFractionDigits(3);
-	    }
 		private JFormattedTextField stopMsField = new JFormattedTextField(threePlaces);
 		private JFormattedTextField reverseMsField = new JFormattedTextField(threePlaces);
 		private JFormattedTextField forwardMsField = new JFormattedTextField(threePlaces);
 		private JFormattedTextField triggerMsField = new JFormattedTextField(threePlaces);
-		BackoffPanel() {
+		private final ToolModel tool;
+		BackoffPanel(ToolModel tool) {
+			this.tool = tool;
 			setLayout(new MigLayout());
 			setBorder(BorderFactory.createTitledBorder("Reversal parameters"));
 			stopMsField.setColumns(FIELD_WIDTH);
@@ -146,7 +151,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(forwardMsField,"wrap");
 			add(new JLabel("Min. extrusion time before reversal (ms)"));
 			add(triggerMsField,"wrap");
-			OnboardParameters.BackoffParameters bp = target.getBackoffParameters();
+			OnboardParameters.BackoffParameters bp = target.getBackoffParameters(tool.getIndex());
 			stopMsField.setValue(bp.stopMs);
 			reverseMsField.setValue(bp.reverseMs);
 			forwardMsField.setValue(bp.forwardMs);
@@ -161,7 +166,7 @@ public class ExtruderOnboardParameters extends JFrame {
 				bp.reverseMs = nf.parse(reverseMsField.getText()).intValue();
 				bp.stopMs = nf.parse(stopMsField.getText()).intValue();
 				bp.triggerMs = nf.parse(triggerMsField.getText()).intValue();
-				target.setBackoffParameters(bp);
+				target.setBackoffParameters(bp, tool.getIndex());
 			} catch (ParseException pe) {
 				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
 				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
@@ -178,9 +183,12 @@ public class ExtruderOnboardParameters extends JFrame {
 		private JCheckBox swapMotors;
 		private JComboBox extCh, hbpCh, abpCh;
 		private OnboardParameters.ExtraFeatures ef;
-		ExtraFeaturesPanel() {
+		
+		private final ToolModel tool;
+		ExtraFeaturesPanel(ToolModel tool) {
+			this.tool = tool;
 			setLayout(new MigLayout());
-			ef = target.getExtraFeatures();
+			ef = target.getExtraFeatures(tool.getIndex());
 			swapMotors = new JCheckBox("Use 2A/2B to drive DC motor instead of 1A/1B", ef.swapMotorController);
 			add(swapMotors,"span 3,growx,wrap");
 			Vector<String> choices = new Vector<String>();
@@ -209,7 +217,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			ef.heaterChannel = extCh.getSelectedIndex();
 			ef.hbpChannel = hbpCh.getSelectedIndex();
 			ef.abpChannel = abpCh.getSelectedIndex();
-			target.setExtraFeatures(ef);
+			target.setExtraFeatures(ef, tool.getIndex());
 		}
 		
 		public boolean isCommitable() {
@@ -226,11 +234,7 @@ public class ExtruderOnboardParameters extends JFrame {
 	}
 	
 	private class PIDPanel extends JPanel implements Commitable {
-	    private NumberFormat threePlaces = Base.getLocalFormat();
-	    {
-	        threePlaces.setMaximumFractionDigits(3);
-	    }
-	    private NumberFormat eightPlaces = Base.getLocalFormat();
+	    private NumberFormat eightPlaces = (NumberFormat) threePlaces.clone();
 	    {
 	    	eightPlaces.setMaximumFractionDigits(8);
 	    }
@@ -238,9 +242,11 @@ public class ExtruderOnboardParameters extends JFrame {
 	    private JFormattedTextField pField = new JFormattedTextField(threePlaces);
 		private JFormattedTextField iField = new JFormattedTextField(eightPlaces);
 		private JFormattedTextField dField = new JFormattedTextField(threePlaces);
-		private int which;
-		PIDPanel(int which, String name) {
+		private final int which;
+		private final ToolModel tool;
+		PIDPanel(int which, String name, ToolModel tool) {
 			this.which = which;
+			this.tool = tool;
 			setLayout(new MigLayout());
 			setBorder(BorderFactory.createTitledBorder(name+" PID parameters"));
 			pField.setColumns(FIELD_WIDTH);
@@ -253,7 +259,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(iField,"wrap");
 			add(new JLabel("D parameter"));
 			add(dField,"wrap");
-			OnboardParameters.PIDParameters pp = target.getPIDParameters(which);
+			OnboardParameters.PIDParameters pp = target.getPIDParameters(which, tool.getIndex());
 			pField.setValue(pp.p);
 			iField.setValue(pp.i);
 			dField.setValue(pp.d);
@@ -266,7 +272,7 @@ public class ExtruderOnboardParameters extends JFrame {
 				pp.p = nf.parse(pField.getText()).floatValue();
 				pp.i = nf.parse(iField.getText()).floatValue();
 				pp.d = nf.parse(dField.getText()).floatValue();
-				target.setPIDParameters(which,pp);
+				target.setPIDParameters(which,pp, tool.getIndex());
 			} catch (ParseException pe) {
 				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
 				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
@@ -282,20 +288,22 @@ public class ExtruderOnboardParameters extends JFrame {
 	class RegulatedCoolingFan extends JPanel implements Commitable {
 		private static final long serialVersionUID = 7765098486598830410L;
 		private JCheckBox coolingFanEnabled;
-	    private NumberFormat threePlaces = Base.getLocalFormat();
-	    {
-	        threePlaces.setMaximumFractionDigits(3);
-	    }
+		
 		private JFormattedTextField coolingFanSetpoint = new JFormattedTextField(threePlaces);
-		RegulatedCoolingFan() {
-			super(new MigLayout());			
+		
+		private final ToolModel tool;
+		RegulatedCoolingFan(ToolModel tool) {
+			super(new MigLayout());	
+			
+			this.tool = tool;
+			
 			coolingFanEnabled = new JCheckBox("Enable regulated cooling fan (stepper extruders only)",
-					target.getCoolingFanEnabled());
+					target.getCoolingFanEnabled(tool.getIndex()));
 			add(coolingFanEnabled,"growx,wrap");
 			
 			coolingFanSetpoint.setColumns(FIELD_WIDTH);
 	
-			coolingFanSetpoint.setValue((int)target.getCoolingFanSetpoint());
+			coolingFanSetpoint.setValue((int)target.getCoolingFanSetpoint(tool.getIndex()));
 			add(new JLabel("Setpoint (C)"));
 			add(coolingFanSetpoint,"wrap");
 
@@ -306,7 +314,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			boolean enabled = coolingFanEnabled.isSelected();   
 			try {
 				int setpoint = nf.parse(coolingFanSetpoint.getText()).intValue();
-				target.setCoolingFanParameters(enabled, setpoint);
+				target.setCoolingFanParameters(enabled, setpoint, tool.getIndex());
 			} catch (ParseException pe) {
 				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
 				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
@@ -348,42 +356,65 @@ public class ExtruderOnboardParameters extends JFrame {
 		if (target instanceof Sanguino3GDriver) {
 			v = ((Sanguino3GDriver)target).getToolVersion();
 		}
+		
+		List<ToolModel> tools = new ArrayList<ToolModel>();
+		
+		// This is guaranteed, right?
+		// MainWindow casts a Driver as OnboardParameters to pass it to us, 
+		// we're just casting it back (weird, I know) 
+		if (target instanceof Driver)
+			tools = ((Driver)target).getMachine().getTools();
 
-		JPanel panel = new JPanel(new MigLayout());
-		ThermistorTablePanel ttp;
-		ttp = new ThermistorTablePanel(0,"Extruder thermistor");
-		panel.add(ttp);
-		commitList.add(ttp);
-		ttp = new ThermistorTablePanel(1,"Heated build platform thermistor");
-		panel.add(ttp,"wrap");
-		commitList.add(ttp);
-		if (!v.atLeast(new Version(2,5))) {
-			BackoffPanel backoffPanel = new BackoffPanel();
-			panel.add(backoffPanel,"span 2,growx,wrap");
-			commitList.add(backoffPanel);
-		}
-		if (v.atLeast(new Version(2,5))) {
-			ExtraFeaturesPanel efp = new ExtraFeaturesPanel();
-			panel.add(efp,"span 2,growx,wrap");
-			commitList.add(efp);
-		}
-		PIDPanel pidPanel = new PIDPanel(0,"Extruder");
-		panel.add(pidPanel,"growx");
-		commitList.add(pidPanel);
-		if (v.atLeast(new Version(2,4))) {
-			PIDPanel pp = new PIDPanel(1,"Heated build platform");
-			panel.add(pp,"growx,wrap");
-			commitList.add(pp);
-		}
+		setLayout(new MigLayout());
+		JTabbedPane extruders = new JTabbedPane();
+		
+		for(ToolModel t : tools)
+		{
+			JPanel tab = new JPanel(new MigLayout());
+			
+			ThermistorTablePanel ttp;
+			ttp = new ThermistorTablePanel(0,"Extruder thermistor", t);
+			tab.add(ttp);
+			commitList.add(ttp);
+			ttp = new ThermistorTablePanel(1,"Heated build platform thermistor", t);
+			tab.add(ttp,"wrap");
+			commitList.add(ttp);
+			
+			if (!v.atLeast(new Version(2,5))) {
+				BackoffPanel backoffPanel = new BackoffPanel(t);
+				tab.add(backoffPanel,"span 2,growx,wrap");
+				commitList.add(backoffPanel);
+			}
 
-		if (v.atLeast(new Version(2,9))) {
-			RegulatedCoolingFan rcf = new RegulatedCoolingFan();
-			panel.add(rcf,"span 2,growx,wrap");
-			commitList.add(rcf);
+			if (v.atLeast(new Version(2,5))) {
+				ExtraFeaturesPanel efp = new ExtraFeaturesPanel(t);
+				tab.add(efp,"span 2,growx,wrap");
+				commitList.add(efp);
+			}
+			
+			PIDPanel pidPanel = new PIDPanel(0,"Extruder", t);
+			tab.add(pidPanel,"growx");
+			commitList.add(pidPanel);
+			
+			if (v.atLeast(new Version(2,4))) {
+				PIDPanel pp = new PIDPanel(1,"Heated build platform", t);
+				tab.add(pp,"growx,wrap");
+				commitList.add(pp);
+			}
+	
+			if (v.atLeast(new Version(2,9))) {
+				RegulatedCoolingFan rcf = new RegulatedCoolingFan(t);
+				tab.add(rcf,"span 2,growx,wrap");
+				commitList.add(rcf);
+			}
+			
+			extruders.addTab("Extruder " + t.getIndex(), tab);
+			
 		}
 		
-		panel.add(makeButtonPanel(),"span 2,newline");
-		add(panel);
+		add(extruders);
+		
+		add(makeButtonPanel(),"span 2,newline");
 
 		pack();
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
