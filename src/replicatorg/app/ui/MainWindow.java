@@ -1704,14 +1704,16 @@ ToolpathGenerator.GeneratorListener
 		}
 
 		ExtruderOnboardParameters eop = new ExtruderOnboardParameters((OnboardParameters)machineLoader.getDriver());
-		if(isDualDriver())
-		{
-			JOptionPane.showMessageDialog( this,
-					"WARNING: Extruder Preferences must be set one at a time for DualStrusion machines.  "+
-					"see documentation at: http://www.makerbot.com/docs/dualstrusion for full instructions",
-					"Dualstrusion Extruder Board Warning",
-					JOptionPane.WARNING_MESSAGE);
-		}
+		
+		// We should be able to do both heads at once, now.
+//		if(isDualDriver())
+//		{
+//			JOptionPane.showMessageDialog( this,
+//					"WARNING: Extruder Preferences must be set one at a time for DualStrusion machines.  "+
+//					"see documentation at: http://www.makerbot.com/docs/dualstrusion for full instructions",
+//					"Dualstrusion Extruder Board Warning",
+//					JOptionPane.WARNING_MESSAGE);
+//		}
 		eop.setVisible(true);
 	}
 

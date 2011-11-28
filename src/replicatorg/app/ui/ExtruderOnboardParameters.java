@@ -373,10 +373,10 @@ public class ExtruderOnboardParameters extends JFrame {
 			JPanel tab = new JPanel(new MigLayout());
 			
 			ThermistorTablePanel ttp;
-			ttp = new ThermistorTablePanel(0,"Extruder thermistor", t);
+			ttp = new ThermistorTablePanel(OnboardParameters.EXTRUDER,"Extruder thermistor", t);
 			tab.add(ttp);
 			commitList.add(ttp);
-			ttp = new ThermistorTablePanel(1,"Heated build platform thermistor", t);
+			ttp = new ThermistorTablePanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform thermistor", t);
 			tab.add(ttp,"wrap");
 			commitList.add(ttp);
 			
@@ -392,12 +392,12 @@ public class ExtruderOnboardParameters extends JFrame {
 				commitList.add(efp);
 			}
 			
-			PIDPanel pidPanel = new PIDPanel(0,"Extruder", t);
+			PIDPanel pidPanel = new PIDPanel(OnboardParameters.EXTRUDER,"Extruder", t);
 			tab.add(pidPanel,"growx");
 			commitList.add(pidPanel);
 			
 			if (v.atLeast(new Version(2,4))) {
-				PIDPanel pp = new PIDPanel(1,"Heated build platform", t);
+				PIDPanel pp = new PIDPanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform", t);
 				tab.add(pp,"growx,wrap");
 				commitList.add(pp);
 			}

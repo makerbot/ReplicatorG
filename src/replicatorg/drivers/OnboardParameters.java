@@ -5,6 +5,10 @@ import java.util.EnumSet;
 import replicatorg.machine.model.AxisId;
 
 public interface OnboardParameters {
+	
+	public static final int EXTRUDER = 0;
+	public static final int BUILD_PLATFORM = 1;
+	
 	EnumSet<AxisId> getInvertedParameters();
 	void setInvertedParameters(EnumSet<AxisId> axes);
 	
