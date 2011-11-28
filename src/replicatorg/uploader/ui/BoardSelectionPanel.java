@@ -1,6 +1,10 @@
 package replicatorg.uploader.ui;
 
 import java.awt.Component;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractListModel;
 import javax.swing.Icon;
@@ -25,6 +29,7 @@ import replicatorg.app.Base;
 public class BoardSelectionPanel extends JPanel {
 	interface BoardSelectionListener {
 		public void boardSelected(Node board);
+		public void boardConfirmed();
 	}
 	
 	class BoardListModel extends AbstractListModel {	
@@ -94,6 +99,26 @@ public class BoardSelectionPanel extends JPanel {
 			public void valueChanged(ListSelectionEvent lse) {
 				selectedBoard = (Node)blm.getElementAt(list.getSelectedIndex());
 				if (listener != null) { listener.boardSelected(selectedBoard); }
+			}
+		});
+		list.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(arg0.getClickCount() == 2)
+					listener.boardConfirmed();
+			}
+		});
+		list.addKeyListener(new KeyAdapter(){
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				if(arg0.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					listener.boardConfirmed();
+				} else if(arg0.getKeyCode() == KeyEvent.VK_UP) {
+					list.setSelectedIndex(Math.max(list.getSelectedIndex(), 0));
+				} else if(arg0.getKeyCode() == KeyEvent.VK_DOWN) {
+					list.setSelectedIndex(Math.min(list.getSelectedIndex(), list.getModel().getSize()));
+				}
 			}
 		});
 		add(scrollPane,"growx,growx");
