@@ -11,10 +11,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.Date;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,11 +22,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
@@ -52,11 +49,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
+import replicatorg.app.ui.CallbackTextField;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.commands.DriverCommand.AxialDirection;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.ToolModel;
-import replicatorg.app.ui.CallbackTextField;
 
 public class ExtruderPanel extends JPanel implements FocusListener, ActionListener, ItemListener {
 	private ToolModel toolModel;
@@ -64,9 +61,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 	public ToolModel getTool() { return toolModel; }
 	
-	protected JTextField currentTempField;
+	protected JFormattedTextField currentTempField;
 	
-	protected JTextField platformCurrentTempField;
+	protected JFormattedTextField platformCurrentTempField;
 
 	protected double targetTemperature;
 	protected double targetPlatformTemperature;
@@ -185,9 +182,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		this.machine = machine;
 		this.toolModel = t;
 		
-		int textBoxWidth = 75;
 		Dimension panelSize = new Dimension(420, 30);
-//		driver = machine2.getDriver();
 
 		extrudeTimePattern = Pattern.compile("([.0-9]+)");
 		
@@ -201,8 +196,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if ((t.getMotorStepperAxis() == null) && !(t.motorHasEncoder() || t.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
-				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9);
-				field.setText(Integer.toString(machine.getDriverQueryInterface().getMotorSpeedPWM()));
+				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9, Base.getLocalFormat());
+				field.setValue(Integer.toString(machine.getDriverQueryInterface().getMotorSpeedPWM()));
 				add(label);
 				add(field,"wrap");
 			}
@@ -210,8 +205,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if (t.motorHasEncoder() || t.motorIsStepper()) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (RPM)");
-				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed", 9);
-				field.setText(Double.toString(machine.getDriverQueryInterface().getMotorRPM()));
+				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed", 9, Base.getLocalFormat());
+				field.setValue(machine.getDriverQueryInterface().getMotorRPM());
 				add(label);
 				add(field,"wrap");
 
@@ -287,14 +282,15 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		// our temperature fields
 		if (t.hasHeater()) {
 			JLabel targetTempLabel = makeKeyLabel("Target Temperature (C)",targetColor);
-			JTextField targetTempField = new CallbackTextField(this, "handleTextField", "target-temp", 9);
+			JFormattedTextField targetTempField = new CallbackTextField(this, "handleTextField", "target-temp", 9, Base.getLocalFormat());
 			targetTemperature = machine.getDriverQueryInterface().getTemperatureSetting();
-			targetTempField.setText(Double.toString(targetTemperature));
+			targetTempField.setValue(targetTemperature);
 
 			JLabel currentTempLabel = makeKeyLabel("Current Temperature (C)",measuredColor);
-			currentTempField = new JTextField("",9);
+			currentTempField = new JFormattedTextField(Base.getLocalFormat());
+			currentTempField.setColumns(9);
 			currentTempField.setEnabled(false);
-
+			
 			add(targetTempLabel);
 			add(targetTempField,"wrap");
 			add(currentTempLabel);
@@ -304,12 +300,13 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		// our heated platform fields
 		if (t.hasHeatedPlatform()) {
 			JLabel targetTempLabel = makeKeyLabel("Platform Target Temp (C)",targetPlatformColor);
-			JTextField targetTempField = new CallbackTextField(this, "handleTextField", "platform-target-temp", 9);
+			JFormattedTextField targetTempField = new CallbackTextField(this, "handleTextField", "platform-target-temp", 9, Base.getLocalFormat());
 			targetPlatformTemperature = machine.getDriverQueryInterface().getPlatformTemperatureSetting();
-			targetTempField.setText(Double.toString(targetPlatformTemperature));
+			targetTempField.setValue(targetPlatformTemperature);
 
 			JLabel currentTempLabel = makeKeyLabel("Platform Current Temp (C)",measuredPlatformColor);
-			platformCurrentTempField = new JTextField("",9);
+			platformCurrentTempField = new JFormattedTextField(Base.getLocalFormat());
+			platformCurrentTempField.setColumns(9);
 			platformCurrentTempField.setEnabled(false);
 
 			add(targetTempLabel);
@@ -453,14 +450,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	
 	synchronized public void updateTemperature(Second second, double temperature)
 	{
-		currentTempField.setText(Double.toString(temperature));
+		currentTempField.setValue(temperature);
 		measuredDataset.add(second, temperature,"a");
 		targetDataset.add(second, targetTemperature,"a");
 	}
 
 	synchronized public void updatePlatformTemperature(Second second, double temperature)
 	{
-		platformCurrentTempField.setText(Double.toString(temperature));
+		platformCurrentTempField.setValue(temperature);
 		measuredPlatformDataset.add(second, temperature,"a");
 		targetPlatformDataset.add(second, targetPlatformTemperature,"a");
 	}
@@ -469,7 +466,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	}
 
 	public void focusLost(FocusEvent e) {
-		JTextField source = (JTextField) e.getSource();
+		JFormattedTextField source = (JFormattedTextField) e.getSource();
 		try {
 			handleChangedTextField(source);
 		} catch (RetryException e1) {
@@ -510,19 +507,11 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 	}
 	
-	public void handleChangedTextField(JTextField source) throws RetryException
+	public void handleChangedTextField(JFormattedTextField source) throws RetryException
 	{
 		String name = source.getName();
 		if (source.getText().length() > 0) {
-			double target;
-			try {
-				NumberFormat nf = Base.getLocalFormat();
-				target = nf.parse(source.getText()).doubleValue();
-			} catch (ParseException pe) {
-				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
-				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+			double target = ((Number)source.getValue()).doubleValue();
 			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
 				
 				if(name.equals("target-temp")) {
@@ -541,7 +530,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					targetPlatformTemperature = target;
 				}
 				// This gives some feedback by adding .0 if it wasn't typed.
-				source.setText(Double.toString(target));
+				source.setValue(target);
 			} else if (name.equals("motor-speed")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(target));
 			} else if (name.equals("motor-speed-pwm")) {
@@ -622,7 +611,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		if(s.equals("handleTextField"))
 		{
-			JTextField source = (JTextField) e.getSource();
+			JFormattedTextField source = (JFormattedTextField) e.getSource();
 			try {
 				handleChangedTextField(source);
 			} catch (RetryException e1) {

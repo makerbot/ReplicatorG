@@ -5,11 +5,9 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -86,17 +84,10 @@ public class ExtruderOnboardParameters extends JFrame {
 		}
 
 		public void commit() {
-			NumberFormat nf = Base.getLocalFormat();
-			try {
-				int beta = nf.parse(betaField.getText()).intValue();
-				int r0 = nf.parse(r0Field.getText()).intValue();
-				int t0 = nf.parse(t0Field.getText()).intValue();
-				target.createThermistorTable(which,r0,t0,beta,tool.getIndex());
-			} catch (ParseException pe) {
-				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
-				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+			int beta = ((Number)betaField.getValue()).intValue();
+			int r0 = ((Number)r0Field.getValue()).intValue();
+			int t0 = ((Number)t0Field.getValue()).intValue();
+			target.createThermistorTable(which,r0,t0,beta,tool.getIndex());
 		}
 		
 		public boolean isCommitable() {
@@ -159,19 +150,12 @@ public class ExtruderOnboardParameters extends JFrame {
 		}
 
 		public void commit() {
-			NumberFormat nf = Base.getLocalFormat();
 			OnboardParameters.BackoffParameters bp = new OnboardParameters.BackoffParameters();
-			try {
-				bp.forwardMs = nf.parse(forwardMsField.getText()).intValue();
-				bp.reverseMs = nf.parse(reverseMsField.getText()).intValue();
-				bp.stopMs = nf.parse(stopMsField.getText()).intValue();
-				bp.triggerMs = nf.parse(triggerMsField.getText()).intValue();
-				target.setBackoffParameters(bp, tool.getIndex());
-			} catch (ParseException pe) {
-				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
-				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+			bp.forwardMs = ((Number)forwardMsField.getValue()).intValue();
+			bp.reverseMs = ((Number)reverseMsField.getValue()).intValue();
+			bp.stopMs = ((Number)stopMsField.getValue()).intValue();
+			bp.triggerMs = ((Number)triggerMsField.getValue()).intValue();
+			target.setBackoffParameters(bp, tool.getIndex());
 		}
 		
 		public boolean isCommitable() {
@@ -267,17 +251,10 @@ public class ExtruderOnboardParameters extends JFrame {
 
 		public void commit() {
 			OnboardParameters.PIDParameters pp = new OnboardParameters.PIDParameters();
-			NumberFormat nf = Base.getLocalFormat();
-			try{ 
-				pp.p = nf.parse(pField.getText()).floatValue();
-				pp.i = nf.parse(iField.getText()).floatValue();
-				pp.d = nf.parse(dField.getText()).floatValue();
-				target.setPIDParameters(which,pp, tool.getIndex());
-			} catch (ParseException pe) {
-				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
-				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+			pp.p = ((Number)pField.getValue()).floatValue();
+			pp.i = ((Number)iField.getValue()).floatValue();
+			pp.d = ((Number)dField.getValue()).floatValue();
+			target.setPIDParameters(which,pp, tool.getIndex());
 		}
 		
 		public boolean isCommitable() {
@@ -310,16 +287,9 @@ public class ExtruderOnboardParameters extends JFrame {
 		}
 
 		public void commit() {
-			NumberFormat nf = Base.getLocalFormat();
 			boolean enabled = coolingFanEnabled.isSelected();   
-			try {
-				int setpoint = nf.parse(coolingFanSetpoint.getText()).intValue();
-				target.setCoolingFanParameters(enabled, setpoint, tool.getIndex());
-			} catch (ParseException pe) {
-				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
-				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+			int setpoint = ((Number)coolingFanSetpoint.getValue()).intValue();
+			target.setCoolingFanParameters(enabled, setpoint, tool.getIndex());
 		}
 		
 		public boolean isCommitable() {

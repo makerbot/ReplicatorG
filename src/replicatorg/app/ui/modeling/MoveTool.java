@@ -80,80 +80,38 @@ public class MoveTool extends Tool {
 		
 		transXplus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String txt = transX.getText();
-				if (txt != null) {
-					try {
-						double transXval = Base.getLocalFormat().parse(txt).doubleValue();
-						parent.getModel().translateObject(transXval, 0, 0);
-					} catch (Exception e) {
-						Base.logger.fine("Problem parsing number or translating object.");
-					}
-				}
+				double transXval = ((Number)transX.getValue()).doubleValue();
+				parent.getModel().translateObject(transXval, 0, 0);
 			}
 		});
 		transXminus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String txt = transX.getText();
-				if (txt != null) {
-					try {
-						double transXval = Base.getLocalFormat().parse(txt).doubleValue();
-						parent.getModel().translateObject(-transXval, 0, 0);
-					} catch (Exception e) {
-						Base.logger.fine("Problem parsing number or translating object.");
-					}
-				}
+				double transXval = ((Number)transX.getValue()).doubleValue();
+				parent.getModel().translateObject(-transXval, 0, 0);
 			}
 		});
 		transYplus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String txt = transY.getText();
-				if (txt != null) {
-					try {
-						double transYval = Base.getLocalFormat().parse(txt).doubleValue();
-						parent.getModel().translateObject(0,transYval, 0);
-					} catch (Exception e) {
-						Base.logger.fine("Problem parsing number or translating object.");
-					}
-				}
+				double transYval = ((Number)transY.getValue()).doubleValue();
+				parent.getModel().translateObject(transYval, 0, 0);
 			}
 		});
 		transYminus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String txt = transY.getText();
-				if (txt != null) {
-					try {
-						double transYval = Base.getLocalFormat().parse(txt).doubleValue();
-						parent.getModel().translateObject(0,-transYval,0);
-					} catch (Exception e) {
-						Base.logger.fine("Problem parsing number or translating object.");
-					}
-				}
+				double transYval = ((Number)transY.getValue()).doubleValue();
+				parent.getModel().translateObject(-transYval, 0, 0);
 			}
 		});
 		transZplus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String txt = transZ.getText();
-				if (txt != null) {
-					try {
-						double transZval = Base.getLocalFormat().parse(txt).doubleValue();
-						parent.getModel().translateObject(0,0,transZval);
-					} catch (Exception e) {
-						Base.logger.fine("Problem parsing number or translating object.");
-					}
-				}
+				double transZval = ((Number)transZ.getValue()).doubleValue();
+				parent.getModel().translateObject(transZval, 0, 0);
 			}
 		});
 		transZminus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String txt = transZ.getText();
-				if (txt != null) {
-					try {
-						double transZval = Base.getLocalFormat().parse(txt).doubleValue();
-						parent.getModel().translateObject(0,0,-transZval);
-					} catch (Exception e) {
-						Base.logger.fine("Problem parsing number or translating object.");
-					}
-				}
+				double transZval = ((Number)transZ.getValue()).doubleValue();
+				parent.getModel().translateObject(-transZval, 0, 0);
 			}
 		});
 		lockZ = new JCheckBox("Lock height");

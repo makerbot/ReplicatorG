@@ -65,11 +65,11 @@ public class MachineOnboardParameters extends JFrame {
     {
         threePlaces.setMaximumFractionDigits(3);
     }
-	private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(threePlaces );
-	private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(threePlaces );
-	private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(threePlaces );
-	private JFormattedTextField aAxisHomeOffsetField = new JFormattedTextField(threePlaces );
-	private JFormattedTextField bAxisHomeOffsetField = new JFormattedTextField(threePlaces );
+	private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(threePlaces);
+	private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(threePlaces);
+	private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(threePlaces);
+	private JFormattedTextField aAxisHomeOffsetField = new JFormattedTextField(threePlaces);
+	private JFormattedTextField bAxisHomeOffsetField = new JFormattedTextField(threePlaces);
 	
 	private void resetDialog() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
@@ -108,18 +108,11 @@ public class MachineOnboardParameters extends JFrame {
 			target.setEstopConfig(estop);
 		}
 		
-		try {
-			NumberFormat nf = Base.getLocalFormat();
-			target.setAxisHomeOffset(0, nf.parse(xAxisHomeOffsetField.getText()).doubleValue());
-			target.setAxisHomeOffset(1, nf.parse(yAxisHomeOffsetField.getText()).doubleValue());
-			target.setAxisHomeOffset(2, nf.parse(zAxisHomeOffsetField.getText()).doubleValue());
-			target.setAxisHomeOffset(3, nf.parse(aAxisHomeOffsetField.getText()).doubleValue());
-			target.setAxisHomeOffset(4, nf.parse(bAxisHomeOffsetField.getText()).doubleValue());
-		} catch (ParseException pe) {
-			Base.logger.log(Level.WARNING,"Could not parse value!",pe);
-			JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+		target.setAxisHomeOffset(0, ((Number)xAxisHomeOffsetField.getValue()).doubleValue());
+		target.setAxisHomeOffset(1, ((Number)yAxisHomeOffsetField.getValue()).doubleValue());
+		target.setAxisHomeOffset(2, ((Number)zAxisHomeOffsetField.getValue()).doubleValue());
+		target.setAxisHomeOffset(3, ((Number)aAxisHomeOffsetField.getValue()).doubleValue());
+		target.setAxisHomeOffset(4, ((Number)bAxisHomeOffsetField.getValue()).doubleValue());
 		resetDialog();
 	}
 
