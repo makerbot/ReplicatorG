@@ -245,7 +245,7 @@ public class Machine implements MachineInterface {
 		// TODO: Is this correct?
 		estimator.setMachine(machineThread.getModel());
 		
-		boolean safetyChecks = Base.preferences.getBoolean("build.runSafetyChecks", true);
+		boolean safetyChecks = Base.preferences.getBoolean("build.safetyChecks", true);
 		
 		int nToolheads = machineThread.getModel().getTools().size();
 		Point5d maxRates = machineThread.getModel().getMaximumFeedrates();
