@@ -16,8 +16,8 @@ import javax.swing.text.DefaultFormatter;
 import replicatorg.app.Base;
 
 
-// Text field that keeps track of whether it's data has been modified, and calls a function
-// when it loses focus or gets an ENTER key to allow the subclasser to handle the event.
+// Text field that keeps track of whether its data has been modified, and calls a function
+// when it loses focus or gets an ENTER key to allow the subclass to handle the event.
 public abstract class ActionTextField extends JFormattedTextField {
 	Color defaultColor;
 	Color modifiedColor;
