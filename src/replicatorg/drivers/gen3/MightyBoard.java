@@ -81,6 +81,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		super();
 		ledColorByEffect = new Hashtable();
 		ledColorByEffect.put(0, Color.BLACK);
+		Base.logger.fine("Created a MightBoard");
 	}
 
 
@@ -92,6 +93,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * @throws RetryException
 	 */
 	public void setStepperVoltage(int stepperId, int referenceValue) throws RetryException {
+		Base.logger.fine("MightBoard sending setStepperVoltage");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_STEPPER_REFERENCE_POT.getCode());
 		pb.add8(stepperId);
 		pb.add8(referenceValue); //range should be only is 0-127
@@ -107,6 +109,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * @throws RetryException
 	 */
 	public void setLedStrip(Color color, int effectId) throws RetryException {
+		Base.logger.fine("MightBoard sending setLedStrip");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_LED_STRIP_COLOR.getCode());
 		pb.add8(effectId);
 		pb.add8(color.getRed());
@@ -125,6 +128,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * @throws RetryException
 	 */
 	public void sendBeep(int frequencyHz, int durationMs, int effectId) throws RetryException {
+		Base.logger.fine("MightBoard sending setBeep");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_BEEP.getCode());
 		pb.add16(frequencyHz);
 		pb.add16(durationMs);
