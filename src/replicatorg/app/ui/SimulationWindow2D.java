@@ -51,6 +51,7 @@ import javax.vecmath.Point3d;
 
 import replicatorg.util.Point5d;
 
+
 public class SimulationWindow2D extends SimulationWindow implements
 		LayoutManager {
 	private static final long serialVersionUID = -1940284103536979587L;
@@ -59,7 +60,6 @@ public class SimulationWindow2D extends SimulationWindow implements
 	protected static BuildView buildView;
 
 	protected static HorizontalRuler hRuler;
-
 	protected static VerticalRuler vRuler;
 
 	private int rulerWidth = 25;
@@ -386,17 +386,21 @@ public class SimulationWindow2D extends SimulationWindow implements
 
 	}
 
+	/** 
+	 * Manages info about the build area preview window. 
+	 * @author farmckon
+	 *
+	 */
 	class BuildView extends MyComponent implements MouseMotionListener {
+	
+		/// Maximim X 
 		private Point3d minimum;
-
 		private Point3d maximum;
 
 		private Point3d current;
-
 		private double currentZ;
 
 		private int mouseX = 0;
-
 		private int mouseY = 0;
 
 		private double ratio = 1.0;
@@ -740,8 +744,8 @@ public class SimulationWindow2D extends SimulationWindow implements
 			return paths;
 		}
 
+		// recalculates member varible 'ratio' that will keep us inside our box
 		private void calculateRatio() {
-			// calculate the ratios that will keep us inside our box
 			double yRatio = (getWidth()) / (maximum.y - minimum.y);
 			double xRatio = (getHeight()) / (maximum.x - minimum.x);
 
@@ -809,6 +813,9 @@ public class SimulationWindow2D extends SimulationWindow implements
 	public void removeLayoutComponent(Component comp) {
 	}
 
+	/**
+	 * Update the build view with a new bounding box, and redraw it
+	 */
 	public void setSimulationBounds(Rectangle2D.Double bounds) {
 		this.simulationBounds = bounds;
 		buildView.maximum.x = bounds.getMaxX();
