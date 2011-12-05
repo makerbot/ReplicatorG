@@ -524,18 +524,28 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 
 	public void setStepperVoltage(int stepperId, int referenceValue)
 	{
+		Base.logger.finer("VirtualPrinter::setStepperVoltage");
 		//generated method stub
 	}
 	
 
+	public void storeStepperVoltage(int stepperId, int referenceValue)
+	{
+		Base.logger.finer("VirtualPrinter::storeStepperVoltage");
+		//generated method stub
+	}
+
+	
 	public void setLedStrip(Color color, int effectId)
 	{
+		Base.logger.finer("VirtualPrinter::setLedStrip");
 		//generated method stub
 	}
 	
 	
 	public void sendBeep(int frequencyHz, int durationMs) throws RetryException
 	{
+		Base.logger.finer("VirtualPrinter::sendBeep");
 		//generated method stub
 	}
 
