@@ -62,19 +62,22 @@ public class ExtruderOnboardParameters extends JPanel {
 			t0Field.setColumns(FIELD_WIDTH);
 			
 			double beta = target.getBeta(which, tool.getIndex());
-			if (beta == -1) { beta = 4066; }
+			if (beta == -1)
+				beta = 4066;
 			betaField.setValue((int)beta);
 			add(new JLabel("Beta"));
 			add(betaField,"wrap");
 
 			double r0 = target.getR0(which, tool.getIndex());
-			if (r0 == -1) { r0 = 100000; }
+			if (r0 == -1)
+				r0 = 100000;
 			r0Field.setValue((int)r0);
 			add(new JLabel("Thermistor Resistance"));
 			add(r0Field,"wrap");
 
 			double t0 = target.getT0(which, tool.getIndex());
-			if (t0 == -1) { t0 = 25; }
+			if (t0 == -1)
+				t0 = 25;
 			t0Field.setValue((int)t0);
 			add(new JLabel("Base Temperature"));
 			add(t0Field,"wrap");

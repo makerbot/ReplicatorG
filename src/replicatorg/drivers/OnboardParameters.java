@@ -117,6 +117,11 @@ public interface OnboardParameters {
 	/** Reset the onboard parameters on the extruder controller to factory settings. */ 
 	void resetToolToFactory(int toolIndex);
 
+	boolean hasVrefSupport();
+	/** set the Stepper Voltage Reference */
+	void setStoredStepperVoltage(int stepperId, int referenceValue);
+	/** get the Stepper Voltage Reference */
+	int getStoredStepperVoltage(int stepperId);
 	
 	public class CommunicationStatistics {
 		public int packetCount;

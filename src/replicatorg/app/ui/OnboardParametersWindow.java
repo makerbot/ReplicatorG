@@ -37,7 +37,6 @@ public class OnboardParametersWindow extends JFrame {
 
 		paramsTabs.addTab("Motherboard", new MachineOnboardParameters(targetParams, driver));
 		
-
 		List<ToolModel> tools = driver.getMachine().getTools();
 		
 		for(ToolModel t : tools)

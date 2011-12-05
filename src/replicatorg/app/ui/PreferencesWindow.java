@@ -43,6 +43,8 @@ import replicatorg.app.Base;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
+import replicatorg.drivers.RetryException;
+import replicatorg.machine.MachineInterface;
 import replicatorg.uploader.FirmwareUploader;
 
 /**
@@ -163,14 +165,18 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		}
 	}
 	
-	public PreferencesWindow() {
+	/**
+	 * 
+	 * @param driver Needed for the Replicator-specific options
+	 */
+	public PreferencesWindow(final MachineInterface machine) {
 		super("Preferences");
 		setResizable(true);
 		
 		Image icon = Base.getImage("images/icon.gif", this);
 		setIconImage(icon);
 		
-		JTabbedPane basicVSadvanced = new JTabbedPane();
+		JTabbedPane prefTabs = new JTabbedPane();
 		
 		JPanel basic = new JPanel();
 		
@@ -424,9 +430,77 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				}
 			});
 		}
-
+		
 		addInitialFilePrefs(content);
+		
+		prefTabs.add(basic, "Basic");
+		prefTabs.add(advanced, "Advanced");
+		
+		// For Replicator Testing
+		content = new JPanel();
+		
+		content.setLayout(new MigLayout("fillx"));
 
+		final JFormattedTextField vref0 = new JFormattedTextField(Base.getLocalFormat());
+		final JFormattedTextField vref1 = new JFormattedTextField(Base.getLocalFormat());
+		final JFormattedTextField vref2 = new JFormattedTextField(Base.getLocalFormat());
+		final JFormattedTextField vref3 = new JFormattedTextField(Base.getLocalFormat());
+		final JFormattedTextField vref4 = new JFormattedTextField(Base.getLocalFormat());
+		vref0.setColumns(3);
+		vref1.setColumns(3);
+		vref2.setColumns(3);
+		vref3.setColumns(3);
+		vref4.setColumns(3);
+		JButton vrefApplyButton = new JButton("Apply VREF");
+
+		if(machine != null)
+		{
+			vref0.setValue(machine.getDriver().getStepperVoltage(0));
+			vref1.setValue(machine.getDriver().getStepperVoltage(1));
+			vref2.setValue(machine.getDriver().getStepperVoltage(2));
+			vref3.setValue(machine.getDriver().getStepperVoltage(3));
+			vref4.setValue(machine.getDriver().getStepperVoltage(4));
+		}
+		
+		vrefApplyButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(machine != null)
+				{
+					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
+							0, ((Number)vref0.getValue()).intValue()));
+					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
+							1, ((Number)vref1.getValue()).intValue()));
+					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
+							2, ((Number)vref2.getValue()).intValue()));
+					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
+							3, ((Number)vref3.getValue()).intValue()));
+					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
+							4, ((Number)vref4.getValue()).intValue()));
+				}
+			}
+		});
+
+		content.add(new JLabel("VREF Pot. 0"), "split");
+		content.add(vref0, "split");
+		content.add(new JLabel("VREF Pot. 1"), "split, gap unrel");
+		content.add(vref1, "split");
+		content.add(new JLabel("VREF Pot. 2"), "split, gap unrel");
+		content.add(vref2, "wrap");
+		content.add(new JLabel("VREF Pot. 3"), "split");
+		content.add(vref3, "split");
+		content.add(new JLabel("VREF Pot. 4"), "split, gap unrel");
+		content.add(vref4, "split");
+		content.add(vrefApplyButton, "wrap, gap unrel");
+
+
+		prefTabs.add(content, "Replicator Testing");
+
+		content = getContentPane();
+		content.setLayout(new MigLayout());
+		
+		content.add(prefTabs, "wrap");
+		
 		JButton allPrefs = new JButton("View All Prefs");
 		content.add(allPrefs, "split");
 		allPrefs.addActionListener(new ActionListener() {
@@ -454,10 +528,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			}
 		});
 		content.add(button, "tag ok");
-
-		basicVSadvanced.add(basic, "Basic");
-		basicVSadvanced.add(advanced, "Advanced");
-		getContentPane().add(basicVSadvanced);
 		
 		showCurrentSettings();
 

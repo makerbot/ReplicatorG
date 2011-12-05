@@ -1694,7 +1694,7 @@ ToolpathGenerator.GeneratorListener
 	 */
 	public void showPrefsWindow() {
 		if(preferences == null)
-			preferences = new PreferencesWindow();
+			preferences = new PreferencesWindow(machineLoader.getMachine());
 
 		preferences.showFrame(this);
 	}

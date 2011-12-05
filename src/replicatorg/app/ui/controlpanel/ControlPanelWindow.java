@@ -190,9 +190,10 @@ public class ControlPanelWindow extends JFrame implements
 		};
 
 		ledStripButton = new JButton(new ShowColorChooserAction(this, chooser, okListener, null,Color.BLACK));
-		mainPanel.add( new JogPanel(machine),"split 3,flowy, growx");
+		jogPanel = new JogPanel(machine);
+		mainPanel.add(jogPanel,"split 3, flowy, growx");
 		mainPanel.add(createActivationPanel(),"split, flowy, growx");
-		mainPanel.add( ledStripButton ,"flowy, growx");
+		mainPanel.add(ledStripButton ,"flowy, growx");
 		mainPanel.add(createToolsPanel(),"growy, flowy,");
 		
 		this.setResizable(false);
