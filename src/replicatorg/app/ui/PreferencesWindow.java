@@ -44,6 +44,8 @@ import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
 import replicatorg.drivers.RetryException;
+import replicatorg.drivers.commands.SendBeep;
+import replicatorg.drivers.commands.SetLedStrip;
 import replicatorg.machine.MachineInterface;
 import replicatorg.uploader.FirmwareUploader;
 
@@ -61,6 +63,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 	JFormattedTextField fontSizeField;
 	JTextField firmwareUpdateUrlField;
 	JTextField logPathField;
+
+	final JButton ledStripButton;
 	
 	private void showCurrentSettings() {		
 		Font editorFont = Base.getFontPref("editor.font","Monospaced,plain,12");
@@ -492,8 +496,36 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content.add(new JLabel("VREF Pot. 4"), "split, gap unrel");
 		content.add(vref4, "split");
 		content.add(vrefApplyButton, "wrap, gap unrel");
+		
+		final JColorChooser chooser = new JColorChooser(Color.BLACK);
+		final ActionListener colorListener = new ActionListener() {
+			public void actionPerformed(ActionEvent e){
+				Color ledColor = chooser.getColor();
+				machine.runCommand(new SetLedStrip(ledColor, 0));	
+				ledStripButton.setText(ShowColorChooserAction.buttonStringFromColor(ledColor));
+			}
+		};
+		ledStripButton = new JButton(new ShowColorChooserAction(this, chooser, colorListener, null,Color.BLACK));
+		content.add(ledStripButton, "spanx, growx");
 
-
+		final JFormattedTextField beepFreq = new JFormattedTextField(Base.getLocalFormat());
+		final JFormattedTextField beepDur = new JFormattedTextField(Base.getLocalFormat());
+		final JButton beepButton = new JButton("Beep Beep!");
+		
+		beepButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				machine.runCommand(new SendBeep(((Number)beepFreq.getValue()).intValue(),
+												((Number) beepDur.getValue()).intValue()));
+			}
+		});
+		
+		content.add(new JLabel("Frequency"), "split");
+		content.add(beepFreq, "split, growx");
+		content.add(new JLabel("Duration"), "split, gap unrel");
+		content.add(beepDur, "split, growx");
+		content.add(beepButton, "split, gap unrel");
+		
 		prefTabs.add(content, "Replicator Testing");
 
 		content = getContentPane();
