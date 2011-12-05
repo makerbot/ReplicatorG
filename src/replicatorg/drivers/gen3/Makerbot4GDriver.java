@@ -122,7 +122,15 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 		}
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.GET_POSITION_EXT.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
-		Point5d steps = new Point5d(pr.get32(), pr.get32(), pr.get32(), pr.get32(), pr.get32());
+		
+		Point5d steps;
+		try {
+			steps = new Point5d(pr.get32(), pr.get32(), pr.get32(), pr.get32(), pr.get32());
+		} catch(NullPointerException npe) {
+			Base.logger.log(Level.FINEST, "Invalid response packet");
+			return null;
+		}
+		
 //		Base.logger.fine("Reconciling : "+machine.stepsToMM(steps).toString());
 		return machine.stepsToMM(steps);
 	}

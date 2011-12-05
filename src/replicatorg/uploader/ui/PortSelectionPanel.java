@@ -1,5 +1,9 @@
 package replicatorg.uploader.ui;
 
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Vector;
 
 import javax.swing.AbstractListModel;
@@ -17,6 +21,7 @@ import replicatorg.app.util.serial.Serial;
 public class PortSelectionPanel extends JPanel {
 	interface PortSelectionListener {
 		public void portSelected(String port);
+		public void portConfirmed();
 	}
 	
 	class SerialListModel extends AbstractListModel {
@@ -42,6 +47,26 @@ public class PortSelectionPanel extends JPanel {
 					Name name = (Name)list.getModel().getElementAt(list.getSelectedIndex());
 					String portName = name.getName();
 					listener.portSelected(portName);
+				}
+			}
+		});
+		list.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(arg0.getClickCount() == 2)
+					listener.portConfirmed();
+			}
+		});
+		list.addKeyListener(new KeyAdapter(){
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				if(arg0.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					listener.portConfirmed();
+				} else if(arg0.getKeyCode() == KeyEvent.VK_UP) {
+					list.setSelectedIndex(Math.max(list.getSelectedIndex(), 0));
+				} else if(arg0.getKeyCode() == KeyEvent.VK_DOWN) {
+					list.setSelectedIndex(Math.min(list.getSelectedIndex(), list.getModel().getSize()));
 				}
 			}
 		});

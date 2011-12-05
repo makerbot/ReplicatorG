@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
+import net.miginfocom.swing.MigLayout;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.ToolModel;
@@ -24,10 +25,12 @@ public class OnboardParametersWindow extends JFrame {
 	
 	public OnboardParametersWindow(OnboardParameters targetParams, Driver driver)
 	{
-		super("Update Machine Options.");
+		super("Update Machine Options");
 		
 		this.targetParams = targetParams;
 		this.driver = driver;
+		
+		setLayout(new MigLayout());
 		
 		paramsTabs = new JTabbedPane();
 		add(paramsTabs, "wrap");

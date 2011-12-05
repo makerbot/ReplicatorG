@@ -370,7 +370,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 					if(ae.getSource() == t0Field)
 					{
 						// casting to long because that's what it is
-						target = (Long)t0Field.getValue();
+						target = ((Number)t0Field.getValue()).doubleValue();
 						target = confirmTemperature(target,"temperature.acceptedLimit",200.0);
 						if (target == Double.MIN_VALUE) {
 							return;
@@ -380,7 +380,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 					else if(ae.getSource() == t1Field)
 					{
 						// casting to long because that's what it is
-						target = (Long)t1Field.getValue();
+						target = ((Number)t1Field.getValue()).doubleValue();
 						target = confirmTemperature(target,"temperature.acceptedLimit",200.0);
 						if (target == Double.MIN_VALUE) {
 							return;
@@ -390,7 +390,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 					else if(ae.getSource() == pField)
 					{
 						// casting to long because that's what it is
-						target = (Long)pField.getValue();
+						target = ((Number)pField.getValue()).doubleValue();
 						target = confirmTemperature(target,"temperature.acceptedLimit.bed",90.0);
 						if (target == Double.MIN_VALUE) {
 							return;

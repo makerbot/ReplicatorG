@@ -6,13 +6,19 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.text.Format;
+import java.text.ParseException;
+import java.util.logging.Level;
 
-import javax.swing.JTextField;
+import javax.swing.JFormattedTextField;
+import javax.swing.text.DefaultFormatter;
+
+import replicatorg.app.Base;
 
 
 // Text field that keeps track of whether it's data has been modified, and calls a function
 // when it loses focus or gets an ENTER key to allow the subclasser to handle the event.
-public abstract class ActionTextField extends JTextField {
+public abstract class ActionTextField extends JFormattedTextField {
 	Color defaultColor;
 	Color modifiedColor;
 	
@@ -94,8 +100,16 @@ public abstract class ActionTextField extends JTextField {
 	
 	public abstract void doSaveEvent();
 	
-	public ActionTextField(String text, int columns) {
-		super(text, columns);
+	public ActionTextField(Object value, int columns, Format format) {
+//		super(text, columns);
+		super(format);
+		setColumns(columns);
+		
+		if(format == null)
+			super.setFormatter(new DefaultFormatter());
+		
+		if(value != null)
+			setValue(value);
 		
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		defaultColor = this.getBackground();

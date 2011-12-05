@@ -6,7 +6,6 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;

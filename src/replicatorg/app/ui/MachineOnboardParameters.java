@@ -202,9 +202,12 @@ public class MachineOnboardParameters extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				MachineOnboardParameters.this.resetToFactory();
 				// Reload
-				loadParameters();
+				// This gets called in resetToFactory()
+//				loadParameters();
 			}
 		});
 		add(resetToFactoryButton);
+		
+		loadParameters();
 	}
 }

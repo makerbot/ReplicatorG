@@ -1307,10 +1307,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 			PacketResponse pr = runQuery(pb.getPacket());
 			if (pr.isEmpty()) return;
 			int temp = pr.get16();
-			machine.currentTool().setPlatformCurrentTemperature(temp);
+			t.setPlatformCurrentTemperature(temp);
 			
-			Base.logger.fine("Current platform temperature (T" + t.getIndex() + "): "
-							+ machine.currentTool().getPlatformCurrentTemperature() + "C");
+			Base.logger.fine("Current platform temperature" +
+					" (T" + t.getIndex() + "): " + t.getPlatformCurrentTemperature() + "C");
 		}
 	}
 
@@ -2187,7 +2187,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	public PIDParameters getPIDParameters(int which, int toolIndex) {
 		PIDParameters pp = new PIDParameters();
-		int offset = (which == 0)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
+		int offset = (which == OnboardParameters.EXTRUDER)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
 		pp.p = readFloat16FromToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET, 7.0f, toolIndex);
 		pp.i = readFloat16FromToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET, 0.325f, toolIndex);
 		pp.d = readFloat16FromToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET, 36.0f, toolIndex);
@@ -2195,7 +2195,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 	
 	public void setPIDParameters(int which, PIDParameters pp, int toolIndex) {
-		int offset = (which == 0)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
+		int offset = (which == OnboardParameters.EXTRUDER)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
 		writeToToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET,floatToLE(pp.p),toolIndex);
 		writeToToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET,floatToLE(pp.i),toolIndex);
 		writeToToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET,floatToLE(pp.d),toolIndex);
