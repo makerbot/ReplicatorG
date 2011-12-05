@@ -132,6 +132,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
 	 */
 	public void enableMotor() throws RetryException {
+		Base.logger.fine("MakerBot4G.enableMotor()");//REMOVE
 		machine.currentTool().enableMotor();
 	}
 	
@@ -139,6 +140,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
 	 */
 	public void disableMotor() throws RetryException {
+		Base.logger.fine("MakerBot4G.enableMotor()"); //REMOVE
 		machine.currentTool().disableMotor();
 	}
 	

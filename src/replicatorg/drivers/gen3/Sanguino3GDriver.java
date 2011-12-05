@@ -719,6 +719,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	public void delay(long millis) throws RetryException {
 		Base.logger.finer("Delaying " + millis + " millis.");
+		Base.logger.fine("Sanguino3GDriver.enableMotor()");//REMOVE:
 
 		// send it!
 		PacketBuilder pb = new PacketBuilder(
