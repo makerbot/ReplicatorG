@@ -21,7 +21,7 @@ import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.Version;
 import replicatorg.drivers.gen3.Sanguino3GDriver;
 
-public class ExtruderOnboardParameters extends JFrame {
+public class ExtruderOnboardParameters extends JPanel {
 	private static final long serialVersionUID = 6353987389397209816L;
 	private OnboardParameters target;
 	
@@ -270,22 +270,13 @@ public class ExtruderOnboardParameters extends JFrame {
 		commitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (ExtruderOnboardParameters.this.commit()) {
-					ExtruderOnboardParameters.this.dispose();
 				}
 			}
 		});
-		JButton cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				ExtruderOnboardParameters.this.dispose();
-			}
-		});
-		panel.add(cancelButton);
 		return panel;
 	}
 
 	public ExtruderOnboardParameters(OnboardParameters target) {
-		super("Update onboard extruder options");
 		this.target = target;
 
 		Version v = new Version(0,0);
@@ -293,46 +284,40 @@ public class ExtruderOnboardParameters extends JFrame {
 			v = ((Sanguino3GDriver)target).getToolVersion();
 		}
 
-		JPanel panel = new JPanel(new MigLayout());
+		setLayout(new MigLayout());
 		ThermistorTablePanel ttp;
 		ttp = new ThermistorTablePanel(0,"Extruder thermistor");
-		panel.add(ttp);
+		add(ttp);
 		commitList.add(ttp);
 		ttp = new ThermistorTablePanel(1,"Heated build platform thermistor");
-		panel.add(ttp,"wrap");
+		add(ttp,"wrap");
 		commitList.add(ttp);
 		if (!v.atLeast(new Version(2,5))) {
 			BackoffPanel backoffPanel = new BackoffPanel();
-			panel.add(backoffPanel,"span 2,growx,wrap");
+			add(backoffPanel,"span 2,growx,wrap");
 			commitList.add(backoffPanel);
 		}
 		if (v.atLeast(new Version(2,5))) {
 			ExtraFeaturesPanel efp = new ExtraFeaturesPanel();
-			panel.add(efp,"span 2,growx,wrap");
+			add(efp,"span 2,growx,wrap");
 			commitList.add(efp);
 		}
 		PIDPanel pidPanel = new PIDPanel(0,"Extruder");
-		panel.add(pidPanel,"growx");
+		add(pidPanel,"growx");
 		commitList.add(pidPanel);
 		if (v.atLeast(new Version(2,4))) {
 			PIDPanel pp = new PIDPanel(1,"Heated build platform");
-			panel.add(pp,"growx,wrap");
+			add(pp,"growx,wrap");
 			commitList.add(pp);
 		}
 
 		if (v.atLeast(new Version(2,9))) {
 			RegulatedCoolingFan rcf = new RegulatedCoolingFan();
-			panel.add(rcf,"span 2,growx,wrap");
+			add(rcf,"span 2,growx,wrap");
 			commitList.add(rcf);
 		}
 		
-		panel.add(makeButtonPanel(),"span 2,newline");
-		add(panel);
-
-		pack();
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		setLocation((screen.width - getWidth()) / 2,
-				(screen.height - getHeight()) / 2);
+		add(makeButtonPanel(),"span 2,newline");
 
 	}
 }
