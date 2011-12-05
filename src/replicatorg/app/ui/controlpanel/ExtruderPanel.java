@@ -567,14 +567,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				if (toolModel.motorHasEncoder() || toolModel.motorIsStepper()) {
 					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
 				}
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor());
 			} else if (name.equals("motor-reverse")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
 				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
 				if (toolModel.motorHasEncoder() || toolModel.motorIsStepper()) {
 					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
 				}
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor());
 			} else if (name.equals("motor-stop")) {
 				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
 			}
@@ -648,9 +648,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
 				// Reverted to one single command for RepRap5D driver
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
-					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000));
 				} else {
-					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor());
 					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
 					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
 				}
@@ -660,9 +660,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
 				// Reverted to one single command for RepRap5D driver
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
-					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000));
 				} else {
-					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor());
 					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
 					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
 				}

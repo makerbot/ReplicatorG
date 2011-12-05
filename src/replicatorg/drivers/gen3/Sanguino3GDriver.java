@@ -775,10 +775,11 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return v;
 	}
 
+	/** Command machine to enable some steppers. Note that they are
+	* already automagically enabled by most commands and need
+	* not be explicitly enabled.
+	*/
 	public void enableAxes(EnumSet<AxisId> axes) throws RetryException {
-		// Command machine to enable some steppers. Note that they are
-		// already automagically enabled by most commands and need
-		// not be explicitly enabled.
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.ENABLE_AXES.getCode());
 		pb.add8(0x80 + (axesToBitfield(axes) & 0x1f)); // enable axes
@@ -786,8 +787,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.enableAxes(axes);
 	}
 
+	/// Command machine to disable some steppers.
 	public void disableAxes(EnumSet<AxisId> axes) throws RetryException {
-		// Command machine to disable some steppers.
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.ENABLE_AXES.getCode());
 		pb.add8(axesToBitfield(axes) & 0x1f); // disable axes
@@ -928,7 +929,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
 			flags += 2;
 
-		Base.logger.fine("Disabling motor 1");
+		Base.logger.finer("Disabling motor 1");
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
@@ -1258,7 +1259,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 			else {
 				int temp = pr.get16();
 				t.setCurrentTemperature(temp);
-				Base.logger.fine("New Current temperature: "
+				Base.logger.finer("New Current temperature: "
 						+ machine.currentTool().getCurrentTemperature() + "C");
 			}
 			// Check if we should co-read platform temperatures when we read
@@ -1312,7 +1313,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		int temp = pr.get16();
 		machine.currentTool().setPlatformCurrentTemperature(temp);
 
-		Base.logger.fine("Current platform temperature: "
+		Base.logger.finer("Current platform temperature: "
 				+ machine.currentTool().getPlatformCurrentTemperature() + "C");
 
 		super.readPlatformTemperature();
@@ -1625,6 +1626,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		assert pr.get8() == data.length;
 	}
 
+	
 	protected byte[] readFromToolEEPROM(int offset, int len) {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
@@ -1646,10 +1648,21 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param offset
+	 * @param data
+	 */
 	protected void writeToToolEEPROM(int offset, byte[] data) {
 		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
 	}
 
+	/**
+	 * 
+	 * @param offset
+	 * @param data
+	 * @param toolIndex
+	 */
 	protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 		final int MAX_PAYLOAD = 11;
 		while (data.length > MAX_PAYLOAD) {

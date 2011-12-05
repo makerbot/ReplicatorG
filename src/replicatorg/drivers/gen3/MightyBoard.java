@@ -115,7 +115,7 @@ class MightyBoardEEPROM implements EEPROMClass
  * Object for managing the connection to the MightyBoard hardware.
  * @author farmckon
  */
-public class MightyBoard extends Makerbot4GDriver
+public class MightyBoard extends Makerbot4GAlternateDriver
 	implements OnboardParameters, SDCardCapture
 {
 	// note: other machines also inherit: PenPlotter, MultiTool
@@ -242,7 +242,6 @@ public class MightyBoard extends Makerbot4GDriver
 	}	
 	
 	
-
 	private void checkEEPROM() {
 		if (!eepromChecked) {
 			// Versions 2 and up have onboard eeprom defaults and rely on 0xff values
@@ -576,7 +575,41 @@ public class MightyBoard extends Makerbot4GDriver
 //	}
 //	
 
-	
+	/// Enable extruder motor
+	public void enableMotor() throws RetryException {
+
+		int tool = machine.currentTool().getIndex(); //WARNING: this in unsafe, since tool is checked
+													//async from when command is set. Tool should be a param
+		EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+		if (tool  == 0) {
+			axes.add(AxisId.A);
+			Base.logger.fine("enableMotor Toggling motor  A ");
+		}
+		else if (tool == 1)  {
+			axes.add(AxisId.B);
+			Base.logger.fine("enableMotor Toggling motor B ");
+		}
+		this.enableAxes(axes);
+	}
+
+	/** 
+	 * Disable our extruder motor
+	 */
+	public void disableMotor() throws RetryException {
+
+		EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
+		int tool = machine.currentTool().getIndex(); //WARNING: this in unsafe, since tool is checked
+		//async from when command is set. Tool should be a param
+		if (tool == 0) {
+			axes.add(AxisId.A);
+			Base.logger.severe("enableMotor Toggling motor  A ");	
+		}
+		else if (tool == 1) {
+			axes.add(AxisId.B);
+			Base.logger.severe("enableMotor Toggling motor  B ");
+		}
+		this.disableAxes(axes);
+	}
 	
 	
 	
