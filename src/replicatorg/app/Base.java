@@ -105,7 +105,7 @@ public class Base {
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */
-	public static final String VERSION_NAME = String.format("%04d_Alpha",VERSION);
+	public static final String VERSION_NAME = String.format("%04d",VERSION);
 
 	/**
 	 * The machine controller in use.
@@ -216,13 +216,13 @@ public class Base {
 
 	/** Local storage for localized NumberFormat. */
 	static private NumberFormat localNF = NumberFormat.getInstance();
-	{
-		localNF.setMinimumFractionDigits(2);
-	}
+//	{
+//		localNF.setMinimumFractionDigits(2);
+//	}
 	
 	/**
 	 * Get the NumberFormat object used for parsing and displaying numbers in the localized
-	 * format. This should be used for all non-GCode input and output.
+	 * format. This should be used for all non-GCode, floating point input and output.
 	 */
 	static public NumberFormat getLocalFormat() {
 		return localNF;
@@ -231,9 +231,11 @@ public class Base {
 	/** Local storage for gcode NumberFormat. */
 	static private NumberFormat gcodeNF;
 	{
-        DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+		// We don't use DFS.getInstance here to maintain compatibility with Java 5
+        DecimalFormatSymbols dfs;
+ 	 	gcodeNF = new DecimalFormat("#0.0");
+ 	 	dfs = ((DecimalFormat)gcodeNF).getDecimalFormatSymbols();
  	 	dfs.setDecimalSeparator('.');
- 	 	gcodeNF = new DecimalFormat("#0.0", dfs);
 	}
 	
 	/**

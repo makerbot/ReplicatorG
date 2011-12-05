@@ -50,15 +50,8 @@ public class ScalingTool extends Tool {
 		b = new JButton("Scale");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String txt = scaleFactor.getText();
-				if (txt != null) {
-					try {
-						double scale = Base.getLocalFormat().parse(txt).doubleValue();
-						parent.getModel().scale(scale,parent.getModel().isOnPlatform());
-					} catch (Exception nfe) {
-						Base.logger.fine("Scale factor "+txt+" is not parseable");
-					}
-				}
+				double scale = ((Number)scaleFactor.getValue()).doubleValue();
+				parent.getModel().scale(scale,parent.getModel().isOnPlatform());
 			}
 		});
 		p.add(b,"growx,wrap");

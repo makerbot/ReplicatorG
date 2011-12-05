@@ -6,7 +6,7 @@ public class SavingTextField extends ActionTextField {
 	final String parameterName;
 	
 	public SavingTextField(String parameterName, String text, int columns) {
-		super(text, columns);
+		super(text, columns, null);
 
 		this.parameterName = parameterName;
 	}
