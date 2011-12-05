@@ -541,12 +541,12 @@ public class GCodeParser {
 			// turn extruder on, forward
 		case M101:
 			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.CLOCKWISE));
-			commands.add(new replicatorg.drivers.commands.EnableMotor());
+			commands.add(new replicatorg.drivers.commands.EnableExtruderMotor());
 			break;
 		// turn extruder on, reverse
 		case M102:
 			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
-			commands.add(new replicatorg.drivers.commands.EnableMotor());
+			commands.add(new replicatorg.drivers.commands.EnableExtruderMotor());
 			break;
 		// turn extruder off
 		case M103:

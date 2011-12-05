@@ -189,8 +189,8 @@ public class ControlPanelWindow extends JFrame implements
 			}
 		};
 
-		ledStripButton = new JButton(new ShowColorChooserAction(this, chooser, okListener, null,Color.BLACK));
 		jogPanel = new JogPanel(machine);
+		ledStripButton = new JButton(new ShowColorChooserAction(this, chooser, okListener, null,Color.BLACK));
 		mainPanel.add(jogPanel,"split 3, flowy, growx");
 		mainPanel.add(createActivationPanel(),"split, flowy, growx");
 		mainPanel.add(ledStripButton ,"flowy, growx");
@@ -331,7 +331,9 @@ public class ControlPanelWindow extends JFrame implements
 	}
 	
 	public void updateStatus() {
-		jogPanel.updateStatus();
+		if(jogPanel != null)	jogPanel.updateStatus();
+		else					Base.logger.severe("null jog panel");
+
 		for (ExtruderPanel e : extruderPanels) {
 			e.updateStatus();
 		}

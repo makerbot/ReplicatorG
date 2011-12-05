@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="utf-8"?>
 <machines>
-	<machine experimental="0">
+	<machine experimental="1">
 		<name>The Replicator Dual Rev-A</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
@@ -29,7 +29,7 @@
 M18
 		</cooldown>
 	</machine>
-	<machine experimental="0">
+	<machine experimental="1">
 		<name>The Replicator Dual Rev-D</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
@@ -58,7 +58,7 @@ M18
 M18 (Turn off steppers after a build.)
 		</cooldown>
 	</machine>
-	<machine experimental="0">
+	<machine experimental="1">
 		<name>The Replicator Dual Rev-F</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
@@ -106,7 +106,7 @@ M18 (Turn off steppers after a build.)
 			<wipe index="1" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
 		</wipes>
 		<clamps></clamps>
-		<driver name="makerbot4ga">
+		<driver name="mightyboard">
 			<!-- optional: <portname>COM1</portname> -->
 			<rate>115200</rate>
 		</driver>
