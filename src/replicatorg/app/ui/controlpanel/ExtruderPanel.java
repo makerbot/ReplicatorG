@@ -110,7 +110,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		return new JLabel(text,icon,SwingConstants.LEFT);
 	}
 
-	public ChartPanel makeChart(ToolModel t) {
+	public ChartPanel makeChart(ToolModel tool) {
 		JFreeChart chart = ChartFactory.createXYLineChart(null, null, null, 
 				measuredDataset, PlotOrientation.VERTICAL, 
 				false, false, false);
@@ -134,7 +134,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		plot.setRenderer(1, renderer);
 		plot.getRenderer(1).setSeriesPaint(0, targetColor);
 		plot.getRenderer(0).setSeriesPaint(0, measuredColor);
-		if (t.hasHeatedPlatform()) {
+		if (tool.hasHeatedPlatform()) {
 			plot.setDataset(2,measuredPlatformDataset);
 			plot.setRenderer(2, new XYLineAndShapeRenderer(true,false)); 
 			plot.getRenderer(2).setSeriesPaint(0, measuredPlatformColor);
@@ -181,9 +181,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}		
 	}
 	
-	public ExtruderPanel(MachineInterface machine, ToolModel t) {
+	public ExtruderPanel(MachineInterface machine, ToolModel tool) {
 		this.machine = machine;
-		this.toolModel = t;
+		this.toolModel = tool;
 		
 		int textBoxWidth = 75;
 		Dimension panelSize = new Dimension(420, 30);
@@ -194,11 +194,11 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		// create our initial panel
 		setLayout(new MigLayout());
 		// create our motor options
-		if (t.hasMotor()) {
+		if (tool.hasMotor()) {
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder. (it's not!)
-			if ((t.getMotorStepperAxis() == null) && !(t.motorHasEncoder() || t.motorIsStepper())) {
+			if ((tool.getMotorStepperAxis() == null) && !(tool.motorHasEncoder() || tool.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
 				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9);
@@ -207,7 +207,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				add(field,"wrap");
 			}
 
-			if (t.motorHasEncoder() || t.motorIsStepper()) {
+			if (tool.motorHasEncoder() || tool.motorIsStepper()) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (RPM)");
 				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed", 9);
@@ -230,7 +230,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			// create our motor options
 			JLabel motorEnabledLabel = makeLabel("Motor Control");
 			
-			if (t.motorHasEncoder() || (t.motorIsStepper() && this.toolModel.getMotorStepperAxis() != null)) {
+			if (tool.motorHasEncoder() || (tool.motorIsStepper() && this.toolModel.getMotorStepperAxis() != null)) {
 				JButton motorReverseButton = new JButton("reverse");
 				motorReverseButton.setActionCommand("reverse");
 				motorReverseButton.addActionListener(this);
@@ -285,7 +285,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// our temperature fields
-		if (t.hasHeater()) {
+		if (tool.hasHeater()) {
 			JLabel targetTempLabel = makeKeyLabel("Target Temperature (C)",targetColor);
 			JTextField targetTempField = new CallbackTextField(this, "handleTextField", "target-temp", 9);
 			targetTemperature = machine.getDriverQueryInterface().getTemperatureSetting();
@@ -302,7 +302,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// our heated platform fields
-		if (t.hasHeatedPlatform()) {
+		if (tool.hasHeatedPlatform()) {
 			JLabel targetTempLabel = makeKeyLabel("Platform Target Temp (C)",targetPlatformColor);
 			JTextField targetTempField = new CallbackTextField(this, "handleTextField", "platform-target-temp", 9);
 			targetPlatformTemperature = machine.getDriverQueryInterface().getPlatformTemperatureSetting();
@@ -319,13 +319,13 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			
 		}
 
-		if (t.hasHeater() || t.hasHeatedPlatform()) {
+		if (tool.hasHeater() || tool.hasHeatedPlatform()) {
 			add(new JLabel("Temperature Chart"),"growx,spanx,wrap");
-			add(makeChart(t),"growx,spanx,wrap");
+			add(makeChart(tool),"growx,spanx,wrap");
 		}
 
 		// flood coolant controls
-		if (t.hasFloodCoolant()) {
+		if (tool.hasFloodCoolant()) {
 			JLabel floodCoolantLabel = makeLabel("Flood Coolant");
 
 			JCheckBox floodCoolantCheck = new JCheckBox("enable");
@@ -337,7 +337,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// mist coolant controls
-		if (t.hasMistCoolant()) {
+		if (tool.hasMistCoolant()) {
 			JLabel mistCoolantLabel = makeLabel("Mist Coolant");
 
 			JCheckBox mistCoolantCheck = new JCheckBox("enable");
@@ -349,10 +349,10 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// cooling fan controls
-		if (t.hasFan()) {
+		if (tool.hasFan()) {
 			String fanString = "Cooling Fan";
 			String enableString = "enable";
-			Element xml = findMappingNode(t.getXml(),"fan");
+			Element xml = findMappingNode(tool.getXml(),"fan");
 			if (xml != null) {
 				fanString = xml.getAttribute("name");
 				enableString = xml.getAttribute("actuated");
@@ -368,7 +368,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// cooling fan controls
-		if (t.hasAutomatedPlatform()) {
+		if (tool.hasAutomatedPlatform()) {
 			String abpString = "Build platform belt";
 			String enableString = "enable";
 			JLabel abpLabel = makeLabel(abpString);
@@ -382,11 +382,11 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// valve controls
-		if (t.hasValve()) {
+		if (tool.hasValve()) {
 			String valveString = "Valve";
 			String enableString = "open";
 
-			Element xml = findMappingNode(t.getXml(),"valve");
+			Element xml = findMappingNode(tool.getXml(),"valve");
 			if (xml != null) {
 				valveString = xml.getAttribute("name");
 				enableString = xml.getAttribute("actuated");
@@ -403,7 +403,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// valve controls
-		if (t.hasCollet()) {
+		if (tool.hasCollet()) {
 			JLabel colletLabel = makeLabel("Collet");
 
 			JCheckBox colletCheck = new JCheckBox("open");
@@ -512,42 +512,46 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	public void handleChangedTextField(JTextField source) throws RetryException
 	{
 		String name = source.getName();
-		if (source.getText().length() > 0) {
-			double target;
-			try {
-				NumberFormat nf = Base.getLocalFormat();
-				target = nf.parse(source.getText()).doubleValue();
-			} catch (ParseException pe) {
-				Base.logger.log(Level.WARNING,"Could not parse value!",pe);
-				JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
-				
-				if(name.equals("target-temp")) {
-					target = confirmTemperature(target,"temperature.acceptedLimit",260.0);
-					if (target == Double.MIN_VALUE) {
-						return;
-					}
-					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(target));
-					targetTemperature = target;
-				} else {
-					target = confirmTemperature(target,"temperature.acceptedLimit.bed",130.0);
-					if (target == Double.MIN_VALUE) {
-						return;
-					}
-					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(target));
-					targetPlatformTemperature = target;
+		double newValue;
+		
+		/// nothing to save
+		if (source.getText().length() <= 0) 
+			return;
+
+		try {
+			NumberFormat nf = Base.getLocalFormat();
+			newValue = nf.parse(source.getText()).doubleValue();
+		} catch (ParseException pe) {
+			Base.logger.log(Level.WARNING,"Could not parse value!",pe);
+			JOptionPane.showMessageDialog(this, "Error parsing value: "+pe.getMessage()+"\nPlease try again.", "Could not parse value", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		
+		if (name.equals("target-temp") || name.equals("platform-target-temp")) {
+			
+			if(name.equals("target-temp")) {
+				newValue = confirmTemperature(newValue,"temperature.acceptedLimit",260.0);
+				if (newValue == Double.MIN_VALUE) {
+					return;
 				}
-				// This gives some feedback by adding .0 if it wasn't typed.
-				source.setText(Double.toString(target));
-			} else if (name.equals("motor-speed")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(target));
-			} else if (name.equals("motor-speed-pwm")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)target));
+				machine.runCommand(new replicatorg.drivers.commands.SetTemperature(newValue));
+				targetTemperature = newValue;
 			} else {
-				Base.logger.warning("Unhandled text field: "+name);
+				newValue = confirmTemperature(newValue,"temperature.acceptedLimit.bed",130.0);
+				if (newValue == Double.MIN_VALUE) {
+					return;
+				}
+				machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(newValue));
+				targetPlatformTemperature = newValue;
 			}
+			// This gives some feedback by adding .0 if it wasn't typed.
+			source.setText(Double.toString(newValue));
+		} else if (name.equals("motor-speed")) {
+			machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(newValue));
+		} else if (name.equals("motor-speed-pwm")) {
+			machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)newValue));
+		} else {
+			Base.logger.warning("Unhandled text field: "+name);
 		}
 	}
 
@@ -616,6 +620,10 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 	}
 	
+	
+	/** 
+	 * handles a lot of actions that come out of the CallbackTextField
+	 */
 	public void actionPerformed(ActionEvent e) {
 		String s = e.getActionCommand();
 		
