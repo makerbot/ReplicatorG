@@ -396,9 +396,12 @@ public class MightyBoard extends Makerbot4GDriver
 		writeToToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.data(which),table);
 	}
 	
-
-	public int getBeta(int which) {
-		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.beta(which),4);
+	/**
+	 * 
+	 * @param which if 0 this is the extruder, if 1 it's the HBP attached to the extruder
+	 */
+	public int getBeta(int which, int toolIndex) {
+		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.beta(which),4, toolIndex);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -406,8 +409,12 @@ public class MightyBoard extends Makerbot4GDriver
 		return val;
 	}
 
-	public int getR0(int which) {
-		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.r0(which),4);
+	/**
+	 * 
+	 * @param which if 0 this is the extruder, if 1 it's the HBP attached to the extruder
+	 */
+	public int getR0(int which, int toolIndex) {
+		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.r0(which),4, toolIndex);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -415,8 +422,12 @@ public class MightyBoard extends Makerbot4GDriver
 		return val;
 	}
 
-	public int getT0(int which) {
-		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.t0(which),4);
+	/**
+	 * 
+	 * @param which if 0 this is the extruder, if 1 it's the HBP attached to the extruder
+	 */
+	public int getT0(int which, int toolIndex) {
+		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.t0(which),4, toolIndex);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -424,8 +435,6 @@ public class MightyBoard extends Makerbot4GDriver
 		return val;
 	}
 	
-	
-
 	public EndstopType getInvertedEndstops() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(MightyBoardEEPROM.EEPROM_ENDSTOP_INVERSION_OFFSET,1);
@@ -438,8 +447,8 @@ public class MightyBoard extends Makerbot4GDriver
 		writeToEEPROM(MightyBoardEEPROM.EEPROM_ENDSTOP_INVERSION_OFFSET,b);
 	}
 
-	public ExtraFeatures getExtraFeatures() {
-		int efdat = read16FromToolEEPROM(MightyBoardEEPROM.EC_EEPROM_EXTRA_FEATURES,0x4084);
+	public ExtraFeatures getExtraFeatures(int toolIndex) {
+		int efdat = read16FromToolEEPROM(MightyBoardEEPROM.EC_EEPROM_EXTRA_FEATURES,0x4084, toolIndex);
 		ExtraFeatures ef = new ExtraFeatures();
 		ef.swapMotorController = (efdat & 0x0001) != 0;
 		ef.heaterChannel = (efdat >> 2) & 0x0003;

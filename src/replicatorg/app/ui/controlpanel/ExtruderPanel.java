@@ -485,6 +485,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	// to set a potentially dangerous limit would suck.
 	// @return Double.MIN_VALUE if cancelled; the target temperature otherwise.
 	//
+	// NOTE: copy of this in preferences window
 	private double confirmTemperature(double target, String limitPrefName, double defaultLimit) {
 		double limit = Base.preferences.getDouble("temperature.acceptedLimit", defaultLimit);
 		if (target > limit){

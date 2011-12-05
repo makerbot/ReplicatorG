@@ -24,13 +24,11 @@ import replicatorg.drivers.MultiTool;
 public class ToolheadIndexer extends JDialog {
 
 	final static String instructions = "<html>" +
-			"You can use this tool to set the tool index of the attached toolhead. " +
-			"Make sure that only one toolhead is currently plugged in! " +
-			"If you have multiple toolheads attached, cancel this operation, turn off " +
-			"your machine, remove the other toolheads, turn the machine back on and " +
-			"restart ReplicatorG.</html>";
+			"Set the Toolhead Index of *all attached extruders*.\n"+  
+			"If you have multiple extruder boards attached, this will case an error.\n" +
+			"See documentaiton at: http://www.makerbot.com/docs/dualstrusion for details. </html>";
 	public ToolheadIndexer(Frame parent, final Driver d) {
-		super(parent,"Set toolhead index",true);
+		super(parent,"Set Toolhead Index",true);
 		Container c = getContentPane();
 		c.setLayout(new MigLayout("fillx,pack pref pref"));
 		c.add(new JLabel(instructions),"wrap,wmax 500px");

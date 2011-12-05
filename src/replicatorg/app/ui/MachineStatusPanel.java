@@ -134,11 +134,14 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			text = state.toString();
 		}
 		
-		String machineText = machineStatusString(evt.getSource().getMachineName(), evt.getState().isConnected()); 
+		String machineText = machineStatusString(evt.getSource().getMachineName(),
+												 evt.getState().isConnected()); 
 		
 		if( evt.getState().isConnected() == false )
 			tempLabel.setText("");
 
+		if( evt.getState().isBuilding() && !(Base.preferences.getBoolean("build.monitor_temp", false) ))
+			tempLabel.setText("Monitor build temp.: off");
 		
 		// And mark which state we are in.
 		switch (state) {
@@ -201,13 +204,21 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			public void run() {
 				Vector<ToolModel> tools = e.getSource().getModel().getTools();
 				String tempString = "";
+				
+				// This call makes sure our temperatures are up to date
+				e.getSource().getDriver().readPlatformTemperature();
+				
 				for(ToolModel t : tools)
 				{
-					double temperature = t.getCurrentTemperature();
-					tempString += String.format("Toolhead "+t.getIndex()+": %1$3.1f\u00B0C  ", temperature);
+					double temp= t.getCurrentTemperature();
+					tempString += String.format("Toolhead "+t.getIndex()+": %1$3.1f\u00B0C  ", temp);
+					if(t.hasHeatedPlatform())
+					{
+						double ptemp = t.getPlatformCurrentTemperature();
+						tempString += String.format("Platform: %1$3.1f\u00B0C", ptemp);
+					}
 				}
-				tempString += String.format("Platform: %1$3.1f\u00B0C", 
-						e.getSource().getDriverQueryInterface().getPlatformTemperature());
+				
 				tempLabel.setText(tempString);
 			}
 		});

@@ -176,6 +176,9 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	 * 
 	 */
 	public void enableStepperExtruderFan(boolean enabled) throws RetryException {
+		enableStepperExtruderFan(enabled, machine.currentTool().getIndex());
+	}
+	public void enableStepperExtruderFan(boolean enabled, int toolIndex) throws RetryException {
 		
 		// Always re-enable the fan when 
 		if (this.stepperExtruderFanEnabled == enabled) return;
@@ -192,7 +195,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 
 		// send it!
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolIndex);
 		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
@@ -200,7 +203,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 
 		// Always use max PWM
 		pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolIndex);
 		pb.add8(ToolCommandCode.SET_MOTOR_1_PWM.getCode());
 		pb.add8((byte) 1); // length of payload.
 		pb.add8((byte) 255);
