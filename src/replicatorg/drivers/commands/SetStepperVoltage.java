@@ -3,6 +3,11 @@ package replicatorg.drivers.commands;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 
+/**
+ * Command to set the stepper voltage (but do not store it in EEPROM
+ * @author farmckon
+ *
+ */
 public class SetStepperVoltage implements DriverCommand {
 
 	int stepperId;

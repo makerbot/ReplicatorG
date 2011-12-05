@@ -67,7 +67,8 @@ class MightyBoardEEPROM implements EEPROMClass
 	
 	public static final int EEPROM_CHECK_LOW = 0x5A;
 	public static final int EEPROM_CHECK_HIGH = 0x78;
-		
+	
+	
 	/// EEPROM map:
 	/// 00-01 - EEPROM data version
 	/// 02    - Axis inversion byte
@@ -122,6 +123,8 @@ public class MightyBoard extends Makerbot4GDriver
 	/// Stores LED color by effect. Mostly uses '0' (color now)
 	private Hashtable ledColorByEffect;
 	
+	private int[] stepperValues = new int[5]; //only 0 - 127 are valid
+	
 	/// 0 -127, current reference value. Store on desktop for this machine
 	private int voltageReference; 
 
@@ -152,9 +155,50 @@ public class MightyBoard extends Makerbot4GDriver
 	public void setStepperVoltage(int stepperId, int referenceValue) throws RetryException {
 		Base.logger.info("MightBoard sending setStepperVoltage");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_STEPPER_REFERENCE_POT.getCode());
+		
+		if(stepperId > 5) {
+			Base.logger.severe("set invalid stepper Id" + Integer.toString(stepperId) );
+			return; 
+		}
+		if (referenceValue > 127) {
+			Base.logger.fine("set clipping vRef to 127 from " + Integer.toString(referenceValue) );			
+			referenceValue= 127; 
+		}
+		else if (referenceValue < 0) {
+			Base.logger.fine("set clipping vRef to 0 from " + Integer.toString(referenceValue) );			
+			referenceValue= 0; 
+		}
+		
 		pb.add8(stepperId);
 		pb.add8(referenceValue); //range should be only is 0-127
-		runCommand(pb.getPacket());
+		PacketResponse pr = runCommand(pb.getPacket());
+
+		if( pr.isOK() )
+			stepperValues[stepperId] = referenceValue;
+	}
+	
+	
+	public void storeStepperVoltage(int stepperId, int referenceValue) throws RetryException {
+		Base.logger.info("MightBoard sending storeStepperVoltage");
+
+		if(stepperId > 5) {
+			Base.logger.severe("store invalid stepper Id" + Integer.toString(stepperId) );
+			return; 
+		}
+		if (referenceValue > 127) {
+			Base.logger.fine("store clipping vRef to 127 from " + Integer.toString(referenceValue) );			
+			referenceValue= 127; 
+		}
+		else if (referenceValue < 0) {
+			Base.logger.fine("store clipping vRef to 0 from " + Integer.toString(referenceValue) );			
+			referenceValue= 0; 
+		}
+
+		int vRefForPotLocation = MightyBoardEEPROM.EEPROM_DIGITAL_POT_OFFSET + stepperId;
+		byte b[] = new byte[1];
+		b[1] =  (byte)referenceValue;
+		checkEEPROM();
+		writeToEEPROM(vRefForPotLocation, b);
 	}
 	
 	

@@ -640,7 +640,12 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		Base.logger.fine("BaseImplementation setStepperVoltage called.");
 	}
 	
+	public void storeStepperVoltage(int stepperId, int referenceValue) throws RetryException
+	{
+		Base.logger.fine("BaseImplementation setStepperVoltage called.");
+	}
 
+	
 	public void setLedStrip(Color color, int effectId) throws RetryException 
 	{
 		Base.logger.fine("BaseImplementation setLedStrip called.");
