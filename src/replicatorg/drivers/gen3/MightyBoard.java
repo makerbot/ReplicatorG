@@ -52,6 +52,9 @@ import replicatorg.drivers.OnboardParameters.EndstopType;
 import replicatorg.drivers.OnboardParameters.EstopType;
 import replicatorg.drivers.OnboardParameters.ExtraFeatures;
 import replicatorg.drivers.gen3.PacketProcessor.CRCException;
+import replicatorg.drivers.gen3.Sanguino3GDriver.CoolingFanOffsets;
+import replicatorg.drivers.gen3.Sanguino3GDriver.ECBackoffOffsets;
+import replicatorg.drivers.gen3.Sanguino3GDriver.PIDOffsets;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
@@ -107,6 +110,9 @@ class MightyBoardEEPROM implements EEPROMClass
 
 	final public static int MAX_MACHINE_NAME_LEN = 16;
 
+	final public static int EXTRUDER_PID_BASE_0 = 0x006C;
+	final public static int EXTRUDER_PID_BASE_1 = 0x0155;
+	
 }
 
 
@@ -306,6 +312,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		}
 	}
 
+
 	public void setMachineName(String machineName) {
 		machineName = new String(machineName);
 		if (machineName.length() > 16) { 
@@ -444,6 +451,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * @param which if 0 this is the extruder, if 1 it's the HBP attached to the extruder
 	 */
 	public int getBeta(int which, int toolIndex) {
+		Base.logger.severe("beta" + Integer.toString(toolIndex));
 		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.beta(which),4, toolIndex);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
@@ -565,60 +573,103 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		assert (toolIndex == 255) || (toolIndex == 127) || (slavepr.get8() == data.length); 
 	}
 
+	
+	protected byte[] readFromToolEEPROM(int offset, int len, int toolIndex) {
+
+//		int toolInfoOffset = 0;
+//		if (toolIndex == 0)
+//			toolInfoOffset = EXTRUDER_PID_BASE_0;
+//		else if (toolIndex == 1)
+//			toolInfoOffset = EXTRUDER_PID_BASE_1;
+//
+//		if(offset == CoolingFanOffsets.COOLING_FAN_ENABLE)
+//			toolInfoOffset += 0;
+//		else if (offset == CoolingFanOffsets.COOLING_FAN_SETPOINT_C)		
+//			toolInfoOffset += 0;
+		//if Sanguino3GEEPRPOM.EEPROM_CHECK_LOW;
+		//if Sanguino3GEEPRPOM.EEPROM_CHECK_HIGH;
+		//if Sanguino3GEEPRPOM.ECThermistorOffsets.beta(which)
+		// Sanguino3GEEPRPOM.ECThermistorOffsets.r0(which), intToLE((int) r0), toolIndex);
+		// Sanguino3GEEPRPOM.ECThermistorOffsets.t0(which), intToLE((int) t0), toolIndex);
+		// Sanguino3GEEPRPOM.ECThermistorOffsets.data(which), table, toolIndex);
+		// ECBackoffOffsets.FORWARD_MS
+		// ECBackoffOffsets.STOP_MS,intToLE(bp.stopMs,2), toolIndex);
+		// ECBackoffOffsets.REVERSE_MS,intToLE(bp.reverseMs,2), toolIndex);
+		// ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2), toolIndex);
+		// offset+PIDOffsets.P_TERM_OFFSET,floatToLE(pp.p),toolIndex);
+		// offset+PIDOffsets.I_TERM_OFFSET,floatToLE(pp.i),toolIndex);
+		// offset+PIDOffsets.D_TERM_OFFSET,floatToLE(pp.d),toolIndex);
+		// 	Sanguino3GEEPRPOM.EC_EEPROM_EXTRA_FEATURES,intToLE(efdat,2), toolIndex);
+		// (Sanguino3GEEPRPOM.EC_EEPROM_SLAVE_ID
+		
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.READ_EEPROM.getCode());
+		pb.add16(offset);
+		pb.add8(len);
+		PacketResponse pr = runQuery(pb.getPacket());
+		
+
+		/*
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+		pb.add8((byte) toolIndex);
+		pb.add8(ToolCommandCode.READ_FROM_EEPROM.getCode());
+		pb.add16(offset);
+		pb.add8(len);
+		PacketResponse pr = runQuery(pb.getPacket());
+		if (pr.isOK()) {
+			int rvlen = Math.min(pr.getPayload().length - 1, len);
+			byte[] rv = new byte[rvlen];
+			// Copy removes the first response byte from the packet payload.
+			System.arraycopy(pr.getPayload(), 1, rv, 0, rvlen);
+			return rv;
+		} else {
+			Base.logger.severe("On tool read: "
+					+ pr.getResponseCode().getMessage());
+		}
+		Base.logger.severe("readFromToolEEPROM null" + offset +" " + len + " " + toolIndex);
+		return null;
+		*/
+		return null;
+	}
 
 	
-//	/**
-//	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
-//	 */
-//	public void enableMotor() throws RetryException {
-//		Base.logger.severe("MigtyBoard does not do DC style enable motor");
-//		//machine.currentTool().enableMotor();
-//	}
-//	
-//	/**
-//	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
-//	 */
-//	public void disableMotor() throws RetryException {
-//		Base.logger.severe("MigtyBoard does not do DC style disable motor");
-//		//machine.currentTool().disableMotor();
-//	}
-//	
 
-	/// Enable extruder motor
+	/** 
+	 * Enable extruder motor
+	 */
 	public void enableMotor() throws RetryException {
 
-		int tool = machine.currentTool().getIndex(); //WARNING: this in unsafe, since tool is checked
-													//async from when command is set. Tool should be a param
-		EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-		if (tool  == 0) {
-			axes.add(AxisId.A);
-			Base.logger.fine("enableMotor Toggling motor  A ");
-		}
-		else if (tool == 1)  {
-			axes.add(AxisId.B);
-			Base.logger.fine("enableMotor Toggling motor B ");
-		}
-		this.enableAxes(axes);
+		ToolModel curTool = machine.currentTool();//WARNING: this in unsafe, since tool is checked
+		//async from when command is set. Tool should be a param
+		Iterable<AxisId>  axes = getHijackedAxes(curTool);
+
+		// Hack conversion to match datapoints. ToDo: convert all to Interable or all to EnumSet, 
+		// stop using a mix
+		EnumSet<AxisId> axesEnum = EnumSet.noneOf(AxisId.class);
+		for( AxisId e: axes)
+			axesEnum.add(e);
+
+		enableAxes(axesEnum);
+		curTool.enableMotor();
 	}
 
 	/** 
 	 * Disable our extruder motor
 	 */
 	public void disableMotor() throws RetryException {
-
-		EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
-		int tool = machine.currentTool().getIndex(); //WARNING: this in unsafe, since tool is checked
+		ToolModel curTool = machine.currentTool();//WARNING: this in unsafe, since tool is checked
 		//async from when command is set. Tool should be a param
-		if (tool == 0) {
-			axes.add(AxisId.A);
-			Base.logger.severe("enableMotor Toggling motor  A ");	
-		}
-		else if (tool == 1) {
-			axes.add(AxisId.B);
-			Base.logger.severe("enableMotor Toggling motor  B ");
-		}
-		this.disableAxes(axes);
+		Iterable<AxisId> axes = getHijackedAxes(curTool);
+
+		// Hack conversion to match datapoints. ToDo: convert all to Interable or all to EnumSet, 
+		// stop using a mix
+		EnumSet<AxisId> axesEnum = EnumSet.noneOf(AxisId.class);
+		for( AxisId e: axes)
+			axesEnum.add(e);
+
+		disableAxes(axesEnum);
+		curTool.disableMotor();
 	}
+
 	
 	
 	

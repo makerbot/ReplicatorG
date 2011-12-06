@@ -129,7 +129,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		Base.logger.fine("Attempting to initialize device");
 
 		// Assert: serial port present.
-		// TODO: Handle this better
 		assert serial != null : "No serial port found.";
 		// wait till we're initialized
 		if (!isInitialized()) {
@@ -579,7 +578,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	public void queuePoint(Point5d p) throws RetryException {
 		// TODO: check if our current position is valid?
 
-		Base.logger.fine("Queued point " + p);
+		Base.logger.finer("Queued point " + p);
 
 		// is this point even step-worthy?
 		Point5d deltaSteps = getAbsDeltaSteps(getCurrentPosition(false), p);
@@ -1645,6 +1644,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 			Base.logger.severe("On tool read: "
 					+ pr.getResponseCode().getMessage());
 		}
+		Base.logger.severe("readFromToolEEPROM null" + offset +" " + len + " " + toolIndex);
 		return null;
 	}
 
@@ -2325,22 +2325,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 		data[0] = (byte) index;
 		// The broadcast address has changed. The safest solution is to try
 		// both.
-		writeToToolEEPROM(Sanguino3GEEPRPOM.EC_EEPROM_SLAVE_ID, data, 255); // old
-																			// firmware
-																			// used
-																			// 255,
-																			// new
-																			// fw
-																			// ignores
-																			// this
-		writeToToolEEPROM(Sanguino3GEEPRPOM.EC_EEPROM_SLAVE_ID, data, 127); // new
-																			// firmware
-																			// used
-																			// 127,
-																			// old
-																			// fw
-																			// ignores
-																			// this
+		writeToToolEEPROM(Sanguino3GEEPRPOM.EC_EEPROM_SLAVE_ID, data, 255); 
+		///^  old firmware used 255, new fw ignores this 
+		writeToToolEEPROM(Sanguino3GEEPRPOM.EC_EEPROM_SLAVE_ID, data, 127); 
+		///^ new firmware used 127, old fw ignores this
 		return false;
 	}
 
