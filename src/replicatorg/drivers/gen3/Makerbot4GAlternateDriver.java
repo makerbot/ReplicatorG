@@ -119,7 +119,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	}
 
 	/**
-	 * Overloaded to support extruding without moving by converting a delay in to an extruder command
+	 * Overloaded to support extruding without moving by converting a delay into an extruder command
 	 */
 	public void delay(long millis) throws RetryException {
 		if (Base.logger.isLoggable(Level.FINER)) {

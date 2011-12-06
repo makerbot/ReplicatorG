@@ -617,9 +617,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		String s = e.getActionCommand();
+		String actionName = e.getActionCommand();
 		
-		if(s.equals("handleTextField"))
+		if(actionName.equals("handleTextField"))
 		{
 			JTextField source = (JTextField) e.getSource();
 			try {
@@ -629,13 +629,13 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			}
 			source.selectAll();
 		}
-		else if (s.equals("Extrude-duration")) {
+		else if (actionName.equals("Extrude-duration")) {
 			JComboBox cb = (JComboBox) e.getSource();
 			String timeText = (String) cb.getSelectedItem();
 			setExtrudeTime(timeText);
 		}
 		/* Handle stepper extruder commands */
-		if (s.equals("forward")) {
+		if (actionName.equals("forward")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
 				// Reverted to one single command for RepRap5D driver
@@ -647,7 +647,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
 				}
 			}
-		} else if (s.equals("reverse")) {
+		} else if (actionName.equals("reverse")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
 				// Reverted to one single command for RepRap5D driver
@@ -659,7 +659,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
 				}
 			}
-		} else if (s.equals("stop")) {
+		} else if (actionName.equals("stop")) {
 			machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
 			
 			if (this.toolModel.getMotorStepperAxis() != null) {
