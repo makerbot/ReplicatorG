@@ -23,6 +23,7 @@
 
 package replicatorg.drivers;
 
+import java.awt.Color;
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -632,6 +633,34 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 
 	public void closeValve() throws RetryException {
 		machine.currentTool().closeValve();
+	}
+
+	public void setStepperVoltage(int stepperId, int referenceValue) throws RetryException
+	{
+		Base.logger.fine("BaseImplementation setStepperVoltage called.");
+	}
+	
+//	public void storeStepperVoltage(int stepperId, int referenceValue) throws RetryException
+//	{
+//		Base.logger.fine("BaseImplementation setStepperVoltage called.");
+//	}
+	
+	public int getStepperVoltage(int stepperId)
+	{
+		Base.logger.fine("BaseImplementation getStepperVoltage called.");
+		return -1;
+	}
+
+	
+	public void setLedStrip(Color color, int effectId) throws RetryException 
+	{
+		Base.logger.fine("BaseImplementation setLedStrip called.");
+	}
+	
+	
+	public void sendBeep(int frequencyHz, int durationMs) throws RetryException
+	{
+		Base.logger.fine("BaseImplementation sendBeep called.");
 	}
 
 	/***************************************************************************

@@ -1,13 +1,15 @@
 package replicatorg.drivers;
 
-// A fake, but agreeable driver.
+/// A fake, but agreeable driver.
 
+import java.awt.Color;
 import java.util.EnumSet;
 
 import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
+import replicatorg.app.Base;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
@@ -520,6 +522,41 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 
 	}
 
+	public void setStepperVoltage(int stepperId, int referenceValue)
+	{
+		Base.logger.finer("VirtualPrinter::setStepperVoltage");
+		//generated method stub
+	}
+
+	public int getStepperVoltage(int stepperId)
+	{
+		Base.logger.finer("VirtualPrinter::setStepperVoltage");
+		return 0;
+		//generated method stub
+	}
+	
+
+	public void storeStepperVoltage(int stepperId, int referenceValue)
+	{
+		Base.logger.finer("VirtualPrinter::storeStepperVoltage");
+		//generated method stub
+	}
+
+	
+	public void setLedStrip(Color color, int effectId)
+	{
+		Base.logger.finer("VirtualPrinter::setLedStrip");
+		//generated method stub
+	}
+	
+	
+	public void sendBeep(int frequencyHz, int durationMs) throws RetryException
+	{
+		Base.logger.finer("VirtualPrinter::sendBeep");
+		//generated method stub
+	}
+
+	
 	@Override
 	public void openCollet() {
 		// TODO Auto-generated method stub

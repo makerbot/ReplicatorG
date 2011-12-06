@@ -1063,8 +1063,7 @@ ToolpathGenerator.GeneratorListener
 		return menu;
 	}
 
-	JMenuItem onboardParamsItem = new JMenuItem("Motherboard Onboard Preferences...");
-	JMenuItem extruderParamsItem = new JMenuItem("Toolhead Onboard Preferences...");
+	JMenuItem onboardParamsItem = new JMenuItem("Machine Onboard Preferences...");
 	JMenuItem toolheadIndexingItem = new JMenuItem("Set Toolhead Index...");
 	JMenuItem realtimeControlItem = new JMenuItem("Open real time controls window...");
 	JMenuItem infoPanelItem = new JMenuItem("Machine information...");
@@ -1098,14 +1097,6 @@ ToolpathGenerator.GeneratorListener
 		});
 		onboardParamsItem.setVisible(false);
 		menu.add(onboardParamsItem);
-
-		extruderParamsItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				handleExtruderPrefs();
-			}
-		});
-		extruderParamsItem.setVisible(false);
-		menu.add(extruderParamsItem);
 
 		toolheadIndexingItem.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
@@ -1209,20 +1200,27 @@ ToolpathGenerator.GeneratorListener
 			{
 				machine.runCommand(new replicatorg.drivers.commands.SelectTool(1));
 				machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool1Target));
-				machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(platTarget));
 			}
 		}
 	}
 
 	protected void handleToolheadIndexing() {
 		if (!(machineLoader.getDriver() instanceof MultiTool)) {
-			JOptionPane.showMessageDialog(
-					this,
+			JOptionPane.showMessageDialog( this,
 					"ReplicatorG can't connect to your machine or toolhead index setting is not supported.\nTry checking your settings and resetting your machine.",
 					"Can't run toolhead indexing", JOptionPane.ERROR_MESSAGE);
 			return;
 		} else {
 			ToolheadIndexer indexer = new ToolheadIndexer(this,machineLoader.getDriver());
+			if(isDualDriver())
+			{
+				JOptionPane.showMessageDialog( this,
+						"WARNING: Toolhead Index must be set one at a time on DualStrusion machines.  " +
+						"See documentation at: http://www.makerbot.com/docs/dualstrusion for full instructions",
+						"Dualstrusion Extruder Board Warning:",
+						JOptionPane.WARNING_MESSAGE);
+			}
+
 			indexer.setVisible(true);
 		}
 	}
@@ -1624,7 +1622,7 @@ ToolpathGenerator.GeneratorListener
 					this,
 					"ReplicatorG can't connect to your machine.\nTry checking your settings and resetting your machine.",
 					"Can't find machine", JOptionPane.ERROR_MESSAGE);
-		} else {
+		} else if(!building) {
 			ControlPanelWindow window = ControlPanelWindow.getControlPanel(machineLoader.getMachine());
 			if (window != null) {
 				window.pack();
@@ -1666,30 +1664,21 @@ ToolpathGenerator.GeneratorListener
 
 	}
 
+	/**
+	 * Displays Machine Onboard Preferences dialog
+	 */
 	public void handleOnboardPrefs() {
 		if (!(machineLoader.getDriver() instanceof OnboardParameters)) {
 			JOptionPane.showMessageDialog(
 					this,
-					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
+					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\n"+
+					"Try checking your settings and resetting your machine.",
 					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
-		MachineOnboardParameters moo = new MachineOnboardParameters((OnboardParameters)machineLoader.getDriver(),machineLoader.getDriver());
-		moo.setVisible(true);
-	}
-
-	public void handleExtruderPrefs() {
-		if (!(machineLoader.getDriver() instanceof OnboardParameters)) {
-			JOptionPane.showMessageDialog(
-					this,
-					"ReplicatorG can't connect to your machine or onboard preferences are not supported.\nTry checking your settings and resetting your machine.",
-					"Can't run onboard prefs", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-
-		ExtruderOnboardParameters eop = new ExtruderOnboardParameters((OnboardParameters)machineLoader.getDriver());
-		eop.setVisible(true);
+		OnboardParametersWindow mop = new OnboardParametersWindow((OnboardParameters)machineLoader.getDriver(),machineLoader.getDriver());
+		mop.setVisible(true);
 	}
 
 	/**
@@ -1705,7 +1694,7 @@ ToolpathGenerator.GeneratorListener
 	 */
 	public void showPrefsWindow() {
 		if(preferences == null)
-			preferences = new PreferencesWindow();
+			preferences = new PreferencesWindow(machineLoader.getMachine());
 
 		preferences.showFrame(this);
 	}
@@ -1866,14 +1855,14 @@ ToolpathGenerator.GeneratorListener
 		{
 			flag = BuildFlag.JUST_BUILD;
 		}
-		else if(Base.preferences.getBoolean("build.showRegenCheck", true) && getBuild() != null)
+		else if(getBuild() != null)
 		{
 			//no code. Generate code and build
 			if(getBuild().getCode() == null)
 			{
 				flag = BuildFlag.GEN_AND_BUILD;
 			}
-			else
+			else if(Base.preferences.getBoolean("build.showRegenCheck", true))
 			{
 				JCheckBox showCheck = new JCheckBox("Print from Model View always regenerates gcode.");
 				Object[] choices = {"Regenerate GCode", "Use existing GCode"};
@@ -1883,7 +1872,7 @@ ToolpathGenerator.GeneratorListener
 						};
 				int option = JOptionPane.showOptionDialog(this, message, "Re-generate Gcode?", 
 					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-					null,choices, choices[1]);
+					null, choices, choices[1]);
 
 				if(showCheck.isSelected())
 					Base.preferences.putBoolean("build.showRegenCheck", false); 
@@ -1891,9 +1880,14 @@ ToolpathGenerator.GeneratorListener
 				if(option == JOptionPane.CLOSED_OPTION) 	
 					flag = BuildFlag.NONE; //exit clicked
 				else if(option == 0 )  
-					flag = BuildFlag.GEN_AND_BUILD; //gen and builld
+					flag = BuildFlag.GEN_AND_BUILD; //gen and build
 				else if (option == 1) 
 					flag = BuildFlag.JUST_BUILD; //build from old generation
+			}
+			else
+			{
+				// If showRegenCheck is false, the user wants us to always regenerate
+				flag = BuildFlag.GEN_AND_BUILD;
 			}
 		}
 		return flag;
@@ -2192,9 +2186,7 @@ ToolpathGenerator.GeneratorListener
 		// enable the build menu item when the machine is ready and there is gcode in the editor
 		buildMenuItem.setEnabled(hasGcode && evt.getState().isConfigurable());
 		onboardParamsItem.setVisible(showParams);
-		extruderParamsItem.setVisible(showParams);
 		onboardParamsItem.setEnabled(showParams);
-		extruderParamsItem.setEnabled(showParams);
 		preheatItem.setEnabled(evt.getState().isConnected() && !building);
 		
 		boolean showIndexing = 

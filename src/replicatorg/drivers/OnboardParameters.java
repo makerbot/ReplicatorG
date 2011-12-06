@@ -5,6 +5,10 @@ import java.util.EnumSet;
 import replicatorg.machine.model.AxisId;
 
 public interface OnboardParameters {
+	
+	public static final int EXTRUDER = 0;
+	public static final int BUILD_PLATFORM = 1;
+	
 	EnumSet<AxisId> getInvertedParameters();
 	void setInvertedParameters(EnumSet<AxisId> axes);
 	
@@ -42,15 +46,15 @@ public interface OnboardParameters {
 	 */
 	boolean hasFeatureOnboardParameters();
 		
-	void createThermistorTable(int which, double r0, double t0, double beta);
-	int getR0(int which);
-	int getT0(int which);
-	int getBeta(int which);
+	void createThermistorTable(int which, double r0, double t0, double beta, int toolIndex);
+	int getR0(int which, int toolIndex);
+	int getT0(int which, int toolIndex);
+	int getBeta(int which, int toolIndex);
 	
 	
-	boolean getCoolingFanEnabled();
-	int getCoolingFanSetpoint();
-	void setCoolingFanParameters(boolean enabled, int setpoint);
+	boolean getCoolingFanEnabled(int toolIndex);
+	int getCoolingFanSetpoint(int toolIndex);
+	void setCoolingFanParameters(boolean enabled, int setpoint, int toolIndex);
 
 	class BackoffParameters {
 		public int stopMs;
@@ -59,8 +63,8 @@ public interface OnboardParameters {
 		public int triggerMs;
 	}
 	
-	BackoffParameters getBackoffParameters();
-	void setBackoffParameters(BackoffParameters params);
+	BackoffParameters getBackoffParameters(int toolIndex);
+	void setBackoffParameters(BackoffParameters params, int toolIndex);
 	
 	class PIDParameters {
 		public float p;
@@ -68,8 +72,8 @@ public interface OnboardParameters {
 		public float d;
 	}
 	
-	PIDParameters getPIDParameters(int which);
-	void setPIDParameters(int which, PIDParameters params);
+	PIDParameters getPIDParameters(int which, int toolIndex);
+	void setPIDParameters(int which, PIDParameters params, int toolIndex);
 	
 	class ExtraFeatures {
 		final static int CHA = 0;
@@ -81,8 +85,8 @@ public interface OnboardParameters {
 		public int abpChannel;
 	}
 	
-	ExtraFeatures getExtraFeatures();
-	void setExtraFeatures(ExtraFeatures features);
+	ExtraFeatures getExtraFeatures(int toolIndex);
+	void setExtraFeatures(ExtraFeatures features, int toolIndex);
 	
 	public enum EstopType {
 		NOT_PRESENT((byte)0x00),
@@ -111,8 +115,13 @@ public interface OnboardParameters {
 	void resetToFactory();
 
 	/** Reset the onboard parameters on the extruder controller to factory settings. */ 
-	void resetToolToFactory();
+	void resetToolToFactory(int toolIndex);
 
+	boolean hasVrefSupport();
+	/** set the Stepper Voltage Reference */
+	void setStoredStepperVoltage(int stepperId, int referenceValue);
+	/** get the Stepper Voltage Reference */
+	int getStoredStepperVoltage(int stepperId);
 	
 	public class CommunicationStatistics {
 		public int packetCount;

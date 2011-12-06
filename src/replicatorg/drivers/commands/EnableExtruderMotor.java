@@ -3,15 +3,15 @@ package replicatorg.drivers.commands;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 
-public class EnableMotor implements DriverCommand {
+public class EnableExtruderMotor implements DriverCommand {
 	
 	long millis = 0;
 
-	public EnableMotor() {
+	public EnableExtruderMotor() {
 		this.millis = 0;
 	}
 	
-	public EnableMotor(long millis) {
+	public EnableExtruderMotor(long millis) {
 		this.millis = millis;
 	}
 	

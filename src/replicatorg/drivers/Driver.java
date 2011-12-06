@@ -23,6 +23,7 @@
 
 package replicatorg.drivers;
 
+import java.awt.Color;
 import java.util.EnumSet;
 
 import javax.vecmath.Point3d;
@@ -381,6 +382,26 @@ public interface Driver {
 
 	public void closeValve() throws RetryException;
 
+	/*************************************************************************
+	 * Potentiometer interface
+	 **************************************************************************/
+	public void setStepperVoltage(int stepperId, int referenceValue) throws RetryException;
+//	public void storeStepperVoltage(int stepperId, int referenceValue) throws RetryException;
+	public int getStepperVoltage(int stepperId ); 
+	
+	/*************************************************************************
+	 * LED Strip interface
+	 **************************************************************************/
+	public void setLedStrip(Color color, int effectId) throws RetryException;
+	//public Color getLedColors(int effectId);
+
+
+	/*************************************************************************
+	 * Beep Interface
+	 **************************************************************************/
+	public void sendBeep(int frequencyHz, int durationMs) throws RetryException;
+
+	
 	/***************************************************************************
 	 * Collet interface functions
 	 **************************************************************************/
@@ -414,5 +435,7 @@ public interface Driver {
 	 * Heartbeat
 	 **************************************************************************/
 	public boolean heartbeat();
+	
+
 
 }
