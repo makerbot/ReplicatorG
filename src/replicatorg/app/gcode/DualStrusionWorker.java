@@ -136,7 +136,7 @@ public class DualStrusionWorker {
 
 		// TRICKY: since both files are 'default toolhead' (t1) swap primaryTemp
 		// to be 'first toolhead' (t0)
-		primaryTemp = swapToolhead(primaryTemp, Toolheads.LEFT.getTid());
+		primaryTemp = swapToolhead(primaryTemp, Toolheads.LEFT.getTcode());
 
 		if (replaceStart) {
 			stripStartGcode(primaryGcode);
@@ -177,7 +177,7 @@ public class DualStrusionWorker {
 	
 	private static void modifyTempReference(ArrayList<String> gcode, Toolheads toolhead, String newTempCmd)
 	{
-		String matchTarget = "M104.*" + toolhead.getTid() + ".*";
+		String matchTarget = "M104.*" + toolhead.getTcode() + ".*";
 
 		for (int i = 0; i < gcode.size(); i++) {
 			if (gcode.get(i).matches(matchTarget)) {
@@ -262,7 +262,8 @@ public class DualStrusionWorker {
 		 *    -Ebeneezer 
 		 */
 
-		ArrayList<String> gcode = readFiletoArrayList(source);
+		ArrayList<String> oldGcode = readFiletoArrayList(source);
+		ArrayList<String> newGcode = new ArrayList<String>();
 		
 		// T only needs to be called once in a file, so we find the first,
 		// make sure it's correct, and then remove every T after it
@@ -271,7 +272,7 @@ public class DualStrusionWorker {
 		// same goes for G54&55
 		boolean foundG = false;
 		
-		for(String line : gcode)
+		for(String line : oldGcode)
 		{
 			GCode g = new GCode(line);
 
@@ -279,15 +280,22 @@ public class DualStrusionWorker {
 			// removes every following toolhead call
 			if(!foundT)
 			{
-				if(g.removeCode('T') != null)
+//				if(g.removeCode('T') != null)
+				if(g.hasCode('T'))
 				{
 					foundT = true;
-					g.addCode('T', tool.number);
+//					g.addCode('T', tool.number);
+
+					// replace T* with the correct T code
+					line = line.replace("T0", tool.getTcode());
+					line = line.replace("T1", tool.getTcode());
 				}
 			}
 			else
 			{
-				g.removeCode('T');
+//				g.removeCode('T');
+				line = line.replace("T0", "");
+				line = line.replace("T1", "");
 			}
 			
 			// replaces the first G54/55 with the correct one
@@ -299,8 +307,9 @@ public class DualStrusionWorker {
 					foundG = true;
 					if(tool == Toolheads.LEFT)
 					{
-						g.removeCode('G');
-						g.addCode('G', 54);
+//						g.removeCode('G');
+//						g.addCode('G', 54);
+						line = line.replace("G55", "G54");
 					}
 				}
 				else if(g.getCodeValue('G') == 54)
@@ -308,22 +317,27 @@ public class DualStrusionWorker {
 					foundG = true;
 					if(tool == Toolheads.RIGHT)
 					{
-						g.removeCode('G');
-						g.addCode('G', 55);
+						line = line.replace("G54", "G55");
 					}
 				}
 			}
 			else
 			{
 				if (g.getCodeValue('G') == 55 || g.getCodeValue('G') == 54)
-					g.removeCode('G');
+				{
+//					g.removeCode('G');
+					line = line.replace("G54", "");
+					line = line.replace("G55", "");
+				}
 			}
 			
 			//put the codes back in the string
-			line = g.getCommand() + g.getComment();
+//			line = g.getCommand() + g.getComment();
+//			System.out.println(line);
+			newGcode.add(line);
 		}
 
-		writeArrayListtoFile(gcode, source);
+		writeArrayListtoFile(newGcode, source);
 	}
 
 	/**
@@ -393,7 +407,7 @@ public class DualStrusionWorker {
 	private static ArrayList<String> replaceToolHeadReferences(
 			ArrayList<String> gcode, Toolheads desiredToolhead) {
 		ArrayList<String> newGcode = new ArrayList<String>();
-		String newToolhead = desiredToolhead.getTid();
+		String newToolhead = desiredToolhead.getTcode();
 
 		for (String s : gcode) {
 

@@ -122,30 +122,30 @@ public class GCode {
 		return -1;	// TODO: What do we return if there is no code?
 	}
 	
-	public Double removeCode(char searchCode) {
-		for (Iterator<gCodeParameter> i = parameters.iterator(); i.hasNext();)
-		{
-			gCodeParameter gcp = i.next();
-			if(gcp.code == searchCode)
-			{
-				i.remove();
-				return gcp.value;
-			}
-		}
-		return null;
-	}
-	
-	public void addCode(Character code, Double value)
-	{
-		parameters.add(new gCodeParameter(code, value));
-		command += " ";
-		command = command.concat(code.toString()).concat(value.toString());
-	}
-	
-	public void addCode(Character code, Integer value)
-	{
-		parameters.add(new gCodeParameter(code, ((Number)value).doubleValue()));
-		command += " ";
-		command = command.concat(code.toString()).concat(value.toString());
-	}
+//	public Double removeCode(Character searchCode) {
+//		for (Iterator<gCodeParameter> i = parameters.iterator(); i.hasNext();)
+//		{
+//			gCodeParameter gcp = i.next();
+//			if(gcp.code == searchCode)
+//			{
+//				i.remove();
+//				return gcp.value;
+//			}
+//		}
+//		return null;
+//	}
+//	
+//	public void addCode(Character code, Double value)
+//	{
+//		parameters.add(new gCodeParameter(code, value));
+//		command += " ";
+//		command = command.concat(code.toString()).concat(value.toString());
+//	}
+//	
+//	public void addCode(Character code, Integer value)
+//	{
+//		parameters.add(new gCodeParameter(code, ((Number)value).doubleValue()));
+//		command += " ";
+//		command = command.concat(code.toString()).concat(value.toString());
+//	}
 }

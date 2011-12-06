@@ -21,7 +21,7 @@ public enum Toolheads
 	}
 	
 	/// returns the Toolhead ID (T0 or T1) 
-	public String getTid(){
+	public String getTcode(){
 		if(this == RIGHT)		return "T0";
 		return "T1";
 	}
