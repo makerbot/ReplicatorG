@@ -1,4 +1,4 @@
-package replicatorg.dualstrusion;
+package replicatorg.app.gcode;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import replicatorg.app.Base;
+import replicatorg.machine.model.Toolheads;
 
 /**
  * 
@@ -135,13 +136,12 @@ public class DualStrusionWorker {
 
 		// TRICKY: since both files are 'default toolhead' (t1) swap primaryTemp
 		// to be 'first toolhead' (t0)
-		primaryTemp = swapToolhead(primaryTemp, Toolheads.PRIMARY.getTid());
+		primaryTemp = swapToolhead(primaryTemp, Toolheads.LEFT.getTid());
 
 		if (replaceStart) {
 			stripStartGcode(primaryGcode);
 		} else {
-			startGcode = saveStartGcode(primaryGcode); // startGcode comes from
-														// prior file
+			startGcode = saveStartGcode(primaryGcode); // startGcode comes from prior file
 		}
 
 		if (replaceEnd == false)
@@ -152,18 +152,17 @@ public class DualStrusionWorker {
 		stripEndGcode(secondaryGcode);
 
 		primaryGcode = replaceToolHeadReferences(primaryGcode,
-				Toolheads.PRIMARY);
+				Toolheads.LEFT);
 		secondaryGcode = replaceToolHeadReferences(secondaryGcode,
-				Toolheads.SECONDARY);
+				Toolheads.RIGHT);
 
 		// interlace the layers for each toolhead
-		LayerHelper helper = new LayerHelper(primaryGcode, secondaryGcode,
-				false, useWipes);
+		LayerHelper helper = new LayerHelper(primaryGcode, secondaryGcode, false, useWipes);
 		master_layer = helper.mergeLayers();
 
 		//modifyTempReferences(startGcode, primaryTemp, secondaryTemp);
-		modifyTempReference(startGcode, Toolheads.PRIMARY, primaryTemp);
-		modifyTempReference(startGcode, Toolheads.SECONDARY, secondaryTemp);
+		modifyTempReference(startGcode, Toolheads.LEFT, primaryTemp);
+		modifyTempReference(startGcode, Toolheads.RIGHT, secondaryTemp);
 
 		// add start and end gcode
 		master_layer.addAll(0, startGcode);
@@ -216,38 +215,113 @@ public class DualStrusionWorker {
 	 * Takes gcode, and changes all toolhead references(T0 -> T1 or similar)
 	 * based on user input.
 	 * 
+	 * G54 also must be used for T0, and G55 for T1 
+	 * 
+	 * This is not used by DualstrusionWorker, 
+	 * it is only meant for single headed files
+	 * 
 	 * @param source
 	 *            gcode to alter the toolhead info on
-	 * @param Toolhead
+	 * @param tool
 	 *            string name of the toolhead, 'right' or 'left'
 	 */
-	public static void changeToolHead(File source, String Toolhead) {
-		ArrayList<String> startGcode = readFiletoArrayList(new File(
-				"DualStrusion_Snippets/start.gcode"));
-		ArrayList<String> endGcode = readFiletoArrayList(new File(
-				"DualStrusion_Snippets/end.gcode"));
+	public static void changeToolHead(File source, Toolheads tool) {
+//		ArrayList<String> startGcode = readFiletoArrayList(new File(
+//				"DualStrusion_Snippets/start.gcode"));
+//		ArrayList<String> endGcode = readFiletoArrayList(new File(
+//				"DualStrusion_Snippets/end.gcode"));
+//		ArrayList<String> gcode = readFiletoArrayList(source);
+//
+//		Toolheads t = Toolheads.SECONDARY;
+//
+//		if (Toolhead.equalsIgnoreCase("right"))
+//			t = Toolheads.SECONDARY;
+//		else if (Toolhead.equalsIgnoreCase("left"))
+//			t = Toolheads.PRIMARY;
+//
+//		// remove old start/end gcode
+//		stripStartGcode(gcode);
+//		stripEndGcode(gcode);
+//
+//		// change reference to toolheads before adding start gcode
+//		gcode = replaceToolHeadReferences(gcode, t);
+//
+//		// insert new start/end gcode stanzas
+//		gcode.addAll(0, startGcode);
+//		gcode.addAll(endGcode);
+//
+//		// change offset recall after adding gcode
+//		changeOffsetRecall(gcode, t);
+		
+		/*
+		 * This function is named "change toolhead." It should not do anything
+		 * except change the toolhead.
+		 * doing stuff like replacing start & end gcodes is sneaky, underhanded,
+		 * and belongs somewhere else.
+		 * Humbug.
+		 *    -Ebeneezer 
+		 */
+
 		ArrayList<String> gcode = readFiletoArrayList(source);
+		
+		// T only needs to be called once in a file, so we find the first,
+		// make sure it's correct, and then remove every T after it
+		// (unless it's a comment, we can skip comments)
+		boolean foundT = false;
+		// same goes for G54&55
+		boolean foundG = false;
+		
+		for(String line : gcode)
+		{
+			GCode g = new GCode(line);
 
-		Toolheads t = Toolheads.SECONDARY;
-
-		if (Toolhead.equalsIgnoreCase("right"))
-			t = Toolheads.SECONDARY;
-		else if (Toolhead.equalsIgnoreCase("left"))
-			t = Toolheads.PRIMARY;
-
-		// remove old start/end gcode
-		stripStartGcode(gcode);
-		stripEndGcode(gcode);
-
-		// change reference to toolheads before adding start gcode
-		gcode = replaceToolHeadReferences(gcode, t);
-
-		// insert new start/end gcode stanzas
-		gcode.addAll(0, startGcode);
-		gcode.addAll(endGcode);
-
-		// change offset recall after adding gcode
-		changeOffsetRecall(gcode, t);
+			// replace the first toolhead call with the correct one
+			// removes every following toolhead call
+			if(!foundT)
+			{
+				if(g.removeCode('T') != null)
+				{
+					foundT = true;
+					g.addCode('T', tool.number);
+				}
+			}
+			else
+			{
+				g.removeCode('T');
+			}
+			
+			// replaces the first G54/55 with the correct one
+			// removes every following G54/55
+			if(!foundG)
+			{
+				if(g.getCodeValue('G') == 55)
+				{
+					foundG = true;
+					if(tool == Toolheads.LEFT)
+					{
+						g.removeCode('G');
+						g.addCode('G', 54);
+					}
+				}
+				else if(g.getCodeValue('G') == 54)
+				{
+					foundG = true;
+					if(tool == Toolheads.RIGHT)
+					{
+						g.removeCode('G');
+						g.addCode('G', 55);
+					}
+				}
+			}
+			else
+			{
+				if (g.getCodeValue('G') == 55 || g.getCodeValue('G') == 54)
+					g.removeCode('G');
+			}
+			
+			//put the codes back in the string
+			line = g.getCommand() + g.getComment();
+		}
 
 		writeArrayListtoFile(gcode, source);
 	}

@@ -1,4 +1,4 @@
-package replicatorg.dualstrusion;
+package replicatorg.app.gcode;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
+import replicatorg.machine.model.Toolheads;
 import replicatorg.machine.model.WipeModel;
 
 /**
@@ -49,7 +50,7 @@ public class LayerHelper {
 		this.useWipes = useWipes;
 		this.mergeSupport = mergeSupport;
 		
-		currentToolhead = Toolheads.PRIMARY;
+		currentToolhead = Toolheads.LEFT;
 		
 	}
 	/**
@@ -130,7 +131,7 @@ public class LayerHelper {
 		}
 		//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
-		merged.addAll(toolChange(Toolheads.PRIMARY, 0.6f)); //insures we start with right offset and nozzles start supaclean
+		merged.addAll(toolChange(Toolheads.LEFT, 0.6f)); //insures we start with right offset and nozzles start supaclean
 
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
@@ -144,7 +145,7 @@ public class LayerHelper {
 				{
 					System.out.println("mergeSupport is: ON");
 					//currentToolhead = Toolheads.Primary; //1=A=Primary=Left
-					merged.addAll(toolChange(Toolheads.PRIMARY, i));
+					merged.addAll(toolChange(Toolheads.LEFT, i));
 					//2=B=Primary=Right
 				}
 				//System.out.println("non null layers at " + i);
@@ -161,13 +162,13 @@ public class LayerHelper {
 				{
 					//System.out.println("a is real b is null" + i);
 					//setCurrentFeedRate(b.getCommands());
-					merged.addAll(parseLayer(a, Toolheads.PRIMARY));
+					merged.addAll(parseLayer(a, Toolheads.LEFT));
 				}
 				else if(b != null)
 				{
 					//System.out.println("b is real a is null" + i);
 					//setCurrentFeedRate(a.getCommands());
-					merged.addAll(parseLayer(b, Toolheads.SECONDARY));
+					merged.addAll(parseLayer(b, Toolheads.RIGHT));
 				}
 			}
 		}
@@ -201,28 +202,28 @@ public class LayerHelper {
 		//	setCurrentFeedRate(a.getCommands());
 		ArrayList<String> completeLayer = new ArrayList<String>();
 		//System.out.println("curTool " + currentToolhead + " desttool " + destTool + "linenum " + a.getHeight());
-		if(destTool == Toolheads.PRIMARY)
+		if(destTool == Toolheads.LEFT)
 		{
-			if(currentToolhead == Toolheads.PRIMARY)
+			if(currentToolhead == Toolheads.LEFT)
 			{
 				//System.out.println(a.getCommands());
 				completeLayer.addAll(a.getCommands());
 			}
-			else if(currentToolhead == Toolheads.SECONDARY)
+			else if(currentToolhead == Toolheads.RIGHT)
 			{
-				completeLayer.addAll(toolChange(Toolheads.PRIMARY, a));
+				completeLayer.addAll(toolChange(Toolheads.LEFT, a));
 				completeLayer.addAll(a.getCommands());
 			}
 		}
-		else if(destTool == Toolheads.SECONDARY)
+		else if(destTool == Toolheads.RIGHT)
 		{
-			if(currentToolhead == Toolheads.SECONDARY)
+			if(currentToolhead == Toolheads.RIGHT)
 			{
 				completeLayer.addAll(a.getCommands());
 			}
-			else if(currentToolhead == Toolheads.PRIMARY)
+			else if(currentToolhead == Toolheads.LEFT)
 			{
-				completeLayer.addAll(toolChange(Toolheads.SECONDARY, a));
+				completeLayer.addAll(toolChange(Toolheads.RIGHT, a));
 				completeLayer.addAll(a.getCommands());
 			}
 		}
@@ -293,18 +294,18 @@ public class LayerHelper {
 		ArrayList<String> cmds = new ArrayList<String>();
 		//System.out.println(a.getHeight());
 		cmds.add("(<layer> " + nf.format(a.getHeight()) + " )");
-		if(currentToolhead == Toolheads.PRIMARY)
+		if(currentToolhead == Toolheads.LEFT)
 		{
 			//setCurrentFeedRate(b.getCommands());
 			cmds.addAll(a.getCommandsWithoutLayerTag());
-			cmds.addAll(toolChange(Toolheads.SECONDARY, a));
+			cmds.addAll(toolChange(Toolheads.RIGHT, a));
 			cmds.addAll(b.getCommandsWithoutLayerTag());
 		}
-		else if(currentToolhead == Toolheads.SECONDARY)
+		else if(currentToolhead == Toolheads.RIGHT)
 		{
 			//setCurrentFeedRate(a.getCommands());
 			cmds.addAll(b.getCommandsWithoutLayerTag());
-			cmds.addAll(toolChange(Toolheads.PRIMARY, b));
+			cmds.addAll(toolChange(Toolheads.LEFT, b));
 			cmds.addAll(a.getCommandsWithoutLayerTag());
 		}
 		cmds.add("(</layer>)");
@@ -422,10 +423,10 @@ public class LayerHelper {
 		ArrayList<String> targetCode = new ArrayList<String>();
 		Toolheads currentTool = null;
 
-		if (nextTool == Toolheads.PRIMARY) { 
-			currentTool = Toolheads.SECONDARY;
-		} else if (nextTool == Toolheads.SECONDARY) { 
-			currentTool = Toolheads.PRIMARY;
+		if (nextTool == Toolheads.LEFT) { 
+			currentTool = Toolheads.RIGHT;
+		} else if (nextTool == Toolheads.RIGHT) { 
+			currentTool = Toolheads.LEFT;
 		}
 		int nextToolnum = nextTool.number;
 		int currentToolnum = currentTool.number;

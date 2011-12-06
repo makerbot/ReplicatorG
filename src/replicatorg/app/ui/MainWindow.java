@@ -107,8 +107,9 @@ import net.iharder.dnd.FileDrop;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.Base.InitialOpenBehavior;
-import replicatorg.app.GCodeEnumeration;
 import replicatorg.app.MRUList;
+import replicatorg.app.gcode.DualStrusionWorker;
+import replicatorg.app.gcode.GCodeEnumeration;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
@@ -125,7 +126,6 @@ import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RealtimeControl;
 import replicatorg.drivers.SDCardCapture;
-import replicatorg.dualstrusion.DualStrusionWorker;
 import replicatorg.machine.MachineFactory;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
@@ -134,6 +134,7 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
+import replicatorg.machine.model.Toolheads;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
 import replicatorg.model.BuildElement;
@@ -1007,7 +1008,7 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
-				DualStrusionWorker.changeToolHead(build.getCode().file, "left");
+				DualStrusionWorker.changeToolHead(build.getCode().file, Toolheads.LEFT);
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();
@@ -1024,7 +1025,7 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
-				DualStrusionWorker.changeToolHead(build.getCode().file, "right");
+				DualStrusionWorker.changeToolHead(build.getCode().file, Toolheads.RIGHT);
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();
@@ -2372,15 +2373,6 @@ ToolpathGenerator.GeneratorListener
 
 	}
 	
-	public void handleCombination()
-	{
-		//TODO: Constructors shouldn't auto-display. Refactor that
-		if(getBuild() != null)
-			new CombineWindow(getBuild().folder.getAbsolutePath() + File.separator + getBuild().getName() + ".stl", this);	
-		else
-			new CombineWindow(this);
-	}
-	
 	public void estimationOver() {
 		// stopItem.setEnabled(false);
 		// pauseItem.setEnabled(false);
@@ -3107,13 +3099,22 @@ ToolpathGenerator.GeneratorListener
 		{
 			boolean printOMaticEnabled  = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
 			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
-			int toolCount = machineLoader.getMachine().getModel().getTools().size();
-
-			Base.logger.fine("Selected Extruder " + extruderChoice);
+			
+			Toolheads switchTo = null;
+			
+			if(extruderChoice.equals("right"))
+				switchTo = Toolheads.RIGHT;
+			else if(extruderChoice.equals("left"))
+				switchTo = Toolheads.LEFT; 
+			else if(extruderChoice.equals("does not exist")) {
+				Base.logger.severe("No toolhead selected, cannot replace toolhead");
+				return;
+			}
+			
 			if(printOMaticEnabled == true)
 			{
 				Base.logger.finer("performing " + extruderChoice + " ops");
-				DualStrusionWorker.changeToolHead(build.getCode().file, extruderChoice);
+				DualStrusionWorker.changeToolHead(build.getCode().file, switchTo);
 				handleOpen2(build.getCode().file.getAbsolutePath() );
 			}
 			else {

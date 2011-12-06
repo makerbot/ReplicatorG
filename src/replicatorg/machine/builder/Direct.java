@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
-import replicatorg.app.GCodeParser;
+import replicatorg.app.gcode.GCodeParser;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.RetryException;

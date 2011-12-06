@@ -1,6 +1,6 @@
 package replicatorg.plugin;
 
-import replicatorg.app.GCode;
+import replicatorg.app.gcode.GCode;
 
 public interface MCodePlugin {
 	/**

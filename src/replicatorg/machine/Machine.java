@@ -30,9 +30,9 @@ import javax.swing.JTextArea;
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.app.GCode;
-import replicatorg.app.GCodeEnumeration;
-import replicatorg.app.GCodeParser;
+import replicatorg.app.gcode.GCode;
+import replicatorg.app.gcode.GCodeEnumeration;
+import replicatorg.app.gcode.GCodeParser;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.EstimationDriver;

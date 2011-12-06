@@ -58,7 +58,7 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.dualstrusion.DualStrusionConstruction;
+import replicatorg.app.gcode.DualStrusionConstruction;
 import replicatorg.model.Build;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;

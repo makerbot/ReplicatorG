@@ -3,7 +3,7 @@ package replicatorg.plugin;
 import java.util.Iterator;
 import java.util.Vector;
 
-import replicatorg.app.GCode;
+import replicatorg.app.gcode.GCode;
 import replicatorg.model.GCodeSource;
 
 public class PluginEngine implements GCodeSource {

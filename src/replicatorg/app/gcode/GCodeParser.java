@@ -46,7 +46,7 @@
  * http://www.textfiles.com/artscene/asciiart/castles
  */
 
-package replicatorg.app;
+package replicatorg.app.gcode;
 
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -55,6 +55,7 @@ import java.util.logging.Level;
 
 import javax.vecmath.Point3d;
 
+import replicatorg.app.Base;
 import replicatorg.app.exceptions.GCodeException;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.MultiTool;

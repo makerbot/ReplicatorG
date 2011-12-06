@@ -2,7 +2,7 @@ package replicatorg.plugin;
 
 import java.lang.reflect.Method;
 
-import replicatorg.app.GCode;
+import replicatorg.app.gcode.GCode;
 
 // Example plug-in that handles custom m-codes
 public class TwitterBotPlugin implements MCodePlugin {
