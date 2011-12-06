@@ -386,8 +386,8 @@ public interface Driver {
 	 * Potentiometer interface
 	 **************************************************************************/
 	public void setStepperVoltage(int stepperId, int referenceValue) throws RetryException;
-	public void storeStepperVoltage(int stepperId, int referenceValue) throws RetryException;
-	//public int getStepperVoltage(int stepperId ); 
+//	public void storeStepperVoltage(int stepperId, int referenceValue) throws RetryException;
+	public int getStepperVoltage(int stepperId ); 
 	
 	/*************************************************************************
 	 * LED Strip interface

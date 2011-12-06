@@ -527,6 +527,13 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 		Base.logger.finer("VirtualPrinter::setStepperVoltage");
 		//generated method stub
 	}
+
+	public int getStepperVoltage(int stepperId)
+	{
+		Base.logger.finer("VirtualPrinter::setStepperVoltage");
+		return 0;
+		//generated method stub
+	}
 	
 
 	public void storeStepperVoltage(int stepperId, int referenceValue)

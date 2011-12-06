@@ -64,6 +64,12 @@ public class MachineOnboardParameters extends JPanel {
 	private JFormattedTextField aAxisHomeOffsetField = new JFormattedTextField(threePlaces);
 	private JFormattedTextField bAxisHomeOffsetField = new JFormattedTextField(threePlaces);
 	
+	private JFormattedTextField vref0 = new JFormattedTextField(threePlaces);
+	private JFormattedTextField vref1 = new JFormattedTextField(threePlaces);
+	private JFormattedTextField vref2 = new JFormattedTextField(threePlaces);
+	private JFormattedTextField vref3 = new JFormattedTextField(threePlaces);
+	private JFormattedTextField vref4 = new JFormattedTextField(threePlaces);
+
 	private void resetDialog() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
 				"<html>Before these changes can take effect, you'll need to reset your <br/>"+
@@ -106,6 +112,21 @@ public class MachineOnboardParameters extends JPanel {
 		target.setAxisHomeOffset(2, ((Number)zAxisHomeOffsetField.getValue()).doubleValue());
 		target.setAxisHomeOffset(3, ((Number)aAxisHomeOffsetField.getValue()).doubleValue());
 		target.setAxisHomeOffset(4, ((Number)bAxisHomeOffsetField.getValue()).doubleValue());
+		
+		if(target.hasVrefSupport())
+		{
+			target.setStoredStepperVoltage(0, ((Number)vref0.getValue()).intValue());
+			target.setStoredStepperVoltage(1, ((Number)vref1.getValue()).intValue());
+			target.setStoredStepperVoltage(2, ((Number)vref2.getValue()).intValue());
+			target.setStoredStepperVoltage(3, ((Number)vref3.getValue()).intValue());
+			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
+
+			add(vref0, "growx, split");
+			add(vref1, "growx, split");
+			add(vref2, "growx, split");
+			add(vref3, "growx, split");
+			add(vref4, "growx, wrap");
+		}
 		resetDialog();
 	}
 
@@ -133,12 +154,20 @@ public class MachineOnboardParameters extends JPanel {
 		OnboardParameters.EstopType estop = this.target.getEstopConfig();
 		estopSelection.setSelectedIndex(estop.ordinal());
 	   
-		
 		xAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(0));
 		yAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(1));
 		zAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(2));
 		aAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(3));
 		bAxisHomeOffsetField.setValue(this.target.getAxisHomeOffset(4));
+		
+		if(target.hasVrefSupport())
+		{
+			vref0.setValue(this.target.getStoredStepperVoltage(0));
+			vref1.setValue(this.target.getStoredStepperVoltage(1));
+			vref2.setValue(this.target.getStoredStepperVoltage(2));
+			vref3.setValue(this.target.getStoredStepperVoltage(3));
+			vref4.setValue(this.target.getStoredStepperVoltage(4));
+		}
 	}
 
 	private JPanel makeButtonPanel() {
@@ -161,23 +190,23 @@ public class MachineOnboardParameters extends JPanel {
 
 		add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
 		machineNameField.setColumns(MAX_NAME_LENGTH);
-		add(machineNameField,"wrap");
+		add(machineNameField,"span 3, wrap");
 		add(new JLabel("Invert X axis"));
-		add(xAxisInvertBox,"wrap");
+		add(xAxisInvertBox,"span 3, wrap");
 		add(new JLabel("Invert Y axis"));
-		add(yAxisInvertBox,"wrap");
+		add(yAxisInvertBox,"span 3, wrap");
 		add(new JLabel("Invert Z axis"));
-		add(zAxisInvertBox,"wrap");
+		add(zAxisInvertBox,"span 3, wrap");
 		add(new JLabel("Invert A axis"));
-		add(aAxisInvertBox,"wrap");
+		add(aAxisInvertBox,"span 3, wrap");
 		add(new JLabel("Invert B axis"));
-		add(bAxisInvertBox,"wrap");
+		add(bAxisInvertBox,"span 3, wrap");
 		add(new JLabel("Hold Z axis"));
-		add(zHoldBox,"wrap");
+		add(zHoldBox,"span 3, wrap");
 		add(new JLabel("Invert endstops"));
-		add(endstopInversionSelection,"wrap");
+		add(endstopInversionSelection,"span 3, wrap");
 		add(new JLabel("Emergency stop"));
-		add(estopSelection,"wrap");
+		add(estopSelection,"span 3, wrap");
 		
 		xAxisHomeOffsetField.setColumns(10);
 		yAxisHomeOffsetField.setColumns(10);
@@ -185,17 +214,43 @@ public class MachineOnboardParameters extends JPanel {
 		aAxisHomeOffsetField.setColumns(10);
 		bAxisHomeOffsetField.setColumns(10);
 		
-		add(new JLabel("X home offset (mm)"));
-		add(xAxisHomeOffsetField,"wrap");
-		add(new JLabel("Y home offset (mm)"));
-		add(yAxisHomeOffsetField,"wrap");
-		add(new JLabel("Z home offset (mm)"));
-		add(zAxisHomeOffsetField,"wrap");
-		add(new JLabel("A home offset (mm)"));
-		add(aAxisHomeOffsetField,"wrap");
-		add(new JLabel("B home offset (mm)"));
-		add(bAxisHomeOffsetField,"wrap");
-				
+		if(target.hasVrefSupport())
+		{
+			add(new JLabel("X home offset (mm)"));
+			add(xAxisHomeOffsetField);
+			add(new JLabel("VREF Pot. 0"));
+			add(vref0, "growx, wrap");
+			add(new JLabel("Y home offset (mm)"));
+			add(yAxisHomeOffsetField);
+			add(new JLabel("VREF Pot. 1"));
+			add(vref1, "growx, wrap");
+			add(new JLabel("Z home offset (mm)"));
+			add(zAxisHomeOffsetField);
+			add(new JLabel("VREF Pot. 2"));
+			add(vref2, "growx, wrap");
+			add(new JLabel("A home offset (mm)"));
+			add(aAxisHomeOffsetField);
+			add(new JLabel("VREF Pot. 3"));
+			add(vref3, "growx, wrap");
+			add(new JLabel("B home offset (mm)"));
+			add(bAxisHomeOffsetField);
+			add(new JLabel("VREF Pot. 4"));
+			add(vref4, "growx, wrap");
+		}
+		else
+		{
+			add(new JLabel("X home offset (mm)"));
+			add(xAxisHomeOffsetField,"wrap");
+			add(new JLabel("Y home offset (mm)"));
+			add(yAxisHomeOffsetField,"wrap");
+			add(new JLabel("Z home offset (mm)"));
+			add(zAxisHomeOffsetField,"wrap");
+			add(new JLabel("A home offset (mm)"));
+			add(aAxisHomeOffsetField,"wrap");
+			add(new JLabel("B home offset (mm)"));
+			add(bAxisHomeOffsetField,"wrap");
+		}
+
 		add(makeButtonPanel());
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {

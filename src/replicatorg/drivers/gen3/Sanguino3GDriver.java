@@ -2340,4 +2340,19 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return true;
 	}
 
+	@Override
+	public boolean hasVrefSupport() {
+		return false;
+	}
+
+	@Override
+	public void setStoredStepperVoltage(int stepperId, int referenceValue) {
+		throw new UnsupportedOperationException("Store Stepper Voltage not supported in Sanguino3GDriver");
+	}
+
+	@Override
+	public int getStoredStepperVoltage(int stepperId) {
+		throw new UnsupportedOperationException("Get Stored Stepper Voltage not supported in Sanguino3GDriver");
+	}
+
 }

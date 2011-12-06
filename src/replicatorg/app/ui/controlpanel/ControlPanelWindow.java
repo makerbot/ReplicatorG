@@ -45,7 +45,9 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -57,12 +59,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.Color;
 import javax.swing.JColorChooser;
-import javax.swing.AbstractAction;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.app.ui.ShowColorChooserAction;
 import replicatorg.app.ui.controlpanel.ExtruderPanel;
 import replicatorg.app.ui.controlpanel.JogPanel;
+import replicatorg.drivers.commands.SendBeep;
 import replicatorg.drivers.commands.SetLedStrip;
 import replicatorg.drivers.commands.HomeAxes;
 import replicatorg.drivers.commands.InvalidatePosition;
@@ -77,43 +80,6 @@ import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.Endstops;
 import replicatorg.machine.model.ToolModel;
 
-
-import javax.swing.JDialog;
-
-class ShowColorChooserAction extends AbstractAction {
-    JColorChooser chooser;
-    JDialog dialog;
-    
-
-    ShowColorChooserAction(JFrame frame, JColorChooser chooser, ActionListener okListener, ActionListener cancelListener, Color inColor) {
-        super(buttonStringFromColor(inColor) );
-        this.chooser = chooser;
-
-        // Choose whether dialog is modal or modeless
-        boolean modal = true;
-
-        // Create the dialog that contains the chooser
-        dialog = JColorChooser.createDialog(frame, "Choose an LED Strip color", modal,
-            chooser, okListener, cancelListener);
-    }
-
-    public void actionPerformed(ActionEvent evt) {
-        // Show dialog
-        dialog.setVisible(true);
-        // Disable the action; to enable the action when the dialog is closed, see
-        // Listening for OK and Cancel Events in a JColorChooser Dialog
-        setEnabled(true);
-    }
-
-    public static String buttonStringFromColor(Color c)
-	{
-		String baseString = "LED String: ";
-		if(c == Color.BLACK) {
-			return (baseString + "Off");
-		}
-		return( baseString + c.toString());
-	}
-};
 
 
 public class ControlPanelWindow extends JFrame implements
@@ -188,12 +154,36 @@ public class ControlPanelWindow extends JFrame implements
 				ledStripButton.setText(ShowColorChooserAction.buttonStringFromColor(ledColor));
 			}
 		};
+		
+		JPanel beepPanel = new JPanel();
+
+		final JFormattedTextField beepFreq = new JFormattedTextField(Base.getLocalFormat());
+		final JFormattedTextField beepDur = new JFormattedTextField(Base.getLocalFormat());
+		final JButton beepButton = new JButton("Beep Beep!");
+		
+		beepFreq.setColumns(5);
+		beepDur.setColumns(5);
+		
+		beepButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				machine.runCommand(new SendBeep(((Number)beepFreq.getValue()).intValue(),
+												((Number) beepDur.getValue()).intValue()));
+			}
+		});
+
+		beepPanel.add(new JLabel("Frequency"), "split");
+		beepPanel.add(beepFreq, "growy");
+		beepPanel.add(new JLabel("Duration"), "gap unrel");
+		beepPanel.add(beepDur, "growx");
+		beepPanel.add(beepButton, "gap unrel");
 
 		jogPanel = new JogPanel(machine);
 		ledStripButton = new JButton(new ShowColorChooserAction(this, chooser, okListener, null,Color.BLACK));
-		mainPanel.add( jogPanel, "split 3,flowy, growx");
+		mainPanel.add(jogPanel,"split 4, flowy, growx");
 		mainPanel.add(createActivationPanel(),"split, flowy, growx");
-		mainPanel.add( ledStripButton ,"flowy, growx");
+		mainPanel.add(ledStripButton ,"flowy, growx");
+		mainPanel.add(beepPanel, "flowy, growx");
 		mainPanel.add(createToolsPanel(),"growy, flowy,");
 		
 		this.setResizable(false);

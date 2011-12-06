@@ -183,8 +183,12 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			stepperValues[stepperId] = referenceValue;
 	}
 	
+	public boolean hasVrefSupport() {
+		return true;
+	}
 	
-	public void storeStepperVoltage(int stepperId, int referenceValue) throws RetryException {
+	@Override
+	public void setStoredStepperVoltage(int stepperId, int referenceValue) {
 		Base.logger.info("MightBoard sending storeStepperVoltage");
 
 		if(stepperId > 5) {
