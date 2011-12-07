@@ -554,7 +554,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		
 		// This should be a temporary fix to pass the location of the profile used
 		ArrayList<String> gcode = DualStrusionWorker.readFiletoArrayList(output.file);
-		gcode.add(0, profile.replace("\\", "/"));
+		gcode.add(0, "(" + profile.replace("\\", "/") + ")");
 		DualStrusionWorker.writeArrayListtoFile(gcode, output.file);
 		
 		return output;

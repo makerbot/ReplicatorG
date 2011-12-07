@@ -3140,7 +3140,10 @@ ToolpathGenerator.GeneratorListener
 		ArrayList<String> sourceCode = DualStrusionWorker.readFiletoArrayList(source);
 		
 		String path = sourceCode.remove(0);
+		path = path.replace("(", "");
+		path = path.replace(")", "");
 		path = path.concat("/alterations");
+		
 		
 		// load start and end from profile
 		// IMPORTANT: I'm using the string literal "start.gcode" because I know what my start & end are called,
