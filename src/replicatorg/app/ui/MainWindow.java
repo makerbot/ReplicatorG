@@ -60,12 +60,14 @@ import java.io.File;
 import java.io.IOException;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
@@ -543,7 +545,7 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 
-	public void editProfiles() {
+	public void handleEditProfiles() {
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
 		if( generator != null)
 			generator.editProfiles(this);
@@ -992,7 +994,7 @@ ToolpathGenerator.GeneratorListener
 		profilesMenuItem = newJMenuItem("Edit Base Profiles...", 'R');
 		profilesMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				editProfiles();
+				handleEditProfiles();
 			}
 		});
 		profilesMenuItem.setEnabled(true);
@@ -3128,6 +3130,74 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 	
+	/**
+	 * This is a miserable hack. So ashamed!
+	 * @param source
+	 */
+	public void replaceStartAndEndGCode(File source)
+	{
+		// for now we assume that the first line of gcode is the location of the profile
+		ArrayList<String> sourceCode = DualStrusionWorker.readFiletoArrayList(source);
+		
+		String path = sourceCode.remove(0);
+		path = path.concat("/alterations");
+		
+		// load start and end from profile
+		// IMPORTANT: I'm using the string literal "start.gcode" because I know what my start & end are called,
+		//  but that isn't necessarily the name of everyone else's start code, the name used can actually be read
+		//  from the profile (though the place where it is specified may change from one sf version to the next)
+		ArrayList<String> profileStart = DualStrusionWorker.readFiletoArrayList(new File(path+"/start.gcode"));
+		ArrayList<String> profileEnd = DualStrusionWorker.readFiletoArrayList(new File(path+"/end.gcode"));
+		
+		// remove start and end
+		ListIterator<String> sourceIt = sourceCode.listIterator();
+		
+		//remove start
+		ListIterator<String> startIt = profileStart.listIterator();
+		String firstStartLine = startIt.next();
+		// find the beginning of start code in source
+		while(! sourceIt.next().equals(firstStartLine));
+		sourceIt.remove();
+		
+		// we just assume that start is the same length as it was,
+		// but we don't check for exact matches, because some other modification may have been done
+		for(; startIt.hasNext();)
+		{
+			sourceIt.next();
+			startIt.next();
+			sourceIt.remove();
+		}
+		
+		// do the same for the end
+		
+		ListIterator<String> endIt = profileEnd.listIterator();
+		String firstEndLine = endIt.next();
+		// find the beginning of start code in source
+		while(! sourceIt.next().equals(firstEndLine));
+		sourceIt.remove();
+		
+		// we just assume that end is the same length as it was,
+		// but we don't check for exact matches, because some other modification may have been done
+		for(; endIt.hasNext(); )
+		{
+			sourceIt.next();
+			endIt.next();
+			sourceIt.remove();
+		}
+		
+		// get our new start and end
+		// again, using hard-coded locations where I shouldn't
+		ArrayList<String> machineStart = DualStrusionWorker.readFiletoArrayList(new File("machines/replicator/start.gcode"));
+		ArrayList<String> machineEnd = DualStrusionWorker.readFiletoArrayList(new File("machines/replicator/end.gcode"));
+		
+		sourceCode.addAll(0, machineStart);
+		sourceCode.addAll(machineEnd);
+		
+		DualStrusionWorker.writeArrayListtoFile(sourceCode, build.getCode().file);
+		
+		// 
+		handleOpen2(build.getCode().file.getAbsolutePath());
+	}
 	
 	/** Function called automatically when new gcode generation completes
 	 *  does post-processing for newly created gcode
@@ -3147,6 +3217,12 @@ ToolpathGenerator.GeneratorListener
 			// but only when there is no gcode tab open already. they even seem to share the scrollbar?
 			if (isDualDriver()) {
 				singleMaterialDualstrusionModifications(build.getCode().file);
+			}
+			
+			// there should be a condition here?
+			if(true)
+			{
+				replaceStartAndEndGCode(build.getCode().file);
 			}
 			
 			buttons.updateFromMachine(machineLoader.getMachine());

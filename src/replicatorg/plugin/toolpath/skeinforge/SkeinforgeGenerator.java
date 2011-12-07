@@ -3,10 +3,9 @@ package replicatorg.plugin.toolpath.skeinforge;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -24,6 +23,7 @@ import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.app.gcode.DualStrusionWorker;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.StreamLoggerThread;
 import replicatorg.model.BuildCode;
@@ -508,7 +508,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			}
 		}
 		arguments.add(path);
-
+		
 		ProcessBuilder pb = new ProcessBuilder(arguments);
 		pb.directory(getSkeinforgeDir());
 		Process process = null;
@@ -550,6 +550,13 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 		int lastIdx = path.lastIndexOf('.');
 		String root = (lastIdx >= 0) ? path.substring(0, lastIdx) : path;
-		return new BuildCode(root, new File(root + ".gcode"));
+		BuildCode output = new BuildCode(root, new File(root + ".gcode"));
+		
+		// This should be a temporary fix to pass the location of the profile used
+		ArrayList<String> gcode = DualStrusionWorker.readFiletoArrayList(output.file);
+		gcode.add(0, profile.replace("\\", "/"));
+		DualStrusionWorker.writeArrayListtoFile(gcode, output.file);
+		
+		return output;
 	}
 }
