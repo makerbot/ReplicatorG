@@ -399,7 +399,7 @@ public interface Driver {
 	/*************************************************************************
 	 * Beep Interface
 	 **************************************************************************/
-	public void sendBeep(int frequencyHz, int durationMs) throws RetryException;
+	public void sendBeep(int frequencyHz, int durationMs, int effect) throws RetryException;
 
 	
 	/***************************************************************************

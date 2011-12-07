@@ -150,6 +150,7 @@ public class ControlPanelWindow extends JFrame implements
 		{
 			public void actionPerformed(ActionEvent e){
 				Color ledColor = chooser.getColor();
+				Base.logger.severe("running setLedStrip");
 				machine.runCommand(new SetLedStrip(ledColor, 0));	
 				ledStripButton.setText(ShowColorChooserAction.buttonStringFromColor(ledColor));
 			}
@@ -164,11 +165,14 @@ public class ControlPanelWindow extends JFrame implements
 		beepFreq.setColumns(5);
 		beepDur.setColumns(5);
 		
+		final int EFFECT_DO_IMMEDATELY= 0; /// 
 		beepButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				Base.logger.severe("running sendBeep");
 				machine.runCommand(new SendBeep(((Number)beepFreq.getValue()).intValue(),
-												((Number) beepDur.getValue()).intValue()));
+												((Number) beepDur.getValue()).intValue(),
+												EFFECT_DO_IMMEDATELY));
 			}
 		});
 
