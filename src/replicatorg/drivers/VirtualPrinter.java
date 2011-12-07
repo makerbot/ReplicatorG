@@ -550,7 +550,7 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 	
 	
-	public void sendBeep(int frequencyHz, int durationMs) throws RetryException
+	public void sendBeep(int frequencyHz, int durationMs,int effect) throws RetryException
 	{
 		Base.logger.finer("VirtualPrinter::sendBeep");
 		//generated method stub

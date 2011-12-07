@@ -658,7 +658,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	}
 	
 	
-	public void sendBeep(int frequencyHz, int durationMs) throws RetryException
+	public void sendBeep(int frequencyHz, int durationMs,int effect) throws RetryException
 	{
 		Base.logger.fine("BaseImplementation sendBeep called.");
 	}

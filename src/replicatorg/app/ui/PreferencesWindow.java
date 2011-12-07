@@ -512,11 +512,13 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		final JFormattedTextField beepDur = new JFormattedTextField(Base.getLocalFormat());
 		final JButton beepButton = new JButton("Beep Beep!");
 		
+		final int EFFECT_DO_IMMEDATELY= 0; /// 
 		beepButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				machine.runCommand(new SendBeep(((Number)beepFreq.getValue()).intValue(),
-												((Number) beepDur.getValue()).intValue()));
+												((Number) beepDur.getValue()).intValue(),
+												EFFECT_DO_IMMEDATELY));
 			}
 		});
 		
