@@ -174,11 +174,11 @@ public class PrintOMatic implements SkeinforgePreference {
 		JComponent machinePanel = new JPanel(new MigLayout("fillx"));
 		
 		addTextParameter(printPanel, "infillPercent",
-				"Object infill (%)", "30",
+				"Object infill (%)", "15",
 				"0= hollow object, 100=solid object");
 		
 		addTextParameter(printPanel, "desiredLayerHeight",
-					"Layer Height (mm)", "0.35",
+					"Layer Height (mm)", "0.30",
 					"Set the desired feedrate");
 
 		addTextParameter(printPanel, "numberOfShells",
@@ -200,12 +200,12 @@ public class PrintOMatic implements SkeinforgePreference {
 				"Select the type of plastic to use during print");
 		
 		addTextParameter(materialPanel, "filamentDiameter",
-				"Filament Diameter (mm)", "2.94",
+				"Filament Diameter (mm)", "1.8",
 				"measure feedstock");
 		
 		
 		addTextParameter(machinePanel, "nozzleDiameter",
-				"Nozzle Diameter (mm)", "0.5",
+				"Nozzle Diameter (mm)", "0.4",
 				"exit hole diameter");
 		
 		addTextParameter(machinePanel, "driveGearDiameter",
