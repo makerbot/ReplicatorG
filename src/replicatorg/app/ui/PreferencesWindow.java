@@ -8,11 +8,14 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.TextArea;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.TextEvent;
+import java.awt.event.TextListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -43,7 +46,6 @@ import replicatorg.app.Base;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
-import replicatorg.drivers.RetryException;
 import replicatorg.drivers.commands.SendBeep;
 import replicatorg.drivers.commands.SetLedStrip;
 import replicatorg.machine.MachineInterface;
@@ -526,7 +528,64 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content.add(beepFreq, "split, growx");
 		content.add(new JLabel("Duration"), "split, gap unrel");
 		content.add(beepDur, "split, growx");
-		content.add(beepButton, "split, gap unrel");
+		content.add(beepButton, "split, gap unrel, wrap");
+		
+		final JLabel bytesLabel = new JLabel("<html>Enter up to sixteen (16) comma separated hex values below.<br/>" +
+				"Can be written with '0x', '#' or nothing in front of each number.<br/>" +
+				"If the box turns red, it can't parse the values.<html/>");
+		final TextArea bytesField = new TextArea();
+		final JButton sendBytesButton = new JButton("Send hex values");
+		
+		bytesField.setColumns(10);
+		bytesField.setRows(4);
+		
+		sendBytesButton.addActionListener(new ActionListener(){
+			private final int MAX_BYTES = 16;
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// parse hex values
+				String[] hexes = bytesField.getText().split(",");
+				
+				if(hexes.length > MAX_BYTES)
+				{
+					bytesField.setBackground(Color.RED);
+					return;
+				}
+				
+				byte[] bytes = new byte[hexes.length];
+				int i = 0;
+				for(String h : hexes)
+				{
+					//strip whitespace
+					h = h.trim();
+					
+					if(!(h.startsWith("0x")) && !(h.startsWith("#")))
+						h = "0x".concat(h);
+					System.out.print(h + '\t');
+					try {
+						bytes[i] = Byte.decode(h);
+					} catch(NumberFormatException nfe) {
+						bytesField.setBackground(Color.RED);
+						return;
+					}
+					System.out.println(bytes[i]);
+					i++;
+				}
+				
+				//Send the bytes to the machine
+				//TODO:
+			}
+		});
+		bytesField.addTextListener(new TextListener(){
+			@Override
+			public void textValueChanged(TextEvent arg0) {
+				bytesField.setBackground(Color.WHITE);
+			}
+		});
+		
+		content.add(bytesLabel, "wrap");
+		content.add(bytesField, "growx");
+		content.add(sendBytesButton, "wrap");
 		
 		prefTabs.add(content, "Replicator Testing");
 
