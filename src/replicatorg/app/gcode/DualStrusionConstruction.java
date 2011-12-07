@@ -1,4 +1,4 @@
-package replicatorg.dualstrusion;
+package replicatorg.app.gcode;
 
 import java.io.File;
 import java.util.logging.Level;
