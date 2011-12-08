@@ -105,7 +105,7 @@ public class Base {
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */
-	public static final String VERSION_NAME = String.format("%04d_Alpha",VERSION);
+	public static final String VERSION_NAME = String.format("%04d_Beta",VERSION);
 
 	/**
 	 * The machine controller in use.
