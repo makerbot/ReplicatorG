@@ -5,9 +5,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -122,12 +125,17 @@ public class PrintOMatic implements SkeinforgePreference {
 		return number;
 	}
 	
+	private void setValue(String optionName, String value) {
+		Base.preferences.put(baseName + optionName, value);
+	}
+	
 	private double getScalingFactor() {
 		// TODO: record the default values somewhere, so that we can retrieve them here!
 		String value = Base.preferences.get(baseName + "materialType", null);
 		
 		double scalingFactor = 1;
 		
+		//MAGIC:
 		if (value.equals("ABS")) {
 			scalingFactor = .85;
 		}
@@ -144,6 +152,168 @@ public class PrintOMatic implements SkeinforgePreference {
 	
 	JTabbedPane printOMatic;
 	
+
+	/*
+	 * The default settings for different machines/nozzles
+	 * 
+	 * When adding anything to the defaults, make sure you update the "load defaults" panel
+	 * so that it sets your new defaults
+	 * 
+	 * Also, whenever a new head is released, create a new subclass of this and make sure
+	 * the field "defaults" points to an instance of it. 
+	 *
+	 */
+	private abstract class Defaults {
+		public String infillPercent;
+		public String desiredLayerHeight;
+		public String numberOfShells;
+		public String desiredFeedrate;
+		public String filamentDiameter;
+		public String nozzleDiameter;
+		public String driveGearDiameter;
+	}
+	
+	// Double braces create a static block in which to declare the values of our variables
+	private class Mk7Defaults extends Defaults {{
+		infillPercent = "15";
+		desiredLayerHeight = ".30";
+		numberOfShells = "1";
+		desiredFeedrate = "30";
+		filamentDiameter = "1.8";
+		nozzleDiameter = ".4";
+		driveGearDiameter = "10.58";
+	}}
+	
+	private class Mk6Defaults extends Defaults {{
+		infillPercent = "30";
+		desiredLayerHeight = ".35";
+		numberOfShells = "1";
+		desiredFeedrate = "30";
+		filamentDiameter = "2.94";
+		nozzleDiameter = ".5";
+		driveGearDiameter = "10.58";
+	}}
+	
+	// This should be kept up to date, so that we always default to the newest kind of head
+	private Defaults defaults = new Mk7Defaults();
+	
+	
+	private JComponent printPanel() {
+
+		JComponent printPanel = new JPanel(new MigLayout("fillx"));
+		
+		addTextParameter(printPanel, "infillPercent",
+				"Object infill (%)", defaults.infillPercent,
+				"0= hollow object, 100=solid object");
+		
+		addTextParameter(printPanel, "desiredLayerHeight",
+				"Layer Height (mm)", defaults.desiredLayerHeight,
+				"Set the desired feedrate");
+
+		addTextParameter(printPanel, "numberOfShells",
+				"Number of shells:", defaults.numberOfShells,
+				"Number of shells to add to the perimeter of an object. Set this to 0 if you are printing a model with thin features.");
+		
+		addTextParameter(printPanel, "desiredFeedrate",
+				"Feedrate (mm/s)", defaults.desiredFeedrate,
+				"slow: 0-20, default: 30, Fast: 40+");
+		
+		return printPanel;
+	}
+	
+	private JComponent materialPanel() {
+
+		JComponent materialPanel = new JPanel(new MigLayout("fillx"));
+		
+		Vector<String> materialTypes = new Vector<String>();
+		materialTypes.add("ABS");
+		materialTypes.add("PLA");
+
+		addDropDownParameter(materialPanel, "materialType",
+				"Material type:", materialTypes,
+				"Select the type of plastic to use during print");
+		
+		addTextParameter(materialPanel, "filamentDiameter",
+				"Filament Diameter (mm)", defaults.filamentDiameter,
+				"measure feedstock");
+		
+		return materialPanel;
+	}
+	
+	private JComponent machinePanel() {
+
+		JComponent machinePanel = new JPanel(new MigLayout("fillx"));
+		
+		addTextParameter(machinePanel, "nozzleDiameter",
+				"Nozzle Diameter (mm)", defaults.nozzleDiameter,
+				"exit hole diameter");
+		
+		addTextParameter(machinePanel, "driveGearDiameter",
+				"Drive Gear Diameter (mm)", defaults.driveGearDiameter,
+				"measure at teeth");
+		
+		if(Base.getEditor() != null && Base.getEditor().isDualDriver())
+		{
+			Vector<String> extruders = new Vector<String>();
+			extruders.add("Left");
+			extruders.add("Right");
+			addDropDownParameter(machinePanel, "toolheadOrientation", "Extruder: ", extruders, "select which extruder this gcode prints on");
+		}
+		
+		return machinePanel;
+	}
+	
+	private JComponent defaultsPanel() {
+
+		JPanel defaultsPanel = new JPanel(new MigLayout());
+
+		final JButton mk7 = new JButton("Load Mk7 Defualts");
+		final JButton mk6 = new JButton("Load Mk6 Defualts");
+
+		ActionListener loadDefaults = new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				Defaults def = null;
+				
+				// Select the correct set of defaults based on the button pressed
+				if(evt.getSource() == mk7)
+					def = new Mk7Defaults();
+				else if(evt.getSource() == mk6)
+					def = new Mk6Defaults();
+				
+				// Set all the values based on the selected default
+				// Keep this up to date! if the set of defaults changes, so does this set of calls!
+				setValue("infillPercent", def.infillPercent);
+				setValue("desiredLayerHeight", def.desiredLayerHeight);
+				setValue("numberOfShells", def.numberOfShells);
+				setValue("desiredFeedrate", def.desiredFeedrate);
+				setValue("filamentDiameter", def.filamentDiameter);
+				setValue("nozzleDiameter", def.nozzleDiameter);
+				setValue("driveGearDiameter", def.driveGearDiameter);
+					
+				// Refresh the other three tabs
+				printOMatic.removeAll();
+				makeTabs();
+			}
+		};
+		mk7.addActionListener(loadDefaults);
+		mk6.addActionListener(loadDefaults);
+		
+		defaultsPanel.add(mk7, "growx, wrap");
+		defaultsPanel.add(mk6, "growx, Wrap");
+		
+		return defaultsPanel;
+	}
+
+	// Handles the creation of the various tabs and adds them to printOMatic
+	private void makeTabs()
+	{
+		printOMatic.addTab("Settings", printPanel());
+		printOMatic.addTab("Plastic", materialPanel());
+		printOMatic.addTab("Extruder", machinePanel());
+		printOMatic.addTab("Defaults", defaultsPanel());
+	}
+	
 	public PrintOMatic() {
 		component = new JPanel(new MigLayout("ins 0, fillx, hidemode 1"));
 		
@@ -151,7 +321,7 @@ public class PrintOMatic implements SkeinforgePreference {
 
 		// Add a checkbox to switch print-o-matic on and off
 		final String enabledName = baseName + "enabled";
-		enabled = new JCheckBox("Use Print-O-Matic (stepper extruders only)", Base.preferences.getBoolean(enabledName,false));
+		enabled = new JCheckBox("Use Print-O-Matic (stepper extruders only)", Base.preferences.getBoolean(enabledName,true));
 		enabled.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (enabledName != null) {
@@ -169,60 +339,9 @@ public class PrintOMatic implements SkeinforgePreference {
 		// Make a tabbed pane to sort basic and advanced components 
 		printOMatic = new JTabbedPane();
 		
-		JComponent printPanel = new JPanel(new MigLayout("fillx"));
-		JComponent materialPanel = new JPanel(new MigLayout("fillx"));
-		JComponent machinePanel = new JPanel(new MigLayout("fillx"));
+		// Handles the creation of the various tabs and adds them to printOMatic
+		makeTabs();
 		
-		addTextParameter(printPanel, "infillPercent",
-				"Object infill (%)", "30",
-				"0= hollow object, 100=solid object");
-		
-		addTextParameter(printPanel, "desiredLayerHeight",
-					"Layer Height (mm)", "0.35",
-					"Set the desired feedrate");
-
-		addTextParameter(printPanel, "numberOfShells",
-				"Number of shells:", "1",
-				"Number of shells to add to the perimeter of an object. Set this to 0 if you are printing a model with thin features.");
-		
-		addTextParameter(printPanel, "desiredFeedrate",
-				"Feedrate (mm/s)", "30",
-				"slow: 0-20, default: 30, Fast: 40+");
-		
-		
-		Vector<String> materialTypes = new Vector<String>();
-		materialTypes.add("ABS");
-		materialTypes.add("PLA");
-		
-		
-		addDropDownParameter(materialPanel, "materialType",
-				"Material type:", materialTypes,
-				"Select the type of plastic to use during print");
-		
-		addTextParameter(materialPanel, "filamentDiameter",
-				"Filament Diameter (mm)", "2.94",
-				"measure feedstock");
-		
-		
-		addTextParameter(machinePanel, "nozzleDiameter",
-				"Nozzle Diameter (mm)", "0.5",
-				"exit hole diameter");
-		
-		addTextParameter(machinePanel, "driveGearDiameter",
-				"Drive Gear Diameter (mm)", "10.58",
-				"measure at teeth");
-		
-		if(Base.getEditor() != null && Base.getEditor().isDualDriver())
-		{
-			Vector<String> extruders = new Vector<String>();
-			extruders.add("Left");
-			extruders.add("Right");
-			addDropDownParameter(machinePanel, "toolheadOrientation", "Extruder: ", extruders, "select which extruder this gcode prints on");
-		}
-		
-		printOMatic.addTab("Settings", printPanel);
-		printOMatic.addTab("Plastic", materialPanel);
-		printOMatic.addTab("Extruder", machinePanel);
 		component.add(printOMatic, "spanx,hidemode 1");
 		printOMatic.setVisible(enabled.isSelected());
 	}
