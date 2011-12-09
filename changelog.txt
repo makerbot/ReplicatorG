@@ -1,3 +1,12 @@
+0029 ReplicatorG
+* Fixed some OnboardPreferences Abstraction
+* Added defaults reset button for Print-O-Matic
+* Updated and simplified some international number parsing
+* Updated Opboard Parameters dialog
+* Updated hardcoded defaults for Print-O-Matic
+* Added data to start.gcode and wipe to help users modify 
+* Changed handling of JFormattedTextField
+
 0028 ReplicatorG
 * Fixed toolhead setting function to work with new and old firmware
 * Improvements to localization of decimal numbers
