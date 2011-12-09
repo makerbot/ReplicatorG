@@ -1,13 +1,18 @@
 package replicatorg.drivers;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import replicatorg.machine.model.AxisId;
+
 
 public interface OnboardParameters {
 	
 	public static final int EXTRUDER = 0;
 	public static final int BUILD_PLATFORM = 1;
+	
+	//// Get a list of all toolheads we save onboard preferences for 
+	List<Integer> toolheadsWithStoredData();
 	
 	EnumSet<AxisId> getInvertedParameters();
 	void setInvertedParameters(EnumSet<AxisId> axes);
