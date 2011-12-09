@@ -185,13 +185,17 @@ public class PrintOMatic implements SkeinforgePreference {
 	}}
 	
 	private class Mk6Defaults extends Defaults {{
-		infillPercent = "30";
-		desiredLayerHeight = ".35";
+		infillPercent = "15";
+		desiredLayerHeight = ".30";
 		numberOfShells = "1";
 		desiredFeedrate = "30";
 		filamentDiameter = "2.94";
 		nozzleDiameter = ".5";
 		driveGearDiameter = "10.58";
+	}}
+	
+	private class Mk6NewStyleDefaults extends Mk6Defaults {{
+		nozzleDiameter = ".4";
 	}}
 	
 	// This should be kept up to date, so that we always default to the newest kind of head
@@ -265,10 +269,11 @@ public class PrintOMatic implements SkeinforgePreference {
 	
 	private JComponent defaultsPanel() {
 
-		JPanel defaultsPanel = new JPanel(new MigLayout());
+		JComponent defaultsPanel = new JPanel(new MigLayout("fillx"));
 
 		final JButton mk7 = new JButton("Load Mk7 Defualts");
-		final JButton mk6 = new JButton("Load Mk6 Defualts");
+		final JButton mk6 = new JButton("Load Mk6 Defualts (0.5 nozzle)");
+		final JButton mk6ns = new JButton("Load Mk6 Defualts (0.4 nozzle)");
 
 		ActionListener loadDefaults = new ActionListener(){
 			@Override
@@ -280,6 +285,8 @@ public class PrintOMatic implements SkeinforgePreference {
 					def = new Mk7Defaults();
 				else if(evt.getSource() == mk6)
 					def = new Mk6Defaults();
+				else if(evt.getSource() == mk6ns)
+					def = new Mk6NewStyleDefaults();
 				
 				// Set all the values based on the selected default
 				// Keep this up to date! if the set of defaults changes, so does this set of calls!
@@ -298,9 +305,11 @@ public class PrintOMatic implements SkeinforgePreference {
 		};
 		mk7.addActionListener(loadDefaults);
 		mk6.addActionListener(loadDefaults);
+		mk6ns.addActionListener(loadDefaults);
 		
 		defaultsPanel.add(mk7, "growx, wrap");
 		defaultsPanel.add(mk6, "growx, Wrap");
+		defaultsPanel.add(mk6ns, "growx, Wrap");
 		
 		return defaultsPanel;
 	}
