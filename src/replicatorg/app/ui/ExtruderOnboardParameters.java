@@ -54,29 +54,33 @@ public class ExtruderOnboardParameters extends JFrame {
 		private JFormattedTextField t0Field = new JFormattedTextField(threePlaces);
 		// Toolhead or Heated Platform?
 		private final int which;
-		private final ToolModel tool;
-		ThermistorTablePanel(int which, String titleText, ToolModel tool) {
+
+//		private final ToolModel tool;
+		private final int toolIndex; 
+
+		ThermistorTablePanel(int which, String titleText, int toolIndex/*ToolModel tool*/) {
 			super(new MigLayout());
 			this.which = which;
-			this.tool = tool;
+			//this.tool = tool;
+			this.toolIndex = toolIndex;
 			setBorder(BorderFactory.createTitledBorder(titleText));
 			betaField.setColumns(FIELD_WIDTH);
 			r0Field.setColumns(FIELD_WIDTH);
 			t0Field.setColumns(FIELD_WIDTH);
 			
-			double beta = target.getBeta(which, tool.getIndex());
+			double beta = target.getBeta(which, this.toolIndex);
 			if (beta == -1) { beta = 4066; }
 			betaField.setValue((int)beta);
 			add(new JLabel("Beta"));
 			add(betaField,"wrap");
 
-			double r0 = target.getR0(which, tool.getIndex());
+			double r0 = target.getR0(which, this.toolIndex);
 			if (r0 == -1) { r0 = 100000; }
 			r0Field.setValue((int)r0);
 			add(new JLabel("Thermistor Resistance"));
 			add(r0Field,"wrap");
 
-			double t0 = target.getT0(which, tool.getIndex());
+			double t0 = target.getT0(which, this.toolIndex);
 			if (t0 == -1) { t0 = 25; }
 			t0Field.setValue((int)t0);
 			add(new JLabel("Base Temperature"));
@@ -87,7 +91,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			int beta = ((Number)betaField.getValue()).intValue();
 			int r0 = ((Number)r0Field.getValue()).intValue();
 			int t0 = ((Number)t0Field.getValue()).intValue();
-			target.createThermistorTable(which,r0,t0,beta,tool.getIndex());
+			target.createThermistorTable(which,r0,t0,beta,this.toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -124,9 +128,10 @@ public class ExtruderOnboardParameters extends JFrame {
 		private JFormattedTextField reverseMsField = new JFormattedTextField(threePlaces);
 		private JFormattedTextField forwardMsField = new JFormattedTextField(threePlaces);
 		private JFormattedTextField triggerMsField = new JFormattedTextField(threePlaces);
-		private final ToolModel tool;
-		BackoffPanel(ToolModel tool) {
-			this.tool = tool;
+		//private final ToolModel tool;
+		private int toolIndex; 
+		BackoffPanel(int toolIndex /*ToolModel tool*/) {
+			this.toolIndex = toolIndex;
 			setLayout(new MigLayout());
 			setBorder(BorderFactory.createTitledBorder("Reversal parameters"));
 			stopMsField.setColumns(FIELD_WIDTH);
@@ -142,7 +147,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(forwardMsField,"wrap");
 			add(new JLabel("Min. extrusion time before reversal (ms)"));
 			add(triggerMsField,"wrap");
-			OnboardParameters.BackoffParameters bp = target.getBackoffParameters(tool.getIndex());
+			OnboardParameters.BackoffParameters bp = target.getBackoffParameters(toolIndex);
 			stopMsField.setValue(bp.stopMs);
 			reverseMsField.setValue(bp.reverseMs);
 			forwardMsField.setValue(bp.forwardMs);
@@ -155,7 +160,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			bp.reverseMs = ((Number)reverseMsField.getValue()).intValue();
 			bp.stopMs = ((Number)stopMsField.getValue()).intValue();
 			bp.triggerMs = ((Number)triggerMsField.getValue()).intValue();
-			target.setBackoffParameters(bp, tool.getIndex());
+			target.setBackoffParameters(bp, toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -168,11 +173,13 @@ public class ExtruderOnboardParameters extends JFrame {
 		private JComboBox extCh, hbpCh, abpCh;
 		private OnboardParameters.ExtraFeatures ef;
 		
-		private final ToolModel tool;
-		ExtraFeaturesPanel(ToolModel tool) {
-			this.tool = tool;
+		//private final ToolModel tool;
+		private int toolIndex; 
+		ExtraFeaturesPanel(int toolIndex /*ToolModel tool*/) {
+			//this.tool = tool;
+			this.toolIndex = toolIndex; 
 			setLayout(new MigLayout());
-			ef = target.getExtraFeatures(tool.getIndex());
+			ef = target.getExtraFeatures(toolIndex);
 			swapMotors = new JCheckBox("Use 2A/2B to drive DC motor instead of 1A/1B", ef.swapMotorController);
 			add(swapMotors,"span 3,growx,wrap");
 			Vector<String> choices = new Vector<String>();
@@ -201,7 +208,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			ef.heaterChannel = extCh.getSelectedIndex();
 			ef.hbpChannel = hbpCh.getSelectedIndex();
 			ef.abpChannel = abpCh.getSelectedIndex();
-			target.setExtraFeatures(ef, tool.getIndex());
+			target.setExtraFeatures(ef, toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -227,10 +234,12 @@ public class ExtruderOnboardParameters extends JFrame {
 		private JFormattedTextField iField = new JFormattedTextField(eightPlaces);
 		private JFormattedTextField dField = new JFormattedTextField(threePlaces);
 		private final int which;
-		private final ToolModel tool;
-		PIDPanel(int which, String name, ToolModel tool) {
+		//private final ToolModel tool;
+		private int toolIndex; 
+		
+		PIDPanel(int which, String name, int toolIndex) {
 			this.which = which;
-			this.tool = tool;
+			this.toolIndex= toolIndex;
 			setLayout(new MigLayout());
 			setBorder(BorderFactory.createTitledBorder(name+" PID parameters"));
 			pField.setColumns(FIELD_WIDTH);
@@ -243,7 +252,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(iField,"wrap");
 			add(new JLabel("D parameter"));
 			add(dField,"wrap");
-			OnboardParameters.PIDParameters pp = target.getPIDParameters(which, tool.getIndex());
+			OnboardParameters.PIDParameters pp = target.getPIDParameters(which, toolIndex);
 			pField.setValue(pp.p);
 			iField.setValue(pp.i);
 			dField.setValue(pp.d);
@@ -254,7 +263,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			pp.p = ((Number)pField.getValue()).floatValue();
 			pp.i = ((Number)iField.getValue()).floatValue();
 			pp.d = ((Number)dField.getValue()).floatValue();
-			target.setPIDParameters(which,pp, tool.getIndex());
+			target.setPIDParameters(which,pp, toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -268,19 +277,20 @@ public class ExtruderOnboardParameters extends JFrame {
 		
 		private JFormattedTextField coolingFanSetpoint = new JFormattedTextField(threePlaces);
 		
-		private final ToolModel tool;
-		RegulatedCoolingFan(ToolModel tool) {
+		//private final ToolModel tool;
+		private final int toolIndex;
+		RegulatedCoolingFan(/*ToolModel tool*/int toolIndex) {
 			super(new MigLayout());	
 			
-			this.tool = tool;
-			
+			//this.tool = tool;
+			this.toolIndex = toolIndex;
 			coolingFanEnabled = new JCheckBox("Enable regulated cooling fan (stepper extruders only)",
-					target.getCoolingFanEnabled(tool.getIndex()));
+					target.getCoolingFanEnabled(toolIndex) );
 			add(coolingFanEnabled,"growx,wrap");
 			
 			coolingFanSetpoint.setColumns(FIELD_WIDTH);
 	
-			coolingFanSetpoint.setValue((int)target.getCoolingFanSetpoint(tool.getIndex()));
+			coolingFanSetpoint.setValue((int)target.getCoolingFanSetpoint(toolIndex));
 			add(new JLabel("Setpoint (C)"));
 			add(coolingFanSetpoint,"wrap");
 
@@ -289,7 +299,7 @@ public class ExtruderOnboardParameters extends JFrame {
 		public void commit() {
 			boolean enabled = coolingFanEnabled.isSelected();   
 			int setpoint = ((Number)coolingFanSetpoint.getValue()).intValue();
-			target.setCoolingFanParameters(enabled, setpoint, tool.getIndex());
+			target.setCoolingFanParameters(enabled, setpoint, toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -326,59 +336,53 @@ public class ExtruderOnboardParameters extends JFrame {
 		if (target instanceof Sanguino3GDriver) {
 			v = ((Sanguino3GDriver)target).getToolVersion();
 		}
-		
-		List<ToolModel> tools = new ArrayList<ToolModel>();
-		
-		// This is guaranteed, right?
-		// MainWindow casts a Driver as OnboardParameters to pass it to us, 
-		// we're just casting it back (weird, I know) 
-		if (target instanceof Driver)
-			tools = ((Driver)target).getMachine().getTools();
 
 		setLayout(new MigLayout());
 		JTabbedPane extruders = new JTabbedPane();
+
+		List<Integer> tools = target.toolheadsWithStoredData();
 		
-		for(ToolModel t : tools)
+		for(int toolIndex : tools)
 		{
 			JPanel tab = new JPanel(new MigLayout());
-			
+			//int toolIndex = t.getIndex();
 			ThermistorTablePanel ttp;
-			ttp = new ThermistorTablePanel(OnboardParameters.EXTRUDER,"Extruder thermistor", t);
+			ttp = new ThermistorTablePanel(OnboardParameters.EXTRUDER,"Extruder thermistor", toolIndex);
 			tab.add(ttp);
 			commitList.add(ttp);
-			ttp = new ThermistorTablePanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform thermistor", t);
+			ttp = new ThermistorTablePanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform thermistor", toolIndex);
 			tab.add(ttp,"wrap");
 			commitList.add(ttp);
 			
 			if (!v.atLeast(new Version(2,5))) {
-				BackoffPanel backoffPanel = new BackoffPanel(t);
+				BackoffPanel backoffPanel = new BackoffPanel(toolIndex);
 				tab.add(backoffPanel,"span 2,growx,wrap");
 				commitList.add(backoffPanel);
 			}
 
 			if (v.atLeast(new Version(2,5))) {
-				ExtraFeaturesPanel efp = new ExtraFeaturesPanel(t);
+				ExtraFeaturesPanel efp = new ExtraFeaturesPanel(toolIndex);
 				tab.add(efp,"span 2,growx,wrap");
 				commitList.add(efp);
 			}
 			
-			PIDPanel pidPanel = new PIDPanel(OnboardParameters.EXTRUDER,"Extruder", t);
+			PIDPanel pidPanel = new PIDPanel(OnboardParameters.EXTRUDER,"Extruder", toolIndex);
 			tab.add(pidPanel,"growx");
 			commitList.add(pidPanel);
 			
 			if (v.atLeast(new Version(2,4))) {
-				PIDPanel pp = new PIDPanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform", t);
+				PIDPanel pp = new PIDPanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform", toolIndex);
 				tab.add(pp,"growx,wrap");
 				commitList.add(pp);
 			}
 	
 			if (v.atLeast(new Version(2,9))) {
-				RegulatedCoolingFan rcf = new RegulatedCoolingFan(t);
+				RegulatedCoolingFan rcf = new RegulatedCoolingFan(toolIndex);
 				tab.add(rcf,"span 2,growx,wrap");
 				commitList.add(rcf);
 			}
 			
-			extruders.addTab("Extruder " + t.getIndex(), tab);
+			extruders.addTab("Extruder " + toolIndex, tab);
 			
 		}
 		

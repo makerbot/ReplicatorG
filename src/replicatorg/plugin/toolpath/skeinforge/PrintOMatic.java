@@ -271,9 +271,9 @@ public class PrintOMatic implements SkeinforgePreference {
 
 		JComponent defaultsPanel = new JPanel(new MigLayout("fillx"));
 
-		final JButton mk7 = new JButton("Load Mk7 Defualts");
-		final JButton mk6 = new JButton("Load Mk6 Defualts (0.5 nozzle)");
-		final JButton mk6ns = new JButton("Load Mk6 Defualts (0.4 nozzle)");
+		final JButton mk7 = new JButton("Load Mk7 Defaults");
+		final JButton mk6 = new JButton("Load Mk6 Defaults (0.5 nozzle)");
+		final JButton mk6ns = new JButton("Load Mk6 Defaults (0.4 nozzle)");
 
 		ActionListener loadDefaults = new ActionListener(){
 			@Override
