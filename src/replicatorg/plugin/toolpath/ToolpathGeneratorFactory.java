@@ -101,7 +101,7 @@ public class ToolpathGeneratorFactory {
 						"replicatorg.skeinforge.useRaft", false,
 						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
 						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
-				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "false"));
+				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
 				prefs.add(raftPref);
 				SkeinforgeChoicePreference supportPref =
 					new SkeinforgeChoicePreference("Use support material",
