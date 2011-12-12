@@ -35,7 +35,7 @@ public class ToolheadIndexer extends JDialog {
 		c.add(new JLabel("Tool index:"),"split");
 		NumberFormat.getNumberInstance();
 
-		final JFormattedTextField toolIndexField = new JFormattedTextField(NumberFormat.getNumberInstance());
+		final JFormattedTextField toolIndexField = new JFormattedTextField(NumberFormat.getIntegerInstance());
 		toolIndexField.setColumns(4);
 		toolIndexField.setValue(new Integer(0));
 		c.add(toolIndexField);

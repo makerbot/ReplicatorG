@@ -100,7 +100,7 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 28;
+	public static final int VERSION = 29;
 	
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
@@ -115,7 +115,7 @@ public class Base {
 	/**
 	 * The user preferences store.
 	 */
-	static public Preferences preferences = Preferences.userNodeForPackage(Base.class);
+	static public Preferences preferences = getUserPreferences();
 
 	/**
 	*  Simple base data capture logger. So simple, but useful.
@@ -175,15 +175,41 @@ public class Base {
 	 */
 	static public String openedAtStartup;
 
+	/**
+	 * This is the name of the alternate preferences set that this instance of
+	 * ReplicatorG uses. If null, this instance will use the default preferences
+	 * set.
+	 */
+	static private String alternatePrefs = null;
+	
+	/**
+	 * Get the preferences node for ReplicatorG.
+	 */
+	static Preferences getUserPreferences() {
+		Preferences prefs = Preferences.userNodeForPackage(Base.class);
+		if (alternatePrefs != null) {
+			prefs = prefs.node("alternate/"+alternatePrefs);
+		}
+		return prefs;
+	}
+	
+	/**
+	 * Reset the preferences for ReplicatorG to a clean state.
+	 */
 	static public void resetPreferences() {
 		try {
 			Base.preferences.removeNode();
 			Base.preferences.flush();
-			preferences = Preferences.userNodeForPackage(Base.class);
+			preferences = getUserPreferences();
 		} catch (BackingStoreException bse) {
 			bse.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Back up the preferences
+	 * @return
+	 */
 	
 	static public String getToolsPath() {
 	    String toolsDir = System.getProperty("replicatorg.toolpath");
@@ -194,8 +220,15 @@ public class Base {
 	    return toolsDir;
 	}
 	
+	/**
+	 * Get the the user preferences and profiles directory. By default this is
+	 * ~/.replicatorg; if an alternate preferences set is selected, it will
+	 * instead be ~/.replicatorg/alternatePrefs/<i>alternate_prefs_name</i>.
+	 */
 	static public File getUserDirectory() {
-		File dir = new File(System.getProperty("user.home")+File.separator+".replicatorg");
+		String path = System.getProperty("user.home")+File.separator+".replicatorg";
+		if (alternatePrefs != null) { path = path + File.separator + alternatePrefs; }
+		File dir = new File(path);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
@@ -216,13 +249,13 @@ public class Base {
 
 	/** Local storage for localized NumberFormat. */
 	static private NumberFormat localNF = NumberFormat.getInstance();
-	{
-		localNF.setMinimumFractionDigits(2);
-	}
+//	{
+//		localNF.setMinimumFractionDigits(2);
+//	}
 	
 	/**
 	 * Get the NumberFormat object used for parsing and displaying numbers in the localized
-	 * format. This should be used for all non-GCode input and output.
+	 * format. This should be used for all non-GCode, floating point input and output.
 	 */
 	static public NumberFormat getLocalFormat() {
 		return localNF;
@@ -354,19 +387,24 @@ public class Base {
 				    "ReplicatorG");
 		}
 		
+		boolean cleanPrefs = false;
+		
 		// parse command line input
 		for (int i=0;i<args.length;i++) {
-			// grab any opened file from the command line
-			if (supportedExtension(args[i])) {
-				Base.openedAtStartup = args[i];
-			}
-			
-			// Allow for [--debug] [DEBUGLEVEL]
-			if(args[i].equals("--debug")) {
+			if (args[i].equals("--alternate-prefs")) {
+				if((i+1) < args.length) {
+					i++;
+					alternatePrefs = args[i];
+				}
+			} else if (args[i].equals("--clean-prefs")) {
+				cleanPrefs = true;
+			} else if(args[i].equals("--debug")) {
+				// Allow for [--debug] [DEBUGLEVEL]
 				int debugLevelArg = 2;
 				if((i+1) < args.length) {
 					try {
 						debugLevelArg = Integer.parseInt(args[i+1]);
+						i++;
 					} catch (NumberFormatException e) {};
 				}
 				if(debugLevelArg == 0) {
@@ -386,13 +424,16 @@ public class Base {
 					logger.info("Debug level is 'ALL'");
 				}
 			} else if(args[i].startsWith("-")){
-				System.out.println("Usage: ./replicatorg [[--debug] [DEBUGLEVEL]] [filename.stl]");
+				System.out.println("Usage: ./replicatorg [--debug DEBUGLEVEL] [--alternate-prefs ALTERNATE_PREFS_NAME] [--clean-prefs] [filename.stl]");
 				System.exit(1);
+			} else if (supportedExtension(args[i])) {
+				// grab any opened file from the command line
+				Base.openedAtStartup = args[i];
 			}
 		}
 		
-		// Warn about read-only directories
-    	{
+		// Warn about read-only user directories
+    	{    		
     		File userDir = getUserDirectory();
     		String header = null;
     		if (!userDir.exists()) header = new String("Unable to create user directory");
@@ -407,6 +448,9 @@ public class Base {
     					);
     		}
     	}
+
+    	// TODO: 0030
+		// Warn about read-only replicatorG directories
 
 		// Use the default system proxy settings
 		System.setProperty("java.net.useSystemProxies", "true");
@@ -432,10 +476,18 @@ public class Base {
 		MRJApplicationUtils.registerOpenDocumentHandler(startupOpen);
 
 		// Create the new application "Base" class.
-		new Base();
+		new Base(cleanPrefs);
 	}
 
-	public Base() {
+	/**
+	 * 
+	 * @param cleanPrefs Before starting ReplicatorG proper, erase the user preferences.
+	 */
+	public Base(boolean cleanPrefs) {
+		if (cleanPrefs) {
+			resetPreferences();
+		}
+		
 		// set the look and feel before opening the window
 		try {
 			if (Base.isMacOS()) {
