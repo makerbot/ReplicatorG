@@ -392,14 +392,11 @@ public class Base {
 		// parse command line input
 		for (int i=0;i<args.length;i++) {
 			if (args[i].equals("--alternate-prefs")) {
-				System.err.println("ALT PREFS");
 				if((i+1) < args.length) {
 					i++;
 					alternatePrefs = args[i];
-					System.err.println(alternatePrefs);
 				}
 			} else if (args[i].equals("--clean-prefs")) {
-				System.err.println("CLEAN PREFS");
 				cleanPrefs = true;
 			} else if(args[i].equals("--debug")) {
 				// Allow for [--debug] [DEBUGLEVEL]
@@ -427,7 +424,6 @@ public class Base {
 					logger.info("Debug level is 'ALL'");
 				}
 			} else if(args[i].startsWith("-")){
-				System.err.println("BAD PREF "+args[i]);
 				System.out.println("Usage: ./replicatorg [--debug DEBUGLEVEL] [--alternate-prefs ALTERNATE_PREFS_NAME] [--clean-prefs] [filename.stl]");
 				System.exit(1);
 			} else if (supportedExtension(args[i])) {
