@@ -28,10 +28,12 @@ import replicatorg.machine.model.ToolModel;
 public class ExtruderOnboardParameters extends JPanel {
 	private static final long serialVersionUID = 6353987389397209816L;
 	private OnboardParameters target;
-	// We clone this because we don't want to set the precision globally
-    private static final NumberFormat threePlaces = (NumberFormat) Base.getLocalFormat().clone();
+	
+	// Float gui objects show at least 2 places, max 8 places for clarity it's a float
+    private static final NumberFormat floatFormat = (NumberFormat) Base.getLocalFormat().clone();
     {
-        threePlaces.setMaximumFractionDigits(3);
+        floatFormat.setMaximumFractionDigits(8);
+        floatFormat.setMinimumFractionDigits(2);
     }
 	
 	interface Commitable {
@@ -46,9 +48,9 @@ public class ExtruderOnboardParameters extends JPanel {
 	class ThermistorTablePanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 7765098486598830410L;
 
-		private JFormattedTextField betaField = new JFormattedTextField(threePlaces);
-		private JFormattedTextField r0Field = new JFormattedTextField(threePlaces);
-		private JFormattedTextField t0Field = new JFormattedTextField(threePlaces);
+		private JFormattedTextField betaField = new JFormattedTextField(floatFormat);
+		private JFormattedTextField r0Field = new JFormattedTextField(floatFormat);
+		private JFormattedTextField t0Field = new JFormattedTextField(floatFormat);
 		// Toolhead or Heated Platform?
 		private final int which;
 		private final ToolModel tool;
@@ -120,11 +122,13 @@ public class ExtruderOnboardParameters extends JPanel {
 
 	private class BackoffPanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 6593800743174557032L;
-		private JFormattedTextField stopMsField = new JFormattedTextField(threePlaces);
-		private JFormattedTextField reverseMsField = new JFormattedTextField(threePlaces);
-		private JFormattedTextField forwardMsField = new JFormattedTextField(threePlaces);
-		private JFormattedTextField triggerMsField = new JFormattedTextField(threePlaces);
+		
+		private JFormattedTextField stopMsField = new JFormattedTextField(floatFormat);
+		private JFormattedTextField reverseMsField = new JFormattedTextField(floatFormat);
+		private JFormattedTextField forwardMsField = new JFormattedTextField(floatFormat);
+		private JFormattedTextField triggerMsField = new JFormattedTextField(floatFormat);
 		private final ToolModel tool;
+
 		BackoffPanel(ToolModel tool) {
 			this.tool = tool;
 			setLayout(new MigLayout());
@@ -218,14 +222,14 @@ public class ExtruderOnboardParameters extends JPanel {
 	}
 	
 	private class PIDPanel extends JPanel implements Commitable {
-	    private NumberFormat eightPlaces = (NumberFormat) threePlaces.clone();
+	    private NumberFormat eightPlaces = (NumberFormat) floatFormat.clone();
 	    {
 	    	eightPlaces.setMaximumFractionDigits(8);
 	    }
 
-	    private JFormattedTextField pField = new JFormattedTextField(threePlaces);
+	    private JFormattedTextField pField = new JFormattedTextField(floatFormat);
 		private JFormattedTextField iField = new JFormattedTextField(eightPlaces);
-		private JFormattedTextField dField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField dField = new JFormattedTextField(floatFormat);
 		private final int which;
 		private final ToolModel tool;
 		PIDPanel(int which, String name, ToolModel tool) {
@@ -266,7 +270,7 @@ public class ExtruderOnboardParameters extends JPanel {
 		private static final long serialVersionUID = 7765098486598830410L;
 		private JCheckBox coolingFanEnabled;
 		
-		private JFormattedTextField coolingFanSetpoint = new JFormattedTextField(threePlaces);
+		private JFormattedTextField coolingFanSetpoint = new JFormattedTextField(floatFormat);
 		
 		private final ToolModel tool;
 		RegulatedCoolingFan(ToolModel tool) {

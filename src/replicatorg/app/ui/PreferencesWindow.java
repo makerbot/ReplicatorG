@@ -457,7 +457,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		vref2.setColumns(3);
 		vref3.setColumns(3);
 		vref4.setColumns(3);
-		JButton vrefApplyButton = new JButton("Apply VREF");
+		JButton vrefApplyButton = new JButton("Set All vRef voltages");
 
 		if(machine != null)
 		{
@@ -473,6 +473,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			public void actionPerformed(ActionEvent arg0) {
 				if(machine != null)
 				{
+					Base.logger.info("actionPerformed set all vRef preferences");
 					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
 							0, ((Number)vref0.getValue()).intValue()));
 					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
@@ -559,8 +560,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 					//strip whitespace
 					h = h.trim();
 					
-					if(!(h.startsWith("0x")) && !(h.startsWith("#")))
-						h = "0x".concat(h);
+//					if(!(h.startsWith("0x")) && !(h.startsWith("#")))
+//						h = "0x".concat(h);
 					System.out.print(h + '\t');
 					try {
 						bytes[i] = Byte.decode(h);

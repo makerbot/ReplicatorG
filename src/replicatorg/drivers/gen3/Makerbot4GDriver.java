@@ -168,24 +168,29 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	
 	
 	public void enableDrives() throws RetryException {
-		enableStepperExtruderFan(true);
+		enableStepperExtruderFan(true,machine.currentTool().getIndex());
 		
 		super.enableDrives();
 	}
 
 	public void disableDrives() throws RetryException {
-		enableStepperExtruderFan(false);
+		enableStepperExtruderFan(false,machine.currentTool().getIndex());
 		
 		super.disableDrives();
 	}
 	
 	/**
-	 * Will turn on/off the stepper extruder fan if it's not already in the correct state.
-	 * 
+	 * Due to async command dispatch, this version should not be called.
 	 */
+	@Deprecated 
 	public void enableStepperExtruderFan(boolean enabled) throws RetryException {
 		enableStepperExtruderFan(enabled, machine.currentTool().getIndex());
 	}
+
+	/**
+	 * Will turn on/off the stepper extruder fan if it's not already in the correct state.
+	 * 
+	 */
 	public void enableStepperExtruderFan(boolean enabled, int toolIndex) throws RetryException {
 		
 		// Always re-enable the fan when 
@@ -222,6 +227,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 
 	EnumMap<AxisId,ToolModel> stepExtruderMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
 	
+	
 	@Override
 	/**
 	 * When the machine is set for this driver, some toolheads may poach the an extrusion axis.
@@ -247,5 +253,4 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 			}
 		}
 	}
-
 }

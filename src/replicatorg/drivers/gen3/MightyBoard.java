@@ -54,9 +54,9 @@ import replicatorg.drivers.OnboardParameters.EstopType;
 import replicatorg.drivers.OnboardParameters.ExtraFeatures;
 import replicatorg.drivers.OnboardParameters.PIDParameters;
 import replicatorg.drivers.gen3.PacketProcessor.CRCException;
-import replicatorg.drivers.gen3.Sanguino3GDriver.CoolingFanOffsets;
-import replicatorg.drivers.gen3.Sanguino3GDriver.ECBackoffOffsets;
-import replicatorg.drivers.gen3.Sanguino3GDriver.PIDOffsets;
+//import replicatorg.drivers.gen3.Sanguino3GDriver.CoolingFanOffsets;
+//import replicatorg.drivers.gen3.Sanguino3GDriver.c;
+//import replicatorg.drivers.gen3.Sanguino3GDriver.PIDOffsets;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
@@ -87,10 +87,17 @@ import java.util.Hashtable;
 //	}
 //}
 
+final class PIDTermOffsets {
+	final static int P_TERM_OFFSET = 0x0000;
+	final static int I_TERM_OFFSET = 0x0002;
+	final static int D_TERM_OFFSET = 0x0004;
+};
+
+
 class ToolheadEEPROM implements EEPROMClass
 {
 	////Feature map: 2 bytes
-	public static final int FEATURES			= 0x0000;
+	public static final int FEATURES				= 0x0000;
 	/// Backoff stop time, in ms: 2 bytes
 	public static final int BACKOFF_STOP_TIME         = 0x0002;
 	/// Backoff reverse time, in ms: 2 bytes
@@ -123,7 +130,7 @@ class MightyBoardEEPROM implements EEPROMClass
 	public static final int EEPROM_CHECK_LOW = 0x5A;
 	public static final int EEPROM_CHECK_HIGH = 0x78;
 	
-	public static final int MAX_MACHINE_NAME_LEN = 12;
+	public static final int MAX_MACHINE_NAME_LEN = 16;
 	
 	
 	final static class ECThermistorOffsets {
@@ -169,53 +176,16 @@ class MightyBoardEEPROM implements EEPROMClass
 	final public static int T1_DATA_BASE		= 0x011A;
 	/// Digital Potentiometer Settings : 5 Bytes
 	final public static int DIGI_POT_SETTINGS			= 0x0134;
-	// Padding: 1 byte free space
+	/// hardare version id
+	final public static int HARDWARE_ID 				= 0x0139;
+
 	/// start of free space
 	final public static int FREE_EEPROM_STARTS = 0x0140;
-}
-	
-	
-	
-//	/// EEPROM map:
-//	/// 00-01 - EEPROM data version
-//	/// 02    - Axis inversion byte
-//	/// 32-47 - Machine name (max. 16 chars)
-//	final public static int AXIS_INVERSION = 3;
-//	final public static int MACHINE_NAME = 32;
-//	final public static int EEPROM_AXIS_HOME_POSITIONS_OFFSET = 96;
-//	final public static int EEPROM_ESTOP_CONFIGURATION_OFFSET = 116;
-//	
-//	// EEPROM pot, size, offset, etc.
-//	final public static int DIGI_POT_SETTINGS = 0x0150;
-//	final public static int DIGITAL_POT_COUNT = 5;
-//	final public static int DIGITAL_POT_BYSIZE = 1;
-//	
-//	final static class ECThermistorOffsets {
-//		final public static int[] TABLE_OFFSETS = {
-//			0x0155,
-//			0x01C5
-//		};
-//
-//		final public static int R0 = 0x00;
-//		final public static int T0 = 0x04;
-//		final public static int BETA = 0x08;
-//		final public static int DATA = 0x10;
-//		
-//		public static int r0(int which) { return R0 + TABLE_OFFSETS[which]; }
-//		public static int t0(int which) { return T0 + TABLE_OFFSETS[which]; }
-//		public static int beta(int which) { return BETA + TABLE_OFFSETS[which]; }
-//		public static int data(int which) { return DATA + TABLE_OFFSETS[which]; }
-//	};	
-//
-//	final public static int EC_EEPROM_EXTRA_FEATURES = 0x0018;
-//	final public static int EC_EEPROM_SLAVE_ID = 0x001A;
-//
-//	final public static int MAX_MACHINE_NAME_LEN = 16;
-//
-//	final public static int EXTRUDER_PID_BASE_0 = 0x006C;
-//	final public static int EXTRUDER_PID_BASE_1 = 0x0155;
-//	
 
+	// tag for Mightyboard V1 shipping hardware
+	final public static int HARDWARE_ID_LMIGHTYBOARD_A = 0x1213;
+
+}
 
 
 /**
@@ -229,7 +199,14 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	
 	/// Stores LED color by effect. Mostly uses '0' (color now)
 	private Hashtable ledColorByEffect;
-	private int[] stepperValues = new int[5]; //only 0 - 127 are valid
+
+	/// Stores the last know stepper values.
+	/// on boot, fetches those values from the machine,
+	/// afterwords updated when stepper values are set (currently
+	/// there is no way to get stepper values from the machine)
+	/// hash is <int(StepperId), int(StepperLastSetValue>
+	private Hashtable stepperValues; //only 0 - 127 are valid
+
 	
 	/// 0 -127, current reference value. Store on desktop for this machine
 	private int voltageReference; 
@@ -248,11 +225,34 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		ledColorByEffect = new Hashtable();
 		ledColorByEffect.put(0, Color.BLACK);
 		Base.logger.info("Created a MightBoard");
-		
+
+		stepperValues= new Hashtable();
+
 	}
 
-
 	/**
+	 * This function is called just after a connection is made, to do initial
+	 * sycn of any values stored in software that are not available by 
+	 * s3g command. For example, stepper vRef
+	 * @see replicatorg.drivers.gen3.Sanguino3GDriver#initialSync()
+	 */
+	@Override
+	public void initialSync()
+	{
+		int stepperCountMightyBoard = 5;
+		Base.logger.severe("MightBoard initial Sync");
+		for(int i = 0; i < stepperCountMightyBoard; i++)
+		{
+			int vRef = getStoredStepperVoltage(i); 
+			Base.logger.info("storing inital stepper Values from onboard eeprom");
+			Base.logger.info("i = " + i + " vRef =" + vRef);
+			stepperValues.put(new Integer(i), new Integer(vRef) );
+		}
+	}
+
+	
+	/**
+	 * 
 	 *  Sets the reference voltage for the specified stepper. This will change the reference voltage
 	 *  and therefore the power used by the stepper. Voltage range is 0v (0) to 1.7v (127) for Replicator machine
 	 * @param stepperId target stepper index
@@ -261,49 +261,72 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 */
 	@Override
 	public void setStepperVoltage(int stepperId, int referenceValue) throws RetryException {
-		Base.logger.info("MightBoard sending setStepperVoltage");
+		Base.logger.severe("MightBoard sending setStepperVoltage: " + stepperId + " " + referenceValue);
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_STEPPER_REFERENCE_POT.getCode());
 		
 		if(stepperId > 5) {
 			Base.logger.severe("set invalid stepper Id" + Integer.toString(stepperId) );
 			return; 
 		}
-		if (referenceValue > 127) {
-			Base.logger.fine("set clipping vRef to 127 from " + Integer.toString(referenceValue) );			
-			referenceValue= 127; 
-		}
-		else if (referenceValue < 0) {
-			Base.logger.fine("set clipping vRef to 0 from " + Integer.toString(referenceValue) );			
-			referenceValue= 0; 
-		}
+		if (referenceValue > 127) 	 referenceValue= 127; 
+		else if (referenceValue < 0) referenceValue= 0;
 		
 		pb.add8(stepperId);
 		pb.add8(referenceValue); //range should be only is 0-127
 		PacketResponse pr = runCommand(pb.getPacket());
 
 		if( pr.isOK() )
-			stepperValues[stepperId] = referenceValue;
+		{
+			stepperValues.put(new Integer(stepperId), new Integer(referenceValue));
+		}
 	}
+
+	@Override
+	public int getStepperVoltage(int stepperId )
+	{
+		Integer key = new Integer(stepperId);
+		if( stepperValues.containsKey(key) ){
+			Integer stepperVal = (Integer)stepperValues.get(key);
+			return (int)stepperVal;
+		}
+
+		Base.logger.severe("No known local stepperVoltage: " + stepperId);
+		return 0;
+	}
+
 	
 	@Override
 	public boolean hasVrefSupport() {
 		return true;
 	}
 	
+	
+	
 	@Override
 	public int getStoredStepperVoltage(int stepperId) 
 	{
+		Base.logger.severe("Getting stored stepperVoltage: " + stepperId );
 		int vRefForPotLocation = MightyBoardEEPROM.DIGI_POT_SETTINGS + stepperId;
+		
+		Base.logger.severe("Getting stored stepperVoltage from eeprom addr: " +
+				vRefForPotLocation  );
+
 		byte[] voltages = readFromEEPROM(vRefForPotLocation, 1) ;
 		if(voltages == null ) {
 			Base.logger.severe("null response to EEPROM read");
 			return 0;
 		}
+		Base.logger.severe("raw stored stepperVoltage: " + voltages[0]);
+
+		if(voltages[0] > 127)		voltages[0] = 127;
+		else if(voltages[0] < 0)	voltages[0] = 0;
+
+		Base.logger.severe("Effective stored stepperVoltage: " + voltages[0]);
 		return (int)voltages[0];
 		
 	}
 
-	
+
 	@Override
 	public void setStoredStepperVoltage(int stepperId, int referenceValue) {
 		Base.logger.info("MightBoard sending storeStepperVoltage");
@@ -312,14 +335,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			Base.logger.severe("store invalid stepper Id" + Integer.toString(stepperId) );
 			return; 
 		}
-		if (referenceValue > 127) {
-			Base.logger.fine("store clipping vRef to 127 from " + Integer.toString(referenceValue) );			
-			referenceValue= 127; 
-		}
-		else if (referenceValue < 0) {
-			Base.logger.fine("store clipping vRef to 0 from " + Integer.toString(referenceValue) );			
-			referenceValue= 0; 
-		}
+		if (referenceValue > 127)		referenceValue= 127; 
+		else if (referenceValue < 0)	referenceValue= 0; 
 
 		int vRefForPotLocation = MightyBoardEEPROM.DIGI_POT_SETTINGS + stepperId;
 		byte b[] = new byte[1];
@@ -362,7 +379,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * @throws RetryException
 	 */
 	public void sendBeep(int frequencyHz, int durationMs, int effectId) throws RetryException {
-		Base.logger.severe("MightBoard sending setBeep");
+		Base.logger.severe("MightBoard sending setBeep" + durationMs + " effect" + effectId);
+		Base.logger.severe("max " + Integer.MAX_VALUE);
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_BEEP.getCode());
 		pb.add16(frequencyHz);
 		pb.add16(durationMs);
@@ -382,9 +400,11 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			eepromChecked = true;
 			if (version.getMajor() < 2) {
 				byte versionBytes[] = readFromEEPROM(MightyBoardEEPROM.VERSION_LOW,2);
-				if (versionBytes == null || versionBytes.length < 2) return;
+				if (versionBytes == null || versionBytes.length < 2) 
+					return;
 				if ((versionBytes[0] != MightyBoardEEPROM.EEPROM_CHECK_LOW) || 
-					(versionBytes[1] != MightyBoardEEPROM.EEPROM_CHECK_HIGH)) {
+					(versionBytes[1] != MightyBoardEEPROM.EEPROM_CHECK_HIGH)) 
+				{
 					Base.logger.severe("Cleaning EEPROM to v1.X state");
 					// Wipe EEPROM
 					byte eepromWipe[] = new byte[16];
@@ -397,6 +417,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 						writeToEEPROM(i,eepromWipe);
 					}
 				}
+				Base.logger.severe("checkEEPROM has version" + version.toString());
 			}
 		}
 	}
@@ -406,14 +427,17 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		checkEEPROM();
 		byte[] b = readFromEEPROM(MightyBoardEEPROM.AXIS_INVERSION,1);
 		EnumSet<AxisId> r = EnumSet.noneOf(AxisId.class);
-
-		if ( (b[0] & (0x01 << 0)) != 0 ) r.add(AxisId.X);
-		if ( (b[0] & (0x01 << 1)) != 0 ) r.add(AxisId.Y);
-		if ( (b[0] & (0x01 << 2)) != 0 ) r.add(AxisId.Z);
-		if ( (b[0] & (0x01 << 3)) != 0 ) r.add(AxisId.A);
-		if ( (b[0] & (0x01 << 4)) != 0 ) r.add(AxisId.B);
-		if ( (b[0] & (0x01 << 7)) != 0 ) r.add(AxisId.V);
-		return r;
+		if(b != null) {
+			if ( (b[0] & (0x01 << 0)) != 0 ) r.add(AxisId.X);
+			if ( (b[0] & (0x01 << 1)) != 0 ) r.add(AxisId.Y);
+			if ( (b[0] & (0x01 << 2)) != 0 ) r.add(AxisId.Z);
+			if ( (b[0] & (0x01 << 3)) != 0 ) r.add(AxisId.A);
+			if ( (b[0] & (0x01 << 4)) != 0 ) r.add(AxisId.B);
+			if ( (b[0] & (0x01 << 7)) != 0 ) r.add(AxisId.V);
+			return r;
+		}
+		Base.logger.severe("Null settings for getInvertedParameters");
+		return EnumSet.noneOf(AxisId.class);	
 	}
 
 	@Override
@@ -431,9 +455,12 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public String getMachineName() {
 		checkEEPROM();
+		
 		byte[] data = readFromEEPROM(MightyBoardEEPROM.MACHINE_NAME,
 				MightyBoardEEPROM.MAX_MACHINE_NAME_LEN);
-		if (data == null) { return new String(); }
+		Base.logger.severe("getting getMachineName");
+
+		if (data == null) { return "no name"; }
 		try {
 			int len = 0;
 			while (len < MightyBoardEEPROM.MAX_MACHINE_NAME_LEN && data[len] != 0) len++;
@@ -446,36 +473,40 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 
 	public void setMachineName(String machineName) {
+		int maxLen = MightyBoardEEPROM.MAX_MACHINE_NAME_LEN;
 		machineName = new String(machineName);
-		if (machineName.length() > 16) { 
-			machineName = machineName.substring(0,16);
+		if (machineName.length() > maxLen) { 
+			machineName = machineName.substring(0,maxLen);
 		}
-		byte b[] = new byte[16];
+		byte b[] = new byte[maxLen];
 		int idx = 0;
 		for (byte sb : machineName.getBytes()) {
 			b[idx++] = sb;
-			if (idx == 16) break;
+			if (idx == maxLen) break;
 		}
-		if (idx < 16) b[idx] = 0;
+		if (idx < maxLen) b[idx] = 0;
 		writeToEEPROM(MightyBoardEEPROM.MACHINE_NAME,b);
 	}
 	
 
 	@Override
 	public double getAxisHomeOffset(int axis) {
+
+		Base.logger.severe("MigtyBoard getAxisHomeOffset" + axis);
 		if ((axis < 0) || (axis > 4)) {
 			// TODO: handle this
+			Base.logger.severe("axis out of range" + axis);
 			return 0;
 		}
 		
 		checkEEPROM();
 		byte[] r = readFromEEPROM(MightyBoardEEPROM.AXIS_HOME_POSITIONS + axis*4, 4);
 		
+
 		double val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
 		}
-		
 		Point5d stepsPerMM = getMachine().getStepsPerMM();
 		switch(axis) {
 			case 0:
@@ -575,10 +606,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		eepromIndicator[1] = MightyBoardEEPROM.EEPROM_CHECK_HIGH;
 		writeToToolEEPROM(0,eepromIndicator);
 
-		writeToToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.beta(which),intToLE((int)beta));
-		writeToToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.r0(which),intToLE((int)r0));
-		writeToToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.t0(which),intToLE((int)t0));
-		writeToToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.data(which),table);
+		writeToEEPROM(MightyBoardEEPROM.ECThermistorOffsets.beta(which),intToLE((int)beta));
+		writeToEEPROM(MightyBoardEEPROM.ECThermistorOffsets.r0(which),intToLE((int)r0));
+		writeToEEPROM(MightyBoardEEPROM.ECThermistorOffsets.t0(which),intToLE((int)t0));
+		writeToEEPROM(MightyBoardEEPROM.ECThermistorOffsets.data(which),table);
 	}
 	
 	/**
@@ -587,8 +618,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 */
 	@Override
 	public int getBeta(int which, int toolIndex) {
-		Base.logger.severe("beta" + Integer.toString(toolIndex));
-		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.beta(which),4, toolIndex);
+		Base.logger.severe("beta for " + Integer.toString(toolIndex));
+		byte r[] = readFromEEPROM(MightyBoardEEPROM.ECThermistorOffsets.beta(which),4);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -612,6 +643,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	@Override
 	public ExtraFeatures getExtraFeatures(int toolIndex) {
+		Base.logger.severe("extra Feat: " + Integer.toString(toolIndex));
 		int efdat = read16FromToolEEPROM(ToolheadEEPROM.FEATURES ,0x4084, toolIndex);
 		ExtraFeatures ef = new ExtraFeatures();
 		ef.swapMotorController = (efdat & 0x0001) != 0;
@@ -697,6 +729,12 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 	}
 
 	
+	/**
+	 * Reads a chunk of data from the tool EEPROM. 
+	 * For mightyboard, this data is stored onbopard
+	 * @param offset  offset into the 'Tool' section of the EEPROM
+	 * 	(the location of the tool section of eeprom is calculated in this function')
+	 */
 	@Override 
 	protected byte[] readFromToolEEPROM(int offset, int len, int toolIndex) {
 
@@ -712,16 +750,15 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 		pb.add8(len);
 		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isOK()) {
-			Base.logger.severe("readFromToolEEPROM ok");
-
+			Base.logger.severe("readFromToolEEPROM ok at: " + offset +" len:" + len + " id:" + toolIndex);			
+			//Base.logger.severe("readFromToolEEPROM ok");
 			int rvlen = Math.min(pr.getPayload().length - 1, len);
 			byte[] rv = new byte[rvlen];
 			// Copy removes the first response byte from the packet payload.
 			System.arraycopy(pr.getPayload(), 1, rv, 0, rvlen);
 			return rv;
 		} else {
-			Base.logger.severe("On tool read: "
-					+ pr.getResponseCode().getMessage());
+			Base.logger.severe("On tool read: " + pr.getResponseCode().getMessage());
 		}
 		Base.logger.severe("readFromToolEEPROM null" + offset +" " + len + " " + toolIndex);
 		return null;
@@ -775,8 +812,8 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 	 *******************************/
 	@Override
 	public boolean getCoolingFanEnabled(int toolIndex) {
+		Base.logger.severe("getCoolingFanEnable: " + Integer.toString(toolIndex));
 		byte[]  a = readFromToolEEPROM(ToolheadEEPROM.COOLING_FAN_SETTINGS, 1, toolIndex);
-//		byte[] a = readFromToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE, 1, toolIndex);
 		return (a[0] == 1);
 	}
 
@@ -786,7 +823,8 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 	 */
 	@Override
 	public int getR0(int which, int toolIndex) {
-		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.r0(which),4, toolIndex);
+		Base.logger.severe("getR0: " + Integer.toString(toolIndex));
+		byte r[] = readFromEEPROM(MightyBoardEEPROM.ECThermistorOffsets.r0(which),4);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -800,7 +838,8 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 	 */
 	@Override
 	public int getT0(int which, int toolIndex) {
-		byte r[] = readFromToolEEPROM(MightyBoardEEPROM.ECThermistorOffsets.t0(which),4, toolIndex);
+		Base.logger.severe("getT0: " + Integer.toString(toolIndex));
+		byte r[] = readFromEEPROM(MightyBoardEEPROM.ECThermistorOffsets.t0(which),4);
 		int val = 0;
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int)r[i] & 0xff) << 8*i);
@@ -817,9 +856,12 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 	protected int read16FromToolEEPROM(int offset, int defaultValue, int toolIndex) {
 		byte r[] = readFromToolEEPROM(offset, 2, toolIndex);
 		int val = ((int) r[0]) & 0xff;
+		Base.logger.severe("val " + val + " & " + (((int) r[1]) & 0xff) );
 		val += (((int) r[1]) & 0xff) << 8;
-		if (val == 0x0ffff)
+		if (val == 0x0ffff) {
+			Base.logger.fine("ERROR: Eeprom val at "+ offset +" is 0xFFFF");
 			return defaultValue;
+		}
 		return val;
 	}
 
@@ -827,44 +869,74 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 	@Override
 	public BackoffParameters getBackoffParameters(int toolIndex) {
 		BackoffParameters bp = new BackoffParameters();
-		bp.forwardMs = read16FromToolEEPROM(ECBackoffOffsets.FORWARD_MS, 300, toolIndex);
-		bp.stopMs = read16FromToolEEPROM(ECBackoffOffsets.STOP_MS, 5, toolIndex);
-		bp.reverseMs = read16FromToolEEPROM(ECBackoffOffsets.REVERSE_MS, 500, toolIndex);
-		bp.triggerMs = read16FromToolEEPROM(ECBackoffOffsets.TRIGGER_MS, 300, toolIndex);
+		Base.logger.severe("backoff Forward: " + Integer.toString(toolIndex));
+		bp.forwardMs = read16FromToolEEPROM( ToolheadEEPROM.BACKOFF_FORWARD_TIME, 300, toolIndex);
+		Base.logger.severe("backoff sop: " + Integer.toString(toolIndex));
+		bp.stopMs = read16FromToolEEPROM( ToolheadEEPROM.BACKOFF_STOP_TIME, 5, toolIndex);
+		Base.logger.severe("backoff reverse: " + Integer.toString(toolIndex));
+		bp.reverseMs = read16FromToolEEPROM(ToolheadEEPROM.BACKOFF_REVERSE_TIME, 500, toolIndex);
+		Base.logger.severe("backoff trigger: " + Integer.toString(toolIndex));
+		bp.triggerMs = read16FromToolEEPROM(ToolheadEEPROM.BACKOFF_TRIGGER_TIME, 300, toolIndex);
 		return bp;
 	}
 	
 	@Override
 	public void setBackoffParameters(BackoffParameters bp, int toolIndex) {
-		writeToToolEEPROM(ECBackoffOffsets.FORWARD_MS,intToLE(bp.forwardMs,2), toolIndex);
-		writeToToolEEPROM(ECBackoffOffsets.STOP_MS,intToLE(bp.stopMs,2), toolIndex);
-		writeToToolEEPROM(ECBackoffOffsets.REVERSE_MS,intToLE(bp.reverseMs,2), toolIndex);
-		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2), toolIndex);
+		writeToToolEEPROM(ToolheadEEPROM.BACKOFF_FORWARD_TIME,intToLE(bp.forwardMs,2), toolIndex);
+		writeToToolEEPROM(ToolheadEEPROM.BACKOFF_STOP_TIME,intToLE(bp.stopMs,2), toolIndex);
+		writeToToolEEPROM(ToolheadEEPROM.BACKOFF_REVERSE_TIME,intToLE(bp.reverseMs,2), toolIndex);
+		writeToToolEEPROM(ToolheadEEPROM.BACKOFF_TRIGGER_TIME,intToLE(bp.triggerMs,2), toolIndex);
 	}
 
+
+	/**
+	 */
 	@Override
 	public PIDParameters getPIDParameters(int which, int toolIndex) {
 		PIDParameters pp = new PIDParameters();
-		int offset = (which == OnboardParameters.EXTRUDER)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
-		pp.p = readFloat16FromToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET, 7.0f, toolIndex);
-		pp.i = readFloat16FromToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET, 0.325f, toolIndex);
-		pp.d = readFloat16FromToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET, 36.0f, toolIndex);
+
+		int offset = (which == OnboardParameters.EXTRUDER)?
+				ToolheadEEPROM.EXTRUDER_PID_BASE:ToolheadEEPROM.HBP_PID_BASE;
+		if (which == OnboardParameters.EXTRUDER)
+			Base.logger.severe("** PID FOR ID: Extruder" );
+		else
+			Base.logger.severe("** PID FOR ID: BuildPlatform" );
+
+
+		Base.logger.severe("pid p: " + Integer.toString(toolIndex));
+		pp.p = readFloat16FromToolEEPROM(offset + PIDTermOffsets.P_TERM_OFFSET, 7.0f, toolIndex);
+		Base.logger.severe("pid i: " + Integer.toString(toolIndex));
+		pp.i = readFloat16FromToolEEPROM(offset + PIDTermOffsets.I_TERM_OFFSET, 0.325f, toolIndex);
+		Base.logger.severe("pid d: " + Integer.toString(toolIndex));
+		pp.d = readFloat16FromToolEEPROM(offset + PIDTermOffsets.D_TERM_OFFSET, 36.0f, toolIndex);
 		return pp;
 	}
 	
 	@Override
 	public void setPIDParameters(int which, PIDParameters pp, int toolIndex) {
-		int offset = (which == OnboardParameters.EXTRUDER)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
-		writeToToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET,floatToLE(pp.p),toolIndex);
-		writeToToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET,floatToLE(pp.i),toolIndex);
-		writeToToolEEPROM(offset+PIDOffsets.D_TERM_OFFSET,floatToLE(pp.d),toolIndex);
+		int offset = (which == OnboardParameters.EXTRUDER)?
+				ToolheadEEPROM.EXTRUDER_PID_BASE:ToolheadEEPROM.HBP_PID_BASE;
+		writeToToolEEPROM(offset+PIDTermOffsets.P_TERM_OFFSET,floatToLE(pp.p),toolIndex);
+		writeToToolEEPROM(offset+PIDTermOffsets.I_TERM_OFFSET,floatToLE(pp.i),toolIndex);
+		writeToToolEEPROM(offset+PIDTermOffsets.D_TERM_OFFSET,floatToLE(pp.d),toolIndex);
 	}
 	
 	
+	/**
+	 * Reads a EEPROM value from the mahine
+	 * @param offset distance into EEPROM to read
+	 * @param defaultValue value to return on error or failure
+	 * @param toolIndex index of the tool to read/write a bite from 
+	 * @return a float value, the 'defaultValue' if there is an error
+	 */
 	private float readFloat16FromToolEEPROM(int offset, float defaultValue, int toolIndex) {
 		byte r[] = readFromToolEEPROM(offset, 2, toolIndex);
-		if (r[0] == (byte) 0xff && r[1] == (byte) 0xff)
+
+		Base.logger.severe("val " + (((int) r[0]) & 0xff)+ " & " + (((int) r[1]) & 0xff) );
+		if (r[0] == (byte) 0xff && r[1] == (byte) 0xff){
+			Base.logger.fine("ERROR: Eeprom  float 16 val at "+ offset +" is 0xFFFF");
 			return defaultValue;
+		}
 		return (float) byteToInt(r[0]) + ((float) byteToInt(r[1])) / 256.0f;
 	}
 
@@ -944,110 +1016,8 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 		return toolVersion;
 	}
 	
+
+	
 }
 
-
-
-
-/**
- * Singleton class until MightBoard no longer inherits from it's Sanguino3GDriver
- * parent. At that point this will become a regular part of MightBoard
- * @author farmckon
- *
-// */
-//private class MightyBoardEEPROM implements EEPROMClass
-//{
-//	
-//    private static MightyBoardEEPROM _instance;
-//    
-//    private MightyBoardEEPROM() {  }
-//
-//    public static synchronized EEPROMClass getInstance() {
-//            if (null == _instance) {
-//                    _instance = new MightyBoardEEPROM();
-//            }
-//            return _instance;
-//    }
-//    
-//	final private static int EEPROM_SIZE = 0x0200;
-//	final private static int MAX_MACHINE_NAME_LEN = 16;
-//
-//	/// EEPROM map:
-//	/// x00-x01 - EEPROM data version
-//	/// x02    - Axis inversion byte
-//	/// x03    - EndStop inversion byte
-//	final private static int EEPROM_CHECK_OFFSET = 0;
-//	final private static int EEPROM_AXIS_INVERSION_OFFSET = 2;
-//	final private static int AXIS_INVERSION = 3;
-//	
-//	/// x20-x30 - Machine name (max. 16 chars)
-//	final private static int MACHINE_NAME = 32;
-//	
-//	/// x60		- Home position
-//	final private static int EEPROM_AXIS_HOME_POSITIONS_OFFSET = 96;
-//	/// x62 	- Board Features bit-set* See below
-//	/// x64		- Backoff stop time
-//	/// x66		- Backoff reverse time
-//	/// x68		- Backoff forwrd time
-//	//  x6A		- Backoff trigger time
-//	
-//	final private static int EEPROM_ESTOP_CONFIGURATION_OFFSET = 116;
-//	
-//	/// Thermister table class/objects
-//	final static class ECThermistorOffsets {
-//		final private static int[] TABLE_OFFSETS = {
-//			0x0155,
-//			0x01C5
-//		};
-//
-//		final private static int R0 = 0x00;
-//		final private static int T0 = 0x04;
-//		final private static int BETA = 0x08;
-//		final private static int DATA = 0x10;
-//		
-//		public static int r0(int which) { return R0 + TABLE_OFFSETS[which]; }
-//		public static int t0(int which) { return T0 + TABLE_OFFSETS[which]; }
-//		public static int beta(int which) { return BETA + TABLE_OFFSETS[which]; }
-//		public static int data(int which) { return DATA + TABLE_OFFSETS[which]; }
-//	};	
-//
-//	final static class DigitalPotentiometer
-//	{
-//		final private static int DIGITAL_POT_BASE = 0x0150;
-//		public static int getPotOffset(int potId) {return  DIGITAL_POT_BASE + potId;}
-//	}
-//	
-//	final private static int EC_EEPROM_EXTRA_FEATURES = 0x0018;
-//	final private static int EC_EEPROM_SLAVE_ID = 0x001A;
-//
-//	private void checkEEPROM() {
-//
-//		
-//		private boolean eepromChecked = false;
-//		if (!eepromChecked) {
-//			// Versions 2 and up have onboard eeprom defaults and rely on 0xff values
-//			eepromChecked = true;
-//			if (version.getMajor() < 2) {
-//				byte versionBytes[] = readFromEEPROM(EEPROM_CHECK_OFFSET,2);
-//				if (versionBytes == null || versionBytes.length < 2) return;
-//				if ((versionBytes[0] != EEPROM_CHECK_LOW) || 
-//						(versionBytes[1] != EEPROM_CHECK_HIGH)) {
-//					Base.logger.severe("Cleaning EEPROM to v1.X state");
-//					// Wipe EEPROM
-//					byte eepromWipe[] = new byte[16];
-//					Arrays.fill(eepromWipe,(byte)0x00);
-//					eepromWipe[0] = EEPROM_CHECK_LOW;
-//					eepromWipe[1] = EEPROM_CHECK_HIGH;
-//					writeToEEPROM(0,eepromWipe);
-//					Arrays.fill(eepromWipe,(byte)0x00);
-//					for (int i = 16; i < 256; i+=16) {
-//						writeToEEPROM(i,eepromWipe);
-//					}
-//				}
-//			}
-//		}
-//	}
-//
-//
-//}
 

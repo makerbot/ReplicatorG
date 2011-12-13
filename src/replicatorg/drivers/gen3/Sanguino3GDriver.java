@@ -171,6 +171,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	private boolean attemptConnection() {
 		// Eat anything in the serial buffer
 		serial.clear();
+
 		version = getVersionInternal();
 		if (getVersion() != null)
 			setInitialized(true);
@@ -451,6 +452,11 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/***************************************************************************
 	 * commands used internally to driver
 	 **************************************************************************/
+	
+	/** 
+	 * Make an inital connection to read the version code.
+	 * @return
+	 */
 	public Version getVersionInternal() {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.VERSION.getCode());
@@ -478,18 +484,23 @@ public class Sanguino3GDriver extends SerialDriver implements
 			Base.logger.severe("Null version reported!");
 			return null;
 		}
+		
 		Version v = new Version(versionNum / 100, versionNum % 100);
 		Base.logger.warning("Motherboard firmware v" + v + buildname);
 
 		final String MB_NAME = "RepRap Motherboard v1.X";
 		FirmwareUploader.checkLatestVersion(MB_NAME, v);
 
+		// Do inital sync of MotherBoard values to local valuse
+		this.initialSync();
+		
 		// Scan for each slave
 		for (ToolModel t : getMachine().getTools()) {
 			if (t != null) {
 				initSlave(t.getIndex());
 			}
 		}
+		
 		// If we're dealing with older firmware, set timeout to infinity
 		if (v.getMajor() < 2) {
 			serial.setTimeout(Integer.MAX_VALUE);
@@ -497,6 +508,13 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return v;
 	}
 
+	/// Once connected, do the initial sync of the MotherBoard state
+	// to the remote machine state
+	public void initialSync()
+	{
+		// do nothing
+	}
+	
 	public CommunicationStatistics getCommunicationStatistics() {
 		CommunicationStatistics stats = new CommunicationStatistics();
 
@@ -1634,6 +1652,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add16(offset);
 		pb.add8(len);
 		PacketResponse pr = runQuery(pb.getPacket());
+		
 		if (pr.isOK()) {
 			int rvlen = Math.min(pr.getPayload().length - 1, len);
 			byte[] rv = new byte[rvlen];
@@ -1692,19 +1711,34 @@ public class Sanguino3GDriver extends SerialDriver implements
 				|| (slavepr.get8() == data.length);
 	}
 
+	/**
+	 * Sends a request to the MoBo to read an eeprom address
+	 * @param offset Offset from the bottom of EEPROM memory
+	 * @param len	number of bytes to read from EEPROM
+	 * @return a byte array of size length on success, a null object on failure
+	 */
 	protected byte[] readFromEEPROM(int offset, int len) {
+		final int MAX_EEPROM_READ_SZ = 16;
+		if(len > MAX_EEPROM_READ_SZ)
+			Base.logger.severe("readFromEEPROM too big for: " + offset + " size: " + len);
+
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.READ_EEPROM.getCode());
 		pb.add16(offset);
 		pb.add8(len);
+
+		
 		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isOK()) {
+			Base.logger.severe("readFromEEPROM ok for: " + offset + " size: " + len);
 			int rvlen = Math.min(pr.getPayload().length - 1, len);
 			byte[] rv = new byte[rvlen];
 			// Copy removes the first response byte from the packet payload.
 			System.arraycopy(pr.getPayload(), 1, rv, 0, rvlen);
 			return rv;
 		}
+		Base.logger.severe("readFromEEPROM failsauce: " + offset + " size: " + len);
+		Base.logger.severe("readFromEEPROM PR is: " + pr.toString());
 		return null;
 	}
 
@@ -1782,6 +1816,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_MACHINE_NAME_OFFSET, b);
 	}
 
+	/**
+	 * Reads a 32 bit double from EEPROM on the MightyBoard to indicate the 
+	 * number of steps of offset from end-stop to home on the specified axis
+	 */
 	public double getAxisHomeOffset(int axis) {
 		if ((axis < 0) || (axis > 4)) {
 			// TODO: handle this
@@ -1790,8 +1828,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		checkEEPROM();
 		byte[] r = readFromEEPROM(
-				Sanguino3GEEPRPOM.EEPROM_AXIS_HOME_POSITIONS_OFFSET + axis * 4,
-				4);
+				Sanguino3GEEPRPOM.EEPROM_AXIS_HOME_POSITIONS_OFFSET + (axis * 4), 4);
 
 		double val = 0;
 		for (int i = 0; i < 4; i++) {
@@ -2134,7 +2171,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return val;
 	}
 
-	final static class ECBackoffOffsets {
+	/// Offsets from start of a Toolhead EEPROM section 
+	// to the specified data 
+	final private static class ECBackoffOffsets {
 		// / Backoff stop time, in ms: 2 bytes
 		final static int STOP_MS = 0x0004;
 		// / Backoff reverse time, in ms: 2 bytes
@@ -2145,7 +2184,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		final static int TRIGGER_MS = 0x000A;
 	};
 
-	final static class PIDOffsets {
+	final private static class PIDOffsets {
 		final static int PID_EXTRUDER = 0x000C;
 		final static int PID_HBP = 0x0012;
 		final static int P_TERM_OFFSET = 0x0000;
@@ -2153,7 +2192,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		final static int D_TERM_OFFSET = 0x0004;
 	};
 
-	final static class CoolingFanOffsets {
+	final private static class CoolingFanOffsets {
 		final static int COOLING_FAN_ENABLE = 0x001c;
 		final static int COOLING_FAN_SETPOINT_C = 0x001d;
 	};
@@ -2220,6 +2259,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * entire eeprom.
 	 */
 	public void resetToFactory() {
+		Base.logger.severe("resetting to Factory in Sanguino3G");
 		byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe, (byte) 0xff);
 		for (int i = 0; i < 0x0200; i += 16) {
