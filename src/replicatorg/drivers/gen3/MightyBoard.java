@@ -130,7 +130,7 @@ class MightyBoardEEPROM implements EEPROMClass
 	public static final int EEPROM_CHECK_LOW = 0x5A;
 	public static final int EEPROM_CHECK_HIGH = 0x78;
 	
-	public static final int MAX_MACHINE_NAME_LEN = 16;
+	public static final int MAX_MACHINE_NAME_LEN = 16; // set to 32 in firmware
 	
 	
 	final static class ECThermistorOffsets {
@@ -173,14 +173,18 @@ class MightyBoardEEPROM implements EEPROMClass
 	// Toolhead 0 data: 26 bytes (see above)
 	final public static int T0_DATA_BASE		= 0x100;
 	// Toolhead 0 data: 26 bytes (see above)
-	final public static int T1_DATA_BASE		= 0x011A;
+	final public static int T1_DATA_BASE		= 0x011C;
 	/// Digital Potentiometer Settings : 5 Bytes
-	final public static int DIGI_POT_SETTINGS			= 0x0134;
+	final public static int DIGI_POT_SETTINGS			= 0x0138;
 	/// hardare version id
-	final public static int HARDWARE_ID 				= 0x0139;
+	final public static int HARDWARE_ID 				= 0x013D;
+	/// Ligth Effect table. 3 Bytes x 3 entries
+	final public static int LED_STRIP_SETTINGS		= 0x013E;
+	/// Buzz Effect table. 4 Bytes x 3 entries
+	final public static int BUZZ_SETTINGS		= 0x0147;
 
 	/// start of free space
-	final public static int FREE_EEPROM_STARTS = 0x0140;
+	final public static int FREE_EEPROM_STARTS = 0x0153;
 
 	// tag for Mightyboard V1 shipping hardware
 	final public static int HARDWARE_ID_LMIGHTYBOARD_A = 0x1213;
@@ -744,6 +748,7 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 		else if (toolIndex == 1)toolInfoOffset = MightyBoardEEPROM.T1_DATA_BASE;
 
 		offset = toolInfoOffset + offset;
+		Base.logger.severe("readFromToolEEPROM null" + offset +" " + len + " " + toolIndex);
 				
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.READ_EEPROM.getCode());
 		pb.add16(offset);

@@ -6,7 +6,7 @@
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="80" maxfeedrate="10000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="y" length="80" maxfeedrate="10000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="min"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="400" endstops="min"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
@@ -35,7 +35,7 @@ M18
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="211" maxfeedrate="10000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="y" length="148" maxfeedrate="10000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="z" length="158" maxfeedrate="1000" homingfeedrate="1000" stepspermm="200" endstops="min"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="z" length="158" maxfeedrate="1000" homingfeedrate="1000" stepspermm="400" endstops="min"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
