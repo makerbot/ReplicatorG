@@ -511,7 +511,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 		checkEEPROM();
 		byte[] r = readFromEEPROM(MightyBoardEEPROM.AXIS_HOME_POSITIONS + axis*4, 4);
-		
+		if( r == null || r.length < 4) {
+			Base.logger.severe("invalid read from AXIS_HOME_POSITION");
+			return 0; }
 
 		double val = 0;
 		for (int i = 0; i < 4; i++) {
@@ -640,7 +642,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public EndstopType getInvertedEndstops() {
 		checkEEPROM();
-		byte[] b = readFromEEPROM(MightyBoardEEPROM.AXIS_INVERSION,1);
+		byte[] b = readFromEEPROM(MightyBoardEEPROM.ENDSTOP_INVERSION,1);
 		return EndstopType.endstopTypeForValue(b[0]);
 	}
 
@@ -648,7 +650,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	public void setInvertedEndstops(EndstopType endstops) {
 		byte b[] = new byte[1];
 		b[0] = endstops.getValue();
-		writeToEEPROM(MightyBoardEEPROM.AXIS_INVERSION,b);
+		writeToEEPROM(MightyBoardEEPROM.ENDSTOP_INVERSION,b);
 	}
 
 	@Override

@@ -1582,7 +1582,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	public void reset() {
-		Base.logger.info("Reset.");
+		Base.logger.info("Reset Board");
 		if (isInitialized() && version.compareTo(new Version(1, 4)) >= 0) {
 			// WDT reset introduced in version 1.4 firmware
 			PacketBuilder pb = new PacketBuilder(
