@@ -361,9 +361,15 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	public void setLedStrip(Color color, int effectId) throws RetryException {
 		Base.logger.severe("MightBoard sending setLedStrip");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_LED_STRIP_COLOR.getCode());
-		pb.add8(color.getRed());
-		pb.add8(color.getGreen());
-		pb.add8(color.getBlue());
+
+                int Channel = 1;
+                int Brightness = 60;
+                int BlinkRate = 10;
+                int LEDs = 0x33;
+		pb.add8(Channel);//color.getRed());
+		pb.add8(Brightness);//color.getGreen());
+		pb.add8(BlinkRate);//color.getBlue());
+                pb.add8(LEDs);
 		pb.add8(effectId);
 
 		PacketResponse resp =  runCommand(pb.getPacket());
@@ -383,7 +389,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * @throws RetryException
 	 */
 	public void sendBeep(int frequencyHz, int durationMs, int effectId) throws RetryException {
-		Base.logger.severe("MightBoard sending setBeep" + durationMs + " effect" + effectId);
+		Base.logger.severe("MightBoard sending setBeep" + frequencyHz + durationMs + " effect" + effectId);
 		Base.logger.severe("max " + Integer.MAX_VALUE);
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_BEEP.getCode());
 		pb.add16(frequencyHz);
