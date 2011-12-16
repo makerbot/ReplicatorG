@@ -2186,6 +2186,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 	public int getBeta(int which, int toolIndex) {
 		byte r[] = readFromToolEEPROM(Sanguino3GEEPRPOM.ECThermistorOffsets.beta(which),4,toolIndex);
 		int val = 0;
+		if( r == null || r.length < 4 ) {
+			Base.logger.fine("failure to read getBeta");
+			return val;
+		}
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int) r[i] & 0xff) << 8 * i);
 		}
@@ -2195,6 +2199,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 	public int getR0(int which, int toolIndex) {
 		byte r[] = readFromToolEEPROM(Sanguino3GEEPRPOM.ECThermistorOffsets.r0(which),4,toolIndex);
 		int val = 0;
+		if( r == null || r.length < 4 ) {
+			Base.logger.fine("failure to read getR0");
+			return val;
+		}
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int) r[i] & 0xff) << 8 * i);
 		}
@@ -2204,6 +2212,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 	public int getT0(int which, int toolIndex) {
 		byte r[] = readFromToolEEPROM(Sanguino3GEEPRPOM.ECThermistorOffsets.t0(which),4,toolIndex);
 		int val = 0;
+		if( r == null || r.length < 4 ) {
+			Base.logger.fine("failure to read getT0");
+			return val;
+		}
 		for (int i = 0; i < 4; i++) {
 			val = val + (((int) r[i] & 0xff) << 8 * i);
 		}
