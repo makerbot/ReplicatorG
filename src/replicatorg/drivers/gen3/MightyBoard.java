@@ -44,6 +44,7 @@ import replicatorg.drivers.DriverError;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.PenPlotter;
+import replicatorg.drivers.InteractiveDisplay;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SDCardCapture;
 import replicatorg.drivers.SerialDriver;
@@ -196,6 +197,7 @@ class MightyBoardEEPROM implements EEPROMClass
  * @author farmckon
  */
 public class MightyBoard extends Makerbot4GAlternateDriver
+	implements InteractiveDisplay
 	//implements OnboardParameters, SDCardCapture
 {
 	// note: other machines also inherit: PenPlotter, MultiTool
@@ -1043,6 +1045,30 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			machine.currentTool().setPlatformTargetTemperature(sp);
 		}
 		return super.getPlatformTemperatureSetting();
+	}
+
+	public void displayMessage(double seconds, String message) throws RetryException {
+		byte options = 0;
+		final int MAX_MSG_PER_PACKET = 25;
+		int cursor = 0;
+		while (cursor < message.length()) {
+			int roomRemaining = MAX_MSG_PER_PACKET;
+			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.DISPLAY_MESSAGE.getCode());
+			pb.add8(options);
+			pb.add8(0); // x coordinate
+			pb.add8(0); // y coordinate
+			pb.add8((int)seconds); // timeout
+			while (roomRemaining > 0 && cursor < message.length()) {
+				pb.add8(message.charAt(cursor));
+				cursor++;
+				roomRemaining--;
+			}
+			pb.add8('\0');
+			options = 1;
+			System.err.println("SENDING PACKET, cursor at "+Integer.toString(cursor));
+			runCommand(pb.getPacket());
+		}
+						     
 	}
 	
 	@Override

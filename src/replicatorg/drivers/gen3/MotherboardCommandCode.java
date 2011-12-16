@@ -54,7 +54,10 @@ public enum MotherboardCommandCode {
 	
 	SET_STEPPER_REFERENCE_POT(145, "set the digital pot for stepper power reference"),
 	SET_LED_STRIP_COLOR(146, "set an RGB value to blink the leds, optional blink trigger"), 
-	SET_BEEP(147, "set a beep frequency and length");
+	SET_BEEP(147, "set a beep frequency and length"),
+
+	PAUSE_FOR_BUTTON(148, "Wait until a user button push is recorded"),
+	DISPLAY_MESSAGE(149, "Display a user message on the machine display");
 	
 	private int code; 	/// id code of this packet in the s3g protocol
 	private String info;/// rough info on what this packet does
