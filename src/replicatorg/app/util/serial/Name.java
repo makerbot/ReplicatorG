@@ -2,16 +2,22 @@ package replicatorg.app.util.serial;
 
 /**
  * Serial.Name objects are simple compact objects that hold the name
- * of a serial port, along with the port's current availability.
+ * of a serial port, along with the port's current availability,
+ * and what kind of hardware the connection is (if it's known)
  */
 public class Name implements Comparable<Name> {
 	private String name;
 	private String alias;
 	private boolean available;
+	private UsbHardwareId hardwareId;/// Id to represent hardware type.
+									 /// do not set unless the id is well known
+	
+	
 	public Name(String name, boolean available) {
 		this.name = name;
 		this.alias = null;
 		this.available = available;
+		this.hardwareId = UsbHardwareId.NONE;
 	}
 	
 	public Name(String name, String alias, boolean available) {
@@ -27,6 +33,26 @@ public class Name implements Comparable<Name> {
 	public String getName() {
 		return name;
 	}
+	
+	public void setHardwareId(UsbHardwareId newId) {
+		this.hardwareId = newId;
+	}
+
+	/** Checks if this Serial.name is a valid connection port
+	 * for a machine name (as specified in machines.xml
+	 */
+	public boolean isValidConnectorForMachineName(String machineName) {
+		/// if this Serial.Name is a MightyBoard, and the machine contains
+		// Replicator or MightyBoard, we can verif we are connectable
+		if( this.hardwareId == UsbHardwareId.MIGHTY_BOARD ) {
+			if ( machineName.contains("MightyBoard") || machineName.contains("Replicator") )
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean isVerified() { return this.hardwareId.isVerified(); }
+	
 	/**
 	 * @return true if the port can be successfully opened by ReplicatorG.
 	 */
@@ -46,4 +72,5 @@ public class Name implements Comparable<Name> {
 		}
 		return this.name;
 	}
+
 }

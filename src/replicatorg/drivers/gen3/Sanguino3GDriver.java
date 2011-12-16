@@ -370,6 +370,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 				Base.logger.severe("null packet in runCommand");
 				return PacketResponse.timeoutResponse();
 			}
+			
+			// This can actually happen during shutdown.
+			if (serial == null)
+				return PacketResponse.timeoutResponse();
 
 			synchronized (serial) {
 				// Do not allow a stop or reset command to interrupt mid-packet!

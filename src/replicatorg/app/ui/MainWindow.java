@@ -594,7 +594,9 @@ ToolpathGenerator.GeneratorListener
 	private JMenu serialMenu = null;
 
 	private void reloadSerialMenu() {
-		if (serialMenu == null) return;
+		
+		if (serialMenu == null) 
+			return;
 
 		serialMenuListener = new SerialMenuListener(); 
 
@@ -653,6 +655,7 @@ ToolpathGenerator.GeneratorListener
 		serialMenu.add(item);
 	}
 
+	
 	private JMenu mruMenu = null;
 
 	private class FileOpenActionListener implements ActionListener {
@@ -1650,10 +1653,13 @@ ToolpathGenerator.GeneratorListener
 		machineLoader.disconnect();
 	}
 
-	// handleConnect means, 'if we aren't already connected to a machine, make
-	// a new one and connect to it'. This has the side effect of destroying
-	// any machine that might have been loaded but not connected
-	// TODO: eh?
+	/**
+	 * Function to connect to a bot. handleConnect means, 'if we aren't already connected to a machine, make
+ 	 * a new one and connect to it'. This has the side effect of destroying
+	 * any machine that might have been loaded but not connected
+	* TODO: eh?
+	*/
+
 	public void handleConnect() {
 		// If we are already connected, don't try to connect again.
 		if (machineLoader.isConnected()) {
@@ -3012,16 +3018,38 @@ ToolpathGenerator.GeneratorListener
 		return this.machineLoader.getMachine();
 	}
 
+	boolean canVerifyDeviceType(String targetPort)
+	{
+		Vector<Name> names = Serial.scanSerialNames();
+		for (Name n : names){
+			if( n.getName() == targetPort && n.isVerified() == true )
+				return true;
+		}
+		return false;
+	}
+	
+	
+	boolean connectionVerified(String targetPort, String machineName) 
+	{
+		Vector<Name> names = Serial.scanSerialNames();
+		for (Name n : names){
+			if( n.getName() == targetPort) {
+				return n.isValidConnectorForMachineName(machineName);
+			}
+		}
+		return false;
+	}
+	
 	/**
+ 	 * Here we want to:
+	 * 1. Create a new machine using the given profile name
+	 * 2. If the new machine uses a serial port, connect to the serial port
+	 * 3. If this is a new machine, record a reference to it
+	 * 4. Hook the machine to the main window.
 	 * @param name       name of the machine
 	 * @param doConnect  perform the connect
 	 */
 	public void loadMachine(String name, boolean doConnect) {
-		// Here we want to:
-		// 1. Create a new machine using the given profile name
-		// 2. If the new machine uses a serial port, connect to the serial port
-		// 3. If this is a new machine, record a reference to it
-		// 4. Hook the machine to the main window.
 		
 		boolean loaded = machineLoader.load(name);
 		
@@ -3030,15 +3058,27 @@ ToolpathGenerator.GeneratorListener
 			return;
 		}
 		
-		String targetPort;
-
-		targetPort = Base.preferences.get("serial.last_selected", null);
+		String targetPort = Base.preferences.get("serial.last_selected", null);
 
 		if (targetPort == null) {
 			Base.logger.severe("Couldn't find a port to use!");
 			return;
 		}
 
+//		if( canVerifyDeviceType(targetPort) )
+//		{
+//			if ( ! connectionVerified(targetPort,name) ) {
+//				Base.logger.severe("We can't connect this machine to that port.");
+//				JOptionPane.showMessageDialog( this,
+//						"WARNING: You have selected a MightyBoard based machine, " +
+//						"but the target USB device is not a MightyBoard based machine. " +
+//						"this may cause connection problems.",
+//						"Dualstrusion Extruder Board Warning:",
+//						JOptionPane.WARNING_MESSAGE);
+//			}
+//				
+//		}
+			
 		if (doConnect) {
 			machineLoader.connect(targetPort);
 		}
