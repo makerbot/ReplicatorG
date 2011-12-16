@@ -211,7 +211,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/**
 	 * Connect to the device. After the specified timeout, replicatorG will
 	 * attempt to remotely reset the device.
-	 * 
 	 * @timeoutMillis the time, in milliseconds, that we should wait for a
 	 *                handshake.
 	 * @return true if we received a handshake; false if we timed out.
@@ -312,6 +311,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 */
 	protected PacketResponse runCommand(byte[] packet, int retries)
 			throws RetryException {
+
 		if (retries == 0) {
 			Base.logger.severe("Packet timed out!");
 			return PacketResponse.timeoutResponse();
@@ -372,13 +372,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 			}
 			
 			// This can actually happen during shutdown.
-			if (serial == null)
+			if (serial == null){
+				Base.logger.severe("null serial in runCommand");
 				return PacketResponse.timeoutResponse();
-
-			synchronized (serial) {
-				// Do not allow a stop or reset command to interrupt mid-packet!
-				serial.write(packet);
 			}
+			// Do not allow a stop or reset command to interrupt mid-packet!
+			serial.write(packet);
 			
 			printDebugData("OUT", packet);
 
