@@ -52,14 +52,16 @@ public class ToolModel
 	protected int motorDirection;
 	protected double motorSpeedRPM;
 	protected int motorSpeedPWM;
+
 	protected double motorSpeedReadingRPM;
 	protected int motorSpeedReadingPWM;
+
 	protected boolean motorUsesRelay = false;
 	protected boolean motorHasEncoder;
 	protected int motorEncoderPPR;
 	protected boolean motorIsStepper;
-	protected double motorSteps; // motor steps per full rotation
-	protected String motorStepperAxis;    // Stepper axis this motor is connected to
+	protected double motorSteps;		// motor steps per full rotation
+	protected String motorStepperAxis;	// Stepper axis this motor is connected to
 
 	//spindle stuff
 	protected boolean spindleEnabled;
@@ -368,11 +370,19 @@ public class ToolModel
 		return motorDirection;
 	}
 	
+	/**
+	 *  Motor speed *read from the XML*
+	 * @return
+	 */
 	public void setMotorSpeedRPM(double rpm)
 	{
 		motorSpeedRPM = rpm;
 	}
 
+	/**
+	 *  Motor speed *read from the XML*
+	 * @return
+	 */
 	public void setMotorSpeedPWM(int pwm)
 	{
 		motorSpeedPWM = pwm;
@@ -391,31 +401,52 @@ public class ToolModel
 		return motorSteps;
 	}
 
+	/**
+	 *  Motor speed *read from the XML*
+	 * @return
+	 */
 	public int getMotorSpeedPWM()
 	{
 		return motorSpeedPWM;
 	}
 	
+
 	public boolean getMotorUsesRelay()
 	{
 		return motorUsesRelay;
 	}
 	
+	/**
+	 *  Motor speed *read from the device*
+	 * @param rpm
+	 */
 	public void setMotorSpeedReadingRPM(double rpm)
 	{
 		motorSpeedReadingRPM = rpm;
 	}
 	
+	/**
+	 *  Motor speed *read from the device*
+	 * @param rpm
+	 */	
 	public void setMotorSpeedReadingPWM(int pwm)
 	{
 		motorSpeedReadingPWM = pwm;
 	}
 	
+	/**
+	 *  Motor speed *read from the device*
+	 * @param rpm
+	 */	
 	public double getMotorSpeedReadingRPM()
 	{
 		return motorSpeedReadingRPM;
 	}
 
+	/**
+	 *  Motor speed *read from the device*
+	 * @param rpm
+	 */	
 	public int getMotorSpeedReadingPWM()
 	{
 		return motorSpeedReadingPWM;
@@ -690,4 +721,5 @@ public class ToolModel
 	 * Retrieve XML node. A temporary hack until new  tool models.
 	 */
 	public Node getXml() { return xml; }
+	
 }

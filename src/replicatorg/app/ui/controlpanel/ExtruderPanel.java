@@ -188,16 +188,21 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		// create our initial panel
 		setLayout(new MigLayout());
+		
 		// create our motor options
 		if (tool.hasMotor()) {
+			
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder. (it's not!)
-			if ((tool.getMotorStepperAxis() == null) && !(tool.motorHasEncoder() || tool.motorIsStepper())) {
+			if ((tool.getMotorStepperAxis() == null) && 
+					!(tool.motorHasEncoder() || tool.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
+				
 				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9, Base.getLocalFormat());
-				field.setValue(Integer.toString(machine.getDriverQueryInterface().getMotorSpeedPWM()));
+				field.setValue(Integer.toString(tool.getMotorSpeedReadingPWM()) );// <-- should be
+				//field.setValue(Integer.toString(machine.getDriver().getMotorSpeedPWM()));
 				add(label);
 				add(field,"wrap");
 			}
@@ -206,7 +211,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (RPM)");
 				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed", 9, Base.getLocalFormat());
-				field.setValue(machine.getDriverQueryInterface().getMotorRPM());
+				field.setValue(tool.getMotorSpeedReadingRPM() );// <-- should be
+				//field.setValue(machine.getDriver().getMotorRPM());
 				add(label);
 				add(field,"wrap");
 
@@ -222,6 +228,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					add(timeList,"wrap");
 				}
 			}
+			
 			// create our motor options
 			JLabel motorEnabledLabel = makeLabel("Motor Control");
 			

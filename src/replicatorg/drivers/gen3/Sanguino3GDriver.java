@@ -167,14 +167,35 @@ public class Sanguino3GDriver extends SerialDriver implements
 			dispose();
 		}
 	}
+	
+	public boolean initializeBot()
+	{
+		// Scan for each slave
+		for (ToolModel t : getMachine().getTools()) {
+			if (t != null) {
+				initSlave(t.getIndex());
+			}
+		}
+	return true;
 
+	}
+	
 	private boolean attemptConnection() {
 		// Eat anything in the serial buffer
 		serial.clear();
 
 		version = getVersionInternal();
-		if (getVersion() != null)
+		if (version != null){
+			initializeBot();
+			final String MB_NAME = "RepRap Motherboard v1.X";
+			FirmwareUploader.checkLatestVersion(MB_NAME, version);
+
+			// If we're dealing with older firmware, set timeout to infinity
+			if (version.getMajor() < 2) {
+				serial.setTimeout(Integer.MAX_VALUE);
+			}
 			setInitialized(true);
+		}
 		return isInitialized();
 	}
 
@@ -344,10 +365,17 @@ public class Sanguino3GDriver extends SerialDriver implements
 			}
 
 			pp = new PacketProcessor();
+			
+			if(packet == null) {
+				Base.logger.severe("null packet in runCommand");
+				return PacketResponse.timeoutResponse();
+			}
 
-			// Do not allow a stop or reset command to interrupt mid-packet!
-			serial.write(packet);
-
+			synchronized (serial) {
+				// Do not allow a stop or reset command to interrupt mid-packet!
+				serial.write(packet);
+			}
+			
 			printDebugData("OUT", packet);
 
 			// Read entire response packet
@@ -458,8 +486,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * @return
 	 */
 	public Version getVersionInternal() {
-		PacketBuilder pb = new PacketBuilder(
-				MotherboardCommandCode.VERSION.getCode());
+		
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.VERSION.getCode());
 		pb.add16(Base.VERSION);
 
 		PacketResponse pr = runQuery(pb.getPacket(), 1);
@@ -487,34 +515,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 		
 		Version v = new Version(versionNum / 100, versionNum % 100);
 		Base.logger.warning("Motherboard firmware v" + v + buildname);
-
-		final String MB_NAME = "RepRap Motherboard v1.X";
-		FirmwareUploader.checkLatestVersion(MB_NAME, v);
-
-		// Do inital sync of MotherBoard values to local valuse
-		this.initialSync();
-		
-		// Scan for each slave
-		for (ToolModel t : getMachine().getTools()) {
-			if (t != null) {
-				initSlave(t.getIndex());
-			}
-		}
-		
-		// If we're dealing with older firmware, set timeout to infinity
-		if (v.getMajor() < 2) {
-			serial.setTimeout(Integer.MAX_VALUE);
-		}
 		return v;
 	}
 
-	/// Once connected, do the initial sync of the MotherBoard state
-	// to the remote machine state
-	public void initialSync()
-	{
-		// do nothing
-	}
-	
+
 	public CommunicationStatistics getCommunicationStatistics() {
 		CommunicationStatistics stats = new CommunicationStatistics();
 
@@ -534,6 +538,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	private void initSlave(int toolIndex) {
+		
 		PacketBuilder slavepb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
 		slavepb.add8((byte) toolIndex);
@@ -579,6 +584,23 @@ public class Sanguino3GDriver extends SerialDriver implements
 			final String EC_NAME = "Extruder Controller v2.2";
 			FirmwareUploader.checkLatestVersion(EC_NAME, sv);
 		}
+		
+		ToolModel curToolMod = getMachine().getTool(toolIndex);
+		if (curToolMod != null) {
+			double targetRPM =  curToolMod.getMotorSpeedRPM();
+			///set 'running RPM' to be the same as the default RPM
+			try { 
+				this.setMotorRPM( targetRPM, toolIndex );
+			}
+			catch (replicatorg.drivers.RetryException e)
+			{
+				Base.logger.severe("could not init motor RPM, got exception" + e );
+			}
+		}
+//		//TRICKY: this is just called to get the value cached into the ToolModel
+//		double ignore = getMotorRPM(toolIndex);
+	
+
 	}
 
 	public void sendInit() {
@@ -691,9 +713,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setCurrentPosition(p);
 	}
 
-	// TODO: this says it homes the first three axes, but it actually homes
-	// whatever's passed
-	// Homes the three first axes
+	/// TODO: this says it homes the first three axes, but it actually homes
+	/// whatever's passed
+	/// Homes the three first axes
 	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate)
 			throws RetryException {
 		Base.logger.fine("Homing axes " + axes.toString());
@@ -871,10 +893,14 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.selectTool(toolIndex);
 	}
 
+	public void setMotorRPM(double rpm) throws RetryException {
+		setMotorRPM( rpm, machine.currentTool().getIndex() );
+	}
+	
 	/***************************************************************************
 	 * Motor interface functions
 	 **************************************************************************/
-	public void setMotorRPM(double rpm) throws RetryException {
+	public void setMotorRPM(double rpm, int toolIndex) throws RetryException {
 		// convert RPM into microseconds and then send.
 		long microseconds = rpm == 0 ? 0 : Math.round(60.0 * 1000000.0 / rpm); // no
 		// unsigned
@@ -887,15 +913,19 @@ public class Sanguino3GDriver extends SerialDriver implements
 		// send it!
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolIndex );
 		pb.add8(ToolCommandCode.SET_MOTOR_1_RPM.getCode());
 		pb.add8((byte) 4); // length of payload.
 		pb.add32(microseconds);
 		runCommand(pb.getPacket());
 
-		super.setMotorRPM(rpm);
+		//TRICKY: WAS vvvv , but this seems not to work right. Seems to set default motor value(motorSppedRPM , not 'running' motor value. Caused gui to show bad values
+		//super.setMotorRPM(rpm); 
+		machine.currentTool().setMotorSpeedReadingRPM(rpm);
+		
 	}
 
+	
 	public void setMotorSpeedPWM(int pwm) throws RetryException {
 		// If we are using a relay, make sure that we don't enable the PWM
 		if (machine.currentTool().getMotorUsesRelay() && pwm > 0) {
@@ -978,10 +1008,15 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return pwm;
 	}
 
-	public double getMotorRPM() {
+	public double getMotorRPM()
+	{
+		return getMotorRPM(machine.currentTool().getIndex());
+	}
+	
+	public double getMotorRPM(int toolIndex) {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte)toolIndex);
 		pb.add8(ToolCommandCode.GET_MOTOR_1_RPM.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
 

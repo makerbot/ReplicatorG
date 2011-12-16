@@ -76,7 +76,6 @@ import java.util.Hashtable;
 //	
 //
 //	public final int offset;
-//	public final int byteSz;
 //	public final String info;
 //	
 //	/// standard constructor. 
@@ -233,16 +232,40 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		stepperValues= new Hashtable();
 
 	}
+	
+	/**
+	 * Initalize the extruder or sub-controllers.
+	 * For mightyboard, this involves setting some tool values,
+	 * and checking some eeprom values
+	 * @param toolIndex
+	 * @return
+	 */
+	public boolean initSlave(int toolIndex)
+	{
+		// since our motor speed is controlled by host software,
+		// initalize 'running' motor speed to be the same as the 
+		// default motor speed
+		ToolModel curTool = machine.getTool(toolIndex);
+		curTool.setMotorSpeedReadingRPM( curTool.getMotorSpeedRPM() );
+		return true;
+	}
 
 	/**
 	 * This function is called just after a connection is made, to do initial
 	 * sycn of any values stored in software that are not available by 
 	 * s3g command. For example, stepper vRef
-	 * @see replicatorg.drivers.gen3.Sanguino3GDriver#initialSync()
+	 * @see replicatorg.drivers.gen3.Sanguino3GDriver#pullInitialValuesFromBot()
 	 */
 	@Override
-	public void initialSync()
+	public boolean initializeBot()
 	{
+		// Scan for each slave
+		for (ToolModel t : getMachine().getTools()) {
+			if (t != null) {
+				initSlave(t.getIndex());
+			}
+		}
+
 		int stepperCountMightyBoard = 5;
 		Base.logger.severe("MightBoard initial Sync");
 		for(int i = 0; i < stepperCountMightyBoard; i++)
@@ -252,6 +275,13 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			Base.logger.info("i = " + i + " vRef =" + vRef);
 			stepperValues.put(new Integer(i), new Integer(vRef) );
 		}
+		
+		//load our motor RPM from firmware if we can.
+		getMotorRPM();
+
+		//
+		getSpindleSpeedPWM();
+		return true;
 	}
 
 	
@@ -709,7 +739,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	
 
 	@Override
-protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
+	protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 		final int MAX_PAYLOAD = 11;
 		while (data.length > MAX_PAYLOAD) {
 			byte[] head = new byte[MAX_PAYLOAD];
@@ -1018,10 +1048,43 @@ protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 		}
 		return super.getTemperatureSetting();
 	}
+	
+	
 
 	public Version getToolVersion() {
 		return toolVersion;
 	}
+	
+	@Override
+	public void setMotorRPM(double rpm) throws RetryException {
+	
+		///TRICKY: fot The Replicator,the firmware no longer handles this command
+		// it's all done on host side via 5D command translation
+		
+	// convert RPM into microseconds and then send.
+//		long microseconds = rpm == 0 ? 0 : Math.round(60.0 * 1000000.0 / rpm); // no
+//		// unsigned
+//		// ints?!?
+//		// microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
+//
+//		Base.logger.fine("Setting motor 1 speed to " + rpm + " RPM ("
+//				+ microseconds + " microseconds)");
+//
+//		// send it!
+//		PacketBuilder pb = new PacketBuilder(
+//				MotherboardCommandCode.TOOL_COMMAND.getCode());
+//		pb.add8((byte) machine.currentTool().getIndex());
+//		pb.add8(ToolCommandCode.SET_MOTOR_1_RPM.getCode());
+//		pb.add8((byte) 4); // length of payload.
+//		pb.add32(microseconds);
+//		runCommand(pb.getPacket());
+//
+		
+		machine.currentTool().setMotorSpeedRPM(rpm);
+//		super.setMotorRPM(rpm); TODO: this should be setMotorRPM running? 
+//				check read value vs running/tested value
+	}
+
 	
 
 	

@@ -38,6 +38,13 @@ import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
 import replicatorg.util.Point5d;
 
+/**
+ * Loads a machine model from XML, and contains data related to that XML setup for the 
+ * machine model, and a lot (but not all) of machine state values
+ * 
+ * @author unknows
+ *
+ */
 public class MachineModel
 {
 	//our xml config info
@@ -97,6 +104,7 @@ public class MachineModel
 		currentTool.set(nullTool);
 	}
 	
+	
 	//load data from xml config
 	public void loadXML(Node node)
 	{
@@ -109,6 +117,8 @@ public class MachineModel
 		parseWipes();
 		parseExclusion();
 	}
+	
+	
 	private void parseExclusion()
 	{
 		if(XML.hasChildNode(xml, "exclusion"))
@@ -127,6 +137,8 @@ public class MachineModel
 			}
 		}
 	}
+	
+	
 	private void parseWipes()
 	{
 		if(XML.hasChildNode(xml, "wipes"))
@@ -147,6 +159,8 @@ public class MachineModel
 			}
 		}
 	}
+	
+	
 	//load axes configuration
 	private void parseAxes()
 	{
