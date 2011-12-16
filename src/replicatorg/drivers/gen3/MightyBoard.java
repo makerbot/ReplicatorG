@@ -162,7 +162,9 @@ class MightyBoardEEPROM implements EEPROMClass
 	/// Bit 7 is set to indicate endstops are present; it is zero to indicate
 	/// that endstops are not present.
 	/// Ordinary endstops (H21LOB et. al.) are inverted.
-	final public static int ENDSTOP_INVERSION			= 0x0003;
+	/// only valid values are 0x9F, 0x80 or 0x00
+	final public static int ENDSTOP_INVERSION			= 0x0004;
+	///Padding: 28 bytes space
 	/// Name of this machine: 32 bytes.
 	final public static int MACHINE_NAME				= 0x0020;
 	/// Default locations for the axis: 5 x 32 bit = 20 bytes
@@ -181,13 +183,18 @@ class MightyBoardEEPROM implements EEPROMClass
 	/// Ligth Effect table. 3 Bytes x 3 entries
 	final public static int LED_STRIP_SETTINGS		= 0x013E;
 	/// Buzz Effect table. 4 Bytes x 3 entries
-	final public static int BUZZ_SETTINGS		= 0x0147;
+	/// 1 byte padding for offsets
+	final public static int BUZZ_SETTINGS		= 0x0148;
 
+	final public static int FIRST_BOOT_FLAG	= 0x0154;
+
+	/// axis home direction (1 byte)
+	final public static int AXIS_HOME_DIRECTION = 0x156;
+	/// axis lengths (mm) (6 bytes)
+	final public static int AXIS_LENGTHS	= 0x158;
+	
 	/// start of free space
-	final public static int FREE_EEPROM_STARTS = 0x0153;
-
-	// tag for Mightyboard V1 shipping hardware
-	final public static int HARDWARE_ID_LMIGHTYBOARD_A = 0x1213;
+	final public static int FREE_EEPROM_STARTS = 0x0156;
 
 }
 

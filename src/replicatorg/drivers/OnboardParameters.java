@@ -19,11 +19,12 @@ public interface OnboardParameters {
 	void setAxisHomeOffset(int axis, double d);
 	
 	public enum EndstopType {
-		NOT_PRESENT((byte)0x00),
-		INVERTED((byte)0x9F),
-		NON_INVERTED((byte)0x80);
 		
-		final byte value;
+		NOT_PRESENT((byte)0x00), //no endstops present 
+		ALL_INVERTED((byte)0x9F),// 5 ends stops (bits 0:4) plus has_endstops flag (bit 7)
+		NON_INVERTED((byte)0x80); // only has_endstops flag (bit 7)
+		
+		final byte value; //byte flag for endstop inversion status
 		
 		EndstopType(byte value) {
 			this.value = value;
@@ -32,8 +33,9 @@ public interface OnboardParameters {
 		public byte getValue() { return value; }
 		
 		public static EndstopType endstopTypeForValue(byte value) {
-			if ((value & 1<<7) == 0) { return NOT_PRESENT; }
-			return ((value & 1) == 0)?NON_INVERTED:INVERTED;
+			if ((value & 1<<7) == 0) 
+			{ return NOT_PRESENT; }
+			return ((value & 1) == 0)?NON_INVERTED:ALL_INVERTED;
 		}
 	}
 	
