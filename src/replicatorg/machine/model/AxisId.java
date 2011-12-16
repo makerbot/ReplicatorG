@@ -20,8 +20,12 @@ public enum AxisId {
 	W(8,"parallel to Z");
 	
 	private int index;
-	
-	private AxisId(int index, String info) { this.index = index; } 
+	private String info;
+
+	private AxisId(int index, String info) { 
+		this.index = index;
+		this.info = info;
+	} 
 	
 	public int getIndex() { return index; }
 }
