@@ -540,6 +540,10 @@ public class GCodeParser {
 			driver.getSpindleRPM();
 			break;
 			// turn extruder on, forward
+		case M70:
+			// print message
+			commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment()));
+			break;
 		case M101:
 			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.CLOCKWISE));
 			commands.add(new replicatorg.drivers.commands.EnableExtruderMotor());

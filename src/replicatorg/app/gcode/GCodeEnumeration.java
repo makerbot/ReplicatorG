@@ -51,6 +51,8 @@ public enum GCodeEnumeration {
 	M45("M", 45, "Change Gear Ratio to 5"),
 	M46("M", 46, "Change Gear Ratio to 6"),
 	M50("M", 50, "Read Spindle Speed"),
+	M70("M", 70, "Display Message On Machine"),
+	M71("M", 71, "Wait For User Button Press"),
 	M101("M", 101, "Turn Extruder On, Forward"),
 	M102("M", 102, "Turn Extruder On, Reverse"),
 	M103("M", 103, "Turn Extruder Off"),
