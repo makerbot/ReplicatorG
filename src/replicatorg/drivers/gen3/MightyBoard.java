@@ -999,12 +999,17 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * entire eeprom.
 	 */
 	@Override
+	//TODO: better solution to not wiping eeprom on Mightyboard
 	public void resetToFactory() {
-		byte eepromWipe[] = new byte[16];
+		// reset to factory disabled for Mightyboard.
+		// we do not want to overwrite home axis positions
+		
+		/*byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe, (byte) 0xff);
 		for (int i = 0; i < 0x0200; i += 16) {
 			writeToEEPROM(i, eepromWipe);
 		}
+		*/
 	}
 
 	@Override
