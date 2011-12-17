@@ -110,7 +110,6 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.MRUList;
-import replicatorg.app.gcode.DualStrusionWorker;
 import replicatorg.app.gcode.GCodeEnumeration;
 import replicatorg.app.gcode.GCodeHelper;
 import replicatorg.app.syntax.JEditTextArea;
@@ -146,6 +145,7 @@ import replicatorg.model.BuildElement;
 import replicatorg.model.BuildModel;
 import replicatorg.model.JEditTextAreaSource;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
+import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorEvent;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory.ToolpathGeneratorDescriptor;
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
@@ -594,7 +594,6 @@ ToolpathGenerator.GeneratorListener
 			// Here we'll do the setup for the post-processor
 			//Let's figure out which post-processing steps need to be taken
 			Set<String> postProcessingSteps = new TreeSet<String>();
-
 			// Set the target machine type
 			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
 				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_REPLICATOR);
@@ -602,7 +601,7 @@ ToolpathGenerator.GeneratorListener
 				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_TOM);
 			else if(machineLoader.getMachineInterface().getMachineType() == MachineType.CUPCAKE)
 				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_CUPCAKE);
-			
+
 			if (isDualDriver()) {
 				boolean printOMaticEnabled  = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
 				
@@ -615,7 +614,6 @@ ToolpathGenerator.GeneratorListener
 					postProcessingSteps.add(SkeinforgePostProcessor.TARGET_TOOLHEAD_RIGHT);
 				else if(extruderChoice.equalsIgnoreCase("left"))
 					postProcessingSteps.add(SkeinforgePostProcessor.TARGET_TOOLHEAD_LEFT);
-				
 			}
 			
 			((SkeinforgeGenerator) generator).setPostProcessor(
@@ -624,6 +622,7 @@ ToolpathGenerator.GeneratorListener
 							machineLoader.getMachineInterface().getModel().getEndCode(),
 							postProcessingSteps));
 		}
+
 
 		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build, skipConfig);
 		tgt.addListener(this);
@@ -3188,15 +3187,22 @@ ToolpathGenerator.GeneratorListener
 	 * @param completion
 	 * @param details
 	 */
-	public void generationComplete(Completion completion, Object details) {
+	@Override
+	public void generationComplete(GeneratorEvent evt) {
 
 		// if success, update header and switch to code view
-		if (completion == Completion.SUCCESS) {
+		if (evt.getCompletion() == Completion.SUCCESS) {
+			
+			
 			if (build.getCode() != null) {
+
+				
+				build.reloadCode();
 				setCode(build.getCode());
 			}
 			
 			buttons.updateFromMachine(machineLoader.getMachineInterface());
+			
 			updateBuild();
 			
 			if(buildOnComplete)
@@ -3210,8 +3216,9 @@ ToolpathGenerator.GeneratorListener
 			buildOnComplete = false;
 		}
 	}
-
-	public void updateGenerator(String message) {
+	
+	@Override
+	public void updateGenerator(GeneratorEvent evt) {
 		// ignore
 	}
 }

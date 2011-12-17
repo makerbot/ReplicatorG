@@ -115,6 +115,7 @@ public class GCodeHelper {
 
 		return new StringListSource(newGCode);
 	}
+
 	// TODO: remove this -- "reverse compatibility"
 	public static void changeToolHead(File source, ToolheadAlias tool) {
 		writeGCodeSourcetoFile(changeToolHead(readFiletoGCodeSource(source), tool), source);
@@ -228,7 +229,7 @@ public class GCodeHelper {
 
 		return new StringListSource(newGCode);
 	}
-	
+
 	/**
 	 * This method is used to write finished combinedGcode to a file
 	 * 
