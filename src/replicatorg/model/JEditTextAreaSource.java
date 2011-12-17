@@ -20,7 +20,7 @@ public class JEditTextAreaSource implements GCodeSource {
 	public JEditTextAreaSource(JEditTextArea textarea) {
 		this.textarea = textarea;
 	}
-	
+
 	@Override
 	public Iterator<String> iterator() {
 		final JEditTextArea ta = this.textarea;

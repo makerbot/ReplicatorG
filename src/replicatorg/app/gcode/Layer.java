@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * 
  * @author Noah Levy
- * This object is used to represent individual layers in Gcode, this is a revision of Will Langford's design which had problems because he was unable to use objects
+ * This object is used to represent individual layers in Gcode, this is a revision of Will Langford's design
  */
 public class Layer {
 	

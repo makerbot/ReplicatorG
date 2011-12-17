@@ -36,16 +36,15 @@ $Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
  */
 import java.awt.Container;
 import java.awt.Desktop;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
@@ -61,12 +60,13 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.gcode.DualStrusionConstruction;
 import replicatorg.model.Build;
-import replicatorg.model.GCodeSource;
-import replicatorg.model.StringListSource;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
+import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorEvent;
 import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorListener;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgePostProcessor;
 
 
 /**
@@ -75,6 +75,16 @@ import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
  * 
  * Also, because this is still very new (and potentially buggy) code, I've thrown a whole lot of logging calls in,
  * Those can be removed in a future release.
+ */
+
+/*
+ * NOTE: to self(Ted):
+ * to test: generate each individual, generate merged, merge individual for each dualstrusion thing that we have
+
+   We can have a more reliable thing that combines STLs, and a less reliable thing that combines gcodes
+   (Start code removal without getting it straight from skeinforge is a little less certain)
+
+   We should set up the post-processor before starting the generator, and the generator should just call the post-processor itself
  */
 public class DualStrusionWindow extends JFrame{
 	private static final long serialVersionUID = 2548421042732389328L; //Generated serial
@@ -90,6 +100,8 @@ public class DualStrusionWindow extends JFrame{
 	//   but that's just for now...
 	CountDownLatch numStls, numGcodes;
 
+	boolean aborted = false;
+	
 	/**
 	 * 
 	 * This is the default constructor, it is only invoked if the ReplicatorG window did not already have a piece of gcode open
@@ -106,7 +118,12 @@ public class DualStrusionWindow extends JFrame{
 
 	 * This is a constructor that takes the filepath of the gcode open currently in ReplicatorG
 	 * @param s the path of the gcode currently open in RepG
-	*/
+	 */
+	
+	/*
+	 * 
+	 */
+	
 	public DualStrusionWindow(String path) {
 		//TODO: Constructors shouldn't auto-display. Refactor that
 		super("DualStrusion Window (EXPERIMENTAL functionality)");
@@ -330,6 +347,10 @@ public class DualStrusionWindow extends JFrame{
 				repEnd = replaceEnd.isSelected();
 				uWipe = useWipes.isSelected();
 
+				if(!gcodes.isEmpty())
+				{
+					// we need to make sure these gcodes are properly processed
+				}
 				if(!stls.isEmpty())
 				{
 					Base.logger.log(Level.FINE, "stls is not empty, converting STL files to gcode");
@@ -389,14 +410,32 @@ public class DualStrusionWindow extends JFrame{
 			p.remove(arg0);
 			p.add(arg0);
 			 //*/
+
+			if(gen instanceof SkeinforgeGenerator) {
+				// Here we'll do the setup for the post-processor
+				//Let's figure out which post-processing steps need to be taken
+				Set<String> postProcessingSteps = new TreeSet<String>();
+				
+				postProcessingSteps.add(SkeinforgePostProcessor.TARGET_TOOLHEAD_DUAL);
+					
+				/// a dual extruder machine is selected, start/end gcode must be updated accordingly
+				// there should be a condition here?
+				//DANGER: don't ship this
+				if(true) {
+					postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_REPLICATOR);
+					postProcessingSteps.add(SkeinforgePostProcessor.REPLACE_START);
+					postProcessingSteps.add(SkeinforgePostProcessor.REPLACE_END);
+				}
+				
+			}
 			
 			final Build b = new Build(toBuild.getAbsolutePath());
 			final ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(progress, gen, b);
 			
 			tgt.addListener(new GeneratorListener(){
 				@Override
-				public void updateGenerator(String message) {
-					if(message.equals("Config Done") && !stls.isEmpty())
+				public void updateGenerator(GeneratorEvent evt) {
+					if(evt.getMessage().equals("Config Done") && !stls.isEmpty())
 					{
 						Base.logger.log(Level.FINE, "Starting next stl > gcode: " + stls.peek().getName());
 						stlsToGcode();
@@ -404,7 +443,15 @@ public class DualStrusionWindow extends JFrame{
 				}
 
 				@Override
-				public void generationComplete(Completion completion, Object details) {
+				public void generationComplete(GeneratorEvent evt) {
+					if(evt.getCompletion() == Completion.FAILURE || aborted)
+					{
+						aborted = true;
+						return;
+					}
+					
+					
+					
 					numStls.countDown();
 					if(numStls.getCount() == 0)
 					{
@@ -454,20 +501,13 @@ public class DualStrusionWindow extends JFrame{
 					numGcodes.getCount() + " cancelling Dualstrusion combination");
 			return;
 		}
-
-		Base.logger.log(Level.FINE, "pre pause");
-		// Why is this here?
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Base.logger.log(Level.FINE, "post pause");
 			
+		// the two consecutive poll()s pull what are the only two gcode files
 		DualStrusionConstruction dcs = new DualStrusionConstruction(gcodes.poll(), gcodes.poll(), dest, repStart, repEnd, uWipe);
-		dcs.run();
 		result = dcs.getCombinedFile();
+		
+		//TED: do we need to do post-processing here
+		// we shouldn't?
 
 		Base.logger.log(Level.FINE, "Finished DualStrusionWindow's part");
 		

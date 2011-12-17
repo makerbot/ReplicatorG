@@ -7,11 +7,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import replicatorg.app.gcode.GCodeHelper;
-import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
 import replicatorg.model.GCodeSource;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
+
 
 public class SkeinforgePostProcessor {
 

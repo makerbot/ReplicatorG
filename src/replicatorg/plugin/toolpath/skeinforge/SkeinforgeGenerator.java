@@ -33,7 +33,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	ConfigurationDialog cd;
 	String profile = null;
 	List <SkeinforgePreference> preferences;
-
+	
 	BuildCode output;
 	SkeinforgePostProcessor postprocess = null;
 	
@@ -499,6 +499,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			}
 		}
 	}
+
 
 	// renamed to actually reflect what it does, also making way for an internal getPrefs
 	abstract public List<SkeinforgePreference> initPreferences();
