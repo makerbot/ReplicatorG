@@ -59,10 +59,11 @@ public abstract class ActionTextField extends JFormattedTextField {
 
 		@Override
 		public void keyTyped(KeyEvent arg0) {
-			if (arg0.getKeyChar() == KeyEvent.VK_ENTER) {
+			int keyEvent = arg0.getKeyChar() ;
+			if ( keyEvent == KeyEvent.VK_ENTER ||  keyEvent == KeyEvent.VK_TAB) {
 				textField.notifyDoneModifying();
 			}
-			else if (arg0.getKeyChar() == KeyEvent.VK_ESCAPE) {
+			else if ( keyEvent == KeyEvent.VK_ESCAPE) {
 				textField.notifyRestoreOriginalValue();
 			}
 			else {
