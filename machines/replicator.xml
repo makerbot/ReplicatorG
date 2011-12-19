@@ -11,7 +11,7 @@
 			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
 		<tools>
-			<tool name="Mk7 Left"  stepper_axis="b" index="1" type="extruder" motor="true" fan="true" automatedplatform="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
+			<tool name="Mk7 Left"  stepper_axis="b" index="1" type="extruder" motor="true" fan="true" automatedplatform="true" heatedplatform="false" motor_steps="3200" default_rpm="3" heater="true"/>
 			<tool name="Mk7 Right" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" automatedplatform="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
 		</tools>
 		<wipes>
