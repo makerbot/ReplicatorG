@@ -544,10 +544,22 @@ public class GCodeParser {
 			// print message
 			commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment()));
 			break;
+		case M71:
+			// User-clearable pause
+			// First send message, if any...
+			if (gcode.getComment().length() > 0) {
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment()));
+			} else {
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,"Paused, press button\nto continue"));
+			}
+			// ...then send user pause command. 
+			commands.add(new replicatorg.drivers.commands.UserPause(gcode.getCodeValue('P'),true,0xff));
+			break;
 		case M101:
 			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.CLOCKWISE));
 			commands.add(new replicatorg.drivers.commands.EnableExtruderMotor());
 			break;
+		case M71:
 		// turn extruder on, reverse
 		case M102:
 			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.COUNTERCLOCKWISE));
