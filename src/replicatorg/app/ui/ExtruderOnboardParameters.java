@@ -35,6 +35,12 @@ public class ExtruderOnboardParameters extends JPanel {
         floatFormat.setMaximumFractionDigits(8);
         floatFormat.setMinimumFractionDigits(2);
     }
+    
+    private static final NumberFormat mmNumberFormat = (NumberFormat) Base.getLocalFormat().clone();
+    {
+        floatFormat.setMaximumFractionDigits(0);
+        floatFormat.setMinimumFractionDigits(0);
+    }
 	
 	interface Commitable {
 		public void commit();
@@ -67,7 +73,7 @@ public class ExtruderOnboardParameters extends JPanel {
 			r0Field.setColumns(FIELD_WIDTH);
 			t0Field.setColumns(FIELD_WIDTH);
 			
-			double beta = target.getBeta(which, tool.getIndex());
+			double beta = target.getBeta(which, toolIndex);
 			if (beta == -1)
 				beta = 4066;
 
@@ -75,7 +81,7 @@ public class ExtruderOnboardParameters extends JPanel {
 			add(new JLabel("Beta"));
 			add(betaField,"wrap");
 
-			double r0 = target.getR0(which, tool.getIndex());
+			double r0 = target.getR0(which, toolIndex);
 			if (r0 == -1)
 				r0 = 100000;
 
@@ -83,7 +89,7 @@ public class ExtruderOnboardParameters extends JPanel {
 			add(new JLabel("Thermistor Resistance"));
 			add(r0Field,"wrap");
 
-			double t0 = target.getT0(which, tool.getIndex());
+			double t0 = target.getT0(which, toolIndex);
 			if (t0 == -1)
 				t0 = 25;
 
@@ -130,10 +136,10 @@ public class ExtruderOnboardParameters extends JPanel {
 	private class BackoffPanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 6593800743174557032L;
 
-		private JFormattedTextField stopMsField = new JFormattedTextField(threePlaces);
-		private JFormattedTextField reverseMsField = new JFormattedTextField(threePlaces);
-		private JFormattedTextField forwardMsField = new JFormattedTextField(threePlaces);
-		private JFormattedTextField triggerMsField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField stopMsField = new JFormattedTextField(mmNumberFormat);
+		private JFormattedTextField reverseMsField = new JFormattedTextField(mmNumberFormat);
+		private JFormattedTextField forwardMsField = new JFormattedTextField(mmNumberFormat);
+		private JFormattedTextField triggerMsField = new JFormattedTextField(mmNumberFormat);
 		//private final ToolModel tool;
 		private int toolIndex; 
 		BackoffPanel(int toolIndex /*ToolModel tool*/) {
@@ -329,20 +335,21 @@ public class ExtruderOnboardParameters extends JPanel {
 
 	public ExtruderOnboardParameters(OnboardParameters target, ToolModel tool) {
 		this.target = target;
-
+		int toolIndex = tool.getIndex();
+		
 		Version v = new Version(0,0);
 		if (target instanceof Sanguino3GDriver) {
 			v = ((Sanguino3GDriver)target).getToolVersion();
 		}
-
-		JTabbedPane extruders = new JTabbedPane();
-
-		List<Integer> tools = target.toolheadsWithStoredData();
 		
-		for(int toolIndex : tools)
-		{
-			JPanel tab = new JPanel(new MigLayout());
-			//int toolIndex = t.getIndex();
+//		JTabbedPane extruders = new JTabbedPane();
+
+//		List<Integer> tools = target.toolheadsWithStoredData();
+//		
+//		for(int toolIndex : tools)
+//		{
+			JPanel tab = this; //new JPanel(new MigLayout());
+//			//int toolIndex = t.getIndex();
 			ThermistorTablePanel ttp;
 			ttp = new ThermistorTablePanel(OnboardParameters.EXTRUDER,"Extruder thermistor", toolIndex);
 			tab.add(ttp);
@@ -366,9 +373,9 @@ public class ExtruderOnboardParameters extends JPanel {
 				tab.add(rcf,"span 2,growx,wrap");
 				commitList.add(rcf);
 			}
-			
-			extruders.addTab("Extruder " + toolIndex, tab);
-		}
+//			
+//			extruders.addTab("Extruder " + toolIndex, tab);
+//		}
 		
 		add(makeButtonPanel(),"span 2,newline");
 	}
