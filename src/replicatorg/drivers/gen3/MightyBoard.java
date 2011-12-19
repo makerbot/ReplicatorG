@@ -164,11 +164,15 @@ class MightyBoardEEPROM implements EEPROMClass
 	/// Ordinary endstops (H21LOB et. al.) are inverted.
 	/// only valid values are 0x9F, 0x80 or 0x00
 	final public static int ENDSTOP_INVERSION			= 0x0004;
-	///Padding: 28 bytes space
+	/// Digital Potentiometer Settings : 5 Bytes
+	final public static int DIGI_POT_SETTINGS			= 0x0006;
+	/// axis home direction (1 byte)
+	final public static int AXIS_HOME_DIRECTION = 0x000C;
+	/// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
+	final public static int AXIS_HOME_POSITIONS		= 0x000E;
 	/// Name of this machine: 32 bytes.
-	final public static int MACHINE_NAME				= 0x0020;
-	/// Default locations for the axis: 5 x 32 bit = 20 bytes
-	final public static int AXIS_HOME_POSITIONS		= 0x0060;
+	final public static int MACHINE_NAME				= 0x0022;
+	/// 50 bytes padding
 	/// Thermistor table 0: 128 bytes
 	final public static int THERM_TABLE		= 0x0074;
 	/// Padding: 8 bytes
@@ -176,25 +180,23 @@ class MightyBoardEEPROM implements EEPROMClass
 	final public static int T0_DATA_BASE		= 0x100;
 	// Toolhead 0 data: 26 bytes (see above)
 	final public static int T1_DATA_BASE		= 0x011C;
-	/// Digital Potentiometer Settings : 5 Bytes
-	final public static int DIGI_POT_SETTINGS			= 0x0138;
+	/// axis lengths (mm) (6 bytes)
+	final public static int AXIS_LENGTHS	= 0x138;
 	/// hardare version id
-	final public static int HARDWARE_ID 				= 0x013D;
+	final public static int HARDWARE_ID 				= 0x013E;
 	/// Ligth Effect table. 3 Bytes x 3 entries
-	final public static int LED_STRIP_SETTINGS		= 0x013E;
+	final public static int LED_STRIP_SETTINGS		= 0x0140;
 	/// Buzz Effect table. 4 Bytes x 3 entries
 	/// 1 byte padding for offsets
-	final public static int BUZZ_SETTINGS		= 0x0148;
+	final public static int BUZZ_SETTINGS		= 0x014A;
+	///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
+	final public static int FIRST_BOOT_FLAG	= 0x0156;
 
-	final public static int FIRST_BOOT_FLAG	= 0x0154;
 
-	/// axis home direction (1 byte)
-	final public static int AXIS_HOME_DIRECTION = 0x156;
-	/// axis lengths (mm) (6 bytes)
-	final public static int AXIS_LENGTHS	= 0x158;
+	
 	
 	/// start of free space
-	final public static int FREE_EEPROM_STARTS = 0x0156;
+	final public static int FREE_EEPROM_STARTS = 0x0158;
 
 }
 
