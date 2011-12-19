@@ -536,8 +536,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(newValue));
 					targetPlatformTemperature = newValue;
 				}
-				// This gives some feedback by adding .0 if it wasn't typed.
-				source.setValue(newValue);
+				
 			} else if (name.equals("motor-speed")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(newValue));
 			} else if (name.equals("motor-speed-pwm")) {

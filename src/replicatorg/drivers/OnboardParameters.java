@@ -1,13 +1,20 @@
 package replicatorg.drivers;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import replicatorg.machine.model.AxisId;
 
+
 public interface OnboardParameters {
 	
+	/// Some tools store 2 heating data tables, these flags are used to indicate which table we
+	// wish to access, the extruder heater, or the build platform heater.
 	public static final int EXTRUDER = 0;
 	public static final int BUILD_PLATFORM = 1;
+	
+	//// Get a list of all toolheads for which we save onboard preferences
+	List<Integer> toolheadsWithStoredData();
 	
 	EnumSet<AxisId> getInvertedParameters();
 	void setInvertedParameters(EnumSet<AxisId> axes);

@@ -280,7 +280,19 @@ public class Sanguino3GDriver extends SerialDriver implements
 	protected PacketResponse runQuery(byte[] packet) {
 		return runQuery(packet, 1);
 	}
+	//// Get a list of all toolheads we save onboard preferences for 
+	public List<Integer> toolheadsWithStoredData()
+	{
+		Vector<ToolModel> tools = this.getMachine().getTools();
+		Vector<Integer> toolsList = new Vector<Integer>();
+		for( ToolModel t : tools )
+		{
+			toolsList.add(new Integer(t.getIndex()));
+		}
+		return toolsList;
+	}
 
+	
 	void printDebugData(String title, byte[] data) {
 		if (Base.logger.isLoggable(Level.FINER)) {
 			StringBuffer buf = new StringBuffer(title + ": ");
@@ -1354,19 +1366,20 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	public void readPlatformTemperature() {
-		for(ToolModel t : machine.getTools())
+		for(ToolModel curTool : machine.getTools())
 		{
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) t.getIndex());
+			pb.add8((byte) curTool.getIndex());
 			pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
 			
 			PacketResponse pr = runQuery(pb.getPacket());
 			if (pr.isEmpty()) return;
 			int temp = pr.get16();
-			t.setPlatformCurrentTemperature(temp);
+			curTool.setPlatformCurrentTemperature(temp);
 			
-			Base.logger.finer("Current platform temperature" +
-					" (T" + t.getIndex() + "): " + t.getPlatformCurrentTemperature() + "C");
+			Base.logger.fine("Current platform temperature (T" + curTool.getIndex() + "): "
+							+ curTool.getPlatformCurrentTemperature() + "C");
+			
 		}
 	}
 

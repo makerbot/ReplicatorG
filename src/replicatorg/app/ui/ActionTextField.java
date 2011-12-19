@@ -16,14 +16,16 @@ import javax.swing.text.DefaultFormatter;
 import replicatorg.app.Base;
 
 
-// Text field that keeps track of whether it's data has been modified, and calls a function
-// when it loses focus or gets an ENTER key to allow the subclasser to handle the event.
+/** Text field that keeps track of whether its data has been modified, and calls a function
+ * when it loses focus or gets an ENTER key to allow the subclass to handle the event.
+ * @author unknown
+ *
+ */
 public abstract class ActionTextField extends JFormattedTextField {
 	Color defaultColor;
 	Color modifiedColor;
-	
 	boolean valueModified;
-	String originalValue;
+	String origionalString;
 	
 	private class StoringFocusListener implements FocusListener {
 		final ActionTextField textField;
@@ -59,10 +61,7 @@ public abstract class ActionTextField extends JFormattedTextField {
 
 		@Override
 		public void keyTyped(KeyEvent arg0) {
-			if (arg0.getKeyChar() == KeyEvent.VK_ENTER) {
-				textField.notifyDoneModifying();
-			}
-			else if (arg0.getKeyChar() == KeyEvent.VK_ESCAPE) {
+			if ( arg0.getKeyChar() == KeyEvent.VK_ESCAPE) {
 				textField.notifyRestoreOriginalValue();
 			}
 			else {
@@ -74,8 +73,9 @@ public abstract class ActionTextField extends JFormattedTextField {
 	public void notifyRestoreOriginalValue() {
 		if (valueModified) {
 			valueModified = false;
-			setText(originalValue);
-			originalValue = null;
+			setText(origionalString);
+			origionalString = null;
+			try {  commitEdit(); } catch (java.text.ParseException e) {Base.logger.severe("parse err in ActionTextField" +e );}
 			setBackground(defaultColor);
 		}
 	}
@@ -83,15 +83,16 @@ public abstract class ActionTextField extends JFormattedTextField {
 	public void notifyValueModified() {
 		if (!valueModified) {
 			valueModified = true;
-			originalValue = getText();
+			origionalString = getText();
 			setBackground(modifiedColor);
 		}
 	}
 	
 	public void notifyDoneModifying() {
 		if (valueModified) {
+			try {  commitEdit(); } catch (java.text.ParseException e) {Base.logger.severe("parse err in ActionTextField" +e );}
 			valueModified = false;
-			originalValue = null;
+			origionalString = null;
 			setBackground(defaultColor);
 			
 			doSaveEvent();
