@@ -3,6 +3,7 @@ package replicatorg.app.ui;
 import java.awt.event.ActionEvent;
 import java.text.Format;
 
+import replicatorg.app.Base;
 import replicatorg.app.ui.controlpanel.ExtruderPanel;
 
 public class CallbackTextField extends ActionTextField {
@@ -11,6 +12,7 @@ public class CallbackTextField extends ActionTextField {
 	
 	public CallbackTextField(ExtruderPanel panel, String actionCommand, String name, int columns, Format format) {
 		super(null, columns, format);
+		Base.logger.severe("CallbackTextField const");
 		
 //		setMaximumSize(new Dimension(textBoxWidth, 25));
 //		setMinimumSize(new Dimension(textBoxWidth, 25));
@@ -22,7 +24,6 @@ public class CallbackTextField extends ActionTextField {
 
 	@Override
 	public void doSaveEvent() {
-		// TODO Auto-generated method stub
 		panel.actionPerformed(new ActionEvent(this, 0, actionCommand));
 	}
 

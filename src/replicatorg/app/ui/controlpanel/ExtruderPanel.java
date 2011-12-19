@@ -512,6 +512,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		String name = source.getName();
 		if (source.getText().length() > 0) {
 			double target = ((Number)source.getValue()).doubleValue();
+			Base.logger.severe("target is " + target);
 			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
 				
 				if(name.equals("target-temp")) {
@@ -529,8 +530,6 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(target));
 					targetPlatformTemperature = target;
 				}
-				// This gives some feedback by adding .0 if it wasn't typed.
-				source.setValue(target);
 			} else if (name.equals("motor-speed")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(target));
 			} else if (name.equals("motor-speed-pwm")) {
