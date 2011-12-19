@@ -6,5 +6,5 @@ package replicatorg.drivers;
  */
 public interface InteractiveDisplay {
 	public void displayMessage(double seconds, String message) throws RetryException;
-	public void userPause(double seconds, boolean resetOnTimeout) throws RetryException;
+	public void userPause(double seconds, boolean resetOnTimeout, int buttonMask) throws RetryException;
 }

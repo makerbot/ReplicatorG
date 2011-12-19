@@ -6,7 +6,7 @@ import replicatorg.drivers.RetryException;
 
 public class UserPause implements DriverCommand {
 
-	String message;
+	int seconds;
 	boolean resetOnTimeout;
 	int buttonMask;
 
@@ -22,12 +22,13 @@ public class UserPause implements DriverCommand {
 	public UserPause(double seconds, boolean resetOnTimeout, int buttonMask) {
 		this.seconds = seconds;
 		this.resetOnTimeout = resetOnTimeout;
+		this.buttonMask = buttonMask;
 	}
 		
 	@Override
 	public void run(Driver driver) throws RetryException {
 		if (driver instanceof InteractiveDisplay) {
-			((InteractiveDisplay)driver).userPause(seconds,resetOnTimeout);
+			((InteractiveDisplay)driver).userPause(seconds,resetOnTimeout,buttonMask);
 		}
 	}
 }

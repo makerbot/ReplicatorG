@@ -1054,6 +1054,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		return super.getPlatformTemperatureSetting();
 	}
 
+	// Display a message on the user interface
 	public void displayMessage(double seconds, String message) throws RetryException {
 		byte options = 0;
 		final int MAX_MSG_PER_PACKET = 25;
@@ -1072,12 +1073,20 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			}
 			pb.add8('\0');
 			options = 1;
-			System.err.println("SENDING PACKET, cursor at "+Integer.toString(cursor));
 			runCommand(pb.getPacket());
 		}
 						     
 	}
 	
+	public void userPause(double seconds, boolean resetOnTimeout, int buttonMask) throws RetryException {
+		int options = resetOnTimeout?1:0;
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.PAUSE_FOR_BUTTON.getCode());
+		pb.add8(buttonMask);
+		pb.add16((int)seconds);
+		pb.add8(options);
+		runCommand(pb.getPacket());
+	}
+
 	@Override
 	public double getTemperatureSetting() {
 		// This call was introduced in version 2.3
