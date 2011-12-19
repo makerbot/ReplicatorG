@@ -294,14 +294,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	
 	void printDebugData(String title, byte[] data) {
-		if (Base.logger.isLoggable(Level.FINER)) {
-			StringBuffer buf = new StringBuffer(title + ": ");
-			for (int i = 0; i < data.length; i++) {
-				buf.append(Integer.toHexString((int) data[i] & 0xff));
-				buf.append(" ");
-			}
-			Base.logger.finer(buf.toString());
+		StringBuffer buf = new StringBuffer(title + ": ");
+		for (int i = 0; i < data.length; i++) {
+			buf.append(Integer.toHexString((int) data[i] & 0xff));
+			buf.append(" ");
 		}
+		Base.logger.finer(buf.toString());
 	}
 
 	/**
@@ -334,6 +332,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		}
 
 		boolean isCommand = (packet[2] & 0x80) != 0;
+		
 		if (fileCaptureOstream != null) {
 			// capture to file.
 			try {
@@ -1290,7 +1289,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	/***************************************************************************
 	 * Temperature interface functions
-	 * 
 	 * @throws RetryException
 	 **************************************************************************/
 	public void setTemperature(double temperature) throws RetryException {
