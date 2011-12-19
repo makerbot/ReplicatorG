@@ -1081,7 +1081,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	public void userPause(double seconds, boolean resetOnTimeout, int buttonMask) throws RetryException {
 		int options = resetOnTimeout?1:0;
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.PAUSE_FOR_BUTTON.getCode());
-		pb.add8(buttonMask);
+		pb.add8(0xff); // buttonMask);
 		pb.add16((int)seconds);
 		pb.add8(options);
 		runCommand(pb.getPacket());

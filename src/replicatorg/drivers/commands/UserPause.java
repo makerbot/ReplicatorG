@@ -6,7 +6,7 @@ import replicatorg.drivers.RetryException;
 
 public class UserPause implements DriverCommand {
 
-	int seconds;
+	double seconds;
 	boolean resetOnTimeout;
 	int buttonMask;
 
