@@ -56,10 +56,12 @@ import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.ToolModel;
 
 public class ExtruderPanel extends JPanel implements FocusListener, ActionListener, ItemListener {
-	private ToolModel toolModel;
+	private final ToolModel toolModel;
 	private MachineInterface machine;
 
-	public ToolModel getTool() { return toolModel; }
+	public ToolModel getTool() { 
+		return toolModel; 
+		}
 	
 	protected JFormattedTextField currentTempField;
 	
@@ -290,6 +292,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		if (tool.hasHeater()) {
 			JLabel targetTempLabel = makeKeyLabel("Target Temperature (C)",targetColor);
 			JFormattedTextField targetTempField = new CallbackTextField(this, "handleTextField", "target-temp", 9, Base.getLocalFormat());
+			
 			targetTemperature = machine.getDriverQueryInterface().getTemperatureSetting();
 			targetTempField.setValue(targetTemperature);
 
@@ -445,12 +448,12 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
 		
-		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeater()) {
-			double temperature = machine.getDriverQueryInterface().getTemperature();
+		if ( toolModel.hasHeater() ) {
+			double temperature = machine.getDriverQueryInterface().getTemperature(toolModel.getIndex());
 			updateTemperature(second, temperature);
 		}
-		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeatedPlatform()) {
-			double temperature = machine.getDriverQueryInterface().getPlatformTemperature();
+		if ( toolModel.hasHeatedPlatform() ) {
+			double temperature = machine.getDriverQueryInterface().getPlatformTemperature(toolModel.getIndex());
 			updatePlatformTemperature(second, temperature);
 		}
 	}
@@ -526,17 +529,16 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					if (newValue == Double.MIN_VALUE) {
 						return;
 					}
-					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(newValue));
+					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(newValue, toolModel.getIndex()));
 					targetTemperature = newValue;
 				} else {
 					newValue = confirmTemperature(newValue,"temperature.acceptedLimit.bed",130.0);
 					if (newValue == Double.MIN_VALUE) {
 						return;
 					}
-					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(newValue));
+					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(newValue, toolModel.getIndex()));
 					targetPlatformTemperature = newValue;
 				}
-				
 			} else if (name.equals("motor-speed")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(newValue));
 			} else if (name.equals("motor-speed-pwm")) {

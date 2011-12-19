@@ -417,11 +417,23 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 
 	@Override
+	public void setTemperature(double temperature, int toolhead) throws RetryException {
+		toolTemperature = temperature;
+		toolTemperatureSetting = temperature;
+	}
+
+	@Override
 	public void readTemperature() {
 	}
 
 	@Override
+	@Deprecated
 	public double getTemperature() {
+		return toolTemperature;
+	}
+
+	@Override
+	public double getTemperature(int toolheadIndex) {
 		return toolTemperature;
 	}
 
@@ -438,11 +450,25 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 
 	@Override
+	public void setPlatformTemperature(double temperature, int toolhead) throws RetryException {
+		platformTemperature = temperature;
+		platformTemperatureSetting = temperature;
+	}
+
+	
+	@Override
 	public void readPlatformTemperature() {
 	}
 
 	@Override
 	public double getPlatformTemperature() {
+		return platformTemperature;
+	}
+
+	/** relies on timing to have the 'right selected toolhead', deprecated */
+	@Override
+	@Deprecated
+	public double getPlatformTemperature(int toolheadIndex) {
 		return platformTemperature;
 	}
 

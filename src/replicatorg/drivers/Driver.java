@@ -317,7 +317,7 @@ public interface Driver {
 	 * @throws RetryException 
 	 **************************************************************************/
 	public void setTemperature(double temperature) throws RetryException;
-	
+	public void setTemperature(double temperature, int toolIndex) throws RetryException;
 	public void readTemperature();
 	
 	public double getTemperature();
@@ -329,6 +329,7 @@ public interface Driver {
 	 * @throws RetryException 
 	 **************************************************************************/
 	public void setPlatformTemperature(double temperature) throws RetryException;
+	public void setPlatformTemperature(double temperature, int toolIndex) throws RetryException;
 	
 	public void readPlatformTemperature();
 	

@@ -548,36 +548,71 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	 * Temperature interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
+	@Override
 	public void setTemperature(double temperature) throws RetryException {
 		machine.currentTool().setTargetTemperature(temperature);
+	}
+
+	@Override
+	public void setTemperature(double temperature, int toolhead) throws RetryException {
+		machine.getTool(toolhead).setTargetTemperature(temperature);
 	}
 
 	public void readTemperature() {
 
 	}
 
+	/** relies on timing to have the 'right selected toolhead', deprecated */
+	@Override
+	@Deprecated
 	public double getTemperature() {
 		readTemperature();
 
 		return machine.currentTool().getCurrentTemperature();
 	}
 	
+	@Override
+	public double getTemperature(int toolheadIndex) {
+		readTemperature();
+		return machine.getTool(toolheadIndex).getCurrentTemperature();
+	}
+
 	/***************************************************************************
 	 * Platform Temperature interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
+	@Override
 	public void setPlatformTemperature(double temperature) throws RetryException {
 		machine.currentTool().setPlatformTargetTemperature(temperature);
 	}
-
-	public void readPlatformTemperature() {
-
+	
+	@Override
+	public void setPlatformTemperature(double temperature, int toolhead) throws RetryException {
+		machine.getTool(toolhead).setPlatformTargetTemperature(temperature);
 	}
 
+	/** relies on timing to have the 'right selected toolhead', deprecated */
+	@Deprecated
+	public void readPlatformTemperature() {
+		
+	}
+	public void readPlatformTemperature(int toolhead) {
+		
+	}
+
+	/** relies on timing to have the 'right selected toolhead', deprecated */
+	@Override 
+	@Deprecated
 	public double getPlatformTemperature() {
 		readPlatformTemperature();
 
 		return machine.currentTool().getPlatformCurrentTemperature();
+	}
+
+	public double getPlatformTemperature(int toolhead) {
+		readPlatformTemperature(toolhead);
+
+		return machine.getTool(toolhead).getPlatformCurrentTemperature();
 	}
 
 	/***************************************************************************
