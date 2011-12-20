@@ -3,7 +3,7 @@ package replicatorg.plugin;
 import java.util.Iterator;
 import java.util.Vector;
 
-import replicatorg.app.gcode.GCode;
+import replicatorg.app.gcode.GCodeCommand;
 import replicatorg.model.GCodeSource;
 
 public class PluginEngine implements GCodeSource {
@@ -23,7 +23,7 @@ public class PluginEngine implements GCodeSource {
 	}
 
 	private void processLine(String line) {
-		GCode mcode = new GCode(line);
+		GCodeCommand mcode = new GCodeCommand(line);
 		if( mcode.hasCode('M')) {
 			double code = mcode.getCodeValue('M');
 		

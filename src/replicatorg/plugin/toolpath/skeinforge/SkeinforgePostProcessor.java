@@ -7,7 +7,6 @@ import java.util.TreeSet;
 
 import replicatorg.app.gcode.GCodeHelper;
 import replicatorg.machine.model.ToolheadAlias;
-import replicatorg.machine.model.Toolheads;
 import replicatorg.model.BuildCode;
 import replicatorg.model.GCodeSource;
 

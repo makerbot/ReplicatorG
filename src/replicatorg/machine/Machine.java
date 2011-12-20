@@ -24,13 +24,11 @@ import java.util.Queue;
 import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.app.gcode.GCode;
+import replicatorg.app.gcode.GCodeCommand;
 import replicatorg.app.gcode.GCodeEnumeration;
 import replicatorg.app.gcode.GCodeParser;
 import replicatorg.drivers.Driver;
@@ -262,7 +260,7 @@ public class Machine implements MachineInterface {
 
 			if(safetyChecks)
 			{
-				GCode gcLine = new GCode(line);
+				GCodeCommand gcLine = new GCodeCommand(line);
 				String s;
 
 				String mainCode = gcLine.getCommand().split(" ")[0];
