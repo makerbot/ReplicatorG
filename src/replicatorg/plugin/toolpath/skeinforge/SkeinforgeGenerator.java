@@ -36,6 +36,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	String profile = null;
 	List <SkeinforgePreference> preferences;
 
+	BuildCode output;
+	SkeinforgePostProcessor postprocess = null;
+	
 	// "skein_engines/skeinforge-0006","sf_profiles");
 	public SkeinforgeGenerator() {
 	}
@@ -493,6 +496,10 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			preferences = initPreferences();
 		return preferences;
 	}
+
+	public void setPostProcessor(SkeinforgePostProcessor spp) {
+		postprocess = spp;
+	}
 	
 	public BuildCode generateToolpath() {
 		String path = model.getPath();
@@ -557,12 +564,14 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 		int lastIdx = path.lastIndexOf('.');
 		String root = (lastIdx >= 0) ? path.substring(0, lastIdx) : path;
-		BuildCode output = new BuildCode(root, new File(root + ".gcode"));
-		
-		// This should be a temporary fix to pass the location of the profile used
-//		ArrayList<String> gcode = DualStrusionWorker.readFiletoArrayList(output.file);
-//		gcode.add(0, "(" + profile.replace("\\", "/") + ")");
-//		DualStrusionWorker.writeArrayListtoFile(gcode, output.file);
+		output = new BuildCode(root, new File(root + ".gcode"));
+
+		if(postprocess != null)
+		{
+			System.out.println("pre-post-processor");
+			postprocess.runPostProcessing();
+			System.out.println("post-post-processor");
+		}
 		
 		return output;
 	}
