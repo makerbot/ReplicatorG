@@ -215,7 +215,7 @@ public class DualStrusionConstruction {
 						tmpLayer.add(read.poll());
 					
 					// put it in a new layer
-					layers.add(new Layer((float)lastZHeight, tmpLayer));
+					layers.add(new Layer(lastZHeight, tmpLayer));
 
 					// record our next layer height
 					lastZHeight = newZ;

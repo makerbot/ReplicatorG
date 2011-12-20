@@ -16,13 +16,13 @@ public class Layer {
 	/**
 	 * <code>height</code> holds the height of the given layer, instantiated to -1 for debugging purposes
 	 */
-	private float height =  - 1;
+	private double height =  - 1;
 	/**
 	 * The only constructor for <code>Layer</code> takes a layer height and an arrayList of the commands
 	 * @param h height
 	 * @param cmds commands
 	 */
-	public Layer(float h, ArrayList<String> cmds)
+	public Layer(double h, ArrayList<String> cmds)
 	{
 		commands = cmds;	
 		height = h;
@@ -57,10 +57,21 @@ public class Layer {
 		return result;
 		
 	}
-	public float getHeight()
+	public double getHeight()
 	{
 		return height;
 	}
 
+	/**
+	 * Debug Code, returns all the strings in this layer, with a \n appended to each
+	 */
+	@Override
+	public String toString()
+	{
+		String result = "";
+		for(String c : commands)
+			result += c + '\n';
+		return result;
+	}
 
 }

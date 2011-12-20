@@ -1,7 +1,6 @@
 package replicatorg.app.gcode;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -37,7 +36,8 @@ public class LayerHelper {
 	private float tolerance = .01f;
 	//private  String currentFeedRate; // good default start speed
 	/**
-	 * This method has all the method calls in order to merge two gcodes, it is the only method that "needs" to be public
+	 * This method has all the method calls in order to merge two gcodes, it is the only method that "needs" to be 
+	 * public
 	 */
 	private boolean mergeSupport, useWipes;
 	
@@ -54,7 +54,8 @@ public class LayerHelper {
 		
 	}
 	/**
-	 * This method is used to search through an ArrayList of Layers to find a Layer with height x, it is used by to check whether both gcodes have layers at a specified height
+	 * This method is used to search through an ArrayList of Layers to find a Layer with height x, it is used by to 
+	 * check whether both gcodes have layers at a specified height
 	 * @param height find layers within <code>tolerance</code> of this height
 	 * @param searchme an ArrayList of layers to search
 	 * @return if it finds something returns the layer, else returns null
@@ -78,11 +79,12 @@ public class LayerHelper {
 	{
 		for(Layer l : a)
 		{
-			//System.out.println(l.getHeight());
+			System.out.println(l.getHeight());
 		}
 	}
 	/**
-	 * This method starts to execute a toolChange, very little actually happens here, mostly it just calls Will's toolchange
+	 * This method starts to execute a toolChange, very little actually happens here, mostly it just calls Will's 
+	 * toolchange
 	 * @param destinationTool a Toolheads enum of the tool to switch to
 	 * @param LayerHeight the layer height to return to, important so as not to run into the print toolchanging
 	 * @return
@@ -111,16 +113,18 @@ public class LayerHelper {
 		return cmds;
 	}
 	/**
-	 * This method merges two layers, it does so by iterating through in increments of <code>tolerance</code> and calling getByHeight to see if both gcodes, one gcode, or no gcodes have layers at that height.
+	 * This method merges two layers, it does so by iterating through in increments of <code>tolerance</code> and 
+	 * calling getByHeight to see if both gcodes, one gcode, or no gcodes have layers at that height.
 	 * It then calls different methods to integrate the gcode in depending on the presence of layers at that height
 	 */
 	public ArrayList<String> mergeLayers()
 	{
 		ArrayList<String> merged = new ArrayList<String>();
-		float maxHeight1 = primaryLayers.get(primaryLayers.size()-1).getHeight();
-		float maxHeight0 = secondaryLayers.get(secondaryLayers.size()-1).getHeight();
-		float maxHeight;
-		//System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
+		double maxHeight1 = primaryLayers.get(primaryLayers.size()-1).getHeight();
+		double maxHeight0 = secondaryLayers.get(secondaryLayers.size()-1).getHeight();
+		double maxHeight;
+		//System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + 
+		//								"BetterMaxHeight" + maxHeight);
 		if(maxHeight0 < maxHeight1)
 		{
 			maxHeight = maxHeight1;
@@ -129,9 +133,11 @@ public class LayerHelper {
 		{
 			maxHeight = maxHeight0;
 		}
-		//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
+		//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 +
+		//								"BetterMaxHeight" + maxHeight);
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
-		merged.addAll(toolChange(ToolheadAlias.LEFT, 0.6f)); //insures we start with right offset and nozzles start supaclean
+		//ensures we start with right offset and nozzles start supaclean
+		merged.addAll(toolChange(ToolheadAlias.LEFT, 0.6f));
 
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
@@ -176,7 +182,8 @@ public class LayerHelper {
 	}
 	/**
 	 * This method is called  to add gcode to the combined gcode if a layer is only present in one of the sources,
-	 * basically all it does  is check to see if it needs to toolchange, execute a toolchange if needed, and then add the gcode
+	 * basically all it does  is check to see if it needs to toolchange, execute a toolchange if needed, and then
+	 * add the gcode
 	 * @param a layer to be added
 	 * @param destTool Tool to add layer with
 	 * @return
@@ -206,7 +213,6 @@ public class LayerHelper {
 		{
 			if(currentToolhead == ToolheadAlias.LEFT)
 			{
-				//System.out.println(a.getCommands());
 				completeLayer.addAll(a.getCommands());
 			}
 			else if(currentToolhead == ToolheadAlias.RIGHT)
@@ -285,10 +291,7 @@ public class LayerHelper {
 	 */
 	private ArrayList<String> mergeLayer(Layer a, Layer b) //This method makes it so that you dont switch toolheads unnessecarily a is primary layers b is secondary layers
 	{
-		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-		dfs.setDecimalSeparator('.');
-		DecimalFormat nf = new DecimalFormat();
-		nf.setDecimalFormatSymbols(dfs);
+		NumberFormat nf = (NumberFormat) Base.getGcodeFormat().clone();
 		nf.setMaximumFractionDigits(2);
 		nf.setMinimumFractionDigits(2);
 		ArrayList<String> cmds = new ArrayList<String>();
@@ -319,7 +322,7 @@ public class LayerHelper {
 	 * @param layer_height the layer height that the toolchange must start and end yet, this gives us the flexibility  to avoid smashing into the print
 	 * @return
 	 */
-	public ArrayList<String> wipe(int currentToolnum, int nextToolnum, float layer_height) {
+	public ArrayList<String> wipe(int currentToolnum, int nextToolnum, double layer_height) {
 
 		WipeModel tool0Wipes = Base.getMachineLoader().getMachineInterface().getModel().getWipeByIndex(0);
 		WipeModel tool1Wipes = Base.getMachineLoader().getMachineInterface().getModel().getWipeByIndex(1);
@@ -334,10 +337,7 @@ public class LayerHelper {
 		
 		ArrayList<String> result = new ArrayList<String>();
 		
-		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-		dfs.setDecimalSeparator('.');
-		DecimalFormat nf = new DecimalFormat();
-		nf.setDecimalFormatSymbols(dfs);
+		NumberFormat nf = (NumberFormat) Base.getGcodeFormat().clone();
 		
 		nf.setMinimumFractionDigits(0); //Min no decimals
 		nf.setMaximumFractionDigits(2); //Max 2 decimal placesa
@@ -419,7 +419,7 @@ public class LayerHelper {
 	 * @param layer_height this is the layer height to do it at
 	 * @return
 	 */
-	public  ArrayList<String> completeToolChange(ToolheadAlias nextTool, float layer_height) {
+	public  ArrayList<String> completeToolChange(ToolheadAlias nextTool, double layer_height) {
 		ArrayList<String> targetCode = new ArrayList<String>();
 		ToolheadAlias currentTool = null;
 
@@ -456,7 +456,7 @@ public class LayerHelper {
 			targetCode.add(getNextPos(line_num,gcode).split("Z")[0]+"Z"+ h +" F2000");
 		}
 		 */
-		float h = layer_height+hop_height;
+		double h = layer_height+hop_height;
 		targetCode.add("G1 Z"+ h +" F2000");
 
 		targetCode.add("(</toolchange>)");
