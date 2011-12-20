@@ -2456,22 +2456,35 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * Reset to the factory state. This ordinarily means writing 0xff over the
 	 * entire eeprom.
 	 */
+	@Override
 	public void resetToFactory() {
-		Base.logger.severe("resetting to Factory in Sanguino3G");
+		Base.logger.finer("resetting to Factory in Sanguino3G");
+		resetToBlank();
+	}
+
+	@Override
+	public void resetToBlank() {
+		Base.logger.finer("resetting to Blank in Sanguino3G");
 		byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe, (byte) 0xff);
 		for (int i = 0; i < 0x0200; i += 16) {
 			writeToEEPROM(i, eepromWipe);
 		}
 	}
-
+	
+	@Override
 	public void resetToolToFactory(int toolIndex) {
+		resetToolToBlank(toolIndex); /// for generic S3G, just wipe the EEPROM
+	}
+	
+	public void resetToolToBlank(int toolIndex){
 		byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe,(byte)0xff);
 		for (int i = 0; i < 0x0200; i+=16) {
 			writeToToolEEPROM(i,eepromWipe,toolIndex);
 		}
 	}
+
 
 	public EndstopType getInvertedEndstops() {
 		checkEEPROM();

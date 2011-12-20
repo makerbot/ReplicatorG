@@ -1000,30 +1000,20 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 	
 	/**
-	 * Reset to the factory state. This ordinarily means writing 0xff over the
-	 * entire eeprom.
+	 * Reset to the factory state. For MightyBoard this 
+	 * does NOT write 0xFF to all EEPROM, but instead sends a 
+	 * 'wipe and reboot' command
 	 */
 	@Override
-	//TODO: better solution to not wiping eeprom on Mightyboard
 	public void resetToFactory() {
-		// reset to factory disabled for Mightyboard.
-		// we do not want to overwrite home axis positions
-		
-		/*byte eepromWipe[] = new byte[16];
-		Arrays.fill(eepromWipe, (byte) 0xff);
-		for (int i = 0; i < 0x0200; i += 16) {
-			writeToEEPROM(i, eepromWipe);
-		}
-		*/
+		/// send message to FW to wipe all settings
+		/// except home, wipe locations, and single/dual status
 	}
 
 	@Override
 	public void resetToolToFactory(int toolIndex) {
-		byte eepromWipe[] = new byte[16];
-		Arrays.fill(eepromWipe,(byte)0xff);
-		for (int i = 0; i < 0x0200; i+=16) {
-			writeToToolEEPROM(i,eepromWipe,toolIndex);
-		}
+		/// send message to FW to wipe all settings
+		/// except home, wipe locations, and single/dual status
 	}
 
 	

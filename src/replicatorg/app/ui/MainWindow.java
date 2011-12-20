@@ -1069,7 +1069,7 @@ ToolpathGenerator.GeneratorListener
 		return menu;
 	}
 
-	JMenuItem onboardParamsItem = new JMenuItem("Machine Onboard Preferences...");
+	JMenuItem onboardParamsItem = new JMenuItem("Onboard Preferences...");
 	JMenuItem toolheadIndexingItem = new JMenuItem("Set Toolhead Index...");
 	JMenuItem realtimeControlItem = new JMenuItem("Open real time controls window...");
 	JMenuItem infoPanelItem = new JMenuItem("Machine information...");

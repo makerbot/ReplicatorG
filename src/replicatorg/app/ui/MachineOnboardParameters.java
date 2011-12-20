@@ -13,6 +13,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -33,6 +34,8 @@ public class MachineOnboardParameters extends JPanel {
 	private static final long serialVersionUID = 7876192459063774731L;
 	private final OnboardParameters target;
 	private final Driver driver;
+	private final JFrame parent;
+	
 	private JTextField machineNameField = new JTextField();
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
@@ -41,6 +44,7 @@ public class MachineOnboardParameters extends JPanel {
 	private JCheckBox bAxisInvertBox = new JCheckBox();
 	private JCheckBox zHoldBox = new JCheckBox();
 	private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
+	private JButton resetToBlankButton = new JButton("Reset motherboard completely");
 	private static final String[]  endstopInversionChoices = {
 		"No endstops installed",
 		"Inverted (Default; Mechanical switch or H21LOB-based enstops)",
@@ -133,6 +137,13 @@ public class MachineOnboardParameters extends JPanel {
 		resetDialog();
 	}
 
+	private void resetToBlank()
+	{
+		target.resetToBlank();
+		resetDialog();
+		loadParameters();		
+	}
+	
 	private void resetToFactory() {
 		target.resetToFactory();
 		resetDialog();
@@ -180,14 +191,20 @@ public class MachineOnboardParameters extends JPanel {
 		commitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				MachineOnboardParameters.this.commit();
+				MachineOnboardParameters.this.dispose();
 			}
 		});
 		return panel;
 	}
 	
-	public MachineOnboardParameters(OnboardParameters target, Driver driver) {
+	protected void dispose() {
+		parent.dispose();
+	}
+
+	public MachineOnboardParameters(OnboardParameters target, Driver driver, JFrame parent) {
 		this.target = target;
 		this.driver = driver;
+		this.parent = parent;
 
 		setLayout(new MigLayout("fill"));
 		EnumMap<AxisId, String> axesAltNamesMap = target.getAxisAlises();
@@ -276,12 +293,25 @@ public class MachineOnboardParameters extends JPanel {
 		resetToFactoryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				MachineOnboardParameters.this.resetToFactory();
-				// Reload
 				// This gets called in resetToFactory()
 //				loadParameters();
 			}
 		});
+		resetToFactoryButton.setToolTipText("Reest the onboard settings to the factory defaults");
 		add(resetToFactoryButton);
+
+		
+		resetToBlankButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				MachineOnboardParameters.this.resetToBlank();
+				// This gets called in resetToFactory()
+//				loadParameters();
+			}
+		});
+		resetToBlankButton.setToolTipText("Reest the onboard settings to the *completely blank*");
+		add(resetToBlankButton);
+
+
 		
 		loadParameters();
 	}

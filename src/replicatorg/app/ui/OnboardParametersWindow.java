@@ -35,13 +35,13 @@ public class OnboardParametersWindow extends JFrame {
 		paramsTabs = new JTabbedPane();
 		add(paramsTabs, "wrap");
 
-		paramsTabs.addTab("Motherboard", new MachineOnboardParameters(targetParams, driver));
+		paramsTabs.addTab("Motherboard", new MachineOnboardParameters(targetParams, driver, (JFrame)this));
 		
 		List<ToolModel> tools = driver.getMachine().getTools();
 		
 		for(ToolModel t : tools)
 		{
-			paramsTabs.addTab("Extruder " + t.getIndex(), new ExtruderOnboardParameters(targetParams, t));
+			paramsTabs.addTab("Extruder " + t.getIndex(), new ExtruderOnboardParameters(targetParams, t,(JFrame)this));
 			
 		}
 

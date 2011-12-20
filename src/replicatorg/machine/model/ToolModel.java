@@ -732,5 +732,19 @@ public class ToolModel
 	 */
 	public Node getXml() { return xml; }
 
+	// returns true of an extruder has a thermocouple (implies it has a PID)
+	public boolean hasExtruderThermocouple() {
+		return true;
+	}
+
+	public boolean hasExtruderThermistor() {
+		//HACKY HACK HACK!
+		if(this.name.contains("MightyBoard") || this.name.contains("Replicator"))
+			return false;
+		if(this.name.contains("Thingomatic") )
+			return true;
+		return false;
+	}
+
 		
 }
