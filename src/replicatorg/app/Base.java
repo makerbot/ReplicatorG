@@ -129,25 +129,38 @@ public class Base {
 	public static FileHandler logFileHandler = null;
 	public static String logFilePath = null;
 	
+	
+    /*
+     * expands ~ as per python os.path.expanduser
+     */
+    public static String expanduser(String path) {
+        String user=System.getProperty("user.home");
+
+        return path.replaceFirst("~", user);
+    }
+
+	
 	/**
 	 * Start logging on the given path. If the path is null, stop file logging.
 	 * @param path The path to log messages to
 	 */
 	public static void setLogFile(String path) {
 		boolean useLogFile = Base.preferences.getBoolean("replicatorg.useLogFile",false);
-
-		if (useLogFile && path.equals(logFilePath)) { return; }
+		String explicitPath = expanduser(path);
+		
+		if (useLogFile && explicitPath.equals(logFilePath)) { return; }
 		
 		if (logFileHandler != null) {
 			logger.removeHandler(logFileHandler);
 			logFileHandler = null;
 		}
 		
-		logFilePath = path;
+		logFilePath = explicitPath;
 		
 		if (useLogFile && logFilePath != null && logFilePath.length() > 0) {
 			boolean append = true;
 			try {
+				
 				FileHandler fh = new FileHandler(logFilePath, append);
 				fh.setFormatter(new SimpleFormatter());
 				fh.setLevel(Level.ALL);
