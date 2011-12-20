@@ -1,9 +1,11 @@
 package replicatorg.drivers;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 
 import replicatorg.machine.model.AxisId;
+import replicatorg.machine.model.ToolModel;
 
 
 public interface OnboardParameters {
@@ -16,14 +18,21 @@ public interface OnboardParameters {
 	//// Get a list of all toolheads for which we save onboard preferences
 	List<Integer> toolheadsWithStoredData();
 	
-	EnumSet<AxisId> getInvertedParameters();
-	void setInvertedParameters(EnumSet<AxisId> axes);
+	///Return a list of Axes that are flagged as inverted in the firmware
+	EnumSet<AxisId> getInvertedAxes();
+
+	/// Returns a set of Axes that are overridden or hijacked, 
+	/// and a string to indicate what they are overridden or hijacked for.
+	EnumMap<AxisId,String> getAxisAlises();
+	
+	void setInvertedAxes(EnumSet<AxisId> axes);
 	
 	String getMachineName();
 	void setMachineName(String machineName);
 	
 	double getAxisHomeOffset(int axis);
 	void setAxisHomeOffset(int axis, double d);
+	
 	
 	public enum EndstopType {
 		
@@ -46,6 +55,7 @@ public interface OnboardParameters {
 		}
 	}
 	
+	
 	EndstopType getInvertedEndstops();
 	void setInvertedEndstops(EndstopType endstops);
 	
@@ -55,6 +65,7 @@ public interface OnboardParameters {
 	 */
 	boolean hasFeatureOnboardParameters();
 		
+	
 	void createThermistorTable(int which, double r0, double t0, double beta, int toolIndex);
 	int getR0(int which, int toolIndex);
 	int getT0(int which, int toolIndex);

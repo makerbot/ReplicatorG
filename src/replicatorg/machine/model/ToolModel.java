@@ -23,6 +23,9 @@
 
 package replicatorg.machine.model;
 
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.w3c.dom.Node;
@@ -61,7 +64,8 @@ public class ToolModel
 	protected int motorEncoderPPR;
 	protected boolean motorIsStepper;
 	protected double motorSteps;		// motor steps per full rotation
-	protected String motorStepperAxis;	// Stepper axis this motor is connected to
+	
+	protected AxisId motorStepperAxis;	// Stepper axis this motor is connected to
 
 	//spindle stuff
 	protected boolean spindleEnabled;
@@ -102,9 +106,9 @@ public class ToolModel
 	protected boolean hasValve = false;
 	protected boolean hasCollet = false;
 	protected boolean alwaysReadHBP = false;
-
 	
 	protected boolean automatedBuildPlatformEnabled;
+	
 
 	/*************************************
 	*  Creates the model object.
@@ -220,7 +224,7 @@ public class ToolModel
 			n = XML.getAttributeValue(xml, "stepper_axis");
 			try{
 				if (n != null && n.length() > 0) {
-					motorStepperAxis = n;
+					motorStepperAxis = AxisId.getAxis(n);
 				}
 			} catch (Exception e) {} // ignore parse errors.
 			
@@ -318,7 +322,8 @@ public class ToolModel
 			result += "hasAutomatedPlatform, ";
 		if (motorIsStepper) {
 			result += "motorIsStepper, ";
-			result += "motorStepperAxis: " + motorStepperAxis + ", ";
+			if(motorStepperAxis != null ) result += "motorStepperAxis: " + motorStepperAxis.name() + ", ";
+			else  result += "motorStepperAxis: (null), ";
 			result += "motorSteps: " + motorSteps + ", ";
 		}
 	}
@@ -486,7 +491,12 @@ public class ToolModel
 	 * 
 	 * @return null if motorstepperaxis wasn't specified. The axis identifier otherwise
 	 */
-	public String getMotorStepperAxis()
+	public String getMotorStepperAxisName()
+	{
+		return motorStepperAxis.name();
+	}
+	
+	public AxisId getMotorStepperAxis()
 	{
 		return motorStepperAxis;
 	}
@@ -721,5 +731,6 @@ public class ToolModel
 	 * Retrieve XML node. A temporary hack until new  tool models.
 	 */
 	public Node getXml() { return xml; }
-	
+
+		
 }

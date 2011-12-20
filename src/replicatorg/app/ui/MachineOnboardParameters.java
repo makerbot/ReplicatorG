@@ -6,6 +6,7 @@ package replicatorg.app.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
+import java.util.EnumMap;
 import java.util.EnumSet;
 
 import javax.swing.JButton;
@@ -95,7 +96,7 @@ public class MachineOnboardParameters extends JPanel {
 		// V is in the 7th bit position, and it's set to NOT hold Z
 		// From the firmware: "Bit 7 is used for HoldZ OFF: 1 = off, 0 = on"
 		if (!zHoldBox.isSelected())      axesInverted.add(AxisId.V);
-		target.setInvertedParameters(axesInverted);
+		target.setInvertedAxes(axesInverted);
 		{
 			int idx = endstopInversionSelection.getSelectedIndex();
 			OnboardParameters.EndstopType endstops = 
@@ -141,7 +142,7 @@ public class MachineOnboardParameters extends JPanel {
 
 	private void loadParameters() {
 		machineNameField.setText(this.target.getMachineName());
-		EnumSet<AxisId> invertedAxes = this.target.getInvertedParameters();
+		EnumSet<AxisId> invertedAxes = this.target.getInvertedAxes();
 		
 		xAxisInvertBox.setSelected(invertedAxes.contains(AxisId.X));
 		yAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Y));
@@ -189,23 +190,40 @@ public class MachineOnboardParameters extends JPanel {
 		this.driver = driver;
 
 		setLayout(new MigLayout("fill"));
+		EnumMap<AxisId, String> axesAltNamesMap = target.getAxisAlises();
+
 
 		add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
 		machineNameField.setColumns(MAX_NAME_LENGTH);
+		
 		add(machineNameField,"span 3, wrap");
-		add(new JLabel("Invert X axis"));
+
+		add(new JLabel("Invert X axis"));		
 		add(xAxisInvertBox,"span 3, wrap");
+		
 		add(new JLabel("Invert Y axis"));
 		add(yAxisInvertBox,"span 3, wrap");
+		
 		add(new JLabel("Invert Z axis"));
 		add(zAxisInvertBox,"span 3, wrap");
-		add(new JLabel("Invert A axis"));
+
+		String aName = "Invert A axis";
+		if( axesAltNamesMap.containsKey(AxisId.A) )
+			aName = aName + " (" + axesAltNamesMap.get(AxisId.A) + ") ";
+		add(new JLabel(aName));
 		add(aAxisInvertBox,"span 3, wrap");
-		add(new JLabel("Invert B axis"));
+		
+		String bName = "Invert B axis";
+		if( axesAltNamesMap.containsKey(AxisId.B) )
+			bName = bName + " (" + axesAltNamesMap.get(AxisId.B) + ") ";
+		add(new JLabel(bName));
+		
 		add(bAxisInvertBox,"span 3, wrap");
 		add(new JLabel("Hold Z axis"));
+		
 		add(zHoldBox,"span 3, wrap");
 		add(new JLabel("Invert endstops"));
+		
 		add(endstopInversionSelection,"span 3, wrap");
 		add(new JLabel("Emergency stop"));
 		add(estopSelection,"span 3, wrap");

@@ -42,38 +42,50 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 		super.stop(abort);
 	}
 	
-	/** 
-	 * Returns the hijacked axes for the current tool.
-	 */
-	private Iterable<AxisId> getHijackedAxes() {
+	private Iterable<AxisId> getHijackedAxes(int toolhead){
 		Vector<AxisId> axes = new Vector<AxisId>();
-		for ( Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
-			ToolModel curTool = machine.currentTool();
-			AxisId axis = entry.getKey();
-			if (curTool.equals(entry.getValue())) {
-				axes.add(axis);
-			}
-		}
+		AxisId toolheadAxis = machine.getTool(toolhead).getMotorStepperAxis();
+		if( extruderHijackedMap.containsKey( toolheadAxis ) )
+			axes.add(toolheadAxis);
 		return axes;
-	}
+	}	
+
+//	/** 
+//	 * Returns the hijacked axes for the current tool.
+//	 */
+//	@Deprecated
+//	private Iterable<AxisId> getHijackedAxes() {
+//		Vector<AxisId> axes = new Vector<AxisId>();
+//		
+//		for ( Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
+//			ToolModel curTool = machine.currentTool();
+//			if (curTool.equals(entry.getValue())) {
+//				axes.add(curTool.getMotorStepperAxis());
+//			}
+//		}
+//		return axes;
+//	}
 
 	/** 
 	 * Returns the hijacked axes for all tools.
 	 */
 	private Iterable<AxisId> getAllHijackedAxes() {
 		Vector<AxisId> axes = new Vector<AxisId>();
-		for ( Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
+		for ( Map.Entry<AxisId,ToolModel> entry : extruderHijackedMap.entrySet()) {
 			AxisId axis = entry.getKey();
 			axes.add(axis);
 		}
 		return axes;
 	}
 
+	/** relies on currentTool too much **/
+	@Deprecated 
 	protected void queueAbsolutePoint(Point5d steps, long micros) throws RetryException {
 		// Turn on fan if necessary
-		for (AxisId axis : getHijackedAxes()) {
+		int toolhead = machine.currentTool().getIndex();
+		for (AxisId axis : getHijackedAxes(toolhead)) {
 			if (steps.axis(axis) != 0) {
-				enableStepperExtruderFan(true);
+				enableStepperExtruderFan(true,toolhead);
 			}
 		}
 
@@ -225,7 +237,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 		this.stepperExtruderFanEnabled = enabled;
 	}
 
-	EnumMap<AxisId,ToolModel> stepExtruderMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
+	EnumMap<AxisId,ToolModel> extruderHijackedMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
 	
 	
 	@Override
@@ -243,7 +255,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 					if (m.hasAxis(axis)) {
 						// If we're seizing an axis for an extruder, remove it from the available axes and get
 						// the data associated with that axis.
-						stepExtruderMap.put(axis,tm);
+						extruderHijackedMap.put(axis,tm);
 					} else {
 						Base.logger.severe("Tool claims unavailable axis "+axis.name());
 					}
@@ -253,4 +265,20 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 			}
 		}
 	}
+	
+	
+	@Override
+	public EnumMap<AxisId, String> getAxisAlises() {
+		/// Returns a set of Axes that are overridden or hijacked, 
+		/// and a string to indicate what they are overridden or hijacked for.
+		EnumMap<AxisId,String> map = new EnumMap<AxisId,String>(AxisId.class);
+		for ( AxisId id : extruderHijackedMap.keySet() ) {
+			ToolModel t = extruderHijackedMap.get(id);
+			map.put(id,t.getName());
+		}
+		return map;
+	}
+
+
+	
 }

@@ -144,8 +144,11 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 * @return a list of AxisId containing all overriden axis for tool curTool
 	 */
 	protected Iterable<AxisId> getHijackedAxes(ToolModel curTool) {
+		//NOTE:
+		/// can be reduced to '		axes.add(curTool.getMotorStepperAxis());' 
+		/// once we get rid of curTool calls
 		Vector<AxisId> axes = new Vector<AxisId>();
-		for ( Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
+		for ( Map.Entry<AxisId,ToolModel> entry : extruderHijackedMap.entrySet()) {
 			AxisId axis = entry.getKey();
 			if (curTool.equals(entry.getValue())) {
 				axes.add(axis);
@@ -162,7 +165,8 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 */
 	protected Iterable<AxisId> getAllHijackedAxes() {
 		Vector<AxisId> axes = new Vector<AxisId>();
-		for ( Map.Entry<AxisId,ToolModel> entry : stepExtruderMap.entrySet()) {
+
+		for ( Map.Entry<AxisId,ToolModel> entry : extruderHijackedMap.entrySet()) {
 			AxisId axis = entry.getKey();
 			axes.add(axis);
 		}
@@ -345,7 +349,8 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		this.stepperExtruderFanEnabled = enabled;
 	}
 
-	EnumMap<AxisId,ToolModel> stepExtruderMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
+	/// This is a list of which axis are hijacked for extruder use.
+	EnumMap<AxisId,ToolModel> extruderHijackedMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
 	
 	@Override
 	/**
@@ -363,7 +368,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 						Base.logger.finer("seize the axis for extrusion!  Hijacking axis "+axis.name());
 						// If we're seizing an axis for an extruder, remove it from the available axes and get
 						// the data associated with that axis.
-						stepExtruderMap.put(axis,tm);
+						extruderHijackedMap.put(axis,tm);
 						m.getAvailableAxes().remove(axis);
 					} else {
 						Base.logger.severe("Tool claims unavailable axis "+axis.name());
