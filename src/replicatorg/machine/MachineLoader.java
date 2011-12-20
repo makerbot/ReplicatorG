@@ -41,11 +41,11 @@ import replicatorg.drivers.Driver;
 		public MachineInterface getMachineInterface(String machineType) {
 
 			//if we have a matching singleton running, return it
-			if(singletonMI != null && machineType == singletonMIType) {
+			if(singletonMI != null && machineType.equals(singletonMIType) ) {
 				return singletonMI;
 			}
 			//if we have noting loaded, try to load that machine
-			else if (singletonMI == null || machineType == "" ){
+			else if (singletonMI == null || machineType.equals("") ){
 				singletonMI = MachineFactory.load(machineType, callbackHandler);
 				if(singletonMI != null)
 				{
@@ -54,7 +54,7 @@ import replicatorg.drivers.Driver;
 				return singletonMI;
 			}
 			// if we don't have matching types, warn, then load a new singleton over this one
-			else if (singletonMI != null && machineType != machineType) {
+			else if (singletonMI != null && !machineType.equals(singletonMIType) ) {
 					Base.logger.severe("loading new singleton " + machineType + " to replace a " + singletonMIType);
 					singletonMI.dispose();
 					singletonMI = MachineFactory.load(machineType, callbackHandler);
