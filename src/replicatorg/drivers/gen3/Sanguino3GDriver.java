@@ -907,6 +907,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.selectTool(toolIndex);
 	}
 
+	@Deprecated
 	public void setMotorRPM(double rpm) throws RetryException {
 		setMotorRPM( rpm, machine.currentTool().getIndex() );
 	}
@@ -941,8 +942,13 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	
 	public void setMotorSpeedPWM(int pwm) throws RetryException {
+		this.setMotorSpeedPWM(pwm, machine.currentTool().getIndex());
+	}
+	
+	
+	public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException {
 		// If we are using a relay, make sure that we don't enable the PWM
-		if (machine.currentTool().getMotorUsesRelay() && pwm > 0) {
+		if (machine.getTool(toolhead).getMotorUsesRelay() && pwm > 0) {
 			Base.logger.fine("Tool motor uses relay, overriding PWM setting");
 			pwm = 255;
 		}
@@ -952,7 +958,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		// send it!
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead);
 		pb.add8(ToolCommandCode.SET_MOTOR_1_PWM.getCode());
 		pb.add8((byte) 1); // length of payload.
 		pb.add8((byte) ((pwm > 255) ? 255 : pwm));
@@ -961,12 +967,18 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setMotorSpeedPWM(pwm);
 	}
 
+	@Deprecated
 	public void enableMotor() throws RetryException {
+		this.enableMotor(machine.currentTool().getIndex());
+	}
+	
+	public void enableMotor(int toolheadIndex) throws RetryException {
+
 		// our flag variable starts with motors enabled.
 		byte flags = 1;
 
 		// bit 1 determines direction...
-		if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.getTool(toolheadIndex).getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
 			flags += 2;
 
 		Base.logger.fine("Toggling motor 1 w/ flags: "
@@ -975,7 +987,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		// send it!
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolheadIndex );
 		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
@@ -984,17 +996,22 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.enableMotor();
 	}
 
+	@Deprecated
 	public void disableMotor() throws RetryException {
+		this.disableMotor(machine.currentTool().getIndex());
+	}
+
+	public void disableMotor(int toolhead) throws RetryException {
 		// bit 1 determines direction...
 		byte flags = 0;
-		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.getTool(toolhead).getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
 			flags += 2;
 
 		Base.logger.finer("Disabling motor 1");
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead );
 		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
@@ -1003,10 +1020,14 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.disableMotor();
 	}
 
+	@Deprecated
 	public int getMotorSpeedPWM() {
+		return this.getMotorSpeedPWM(machine.currentTool().getIndex());
+	}
+	public int getMotorSpeedPWM(int toolhead) {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead);
 		pb.add8(ToolCommandCode.GET_MOTOR_1_PWM.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
 
@@ -1017,7 +1038,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		Base.logger.fine("Current motor 1 PWM: " + pwm);
 
 		// set it.
-		machine.currentTool().setMotorSpeedReadingPWM(pwm);
+		machine.getTool(toolhead).setMotorSpeedReadingPWM(pwm);
 
 		return pwm;
 	}
@@ -1043,15 +1064,21 @@ public class Sanguino3GDriver extends SerialDriver implements
 		Base.logger.fine("Current motor 1 RPM: " + rpm + " (" + micros + ")");
 
 		// set it.
-		machine.currentTool().setMotorSpeedReadingRPM(rpm);
+		machine.getTool(toolIndex).setMotorSpeedReadingRPM(rpm);
 
 		return rpm;
 	}
 
+	
+	@Deprecated
 	public void readToolStatus() {
+		this.readToolStatus(machine.currentTool().getIndex());
+	}
+	
+	public void readToolStatus(int toolhead) {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead );
 		pb.add8(ToolCommandCode.GET_TOOL_STATUS.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isEmpty())
@@ -1059,7 +1086,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		// FIXME: First, check that the result code is OK. We occasionally
 		// receive RC_DOWNSTREAM_TIMEOUT codes here. kintel 20101207.
 		int status = pr.get8();
-		machine.currentTool().setToolStatus(status);
+		machine.getTool(toolhead).setToolStatus(status);
 
 		if (Base.logger.isLoggable(Level.FINE)) {
 			Base.logger.fine("Extruder Status: " + status + ": "
@@ -1084,13 +1111,17 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return value;
 	}
 
-	// TODO: Implement a way for this to reach the outside
+	@Deprecated 
 	public void readToolPIDState() {
+		this.readToolPIDState(machine.currentTool().getIndex());
+	}
+	// TODO: Implement a way for this to reach the outside
+	public void readToolPIDState(int toolhead) {
 		if (Base.logger.isLoggable(Level.FINE)) {
 
 			PacketBuilder pb = new PacketBuilder(
 					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8((byte) toolhead );
 			pb.add8(ToolCommandCode.GET_PID_STATE.getCode());
 			PacketResponse pr = runQuery(pb.getPacket());
 			if (pr.isEmpty())
@@ -1126,7 +1157,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	// public void disableServo() {}
 
+	@Deprecated
 	public void setServoPos(int index, double degree) throws RetryException {
+		this.setServoPos(index, degree, machine.currentTool().getIndex());
+	}
+	
+	public void setServoPos(int index, double degree, int toolhead) throws RetryException {
 		int command = 0;
 
 		// We can handle two servos
@@ -1158,7 +1194,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		// send it!
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead );
 		pb.add8(command);
 		pb.add8((byte) 1); // length of payload.
 		pb.add8((byte) degree);
@@ -1171,7 +1207,11 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/***************************************************************************
 	 * Spindle interface functions
 	 **************************************************************************/
+	@Deprecated
 	public void setSpindleRPM(double rpm) throws RetryException {
+		this.setSpindleRPM(rpm, machine.currentTool().getIndex() );
+	}
+	public void setSpindleRPM(double rpm, int toolhead) throws RetryException {
 		// convert RPM into microseconds and then send.
 		long microseconds = (int) Math.round(60 * 1000000 / rpm); // no
 		// unsigned
@@ -1184,7 +1224,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		// send it!
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead );
 		pb.add8(ToolCommandCode.SET_MOTOR_2_RPM.getCode());
 		pb.add8((byte) 4); // payload length
 		pb.add32(microseconds);
@@ -1193,13 +1233,18 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setSpindleRPM(rpm);
 	}
 
+	@Deprecated
 	public void setSpindleSpeedPWM(int pwm) throws RetryException {
+		this.setSpindleSpeedPWM(pwm, machine.currentTool().getIndex());
+	}
+		
+		public void setSpindleSpeedPWM(int pwm, int toolhead) throws RetryException {
 		Base.logger.fine("Setting motor 2 speed to " + pwm + " PWM");
 
 		// send it!
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead );
 		pb.add8(ToolCommandCode.SET_MOTOR_2_PWM.getCode());
 		pb.add8((byte) 1); // length of payload.
 		pb.add8((byte) pwm);
@@ -1208,12 +1253,17 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setSpindleSpeedPWM(pwm);
 	}
 
+	@Deprecated
 	public void enableSpindle() throws RetryException {
+		this.enableSpindle(machine.currentTool().getIndex());
+		}
+
+	public void enableSpindle(int toolhead) throws RetryException {
 		// our flag variable starts with spindles enabled.
 		byte flags = 1;
 
 		// bit 1 determines direction...
-		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.getTool(toolhead).getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
 			flags += 2;
 
 		Base.logger.fine("Toggling motor 2 w/ flags: "
@@ -1222,7 +1272,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		// send it!
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead );
 		pb.add8(ToolCommandCode.TOGGLE_MOTOR_2.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
@@ -1231,17 +1281,22 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.enableSpindle();
 	}
 
+	@Deprecated
 	public void disableSpindle() throws RetryException {
+		disableSpindle(machine.currentTool().getIndex());
+	}
+	
+	public void disableSpindle(int toolhead) throws RetryException {
 		// bit 1 determines direction...
 		byte flags = 0;
-		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.getTool(toolhead).getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
 			flags += 2;
 
 		Base.logger.fine("Disabling motor 2");
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead);
 		pb.add8(ToolCommandCode.TOGGLE_MOTOR_2.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8(flags);
@@ -1250,10 +1305,15 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.disableSpindle();
 	}
 
+	@Deprecated
 	public double getSpindleSpeedRPM() throws RetryException {
+		return this.getSpindleSpeedRPM(machine.currentTool().getIndex());
+	}
+
+	public double getSpindleSpeedRPM(int toolhead) throws RetryException {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead);
 		pb.add8(ToolCommandCode.GET_MOTOR_2_RPM.getCode());
 		PacketResponse pr = runCommand(pb.getPacket());
 
@@ -1264,15 +1324,20 @@ public class Sanguino3GDriver extends SerialDriver implements
 		Base.logger.fine("Current motor 2 RPM: " + rpm + " (" + micros + ")");
 
 		// set it.
-		machine.currentTool().setSpindleSpeedReadingRPM(rpm);
+		machine.getTool(toolhead).setSpindleSpeedReadingRPM(rpm);
 
 		return rpm;
 	}
 
+	@Deprecated
 	public int getSpindleSpeedPWM() {
+		return this.getSpindleSpeedPWM(machine.currentTool().getIndex());
+	}
+	
+	public int getSpindleSpeedPWM(int toolhead) {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead);
 		pb.add8(ToolCommandCode.GET_MOTOR_2_PWM.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
 
@@ -1282,16 +1347,22 @@ public class Sanguino3GDriver extends SerialDriver implements
 		Base.logger.fine("Current motor 1 PWM: " + pwm);
 
 		// set it.
-		machine.currentTool().setSpindleSpeedReadingPWM(pwm);
+		machine.getTool(toolhead).setSpindleSpeedReadingPWM(pwm);
 
 		return pwm;
 	}
 
+	
 	/***************************************************************************
 	 * Temperature interface functions
 	 * @throws RetryException
 	 **************************************************************************/
+	@Deprecated
 	public void setTemperature(double temperature) throws RetryException {
+		this.setTemperature(temperature, machine.currentTool().getIndex());
+	}
+
+	public void setTemperature(double temperature, int toolhead) throws RetryException {
 		// constrain our temperature.
 		int temp = (int) Math.round(temperature);
 		temp = Math.min(temp, 65535);
@@ -1300,40 +1371,53 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead);
 		pb.add8(ToolCommandCode.SET_TEMP.getCode());
 		pb.add8((byte) 2); // payload length
 		pb.add16(temp);
 		runCommand(pb.getPacket());
 
-		super.setTemperature(temperature);
+		super.setTemperature(temperature, toolhead);
 	}
 
+	@Deprecated
 	public void readTemperature() {
+		readTemperature(machine.currentTool().getIndex());
+	}
+	
+	public void readAllTemperatures(int toolheadIndex) {
 		Vector<ToolModel> tools = machine.getTools();
-		for (ToolModel t : tools) {
-			PacketBuilder pb = new PacketBuilder(
-					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) t.getIndex());
-			pb.add8(ToolCommandCode.GET_TEMP.getCode());
-			PacketResponse pr = runQuery(pb.getPacket());
-			if (pr.getResponseCode() == PacketResponse.ResponseCode.TIMEOUT)
-				Base.logger.finer("timeout reading temp");
-			else if (pr.isEmpty())
-				Base.logger.finer("empty response, no temp");
-			else {
-				int temp = pr.get16();
-				t.setCurrentTemperature(temp);
-				Base.logger.finer("New Current temperature: "
-						+ machine.currentTool().getCurrentTemperature() + "C");
-			}
-			// Check if we should co-read platform temperatures when we read
-			// head temp.
-			if (machine.currentTool().alwaysReadBuildPlatformTemp()) {
-				this.readPlatformTemperature();
-			}
 
+		for (ToolModel t : tools) {
+			this.readTemperature(t.getIndex());
 		}
+		
+	
+	}
+	
+	public void readTemperature(int toolhead) 
+	{	
+		PacketBuilder pb = new PacketBuilder(
+				MotherboardCommandCode.TOOL_QUERY.getCode());
+		pb.add8((byte)toolhead);
+		pb.add8(ToolCommandCode.GET_TEMP.getCode());
+		PacketResponse pr = runQuery(pb.getPacket());
+		if (pr.getResponseCode() == PacketResponse.ResponseCode.TIMEOUT)
+			Base.logger.finer("timeout reading temp");
+		else if (pr.isEmpty())
+			Base.logger.finer("empty response, no temp");
+		else {
+			int temp = pr.get16();
+			machine.getTool(toolhead).setCurrentTemperature(temp);
+			Base.logger.finer("New Current temperature: "
+					+ machine.getTool(toolhead).getCurrentTemperature() + "C");
+		}
+		// Check if we should co-read platform temperatures when we read
+		// head temp.
+		if (machine.getTool(toolhead).alwaysReadBuildPlatformTemp()) {
+			this.readPlatformTemperature(toolhead);
+		}
+
 		super.readTemperature();
 	}
 
@@ -1342,43 +1426,66 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * 
 	 * @throws RetryException
 	 **************************************************************************/
-	public void setPlatformTemperature(double temperature)
-			throws RetryException {
-		// constrain our temperature.
+
+	@Deprecated
+	public void setPlatformTemperature(double temperature) 	throws RetryException {
+		setAllPlatformTemperatures(temperature);
+	}
+
+	public void setPlatformTemperature(double temperature, int toolhead)  throws RetryException {
+
+		
 		int temp = (int) Math.round(temperature);
 		temp = Math.min(temp, 65535);
 		Base.logger.fine("Setting platform temperature to " + temp + "C");
 
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
+		pb.add8((byte) toolhead );
+		pb.add8(ToolCommandCode.SET_PLATFORM_TEMP.getCode());
+		pb.add8((byte) 2); // payload length
+		pb.add16(temp);
+		runCommand(pb.getPacket());
+		
+		machine.getTool(toolhead).setPlatformTargetTemperature(temperature);
+
+	}
+
+	public void setAllPlatformTemperatures(double temperature) throws RetryException {
+		// constrain our temperature.
 		//Set the platform temperature for any & every tool with an HBP
 		for(ToolModel t : machine.getTools())
 		{
-			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-			pb.add8((byte) t.getIndex());
-			pb.add8(ToolCommandCode.SET_PLATFORM_TEMP.getCode());
-			pb.add8((byte) 2); // payload length
-			pb.add16(temp);
-			runCommand(pb.getPacket());
-			
-			t.setPlatformTargetTemperature(temperature);
+			this.setPlatformTemperature(temperature, t.getIndex());
 		}
 	}
 
+	@Deprecated
 	public void readPlatformTemperature() {
+		this.readAllPlatformTemperatures();
+	}
+	
+	public void readPlatformTemperature(int toolheadIndex) {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
+		pb.add8((byte) toolheadIndex);
+		pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
+		
+		PacketResponse pr = runQuery(pb.getPacket());
+		if (pr.isEmpty()) return;
+		int temp = pr.get16();
+		machine.getTool(toolheadIndex).setPlatformCurrentTemperature(temp);
+		
+		Base.logger.fine("Current platform temperature (T" + toolheadIndex + "): "
+						+ machine.getTool(toolheadIndex).getPlatformCurrentTemperature() + "C");
+		
+	}
+
+	public void readAllPlatformTemperatures()
+	{
 		for(ToolModel curTool : machine.getTools())
 		{
-			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) curTool.getIndex());
-			pb.add8(ToolCommandCode.GET_PLATFORM_TEMP.getCode());
-			
-			PacketResponse pr = runQuery(pb.getPacket());
-			if (pr.isEmpty()) return;
-			int temp = pr.get16();
-			curTool.setPlatformCurrentTemperature(temp);
-			
-			Base.logger.fine("Current platform temperature (T" + curTool.getIndex() + "): "
-							+ curTool.getPlatformCurrentTemperature() + "C");
-			
+			this.readPlatformTemperature(curTool.getIndex());
 		}
+	
 	}
 
 	/***************************************************************************
@@ -1416,15 +1523,19 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * 
 	 * @throws RetryException
 	 **************************************************************************/
+	@Deprecated
 	public void enableFan() throws RetryException {
+		this.enableFan(machine.currentTool().getIndex() );
+	}
+	
+	public void enableFan(int toolhead) throws RetryException {
 		Base.logger.fine("Enabling fan");
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		int idx = machine.currentTool().getIndex();
-		pb.add8((byte) idx);
+		pb.add8((byte) toolhead);
 		// pb.add8((byte) 0); // target 0 TODO FIXME !!!
-		Base.logger.fine("Tool index " + Integer.toString(idx));
+		Base.logger.fine("Tool index " +toolhead );
 		pb.add8(ToolCommandCode.TOGGLE_FAN.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
@@ -1432,12 +1543,16 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.enableFan();
 	}
 
+	@Deprecated
 	public void disableFan() throws RetryException {
+		this.disableFan(machine.currentTool().getIndex());
+	}
+	public void disableFan(int toolhead) throws RetryException {
 		Base.logger.severe("Disabling fan");
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead );
 		pb.add8(ToolCommandCode.TOGGLE_FAN.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 0); // disable
@@ -1446,7 +1561,13 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.disableFan();
 	}
 
+	@Deprecated
 	public void setAutomatedBuildPlatformRunning(boolean state)
+		throws RetryException {
+		this.setAutomatedBuildPlatformRunning(state, machine.currentTool().getIndex());
+	}
+	
+	public void setAutomatedBuildPlatformRunning(boolean state, int toolhead)
 			throws RetryException {
 		// why is this severe?
 		Base.logger.severe("Toggling ABP to " + state);
@@ -1454,7 +1575,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead );
 		pb.add8(ToolCommandCode.TOGGLE_ABP.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) newState); // enable(1)disable(0)
@@ -1469,12 +1590,17 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * 
 	 * @throws RetryException
 	 **************************************************************************/
+	@Deprecated
 	public void openValve() throws RetryException {
+		openValve(machine.currentTool().getIndex());
+	}
+	
+	public void openValve(int toolhead) throws RetryException {
 		Base.logger.fine("Opening valve");
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead );
 		pb.add8(ToolCommandCode.TOGGLE_VALVE.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
@@ -1483,12 +1609,19 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.openValve();
 	}
 
+
+	@Deprecated
 	public void closeValve() throws RetryException {
+		closeValve(machine.currentTool().getIndex());
+	}
+
+	
+	public void closeValve(int toolhead) throws RetryException {
 		Base.logger.fine("Closing valve");
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
+		pb.add8((byte) toolhead);
 		pb.add8(ToolCommandCode.TOGGLE_VALVE.getCode());
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 0); // disable
@@ -1688,6 +1821,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		assert pr.get8() == data.length;
 	}
 
+	@Deprecated
 	protected byte[] readFromToolEEPROM(int offset, int len)
 	{
 		return readFromToolEEPROM(offset, len, machine.currentTool().getIndex());
@@ -1721,6 +1855,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * @param offset
 	 * @param data
 	 */
+	@Deprecated
 	protected void writeToToolEEPROM(int offset, byte[] data) {
 		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
 	}
@@ -2259,6 +2394,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	};
 
 
+	@Deprecated
 	protected int read16FromToolEEPROM(int offset, int defaultValue) {
 		return read16FromToolEEPROM(offset, defaultValue, machine.currentTool().getIndex());
 	}
@@ -2389,30 +2525,40 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_ESTOP_CONFIGURATION_OFFSET, b);
 	}
 
+	@Deprecated
 	public double getPlatformTemperatureSetting() {
+		return this.getPlatformTemperatureSetting(machine.currentTool().getIndex());
+	}
+	
+	public double getPlatformTemperatureSetting(int toolhead) {
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2, 3))) {
 			PacketBuilder pb = new PacketBuilder(
 					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8((byte) toolhead );
 			pb.add8(ToolCommandCode.GET_PLATFORM_SP.getCode());
 			PacketResponse pr = runQuery(pb.getPacket());
 			int sp = pr.get16();
-			machine.currentTool().setPlatformTargetTemperature(sp);
+			machine.getTool(toolhead).setPlatformTargetTemperature(sp);
 		}
 		return super.getPlatformTemperatureSetting();
 	}
 
+	@Deprecated
 	public double getTemperatureSetting() {
+		return this.getTemperatureSetting(machine.currentTool().getIndex());
+	}
+
+	public double getTemperatureSetting(int toolhead) {
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2, 3))) {
 			PacketBuilder pb = new PacketBuilder(
 					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8((byte) toolhead );
 			pb.add8(ToolCommandCode.GET_SP.getCode());
 			PacketResponse pr = runQuery(pb.getPacket());
 			int sp = pr.get16();
-			machine.currentTool().setTargetTemperature(sp);
+			machine.getTool(toolhead).setTargetTemperature(sp);
 		}
 		return super.getTemperatureSetting();
 	}

@@ -321,13 +321,13 @@ public class LayerHelper {
 	 */
 	public ArrayList<String> wipe(int currentToolnum, int nextToolnum, float layer_height) {
 
-		WipeModel tool0Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(0);
-		WipeModel tool1Wipes = Base.getMachineLoader().getMachine().getModel().getWipeByIndex(1);
+		WipeModel tool0Wipes = Base.getMachineLoader().getMachineInterface().getModel().getWipeByIndex(0);
+		WipeModel tool1Wipes = Base.getMachineLoader().getMachineInterface().getModel().getWipeByIndex(1);
 		
 		if(tool0Wipes == null || tool1Wipes == null)
 		{			
 			String error = "Could not find wipes for the current machine," + 
-				Base.getMachineLoader().getMachine().getModel().toString() + "please select a dualstrusion machine in the drivers menu.";
+				Base.getMachineLoader().getMachineInterface().getModel().toString() + "please select a dualstrusion machine in the drivers menu.";
 			JOptionPane.showConfirmDialog(null, error, 
 					"Could not prepare Dualstrusion!", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
 		}

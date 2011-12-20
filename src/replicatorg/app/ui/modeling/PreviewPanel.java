@@ -113,7 +113,7 @@ public class PreviewPanel extends JPanel {
 	
 	private void getBuildVolume(){
 		Base.logger.fine("Resetting the build volume!");
-		MachineInterface mc = this.mainWindow.getMachine(); 
+		MachineInterface mc = this.mainWindow.getMachineInterface(); 
 		if(mc instanceof Machine){
 			MachineModel mm = mc.getModel();
 			buildVol = mm.getBuildVolume();

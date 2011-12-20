@@ -1188,7 +1188,7 @@ ToolpathGenerator.GeneratorListener
 		}
 		//preheatItem.setArmed(preheatMachine);
 		
-		MachineInterface machine = getMachine();
+		MachineInterface machine = Base.getMachineLoader().getMachineInterface();
 		
 		if(machine != null && !building)
 		{
@@ -1251,7 +1251,7 @@ ToolpathGenerator.GeneratorListener
 					"Real time control is not supported for your machine's driver.",
 					"Can't enabled real time control", JOptionPane.ERROR_MESSAGE);
 		} else {
-			RealtimePanel window = RealtimePanel.getRealtimePanel(machineLoader.getMachine());
+			RealtimePanel window = RealtimePanel.getRealtimePanel(machineLoader.getMachineInterface());
 			if (window != null) {
 				window.pack();
 				window.setVisible(true);
@@ -1259,19 +1259,22 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 	}
-	
-	/// Returns True of the selected machine has 2 or more toolheads
+		
+	/// Returns True of the currently running machine singleton has 2 or more toolheads
 	public boolean isDualDriver()
 	{
-		String mname = Base.preferences.get("machine.name", "error");
-
 		try
 		{
-			MachineLoader ml = new MachineLoader();
-			ml.load(mname);
-			System.out.println(ml.getMachine().getModel().getTools().size());
-			if(ml.getMachine().getModel().getTools().size() == 2)
-			{
+			//TRICKY: machieLoader may not be loaded yet 'naturally' so we force an early load
+			String mname = Base.preferences.get("machine.name", "error");
+
+			MachineInterface machineInter = machineLoader.getMachineInterface(mname);
+			if(machineInter == null){
+				Base.logger.fine("no valid machine for " + mname);
+				return false; //assume it's a single extruder
+			}
+			System.out.println(machineInter.getModel().getTools().size());
+			if( machineInter.getModel().getTools().size() == 2 ) {
 				return true;
 			}
 		}
@@ -1629,7 +1632,7 @@ ToolpathGenerator.GeneratorListener
 					"ReplicatorG can't connect to your machine.\nTry checking your settings and resetting your machine.",
 					"Can't find machine", JOptionPane.ERROR_MESSAGE);
 		} else if(!building) {
-			ControlPanelWindow window = ControlPanelWindow.getControlPanel(machineLoader.getMachine());
+			ControlPanelWindow window = ControlPanelWindow.getControlPanel(machineLoader.getMachineInterface());
 			if (window != null) {
 				window.pack();
 				window.setVisible(true);
@@ -1703,7 +1706,7 @@ ToolpathGenerator.GeneratorListener
 	 */
 	public void showPrefsWindow() {
 		if(preferences == null)
-			preferences = new PreferencesWindow(machineLoader.getMachine());
+			preferences = new PreferencesWindow(machineLoader.getMachineInterface());
 
 		preferences.showFrame(this);
 	}
@@ -1934,7 +1937,7 @@ ToolpathGenerator.GeneratorListener
 		} else {
 			// First, stop machines (but don't tweak gui states)
 			if (machineLoader.isLoaded()) {
-				machineLoader.getMachine().stopAll();
+				machineLoader.getMachineInterface().stopAll();
 			}
 			
 			// build specific stuff
@@ -1948,7 +1951,7 @@ ToolpathGenerator.GeneratorListener
 			buildStart = new Date();
 			
 			//doing this check allows us to recover from pre-build stuff
-			if(machineLoader.getMachine().buildDirect(new JEditTextAreaSource(textarea)) == false)
+			if(machineLoader.getMachineInterface().buildDirect(new JEditTextAreaSource(textarea)) == false)
 			{
 				buildStart = null;
 				setEditorBusy(false);
@@ -1983,7 +1986,7 @@ ToolpathGenerator.GeneratorListener
 
 			message("Uploading...");
 			buildStart = new Date();
-			machineLoader.getMachine().upload(new JEditTextAreaSource(textarea), path);
+			machineLoader.getMachineInterface().upload(new JEditTextAreaSource(textarea), path);
 		}
 	}
 
@@ -2053,7 +2056,7 @@ ToolpathGenerator.GeneratorListener
 		if (!machineLoader.isLoaded()) {
 			String name = Base.preferences.get("machine.name", null);
 			if ( name != null ) {
-				machineLoader.load(name);
+				machineLoader.getMachineInterface(name);
 			}
 		}
 
@@ -2073,7 +2076,7 @@ ToolpathGenerator.GeneratorListener
 
 			// start our building thread.
 			buildStart = new Date();
-			machineLoader.getMachine().buildToFile(new JEditTextAreaSource(textarea), path);
+			machineLoader.getMachineInterface().buildToFile(new JEditTextAreaSource(textarea), path);
 		}
 	}
 
@@ -2106,7 +2109,7 @@ ToolpathGenerator.GeneratorListener
 			// start our building thread.
 			message("Building...");
 			buildStart = new Date();
-			machineLoader.getMachine().buildRemote(path);
+			machineLoader.getMachineInterface().buildRemote(path);
 		}
 	}
 
@@ -2217,7 +2220,7 @@ ToolpathGenerator.GeneratorListener
 		// Advertise machine name
 		String name = "Not Connected";
 		if (evt.getState().isConnected() && machineLoader.isLoaded()) {
-			name = machineLoader.getMachine().getMachineName();
+			name = machineLoader.getMachineInterface().getMachineName();
 		}
 		if (name != null) {
 			this.setTitle(name + " - " + WINDOW_TITLE);
@@ -2277,7 +2280,7 @@ ToolpathGenerator.GeneratorListener
 			+ EstimationDriver.getBuildTimeString(elapsed);
 
 		// Highlight the line at which the user aborted...
-		int atWhichLine = machineLoader.getMachine().getLinesProcessed();
+		int atWhichLine = machineLoader.getMachineInterface().getLinesProcessed();
 		highlightLine(atWhichLine);
 
 		Base.showMessage("Build aborted (line "+ atWhichLine+")", message);
@@ -2295,8 +2298,8 @@ ToolpathGenerator.GeneratorListener
 
 		building = false;
 		if (machineLoader.isLoaded()) {
-			if (machineLoader.getMachine().getSimulatorDriver() != null)
-				machineLoader.getMachine().getSimulatorDriver().destroyWindow();
+			if (machineLoader.getMachineInterface().getSimulatorDriver() != null)
+				machineLoader.getMachineInterface().getSimulatorDriver().destroyWindow();
 		}	
 
 		setEditorBusy(false);
@@ -2313,7 +2316,7 @@ ToolpathGenerator.GeneratorListener
 
 		public void run() {
 			message("Simulating...");
-			machineLoader.getMachine().simulate(new JEditTextAreaSource(textarea));
+			machineLoader.getMachineInterface().simulate(new JEditTextAreaSource(textarea));
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
 					simulationOver();
@@ -2343,7 +2346,7 @@ ToolpathGenerator.GeneratorListener
 
 		public void run() {
 			message("Estimating...");
-			machineLoader.getMachine().estimate(new JEditTextAreaSource(textarea));
+			machineLoader.getMachineInterface().estimate(new JEditTextAreaSource(textarea));
 			editor.estimationOver();
 		}
 	}
@@ -2393,7 +2396,7 @@ ToolpathGenerator.GeneratorListener
 	 */
 	public void doStop() {
 		if (machineLoader.isLoaded()) {
-			machineLoader.getMachine().stopAll();
+			machineLoader.getMachineInterface().stopAll();
 		}
 		doPreheat(false);
 		building = false;
@@ -2402,7 +2405,7 @@ ToolpathGenerator.GeneratorListener
 
 	public void handleReset() {
 		if (machineLoader.isLoaded()) {
-			machineLoader.getMachine().reset();
+			machineLoader.getMachineInterface().reset();
 		}
 	}
 
@@ -2417,8 +2420,8 @@ ToolpathGenerator.GeneratorListener
 	 * Pause the applet but don't kill its window.
 	 */
 	public void doPause() {
-		if (machineLoader.getMachine().isPaused()) {
-			machineLoader.getMachine().unpause();
+		if (machineLoader.getMachineInterface().isPaused()) {
+			machineLoader.getMachineInterface().unpause();
 
 			if (simulating) {
 				message("Simulating...");
@@ -2428,8 +2431,8 @@ ToolpathGenerator.GeneratorListener
 
 			//buttons.inactivate(MainButtonPanel.PAUSE);
 		} else {
-			machineLoader.getMachine().pause();
-			int atWhichLine = machineLoader.getMachine().getLinesProcessed();
+			machineLoader.getMachineInterface().pause();
+			int atWhichLine = machineLoader.getMachineInterface().getLinesProcessed();
 			highlightLine(atWhichLine);
 			message("Paused at line "+ atWhichLine +".");
 
@@ -2517,7 +2520,7 @@ ToolpathGenerator.GeneratorListener
 	}
 
 	protected boolean confirmBuildAbort() {
-		if (machineLoader.isLoaded() && machineLoader.getMachine().getMachineState().isBuilding()) {
+		if (machineLoader.isLoaded() && machineLoader.getMachineInterface().getMachineState().isBuilding()) {
 			final String message = "<html>You are currently printing from ReplicatorG! Your build will be stopped.<br>" +
 			"Continue and abort print?</html>";
 			int option = JOptionPane.showConfirmDialog(this, message, "Abort print?", 
@@ -2713,7 +2716,7 @@ ToolpathGenerator.GeneratorListener
 			setCode(build.getCode());
 			setModel(build.getModel());
 			updateBuild();
-			buttons.updateFromMachine(machineLoader.getMachine());
+			buttons.updateFromMachine(machineLoader.getMachineInterface());
 			if (null != path) {
 				handleOpenPath = path;
 				mruList.update(path);
@@ -3014,8 +3017,8 @@ ToolpathGenerator.GeneratorListener
 	}
 
 
-	public MachineInterface getMachine(){
-		return this.machineLoader.getMachine();
+	public MachineInterface getMachineInterface(){
+		return this.machineLoader.getMachineInterface();
 	}
 
 	boolean canVerifyDeviceType(String targetPort)
@@ -3051,9 +3054,9 @@ ToolpathGenerator.GeneratorListener
 	 */
 	public void loadMachine(String name, boolean doConnect) {
 		
-		boolean loaded = machineLoader.load(name);
+		MachineInterface mi = machineLoader.getMachineInterface(name);
 		
-		if(loaded == false) {
+		if(mi == null ) {
 			Base.logger.severe("could not load machine '" + name + "' please check Driver-> <Machine Name> ");
 			return;
 		}
@@ -3268,7 +3271,7 @@ ToolpathGenerator.GeneratorListener
 				replaceStartAndEndGCode(build.getCode().file);
 			}
 			
-			buttons.updateFromMachine(machineLoader.getMachine());
+			buttons.updateFromMachine(machineLoader.getMachineInterface());
 			updateBuild();
 			
 			if(buildOnComplete)
