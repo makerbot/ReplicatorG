@@ -11,8 +11,8 @@
 			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
 		<tools>
-			<tool name="Mk8 Left"  stepper_axis="b" index="1" type="extruder" motor="true" fan="true" automatedplatform="true" heatedplatform="false" motor_steps="3200" default_rpm="3" heater="true"/>
-			<tool name="Mk8 Right" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" automatedplatform="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
+			<tool name="Mk8 Left" model="Mk8" diameter="0.4" stepper_axis="b" index="1" type="extruder" motor="true" fan="true" automatedplatform="true" heatedplatform="false" motor_steps="3200" default_rpm="3" heater="true"/>
+			<tool name="Mk8 Right" model="Mk8" diameter="0.4" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" automatedplatform="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
 		</tools>
 		<wipes>
 			<wipe index="0" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
@@ -28,6 +28,7 @@
 		<cooldown>
 M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/replicator/dual-start.gcode" end="machines/replicator/end.gcode"/>
 	</machine>
 <machine experimental="0">
 		<name>The Replicator (Shipping Config)</name>
@@ -55,4 +56,5 @@ M18 (Turn off steppers after a build.)
 		<cooldown>
 M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>
 	</machine></machines>

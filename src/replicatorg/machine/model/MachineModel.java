@@ -25,6 +25,7 @@
 
 package replicatorg.machine.model;
 
+import java.io.File;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Set;
@@ -36,6 +37,7 @@ import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
+import replicatorg.model.GCodeSource;
 import replicatorg.util.Point5d;
 
 /**
@@ -81,6 +83,10 @@ public class MachineModel
 	//our wipe models @Noah
 	protected  Vector<WipeModel> wipes = new Vector<WipeModel>();
 	
+	// our machine-specific start & end gcode
+	protected File startCode = null;
+	protected File endCode = null;
+	
 	// our build volume
 	protected BuildVolume buildVolume;
 
@@ -116,6 +122,7 @@ public class MachineModel
 		parseBuildVolume();
 		parseWipes();
 		parseExclusion();
+		parseGCode();
 	}
 	
 	
@@ -348,6 +355,18 @@ public class MachineModel
 		}
 		
 	}
+	
+	private void parseGCode()
+	{
+		if(XML.hasChildNode(xml, "bookend"))
+		{
+			Node bookend = XML.getChildNodeByName(xml, "bookend");
+			String startLocation = XML.getAttributeValue(bookend, "start");
+			String endLocation = XML.getAttributeValue(bookend, "end");
+			startCode = new File(startLocation);
+			endCode = new File(endLocation);
+		}
+	}
 
 	/*************************************
 	*  Reporting available axes
@@ -498,21 +517,6 @@ public class MachineModel
 	{
 		return tools;
 	}
-	public Vector<WipeModel> getWipes()
-	{
-		return wipes;
-	}
-	public WipeModel getWipeByIndex(int index)
-	{
-		for(WipeModel wm : wipes)
-		{
-			if(wm.getIndex() == index)
-			{
-				return wm;
-			}
-		}
-		return null;
-	}
 	public void addTool(ToolModel t)
 	{
 		tools.add(t);
@@ -529,22 +533,58 @@ public class MachineModel
 		}
 	}
 
-  public Point5d getMaximumFeedrates() {
-    return maximumFeedrates;
-  }
-
-  public Point5d getHomingFeedrates() {
-	    return homingFeedrates;
-	  }
+	public Point5d getMaximumFeedrates() {
+		return maximumFeedrates;
+	}
+	
+	public Point5d getHomingFeedrates() {
+		return homingFeedrates;
+	}
+	  
+	public Point5d getTimeOut() {
+		return timeOut;
+	}
+	  
+	/** returns the endstop configuration for the given axis */
+	public Endstops getEndstops(AxisId axis)
+	{
+		return this.endstops.get(axis);
+	}
   
-  public Point5d getTimeOut() {
-      return timeOut;
-	  }
-  
-  /** returns the endstop configuration for the given axis */
-  public Endstops getEndstops(AxisId axis)
-  {
-	  return this.endstops.get(axis);
-  }
+	/*************************************
+	*  Wipe functions
+	*************************************/
+	public Vector<WipeModel> getWipes() {
+		return wipes;
+	}
+	
+	public WipeModel getWipeByIndex(int index) {
+		for(WipeModel wm : wipes)
+		{
+			if(wm.getIndex() == index)
+			{
+				return wm;
+			}
+		}
+		return null;
+	}
 
+	/*************************************
+	*  Gcode functions
+	*************************************/
+	public GCodeSource getStartCode() {
+		throw new UnsupportedOperationException("getStartCode() not yet implemented");
+//		return null;
+	}
+	public String getStartCodeLocation() {
+		return startCode.getAbsolutePath();
+	}
+	
+	public GCodeSource getEndCode() {
+		throw new UnsupportedOperationException("getStartCode() not yet implemented");
+//		return null;
+	}
+	public String getEndCodeLocation() {
+		return endCode.getAbsolutePath();
+	}
 }

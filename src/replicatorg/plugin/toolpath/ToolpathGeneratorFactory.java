@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Vector;
 
 import replicatorg.app.Base;
+import replicatorg.machine.model.MachineModel;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic5D;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
@@ -47,13 +48,14 @@ public class ToolpathGeneratorFactory {
 		Vector<ToolpathGeneratorDescriptor> list = new Vector<ToolpathGeneratorDescriptor>();
 		
 		class Skeinforge6 extends SkeinforgeGenerator {
+			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-0006");
 			}
 			public File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_profiles");
 			}
-			public List<SkeinforgePreference> getPreferences() {
+			public List<SkeinforgePreference> initPreferences() {				
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 				SkeinforgeBooleanPreference raftPref = 			
 					new SkeinforgeBooleanPreference("Use raft",
@@ -63,18 +65,20 @@ public class ToolpathGeneratorFactory {
 				raftPref.addNegateableOption(new SkeinforgeOption("Raft", "Activate Raft:", "true"));
 				raftPref.addNegateableOption(new SkeinforgeOption("Raftless", "Activate Raftless:", "false"));
 				prefs.add(raftPref);
+
 				return prefs;
 			}
 		};
 
 		class Skeinforge31 extends SkeinforgeGenerator {
+			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-31/skeinforge_application");
 			}
 			public File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_31_profiles");
 			}
-			public List<SkeinforgePreference> getPreferences() {
+			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 				SkeinforgeBooleanPreference raftPref = 			
 					new SkeinforgeBooleanPreference("Use raft",
@@ -83,18 +87,20 @@ public class ToolpathGeneratorFactory {
 						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
 				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Activate Raft", "true"));
 				prefs.add(raftPref);
+
 				return prefs;
 			}
 		};
 		
 		class Skeinforge35 extends SkeinforgeGenerator {
+			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-35/skeinforge_application");
 			}
 			public File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_35_profiles");
 			}
-			public List<SkeinforgePreference> getPreferences() {
+			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 				SkeinforgeBooleanPreference raftPref = 			
 					new SkeinforgeBooleanPreference("Use raft",
@@ -103,6 +109,7 @@ public class ToolpathGeneratorFactory {
 						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
 				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
 				prefs.add(raftPref);
+				
 				SkeinforgeChoicePreference supportPref =
 					new SkeinforgeChoicePreference("Use support material",
 							"replicatorg.skeinforge.choiceSupport", "None",
@@ -124,22 +131,33 @@ public class ToolpathGeneratorFactory {
 				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
 				
 				prefs.add(supportPref);
+
+				SkeinforgeBooleanPreference bookendPref = 	
+					new SkeinforgeBooleanPreference("Use machine-specific start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
+						"If this option is checked, skeinforge will use the start.gcode and end.gcode defined for the currently selected machine");
+				// This relies on the fact that there is no way to change the currently selected machine between when this generator is instantiated and when it runs
+				MachineModel selectedMachine = Base.getEditor().getMachineInterface().getModel();
+				
+				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
+				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
+				prefs.add(bookendPref);
 				
 				PrintOMatic printOMatic = new PrintOMatic();
 				prefs.add(printOMatic);
-				
+
 				return prefs;
 			}
 		};
 
 		class Skeinforge40 extends SkeinforgeGenerator {
+			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-40/skeinforge_application");
 			}
 			public File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_40_profiles");
 			}
-			public List<SkeinforgePreference> getPreferences() {
+			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 				SkeinforgeBooleanPreference raftPref = 			
 					new SkeinforgeBooleanPreference("Use raft",
@@ -172,24 +190,25 @@ public class ToolpathGeneratorFactory {
 
 				PrintOMatic printOMatic = new PrintOMatic();
 				prefs.add(printOMatic);
-				
+
 				return prefs;
 			}
 		};
 		
 		class Skeinforge44 extends SkeinforgeGenerator {
+			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-44/skeinforge_application");
 			}
 			public File getUserProfilesDir() {
 		    	return Base.getUserFile("sf_44_profiles");
 			}
-			public List<SkeinforgePreference> getPreferences() {
+			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 				
 				PrintOMatic5D printOMatic5D = new PrintOMatic5D();
 				prefs.add(printOMatic5D);
-				
+
 				return prefs;
 			}
 		};

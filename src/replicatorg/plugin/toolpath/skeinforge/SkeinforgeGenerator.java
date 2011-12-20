@@ -38,13 +38,12 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 	// "skein_engines/skeinforge-0006","sf_profiles");
 	public SkeinforgeGenerator() {
-		preferences = getPreferences();
 	}
 
 	public boolean runSanityChecks() {
 		String errors = "";
 		
-		for (SkeinforgePreference preference : preferences) {
+		for (SkeinforgePreference preference : getPreferences()) {
 			String error = preference.valueSanityCheck();
 			if( error != null) {
 				errors += error;
@@ -485,7 +484,15 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
-	abstract public List<SkeinforgePreference> getPreferences();
+	// renamed to actually reflect what it does, also making way for an internal getPrefs
+	abstract public List<SkeinforgePreference> initPreferences();
+	
+	public List<SkeinforgePreference> getPreferences()
+	{
+		if(preferences == null)
+			preferences = initPreferences();
+		return preferences;
+	}
 	
 	public BuildCode generateToolpath() {
 		String path = model.getPath();
@@ -497,7 +504,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		for (String arg : baseArguments) {
 			arguments.add(arg);
 		}
-		for (SkeinforgePreference preference : preferences) {
+		for (SkeinforgePreference preference : getPreferences()) {
 			List<SkeinforgeOption> options = preference.getOptions();
 			if (options != null) {
 				for (SkeinforgeOption option : options) {
@@ -553,9 +560,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		BuildCode output = new BuildCode(root, new File(root + ".gcode"));
 		
 		// This should be a temporary fix to pass the location of the profile used
-		ArrayList<String> gcode = DualStrusionWorker.readFiletoArrayList(output.file);
-		gcode.add(0, "(" + profile.replace("\\", "/") + ")");
-		DualStrusionWorker.writeArrayListtoFile(gcode, output.file);
+//		ArrayList<String> gcode = DualStrusionWorker.readFiletoArrayList(output.file);
+//		gcode.add(0, "(" + profile.replace("\\", "/") + ")");
+//		DualStrusionWorker.writeArrayListtoFile(gcode, output.file);
 		
 		return output;
 	}
