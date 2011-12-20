@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import replicatorg.app.Base;
-import replicatorg.machine.model.Toolheads;
+import replicatorg.machine.model.ToolheadAlias;
 
 /**
  * 
@@ -136,7 +136,7 @@ public class DualStrusionWorker {
 
 		// TRICKY: since both files are 'default toolhead' (t1) swap primaryTemp
 		// to be 'first toolhead' (t0)
-		primaryTemp = swapToolhead(primaryTemp, Toolheads.LEFT.getTcode());
+		primaryTemp = swapToolhead(primaryTemp, ToolheadAlias.LEFT.getTcode());
 
 		if (replaceStart) {
 			stripStartGcode(primaryGcode);
@@ -152,17 +152,17 @@ public class DualStrusionWorker {
 		stripEndGcode(secondaryGcode);
 
 		primaryGcode = replaceToolHeadReferences(primaryGcode,
-				Toolheads.LEFT);
+				ToolheadAlias.LEFT);
 		secondaryGcode = replaceToolHeadReferences(secondaryGcode,
-				Toolheads.RIGHT);
+				ToolheadAlias.RIGHT);
 
 		// interlace the layers for each toolhead
 		LayerHelper helper = new LayerHelper(primaryGcode, secondaryGcode, false, useWipes);
 		master_layer = helper.mergeLayers();
 
 		//modifyTempReferences(startGcode, primaryTemp, secondaryTemp);
-		modifyTempReference(startGcode, Toolheads.LEFT, primaryTemp);
-		modifyTempReference(startGcode, Toolheads.RIGHT, secondaryTemp);
+		modifyTempReference(startGcode, ToolheadAlias.LEFT, primaryTemp);
+		modifyTempReference(startGcode, ToolheadAlias.RIGHT, secondaryTemp);
 
 		// add start and end gcode
 		master_layer.addAll(0, startGcode);
@@ -175,7 +175,7 @@ public class DualStrusionWorker {
 
 	}
 	
-	private static void modifyTempReference(ArrayList<String> gcode, Toolheads toolhead, String newTempCmd)
+	private static void modifyTempReference(ArrayList<String> gcode, ToolheadAlias toolhead, String newTempCmd)
 	{
 		String matchTarget = "M104.*" + toolhead.getTcode() + ".*";
 
@@ -225,7 +225,7 @@ public class DualStrusionWorker {
 	 * @param tool
 	 *            string name of the toolhead, 'right' or 'left'
 	 */
-	public static void changeToolHead(File source, Toolheads tool) {
+	public static void changeToolHead(File source, ToolheadAlias tool) {
 //		ArrayList<String> startGcode = readFiletoArrayList(new File(
 //				"DualStrusion_Snippets/start.gcode"));
 //		ArrayList<String> endGcode = readFiletoArrayList(new File(
@@ -305,7 +305,7 @@ public class DualStrusionWorker {
 				if(g.getCodeValue('G') == 55)
 				{
 					foundG = true;
-					if(tool == Toolheads.LEFT)
+					if(tool == ToolheadAlias.LEFT)
 					{
 //						g.removeCode('G');
 //						g.addCode('G', 54);
@@ -315,7 +315,7 @@ public class DualStrusionWorker {
 				else if(g.getCodeValue('G') == 54)
 				{
 					foundG = true;
-					if(tool == Toolheads.RIGHT)
+					if(tool == ToolheadAlias.RIGHT)
 					{
 						line = line.replace("G54", "G55");
 					}
@@ -351,7 +351,7 @@ public class DualStrusionWorker {
 	 *            target toolhead for this gcode
 	 */
 	public static void changeOffsetRecall(ArrayList<String> gcode,
-			Toolheads toolhead) {
+			ToolheadAlias toolhead) {
 		// changeOffsetRecall(gcode, t);
 		for (int i = 0; i < gcode.size(); i++) {
 			if (gcode.get(i).matches("G54.*")) 
@@ -405,7 +405,7 @@ public class DualStrusionWorker {
 	 * @return
 	 */
 	private static ArrayList<String> replaceToolHeadReferences(
-			ArrayList<String> gcode, Toolheads desiredToolhead) {
+			ArrayList<String> gcode, ToolheadAlias desiredToolhead) {
 		ArrayList<String> newGcode = new ArrayList<String>();
 		String newToolhead = desiredToolhead.getTcode();
 
