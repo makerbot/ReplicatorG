@@ -131,6 +131,25 @@
 		</java>
 	</target>
 
+	<target name="run-non-clean" depends="jar">
+		<java fork="true" classname="replicatorg.app.Base">
+			<!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
+			<jvmarg value="-ea" />
+			<jvmarg value="-Xmx512m" />
+			<jvmarg value="-XX:+HeapDumpOnOutOfMemoryError" />
+			<jvmarg value="${native.java.flags}" />
+			<arg value="--alternate-prefs"/>
+			<arg value="temp"/>
+			<classpath>
+				<path refid="classpath" />
+				<pathelement location="${jar.dir}/${ant.project.name}.jar" />
+			</classpath>
+			<sysproperty key="java.library.path" path="${native.lib.dir}" />
+			<sysproperty key="replicatorg.app-resources" path="${lib.dir}" />
+			<sysproperty key="replicatorg.toolpath" path="${native.tools.dir}" />
+		</java>
+	</target>
+
 	<!--
   <taskdef name="testng" classpath="test/lib/testng.jar" classname="org.testng.TestNGAntTask" />
   
