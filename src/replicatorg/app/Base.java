@@ -349,7 +349,7 @@ public class Base {
 	public static MainWindow getEditor() {
 		return editor;
 	}
-	private static NotificationHandler notificationHandler;
+	private static NotificationHandler notificationHandler = null;
 
 	private static final String[] supportedExtensions = {
 			"gcode", "ngc",
@@ -438,26 +438,6 @@ public class Base {
 			}
 		}
 		
-		// Warn about read-only user directories
-    	{    		
-    		File userDir = getUserDirectory();
-    		String header = null;
-    		if (!userDir.exists()) header = new String("Unable to create user directory");
-    		else if (!userDir.canWrite()) header = new String("Unable to write to user directory");
-    		else if (!userDir.isDirectory()) header = new String("User directory must be a directory");
-    		if (header != null) {
-    			Base.showMessage(header, 
-    					"<html><body>ReplicatorG can not write to the directory "+userDir.getAbsolutePath()+".<br>" +
-    					"Some functions of ReplicatorG, like toolpath generation and firmware updates,<br>" +
-    					"require ReplicatorG to write data to this directory.  You should end this<br>"+
-    					"session, change the permissions on this directory, and start again."
-    					);
-    		}
-    	}
-
-    	// TODO: 0030
-		// Warn about read-only replicatorG directories
-
 		// Use the default system proxy settings
 		System.setProperty("java.net.useSystemProxies", "true");
     	// Use antialiasing implicitly
@@ -484,7 +464,36 @@ public class Base {
 		// Create the new application "Base" class.
 		new Base(cleanPrefs);
 	}
+	/** Check that the correct directories are writeable, and issue warnings. */
+	private void checkDirectories() {
+		// Warn about read-only user directories
+    	{    		
+    		File userDir = getUserDirectory();
+    		String header = null;
+    		if (!userDir.exists()) header = new String("Unable to create user directory");
+    		else if (!userDir.canWrite()) header = new String("Unable to write to user directory");
+    		else if (!userDir.isDirectory()) header = new String("User directory must be a directory");
+    		if (header != null) {
+    			Base.showMessage(header, 
+    					"<html><body>ReplicatorG can not write to the directory "+userDir.getAbsolutePath()+".<br>" +
+    					"Some functions of ReplicatorG, like toolpath generation and firmware updates,<br>" +
+    					"require ReplicatorG to write data to this directory.  You should end this<br>"+
+    					"session, change the permissions on this directory, and start again."
+    					);
+    		}
+    	}
+		// Warn about read-only replicatorG directories
+    	{
+    		File repGDir = getApplicationDirectory();
+    		if (!repGDir.canWrite()) {
+    			Base.showMessage("ReplicatorG directory is read-only",
+    					"<html><body>ReplicatorG can not write to the directory "+repGDir.getPath()+".<br>" +
+    					"You may be running ReplicatorG from an archive or other read-only directory.<br>" +
+    					"Please quit ReplicatorG and extract it to a writeable location, then start again.");
+    		}
 
+    	}
+	}
 	/**
 	 * 
 	 * @param cleanPrefs Before starting ReplicatorG proper, erase the user preferences.
@@ -560,6 +569,7 @@ public class Base {
 				
 				// show the window
 				editor.setVisible(true);
+				checkDirectories();
 				UpdateChecker.checkLatestVersion(editor);
 		    }
 		});
@@ -841,6 +851,9 @@ public class Base {
 	 * bummer, but something to notify the user about.
 	 */
 	static public void showMessage(String title, String message) {
+		if (notificationHandler == null) { 
+			notificationHandler = NotificationHandler.Factory.getHandler(null, false);
+		}		
 		notificationHandler.showMessage(title,message);
 	}
 
@@ -848,7 +861,9 @@ public class Base {
 	 * Non-fatal error message with optional stack trace side dish.
 	 */
 	static public void showWarning(String title, String message, Exception e) {
-
+		if (notificationHandler == null) { 
+			notificationHandler = NotificationHandler.Factory.getHandler(null, false);
+		}
 		notificationHandler.showWarning(title, message, e);
 		
 		if (e != null)
