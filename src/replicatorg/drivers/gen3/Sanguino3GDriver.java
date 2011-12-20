@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Vector;
@@ -1926,7 +1927,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return null;
 	}
 
-	public EnumSet<AxisId> getInvertedParameters() {
+	public EnumSet<AxisId> getInvertedAxes() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(
 				Sanguino3GEEPRPOM.EEPROM_AXIS_INVERSION_OFFSET, 1);
@@ -1946,7 +1947,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return r;
 	}
 
-	public void setInvertedParameters(EnumSet<AxisId> axes) {
+	public void setInvertedAxes(EnumSet<AxisId> axes) {
 		byte b[] = new byte[1];
 		if (axes.contains(AxisId.X))
 			b[0] = (byte) (b[0] | (0x01 << 0));
@@ -2602,4 +2603,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 		throw new UnsupportedOperationException("Get Stored Stepper Voltage not supported in Sanguino3GDriver");
 	}
 
+	@Override
+	public EnumMap<AxisId, String> getAxisAlises() {
+		/// Returns a set of Axes that are overridden or hijacked, 
+		/// and a string to indicate what they are overridden or hijacked for.
+		return new EnumMap<AxisId,String>(AxisId.class);
+	}
 }

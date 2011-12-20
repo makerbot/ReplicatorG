@@ -265,7 +265,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		Set<AxisId> invertedAxes = EnumSet.noneOf(AxisId.class);
 		if(onboardParam != null )
 		{
-			invertedAxes = onboardParam.getInvertedParameters();
+			invertedAxes = onboardParam.getInvertedAxes();
 		}
 		setLayout(new MigLayout("gap 0, ins 0"));
 		

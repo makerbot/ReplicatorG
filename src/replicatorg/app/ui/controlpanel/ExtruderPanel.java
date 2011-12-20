@@ -197,7 +197,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder. (it's not!)
-			if ((tool.getMotorStepperAxis() == null) && 
+			if ((tool.getMotorStepperAxisName() == null) && 
 					!(tool.motorHasEncoder() || tool.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
@@ -218,7 +218,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				add(label);
 				add(field,"wrap");
 
-				if (this.toolModel.getMotorStepperAxis() != null) {
+				if (this.toolModel.getMotorStepperAxisName() != null) {
 					label = makeLabel("Extrude duration");
 				
 					JComboBox timeList = new JComboBox(extrudeTimeStrings);
@@ -234,7 +234,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			// create our motor options
 			JLabel motorEnabledLabel = makeLabel("Motor Control");
 			
-			if (tool.motorHasEncoder() || (tool.motorIsStepper() && this.toolModel.getMotorStepperAxis() != null)) {
+			if (tool.motorHasEncoder() || (tool.motorIsStepper() && this.toolModel.getMotorStepperAxisName() != null)) {
 				JButton motorReverseButton = new JButton("reverse");
 				motorReverseButton.setActionCommand("reverse");
 				motorReverseButton.addActionListener(this);
@@ -638,7 +638,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 		/* Handle stepper extruder commands */
 		if (actionName.equals("forward")) {
-			if (this.toolModel.getMotorStepperAxis() != null) {
+			if (this.toolModel.getMotorStepperAxisName() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
 				// Reverted to one single command for RepRap5D driver
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
@@ -650,7 +650,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				}
 			}
 		} else if (actionName.equals("reverse")) {
-			if (this.toolModel.getMotorStepperAxis() != null) {
+			if (this.toolModel.getMotorStepperAxisName() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
 				// Reverted to one single command for RepRap5D driver
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
@@ -664,7 +664,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		} else if (actionName.equals("stop")) {
 			machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
 			
-			if (this.toolModel.getMotorStepperAxis() != null) {
+			if (this.toolModel.getMotorStepperAxisName() != null) {
 				machine.stopMotion();
 			}
 		}

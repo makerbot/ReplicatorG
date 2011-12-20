@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Vector;
@@ -474,7 +475,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 	
 	@Override
-	public EnumSet<AxisId> getInvertedParameters() {
+	public EnumSet<AxisId> getInvertedAxes() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(MightyBoardEEPROM.AXIS_INVERSION,1);
 		EnumSet<AxisId> r = EnumSet.noneOf(AxisId.class);
@@ -492,7 +493,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 	@Override
-	public void setInvertedParameters(EnumSet<AxisId> axes) {
+	public void setInvertedAxes(EnumSet<AxisId> axes) {
 		byte b[] = new byte[1];
 		if (axes.contains(AxisId.X)) b[0] = (byte)(b[0] | (0x01 << 0));
 		if (axes.contains(AxisId.Y)) b[0] = (byte)(b[0] | (0x01 << 1));
@@ -1139,10 +1140,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 //		super.setMotorRPM(rpm); TODO: this should be setMotorRPM running? 
 //				check read value vs running/tested value
 	}
-
-	
-
-	
 }
 
 
