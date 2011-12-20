@@ -211,7 +211,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 				for(ToolModel t : tools)
 				{
 					double temp= t.getCurrentTemperature();
-					tempString += String.format("Toolhead "+t.getIndex()+": %1$3.1f\u00B0C  ", temp);
+					tempString += String.format(" "+t.getName()+": %1$3.1f\u00B0C  ", temp);
 					if(t.hasHeatedPlatform())
 					{
 						double ptemp = t.getPlatformCurrentTemperature();

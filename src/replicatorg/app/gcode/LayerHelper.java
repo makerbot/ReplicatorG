@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
-import replicatorg.machine.model.Toolheads;
+import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.machine.model.WipeModel;
 
 /**
@@ -22,7 +22,7 @@ public class LayerHelper {
 	/**
 	 * <code>currentToolhead</code> holds a Toolheads enum representing the current Toolhead, this is checked to see whether a toolchange is necessary
 	 */
-	private Toolheads currentToolhead;
+	private ToolheadAlias currentToolhead;
 	/**
 	 * Holds the ArrayList of layers for the primary gcode
 	 */
@@ -50,7 +50,7 @@ public class LayerHelper {
 		this.useWipes = useWipes;
 		this.mergeSupport = mergeSupport;
 		
-		currentToolhead = Toolheads.LEFT;
+		currentToolhead = ToolheadAlias.LEFT;
 		
 	}
 	/**
@@ -90,7 +90,7 @@ public class LayerHelper {
 	
 	//Why do these methods have different effects?
 	//why does the second add getFirstMove()?
-	public ArrayList<String> toolChange(Toolheads destinationTool, float LayerHeight)
+	public ArrayList<String> toolChange(ToolheadAlias destinationTool, float LayerHeight)
 	{
 		 //calls will langfords toolchange
 		//System.out.println("destination toolhead " + destinationTool + "curent toolhead " + currentToolhead);
@@ -99,7 +99,7 @@ public class LayerHelper {
 
 		return completeToolChange(destinationTool, LayerHeight);
 	}
-	public ArrayList<String> toolChange(Toolheads destinationTool, Layer a)
+	public ArrayList<String> toolChange(ToolheadAlias destinationTool, Layer a)
 	{
 		////System.out.println("dest " + destinationTool);
 		currentToolhead = destinationTool;
@@ -131,7 +131,7 @@ public class LayerHelper {
 		}
 		//	System.out.println("T0 maxheight: " + maxHeight0 + " T1 maxheight: " + maxHeight1 + "BetterMaxHeight" + maxHeight);
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
-		merged.addAll(toolChange(Toolheads.LEFT, 0.6f)); //insures we start with right offset and nozzles start supaclean
+		merged.addAll(toolChange(ToolheadAlias.LEFT, 0.6f)); //insures we start with right offset and nozzles start supaclean
 
 		for(float i = 0; i < maxHeight - .008; i += tolerance)
 		{
@@ -145,7 +145,7 @@ public class LayerHelper {
 				{
 					System.out.println("mergeSupport is: ON");
 					//currentToolhead = Toolheads.Primary; //1=A=Primary=Left
-					merged.addAll(toolChange(Toolheads.LEFT, i));
+					merged.addAll(toolChange(ToolheadAlias.LEFT, i));
 					//2=B=Primary=Right
 				}
 				//System.out.println("non null layers at " + i);
@@ -162,13 +162,13 @@ public class LayerHelper {
 				{
 					//System.out.println("a is real b is null" + i);
 					//setCurrentFeedRate(b.getCommands());
-					merged.addAll(parseLayer(a, Toolheads.LEFT));
+					merged.addAll(parseLayer(a, ToolheadAlias.LEFT));
 				}
 				else if(b != null)
 				{
 					//System.out.println("b is real a is null" + i);
 					//setCurrentFeedRate(a.getCommands());
-					merged.addAll(parseLayer(b, Toolheads.RIGHT));
+					merged.addAll(parseLayer(b, ToolheadAlias.RIGHT));
 				}
 			}
 		}
@@ -197,33 +197,33 @@ public class LayerHelper {
 		}
 		return " ";
 	}
-	private  ArrayList<String> parseLayer(Layer a, Toolheads destTool)
+	private  ArrayList<String> parseLayer(Layer a, ToolheadAlias destTool)
 	{
 		//	setCurrentFeedRate(a.getCommands());
 		ArrayList<String> completeLayer = new ArrayList<String>();
 		//System.out.println("curTool " + currentToolhead + " desttool " + destTool + "linenum " + a.getHeight());
-		if(destTool == Toolheads.LEFT)
+		if(destTool == ToolheadAlias.LEFT)
 		{
-			if(currentToolhead == Toolheads.LEFT)
+			if(currentToolhead == ToolheadAlias.LEFT)
 			{
 				//System.out.println(a.getCommands());
 				completeLayer.addAll(a.getCommands());
 			}
-			else if(currentToolhead == Toolheads.RIGHT)
+			else if(currentToolhead == ToolheadAlias.RIGHT)
 			{
-				completeLayer.addAll(toolChange(Toolheads.LEFT, a));
+				completeLayer.addAll(toolChange(ToolheadAlias.LEFT, a));
 				completeLayer.addAll(a.getCommands());
 			}
 		}
-		else if(destTool == Toolheads.RIGHT)
+		else if(destTool == ToolheadAlias.RIGHT)
 		{
-			if(currentToolhead == Toolheads.RIGHT)
+			if(currentToolhead == ToolheadAlias.RIGHT)
 			{
 				completeLayer.addAll(a.getCommands());
 			}
-			else if(currentToolhead == Toolheads.LEFT)
+			else if(currentToolhead == ToolheadAlias.LEFT)
 			{
-				completeLayer.addAll(toolChange(Toolheads.RIGHT, a));
+				completeLayer.addAll(toolChange(ToolheadAlias.RIGHT, a));
 				completeLayer.addAll(a.getCommands());
 			}
 		}
@@ -294,18 +294,18 @@ public class LayerHelper {
 		ArrayList<String> cmds = new ArrayList<String>();
 		//System.out.println(a.getHeight());
 		cmds.add("(<layer> " + nf.format(a.getHeight()) + " )");
-		if(currentToolhead == Toolheads.LEFT)
+		if(currentToolhead == ToolheadAlias.LEFT)
 		{
 			//setCurrentFeedRate(b.getCommands());
 			cmds.addAll(a.getCommandsWithoutLayerTag());
-			cmds.addAll(toolChange(Toolheads.RIGHT, a));
+			cmds.addAll(toolChange(ToolheadAlias.RIGHT, a));
 			cmds.addAll(b.getCommandsWithoutLayerTag());
 		}
-		else if(currentToolhead == Toolheads.RIGHT)
+		else if(currentToolhead == ToolheadAlias.RIGHT)
 		{
 			//setCurrentFeedRate(a.getCommands());
 			cmds.addAll(b.getCommandsWithoutLayerTag());
-			cmds.addAll(toolChange(Toolheads.LEFT, b));
+			cmds.addAll(toolChange(ToolheadAlias.LEFT, b));
 			cmds.addAll(a.getCommandsWithoutLayerTag());
 		}
 		cmds.add("(</layer>)");
@@ -419,14 +419,14 @@ public class LayerHelper {
 	 * @param layer_height this is the layer height to do it at
 	 * @return
 	 */
-	public  ArrayList<String> completeToolChange(Toolheads nextTool, float layer_height) {
+	public  ArrayList<String> completeToolChange(ToolheadAlias nextTool, float layer_height) {
 		ArrayList<String> targetCode = new ArrayList<String>();
-		Toolheads currentTool = null;
+		ToolheadAlias currentTool = null;
 
-		if (nextTool == Toolheads.LEFT) { 
-			currentTool = Toolheads.RIGHT;
-		} else if (nextTool == Toolheads.RIGHT) { 
-			currentTool = Toolheads.LEFT;
+		if (nextTool == ToolheadAlias.LEFT) { 
+			currentTool = ToolheadAlias.RIGHT;
+		} else if (nextTool == ToolheadAlias.RIGHT) { 
+			currentTool = ToolheadAlias.LEFT;
 		}
 		int nextToolnum = nextTool.number;
 		int currentToolnum = currentTool.number;

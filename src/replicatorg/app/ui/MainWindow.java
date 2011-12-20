@@ -136,7 +136,7 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
-import replicatorg.machine.model.Toolheads;
+import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
 import replicatorg.model.BuildElement;
@@ -1013,7 +1013,7 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
-				DualStrusionWorker.changeToolHead(build.getCode().file, Toolheads.LEFT);
+				DualStrusionWorker.changeToolHead(build.getCode().file, ToolheadAlias.LEFT);
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();
@@ -1030,7 +1030,7 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
-				DualStrusionWorker.changeToolHead(build.getCode().file, Toolheads.RIGHT);
+				DualStrusionWorker.changeToolHead(build.getCode().file, ToolheadAlias.RIGHT);
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();
@@ -3145,12 +3145,12 @@ ToolpathGenerator.GeneratorListener
 			boolean printOMaticEnabled  = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
 			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
 			
-			Toolheads switchTo = null;
+			ToolheadAlias switchTo = null;
 			
 			if(extruderChoice.equals("right"))
-				switchTo = Toolheads.RIGHT;
+				switchTo = ToolheadAlias.RIGHT;
 			else if(extruderChoice.equals("left"))
-				switchTo = Toolheads.LEFT; 
+				switchTo = ToolheadAlias.LEFT; 
 			else if(extruderChoice.equals("does not exist")) {
 				Base.logger.severe("No toolhead selected, cannot replace toolhead");
 				return;
