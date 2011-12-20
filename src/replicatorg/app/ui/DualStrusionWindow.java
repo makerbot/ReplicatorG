@@ -476,7 +476,6 @@ public class DualStrusionWindow extends JFrame{
 		} 
 	}
 	
-
 	private static String getExtension(String path)
 	{
 		int i = path.lastIndexOf(".");
@@ -504,9 +503,10 @@ public class DualStrusionWindow extends JFrame{
 			
 		// the two consecutive poll()s pull what are the only two gcode files
 		DualStrusionConstruction dcs = new DualStrusionConstruction(gcodes.poll(), gcodes.poll(), dest, repStart, repEnd, uWipe);
+		dcs.combine();
 		result = dcs.getCombinedFile();
 		
-		//TED: do we need to do post-processing here
+		//TED: do we need to do post-processing here?
 		// we shouldn't?
 
 		Base.logger.log(Level.FINE, "Finished DualStrusionWindow's part");
