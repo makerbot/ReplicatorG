@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GCode {
+public class GCodeCommand {
 
 	// These are the letter codes that we understand
 	static protected char[] codes = { 
@@ -37,7 +37,7 @@ public class GCode {
 	// The set of parameters in this GCode
 	private List<gCodeParameter> parameters;
 
-	public GCode(String command) {
+	public GCodeCommand(String command) {
 		// Copy over the command
 		this.command = new String(command);
 		

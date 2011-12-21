@@ -60,14 +60,14 @@ import java.io.File;
 import java.io.IOException;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
@@ -136,6 +136,7 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
+import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
@@ -146,6 +147,8 @@ import replicatorg.plugin.toolpath.ToolpathGenerator;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory.ToolpathGeneratorDescriptor;
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgePostProcessor;
 import replicatorg.uploader.FirmwareUploader;
 import replicatorg.app.ui.onboard.OnboardParametersWindow;
 
@@ -585,6 +588,42 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
+
+		if(generator instanceof SkeinforgeGenerator) {
+			// Here we'll do the setup for the post-processor
+			//Let's figure out which post-processing steps need to be taken
+			Set<String> postProcessingSteps = new TreeSet<String>();
+
+			// Set the target machine type
+			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
+				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_REPLICATOR);
+			else if(machineLoader.getMachineInterface().getMachineType() == MachineType.THINGOMATIC)
+				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_TOM);
+			else if(machineLoader.getMachineInterface().getMachineType() == MachineType.CUPCAKE)
+				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_CUPCAKE);
+			
+			if (isDualDriver()) {
+				boolean printOMaticEnabled  = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
+				
+				//Figure out if we're looking to do a toolhead swap
+				String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
+				
+				if(!printOMaticEnabled)
+					; //NOP - only do these modifications if POM is on
+				else if(extruderChoice.equalsIgnoreCase("right"))
+					postProcessingSteps.add(SkeinforgePostProcessor.TARGET_TOOLHEAD_RIGHT);
+				else if(extruderChoice.equalsIgnoreCase("left"))
+					postProcessingSteps.add(SkeinforgePostProcessor.TARGET_TOOLHEAD_LEFT);
+				
+			}
+			
+			((SkeinforgeGenerator) generator).setPostProcessor(
+					new SkeinforgePostProcessor((SkeinforgeGenerator)generator, 
+							machineLoader.getMachineInterface().getModel().getStartCode(),
+							machineLoader.getMachineInterface().getModel().getEndCode(),
+							postProcessingSteps));
+		}
+
 		ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(this, generator, build, skipConfig);
 		tgt.addListener(this);
 		tgt.start();
@@ -3132,120 +3171,6 @@ ToolpathGenerator.GeneratorListener
 		setCurrentElement(header.getSelectedElement());
 	}
 	
-	/**
-	 * This function takes standard skeinforge output, and converts it 
-	 * to be proper code for running a single material build on a dual material machine
-	 * 
-	 * @param source file containing single extruder gcode
-	 */
-
-	public void singleMaterialDualstrusionModifications(File source)
-	{
-		try
-		{
-			boolean printOMaticEnabled  = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
-			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
-			
-			ToolheadAlias switchTo = null;
-			
-			if(extruderChoice.equals("right"))
-				switchTo = ToolheadAlias.RIGHT;
-			else if(extruderChoice.equals("left"))
-				switchTo = ToolheadAlias.LEFT; 
-			else if(extruderChoice.equals("does not exist")) {
-				Base.logger.severe("No toolhead selected, cannot replace toolhead");
-				return;
-			}
-			
-			if(printOMaticEnabled == true)
-			{
-				Base.logger.finer("performing " + extruderChoice + " ops");
-				DualStrusionWorker.changeToolHead(build.getCode().file, switchTo);
-				handleOpen2(build.getCode().file.getAbsolutePath() );
-			}
-			else {
-				Base.logger.finer("cannot use Dual Extrusion without Print-O-Matic");						
-			}
-		}
-		catch(NullPointerException e)
-		{
-			// This case happens often when generating gcode and dual Mk7's are selected
-			Base.logger.severe("Error doing toolhead update in generationComplete" + e);
-		}
-	}
-	
-	/**
-	 * This is a miserable hack. So ashamed!
-	 * @param source
-	 */
-	public void replaceStartAndEndGCode(File source)
-	{
-		// for now we assume that the first line of gcode is the location of the profile
-		ArrayList<String> sourceCode = DualStrusionWorker.readFiletoArrayList(source);
-		
-		String path = sourceCode.remove(0);
-		path = path.replace("(", "");
-		path = path.replace(")", "");
-		path = path.concat("/alterations");
-		
-		
-		// load start and end from profile
-		// IMPORTANT: I'm using the string literal "start.gcode" because I know what my start & end are called,
-		//  but that isn't necessarily the name of everyone else's start code, the name used can actually be read
-		//  from the profile (though the place where it is specified may change from one sf version to the next)
-		ArrayList<String> profileStart = DualStrusionWorker.readFiletoArrayList(new File(path+"/start.gcode"));
-		ArrayList<String> profileEnd = DualStrusionWorker.readFiletoArrayList(new File(path+"/end.gcode"));
-		
-		// remove start and end
-		ListIterator<String> sourceIt = sourceCode.listIterator();
-		
-		//remove start
-		ListIterator<String> startIt = profileStart.listIterator();
-		String firstStartLine = startIt.next();
-		// find the beginning of start code in source
-		while(! sourceIt.next().equals(firstStartLine));
-		sourceIt.remove();
-		
-		// we just assume that start is the same length as it was,
-		// but we don't check for exact matches, because some other modification may have been done
-		for(; startIt.hasNext();)
-		{
-			sourceIt.next();
-			startIt.next();
-			sourceIt.remove();
-		}
-		
-		// do the same for the end
-		
-		ListIterator<String> endIt = profileEnd.listIterator();
-		String firstEndLine = endIt.next();
-		// find the beginning of start code in source
-		while(! sourceIt.next().equals(firstEndLine));
-		sourceIt.remove();
-		
-		// we just assume that end is the same length as it was,
-		// but we don't check for exact matches, because some other modification may have been done
-		for(; endIt.hasNext(); )
-		{
-			sourceIt.next();
-			endIt.next();
-			sourceIt.remove();
-		}
-		
-		// get our new start and end
-		// again, using hard-coded locations where I shouldn't
-		ArrayList<String> machineStart = DualStrusionWorker.readFiletoArrayList(new File("machines/replicator/start.gcode"));
-		ArrayList<String> machineEnd = DualStrusionWorker.readFiletoArrayList(new File("machines/replicator/end.gcode"));
-		
-		sourceCode.addAll(0, machineStart);
-		sourceCode.addAll(machineEnd);
-		
-		DualStrusionWorker.writeArrayListtoFile(sourceCode, build.getCode().file);
-		
-		// 
-		handleOpen2(build.getCode().file.getAbsolutePath());
-	}
-	
 	/** Function called automatically when new gcode generation completes
 	 *  does post-processing for newly created gcode
 	 * @param completion
@@ -3257,19 +3182,6 @@ ToolpathGenerator.GeneratorListener
 		if (completion == Completion.SUCCESS) {
 			if (build.getCode() != null) {
 				setCode(build.getCode());
-			}
-			
-			/// a dual extruder machine is selected, start/end gcode must be updated accordingly
-			//TODO: this seems to be causing two gcode tabs containing the same gcode to appear
-			// but only when there is no gcode tab open already. they even seem to share the scrollbar?
-			if (isDualDriver()) {
-				singleMaterialDualstrusionModifications(build.getCode().file);
-			}
-			
-			// there should be a condition here?
-			if(true)
-			{
-				replaceStartAndEndGCode(build.getCode().file);
 			}
 			
 			buttons.updateFromMachine(machineLoader.getMachineInterface());

@@ -36,6 +36,7 @@ $Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
  */
 import java.awt.Container;
 import java.awt.Desktop;
+import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -380,6 +381,15 @@ public class DualStrusionWindow extends JFrame{
 			
 			final JFrame progress = new JFrame("STL to GCode Progress");
 			final ToolpathGenerator gen = ToolpathGeneratorFactory.createSelectedGenerator();
+			
+			/*
+			 * I think we can change some skeinforge preferences in here:
+			 *
+			List p = ((SkeinforgeGenerator)gen).getPreferences();
+			p.remove(arg0);
+			p.add(arg0);
+			 //*/
+			
 			final Build b = new Build(toBuild.getAbsolutePath());
 			final ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(progress, gen, b);
 			
@@ -414,7 +424,7 @@ public class DualStrusionWindow extends JFrame{
 		catch(IOException e)
 		{
 			Base.logger.log(Level.SEVERE, "cannot read stl! Aborting dualstrusion generation, see log level FINEST for more details.");
-			Base.logger.log(Level.FINEST, ""+e);
+			Base.logger.log(Level.FINEST, "", e);
 			
 		} 
 	}

@@ -274,7 +274,7 @@ public class DualStrusionWorker {
 		
 		for(String line : oldGcode)
 		{
-			GCode g = new GCode(line);
+			GCodeCommand g = new GCodeCommand(line);
 
 			// replace the first toolhead call with the correct one
 			// removes every following toolhead call

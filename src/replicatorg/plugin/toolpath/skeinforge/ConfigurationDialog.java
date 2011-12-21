@@ -102,7 +102,7 @@ class ConfigurationDialog extends JDialog {
 		loadList(prefPulldown);
 		add(prefPulldown, "wrap, growx");
 
-		for (SkeinforgePreference preference: parentGenerator.preferences) {
+		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
 			add(preference.getUI(), "wrap");
 		}
 

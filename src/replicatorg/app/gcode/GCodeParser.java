@@ -326,7 +326,7 @@ public class GCodeParser {
 	public boolean parse(String cmd, Queue< DriverCommand > commandQueue) {
 		
 		// First, parse the GCode string into an object we can query.
-		GCode gcode = new GCode(cmd);
+		GCodeCommand gcode = new GCodeCommand(cmd);
 
 		// Now, convert the GCode instruction into a series of driver commands,
 		// that will be executed by execute()
@@ -361,7 +361,7 @@ public class GCodeParser {
 		return value;
 	}
 
-	private EnumSet<AxisId> getAxes(GCode gcode) {
+	private EnumSet<AxisId> getAxes(GCodeCommand gcode) {
 		EnumSet<AxisId> axes = EnumSet.noneOf(AxisId.class);
 
 		if (gcode.hasCode('X')) axes.add(AxisId.X);
@@ -373,7 +373,7 @@ public class GCodeParser {
 		return axes;
 	}
 
-	private void buildMCodes(GCode gcode, Queue< DriverCommand > commands) throws GCodeException {
+	private void buildMCodes(GCodeCommand gcode, Queue< DriverCommand > commands) throws GCodeException {
 		// If this machine handles multiple active toolheads, we always honor a T code
 		// as being a annotation to send the given command to the given toolheads.  Be
 		// aware that appending a T code to an M code will not necessarily generate a
@@ -680,7 +680,7 @@ public class GCodeParser {
 		}
 	}
 
-	private void buildGCodes(GCode gcode, Queue< DriverCommand > commands) throws GCodeException {
+	private void buildGCodes(GCodeCommand gcode, Queue< DriverCommand > commands) throws GCodeException {
 		if (! gcode.hasCode('G')) {
 			throw new GCodeException("Not a G code!");
 		}

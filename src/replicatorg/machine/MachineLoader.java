@@ -44,7 +44,7 @@ import replicatorg.drivers.Driver;
 			if(singletonMI != null && machineType.equals(singletonMIType) ) {
 				return singletonMI;
 			}
-			//if we have noting loaded, try to load that machine
+			//if we have nothing loaded, try to load that machine
 			else if (singletonMI == null || machineType.equals("") ){
 				singletonMI = MachineFactory.load(machineType, callbackHandler);
 				if(singletonMI != null)
