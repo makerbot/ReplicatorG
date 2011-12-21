@@ -132,7 +132,7 @@ public class LayerHelper {
 		//merged.addAll(toolChange(currentToolhead, 0.45f));
 		merged.addAll(toolChange(Toolheads.PRIMARY, 0.6f)); //insures we start with right offset and nozzles start supaclean
 
-		for(float i = 0; i < maxHeight - .008; i += tolerance)
+		for(float i = 0; i < maxHeight; i += tolerance)
 		{
 
 			//System.out.println("checking " + i);
