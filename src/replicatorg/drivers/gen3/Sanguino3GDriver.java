@@ -466,6 +466,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return finished;
 	}
 
+	
+	
 	public boolean isBufferEmpty() {
 		// TODO: Make sure this is right
 		PacketBuilder pb = new PacketBuilder(
@@ -896,6 +898,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		}
 	}
 
+	
 	public void selectTool(int toolIndex) throws RetryException {
 		Base.logger.fine("Selecting tool #" + toolIndex);
 
@@ -908,6 +911,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.selectTool(toolIndex);
 	}
 
+	
 	@Deprecated
 	public void setMotorRPM(double rpm) throws RetryException {
 		setMotorRPM( rpm, machine.currentTool().getIndex() );
