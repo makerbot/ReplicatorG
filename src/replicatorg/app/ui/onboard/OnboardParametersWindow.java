@@ -1,4 +1,4 @@
-package replicatorg.app.ui;
+package replicatorg.app.ui.onboard;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;

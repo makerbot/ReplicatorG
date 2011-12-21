@@ -436,6 +436,16 @@ public interface Driver {
 	 * Heartbeat
 	 **************************************************************************/
 	public boolean heartbeat();
+
+	/**
+	 * Reads temperatures from all extruders
+	 */
+	public void readAllTemperatures();
+
+	/**
+	 * reads temperature from all heated build platforms
+	 */
+	public void readAllPlatformTemperatures();
 	
 
 

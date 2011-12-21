@@ -778,4 +778,16 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	public Point5d getMaximumFeedrates() {
 		return (getMachine().getMaximumFeedrates());
 	}
+
+	@Override
+	public void readAllTemperatures() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void readAllPlatformTemperatures() {
+		// TODO Auto-generated method stub
+		
+	}
 }

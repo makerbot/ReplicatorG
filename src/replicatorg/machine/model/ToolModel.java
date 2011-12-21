@@ -493,6 +493,8 @@ public class ToolModel
 	 */
 	public String getMotorStepperAxisName()
 	{
+		if (motorStepperAxis == null)
+			return ""; 
 		return motorStepperAxis.name();
 	}
 	
@@ -737,12 +739,18 @@ public class ToolModel
 		return true;
 	}
 
+	
 	public boolean hasExtruderThermistor() {
-		//HACKY HACK HACK!
-		if(this.name.contains("MightyBoard") || this.name.contains("Replicator"))
+		/// Mk6/7/8 use Thermocouple
+		String nameLower = this.name.toLowerCase();
+		if( nameLower.contains("Unicorn") )
 			return false;
-		if(this.name.contains("Thingomatic") )
+		else if(nameLower.contains("mk6") || nameLower.contains("mk7") || nameLower.contains("mk8"))
+			return false;
+		//Mk1 to ? use thermistor
+		else if( nameLower.contains("mk5") || nameLower.contains("mk5") || nameLower.contains("mk3") ||nameLower.contains("mk2"))
 			return true;
+		// default to false, sice we don't know
 		return false;
 	}
 

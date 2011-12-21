@@ -1383,10 +1383,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	@Deprecated
 	public void readTemperature() {
-		readTemperature(machine.currentTool().getIndex());
+		readAllTemperatures(); /// for safety, read all the temps we can
+		//readTemperature(machine.currentTool().getIndex());
 	}
 	
-	public void readAllTemperatures(int toolheadIndex) {
+	@Override
+	public void readAllTemperatures() {
 		Vector<ToolModel> tools = machine.getTools();
 
 		for (ToolModel t : tools) {
