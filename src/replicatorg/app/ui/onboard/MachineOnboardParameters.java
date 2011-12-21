@@ -1,7 +1,7 @@
 /**
  * 
  */
-package replicatorg.app.ui;
+package replicatorg.app.ui.onboard;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

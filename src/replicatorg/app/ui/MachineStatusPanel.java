@@ -170,7 +170,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 			}
 				
 			final String s = String.format(
-					"Commands:  %1$7d / %2$7d  (%3$3.2f%%)   |   Elapsed:  %4$s  |  Estimated Remaining:  %5$s",
+					"Commands: %1$7d / %2$7d  (%3$3.2f%%) | Elapsed: %4$s  |  Est. done in:  %5$s",
 					event.getLines(), event.getTotalLines(), 
 					percentComplete,
 					EstimationDriver.getBuildTimeString(event.getElapsed(), true),
@@ -205,8 +205,9 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 				Vector<ToolModel> tools = e.getSource().getModel().getTools();
 				String tempString = "";
 				
-				// This call makes sure our temperatures are up to date
-				e.getSource().getDriver().readPlatformTemperature();
+				// This call reads all temperatures for all heads
+				e.getSource().getDriver().readAllPlatformTemperatures();
+				e.getSource().getDriver().readAllTemperatures(); 
 				
 				for(ToolModel t : tools)
 				{

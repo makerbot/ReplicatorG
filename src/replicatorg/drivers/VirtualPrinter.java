@@ -649,4 +649,16 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 		return true;
 	}
 
+	@Override
+	public void readAllTemperatures() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void readAllPlatformTemperatures() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

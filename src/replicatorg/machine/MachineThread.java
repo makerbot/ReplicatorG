@@ -529,7 +529,8 @@ class MachineThread extends Thread {
 					// if we're not building, check temp
 					// if we are, check preferences for whether we want to check temp
 					if ((!state.isBuilding()) || Base.preferences.getBoolean("build.monitor_temp",false)) {
-						driver.readTemperature();
+						driver.readAllTemperatures();
+						driver.readAllPlatformTemperatures();
 						Vector<ToolModel> tools = controller.getModel().getTools();
 						for (ToolModel t : tools) {
 							controller.emitToolStatus(t);

@@ -147,6 +147,7 @@ import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory.ToolpathGeneratorDescriptor;
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
 import replicatorg.uploader.FirmwareUploader;
+import replicatorg.app.ui.onboard.OnboardParametersWindow;
 
 import com.apple.mrj.MRJAboutHandler;
 import com.apple.mrj.MRJApplicationUtils;
