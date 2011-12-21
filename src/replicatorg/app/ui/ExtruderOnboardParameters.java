@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -254,7 +255,7 @@ public class ExtruderOnboardParameters extends JPanel {
 			this.which = which;
 			this.toolIndex= toolIndex;
 			setLayout(new MigLayout());
-			setBorder(BorderFactory.createTitledBorder(name+" PID parameters"));
+			setBorder(BorderFactory.createTitledBorder( name ));
 			pField.setColumns(FIELD_WIDTH);
 			iField.setColumns(FIELD_WIDTH);
 			dField.setColumns(FIELD_WIDTH);
@@ -333,7 +334,7 @@ public class ExtruderOnboardParameters extends JPanel {
 		return panel;
 	}
 
-	public ExtruderOnboardParameters(OnboardParameters target, ToolModel tool) {
+	public ExtruderOnboardParameters(OnboardParameters target, ToolModel tool, JFrame parent) {
 		this.target = target;
 		int toolIndex = tool.getIndex();
 		
@@ -342,40 +343,40 @@ public class ExtruderOnboardParameters extends JPanel {
 			v = ((Sanguino3GDriver)target).getToolVersion();
 		}
 		
-//		JTabbedPane extruders = new JTabbedPane();
+		ThermistorTablePanel ttp;
 
-//		List<Integer> tools = target.toolheadsWithStoredData();
-//		
-//		for(int toolIndex : tools)
-//		{
-			JPanel tab = this; //new JPanel(new MigLayout());
-//			//int toolIndex = t.getIndex();
-			ThermistorTablePanel ttp;
+		if(tool.hasExtruderThermistor() )
+		{
 			ttp = new ThermistorTablePanel(OnboardParameters.EXTRUDER,"Extruder thermistor", toolIndex);
-			tab.add(ttp);
+			this.add(ttp);
 			commitList.add(ttp);
+		}
+		
+		if(tool.hasAutomatedPlatform()) {
 			ttp = new ThermistorTablePanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform thermistor", toolIndex);
-			tab.add(ttp,"wrap");
+			this.add(ttp,"wrap");
 			commitList.add(ttp);
-			
-			PIDPanel pidPanel = new PIDPanel(OnboardParameters.EXTRUDER,"Extruder", toolIndex);
-			tab.add(pidPanel,"growx");
+		}
+		
+		if(tool.hasExtruderThermocouple())
+		{
+			PIDPanel pidPanel = new PIDPanel(OnboardParameters.EXTRUDER,"Extruder PID parameters", toolIndex);
+			this.add(pidPanel,"growx");
 			commitList.add(pidPanel);
-			
-			if (v.atLeast(new Version(2,4))) {
-				PIDPanel pp = new PIDPanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform", toolIndex);
-				tab.add(pp,"growx,wrap");
-				commitList.add(pp);
-			}
-	
-			if (v.atLeast(new Version(2,9))) {
-				RegulatedCoolingFan rcf = new RegulatedCoolingFan(toolIndex);
-				tab.add(rcf,"span 2,growx,wrap");
-				commitList.add(rcf);
-			}
-//			
-//			extruders.addTab("Extruder " + toolIndex, tab);
-//		}
+		}	
+
+		if (v.atLeast(new Version(2,4))) {
+			PIDPanel pp = new PIDPanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform", toolIndex);
+			this.add(pp,"growx,wrap");
+			commitList.add(pp);
+		}
+
+		if (v.atLeast(new Version(2,9))) {
+			RegulatedCoolingFan rcf = new RegulatedCoolingFan(toolIndex);
+			this.add(rcf,"span 2,growx,wrap");
+			commitList.add(rcf);
+		}
+
 		
 		add(makeButtonPanel(),"span 2,newline");
 	}

@@ -133,10 +133,14 @@ public interface OnboardParameters {
 
 	/** Reset the onboard parameters on the motherboard to factory settings. */ 
 	void resetToFactory();
+	/** reset the onboard params to be totally blank */
+	void resetToBlank();
 
 	/** Reset the onboard parameters on the extruder controller to factory settings. */ 
 	void resetToolToFactory(int toolIndex);
+	void resetToolToBlank(int toolIndex);
 
+	
 	boolean hasVrefSupport();
 	/** set the Stepper Voltage Reference */
 	void setStoredStepperVoltage(int stepperId, int referenceValue);
