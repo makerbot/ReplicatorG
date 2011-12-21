@@ -2,13 +2,16 @@ package replicatorg.plugin.toolpath.skeinforge;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import replicatorg.app.gcode.GCodeHelper;
+import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
 import replicatorg.model.GCodeSource;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
 public class SkeinforgePostProcessor {
 
@@ -20,8 +23,10 @@ public class SkeinforgePostProcessor {
 	public static final String TARGET_TOOLHEAD_RIGHT = "target-toolhead-right";
 	public static final String TARGET_TOOLHEAD_DUAL= "target-toolhead-dual";
 
+	public static final String PREPEND_START = "prepend-start";
 	public static final String REPLACE_START = "replace-start";
 	public static final String REPLACE_END = "replace-end";
+	public static final String APPEND_END = "append-end";
 
 	public static final String MACHINE_TYPE_REPLICATOR = "machine-type-replicator";
 	public static final String MACHINE_TYPE_TOM = "machine-type-tom";
@@ -32,18 +37,37 @@ public class SkeinforgePostProcessor {
 	
 	private GCodeSource source;
 	
-	public SkeinforgePostProcessor(SkeinforgeGenerator generator, String...ops)
+	// Because I'm trying to do this quickly, I'm just throwing these in here. A better way to do it
+	// would be to replace the Set<String> with a Set<SFPostProcessorOptions> that would say, 
+	// for instance, {PREPEND, File toPrepend} or {REPLACE, GCodeSource toRemove, GCodeSource toAdd}
+	private File startCode, endCode;
+	public SkeinforgePostProcessor(SkeinforgeGenerator generator, File startCode, File endCode, String...ops)
 	{
-		this(generator, new TreeSet<String>(Arrays.asList(ops)));
+		this(generator, startCode, endCode, new TreeSet<String>(Arrays.asList(ops)));
 	}
-	public SkeinforgePostProcessor(SkeinforgeGenerator generator, Set<String> options)
+	public SkeinforgePostProcessor(SkeinforgeGenerator generator, File startCode, File endCode, Set<String> options)
 	{
 		this.generator = generator;
 		this.options = options;
+		this.startCode = startCode;
+		this.endCode = endCode;
 	}
 	
 	public BuildCode runPostProcessing()
 	{
+		// Check to see if we need to do anything based on selected prefs
+		List<SkeinforgePreference> prefs = generator.getPreferences();
+		
+		// look for prefs we care about
+		for(SkeinforgePreference sp : prefs)
+		{
+			if(sp.getName().equals("Use machine-specific start/end gcode"))
+			{
+				options.add(PREPEND_START);
+				options.add(APPEND_END);
+			}
+		}
+		
 		// Load our code to a source iterator
 		source = GCodeHelper.readFiletoGCodeSource(generator.output.file);
 
@@ -59,10 +83,14 @@ public class SkeinforgePostProcessor {
 			runToolheadSwap(ToolheadAlias.RIGHT);
 		
 		//Not sure if the start/end replacement should come before or after the toolhead swap
-		if(options.contains(REPLACE_START))
-			runStartReplacement();
-		if(options.contains(REPLACE_END))
-			runEndReplacement();
+//		if(options.contains(REPLACE_START))
+//			runStartReplacement();
+//		if(options.contains(REPLACE_END))
+//			runEndReplacement();
+		if(options.contains(PREPEND_START))
+			runPrepend(GCodeHelper.readFiletoGCodeSource(startCode));
+		if(options.contains(APPEND_END))
+			runAppend(GCodeHelper.readFiletoGCodeSource(endCode));
 
 		System.out.println("***********************************");
 		
@@ -115,4 +143,13 @@ public class SkeinforgePostProcessor {
 		source = GCodeHelper.replaceStartOrEndGCode(source, oldEnd, newEnd);
 	}
 	
+	private void runPrepend(GCodeSource newCode)
+	{
+		source = GCodeHelper.addCodeToSource(source, newCode, 0);
+	}
+	
+	private void runAppend(GCodeSource newCode)
+	{
+		source = GCodeHelper.addCodeToSource(source, newCode, source.getLineCount());
+	}
 }

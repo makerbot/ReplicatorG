@@ -89,6 +89,8 @@ public class MachineModel
 	
 	// our build volume
 	protected BuildVolume buildVolume;
+	
+	private MachineType machineType;
 
 	/*************************************
 	*  Creates the model object.
@@ -572,19 +574,15 @@ public class MachineModel
 	/*************************************
 	*  Gcode functions
 	*************************************/
-	public GCodeSource getStartCode() {
-		throw new UnsupportedOperationException("getStartCode() not yet implemented");
-//		return null;
+	public File getStartCode() {
+		return startCode;
 	}
-	public String getStartCodeLocation() {
-		return startCode.getAbsolutePath();
+	public File getEndCode() {
+		return endCode;
 	}
 	
-	public GCodeSource getEndCode() {
-		throw new UnsupportedOperationException("getStartCode() not yet implemented");
-//		return null;
+	public MachineType getMachineType() {
+		return machineType;
 	}
-	public String getEndCodeLocation() {
-		return endCode.getAbsolutePath();
-	}
+	
 }

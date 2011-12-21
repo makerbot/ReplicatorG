@@ -172,6 +172,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		public JComponent getUI();
 		public List<SkeinforgeOption> getOptions();
 		public String valueSanityCheck();
+		public String getName();
 	}
 	
 	public static class SkeinforgeChoicePreference implements SkeinforgePreference {
@@ -179,6 +180,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		private JPanel component;
 		private DefaultComboBoxModel model;
 		private String chosen;
+		private String name;
 		
 		public SkeinforgeChoicePreference(String name, final String preferenceName, String defaultState, String toolTip) {
 			component = new JPanel(new MigLayout("ins 5"));
@@ -188,6 +190,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			}
 			model = new DefaultComboBoxModel();
 			model.setSelectedItem(chosen);
+			this.name = name;
 			component.add(new JLabel(name));
 			JComboBox cb = new JComboBox(model);
 			component.add(cb);
@@ -232,6 +235,11 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			return null;
 		}
 
+		@Override
+		public String getName() {
+			return name;
+		}
+		
 	}
 	
 	protected static class SkeinforgeBooleanPreference implements SkeinforgePreference {
@@ -239,12 +247,14 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		private JCheckBox component;
 		private List<SkeinforgeOption> trueOptions = new LinkedList<SkeinforgeOption>();
 		private List<SkeinforgeOption> falseOptions = new LinkedList<SkeinforgeOption>();
+		private String name;
 		
 		public SkeinforgeBooleanPreference(String name, final String preferenceName, boolean defaultState, String toolTip) {
 			isSet = defaultState;
 			if (preferenceName != null) {
 				isSet = Base.preferences.getBoolean(preferenceName, defaultState);
 			}
+			this.name = name;
 			component = new JCheckBox(name, isSet);
 			component.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -276,6 +286,11 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		@Override
 		public String valueSanityCheck() {
 			return null;
+		}
+		
+		@Override
+		public String getName() {
+			return name;
 		}
 	}
 
@@ -568,9 +583,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 		if(postprocess != null)
 		{
-			System.out.println("pre-post-processor");
+			Base.logger.log(Level.FINER, "pre-post-processor");
 			postprocess.runPostProcessing();
-			System.out.println("post-post-processor");
+			Base.logger.log(Level.FINER, "post-post-processor");
 		}
 		
 		return output;

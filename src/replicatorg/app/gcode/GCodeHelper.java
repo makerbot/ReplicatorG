@@ -115,7 +115,7 @@ public class GCodeHelper {
 
 		return new StringListSource(newGCode);
 	}
-	// TODO: "reverse compatibility" -- remove this
+	// TODO: remove this -- "reverse compatibility"
 	public static void changeToolHead(File source, ToolheadAlias tool) {
 		writeGCodeSourcetoFile(changeToolHead(readFiletoGCodeSource(source), tool), source);
 	}
@@ -159,6 +159,15 @@ public class GCodeHelper {
 				newGCode.add(line);
 			}
 		}
+
+		return new StringListSource(newGCode);
+	}
+	
+	public static GCodeSource addCodeToSource(GCodeSource source, GCodeSource newSection, long location)
+	{
+		Vector<String> newGCode = new Vector<String>();
+
+//		newGCode.addAll(source.)
 
 		return new StringListSource(newGCode);
 	}

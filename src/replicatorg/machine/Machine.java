@@ -39,6 +39,7 @@ import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.model.MachineModel;
+import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.util.Point5d;
@@ -490,5 +491,11 @@ public class Machine implements MachineInterface {
 	// TODO: Drop this
 	public JobTarget getTarget() {
 		return machineThread.getTarget();
+	}
+	
+	@Override
+	public MachineType getMachineType()
+	{
+		return getModel().getMachineType();
 	}
 }

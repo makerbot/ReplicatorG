@@ -420,4 +420,10 @@ public class PrintOMatic implements SkeinforgePreference {
 		
 		return options;
 	}
+	
+	@Override
+	public String getName() {
+		return "Print-O-Matic";
+	}
+	
 }
