@@ -3,7 +3,9 @@
  */
 package replicatorg.model;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import replicatorg.app.syntax.JEditTextArea;
 
@@ -19,6 +21,7 @@ public class JEditTextAreaSource implements GCodeSource {
 		this.textarea = textarea;
 	}
 	
+	@Override
 	public Iterator<String> iterator() {
 		final JEditTextArea ta = this.textarea;
 		return new Iterator<String>() {
@@ -29,8 +32,17 @@ public class JEditTextAreaSource implements GCodeSource {
 		};
 	}
 	
+	@Override
 	public int getLineCount() {
 		return textarea.getLineCount();
+	}
+
+	@Override
+	public List<String> asList() {
+		List<String> result = new ArrayList<String>();
+		for(Iterator<String> i = iterator(); i.hasNext();)
+			result.add(i.next());
+		return result;
 	}
 
 	

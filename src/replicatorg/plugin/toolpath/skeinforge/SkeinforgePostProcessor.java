@@ -37,6 +37,7 @@ public class SkeinforgePostProcessor {
 	
 	private GCodeSource source;
 	
+	//TODO:
 	// Because I'm trying to do this quickly, I'm just throwing these in here. A better way to do it
 	// would be to replace the Set<String> with a Set<SFPostProcessorOptions> that would say, 
 	// for instance, {PREPEND, File toPrepend} or {REPLACE, GCodeSource toRemove, GCodeSource toAdd}
@@ -61,7 +62,10 @@ public class SkeinforgePostProcessor {
 		// look for prefs we care about
 		for(SkeinforgePreference sp : prefs)
 		{
-			if(sp.getName().equals("Use machine-specific start/end gcode"))
+			// This works because we know that in ToolpathGeneratorFactory options
+			// are only added for this pref if it's true
+			if(sp.getName().equals("Use machine-specific start/end gcode") &&
+				(!sp.getOptions().isEmpty()))
 			{
 				options.add(PREPEND_START);
 				options.add(APPEND_END);

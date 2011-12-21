@@ -163,11 +163,12 @@ public class GCodeHelper {
 		return new StringListSource(newGCode);
 	}
 	
-	public static GCodeSource addCodeToSource(GCodeSource source, GCodeSource newSection, long location)
+	public static GCodeSource addCodeToSource(GCodeSource source, GCodeSource newSection, int location)
 	{
 		Vector<String> newGCode = new Vector<String>();
 
-//		newGCode.addAll(source.)
+		newGCode.addAll(source.asList());
+		newGCode.addAll(location, newSection.asList());
 
 		return new StringListSource(newGCode);
 	}

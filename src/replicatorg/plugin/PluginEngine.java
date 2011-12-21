@@ -1,6 +1,8 @@
 package replicatorg.plugin;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import replicatorg.app.gcode.GCodeCommand;
@@ -63,6 +65,14 @@ public class PluginEngine implements GCodeSource {
 	
 	public Iterator<String> iterator() {
 		return new GCodeIterator(parent.iterator());
+	}
+
+	@Override
+	public List<String> asList() {
+		List<String> result = new ArrayList<String>();
+		for(Iterator<String> i = iterator(); i.hasNext();)
+			result.add(i.next());
+		return result;
 	}
 
 }

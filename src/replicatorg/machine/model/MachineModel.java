@@ -90,7 +90,7 @@ public class MachineModel
 	// our build volume
 	protected BuildVolume buildVolume;
 	
-	private MachineType machineType;
+	private MachineType machineType = null;
 
 	/*************************************
 	*  Creates the model object.
@@ -118,6 +118,7 @@ public class MachineModel
 	{
 		xml = node;
 		
+		parseType();
 		parseAxes();
 		parseClamps();
 		parseTools();
@@ -127,6 +128,25 @@ public class MachineModel
 		parseGCode();
 	}
 	
+
+	private void parseType() {
+		NodeList kids = xml.getChildNodes();
+
+		for (int j = 0; j < kids.getLength(); j++) {
+			Node kid = kids.item(j);
+
+			if (kid.getNodeName().equals("name")) {
+				String name = kid.getFirstChild().getNodeValue().trim();
+				if(name.startsWith("The Replicator"))
+					machineType = MachineType.THE_REPLICATOR;
+				else if(name.startsWith("Thingomatic"))
+					machineType = MachineType.THINGOMATIC;
+				else if(name.startsWith("Cupcake"))
+					machineType = MachineType.CUPCAKE;
+				return;
+			}
+		}
+	}
 	
 	private void parseExclusion()
 	{
