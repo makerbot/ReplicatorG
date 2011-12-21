@@ -1,5 +1,5 @@
 (**** beginning of start.gcode ****)
-(This file is for a single head on a MakerBot Thing-O-Matic II with Dual Extruders)
+(This file is for a single head on a MakerBot Replicator with Dual Extruders)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 G10 P1 X16.55 Y0 Z-0.3 (Designate T0 Offset)
@@ -17,6 +17,6 @@ G162 X Y F2500 (home XY axes maximum)
 M132 X Y Z A B (Recall stored home offsets for XYZAB axis)
 (**** end homing ****)
 G1 X0.0 Y0.0 Z0.0 (Go to center)
+M6 T0
+M6 T1
 (**** end of start.gcode ****)
-G1 X0 Y0
-G54
