@@ -37,6 +37,9 @@ public class MachineOnboardParameters extends JPanel {
 	private final JFrame parent;
 	
 	private JTextField machineNameField = new JTextField();
+	private static final String[] toolCountChoices = {"unavailable","1", "2"};
+	private JComboBox toolCountField = new JComboBox(toolCountChoices);
+	private JComboBox toolCountComboBox = new JComboBox();
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
 	private JCheckBox zAxisInvertBox = new JCheckBox();
@@ -91,6 +94,14 @@ public class MachineOnboardParameters extends JPanel {
 	
 	private void commit() {
 		target.setMachineName(machineNameField.getText());
+
+		if( target.hasToolCountOnboard() ) {
+			if (toolCountField.getSelectedIndex() > 0) 
+				target.setToolCountOnboard( toolCountField.getSelectedIndex() );
+			else 
+				target.setToolCountOnboard( -1 );
+		}
+		
 		EnumSet<AxisId> axesInverted = EnumSet.noneOf(AxisId.class);
 		if (xAxisInvertBox.isSelected()) axesInverted.add(AxisId.X);
 		if (yAxisInvertBox.isSelected()) axesInverted.add(AxisId.Y);
@@ -99,7 +110,8 @@ public class MachineOnboardParameters extends JPanel {
 		if (bAxisInvertBox.isSelected()) axesInverted.add(AxisId.B);
 		// V is in the 7th bit position, and it's set to NOT hold Z
 		// From the firmware: "Bit 7 is used for HoldZ OFF: 1 = off, 0 = on"
-		if (!zHoldBox.isSelected())      axesInverted.add(AxisId.V);
+		if (!zHoldBox.isSelected())      
+			axesInverted.add(AxisId.V);
 		target.setInvertedAxes(axesInverted);
 		{
 			int idx = endstopInversionSelection.getSelectedIndex();
@@ -153,6 +165,15 @@ public class MachineOnboardParameters extends JPanel {
 
 	private void loadParameters() {
 		machineNameField.setText(this.target.getMachineName());
+		
+		if(target.hasToolCountOnboard()){
+			int toolCount = target.toolCountOnboard();
+			if (toolCount == 1 || toolCount == 2) 
+				toolCountField.setSelectedIndex(toolCount); //'1' or '2'
+			else
+				toolCountField.setSelectedIndex(0);//'unknown'
+		}
+		
 		EnumSet<AxisId> invertedAxes = this.target.getInvertedAxes();
 		
 		xAxisInvertBox.setSelected(invertedAxes.contains(AxisId.X));
@@ -209,12 +230,16 @@ public class MachineOnboardParameters extends JPanel {
 		setLayout(new MigLayout("fill"));
 		EnumMap<AxisId, String> axesAltNamesMap = target.getAxisAlises();
 
-
 		add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
 		machineNameField.setColumns(MAX_NAME_LENGTH);
-		
 		add(machineNameField,"span 3, wrap");
 
+  		if( target.hasToolCountOnboard() ) {
+  			add(new JLabel("Reported Tool Count:"));
+  			add(toolCountField, "span 3, wrap");
+  		}
+		
+		
 		add(new JLabel("Invert X axis"));		
 		add(xAxisInvertBox,"span 3, wrap");
 		

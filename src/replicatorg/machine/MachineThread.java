@@ -707,6 +707,7 @@ class MachineThread extends Thread {
 				name = n;
 			}
 			else {
+				Base.logger.fine("No name on the machine. Using the XML name of the machine");
 				parseName(); // Use name from XML file instead of reusing name from last connected machine
 			}
 		}

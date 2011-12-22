@@ -49,7 +49,10 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 
 	// our firmware version info
 	private String firmwareName = "Unknown";
+	/// the 'proper name' of our bot. null indicates it is not yet read, or read failed
+	protected String botName = null;
 
+	
 	protected Version version = new Version(0,0);
 	protected Version preferredVersion = new Version(0,0);
 	protected Version minimumVersion = new Version(0,0);
@@ -200,6 +203,12 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 
 	public String getFirmwareInfo() {
 		return firmwareName + " v" + getVersion();
+	}
+	
+	public String getBotName(){
+		if ( botName != null ) 
+			return botName;
+		return "Unnamed Bot (a Sad Bot)";
 	}
 
 	public Version getVersion() {

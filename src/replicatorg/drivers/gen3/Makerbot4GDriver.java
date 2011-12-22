@@ -279,6 +279,8 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 		return map;
 	}
 
+	@Override 
+	public String getMachineType(){ return "Thing-O-Matic/CupCake CNC"; } 
 
 	
 }

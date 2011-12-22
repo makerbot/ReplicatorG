@@ -390,4 +390,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		machine.currentTool().setMotorSpeedReadingRPM(rpm);
 		return rpm;
 	}
+	
+	@Override 
+	public String getMachineType(){ return "Thing-O-Matic/CupCake CNC"; } 
 }

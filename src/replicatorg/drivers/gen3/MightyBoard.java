@@ -67,34 +67,14 @@ import replicatorg.util.Point5d;
 import replicatorg.drivers.gen3.*;
 import java.util.Hashtable;
 
-
-//enum EepromOffsets {
-//	
-////	final public static int EEPROM_CHECK_OFFSET = 0;
-//	EEPROM_VERSION(0x0000,2,"Eeprom Version info");
-//	AXIS_INVERSION(0x0002,1,
-//			"Axis N (where X=0, Y=1, etc.) is inverted if the Nth bit is set." +
-//			"Bit 7 is used for HoldZ OFF: 1 = off, 0 = on");
-//	
-//
-//	public final int offset;
-//	public final String info;
-//	
-//	/// standard constructor. 
-//	private EepromOffsets(int offset, int size, String info){
-//		this.offset = offset;
-//		this.byteSz = size;
-//		this.info = info;
-//	}
-//}
-
-final class PIDTermOffsets {
+/// EEPROM offsets for PID electronics control
+final class PIDTermOffsets implements EEPROMClass {
 	final static int P_TERM_OFFSET = 0x0000;
 	final static int I_TERM_OFFSET = 0x0002;
 	final static int D_TERM_OFFSET = 0x0004;
 };
 
-
+/// EEPROM offset class for toolhead info/data
 class ToolheadEEPROM implements EEPROMClass
 {
 	////Feature map: 2 bytes
@@ -121,6 +101,7 @@ class ToolheadEEPROM implements EEPROMClass
 	/// Padding: 6 empty bytes of space
 }
 
+
 class MightyBoardEEPROM implements EEPROMClass
 {
 	/// NOTE: this file needs to match the data in EepromMap.hh for all 
@@ -132,7 +113,6 @@ class MightyBoardEEPROM implements EEPROMClass
 	public static final int EEPROM_CHECK_HIGH = 0x78;
 	
 	public static final int MAX_MACHINE_NAME_LEN = 16; // set to 32 in firmware
-	
 	
 	final static class ECThermistorOffsets {
 	
@@ -172,20 +152,23 @@ class MightyBoardEEPROM implements EEPROMClass
 	/// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
 	final public static int AXIS_HOME_POSITIONS		= 0x000E;
 	/// Name of this machine: 32 bytes.
-	final public static int MACHINE_NAME				= 0x0022;
-	/// 50 bytes padding
+	final public static int MACHINE_NAME			= 0x0022;
+	/// Tool count : 2 bytes
+	final public static int TOOL_COUNT 				= 0x0042;
+	/// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4Bytes 
+	final public static int VID_PID_INFO			= 0x0044; 
+	/// 44 bytes padding
 	/// Thermistor table 0: 128 bytes
-	final public static int THERM_TABLE		= 0x0074;
+	final public static int THERM_TABLE				= 0x0074;
 	/// Padding: 8 bytes
 	// Toolhead 0 data: 26 bytes (see above)
-	final public static int T0_DATA_BASE		= 0x100;
+	final public static int T0_DATA_BASE			= 0x100;
 	// Toolhead 0 data: 26 bytes (see above)
-	final public static int T1_DATA_BASE		= 0x011C;
+	final public static int T1_DATA_BASE			= 0x011C;
 	/// axis lengths (mm) (6 bytes)
-	final public static int AXIS_LENGTHS	= 0x138;
-	/// hardare version id
-	final public static int HARDWARE_ID 				= 0x013E;
-	/// Ligth Effect table. 3 Bytes x 3 entries
+	final public static int AXIS_LENGTHS			= 0x138;
+	/// 2 bytes padding
+	/// Light Effect table. 3 Bytes x 3 entries
 	final public static int LED_STRIP_SETTINGS		= 0x0140;
 	/// Buzz Effect table. 4 Bytes x 3 entries
 	/// 1 byte padding for offsets
@@ -193,14 +176,64 @@ class MightyBoardEEPROM implements EEPROMClass
 	///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 	final public static int FIRST_BOOT_FLAG	= 0x0156;
 
-
-	
-	
 	/// start of free space
 	final public static int FREE_EEPROM_STARTS = 0x0158;
 
 }
 
+/**
+ * Enum for VendorID and ProductId comparison, 
+ * @author farmckon
+ *
+ */
+enum VidPid {
+	UNKNOWN (0X0000, 0X000),
+	MIGHTY_BOARD (0x23C1, 0xB404),
+	THE_REPLICATOR(0x23C1, 0xD314);
+
+	final int pid; //productId (same as USB product id)
+	final int vid; //vendorId (same as USB vendor id)
+	
+	private VidPid(int pid, int vid)
+	{
+		this.pid = pid;
+		this.vid = vid;
+	}
+	
+	/** Create a PID/VID if we know how to, 
+	 * otherwise return unknown.
+	 * @param bytes 4 byte array of PID/VID
+	 * @return
+	 */
+	public static VidPid getPidVid(byte[] bytes)
+	{
+		if (bytes != null && bytes.length >= 4){
+			int vid = ((int) bytes[0]) & 0xff;
+			vid += (((int) bytes[1]) & 0xff) << 8;
+			int pid = ((int) bytes[2]) & 0xff;
+			pid += (((int) bytes[3]) & 0xff) << 8;
+			for (VidPid known : VidPid.values())
+			{
+				if(known.equals(vid,pid)) return known; 
+			}
+		}
+		return VidPid.UNKNOWN;
+	}
+	
+	public boolean equals(VidPid VidPid){
+		if (VidPid.vid == this.vid && 
+			VidPid.pid == this.pid)
+			return true;
+		return false;
+	}
+	public boolean equals(int pid, int vid){
+		if (vid == this.vid && 
+			pid == this.pid)
+			return true;
+		return false;
+	}
+	
+}
 
 /**
  * Object for managing the connection to the MightyBoard hardware.
@@ -229,6 +262,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	private boolean eepromChecked = false;
 	
 	protected final static int DEFAULT_RETRIES = 5;
+	
+	private VidPid machineId = VidPid.UNKNOWN;
+	private int toolCountOnboard = -1; /// no count aka FFFF
 	
 	Version toolVersion = new Version(0,0);
 
@@ -290,8 +326,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 		//load our motor RPM from firmware if we can.
 		getMotorRPM();
+		//read our PID/VID if we can
+		readMachineVidPid();
 
-		//
+		// I have no idea why we still do this, we may want to test and refactor away
 		getSpindleSpeedPWM();
 		return true;
 	}
@@ -506,6 +544,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	@Override
 	public String getMachineName() {
+
+		if( botName != null )
+			return botName; 
+		
 		checkEEPROM();
 		
 		byte[] data = readFromEEPROM(MightyBoardEEPROM.MACHINE_NAME,
@@ -516,11 +558,12 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		try {
 			int len = 0;
 			while (len < MightyBoardEEPROM.MAX_MACHINE_NAME_LEN && data[len] != 0) len++;
-			return new String(data,0,len,"ISO-8859-1");
+			String name = new String(data,0,len,"ISO-8859-1");
+			this.botName = name;
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
-			return null;
 		}
+		return this.botName; ///may be null if name set failed
 	}
 
 
@@ -734,7 +777,38 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		b[0] = estop.getValue();
 		writeToEEPROM(MightyBoardEEPROM.ENDSTOP_INVERSION,b);
 	}
+		 
+	public void readMachineVidPid() {
+		checkEEPROM();
+		byte[] b = readFromEEPROM(MightyBoardEEPROM.VID_PID_INFO,4);
+		this.machineId = VidPid.getPidVid(b);
+	}
 	
+	
+	/** try to verify our acutal machine matches our selected machine
+	 * @param vid vendorId (same as usb vendorId)
+	 * @param pid product (same as usb productId)
+	 * @return true if we can verify this is a valid machine match
+	 */
+	@Override
+	public boolean verifyMachineId()
+	{
+		if ( this.machineId == VidPid.UNKNOWN ) {
+			readMachineVidPid();
+		}
+		if(this.machineId.equals(VidPid.MIGHTY_BOARD)) {
+			Base.logger.severe("You are running an unverified MightyBoard,");
+			Base.logger.severe("your machine is not a verified MakerBot Replicator");			
+			return true;
+		}
+		return this.machineId.equals(VidPid.THE_REPLICATOR);
+	}
+
+	@Override
+	public boolean canVerifyMachine() {
+		return true;
+	}
+
 
 	@Override
 	public boolean setConnectedToolIndex(int index) {
@@ -1171,6 +1245,42 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 	}
 	
+	@Override 
+	public String getMachineType(){
+		if (this.machineId.equals(VidPid.MIGHTY_BOARD))
+			return "MightyBoard"; 
+		else if (this.machineId.equals(VidPid.THE_REPLICATOR))
+			return "The Replicator"; 
+		return "MightyBoard(unverified)"; 			
+	} 
+	
+	
+	/// Returns the number of tools as saved on the machine (not as per XML count)
+	@Override 
+	public int toolCountOnboard() { 
+
+		if (toolCountOnboard == -1 ) {
+			byte[] toolCountByte = readFromEEPROM(MightyBoardEEPROM.TOOL_COUNT, 1) ;
+			if (toolCountByte != null && toolCountByte.length > 0 ) {
+				toolCountOnboard = toolCountByte[0];
+			}
+		}
+		return toolCountOnboard;
+	} 
+
+	/// Returns true of tool count is save on the machine  (not as per XML count)
+	@Override 
+	public boolean hasToolCountOnboard() {return true; }
+
+	/// Sets the number of tool count as saved on the machine (not as per XML count)
+	@Override 
+	public void setToolCountOnboard(int i){ 
+		byte b[] = {(byte)-1};
+		if (i == 1 ||  i == 2)		
+			b[0] = (byte)i;
+		writeToEEPROM(MightyBoardEEPROM.TOOL_COUNT,b);
+		
+	}; 
 }
 
 

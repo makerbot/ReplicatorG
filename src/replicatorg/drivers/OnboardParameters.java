@@ -30,6 +30,15 @@ public interface OnboardParameters {
 	String getMachineName();
 	void setMachineName(String machineName);
 	
+	/// Returns true if this machine can verify the connected hardware
+	/// is valid 
+	public boolean canVerifyMachine(); 
+	
+	/// Returns true if the connected machine is verified to be the 
+	/// proper type
+	public boolean verifyMachineId();
+
+	
 	double getAxisHomeOffset(int axis);
 	void setAxisHomeOffset(int axis, double d);
 	
@@ -156,4 +165,15 @@ public interface OnboardParameters {
 	}
 	
 	CommunicationStatistics getCommunicationStatistics();
+
+	String getMachineType();
+
+	/// Returns the number of tools as saved on the machine (not as per XML count)
+	int toolCountOnboard();
+
+	/// Returns true of tool count is save on the machine  (not as per XML count)
+	boolean hasToolCountOnboard();
+
+	/// Sets the number of tool count as saved on the machine (not as per XML count)
+	void setToolCountOnboard(int i);
 }

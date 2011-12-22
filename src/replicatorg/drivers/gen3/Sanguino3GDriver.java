@@ -2772,4 +2772,29 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return new EnumMap<AxisId,String>(AxisId.class);
 	}
 	
+	/// Returns true if this machine can verify the connected hardware
+	/// is valid 
+	@Override
+	public boolean canVerifyMachine() { return false; } 
+	
+	/// Returns true if the connected machine is verified to be the 
+	/// proper type
+	@Override
+	public boolean verifyMachineId() { return false; }
+
+	@Override 
+	public String getMachineType(){ return "MakerBot Sanguino"; } 
+	
+	/// Returns the number of tools as saved on the machine (not as per XML count)
+	@Override 
+	public int toolCountOnboard() { return 0; } 
+
+	/// Returns true of tool count is save on the machine  (not as per XML count)
+	@Override 
+	public boolean hasToolCountOnboard() {return false; }
+
+	/// Sets the number of tool count as saved on the machine (not as per XML count)
+	@Override 
+	public void setToolCountOnboard(int i){ }; 
+
 }
