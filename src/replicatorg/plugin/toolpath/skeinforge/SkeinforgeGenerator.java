@@ -589,4 +589,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		
 		return output;
 	}
+	
+	public BuildCode getGeneratedToolpath()
+	{
+		return output;
+	}
 }

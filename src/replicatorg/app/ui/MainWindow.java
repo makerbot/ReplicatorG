@@ -143,6 +143,7 @@ import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
 import replicatorg.model.BuildElement;
 import replicatorg.model.BuildModel;
+import replicatorg.model.GCodeSource;
 import replicatorg.model.JEditTextAreaSource;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
 import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorEvent;
@@ -169,8 +170,7 @@ ToolpathGenerator.GeneratorListener
 	 */
 	private static final long serialVersionUID = 4144538738677712284L;
 
-	static final String WINDOW_TITLE = "ReplicatorG" + " - "
-	+ Base.VERSION_NAME;
+	static final String WINDOW_TITLE = "ReplicatorG" + " - " + Base.VERSION_NAME;
 
 
 	final static String MODEL_TAB_KEY = "MODEL";
@@ -589,7 +589,7 @@ ToolpathGenerator.GeneratorListener
 			}
 		}
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
-
+		
 		if(generator instanceof SkeinforgeGenerator) {
 			// Here we'll do the setup for the post-processor
 			//Let's figure out which post-processing steps need to be taken
@@ -618,8 +618,8 @@ ToolpathGenerator.GeneratorListener
 			
 			((SkeinforgeGenerator) generator).setPostProcessor(
 					new SkeinforgePostProcessor((SkeinforgeGenerator)generator, 
-							machineLoader.getMachineInterface().getModel().getStartCode(),
-							machineLoader.getMachineInterface().getModel().getEndCode(),
+							GCodeHelper.readFiletoGCodeSource(machineLoader.getMachineInterface().getModel().getStartCode()),
+							GCodeHelper.readFiletoGCodeSource(machineLoader.getMachineInterface().getModel().getEndCode()),
 							postProcessingSteps));
 		}
 
@@ -2422,14 +2422,20 @@ ToolpathGenerator.GeneratorListener
 		}
 		else
 		{
+			DualStrusionWindow dsw;
+			
+			// this is stuff that DualStrusion, and until there's a better way to get it there...
+			MachineType type = machineLoader.getMachineInterface().getMachineType();
+			GCodeSource startCode = GCodeHelper.readFiletoGCodeSource(
+					machineLoader.getMachineInterface().getModel().getStartCode());
+			GCodeSource endCode = GCodeHelper.readFiletoGCodeSource(
+					machineLoader.getMachineInterface().getModel().getEndCode());
+			
 			if(getBuild().getCode() != null)
-				new DualStrusionWindow(getBuild().getMainFilePath());	//TODO: Constructors shouldn't auto-display. Refactor that
+				dsw = new DualStrusionWindow(type, startCode, endCode, getBuild().getMainFilePath());
 			else
-				new DualStrusionWindow(); //TODO: Constructorsshouldn't auto-display. Refactor that
-
-			//File f = dsw.getCombined();
-			//if(f != null)
-				//handleOpenFile(f);
+				dsw = new DualStrusionWindow(type, startCode, endCode);
+			dsw.setVisible(true);
 		}
 
 	}

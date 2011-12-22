@@ -1,6 +1,7 @@
 package replicatorg.app.gcode;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -12,17 +13,17 @@ public class Layer {
 	/**
 	 * <code>commands</code> holds the commands from given layer
 	 */
-	private ArrayList<String> commands = new ArrayList<String>();
+	private List<String> commands;
 	/**
 	 * <code>height</code> holds the height of the given layer, instantiated to -1 for debugging purposes
 	 */
 	private double height =  - 1;
 	/**
-	 * The only constructor for <code>Layer</code> takes a layer height and an arrayList of the commands
+	 * The only constructor for <code>Layer</code> takes a layer height and an List of the commands
 	 * @param h height
 	 * @param cmds commands
 	 */
-	public Layer(double h, ArrayList<String> cmds)
+	public Layer(double h, List<String> cmds)
 	{
 		commands = cmds;	
 		height = h;
@@ -31,7 +32,7 @@ public class Layer {
 	 * This method returns the Layers commands
 	 * @return commands
 	 */
-	public ArrayList<String> getCommands()
+	public List<String> getCommands()
 	{
 		return commands;
 	}
@@ -39,9 +40,9 @@ public class Layer {
 	/**
 	 * This method returns the commands without the layer tags, this is used when merging layers
 	 */
-	public ArrayList<String> getCommandsWithoutLayerTag()
+	public List<String> getCommandsWithoutLayerTag()
 	{	
-		ArrayList<String> result;
+		List<String> result;
 		
 		//TODO document why < 3 commands doesn't fly
 		if(commands.size() < 3)

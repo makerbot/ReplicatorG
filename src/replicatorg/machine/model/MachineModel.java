@@ -580,10 +580,10 @@ public class MachineModel
 		return wipes;
 	}
 	
-	public WipeModel getWipeByIndex(int index) {
+	public WipeModel getWipeFor(ToolheadAlias tool) {
 		for(WipeModel wm : wipes)
 		{
-			if(wm.getIndex() == index)
+			if(wm.getTool() == tool)
 			{
 				return wm;
 			}

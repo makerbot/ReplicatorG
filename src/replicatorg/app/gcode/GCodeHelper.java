@@ -16,6 +16,9 @@ import replicatorg.model.StringListSource;
  * What a useless class name. 
  * This class is where we're going to stash the various functions for manipulating GCode source
  * I suspect that anything that ends up in here really belongs somewhere else
+ * 
+ * So, most of these functions take a GCodeSource and return a different, modified, GCodeSource.
+ *   would it make sense to pass them a MutableGCodeSource or something like that?
  * @author Ted
  *
  */
@@ -220,6 +223,18 @@ public class GCodeHelper {
 		return new StringListSource(newGCode);
 	}
 	
+	/**
+	 * This looks for and tries to remove sections that match what we expect from the start and end code
+	 * It is not guaranteed to remove start and end code, just to try its best.
+	 * @param source
+	 * @return
+	 */
+	public static GCodeSource stripStartEndBestEffort(GCodeSource source)
+	{
+		//TODO: try harder
+		return source;
+	}
+	
 	public static GCodeSource addCodeToSource(GCodeSource source, GCodeSource newSection, int location)
 	{
 		Vector<String> newGCode = new Vector<String>();
@@ -260,6 +275,10 @@ public class GCodeHelper {
 	public static GCodeSource readFiletoGCodeSource(File f) {
 		Vector<String> vect = new Vector<String>();
 		String curline;
+		
+		if(f == null)
+			return null;
+		
 		try {
 			BufferedReader bir = new BufferedReader(new FileReader(f));
 			curline = bir.readLine();

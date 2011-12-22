@@ -1,15 +1,21 @@
 package replicatorg.plugin.toolpath.skeinforge;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+
 import replicatorg.app.gcode.GCodeHelper;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
 import replicatorg.model.GCodeSource;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeBooleanPreference;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeOption;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
 
@@ -41,21 +47,52 @@ public class SkeinforgePostProcessor {
 	// Because I'm trying to do this quickly, I'm just throwing these in here. A better way to do it
 	// would be to replace the Set<String> with a Set<SFPostProcessorOptions> that would say, 
 	// for instance, {PREPEND, File toPrepend} or {REPLACE, GCodeSource toRemove, GCodeSource toAdd}
-	private File startCode, endCode;
-	public SkeinforgePostProcessor(SkeinforgeGenerator generator, File startCode, File endCode, String...ops)
+	private GCodeSource startCode, endCode;
+	public SkeinforgePostProcessor(SkeinforgeGenerator generator, GCodeSource startCode, GCodeSource endCode, String...ops)
 	{
 		this(generator, startCode, endCode, new TreeSet<String>(Arrays.asList(ops)));
 	}
-	public SkeinforgePostProcessor(SkeinforgeGenerator generator, File startCode, File endCode, Set<String> options)
+	public SkeinforgePostProcessor(SkeinforgeGenerator generator, GCodeSource startCode, GCodeSource endCode, Set<String> options)
 	{
 		this.generator = generator;
 		this.options = options;
 		this.startCode = startCode;
 		this.endCode = endCode;
-	}
+
+		// Check to see if we need to do anything based on selected prefs
+		List<SkeinforgePreference> prefs = generator.getPreferences();
 	
+		// If we're doing dualstrusion we always remove the beginning and end code
+		//this actually creates some non-intuitive/unclear behavior for the user
+		if(options.contains(TARGET_TOOLHEAD_DUAL))
+		{
+			prefs.add(0, new SkeinforgePreference(){
+				@Override
+				public JComponent getUI() {
+					return new JLabel("Dualstruding...");
+				}
+				@Override
+				public List<SkeinforgeOption> getOptions() {
+					List<SkeinforgeOption> result = new ArrayList<SkeinforgeOption>();
+					result.add(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
+					result.add(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
+					return result;
+				}
+				@Override
+				public String valueSanityCheck() {
+					// TODO Auto-generated method stub
+					return null;
+				}
+				@Override
+				public String getName() {
+					return "Dualstrusion options";
+				}
+			});
+		}
+	}
 	public BuildCode runPostProcessing()
 	{
+
 		// Check to see if we need to do anything based on selected prefs
 		List<SkeinforgePreference> prefs = generator.getPreferences();
 		
@@ -64,14 +101,15 @@ public class SkeinforgePostProcessor {
 		{
 			// This works because we know that in ToolpathGeneratorFactory options
 			// are only added for this pref if it's true
-			if(sp.getName().equals("Use machine-specific start/end gcode") &&
-				(!sp.getOptions().isEmpty()))
+			if(sp.getName().equals("Use machine-specific start/end gcode"))
 			{
-				options.add(PREPEND_START);
-				options.add(APPEND_END);
+				if(!sp.getOptions().isEmpty())
+				{
+					options.add(PREPEND_START);
+					options.add(APPEND_END);
+				}
 			}
 		}
-		
 		// Load our code to a source iterator
 		source = GCodeHelper.readFiletoGCodeSource(generator.output.file);
 
@@ -92,9 +130,9 @@ public class SkeinforgePostProcessor {
 //		if(options.contains(REPLACE_END))
 //			runEndReplacement();
 		if(options.contains(PREPEND_START))
-			runPrepend(GCodeHelper.readFiletoGCodeSource(startCode));
+			runPrepend(startCode);
 		if(options.contains(APPEND_END))
-			runAppend(GCodeHelper.readFiletoGCodeSource(endCode));
+			runAppend(endCode);
 
 		System.out.println("***********************************");
 		

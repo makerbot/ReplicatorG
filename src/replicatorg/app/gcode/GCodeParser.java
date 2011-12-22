@@ -69,110 +69,12 @@ public class GCodeParser {
 	// our driver we use.
 	protected DriverQueryInterface driver;
 	
-	// Convenience class to execute drill routines (untested)
-	DrillCycle drillCycle;
-		
-	// Canned drilling cycle engine
-	private class DrillCycle {
-		private Point5d target;
-		private double retract = 0.0;
-		private double feedrate = 0.0;
-		private int dwell = 0;
-		private double pecksize = 0.0;
-		
-		DrillCycle() {
-			target = new Point5d();
-		}
-		
-		public void setTarget(Point5d temp) {
-			this.target = temp;
-		}
-		
-		public void setRetract(double retract) {
-			this.retract = retract;
-		}
-		
-		public void setFeedrate(double feedrate) {
-			this.feedrate = feedrate;
-		}
-		
-		public void setDwell(int dwell) {
-			this.dwell = dwell;
-		}
-		
-		public void setPecksize(double pecksize) {
-			this.pecksize = pecksize;
-		}
-		
-		/*
-		 * drillTarget = new Point3d(); drillRetract = 0.0; drillFeedrate = 0.0;
-		 * drillDwell = 0.0; drillPecksize = 0.0;
-		 */
-		public void doDrill(boolean speedPeck) {
-			Base.logger.severe("Drill Cycle code is untested and has therefore been disabled.");
-//			// Retract to R position if Z is currently below this
-//			Point5d current = driver.getCurrentPosition();
-//			if (current.z() < retract) {
-//				driver.setFeedrate(getMaxFeedrate());
-//				driver.queuePoint(new Point5d(current.x(), current.y(), retract, current.a(), current.b()));
-//			}
-//
-//			// Move to start XY
-//			driver.setFeedrate(getMaxFeedrate());
-//			driver.queuePoint(new Point5d(target.x(), target.y(), current.z(), current.a(), current.b()));
-//
-//			// Do the actual drilling
-//			double targetZ = retract;
-//			double deltaZ;
-//
-//			// For G83/G183 move in increments specified by Q code
-//			if (pecksize > 0)
-//				deltaZ = pecksize;
-//			// otherwise do in one pass
-//			else
-//				deltaZ = retract - target.z();
-//
-//			do // the drilling
-//			{
-//				// only move there if we're not at top
-//				if (targetZ != retract && !speedPeck) {
-//					// TODO: move this to 10% of the bottom.
-//					driver.setFeedrate(getMaxFeedrate());
-//					driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
-//				}
-//
-//				// set our plunge depth
-//				targetZ -= deltaZ;
-//				// make sure we dont go too deep.
-//				if (targetZ < target.z())
-//					targetZ = target.z();
-//
-//				// Move with controlled feed rate
-//				driver.setFeedrate(feedrate);
-//
-//				// do it!
-//				driver.queuePoint(new Point5d(target.x(), target.y(), targetZ, current.a(), current.b()));
-//
-//				// Dwell if doing a G82
-//				if (dwell > 0)
-//					driver.delay(dwell);
-//
-//				// Retract unless we're speed pecking.
-//				if (!speedPeck) {
-//					driver.setFeedrate(getMaxFeedrate());
-//					driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
-//				}
-//
-//			} while (targetZ > target.z());
-//
-//			// double check for final speedpeck retract
-//			if (current.z() < retract) {
-//				driver.setFeedrate(getMaxFeedrate());
-//				driver.queuePoint(new Point5d(target.x(), target.y(), retract, current.a(), current.b()));
-//			}
-		}
-	}
-
+	/*
+	 * We used to have all of this drilling code here.
+	 * Over lunch we decided it didn't need to stay here.
+	 * Now it's gone.
+	 */
+	
 	// Arc drawing routine
 	// Note: 5D is not supported
 	Queue< DriverCommand > drawArc(Point5d center, Point5d endpoint, boolean clockwise) {
@@ -314,8 +216,6 @@ public class GCodeParser {
 		
 		// init our offset variables
 		currentOffset = driver.getOffset(0);
-		
-		drillCycle = new DrillCycle();
 	}
 
 	/**
@@ -686,7 +586,7 @@ public class GCodeParser {
 		}
 		
 		// start us off at our current position...
-		Point5d temp = driver.getCurrentPosition(false);
+		Point5d pos = driver.getCurrentPosition(false);
 
 		// initialize our points, etc.
 		double iVal = convertToMM(gcode.getCodeValue('I'), units); // / X offset
@@ -717,40 +617,40 @@ public class GCodeParser {
 		// absolute just specifies the new position
 		if (absoluteMode) {
 			if (gcode.hasCode('X'))
-				temp.setX(xVal);
+				pos.setX(xVal);
 			if (gcode.hasCode('Y'))
-				temp.setY(yVal);
+				pos.setY(yVal);
 			if (gcode.hasCode('Z'))
-				temp.setZ(zVal);
+				pos.setZ(zVal);
 			if (gcode.hasCode('A'))
-				temp.setA(aVal);
+				pos.setA(aVal);
 			if (gcode.hasCode('E')) {
 				if (tool == 0)
-					temp.setA(eVal);
+					pos.setA(eVal);
 				else if (tool == 1)
-					temp.setB(eVal);
+					pos.setB(eVal);
 			}
 			if (gcode.hasCode('B'))
-				temp.setB(bVal);
+				pos.setB(bVal);
 		}
 		// relative specifies a delta
 		else {
 			if (gcode.hasCode('X'))
-				temp.setX(temp.x() + xVal);
+				pos.setX(pos.x() + xVal);
 			if (gcode.hasCode('Y'))
-				temp.setY(temp.y() + yVal);
+				pos.setY(pos.y() + yVal);
 			if (gcode.hasCode('Z'))
-				temp.setZ(temp.z() + zVal);
+				pos.setZ(pos.z() + zVal);
 			if (gcode.hasCode('A'))
-				temp.setA(temp.a() + aVal);
+				pos.setA(pos.a() + aVal);
 			if (gcode.hasCode('E')) {
 				if (tool == 0)
-					temp.setA(temp.a() + eVal);
+					pos.setA(pos.a() + eVal);
 				else if (tool == 1)
-					temp.setB(temp.b() + eVal);
+					pos.setB(pos.b() + eVal);
 			}
 			if (gcode.hasCode('B'))
-				temp.setB(temp.b() + bVal);
+				pos.setB(pos.b() + bVal);
 		}
 
 		// Get feedrate if supplied
@@ -783,7 +683,7 @@ public class GCodeParser {
 			} else {
 				// Compute the most rapid possible rate for this move.
 				Point5d diff = driver.getCurrentPosition(false);
-				diff.sub(temp);
+				diff.sub(pos);
 				diff.absolute();
 				double length = diff.length();
 				double selectedFR = Double.MAX_VALUE;
@@ -802,13 +702,20 @@ public class GCodeParser {
 				if (selectedFR == Double.MAX_VALUE) { selectedFR = maxFR.get(0); }  
 				commands.add(new replicatorg.drivers.commands.SetFeedrate(selectedFR));
 			}				
-			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
+			commands.add(new replicatorg.drivers.commands.QueuePoint(pos));
 			break;
 		// Linear Interpolation
 		case G1:
 			// set our target.
 			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
-			commands.add(new replicatorg.drivers.commands.QueuePoint(temp));
+			
+			//I'm in a rush. simple solution: if our G1 has no axes, there's no move.
+			//DualstrusionConstruction relies on this, so if you change this, change that
+			if(!gcode.hasCode('X') && !gcode.hasCode('Y') && !gcode.hasCode('Z') &&
+					!gcode.hasCode('A') && !gcode.hasCode('B'))
+				break;
+			
+			commands.add(new replicatorg.drivers.commands.QueuePoint(pos));
 			break;
 		// Clockwise arc
 		case G2:
@@ -825,9 +732,9 @@ public class GCodeParser {
 
 				// Get the points for the arc
 				if (codeEnum == GCodeEnumeration.G2)
-					commands.addAll(drawArc(center, temp, true));
+					commands.addAll(drawArc(center, pos, true));
 				else
-					commands.addAll(drawArc(center, temp, false));
+					commands.addAll(drawArc(center, pos, false));
 			}
 			// or we want a radius based one
 			else if (gcode.hasCode('R')) {
