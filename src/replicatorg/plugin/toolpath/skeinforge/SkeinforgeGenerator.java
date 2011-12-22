@@ -536,7 +536,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			}
 		}
 		arguments.add(path);
-		
+for(String a : arguments) System.out.println(a);
 		ProcessBuilder pb = new ProcessBuilder(arguments);
 		pb.directory(getSkeinforgeDir());
 		Process process = null;
