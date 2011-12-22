@@ -1,12 +1,21 @@
 package replicatorg.app.gcode;
 
-import java.io.File;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
+import java.util.Vector;
 
+import javax.swing.JOptionPane;
+
+import replicatorg.app.Base;
+import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolheadAlias;
+import replicatorg.machine.model.WipeModel;
 import replicatorg.model.GCodeSource;
+import replicatorg.model.StringListSource;
+import replicatorg.util.Point5d;
 
 
 /**
@@ -17,20 +26,40 @@ import replicatorg.model.GCodeSource;
  */
 public class DualStrusionConstruction {
 
-	private File result;
-	private File primary, secondary;
-	private boolean replaceStart, replaceEnd, useWipes;
+	private GCodeSource result;
+	private GCodeSource left, right;
+	private GCodeSource start, end;
+	private boolean useWipes;
+	private WipeModel leftWipe;
+	private WipeModel rightWipe;
+	private MachineType machineType;
 
-	public DualStrusionConstruction(File primary, File secondary, File destination, boolean replaceStart, boolean replaceEnd, boolean useWipes)
+	public DualStrusionConstruction(GCodeSource left, GCodeSource right, GCodeSource startSource, GCodeSource endSource, MachineType type, boolean useWipes)
 	{
-		this.primary = primary;
-		this.secondary = secondary;
-		this.result = destination;
-		this.replaceStart = replaceStart;
-		this.replaceEnd = replaceEnd;
+		this.left = left;
+		this.right = right;
 		this.useWipes = useWipes;
+		this.machineType = type;
+		start = startSource;
+		end = endSource;
+		if(useWipes)
+		{
+			leftWipe = Base.getMachineLoader().getMachineInterface().getModel().getWipeFor(ToolheadAlias.LEFT);
+			rightWipe = Base.getMachineLoader().getMachineInterface().getModel().getWipeFor(ToolheadAlias.RIGHT);
+			
+			if(leftWipe == null || rightWipe == null)
+			{			
+				String error = "Could not find wipes for the current machine," + 
+					Base.getMachineLoader().getMachineInterface().getModel().toString() + "please select a dualstrusion machine in the drivers menu.";
+				JOptionPane.showConfirmDialog(null, error, 
+						"Could not prepare Dualstrusion!", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+				// TODO: better fail condition...
+				// seriously, do it.
+				// DANGER: don't let this code go to production
+			}
+		}
 	}
-	public File getCombinedFile()
+	public GCodeSource getCombinedFile()
 	{
 		return result;	
 	}
@@ -57,12 +86,56 @@ public class DualStrusionConstruction {
 		 * merge layers, adding any tweening code that's necessary
 		 *   changing tools (tweening) is only necessary when the next layer is not the same toolhead as this one?
 		 *   wipes need to be toggleable (really, "use machine's wipe" should be toggleable, there'll be other tween code)
+		 * do we need special setup code based on which layer is the first?
+		 * 
 		 * 
 		 * add start and end gcode
 		 * 
 		 * 
 		 */
 
+		left = GCodeHelper.stripStartEndBestEffort(left);
+		right = GCodeHelper.stripStartEndBestEffort(right);
+
+		LinkedList<Layer> leftLayers = parseLayers(left);
+		LinkedList<Layer> rightLayers = parseLayers(right);
+
+		System.out.println(left == null);
+		System.out.println(right == null);
+		System.out.println(start == null);
+		System.out.println(end == null);
+
+		//make sure every layer starts by setting the correct toolhead
+		for(Layer l : leftLayers)
+			l.getCommands().add(0, "G1 "+ToolheadAlias.LEFT.getTcode());
+		for(Layer l : rightLayers)
+			l.getCommands().add(0, "G1 "+ToolheadAlias.RIGHT.getTcode());
+
+		LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
+		
+		//process start & end before adding them
+		start = duplicateToolheadLines(start);
+		end = duplicateToolheadLines(end);
+
+		//debug code///////////////////////////
+		merged.add(0, new Layer(0d, new ArrayList<String>(){{add("********************************************************************************post-start**************************************************************");}}));
+		//////////////////////////////////////
+		merged.add(0, new Layer(0d, start.asList()));
+		//debug code///////////////////////////
+		merged.add(new Layer(0d, new ArrayList<String>(){{add("********************************************************************************pre-start**************************************************************");}}));
+		//////////////////////////////////////
+		merged.add(new Layer(Double.MAX_VALUE, end.asList()));
+
+		Vector<String> wholeCode = new Vector<String>();
+		for(Layer l : merged)
+		{
+			for(String s : l.getCommands())
+			{
+				wholeCode.add(s);
+			}
+		}
+		result = new StringListSource(wholeCode);
+		
 //		GCodeSource primaryGcode = GCodeHelper.readFiletoGCodeSource(primary);
 //		GCodeSource secondaryGcode = GCodeHelper.readFiletoGCodeSource(secondary);
 //		ArrayList<String> master_layer = new ArrayList<String>();
@@ -228,7 +301,7 @@ public class DualStrusionConstruction {
 		return layers;
 	}
 	
-	private Layer toolchange(ToolheadAlias from, ToolheadAlias to)
+	private Layer toolchange(ToolheadAlias from, Layer fromLayer, ToolheadAlias to, Layer toLayer)
 	{
 		/*
 		 * How does a toolchange work? Glad you asked:
@@ -253,16 +326,6 @@ public class DualStrusionConstruction {
 		 *   toolchange psudocode:
 		 *   
 		 *   Layer toolchange = new Layer
-		 *   
-		 *   toolchange.add(reversal code(currentTool)
-		 *   
-		 *   if newTool.zPosition < wipe height
-		 *     layer.add(move up and over)
-		 *   else
-		 *     layer.add(move up, over, and down)
-		 *     
-		 *   if purge
-		 *     layer.add(purge)
 		 *     
 		 *   if wipes
 		 *     layer.add(wipes)
@@ -275,10 +338,128 @@ public class DualStrusionConstruction {
 		 *   
 		 *   layer.add(M18 A B)
 		 */
+		ArrayList<String> result = new ArrayList<String>();
+		
+		if(useWipes)
+		{
+			// The left/right distinction isn't actually important here
+			// on a tom you have to wipe both heads, and on a replicator
+			// wiping either does both
+			result.addAll(wipe(leftWipe));
+			if(machineType != MachineType.THE_REPLICATOR)
+				result.addAll(wipe(rightWipe));
+		}
+		
+		// Ben's suggestion
+		result.add("M18 A B");
+		
+		NumberFormat nf = Base.getGcodeFormat();
+		Point5d firstPos = getFirstPosition(toLayer);
+		
+		// The F here is a magic number, you can read about it in the 'wipe()' function
+		// move up fairly quickly
+		result.add("G1 Z" + nf.format(firstPos.z()) +" F3000");
+		// move to the next point
+		result.add("G1 X" + nf.format(firstPos.x()) + " Y" + nf.format(firstPos.y()) + " Z" + nf.format(firstPos.z()) +" F3000");
+		
+		// set the feedrate with an empty G1
+		String feedrate = getFirstFeedrate(toLayer);
+		if(feedrate.equals(""))
+			feedrate = getLastFeedrate(fromLayer);
+		result.add("G1 " + feedrate);
+		
+		
+		// The 'height' of the toolchange. just the average of the surrounding layers because why not?
+		double height = (toLayer.getHeight() - fromLayer.getHeight())/2;
+		
+		return new Layer(height, result);
+	}
+	
+	private Point5d getFirstPosition(Layer l)
+	{
+		List<String> search = l.getCommands();
+		for(int i = 0; i < search.size(); i++)
+		{
+			GCodeCommand g = new GCodeCommand(search.get(i));
+			if(g.getCodeValue('G') == 1)
+			{
+				Point5d result = new Point5d();
+				result.setX(g.getCodeValue('X'));
+				result.setY(g.getCodeValue('Y'));
+				result.setZ(g.getCodeValue('Z'));
+				return result;
+			}
+		}
 		return null;
 	}
 	
-	private void doMerge(LinkedList<Layer> a, LinkedList<Layer> b)
+	private String getLastFeedrate(Layer l)
+	{
+		List<String> search = l.getCommands();
+		for(int i = search.size()-1; i >= 0; i--)
+		{
+			GCodeCommand g = new GCodeCommand(search.get(i));
+			if(g.getCodeValue('F') != -1)
+				return "F"+Base.getGcodeFormat().format(g.getCodeValue('F'));
+		}
+		return "";
+	}
+	private String getFirstFeedrate(Layer l)
+	{
+		List<String> search = l.getCommands();
+		for(int i = 0; i < search.size(); i++)
+		{
+		GCodeCommand g = new GCodeCommand(search.get(i));
+		if(g.getCodeValue('F') != -1)
+			return "F"+Base.getGcodeFormat().format(g.getCodeValue('F'));
+		}
+		return "";
+	}
+	
+	private ArrayList<String> wipe(WipeModel toolWipe)
+	{
+		ArrayList<String> result = new ArrayList<String>();
+		
+
+		// This is a not-entirely-arbitrarily chosen number
+		// Ben or Noah may be able to explain it,
+		// Ted might be able to by the time you ask
+		String feedrate = "F3000";
+		// move to purge home
+		result.add("G53");
+
+		// Ben and Ted had a chat and believe that it is almost always safe to do the move for wipes in this order
+		result.add("G1 " + toolWipe.getY1() +" "+ feedrate);
+		result.add("G1 " + toolWipe.getZ1() +" "+ feedrate);
+		result.add("G1 " + toolWipe.getX1() +" "+ feedrate);	
+
+		// purge current toolhead
+		result.add("M108 "+toolWipe.getPurgeRPM());
+		result.add("M102");
+		result.add("G04 "+toolWipe.getPurgeDuration());
+		result.add("M103");
+		
+		// reverse current toolhead
+		result.add("M108 "+toolWipe.getReverseRPM());
+		result.add("M102");
+		result.add("G04 "+toolWipe.getReverseDuration());
+		result.add("M103");		
+		// wait for leak
+		result.add("G04 " + toolWipe.getWait());
+		
+		// move to second wipe position
+		result.add("G1 " + toolWipe.getX2() +" "+ toolWipe.getY2() +" "+ toolWipe.getZ2() +" "+ feedrate);
+		
+		return result;
+	}
+	
+	/**
+	 * This will consume two LinkedLists of Layers and return a combined List of Layers
+	 * representing a dualstrusion print, with all the appropriate toolchanges inserted. 
+	 * @param left
+	 * @param right
+	 */
+	private LinkedList<Layer> doMerge(LinkedList<Layer> left, LinkedList<Layer> right)
 	{
 		/*
 		 *   Merging layers should look something like this:
@@ -287,7 +468,7 @@ public class DualStrusionConstruction {
 		 *   A = layers from one file, sorted from least to greatest
 		 *   B = layers from other file, sorted from least to greatest
 		 *   last = null 
-		 *   while A || B are not empty
+		 *   while A && B are not empty
 		 *     if A.peek.height < B.peek.height
 		 *       if last == B
 		 *         result.append(toolchange B to A)
@@ -306,8 +487,91 @@ public class DualStrusionConstruction {
 		 *           result.append(B.pop)
 		 *       else
 		 *         result.append(A.pop)
+		 *   // at this point one of them is empty
+		 *   if A is not empty
+		 *     if last == B
+		 *       result.append(toolchange B to A)
+		 *     result.appendAll(A)
+		 *   if B is not empty
+		 *     if last == A
+		 *       result.append(toolchange A to B)
+		 *     result.appendAll(B)
+		 *     
 		 *           
 		 */
+		// using a LinkedList means we can getLast()
+		LinkedList<Layer> result = new LinkedList<Layer>();
+
+		// this is just a handy way to keep track of where our last layer came from
+		Object lastLayer = null;
 		
+		while((!left.isEmpty()) || (!right.isEmpty()))
+		{
+			if(right.isEmpty())
+			{
+				if(right.equals(lastLayer))
+					result.add(toolchange(ToolheadAlias.RIGHT, result.getLast(), ToolheadAlias.LEFT, left.peek()));
+				result.add(left.pop());
+				lastLayer = left;
+			}
+			else if(left.isEmpty())
+			{
+				if(left.equals(lastLayer))
+					result.add(toolchange(ToolheadAlias.LEFT, result.getLast(), ToolheadAlias.RIGHT, right.peek()));
+				result.add(right.pop());
+				lastLayer = right;
+			}
+			else if(left.peek().getHeight() < right.peek().getHeight())
+			{
+				if(right.equals(lastLayer))
+					result.add(toolchange(ToolheadAlias.RIGHT, result.getLast(), ToolheadAlias.LEFT, left.peek()));
+				result.add(left.pop());
+				lastLayer = left;
+			}
+			else if(right.peek().getHeight() < left.peek().getHeight())
+			{
+				if(left.equals(lastLayer))
+					result.add(toolchange(ToolheadAlias.LEFT, result.getLast(), ToolheadAlias.RIGHT, right.peek()));
+				result.add(right.pop());
+				lastLayer = right;
+			}
+			else //equal height
+			{
+				if(lastLayer == null)
+				{
+					//arbitrary
+					result.add(left.pop());
+					lastLayer = left;
+				}
+				else
+				{
+					if(lastLayer == left)
+						result.add(left.pop());
+					else// if(lastLayer == right)
+						result.add(right.pop());
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	private GCodeSource duplicateToolheadLines(GCodeSource source)
+	{
+		Vector<String> newGCode = new Vector<String>();
+
+		for(String s : source)
+		{
+			newGCode.add(s);
+			GCodeCommand gcode = new GCodeCommand(s);
+			
+			double toolhead = gcode.getCodeValue('T');
+			if(toolhead == 0)
+				newGCode.add(s.replace("T0", "T1"));
+			if(toolhead == 1)
+				newGCode.add(s.replace("T1", "T0"));
+		}
+
+		return new StringListSource(newGCode);
 	}
 }

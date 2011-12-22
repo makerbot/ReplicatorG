@@ -92,6 +92,8 @@ public abstract class ToolpathGenerator {
 	}
 	
 	public abstract BuildCode generateToolpath();
+	//should return a cached toolpath
+	public abstract BuildCode getGeneratedToolpath();
 	
 	public void emitUpdate(String message) {
 		for (GeneratorListener listener : listeners) {
