@@ -359,7 +359,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 		// cooling fan controls
 		if (tool.hasFan()) {
-			Base.logger.severe("hasFan(): fan automatic and not user controlled in The Replicator.");
+			Base.logger.finer("ExtruderPanel.hasFan(): fan automatic and not user controlled in The Replicator.");
 //			String fanString = "Cooling Fan";
 //			String enableString = "enable";
 //			Element xml = findMappingNode(tool.getXml(),"fan");

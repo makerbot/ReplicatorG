@@ -173,6 +173,18 @@ public class PrintOMatic implements SkeinforgePreference {
 		public String driveGearDiameter;
 	}
 	
+
+	// Double braces create a static block in which to declare the values of our variables
+	private class Mk8Defaults extends Defaults {{
+		infillPercent = "15";
+		desiredLayerHeight = ".30";
+		numberOfShells = "1";
+		desiredFeedrate = "30";
+		filamentDiameter = "1.8";
+		nozzleDiameter = ".4";
+		driveGearDiameter = "10.58";
+	}}
+
 	// Double braces create a static block in which to declare the values of our variables
 	private class Mk7Defaults extends Defaults {{
 		infillPercent = "15";
@@ -199,7 +211,7 @@ public class PrintOMatic implements SkeinforgePreference {
 	}}
 	
 	// This should be kept up to date, so that we always default to the newest kind of head
-	private Defaults defaults = new Mk7Defaults();
+	private Defaults defaults = new Mk8Defaults();
 	
 	
 	private JComponent printPanel() {
@@ -271,6 +283,7 @@ public class PrintOMatic implements SkeinforgePreference {
 
 		JComponent defaultsPanel = new JPanel(new MigLayout("fillx"));
 
+		final JButton mk8 = new JButton("Load Mk8 Defaults");
 		final JButton mk7 = new JButton("Load Mk7 Defaults");
 		final JButton mk6 = new JButton("Load Mk6 Defaults (0.5 nozzle)");
 		final JButton mk6ns = new JButton("Load Mk6 Defaults (0.4 nozzle)");
@@ -281,7 +294,9 @@ public class PrintOMatic implements SkeinforgePreference {
 				Defaults def = null;
 				
 				// Select the correct set of defaults based on the button pressed
-				if(evt.getSource() == mk7)
+				if(evt.getSource() == mk8)
+					def = new Mk8Defaults();
+				else if(evt.getSource() == mk7)
 					def = new Mk7Defaults();
 				else if(evt.getSource() == mk6)
 					def = new Mk6Defaults();
@@ -303,10 +318,12 @@ public class PrintOMatic implements SkeinforgePreference {
 				makeTabs();
 			}
 		};
+		mk8.addActionListener(loadDefaults);
 		mk7.addActionListener(loadDefaults);
 		mk6.addActionListener(loadDefaults);
 		mk6ns.addActionListener(loadDefaults);
 		
+		defaultsPanel.add(mk8, "growx, wrap");
 		defaultsPanel.add(mk7, "growx, wrap");
 		defaultsPanel.add(mk6, "growx, Wrap");
 		defaultsPanel.add(mk6ns, "growx, Wrap");
