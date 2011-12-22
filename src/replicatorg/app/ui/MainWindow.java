@@ -1895,18 +1895,27 @@ ToolpathGenerator.GeneratorListener
 	};
 
 	/**
-	 * Checks some enviroment settings to detect the type of build desired
-	 * @return a build flag to indicate build type/settings/etc
+	 * Checks some enviroment settings and the user interface state to detect the type of build 
+	 * desired by clicking on the 'Build' button.
+	 * 
+	 * @return a build flag to indicate build type/settings/etc as determined by the program state.
 	 */
 	public BuildFlag detectBuildIntention()
 	{
 		BuildFlag flag = BuildFlag.NONE;
 
 		// if we have gcode selected, simply build
-		if(header.getSelectedElement().getType() == BuildElement.Type.GCODE)
+		BuildElement elementInVew = header.getSelectedElement(); 
+		if( elementInVew == null ) {
+			Base.logger.severe("cannot determine build intention, no view selected.");
+			return flag; ///fail 
+		}
+
+		if( elementInVew.getType() == BuildElement.Type.GCODE)
 		{
 			flag = BuildFlag.JUST_BUILD;
 		}
+		
 		else if(getBuild() != null)
 		{
 			//no code. Generate code and build
@@ -1944,6 +1953,7 @@ ToolpathGenerator.GeneratorListener
 		}
 		return flag;
 	}
+	
 	
 	public void handleBuild() {
 		if (building)
