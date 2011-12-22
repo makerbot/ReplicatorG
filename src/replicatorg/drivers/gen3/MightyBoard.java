@@ -750,7 +750,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		return false;
 	}
 
+
 	@Override
+	@Deprecated
 	protected void writeToToolEEPROM(int offset, byte[] data) {
 		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
 	}
@@ -825,9 +827,13 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * Enable extruder motor
 	 */
 	@Override
-	public void enableMotor() throws RetryException {
+	public void enableMotor(int toolhead) throws RetryException {
 
-		ToolModel curTool = machine.currentTool();//WARNING: this in unsafe, since tool is checked
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+
+		
+		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
 		//async from when command is set. Tool should be a param
 		Iterable<AxisId>  axes = getHijackedAxes(curTool);
 
@@ -845,8 +851,13 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * Disable our extruder motor
 	 */
 	@Override
-	public void disableMotor() throws RetryException {
-		ToolModel curTool = machine.currentTool();//WARNING: this in unsafe, since tool is checked
+	public void disableMotor(int toolhead) throws RetryException {
+
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		
+		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
+
 		//async from when command is set. Tool should be a param
 		Iterable<AxisId> axes = getHijackedAxes(curTool);
 
@@ -903,6 +914,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 	@Override
+	@Deprecated
 	protected int read16FromToolEEPROM(int offset, int defaultValue) {
 		return read16FromToolEEPROM(offset, defaultValue, machine.currentTool().getIndex());
 	}
@@ -1033,18 +1045,18 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	
 
 	@Override
-	public double getPlatformTemperatureSetting() {
+	public double getPlatformTemperatureSetting(int toolhead) {
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2, 3))) {
 			PacketBuilder pb = new PacketBuilder(
 					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8((byte) toolhead);
 			pb.add8(ToolCommandCode.GET_PLATFORM_SP.getCode());
 			PacketResponse pr = runQuery(pb.getPacket());
 			int sp = pr.get16();
 			machine.currentTool().setPlatformTargetTemperature(sp);
 		}
-		return super.getPlatformTemperatureSetting();
+		return super.getPlatformTemperatureSetting(toolhead);
 	}
 
 	// Display a message on the user interface
@@ -1081,18 +1093,18 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 	@Override
-	public double getTemperatureSetting() {
+	public double getTemperatureSetting(int toolhead) {
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2, 3))) {
 			PacketBuilder pb = new PacketBuilder(
 					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8((byte) toolhead );
 			pb.add8(ToolCommandCode.GET_SP.getCode());
 			PacketResponse pr = runQuery(pb.getPacket());
 			int sp = pr.get16();
-			machine.currentTool().setTargetTemperature(sp);
+			machine.getTool(toolhead).setTargetTemperature(sp);
 		}
-		return super.getTemperatureSetting();
+		return super.getTemperatureSetting(toolhead);
 	}
 	
 	
@@ -1102,34 +1114,18 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 	
 	@Override
-	public void setMotorRPM(double rpm) throws RetryException {
+	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 	
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+
+		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
+
 		///TRICKY: fot The Replicator,the firmware no longer handles this command
-		// it's all done on host side via 5D command translation
-		
-	// convert RPM into microseconds and then send.
-//		long microseconds = rpm == 0 ? 0 : Math.round(60.0 * 1000000.0 / rpm); // no
-//		// unsigned
-//		// ints?!?
-//		// microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
-//
-//		Base.logger.fine("Setting motor 1 speed to " + rpm + " RPM ("
-//				+ microseconds + " microseconds)");
-//
-//		// send it!
-//		PacketBuilder pb = new PacketBuilder(
-//				MotherboardCommandCode.TOOL_COMMAND.getCode());
-//		pb.add8((byte) machine.currentTool().getIndex());
-//		pb.add8(ToolCommandCode.SET_MOTOR_1_RPM.getCode());
-//		pb.add8((byte) 4); // length of payload.
-//		pb.add32(microseconds);
-//		runCommand(pb.getPacket());
-//
-		
-		machine.currentTool().setMotorSpeedRPM(rpm);
-//		super.setMotorRPM(rpm); TODO: this should be setMotorRPM running? 
-//				check read value vs running/tested value
+		// it's all done on host side via 5D command translation.  We just set a local value
+		curTool.setMotorSpeedRPM(rpm);
 	}
+	
 }
 
 

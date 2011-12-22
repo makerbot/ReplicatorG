@@ -333,45 +333,48 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 		// flood coolant controls
 		if (tool.hasFloodCoolant()) {
-			JLabel floodCoolantLabel = makeLabel("Flood Coolant");
-
-			JCheckBox floodCoolantCheck = new JCheckBox("enable");
-			floodCoolantCheck.setName("flood-coolant");
-			floodCoolantCheck.addItemListener(this);
-
-			add(floodCoolantLabel);
-			add(floodCoolantCheck,"wrap");
+			Base.logger.severe("hasFloodCoolant not supported due to toolhead madness.");
+//			JLabel floodCoolantLabel = makeLabel("Flood Coolant");
+//
+//			JCheckBox floodCoolantCheck = new JCheckBox("enable");
+//			floodCoolantCheck.setName("flood-coolant");
+//			floodCoolantCheck.addItemListener(this);
+//
+//			add(floodCoolantLabel);
+//			add(floodCoolantCheck,"wrap");
 		}
 
 		// mist coolant controls
 		if (tool.hasMistCoolant()) {
-			JLabel mistCoolantLabel = makeLabel("Mist Coolant");
-
-			JCheckBox mistCoolantCheck = new JCheckBox("enable");
-			mistCoolantCheck.setName("mist-coolant");
-			mistCoolantCheck.addItemListener(this);
-
-			add(mistCoolantLabel);
-			add(mistCoolantCheck,"wrap");
+			Base.logger.severe("hasMistCoolant not supported due to toolhead madness.");
+//			JLabel mistCoolantLabel = makeLabel("Mist Coolant");
+//
+//			JCheckBox mistCoolantCheck = new JCheckBox("enable");
+//			mistCoolantCheck.setName("mist-coolant");
+//			mistCoolantCheck.addItemListener(this);
+//
+//			add(mistCoolantLabel);
+//			add(mistCoolantCheck,"wrap");
 		}
 
 		// cooling fan controls
 		if (tool.hasFan()) {
-			String fanString = "Cooling Fan";
-			String enableString = "enable";
-			Element xml = findMappingNode(tool.getXml(),"fan");
-			if (xml != null) {
-				fanString = xml.getAttribute("name");
-				enableString = xml.getAttribute("actuated");
-			}
-			JLabel fanLabel = makeLabel(fanString);
-
-			JCheckBox fanCheck = new JCheckBox(enableString);
-			fanCheck.setName("fan-check");
-			fanCheck.addItemListener(this);
-
-			add(fanLabel);
-			add(fanCheck,"wrap");
+			Base.logger.severe("hasFan(): fan automatic and not user controlled in The Replicator.");
+//			String fanString = "Cooling Fan";
+//			String enableString = "enable";
+//			Element xml = findMappingNode(tool.getXml(),"fan");
+//			if (xml != null) {
+//				fanString = xml.getAttribute("name");
+//				enableString = xml.getAttribute("actuated");
+//			}
+//			JLabel fanLabel = makeLabel(fanString);
+//
+//			JCheckBox fanCheck = new JCheckBox(enableString);
+//			fanCheck.setName("fan-check");
+//			fanCheck.addItemListener(this);
+//
+//			add(fanLabel);
+//			add(fanCheck,"wrap");
 		}
 
 		// cooling fan controls
@@ -390,42 +393,44 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 		// valve controls
 		if (tool.hasValve()) {
-			String valveString = "Valve";
-			String enableString = "open";
-
-			Element xml = findMappingNode(tool.getXml(),"valve");
-			if (xml != null) {
-				valveString = xml.getAttribute("name");
-				enableString = xml.getAttribute("actuated");
-			}
-			
-			JLabel valveLabel = makeLabel(valveString);
-
-			JCheckBox valveCheck = new JCheckBox(enableString);
-			valveCheck.setName("valve-check");
-			valveCheck.addItemListener(this);
-
-			add(valveLabel);
-			add(valveCheck,"wrap");
+			Base.logger.severe("hasValve not supported due to toolhead madness.");
+//			String valveString = "Valve";
+//			String enableString = "open";
+//
+//			Element xml = findMappingNode(tool.getXml(),"valve");
+//			if (xml != null) {
+//				valveString = xml.getAttribute("name");
+//				enableString = xml.getAttribute("actuated");
+//			}
+//			
+//			JLabel valveLabel = makeLabel(valveString);
+//
+//			JCheckBox valveCheck = new JCheckBox(enableString);
+//			valveCheck.setName("valve-check");
+//			valveCheck.addItemListener(this);
+//
+//			add(valveLabel);
+//			add(valveCheck,"wrap");
 		}
 
 		// valve controls
 		if (tool.hasCollet()) {
-			JLabel colletLabel = makeLabel("Collet");
-
-			JCheckBox colletCheck = new JCheckBox("open");
-			colletCheck.setName("collet-check");
-			colletCheck.addItemListener(this);
-
-			JPanel colletPanel = new JPanel();
-			colletPanel.setLayout(new BoxLayout(colletPanel,
-					BoxLayout.LINE_AXIS));
-			colletPanel.setMaximumSize(panelSize);
-			colletPanel.setMinimumSize(panelSize);
-			colletPanel.setPreferredSize(panelSize);
-
-			add(colletLabel);
-			add(colletCheck,"wrap");
+			Base.logger.severe("hasCollect not supported due to toolhead madness.");
+//			JLabel colletLabel = makeLabel("Collet");
+//
+//			JCheckBox colletCheck = new JCheckBox("open");
+//			colletCheck.setName("collet-check");
+//			colletCheck.addItemListener(this);
+//
+//			JPanel colletPanel = new JPanel();
+//			colletPanel.setLayout(new BoxLayout(colletPanel,
+//					BoxLayout.LINE_AXIS));
+//			colletPanel.setMaximumSize(panelSize);
+//			colletPanel.setMinimumSize(panelSize);
+//			colletPanel.setPreferredSize(panelSize);
+//
+//			add(colletLabel);
+//			add(colletCheck,"wrap");
 		}
 	}
 
@@ -520,6 +525,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	public void handleChangedTextField(JFormattedTextField source) throws RetryException
 	{
 		String name = source.getName();
+		int toolhead = toolModel.getIndex();
+		
 		if (source.getText().length() > 0) {
 			double newValue = ((Number)source.getValue()).doubleValue();
 			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
@@ -529,88 +536,87 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					if (newValue == Double.MIN_VALUE) {
 						return;
 					}
-					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(newValue, toolModel.getIndex()));
+					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(newValue, toolhead));
 					targetTemperature = newValue;
 				} else {
 					newValue = confirmTemperature(newValue,"temperature.acceptedLimit.bed",130.0);
 					if (newValue == Double.MIN_VALUE) {
 						return;
 					}
-					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(newValue, toolModel.getIndex()));
+					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(newValue, toolhead));
 					targetPlatformTemperature = newValue;
 				}
 			} else if (name.equals("motor-speed")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(newValue));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(newValue,toolhead));
 			} else if (name.equals("motor-speed-pwm")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)newValue));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)newValue,toolhead));
 			} else {
 				Base.logger.warning("Unhandled text field: "+name);
 			}
 		}
 	}
 
-
+	
 	public void itemStateChanged(ItemEvent e) {
 		Component source = (Component) e.getItemSelectable();
 		String name = source.getName();
+		int toolhead = toolModel.getIndex();
 		if (e.getStateChange() == ItemEvent.SELECTED) {
 			/* Handle DC extruder commands */
 			if (name.equals("motor-forward")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE,toolhead));
 				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
 				if (toolModel.motorHasEncoder() || toolModel.motorIsStepper()) {
-					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
+					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM(),toolhead));
 				}
-				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor());
+				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
 			} else if (name.equals("motor-reverse")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE,toolhead));
 				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
 				if (toolModel.motorHasEncoder() || toolModel.motorIsStepper()) {
-					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
+					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM(),toolhead));
 				}
-				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor());
+				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
 			} else if (name.equals("motor-stop")) {
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
 			}
-			else if (name.equals("spindle-enabled"))
-				machine.runCommand(new replicatorg.drivers.commands.EnableSpindle());
-			else if (name.equals("flood-coolant"))
-				machine.runCommand(new replicatorg.drivers.commands.EnableFloodCoolant());
-			else if (name.equals("mist-coolant"))
-				machine.runCommand(new replicatorg.drivers.commands.EnableMistCoolant());
-			else if (name.equals("fan-check"))
-				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
+//			else if (name.equals("spindle-enabled"))
+//				machine.runCommand(new replicatorg.drivers.commands.EnableSpindle(toolhead));
+//			else if (name.equals("flood-coolant"))
+//				machine.runCommand(new replicatorg.drivers.commands.EnableFloodCoolant(toolhead));
+//			else if (name.equals("mist-coolant"))
+//				machine.runCommand(new replicatorg.drivers.commands.EnableMistCoolant(toolhead));
+//			else if (name.equals("fan-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.EnableFan(toolhead));
 			else if (name.equals("abp-check")) {
-				// TODO: Debugging. Run both!
-				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
-				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true,toolhead));
 			}
-			else if (name.equals("valve-check"))
-				machine.runCommand(new replicatorg.drivers.commands.OpenValve());
-			else if (name.equals("collet-check"))
-				machine.runCommand(new replicatorg.drivers.commands.OpenCollet());
-			else
-				Base.logger.warning("checkbox selected: " + source.getName());
+//			else if (name.equals("valve-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.OpenValve(toolhead));
+//			else if (name.equals("collet-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.OpenCollet(toolhead));
+//			else
+//				Base.logger.warning("checkbox selected: " + source.getName(toolhead));
 		} else {
 			if (name.equals("motor-enabled"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
-			else if (name.equals("spindle-enabled"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableSpindle());
-			else if (name.equals("flood-coolant"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableFloodCoolant());
-			else if (name.equals("mist-coolant"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableMistCoolant());
+				machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
+//			else if (name.equals("spindle-enabled"))
+//				machine.runCommand(new replicatorg.drivers.commands.DisableSpindle(toolhead));
+//			else if (name.equals("flood-coolant"))
+//				machine.runCommand(new replicatorg.drivers.commands.DisableFloodCoolant(toolhead));
+//			else if (name.equals("mist-coolant"))
+//				machine.runCommand(new replicatorg.drivers.commands.DisableMistCoolant(toolhead));
 			else if (name.equals("fan-check"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
+				machine.runCommand(new replicatorg.drivers.commands.DisableFan(toolhead));
 			else if (name.equals("abp-check")) {
 				// TODO: Debugging. Run both!
-				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
-				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false,toolhead));
+				machine.runCommand(new replicatorg.drivers.commands.DisableFan(toolhead));
 			}
-			else if (name.equals("valve-check"))
-				machine.runCommand(new replicatorg.drivers.commands.CloseValve());
-			else if (name.equals("collet-check"))
-				machine.runCommand(new replicatorg.drivers.commands.CloseCollet());
+//			else if (name.equals("valve-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.CloseValve(toolhead));
+//			else if (name.equals("collet-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.CloseCollet(toolhead));
 		}
 	}
 	
@@ -620,6 +626,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	 */
 	public void actionPerformed(ActionEvent e) {
 		String actionName = e.getActionCommand();
+		int toolhead = toolModel.getIndex();
 		
 		if(actionName.equals("handleTextField"))
 		{
@@ -638,31 +645,32 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 		/* Handle stepper extruder commands */
 		if (actionName.equals("forward")) {
+			
 			if (this.toolModel.getMotorStepperAxisName() != null) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE,toolhead));
 				// Reverted to one single command for RepRap5D driver
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
-					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000,toolhead));
 				} else {
-					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor());
-					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000,toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
 				}
 			}
 		} else if (actionName.equals("reverse")) {
 			if (this.toolModel.getMotorStepperAxisName() != null) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE,toolhead));
 				// Reverted to one single command for RepRap5D driver
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
-					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000,toolhead));
 				} else {
-					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor());
-					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000,toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
 				}
 			}
 		} else if (actionName.equals("stop")) {
-			machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+			machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
 			
 			if (this.toolModel.getMotorStepperAxisName() != null) {
 				machine.stopMotion();
