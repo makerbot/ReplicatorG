@@ -102,6 +102,6 @@ MFGFILENAME="CDC_vista"
 DRIVERFILENAME ="usbser"
 MFGNAME="MakerBot Industries"
 INSTDISK="MakerBot Driver Installer"
-DESCRIPTION="MakerBot Interface, S3G via Serial" 
+DESCRIPTION="MightyBoard, S3G via Serial" 
 SERVICE="USB RS-232 Emulation Driver"
 
