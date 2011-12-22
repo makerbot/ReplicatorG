@@ -1126,6 +1126,51 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		curTool.setMotorSpeedRPM(rpm);
 	}
 	
+	/**
+	 * Will wait for first the tool, then the build platform, it exists and
+	 * supported. Technically the platform is connected to a tool (extruder
+	 * controller) but this information is currently not used by the firmware.
+	 * 
+	 * timeout is given in seconds. If the tool isn't ready by then, the machine
+	 * will continue anyway.
+	 */
+	public void requestToolChange(int toolhead, int timeout)
+			throws RetryException {
+
+		selectTool(toolhead);
+
+		Base.logger.fine("Waiting for tool #" + toolhead);
+
+		// send it!
+		if (this.machine.getTool(toolhead).getTargetTemperature() > 0.0) {
+			PacketBuilder pb = new PacketBuilder(
+					MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
+			pb.add8((byte) toolhead);
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(timeout); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
+
+		///hack, since we have one HBP on the Replicator for now, search-grab that and heat it at any toolchange.
+		boolean needsToHeatHPB = false; 
+		int toolheadWithHBP = -1;
+		for(ToolModel t : machine.getTools())
+			if( t.hasHeatedPlatform() && t.getPlatformTargetTemperature() > 0.0) {
+				toolheadWithHBP = t.getIndex();
+				needsToHeatHPB = true;
+		}
+		
+		if(needsToHeatHPB && toolheadWithHBP > -1 ) {
+			PacketBuilder pb = new PacketBuilder(
+					MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
+			pb.add8((byte) toolheadWithHBP );
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(timeout); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
+		
+	}
+	
 }
 
 
