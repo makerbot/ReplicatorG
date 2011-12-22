@@ -136,89 +136,6 @@ public class DualStrusionConstruction {
 		}
 		result = new StringListSource(wholeCode);
 		
-//		GCodeSource primaryGcode = GCodeHelper.readFiletoGCodeSource(primary);
-//		GCodeSource secondaryGcode = GCodeHelper.readFiletoGCodeSource(secondary);
-//		ArrayList<String> master_layer = new ArrayList<String>();
-//
-//		GCodeSource startGcode = GCodeHelper.readFiletoGCodeSource(new File("DualStrusion_Snippets/start.gcode"));
-//		GCodeSource endGcode = GCodeHelper.readFiletoGCodeSource(new File("DualStrusion_Snippets/end.gcode"));
-//
-//		// get our temp commands on a per-file basis
-//		String primaryTemp = getTemperatureCommand(primaryGcode);
-//		String secondaryTemp = getTemperatureCommand(secondaryGcode);
-//
-//		// TRICKY: since both files are 'default toolhead' (t1) swap primaryTemp
-//		// to be 'first toolhead' (t0)
-//		// this could be moved to DSW, by passing a different toolhead for each file?
-//		// But what about when given gcode? we may have to check for which T a file uses
-//		primaryTemp = swapToolhead(primaryTemp, Toolheads.LEFT.getTcode());
-//		
-//		// 
-//		if (replaceStart) {
-//			stripStartGcode(primaryGcode);
-//		} else {
-//			startGcode = saveStartGcode(primaryGcode); // startGcode comes from prior file
-//		}
-//
-//		if (replaceEnd == false)
-//			endGcode = saveEndGcode(primaryGcode);
-//
-//		// on combine, always strip start/end of secondaryGcode
-//		stripStartGcode(secondaryGcode);
-//		stripEndGcode(secondaryGcode);
-//
-//		primaryGcode = replaceToolHeadReferences(primaryGcode,
-//				Toolheads.LEFT);
-//		secondaryGcode = replaceToolHeadReferences(secondaryGcode,
-//				Toolheads.RIGHT);
-//
-//		// interlace the layers for each toolhead
-//		LayerHelper helper = new LayerHelper(primaryGcode, secondaryGcode, false, useWipes);
-//		master_layer = helper.mergeLayers();
-//
-//		//modifyTempReferences(startGcode, primaryTemp, secondaryTemp);
-//		modifyTempReference(startGcode, Toolheads.LEFT, primaryTemp);
-//		modifyTempReference(startGcode, Toolheads.RIGHT, secondaryTemp);
-//
-//		// add start and end gcode
-//		master_layer.addAll(0, startGcode);
-//		master_layer.addAll(master_layer.size(), endGcode);
-//
-//		mayHaveWipeCrash(master_layer);
-//		writeGCodeSourcetoFile(master_layer, dest);
-
-//		try
-//		{
-//			result = DualStrusionWorker.combineGcode(primary, secondary, dest, replaceStart, replaceEnd, useWipes);
-//			Base.getEditor().handleOpenFile(result);
-//		}
-//		catch(Exception e)
-//		{
-//			Base.logger.log(Level.SEVERE, "Could not finish combining gcodes for dualstrusion, Sorry.\n" +
-//					"Dualstrusion is still very new functionality and is currently being improved.");
-//			e.printStackTrace();
-//		}
-		
-		// ************* Debug layer parsing ****************** //
-//		System.out.println("File: " + primary.getAbsolutePath());
-//
-//		try {
-//			FileWriter fileout = new FileWriter(new File("layers.txt"));
-//			for(Layer l : parseLayers(GCodeHelper.readFiletoGCodeSource(primary)))
-//			{
-////				System.out.println("***************"+l.getHeight()+"**********");
-////				System.out.println(l.toString());
-////				System.out.println("****************************************");
-//
-//				fileout.append("***************"+l.getHeight()+"**********\n");
-//				fileout.append(l.toString());
-//				fileout.append("*******************************\n");
-//			}
-//			fileout.close();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 	}
 	
 	/**
@@ -256,6 +173,9 @@ public class DualStrusionConstruction {
 		LinkedList<Layer> layers = new LinkedList<Layer>();	
 		Queue<String> read = new LinkedList<String>();
 
+		//debug code///////////////////////////
+		layers.add(new Layer(0d, new ArrayList<String>(){{add("********************************************************************************start layer**************************************************************");}}));
+		//////////////////////////////////////
 		String lastM103 = null;
 		double lastZHeight = Double.MIN_VALUE;
 		for(String line : source)
@@ -297,7 +217,10 @@ public class DualStrusionConstruction {
 			
 			read.add(line);
 		}
-		
+
+		//debug code///////////////////////////
+		layers.add(new Layer(0d, new ArrayList<String>(){{add("********************************************************************************end layer**************************************************************");}}));
+		//////////////////////////////////////
 		return layers;
 	}
 	
@@ -339,7 +262,9 @@ public class DualStrusionConstruction {
 		 *   layer.add(M18 A B)
 		 */
 		ArrayList<String> result = new ArrayList<String>();
-		
+		//debug code///////////////////////////
+		result.add("********************************************************************************start toolchange**************************************************************");
+		//////////////////////////////////////
 		if(useWipes)
 		{
 			// The left/right distinction isn't actually important here
@@ -369,6 +294,9 @@ public class DualStrusionConstruction {
 		result.add("G1 " + feedrate);
 		
 		
+		//debug code///////////////////////////
+		result.add("********************************************************************************end toolchange**************************************************************");
+		//////////////////////////////////////
 		// The 'height' of the toolchange. just the average of the surrounding layers because why not?
 		double height = (toLayer.getHeight() - fromLayer.getHeight())/2;
 		
@@ -419,7 +347,10 @@ public class DualStrusionConstruction {
 	private ArrayList<String> wipe(WipeModel toolWipe)
 	{
 		ArrayList<String> result = new ArrayList<String>();
-		
+
+		//debug code///////////////////////////
+		result.add("********************************************************************************start wipe**************************************************************");
+		//////////////////////////////////////
 
 		// This is a not-entirely-arbitrarily chosen number
 		// Ben or Noah may be able to explain it,
@@ -449,7 +380,10 @@ public class DualStrusionConstruction {
 		
 		// move to second wipe position
 		result.add("G1 " + toolWipe.getX2() +" "+ toolWipe.getY2() +" "+ toolWipe.getZ2() +" "+ feedrate);
-		
+
+		//debug code///////////////////////////
+		result.add("********************************************************************************end wipe**************************************************************");
+		//////////////////////////////////////
 		return result;
 	}
 	

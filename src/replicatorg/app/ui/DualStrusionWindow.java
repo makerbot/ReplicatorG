@@ -150,7 +150,7 @@ public class DualStrusionWindow extends JFrame{
 		cont.add(new JLabel("Left Extruder"), "split");
 
 		final JTextField leftToolhead = new JTextField(60);
-		String loadFileName = Base.preferences.get("dualstrusionwindow.1file", path);
+		String loadFileName = Base.preferences.get("dualstrusionwindow.leftfile", path);
 		if(loadFileName != null)
 			leftToolhead.setText(loadFileName);
 		else
@@ -177,7 +177,7 @@ public class DualStrusionWindow extends JFrame{
 		cont.add(leftChooserButton, "wrap");
 
 		final JTextField rightToolhead = new JTextField(60);
-		loadFileName = Base.preferences.get("dualstrusionwindow.0file", path);
+		loadFileName = Base.preferences.get("dualstrusionwindow.rightfile", path);
 		if(loadFileName != null)
 			rightToolhead.setText(loadFileName);
 		else
@@ -353,10 +353,12 @@ public class DualStrusionWindow extends JFrame{
 
 				if(leftStl != null)
 				{
+					leftGcode = new File(replaceExtension(leftStl.getAbsolutePath(), "gcode"));
 					stlToGcode(leftStl, leftGcode, ToolheadAlias.LEFT, DualStrusionWindow.this.type);
 				}
 				if(rightStl != null)
 				{
+					rightGcode = new File(replaceExtension(rightStl.getAbsolutePath(), "gcode"));
 					stlToGcode(rightStl, rightGcode, ToolheadAlias.RIGHT, DualStrusionWindow.this.type);
 				}
 			}
@@ -387,16 +389,16 @@ public class DualStrusionWindow extends JFrame{
 	private void stlToGcode(File stl, File gcode, ToolheadAlias tool, MachineType type)
 	{
 		try{
-			gcode = new File(replaceExtension(stl.getAbsolutePath(), "gcode"));
-	
 			if(!gcode.exists())
 				gcode.createNewFile();
+
+			System.out.println(gcode.getName());
 
 			String title = "STL to GCode ";
 			if(tool == ToolheadAlias.LEFT)
 				title += "(Left) ";
 			if(tool == ToolheadAlias.RIGHT)
-				title += "(Left) ";
+				title += "(Right) ";
 			title += "Progress";
 			
 			final JFrame progress = new JFrame(title);
@@ -464,88 +466,6 @@ public class DualStrusionWindow extends JFrame{
 		} 
 	}
 	
-//	private void stlsToGcode()
-//	{
-//		try{
-//			final File toBuild = stls.poll();
-//			final File buildDest = new File(replaceExtension(toBuild.getAbsolutePath(), "gcode"));
-//			
-//			Base.logger.log(Level.FINE, "Initializing stl -> gcode " + toBuild.getAbsolutePath());
-//			if(!buildDest.exists())
-//				buildDest.createNewFile();
-//			gcodes.add(buildDest);
-//			
-//			final JFrame progress = new JFrame("STL to GCode Progress");
-//			final ToolpathGenerator gen = ToolpathGeneratorFactory.createSelectedGenerator();
-//
-//			if(gen instanceof SkeinforgeGenerator) {
-//			
-//
-//				
-//				// Here we'll do the setup for the post-processor
-//				//Let's figure out which post-processing steps need to be taken
-//				Set<String> postProcessingSteps = new TreeSet<String>();
-//				
-//				postProcessingSteps.add(SkeinforgePostProcessor.TARGET_TOOLHEAD_DUAL);
-//					
-//				/// a dual extruder machine is selected, start/end gcode must be updated accordingly
-//				// there should be a condition here?
-//				//DANGER: don't ship this
-//				if(true) {
-//					postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_REPLICATOR);
-//					postProcessingSteps.add(SkeinforgePostProcessor.PREPEND_START);
-//					postProcessingSteps.add(SkeinforgePostProcessor.REPLACE_END);
-//				}
-//				
-//			}
-//			
-//			final Build b = new Build(toBuild.getAbsolutePath());
-//			final ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(progress, gen, b);
-//			
-//			tgt.addListener(new GeneratorListener(){
-//				@Override
-//				public void updateGenerator(GeneratorEvent evt) {
-//					if(evt.getMessage().equals("Config Done") && !stls.isEmpty())
-//					{
-//						Base.logger.log(Level.FINE, "Starting next stl > gcode: " + stls.peek().getName());
-//						stlsToGcode();
-//					}
-//				}
-//
-//				@Override
-//				public void generationComplete(GeneratorEvent evt) {
-//					if(evt.getCompletion() == Completion.FAILURE || aborted)
-//					{
-//						aborted = true;
-//						return;
-//					}
-//					
-//					
-//					
-//					numStls.countDown();
-//					if(numStls.getCount() == 0)
-//					{
-//						Base.logger.log(Level.FINE, "done converting stl files, on to gcode combination! " + numStls.getCount() + "==0?  " + buildDest.getName());
-//						numGcodes = new CountDownLatch(gcodes.size());
-//						combineGcodes();
-//					}
-//				}
-//				
-//			});
-//			tgt.setDualStrusionSupportFlag(true, 200, 300, toBuild.getName());
-//
-//			Base.logger.log(Level.FINE, "Init finished, starting conversion");
-//			
-//			tgt.start();
-//		}
-//		catch(IOException e)
-//		{
-//			Base.logger.log(Level.SEVERE, "cannot read stl! Aborting dualstrusion generation, see log level FINEST for more details.");
-//			Base.logger.log(Level.FINEST, "", e);
-//			
-//		} 
-//	}
-	
 	private static String getExtension(String path)
 	{
 		int i = path.lastIndexOf(".");
@@ -563,6 +483,8 @@ public class DualStrusionWindow extends JFrame{
 	
 	private void combineGcodes()
 	{
+		System.out.println(leftGcode == null);
+		System.out.println(rightGcode == null);
 		//For now this should always be exactly two gcodes, let's just check that assumption
 		if(leftGcode == null || rightGcode == null)
 		{

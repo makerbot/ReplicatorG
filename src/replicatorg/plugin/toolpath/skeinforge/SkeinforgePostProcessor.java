@@ -129,10 +129,13 @@ public class SkeinforgePostProcessor {
 //			runStartReplacement();
 //		if(options.contains(REPLACE_END))
 //			runEndReplacement();
-		if(options.contains(PREPEND_START))
-			runPrepend(startCode);
-		if(options.contains(APPEND_END))
-			runAppend(endCode);
+		if(! options.contains(TARGET_TOOLHEAD_DUAL))
+		{
+			if(options.contains(PREPEND_START))
+				runPrepend(startCode);
+			if(options.contains(APPEND_END))
+				runAppend(endCode);
+		}
 
 		System.out.println("***********************************");
 		
