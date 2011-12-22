@@ -876,7 +876,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		Base.logger.fine("Waiting for tool #" + toolhead);
 
 		// send it!
-		if (this.machine.currentTool().getTargetTemperature() > 0.0) {
+		if (this.machine.getTool(toolhead).getTargetTemperature() > 0.0) {
 			PacketBuilder pb = new PacketBuilder(
 					MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
 			pb.add8((byte) toolhead);
@@ -885,6 +885,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 			runCommand(pb.getPacket());
 		}
 
+		
 		// FIXME: We used to check for version here, but this will only work if
 		// we're connected. Atm., we'll rather
 		// require the latest firmware.
@@ -892,7 +893,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		// Version(2,6))
 		if (this.machine.getTool(toolhead) != null
 				&& this.machine.getTool(toolhead).hasHeatedPlatform()
-				&& this.machine.currentTool().getPlatformTargetTemperature() > 0.0) {
+				&& this.machine.getTool(toolhead).getPlatformTargetTemperature() > 0.0) {
 			PacketBuilder pb = new PacketBuilder(
 					MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
 			pb.add8((byte) toolhead);
