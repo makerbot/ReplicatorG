@@ -11,9 +11,11 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -32,6 +34,7 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.AxisId;
 import replicatorg.util.Point5d;
@@ -54,7 +57,15 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	protected MachineInterface machine;
 
+	
+	/**
+	 * Creates a jog button, automatically fetching image resources from resources
+	 * using the root string
+	 * @author unknown
+	 *
+	 */
 	public class JogButton extends JButton {
+		
 		public JogButton(String root, String tooltip) {
 			BufferedImage img = Base.getImage("images/"+root+".png", this);					
 			setIcon(new ImageIcon(img));
@@ -249,6 +260,13 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		this.machine = machine;
 		Set<AxisId> axes = machine.getModel().getAvailableAxes();
 		
+		OnboardParameters onboardParam =  (OnboardParameters)machine.getDriver();
+		
+		Set<AxisId> invertedAxes = EnumSet.noneOf(AxisId.class);
+		if(onboardParam != null )
+		{
+			invertedAxes = onboardParam.getInvertedAxes();
+		}
 		setLayout(new MigLayout("gap 0, ins 0"));
 		
 		// compile our regexes
@@ -262,6 +280,9 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			list.removeAll(Arrays.asList("Continuous Jog"));
 			jogStrings = list.toArray(jogStrings);
 		}
+		
+		
+		
 		
 		JButton xPlusButton = createJogButton("jog/X+", "Jog X axis in positive direction", "X+");
 		JButton xMinusButton = createJogButton("jog/X-", "Jog X axis in negative direction", "X-");
@@ -284,12 +305,23 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		xyPanel.add(xPlusButton,"growx,growy,wrap");
 		xyPanel.add(yMinusButton, "skip 1,growx,growy,wrap");
 		jogButtonPanel.add(xyPanel);
+
 		if (axes.contains(AxisId.Z)) {
-			JButton zPlusButton = createJogButton("jog/Z+", "Jog Z axis in positive direction", "Z+");
-			JButton zMinusButton = createJogButton("jog/Z-", "Jog Z axis in negative direction", "Z-");
 			JPanel zPanel = new JPanel(new MigLayout("flowy"));
-			zPanel.add(zPlusButton);
-			zPanel.add(zMinusButton);
+			if (invertedAxes.contains(AxisId.Z) )
+			{
+				JButton zPlusButton = createJogButton("jog/DownZ+", "Jog Z axis in positive direction", "Z+");
+				JButton zMinusButton = createJogButton("jog/UpZ-", "Jog Z axis in negative direction", "Z-");
+				zPanel.add(zMinusButton);
+				zPanel.add(zPlusButton);
+			}
+			else {
+				JButton zMinusButton = createJogButton("jog/Z-", "Jog Z axis in negative direction", "Z-");
+				JButton zPlusButton = createJogButton("jog/Z+", "Jog Z axis in positive direction", "Z+");
+				zPanel.add(zPlusButton);
+				zPanel.add(zMinusButton);
+				
+			}
 			jogButtonPanel.add(zPanel,"wrap");
 		}
 		if (axes.contains(AxisId.A)) {
@@ -322,15 +354,10 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 		// add jog panel border and stuff.
 		setBorder(BorderFactory.createTitledBorder("Jog Controls"));
-	
-
-		DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
-		dfs.setDecimalSeparator('.');
-		positionFormatter = new DecimalFormat("###.##", dfs);
 	}
 	
 
-	private DecimalFormat positionFormatter;
+	private NumberFormat positionFormatter = Base.getLocalFormat();
 
 	synchronized public void updateStatus() {
 		Point5d current = machine.getDriverQueryInterface().getCurrentPosition(false);

@@ -47,13 +47,16 @@ import replicatorg.app.Base;
 import replicatorg.app.exceptions.SerialException;
 import replicatorg.app.exceptions.UnknownSerialPortException;
 
+
 public class Serial implements SerialPortEventListener {
+
 	/**
 	 * We maintain our own set of ports in current use, because RXTX can't be trusted.
 	 * (NB: may be obsoleted at some point on some platforms?)
 	 */
 	private static Set<Serial> portsInUse = new HashSet<Serial>();
 
+	
 	/** True if the device is connected **/
 	private AtomicBoolean connected = new AtomicBoolean(false);
 	
@@ -85,6 +88,7 @@ public class Serial implements SerialPortEventListener {
 	 */
 	public static Vector<Name> scanSerialNames()
 	{
+		
 		Vector<Name> v = new Vector<Name>();
 		try {
 			Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
@@ -98,7 +102,10 @@ public class Serial implements SerialPortEventListener {
 				}
 			}
 		} catch (Exception e) {
+			Base.logger.fine("problem scanning SerialPorts: " + e);
 		}
+		
+		
 		// In-use ports may not end up in the enumeration (thanks, RXTX), so
 		// we'll scan for them, and insert them if necessary.  (The app wants
 		// to display in-use ports to reduce user confusion.)
@@ -119,10 +126,10 @@ public class Serial implements SerialPortEventListener {
 			Pattern idPattern = Pattern.compile("(FTDI_TTL232R_|usb-Arduino__www.arduino.cc__Arduino_Uno_)([^-]*)");
 			File portDir = new File("/dev/serial/by-id/");
 			if (portDir.exists() && portDir.isDirectory()) {
-				for (File f : portDir.listFiles()) {
-					Matcher match = idPattern.matcher(f.getPath());
+				for (File file : portDir.listFiles()) {
+					Matcher match = idPattern.matcher(file.getPath());
 					if (match.find()) try {
-						String canonical = f.getCanonicalFile().getPath();
+						String canonical = file.getCanonicalFile().getPath();
 						for (Name m : v) {
 							if (m.getName().equals(canonical)) {
 								m.setAlias(match.group(2));
@@ -130,6 +137,29 @@ public class Serial implements SerialPortEventListener {
 						}
 					} catch (IOException ioe) {
 						// pass 
+					}
+				}
+			}
+			/// scan on linux the 'By-Id' value, and try to verify by ID if we have a MakerBot Inutries USB device
+			Pattern makerBotByIdPattern = Pattern.compile("usb-MakerBot_Industries_(MightyBoard)_([^-]*)");
+			if (portDir.exists() && portDir.isDirectory()) {
+				for (File file : portDir.listFiles()) {
+					/// try to match our ex
+					Matcher match = makerBotByIdPattern.matcher(file.getPath());
+					if ( match.find() ) 
+					{
+						try {
+							String canonical = file.getCanonicalFile().getPath();
+							for (Name m : v) {
+								/// if any name matchines, we can verify we have a verified MBI device.
+								if (m.getName().equals(canonical)) {
+									m.setAlias("'MightyBoard " + match.group(2));
+									m.setHardwareId(UsbHardwareId.MIGHTY_BOARD);
+								}
+							}
+						} catch (IOException ioe) {
+							// pass 
+						}
 					}
 				}
 			}
@@ -160,6 +190,7 @@ public class Serial implements SerialPortEventListener {
 		}
 		return null;
 	}
+	
 
 	private void init(String name, int rate, char parity, int data, float stop) throws SerialException {
 		// Prepare parameters
@@ -192,18 +223,17 @@ public class Serial implements SerialPortEventListener {
 			port.notifyOnDataAvailable(true);
 		} catch (PortInUseException e) {
 			throw new SerialException(
-					"Serial port '"
-					+ name
+					"Serial port '" + name
 					+ "' already in use.  Try quiting any programs that may be using it.");
 		} catch (Exception e) {
-			throw new SerialException("Error opening serial port '" + name
-					+ "'.", e);
+			throw new SerialException("Error opening serial port '" + name + "'.", e);
 		}
 		portsInUse.add(this);
 		
 		connected.set(true);
 	}
 
+	
 	/**
 	 * Unregister and close the port.
 	 */

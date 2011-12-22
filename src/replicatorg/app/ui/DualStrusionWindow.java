@@ -36,6 +36,7 @@ $Id: MainWindow.java 370 2008-01-19 16:37:19Z mellis $
  */
 import java.awt.Container;
 import java.awt.Desktop;
+import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -58,7 +59,7 @@ import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.dualstrusion.DualStrusionConstruction;
+import replicatorg.app.gcode.DualStrusionConstruction;
 import replicatorg.model.Build;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
@@ -97,16 +98,17 @@ public class DualStrusionWindow extends JFrame{
 	{
 		this(null);
 	}
-	/**
-	 * This is a constructor that takes the filepath of the gcode open currently in ReplicatorG
-	 * @param s the path of the gcode currently open in RepG
-	 */
+	
 	/**
 	 * This method creates and shows the DualStrusionWindow GUI, this window is a MigLayout with 3 JFileChooser-TextBox Pairs, the first two being source gcodes and the last being the combined gcode destination.
 	 * It also links to online DualStrusion Documentation NOTE: This may be buggy, it uses getDesktop() which is JDK 1.6 and scary.
 	 * This method also invokes the thread in which the gcode combining operations run in, I would like to turn this into a SwingWorker soon.
-	 */
+
+	 * This is a constructor that takes the filepath of the gcode open currently in ReplicatorG
+	 * @param s the path of the gcode currently open in RepG
+	*/
 	public DualStrusionWindow(String path) {
+		//TODO: Constructors shouldn't auto-display. Refactor that
 		super("DualStrusion Window (EXPERIMENTAL functionality)");
 
 		Base.logger.log(Level.FINE, "Dualstrusion window booting up...");
@@ -261,7 +263,7 @@ public class DualStrusionWindow extends JFrame{
 		//Use Wipes	
 		final JCheckBox useWipes = new JCheckBox();
 		useWipes.setSelected(true);
-		cont.add(new JLabel("Use Wipes. (DANGER! Don't disable this unless you know what you're doing)"), "split");
+		cont.add(new JLabel("Use wipes defined in machines.xml"), "split");
 		cont.add(useWipes, "wrap");
 		
 		//Merge
@@ -379,6 +381,15 @@ public class DualStrusionWindow extends JFrame{
 			
 			final JFrame progress = new JFrame("STL to GCode Progress");
 			final ToolpathGenerator gen = ToolpathGeneratorFactory.createSelectedGenerator();
+			
+			/*
+			 * I think we can change some skeinforge preferences in here:
+			 *
+			List p = ((SkeinforgeGenerator)gen).getPreferences();
+			p.remove(arg0);
+			p.add(arg0);
+			 //*/
+			
 			final Build b = new Build(toBuild.getAbsolutePath());
 			final ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(progress, gen, b);
 			
@@ -413,7 +424,7 @@ public class DualStrusionWindow extends JFrame{
 		catch(IOException e)
 		{
 			Base.logger.log(Level.SEVERE, "cannot read stl! Aborting dualstrusion generation, see log level FINEST for more details.");
-			Base.logger.log(Level.FINEST, ""+e);
+			Base.logger.log(Level.FINEST, "", e);
 			
 		} 
 	}

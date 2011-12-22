@@ -1,0 +1,60 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+<machine experimental="0">
+		<name>The Replicator Dual (Shipping Config) </name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="227" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="148" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="150" maxfeedrate="1400" homingfeedrate="1100" stepspermm="400" endstops="min"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
+			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
+		</geometry>
+		<tools>
+			<tool name="Mk8 Left" model="Mk8" diameter="0.4" stepper_axis="b" index="1" type="extruder" motor="true" fan="true"  heatedplatform="false" motor_steps="3200" default_rpm="3" heater="true"/>
+			<tool name="Mk8 Right" model="Mk8" diameter="0.4" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
+		</tools>
+		<wipes>
+			<wipe index="0" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+			<wipe index="1" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+		</wipes>
+		<clamps></clamps>
+		<driver name="mightyboard">
+			<!-- optional: <portname>COM1</portname> -->
+			<rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+M18 (Turn off steppers after a build.)
+		</cooldown>
+		<bookend start="machines/replicator/dual-start.gcode" end="machines/replicator/end.gcode"/>
+	</machine>
+<machine experimental="0">
+		<name>The Replicator (Shipping Config)</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="227" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="148" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="150" maxfeedrate="1400" homingfeedrate="1100" stepspermm="400" endstops="min"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
+		</geometry>
+		<tools>
+			<tool name="Mk8" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
+		</tools>
+		<wipes>
+			<wipe index="0" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+			<wipe index="1" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+		</wipes>
+		<clamps></clamps>
+		<driver name="mightyboard">
+			<!-- optional: <portname>COM1</portname> -->
+			<rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+M18 (Turn off steppers after a build.)
+		</cooldown>
+		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>
+	</machine></machines>

@@ -101,6 +101,12 @@ public class UploaderDialog extends JDialog implements ActionListener {
 						selectedBoard = board;
 						nextButton.setEnabled(true);
 					}
+
+					@Override
+					public void boardConfirmed() {
+						// equivalent to clicking "next"
+						actionPerformed(null);
+					}
 		});
 		showPanel(boardPanel);
 	}
@@ -115,6 +121,11 @@ public class UploaderDialog extends JDialog implements ActionListener {
 					public void firmwareSelected(FirmwareVersion firmware) {
 						selectedVersion = firmware;
 						nextButton.setEnabled(true);
+					}
+
+					public void firmwareConfirmed() {
+						// equivalent to clicking "next"
+						actionPerformed(null);
 					}
 		});
 		showPanel(firmwarePanel);
@@ -131,12 +142,18 @@ public class UploaderDialog extends JDialog implements ActionListener {
 						portName = port;
 						nextButton.setEnabled(true);
 					}
+
+					@Override
+					public void portConfirmed() {
+						// equivalent to clicking "next"
+						actionPerformed(null);
+					}
 		});
 		showPanel(portPanel);
 	}
 
 	AbstractFirmwareUploader createUploader() {
-		MachineInterface machine = Base.getMachineLoader().getMachine();
+		MachineInterface machine = Base.getMachineLoader().getMachineInterface();
 		
 		if (machine != null) { machine.dispose(); }
 		NodeList nl = selectedBoard.getChildNodes();

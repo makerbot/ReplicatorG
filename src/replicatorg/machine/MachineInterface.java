@@ -6,6 +6,7 @@ import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.Machine.JobTarget;
 import replicatorg.machine.model.MachineModel;
+import replicatorg.machine.model.MachineType;
 import replicatorg.model.GCodeSource;
 
 
@@ -58,6 +59,7 @@ public interface MachineInterface {
 	
 	
 	public String getMachineName();
+	public MachineType getMachineType();
 	
 	
 	// Job level commands

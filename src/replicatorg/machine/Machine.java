@@ -24,15 +24,13 @@ import java.util.Queue;
 import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
-import replicatorg.app.GCode;
-import replicatorg.app.GCodeEnumeration;
-import replicatorg.app.GCodeParser;
+import replicatorg.app.gcode.GCodeCommand;
+import replicatorg.app.gcode.GCodeEnumeration;
+import replicatorg.app.gcode.GCodeParser;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverQueryInterface;
 import replicatorg.drivers.EstimationDriver;
@@ -41,6 +39,7 @@ import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.model.MachineModel;
+import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.util.Point5d;
@@ -245,7 +244,7 @@ public class Machine implements MachineInterface {
 		// TODO: Is this correct?
 		estimator.setMachine(machineThread.getModel());
 		
-		boolean safetyChecks = Base.preferences.getBoolean("build.runSafetyChecks", true);
+		boolean safetyChecks = Base.preferences.getBoolean("build.safetyChecks", true);
 		
 		int nToolheads = machineThread.getModel().getTools().size();
 		Point5d maxRates = machineThread.getModel().getMaximumFeedrates();
@@ -262,7 +261,7 @@ public class Machine implements MachineInterface {
 
 			if(safetyChecks)
 			{
-				GCode gcLine = new GCode(line);
+				GCodeCommand gcLine = new GCodeCommand(line);
 				String s;
 
 				String mainCode = gcLine.getCommand().split(" ")[0];
@@ -492,5 +491,11 @@ public class Machine implements MachineInterface {
 	// TODO: Drop this
 	public JobTarget getTarget() {
 		return machineThread.getTarget();
+	}
+	
+	@Override
+	public MachineType getMachineType()
+	{
+		return getModel().getMachineType();
 	}
 }

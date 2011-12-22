@@ -3,21 +3,15 @@ package replicatorg.plugin.toolpath.skeinforge;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.List;
-import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -43,6 +37,10 @@ class ConfigurationDialog extends JDialog {
 	
 	JPanel profilePanel = new JPanel();
 	
+	/**
+	 * Fills a combo box with a list of skeinforge profiles
+	 * @param comboBox to fill with list of skeinforge profiles
+	 */
 	private void loadList(JComboBox comboBox) {
 		comboBox.removeAllItems();
 		profiles = parentGenerator.getProfiles();
@@ -90,10 +88,6 @@ class ConfigurationDialog extends JDialog {
 		setTitle("GCode Generator");
 		setLayout(new MigLayout("aligny, top, ins 5, fill"));
 		
-		// have to set this. Something wrong with the initial use of the
-		// ListSelectionListener
-		generateButton.setEnabled(false);
-				
 		add(new JLabel("Base Profile:"), "split 2");
 		
 		// This is intended to fix a bug where the "Generate Gcode" button doesn't get enabled 
@@ -104,35 +98,32 @@ class ConfigurationDialog extends JDialog {
 				generateButton.requestFocusInWindow();
 				generateButton.setFocusPainted(true);
 			}
-			
 		});
 		loadList(prefPulldown);
-		prefPulldown.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent arg0) {
-				String value = (String)prefPulldown.getSelectedItem().toString();
-			}
-		});
 		add(prefPulldown, "wrap, growx");
 
-		for (SkeinforgePreference preference: parentGenerator.preferences) {
+		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
 			add(preference.getUI(), "wrap");
 		}
 
+		final JCheckBox autoGen = new JCheckBox("Automatically generate when building.");
+		autoGen.setToolTipText("When building from the model view with this checked " +
+				"GCode will automatically be generated, bypassing this dialog.");
+		add(autoGen, "wrap");
+		autoGen.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Base.preferences.putBoolean("build.autoGenerateGcode", autoGen.isSelected());
+			}
+		});
+		autoGen.setSelected(Base.preferences.getBoolean("build.autoGenerateGcode", false));
+		
 		add(generateButton, "tag ok, split 2");
 		add(cancelButton, "tag cancel");
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if(!parentGenerator.runSanityChecks()) {
-					return;
-				}
-				
-				int idx = prefPulldown.getSelectedIndex();
-				Profile p = getListedProfile(idx);
-				Base.preferences.put("lastGeneratorProfileSelected",p.toString());
-				parentGenerator.configSuccess = true;
-				parentGenerator.profile = p.getFullPath();
-				setVisible(false);
-				SkeinforgeGenerator.setSelectedProfile(p.toString());
+				parentGenerator.configSuccess = configureGenerator();
+				setVisible(!parentGenerator.configSuccess);
 			}
 		});
 		cancelButton.addActionListener(new ActionListener() {
@@ -141,18 +132,28 @@ class ConfigurationDialog extends JDialog {
 				setVisible(false);
 			}
 		});
-		//add(buttonPanel, "wrap, growx");
-/*
- * This is being removed because the nulling of profiles and 
- * parentGenerator is being moved to setVisible()		
-		addWindowListener( new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				profiles = null;
-				parentGenerator = null;
-				super.windowClosed(e);
-			}
-		});
-*/
+
+	}
+	
+	/**
+	 * Does pre-skeinforge generation tasks
+	 */
+	protected boolean configureGenerator()
+	{
+		if(!parentGenerator.runSanityChecks()) {
+			return false;
+		}
+		
+		int idx = prefPulldown.getSelectedIndex();
+		
+		if(idx == -1) {
+			return false;
+		}
+		
+		Profile p = getListedProfile(idx);
+		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
+		parentGenerator.profile = p.getFullPath();
+		SkeinforgeGenerator.setSelectedProfile(p.toString());
+		return true;
 	}
 };
