@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Vector;
 import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
@@ -15,7 +14,6 @@ import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.machine.model.WipeModel;
 import replicatorg.model.GCodeSource;
-import replicatorg.model.StringListSource;
 import replicatorg.util.Point5d;
 
 
@@ -43,8 +41,8 @@ public class DualStrusionConstruction {
 		this.right = right;
 		this.useWipes = useWipes;
 		this.machineType = type;
-		start = startSource;
-		end = endSource;
+		start = startSource.copy();
+		end = endSource.copy();
 		if(useWipes)
 		{
 			leftWipe = Base.getMachineLoader().getMachineInterface().getModel().getWipeFor(ToolheadAlias.LEFT);
@@ -105,9 +103,15 @@ public class DualStrusionConstruction {
 
 		//make sure every layer starts by setting the correct toolhead
 		for(Layer l : leftLayers)
+		{
+			l.getCommands().add(0, ToolheadAlias.LEFT.getRecallOffsetGcodeCommand());
 			l.getCommands().add(0, "M6 P1 "+ToolheadAlias.LEFT.getTcode() + "(Set tool)");
+		}
 		for(Layer l : rightLayers)
+		{
+			l.getCommands().add(0, ToolheadAlias.RIGHT.getRecallOffsetGcodeCommand());
 			l.getCommands().add(0, "M6 P1 "+ToolheadAlias.RIGHT.getTcode() + "(Set tool)");
+		}
 
 		LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
 		
@@ -116,11 +120,11 @@ public class DualStrusionConstruction {
 		duplicateToolheadLines(end);
 
 		//debug code///////////////////////////
-		merged.add(0, new Layer(0d, new ArrayList<String>(){{add("********************************************************************************post-start**************************************************************");}}));
+		merged.add(0, new Layer(0d, new ArrayList<String>(){{add("(********************************************************************************post-start**************************************************************)");}}));
 		//////////////////////////////////////
 		merged.add(0, new Layer(0d, start.asList()));
 		//debug code///////////////////////////
-		merged.add(new Layer(0d, new ArrayList<String>(){{add("********************************************************************************pre-start**************************************************************");}}));
+		merged.add(new Layer(0d, new ArrayList<String>(){{add("(********************************************************************************pre-start**************************************************************)");}}));
 		//////////////////////////////////////
 		merged.add(new Layer(Double.MAX_VALUE, end.asList()));
 
@@ -168,7 +172,7 @@ public class DualStrusionConstruction {
 		Queue<String> read = new LinkedList<String>();
 
 		//debug code///////////////////////////
-		layers.add(new Layer(0d, new ArrayList<String>(){{add("********************************************************************************start layer**************************************************************");}}));
+		layers.add(new Layer(0d, new ArrayList<String>(){{add("(********************************************************************************start layer**************************************************************)");}}));
 		//////////////////////////////////////
 		String lastM103 = null;
 		double lastZHeight = Double.MIN_VALUE;
@@ -213,7 +217,7 @@ public class DualStrusionConstruction {
 		}
 
 		//debug code///////////////////////////
-		layers.add(new Layer(0d, new ArrayList<String>(){{add("********************************************************************************end layer**************************************************************");}}));
+		layers.add(new Layer(0d, new ArrayList<String>(){{add("(********************************************************************************end layer**************************************************************)");}}));
 		//////////////////////////////////////
 		return layers;
 	}
@@ -295,7 +299,7 @@ public class DualStrusionConstruction {
 		 */
 		ArrayList<String> result = new ArrayList<String>();
 		//debug code///////////////////////////
-		result.add("********************************************************************************start toolchange**************************************************************");
+		result.add("(********************************************************************************start toolchange**************************************************************)");
 		//////////////////////////////////////
 		if(useWipes)
 		{
@@ -327,7 +331,7 @@ public class DualStrusionConstruction {
 		
 		
 		//debug code///////////////////////////
-		result.add("********************************************************************************end toolchange**************************************************************");
+		result.add("(********************************************************************************end toolchange**************************************************************)");
 		//////////////////////////////////////
 		// The 'height' of the toolchange. just the average of the surrounding layers because why not?
 		double height = (toLayer.getHeight() - fromLayer.getHeight())/2;
@@ -381,7 +385,7 @@ public class DualStrusionConstruction {
 		ArrayList<String> result = new ArrayList<String>();
 
 		//debug code///////////////////////////
-		result.add("********************************************************************************start wipe**************************************************************");
+		result.add("(********************************************************************************start wipe**************************************************************)");
 		//////////////////////////////////////
 
 		// This is a not-entirely-arbitrarily chosen number
@@ -414,7 +418,7 @@ public class DualStrusionConstruction {
 		result.add("G1 " + toolWipe.getX2() +" "+ toolWipe.getY2() +" "+ toolWipe.getZ2() +" "+ feedrate);
 
 		//debug code///////////////////////////
-		result.add("********************************************************************************end wipe**************************************************************");
+		result.add("(********************************************************************************end wipe**************************************************************)");
 		//////////////////////////////////////
 		return result;
 	}
@@ -525,8 +529,10 @@ public class DualStrusionConstruction {
 	private void duplicateToolheadLines(MutableGCodeSource source)
 	{
 		int idx = 0;
-		for(String line : source)
+		List<String> sourceList = source.asList();
+		for(int i = 0; i < source.getLineCount(); i++)
 		{
+			String line = sourceList.get(i);
 			idx++;
 			GCodeCommand gcode = new GCodeCommand(line);
 			
@@ -535,6 +541,8 @@ public class DualStrusionConstruction {
 				source.add(idx, line.replace("T0", "T1"));
 			if(toolhead == 1)
 				source.add(line.replace("T1", "T0"));
+			if(toolhead != -1)
+				i++;
 			
 		}
 	}
