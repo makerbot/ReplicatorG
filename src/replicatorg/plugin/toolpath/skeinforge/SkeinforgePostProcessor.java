@@ -11,10 +11,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 
 import replicatorg.app.gcode.GCodeHelper;
+import replicatorg.app.gcode.MutableGCodeSource;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
 import replicatorg.model.GCodeSource;
-import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeBooleanPreference;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeOption;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
@@ -41,18 +41,18 @@ public class SkeinforgePostProcessor {
 	private final SkeinforgeGenerator generator;
 	private final Set<String> options;
 	
-	private GCodeSource source;
+	private MutableGCodeSource source;
 	
 	//TODO:
 	// Because I'm trying to do this quickly, I'm just throwing these in here. A better way to do it
 	// would be to replace the Set<String> with a Set<SFPostProcessorOptions> that would say, 
 	// for instance, {PREPEND, File toPrepend} or {REPLACE, GCodeSource toRemove, GCodeSource toAdd}
-	private GCodeSource startCode, endCode;
-	public SkeinforgePostProcessor(SkeinforgeGenerator generator, GCodeSource startCode, GCodeSource endCode, String...ops)
+	private MutableGCodeSource startCode, endCode;
+	public SkeinforgePostProcessor(SkeinforgeGenerator generator, MutableGCodeSource startCode, MutableGCodeSource endCode, String...ops)
 	{
 		this(generator, startCode, endCode, new TreeSet<String>(Arrays.asList(ops)));
 	}
-	public SkeinforgePostProcessor(SkeinforgeGenerator generator, GCodeSource startCode, GCodeSource endCode, Set<String> options)
+	public SkeinforgePostProcessor(SkeinforgeGenerator generator, MutableGCodeSource startCode, MutableGCodeSource endCode, Set<String> options)
 	{
 		this.generator = generator;
 		this.options = options;
@@ -111,7 +111,7 @@ public class SkeinforgePostProcessor {
 			}
 		}
 		// Load our code to a source iterator
-		source = GCodeHelper.readFiletoGCodeSource(generator.output.file);
+		source = new MutableGCodeSource(generator.output.file);
 
 		System.out.println("***********************************");
 		for(String s : options)
@@ -140,7 +140,7 @@ public class SkeinforgePostProcessor {
 		System.out.println("***********************************");
 		
 		//Write the modified source back to our file
-		GCodeHelper.writeGCodeSourcetoFile(source, generator.output.file);
+		source.writeToFile(generator.output.file);
 		
 		return generator.output;
 	}
@@ -149,7 +149,7 @@ public class SkeinforgePostProcessor {
 	{
 		System.out.println("runToolheadSwap");
 
-		source = GCodeHelper.changeToolHead(source, switchTo);
+		source.changeToolhead(switchTo);
 	}
 	
 	private void runStartReplacement()
@@ -158,11 +158,11 @@ public class SkeinforgePostProcessor {
 		//DANGER: start and end codes are not required to be called start/end.gcode
 		// we can look up what the name of the thing being used is, but it's in 
 		// different places in SF-35 and SF-44
-		GCodeSource oldStart = GCodeHelper.readFiletoGCodeSource(new File(generator.profile +"/alterations/start.gcode"));
+		MutableGCodeSource oldStart = new MutableGCodeSource(new File(generator.profile +"/alterations/start.gcode"));
 		
-		GCodeSource newStart = null;
+		MutableGCodeSource newStart = null;
 		if(options.contains(MACHINE_TYPE_REPLICATOR))
-			newStart = GCodeHelper.readFiletoGCodeSource(new File("machines/replicator/start.gcode"));
+			newStart = new MutableGCodeSource(new File("machines/replicator/start.gcode"));
 		
 		if(newStart == null)
 			return;
@@ -176,11 +176,11 @@ public class SkeinforgePostProcessor {
 		//DANGER: start and end codes are not required to be called start/end.gcode
 		// we can look up what the name of the thing being used is, but it's in 
 		// different places in SF-35 and SF-44
-		GCodeSource oldEnd = GCodeHelper.readFiletoGCodeSource(new File(generator.profile +"/alterations/end.gcode"));
+		GCodeSource oldEnd = new MutableGCodeSource(new File(generator.profile +"/alterations/end.gcode"));
 
 		GCodeSource newEnd = null;
 		if(options.contains(MACHINE_TYPE_REPLICATOR))
-			newEnd = GCodeHelper.readFiletoGCodeSource(new File("machines/replicator/end.gcode"));
+			newEnd = new MutableGCodeSource(new File("machines/replicator/end.gcode"));
 		
 		if(newEnd == null)
 			return;
@@ -190,11 +190,11 @@ public class SkeinforgePostProcessor {
 	
 	private void runPrepend(GCodeSource newCode)
 	{
-		source = GCodeHelper.addCodeToSource(source, newCode, 0);
+		source.add(0, newCode);
 	}
 	
 	private void runAppend(GCodeSource newCode)
 	{
-		source = GCodeHelper.addCodeToSource(source, newCode, source.getLineCount());
+		source.add(newCode);
 	}
 }

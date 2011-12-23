@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Vector;
+import java.util.logging.Level;
 
 import javax.swing.JOptionPane;
 
@@ -26,15 +27,17 @@ import replicatorg.util.Point5d;
  */
 public class DualStrusionConstruction {
 
-	private GCodeSource result;
-	private GCodeSource left, right;
-	private GCodeSource start, end;
+	private MutableGCodeSource result;
+	private MutableGCodeSource left, right;
+	private MutableGCodeSource start, end;
 	private boolean useWipes;
 	private WipeModel leftWipe;
 	private WipeModel rightWipe;
 	private MachineType machineType;
 
-	public DualStrusionConstruction(GCodeSource left, GCodeSource right, GCodeSource startSource, GCodeSource endSource, MachineType type, boolean useWipes)
+	public DualStrusionConstruction(MutableGCodeSource left, MutableGCodeSource right,
+									MutableGCodeSource startSource, MutableGCodeSource endSource,
+									MachineType type, boolean useWipes)
 	{
 		this.left = left;
 		this.right = right;
@@ -59,7 +62,7 @@ public class DualStrusionConstruction {
 			}
 		}
 	}
-	public GCodeSource getCombinedFile()
+	public MutableGCodeSource getCombinedFile()
 	{
 		return result;	
 	}
@@ -94,28 +97,23 @@ public class DualStrusionConstruction {
 		 * 
 		 */
 
-		left = GCodeHelper.stripStartEndBestEffort(left);
-		right = GCodeHelper.stripStartEndBestEffort(right);
+		left.stripStartEndBestEffort();
+		right.stripStartEndBestEffort();
 
-		LinkedList<Layer> leftLayers = parseLayers(left);
-		LinkedList<Layer> rightLayers = parseLayers(right);
-
-		System.out.println(left == null);
-		System.out.println(right == null);
-		System.out.println(start == null);
-		System.out.println(end == null);
+		LinkedList<Layer> leftLayers = oldParseLayers(left);
+		LinkedList<Layer> rightLayers = oldParseLayers(right);
 
 		//make sure every layer starts by setting the correct toolhead
 		for(Layer l : leftLayers)
-			l.getCommands().add(0, "G1 "+ToolheadAlias.LEFT.getTcode());
+			l.getCommands().add(0, "M6 P1 "+ToolheadAlias.LEFT.getTcode() + "(Set tool)");
 		for(Layer l : rightLayers)
-			l.getCommands().add(0, "G1 "+ToolheadAlias.RIGHT.getTcode());
+			l.getCommands().add(0, "M6 P1 "+ToolheadAlias.RIGHT.getTcode() + "(Set tool)");
 
 		LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
 		
 		//process start & end before adding them
-		start = duplicateToolheadLines(start);
-		end = duplicateToolheadLines(end);
+		duplicateToolheadLines(start);
+		duplicateToolheadLines(end);
 
 		//debug code///////////////////////////
 		merged.add(0, new Layer(0d, new ArrayList<String>(){{add("********************************************************************************post-start**************************************************************");}}));
@@ -126,15 +124,11 @@ public class DualStrusionConstruction {
 		//////////////////////////////////////
 		merged.add(new Layer(Double.MAX_VALUE, end.asList()));
 
-		Vector<String> wholeCode = new Vector<String>();
+		result = new MutableGCodeSource();
 		for(Layer l : merged)
 		{
-			for(String s : l.getCommands())
-			{
-				wholeCode.add(s);
-			}
+			result.add(l.getCommands());
 		}
-		result = new StringListSource(wholeCode);
 		
 	}
 	
@@ -222,6 +216,44 @@ public class DualStrusionConstruction {
 		layers.add(new Layer(0d, new ArrayList<String>(){{add("********************************************************************************end layer**************************************************************");}}));
 		//////////////////////////////////////
 		return layers;
+	}
+	
+	private LinkedList<Layer> oldParseLayers(GCodeSource source)
+	{
+		LinkedList<Layer> result = new LinkedList<Layer>();
+		
+		List<String> sourceList = source.asList();
+		
+		for(int i = 0; i < sourceList.size();  i++)
+		{
+			if(sourceList.get(i).matches("\\(\\<layer\\>.*\\)"))
+			{
+				float layerHeight = 0;
+				try
+				{
+					layerHeight = Float.parseFloat(sourceList.get(i).split(" ")[1]);
+				}
+				catch(NumberFormatException e)
+				{
+					Base.logger.log(Level.SEVERE, "one of your layer heights was unparseable, " +
+							"please check and make sure all of them are in the format (<layer> 0.00)");
+				}
+
+				int a = i + 1;
+				while(true)
+				{
+					if(sourceList.get(a).equalsIgnoreCase("(</layer>)"))
+					{
+						ArrayList<String> tempList = new ArrayList<String>(sourceList.subList(i, a+1));
+						result.add(new Layer(layerHeight, tempList)); 
+						break;
+					}
+					a++;
+				}
+			}
+		}
+
+		return result;
 	}
 	
 	private Layer toolchange(ToolheadAlias from, Layer fromLayer, ToolheadAlias to, Layer toLayer)
@@ -490,22 +522,20 @@ public class DualStrusionConstruction {
 		return result;
 	}
 	
-	private GCodeSource duplicateToolheadLines(GCodeSource source)
+	private void duplicateToolheadLines(MutableGCodeSource source)
 	{
-		Vector<String> newGCode = new Vector<String>();
-
-		for(String s : source)
+		int idx = 0;
+		for(String line : source)
 		{
-			newGCode.add(s);
-			GCodeCommand gcode = new GCodeCommand(s);
+			idx++;
+			GCodeCommand gcode = new GCodeCommand(line);
 			
 			double toolhead = gcode.getCodeValue('T');
 			if(toolhead == 0)
-				newGCode.add(s.replace("T0", "T1"));
+				source.add(idx, line.replace("T0", "T1"));
 			if(toolhead == 1)
-				newGCode.add(s.replace("T1", "T0"));
+				source.add(line.replace("T1", "T0"));
+			
 		}
-
-		return new StringListSource(newGCode);
 	}
 }
