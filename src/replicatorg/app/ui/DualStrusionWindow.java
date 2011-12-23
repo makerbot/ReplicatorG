@@ -57,6 +57,7 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.gcode.DualStrusionConstruction;
 import replicatorg.app.gcode.GCodeHelper;
+import replicatorg.app.gcode.MutableGCodeSource;
 import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.Build;
@@ -98,10 +99,10 @@ public class DualStrusionWindow extends JFrame{
 	File rightStl = null;
 	File leftGcode = null;
 	File rightGcode = null;
-	GCodeSource leftSource;
-	GCodeSource rightSource;
-	GCodeSource startSource;
-	GCodeSource endSource;
+	MutableGCodeSource leftSource;
+	MutableGCodeSource rightSource;
+	MutableGCodeSource startSource;
+	MutableGCodeSource endSource;
 
 	boolean aborted = false;
 	CountDownLatch completed;
@@ -111,7 +112,7 @@ public class DualStrusionWindow extends JFrame{
 	 * 
 	 * This is the default constructor, it is only invoked if the ReplicatorG window did not already have a piece of gcode open
 	 */
-	public DualStrusionWindow(MachineType type, GCodeSource startCode, GCodeSource endCode)
+	public DualStrusionWindow(MachineType type, MutableGCodeSource startCode, MutableGCodeSource endCode)
 	{
 		this(type, startCode, endCode, null);
 	}
@@ -129,7 +130,7 @@ public class DualStrusionWindow extends JFrame{
 	 * 
 	 */
 	
-	public DualStrusionWindow(MachineType type, GCodeSource startCode, GCodeSource endCode, String path) {
+	public DualStrusionWindow(MachineType type, MutableGCodeSource startCode, MutableGCodeSource endCode, String path) {
 		super("DualStrusion Window (EXPERIMENTAL functionality)");
 
 		Base.logger.log(Level.FINE, "Dualstrusion window booting up...");
@@ -336,14 +337,14 @@ public class DualStrusionWindow extends JFrame{
 				completed = new CountDownLatch(2);
 				if(leftGcode != null)
 				{
-					leftSource = GCodeHelper.readFiletoGCodeSource(leftGcode);
-					leftSource = GCodeHelper.stripStartEndBestEffort(leftSource);
+					leftSource = new MutableGCodeSource(leftGcode);
+					leftSource.stripStartEndBestEffort();
 					completed.countDown();
 				}
 				if(rightGcode != null)
 				{
-					rightSource = GCodeHelper.readFiletoGCodeSource(rightGcode);
-					rightSource = GCodeHelper.stripStartEndBestEffort(rightSource);
+					rightSource = new MutableGCodeSource(rightGcode);
+					rightSource.stripStartEndBestEffort();
 					completed.countDown();
 				}
 				if(completed.getCount() == 0)
@@ -493,13 +494,13 @@ public class DualStrusionWindow extends JFrame{
 			return;
 		}
 
-		leftSource = GCodeHelper.readFiletoGCodeSource(leftGcode);
-		rightSource = GCodeHelper.readFiletoGCodeSource(rightGcode);
+		leftSource = new MutableGCodeSource(leftGcode);
+		rightSource = new MutableGCodeSource(rightGcode);
 		
 		// the two consecutive poll()s pull what are the only two gcode files
 		DualStrusionConstruction dcs = new DualStrusionConstruction(leftSource, rightSource, startSource, endSource, type, uWipe);
 		dcs.combine();
-		GCodeHelper.writeGCodeSourcetoFile(dcs.getCombinedFile(), dest);
+		dcs.getCombinedFile().writeToFile(dest);
 		
 		Base.logger.log(Level.FINE, "Finished DualStrusionWindow's part");
 		

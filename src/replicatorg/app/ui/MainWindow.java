@@ -112,6 +112,7 @@ import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.MRUList;
 import replicatorg.app.gcode.GCodeEnumeration;
 import replicatorg.app.gcode.GCodeHelper;
+import replicatorg.app.gcode.MutableGCodeSource;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
@@ -143,7 +144,6 @@ import replicatorg.model.Build;
 import replicatorg.model.BuildCode;
 import replicatorg.model.BuildElement;
 import replicatorg.model.BuildModel;
-import replicatorg.model.GCodeSource;
 import replicatorg.model.JEditTextAreaSource;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
 import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorEvent;
@@ -618,8 +618,8 @@ ToolpathGenerator.GeneratorListener
 			
 			((SkeinforgeGenerator) generator).setPostProcessor(
 					new SkeinforgePostProcessor((SkeinforgeGenerator)generator, 
-							GCodeHelper.readFiletoGCodeSource(machineLoader.getMachineInterface().getModel().getStartCode()),
-							GCodeHelper.readFiletoGCodeSource(machineLoader.getMachineInterface().getModel().getEndCode()),
+							new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartCode()),
+							new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndCode()),
 							postProcessingSteps));
 		}
 
@@ -1053,7 +1053,9 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
-				GCodeHelper.newChangeToolHead(build.getCode().file, ToolheadAlias.LEFT);
+				MutableGCodeSource code = new MutableGCodeSource(build.getCode().file);
+				code.changeToolhead(ToolheadAlias.LEFT);
+				code.writeToFile(build.getCode().file);
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();
@@ -1070,7 +1072,9 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
-				GCodeHelper.newChangeToolHead(build.getCode().file, ToolheadAlias.RIGHT);
+				MutableGCodeSource code = new MutableGCodeSource(build.getCode().file);
+				code.changeToolhead(ToolheadAlias.RIGHT);
+				code.writeToFile(build.getCode().file);
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();
@@ -2426,10 +2430,10 @@ ToolpathGenerator.GeneratorListener
 			
 			// this is stuff that DualStrusion, and until there's a better way to get it there...
 			MachineType type = machineLoader.getMachineInterface().getMachineType();
-			GCodeSource startCode = GCodeHelper.readFiletoGCodeSource(
-					machineLoader.getMachineInterface().getModel().getStartCode());
-			GCodeSource endCode = GCodeHelper.readFiletoGCodeSource(
-					machineLoader.getMachineInterface().getModel().getEndCode());
+			MutableGCodeSource startCode = 
+					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartCode());
+			MutableGCodeSource endCode = 
+					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndCode());
 			
 			if(getBuild().getCode() != null)
 				dsw = new DualStrusionWindow(type, startCode, endCode, getBuild().getMainFilePath());

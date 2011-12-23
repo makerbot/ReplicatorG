@@ -1,6 +1,7 @@
 package replicatorg.machine.model;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.logging.Level;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -108,11 +109,12 @@ public class WipeModel {
 				reverseRPM = "";
 
 		}
-		catch(NumberFormatException | ParseException e)
+		catch(NumberFormatException e)
 		{
-			Base.logger.severe("Could not parse your xml wipe, please make sure everything is formatted correctly");
-
-			System.err.println("Could not parse your xml wipe, please make sure everything is formatted correctly");
+			Base.logger.log(Level.SEVERE, "Could not parse your xml wipe, please make sure everything is formatted correctly", e);
+			e.printStackTrace();
+		} catch (ParseException e) {
+			Base.logger.log(Level.SEVERE, "Could not parse your xml wipe, please make sure everything is formatted correctly", e);
 			e.printStackTrace();
 		}
 	}
