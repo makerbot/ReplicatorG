@@ -135,4 +135,11 @@ public class MutableGCodeSource implements GCodeSource {
 			}
 		}
 	}
+	
+	public MutableGCodeSource copy() {
+		MutableGCodeSource newSource = new MutableGCodeSource();
+		for(String line : source)
+			newSource.add(new String(line));
+		return newSource;
+	}
 }
