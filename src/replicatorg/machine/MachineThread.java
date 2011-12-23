@@ -524,13 +524,13 @@ class MachineThread extends Thread {
 			
 			if(state.isConnected())
 			{
-				// Check the status poll machine.
-				if (pollingTimer.elapsed()) {
-					// if we're not building, check temp
-					// if we are, check preferences for whether we want to check temp
+				/// Check the status poll machine.
+				if ( pollingTimer.elapsed() ) {
+					/// if we're not building, request temp update
+					/// if we are, check preferences for whether we want to check temp
 					if ((!state.isBuilding()) || Base.preferences.getBoolean("build.monitor_temp",false)) {
-						driver.readAllTemperatures();
-						driver.readAllPlatformTemperatures();
+						MachineCommand pollCmd = new MachineCommand( RequestType.RUN_COMMAND, new replicatorg.drivers.commands.ReadTemperature() );
+						this.scheduleRequest( pollCmd );
 						Vector<ToolModel> tools = controller.getModel().getTools();
 						for (ToolModel t : tools) {
 							controller.emitToolStatus(t);
