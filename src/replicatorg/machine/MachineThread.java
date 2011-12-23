@@ -158,6 +158,8 @@ class MachineThread extends Thread {
 		
 		statusThread = new AssessStatusThread(this);
 		statusThread.start();
+
+
 	}
 
 	/**
@@ -276,7 +278,7 @@ class MachineThread extends Thread {
 			}
 			break;
 		case DISCONNECT:
-			// TODO: This seems wrong
+
 			if (state.isConnected()) {
 				driver.uninitialize();
 				setState(new MachineState(MachineState.State.NOT_ATTACHED), notConnectedMessage());
@@ -286,6 +288,13 @@ class MachineThread extends Thread {
 					us.closeSerial();
 				}
 			}
+			/// for some reason we want to advertise we are still not connected....
+			else { 
+				//TRICKY: in this case way may be disconnected, and re-advertising disconnected. 
+				//setState() will ignore the duplicate state, so we dircetly emit.
+				controller.emitStateChange(new MachineState(MachineState.State.NOT_ATTACHED), "Not Connected");
+			}
+
 			break;
 		case RESET:
 			if (state.isConnected()) {

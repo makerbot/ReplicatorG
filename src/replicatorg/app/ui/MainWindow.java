@@ -1377,7 +1377,7 @@ ToolpathGenerator.GeneratorListener
 				}
 
 				Base.preferences.put("machine.name", name);
-				setDualStrusionGUI(building);
+				loadMachine(name, false);
 			}
 		}
 	}
@@ -3117,6 +3117,7 @@ ToolpathGenerator.GeneratorListener
 			Base.logger.severe("Couldn't find a port to use!");
 			return;
 		}
+		setDualStrusionGUI(building);
 
 //		if( canVerifyDeviceType(targetPort) )
 //		{

@@ -147,6 +147,11 @@ public class Machine implements MachineInterface {
 		machineNode = mNode;
 		machineThread = new MachineThread(this, mNode);
 		machineThread.start();
+
+		/// set initial state to propigate new machine info via callbacks
+		machineThread.scheduleRequest(new MachineCommand(
+				RequestType.DISCONNECT, null, null));
+
 	}
 
 	public boolean buildRemote(String remoteName) {
@@ -456,7 +461,6 @@ public class Machine implements MachineInterface {
 
 	protected void emitStateChange(MachineState current, String message) {
 		MachineStateChangeEvent e = new MachineStateChangeEvent(this, current, message);
-		
 		callbackHandler.schedule(e);
 	}
 
