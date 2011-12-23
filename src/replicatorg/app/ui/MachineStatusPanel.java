@@ -199,15 +199,18 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	}
 
 	public void toolStatusChanged(MachineToolStatusEvent event) {
+		
 		final MachineToolStatusEvent e = event;
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				Vector<ToolModel> tools = e.getSource().getModel().getTools();
 				String tempString = "";
 				
-				// This call reads all temperatures for all heads
-				e.getSource().getDriver().readAllPlatformTemperatures();
-				e.getSource().getDriver().readAllTemperatures(); 
+				/// TRICKY: we assume that the MachineThread is calling these functions 
+				/// for us, at least once every few seconds, to keep the local temperaure cache up to date.
+				/// re-enable this if you want to test that, or if MachineThread stops checking temp
+				//e.getSource().getDriver().readAllPlatformTemperatures();
+				//e.getSource().getDriver().readAllTemperatures(); 
 				
 				for(ToolModel t : tools)
 				{

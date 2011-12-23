@@ -315,12 +315,12 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		}
 
 		int stepperCountMightyBoard = 5;
-		Base.logger.severe("MightBoard initial Sync");
+		Base.logger.fine("MightBoard initial Sync");
 		for(int i = 0; i < stepperCountMightyBoard; i++)
 		{
 			int vRef = getStoredStepperVoltage(i); 
-			Base.logger.info("storing inital stepper Values from onboard eeprom");
-			Base.logger.info("i = " + i + " vRef =" + vRef);
+			Base.logger.fine("Caching inital Stepper vRef from bot");
+			Base.logger.finer("i = " + i + " vRef =" + vRef);
 			stepperValues.put(new Integer(i), new Integer(vRef) );
 		}
 		
@@ -389,23 +389,20 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public int getStoredStepperVoltage(int stepperId) 
 	{
-		Base.logger.severe("Getting stored stepperVoltage: " + stepperId );
+		Base.logger.fine("Getting stored stepperVoltage: " + stepperId );
 		int vRefForPotLocation = MightyBoardEEPROM.DIGI_POT_SETTINGS + stepperId;
 		
-		Base.logger.severe("Getting stored stepperVoltage from eeprom addr: " +
-				vRefForPotLocation  );
+		Base.logger.finer("Getting stored stepperVoltage from eeprom addr: " + vRefForPotLocation  );
 
 		byte[] voltages = readFromEEPROM(vRefForPotLocation, 1) ;
 		if(voltages == null ) {
-			Base.logger.severe("null response to EEPROM read");
+			Base.logger.severe("null response to EEPROM read at "+ vRefForPotLocation);
 			return 0;
 		}
-		Base.logger.severe("raw stored stepperVoltage: " + voltages[0]);
 
 		if(voltages[0] > 127)		voltages[0] = 127;
 		else if(voltages[0] < 0)	voltages[0] = 0;
 
-		Base.logger.severe("Effective stored stepperVoltage: " + voltages[0]);
 		return (int)voltages[0];
 		
 	}

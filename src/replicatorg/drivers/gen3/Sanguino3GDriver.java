@@ -1555,7 +1555,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	public void readAllPlatformTemperatures()
 	{
-		for(ToolModel curTool : machine.getTools())
+		
+		for(ToolModel curTool : machine.getTools() )
 		{
 			this.readPlatformTemperature(curTool.getIndex());
 		}
@@ -2015,14 +2016,14 @@ public class Sanguino3GDriver extends SerialDriver implements
 		
 		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isOK()) {
-			Base.logger.severe("readFromEEPROM ok for: " + offset + " size: " + len);
+			Base.logger.finest("readFromEEPROM ok for: " + offset + " size: " + len);
 			int rvlen = Math.min(pr.getPayload().length - 1, len);
 			byte[] rv = new byte[rvlen];
 			// Copy removes the first response byte from the packet payload.
 			System.arraycopy(pr.getPayload(), 1, rv, 0, rvlen);
 			return rv;
 		}
-		Base.logger.severe("readFromEEPROM failsauce: " + offset + " size: " + len);
+		Base.logger.severe("readFromEEPROM fail for: " + offset + " size: " + len);
 		Base.logger.severe("readFromEEPROM PR is: " + pr.toString());
 		return null;
 	}
