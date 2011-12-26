@@ -15,7 +15,6 @@ G161 Z F100 (home Z axis minimum)
 G162 X Y F2500 (home XY axes maximum)
 M132 X Y Z A B (Recall stored home offsets for XYZAB axis)
 (**** end homing ****)
-G1 X0.0 Y0.0 Z0.0 (Go to center)
 M6 T0
 M108 R3.0 T0
 (**** end of start.gcode ****)
