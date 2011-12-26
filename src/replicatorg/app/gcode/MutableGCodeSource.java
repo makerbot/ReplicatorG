@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Level;
 
 import replicatorg.app.Base;
@@ -109,74 +108,30 @@ public class MutableGCodeSource implements GCodeSource {
 	
 	public void changeToolhead(ToolheadAlias tool) {
 		
-		// T only needs to be called once in a file, so we find the first,
-		// make sure it's correct, and then remove every T after it
-		// (unless it's a comment, we can skip comments)
-		boolean foundT = false;
-		// same goes for G54&55
-		boolean foundG = false;
-		
 		for(String line : source)
 		{
-			GCodeCommand g = new GCodeCommand(line);
-
-			// replace the first toolhead call with the correct one
-			// removes every following toolhead call
-			if(!foundT)
+			GCodeCommand gcode = new GCodeCommand(line);
+			//copy constructor
+			if(gcode.hasCode('T'))
 			{
-//				if(g.removeCode('T') != null)
-				if(g.hasCode('T'))
+				int value = (int)gcode.getCodeValue('T');
+				if(value != tool.number)
 				{
-					foundT = true;
-//					g.addCode('T', tool.number);
-
-					// replace T* with the correct T code
-					line = line.replace("T0", tool.getTcode());
-					line = line.replace("T1", tool.getTcode());
+					if(value == 0)
+						line = line.replace("T0", "T1");
+					else if(value == 1)
+						line = line.replace("T1", "T0");
 				}
 			}
-			else
+			if(gcode.getCodeValue('G') == 54 && !(tool.getRecallOffsetGcodeCommand().equals("G54")))
 			{
-//				g.removeCode('T');
-				line = line.replace("T0", "");
-				line = line.replace("T1", "");
+				line = line.replace("G54", tool.getRecallOffsetGcodeCommand());
 			}
-			
-			// replaces the first G54/55 with the correct one
-			// removes every following G54/55
-			if(!foundG)
+			if(gcode.getCodeValue('G') == 55 && !(tool.getRecallOffsetGcodeCommand().equals("G55")))
 			{
-				if(g.getCodeValue('G') == 55)
-				{
-					foundG = true;
-					if(tool == ToolheadAlias.LEFT)
-					{
-//						g.removeCode('G');
-//						g.addCode('G', 54);
-						line = line.replace("G55", "G54");
-					}
-				}
-				else if(g.getCodeValue('G') == 54)
-				{
-					foundG = true;
-					if(tool == ToolheadAlias.RIGHT)
-					{
-						line = line.replace("G54", "G55");
-					}
-				}
+				line = line.replace("G55", tool.getRecallOffsetGcodeCommand());
 			}
-			else
-			{
-				if (g.getCodeValue('G') == 55 || g.getCodeValue('G') == 54)
-				{
-//					g.removeCode('G');
-					line = line.replace("G54", "");
-					line = line.replace("G55", "");
-				}
-			}
-			
 		}
-
 	}
 	
 	public MutableGCodeSource copy() {

@@ -158,6 +158,8 @@ class MachineThread extends Thread {
 		
 		statusThread = new AssessStatusThread(this);
 		statusThread.start();
+
+
 	}
 
 	/**
@@ -276,7 +278,7 @@ class MachineThread extends Thread {
 			}
 			break;
 		case DISCONNECT:
-			// TODO: This seems wrong
+
 			if (state.isConnected()) {
 				driver.uninitialize();
 				setState(new MachineState(MachineState.State.NOT_ATTACHED), notConnectedMessage());
@@ -286,6 +288,13 @@ class MachineThread extends Thread {
 					us.closeSerial();
 				}
 			}
+			/// for some reason we want to advertise we are still not connected....
+			else { 
+				//TRICKY: in this case way may be disconnected, and re-advertising disconnected. 
+				//setState() will ignore the duplicate state, so we dircetly emit.
+				controller.emitStateChange(new MachineState(MachineState.State.NOT_ATTACHED), "Not Connected");
+			}
+
 			break;
 		case RESET:
 			if (state.isConnected()) {
@@ -524,12 +533,13 @@ class MachineThread extends Thread {
 			
 			if(state.isConnected())
 			{
-				// Check the status poll machine.
-				if (pollingTimer.elapsed()) {
-					// if we're not building, check temp
-					// if we are, check preferences for whether we want to check temp
+				/// Check the status poll machine.
+				if ( pollingTimer.elapsed() ) {
+					/// if we're not building, request temp update
+					/// if we are, check preferences for whether we want to check temp
 					if ((!state.isBuilding()) || Base.preferences.getBoolean("build.monitor_temp",false)) {
-						driver.readTemperature();
+						MachineCommand pollCmd = new MachineCommand( RequestType.RUN_COMMAND, new replicatorg.drivers.commands.ReadTemperature() );
+						this.scheduleRequest( pollCmd );
 						Vector<ToolModel> tools = controller.getModel().getTools();
 						for (ToolModel t : tools) {
 							controller.emitToolStatus(t);
@@ -706,6 +716,7 @@ class MachineThread extends Thread {
 				name = n;
 			}
 			else {
+				Base.logger.fine("No name on the machine. Using the XML name of the machine");
 				parseName(); // Use name from XML file instead of reusing name from last connected machine
 			}
 		}

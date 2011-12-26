@@ -271,10 +271,12 @@ public interface Driver {
 	 * Motor interface functions
 	 **************************************************************************/
 	public void setMotorDirection(int dir);
+	public void setMotorDirection(int dir, int toolhead);
 
-	public void setMotorRPM(double rpm) throws RetryException;
+	public void setMotorRPM(double rpm, int toolhead) throws RetryException;
 
 	public void setMotorSpeedPWM(int pwm) throws RetryException;
+	public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException;
 
 	public double getMotorRPM();
 
@@ -285,14 +287,17 @@ public interface Driver {
 	 * @throws RetryException 
 	 */
 	public void enableMotor() throws RetryException;
+	public void enableMotor(int toolhead) throws RetryException;
 
 	/**
 	 * Enable motor for a fixed duration, then disable
 	 * @throws RetryException 
 	 */
 	public void enableMotor(long millis) throws RetryException;
+	public void enableMotor(long millis, int toolhead) throws RetryException;
 
 	public void disableMotor() throws RetryException;
+	public void disableMotor(int toolhead) throws RetryException;
 
 	/***************************************************************************
 	 * Spindle interface functions
@@ -365,8 +370,10 @@ public interface Driver {
 	 * @throws RetryException 
 	 **************************************************************************/
 	public void enableFan() throws RetryException;
+	public void enableFan(int toolhead) throws RetryException;
 
 	public void disableFan() throws RetryException;
+	public void disableFan(int toolhead) throws RetryException;
 
 	
 	/***************************************************************************
@@ -374,6 +381,7 @@ public interface Driver {
 	 * @throws RetryException 
 	 **************************************************************************/
 	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException;
+	public void setAutomatedBuildPlatformRunning(boolean state, int toolhead) throws RetryException;
 	
 	/***************************************************************************
 	 * Valve interface functions
@@ -436,6 +444,16 @@ public interface Driver {
 	 * Heartbeat
 	 **************************************************************************/
 	public boolean heartbeat();
+
+	/**
+	 * Reads temperatures from all extruders
+	 */
+	public void readAllTemperatures();
+
+	/**
+	 * reads temperature from all heated build platforms
+	 */
+	public void readAllPlatformTemperatures();
 	
 
 

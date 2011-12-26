@@ -33,6 +33,29 @@ import org.w3c.dom.Node;
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
 
+enum ToolheadType {
+	UNKNOWN(1, "Unknown" ),
+	MK1(1, "Mk1" ),
+	MK2(2,"Mk2"),
+	MK3(3, "Mk3"),
+	MK4(4, "Mk4"),
+	MK5(5, "Mk5"),
+	FROSTRUDER(6, "Frostruder" ),
+	UNICORN(6, "Unicorn" ),
+	MK6(7, "Mk6" ),
+	MK6A(8, "Mk7a" ),
+	MK7(9, "Mk7" ),
+	MK8(10, "Mk8" );
+	
+	public String guiName;
+	public int number;
+	
+	ToolheadType(int number, String name) {
+		this.guiName = name;
+		this.number = number;
+	}
+}
+
 public class ToolModel
 {
 	public static int MOTOR_CLOCKWISE = 1;
@@ -46,9 +69,10 @@ public class ToolModel
 	
 	//descriptive stuff
 	protected String name;
-	protected String type;
+	protected String toolClass;
 	protected String material;
 	protected int index;
+	protected ToolheadType type = ToolheadType.UNKNOWN;
 
 	//motor stuff
 	protected boolean motorEnabled;
@@ -130,8 +154,9 @@ public class ToolModel
 	{
 		//default information
 		name = "Generic Tool";
-		type = "tool";
+		toolClass = "tool";
 		material = "unknown";
+		type = ToolheadType.UNKNOWN;
 		index = 0;
 		
 		//default our spindles/motors
@@ -174,9 +199,9 @@ public class ToolModel
 		
 		//load our name.
 		String n = XML.getAttributeValue(xml, "name");
-		if (n != null)
+		if (n != null){
 			name = n;
-		
+		}
 		//load our index.
 		n = XML.getAttributeValue(xml, "index");
 		if (n != null)
@@ -185,7 +210,7 @@ public class ToolModel
 		//load our type.
 		n = XML.getAttributeValue(xml, "type");
 		if (n != null)
-			type = n;
+			toolClass = n;
 		
 		//load our material
 		n = XML.getAttributeValue(xml, "material");
@@ -347,9 +372,16 @@ public class ToolModel
 		return index;
 	}
 	
+	public String getToolClass()
+	{
+		return toolClass;
+	}
+
+	/* use Get Class instead */
+	@Deprecated
 	public String getType()
 	{
-		return type;
+		return getToolClass();
 	}
 	
 	public int getToolStatus()
@@ -493,6 +525,8 @@ public class ToolModel
 	 */
 	public String getMotorStepperAxisName()
 	{
+		if (motorStepperAxis == null)
+			return ""; 
 		return motorStepperAxis.name();
 	}
 	
@@ -737,12 +771,18 @@ public class ToolModel
 		return true;
 	}
 
+	
 	public boolean hasExtruderThermistor() {
-		//HACKY HACK HACK!
-		if(this.name.contains("MightyBoard") || this.name.contains("Replicator"))
+		/// Mk6/7/8 use Thermocouple
+		String nameLower = this.name.toLowerCase();
+		if( nameLower.contains("Unicorn") )
 			return false;
-		if(this.name.contains("Thingomatic") )
+		else if(nameLower.contains("mk6") || nameLower.contains("mk7") || nameLower.contains("mk8"))
+			return false;
+		//Mk1 to ? use thermistor
+		else if( nameLower.contains("mk5") || nameLower.contains("mk5") || nameLower.contains("mk3") ||nameLower.contains("mk2"))
 			return true;
+		// default to false, sice we don't know
 		return false;
 	}
 

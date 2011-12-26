@@ -174,7 +174,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	/**
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
 	 */
-	public void setMotorRPM(double rpm) throws RetryException {
+	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 		machine.currentTool().setMotorSpeedRPM(rpm);
 	}
 	
@@ -279,6 +279,8 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 		return map;
 	}
 
+	@Override 
+	public String getMachineType(){ return "Thing-O-Matic/CupCake CNC"; } 
 
 	
 }

@@ -21,7 +21,7 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	final Version version = new Version(0,0);
 	final Version minimumVersion = new Version(0,0);
 	final Version preferredVersion = new Version(0,0);
-	final boolean hasSoftStop = true;
+	final boolean hasSoftStop = true;	
 	final boolean hasEStop = true;
 	
 	double toolTemperature = 0;
@@ -327,7 +327,7 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 
 	@Override
-	public void setMotorRPM(double rpm) throws RetryException {
+	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 		// TODO Auto-generated method stub
 
 	}
@@ -647,6 +647,68 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	public boolean hasAutomatedBuildPlatform() {
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	@Override
+	public void readAllTemperatures() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void readAllPlatformTemperatures() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+	@Override
+	public void setMotorDirection(int dir, int toolhead) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void enableMotor(int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void enableMotor(long millis, int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void disableMotor(int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void enableFan(int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void disableFan(int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setAutomatedBuildPlatformRunning(boolean state, int toolhead)
+			throws RetryException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

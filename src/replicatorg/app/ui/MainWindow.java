@@ -120,6 +120,7 @@ import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.app.ui.controlpanel.ControlPanelWindow;
 import replicatorg.app.ui.modeling.PreviewPanel;
+import replicatorg.app.ui.onboard.OnboardParametersWindow;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
 import replicatorg.app.util.serial.Name;
@@ -1380,7 +1381,7 @@ ToolpathGenerator.GeneratorListener
 				}
 
 				Base.preferences.put("machine.name", name);
-				setDualStrusionGUI(building);
+				loadMachine(name, false);
 			}
 		}
 	}
@@ -1898,18 +1899,27 @@ ToolpathGenerator.GeneratorListener
 	};
 
 	/**
-	 * Checks some enviroment settings to detect the type of build desired
-	 * @return a build flag to indicate build type/settings/etc
+	 * Checks some enviroment settings and the user interface state to detect the type of build 
+	 * desired by clicking on the 'Build' button.
+	 * 
+	 * @return a build flag to indicate build type/settings/etc as determined by the program state.
 	 */
 	public BuildFlag detectBuildIntention()
 	{
 		BuildFlag flag = BuildFlag.NONE;
 
 		// if we have gcode selected, simply build
-		if(header.getSelectedElement().getType() == BuildElement.Type.GCODE)
+		BuildElement elementInVew = header.getSelectedElement(); 
+		if( elementInVew == null ) {
+			Base.logger.severe("cannot determine build intention, no view selected.");
+			return flag; ///fail 
+		}
+
+		if( elementInVew.getType() == BuildElement.Type.GCODE)
 		{
 			flag = BuildFlag.JUST_BUILD;
 		}
+		
 		else if(getBuild() != null)
 		{
 			//no code. Generate code and build
@@ -1947,6 +1957,7 @@ ToolpathGenerator.GeneratorListener
 		}
 		return flag;
 	}
+	
 	
 	public void handleBuild() {
 		if (building)
@@ -3116,6 +3127,7 @@ ToolpathGenerator.GeneratorListener
 			Base.logger.severe("Couldn't find a port to use!");
 			return;
 		}
+		setDualStrusionGUI(building);
 
 //		if( canVerifyDeviceType(targetPort) )
 //		{

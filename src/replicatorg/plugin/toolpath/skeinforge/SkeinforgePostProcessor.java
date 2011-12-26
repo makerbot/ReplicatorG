@@ -148,7 +148,6 @@ public class SkeinforgePostProcessor {
 	private void runToolheadSwap(ToolheadAlias switchTo)
 	{
 		System.out.println("runToolheadSwap");
-
 		source.changeToolhead(switchTo);
 	}
 	

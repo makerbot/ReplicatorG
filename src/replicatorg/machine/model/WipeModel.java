@@ -1,10 +1,8 @@
 package replicatorg.machine.model;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.logging.Level;
 
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
@@ -112,10 +110,10 @@ public class WipeModel {
 		catch(NumberFormatException e)
 		{
 			Base.logger.log(Level.SEVERE, "Could not parse your xml wipe, please make sure everything is formatted correctly", e);
-			e.printStackTrace();
-		} catch (ParseException e) {
+		}
+		catch(ParseException e)
+		{
 			Base.logger.log(Level.SEVERE, "Could not parse your xml wipe, please make sure everything is formatted correctly", e);
-			e.printStackTrace();
 		}
 	}
 	public ToolheadAlias getTool()

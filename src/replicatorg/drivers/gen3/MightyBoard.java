@@ -67,34 +67,14 @@ import replicatorg.util.Point5d;
 import replicatorg.drivers.gen3.*;
 import java.util.Hashtable;
 
-
-//enum EepromOffsets {
-//	
-////	final public static int EEPROM_CHECK_OFFSET = 0;
-//	EEPROM_VERSION(0x0000,2,"Eeprom Version info");
-//	AXIS_INVERSION(0x0002,1,
-//			"Axis N (where X=0, Y=1, etc.) is inverted if the Nth bit is set." +
-//			"Bit 7 is used for HoldZ OFF: 1 = off, 0 = on");
-//	
-//
-//	public final int offset;
-//	public final String info;
-//	
-//	/// standard constructor. 
-//	private EepromOffsets(int offset, int size, String info){
-//		this.offset = offset;
-//		this.byteSz = size;
-//		this.info = info;
-//	}
-//}
-
-final class PIDTermOffsets {
+/// EEPROM offsets for PID electronics control
+final class PIDTermOffsets implements EEPROMClass {
 	final static int P_TERM_OFFSET = 0x0000;
 	final static int I_TERM_OFFSET = 0x0002;
 	final static int D_TERM_OFFSET = 0x0004;
 };
 
-
+/// EEPROM offset class for toolhead info/data
 class ToolheadEEPROM implements EEPROMClass
 {
 	////Feature map: 2 bytes
@@ -121,6 +101,7 @@ class ToolheadEEPROM implements EEPROMClass
 	/// Padding: 6 empty bytes of space
 }
 
+
 class MightyBoardEEPROM implements EEPROMClass
 {
 	/// NOTE: this file needs to match the data in EepromMap.hh for all 
@@ -132,7 +113,6 @@ class MightyBoardEEPROM implements EEPROMClass
 	public static final int EEPROM_CHECK_HIGH = 0x78;
 	
 	public static final int MAX_MACHINE_NAME_LEN = 16; // set to 32 in firmware
-	
 	
 	final static class ECThermistorOffsets {
 	
@@ -172,20 +152,23 @@ class MightyBoardEEPROM implements EEPROMClass
 	/// Default locations for the axis in step counts: 5 x 32 bit = 20 bytes
 	final public static int AXIS_HOME_POSITIONS		= 0x000E;
 	/// Name of this machine: 32 bytes.
-	final public static int MACHINE_NAME				= 0x0022;
-	/// 50 bytes padding
+	final public static int MACHINE_NAME			= 0x0022;
+	/// Tool count : 2 bytes
+	final public static int TOOL_COUNT 				= 0x0042;
+	/// Hardware ID. Must exactly match the USB VendorId/ProductId pair: 4Bytes 
+	final public static int VID_PID_INFO			= 0x0044; 
+	/// 44 bytes padding
 	/// Thermistor table 0: 128 bytes
-	final public static int THERM_TABLE		= 0x0074;
+	final public static int THERM_TABLE				= 0x0074;
 	/// Padding: 8 bytes
 	// Toolhead 0 data: 26 bytes (see above)
-	final public static int T0_DATA_BASE		= 0x100;
+	final public static int T0_DATA_BASE			= 0x100;
 	// Toolhead 0 data: 26 bytes (see above)
-	final public static int T1_DATA_BASE		= 0x011C;
+	final public static int T1_DATA_BASE			= 0x011C;
 	/// axis lengths (mm) (6 bytes)
-	final public static int AXIS_LENGTHS	= 0x138;
-	/// hardare version id
-	final public static int HARDWARE_ID 				= 0x013E;
-	/// Ligth Effect table. 3 Bytes x 3 entries
+	final public static int AXIS_LENGTHS			= 0x138;
+	/// 2 bytes padding
+	/// Light Effect table. 3 Bytes x 3 entries
 	final public static int LED_STRIP_SETTINGS		= 0x0140;
 	/// Buzz Effect table. 4 Bytes x 3 entries
 	/// 1 byte padding for offsets
@@ -193,14 +176,64 @@ class MightyBoardEEPROM implements EEPROMClass
 	///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 	final public static int FIRST_BOOT_FLAG	= 0x0156;
 
-
-	
-	
 	/// start of free space
 	final public static int FREE_EEPROM_STARTS = 0x0158;
 
 }
 
+/**
+ * Enum for VendorID and ProductId comparison, 
+ * @author farmckon
+ *
+ */
+enum VidPid {
+	UNKNOWN (0X0000, 0X000),
+	MIGHTY_BOARD (0x23C1, 0xB404),
+	THE_REPLICATOR(0x23C1, 0xD314);
+
+	final int pid; //productId (same as USB product id)
+	final int vid; //vendorId (same as USB vendor id)
+	
+	private VidPid(int pid, int vid)
+	{
+		this.pid = pid;
+		this.vid = vid;
+	}
+	
+	/** Create a PID/VID if we know how to, 
+	 * otherwise return unknown.
+	 * @param bytes 4 byte array of PID/VID
+	 * @return
+	 */
+	public static VidPid getPidVid(byte[] bytes)
+	{
+		if (bytes != null && bytes.length >= 4){
+			int vid = ((int) bytes[0]) & 0xff;
+			vid += (((int) bytes[1]) & 0xff) << 8;
+			int pid = ((int) bytes[2]) & 0xff;
+			pid += (((int) bytes[3]) & 0xff) << 8;
+			for (VidPid known : VidPid.values())
+			{
+				if(known.equals(vid,pid)) return known; 
+			}
+		}
+		return VidPid.UNKNOWN;
+	}
+	
+	public boolean equals(VidPid VidPid){
+		if (VidPid.vid == this.vid && 
+			VidPid.pid == this.pid)
+			return true;
+		return false;
+	}
+	public boolean equals(int pid, int vid){
+		if (vid == this.vid && 
+			pid == this.pid)
+			return true;
+		return false;
+	}
+	
+}
 
 /**
  * Object for managing the connection to the MightyBoard hardware.
@@ -229,6 +262,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	private boolean eepromChecked = false;
 	
 	protected final static int DEFAULT_RETRIES = 5;
+	
+	private VidPid machineId = VidPid.UNKNOWN;
+	private int toolCountOnboard = -1; /// no count aka FFFF
 	
 	Version toolVersion = new Version(0,0);
 
@@ -279,19 +315,21 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		}
 
 		int stepperCountMightyBoard = 5;
-		Base.logger.severe("MightBoard initial Sync");
+		Base.logger.fine("MightBoard initial Sync");
 		for(int i = 0; i < stepperCountMightyBoard; i++)
 		{
 			int vRef = getStoredStepperVoltage(i); 
-			Base.logger.info("storing inital stepper Values from onboard eeprom");
-			Base.logger.info("i = " + i + " vRef =" + vRef);
+			Base.logger.fine("Caching inital Stepper vRef from bot");
+			Base.logger.finer("i = " + i + " vRef =" + vRef);
 			stepperValues.put(new Integer(i), new Integer(vRef) );
 		}
 		
 		//load our motor RPM from firmware if we can.
 		getMotorRPM();
+		//read our PID/VID if we can
+		readMachineVidPid();
 
-		//
+		// I have no idea why we still do this, we may want to test and refactor away
 		getSpindleSpeedPWM();
 		return true;
 	}
@@ -351,23 +389,20 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public int getStoredStepperVoltage(int stepperId) 
 	{
-		Base.logger.severe("Getting stored stepperVoltage: " + stepperId );
+		Base.logger.fine("Getting stored stepperVoltage: " + stepperId );
 		int vRefForPotLocation = MightyBoardEEPROM.DIGI_POT_SETTINGS + stepperId;
 		
-		Base.logger.severe("Getting stored stepperVoltage from eeprom addr: " +
-				vRefForPotLocation  );
+		Base.logger.finer("Getting stored stepperVoltage from eeprom addr: " + vRefForPotLocation  );
 
 		byte[] voltages = readFromEEPROM(vRefForPotLocation, 1) ;
 		if(voltages == null ) {
-			Base.logger.severe("null response to EEPROM read");
+			Base.logger.severe("null response to EEPROM read at "+ vRefForPotLocation);
 			return 0;
 		}
-		Base.logger.severe("raw stored stepperVoltage: " + voltages[0]);
 
 		if(voltages[0] > 127)		voltages[0] = 127;
 		else if(voltages[0] < 0)	voltages[0] = 0;
 
-		Base.logger.severe("Effective stored stepperVoltage: " + voltages[0]);
 		return (int)voltages[0];
 		
 	}
@@ -506,6 +541,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	@Override
 	public String getMachineName() {
+
+		if( botName != null )
+			return botName; 
+		
 		checkEEPROM();
 		
 		byte[] data = readFromEEPROM(MightyBoardEEPROM.MACHINE_NAME,
@@ -516,11 +555,12 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		try {
 			int len = 0;
 			while (len < MightyBoardEEPROM.MAX_MACHINE_NAME_LEN && data[len] != 0) len++;
-			return new String(data,0,len,"ISO-8859-1");
+			String name = new String(data,0,len,"ISO-8859-1");
+			this.botName = name;
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
-			return null;
 		}
+		return this.botName; ///may be null if name set failed
 	}
 
 
@@ -734,7 +774,38 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		b[0] = estop.getValue();
 		writeToEEPROM(MightyBoardEEPROM.ENDSTOP_INVERSION,b);
 	}
+		 
+	public void readMachineVidPid() {
+		checkEEPROM();
+		byte[] b = readFromEEPROM(MightyBoardEEPROM.VID_PID_INFO,4);
+		this.machineId = VidPid.getPidVid(b);
+	}
 	
+	
+	/** try to verify our acutal machine matches our selected machine
+	 * @param vid vendorId (same as usb vendorId)
+	 * @param pid product (same as usb productId)
+	 * @return true if we can verify this is a valid machine match
+	 */
+	@Override
+	public boolean verifyMachineId()
+	{
+		if ( this.machineId == VidPid.UNKNOWN ) {
+			readMachineVidPid();
+		}
+		if(this.machineId.equals(VidPid.MIGHTY_BOARD)) {
+			Base.logger.severe("You are running an unverified MightyBoard,");
+			Base.logger.severe("your machine is not a verified MakerBot Replicator");			
+			return true;
+		}
+		return this.machineId.equals(VidPid.THE_REPLICATOR);
+	}
+
+	@Override
+	public boolean canVerifyMachine() {
+		return true;
+	}
+
 
 	@Override
 	public boolean setConnectedToolIndex(int index) {
@@ -750,7 +821,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		return false;
 	}
 
+
 	@Override
+	@Deprecated
 	protected void writeToToolEEPROM(int offset, byte[] data) {
 		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
 	}
@@ -825,9 +898,13 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * Enable extruder motor
 	 */
 	@Override
-	public void enableMotor() throws RetryException {
+	public void enableMotor(int toolhead) throws RetryException {
 
-		ToolModel curTool = machine.currentTool();//WARNING: this in unsafe, since tool is checked
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+
+		
+		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
 		//async from when command is set. Tool should be a param
 		Iterable<AxisId>  axes = getHijackedAxes(curTool);
 
@@ -845,8 +922,13 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * Disable our extruder motor
 	 */
 	@Override
-	public void disableMotor() throws RetryException {
-		ToolModel curTool = machine.currentTool();//WARNING: this in unsafe, since tool is checked
+	public void disableMotor(int toolhead) throws RetryException {
+
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		
+		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
+
 		//async from when command is set. Tool should be a param
 		Iterable<AxisId> axes = getHijackedAxes(curTool);
 
@@ -903,6 +985,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 	@Override
+	@Deprecated
 	protected int read16FromToolEEPROM(int offset, int defaultValue) {
 		return read16FromToolEEPROM(offset, defaultValue, machine.currentTool().getIndex());
 	}
@@ -1033,18 +1116,18 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	
 
 	@Override
-	public double getPlatformTemperatureSetting() {
+	public double getPlatformTemperatureSetting(int toolhead) {
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2, 3))) {
 			PacketBuilder pb = new PacketBuilder(
 					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8((byte) toolhead);
 			pb.add8(ToolCommandCode.GET_PLATFORM_SP.getCode());
 			PacketResponse pr = runQuery(pb.getPacket());
 			int sp = pr.get16();
 			machine.currentTool().setPlatformTargetTemperature(sp);
 		}
-		return super.getPlatformTemperatureSetting();
+		return super.getPlatformTemperatureSetting(toolhead);
 	}
 
 	// Display a message on the user interface
@@ -1081,18 +1164,18 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 	@Override
-	public double getTemperatureSetting() {
+	public double getTemperatureSetting(int toolhead) {
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2, 3))) {
 			PacketBuilder pb = new PacketBuilder(
 					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) machine.currentTool().getIndex());
+			pb.add8((byte) toolhead );
 			pb.add8(ToolCommandCode.GET_SP.getCode());
 			PacketResponse pr = runQuery(pb.getPacket());
 			int sp = pr.get16();
-			machine.currentTool().setTargetTemperature(sp);
+			machine.getTool(toolhead).setTargetTemperature(sp);
 		}
-		return super.getTemperatureSetting();
+		return super.getTemperatureSetting(toolhead);
 	}
 	
 	
@@ -1102,34 +1185,99 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 	
 	@Override
-	public void setMotorRPM(double rpm) throws RetryException {
+	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 	
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+
+		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
+
 		///TRICKY: fot The Replicator,the firmware no longer handles this command
-		// it's all done on host side via 5D command translation
-		
-	// convert RPM into microseconds and then send.
-//		long microseconds = rpm == 0 ? 0 : Math.round(60.0 * 1000000.0 / rpm); // no
-//		// unsigned
-//		// ints?!?
-//		// microseconds = Math.min(microseconds, 2^32-1); // limit to uint32.
-//
-//		Base.logger.fine("Setting motor 1 speed to " + rpm + " RPM ("
-//				+ microseconds + " microseconds)");
-//
-//		// send it!
-//		PacketBuilder pb = new PacketBuilder(
-//				MotherboardCommandCode.TOOL_COMMAND.getCode());
-//		pb.add8((byte) machine.currentTool().getIndex());
-//		pb.add8(ToolCommandCode.SET_MOTOR_1_RPM.getCode());
-//		pb.add8((byte) 4); // length of payload.
-//		pb.add32(microseconds);
-//		runCommand(pb.getPacket());
-//
-		
-		machine.currentTool().setMotorSpeedRPM(rpm);
-//		super.setMotorRPM(rpm); TODO: this should be setMotorRPM running? 
-//				check read value vs running/tested value
+		// it's all done on host side via 5D command translation.  We just set a local value
+		curTool.setMotorSpeedRPM(rpm);
 	}
+	
+	/**
+	 * Will wait for first the tool, then the build platform, it exists and
+	 * supported. Technically the platform is connected to a tool (extruder
+	 * controller) but this information is currently not used by the firmware.
+	 * 
+	 * timeout is given in seconds. If the tool isn't ready by then, the machine
+	 * will continue anyway.
+	 */
+	public void requestToolChange(int toolhead, int timeout)
+			throws RetryException {
+
+		selectTool(toolhead);
+
+		Base.logger.fine("Waiting for tool #" + toolhead);
+
+		// send it!
+		if (this.machine.getTool(toolhead).getTargetTemperature() > 0.0) {
+			PacketBuilder pb = new PacketBuilder(
+					MotherboardCommandCode.WAIT_FOR_TOOL.getCode());
+			pb.add8((byte) toolhead);
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(timeout); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
+
+		///hack, since we have one HBP on the Replicator for now, search-grab that and heat it at any toolchange.
+		boolean needsToHeatHPB = false; 
+		int toolheadWithHBP = -1;
+		for(ToolModel t : machine.getTools())
+			if( t.hasHeatedPlatform() && t.getPlatformTargetTemperature() > 0.0) {
+				toolheadWithHBP = t.getIndex();
+				needsToHeatHPB = true;
+		}
+		
+		if(needsToHeatHPB && toolheadWithHBP > -1 ) {
+			PacketBuilder pb = new PacketBuilder(
+					MotherboardCommandCode.WAIT_FOR_PLATFORM.getCode());
+			pb.add8((byte) toolheadWithHBP );
+			pb.add16(100); // delay between master -> slave pings (millis)
+			pb.add16(timeout); // timeout before continuing (seconds)
+			runCommand(pb.getPacket());
+		}
+		
+	}
+	
+	@Override 
+	public String getMachineType(){
+		if (this.machineId.equals(VidPid.MIGHTY_BOARD))
+			return "MightyBoard"; 
+		else if (this.machineId.equals(VidPid.THE_REPLICATOR))
+			return "The Replicator"; 
+		return "MightyBoard(unverified)"; 			
+	} 
+	
+	
+	/// Returns the number of tools as saved on the machine (not as per XML count)
+	@Override 
+	public int toolCountOnboard() { 
+
+		if (toolCountOnboard == -1 ) {
+			byte[] toolCountByte = readFromEEPROM(MightyBoardEEPROM.TOOL_COUNT, 1) ;
+			if (toolCountByte != null && toolCountByte.length > 0 ) {
+				toolCountOnboard = toolCountByte[0];
+			}
+		}
+		return toolCountOnboard;
+	} 
+
+	/// Returns true of tool count is save on the machine  (not as per XML count)
+	@Override 
+	public boolean hasToolCountOnboard() {return true; }
+
+	/// Sets the number of tool count as saved on the machine (not as per XML count)
+	@Override 
+	public void setToolCountOnboard(int i){ 
+		byte b[] = {(byte)-1};
+		if (i == 1 ||  i == 2)		
+			b[0] = (byte)i;
+		writeToEEPROM(MightyBoardEEPROM.TOOL_COUNT,b);
+		
+	}; 
 }
 
 
