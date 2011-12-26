@@ -112,6 +112,7 @@ import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.MRUList;
 import replicatorg.app.gcode.DualStrusionWorker;
 import replicatorg.app.gcode.GCodeEnumeration;
+import replicatorg.app.gcode.GCodeHelper;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;
 import replicatorg.app.syntax.PdeTextAreaDefaults;
@@ -119,6 +120,7 @@ import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.app.ui.controlpanel.ControlPanelWindow;
 import replicatorg.app.ui.modeling.PreviewPanel;
+import replicatorg.app.ui.onboard.OnboardParametersWindow;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
 import replicatorg.app.util.serial.Name;
@@ -150,7 +152,6 @@ import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgePostProcessor;
 import replicatorg.uploader.FirmwareUploader;
-import replicatorg.app.ui.onboard.OnboardParametersWindow;
 
 import com.apple.mrj.MRJAboutHandler;
 import com.apple.mrj.MRJApplicationUtils;
@@ -1053,7 +1054,7 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
-				DualStrusionWorker.changeToolHead(build.getCode().file, ToolheadAlias.LEFT);
+				GCodeHelper.newChangeToolHead(build.getCode().file, ToolheadAlias.LEFT);
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();
@@ -1070,7 +1071,7 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
-				DualStrusionWorker.changeToolHead(build.getCode().file, ToolheadAlias.RIGHT);
+				GCodeHelper.newChangeToolHead(build.getCode().file, ToolheadAlias.RIGHT);
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();
