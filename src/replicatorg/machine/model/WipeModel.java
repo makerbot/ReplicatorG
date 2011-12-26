@@ -112,10 +112,10 @@ public class WipeModel {
 		catch(NumberFormatException e)
 		{
 			Base.logger.log(Level.SEVERE, "Could not parse your xml wipe, please make sure everything is formatted correctly", e);
-			e.printStackTrace();
-		} catch (ParseException e) {
+		}
+		catch(ParseException e)
+		{
 			Base.logger.log(Level.SEVERE, "Could not parse your xml wipe, please make sure everything is formatted correctly", e);
-			e.printStackTrace();
 		}
 	}
 	public ToolheadAlias getTool()
