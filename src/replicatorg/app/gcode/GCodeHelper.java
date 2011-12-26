@@ -121,6 +121,62 @@ public class GCodeHelper {
 	}
 
 	/**
+	 * Takes gcode, and changes all toolhead references(T0 -> T1 or similar)
+	 * based on user input.
+	 * 
+	 * G54 also must be used for T0, and G55 for T1 
+	 * 
+	 * This is not used by DualstrusionWorker, 
+	 * it is only meant for single headed files
+	 * 
+	 * oldGCode should not change
+	 * 
+	 * @param source
+	 *            gcode to alter the toolhead info on
+	 * @param tool
+	 *            string name of the toolhead, 'right' or 'left'
+	 * @return A new GCodeSource with the new code
+	 */
+	public static GCodeSource newChangeToolHead(GCodeSource oldGCode, ToolheadAlias tool) {
+
+		Vector<String> newGCode = new Vector<String>();
+		
+		for(String line : oldGCode)
+		{
+			GCodeCommand gcode = new GCodeCommand(line);
+			//copy constructor
+			String newLine = new String(line);
+			if(gcode.hasCode('T'))
+			{
+				int value = (int)gcode.getCodeValue('T');
+				if(value != tool.number)
+				{
+					if(value == 0)
+						newLine = newLine.replace("T0", "T1");
+					else if(value == 1)
+						newLine = newLine.replace("T1", "T0");
+				}
+			}
+			if(gcode.getCodeValue('G') == 54 && !(tool.getRecallOffsetGcodeCommand().equals("G54")))
+			{
+				newLine = newLine.replace("G54", tool.getRecallOffsetGcodeCommand());
+			}
+			if(gcode.getCodeValue('G') == 55 && !(tool.getRecallOffsetGcodeCommand().equals("G55")))
+			{
+				newLine = newLine.replace("G55", tool.getRecallOffsetGcodeCommand());
+			}
+			
+			newGCode.add(newLine);
+		}
+
+		return new StringListSource(newGCode);
+	}
+	// TODO: remove this -- "reverse compatibility"
+	public static void newChangeToolHead(File source, ToolheadAlias tool) {
+		writeGCodeSourcetoFile(changeToolHead(readFiletoGCodeSource(source), tool), source);
+	}
+
+	/**
 	 * Weird things about this function:
 	 * It actually just looks for the first line of the 'oldSection' and rips out an amount equal to the
 	 * length of that section. We do this because it's possible that something else has modified the code

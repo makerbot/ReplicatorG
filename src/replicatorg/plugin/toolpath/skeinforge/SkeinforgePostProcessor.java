@@ -108,7 +108,7 @@ public class SkeinforgePostProcessor {
 	{
 		System.out.println("runToolheadSwap");
 
-		source = GCodeHelper.changeToolHead(source, switchTo);
+		source = GCodeHelper.newChangeToolHead(source, switchTo);
 	}
 	
 	private void runStartReplacement()
