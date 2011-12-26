@@ -2,9 +2,11 @@ package replicatorg.app.ui.onboard;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -15,6 +17,8 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.ToolModel;
+import replicatorg.app.Base;
+
 
 public class OnboardParametersWindow extends JFrame {
 	
@@ -27,6 +31,9 @@ public class OnboardParametersWindow extends JFrame {
 	public OnboardParametersWindow(OnboardParameters targetParams, Driver driver)
 	{
 		super("Update Machine Options");
+		
+		Image icon = Base.getImage("images/icon.gif", this);
+		setIconImage(icon);
 		
 		this.targetParams = targetParams;
 		this.driver = driver;
