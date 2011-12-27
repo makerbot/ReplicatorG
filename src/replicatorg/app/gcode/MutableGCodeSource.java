@@ -106,15 +106,32 @@ public class MutableGCodeSource implements GCodeSource {
 		return;
 	}
 	
+	/**
+	 * removes all lines that are skeinforge tag comments, but not layer tags.
+	 */
+	public void stripNonLayerTagComments() {
+		String line;
+		for(Iterator<String> i = source.iterator(); i.hasNext();)
+		{
+			line = i.next();
+			
+			if(line.startsWith("(<") &&	!(line.startsWith("(<layer>") || line.startsWith("(</layer")))
+			{
+				i.remove();
+			}
+		}
+	}
+	
 	public void changeToolhead(ToolheadAlias tool) {
-		
+		GCodeCommand gcode;
+		int value;
 		for(String line : source)
 		{
-			GCodeCommand gcode = new GCodeCommand(line);
+			gcode = new GCodeCommand(line);
 			//copy constructor
 			if(gcode.hasCode('T'))
 			{
-				int value = (int)gcode.getCodeValue('T');
+				value = (int)gcode.getCodeValue('T');
 				if(value != tool.number)
 				{
 					if(value == 0)

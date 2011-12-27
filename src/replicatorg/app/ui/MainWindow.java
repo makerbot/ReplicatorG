@@ -601,20 +601,6 @@ ToolpathGenerator.GeneratorListener
 				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_TOM);
 			else if(machineLoader.getMachineInterface().getMachineType() == MachineType.CUPCAKE)
 				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_CUPCAKE);
-
-			if (isDualDriver()) {
-				boolean printOMaticEnabled  = Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false);
-				
-				//Figure out if we're looking to do a toolhead swap
-				String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
-				
-				if(!printOMaticEnabled)
-					; //NOP - only do these modifications if POM is on
-				else if(extruderChoice.equalsIgnoreCase("right"))
-					postProcessingSteps.add(SkeinforgePostProcessor.TARGET_TOOLHEAD_RIGHT);
-				else if(extruderChoice.equalsIgnoreCase("left"))
-					postProcessingSteps.add(SkeinforgePostProcessor.TARGET_TOOLHEAD_LEFT);
-			}
 			
 			((SkeinforgeGenerator) generator).setPostProcessor(
 					new SkeinforgePostProcessor((SkeinforgeGenerator)generator, 

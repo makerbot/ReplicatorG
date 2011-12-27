@@ -318,6 +318,17 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		if(parent != null)
 			parent.setName(name);
 		cd = new ConfigurationDialog(parent, this);
+
+		if (Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false)) {
+			
+			//Figure out if we're looking to do a toolhead swap
+			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
+			
+			if(extruderChoice.equalsIgnoreCase("right"))
+				postprocess.addOperation(SkeinforgePostProcessor.TARGET_TOOLHEAD_RIGHT);
+			else if(extruderChoice.equalsIgnoreCase("left"))
+				postprocess.addOperation(SkeinforgePostProcessor.TARGET_TOOLHEAD_LEFT);
+		}
 		return true;
 	}
 	

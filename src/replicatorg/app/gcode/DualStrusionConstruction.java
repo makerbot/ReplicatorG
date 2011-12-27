@@ -1,7 +1,9 @@
 package replicatorg.app.gcode;
 
+import java.io.File;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -26,12 +28,12 @@ import replicatorg.util.Point5d;
 public class DualStrusionConstruction {
 
 	private MutableGCodeSource result;
-	private MutableGCodeSource left, right;
-	private MutableGCodeSource start, end;
-	private boolean useWipes;
-	private WipeModel leftWipe;
-	private WipeModel rightWipe;
-	private MachineType machineType;
+	private final MutableGCodeSource left, right;
+	private final MutableGCodeSource start, end;
+	private final boolean useWipes;
+	private final WipeModel leftWipe;
+	private final WipeModel rightWipe;
+	private final MachineType machineType;
 
 	public DualStrusionConstruction(MutableGCodeSource left, MutableGCodeSource right,
 									MutableGCodeSource startSource, MutableGCodeSource endSource,
@@ -50,14 +52,18 @@ public class DualStrusionConstruction {
 			
 			if(leftWipe == null || rightWipe == null)
 			{			
-				String error = "Could not find wipes for the current machine," + 
-					Base.getMachineLoader().getMachineInterface().getModel().toString() + "please select a dualstrusion machine in the drivers menu.";
+				String error = "Could not find wipes for the current machine: " + 
+					Base.getMachineLoader().getMachineInterface().getModel().toString() + ". Continuing without wipes.";
 				JOptionPane.showConfirmDialog(null, error, 
-						"Could not prepare Dualstrusion!", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
-				// TODO: better fail condition...
-				// seriously, do it.
-				// DANGER: don't let this code go to production
+						"Could not find wipes!", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+
+				useWipes = false;
 			}
+		}
+		else
+		{
+			leftWipe = null;
+			rightWipe = null;
 		}
 	}
 	public MutableGCodeSource getCombinedFile()
@@ -97,10 +103,15 @@ public class DualStrusionConstruction {
 
 		left.stripStartEndBestEffort();
 		right.stripStartEndBestEffort();
+		left.stripNonLayerTagComments();
+		right.stripNonLayerTagComments();
 
-		LinkedList<Layer> leftLayers = oldParseLayers(left);
-		LinkedList<Layer> rightLayers = oldParseLayers(right);
+System.out.print("dcs.combine.parselayers.left");
+		LinkedList<Layer> leftLayers = newOldParseLayers(left);
+System.out.print("dcs.combine.parselayers.right");
+		LinkedList<Layer> rightLayers = newOldParseLayers(right);
 
+System.out.print("dcs.combine.setlayerstart");
 		//make sure every layer starts by setting the correct toolhead
 		for(Layer l : leftLayers)
 		{
@@ -113,7 +124,8 @@ public class DualStrusionConstruction {
 			l.getCommands().add(0, "M6 P1 "+ToolheadAlias.RIGHT.getTcode() + "(Set tool)");
 		}
 
-		LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
+System.out.print("dcs.combine.domerge");
+		final LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
 		
 		//process start & end before adding them
 		duplicateToolheadLines(start);
@@ -152,7 +164,7 @@ public class DualStrusionConstruction {
 	 * @param source
 	 * @return
 	 */
-	private LinkedList<Layer> parseLayers(GCodeSource source)
+	private LinkedList<Layer> parseLayers(final GCodeSource source)
 	{
 		/*
 		 * So this is a little more complicated than just breaking up stuff by Z height,
@@ -168,8 +180,8 @@ public class DualStrusionConstruction {
 		 *   
 		 */
 
-		LinkedList<Layer> layers = new LinkedList<Layer>();	
-		Queue<String> read = new LinkedList<String>();
+		final LinkedList<Layer> layers = new LinkedList<Layer>();	
+		final Queue<String> read = new LinkedList<String>();
 
 		//debug code///////////////////////////
 		layers.add(new Layer(0d, new ArrayList<String>(){{add("(********************************************************************************start layer**************************************************************)");}}));
@@ -224,9 +236,9 @@ public class DualStrusionConstruction {
 	
 	private LinkedList<Layer> oldParseLayers(GCodeSource source)
 	{
-		LinkedList<Layer> result = new LinkedList<Layer>();
+		final LinkedList<Layer> result = new LinkedList<Layer>();
 		
-		List<String> sourceList = source.asList();
+		final List<String> sourceList = source.asList();
 		
 		for(int i = 0; i < sourceList.size();  i++)
 		{
@@ -260,7 +272,40 @@ public class DualStrusionConstruction {
 		return result;
 	}
 	
-	private Layer toolchange(ToolheadAlias from, Layer fromLayer, ToolheadAlias to, Layer toLayer)
+	private LinkedList<Layer> newOldParseLayers(GCodeSource source)
+	{
+		final LinkedList<Layer> result = new LinkedList<Layer>();
+		String line;
+		for(Iterator<String> it = source.iterator(); it.hasNext();)
+		{
+			line = it.next();
+			if(line.startsWith("(<layer>"))
+			{
+				float layerHeight = 0;
+				try
+				{
+					layerHeight = Float.parseFloat(line.split(" ")[1]);
+				}
+				catch(NumberFormatException e)
+				{
+					Base.logger.log(Level.SEVERE, "one of your layer heights was unparseable, " +
+							"please check and make sure all of them are in the format (<layer> 0.00)");
+				}
+				
+				final List<String> accumulate = new LinkedList<String>();
+				String next = it.next();
+				while(!next.startsWith("(</layer>)"))
+				{
+					accumulate.add(next);
+					next = it.next();
+				}
+				result.add(new Layer(layerHeight, accumulate));
+			}
+		}
+
+		return result;
+	}
+	private Layer toolchange(final ToolheadAlias from, final Layer fromLayer, final ToolheadAlias to, final Layer toLayer)
 	{
 		/*
 		 * How does a toolchange work? Glad you asked:
@@ -297,7 +342,7 @@ public class DualStrusionConstruction {
 		 *   
 		 *   layer.add(M18 A B)
 		 */
-		ArrayList<String> result = new ArrayList<String>();
+		final ArrayList<String> result = new ArrayList<String>();
 		//debug code///////////////////////////
 		result.add("(********************************************************************************start toolchange**************************************************************)");
 		//////////////////////////////////////
@@ -314,15 +359,23 @@ public class DualStrusionConstruction {
 		// Ben's suggestion
 		result.add("M18 A B");
 		
-		NumberFormat nf = Base.getGcodeFormat();
-		Point5d firstPos = getFirstPosition(toLayer);
+		final NumberFormat nf = Base.getGcodeFormat();
+		final Point5d firstPos = getFirstPosition(toLayer);
 		
-		// The F here is a magic number, you can read about it in the 'wipe()' function
-		// move up fairly quickly
-		result.add("G1 Z" + nf.format(firstPos.z()) +" F3000");
-		// move to the next point
-		result.add("G1 X" + nf.format(firstPos.x()) + " Y" + nf.format(firstPos.y()) + " Z" + nf.format(firstPos.z()) +" F3000");
+		if(firstPos != null)
+		{
+			// The F here is a magic number, you can read about it in the 'wipe()' function
+			// move up fairly quickly
+			result.add("G1 Z" + nf.format(firstPos.z()) +" F3000");
+			// move to the next point
+			result.add("G1 X" + nf.format(firstPos.x()) + " Y" + nf.format(firstPos.y()) + " Z" + nf.format(firstPos.z()) +" F3000");
+		}
+		else
+		{
+			System.err.print(toLayer);
+		}
 		
+		//TODO: catch possible null pointer exceptions?
 		// set the feedrate with an empty G1
 		String feedrate = getFirstFeedrate(toLayer);
 		if(feedrate.equals(""))
@@ -334,55 +387,58 @@ public class DualStrusionConstruction {
 		result.add("(********************************************************************************end toolchange**************************************************************)");
 		//////////////////////////////////////
 		// The 'height' of the toolchange. just the average of the surrounding layers because why not?
-		double height = (toLayer.getHeight() - fromLayer.getHeight())/2;
+		final double height = (toLayer.getHeight() - fromLayer.getHeight())/2;
 		
 		return new Layer(height, result);
 	}
 	
-	private Point5d getFirstPosition(Layer l)
+	private Point5d getFirstPosition(final Layer l)
 	{
-		List<String> search = l.getCommands();
+		final List<String> search = l.getCommands();
+		GCodeCommand gcode;
 		for(int i = 0; i < search.size(); i++)
 		{
-			GCodeCommand g = new GCodeCommand(search.get(i));
-			if(g.getCodeValue('G') == 1)
+			gcode = new GCodeCommand(search.get(i));
+			if(gcode.getCodeValue('G') == 1)
 			{
 				Point5d result = new Point5d();
-				result.setX(g.getCodeValue('X'));
-				result.setY(g.getCodeValue('Y'));
-				result.setZ(g.getCodeValue('Z'));
+				result.setX(gcode.getCodeValue('X'));
+				result.setY(gcode.getCodeValue('Y'));
+				result.setZ(gcode.getCodeValue('Z'));
 				return result;
 			}
 		}
 		return null;
 	}
 	
-	private String getLastFeedrate(Layer l)
+	private String getLastFeedrate(final Layer l)
 	{
-		List<String> search = l.getCommands();
+		final List<String> search = l.getCommands();
+		GCodeCommand gcode;
 		for(int i = search.size()-1; i >= 0; i--)
 		{
-			GCodeCommand g = new GCodeCommand(search.get(i));
-			if(g.getCodeValue('F') != -1)
-				return "F"+Base.getGcodeFormat().format(g.getCodeValue('F'));
+			gcode = new GCodeCommand(search.get(i));
+			if(gcode.getCodeValue('F') != -1)
+				return "F"+Base.getGcodeFormat().format(gcode.getCodeValue('F'));
 		}
 		return "";
 	}
-	private String getFirstFeedrate(Layer l)
+	private String getFirstFeedrate(final Layer l)
 	{
-		List<String> search = l.getCommands();
+		final List<String> search = l.getCommands();
+		GCodeCommand gcode;
 		for(int i = 0; i < search.size(); i++)
 		{
-		GCodeCommand g = new GCodeCommand(search.get(i));
-		if(g.getCodeValue('F') != -1)
-			return "F"+Base.getGcodeFormat().format(g.getCodeValue('F'));
+			gcode = new GCodeCommand(search.get(i));
+			if(gcode.getCodeValue('F') != -1)
+				return "F"+Base.getGcodeFormat().format(gcode.getCodeValue('F'));
 		}
 		return "";
 	}
 	
-	private ArrayList<String> wipe(WipeModel toolWipe)
+	private ArrayList<String> wipe(final WipeModel toolWipe)
 	{
-		ArrayList<String> result = new ArrayList<String>();
+		final ArrayList<String> result = new ArrayList<String>();
 
 		//debug code///////////////////////////
 		result.add("(********************************************************************************start wipe**************************************************************)");
@@ -391,7 +447,7 @@ public class DualStrusionConstruction {
 		// This is a not-entirely-arbitrarily chosen number
 		// Ben or Noah may be able to explain it,
 		// Ted might be able to by the time you ask
-		String feedrate = "F3000";
+		final String feedrate = "F3000";
 		// move to purge home
 		result.add("G53");
 
@@ -429,7 +485,7 @@ public class DualStrusionConstruction {
 	 * @param left
 	 * @param right
 	 */
-	private LinkedList<Layer> doMerge(LinkedList<Layer> left, LinkedList<Layer> right)
+	private LinkedList<Layer> doMerge(final LinkedList<Layer> left, final LinkedList<Layer> right)
 	{
 		/*
 		 *   Merging layers should look something like this:
@@ -470,7 +526,7 @@ public class DualStrusionConstruction {
 		 *           
 		 */
 		// using a LinkedList means we can getLast()
-		LinkedList<Layer> result = new LinkedList<Layer>();
+		final LinkedList<Layer> result = new LinkedList<Layer>();
 
 		// this is just a handy way to keep track of where our last layer came from
 		Object lastLayer = null;
@@ -526,17 +582,19 @@ public class DualStrusionConstruction {
 		return result;
 	}
 	
-	private void duplicateToolheadLines(MutableGCodeSource source)
+	private void duplicateToolheadLines(final MutableGCodeSource source)
 	{
 		int idx = 0;
-		List<String> sourceList = source.asList();
+		String line;
+		double toolhead;
+		final List<String> sourceList = source.asList();
 		for(int i = 0; i < source.getLineCount(); i++)
 		{
-			String line = sourceList.get(i);
+			line = sourceList.get(i);
 			idx++;
 			GCodeCommand gcode = new GCodeCommand(line);
 			
-			double toolhead = gcode.getCodeValue('T');
+			toolhead = gcode.getCodeValue('T');
 			if(toolhead == 0)
 				source.add(idx, line.replace("T0", "T1"));
 			if(toolhead == 1)
