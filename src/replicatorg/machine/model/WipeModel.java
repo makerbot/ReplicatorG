@@ -1,10 +1,8 @@
 package replicatorg.machine.model;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.logging.Level;
 
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;

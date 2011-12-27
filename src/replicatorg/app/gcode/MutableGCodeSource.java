@@ -9,13 +9,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Level;
 
 import replicatorg.app.Base;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.GCodeSource;
-import replicatorg.model.StringListSource;
 
 public class MutableGCodeSource implements GCodeSource {
 
