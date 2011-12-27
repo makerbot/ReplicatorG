@@ -39,7 +39,7 @@ public class SkeinforgePostProcessor {
 	public static final String MACHINE_TYPE_CUPCAKE = "machine-type-cupcake";
 	
 	private final SkeinforgeGenerator generator;
-	private final Set<String> options;
+	private final Set<String> operations;
 	
 	private MutableGCodeSource source;
 	
@@ -52,10 +52,10 @@ public class SkeinforgePostProcessor {
 	{
 		this(generator, startCode, endCode, new TreeSet<String>(Arrays.asList(ops)));
 	}
-	public SkeinforgePostProcessor(SkeinforgeGenerator generator, MutableGCodeSource startCode, MutableGCodeSource endCode, Set<String> options)
+	public SkeinforgePostProcessor(SkeinforgeGenerator generator, MutableGCodeSource startCode, MutableGCodeSource endCode, Set<String> operations)
 	{
 		this.generator = generator;
-		this.options = options;
+		this.operations = operations;
 		this.startCode = startCode;
 		this.endCode = endCode;
 
@@ -64,7 +64,7 @@ public class SkeinforgePostProcessor {
 	
 		// If we're doing dualstrusion we always remove the beginning and end code
 		//this actually creates some non-intuitive/unclear behavior for the user
-		if(options.contains(TARGET_TOOLHEAD_DUAL))
+		if(operations.contains(TARGET_TOOLHEAD_DUAL))
 		{
 			prefs.add(0, new SkeinforgePreference(){
 				@Override
@@ -90,6 +90,12 @@ public class SkeinforgePostProcessor {
 			});
 		}
 	}
+	
+	public void addOperation(String operation)
+	{
+		operations.add(operation);
+	}
+	
 	public BuildCode runPostProcessing()
 	{
 
@@ -105,8 +111,8 @@ public class SkeinforgePostProcessor {
 			{
 				if(!sp.getOptions().isEmpty())
 				{
-					options.add(PREPEND_START);
-					options.add(APPEND_END);
+					operations.add(PREPEND_START);
+					operations.add(APPEND_END);
 				}
 			}
 		}
@@ -114,14 +120,14 @@ public class SkeinforgePostProcessor {
 		source = new MutableGCodeSource(generator.output.file);
 
 		System.out.println("***********************************");
-		for(String s : options)
+		for(String s : operations)
 			System.out.println(s);
 		
-		if(options.contains(TARGET_TOOLHEAD_DUAL))
+		if(operations.contains(TARGET_TOOLHEAD_DUAL))
 			;//NOP
-		else if(options.contains(TARGET_TOOLHEAD_LEFT))
+		else if(operations.contains(TARGET_TOOLHEAD_LEFT))
 			runToolheadSwap(ToolheadAlias.LEFT);
-		else if(options.contains(TARGET_TOOLHEAD_RIGHT))
+		else if(operations.contains(TARGET_TOOLHEAD_RIGHT))
 			runToolheadSwap(ToolheadAlias.RIGHT);
 		
 		//Not sure if the start/end replacement should come before or after the toolhead swap
@@ -129,11 +135,11 @@ public class SkeinforgePostProcessor {
 //			runStartReplacement();
 //		if(options.contains(REPLACE_END))
 //			runEndReplacement();
-		if(! options.contains(TARGET_TOOLHEAD_DUAL))
+		if(! operations.contains(TARGET_TOOLHEAD_DUAL))
 		{
-			if(options.contains(PREPEND_START))
+			if(operations.contains(PREPEND_START))
 				runPrepend(startCode);
-			if(options.contains(APPEND_END))
+			if(operations.contains(APPEND_END))
 				runAppend(endCode);
 		}
 
@@ -160,7 +166,7 @@ public class SkeinforgePostProcessor {
 		MutableGCodeSource oldStart = new MutableGCodeSource(new File(generator.profile +"/alterations/start.gcode"));
 		
 		MutableGCodeSource newStart = null;
-		if(options.contains(MACHINE_TYPE_REPLICATOR))
+		if(operations.contains(MACHINE_TYPE_REPLICATOR))
 			newStart = new MutableGCodeSource(new File("machines/replicator/start.gcode"));
 		
 		if(newStart == null)
@@ -178,7 +184,7 @@ public class SkeinforgePostProcessor {
 		GCodeSource oldEnd = new MutableGCodeSource(new File(generator.profile +"/alterations/end.gcode"));
 
 		GCodeSource newEnd = null;
-		if(options.contains(MACHINE_TYPE_REPLICATOR))
+		if(operations.contains(MACHINE_TYPE_REPLICATOR))
 			newEnd = new MutableGCodeSource(new File("machines/replicator/end.gcode"));
 		
 		if(newEnd == null)

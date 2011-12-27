@@ -493,13 +493,16 @@ public class DualStrusionWindow extends JFrame{
 					"One or both is/are absent. Cancelling Dualstrusion combination");
 			return;
 		}
-
+System.out.print("reading in generated gcode");
 		leftSource = new MutableGCodeSource(leftGcode);
 		rightSource = new MutableGCodeSource(rightGcode);
+System.out.print("done reading generated gcode");
 		
 		// the two consecutive poll()s pull what are the only two gcode files
 		DualStrusionConstruction dcs = new DualStrusionConstruction(leftSource, rightSource, startSource, endSource, type, uWipe);
+System.out.print("called dcs.combine");
 		dcs.combine();
+System.out.print("dcs.combine returned");
 		dcs.getCombinedFile().writeToFile(dest);
 		
 		Base.logger.log(Level.FINE, "Finished DualStrusionWindow's part");
