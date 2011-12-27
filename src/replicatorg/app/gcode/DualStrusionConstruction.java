@@ -25,7 +25,8 @@ import replicatorg.util.Point5d;
  * @author Noah Levy
  * @maintained Ted
  */
-public class DualStrusionConstruction {
+public class DualStrusionConstruction
+{
 
 	private MutableGCodeSource result;
 	private final MutableGCodeSource left, right;
@@ -76,7 +77,8 @@ public class DualStrusionConstruction {
 	 * preprocessing and then hands the gcodes off to Layer_Helper
 	 * 
 	 */
-	public void combine() {
+	public void combine()
+	{
 
 		/* Potential order of things to do:
 		 * 
@@ -101,10 +103,15 @@ public class DualStrusionConstruction {
 		 * 
 		 */
 
-		left.stripStartEndBestEffort();
-		right.stripStartEndBestEffort();
-		left.stripNonLayerTagComments();
-		right.stripNonLayerTagComments();
+		//we're doing this in DSWindow for gcode
+		// not needed for stl
+//		left.stripStartEndBestEffort();
+//		right.stripStartEndBestEffort();
+		
+		stripSurroundingLoop(left);
+		stripSurroundingLoop(right);
+		stripNonLayerTagComments(left);
+		stripNonLayerTagComments(right);
 
 System.out.print("dcs.combine.parselayers.left");
 		LinkedList<Layer> leftLayers = newOldParseLayers(left);
@@ -146,6 +153,48 @@ System.out.print("dcs.combine.domerge");
 			result.add(l.getCommands());
 		}
 		
+	}
+	
+	/**
+	 * removes all lines that are skeinforge tag comments, but not layer tags.
+	 */
+	public void stripNonLayerTagComments(MutableGCodeSource source) {
+		String line;
+		for(Iterator<String> i = source.iterator(); i.hasNext();)
+		{
+			line = i.next();
+			
+			if(line.startsWith("(<") &&	!(line.startsWith("(<layer>") || line.startsWith("(</layer")))
+			{
+				i.remove();
+			}
+		}
+	}
+	/**
+	 * removes the "surroundingLoop" and "loop inner" from a file
+	 */
+	public void stripSurroundingLoop(MutableGCodeSource source) {
+
+		String line;
+		for(Iterator<String> it = source.iterator(); it.hasNext();)
+		{
+			line = it.next();
+			if(line.startsWith("(<surroundingLoop>)"))
+			{
+				while(!it.next().startsWith("(</surroundingLoop>)"))
+				{
+					it.remove();
+				}
+			}
+			else if(line.startsWith("(<loop inner>)"))
+			{
+				while(!it.next().startsWith("(</loop>)"))
+				{
+					it.remove();
+				}
+			}
+		}
+
 	}
 	
 	/**
