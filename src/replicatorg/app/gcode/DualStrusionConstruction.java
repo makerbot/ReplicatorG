@@ -341,7 +341,7 @@ System.out.print("dcs.combine.domerge");
 							"please check and make sure all of them are in the format (<layer> 0.00)");
 				}
 				
-				final List<String> accumulate = new LinkedList<String>();
+				final List<String> accumulate = new ArrayList<String>();
 				String next = it.next();
 				while(!next.startsWith("(</layer>)"))
 				{
@@ -421,7 +421,7 @@ System.out.print("dcs.combine.domerge");
 		}
 		else
 		{
-			System.err.print(toLayer);
+//			System.err.print(toLayer);
 		}
 		
 		//TODO: catch possible null pointer exceptions?

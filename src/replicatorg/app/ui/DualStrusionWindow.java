@@ -446,7 +446,7 @@ System.out.println("DSW.merge cdl value: " + completed.getCount());
 		catch(IOException e)
 		{
 			Base.logger.log(Level.SEVERE, "cannot read stl! Aborting dualstrusion generation, see log level FINEST for more details.");
-			Base.logger.log(Level.FINEST, "", e);
+			Base.logger.log(Level.FINEST, "more details:", e);
 			
 		} 
 	}
