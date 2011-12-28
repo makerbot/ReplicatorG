@@ -1,6 +1,5 @@
 package replicatorg.plugin.toolpath.skeinforge;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.TreeSet;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
-import replicatorg.app.gcode.GCodeHelper;
 import replicatorg.app.gcode.MutableGCodeSource;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
@@ -76,6 +74,7 @@ public class SkeinforgePostProcessor {
 					List<SkeinforgeOption> result = new ArrayList<SkeinforgeOption>();
 					result.add(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
 					result.add(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
+					result.add(new SkeinforgeOption("outline.csv", "Activate Outline", "False"));
 					return result;
 				}
 				@Override
@@ -155,42 +154,6 @@ public class SkeinforgePostProcessor {
 	{
 		System.out.println("runToolheadSwap");
 		source.changeToolhead(switchTo);
-	}
-	
-	private void runStartReplacement()
-	{
-		System.out.println("runStartReplacement");
-		//DANGER: start and end codes are not required to be called start/end.gcode
-		// we can look up what the name of the thing being used is, but it's in 
-		// different places in SF-35 and SF-44
-		MutableGCodeSource oldStart = new MutableGCodeSource(new File(generator.profile +"/alterations/start.gcode"));
-		
-		MutableGCodeSource newStart = null;
-		if(operations.contains(MACHINE_TYPE_REPLICATOR))
-			newStart = new MutableGCodeSource(new File("machines/replicator/start.gcode"));
-		
-		if(newStart == null)
-			return;
-
-		source = GCodeHelper.replaceStartOrEndGCode(source, oldStart, newStart);
-	}
-	
-	private void runEndReplacement()
-	{
-		System.out.println("runEndReplacement");
-		//DANGER: start and end codes are not required to be called start/end.gcode
-		// we can look up what the name of the thing being used is, but it's in 
-		// different places in SF-35 and SF-44
-		GCodeSource oldEnd = new MutableGCodeSource(new File(generator.profile +"/alterations/end.gcode"));
-
-		GCodeSource newEnd = null;
-		if(operations.contains(MACHINE_TYPE_REPLICATOR))
-			newEnd = new MutableGCodeSource(new File("machines/replicator/end.gcode"));
-		
-		if(newEnd == null)
-			return;
-		
-		source = GCodeHelper.replaceStartOrEndGCode(source, oldEnd, newEnd);
 	}
 	
 	private void runPrepend(GCodeSource newCode)

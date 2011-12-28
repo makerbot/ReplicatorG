@@ -111,7 +111,6 @@ import replicatorg.app.Base;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.MRUList;
 import replicatorg.app.gcode.GCodeEnumeration;
-import replicatorg.app.gcode.GCodeHelper;
 import replicatorg.app.gcode.MutableGCodeSource;
 import replicatorg.app.syntax.JEditTextArea;
 import replicatorg.app.syntax.PdeKeywords;

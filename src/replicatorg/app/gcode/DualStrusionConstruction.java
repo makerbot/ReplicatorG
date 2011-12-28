@@ -1,6 +1,5 @@
 package replicatorg.app.gcode;
 
-import java.io.File;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -108,8 +107,6 @@ public class DualStrusionConstruction
 //		left.stripStartEndBestEffort();
 //		right.stripStartEndBestEffort();
 		
-		stripSurroundingLoop(left);
-		stripSurroundingLoop(right);
 		stripNonLayerTagComments(left);
 		stripNonLayerTagComments(right);
 
@@ -169,32 +166,6 @@ System.out.print("dcs.combine.domerge");
 				i.remove();
 			}
 		}
-	}
-	/**
-	 * removes the "surroundingLoop" and "loop inner" from a file
-	 */
-	public void stripSurroundingLoop(MutableGCodeSource source) {
-
-		String line;
-		for(Iterator<String> it = source.iterator(); it.hasNext();)
-		{
-			line = it.next();
-			if(line.startsWith("(<surroundingLoop>)"))
-			{
-				while(!it.next().startsWith("(</surroundingLoop>)"))
-				{
-					it.remove();
-				}
-			}
-			else if(line.startsWith("(<loop inner>)"))
-			{
-				while(!it.next().startsWith("(</loop>)"))
-				{
-					it.remove();
-				}
-			}
-		}
-
 	}
 	
 	/**
@@ -348,7 +319,9 @@ System.out.print("dcs.combine.domerge");
 					accumulate.add(next);
 					next = it.next();
 				}
-				result.add(new Layer(layerHeight, accumulate));
+				//skip empty layers
+				if(!accumulate.isEmpty())
+					result.add(new Layer(layerHeight, accumulate));
 			}
 		}
 
