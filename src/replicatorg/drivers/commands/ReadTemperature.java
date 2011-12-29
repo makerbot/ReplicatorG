@@ -8,5 +8,6 @@ public class ReadTemperature implements DriverCommand {
 	@Override
 	public void run(Driver driver) throws RetryException {
 		driver.readAllTemperatures();
+		driver.readAllPlatformTemperatures();
 	}
 }
