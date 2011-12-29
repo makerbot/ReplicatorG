@@ -1,6 +1,6 @@
 package replicatorg.app.gcode;
 
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -20,6 +20,12 @@ import replicatorg.util.Point5d;
 
 /**
  * This class takes two existing gcode files and merges them into a single gcode that can be run on a dualstrusion printer
+ * 
+ * TODO:
+ * some small changes to try, see what they do to the print:
+ *   Have the merge alternate more often, equal heights choose opposite, not the same
+ *   tiny hops (~1mm)
+ *   in toolchange - get max(nextFeed, lastFeed) 
  * 
  * @author Noah Levy
  * @maintained Ted
@@ -114,19 +120,6 @@ System.out.print("dcs.combine.parselayers.left");
 		LinkedList<Layer> leftLayers = newOldParseLayers(left);
 System.out.print("dcs.combine.parselayers.right");
 		LinkedList<Layer> rightLayers = newOldParseLayers(right);
-
-System.out.print("dcs.combine.setlayerstart");
-		//make sure every layer starts by setting the correct toolhead
-		for(Layer l : leftLayers)
-		{
-			l.getCommands().add(0, ToolheadAlias.LEFT.getRecallOffsetGcodeCommand());
-			l.getCommands().add(0, "M6 P1 "+ToolheadAlias.LEFT.getTcode() + "(Set tool)");
-		}
-		for(Layer l : rightLayers)
-		{
-			l.getCommands().add(0, ToolheadAlias.RIGHT.getRecallOffsetGcodeCommand());
-			l.getCommands().add(0, "M6 P1 "+ToolheadAlias.RIGHT.getTcode() + "(Set tool)");
-		}
 
 System.out.print("dcs.combine.domerge");
 		final LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
@@ -254,44 +247,6 @@ System.out.print("dcs.combine.domerge");
 		return layers;
 	}
 	
-	private LinkedList<Layer> oldParseLayers(GCodeSource source)
-	{
-		final LinkedList<Layer> result = new LinkedList<Layer>();
-		
-		final List<String> sourceList = source.asList();
-		
-		for(int i = 0; i < sourceList.size();  i++)
-		{
-			if(sourceList.get(i).matches("\\(\\<layer\\>.*\\)"))
-			{
-				float layerHeight = 0;
-				try
-				{
-					layerHeight = Float.parseFloat(sourceList.get(i).split(" ")[1]);
-				}
-				catch(NumberFormatException e)
-				{
-					Base.logger.log(Level.SEVERE, "one of your layer heights was unparseable, " +
-							"please check and make sure all of them are in the format (<layer> 0.00)");
-				}
-
-				int a = i + 1;
-				while(true)
-				{
-					if(sourceList.get(a).equalsIgnoreCase("(</layer>)"))
-					{
-						ArrayList<String> tempList = new ArrayList<String>(sourceList.subList(i, a+1));
-						result.add(new Layer(layerHeight, tempList)); 
-						break;
-					}
-					a++;
-				}
-			}
-		}
-
-		return result;
-	}
-	
 	private LinkedList<Layer> newOldParseLayers(GCodeSource source)
 	{
 		final LinkedList<Layer> result = new LinkedList<Layer>();
@@ -327,7 +282,7 @@ System.out.print("dcs.combine.domerge");
 
 		return result;
 	}
-	private Layer toolchange(final ToolheadAlias from, final Layer fromLayer, final ToolheadAlias to, final Layer toLayer)
+	private Layer toolchange(final ToolheadAlias fromTool, final Layer fromLayer, final ToolheadAlias toTool, final Layer toLayer)
 	{
 		/*
 		 * How does a toolchange work? Glad you asked:
@@ -378,10 +333,13 @@ System.out.print("dcs.combine.domerge");
 				result.addAll(wipe(rightWipe));
 		}
 		
+		result.add(toTool.getRecallOffsetGcodeCommand());
+		result.add("M6 P1 "+toTool.getTcode() + "(Set tool)");
+		
 		// Ben's suggestion
 		result.add("M18 A B");
 		
-		final NumberFormat nf = Base.getGcodeFormat();
+		final DecimalFormat nf = (DecimalFormat)Base.getGcodeFormat();
 		final Point5d firstPos = getFirstPosition(toLayer);
 		
 		if(firstPos != null)
@@ -403,7 +361,7 @@ System.out.print("dcs.combine.domerge");
 		if(feedrate.equals(""))
 			feedrate = getLastFeedrate(fromLayer);
 		result.add("G1 " + feedrate);
-		
+
 		
 		//debug code///////////////////////////
 		result.add("(********************************************************************************end toolchange**************************************************************)");
@@ -480,7 +438,7 @@ System.out.print("dcs.combine.domerge");
 
 		// purge current toolhead
 		result.add("M108 "+toolWipe.getPurgeRPM());
-		result.add("M102");
+		result.add("M101");
 		result.add("G04 "+toolWipe.getPurgeDuration());
 		result.add("M103");
 		
@@ -552,6 +510,21 @@ System.out.print("dcs.combine.domerge");
 
 		// this is just a handy way to keep track of where our last layer came from
 		Object lastLayer = null;
+		
+		
+		final ToolheadAlias initialTool;
+		// Start by selecting the correct toolhead
+		// This mimics how the selection happens in the loop below
+		if(right.peek().getHeight() < left.peek().getHeight())
+			initialTool = ToolheadAlias.RIGHT;
+		else
+			initialTool = ToolheadAlias.LEFT;
+
+		// Prepend the switch to correct tool to the whole thing
+		result.add(new Layer(0, new ArrayList<String>(){{
+			add(initialTool.getRecallOffsetGcodeCommand());
+			add("M6 P1 "+initialTool.getTcode() + "(Set tool)");
+		}}));
 		
 		while((!left.isEmpty()) || (!right.isEmpty()))
 		{
