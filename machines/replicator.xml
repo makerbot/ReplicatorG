@@ -15,8 +15,8 @@
 			<tool name="Mk8 Right" model="Mk8" diameter="0.4" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
 		</tools>
 		<wipes>
-			<wipe index="0" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
-			<wipe index="1" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+			<wipe index="0" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+			<wipe index="1" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
 		</wipes>
 		<clamps></clamps>
 		<driver name="mightyboard">
@@ -43,8 +43,8 @@ M18 (Turn off steppers after a build.)
 			<tool name="Mk8" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
 		</tools>
 		<wipes>
-			<wipe index="0" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
-			<wipe index="1" X1="-135.0" Y1="55.0" Z1="0" X2="-135.0" Y2="45.0" Z2="0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+			<wipe index="0" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+			<wipe index="1" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
 		</wipes>
 		<clamps></clamps>
 		<driver name="mightyboard">
