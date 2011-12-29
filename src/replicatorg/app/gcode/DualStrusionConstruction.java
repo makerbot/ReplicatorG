@@ -336,7 +336,9 @@ System.out.print("dcs.combine.domerge");
 //		result.add(toTool.getRecallOffsetGcodeCommand());
 //		result.add("M6 P1 "+toTool.getTcode() + "(Set tool)");
 		//been having trouble with prints stopping part way through, think it might be M6's fault
-		result.add(toTool.getRecallOffsetGcodeCommand() +" "+ toTool.getTcode());
+//		result.add(toTool.getRecallOffsetGcodeCommand() +" "+ toTool.getTcode());
+		result.add(toTool.getRecallOffsetGcodeCommand());
+		result.add("M108 "+toTool.getTcode() + "(Set tool)");
 		
 		// Ben's suggestion
 		result.add("M18 A B");
@@ -527,7 +529,9 @@ System.out.print("dcs.combine.domerge");
 //			add(initialTool.getRecallOffsetGcodeCommand());
 //			add("M6 P1 "+initialTool.getTcode() + "(Set tool)");
 			//been having trouble with prints stopping part way through, think it might be M6's fault
-			add(initialTool.getRecallOffsetGcodeCommand() +" "+ initialTool.getTcode());
+//			add(initialTool.getRecallOffsetGcodeCommand() +" "+ initialTool.getTcode());
+			add(initialTool.getRecallOffsetGcodeCommand());
+			add("M108 "+initialTool.getTcode() + "(Set tool)");
 		}}));
 		
 		while((!left.isEmpty()) || (!right.isEmpty()))
