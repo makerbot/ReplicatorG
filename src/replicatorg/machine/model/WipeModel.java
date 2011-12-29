@@ -56,10 +56,15 @@ public class WipeModel {
 			//load our z1
 			n = XML.getAttributeValue(xml, "Z1");
 			if (n != null)
+			{
 				z1 = "Z" + n;
+				height = Base.getGcodeFormat().parse(n).doubleValue();
+			}
 			else
+			{
 				z1 = "";
-			height = Base.getGcodeFormat().parse(n).doubleValue();
+				height = 0;
+			}
 			
 			//load our x2.
 			n = XML.getAttributeValue(xml, "X2");
