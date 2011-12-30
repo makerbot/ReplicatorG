@@ -5,9 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -17,7 +17,7 @@ import replicatorg.model.GCodeSource;
 
 public class MutableGCodeSource implements GCodeSource {
 
-	LinkedList<String> source = new LinkedList<String>();
+	ArrayList<String> source = new ArrayList<String>();
 	
 	public MutableGCodeSource() {
 	}
@@ -109,10 +109,12 @@ public class MutableGCodeSource implements GCodeSource {
 	public void changeToolhead(ToolheadAlias tool) {
 		GCodeCommand gcode;
 		int value;
-		for(String line : source)
+		ArrayList<String> newSource = new ArrayList<String>(source.size());
+		for(Iterator<String> it = source.iterator(); it.hasNext(); )
 		{
+			String line = it.next();
 			gcode = new GCodeCommand(line);
-			//copy constructor
+
 			if(gcode.hasCode('T'))
 			{
 				value = (int)gcode.getCodeValue('T');
@@ -132,7 +134,9 @@ public class MutableGCodeSource implements GCodeSource {
 			{
 				line = line.replace("G55", tool.getRecallOffsetGcodeCommand());
 			}
+			newSource.add(line);
 		}
+		source = newSource;
 	}
 	
 	public MutableGCodeSource copy() {
