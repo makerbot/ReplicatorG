@@ -277,7 +277,7 @@ public class Base {
 	{
 		// We don't use DFS.getInstance here to maintain compatibility with Java 5
         DecimalFormatSymbols dfs;
- 	 	gcodeNF = new DecimalFormat("#0.0");
+ 	 	gcodeNF = new DecimalFormat("##0.0##");
  	 	dfs = ((DecimalFormat)gcodeNF).getDecimalFormatSymbols();
  	 	dfs.setDecimalSeparator('.');
 	}
