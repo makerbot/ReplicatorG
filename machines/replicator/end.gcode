@@ -1,6 +1,7 @@
 (*******Begin End.gcode*******)
+M18
 M109 S0 T0
 M104 S0 T0
-G1 X0.0 F2500
-G1 X0.0 Y0.0 F2500
+G162 X Y F2500
+M18
 (*********End End.gcode*******)
