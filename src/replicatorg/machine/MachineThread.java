@@ -498,12 +498,12 @@ class MachineThread extends Thread {
 	}
 	
 	/**
-	 * Main machine thread loop.
+	 * Main machine thread loop for managing the connection to the bot.
 	 */
 	public void run() {
 		
 		
-		// This is our main loop.
+		/// This is our main loop.
 		while (true) {
 			
 			// First, check if the driver registered any errors
@@ -511,25 +511,21 @@ class MachineThread extends Thread {
 				DriverError error = driver.getError();
 
 				if(state.isConnected() && error.getDisconnected()) {
-					// If we were connected, but this error causes us to disconnect,
-					// transition to a disconnected state
-					setState(new MachineState(MachineState.State.NOT_ATTACHED),
-							error.getMessage());
+					// If we were connected & the error is a disconnect, set disconnected state
+					setState(new MachineState(MachineState.State.NOT_ATTACHED),error.getMessage());
 				}
 				else {
-					// Otherwise, transition to an error state, where we can still
-					// configure the machine, but can't print.
-					setState(new MachineState(MachineState.State.ERROR),
-							error.getMessage());
+					// transition to an error state, 
+					// in error state we can still configure the machine, but can't print.
+					setState(new MachineState(MachineState.State.ERROR), error.getMessage());
 				}
 			}
-			
-			//
 			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
 				runCommand(pendingQueue.remove());
 			}
+
 			
 			if(state.isConnected())
 			{
@@ -537,7 +533,7 @@ class MachineThread extends Thread {
 				if ( pollingTimer.elapsed() ) {
 					/// if we're not building, request temp update
 					/// if we are, check preferences for whether we want to check temp
-					if ((!state.isBuilding()) || Base.preferences.getBoolean("build.monitor_temp",false)) {
+					if (( !state.isBuilding() ) || Base.preferences.getBoolean("build.monitor_temp",false)) {
 						MachineCommand pollCmd = new MachineCommand( RequestType.RUN_COMMAND, new replicatorg.drivers.commands.ReadTemperature() );
 						this.scheduleRequest( pollCmd );
 						Vector<ToolModel> tools = controller.getModel().getTools();

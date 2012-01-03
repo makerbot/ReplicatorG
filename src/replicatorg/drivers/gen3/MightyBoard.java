@@ -314,27 +314,29 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			}
 		}
 
+		getStepperValues(); //read our current steppers into a local cache
+		getMotorRPM();		//load our motor RPM from firmware if we can.
+		verifyMachineId();	//read and verify our PID/VID if we can
+		
+		// I have no idea why we still do this, we may want to test and refactor away
+		getSpindleSpeedPWM();
+		return true;
+	}
+
+	/// Read stepper refernce voltage values from the bot EEPROM.
+	private void getStepperValues() {
+		
 		int stepperCountMightyBoard = 5;
 		Base.logger.fine("MightBoard initial Sync");
 		for(int i = 0; i < stepperCountMightyBoard; i++)
 		{
 			int vRef = getStoredStepperVoltage(i); 
 			Base.logger.fine("Caching inital Stepper vRef from bot");
-			Base.logger.finer("i = " + i + " vRef =" + vRef);
+			Base.logger.finer("Stepper i = " + i + " vRef =" + vRef);
 			stepperValues.put(new Integer(i), new Integer(vRef) );
 		}
-		
-		//load our motor RPM from firmware if we can.
-		getMotorRPM();
-		//read our PID/VID if we can
-		readMachineVidPid();
-
-		// I have no idea why we still do this, we may want to test and refactor away
-		getSpindleSpeedPWM();
-		return true;
 	}
 
-	
 	/**
 	 * 
 	 *  Sets the reference voltage for the specified stepper. This will change the reference voltage
