@@ -187,7 +187,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		version = getVersionInternal();
 		if (version != null){
-			initializeBot();
+			boolean initOk = initializeBot();
+			if(initOk == false) {
+				setInitialized(false);
+				return false;
+			}
+			
 			final String MB_NAME = "RepRap Motherboard v1.X";
 			FirmwareUploader.checkLatestVersion(MB_NAME, version);
 

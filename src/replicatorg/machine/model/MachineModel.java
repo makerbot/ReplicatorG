@@ -1,5 +1,4 @@
-/*
-  MachineModel.java
+/*  MachineModel.java
 
   A class to model a 3-axis machine.
 
@@ -388,7 +387,9 @@ public class MachineModel
 			startBookendCode = new File(startLocation);
 			endBookendCode = new File(endLocation);
 		}
-		Base.logger.severe("No bookend metadata specified for this machine");
+		else {
+			Base.logger.severe("No bookend metadata specified for this machine");
+		}
 	}
 
 	/*************************************
