@@ -603,8 +603,8 @@ ToolpathGenerator.GeneratorListener
 			
 			((SkeinforgeGenerator) generator).setPostProcessor(
 					new SkeinforgePostProcessor((SkeinforgeGenerator)generator, 
-							new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartCode()),
-							new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndCode()),
+							new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()),
+							new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()),
 							postProcessingSteps));
 		}
 
@@ -2416,9 +2416,9 @@ ToolpathGenerator.GeneratorListener
 			// this is stuff that DualStrusion, and until there's a better way to get it there...
 			MachineType type = machineLoader.getMachineInterface().getMachineType();
 			MutableGCodeSource startCode = 
-					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartCode());
+					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode());
 			MutableGCodeSource endCode = 
-					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndCode());
+					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode());
 			
 			if(getBuild().getCode() != null)
 				dsw = new DualStrusionWindow(type, startCode, endCode, getBuild().getMainFilePath());

@@ -15,23 +15,40 @@ import replicatorg.app.Base;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.GCodeSource;
 
+/**
+ * Class to encapsulate a GCode file, as well as all of the operations
+ * that can be performed or associated with it.
+ * 
+ * 
+ * @author Ted Brandston <ted@makerbot.com>
+ *
+ */
 public class MutableGCodeSource implements GCodeSource {
 
+	/// all gcode source, one command per line
 	ArrayList<String> source = new ArrayList<String>();
 	
-	public MutableGCodeSource() {
-	}
+	
+	public MutableGCodeSource() { }
+	
 	
 	public MutableGCodeSource(GCodeSource shallowCopy) {
 		source.addAll(shallowCopy.asList());
 	}
 	
+	
 	public MutableGCodeSource(Collection<String> shallowCopy) {
 		source.addAll(shallowCopy);
 	}
 	
+	
 	public MutableGCodeSource(File sourceFile) {
 		String curline;
+		
+		if(sourceFile == null) {
+			Base.logger.severe("MutableGCodeSource passed a null sourceFile");
+			return;
+		}
 		
 		try {
 			BufferedReader bir = new BufferedReader(new FileReader(sourceFile));
@@ -46,6 +63,7 @@ public class MutableGCodeSource implements GCodeSource {
 			return;
 		}
 	}
+	
 	
 	@Override
 	public Iterator<String> iterator() {
@@ -62,26 +80,38 @@ public class MutableGCodeSource implements GCodeSource {
 		return source.size();
 	}
 
+	
+	///appends a line to the current source
 	public void add(String line) {
 		source.add(line);
 	}
+	
+	///appends an entire GCode source file.
 	public void add(GCodeSource toAdd) {
 		add(toAdd.asList());
 	}
+	
+	///appends a list (array list, linked list, etc) 
 	public void add(Collection<String> toAdd) {
 		source.addAll(toAdd);
 	}
 	
+	/// inserts the passed line at specified location, 0 indexed.
 	public void add(int location, String line) {
 		source.add(location, line);
 	}
+	
+	/// inserts the passed gcode at specified location, 0 indexed.
 	public void add(int location, GCodeSource toAdd) {
 		add(location, toAdd.asList());
 	}
+	
+	/// inserts the passed collection (list, linked list, etc) at specified location, 0 indexed.
 	public void add(int location, Collection<String> toAdd) {
 		source.addAll(location, toAdd);
 	}
 	
+	/// writes the gcode to file, no path expansion or file testing happens before write attempt.
 	public void writeToFile(File f) {
 
 		try {
@@ -95,6 +125,7 @@ public class MutableGCodeSource implements GCodeSource {
 			Base.logger.log(Level.SEVERE, "Could not write MutableGCodeSource to file.", e);
 		}
 	}
+	
 	/**
 	 * This looks for and tries to remove sections that match what we expect from the start and end code
 	 * It is not guaranteed to remove start and end code, just to try its best.
@@ -103,13 +134,18 @@ public class MutableGCodeSource implements GCodeSource {
 	 */
 	public void stripStartEndBestEffort() {
 		//TODO: try harder
+		Base.logger.finer("stripStartEndBestEffort ToDo: TryHarder" );
 		return;
 	}
 	
+
+	/// Runs through this gcode file, swapping all references to the the current toolhead 
+	/// to instread reference the specified toolhead.  Alters select G, M and T Codes.
 	public void changeToolhead(ToolheadAlias tool) {
 		GCodeCommand gcode;
 		int value;
 		ArrayList<String> newSource = new ArrayList<String>(source.size());
+		///FUTURE: create a syncronize block here someday
 		for(Iterator<String> it = source.iterator(); it.hasNext(); )
 		{
 			String line = it.next();
@@ -138,7 +174,9 @@ public class MutableGCodeSource implements GCodeSource {
 		}
 		source = newSource;
 	}
+
 	
+	/// Make a deep copy of this MutableGCodeSource and returns it to the caller.
 	public MutableGCodeSource copy() {
 		MutableGCodeSource newSource = new MutableGCodeSource();
 		for(String line : source)
