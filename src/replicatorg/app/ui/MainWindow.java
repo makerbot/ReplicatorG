@@ -66,8 +66,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
@@ -590,22 +588,15 @@ ToolpathGenerator.GeneratorListener
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
 		
 		if(generator instanceof SkeinforgeGenerator) {
-			// Here we'll do the setup for the post-processor
-			//Let's figure out which post-processing steps need to be taken
-			Set<String> postProcessingSteps = new TreeSet<String>();
-			// Set the target machine type
-			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
-				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_REPLICATOR);
-			else if(machineLoader.getMachineInterface().getMachineType() == MachineType.THINGOMATIC)
-				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_TOM);
-			else if(machineLoader.getMachineInterface().getMachineType() == MachineType.CUPCAKE)
-				postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_CUPCAKE);
+
+			SkeinforgeGenerator sg = (SkeinforgeGenerator)generator;
+			SkeinforgePostProcessor spp = new SkeinforgePostProcessor((SkeinforgeGenerator)generator);
+			((SkeinforgeGenerator)generator).setPostProcessor(spp);
 			
-			((SkeinforgeGenerator) generator).setPostProcessor(
-					new SkeinforgePostProcessor((SkeinforgeGenerator)generator, 
-							new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()),
-							new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()),
-							postProcessingSteps));
+			spp.setMachineType(machineLoader.getMachineInterface().getMachineType());
+			spp.setPrependMetaInfo(true);
+			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()));
+			spp.setEndCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()));
 		}
 
 
@@ -1041,6 +1032,8 @@ ToolpathGenerator.GeneratorListener
 				MutableGCodeSource code = new MutableGCodeSource(build.getCode().file);
 				code.changeToolhead(ToolheadAlias.LEFT);
 				code.writeToFile(build.getCode().file);
+				
+				//TODO: is this redundant?
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();
@@ -1060,6 +1053,8 @@ ToolpathGenerator.GeneratorListener
 				MutableGCodeSource code = new MutableGCodeSource(build.getCode().file);
 				code.changeToolhead(ToolheadAlias.RIGHT);
 				code.writeToFile(build.getCode().file);
+				
+				//TODO: is this redundant?
 				handleOpenFile(build.getCode().file);
 				try {
 					build.getCode().load();

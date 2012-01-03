@@ -41,8 +41,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
@@ -426,7 +424,7 @@ public class DualStrusionWindow extends JFrame{
 		return panel;
 	}
 	
-	private void stlToGcode(File stl, File gcode, ToolheadAlias tool, MachineType type)
+	private void stlToGcode(File stl, File gcode, ToolheadAlias tool, MachineType machineType)
 	{
 		try{
 			if(!gcode.exists())
@@ -444,23 +442,15 @@ public class DualStrusionWindow extends JFrame{
 
 			if(gen instanceof SkeinforgeGenerator)
 			{
-				// Here we'll do the setup for the post-processor
-				//Let's figure out which post-processing steps need to be taken
-				Set<String> postProcessingSteps = new TreeSet<String>();
+				SkeinforgeGenerator sg = (SkeinforgeGenerator)gen;
+				SkeinforgePostProcessor spp = new SkeinforgePostProcessor((SkeinforgeGenerator)gen);
+				((SkeinforgeGenerator)gen).setPostProcessor(spp);
 				
-				postProcessingSteps.add(SkeinforgePostProcessor.TARGET_TOOLHEAD_DUAL);
-
-				if(type == MachineType.THE_REPLICATOR)
-					postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_REPLICATOR);
-				else if(type == MachineType.THINGOMATIC)
-					postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_TOM);
-				else if(type == MachineType.CUPCAKE)
-					postProcessingSteps.add(SkeinforgePostProcessor.MACHINE_TYPE_CUPCAKE);
-				
-				((SkeinforgeGenerator) gen).setPostProcessor(new SkeinforgePostProcessor(
-								((SkeinforgeGenerator) gen), null, null, postProcessingSteps));
+				spp.enableDualstrusion();
+				spp.setMachineType(machineType);
 				
 			}
+			
 			final Build b = new Build(stl.getAbsolutePath());
 			final ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(progress, gen, b);
 
