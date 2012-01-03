@@ -11,5 +11,4 @@ G161 Z F1000 (Home Z axis minimum; go until reaching the end stop.)
 G92 Z0.0 (Set Z to 0)
 G162 X Y F4000 (Home X and Y axis maximum; go until reaching the end stop.)
 M131 X Y Z A B (record the current coordinates to the motherboard)
-
 M01 (Your coordinates are now saved! To adjust them, use the 'Machine Onboard Preferences' dialog in the Machine menu to change the Axis Offsets.)
