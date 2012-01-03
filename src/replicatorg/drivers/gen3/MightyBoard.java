@@ -314,27 +314,39 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			}
 		}
 
+		getStepperValues(); //read our current steppers into a local cache
+		getMotorRPM();		//load our motor RPM from firmware if we can.
+		if ( verifyMachineId() == false ) //read and verify our PID/VID if we can
+		{
+			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
+			return false;
+		}
+		
+		if(verifyToolCount() == false) /// read and verify our tool count
+		{
+			Base.logger.severe("Tool Count Mismatch. Expecting "+ machine.getTools().size() + " tools, reported " + this.toolCountOnboard + "tools");
+			Base.logger.severe("Please double-check your selected machine.");
+		}
+		
+		// I have no idea why we still do this, we may want to test and refactor away
+		getSpindleSpeedPWM();
+		return true;
+	}
+
+	/// Read stepper refernce voltage values from the bot EEPROM.
+	private void getStepperValues() {
+		
 		int stepperCountMightyBoard = 5;
 		Base.logger.fine("MightBoard initial Sync");
 		for(int i = 0; i < stepperCountMightyBoard; i++)
 		{
 			int vRef = getStoredStepperVoltage(i); 
 			Base.logger.fine("Caching inital Stepper vRef from bot");
-			Base.logger.finer("i = " + i + " vRef =" + vRef);
+			Base.logger.finer("Stepper i = " + i + " vRef =" + vRef);
 			stepperValues.put(new Integer(i), new Integer(vRef) );
 		}
-		
-		//load our motor RPM from firmware if we can.
-		getMotorRPM();
-		//read our PID/VID if we can
-		readMachineVidPid();
-
-		// I have no idea why we still do this, we may want to test and refactor away
-		getSpindleSpeedPWM();
-		return true;
 	}
 
-	
 	/**
 	 * 
 	 *  Sets the reference voltage for the specified stepper. This will change the reference voltage
@@ -410,7 +422,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	@Override
 	public void setStoredStepperVoltage(int stepperId, int referenceValue) {
-		Base.logger.info("MightBoard sending storeStepperVoltage");
+		Base.logger.finer("MightBoard sending storeStepperVoltage");
 
 		if(stepperId > 5) {
 			Base.logger.severe("store invalid stepper Id" + Integer.toString(stepperId) );
@@ -549,9 +561,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 		byte[] data = readFromEEPROM(MightyBoardEEPROM.MACHINE_NAME,
 				MightyBoardEEPROM.MAX_MACHINE_NAME_LEN);
-		Base.logger.severe("getting getMachineName");
 
-		if (data == null) { return "no name"; }
+		if (data == null)
+			{ return "no name"; }
 		try {
 			int len = 0;
 			while (len < MightyBoardEEPROM.MAX_MACHINE_NAME_LEN && data[len] != 0) len++;
@@ -584,7 +596,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public double getAxisHomeOffset(int axis) {
 
-		Base.logger.severe("MigtyBoard getAxisHomeOffset" + axis);
+		Base.logger.finest("MigtyBoard getAxisHomeOffset" + axis);
 		if ((axis < 0) || (axis > 4)) {
 			// TODO: handle this
 			Base.logger.severe("axis out of range" + axis);
@@ -774,13 +786,25 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		b[0] = estop.getValue();
 		writeToEEPROM(MightyBoardEEPROM.ENDSTOP_INVERSION,b);
 	}
-		 
+	
+	
+		/// Check the EEPROM to see what PID/VID the machine believes it has
 	public void readMachineVidPid() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(MightyBoardEEPROM.VID_PID_INFO,4);
 		this.machineId = VidPid.getPidVid(b);
 	}
 	
+	
+	public boolean verifyToolCount()
+	{
+		readToolheadCount(); 
+		if(this.toolCountOnboard ==  machine.getTools().size())
+			return true;
+		return false;
+
+
+	}
 	
 	/** try to verify our acutal machine matches our selected machine
 	 * @param vid vendorId (same as usb vendorId)
@@ -871,14 +895,14 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		else if (toolIndex == 1)toolInfoOffset = MightyBoardEEPROM.T1_DATA_BASE;
 
 		offset = toolInfoOffset + offset;
-		Base.logger.severe("readFromToolEEPROM null" + offset +" " + len + " " + toolIndex);
+		Base.logger.finest("readFromToolEEPROM null" + offset +" " + len + " " + toolIndex);
 				
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.READ_EEPROM.getCode());
 		pb.add16(offset);
 		pb.add8(len);
 		PacketResponse pr = runQuery(pb.getPacket());
 		if (pr.isOK()) {
-			Base.logger.severe("readFromToolEEPROM ok at: " + offset +" len:" + len + " id:" + toolIndex);			
+			Base.logger.finest("readFromToolEEPROM ok at: " + offset +" len:" + len + " id:" + toolIndex);			
 			//Base.logger.severe("readFromToolEEPROM ok");
 			int rvlen = Math.min(pr.getPayload().length - 1, len);
 			byte[] rv = new byte[rvlen];
@@ -1028,6 +1052,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 
 	/**
+	 * 
 	 */
 	@Override
 	public PIDParameters getPIDParameters(int which, int toolIndex) {
@@ -1036,16 +1061,16 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		int offset = (which == OnboardParameters.EXTRUDER)?
 				ToolheadEEPROM.EXTRUDER_PID_BASE:ToolheadEEPROM.HBP_PID_BASE;
 		if (which == OnboardParameters.EXTRUDER)
-			Base.logger.severe("** PID FOR ID: Extruder" );
+			Base.logger.finest("** PID FOR ID: Extruder" );
 		else
-			Base.logger.severe("** PID FOR ID: BuildPlatform" );
+			Base.logger.finest("** PID FOR ID: BuildPlatform" );
 
 
-		Base.logger.severe("pid p: " + Integer.toString(toolIndex));
+		Base.logger.finest("pid p: " + Integer.toString(toolIndex));
 		pp.p = readFloat16FromToolEEPROM(offset + PIDTermOffsets.P_TERM_OFFSET, 7.0f, toolIndex);
-		Base.logger.severe("pid i: " + Integer.toString(toolIndex));
+		Base.logger.finest("pid i: " + Integer.toString(toolIndex));
 		pp.i = readFloat16FromToolEEPROM(offset + PIDTermOffsets.I_TERM_OFFSET, 0.325f, toolIndex);
-		Base.logger.severe("pid d: " + Integer.toString(toolIndex));
+		Base.logger.finest("pid d: " + Integer.toString(toolIndex));
 		pp.d = readFloat16FromToolEEPROM(offset + PIDTermOffsets.D_TERM_OFFSET, 36.0f, toolIndex);
 		return pp;
 	}
@@ -1070,7 +1095,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	private float readFloat16FromToolEEPROM(int offset, float defaultValue, int toolIndex) {
 		byte r[] = readFromToolEEPROM(offset, 2, toolIndex);
 
-		Base.logger.severe("val " + (((int) r[0]) & 0xff)+ " & " + (((int) r[1]) & 0xff) );
+		Base.logger.finest("val " + (((int) r[0]) & 0xff)+ " & " + (((int) r[1]) & 0xff) );
 		if (r[0] == (byte) 0xff && r[1] == (byte) 0xff){
 			Base.logger.fine("ERROR: Eeprom  float 16 val at "+ offset +" is 0xFFFF");
 			return defaultValue;
@@ -1253,17 +1278,22 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	
 	
 	/// Returns the number of tools as saved on the machine (not as per XML count)
-	@Override 
-	public int toolCountOnboard() { 
+	//@Override 
+	public void readToolheadCount() { 
 
-		if (toolCountOnboard == -1 ) {
-			byte[] toolCountByte = readFromEEPROM(MightyBoardEEPROM.TOOL_COUNT, 1) ;
-			if (toolCountByte != null && toolCountByte.length > 0 ) {
-				toolCountOnboard = toolCountByte[0];
-			}
+		byte[] toolCountByte = readFromEEPROM(MightyBoardEEPROM.TOOL_COUNT, 1) ;
+		if (toolCountByte != null && toolCountByte.length > 0 ) {
+			toolCountOnboard = toolCountByte[0];
 		}
-		return toolCountOnboard;
+
 	} 
+	
+	public int getToolheadCount() {
+		if (toolCountOnboard == -1 ) 
+			readToolheadCount();
+		return toolCountOnboard;
+	}
+
 
 	/// Returns true of tool count is save on the machine  (not as per XML count)
 	@Override 

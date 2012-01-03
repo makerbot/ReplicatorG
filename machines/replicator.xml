@@ -1,7 +1,7 @@
 <?xml version="1.1" encoding="utf-8"?>
 <machines>
 <machine experimental="0">
-		<name>The Replicator Dual (Shipping Config) </name>
+		<name>The Replicator Dual</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="227" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
@@ -31,7 +31,7 @@ M18 (Turn off steppers after a build.)
 		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>
 	</machine>
 <machine experimental="0">
-		<name>The Replicator (Shipping Config)</name>
+		<name>The Replicator Single </name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="227" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->

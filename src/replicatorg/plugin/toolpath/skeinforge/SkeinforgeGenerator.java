@@ -24,11 +24,16 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.StreamLoggerThread;
+import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
 
 public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
+	{
+		displayName = "Skeinforge";
+	}
+	
 	boolean configSuccess = false;
 	ConfigurationDialog cd;
 	String profile = null;
@@ -158,7 +163,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	 * A SkeinforgePreference describes a user-visible preference that appears in the 
 	 * configuration dialog.  SkeinforgePreferences should give a list of options
 	 * that will be set at runtime.
-	 * @param name The human-readable name of the preference.
+	 * @param displayName The human-readable name of the preference.
 	 * @param pereferenceName If you wish to cache the last selected value of this option in
 	 * the java application preferences, specify it here.
 	 * @param defaultState the default state of this preference, to be used if the
@@ -325,9 +330,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
 			
 			if(extruderChoice.equalsIgnoreCase("right"))
-				postprocess.addOperation(SkeinforgePostProcessor.TARGET_TOOLHEAD_RIGHT);
+				postprocess.setToolheadTarget(ToolheadAlias.RIGHT);
 			else if(extruderChoice.equalsIgnoreCase("left"))
-				postprocess.addOperation(SkeinforgePostProcessor.TARGET_TOOLHEAD_LEFT);
+				postprocess.setToolheadTarget(ToolheadAlias.LEFT);
 		}
 		return true;
 	}

@@ -211,23 +211,23 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	private Point5d pointsFromHijackedAxes(ToolModel curTool, double minutes) {
 		int relative = 0;
 		Point5d steps = new Point5d();
-		Base.logger.severe("modify hijacked axes");
+		Base.logger.finer("modify hijacked axes");
 		
 		for (AxisId axis : getHijackedAxes(machine.currentTool())) {
-			Base.logger.severe("modify hijacked axes doing " + axis.toString() );
+			Base.logger.finer("modify hijacked axes doing " + axis.toString() );
 			relative |= 1 << axis.getIndex();
 			double extruderSteps = 0;
 			
 			if (curTool.isMotorEnabled()) {
-				Base.logger.severe("modify hijacked axes doing enabled stuff" + axis.toString() );
+				Base.logger.finer("modify hijacked axes doing enabled stuff" + axis.toString() );
 				double maxrpm = machine.getMaximumFeedrates().axis(axis) * machine.getStepsPerMM().axis(axis) / curTool.getMotorSteps();
 				double rpm = (curTool.getMotorSpeedRPM() > maxrpm) ? maxrpm : curTool.getMotorSpeedRPM();
 				boolean clockwise = machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE;
 				extruderSteps = rpm * curTool.getMotorSteps() * minutes * (clockwise?-1d:1d);
 			}
 			
-			Base.logger.severe("setting axis " + axis.toString() );
-			Base.logger.severe("setting extruderSteps" + Double.toString(extruderSteps) );
+			Base.logger.finer("setting axis " + axis.toString() );
+			Base.logger.finer("setting extruderSteps" + Double.toString(extruderSteps) );
 			steps.setAxis(axis, extruderSteps);
 		}
 		return steps;

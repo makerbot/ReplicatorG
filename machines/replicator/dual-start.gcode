@@ -1,5 +1,5 @@
 (**** beginning of start.gcode ****)
-(This file is for a single head on a MakerBot Replicator with Dual Extruders)
+(This is start code for The Replicator with Dual Extruders, running a dual material print)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 G10 P1 X16.55 Y0 Z-0.3 (Designate T0 Offset)

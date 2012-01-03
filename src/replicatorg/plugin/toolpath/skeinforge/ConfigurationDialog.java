@@ -103,7 +103,7 @@ class ConfigurationDialog extends JDialog {
 		add(prefPulldown, "wrap, growx");
 
 		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
-			add(preference.getUI(), "wrap");
+			add(preference.getUI(), "growx, wrap");
 		}
 
 		final JCheckBox autoGen = new JCheckBox("Automatically generate when building.");

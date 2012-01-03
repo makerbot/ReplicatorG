@@ -1,98 +1,46 @@
 package replicatorg.plugin.toolpath.skeinforge;
 
+import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
+import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
+import net.miginfocom.swing.MigLayout;
+import replicatorg.app.Base;
 import replicatorg.app.gcode.MutableGCodeSource;
+import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
 import replicatorg.model.GCodeSource;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeBooleanPreference;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeOption;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
 
 public class SkeinforgePostProcessor {
-
-	/* try to keep these as descriptive as possible
-	 * Also, the way this works right now you can specify conflicting options.
-	 *   This can be fixed by switching to enums or something. or just doing a check
-	 */
-	public static final String TARGET_TOOLHEAD_LEFT = "target-toolhead-left";
-	public static final String TARGET_TOOLHEAD_RIGHT = "target-toolhead-right";
-	public static final String TARGET_TOOLHEAD_DUAL= "target-toolhead-dual";
-
-	public static final String PREPEND_START = "prepend-start";
-	public static final String REPLACE_START = "replace-start";
-	public static final String REPLACE_END = "replace-end";
-	public static final String APPEND_END = "append-end";
-
-	public static final String MACHINE_TYPE_REPLICATOR = "machine-type-replicator";
-	public static final String MACHINE_TYPE_TOM = "machine-type-tom";
-	public static final String MACHINE_TYPE_CUPCAKE = "machine-type-cupcake";
 	
 	private final SkeinforgeGenerator generator;
-	private final Set<String> operations;
 	
 	private MutableGCodeSource source;
 	
-	//TODO:
-	// Because I'm trying to do this quickly, I'm just throwing these in here. A better way to do it
-	// would be to replace the Set<String> with a Set<SFPostProcessorOptions> that would say, 
-	// for instance, {PREPEND, File toPrepend} or {REPLACE, GCodeSource toRemove, GCodeSource toAdd}
-	private MutableGCodeSource startCode, endCode;
-	public SkeinforgePostProcessor(SkeinforgeGenerator generator, MutableGCodeSource startCode, MutableGCodeSource endCode, String...ops)
-	{
-		this(generator, startCode, endCode, new TreeSet<String>(Arrays.asList(ops)));
-	}
-	public SkeinforgePostProcessor(SkeinforgeGenerator generator, MutableGCodeSource startCode, MutableGCodeSource endCode, Set<String> operations)
+	// options:
+	private MutableGCodeSource startCode = null;
+	private MutableGCodeSource endCode = null;
+	private ToolheadAlias toolheadTarget = null;
+	private MachineType machineType = null;
+	private boolean dualstruding = false;
+	private boolean prependStart = false;
+	private boolean appendEnd = false;
+	private boolean prependMetaInfo = false;
+	
+	public SkeinforgePostProcessor(SkeinforgeGenerator generator)
 	{
 		this.generator = generator;
-		this.operations = operations;
-		this.startCode = startCode;
-		this.endCode = endCode;
-
-		// Check to see if we need to do anything based on selected prefs
-		List<SkeinforgePreference> prefs = generator.getPreferences();
-	
-		// If we're doing dualstrusion we always remove the beginning and end code
-		//this actually creates some non-intuitive/unclear behavior for the user
-		if(operations.contains(TARGET_TOOLHEAD_DUAL))
-		{
-			prefs.add(0, new SkeinforgePreference(){
-				@Override
-				public JComponent getUI() {
-					return new JLabel("Dualstruding...");
-				}
-				@Override
-				public List<SkeinforgeOption> getOptions() {
-					List<SkeinforgeOption> result = new ArrayList<SkeinforgeOption>();
-					result.add(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
-					result.add(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
-					result.add(new SkeinforgeOption("outline.csv", "Activate Outline", "False"));
-					return result;
-				}
-				@Override
-				public String valueSanityCheck() {
-					// TODO Auto-generated method stub
-					return null;
-				}
-				@Override
-				public String getName() {
-					return "Dualstrusion options";
-				}
-			});
-		}
-	}
-	
-	public void addOperation(String operation)
-	{
-		operations.add(operation);
 	}
 	
 	public BuildCode runPostProcessing()
@@ -110,40 +58,40 @@ public class SkeinforgePostProcessor {
 			{
 				if(!sp.getOptions().isEmpty())
 				{
-					operations.add(PREPEND_START);
-					operations.add(APPEND_END);
+					prependStart = true;
+					appendEnd = true;
 				}
 			}
 		}
+		
 		// Load our code to a source iterator
 		source = new MutableGCodeSource(generator.output.file);
-
-		System.out.println("***********************************");
-		for(String s : operations)
-			System.out.println(s);
 		
-		if(operations.contains(TARGET_TOOLHEAD_DUAL))
-			;//NOP
-		else if(operations.contains(TARGET_TOOLHEAD_LEFT))
-			runToolheadSwap(ToolheadAlias.LEFT);
-		else if(operations.contains(TARGET_TOOLHEAD_RIGHT))
-			runToolheadSwap(ToolheadAlias.RIGHT);
-		
-		//Not sure if the start/end replacement should come before or after the toolhead swap
-//		if(options.contains(REPLACE_START))
-//			runStartReplacement();
-//		if(options.contains(REPLACE_END))
-//			runEndReplacement();
-		if(! operations.contains(TARGET_TOOLHEAD_DUAL))
+		if(!dualstruding)
 		{
-			if(operations.contains(PREPEND_START))
+			if(toolheadTarget != null)
+				runToolheadSwap(toolheadTarget);
+			
+			if(prependStart)
 				runPrepend(startCode);
-			if(operations.contains(APPEND_END))
+			if(appendEnd)
 				runAppend(endCode);
 		}
-
-		System.out.println("***********************************");
 		
+		if(prependMetaInfo)
+		{
+			MutableGCodeSource metaInfo = new MutableGCodeSource();
+			
+			metaInfo.add("(** This GCode was generated by ReplicatorG "+Base.VERSION_NAME+" **)");
+			//TRICKY: calling a static method on an instance of a class is considered bad practice,
+			//				but I'm not sure how to access that without it
+			metaInfo.add("(*  using "+generator.displayName+"  *)");
+			metaInfo.add("(*  for a "+machineType.getName()+"  *)");
+			metaInfo.add("(*  on "+/*Calendar.getInstance().toString()*/"unknown date"+"  *)");
+			metaInfo.add("(**                                 **)");
+			
+			runPrepend(metaInfo);
+		}
 		//Write the modified source back to our file
 		source.writeToFile(generator.output.file);
 		
@@ -164,5 +112,101 @@ public class SkeinforgePostProcessor {
 	private void runAppend(GCodeSource newCode)
 	{
 		source.add(newCode);
+	}
+	
+	public void enableDualstrusion()
+	{
+		dualstruding = true;
+		
+		List<SkeinforgePreference> prefs = generator.getPreferences();
+		
+		prefs.add(0, new SkeinforgePreference(){
+			SkeinforgeBooleanPreference outlineActive;
+			SkeinforgeBooleanPreference coolActive;
+			//Static block
+			{
+				outlineActive = new SkeinforgeBooleanPreference("Outline Active", 
+						"skeinforge.dualstrusion.outlineActive", false, "<html>Having Outline active for any layer" +
+								" but the first layer<br/>for the first toolhead can damage dualstrusion prints.</html>");
+				outlineActive.addNegateableOption(new SkeinforgeOption("outline.csv", "Activate Outline", "True"));
+				
+
+				coolActive = new SkeinforgeBooleanPreference("Cool Active", 
+						"skeinforge.dualstrusion.coolActive", false, "<html>Cool makes the tool move slowly on very small " +
+						"layers,<br/> with dualstrusion, those layers are usually supported by the other half of the print.</html>");
+				coolActive.addNegateableOption(new SkeinforgeOption("cool.csv", "Activate Cool", "True"));
+			}
+			@Override
+			public JComponent getUI() {
+				JPanel panel = new JPanel();
+				panel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+				panel.setLayout(new MigLayout("fillx, filly"));
+				
+				panel.add(new JLabel("Dualstruding..."), "growx, wrap");
+				panel.add(outlineActive.getUI(), "growx, wrap");
+				panel.add(coolActive.getUI(), "growx, wrap");
+				
+				return panel;
+			}
+			@Override
+			public List<SkeinforgeOption> getOptions() {
+				List<SkeinforgeOption> result = new ArrayList<SkeinforgeOption>();
+				result.add(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
+				result.add(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
+				result.addAll(outlineActive.getOptions());
+				result.addAll(coolActive.getOptions());
+				return result;
+			}
+			@Override
+			public String valueSanityCheck() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			@Override
+			public String getName() {
+				return "Dualstrusion options";
+			}
+		});
+	}
+	
+	public void setToolheadTarget(ToolheadAlias tool)
+	{
+		toolheadTarget = tool;
+	}
+	
+	public void setMachineType(MachineType type)
+	{
+		machineType = type;
+	}
+
+	public void setStartCode(GCodeSource source)
+	{
+		if(source instanceof MutableGCodeSource)
+			startCode = (MutableGCodeSource)source;
+		else
+			startCode = new MutableGCodeSource(source);
+	}
+	
+	public void setEndCode(GCodeSource source)
+	{
+		if(source instanceof MutableGCodeSource)
+			endCode = (MutableGCodeSource)source;
+		else
+			endCode = new MutableGCodeSource(source);
+	}
+	
+	public void setPrependStart(boolean doPrepend)
+	{
+		prependStart = doPrepend;
+	}
+	
+	public void setAppendEnd(boolean doAppend)
+	{
+		appendEnd = doAppend;
+	}
+	
+	public void setPrependMetaInfo(boolean doPrepend)
+	{
+		prependMetaInfo = doPrepend;
 	}
 }

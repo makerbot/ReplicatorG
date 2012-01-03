@@ -1,5 +1,4 @@
-/*
-  MachineModel.java
+/*  MachineModel.java
 
   A class to model a 3-axis machine.
 
@@ -84,8 +83,8 @@ public class MachineModel
 	protected  Vector<WipeModel> wipes = new Vector<WipeModel>();
 	
 	// our machine-specific start & end gcode
-	protected File startCode = null;
-	protected File endCode = null;
+	protected File startBookendCode = null;
+	protected File endBookendCode = null;
 	
 	// our build volume
 	protected BuildVolume buildVolume;
@@ -385,8 +384,11 @@ public class MachineModel
 			Node bookend = XML.getChildNodeByName(xml, "bookend");
 			String startLocation = XML.getAttributeValue(bookend, "start");
 			String endLocation = XML.getAttributeValue(bookend, "end");
-			startCode = new File(startLocation);
-			endCode = new File(endLocation);
+			startBookendCode = new File(startLocation);
+			endBookendCode = new File(endLocation);
+		}
+		else {
+			Base.logger.severe("No bookend metadata specified for this machine");
 		}
 	}
 
@@ -594,11 +596,15 @@ public class MachineModel
 	/*************************************
 	*  Gcode functions
 	*************************************/
-	public File getStartCode() {
-		return startCode;
+
+	/// returns the start code filename specified in machines.xml
+	public File getStartBookendCode() {
+		return startBookendCode;
 	}
-	public File getEndCode() {
-		return endCode;
+
+	/// returns the end code filename specified in machines.xml
+	public File getEndBookendCode() {
+		return endBookendCode;
 	}
 	
 	public MachineType getMachineType() {
