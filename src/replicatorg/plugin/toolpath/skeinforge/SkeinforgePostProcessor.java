@@ -1,21 +1,23 @@
 package replicatorg.plugin.toolpath.skeinforge;
 
+import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
+import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
+import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.gcode.MutableGCodeSource;
 import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
 import replicatorg.model.GCodeSource;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeBooleanPreference;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeOption;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
@@ -119,16 +121,40 @@ public class SkeinforgePostProcessor {
 		List<SkeinforgePreference> prefs = generator.getPreferences();
 		
 		prefs.add(0, new SkeinforgePreference(){
+			SkeinforgeBooleanPreference outlineActive;
+			SkeinforgeBooleanPreference coolActive;
+			//Static block
+			{
+				outlineActive = new SkeinforgeBooleanPreference("Outline Active", 
+						"skeinforge.dualstrusion.outlineActive", false, "<html>Having Outline active for any layer" +
+								" but the first layer<br/>for the first toolhead can damage dualstrusion prints.</html>");
+				outlineActive.addNegateableOption(new SkeinforgeOption("outline.csv", "Activate Outline", "True"));
+				
+
+				coolActive = new SkeinforgeBooleanPreference("Cool Active", 
+						"skeinforge.dualstrusion.coolActive", false, "<html>Cool makes the tool move slowly on very small " +
+						"layers,<br/> with dualstrusion, those layers are usually supported by the other half of the print.</html>");
+				coolActive.addNegateableOption(new SkeinforgeOption("cool.csv", "Activate Cool", "True"));
+			}
 			@Override
 			public JComponent getUI() {
-				return new JLabel("Dualstruding...");
+				JPanel panel = new JPanel();
+				panel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+				panel.setLayout(new MigLayout("fillx, filly"));
+				
+				panel.add(new JLabel("Dualstruding..."), "growx, wrap");
+				panel.add(outlineActive.getUI(), "growx, wrap");
+				panel.add(coolActive.getUI(), "growx, wrap");
+				
+				return panel;
 			}
 			@Override
 			public List<SkeinforgeOption> getOptions() {
 				List<SkeinforgeOption> result = new ArrayList<SkeinforgeOption>();
 				result.add(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
 				result.add(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
-				result.add(new SkeinforgeOption("outline.csv", "Activate Outline", "False"));
+				result.addAll(outlineActive.getOptions());
+				result.addAll(coolActive.getOptions());
 				return result;
 			}
 			@Override
