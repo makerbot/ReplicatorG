@@ -49,6 +49,10 @@ public class ToolpathGeneratorFactory {
 		
 		class Skeinforge6 extends SkeinforgeGenerator {
 			
+			{
+				displayName = "Skeinforge (6)";
+			}
+			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-0006");
 			}
@@ -71,6 +75,10 @@ public class ToolpathGeneratorFactory {
 		};
 
 		class Skeinforge31 extends SkeinforgeGenerator {
+
+			{
+				displayName = "Skeinforge (31)";
+			}
 			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-31/skeinforge_application");
@@ -93,6 +101,10 @@ public class ToolpathGeneratorFactory {
 		};
 		
 		class Skeinforge35 extends SkeinforgeGenerator {
+
+			{
+				displayName = "Skeinforge (35)";
+			}
 			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-35/skeinforge_application");
@@ -148,6 +160,10 @@ public class ToolpathGeneratorFactory {
 		};
 
 		class Skeinforge40 extends SkeinforgeGenerator {
+
+			{
+				displayName = "Skeinforge (40) - experimental";
+			}
 			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-40/skeinforge_application");
@@ -194,6 +210,10 @@ public class ToolpathGeneratorFactory {
 		};
 		
 		class Skeinforge44 extends SkeinforgeGenerator {
+
+			{
+				displayName = "Skeinforge (44) - experimental";
+			}
 			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-44/skeinforge_application");
@@ -212,19 +232,19 @@ public class ToolpathGeneratorFactory {
 		};
 		
 		if((new Skeinforge35()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor("Skeinforge (35)", 
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge35.displayName, 
 				"This is a decent version of skeinforge.", Skeinforge35.class));
 		if((new Skeinforge40()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor("Skeinforge (40) - experimental", 
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge40.displayName, 
 				"This is a recent version of skeinforge.", Skeinforge40.class));
 		if((new Skeinforge44()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor("Skeinforge (44) - experimental", 
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge44.displayName, 
 				"This is an experimental version of skeinforge.", Skeinforge44.class));
 		if((new Skeinforge31()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor("Skeinforge (31)", 
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge31.displayName, 
 				"This is an old version of skeinforge.", Skeinforge31.class));
 		if((new Skeinforge6()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor("Skeinforge (6)", 
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge6.displayName, 
 				"This is an old version of skeinforge.", Skeinforge6.class));
 		
 		return list;

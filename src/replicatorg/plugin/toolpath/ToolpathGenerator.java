@@ -45,6 +45,7 @@ public abstract class ToolpathGenerator {
 		}
 		
 	}
+	public static String displayName = "A Toolpath Generator";
 	
 	protected BuildModel model;
 	protected LinkedList<GeneratorListener> listeners = new LinkedList<GeneratorListener>();
