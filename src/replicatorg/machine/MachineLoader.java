@@ -55,7 +55,7 @@ import replicatorg.drivers.Driver;
 			}
 			// if we don't have matching types, warn, then load a new singleton over this one
 			else if (singletonMI != null && !machineType.equals(singletonMIType) ) {
-					Base.logger.severe("loading new singleton " + machineType + " to replace a " + singletonMIType);
+					Base.logger.severe("MachineLoader loading new machine type " + machineType + " over existing machine " + singletonMIType);
 					singletonMI.dispose();
 					singletonMI = MachineFactory.load(machineType, callbackHandler);
 					if(singletonMI != null)
