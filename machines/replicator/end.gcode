@@ -1,4 +1,5 @@
 (*******Begin End.gcode*******)
+G0 Z155
 M18
 M109 S0 T0
 M104 S0 T0
