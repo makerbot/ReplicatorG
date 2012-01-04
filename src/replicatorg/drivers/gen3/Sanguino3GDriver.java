@@ -1460,9 +1460,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		for (ToolModel t : tools) {
 			this.readTemperature(t.getIndex());
+			this.getTemperatureSetting(t.getIndex());
 		}
-		
-	
 	}
 	
 	public void readTemperature(int toolhead) 
@@ -1561,9 +1560,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 	public void readAllPlatformTemperatures()
 	{
 		
-		for(ToolModel curTool : machine.getTools() )
+		for(ToolModel tool : machine.getTools() )
 		{
-			this.readPlatformTemperature(curTool.getIndex());
+			this.readPlatformTemperature(tool.getIndex());
+			this.getPlatformTemperatureSetting(tool.getIndex());
 		}
 	
 	}
@@ -2693,7 +2693,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 	
 	public double getPlatformTemperatureSetting(int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		/// toolhead -1 indicates auto-detect. Fast hack to get software out...
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
 
 		// This call was introduced in version 2.3
@@ -2706,7 +2706,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 			int sp = pr.get16();
 			machine.getTool(toolhead).setPlatformTargetTemperature(sp);
 		}
-		return super.getPlatformTemperatureSetting();
+		// super uses current toolhead, not specific toolhead
+		return machine.getTool(toolhead).getPlatformTargetTemperature();//super.getPlatformTemperatureSetting();
 	}
 
 	@Deprecated
@@ -2715,7 +2716,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	public double getTemperatureSetting(int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		/// toolhead -1 indicates auto-detect. Fast hack to get software out...
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
 
 		// This call was introduced in version 2.3
@@ -2728,7 +2729,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 			int sp = pr.get16();
 			machine.getTool(toolhead).setTargetTemperature(sp);
 		}
-		return super.getTemperatureSetting();
+		System.err.println(machine.getTool(toolhead).getTargetTemperature());
+		// super uses current toolhead, not specific toolhead
+		return machine.getTool(toolhead).getTargetTemperature();//super.getTemperatureSetting();
 	}
 
 	public Version getToolVersion() {

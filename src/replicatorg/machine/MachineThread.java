@@ -3,13 +3,11 @@ package replicatorg.machine;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
-import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverError;
 import replicatorg.drivers.DriverFactory;
@@ -23,8 +21,8 @@ import replicatorg.drivers.commands.AssessState;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.Machine.JobTarget;
 import replicatorg.machine.Machine.RequestType;
-import replicatorg.machine.builder.MachineBuilder;
 import replicatorg.machine.builder.Direct;
+import replicatorg.machine.builder.MachineBuilder;
 import replicatorg.machine.builder.ToLocalFile;
 import replicatorg.machine.builder.ToRemoteFile;
 import replicatorg.machine.builder.UsingRemoteFile;
@@ -76,7 +74,7 @@ class MachineThread extends Thread {
 	class MachineTimer {
 		private long lastEventTime = 0;
 		private boolean enabled = false;
-		private long intervalMs = 1000;
+		private long intervalMs = 3000;
 		
 		public void start(long interval) {
 			enabled = true;
