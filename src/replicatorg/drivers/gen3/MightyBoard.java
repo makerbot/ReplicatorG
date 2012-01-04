@@ -1154,29 +1154,64 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		}
 		return super.getPlatformTemperatureSetting(toolhead);
 	}
-
+	
 	// Display a message on the user interface
 	public void displayMessage(double seconds, String message) throws RetryException {
-		byte options = 0;
+		///TRICKY: for word-wrapping of long lines, line wrap order is 0,2,1,3. Don't ask, it's complicated.
+		byte options = 0; //bit 1 true cause the buffer to clear.
 		final int MAX_MSG_PER_PACKET = 25;
-		int cursor = 0;
-		while (cursor < message.length()) {
-			int roomRemaining = MAX_MSG_PER_PACKET;
+		int sentTotal = 1; /// set 'clear buffer' flag
+		
+		/// send message in 25 char blocks. Set 'clear buffer' on the first,
+		/// and set the timeout only on the last block
+		while (sentTotal < message.length()) {
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.DISPLAY_MESSAGE.getCode());
+			if(sentTotal  > 0 ) options = 0; 
 			pb.add8(options);
-			pb.add8(0); // x coordinate
+			pb.add8(sentTotal); // x coordinate
 			pb.add8(0); // y coordinate
-			pb.add8((int)seconds); // timeout
-			while (roomRemaining > 0 && cursor < message.length()) {
-				pb.add8(message.charAt(cursor));
-				cursor++;
-				roomRemaining--;
-			}
-			pb.add8('\0');
-			options = 1;
+			if(sentTotal + MAX_MSG_PER_PACKET <  message.length())
+				pb.add8(0); // timeout zero on non-last packets
+			else 
+				pb.add8((int)seconds); // send timeout only on the last packet
+			sentTotal = pb.addString(message.substring(sentTotal), MAX_MSG_PER_PACKET);
 			runCommand(pb.getPacket());
-		}
-						     
+		}					     
+	}
+	
+	public void sendBuildStartNotification(String buildName, int stepCount)  throws RetryException { 
+		final int MAX_MSG_PER_PACKET = 25;
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.BUILD_START_NOTIFICATION.getCode());
+		pb.add32(stepCount);
+		pb.addString(buildName, MAX_MSG_PER_PACKET);//clips name if it's too big
+		runCommand(pb.getPacket());
+	}
+	
+	/**
+	 * @param endCode Reason for build end 0 is normal ending, 1 is user cancel, 
+	 * 					0xFF is cancel due to error or safety cutoff.
+	 * @throws RetryException
+	 */
+	public void sendBuildEndNotification(int endCode)  throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.BUILD_START_NOTIFICATION.getCode());
+		//BUILD_END_NOTIFICATION(24, "Notify the bot object build is complete."),
+		pb.add8(endCode);
+		runCommand(pb.getPacket());
+	}
+	
+	///
+	public void updateBuildPercent(int percentDone) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_BUILD_PERCENT.getCode());
+		pb.add8(percentDone);
+		pb.add8(0xff);///reserved
+		runCommand(pb.getPacket());
+	}
+	
+	/// Tells the bot to queue a pre-canned song.
+	public void playSong(int songId) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_SONG.getCode());
+		pb.add8(songId);
+		runCommand(pb.getPacket());
 	}
 	
 	public void userPause(double seconds, boolean resetOnTimeout, int buttonMask) throws RetryException {

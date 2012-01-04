@@ -23,7 +23,9 @@ import java.util.TreeMap;
 * M203 abort
 * M204 pause
  */
-public enum GCodeEnumeration {
+
+public enum GCodeEnumeration {	
+	
 	M0("M", 0, "Unconditional Halt, not supported on SD?"),
 	M1("M", 1, "Optional Halt, not supported on SD?"),
 	M2("M", 2, "End program"),
@@ -52,7 +54,9 @@ public enum GCodeEnumeration {
 	M46("M", 46, "Change Gear Ratio to 6"),
 	M50("M", 50, "Read Spindle Speed"),
 	M70("M", 70, "Display Message On Machine"),
-	M71("M", 71, "Wait For User Button Press"),
+	M71("M", 71, "Display Message, Wait For User Button Press"),
+	M72("M", 72, "Play a Tone or Song"),
+	M73("M", 73, "Manual Set Build %"),
 	M101("M", 101, "Turn Extruder On, Forward"),
 	M102("M", 102, "Turn Extruder On, Reverse"),
 	M103("M", 103, "Turn Extruder Off"),
@@ -102,6 +106,8 @@ public enum GCodeEnumeration {
 	G161("G", 161, "Home given axes to minimum"),
 	G162("G", 162, "Home given axes to maximum");
 	
+	final String GCodeVersion = "2011.01.04"; //just for our own reference, what version of gcode (date of Replicat.org gcode commands)this can use
+
 	private static final Map<String, GCodeEnumeration> lookup = new TreeMap<String, GCodeEnumeration>(
 			//providing this comparator makes sure that the ordering of the codes is what we'd expect it to be
 			new Comparator<String>(){
