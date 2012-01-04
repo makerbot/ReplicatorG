@@ -140,7 +140,6 @@ public class DualStrusionWindow extends JFrame{
 		this.type = type;
 		
 		panels = new JPanel(new CardLayout());
-//		setLayout(panels);
 		add(panels);
 		
 		panels.add(createSelectionPanel(), SELECT_PANEL);
@@ -148,7 +147,6 @@ public class DualStrusionWindow extends JFrame{
 		panels.add(createWaitingPanel(), WAITING_PANEL);
 		panels.add(createApologyPanel(), ABORT_PANEL);
 		
-//		panels.show(this, SELECT_PANEL);
 		((CardLayout)panels.getLayout()).show(panels, SELECT_PANEL);
 		
 		pack();
@@ -442,7 +440,6 @@ public class DualStrusionWindow extends JFrame{
 
 			if(gen instanceof SkeinforgeGenerator)
 			{
-				SkeinforgeGenerator sg = (SkeinforgeGenerator)gen;
 				SkeinforgePostProcessor spp = new SkeinforgePostProcessor((SkeinforgeGenerator)gen);
 				((SkeinforgeGenerator)gen).setPostProcessor(spp);
 				
@@ -456,7 +453,15 @@ public class DualStrusionWindow extends JFrame{
 
 			tgt.addListener(new GeneratorListener(){
 				@Override
-				public void updateGenerator(GeneratorEvent evt) {}
+				public void updateGenerator(GeneratorEvent evt) {
+					// If config dialog closed and success == false
+					// config canceled
+					if("Config Done".equals(evt.getMessage()) &&
+						(!((SkeinforgeGenerator)evt.getSource()).configSuccess))
+					{
+							abort("Skeinforge generation canceled.");
+					}
+				}
 
 				@Override
 				public void generationComplete(GeneratorEvent evt) {
@@ -517,20 +522,16 @@ public class DualStrusionWindow extends JFrame{
 			return;
 		}
 		
-System.out.print("reading in generated gcode");
 		leftSource = new MutableGCodeSource(leftGcode);
 		rightSource = new MutableGCodeSource(rightGcode);
-System.out.print("done reading generated gcode");
-		
 		DualStrusionConstruction dsConstruction = new DualStrusionConstruction(leftSource, rightSource, startSource, endSource, type, uWipe);
-System.out.print("called dcs.combine");
 		dsConstruction.combine();
-System.out.print("dcs.combine returned");
 		dsConstruction.getCombinedFile().writeToFile(dest);
 		
 		//we want to have the mainwindow load the new code, now.
 		// that should happen here.
 		dispose();
+		Base.getEditor().handleOpenFile(dest);
 		Base.logger.log(Level.FINE, "Finished DualStrusionWindow's part");
 		
 	}
