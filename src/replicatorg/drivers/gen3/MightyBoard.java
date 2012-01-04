@@ -316,7 +316,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		getStepperValues(); //read our current steppers into a local cache
 		getMotorRPM();		//load our motor RPM from firmware if we can.
-		if ( verifyMachineId() == false ) //read and verify our PID/VID if we can
+		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
 		{
 			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
 			return false;
@@ -1193,7 +1193,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * @throws RetryException
 	 */
 	public void sendBuildEndNotification(int endCode)  throws RetryException {
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.BUILD_START_NOTIFICATION.getCode());
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.BUILD_END_NOTIFICATION.getCode());
 		//BUILD_END_NOTIFICATION(24, "Notify the bot object build is complete."),
 		pb.add8(endCode);
 		runCommand(pb.getPacket());
