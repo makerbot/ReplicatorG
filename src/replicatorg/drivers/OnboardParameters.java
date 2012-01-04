@@ -140,10 +140,12 @@ public interface OnboardParameters {
 	EstopType getEstopConfig();
 	void setEstopConfig(EstopType estop);
 
-	/** Reset the onboard parameters on the motherboard to factory settings. */ 
-	void resetToFactory();
+	/** Reset the onboard parameters on the motherboard to factory settings. 
+	 * @throws RetryException */ 
+	void resetToFactory() throws RetryException;
+
 	/** reset the onboard params to be totally blank */
-	void resetToBlank();
+	void resetToBlank() throws RetryException;
 
 	/** Reset the onboard parameters on the extruder controller to factory settings. */ 
 	void resetToolToFactory(int toolIndex);

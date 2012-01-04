@@ -23,49 +23,20 @@
 
 package replicatorg.drivers.gen3;
 
-import java.io.File;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.awt.Color;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.List;
-import java.util.Vector;
-import java.util.logging.Level;
-
-import java.awt.Color;
-
-import org.w3c.dom.Node;
+import java.util.Hashtable;
 
 import replicatorg.app.Base;
-import replicatorg.drivers.DriverError;
-import replicatorg.drivers.MultiTool;
-import replicatorg.drivers.OnboardParameters;
-import replicatorg.drivers.PenPlotter;
 import replicatorg.drivers.InteractiveDisplay;
+import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
-import replicatorg.drivers.SDCardCapture;
-import replicatorg.drivers.SerialDriver;
 import replicatorg.drivers.Version;
-import replicatorg.drivers.OnboardParameters.BackoffParameters;
-import replicatorg.drivers.OnboardParameters.EndstopType;
-import replicatorg.drivers.OnboardParameters.EstopType;
-import replicatorg.drivers.OnboardParameters.ExtraFeatures;
-import replicatorg.drivers.OnboardParameters.PIDParameters;
-import replicatorg.drivers.gen3.PacketProcessor.CRCException;
-//import replicatorg.drivers.gen3.Sanguino3GDriver.CoolingFanOffsets;
-//import replicatorg.drivers.gen3.Sanguino3GDriver.c;
-//import replicatorg.drivers.gen3.Sanguino3GDriver.PIDOffsets;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
-import replicatorg.uploader.FirmwareUploader;
 import replicatorg.util.Point5d;
-
-import replicatorg.drivers.gen3.*;
-import java.util.Hashtable;
 
 /// EEPROM offsets for PID electronics control
 final class PIDTermOffsets implements EEPROMClass {
@@ -451,10 +422,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		Base.logger.severe("MightBoard sending setLedStrip");
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_LED_STRIP_COLOR.getCode());
 
-                int Channel = 1;
-                int Brightness = 60;
-                int BlinkRate = 10;
-                int LEDs = 0x33;
+       int Channel = 1;
+       int Brightness = 60;
+       int BlinkRate = 10;
+       int LEDs = 0x33;
 		pb.add8(Channel);//color.getRed());
 		pb.add8(Brightness);//color.getGreen());
 		pb.add8(BlinkRate);//color.getBlue());
@@ -1113,9 +1084,13 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * 'wipe and reboot' command
 	 */
 	@Override
-	public void resetToFactory() {
+	public void resetToFactory() throws RetryException {
 		/// send message to FW to wipe all settings
 		/// except home, wipe locations, and single/dual status
+		PacketBuilder pb = new PacketBuilder( MotherboardCommandCode.RESET_TO_FACTORY.getCode() );
+		pb.add8((byte) 0xFF);
+		pb.add8(ToolCommandCode.GET_PLATFORM_SP.getCode());
+		PacketResponse pr = runCommand( pb.getPacket() );
 	}
 
 	@Override
@@ -1123,7 +1098,20 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		/// send message to FW to wipe all settings
 		/// except home, wipe locations, and single/dual status
 	}
-
+		
+	/*
+	 * For overrides the EEPROM to null, on reboot eeprom will be repopulated with some 
+	 * baseline values. 
+	 */
+	@Override
+	public void resetToBlank() throws RetryException  {
+		Base.logger.finer("resetting to Blank in Sanguino3G");
+		byte eepromWipe[] = new byte[16];
+		Arrays.fill(eepromWipe, (byte) 0xff);
+		for (int i = 0; i < 0x0200; i += 16) {
+			writeToEEPROM(i, eepromWipe);
+		}
+	}
 	
 	@Override
 	public void setExtraFeatures(ExtraFeatures features, int toolIndex) {
@@ -1142,17 +1130,15 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	@Override
 	public double getPlatformTemperatureSetting(int toolhead) {
-		// This call was introduced in version 2.3
-		if (toolVersion.atLeast(new Version(2, 3))) {
-			PacketBuilder pb = new PacketBuilder(
-					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) toolhead);
-			pb.add8(ToolCommandCode.GET_PLATFORM_SP.getCode());
-			PacketResponse pr = runQuery(pb.getPacket());
-			int sp = pr.get16();
-			machine.currentTool().setPlatformTargetTemperature(sp);
-		}
-		return super.getPlatformTemperatureSetting(toolhead);
+		PacketBuilder pb = new PacketBuilder(
+				MotherboardCommandCode.TOOL_QUERY.getCode());
+		pb.add8((byte) toolhead);
+		pb.add8(ToolCommandCode.GET_PLATFORM_SP.getCode());
+		PacketResponse pr = runQuery(pb.getPacket());
+		int sp = pr.get16();
+		machine.getTool(toolhead).setPlatformTargetTemperature(sp);
+		
+		return machine.getTool(toolhead).getPlatformTargetTemperature();
 	}
 	
 	// Display a message on the user interface
@@ -1225,17 +1211,15 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	@Override
 	public double getTemperatureSetting(int toolhead) {
-		// This call was introduced in version 2.3
-		if (toolVersion.atLeast(new Version(2, 3))) {
-			PacketBuilder pb = new PacketBuilder(
-					MotherboardCommandCode.TOOL_QUERY.getCode());
-			pb.add8((byte) toolhead );
-			pb.add8(ToolCommandCode.GET_SP.getCode());
-			PacketResponse pr = runQuery(pb.getPacket());
-			int sp = pr.get16();
-			machine.getTool(toolhead).setTargetTemperature(sp);
-		}
-		return super.getTemperatureSetting(toolhead);
+		PacketBuilder pb = new PacketBuilder(
+				MotherboardCommandCode.TOOL_QUERY.getCode());
+		pb.add8((byte) toolhead );
+		pb.add8(ToolCommandCode.GET_SP.getCode());
+		PacketResponse pr = runQuery(pb.getPacket());
+		int sp = pr.get16();
+		machine.getTool(toolhead).setTargetTemperature(sp);
+		
+		return machine.getTool(toolhead).getTargetTemperature();
 	}
 	
 	

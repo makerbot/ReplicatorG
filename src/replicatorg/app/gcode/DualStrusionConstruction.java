@@ -107,21 +107,13 @@ public class DualStrusionConstruction
 		 * 
 		 * 
 		 */
-
-		//we're doing this in DSWindow for gcode
-		// not needed for stl
-//		left.stripStartEndBestEffort();
-//		right.stripStartEndBestEffort();
 		
 		stripNonLayerTagComments(left);
 		stripNonLayerTagComments(right);
 
-System.out.print("dcs.combine.parselayers.left");
 		LinkedList<Layer> leftLayers = newOldParseLayers(left);
-System.out.print("dcs.combine.parselayers.right");
 		LinkedList<Layer> rightLayers = newOldParseLayers(right);
 
-System.out.print("dcs.combine.domerge");
 		final LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
 		
 		//process start & end before adding them

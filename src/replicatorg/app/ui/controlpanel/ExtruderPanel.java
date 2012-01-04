@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -293,7 +292,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			JLabel targetTempLabel = makeKeyLabel("Target Temperature (C)",targetColor);
 			JFormattedTextField targetTempField = new CallbackTextField(this, "handleTextField", "target-temp", 9, Base.getLocalFormat());
 			
-			targetTemperature = machine.getDriverQueryInterface().getTemperatureSetting();
+			targetTemperature = tool.getTargetTemperature();
 			targetTempField.setValue(targetTemperature);
 
 			JLabel currentTempLabel = makeKeyLabel("Current Temperature (C)",measuredColor);
@@ -311,7 +310,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		if (tool.hasHeatedPlatform()) {
 			JLabel targetTempLabel = makeKeyLabel("Platform Target Temp (C)",targetPlatformColor);
 			JFormattedTextField targetTempField = new CallbackTextField(this, "handleTextField", "platform-target-temp", 9, Base.getLocalFormat());
-			targetPlatformTemperature = machine.getDriverQueryInterface().getPlatformTemperatureSetting();
+
+			targetPlatformTemperature = tool.getPlatformTargetTemperature();
 			targetTempField.setValue(targetPlatformTemperature);
 
 			JLabel currentTempLabel = makeKeyLabel("Platform Current Temp (C)",measuredPlatformColor);

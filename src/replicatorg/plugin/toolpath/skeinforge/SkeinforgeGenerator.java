@@ -34,7 +34,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		displayName = "Skeinforge";
 	}
 	
-	boolean configSuccess = false;
+	public boolean configSuccess = false;
 	ConfigurationDialog cd;
 	String profile = null;
 	List <SkeinforgePreference> preferences;
@@ -347,6 +347,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		cd.pack();
 		cd.setLocation(x, y);
 		cd.setVisible(true);
+		emitUpdate("Config Done");
 		return cd;
 	}
 	
@@ -384,6 +385,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	{
 		configure(null, "");
 		configSuccess = cd.configureGenerator();
+		emitUpdate("Config Done");
 		return configSuccess;
 	}
 

@@ -62,7 +62,9 @@ public enum MotherboardCommandCode {
 	PAUSE_FOR_BUTTON(148, "Wait until a user button push is recorded"),
 	DISPLAY_MESSAGE(149, "Display a user message on the machine display"),
 	SET_BUILD_PERCENT(150, "Manually override Build % info"),
-	QUEUE_SONG(151, "Trigger a song stored by by ID on the machine");
+	QUEUE_SONG(151, "Trigger a song stored by by ID on the machine"),
+	RESET_TO_FACTORY(152, "Reset onboard preferences to the factory settings");
+	
 	
 	private int code; 	/// id code of this packet in the s3g protocol
 	private String info;/// rough info on what this packet does
