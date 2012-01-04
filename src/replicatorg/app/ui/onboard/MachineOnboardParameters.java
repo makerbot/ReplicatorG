@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -23,6 +24,7 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
+import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.AxisId;
 
 /**
@@ -151,13 +153,21 @@ public class MachineOnboardParameters extends JPanel {
 
 	private void resetToBlank()
 	{
-		target.resetToBlank();
+		try {
+			target.resetToBlank();
+		} catch (RetryException e) {
+			Base.logger.log(Level.SEVERE, "Could not reset board to blankness, please try again.", e);
+		}
 		resetDialog();
 		loadParameters();		
 	}
 	
 	private void resetToFactory() {
-		target.resetToFactory();
+		try {
+			target.resetToFactory();
+		} catch (RetryException e) {
+			Base.logger.log(Level.SEVERE, "Could not reset board to factory settings, please try again.", e);
+		}
 		resetDialog();
 		loadParameters();
 	}
