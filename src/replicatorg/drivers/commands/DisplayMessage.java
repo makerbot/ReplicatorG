@@ -2,6 +2,7 @@ package replicatorg.drivers.commands;
 
 import java.util.EnumSet;
 
+import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.InteractiveDisplay;
 import replicatorg.drivers.RetryException;
@@ -27,5 +28,7 @@ public class DisplayMessage implements DriverCommand {
 		if (driver instanceof InteractiveDisplay) {
 			((InteractiveDisplay)driver).displayMessage(seconds,message);
 		}
+		else 
+			Base.logger.severe("driver " + driver + "is not an instance of IntractiveDisplay");
 	}	
 }

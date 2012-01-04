@@ -32,6 +32,9 @@ public enum MotherboardCommandCode {
 	GET_POSITION_EXT(21,""),
 	EXTENDED_STOP(22,""),
 	
+	BUILD_START_NOTIFICATION(23, "Notify the bot this is an object build, and what it is called"),
+	BUILD_END_NOTIFICATION(24, "Notify the bot object build is complete."),
+
 	GET_COMMUNICATION_STATS(25,""),
 	
 	// QUEUE_POINT_INC(128) obsolete
@@ -57,10 +60,14 @@ public enum MotherboardCommandCode {
 	SET_BEEP(147, "set a beep frequency and length"),
 
 	PAUSE_FOR_BUTTON(148, "Wait until a user button push is recorded"),
-	DISPLAY_MESSAGE(149, "Display a user message on the machine display");
+	DISPLAY_MESSAGE(149, "Display a user message on the machine display"),
+	SET_BUILD_PERCENT(150, "Manually override Build % info"),
+	QUEUE_SONG(151, "Trigger a song stored by by ID on the machine");
 	
 	private int code; 	/// id code of this packet in the s3g protocol
 	private String info;/// rough info on what this packet does
+
+	final String s3GVersion = "4.02"; /// just for our own reference of what version of firmware this targets
 
 	
 	private MotherboardCommandCode(int code, String info) {

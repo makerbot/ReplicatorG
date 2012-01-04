@@ -455,6 +455,14 @@ public class GCodeParser {
 			// ...then send user pause command. 
 			commands.add(new replicatorg.drivers.commands.UserPause(gcode.getCodeValue('P'),true,0xff));
 			break;
+		case M72:
+			// Play a tone or song as stored on the machine
+			commands.add(new replicatorg.drivers.commands.PlaySong(gcode.getCodeValue('P')) );
+			break;
+		case M73:
+			// Manually sets the percent complete info on the bot.
+			commands.add(new replicatorg.drivers.commands.SetBuildPercent(gcode.getCodeValue('P')) );
+			break;			
 		case M101:
 			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.CLOCKWISE));
 			commands.add(new replicatorg.drivers.commands.EnableExtruderMotor());
