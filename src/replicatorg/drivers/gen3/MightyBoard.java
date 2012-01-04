@@ -1120,7 +1120,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		PacketResponse pr = runQuery(pb.getPacket());
 		int sp = pr.get16();
 		machine.getTool(toolhead).setPlatformTargetTemperature(sp);
-		System.out.println("sp="+sp);
 		
 		return machine.getTool(toolhead).getPlatformTargetTemperature();
 	}
