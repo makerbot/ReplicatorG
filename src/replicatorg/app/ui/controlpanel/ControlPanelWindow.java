@@ -145,7 +145,12 @@ public class ControlPanelWindow extends JFrame implements
 			public void actionPerformed(ActionEvent e){
 				Color ledColor = chooser.getColor();
 				Base.logger.severe("running setLedStrip");
-				machine.runCommand(new SetLedStrip(ledColor, 0));	
+				try { 
+					machine.getDriver().setLedStrip(ledColor, 0);
+				} catch (replicatorg.drivers.RetryException f) {
+					Base.logger.severe("foo" + f.toString());
+				}
+				//machine.runCommand(new SetLedStrip(ledColor, 0));	
 				ledStripButton.setText(ShowColorChooserAction.buttonStringFromColor(ledColor));
 			}
 		};

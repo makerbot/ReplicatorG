@@ -409,7 +409,26 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		writeToEEPROM(vRefForPotLocation, b);
 	}
 	
-	
+
+	protected byte getColorBits(Color inputColor){
+		byte bitfield = 0x00;
+		int red = inputColor.getRed();
+		int green = inputColor.getGreen();
+		int blue = inputColor.getBlue();
+		//craptastic. Now converting annoying RGB ints to 
+		// a bitfiled with crazy signed bytes.
+		red= (red >> 6);
+		green= (green>> 6);
+		blue = blue >> 6;
+//		bitfield |= (byte)(red << 4);
+//		bitfield |= (byte)(green << 2);
+//		bitfield |= (byte)(blue);
+		bitfield |= (byte)(blue << 4);
+		bitfield |= (byte)(red << 2);
+		bitfield |= (byte)(green);
+		// {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11}
+		return bitfield;
+	}
 	/**
 	 * Sends a command to the 3d printer to set it's LEDs.   Sets color, and possible effect flag
 	 * @param color The desired color to set the leds to
@@ -420,17 +439,30 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public void setLedStrip(Color color, int effectId) throws RetryException {
 		Base.logger.severe("MightBoard sending setLedStrip");
+
+		PacketBuilder pb1 = new PacketBuilder(MotherboardCommandCode.SET_LED_STRIP_COLOR.getCode());
+		pb1.add8(3);//color.getRed());
+		pb1.add8(0);//color.getBlue());
+		pb1.add8(0);//color.getGreen());
+		pb1.add8(0xFF);
+		pb1.add8(0);
+		runCommand(pb1.getPacket());
+
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_LED_STRIP_COLOR.getCode());
 
-       int Channel = 1;
-       int Brightness = 60;
-       int BlinkRate = 10;
-       int LEDs = 0x33;
+		int Channel = 3;
+		int Brightness = 1;
+		int BlinkRate = 0;
+		byte colorSelect = (byte)0x3F;
+       
+       // {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11}
+       colorSelect = getColorBits(color);
+       
 		pb.add8(Channel);//color.getRed());
-		pb.add8(Brightness);//color.getGreen());
 		pb.add8(BlinkRate);//color.getBlue());
-                pb.add8(LEDs);
-		pb.add8(effectId);
+		pb.add8(Brightness);//color.getGreen());
+		pb.add8(colorSelect);
+		pb.add8(0);
 
 		PacketResponse resp =  runCommand(pb.getPacket());
 		if(resp.isOK()) {
