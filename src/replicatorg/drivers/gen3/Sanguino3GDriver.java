@@ -2593,6 +2593,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/**
 	 * Reset to the factory state. This ordinarily means writing 0xff over the
 	 * entire eeprom.
+	 * @throws RetryException 
 	 */
 	@Override
 	public void resetToFactory() throws RetryException {
@@ -2601,7 +2602,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	@Override
-	public void resetToBlank() throws RetryException {
+	public void resetToBlank() throws RetryException  {
 		Base.logger.finer("resetting to Blank in Sanguino3G");
 		byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe, (byte) 0xff);

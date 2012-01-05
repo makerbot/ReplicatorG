@@ -154,23 +154,27 @@ public class MachineOnboardParameters extends JPanel {
 
 	private void resetToBlank()
 	{
-		try {
+		try { 
 			target.resetToBlank();
-		} catch (RetryException e) {
-			Base.logger.log(Level.SEVERE, "Could not reset board to blankness, please try again.", e);
+			resetDialog();
+			loadParameters();		
 		}
-		resetDialog();
-		loadParameters();		
+		catch (replicatorg.drivers.RetryException e){
+			Base.logger.severe("reset to blank failed due to error" + e.toString());
+			Base.logger.severe("Please restart your machine for safety");
+		}		
 	}
 	
 	private void resetToFactory() {
-		try {
+		try { 
 			target.resetToFactory();
-		} catch (RetryException e) {
-			Base.logger.log(Level.SEVERE, "Could not reset board to factory settings, please try again.", e);
+			resetDialog();
+			loadParameters();
 		}
-		resetDialog();
-		loadParameters();
+		catch (replicatorg.drivers.RetryException e){
+			Base.logger.severe("reset to blank failed due to error" + e.toString());
+			Base.logger.severe("Please restart your machine for safety");
+		}
 	}
 	
 
