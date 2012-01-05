@@ -68,6 +68,7 @@ public class MachineOnboardParameters extends JPanel {
     {
         threePlaces.setMaximumFractionDigits(3);
     }
+    
 	private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(threePlaces);
 	private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(threePlaces);
 	private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(threePlaces);
@@ -95,7 +96,12 @@ public class MachineOnboardParameters extends JPanel {
 	}
 	
 	private void commit() {
+		String newName = machineNameField.getText();
+		if(newName.length() > MAX_NAME_LENGTH)
+			machineNameField.setText(newName.substring(0, MAX_NAME_LENGTH ) );
+
 		target.setMachineName(machineNameField.getText());
+		
 
 		if( target.hasToolCountOnboard() ) {
 			if (toolCountField.getSelectedIndex() > 0) 
@@ -110,10 +116,11 @@ public class MachineOnboardParameters extends JPanel {
 		if (zAxisInvertBox.isSelected()) axesInverted.add(AxisId.Z);
 		if (aAxisInvertBox.isSelected()) axesInverted.add(AxisId.A);
 		if (bAxisInvertBox.isSelected()) axesInverted.add(AxisId.B);
+
 		// V is in the 7th bit position, and it's set to NOT hold Z
 		// From the firmware: "Bit 7 is used for HoldZ OFF: 1 = off, 0 = on"
-		if (!zHoldBox.isSelected())      
-			axesInverted.add(AxisId.V);
+		if ( !zHoldBox.isSelected() )	axesInverted.add(AxisId.V);
+
 		target.setInvertedAxes(axesInverted);
 		{
 			int idx = endstopInversionSelection.getSelectedIndex();
@@ -155,8 +162,7 @@ public class MachineOnboardParameters extends JPanel {
 	{
 		try { 
 			target.resetToBlank();
-			resetDialog();
-			loadParameters();		
+			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){
 			Base.logger.severe("reset to blank failed due to error" + e.toString());
@@ -167,8 +173,7 @@ public class MachineOnboardParameters extends JPanel {
 	private void resetToFactory() {
 		try { 
 			target.resetToFactory();
-			resetDialog();
-			loadParameters();
+			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){
 			Base.logger.severe("reset to blank failed due to error" + e.toString());
@@ -178,8 +183,8 @@ public class MachineOnboardParameters extends JPanel {
 	
 
 	private void loadParameters() {
-		machineNameField.setText(this.target.getMachineName());
-		
+		machineNameField.setText( this.target.getMachineName() );
+
 		if(target.hasToolCountOnboard()){
 			int toolCount = target.toolCountOnboard();
 			if (toolCount == 1 || toolCount == 2) 
@@ -240,7 +245,7 @@ public class MachineOnboardParameters extends JPanel {
 		this.target = target;
 		this.driver = driver;
 		this.parent = parent;
-
+		
 		setLayout(new MigLayout("fill"));
 		EnumMap<AxisId, String> axesAltNamesMap = target.getAxisAlises();
 

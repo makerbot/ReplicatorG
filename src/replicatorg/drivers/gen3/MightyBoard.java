@@ -70,6 +70,8 @@ class ToolheadEEPROM implements EEPROMClass
 	/// Cooling fan info: 2 bytes 
 	public static final int COOLING_FAN_SETTINGS 	= 0x001A;
 	/// Padding: 6 empty bytes of space
+	
+	// TOTAL MEMORY SIZE PER TOOLHEAD = 28 bytes
 }
 
 
@@ -133,11 +135,11 @@ class MightyBoardEEPROM implements EEPROMClass
 	final public static int THERM_TABLE				= 0x0074;
 	/// Padding: 8 bytes
 	// Toolhead 0 data: 26 bytes (see above)
-	final public static int T0_DATA_BASE			= 0x100;
+	final public static int T0_DATA_BASE			= 0x0100;
 	// Toolhead 0 data: 26 bytes (see above)
 	final public static int T1_DATA_BASE			= 0x011C;
 	/// axis lengths (mm) (6 bytes)
-	final public static int AXIS_LENGTHS			= 0x138;
+	final public static int AXIS_LENGTHS			= 0x0138;
 	/// 2 bytes padding
 	/// Light Effect table. 3 Bytes x 3 entries
 	final public static int LED_STRIP_SETTINGS		= 0x0140;
@@ -290,7 +292,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
 		{
 			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
-			return false;
+			return true;//TEST just for now, due to EEPROM munging
 		}
 		
 		if(verifyToolCount() == false) /// read and verify our tool count
@@ -607,15 +609,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		}
 		
 		checkEEPROM();
-		byte[] r = readFromEEPROM(MightyBoardEEPROM.AXIS_HOME_POSITIONS + axis*4, 4);
-		if( r == null || r.length < 4) {
-			Base.logger.severe("invalid read from AXIS_HOME_POSITION");
-			return 0; }
 
-		double val = 0;
-		for (int i = 0; i < 4; i++) {
-			val = val + (((int)r[i] & 0xff) << 8*i);
-		}
+		double val = read32FromEEPROM(MightyBoardEEPROM.AXIS_HOME_POSITIONS + axis*4);
+
 		Point5d stepsPerMM = getMachine().getStepsPerMM();
 		switch(axis) {
 			case 0:
@@ -667,9 +663,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 				offsetSteps = (int)(offset*stepsPerMM.b());
 				break;
 		}
-		
-		writeToEEPROM(MightyBoardEEPROM.AXIS_HOME_POSITIONS + axis*4,intToLE(offsetSteps));
+		write32ToEEPROM32(MightyBoardEEPROM.AXIS_HOME_POSITIONS + axis*4,offsetSteps);
 	}
+
 
 
 	public void createThermistorTable(int which, double r0, double t0, double beta) {
@@ -739,7 +735,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public EndstopType getInvertedEndstops() {
 		checkEEPROM();
-		byte[] b = readFromEEPROM(MightyBoardEEPROM.ENDSTOP_INVERSION,1);
+		byte[] b =  readFromEEPROM(MightyBoardEEPROM.ENDSTOP_INVERSION,1);
 		return EndstopType.endstopTypeForValue(b[0]);
 	}
 
@@ -798,6 +794,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		this.machineId = VidPid.getPidVid(b);
 	}
 	
+	/// Function to grab cached count of tools
+	@Override
+	public int toolCountOnboard() { return toolCountOnboard; } 
+
 	
 	public boolean verifyToolCount()
 	{
@@ -1109,6 +1109,33 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	private int byteToInt(byte b) {
 		return ((int) b) & 0xff;
 	}
+	
+	
+	/// read a 32 bit int from EEPROM at location 'offset'
+	private int read32FromEEPROM(int offset)
+	{
+		int val = 0;
+		byte[] r = readFromEEPROM(offset, 4);
+		if( r == null || r.length < 4) {
+			Base.logger.severe("invalid read from read32FromEEPROM at "+ offset);
+			return val;
+		}
+		for (int i = 0; i < 4; i++)
+			val = val + (((int)r[i] & 0xff) << 8*i);
+		return val;
+	}
+
+	private void write32ToEEPROM32(int offset, int value ) {
+		int s = value;
+		byte buf[] = new byte[4];
+		for (int i = 0; i < 4; i++) {
+			buf[i] = (byte) (s & 0xff);
+				s = s >>> 8;
+		}
+		writeToEEPROM(offset,buf);
+}
+
+
 	
 	/**
 	 * Reset to the factory state. For MightyBoard this 
