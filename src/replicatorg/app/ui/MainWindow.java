@@ -553,7 +553,7 @@ ToolpathGenerator.GeneratorListener
 			generator.editProfiles(this);
 		else { // if no gcode generator is selected (or defaults changed) generator may be null
 			String message = "No Gcode Generator selected. Select a GCode generator \n in the GCode menu, under GCode Generator ";
-			int option = JOptionPane.showConfirmDialog(this, message , "No GCode Generator Selected.", 
+			JOptionPane.showConfirmDialog(this, message , "No GCode Generator Selected.", 
 				JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE);
 		}
 	}
@@ -589,7 +589,6 @@ ToolpathGenerator.GeneratorListener
 		
 		if(generator instanceof SkeinforgeGenerator) {
 
-			SkeinforgeGenerator sg = (SkeinforgeGenerator)generator;
 			SkeinforgePostProcessor spp = new SkeinforgePostProcessor((SkeinforgeGenerator)generator);
 			((SkeinforgeGenerator)generator).setPostProcessor(spp);
 			
@@ -860,7 +859,7 @@ ToolpathGenerator.GeneratorListener
 			public void actionPerformed(ActionEvent arg0) {
 				//Display the auto-generated list of codes our enumeration recognises
 				Object[] codes = GCodeEnumeration.getDocumentation().toArray();
-				JScrollPane displayPane = new JScrollPane(new JList(codes));
+				JScrollPane displayPane = new JScrollPane(new JList<Object>(codes));
 				JOptionPane.showConfirmDialog(MainWindow.this, displayPane,
 						"Supported GCodes", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
 			}
