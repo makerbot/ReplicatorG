@@ -1344,6 +1344,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			readToolheadCount();
 		return toolCountOnboard;
 	}
+	
+	/// Returns the number of tools as saved on the machine (not as per XML count)
+	@Override 
+	public int toolCountOnboard() { return toolCountOnboard; } 
 
 
 	/// Returns true of tool count is save on the machine  (not as per XML count)
