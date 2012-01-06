@@ -112,6 +112,7 @@ public class SkeinforgePostProcessor {
 	private boolean appendEnd = false;
 	private boolean prependMetaInfo = false;
 	private boolean multiHead = false;
+	private boolean addPercentages = false;
 	private PostProcessorPreference ppp;
 	
 	public SkeinforgePostProcessor(SkeinforgeGenerator generator)
@@ -157,6 +158,11 @@ public class SkeinforgePostProcessor {
 			
 			if(toolheadTarget != null)
 				runToolheadSwap(toolheadTarget);
+		}
+		
+		if(addPercentages)
+		{
+			
 		}
 		
 		if(prependMetaInfo)
@@ -295,5 +301,9 @@ public class SkeinforgePostProcessor {
 	{
 		multiHead = isMulti;
 		ppp.refreshPreferences();
+	}
+	public void setAddPercentages(boolean doAdd)
+	{
+		addPercentages = doAdd;
 	}
 }
