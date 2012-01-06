@@ -178,6 +178,25 @@ public class SkeinforgePostProcessor {
 		return generator.output;
 	}
 	
+	/// Scans gcode for layer start/ends. Adds gcode for approx % done 
+	/// by that layer via using line count
+	private void interlacePercentageUpdates(MutableGCodeSource metaInfo)
+	{
+		int index = 0;
+		int sourceSize = metaInfo.asList().size();
+		for(String line : metaInfo)
+		{
+			if( line.startsWith("(<layer>") )
+			{
+				int percentDone = (int)index/sourceSize;
+				metaInfo.add(index,"M73 P"+percentDone);
+			}
+			index++;
+			
+		}
+	}
+	
+	
 	private void runToolheadSwap(ToolheadAlias switchTo)
 	{
 		System.out.println("runToolheadSwap");
