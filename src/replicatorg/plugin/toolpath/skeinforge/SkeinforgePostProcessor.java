@@ -46,8 +46,8 @@ public class SkeinforgePostProcessor {
 			if(multiHead && !dualstruding)
 			{
 				Vector<String> extruders = new Vector<String>();
-				extruders.add(ToolheadAlias.LEFT.guiName);
 				extruders.add(ToolheadAlias.RIGHT.guiName);
+				extruders.add(ToolheadAlias.LEFT.guiName);
 
 				String value = Base.preferences.get("replicatorg.skeinforge.toolheadOrientation", extruders.firstElement());
 				
