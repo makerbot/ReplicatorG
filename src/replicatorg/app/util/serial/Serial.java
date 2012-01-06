@@ -26,6 +26,7 @@ package replicatorg.app.util.serial;
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
+import gnu.io.RXTXVersion;
 import gnu.io.SerialPort;
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
@@ -104,6 +105,7 @@ public class Serial implements SerialPortEventListener {
 		} catch (Exception e) {
 			Base.logger.fine("problem scanning SerialPorts: " + e);
 		}
+		Base.logger.fine("RXTX Version" + RXTXVersion.getVersion());
 		
 		
 		// In-use ports may not end up in the enumeration (thanks, RXTX), so
