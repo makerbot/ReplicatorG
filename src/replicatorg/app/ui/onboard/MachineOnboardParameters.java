@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -24,7 +23,6 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
-import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.AxisId;
 
 /**
@@ -50,6 +48,7 @@ public class MachineOnboardParameters extends JPanel {
 	private JCheckBox zHoldBox = new JCheckBox();
 	private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
 	private JButton resetToBlankButton = new JButton("Reset motherboard completely");
+	private JButton commitButton = new JButton("Commit Changes");
 	private static final String[]  endstopInversionChoices = {
 		"No endstops installed",
 		"Inverted (Default; Mechanical switch or H21LOB-based enstops)",
@@ -224,19 +223,6 @@ public class MachineOnboardParameters extends JPanel {
 		}
 	}
 
-	private JPanel makeButtonPanel() {
-		JPanel panel = new JPanel(new MigLayout());
-		JButton commitButton = new JButton("Commit Changes");
-		panel.add(commitButton);
-		commitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				MachineOnboardParameters.this.commit();
-				MachineOnboardParameters.this.dispose();
-			}
-		});
-		return panel;
-	}
-	
 	protected void dispose() {
 		parent.dispose();
 	}
@@ -332,7 +318,13 @@ public class MachineOnboardParameters extends JPanel {
 			add(bAxisHomeOffsetField,"wrap");
 		}
 
-		add(makeButtonPanel());
+		commitButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				MachineOnboardParameters.this.commit();
+				MachineOnboardParameters.this.dispose();
+			}
+		});
+		add(commitButton);
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -355,8 +347,6 @@ public class MachineOnboardParameters extends JPanel {
 		resetToBlankButton.setToolTipText("Reest the onboard settings to the *completely blank*");
 		add(resetToBlankButton);
 
-
-		
 		loadParameters();
 	}
 }
