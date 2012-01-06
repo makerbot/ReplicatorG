@@ -1204,14 +1204,15 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	public void displayMessage(double seconds, String message) throws RetryException {
 		///TRICKY: for word-wrapping of long lines, line wrap order is 0,2,1,3. Don't ask, it's complicated.
 		byte options = 0; //bit 1 true cause the buffer to clear.
-		final int MAX_MSG_PER_PACKET = 25;
-		int sentTotal = 1; /// set 'clear buffer' flag
+		final int MAX_MSG_PER_PACKET = 30;
+		int sentTotal = 0; /// set 'clear buffer' flag
 		
 		/// send message in 25 char blocks. Set 'clear buffer' on the first,
 		/// and set the timeout only on the last block
 		while (sentTotal < message.length()) {
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.DISPLAY_MESSAGE.getCode());
-			if(sentTotal  > 0 ) options = 0; 
+			if(sentTotal  > 0 ) 
+				options = 1; //do not clear flag
 			pb.add8(options);
 			pb.add8(sentTotal); // x coordinate
 			pb.add8(0); // y coordinate
@@ -1219,7 +1220,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 				pb.add8(0); // timeout zero on non-last packets
 			else 
 				pb.add8((int)seconds); // send timeout only on the last packet
-			sentTotal = pb.addString(message.substring(sentTotal), MAX_MSG_PER_PACKET);
+			sentTotal += pb.addString(message.substring(sentTotal), MAX_MSG_PER_PACKET);
 			runCommand(pb.getPacket());
 		}					     
 	}
