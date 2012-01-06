@@ -162,7 +162,7 @@ public class SkeinforgePostProcessor {
 		
 		if(addPercentages)
 		{
-			
+			interlacePercentageUpdates();
 		}
 		
 		if(prependMetaInfo)
@@ -186,20 +186,22 @@ public class SkeinforgePostProcessor {
 	
 	/// Scans gcode for layer start/ends. Adds gcode for approx % done 
 	/// by that layer via using line count
-	private void interlacePercentageUpdates(MutableGCodeSource metaInfo)
+	private void interlacePercentageUpdates()
 	{
 		int index = 0;
-		int sourceSize = metaInfo.asList().size();
-		for(String line : metaInfo)
+		int sourceSize = source.getLineCount();
+		MutableGCodeSource newSource = new MutableGCodeSource();
+		for(String line : source)
 		{
 			if( line.startsWith("(<layer>") )
 			{
-				int percentDone = (int)index/sourceSize;
-				metaInfo.add(index,"M73 P"+percentDone);
+				int percentDone = (int)(index*100)/sourceSize;
+				newSource.add("M73 P"+percentDone+" (display progress)");
 			}
+			newSource.add(line);
 			index++;
-			
 		}
+		source = newSource;
 	}
 	
 	
