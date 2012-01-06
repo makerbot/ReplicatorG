@@ -51,9 +51,9 @@ public class SkeinforgePostProcessor {
 
 				String value = Base.preferences.get("replicatorg.skeinforge.toolheadOrientation", extruders.firstElement());
 				
-				final DefaultComboBoxModel<String> model= new DefaultComboBoxModel<String>(extruders);
+				final DefaultComboBoxModel model= new DefaultComboBoxModel(extruders);
 				
-				JComboBox<String> input = new JComboBox<String>(model);
+				JComboBox input = new JComboBox(model);
 				panel.add(new JLabel("Extruder: "), "split");
 				panel.add(input, "wrap");
 
