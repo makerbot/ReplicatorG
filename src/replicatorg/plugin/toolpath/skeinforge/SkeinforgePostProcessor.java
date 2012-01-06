@@ -191,6 +191,9 @@ public class SkeinforgePostProcessor {
 		int index = 0;
 		int sourceSize = source.getLineCount();
 		MutableGCodeSource newSource = new MutableGCodeSource();
+		/// TRICKY: M73 P0 is required by The Replicator to enable % display
+		// and M73 P100. is required at the end. These are in TheReplicator start.gcode
+		// and end.gcode
 		for(String line : source)
 		{
 			if( line.startsWith("(<layer>") )
