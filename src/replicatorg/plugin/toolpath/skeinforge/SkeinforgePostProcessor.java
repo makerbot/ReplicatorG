@@ -208,6 +208,7 @@ public class SkeinforgePostProcessor {
 		return generator.output;
 	}
 	
+<<<<<<< HEAD
 	private String getPrettyPrintDate()
 	{
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss (Z)");
@@ -216,6 +217,12 @@ public class SkeinforgePostProcessor {
 		return dateFormat.format(date);
 		   
 
+=======
+	// put 
+	private void runAddProgressUpdates()
+	{
+		source.addProgressUpdates();
+>>>>>>> 8b5d998... Fixed version string in changelog, added build % to dualstrusion.
 	}
 	
 	/**
@@ -391,10 +398,13 @@ public class SkeinforgePostProcessor {
 		multiHead = isMulti;
 		ppp.refreshPreferences();
 	}
+<<<<<<< HEAD
 	/**
 	 * toggles the addition of build % messages, displayable on The Replicator
 	 * @param doAdd
 	 */
+=======
+>>>>>>> 8b5d998... Fixed version string in changelog, added build % to dualstrusion.
 	public void setAddProgressUpdates(boolean doAdd)
 	{
 		addProgressUpdates = doAdd;
