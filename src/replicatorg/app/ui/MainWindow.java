@@ -553,7 +553,7 @@ ToolpathGenerator.GeneratorListener
 			generator.editProfiles(this);
 		else { // if no gcode generator is selected (or defaults changed) generator may be null
 			String message = "No Gcode Generator selected. Select a GCode generator \n in the GCode menu, under GCode Generator ";
-			int option = JOptionPane.showConfirmDialog(this, message , "No GCode Generator Selected.", 
+			JOptionPane.showConfirmDialog(this, message , "No GCode Generator Selected.", 
 				JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE);
 		}
 	}
@@ -589,7 +589,6 @@ ToolpathGenerator.GeneratorListener
 		
 		if(generator instanceof SkeinforgeGenerator) {
 
-			SkeinforgeGenerator sg = (SkeinforgeGenerator)generator;
 			SkeinforgePostProcessor spp = new SkeinforgePostProcessor((SkeinforgeGenerator)generator);
 			((SkeinforgeGenerator)generator).setPostProcessor(spp);
 			
@@ -597,6 +596,8 @@ ToolpathGenerator.GeneratorListener
 			spp.setPrependMetaInfo(true);
 			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()));
 			spp.setEndCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()));
+			spp.setMultiHead(isDualDriver());
+			spp.setAddPercentages(true);
 		}
 
 

@@ -337,6 +337,7 @@ public class DualStrusionConstruction
 		
 		final DecimalFormat nf = (DecimalFormat)Base.getGcodeFormat();
 		final Point5d firstPos = getFirstPosition(toLayer);
+		firstPos.setZ(getLayerZ(toLayer));
 		
 		if(firstPos != null)
 		{
@@ -346,10 +347,10 @@ public class DualStrusionConstruction
 			// move to the next point
 			result.add("G1 X" + nf.format(firstPos.x()) + " Y" + nf.format(firstPos.y()) + " Z" + nf.format(firstPos.z()) +" F3000");
 		}
-		else
-		{
-//			System.err.print(toLayer);
-		}
+//		else
+//		{
+////			System.err.print(toLayer);
+//		}
 		
 		//TODO: catch possible null pointer exceptions?
 		// set the feedrate with an empty G1
@@ -382,6 +383,28 @@ public class DualStrusionConstruction
 				result.setY(gcode.getCodeValue('Y'));
 				result.setZ(gcode.getCodeValue('Z'));
 				return result;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Apparently skeinforge does not have all the moves in a layer at the same height.
+	 * The first one is frequently lower than the following ones, so this function finds
+	 * the last height listed in a layer
+	 * @param l the layer in which to look
+	 * @return the layer height (maybe)
+	 */
+	private Double getLayerZ(final Layer l)
+	{
+		final List<String> search = l.getCommands();
+		GCodeCommand gcode;
+		for(int i = search.size()-1; i >= 0; i--)
+		{
+			gcode = new GCodeCommand(search.get(i));
+			if(gcode.getCodeValue('G') == 1 && gcode.hasCode('Z'))
+			{
+				return gcode.getCodeValue('Z');
 			}
 		}
 		return null;

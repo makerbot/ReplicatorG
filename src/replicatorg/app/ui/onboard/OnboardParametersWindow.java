@@ -1,12 +1,11 @@
 package replicatorg.app.ui.onboard;
 
 import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
-import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -14,20 +13,17 @@ import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 
 import net.miginfocom.swing.MigLayout;
+import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.ToolModel;
-import replicatorg.app.Base;
 
 
 public class OnboardParametersWindow extends JFrame {
 	
 	private final JTabbedPane paramsTabs;
 	private final JButton cancelButton;
-	
-	private final OnboardParameters targetParams;
-	private final Driver driver;
-	
+
 	public OnboardParametersWindow(OnboardParameters targetParams, Driver driver)
 	{
 		super("Update Machine Options");
@@ -35,13 +31,10 @@ public class OnboardParametersWindow extends JFrame {
 		Image icon = Base.getImage("images/icon.gif", this);
 		setIconImage(icon);
 		
-		this.targetParams = targetParams;
-		this.driver = driver;
-		
 		setLayout(new MigLayout());
 		
 		paramsTabs = new JTabbedPane();
-		add(paramsTabs, "wrap");
+		add(paramsTabs, "span 2, wrap");
 
 		paramsTabs.addTab("Motherboard", new MachineOnboardParameters(targetParams, driver, (JFrame)this));
 		
@@ -66,7 +59,7 @@ public class OnboardParametersWindow extends JFrame {
 			}
 			
 		}
-		add(verifyString, "tag ok");
+		add(verifyString);
 		
 		cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
@@ -74,7 +67,7 @@ public class OnboardParametersWindow extends JFrame {
 				OnboardParametersWindow.this.dispose();
 			}
 		});
-		add(cancelButton, "tag ok");
+		add(cancelButton, "align right");
 		
 		pack();
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();

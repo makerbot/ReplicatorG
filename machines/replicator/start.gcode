@@ -1,5 +1,6 @@
 (**** beginning of start.gcode ****)
 (This is start code for The Replicator running a single material print)
+M73 P0 (enable build progress)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 G10 P1 X16.5 Y0 Z-0.3 (Designate T0 Offset)

@@ -3,8 +3,6 @@ package replicatorg.app.ui.onboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -16,11 +14,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.Version;
 import replicatorg.drivers.gen3.Sanguino3GDriver;
@@ -320,19 +316,6 @@ public class ExtruderOnboardParameters extends JPanel {
 			return true;
 		}
 	}
-	
-	private JPanel makeButtonPanel() {
-		JPanel panel = new JPanel(new MigLayout());
-		JButton commitButton = new JButton("Commit Changes");
-		panel.add(commitButton);
-		commitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (ExtruderOnboardParameters.this.commit()) {
-				}
-			}
-		});
-		return panel;
-	}
 
 	public ExtruderOnboardParameters(OnboardParameters target, ToolModel tool, JFrame parent) {
 		this.target = target;
@@ -377,7 +360,13 @@ public class ExtruderOnboardParameters extends JPanel {
 			commitList.add(rcf);
 		}
 
-		
-		add(makeButtonPanel(),"span 2,newline");
+		JButton commitButton = new JButton("Commit Changes");
+		commitButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (ExtruderOnboardParameters.this.commit()) {
+				}
+			}
+		});
+		add(commitButton, "newline, span 2");
 	}
 }

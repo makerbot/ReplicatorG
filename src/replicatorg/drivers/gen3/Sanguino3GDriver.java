@@ -1909,6 +1909,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	protected void writeToEEPROM(int offset, byte[] data) {
+		assert data.length <= 16;
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.WRITE_EEPROM.getCode());
 		pb.add16(offset);
@@ -2012,6 +2013,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		final int MAX_EEPROM_READ_SZ = 16;
 		if(len > MAX_EEPROM_READ_SZ)
 			Base.logger.severe("readFromEEPROM too big for: " + offset + " size: " + len);
+
+		assert len <= 16;
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.READ_EEPROM.getCode());
@@ -2326,7 +2329,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_SETPOINT_C, intToLE(setpoint), toolhead);
 	}
 
-	// / Convert an int to ?
+	// / Convert an int to 32bit int
 	protected byte[] intToLE(int s, int sz) {
 		byte buf[] = new byte[sz];
 		for (int i = 0; i < sz; i++) {
@@ -2543,6 +2546,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
 		byte r[] = readFromToolEEPROM(offset, 2, toolhead);
+		if (r == null) {
+			Base.logger.severe("null read from tool at " + offset + " for tool " + toolhead + " default " +defaultValue);
+			return defaultValue;
+		}
 		if (r[0] == (byte) 0xff && r[1] == (byte) 0xff)
 			return defaultValue;
 		return (float) byteToInt(r[0]) + ((float) byteToInt(r[1])) / 256.0f;

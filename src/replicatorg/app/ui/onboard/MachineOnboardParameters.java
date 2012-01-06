@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -24,7 +23,6 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
-import replicatorg.drivers.RetryException;
 import replicatorg.machine.model.AxisId;
 
 /**
@@ -50,6 +48,7 @@ public class MachineOnboardParameters extends JPanel {
 	private JCheckBox zHoldBox = new JCheckBox();
 	private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
 	private JButton resetToBlankButton = new JButton("Reset motherboard completely");
+	private JButton commitButton = new JButton("Commit Changes");
 	private static final String[]  endstopInversionChoices = {
 		"No endstops installed",
 		"Inverted (Default; Mechanical switch or H21LOB-based enstops)",
@@ -68,6 +67,7 @@ public class MachineOnboardParameters extends JPanel {
     {
         threePlaces.setMaximumFractionDigits(3);
     }
+    
 	private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(threePlaces);
 	private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(threePlaces);
 	private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(threePlaces);
@@ -95,7 +95,12 @@ public class MachineOnboardParameters extends JPanel {
 	}
 	
 	private void commit() {
+		String newName = machineNameField.getText();
+		if(newName.length() > MAX_NAME_LENGTH)
+			machineNameField.setText(newName.substring(0, MAX_NAME_LENGTH ) );
+
 		target.setMachineName(machineNameField.getText());
+		
 
 		if( target.hasToolCountOnboard() ) {
 			if (toolCountField.getSelectedIndex() > 0) 
@@ -110,10 +115,11 @@ public class MachineOnboardParameters extends JPanel {
 		if (zAxisInvertBox.isSelected()) axesInverted.add(AxisId.Z);
 		if (aAxisInvertBox.isSelected()) axesInverted.add(AxisId.A);
 		if (bAxisInvertBox.isSelected()) axesInverted.add(AxisId.B);
+
 		// V is in the 7th bit position, and it's set to NOT hold Z
 		// From the firmware: "Bit 7 is used for HoldZ OFF: 1 = off, 0 = on"
-		if (!zHoldBox.isSelected())      
-			axesInverted.add(AxisId.V);
+		if ( !zHoldBox.isSelected() )	axesInverted.add(AxisId.V);
+
 		target.setInvertedAxes(axesInverted);
 		{
 			int idx = endstopInversionSelection.getSelectedIndex();
@@ -155,8 +161,7 @@ public class MachineOnboardParameters extends JPanel {
 	{
 		try { 
 			target.resetToBlank();
-			resetDialog();
-			loadParameters();		
+			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){
 			Base.logger.severe("reset to blank failed due to error" + e.toString());
@@ -167,8 +172,7 @@ public class MachineOnboardParameters extends JPanel {
 	private void resetToFactory() {
 		try { 
 			target.resetToFactory();
-			resetDialog();
-			loadParameters();
+			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){
 			Base.logger.severe("reset to blank failed due to error" + e.toString());
@@ -178,8 +182,8 @@ public class MachineOnboardParameters extends JPanel {
 	
 
 	private void loadParameters() {
-		machineNameField.setText(this.target.getMachineName());
-		
+		machineNameField.setText( this.target.getMachineName() );
+
 		if(target.hasToolCountOnboard()){
 			int toolCount = target.toolCountOnboard();
 			if (toolCount == 1 || toolCount == 2) 
@@ -219,19 +223,6 @@ public class MachineOnboardParameters extends JPanel {
 		}
 	}
 
-	private JPanel makeButtonPanel() {
-		JPanel panel = new JPanel(new MigLayout());
-		JButton commitButton = new JButton("Commit Changes");
-		panel.add(commitButton);
-		commitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				MachineOnboardParameters.this.commit();
-				MachineOnboardParameters.this.dispose();
-			}
-		});
-		return panel;
-	}
-	
 	protected void dispose() {
 		parent.dispose();
 	}
@@ -240,7 +231,7 @@ public class MachineOnboardParameters extends JPanel {
 		this.target = target;
 		this.driver = driver;
 		this.parent = parent;
-
+		
 		setLayout(new MigLayout("fill"));
 		EnumMap<AxisId, String> axesAltNamesMap = target.getAxisAlises();
 
@@ -327,7 +318,13 @@ public class MachineOnboardParameters extends JPanel {
 			add(bAxisHomeOffsetField,"wrap");
 		}
 
-		add(makeButtonPanel());
+		commitButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				MachineOnboardParameters.this.commit();
+				MachineOnboardParameters.this.dispose();
+			}
+		});
+		add(commitButton);
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -350,8 +347,6 @@ public class MachineOnboardParameters extends JPanel {
 		resetToBlankButton.setToolTipText("Reest the onboard settings to the *completely blank*");
 		add(resetToBlankButton);
 
-
-		
 		loadParameters();
 	}
 }
