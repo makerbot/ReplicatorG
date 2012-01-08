@@ -1,0 +1,39 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+        <machine experimental="0">
+                <name>Ultimaker v1.0 (Sprinter/Marlin firmware)</name>
+                <geometry type="cartesian">
+                        <!-- different pulleys on X and Y axii -->
+                        <axis id="x" length="210" maxfeedrate="9000" stepspermm="47.069852" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="y" length="210" maxfeedrate="9000" stepspermm="47.0698523" endstops="min"/>  <!-- 16th-step driver -->
+                        <axis id="z" length="210" maxfeedrate="650" stepspermm="160" endstops="min"/> <!-- quarter-step driver -->
+                </geometry>
+                <tools>
+                        <tool name="Stepper-based pinch extruder" type="extruder" material="abs" motor="true" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true" heatedplatform="true" motor_steps="1800" default_rpm="1000" />
+                </tools>
+                <clamps></clamps>
+                <firmware url="http://firmware.ultimaker.com/latest" autoupgrade="false"></firmware>
+                <help name="Ultimaking Guide" url="http://www.ultimaker.com/guide"></help>
+                <driver name="reprap5d">
+                        <!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+                        <rate>115200</rate>
+                        <parity>8</parity>
+                        <pulserts>true</pulserts>
+                        <waitforstart enabled="true" timeout="3000" retries="3"></waitforstart>
+                        <fived>true</fived>
+                        <debugLevel>1</debugLevel>
+                        <limitFeedrate>20000.0</limitFeedrate>
+                        <!-- purposefully inject noise to speed up debugging of retransmits and recovery. Use a value 0 to turn it off, 0.05 for once every 20 lines transmitted. -->
+                        <introduceNoise>0</introduceNoise>
+
+                        <!-- optional, defaults to 1.                          <databits>1</databits> -->
+                        <!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+                </driver>
+                <warmup>
+                </warmup>
+                <cooldown>
+(Turn off steppers after a build.)
+M108 S0
+                </cooldown>
+        </machine>
+</machines>
