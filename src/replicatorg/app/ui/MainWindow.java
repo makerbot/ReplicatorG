@@ -839,8 +839,15 @@ ToolpathGenerator.GeneratorListener
 				//Display the auto-generated list of codes our enumeration recognises
 				Object[] codes = GCodeEnumeration.getDocumentation().toArray();
 				JScrollPane displayPane = new JScrollPane(new JList(codes));
-				JOptionPane.showConfirmDialog(MainWindow.this, displayPane,
-						"Supported GCodes", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
+                		JOptionPane pane = new JOptionPane(displayPane, JOptionPane.PLAIN_MESSAGE,
+                        		JOptionPane.DEFAULT_OPTION, null, null, null);
+		                pane.setInitialValue(null);
+				pane.setComponentOrientation(MainWindow.this.getComponentOrientation());
+				JDialog dialog = pane.createDialog(MainWindow.this, "Supported GCodes");
+				pane.selectInitialValue();
+				dialog.setResizable(true); // since the list is long, make the dialog resizeable
+				dialog.setVisible(true);
+				dialog.dispose();		
 			}
 		});
 		menu.add(item);
