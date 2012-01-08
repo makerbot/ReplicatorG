@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import java.awt.BorderLayout;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -30,12 +31,16 @@ public class InfoPanel extends JFrame {
 	
 	public InfoPanel() {
 		super("About this Makerbot");
-		JPanel panel = new JPanel(new MigLayout());
+		JPanel panel = new JPanel();
 
-		infoArea = new JTextArea("ReplicatorG:",40,60);
+		infoArea = new JTextArea("ReplicatorG:",40,80);
 		infoArea.setFont(infoArea.getFont().deriveFont(11f));
-		panel.add(new JScrollPane(infoArea));
-		
+		panel.setLayout(new BorderLayout());
+		panel.add(new JScrollPane(infoArea),BorderLayout.CENTER);
+
+		getContentPane().setLayout(new BorderLayout());
+		getContentPane().add(panel,BorderLayout.CENTER);	
+	
 		add(panel);
 		pack();
 		
