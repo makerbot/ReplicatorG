@@ -1,5 +1,6 @@
 package replicatorg.app.ui;
 
+import java.awt.BorderLayout;
 import java.io.StringWriter;
 
 import javax.swing.JFrame;
@@ -29,14 +30,16 @@ public class InfoPanel extends JFrame {
     JTextArea infoArea;
 	
 	public InfoPanel() {
-		super("About this Makerbot");
-		JPanel panel = new JPanel(new MigLayout());
+		super("About this Machine");
+        JPanel panel = new JPanel();
 
-		infoArea = new JTextArea("ReplicatorG:",40,60);
+		infoArea = new JTextArea("ReplicatorG:",40,80);
 		infoArea.setFont(infoArea.getFont().deriveFont(11f));
-		panel.add(new JScrollPane(infoArea));
+		panel.setLayout(new BorderLayout());
+		panel.add(new JScrollPane(infoArea), BorderLayout.CENTER);
 		
-		add(panel);
+	    getContentPane().setLayout(new BorderLayout());
+	    getContentPane().add(panel, BorderLayout.CENTER);
 		pack();
 		
 		infoArea.setText(getMachineInfo());
