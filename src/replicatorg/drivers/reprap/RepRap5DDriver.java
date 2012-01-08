@@ -882,6 +882,10 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 			} else if (line.startsWith("t:") || line.startsWith("c:")) {
 				// temperature, position handled above
+            } else if (line.startsWith("echo:")) {
+                // do nothing
+            } else if (line.startsWith("x:")) {
+                // do nothing
 			} else {
 				Base.logger.severe("Unknown: " + line);
 			}
