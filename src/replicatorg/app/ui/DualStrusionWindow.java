@@ -437,7 +437,7 @@ public class DualStrusionWindow extends JFrame{
 				
 				spp.enableDualstrusion();
 				spp.setMachineType(machineType);
-				spp.setAddPercentages(false);
+				spp.setAddProgressUpdates(false);
 			}
 			
 			final Build b = new Build(stl.getAbsolutePath());

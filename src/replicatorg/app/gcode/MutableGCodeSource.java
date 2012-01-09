@@ -173,6 +173,29 @@ public class MutableGCodeSource implements GCodeSource {
 			newSource.add(line);
 		}
 		source = newSource;
+	}	
+	
+	/// Scans gcode for layer start/ends. Adds gcode for approx % done 
+	/// by that layer via using line count
+	public void addProgressUpdates()
+	{
+		int index = 0;
+		int sourceSize = source.size();
+		ArrayList<String> newSource = new ArrayList<String>();
+		/// TRICKY: M73 P0 is required by The Replicator to enable % display
+		// and M73 P100. is required at the end. These are in TheReplicator start.gcode
+		// and end.gcode
+		for(String line : source)
+		{
+			if( line.startsWith("(<layer>") )
+			{
+				int percentDone = (int)(index*100)/sourceSize;
+				newSource.add("M73 P"+percentDone+" (display progress)");
+			}
+			newSource.add(line);
+			index++;
+		}
+		source = newSource;
 	}
 
 	

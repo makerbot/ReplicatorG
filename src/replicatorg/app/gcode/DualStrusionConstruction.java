@@ -146,6 +146,7 @@ System.out.println("post parse");
 			result.add(l.getCommands());
 		}
 		
+		result.addProgressUpdates();
 	}
 	
 	/**
