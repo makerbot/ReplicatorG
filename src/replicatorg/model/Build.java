@@ -334,6 +334,22 @@ public class Build {
 	}
 
 	/**
+	 * The line count.
+	 * @return the number of lines in the gcode.
+	 */
+	public int getLines() {
+	    int ret;
+
+	    BuildCode code = getCode();
+	    if (null != code)
+	        ret = countLines(code.program);
+	    else
+	        ret = 0;
+	    
+	    return (ret);
+	}
+
+	/**
 	 * Return the model object.
 	 */
 	public BuildModel getModel() {

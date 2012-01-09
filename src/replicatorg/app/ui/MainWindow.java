@@ -79,7 +79,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -204,8 +203,6 @@ ToolpathGenerator.GeneratorListener
 	MessagePanel console;
 
 	JSplitPane splitPane;
-
-	JLabel lineNumberComponent;
 
 	// currently opened program
 	public Build build;
@@ -337,7 +334,6 @@ ToolpathGenerator.GeneratorListener
 		textarea.setHorizontalOffset(6);
 
 		cardPanel.add(textarea,GCODE_TAB_KEY);
-		//cardPanel.add(test)
 		console = new MessagePanel(this);
 		console.setBorder(null);
 
