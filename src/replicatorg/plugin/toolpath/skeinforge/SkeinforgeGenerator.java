@@ -109,6 +109,10 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 						curline = bir.readLine();
 					}
 					bir.close();
+					
+					for(String machine : targetMachines)
+						machine = machine.trim();
+					
 				} catch (FileNotFoundException e) {
 					Base.logger.log(Level.FINEST, "Didn't find a targetMachines file in " + fullPath, e);
 				} catch (IOException e) {
