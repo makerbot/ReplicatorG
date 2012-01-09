@@ -97,8 +97,6 @@ public class DualStrusionWindow extends JFrame{
 	File rightStl = null;
 	File leftGcode = null;
 	File rightGcode = null;
-	MutableGCodeSource leftSource;
-	MutableGCodeSource rightSource;
 	MutableGCodeSource startSource;
 	MutableGCodeSource endSource;
 
@@ -333,18 +331,12 @@ public class DualStrusionWindow extends JFrame{
 
 				// completed counts the number of stls left to convert 
 				completed = new CountDownLatch(2);
+				
 				if(leftGcode != null)
-				{
-					leftSource = new MutableGCodeSource(leftGcode);
-					leftSource.stripStartEndBestEffort();
 					completed.countDown();
-				}
 				if(rightGcode != null)
-				{
-					rightSource = new MutableGCodeSource(rightGcode);
-					rightSource.stripStartEndBestEffort();
 					completed.countDown();
-				}
+				
 				if(completed.getCount() == 0)
 				{
 					combineGcodes();
@@ -445,7 +437,7 @@ public class DualStrusionWindow extends JFrame{
 				
 				spp.enableDualstrusion();
 				spp.setMachineType(machineType);
-				spp.setAddPercentages(false);
+				spp.setAddProgressUpdates(false);
 			}
 			
 			final Build b = new Build(stl.getAbsolutePath());
@@ -512,7 +504,6 @@ public class DualStrusionWindow extends JFrame{
 	private void combineGcodes()
 	{
 		((CardLayout)panels.getLayout()).show(panels, WAITING_PANEL);
-//		panels.show(this, WAITING_PANEL);
 		
 		//For now this should always be exactly two gcodes, let's just check that assumption
 		if(leftGcode == null || rightGcode == null)
@@ -522,9 +513,7 @@ public class DualStrusionWindow extends JFrame{
 			return;
 		}
 		
-		leftSource = new MutableGCodeSource(leftGcode);
-		rightSource = new MutableGCodeSource(rightGcode);
-		DualStrusionConstruction dsConstruction = new DualStrusionConstruction(leftSource, rightSource, startSource, endSource, type, uWipe);
+		DualStrusionConstruction dsConstruction = new DualStrusionConstruction(leftGcode, rightGcode, startSource, endSource, type, uWipe);
 		dsConstruction.combine();
 		dsConstruction.getCombinedFile().writeToFile(dest);
 		

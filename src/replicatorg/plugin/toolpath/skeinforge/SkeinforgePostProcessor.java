@@ -112,7 +112,7 @@ public class SkeinforgePostProcessor {
 	private boolean appendEnd = false;
 	private boolean prependMetaInfo = false;
 	private boolean multiHead = false;
-	private boolean addPercentages = false;
+	private boolean addProgressUpdates = false;
 	private PostProcessorPreference ppp;
 	
 	public SkeinforgePostProcessor(SkeinforgeGenerator generator)
@@ -160,9 +160,9 @@ public class SkeinforgePostProcessor {
 				runToolheadSwap(toolheadTarget);
 		}
 		
-		if(addPercentages)
+		if(addProgressUpdates)
 		{
-			interlacePercentageUpdates();
+			runAddProgressUpdates();
 		}
 		
 		if(prependMetaInfo)
@@ -173,7 +173,7 @@ public class SkeinforgePostProcessor {
 			//TRICKY: calling a static method on an instance of a class is considered bad practice,
 			//				but I'm not sure how to access displayName without it
 			metaInfo.add("(*  using "+generator.displayName+"  *)");
-			metaInfo.add("(*  for a "+machineType.getName()+"  *)");
+			metaInfo.add("(*  for a "+(multiHead?"Dual headed ":"Single headed ")+machineType.getName()+"  *)");
 			metaInfo.add("(*  on "+/*Calendar.getInstance().toString()*/"unknown date"+"  *)");
 			
 			runPrepend(metaInfo);
@@ -184,27 +184,10 @@ public class SkeinforgePostProcessor {
 		return generator.output;
 	}
 	
-	/// Scans gcode for layer start/ends. Adds gcode for approx % done 
-	/// by that layer via using line count
-	private void interlacePercentageUpdates()
+	// put 
+	private void runAddProgressUpdates()
 	{
-		int index = 0;
-		int sourceSize = source.getLineCount();
-		MutableGCodeSource newSource = new MutableGCodeSource();
-		/// TRICKY: M73 P0 is required by The Replicator to enable % display
-		// and M73 P100. is required at the end. These are in TheReplicator start.gcode
-		// and end.gcode
-		for(String line : source)
-		{
-			if( line.startsWith("(<layer>") )
-			{
-				int percentDone = (int)(index*100)/sourceSize;
-				newSource.add("M73 P"+percentDone+" (display progress)");
-			}
-			newSource.add(line);
-			index++;
-		}
-		source = newSource;
+		source.addProgressUpdates();
 	}
 	
 	
@@ -326,8 +309,8 @@ public class SkeinforgePostProcessor {
 		multiHead = isMulti;
 		ppp.refreshPreferences();
 	}
-	public void setAddPercentages(boolean doAdd)
+	public void setAddProgressUpdates(boolean doAdd)
 	{
-		addPercentages = doAdd;
+		addProgressUpdates = doAdd;
 	}
 }
