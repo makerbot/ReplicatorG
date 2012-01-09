@@ -1,5 +1,6 @@
 package replicatorg.app.gcode;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,19 +35,20 @@ public class DualStrusionConstruction
 {
 
 	private MutableGCodeSource result;
-	private final MutableGCodeSource left, right;
+	private final File leftFile, rightFile;
+	private MutableGCodeSource left, right;
 	private final MutableGCodeSource start, end;
 	private final boolean useWipes;
 	private final WipeModel leftWipe;
 	private final WipeModel rightWipe;
 	private final MachineType machineType;
-
-	public DualStrusionConstruction(MutableGCodeSource left, MutableGCodeSource right,
+	
+	public DualStrusionConstruction(File leftFile, File rightFile,
 									MutableGCodeSource startSource, MutableGCodeSource endSource,
 									MachineType type, boolean useWipes)
 	{
-		this.left = left;
-		this.right = right;
+		this.leftFile = leftFile;
+		this.rightFile = rightFile;
 		this.useWipes = useWipes;
 		this.machineType = type;
 		start = startSource.copy();
@@ -107,12 +109,21 @@ public class DualStrusionConstruction
 		 * 
 		 * 
 		 */
+System.out.println("pre read");
+		left = new MutableGCodeSource(leftFile);
+		right = new MutableGCodeSource(rightFile);
+System.out.println("post read");
+		
+		left.stripStartEndBestEffort();
+		right.stripStartEndBestEffort();
 		
 		stripNonLayerTagComments(left);
 		stripNonLayerTagComments(right);
+System.out.println("post strip");
 
 		LinkedList<Layer> leftLayers = newOldParseLayers(left);
 		LinkedList<Layer> rightLayers = newOldParseLayers(right);
+System.out.println("post parse");
 
 		final LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
 		
