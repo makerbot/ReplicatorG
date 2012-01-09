@@ -269,7 +269,9 @@ public class Machine implements MachineInterface {
 				GCodeCommand gcLine = new GCodeCommand(line);
 				String s;
 
-				String mainCode = gcLine.getCommand().split(" ")[0];
+				String cmd = gcLine.getCommand();
+				if(cmd.split(" ").length < 1) continue; //to avoid null index problems
+				String mainCode = cmd.split(" ")[0];
 				if(!("").equals(mainCode) && GCodeEnumeration.getGCode(mainCode) == null)
 				{
 					s = "Unsupported GCode!\n" + line + 

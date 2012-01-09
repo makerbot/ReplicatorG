@@ -254,7 +254,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 		addBooleanParameter(supportPanel, "useRaft",
 				"Use Raft/Support", true,
-				"If this option is checked, skeinforge can generate use support material, and wil lay down a rectangular 'raft' of plastic below the build.  "
+				"If this option is checked, skeinforge can generate use support material, and will lay down a rectangular 'raft' of plastic below the build.  "
 				+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
 		
 		/*
