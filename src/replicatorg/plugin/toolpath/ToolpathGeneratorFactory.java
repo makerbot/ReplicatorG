@@ -62,10 +62,10 @@ public class ToolpathGeneratorFactory {
 			public List<SkeinforgePreference> initPreferences() {				
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 				SkeinforgeBooleanPreference raftPref = 			
-					new SkeinforgeBooleanPreference("Use raft",
+					new SkeinforgeBooleanPreference("Use Raft/Support",
 						"replicatorg.skeinforge.useRaft", true,
-						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
-						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+						"Enables Raft and/or support material.  " + 
+						"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
 				raftPref.addNegateableOption(new SkeinforgeOption("Raft", "Activate Raft:", "true"));
 				raftPref.addNegateableOption(new SkeinforgeOption("Raftless", "Activate Raftless:", "false"));
 				prefs.add(raftPref);
@@ -89,10 +89,10 @@ public class ToolpathGeneratorFactory {
 			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 				SkeinforgeBooleanPreference raftPref = 			
-					new SkeinforgeBooleanPreference("Use raft",
+					new SkeinforgeBooleanPreference("Use Raft/Support",
 						"replicatorg.skeinforge.useRaft", true,
-						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
-						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+						"Enables Raft and/or support material.  " + 
+						"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
 				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Activate Raft", "true"));
 				prefs.add(raftPref);
 
@@ -115,10 +115,10 @@ public class ToolpathGeneratorFactory {
 			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 				SkeinforgeBooleanPreference raftPref = 			
-					new SkeinforgeBooleanPreference("Use raft",
+					new SkeinforgeBooleanPreference("Use Raft/Support",
 						"replicatorg.skeinforge.useRaft", false,
-						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
-						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+						"Enables Raft and/or support material.  " + 
+						"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
 				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
 				prefs.add(raftPref);
 				
@@ -174,10 +174,10 @@ public class ToolpathGeneratorFactory {
 			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 				SkeinforgeBooleanPreference raftPref = 			
-					new SkeinforgeBooleanPreference("Use raft",
+					new SkeinforgeBooleanPreference("Use Raft/Support",
 						"replicatorg.skeinforge.useRaft", true,
-						"If this option is checked, skeinforge will lay down a rectangular 'raft' of plastic before starting the build.  "
-						+ "Rafts increase the build size slightly, so you should avoid using a raft if your build goes to the edge of the platform.");
+						"Enables Raft and/or support material.  " + 
+						"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
 				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit:", "true"));
 				prefs.add(raftPref);
 				SkeinforgeChoicePreference supportPref =
