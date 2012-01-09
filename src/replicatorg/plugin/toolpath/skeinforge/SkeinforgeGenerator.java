@@ -3,13 +3,19 @@ package replicatorg.plugin.toolpath.skeinforge;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
@@ -81,6 +87,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	static class Profile implements Comparable<Profile> {
 		private String fullPath;
 		private String name;
+		// targetMachines is a filter that will allow this profile to only be show for specified machines
+		private Set<String> targetMachines = new TreeSet<String>();
 
 		public Profile(String fullPath) {
 			this.fullPath = fullPath;
@@ -90,6 +98,25 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			} else {
 				name = fullPath;
 			}
+			
+			File targetsFile = new File(fullPath+File.separator+"targetMachines.csv");
+			if(targetsFile.exists()) {
+				try {
+					BufferedReader bir = new BufferedReader(new FileReader(targetsFile));
+					String curline = bir.readLine();
+					while (curline != null) {
+						targetMachines.addAll(Arrays.asList(curline.split(",")));
+						curline = bir.readLine();
+					}
+					bir.close();
+				} catch (FileNotFoundException e) {
+					Base.logger.log(Level.FINEST, "Didn't find a targetMachines file in " + fullPath, e);
+				} catch (IOException e) {
+					Base.logger.log(Level.FINEST, "Didn't find a targetMachines file in " + fullPath, e);
+				}
+			} else {
+				
+			}
 		}
 
 		public String getFullPath() {
@@ -98,6 +125,10 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 		public String toString() {
 			return name;
+		}
+		
+		public Set<String> getTargetMachines() {
+			return targetMachines;
 		}
 
 		public int compareTo(Profile o) {
