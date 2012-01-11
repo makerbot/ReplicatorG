@@ -1668,8 +1668,10 @@ ToolpathGenerator.GeneratorListener
 
 	/**
 	 * Handles the functionality of 'disconnect' buttons
+	 * @param leavePreheatRunning Do not turn of the heat on the bot, leave bot warm/running/hot.
+	 * @param clearMLSingleton Clear the MachineLoader singleton (ie, totally dispose the local model of the bot state/settings
 	 */
-	public void handleDisconnect(boolean leavePreheatRunning) {
+	public void handleDisconnect(boolean leavePreheatRunning, boolean clearMLSingleton) {
 		if(building)
 		{
 			int choice = JOptionPane.showConfirmDialog(this, "You are attempting to disconnect the printer while it is printing \n are you sure?", "Disconnect Warning", JOptionPane.YES_NO_OPTION);
@@ -1679,6 +1681,8 @@ ToolpathGenerator.GeneratorListener
 		}
 		doPreheat(leavePreheatRunning);
 		machineLoader.disconnect();
+		if(clearMLSingleton) /// this causes the singleton to reload (so post-eeprom-reset/write bots reload data)
+			machineLoader.clearSingleton();
 	}
 
 	/**
@@ -1714,7 +1718,7 @@ ToolpathGenerator.GeneratorListener
 			return;
 		}
 
-		OnboardParametersWindow mop = new OnboardParametersWindow((OnboardParameters)machineLoader.getDriver(),machineLoader.getDriver());
+		OnboardParametersWindow mop = new OnboardParametersWindow((OnboardParameters)machineLoader.getDriver(),machineLoader.getDriver(),this);
 		mop.setVisible(true);
 	}
 
@@ -1732,7 +1736,6 @@ ToolpathGenerator.GeneratorListener
 	public void showPrefsWindow() {
 		if(preferences == null)
 			preferences = new PreferencesWindow(machineLoader.getMachineInterface());
-
 		preferences.showFrame(this);
 	}
 

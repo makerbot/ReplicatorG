@@ -14,6 +14,7 @@ import javax.swing.JTabbedPane;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.app.ui.MainWindow;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.ToolModel;
@@ -23,11 +24,17 @@ public class OnboardParametersWindow extends JFrame {
 	
 	private final JTabbedPane paramsTabs;
 	private final JButton cancelButton;
+	private MachineOnboardParameters onboardParamsTab;
+	private boolean disconnectOnExit = false;
 
-	public OnboardParametersWindow(OnboardParameters targetParams, Driver driver)
-	{
+	private MainWindow mainwin;
+
+	/// shoot me. I'm passing the main window into this box. I am a bad person - Far F-BOMB
+	public OnboardParametersWindow(OnboardParameters targetParams, Driver driver, MainWindow  mainwin)
+	{	
 		super("Update Machine Options");
-		
+		this.mainwin = mainwin;
+	
 		Image icon = Base.getImage("images/icon.gif", this);
 		setIconImage(icon);
 		
@@ -36,14 +43,14 @@ public class OnboardParametersWindow extends JFrame {
 		paramsTabs = new JTabbedPane();
 		add(paramsTabs, "span 2, wrap");
 
-		paramsTabs.addTab("Motherboard", new MachineOnboardParameters(targetParams, driver, (JFrame)this));
+		onboardParamsTab = new MachineOnboardParameters(targetParams, driver, (JFrame)this);
+		paramsTabs.addTab("Motherboard", onboardParamsTab);
 		
 		List<ToolModel> tools = driver.getMachine().getTools();
 		
 		for(ToolModel t : tools)
 		{
 			paramsTabs.addTab("Extruder " + t.getIndex(), new ExtruderOnboardParameters(targetParams, t,(JFrame)this));
-			
 		}
 
 		JLabel verifyString = new JLabel("Warning: Machine Type is not verifyable.");
@@ -72,6 +79,17 @@ public class OnboardParametersWindow extends JFrame {
 		pack();
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		setLocation((screen.width - getWidth()) / 2, (screen.height - getHeight()) / 2);
+	}
+	
+	@Override
+	public void dispose()
+	{
+		this.disconnectOnExit = onboardParamsTab.disconnectOnExit();	
+		if(mainwin != null && this.disconnectOnExit){
+			//leave pre-heat, we expect users to reconnect;
+			mainwin.handleDisconnect(/*leavePreheatRunning*/true, /*dispose machine model*/true); 
+		}
+		super.dispose();
 	}
 
 }
