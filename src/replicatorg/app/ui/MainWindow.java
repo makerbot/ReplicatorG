@@ -1985,13 +1985,14 @@ ToolpathGenerator.GeneratorListener
 			message("Building...");
 			buildStart = new Date();
 			
+			machineLoader.getMachineInterface().buildDirect(new JEditTextAreaSource(textarea));
 			//doing this check allows us to recover from pre-build stuff
-			if(machineLoader.getMachineInterface().buildDirect(new JEditTextAreaSource(textarea)) == false)
-			{
-				buildStart = null;
-				setEditorBusy(false);
-				building = false;
-			}
+//			if(machineLoader.getMachineInterface().buildDirect(new JEditTextAreaSource(textarea)) == false)
+//			{
+//				buildStart = null;
+//				setEditorBusy(false);
+//				building = false;
+//			}
 		}
 	}
 
