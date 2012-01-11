@@ -208,7 +208,7 @@ public class Machine implements MachineInterface {
 					emitStateChange(new MachineState(State.BUILDING), "Running safety checks...");
 					
 					safetyCheck(source, messages);
-					
+
 					if(! messages.isEmpty())
 					{
 						System.out.println("errors");
@@ -244,10 +244,14 @@ public class Machine implements MachineInterface {
 						messageList.addMouseListener(new MouseAdapter(){
 							@Override
 							public void mouseClicked(MouseEvent arg0) {
-								if(arg0.getClickCount() == 2)
+								if(arg0.getClickCount() == 1)
 									highlightLine(messageList.getSelectedValue());
 							}
 						});
+						/// do initial highlight and selection of default item (the 0th)
+						messageList.setSelectedIndex(0);
+						highlightLine(displayMessages.get(0));
+						
 						messageList.addKeyListener(new KeyAdapter(){
 							@Override
 							public void keyPressed(KeyEvent arg0) {
@@ -354,7 +358,7 @@ public class Machine implements MachineInterface {
 			
 			if(!("").equals(mainCode) && GCodeEnumeration.getGCode(mainCode) == null)
 			{
-				message = "Unsupported GCode! ReplicatorG doesn't recognize" + line;
+				message = "ReplicatorG doesn't recognize GCode '" + line +"'";
 
 				messages.put(message, lineNumber);
 				Base.logger.log(Level.SEVERE, message);

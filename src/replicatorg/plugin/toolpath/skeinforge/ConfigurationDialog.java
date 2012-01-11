@@ -99,7 +99,7 @@ class ConfigurationDialog extends JDialog {
 				generateButton.setFocusPainted(true);
 			}
 		});
-		loadList(prefPulldown);
+		loadList(prefPulldown); /// Filles UI with the list of Skeinforge settings/options
 		add(prefPulldown, "wrap, growx");
 
 		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {

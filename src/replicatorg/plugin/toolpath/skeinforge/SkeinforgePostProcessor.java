@@ -66,6 +66,7 @@ public class SkeinforgePostProcessor {
 				ActionListener toolSelected = new ActionListener(){
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
+						
 						if(model.getSelectedItem().equals(ToolheadAlias.LEFT.guiName)) {
 							processor.toolheadTarget = ToolheadAlias.LEFT;
 							Base.preferences.put("replicatorg.skeinforge.toolheadOrientation", ToolheadAlias.LEFT.guiName);
@@ -161,10 +162,14 @@ public class SkeinforgePostProcessor {
 				runPrepend(startCode);
 			if(appendEnd)
 				runAppend(endCode);
-			
+
+			if( !multiHead )
+				toolheadTarget = ToolheadAlias.SINGLE; 
+		
 			if(toolheadTarget != null)
 				runToolheadSwap(toolheadTarget);
 		}
+		
 		
 		if(addProgressUpdates)
 		{
