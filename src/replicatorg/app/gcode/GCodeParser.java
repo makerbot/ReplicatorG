@@ -461,7 +461,7 @@ public class GCodeParser {
 			break;
 		case M73:
 			// Manually sets the percent complete info on the bot.
-			commands.add(new replicatorg.drivers.commands.SetBuildPercent(gcode.getCodeValue('P')) );
+			commands.add(new replicatorg.drivers.commands.SetBuildPercent(gcode.getCodeValue('P'), gcode.getComment() ) );
 			break;			
 		case M101:
 			commands.add(new replicatorg.drivers.commands.SetMotorDirection(DriverCommand.AxialDirection.CLOCKWISE));

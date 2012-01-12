@@ -340,6 +340,7 @@ class MachineThread extends Thread {
 				ToRemoteFile trf = new ToRemoteFile(driver, simulator, combinedSource, command.remoteName);
 				if(trf.setupFailed)
 				{
+					//TRICKY:
 					//I am ashamed of this, but without adding a new state of "BUILD_CANCELLED"
 					// and making some changes to MainWindow.MachineStateChanged(), or by 
 					// changing the whole process by which this gets called, there is, apparently,
@@ -378,6 +379,7 @@ class MachineThread extends Thread {
 				ToLocalFile lf = new ToLocalFile(driver, simulator,	combinedSource, command.remoteName);
 				if(lf.setupFailed)
 				{
+					//TRICKY:
 					// This is even worse than above, because we might already be NOT_ATTACHED
 					// and we don't emit repeated changes for the same state, we have to switch
 					// to something other than NOT_ATTACHED which WILL NOT end the build,

@@ -1862,6 +1862,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return machine.stepsToMM(steps);
 	}
 
+	
 	public void reset() {
 		Base.logger.info("Reset Board");
 		if (isInitialized() && version.compareTo(new Version(1, 4)) >= 0) {
@@ -2603,13 +2604,13 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * @throws RetryException 
 	 */
 	@Override
-	public void resetToFactory() throws RetryException {
+	public void resetSettingsToFactory() throws RetryException {
 		Base.logger.finer("resetting to Factory in Sanguino3G");
-		resetToBlank();
+		resetSettingsToBlank();
 	}
 
 	@Override
-	public void resetToBlank() throws RetryException  {
+	public void resetSettingsToBlank() throws RetryException  {
 		Base.logger.finer("resetting to Blank in Sanguino3G");
 		byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe, (byte) 0xff);

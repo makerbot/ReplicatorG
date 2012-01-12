@@ -63,6 +63,8 @@ public class MachineOnboardParameters extends JPanel {
 	private JComboBox estopSelection = new JComboBox(estopChoices);
 	private static final int MAX_NAME_LENGTH = 16;
 
+	private boolean disconnectNeededOnExit = false; ///
+	
     private NumberFormat threePlaces = Base.getLocalFormat();
     {
         threePlaces.setMaximumFractionDigits(3);
@@ -80,7 +82,10 @@ public class MachineOnboardParameters extends JPanel {
 	private JFormattedTextField vref3 = new JFormattedTextField(threePlaces);
 	private JFormattedTextField vref4 = new JFormattedTextField(threePlaces);
 
-	private void resetDialog() {
+	
+	/** Prompts the user to fire a bot  reset after the changes have been sent to the board.
+	 */
+	private void requestResetFromUser() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
 				"<html>Before these changes can take effect, you'll need to reset your <br/>"+
 				"motherboard.  If you choose not to reset the board now, some old settings <br/>"+
@@ -90,18 +95,20 @@ public class MachineOnboardParameters extends JPanel {
 				JOptionPane.YES_NO_OPTION,
 				JOptionPane.WARNING_MESSAGE);
 		if (confirm == JOptionPane.YES_OPTION) {
+			this.disconnectNeededOnExit = true;
 			driver.reset();
 		}
+		else
+			this.disconnectNeededOnExit = false;
+
 	}
 	
 	private void commit() {
 		String newName = machineNameField.getText();
 		if(newName.length() > MAX_NAME_LENGTH)
 			machineNameField.setText(newName.substring(0, MAX_NAME_LENGTH ) );
-
 		target.setMachineName(machineNameField.getText());
 		
-
 		if( target.hasToolCountOnboard() ) {
 			if (toolCountField.getSelectedIndex() > 0) 
 				target.setToolCountOnboard( toolCountField.getSelectedIndex() );
@@ -154,13 +161,16 @@ public class MachineOnboardParameters extends JPanel {
 			add(vref3, "growx, split");
 			add(vref4, "growx, wrap");
 		}
-		resetDialog();
+		requestResetFromUser();
 	}
 
+	/// Causes the EEPROM to be reset to a totally blank state, and during dispose
+	/// tells caller to reset/reconnect the eeprom.
 	private void resetToBlank()
 	{
 		try { 
-			target.resetToBlank();
+			target.resetSettingsToBlank();
+			requestResetFromUser();
 			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){
@@ -169,9 +179,12 @@ public class MachineOnboardParameters extends JPanel {
 		}		
 	}
 	
+	/// Causes the EEPROM to be reset to a 'from the factory' state, and during dispose
+	/// tells caller to reset/reconnect the eeprom.
 	private void resetToFactory() {
 		try { 
-			target.resetToFactory();
+			target.resetSettingsToFactory();
+			requestResetFromUser();
 			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){
@@ -321,6 +334,7 @@ public class MachineOnboardParameters extends JPanel {
 		commitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				MachineOnboardParameters.this.commit();
+				disconnectNeededOnExit = true;
 				MachineOnboardParameters.this.dispose();
 			}
 		});
@@ -349,4 +363,9 @@ public class MachineOnboardParameters extends JPanel {
 
 		loadParameters();
 	}
+
+	public boolean disconnectOnExit() {
+		return disconnectNeededOnExit;
+	}
+
 }

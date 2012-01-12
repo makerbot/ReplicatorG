@@ -1140,16 +1140,17 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	/**
 	 * Reset to the factory state. For MightyBoard this 
 	 * does NOT write 0xFF to all EEPROM, but instead sends a 
-	 * 'wipe and reboot' command
+	 * 'wipe and reboot' command. 
 	 */
 	@Override
-	public void resetToFactory() throws RetryException {
+	public void resetSettingsToFactory() throws RetryException {
 		/// send message to FW to wipe all settings
 		/// except home, wipe locations, and single/dual status
 		PacketBuilder pb = new PacketBuilder( MotherboardCommandCode.RESET_TO_FACTORY.getCode() );
 		pb.add8((byte) 0xFF);
 		pb.add8(ToolCommandCode.GET_PLATFORM_SP.getCode());
 		PacketResponse pr = runCommand( pb.getPacket() );
+
 	}
 
 	@Override
@@ -1163,7 +1164,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * baseline values. 
 	 */
 	@Override
-	public void resetToBlank() throws RetryException  {
+	public void resetSettingsToBlank() throws RetryException  {
 		Base.logger.finer("resetting to Blank in Sanguino3G");
 		byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe, (byte) 0xff);

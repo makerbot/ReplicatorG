@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import replicatorg.app.Base;
+
 /**
  * After changing this, make sure to run it to re-generate the documentation file.
  * @author Ted
@@ -109,18 +111,24 @@ public enum GCodeEnumeration {
 	final String GCodeVersion = "2011.01.04"; //just for our own reference, what version of gcode (date of Replicat.org gcode commands)this can use
 
 	private static final Map<String, GCodeEnumeration> lookup = new TreeMap<String, GCodeEnumeration>(
+
 			//providing this comparator makes sure that the ordering of the codes is what we'd expect it to be
 			new Comparator<String>(){
 				@Override
 				public int compare(String s, String t) {
 					Character l1 = s.charAt(0);
 					Character l2 = t.charAt(0);
-					Integer i1 = Integer.parseInt(s.substring(1));
-					Integer i2 = Integer.parseInt(t.substring(1));
-					
-					int cmp = l1.compareTo(l2);
-					
-					return cmp == 0 ? i1.compareTo(i2) : cmp;
+					try{
+						Integer i1 = Integer.parseInt(s.substring(1));
+						Integer i2 = Integer.parseInt(t.substring(1));
+						int cmp = l1.compareTo(l2);						
+						return cmp == 0 ? i1.compareTo(i2) : cmp;
+					}
+					catch (java.lang.NumberFormatException exce) {
+						Base.logger.severe("Exception parsing: " + s +" or " + t);
+						Base.logger.severe("Exception info: " + exce);
+						throw exce;
+					}
 				}
 				
 			});
@@ -156,7 +164,13 @@ public enum GCodeEnumeration {
 
 	public static GCodeEnumeration getGCode(String name)
 	{
-		return lookup.get(name);
+		try {
+			return lookup.get(name);
+		}
+		catch (java.lang.NumberFormatException exce) {
+			return null;
+		}
+
 	}
 	
 	public static GCodeEnumeration getGCode(String letter, Integer number)

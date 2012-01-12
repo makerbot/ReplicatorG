@@ -259,7 +259,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		} else if (e.getSource() == connectButton) {
 			editor.handleConnect();
 		} else if (e.getSource() == disconnectButton) {
-			editor.handleDisconnect(/*leavePreheatRunning=*/true);
+			editor.handleDisconnect(/*leavePreheatRunning=*/true, false);
 		} else if (e.getSource() == rcButton) {
 			editor.handleRealTimeControl();
 		}

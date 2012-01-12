@@ -119,4 +119,13 @@ import replicatorg.drivers.Driver;
 		public void removeMachineListener(MachineListener listener) {
 			callbackHandler.removeMachineListener(listener);
 		}
+		
+		/// Clear out singleton object, in cases where we know we must, must, must rebuild the Machine objects
+		public void clearSingleton() {
+			if(singletonMI != null) {
+				singletonMI.dispose();
+				singletonMI = null;
+			}
+
+		}
 	}
