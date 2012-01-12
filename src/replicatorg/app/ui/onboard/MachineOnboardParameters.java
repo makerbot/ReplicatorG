@@ -154,12 +154,6 @@ public class MachineOnboardParameters extends JPanel {
 			target.setStoredStepperVoltage(2, ((Number)vref2.getValue()).intValue());
 			target.setStoredStepperVoltage(3, ((Number)vref3.getValue()).intValue());
 			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
-
-			add(vref0, "growx, split");
-			add(vref1, "growx, split");
-			add(vref2, "growx, split");
-			add(vref3, "growx, split");
-			add(vref4, "growx, wrap");
 		}
 		requestResetFromUser();
 	}
