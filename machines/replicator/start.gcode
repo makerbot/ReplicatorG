@@ -22,7 +22,6 @@ G92 Z0 A0 B0 (Set Z, A, B to 0)
 (**** end homing ****)
 G1 X117 Y-70 Z10 F3300.0 (move to waiting position)
 M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
-M6 T0
 M108 R3.0 T0
 G0 X117 Y-70 (Position Nozzle)
 G0 Z0.6     (Position Height)
