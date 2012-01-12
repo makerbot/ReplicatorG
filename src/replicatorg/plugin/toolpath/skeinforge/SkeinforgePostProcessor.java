@@ -3,7 +3,10 @@ package replicatorg.plugin.toolpath.skeinforge;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
@@ -25,13 +28,18 @@ import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeBool
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeOption;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
-import java.util.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-
-//import java.util.UUID;
-
+/**
+ * The Skeinforge Post Processor does anything that skeinforge doesn't
+ * The SkeinforgeGenerator calls this after it has finished running SF,
+ * and this does things like swapping toolhead, cleaning up comments, 
+ * adding start/end code, etc.
+ * 
+ * This also offers, through the PostProcessorPreference class, a gui
+ * for selecting some of the things that get run.
+ * 
+ * @author Ted
+ *
+ */
 public class SkeinforgePostProcessor {
 	
 	private class PostProcessorPreference implements SkeinforgePreference {
@@ -132,7 +140,11 @@ public class SkeinforgePostProcessor {
 		generator.getPreferences().add(0, ppp);
 	}
 	
-	public BuildCode runPostProcessing()
+	/**
+	 * does the post-processing, called by Skeinforge Generator
+	 * @return
+	 */
+	protected BuildCode runPostProcessing()
 	{
 		
 		// Check to see if we need to do anything based on selected prefs
@@ -170,7 +182,7 @@ public class SkeinforgePostProcessor {
 				runToolheadSwap(toolheadTarget);
 		}
 		
-		
+		// these display the build % on The Replicator
 		if(addProgressUpdates)
 		{
 			runAddProgressUpdates();
@@ -205,29 +217,47 @@ public class SkeinforgePostProcessor {
 		   
 
 	}
-	// put 
+	
+	/**
+	 * adds build % commands for The Replicator
+	 */
 	private void runAddProgressUpdates()
 	{
 		source.addProgressUpdates();
 	}
 	
-	
+	/**
+	 * switches all toolhead specific code to the target toolhead
+	 * @param switchTo
+	 */
 	private void runToolheadSwap(ToolheadAlias switchTo)
 	{
 		System.out.println("runToolheadSwap");
 		source.changeToolhead(switchTo);
 	}
 	
+	/**
+	 * prepends code to the file
+	 * @param newCode
+	 */
 	private void runPrepend(GCodeSource newCode)
 	{
 		source.add(0, newCode);
 	}
 	
+	/**
+	 * appends code to the file
+	 * @param newCode
+	 */
 	private void runAppend(GCodeSource newCode)
 	{
 		source.add(newCode);
 	}
 	
+	/**
+	 * indicates that the code will be used as part of a dualstrusion print
+	 * implies a variety of things, supplies a special UI for the ConfigurationDialog
+	 */
 	public void enableDualstrusion()
 	{
 		dualstruding = true;
@@ -284,17 +314,28 @@ public class SkeinforgePostProcessor {
 			}
 		});
 	}
-	
+	/**
+	 * sets the toolhead the code is being generated for
+	 * @param tool
+	 */
 	public void setToolheadTarget(ToolheadAlias tool)
 	{
 		toolheadTarget = tool;
 	}
 	
+	/**
+	 * sets the type of machine the code is being generated for
+	 * @param type
+	 */
 	public void setMachineType(MachineType type)
 	{
 		machineType = type;
 	}
 
+	/**
+	 * Sets the code to add to the beginning of a file
+	 * @param source
+	 */
 	public void setStartCode(GCodeSource source)
 	{
 		if(source instanceof MutableGCodeSource)
@@ -302,7 +343,10 @@ public class SkeinforgePostProcessor {
 		else
 			startCode = new MutableGCodeSource(source);
 	}
-	
+	/**
+	 * Sets the code to add to the end of a file
+	 * @param source
+	 */
 	public void setEndCode(GCodeSource source)
 	{
 		if(source instanceof MutableGCodeSource)
@@ -310,26 +354,47 @@ public class SkeinforgePostProcessor {
 		else
 			endCode = new MutableGCodeSource(source);
 	}
-	
+
+	/**
+	 * toggles the addition of start code to the beginning of a file
+	 * setStartCode must be called to supply the code to add
+	 * @param doAppend
+	 */
 	public void setPrependStart(boolean doPrepend)
 	{
 		prependStart = doPrepend;
 	}
-	
+	/**
+	 * toggles the addition of end code to the end of a file
+	 * setEndCode must be called to supply the code to add
+	 * @param doAppend
+	 */
 	public void setAppendEnd(boolean doAppend)
 	{
 		appendEnd = doAppend;
 	}
 
+	/**
+	 * toggles the addition of timestamps & other information about the creation process
+	 * @param doPrepend
+	 */
 	public void setPrependMetaInfo(boolean doPrepend)
 	{
 		prependMetaInfo = doPrepend;
 	}
+	/**
+	 * specifies whether the machine has one or more heads
+	 * @param isMulti
+	 */
 	public void setMultiHead(boolean isMulti)
 	{
 		multiHead = isMulti;
 		ppp.refreshPreferences();
 	}
+	/**
+	 * toggles the addition of build % messages, displayable on The Replicator
+	 * @param doAdd
+	 */
 	public void setAddProgressUpdates(boolean doAdd)
 	{
 		addProgressUpdates = doAdd;
