@@ -268,10 +268,10 @@ public class DualStrusionWindow extends JFrame{
 		panel.add(destinationChooserButton, "wrap");
 		
 		//Use Wipes	
-		final JCheckBox useWipes = new JCheckBox();
-		useWipes.setSelected(false);
-		panel.add(new JLabel("Use wipes defined in machines.xml"), "split");
-		panel.add(useWipes, "wrap");
+//		final JCheckBox useWipes = new JCheckBox();
+//		useWipes.setSelected(false);
+//		panel.add(new JLabel("Use wipes defined in machines.xml"), "split");
+//		panel.add(useWipes, "wrap");
 		
 		//Merge
 		JButton merge = new JButton("Merge");
@@ -327,7 +327,8 @@ public class DualStrusionWindow extends JFrame{
 				
 				dest = new File(destinationTextField.getText());
 				
-				uWipe = useWipes.isSelected();
+//				uWipe = useWipes.isSelected();
+				uWipe = false;
 
 				// completed counts the number of stls left to convert 
 				completed = new CountDownLatch(2);

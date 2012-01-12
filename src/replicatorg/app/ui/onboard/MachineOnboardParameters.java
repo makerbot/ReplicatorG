@@ -39,7 +39,6 @@ public class MachineOnboardParameters extends JPanel {
 	private JTextField machineNameField = new JTextField();
 	private static final String[] toolCountChoices = {"unavailable","1", "2"};
 	private JComboBox toolCountField = new JComboBox(toolCountChoices);
-	private JComboBox toolCountComboBox = new JComboBox();
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
 	private JCheckBox zAxisInvertBox = new JCheckBox();
