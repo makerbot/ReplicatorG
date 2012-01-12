@@ -16,6 +16,13 @@ G161 Z F100 (home Z axis minimum)
 G162 X Y F2500 (home XY axes maximum)
 M132 X Y Z A B (Recall stored home offsets for XYZAB axis)
 (**** end homing ****)
+G1 X117 Y-70 Z10 F3300.0 (move to waiting position)
+M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
 M6 T0
 M108 R3.0 T0
+G0 X117 Y-70 (Position Nozzle)
+G0 Z0.6     (Position Height)
+M108 R4.0   (Set Extruder Speed)
+M101        (Start Extruder)
+G4 P1500    (Create Anchor)
 (**** end of start.gcode ****)
