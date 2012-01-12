@@ -1203,23 +1203,29 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	// Display a message on the user interface
 	public void displayMessage(double seconds, String message) throws RetryException {
 		///TRICKY: for word-wrapping of long lines, line wrap order is 0,2,1,3. Don't ask, it's complicated.
-		byte options = 0; //bit 1 true cause the buffer to clear.
-		final int MAX_MSG_PER_PACKET = 30;
+		byte options = 0; //bit 1 true cause the buffer to clear, bit 2 true indicates message complete
+		final int MAX_MSG_PER_PACKET = 20;
 		int sentTotal = 0; /// set 'clear buffer' flag
+		double timeout = 0;
 		
 		/// send message in 25 char blocks. Set 'clear buffer' on the first,
 		/// and set the timeout only on the last block
 		while (sentTotal < message.length()) {
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.DISPLAY_MESSAGE.getCode());
+			
+			// if this is the last packet, set timeout and indicate that message is complete
+			if(!(sentTotal + MAX_MSG_PER_PACKET <  message.length())){
+				timeout = seconds;
+				options |= 0x02;
+			}
 			if(sentTotal  > 0 ) 
-				options = 1; //do not clear flag
-			pb.add8(options);
-			pb.add8(sentTotal); // x coordinate
+				options |= 0x01; //do not clear flag
+			pb.add8(options);		
+			/// TODO: add method to specify x and y coordinate. 
+			/// x and y coordinates is only processed once for each complete message
+			pb.add8(0); // x coordinate
 			pb.add8(0); // y coordinate
-			if(sentTotal + MAX_MSG_PER_PACKET <  message.length())
-				pb.add8(0); // timeout zero on non-last packets
-			else 
-				pb.add8((int)seconds); // send timeout only on the last packet
+			pb.add8((int)seconds); // send timeout only on the last packet
 			sentTotal += pb.addString(message.substring(sentTotal), MAX_MSG_PER_PACKET);
 			runCommand(pb.getPacket());
 		}					     

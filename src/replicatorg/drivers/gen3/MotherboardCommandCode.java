@@ -32,8 +32,8 @@ public enum MotherboardCommandCode {
 	GET_POSITION_EXT(21,""),
 	EXTENDED_STOP(22,""),
 	
-	BUILD_START_NOTIFICATION(23, "Notify the bot this is an object build, and what it is called"),
-	BUILD_END_NOTIFICATION(24, "Notify the bot object build is complete."),
+	BUILD_START_NOTIFICATION(153, "Notify the bot this is an object build, and what it is called"),
+	BUILD_END_NOTIFICATION(154, "Notify the bot object build is complete."),
 
 	GET_COMMUNICATION_STATS(25,""),
 	
