@@ -1,3 +1,6 @@
+0030_CES ReplicatorG
+* packaged for CES
+
 0029_r2 ReplicatorG
 * Fixed problem with Raft in Print-O-Matic settings
 

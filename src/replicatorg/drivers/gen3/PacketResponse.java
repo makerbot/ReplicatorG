@@ -19,7 +19,8 @@ public class PacketResponse {
 		QUERY_OVERFLOW("Query overflow"), 
 		UNSUPPORTED("Unsupported command"),
 		TIMEOUT("Packet timeout"),
-		UNKNOWN("Unknown code")
+		UNKNOWN("Unknown code"),
+		CANCEL("Cancel Build")
 		;
 		
 		private final String message;
@@ -54,6 +55,9 @@ public class PacketResponse {
 			case 0x6:
 			case 0x86:
 				return OK; // more packets expected?
+			case 0x09:
+			case 0x89:
+				return CANCEL;
 			case 127:
 				return TIMEOUT;
 			}

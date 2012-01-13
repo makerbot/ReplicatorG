@@ -434,6 +434,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 				// okay!
 			} else if (pr.getResponseCode() == PacketResponse.ResponseCode.BUFFER_OVERFLOW) {
 				throw new RetryException();
+			} else if (pr.getResponseCode() == PacketResponse.ResponseCode.CANCEL){
+				Base.getEditor().handleStop(); ///  horrible horrible 
+				Base.logger.severe("Build Canceled by Printer");
 			} else {
 				// Other random error
 				printDebugData("Unknown error sending, retry", packet);
@@ -1828,6 +1831,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 **************************************************************************/
 	final private Version extendedStopVersion = new Version(2, 7);
 
+	/// resets the bot, doesn't stop threads
 	public void stop(boolean abort) {
 		PacketBuilder pb;
 		if (!abort && version.atLeast(extendedStopVersion)) {

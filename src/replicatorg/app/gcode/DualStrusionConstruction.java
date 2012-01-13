@@ -24,7 +24,6 @@ import replicatorg.util.Point5d;
  * 
  * TODO:
  * some small changes to try, see what they do to the print:
- *   Have the merge alternate more often, equal heights choose opposite, not the same
  *   tiny hops (~1mm)
  *   in toolchange - get max(nextFeed, lastFeed) 
  * 
@@ -251,15 +250,24 @@ System.out.println("post parse");
 		return layers;
 	}
 	
+	/**
+	 * newOldParseLayers is an improvement on the old parseLayers from Noah, etc. 's dualstrusion,
+	 * but uses the same basic method because skeinforge is what it is.
+	 * look for layer tags, break up the file using those tags.
+	 * @param source
+	 * @return
+	 */
 	private LinkedList<Layer> newOldParseLayers(GCodeSource source)
 	{
 		final LinkedList<Layer> result = new LinkedList<Layer>();
 		String line;
+		
 		for(Iterator<String> it = source.iterator(); it.hasNext();)
 		{
 			line = it.next();
 			if(line.startsWith("(<layer>"))
 			{
+				// Get the layer height (or whatever SF claims it is)
 				float layerHeight = 0;
 				try
 				{
@@ -271,6 +279,7 @@ System.out.println("post parse");
 							"please check and make sure all of them are in the format (<layer> 0.00)");
 				}
 				
+				//collect every command up to the end of the layer 
 				final List<String> accumulate = new ArrayList<String>();
 				String next = it.next();
 				while(!next.startsWith("(</layer>)"))
@@ -286,6 +295,10 @@ System.out.println("post parse");
 
 		return result;
 	}
+	/**
+	 * A toolchange is the code that goes in between commands for one head and commands for the other
+	 * this function creates a toolchange from a tool doing one layer to a tool doing another layer
+	 */
 	private Layer toolchange(final ToolheadAlias fromTool, final Layer fromLayer, final ToolheadAlias toTool, final Layer toLayer)
 	{
 		/*
@@ -337,10 +350,6 @@ System.out.println("post parse");
 				result.addAll(wipe(rightWipe));
 		}
 		
-//		result.add(toTool.getRecallOffsetGcodeCommand());
-//		result.add("M6 P1 "+toTool.getTcode() + "(Set tool)");
-		//been having trouble with prints stopping part way through, think it might be M6's fault
-//		result.add(toTool.getRecallOffsetGcodeCommand() +" "+ toTool.getTcode());
 		result.add(toTool.getRecallOffsetGcodeCommand());
 		result.add("M108 "+toTool.getTcode() + "(Set tool)");
 		
@@ -380,7 +389,11 @@ System.out.println("post parse");
 		
 		return new Layer(height, result);
 	}
-	
+	/**
+	 * gets the first G1 from a layer, returns the position of X, Y, Z axes
+	 * @param l
+	 * @return
+	 */
 	private Point5d getFirstPosition(final Layer l)
 	{
 		final List<String> search = l.getCommands();
@@ -422,6 +435,11 @@ System.out.println("post parse");
 		return null;
 	}
 	
+	/**
+	 * This gets the last feedrate used in a layer 
+	 * @param l
+	 * @return
+	 */
 	private String getLastFeedrate(final Layer l)
 	{
 		final List<String> search = l.getCommands();
@@ -434,6 +452,11 @@ System.out.println("post parse");
 		}
 		return "";
 	}
+	/**
+	 * This gets the first feedrate used in a layer 
+	 * @param l
+	 * @return
+	 */
 	private String getFirstFeedrate(final Layer l)
 	{
 		final List<String> search = l.getCommands();
@@ -447,6 +470,17 @@ System.out.println("post parse");
 		return "";
 	}
 	
+	/**
+	 * **CURRENTLY UNTESTED**
+	 * A wipe is something that can be attached to a machine to rub the toolhead over and
+	 * clear it of excess plastic. the WipeModel specifies a before position and an after position
+	 * as well as some parameters for extruding some plastic before wiping to prime the nozzle.
+	 * 
+	 * this function will always return the same thing for a given wipe, we could easily cache
+	 * that thing and make this much more efficient.
+	 * @param toolWipe
+	 * @return
+	 */
 	private ArrayList<String> wipe(final WipeModel toolWipe)
 	{
 		final ArrayList<String> result = new ArrayList<String>();
@@ -553,39 +587,41 @@ System.out.println("post parse");
 
 		// Prepend the switch to correct tool to the whole thing
 		result.add(new Layer(0, new ArrayList<String>(){{
-//			add(initialTool.getRecallOffsetGcodeCommand());
-//			add("M6 P1 "+initialTool.getTcode() + "(Set tool)");
-			//been having trouble with prints stopping part way through, think it might be M6's fault
-//			add(initialTool.getRecallOffsetGcodeCommand() +" "+ initialTool.getTcode());
 			add(initialTool.getRecallOffsetGcodeCommand());
 			add("M108 "+initialTool.getTcode() + "(Set tool)");
 		}}));
 		
+		// loop while we still have layers to merge
 		while((!left.isEmpty()) || (!right.isEmpty()))
 		{
+			// if we've used all of our right layers, keep grabbing from left
 			if(right.isEmpty())
 			{
+				// if last layer tool != next layer tool, add a toolchange
 				if(right.equals(lastLayer))
 					result.add(toolchange(ToolheadAlias.RIGHT, result.getLast(), ToolheadAlias.LEFT, left.peek()));
 				result.add(left.pop());
 				lastLayer = left;
 			}
-			else if(left.isEmpty())
+			else if(left.isEmpty()) // used all left layers, keep grabbing from right
 			{
+				// if last layer tool != next layer tool, add a toolchange
 				if(left.equals(lastLayer))
 					result.add(toolchange(ToolheadAlias.LEFT, result.getLast(), ToolheadAlias.RIGHT, right.peek()));
 				result.add(right.pop());
 				lastLayer = right;
 			}
-			else if(left.peek().getHeight() < right.peek().getHeight())
+			else if(left.peek().getHeight() < right.peek().getHeight()) // left has a lower layer, grab it
 			{
+				// if last layer tool != next layer tool, add a toolchange
 				if(right.equals(lastLayer))
 					result.add(toolchange(ToolheadAlias.RIGHT, result.getLast(), ToolheadAlias.LEFT, left.peek()));
 				result.add(left.pop());
 				lastLayer = left;
 			}
-			else if(right.peek().getHeight() < left.peek().getHeight())
+			else if(right.peek().getHeight() < left.peek().getHeight()) // right has lower layer
 			{
+				// if last layer tool != next layer tool, add a toolchange
 				if(left.equals(lastLayer))
 					result.add(toolchange(ToolheadAlias.LEFT, result.getLast(), ToolheadAlias.RIGHT, right.peek()));
 				result.add(right.pop());
@@ -612,6 +648,7 @@ System.out.println("post parse");
 		return result;
 	}
 	
+	// This is a hack, really we should be getting the dual-head start code
 	private void duplicateToolheadLines(final MutableGCodeSource source)
 	{
 		int idx = 0;

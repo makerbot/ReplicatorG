@@ -372,9 +372,11 @@ public class Machine implements MachineInterface {
 													   && gcode.getCodeValue('M') != 107)
 			{
 				message = "Too Many Toolheads! You don't have a toolhead numbered " + gcode.getCodeValue('T');
-
+				
 				messages.put(message, lineNumber);
 				Base.logger.log(Level.SEVERE, message);
+				/// this error may happen a TON of times in a big model, in this case exit on the first instance.
+				return; 
 			}
 			if(gcode.hasCode('F'))
 			{
@@ -397,6 +399,7 @@ public class Machine implements MachineInterface {
 			lineNumber++;
 		}
 	}
+	
 	// TODO: Spawn a new thread to handle this for us?
 	public void estimate(GCodeSource source) {
 		if (source == null) {

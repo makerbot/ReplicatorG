@@ -447,8 +447,8 @@ class MachineThread extends Thread {
 			break;
 		case STOP_ALL:
 			// TODO: This should be handled at the driver level?
-			driver.getMachine().currentTool().setTargetTemperature(0);
-			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
+			//driver.getMachine().currentTool().setTargetTemperature(0);
+			//driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			
 			driver.stop(true);
 			

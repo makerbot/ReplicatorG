@@ -422,12 +422,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		red= (red >> 6);
 		green= (green>> 6);
 		blue = blue >> 6;
-//		bitfield |= (byte)(red << 4);
-//		bitfield |= (byte)(green << 2);
-//		bitfield |= (byte)(blue);
 		bitfield |= (byte)(blue << 4);
-		bitfield |= (byte)(red << 2);
-		bitfield |= (byte)(green);
+		bitfield |= (byte)(green << 2);
+		bitfield |= (byte)(red );
 		// {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11}
 		return bitfield;
 	}
