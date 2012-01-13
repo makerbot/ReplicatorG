@@ -331,9 +331,12 @@ public class EditingModel {
 		bb.getUpper(upper);
 		
 		BuildVolume bv = mainWindow.previewPanel.buildVol;
-		Point3d size = new Point3d(upper.x - lower.x, upper.y - lower.y, upper.z - lower.z);
 
-		Point3d scale = new Point3d(((double)bv.getX())/size.x, ((double)bv.getY())/size.y, ((double)bv.getZ())/size.z);
+		Point3d size = new Point3d(upper.x - lower.x, upper.y - lower.y, upper.z - lower.z);
+		
+		//We shrink x and y a little bit, because slight calibration problems could cause problems.
+		Point3d scale = new Point3d(((double)bv.getX() -10)/size.x, ((double)bv.getY() -10)/size.y, ((double)bv.getZ())/size.z);
+//		Point3d scale = new Point3d(((double)bv.getX() -10)/size.x, ((double)bv.getY() -10)/size.y, ((double)bv.getZ())/size.z);
 		
 		//take least of those three, call scale for that value
 		double newScale = Math.min(scale.x, Math.min(scale.y, scale.z));
