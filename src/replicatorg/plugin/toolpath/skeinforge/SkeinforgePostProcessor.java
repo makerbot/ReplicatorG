@@ -208,16 +208,13 @@ public class SkeinforgePostProcessor {
 		return generator.output;
 	}
 	
-	private String getPrettyPrintDate()
-	{
+	private String getPrettyPrintDate() {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss (Z)");
 		//get current date time with Date()
 		Date date = new Date();
 		return dateFormat.format(date);
-		   
-
 	}
-	
+		   
 	/**
 	 * adds build % commands for The Replicator
 	 */
