@@ -22,6 +22,7 @@
 (Turn off steppers after a build.)
 M18
 		</cooldown>
+		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ HBP and Extruder MK5</name>
@@ -46,6 +47,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
+		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ HBP and Extruder MK6</name>
@@ -71,6 +73,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
+		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ ABP and Extruder MK6</name>
@@ -95,6 +98,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
+		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ ABP and Stepstruder MK7</name>
@@ -119,8 +123,8 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
+		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
 	</machine>
-
 	<machine>
 		<name>Thingomatic w/ HBP and Stepstruder MK7</name>
 		<geometry type="cartesian">
@@ -144,6 +148,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
+		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
 	</machine>
 	<machine experimental="0">
 		<name>Thingomatic w/ HBP and Dual Stepstruder MK7</name>
@@ -160,13 +165,13 @@ M18
 			<tool name="Left (A)" index="1" type="extruder" motor="true" fan="false" heatedplatform="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
 		</tools>
 		<wipes>
-		<wipe index="0" X1="44.0" Y1="55.0" Z1="9" X2="44.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
-		<wipe index="1" X1="-36.0" Y1="55.0" Z1="9" X2="-45.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
-		<exclusion>
-		<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 1"/>
-		<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 2"/>
-		
-		</exclusion>
+			<wipe index="0" X1="44.0" Y1="55.0" Z1="9" X2="44.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
+			<wipe index="1" X1="-36.0" Y1="55.0" Z1="9" X2="-45.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
+			<exclusion>
+			<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 1"/>
+			<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 2"/>
+			
+			</exclusion>
 		</wipes>
 		<clamps></clamps>
 		<driver name="makerbot4ga">
@@ -179,6 +184,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
+		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ Frostruder</name>

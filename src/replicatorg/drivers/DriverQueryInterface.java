@@ -20,13 +20,21 @@ public interface DriverQueryInterface {
 	public double getMotorRPM();
 	
 	public int getMotorSpeedPWM();
-	
+
+	/** relies on timing to have the 'right selected toolhead', deprecated */
+	@Deprecated
 	public double getTemperature();
+
+	public double getTemperature(int toolhead);
+
 	public double getTemperatureSetting();
 
 	public boolean hasAutomatedBuildPlatform();
 	
+	/** relies on timing to have the 'right selected toolhead', deprecated */
+	@Deprecated
 	public double getPlatformTemperature();
+	public double getPlatformTemperature(int toolhead);
 	public double getPlatformTemperatureSetting();
 
 	public Point5d getCurrentPosition(boolean b);

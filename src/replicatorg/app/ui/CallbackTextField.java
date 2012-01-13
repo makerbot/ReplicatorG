@@ -11,9 +11,7 @@ public class CallbackTextField extends ActionTextField {
 	String actionCommand;
 	
 	public CallbackTextField(ExtruderPanel panel, String actionCommand, String name, int columns, Format format) {
-		super(null, columns, format);
-		Base.logger.severe("CallbackTextField const");
-		
+		super(null, columns, format);	
 //		setMaximumSize(new Dimension(textBoxWidth, 25));
 //		setMinimumSize(new Dimension(textBoxWidth, 25));
 //		setPreferredSize(new Dimension(textBoxWidth, 25));

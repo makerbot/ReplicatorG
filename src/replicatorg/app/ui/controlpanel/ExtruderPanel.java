@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -56,10 +55,12 @@ import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.ToolModel;
 
 public class ExtruderPanel extends JPanel implements FocusListener, ActionListener, ItemListener {
-	private ToolModel toolModel;
+	private final ToolModel toolModel;
 	private MachineInterface machine;
 
-	public ToolModel getTool() { return toolModel; }
+	public ToolModel getTool() { 
+		return toolModel; 
+		}
 	
 	protected JFormattedTextField currentTempField;
 	
@@ -107,7 +108,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		return new JLabel(text,icon,SwingConstants.LEFT);
 	}
 
-	public ChartPanel makeChart(ToolModel t) {
+	public ChartPanel makeChart(ToolModel tool) {
 		JFreeChart chart = ChartFactory.createXYLineChart(null, null, null, 
 				measuredDataset, PlotOrientation.VERTICAL, 
 				false, false, false);
@@ -131,7 +132,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		plot.setRenderer(1, renderer);
 		plot.getRenderer(1).setSeriesPaint(0, targetColor);
 		plot.getRenderer(0).setSeriesPaint(0, measuredColor);
-		if (t.hasHeatedPlatform()) {
+		if (tool.hasHeatedPlatform()) {
 			plot.setDataset(2,measuredPlatformDataset);
 			plot.setRenderer(2, new XYLineAndShapeRenderer(true,false)); 
 			plot.getRenderer(2).setSeriesPaint(0, measuredPlatformColor);
@@ -178,9 +179,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}		
 	}
 	
-	public ExtruderPanel(MachineInterface machine, ToolModel t) {
+	public ExtruderPanel(MachineInterface machine, ToolModel tool) {
 		this.machine = machine;
-		this.toolModel = t;
+		this.toolModel = tool;
 		
 		Dimension panelSize = new Dimension(420, 30);
 
@@ -188,29 +189,35 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		// create our initial panel
 		setLayout(new MigLayout());
+		
 		// create our motor options
-		if (t.hasMotor()) {
+		if (tool.hasMotor()) {
+			
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder. (it's not!)
-			if ((t.getMotorStepperAxis() == null) && !(t.motorHasEncoder() || t.motorIsStepper())) {
+			if ((tool.getMotorStepperAxisName() == null) && 
+					!(tool.motorHasEncoder() || tool.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
+				
 				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9, Base.getLocalFormat());
-				field.setValue(Integer.toString(machine.getDriverQueryInterface().getMotorSpeedPWM()));
+				field.setValue(Integer.toString(tool.getMotorSpeedReadingPWM()) );// <-- should be
+				//field.setValue(Integer.toString(machine.getDriver().getMotorSpeedPWM()));
 				add(label);
 				add(field,"wrap");
 			}
 
-			if (t.motorHasEncoder() || t.motorIsStepper()) {
+			if (tool.motorHasEncoder() || tool.motorIsStepper()) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (RPM)");
 				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed", 9, Base.getLocalFormat());
-				field.setValue(machine.getDriverQueryInterface().getMotorRPM());
+				field.setValue(tool.getMotorSpeedReadingRPM() );// <-- should be
+				//field.setValue(machine.getDriver().getMotorRPM());
 				add(label);
 				add(field,"wrap");
 
-				if (this.toolModel.getMotorStepperAxis() != null) {
+				if (this.toolModel.getMotorStepperAxisName() != null) {
 					label = makeLabel("Extrude duration");
 				
 					JComboBox timeList = new JComboBox(extrudeTimeStrings);
@@ -222,10 +229,11 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					add(timeList,"wrap");
 				}
 			}
+			
 			// create our motor options
 			JLabel motorEnabledLabel = makeLabel("Motor Control");
 			
-			if (t.motorHasEncoder() || (t.motorIsStepper() && this.toolModel.getMotorStepperAxis() != null)) {
+			if (tool.motorHasEncoder() || (tool.motorIsStepper() && this.toolModel.getMotorStepperAxisName() != null)) {
 				JButton motorReverseButton = new JButton("reverse");
 				motorReverseButton.setActionCommand("reverse");
 				motorReverseButton.addActionListener(this);
@@ -280,10 +288,11 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// our temperature fields
-		if (t.hasHeater()) {
+		if (tool.hasHeater()) {
 			JLabel targetTempLabel = makeKeyLabel("Target Temperature (C)",targetColor);
 			JFormattedTextField targetTempField = new CallbackTextField(this, "handleTextField", "target-temp", 9, Base.getLocalFormat());
-			targetTemperature = machine.getDriverQueryInterface().getTemperatureSetting();
+			
+			targetTemperature = tool.getTargetTemperature();
 			targetTempField.setValue(targetTemperature);
 
 			JLabel currentTempLabel = makeKeyLabel("Current Temperature (C)",measuredColor);
@@ -298,10 +307,11 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// our heated platform fields
-		if (t.hasHeatedPlatform()) {
+		if (tool.hasHeatedPlatform()) {
 			JLabel targetTempLabel = makeKeyLabel("Platform Target Temp (C)",targetPlatformColor);
 			JFormattedTextField targetTempField = new CallbackTextField(this, "handleTextField", "platform-target-temp", 9, Base.getLocalFormat());
-			targetPlatformTemperature = machine.getDriverQueryInterface().getPlatformTemperatureSetting();
+
+			targetPlatformTemperature = tool.getPlatformTargetTemperature();
 			targetTempField.setValue(targetPlatformTemperature);
 
 			JLabel currentTempLabel = makeKeyLabel("Platform Current Temp (C)",measuredPlatformColor);
@@ -316,56 +326,59 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			
 		}
 
-		if (t.hasHeater() || t.hasHeatedPlatform()) {
+		if (tool.hasHeater() || tool.hasHeatedPlatform()) {
 			add(new JLabel("Temperature Chart"),"growx,spanx,wrap");
-			add(makeChart(t),"growx,spanx,wrap");
+			add(makeChart(tool),"growx,spanx,wrap");
 		}
 
 		// flood coolant controls
-		if (t.hasFloodCoolant()) {
-			JLabel floodCoolantLabel = makeLabel("Flood Coolant");
-
-			JCheckBox floodCoolantCheck = new JCheckBox("enable");
-			floodCoolantCheck.setName("flood-coolant");
-			floodCoolantCheck.addItemListener(this);
-
-			add(floodCoolantLabel);
-			add(floodCoolantCheck,"wrap");
+		if (tool.hasFloodCoolant()) {
+			Base.logger.severe("hasFloodCoolant not supported due to toolhead madness.");
+//			JLabel floodCoolantLabel = makeLabel("Flood Coolant");
+//
+//			JCheckBox floodCoolantCheck = new JCheckBox("enable");
+//			floodCoolantCheck.setName("flood-coolant");
+//			floodCoolantCheck.addItemListener(this);
+//
+//			add(floodCoolantLabel);
+//			add(floodCoolantCheck,"wrap");
 		}
 
 		// mist coolant controls
-		if (t.hasMistCoolant()) {
-			JLabel mistCoolantLabel = makeLabel("Mist Coolant");
-
-			JCheckBox mistCoolantCheck = new JCheckBox("enable");
-			mistCoolantCheck.setName("mist-coolant");
-			mistCoolantCheck.addItemListener(this);
-
-			add(mistCoolantLabel);
-			add(mistCoolantCheck,"wrap");
+		if (tool.hasMistCoolant()) {
+			Base.logger.severe("hasMistCoolant not supported due to toolhead madness.");
+//			JLabel mistCoolantLabel = makeLabel("Mist Coolant");
+//
+//			JCheckBox mistCoolantCheck = new JCheckBox("enable");
+//			mistCoolantCheck.setName("mist-coolant");
+//			mistCoolantCheck.addItemListener(this);
+//
+//			add(mistCoolantLabel);
+//			add(mistCoolantCheck,"wrap");
 		}
 
 		// cooling fan controls
-		if (t.hasFan()) {
-			String fanString = "Cooling Fan";
-			String enableString = "enable";
-			Element xml = findMappingNode(t.getXml(),"fan");
-			if (xml != null) {
-				fanString = xml.getAttribute("name");
-				enableString = xml.getAttribute("actuated");
-			}
-			JLabel fanLabel = makeLabel(fanString);
-
-			JCheckBox fanCheck = new JCheckBox(enableString);
-			fanCheck.setName("fan-check");
-			fanCheck.addItemListener(this);
-
-			add(fanLabel);
-			add(fanCheck,"wrap");
+		if (tool.hasFan()) {
+			Base.logger.finer("ExtruderPanel.hasFan(): fan automatic and not user controlled in The Replicator.");
+//			String fanString = "Cooling Fan";
+//			String enableString = "enable";
+//			Element xml = findMappingNode(tool.getXml(),"fan");
+//			if (xml != null) {
+//				fanString = xml.getAttribute("name");
+//				enableString = xml.getAttribute("actuated");
+//			}
+//			JLabel fanLabel = makeLabel(fanString);
+//
+//			JCheckBox fanCheck = new JCheckBox(enableString);
+//			fanCheck.setName("fan-check");
+//			fanCheck.addItemListener(this);
+//
+//			add(fanLabel);
+//			add(fanCheck,"wrap");
 		}
 
 		// cooling fan controls
-		if (t.hasAutomatedPlatform()) {
+		if (tool.hasAutomatedPlatform()) {
 			String abpString = "Build platform belt";
 			String enableString = "enable";
 			JLabel abpLabel = makeLabel(abpString);
@@ -379,43 +392,45 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 
 		// valve controls
-		if (t.hasValve()) {
-			String valveString = "Valve";
-			String enableString = "open";
-
-			Element xml = findMappingNode(t.getXml(),"valve");
-			if (xml != null) {
-				valveString = xml.getAttribute("name");
-				enableString = xml.getAttribute("actuated");
-			}
-			
-			JLabel valveLabel = makeLabel(valveString);
-
-			JCheckBox valveCheck = new JCheckBox(enableString);
-			valveCheck.setName("valve-check");
-			valveCheck.addItemListener(this);
-
-			add(valveLabel);
-			add(valveCheck,"wrap");
+		if (tool.hasValve()) {
+			Base.logger.severe("hasValve not supported due to toolhead madness.");
+//			String valveString = "Valve";
+//			String enableString = "open";
+//
+//			Element xml = findMappingNode(tool.getXml(),"valve");
+//			if (xml != null) {
+//				valveString = xml.getAttribute("name");
+//				enableString = xml.getAttribute("actuated");
+//			}
+//			
+//			JLabel valveLabel = makeLabel(valveString);
+//
+//			JCheckBox valveCheck = new JCheckBox(enableString);
+//			valveCheck.setName("valve-check");
+//			valveCheck.addItemListener(this);
+//
+//			add(valveLabel);
+//			add(valveCheck,"wrap");
 		}
 
 		// valve controls
-		if (t.hasCollet()) {
-			JLabel colletLabel = makeLabel("Collet");
-
-			JCheckBox colletCheck = new JCheckBox("open");
-			colletCheck.setName("collet-check");
-			colletCheck.addItemListener(this);
-
-			JPanel colletPanel = new JPanel();
-			colletPanel.setLayout(new BoxLayout(colletPanel,
-					BoxLayout.LINE_AXIS));
-			colletPanel.setMaximumSize(panelSize);
-			colletPanel.setMinimumSize(panelSize);
-			colletPanel.setPreferredSize(panelSize);
-
-			add(colletLabel);
-			add(colletCheck,"wrap");
+		if (tool.hasCollet()) {
+			Base.logger.severe("hasCollect not supported due to toolhead madness.");
+//			JLabel colletLabel = makeLabel("Collet");
+//
+//			JCheckBox colletCheck = new JCheckBox("open");
+//			colletCheck.setName("collet-check");
+//			colletCheck.addItemListener(this);
+//
+//			JPanel colletPanel = new JPanel();
+//			colletPanel.setLayout(new BoxLayout(colletPanel,
+//					BoxLayout.LINE_AXIS));
+//			colletPanel.setMaximumSize(panelSize);
+//			colletPanel.setMinimumSize(panelSize);
+//			colletPanel.setPreferredSize(panelSize);
+//
+//			add(colletLabel);
+//			add(colletCheck,"wrap");
 		}
 	}
 
@@ -438,12 +453,12 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
 		
-		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeater()) {
-			double temperature = machine.getDriverQueryInterface().getTemperature();
+		if ( toolModel.hasHeater() ) {
+			double temperature = machine.getDriverQueryInterface().getTemperature(toolModel.getIndex());
 			updateTemperature(second, temperature);
 		}
-		if (machine.getModel().currentTool() == toolModel && toolModel.hasHeatedPlatform()) {
-			double temperature = machine.getDriverQueryInterface().getPlatformTemperature();
+		if ( toolModel.hasHeatedPlatform() ) {
+			double temperature = machine.getDriverQueryInterface().getPlatformTemperature(toolModel.getIndex());
 			updatePlatformTemperature(second, temperature);
 		}
 	}
@@ -510,105 +525,110 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	public void handleChangedTextField(JFormattedTextField source) throws RetryException
 	{
 		String name = source.getName();
+		int toolhead = toolModel.getIndex();
+		
 		if (source.getText().length() > 0) {
-			double target = ((Number)source.getValue()).doubleValue();
-			Base.logger.severe("target is " + target);
+			double newValue = ((Number)source.getValue()).doubleValue();
 			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
 				
 				if(name.equals("target-temp")) {
-					target = confirmTemperature(target,"temperature.acceptedLimit",260.0);
-					if (target == Double.MIN_VALUE) {
+					newValue = confirmTemperature(newValue,"temperature.acceptedLimit",260.0);
+					if (newValue == Double.MIN_VALUE) {
 						return;
 					}
-					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(target));
-					targetTemperature = target;
+					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(newValue, toolhead));
+					targetTemperature = newValue;
 				} else {
-					target = confirmTemperature(target,"temperature.acceptedLimit.bed",130.0);
-					if (target == Double.MIN_VALUE) {
+					newValue = confirmTemperature(newValue,"temperature.acceptedLimit.bed",130.0);
+					if (newValue == Double.MIN_VALUE) {
 						return;
 					}
-					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(target));
-					targetPlatformTemperature = target;
+					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(newValue, toolhead));
+					targetPlatformTemperature = newValue;
 				}
 			} else if (name.equals("motor-speed")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(target));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(newValue,toolhead));
 			} else if (name.equals("motor-speed-pwm")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)target));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)newValue,toolhead));
 			} else {
 				Base.logger.warning("Unhandled text field: "+name);
 			}
 		}
 	}
 
-
+	
 	public void itemStateChanged(ItemEvent e) {
 		Component source = (Component) e.getItemSelectable();
 		String name = source.getName();
+		int toolhead = toolModel.getIndex();
 		if (e.getStateChange() == ItemEvent.SELECTED) {
 			/* Handle DC extruder commands */
 			if (name.equals("motor-forward")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE,toolhead));
 				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
 				if (toolModel.motorHasEncoder() || toolModel.motorIsStepper()) {
-					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
+					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM(),toolhead));
 				}
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
 			} else if (name.equals("motor-reverse")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE,toolhead));
 				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
 				if (toolModel.motorHasEncoder() || toolModel.motorIsStepper()) {
-					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM()));
+					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM(),toolhead));
 				}
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
 			} else if (name.equals("motor-stop")) {
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
 			}
-			else if (name.equals("spindle-enabled"))
-				machine.runCommand(new replicatorg.drivers.commands.EnableSpindle());
-			else if (name.equals("flood-coolant"))
-				machine.runCommand(new replicatorg.drivers.commands.EnableFloodCoolant());
-			else if (name.equals("mist-coolant"))
-				machine.runCommand(new replicatorg.drivers.commands.EnableMistCoolant());
-			else if (name.equals("fan-check"))
-				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
+//			else if (name.equals("spindle-enabled"))
+//				machine.runCommand(new replicatorg.drivers.commands.EnableSpindle(toolhead));
+//			else if (name.equals("flood-coolant"))
+//				machine.runCommand(new replicatorg.drivers.commands.EnableFloodCoolant(toolhead));
+//			else if (name.equals("mist-coolant"))
+//				machine.runCommand(new replicatorg.drivers.commands.EnableMistCoolant(toolhead));
+//			else if (name.equals("fan-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.EnableFan(toolhead));
 			else if (name.equals("abp-check")) {
-				// TODO: Debugging. Run both!
-				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
-				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true,toolhead));
 			}
-			else if (name.equals("valve-check"))
-				machine.runCommand(new replicatorg.drivers.commands.OpenValve());
-			else if (name.equals("collet-check"))
-				machine.runCommand(new replicatorg.drivers.commands.OpenCollet());
-			else
-				Base.logger.warning("checkbox selected: " + source.getName());
+//			else if (name.equals("valve-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.OpenValve(toolhead));
+//			else if (name.equals("collet-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.OpenCollet(toolhead));
+//			else
+//				Base.logger.warning("checkbox selected: " + source.getName(toolhead));
 		} else {
 			if (name.equals("motor-enabled"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
-			else if (name.equals("spindle-enabled"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableSpindle());
-			else if (name.equals("flood-coolant"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableFloodCoolant());
-			else if (name.equals("mist-coolant"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableMistCoolant());
+				machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
+//			else if (name.equals("spindle-enabled"))
+//				machine.runCommand(new replicatorg.drivers.commands.DisableSpindle(toolhead));
+//			else if (name.equals("flood-coolant"))
+//				machine.runCommand(new replicatorg.drivers.commands.DisableFloodCoolant(toolhead));
+//			else if (name.equals("mist-coolant"))
+//				machine.runCommand(new replicatorg.drivers.commands.DisableMistCoolant(toolhead));
 			else if (name.equals("fan-check"))
-				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
+				machine.runCommand(new replicatorg.drivers.commands.DisableFan(toolhead));
 			else if (name.equals("abp-check")) {
 				// TODO: Debugging. Run both!
-				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
-				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false,toolhead));
+				machine.runCommand(new replicatorg.drivers.commands.DisableFan(toolhead));
 			}
-			else if (name.equals("valve-check"))
-				machine.runCommand(new replicatorg.drivers.commands.CloseValve());
-			else if (name.equals("collet-check"))
-				machine.runCommand(new replicatorg.drivers.commands.CloseCollet());
+//			else if (name.equals("valve-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.CloseValve(toolhead));
+//			else if (name.equals("collet-check"))
+//				machine.runCommand(new replicatorg.drivers.commands.CloseCollet(toolhead));
 		}
 	}
 	
+	
+	/** 
+	 * handles a lot of actions that come out of the CallbackTextField
+	 */
 	public void actionPerformed(ActionEvent e) {
-		String s = e.getActionCommand();
+		String actionName = e.getActionCommand();
+		int toolhead = toolModel.getIndex();
 		
-		if(s.equals("handleTextField"))
+		if(actionName.equals("handleTextField"))
 		{
 			JFormattedTextField source = (JFormattedTextField) e.getSource();
 			try {
@@ -618,40 +638,41 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			}
 			source.selectAll();
 		}
-		else if (s.equals("Extrude-duration")) {
+		else if (actionName.equals("Extrude-duration")) {
 			JComboBox cb = (JComboBox) e.getSource();
 			String timeText = (String) cb.getSelectedItem();
 			setExtrudeTime(timeText);
 		}
 		/* Handle stepper extruder commands */
-		if (s.equals("forward")) {
-			if (this.toolModel.getMotorStepperAxis() != null) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
-				// Reverted to one single command for RepRap5D driver
-				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
-					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
-				} else {
-					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
-					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
-				}
-			}
-		} else if (s.equals("reverse")) {
-			if (this.toolModel.getMotorStepperAxis() != null) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
-				// Reverted to one single command for RepRap5D driver
-				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
-					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
-				} else {
-					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
-					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
-				}
-			}
-		} else if (s.equals("stop")) {
-			machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+		if (actionName.equals("forward")) {
 			
-			if (this.toolModel.getMotorStepperAxis() != null) {
+			if (this.toolModel.getMotorStepperAxisName() != null) {
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE,toolhead));
+				// Reverted to one single command for RepRap5D driver
+				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000,toolhead));
+				} else {
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000,toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
+				}
+			}
+		} else if (actionName.equals("reverse")) {
+			if (this.toolModel.getMotorStepperAxisName() != null) {
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE,toolhead));
+				// Reverted to one single command for RepRap5D driver
+				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000,toolhead));
+				} else {
+					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000,toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
+				}
+			}
+		} else if (actionName.equals("stop")) {
+			machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
+			
+			if (this.toolModel.getMotorStepperAxisName() != null) {
 				machine.stopMotion();
 			}
 		}

@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
@@ -68,6 +69,15 @@ public class ScalingTool extends Tool {
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parent.getModel().scale(1d/25.4d,parent.getModel().isOnPlatform());
+			}
+		});
+		p.add(b,"growx,wrap");
+		
+		b = createToolButton("Keith it!","");
+		b.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				double newScale = parent.getModel().scaleMax();
+				JOptionPane.showConfirmDialog(null, "Scaled by "+newScale, "Scale to max", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		p.add(b,"growx,wrap");
