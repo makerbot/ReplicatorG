@@ -1,4 +1,4 @@
-(*******Begin End.gcode*******)
+(******* End.gcode*******)
 M73 P100 (end  build progress )
 G0 Z155
 M18
@@ -8,4 +8,4 @@ G162 X Y F2500
 M18
 M70 P5 ( We <3 Making Things!)
 M72 P1  ( Play Ta-Da song )
-(*********End End.gcode*******)
+(*********end End.gcode*******)

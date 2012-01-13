@@ -1,5 +1,4 @@
-(** beginning of start.gcode **)
-(This is code for a MakerBot Replicator running a single material print)
+(*** start.gcode for a MakerBot Replicator, single material ***)
 M73 P0 (enable build progress display)
 G21 (set units to millimeters)
 G90 (set positioning to absolute)

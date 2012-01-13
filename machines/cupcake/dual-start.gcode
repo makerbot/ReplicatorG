@@ -1,5 +1,4 @@
-(**** beginning of start.gcode ****)
-(This is start code for a Cupcake CNC with Dual Extruders, running a dual material print)
+(**** start.gcode for Cupcake CNC, dual material ****)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 G10 P1 X16.55 Y0 Z-0.3 (Designate T0 Offset)

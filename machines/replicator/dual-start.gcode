@@ -1,5 +1,4 @@
-(**** beginning of start.gcode ****)
-(This is start code for The Replicator with Dual Extruders, running a dual material print)
+(**** start.gcode for The Replicator, dual material ****)
 M73 P0 (enable build progress)
 G21 (set units to mm)
 G90 (set positioning to absolute)
