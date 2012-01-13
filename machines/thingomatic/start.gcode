@@ -1,5 +1,4 @@
-(**** beginning of start.gcode ****)
-(This is start code for a Thing-o-Matic running a single material print)
+(**** start.gcode for Thing-o-Matic, single material print)
 G21 (set units to mm)
 G90 (set positioning to absolute)
 G10 P1 X16.5 Y0 Z-0.3 (Designate T0 Offset)
