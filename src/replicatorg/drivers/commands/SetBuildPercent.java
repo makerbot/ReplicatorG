@@ -19,8 +19,7 @@ public class SetBuildPercent implements DriverCommand {
 		this.comment = comment;
 		Matcher m = Pattern.compile("'.*'").matcher(comment);
 		if ( m.find() )
-			this.printName = m.group();
-
+			this.printName = m.group().substring(1, m.group().length()-1);
 	}
 
 	@Override
@@ -31,7 +30,7 @@ public class SetBuildPercent implements DriverCommand {
 			if(percentDone <= 0)
 				((InteractiveDisplay)driver).sendBuildStartNotification(this.printName,0);
 			((InteractiveDisplay)driver).updateBuildPercent(this.percentDone);			
-			/// TRICKY: for ui, must happen after last update of build #
+			/// TRICKY: for ui, must happen *after* final update of build #
 			if(percentDone >= 100)
 				((InteractiveDisplay)driver).sendBuildEndNotification(0);
 		}
