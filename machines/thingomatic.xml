@@ -22,7 +22,7 @@
 (Turn off steppers after a build.)
 M18
 		</cooldown>
-		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
+		<bookend start="machines/thingomatic/start.gcode" end="machines/thingomatic/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ HBP and Extruder MK5</name>
@@ -47,7 +47,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
-		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
+		<bookend start="machines/thingomatic/start.gcode" end="machines/thingomatic/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ HBP and Extruder MK6</name>
@@ -73,7 +73,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
-		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
+		<bookend start="machines/thingomatic/start.gcode" end="machines/thingomatic/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ ABP and Extruder MK6</name>
@@ -98,7 +98,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
-		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
+		<bookend start="machines/thingomatic/start.gcode" end="machines/thingomatic/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ ABP and Stepstruder MK7</name>
@@ -123,7 +123,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
-		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
+		<bookend start="machines/thingomatic/start.gcode" end="machines/thingomatic/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ HBP and Stepstruder MK7</name>
@@ -148,7 +148,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
-		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
+		<bookend start="machines/thingomatic/start.gcode" end="machines/thingomatic/end.gcode"/>		
 	</machine>
 	<machine experimental="0">
 		<name>Thingomatic w/ HBP and Dual Stepstruder MK7</name>
@@ -184,7 +184,7 @@ M18
 (Turn off steppers after a build.)
 M18
 		</cooldown>
-		<bookend start="machines/replicator/start.gcode" end="machines/replicator/end.gcode"/>		
+		<bookend dualstart="machines/thingomatic/dual-start.gcode" start="machines/thingomatic/start.gcode" end="machines/thingomatic/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ Frostruder</name>

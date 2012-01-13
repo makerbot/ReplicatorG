@@ -383,7 +383,7 @@ public class MachineModel
 		if(XML.hasChildNode(xml, "bookend"))
 		{
 			Node bookend = XML.getChildNodeByName(xml, "bookend");
-			String dualstartLocation = XML.getAttributeValue(bookend, "dual-start");
+			String dualstartLocation = XML.getAttributeValue(bookend, "dualstart");
 			String startLocation = XML.getAttributeValue(bookend, "start");
 			String endLocation = XML.getAttributeValue(bookend, "end");
 			if(dualstartLocation != null) 
