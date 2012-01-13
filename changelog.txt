@@ -1,3 +1,8 @@
+0031 ReplicatorG
+* Extensive Rewrite of RepG to support The Replicator
+* Post Processing of Skeinforge changes added
+
+
 0030_CES ReplicatorG
 * packaged for CES
 
