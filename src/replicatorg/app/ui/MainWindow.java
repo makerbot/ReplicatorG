@@ -792,16 +792,7 @@ ToolpathGenerator.GeneratorListener
 			//do bare bones launch
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(java.awt.Desktop.isDesktopSupported())
-				{
-					try {
-							java.awt.Desktop.getDesktop().browse(new java.net.URI("http://www.thingiverse.com/newest?source=repg"));
-					} catch (IOException e) {
-						Base.logger.log(Level.WARNING, "Could not load URL.");
-					} catch (java.net.URISyntaxException e) {
-							Base.logger.log(Level.WARNING, "bad URI");
-					}
-				}
+				MainWindow.this.launchBrowser("http://www.thingiverse.com/newest?source=repg");
 			}
 		});
 		menu.add(item);
@@ -811,24 +802,39 @@ ToolpathGenerator.GeneratorListener
 			//do bare bones launch
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if(java.awt.Desktop.isDesktopSupported())
-				{
-					try {
-						java.awt.Desktop.getDesktop().browse(new java.net.URI("http://www.thingiverse.com/popular?source=repg"));
-					} catch (IOException e) {
-						Base.logger.log(Level.WARNING, "Could not load URL.");
-					} catch (java.net.URISyntaxException e) {
-							Base.logger.log(Level.WARNING, "bad URI");
-					}
-				}
+				MainWindow.this.launchBrowser("http://www.thingiverse.com/popular?source=repg");
 			}
 		});
 		menu.add(item);
 		
+		item = new JMenuItem("Dual Extrusion Models!");
+		item.addActionListener( new ActionListener(){
+			//do bare bones launch
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				MainWindow.this.launchBrowser("http://www.thingiverse.com/tag:dualstrusion?source=repg");
+			}
+		});
+		menu.add(item);
+
 		
 		return menu;
 	}
 
+	protected void launchBrowser(String url)
+	{
+		if(java.awt.Desktop.isDesktopSupported())
+		{
+			try {
+				java.awt.Desktop.getDesktop().browse(new java.net.URI("http://www.thingiverse.com/tag:dualstrusion"));
+			} catch (IOException e) {
+				Base.logger.log(Level.WARNING, "Could not load URL.");
+			} catch (java.net.URISyntaxException e) {
+					Base.logger.log(Level.WARNING, "bad URI");
+			}
+		}
+	}
+	
 	/*
 	 * Creates a menu item 'Help'
 	 * @returrns a JMenu Item containing help items
