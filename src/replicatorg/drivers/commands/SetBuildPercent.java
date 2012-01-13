@@ -19,8 +19,7 @@ public class SetBuildPercent implements DriverCommand {
 		this.comment = comment;
 		Matcher m = Pattern.compile("'.*'").matcher(comment);
 		if ( m.find() )
-			this.printName = m.group();
-
+			this.printName = m.group().substring(1, m.group().length()-1);
 	}
 
 	@Override
