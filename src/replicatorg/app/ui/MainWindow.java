@@ -193,8 +193,7 @@ ToolpathGenerator.GeneratorListener
 
 	MainButtonPanel buttons;
 
-	CardLayout cardLayout = new CardLayout();
-	JPanel cardPanel = new JPanel(cardLayout);
+	protected final MainWindowCardPanel cardPanel = new MainWindowCardPanel();
 	EditorHeader header = new EditorHeader(this);
 	{
 		header.setChangeListener(this);
@@ -341,10 +340,10 @@ ToolpathGenerator.GeneratorListener
 		console = new MessagePanel(this);
 		console.setBorder(null);
 
-		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, cardPanel,
+		splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, cardPanel.getPanel(),
 				console);
 
-		new FileDrop( null, cardPanel, /*dragBorder,*/ new FileDrop.Listener()
+		new FileDrop( null, cardPanel.getPanel(), /*dragBorder,*/ new FileDrop.Listener()
 		{   public void filesDropped( java.io.File[] files )
 		{   
 			// for( java.io.File file : files )
@@ -3117,11 +3116,10 @@ ToolpathGenerator.GeneratorListener
 	public void setCurrentElement(BuildElement e) {
 		currentElement = e;
 		if (currentElement != null) {
-			CardLayout cl = (CardLayout)cardPanel.getLayout();
 			if (currentElement.getType() == BuildElement.Type.MODEL ) {
-				cl.show(cardPanel, MODEL_TAB_KEY);
+				cardPanel.show(MODEL_TAB_KEY);
 			} else {
-				cl.show(cardPanel, GCODE_TAB_KEY);
+				cardPanel.show(GCODE_TAB_KEY);
 			}
 
 		}
