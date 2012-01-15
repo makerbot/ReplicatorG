@@ -197,7 +197,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
 				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9, Base.getLocalFormat());
-				field.setValue(Integer.toString(machine.getDriverQueryInterface().getMotorSpeedPWM()));
+				field.setValue(machine.getDriverQueryInterface().getMotorSpeedPWM());
 				add(label);
 				add(field,"wrap");
 			}
