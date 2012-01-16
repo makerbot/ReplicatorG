@@ -100,12 +100,12 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 29;
+	public static final int VERSION = 31;
 	
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */
-	public static final String VERSION_NAME = String.format("%04d_r2",VERSION);
+	public static final String VERSION_NAME = String.format("%04d",VERSION);
 
 	/**
 	 * The machine controller in use.
