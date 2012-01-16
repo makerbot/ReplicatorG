@@ -23,9 +23,6 @@
 
 package replicatorg.machine.model;
 
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.w3c.dom.Node;

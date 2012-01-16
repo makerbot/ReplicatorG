@@ -83,6 +83,7 @@ public class MachineModel
 	protected  Vector<WipeModel> wipes = new Vector<WipeModel>();
 	
 	// our machine-specific start & end gcode
+	protected File dualstartBookendCode = null;
 	protected File startBookendCode = null;
 	protected File endBookendCode = null;
 	
@@ -382,10 +383,15 @@ public class MachineModel
 		if(XML.hasChildNode(xml, "bookend"))
 		{
 			Node bookend = XML.getChildNodeByName(xml, "bookend");
+			String dualstartLocation = XML.getAttributeValue(bookend, "dualstart");
 			String startLocation = XML.getAttributeValue(bookend, "start");
 			String endLocation = XML.getAttributeValue(bookend, "end");
-			startBookendCode = new File(startLocation);
-			endBookendCode = new File(endLocation);
+			if(dualstartLocation != null) 
+				dualstartBookendCode = new File(startLocation);
+			if(startLocation != null) 
+				startBookendCode = new File(startLocation);
+			if(endLocation != null) 
+				endBookendCode = new File(endLocation);
 		}
 		else {
 			Base.logger.severe("No bookend metadata specified for this machine");
@@ -597,6 +603,11 @@ public class MachineModel
 	*  Gcode functions
 	*************************************/
 
+	/// returns the start code filename specified in machines.xml
+	public File getDualstartBookendCode() {
+		return dualstartBookendCode;
+	}
+	
 	/// returns the start code filename specified in machines.xml
 	public File getStartBookendCode() {
 		return startBookendCode;

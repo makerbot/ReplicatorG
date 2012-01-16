@@ -185,7 +185,7 @@ public class SkeinforgePostProcessor {
 		// these display the build % on The Replicator
 		if(addProgressUpdates)
 		{
-			runAddProgressUpdates();
+			source.addProgressUpdates();
 		}
 		
 		if(prependMetaInfo)
@@ -215,14 +215,6 @@ public class SkeinforgePostProcessor {
 		return dateFormat.format(date);
 	}
 		   
-	/**
-	 * adds build % commands for The Replicator
-	 */
-	private void runAddProgressUpdates()
-	{
-		source.addProgressUpdates();
-	}
-	
 	/**
 	 * switches all toolhead specific code to the target toolhead
 	 * @param switchTo

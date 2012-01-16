@@ -127,7 +127,7 @@ System.out.println("post parse");
 		final LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
 		
 		//process start & end before adding them
-		duplicateToolheadLines(start);
+//		duplicateToolheadLines(start); we have dual-start.gcode to do this, now
 		duplicateToolheadLines(end);
 
 		//debug code///////////////////////////
