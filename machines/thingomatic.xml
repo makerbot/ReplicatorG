@@ -1,7 +1,7 @@
 <?xml version="1.1" encoding="utf-8"?>
 <machines>
 	<machine>
-		<name>Thingomatic w/ ABP Extruder MK5</name>
+		<name>Thingomatic w/ ABP and Extruder MK5</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
@@ -23,7 +23,6 @@
 M18
 		</cooldown>
 	</machine>
-
 	<machine>
 		<name>Thingomatic w/ HBP and Extruder MK5</name>
 		<geometry type="cartesian">
@@ -74,31 +73,6 @@ M18
 		</cooldown>
 	</machine>
 	<machine>
-		<name>Thingomatic w/ HBP and Extruder MK7</name>
-		<geometry type="cartesian">
-			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
-			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
-		</geometry>
-		<tools>
-			<tool name="Stepstruder MK7" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" motor_steps="1600" 
-			default_rpm="3" heater="true" stepper_axis="a"/>
-		</tools>
-		<clamps></clamps>
-		<driver name="makerbot4ga">
-			<!-- optional: <portname>COM1</portname> -->
-			<rate>115200</rate>
-		</driver>
-		<warmup>
-		</warmup>
-		<cooldown>
-(Turn off steppers after a build.)
-M18
-		</cooldown>
-	</machine>
-	<machine>
 		<name>Thingomatic w/ ABP and Extruder MK6</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
@@ -108,7 +82,7 @@ M18
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
 		<tools>
-			<tool name="Stepstruder MK6" type="extruder" material="abs" motor="true" heatedplatform="true" automatedplatform="true" motor_steps="1600" default_rpm="1.98" heater="true" stepper_axis="a"/>
+			<tool name="Stepstruder MK6" type="extruder" material="abs" motor="true" heatedplatform="true" automatedplatform="true" fan="true" motor_steps="1600" default_rpm="1.98" heater="true" stepper_axis="a"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4ga">
@@ -123,7 +97,7 @@ M18
 		</cooldown>
 	</machine>
 	<machine>
-		<name>Thingomatic w/ ABP and Extruder MK7</name>
+		<name>Thingomatic w/ ABP and Stepstruder MK7</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
@@ -132,7 +106,7 @@ M18
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
 		<tools>
-			<tool name="Stepstruder MK7" type="extruder" material="abs" motor="true" heatedplatform="true" automatedplatform="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
+			<tool name="Stepstruder MK7" type="extruder" material="abs" motor="true" heatedplatform="true" automatedplatform="true" fan="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4ga">
@@ -147,6 +121,65 @@ M18
 		</cooldown>
 	</machine>
 
+	<machine>
+		<name>Thingomatic w/ HBP and Stepstruder MK7</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
+		</geometry>
+		<tools>
+			<tool name="Stepstruder MK7" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="makerbot4ga">
+			<!-- optional: <portname>COM1</portname> -->
+			<rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+(Turn off steppers after a build.)
+M18
+		</cooldown>
+	</machine>
+	<machine experimental="0">
+		<name>Thingomatic w/ HBP and Dual Stepstruder MK7</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="80" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="80" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
+			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
+		</geometry>
+		<tools>
+			<tool name="Right (B)" index="0" type="extruder" motor="true" fan="false" heatedplatform="false" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="b"/>
+			<tool name="Left (A)" index="1" type="extruder" motor="true" fan="false" heatedplatform="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
+		</tools>
+		<wipes>
+		<wipe index="0" X1="44.0" Y1="55.0" Z1="9" X2="44.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
+		<wipe index="1" X1="-36.0" Y1="55.0" Z1="9" X2="-45.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
+		<exclusion>
+		<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 1"/>
+		<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 2"/>
+		
+		</exclusion>
+		</wipes>
+		<clamps></clamps>
+		<driver name="makerbot4ga">
+			<!-- optional: <portname>COM1</portname> -->
+			<rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+(Turn off steppers after a build.)
+M18
+		</cooldown>
+	</machine>
 	<machine>
 		<name>Thingomatic w/ Frostruder</name>
 		<geometry type="cartesian">
@@ -173,7 +206,6 @@ M18
 M18
 		</cooldown>
 	</machine>
-
 	<machine experimental="1">
 		<name>EXPERIMENTAL - Thingomatic - 4 axes</name>
 		<geometry type="cartesian">
@@ -188,32 +220,6 @@ M18
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4g">
-			<!-- optional: <portname>COM1</portname> -->
-			<rate>115200</rate>
-		</driver>
-		<warmup>
-		</warmup>
-		<cooldown>
-(Turn off steppers after a build.)
-M18
-		</cooldown>
-	</machine>
-	<machine experimental="1">
-		<name>Thingomatic w/ HBP and two Stepstruder MK6</name>
-		<geometry type="cartesian">
-			<!-- different pulleys on X and Y axii -->
-			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
-			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
-			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
-		</geometry>
-		<tools>
-			<tool name="Stepstruder MK6 (Right)" index="0" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" motor_steps="1600" default_rpm="1.98" heater="true" stepper_axis="a"/>
-			<tool name="Stepstruder MK6 (Left)" index="1" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" motor_steps="1600" default_rpm="1.98" heater="true" stepper_axis="b"/>
-		</tools>
-		<clamps></clamps>
-		<driver name="makerbot4ga">
 			<!-- optional: <portname>COM1</portname> -->
 			<rate>115200</rate>
 		</driver>

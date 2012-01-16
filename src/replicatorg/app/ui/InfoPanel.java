@@ -4,7 +4,9 @@ import java.io.StringWriter;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import java.awt.BorderLayout;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -14,9 +16,10 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import net.miginfocom.swing.MigLayout;
+
 import org.w3c.dom.Node;
 
-import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
@@ -28,11 +31,16 @@ public class InfoPanel extends JFrame {
 	
 	public InfoPanel() {
 		super("About this Makerbot");
-		JPanel panel = new JPanel(new MigLayout());
+		JPanel panel = new JPanel();
 
-		infoArea = new JTextArea("ReplicatorG:",40,60);
-		panel.add(infoArea);
-		
+		infoArea = new JTextArea("ReplicatorG:",40,80);
+		infoArea.setFont(infoArea.getFont().deriveFont(11f));
+		panel.setLayout(new BorderLayout());
+		panel.add(new JScrollPane(infoArea),BorderLayout.CENTER);
+
+		getContentPane().setLayout(new BorderLayout());
+		getContentPane().add(panel,BorderLayout.CENTER);	
+	
 		add(panel);
 		pack();
 		

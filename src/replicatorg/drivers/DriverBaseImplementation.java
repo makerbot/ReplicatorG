@@ -440,6 +440,14 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		machine.disableDrives();
 	}
 
+	public void enableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Not all drivers support this method.
+	}
+	
+	public void disableAxes(EnumSet<AxisId> axes) throws RetryException {
+		// Not all drivers support this method.
+	}
+
 	/***************************************************************************
 	 * Change our gear ratio.
 	 **************************************************************************/
@@ -603,6 +611,15 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 
 	public void disableFan() throws RetryException {
 		machine.currentTool().disableFan();
+	}
+	
+	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException {
+		machine.currentTool().setAutomatedBuildPlatformRunning(state);
+	}
+	
+	public boolean hasAutomatedBuildPlatform()
+	{
+		return machine.currentTool().hasAutomatedPlatform();
 	}
 
 	/***************************************************************************

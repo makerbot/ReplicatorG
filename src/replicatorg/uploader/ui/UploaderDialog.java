@@ -101,6 +101,12 @@ public class UploaderDialog extends JDialog implements ActionListener {
 						selectedBoard = board;
 						nextButton.setEnabled(true);
 					}
+
+					@Override
+					public void boardConfirmed() {
+						// equivalent to clicking "next"
+						actionPerformed(null);
+					}
 		});
 		showPanel(boardPanel);
 	}
@@ -116,6 +122,11 @@ public class UploaderDialog extends JDialog implements ActionListener {
 						selectedVersion = firmware;
 						nextButton.setEnabled(true);
 					}
+
+					public void firmwareConfirmed() {
+						// equivalent to clicking "next"
+						actionPerformed(null);
+					}
 		});
 		showPanel(firmwarePanel);
 	}
@@ -130,6 +141,12 @@ public class UploaderDialog extends JDialog implements ActionListener {
 					public void portSelected(String port) {
 						portName = port;
 						nextButton.setEnabled(true);
+					}
+
+					@Override
+					public void portConfirmed() {
+						// equivalent to clicking "next"
+						actionPerformed(null);
 					}
 		});
 		showPanel(portPanel);

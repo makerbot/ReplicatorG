@@ -1,5 +1,9 @@
 package replicatorg.uploader.ui;
 
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Vector;
 
 import javax.swing.AbstractListModel;
@@ -22,6 +26,7 @@ public class FirmwareSelectionPanel extends JPanel {
 
 	interface FirmwareSelectionListener {
 		public void firmwareSelected(FirmwareVersion firmware);
+		public void firmwareConfirmed();
 	}
 	
 	class FirmwareListModel extends AbstractListModel {
@@ -66,7 +71,28 @@ public class FirmwareSelectionPanel extends JPanel {
 				}
 			}
 		});
+		list.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if(arg0.getClickCount() == 2)
+					listener.firmwareConfirmed();
+			}
+		});
+		list.addKeyListener(new KeyAdapter(){
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				if(arg0.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					listener.firmwareConfirmed();
+				} else if(arg0.getKeyCode() == KeyEvent.VK_UP) {
+					list.setSelectedIndex(Math.max(list.getSelectedIndex(), 0));
+				} else if(arg0.getKeyCode() == KeyEvent.VK_DOWN) {
+					list.setSelectedIndex(Math.min(list.getSelectedIndex(), list.getModel().getSize()));
+				}
+			}
+		});
 		add(scrollPane,"width 50%");
 		add(description,"width 50%");
 	}
+	
 }

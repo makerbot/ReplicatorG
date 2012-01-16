@@ -36,7 +36,7 @@ public class ToolPanel extends JPanel implements KeyListener {
 	}
 
 	final PreviewPanel preview;
-	final JPanel subPanel = new JPanel(new MigLayout("fillx,filly,ins 0, gap 0"));
+	final JPanel subPanel = new JPanel(new MigLayout("fillx,filly,ins 0,gap 0"));
 	
 	Tool[] tools = { 
 			new ViewTool(this),
@@ -101,7 +101,8 @@ public class ToolPanel extends JPanel implements KeyListener {
 		JButton sliceButton = createToolButton("Generate GCode","images/model-to-gcode.png");
 		sliceButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				preview.mainWindow.runToolpathGenerator();
+				preview.mainWindow.runToolpathGenerator(false);
+				
 			}
 		});
 		toolButtons.add(sliceButton,"growx,spanx,wrap");

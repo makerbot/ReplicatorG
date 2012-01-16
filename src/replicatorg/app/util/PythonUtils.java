@@ -41,6 +41,8 @@ public class PythonUtils {
 	}
 	
 	private static Selector selector = null;
+	
+	
 	/**
 	 * Set the callback that allows a user to select the Python path.
 	 */
@@ -49,7 +51,7 @@ public class PythonUtils {
 	}
 	
 	/**
-	 * Class representing a Python version.  The members are directly accessable. 
+	 * Class representing a Python version.  The members are directly accessible. 
 	 * @author phooky
 	 */
 	public static class Version implements Comparable<Version> {
@@ -61,6 +63,7 @@ public class PythonUtils {
 			this.minor = minor;
 			this.revision = revision;
 		}
+		/// returns 0 on match, 1 if this version is newer than other, -1 if this version is older than other
 		public int compareTo(Version other) {
 			if (major < other.major) return -1;
 			if (major > other.major) return 1;
@@ -70,6 +73,7 @@ public class PythonUtils {
 			if (revision > other.revision) return 1;
 			return 0;
 		}
+		
 		public String toString() {
 			return Integer.toString(major)+"."+Integer.toString(minor)+"."+Integer.toString(revision);
 		}
@@ -273,7 +277,7 @@ public class PythonUtils {
 		if (procedureName == null) { procedureName = "This operation"; }
 		if (!hasTkInter) {
 			String s = procedureName+" requires TkInter to be installed.  No valid TkInter install was found.";
-			notifyUser(parent,s);
+			displayPythonErrorDialog(parent,s);
 		}
 		return hasTkInter;
 	}
@@ -286,7 +290,7 @@ public class PythonUtils {
 	 * @param procedureName A string describing the procedure that requires python
 	 * @param min The minimum acceptable version of python, null if we don't care.
 	 * @param max The minimum <i>unacceptable</i> version of python, null if we don't care.
-	 * @return true if python was found and falls within acceptable boundries
+	 * @return true if python was found and falls within acceptable boundaries
 	 */
 	public static boolean interactiveCheckVersion(Frame parent, String procedureName, Version min, Version max) {
 		getPythonPath(min,max);
@@ -294,20 +298,20 @@ public class PythonUtils {
 		if (procedureName == null) { procedureName = "This operation"; }
 		if (v != null) {
 			if (min != null && min.compareTo(v) == 1) {
-				notifyUser(parent,procedureName+" requires Python version "+min.toString()+
+				displayPythonErrorDialog(parent,procedureName+" requires Python version "+min.toString()+
 						" or later.  Python version "+v.toString()+" was detected.");
 				return false;
 			}
 			if (max != null && max.compareTo(v) != 1) {
 				System.err.println("Comparing "+max.toString()+" to "+v.toString());
 				System.err.println("Returned "+Integer.toString(max.compareTo(v)));
-				notifyUser(parent,procedureName+" requires a version of Python earlier than version "+max.toString()+
+				displayPythonErrorDialog(parent,procedureName+" requires a version of Python earlier than version "+max.toString()+
 						".  Python version "+v.toString()+" was detected.");
 				return false;
 			}
 			return true;
 		}
-		notifyUser(parent,procedureName+" requires that a Python interpreter be installed.");
+		displayPythonErrorDialog(parent,procedureName+" requires that a Python interpreter be installed.");
 		return false;
 	}
 
@@ -318,7 +322,7 @@ public class PythonUtils {
 	 * @param parent The frame to parent the warning dialog
 	 * @param message A simple description of the problem with their install
 	 */
-	private static void notifyUser(final Frame parent, final String message) {
+	private static void displayPythonErrorDialog(final Frame parent, final String message) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				if (Base.isLinux()) {

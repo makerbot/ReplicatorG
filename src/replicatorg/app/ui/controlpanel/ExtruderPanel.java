@@ -22,11 +22,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import net.miginfocom.swing.MigLayout;
@@ -49,11 +49,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
+import replicatorg.app.ui.CallbackTextField;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.commands.DriverCommand.AxialDirection;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.ToolModel;
-import replicatorg.app.ui.CallbackTextField;
 
 public class ExtruderPanel extends JPanel implements FocusListener, ActionListener, ItemListener {
 	private ToolModel toolModel;
@@ -61,9 +61,9 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 	public ToolModel getTool() { return toolModel; }
 	
-	protected JTextField currentTempField;
+	protected JFormattedTextField currentTempField;
 	
-	protected JTextField platformCurrentTempField;
+	protected JFormattedTextField platformCurrentTempField;
 
 	protected double targetTemperature;
 	protected double targetPlatformTemperature;
@@ -182,9 +182,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		this.machine = machine;
 		this.toolModel = t;
 		
-		int textBoxWidth = 75;
 		Dimension panelSize = new Dimension(420, 30);
-//		driver = machine2.getDriver();
 
 		extrudeTimePattern = Pattern.compile("([.0-9]+)");
 		
@@ -198,8 +196,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if ((t.getMotorStepperAxis() == null) && !(t.motorHasEncoder() || t.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
-				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9);
-				field.setText(Integer.toString(machine.getDriverQueryInterface().getMotorSpeedPWM()));
+				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9, Base.getLocalFormat());
+				field.setValue(machine.getDriverQueryInterface().getMotorSpeedPWM());
 				add(label);
 				add(field,"wrap");
 			}
@@ -207,8 +205,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			if (t.motorHasEncoder() || t.motorIsStepper()) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (RPM)");
-				JTextField field = new CallbackTextField(this, "handleTextField", "motor-speed", 9);
-				field.setText(Double.toString(machine.getDriverQueryInterface().getMotorRPM()));
+				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed", 9, Base.getLocalFormat());
+				field.setValue(machine.getDriverQueryInterface().getMotorRPM());
 				add(label);
 				add(field,"wrap");
 
@@ -284,14 +282,15 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		// our temperature fields
 		if (t.hasHeater()) {
 			JLabel targetTempLabel = makeKeyLabel("Target Temperature (C)",targetColor);
-			JTextField targetTempField = new CallbackTextField(this, "handleTextField", "target-temp", 9);
+			JFormattedTextField targetTempField = new CallbackTextField(this, "handleTextField", "target-temp", 9, Base.getLocalFormat());
 			targetTemperature = machine.getDriverQueryInterface().getTemperatureSetting();
-			targetTempField.setText(Double.toString(targetTemperature));
+			targetTempField.setValue(targetTemperature);
 
 			JLabel currentTempLabel = makeKeyLabel("Current Temperature (C)",measuredColor);
-			currentTempField = new JTextField("",9);
+			currentTempField = new JFormattedTextField(Base.getLocalFormat());
+			currentTempField.setColumns(9);
 			currentTempField.setEnabled(false);
-
+			
 			add(targetTempLabel);
 			add(targetTempField,"wrap");
 			add(currentTempLabel);
@@ -301,12 +300,13 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		// our heated platform fields
 		if (t.hasHeatedPlatform()) {
 			JLabel targetTempLabel = makeKeyLabel("Platform Target Temp (C)",targetPlatformColor);
-			JTextField targetTempField = new CallbackTextField(this, "handleTextField", "platform-target-temp", 9);
+			JFormattedTextField targetTempField = new CallbackTextField(this, "handleTextField", "platform-target-temp", 9, Base.getLocalFormat());
 			targetPlatformTemperature = machine.getDriverQueryInterface().getPlatformTemperatureSetting();
-			targetTempField.setText(Double.toString(targetPlatformTemperature));
+			targetTempField.setValue(targetPlatformTemperature);
 
 			JLabel currentTempLabel = makeKeyLabel("Platform Current Temp (C)",measuredPlatformColor);
-			platformCurrentTempField = new JTextField("",9);
+			platformCurrentTempField = new JFormattedTextField(Base.getLocalFormat());
+			platformCurrentTempField.setColumns(9);
 			platformCurrentTempField.setEnabled(false);
 
 			add(targetTempLabel);
@@ -450,14 +450,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	
 	synchronized public void updateTemperature(Second second, double temperature)
 	{
-		currentTempField.setText(Double.toString(temperature));
+		currentTempField.setValue(temperature);
 		measuredDataset.add(second, temperature,"a");
 		targetDataset.add(second, targetTemperature,"a");
 	}
 
 	synchronized public void updatePlatformTemperature(Second second, double temperature)
 	{
-		platformCurrentTempField.setText(Double.toString(temperature));
+		platformCurrentTempField.setValue(temperature);
 		measuredPlatformDataset.add(second, temperature,"a");
 		targetPlatformDataset.add(second, targetPlatformTemperature,"a");
 	}
@@ -466,7 +466,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	}
 
 	public void focusLost(FocusEvent e) {
-		JTextField source = (JTextField) e.getSource();
+		JFormattedTextField source = (JFormattedTextField) e.getSource();
 		try {
 			handleChangedTextField(source);
 		} catch (RetryException e1) {
@@ -482,6 +482,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	// to set a potentially dangerous limit would suck.
 	// @return Double.MIN_VALUE if cancelled; the target temperature otherwise.
 	//
+	// NOTE: copy of this in preferences window
 	private double confirmTemperature(double target, String limitPrefName, double defaultLimit) {
 		double limit = Base.preferences.getDouble("temperature.acceptedLimit", defaultLimit);
 		if (target > limit){
@@ -506,12 +507,14 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 	}
 	
-	public void handleChangedTextField(JTextField source) throws RetryException
+	public void handleChangedTextField(JFormattedTextField source) throws RetryException
 	{
 		String name = source.getName();
 		if (source.getText().length() > 0) {
+			double target = ((Number)source.getValue()).doubleValue();
+			Base.logger.severe("target is " + target);
 			if (name.equals("target-temp") || name.equals("platform-target-temp")) {
-				double target = Double.parseDouble(source.getText());
+				
 				if(name.equals("target-temp")) {
 					target = confirmTemperature(target,"temperature.acceptedLimit",260.0);
 					if (target == Double.MIN_VALUE) {
@@ -527,12 +530,10 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 					machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(target));
 					targetPlatformTemperature = target;
 				}
-				// This gives some feedback by adding .0 it it wasn't typed.
-				source.setText(Double.toString(target));
 			} else if (name.equals("motor-speed")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(Double.parseDouble(source.getText())));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(target));
 			} else if (name.equals("motor-speed-pwm")) {
-				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)Double.parseDouble(source.getText())));
+				machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)target));
 			} else {
 				Base.logger.warning("Unhandled text field: "+name);
 			}
@@ -571,7 +572,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			else if (name.equals("fan-check"))
 				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
 			else if (name.equals("abp-check")) {
-				// TODO: Say wha???
+				// TODO: Debugging. Run both!
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true));
 				machine.runCommand(new replicatorg.drivers.commands.EnableFan());
 			}
 			else if (name.equals("valve-check"))
@@ -592,7 +594,8 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			else if (name.equals("fan-check"))
 				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
 			else if (name.equals("abp-check")) {
-				// TODO: Say wha???
+				// TODO: Debugging. Run both!
+				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(false));
 				machine.runCommand(new replicatorg.drivers.commands.DisableFan());
 			}
 			else if (name.equals("valve-check"))
@@ -607,7 +610,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		if(s.equals("handleTextField"))
 		{
-			JTextField source = (JTextField) e.getSource();
+			JFormattedTextField source = (JFormattedTextField) e.getSource();
 			try {
 				handleChangedTextField(source);
 			} catch (RetryException e1) {
@@ -624,18 +627,26 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		if (s.equals("forward")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE));
-				// TODO: Reverted to separate commands for enable + extrude + disable. This probably breaks 5D
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
-				machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				// Reverted to one single command for RepRap5D driver
+				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
+				} else {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				}
 			}
 		} else if (s.equals("reverse")) {
 			if (this.toolModel.getMotorStepperAxis() != null) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE));
-				// TODO: Reverted to separate commands for enable + extrude + disable. This probably breaks 5D
-				machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
-				machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
-				machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				// Reverted to one single command for RepRap5D driver
+				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor(extrudeTime*1000));
+				} else {
+					machine.runCommand(new replicatorg.drivers.commands.EnableMotor());
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
+					machine.runCommand(new replicatorg.drivers.commands.DisableMotor());
+				}
 			}
 		} else if (s.equals("stop")) {
 			machine.runCommand(new replicatorg.drivers.commands.DisableMotor());

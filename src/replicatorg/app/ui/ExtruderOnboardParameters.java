@@ -4,26 +4,38 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.JTabbedPane;
 
 import net.miginfocom.swing.MigLayout;
+import replicatorg.app.Base;
+import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.Version;
 import replicatorg.drivers.gen3.Sanguino3GDriver;
+import replicatorg.machine.model.ToolModel;
 
 public class ExtruderOnboardParameters extends JFrame {
 	private static final long serialVersionUID = 6353987389397209816L;
 	private OnboardParameters target;
+	// We clone this because we don't want to set the precision globally
+    private static final NumberFormat threePlaces = (NumberFormat) Base.getLocalFormat().clone();
+    {
+        threePlaces.setMaximumFractionDigits(3);
+    }
 	
 	interface Commitable {
 		public void commit();
@@ -36,42 +48,50 @@ public class ExtruderOnboardParameters extends JFrame {
 	
 	class ThermistorTablePanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 7765098486598830410L;
-		private JTextField betaField = new JTextField();
-		private JTextField r0Field = new JTextField();
-		private JTextField t0Field = new JTextField();
-		private int which;
-		ThermistorTablePanel(int which, String titleText) {
+
+		private JFormattedTextField betaField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField r0Field = new JFormattedTextField(threePlaces);
+		private JFormattedTextField t0Field = new JFormattedTextField(threePlaces);
+		// Toolhead or Heated Platform?
+		private final int which;
+
+//		private final ToolModel tool;
+		private final int toolIndex; 
+
+		ThermistorTablePanel(int which, String titleText, int toolIndex/*ToolModel tool*/) {
 			super(new MigLayout());
 			this.which = which;
+			//this.tool = tool;
+			this.toolIndex = toolIndex;
 			setBorder(BorderFactory.createTitledBorder(titleText));
 			betaField.setColumns(FIELD_WIDTH);
 			r0Field.setColumns(FIELD_WIDTH);
 			t0Field.setColumns(FIELD_WIDTH);
 			
-			double beta = target.getBeta(which);
+			double beta = target.getBeta(which, this.toolIndex);
 			if (beta == -1) { beta = 4066; }
-			betaField.setText(Integer.toString((int)beta));
+			betaField.setValue((int)beta);
 			add(new JLabel("Beta"));
 			add(betaField,"wrap");
 
-			double r0 = target.getR0(which);
+			double r0 = target.getR0(which, this.toolIndex);
 			if (r0 == -1) { r0 = 100000; }
-			r0Field.setText(Integer.toString((int)r0));
+			r0Field.setValue((int)r0);
 			add(new JLabel("Thermistor Resistance"));
 			add(r0Field,"wrap");
 
-			double t0 = target.getT0(which);
+			double t0 = target.getT0(which, this.toolIndex);
 			if (t0 == -1) { t0 = 25; }
-			t0Field.setText(Integer.toString((int)t0));
+			t0Field.setValue((int)t0);
 			add(new JLabel("Base Temperature"));
 			add(t0Field,"wrap");
 		}
 
 		public void commit() {
-			int beta = Integer.parseInt(betaField.getText());
-			int r0 = Integer.parseInt(r0Field.getText());
-			int t0 = Integer.parseInt(t0Field.getText());
-			target.createThermistorTable(which,r0,t0,beta);
+			int beta = ((Number)betaField.getValue()).intValue();
+			int r0 = ((Number)r0Field.getValue()).intValue();
+			int t0 = ((Number)t0Field.getValue()).intValue();
+			target.createThermistorTable(which,r0,t0,beta,this.toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -104,11 +124,14 @@ public class ExtruderOnboardParameters extends JFrame {
 
 	private class BackoffPanel extends JPanel implements Commitable {
 		private static final long serialVersionUID = 6593800743174557032L;
-		private JTextField stopMsField = new JTextField();
-		private JTextField reverseMsField = new JTextField();
-		private JTextField forwardMsField = new JTextField();
-		private JTextField triggerMsField = new JTextField();
-		BackoffPanel() {
+		private JFormattedTextField stopMsField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField reverseMsField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField forwardMsField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField triggerMsField = new JFormattedTextField(threePlaces);
+		//private final ToolModel tool;
+		private int toolIndex; 
+		BackoffPanel(int toolIndex /*ToolModel tool*/) {
+			this.toolIndex = toolIndex;
 			setLayout(new MigLayout());
 			setBorder(BorderFactory.createTitledBorder("Reversal parameters"));
 			stopMsField.setColumns(FIELD_WIDTH);
@@ -124,20 +147,20 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(forwardMsField,"wrap");
 			add(new JLabel("Min. extrusion time before reversal (ms)"));
 			add(triggerMsField,"wrap");
-			OnboardParameters.BackoffParameters bp = target.getBackoffParameters();
-			stopMsField.setText(Integer.toString(bp.stopMs));
-			reverseMsField.setText(Integer.toString(bp.reverseMs));
-			forwardMsField.setText(Integer.toString(bp.forwardMs));
-			triggerMsField.setText(Integer.toString(bp.triggerMs));
+			OnboardParameters.BackoffParameters bp = target.getBackoffParameters(toolIndex);
+			stopMsField.setValue(bp.stopMs);
+			reverseMsField.setValue(bp.reverseMs);
+			forwardMsField.setValue(bp.forwardMs);
+			triggerMsField.setValue(bp.triggerMs);
 		}
 
 		public void commit() {
 			OnboardParameters.BackoffParameters bp = new OnboardParameters.BackoffParameters();
-			bp.forwardMs = Integer.parseInt(forwardMsField.getText());
-			bp.reverseMs = Integer.parseInt(reverseMsField.getText());
-			bp.stopMs = Integer.parseInt(stopMsField.getText());
-			bp.triggerMs = Integer.parseInt(triggerMsField.getText());
-			target.setBackoffParameters(bp);
+			bp.forwardMs = ((Number)forwardMsField.getValue()).intValue();
+			bp.reverseMs = ((Number)reverseMsField.getValue()).intValue();
+			bp.stopMs = ((Number)stopMsField.getValue()).intValue();
+			bp.triggerMs = ((Number)triggerMsField.getValue()).intValue();
+			target.setBackoffParameters(bp, toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -149,9 +172,14 @@ public class ExtruderOnboardParameters extends JFrame {
 		private JCheckBox swapMotors;
 		private JComboBox extCh, hbpCh, abpCh;
 		private OnboardParameters.ExtraFeatures ef;
-		ExtraFeaturesPanel() {
+		
+		//private final ToolModel tool;
+		private int toolIndex; 
+		ExtraFeaturesPanel(int toolIndex /*ToolModel tool*/) {
+			//this.tool = tool;
+			this.toolIndex = toolIndex; 
 			setLayout(new MigLayout());
-			ef = target.getExtraFeatures();
+			ef = target.getExtraFeatures(toolIndex);
 			swapMotors = new JCheckBox("Use 2A/2B to drive DC motor instead of 1A/1B", ef.swapMotorController);
 			add(swapMotors,"span 3,growx,wrap");
 			Vector<String> choices = new Vector<String>();
@@ -180,7 +208,7 @@ public class ExtruderOnboardParameters extends JFrame {
 			ef.heaterChannel = extCh.getSelectedIndex();
 			ef.hbpChannel = hbpCh.getSelectedIndex();
 			ef.abpChannel = abpCh.getSelectedIndex();
-			target.setExtraFeatures(ef);
+			target.setExtraFeatures(ef, toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -197,12 +225,21 @@ public class ExtruderOnboardParameters extends JFrame {
 	}
 	
 	private class PIDPanel extends JPanel implements Commitable {
-		private JTextField pField = new JTextField();
-		private JTextField iField = new JTextField();
-		private JTextField dField = new JTextField();
-		private int which;
-		PIDPanel(int which, String name) {
+	    private NumberFormat eightPlaces = (NumberFormat) threePlaces.clone();
+	    {
+	    	eightPlaces.setMaximumFractionDigits(8);
+	    }
+
+	    private JFormattedTextField pField = new JFormattedTextField(threePlaces);
+		private JFormattedTextField iField = new JFormattedTextField(eightPlaces);
+		private JFormattedTextField dField = new JFormattedTextField(threePlaces);
+		private final int which;
+		//private final ToolModel tool;
+		private int toolIndex; 
+		
+		PIDPanel(int which, String name, int toolIndex) {
 			this.which = which;
+			this.toolIndex= toolIndex;
 			setLayout(new MigLayout());
 			setBorder(BorderFactory.createTitledBorder(name+" PID parameters"));
 			pField.setColumns(FIELD_WIDTH);
@@ -215,18 +252,18 @@ public class ExtruderOnboardParameters extends JFrame {
 			add(iField,"wrap");
 			add(new JLabel("D parameter"));
 			add(dField,"wrap");
-			OnboardParameters.PIDParameters pp = target.getPIDParameters(which);
-			pField.setText(Float.toString(pp.p));
-			iField.setText(Float.toString(pp.i));
-			dField.setText(Float.toString(pp.d));
+			OnboardParameters.PIDParameters pp = target.getPIDParameters(which, toolIndex);
+			pField.setValue(pp.p);
+			iField.setValue(pp.i);
+			dField.setValue(pp.d);
 		}
 
 		public void commit() {
 			OnboardParameters.PIDParameters pp = new OnboardParameters.PIDParameters();
-			pp.p = Float.parseFloat(pField.getText());
-			pp.i = Float.parseFloat(iField.getText());
-			pp.d = Float.parseFloat(dField.getText());
-			target.setPIDParameters(which,pp);
+			pp.p = ((Number)pField.getValue()).floatValue();
+			pp.i = ((Number)iField.getValue()).floatValue();
+			pp.d = ((Number)dField.getValue()).floatValue();
+			target.setPIDParameters(which,pp, toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -237,16 +274,23 @@ public class ExtruderOnboardParameters extends JFrame {
 	class RegulatedCoolingFan extends JPanel implements Commitable {
 		private static final long serialVersionUID = 7765098486598830410L;
 		private JCheckBox coolingFanEnabled;
-		private JTextField coolingFanSetpoint = new JTextField();
-		RegulatedCoolingFan() {
-			super(new MigLayout());			
+		
+		private JFormattedTextField coolingFanSetpoint = new JFormattedTextField(threePlaces);
+		
+		//private final ToolModel tool;
+		private final int toolIndex;
+		RegulatedCoolingFan(/*ToolModel tool*/int toolIndex) {
+			super(new MigLayout());	
+			
+			//this.tool = tool;
+			this.toolIndex = toolIndex;
 			coolingFanEnabled = new JCheckBox("Enable regulated cooling fan (stepper extruders only)",
-					target.getCoolingFanEnabled());
+					target.getCoolingFanEnabled(toolIndex) );
 			add(coolingFanEnabled,"growx,wrap");
 			
 			coolingFanSetpoint.setColumns(FIELD_WIDTH);
 	
-			coolingFanSetpoint.setText(Integer.toString((int)target.getCoolingFanSetpoint()));
+			coolingFanSetpoint.setValue((int)target.getCoolingFanSetpoint(toolIndex));
 			add(new JLabel("Setpoint (C)"));
 			add(coolingFanSetpoint,"wrap");
 
@@ -254,8 +298,8 @@ public class ExtruderOnboardParameters extends JFrame {
 
 		public void commit() {
 			boolean enabled = coolingFanEnabled.isSelected();   
-			int setpoint = Integer.parseInt(coolingFanSetpoint.getText());
-			target.setCoolingFanParameters(enabled, setpoint);
+			int setpoint = ((Number)coolingFanSetpoint.getValue()).intValue();
+			target.setCoolingFanParameters(enabled, setpoint, toolIndex);
 		}
 		
 		public boolean isCommitable() {
@@ -293,41 +337,58 @@ public class ExtruderOnboardParameters extends JFrame {
 			v = ((Sanguino3GDriver)target).getToolVersion();
 		}
 
-		JPanel panel = new JPanel(new MigLayout());
-		ThermistorTablePanel ttp;
-		ttp = new ThermistorTablePanel(0,"Extruder thermistor");
-		panel.add(ttp);
-		commitList.add(ttp);
-		ttp = new ThermistorTablePanel(1,"Heated build platform thermistor");
-		panel.add(ttp,"wrap");
-		commitList.add(ttp);
-		if (!v.atLeast(new Version(2,5))) {
-			BackoffPanel backoffPanel = new BackoffPanel();
-			panel.add(backoffPanel,"span 2,growx,wrap");
-			commitList.add(backoffPanel);
-		}
-		if (v.atLeast(new Version(2,5))) {
-			ExtraFeaturesPanel efp = new ExtraFeaturesPanel();
-			panel.add(efp,"span 2,growx,wrap");
-			commitList.add(efp);
-		}
-		PIDPanel pidPanel = new PIDPanel(0,"Extruder");
-		panel.add(pidPanel,"growx");
-		commitList.add(pidPanel);
-		if (v.atLeast(new Version(2,4))) {
-			PIDPanel pp = new PIDPanel(1,"Heated build platform");
-			panel.add(pp,"growx,wrap");
-			commitList.add(pp);
-		}
+		setLayout(new MigLayout());
+		JTabbedPane extruders = new JTabbedPane();
 
-		if (v.atLeast(new Version(2,9))) {
-			RegulatedCoolingFan rcf = new RegulatedCoolingFan();
-			panel.add(rcf,"span 2,growx,wrap");
-			commitList.add(rcf);
+		List<Integer> tools = target.toolheadsWithStoredData();
+		
+		for(int toolIndex : tools)
+		{
+			JPanel tab = new JPanel(new MigLayout());
+			//int toolIndex = t.getIndex();
+			ThermistorTablePanel ttp;
+			ttp = new ThermistorTablePanel(OnboardParameters.EXTRUDER,"Extruder thermistor", toolIndex);
+			tab.add(ttp);
+			commitList.add(ttp);
+			ttp = new ThermistorTablePanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform thermistor", toolIndex);
+			tab.add(ttp,"wrap");
+			commitList.add(ttp);
+			
+			if (!v.atLeast(new Version(2,5))) {
+				BackoffPanel backoffPanel = new BackoffPanel(toolIndex);
+				tab.add(backoffPanel,"span 2,growx,wrap");
+				commitList.add(backoffPanel);
+			}
+
+			if (v.atLeast(new Version(2,5))) {
+				ExtraFeaturesPanel efp = new ExtraFeaturesPanel(toolIndex);
+				tab.add(efp,"span 2,growx,wrap");
+				commitList.add(efp);
+			}
+			
+			PIDPanel pidPanel = new PIDPanel(OnboardParameters.EXTRUDER,"Extruder", toolIndex);
+			tab.add(pidPanel,"growx");
+			commitList.add(pidPanel);
+			
+			if (v.atLeast(new Version(2,4))) {
+				PIDPanel pp = new PIDPanel(OnboardParameters.BUILD_PLATFORM,"Heated build platform", toolIndex);
+				tab.add(pp,"growx,wrap");
+				commitList.add(pp);
+			}
+	
+			if (v.atLeast(new Version(2,9))) {
+				RegulatedCoolingFan rcf = new RegulatedCoolingFan(toolIndex);
+				tab.add(rcf,"span 2,growx,wrap");
+				commitList.add(rcf);
+			}
+			
+			extruders.addTab("Extruder " + toolIndex, tab);
+			
 		}
 		
-		panel.add(makeButtonPanel(),"span 2,newline");
-		add(panel);
+		add(extruders);
+		
+		add(makeButtonPanel(),"span 2,newline");
 
 		pack();
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();

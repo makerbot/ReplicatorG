@@ -4,13 +4,11 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.text.NumberFormat;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -38,29 +36,22 @@ public class ScalingTool extends Tool {
 //	double previousScale = 1;
 	double scaleDragChange = 1;
 	
-	JTextField scaleFactor;
+	JFormattedTextField scaleFactor;
 	@Override
 	JPanel getControls() {
 		JPanel p = new JPanel(new MigLayout("fillx,filly,gap 0"));
 		JButton b;
 
-		scaleFactor = new JFormattedTextField(NumberFormat.getInstance());
-		scaleFactor.setText("1.00");
+		scaleFactor = new JFormattedTextField(Base.getLocalFormat());
+		scaleFactor.setValue(1.0);
 		
 		p.add(scaleFactor,"growx");
 
 		b = new JButton("Scale");
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				String txt = scaleFactor.getText();
-				if (txt != null) {
-					try {
-						double scale = Double.parseDouble(txt);
-						parent.getModel().scale(scale,parent.getModel().isOnPlatform());
-					} catch (NumberFormatException nfe) {
-						Base.logger.fine("Scale factor "+txt+" is not parseable");
-					}
-				}
+				double scale = ((Number)scaleFactor.getValue()).doubleValue();
+				parent.getModel().scale(scale,parent.getModel().isOnPlatform());
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -69,10 +60,6 @@ public class ScalingTool extends Tool {
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parent.getModel().scale(25.4d,parent.getModel().isOnPlatform());
-//				double newScale = previousScale*25.4d;
-//				previousScale = newScale;
-				double currentScale = parent.getModel().model.getTransform().getScale();
-				scaleFactor.setText(String.valueOf((double) ((int)(100*currentScale))/100));
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -81,10 +68,6 @@ public class ScalingTool extends Tool {
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parent.getModel().scale(1d/25.4d,parent.getModel().isOnPlatform());
-//				double newScale = (double)((int) (previousScale*100*1d/25.4d))/100;
-//				previousScale = newScale;
-				double currentScale = parent.getModel().model.getTransform().getScale();
-				scaleFactor.setText(String.valueOf((double) ((int)(100*currentScale))/100));
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -106,10 +89,12 @@ public class ScalingTool extends Tool {
 	
 	public void mousePressed(MouseEvent e) {
 		super.mousePressed(e);
+		// Reset scale to current value (in case there have been undos, etc. since
+		// last update)
+		scaleDragChange = parent.getModel().model.getTransform().getScale();
 		isOnPlatform = parent.getModel().isOnPlatform();
 	}
 	public void mouseReleased(MouseEvent e) {
-		scaleDragChange = 1;
 	}
 
 	public void mouseDragged(MouseEvent e) {
@@ -132,7 +117,7 @@ public class ScalingTool extends Tool {
 			double currentScale = parent.getModel().model.getTransform().getScale();
 			double targetScale = scaleDragChange/currentScale;
 			parent.getModel().scale(targetScale, isOnPlatform);
-			scaleFactor.setText(String.valueOf((double) ((int)(100*scaleDragChange))/100));
+			scaleFactor.setValue((double) ((int)(100*scaleDragChange))/100);
 //			Base.logger.info("scaleDragChange="+scaleDragChange);
 			break;
 		}

@@ -10,6 +10,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -321,11 +323,10 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 		// add jog panel border and stuff.
 		setBorder(BorderFactory.createTitledBorder("Jog Controls"));
-	
 	}
 	
 
-	DecimalFormat positionFormatter = new DecimalFormat("###.##");
+	private NumberFormat positionFormatter = Base.getLocalFormat();
 
 	synchronized public void updateStatus() {
 		Point5d current = machine.getDriverQueryInterface().getCurrentPosition(false);
