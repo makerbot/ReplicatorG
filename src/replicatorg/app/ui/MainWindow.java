@@ -588,13 +588,14 @@ ToolpathGenerator.GeneratorListener
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
 		
 		if(generator instanceof SkeinforgeGenerator) {
-
 			SkeinforgePostProcessor spp = new SkeinforgePostProcessor((SkeinforgeGenerator)generator);
 			((SkeinforgeGenerator)generator).setPostProcessor(spp);
 			
 			spp.setMachineType(machineLoader.getMachineInterface().getMachineType());
+			spp.setPrependStart(true);
 			spp.setPrependMetaInfo(true);
-			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getDualstartBookendCode()));
+			spp.setAppendEnd(true);
+			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()));
 			spp.setEndCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()));
 			spp.setMultiHead(isDualDriver());
 			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
