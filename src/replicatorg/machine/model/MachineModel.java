@@ -387,7 +387,7 @@ public class MachineModel
 			String startLocation = XML.getAttributeValue(bookend, "start");
 			String endLocation = XML.getAttributeValue(bookend, "end");
 			if(dualstartLocation != null) 
-				dualstartBookendCode = new File(startLocation);
+				dualstartBookendCode = new File(dualstartLocation);
 			if(startLocation != null) 
 				startBookendCode = new File(startLocation);
 			if(endLocation != null) 
