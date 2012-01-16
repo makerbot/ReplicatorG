@@ -8,14 +8,11 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.TextArea;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.TextEvent;
-import java.awt.event.TextListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -46,8 +43,6 @@ import replicatorg.app.Base;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
-import replicatorg.drivers.commands.SendBeep;
-import replicatorg.drivers.commands.SetLedStrip;
 import replicatorg.machine.MachineInterface;
 import replicatorg.uploader.FirmwareUploader;
 
@@ -65,8 +60,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 	JFormattedTextField fontSizeField;
 	JTextField firmwareUpdateUrlField;
 	JTextField logPathField;
-
-	final JButton ledStripButton;
 	
 	private void showCurrentSettings() {		
 		Font editorFont = Base.getFontPref("editor.font","Monospaced,plain,12");
@@ -441,154 +434,6 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		
 		prefTabs.add(basic, "Basic");
 		prefTabs.add(advanced, "Advanced");
-		
-		// For Replicator Testing
-		content = new JPanel();
-		
-		content.setLayout(new MigLayout("fillx"));
-
-		final JFormattedTextField vref0 = new JFormattedTextField(Base.getLocalFormat());
-		final JFormattedTextField vref1 = new JFormattedTextField(Base.getLocalFormat());
-		final JFormattedTextField vref2 = new JFormattedTextField(Base.getLocalFormat());
-		final JFormattedTextField vref3 = new JFormattedTextField(Base.getLocalFormat());
-		final JFormattedTextField vref4 = new JFormattedTextField(Base.getLocalFormat());
-		vref0.setColumns(3);
-		vref1.setColumns(3);
-		vref2.setColumns(3);
-		vref3.setColumns(3);
-		vref4.setColumns(3);
-		JButton vrefApplyButton = new JButton("Set All vRef voltages");
-
-		if(machine != null)
-		{
-			vref0.setValue(machine.getDriver().getStepperVoltage(0));
-			vref1.setValue(machine.getDriver().getStepperVoltage(1));
-			vref2.setValue(machine.getDriver().getStepperVoltage(2));
-			vref3.setValue(machine.getDriver().getStepperVoltage(3));
-			vref4.setValue(machine.getDriver().getStepperVoltage(4));
-		}
-		
-		vrefApplyButton.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if(machine != null)
-				{
-					Base.logger.info("actionPerformed set all vRef preferences");
-					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
-							0, ((Number)vref0.getValue()).intValue()));
-					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
-							1, ((Number)vref1.getValue()).intValue()));
-					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
-							2, ((Number)vref2.getValue()).intValue()));
-					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
-							3, ((Number)vref3.getValue()).intValue()));
-					machine.runCommand(new replicatorg.drivers.commands.SetStepperVoltage(
-							4, ((Number)vref4.getValue()).intValue()));
-				}
-			}
-		});
-
-		content.add(new JLabel("VREF Pot. 0"), "split");
-		content.add(vref0, "split");
-		content.add(new JLabel("VREF Pot. 1"), "split, gap unrel");
-		content.add(vref1, "split");
-		content.add(new JLabel("VREF Pot. 2"), "split, gap unrel");
-		content.add(vref2, "wrap");
-		content.add(new JLabel("VREF Pot. 3"), "split");
-		content.add(vref3, "split");
-		content.add(new JLabel("VREF Pot. 4"), "split, gap unrel");
-		content.add(vref4, "split");
-		content.add(vrefApplyButton, "wrap, gap unrel");
-		
-		final JColorChooser chooser = new JColorChooser(Color.BLACK);
-		final ActionListener colorListener = new ActionListener() {
-			public void actionPerformed(ActionEvent e){
-				Color ledColor = chooser.getColor();
-				machine.runCommand(new SetLedStrip(ledColor, 0));	
-				ledStripButton.setText(ShowColorChooserAction.buttonStringFromColor(ledColor));
-			}
-		};
-		ledStripButton = new JButton(new ShowColorChooserAction(this, chooser, colorListener, null,Color.BLACK));
-		content.add(ledStripButton, "spanx, growx");
-
-		final JFormattedTextField beepFreq = new JFormattedTextField(Base.getLocalFormat());
-		final JFormattedTextField beepDur = new JFormattedTextField(Base.getLocalFormat());
-		final JButton beepButton = new JButton("Beep Beep!");
-		
-		final int EFFECT_DO_IMMEDATELY= 0; /// 
-		beepButton.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				machine.runCommand(new SendBeep(((Number)beepFreq.getValue()).intValue(),
-												((Number) beepDur.getValue()).intValue(),
-												EFFECT_DO_IMMEDATELY));
-			}
-		});
-		
-		content.add(new JLabel("Frequency"), "split");
-		content.add(beepFreq, "split, growx");
-		content.add(new JLabel("Duration"), "split, gap unrel");
-		content.add(beepDur, "split, growx");
-		content.add(beepButton, "split, gap unrel, wrap");
-		
-		final JLabel bytesLabel = new JLabel("<html>Enter up to sixteen (16) comma separated hex values below.<br/>" +
-				"Can be written with '0x', '#' or nothing in front of each number.<br/>" +
-				"If the box turns red, it can't parse the values.<html/>");
-		final TextArea bytesField = new TextArea();
-		final JButton sendBytesButton = new JButton("Send hex values");
-		
-		bytesField.setColumns(10);
-		bytesField.setRows(4);
-		
-		sendBytesButton.addActionListener(new ActionListener(){
-			private final int MAX_BYTES = 16;
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				// parse hex values
-				String[] hexes = bytesField.getText().split(",");
-				
-				if(hexes.length > MAX_BYTES)
-				{
-					bytesField.setBackground(Color.RED);
-					return;
-				}
-				
-				byte[] bytes = new byte[hexes.length];
-				int i = 0;
-				for(String h : hexes)
-				{
-					//strip whitespace
-					h = h.trim();
-					
-//					if(!(h.startsWith("0x")) && !(h.startsWith("#")))
-//						h = "0x".concat(h);
-					System.out.print(h + '\t');
-					try {
-						bytes[i] = Byte.decode(h);
-					} catch(NumberFormatException nfe) {
-						bytesField.setBackground(Color.RED);
-						return;
-					}
-					System.out.println(bytes[i]);
-					i++;
-				}
-				
-				//Send the bytes to the machine
-				//TODO:
-			}
-		});
-		bytesField.addTextListener(new TextListener(){
-			@Override
-			public void textValueChanged(TextEvent arg0) {
-				bytesField.setBackground(Color.WHITE);
-			}
-		});
-		
-		content.add(bytesLabel, "wrap");
-		content.add(bytesField, "growx");
-		content.add(sendBytesButton, "wrap");
-		
-		prefTabs.add(content, "Replicator Testing");
 
 		content = getContentPane();
 		content.setLayout(new MigLayout());
