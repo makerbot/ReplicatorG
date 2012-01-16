@@ -888,7 +888,20 @@ public class GCodeParser {
 		// spindle speed rate
 		case G97:
 			commands.add(new replicatorg.drivers.commands.SetSpindleRPM(gcode.getCodeValue('S')));
-			break;
+			break;	
+		case G130:
+			/// TODO:  axis ids should not be hard coded
+			if (gcode.hasCode('X'))
+				commands.add(new replicatorg.drivers.commands.SetStepperVoltage(0, (int)gcode.getCodeValue('X')));
+			if (gcode.hasCode('Y'))
+				commands.add(new replicatorg.drivers.commands.SetStepperVoltage(1, (int)gcode.getCodeValue('Y')));
+			if (gcode.hasCode('Z'))
+				commands.add(new replicatorg.drivers.commands.SetStepperVoltage(2, (int)gcode.getCodeValue('Z')));
+			if (gcode.hasCode('A'))
+				commands.add(new replicatorg.drivers.commands.SetStepperVoltage(3, (int)gcode.getCodeValue('A')));
+			if (gcode.hasCode('B'))
+				commands.add(new replicatorg.drivers.commands.SetStepperVoltage(4, (int)gcode.getCodeValue('B')));
+				break;
 		// error, error!
 		default:
 			throw new GCodeException("Unknown G code: G"

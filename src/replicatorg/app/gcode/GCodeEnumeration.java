@@ -105,6 +105,7 @@ public enum GCodeEnumeration {
 	G91("G", 91, "Relative Positioning"),
 	G92("G", 92, "Define current position on axes"),
 	G97("G", 97, "Spindle speed rate"),
+	G130("G", 130, "Set given axes potentiometer Value"),
 	G161("G", 161, "Home given axes to minimum"),
 	G162("G", 162, "Home given axes to maximum");
 	

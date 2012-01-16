@@ -184,7 +184,7 @@ public class MutableGCodeSource implements GCodeSource {
 		ArrayList<String> newSource = new ArrayList<String>();
 		/// TRICKY: M73 P0 is required by The Replicator to enable % display
 		// and M73 P100. is required at the end. These are in TheReplicator start.gcode
-		// and end.gcode
+		// and end.gcode.  P0 and 
 		for(String line : source)
 		{
 			if( line.startsWith("(<layer>") )
