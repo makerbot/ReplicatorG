@@ -2742,7 +2742,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 			int sp = pr.get16();
 			machine.getTool(toolhead).setTargetTemperature(sp);
 		}
-		System.err.println(machine.getTool(toolhead).getTargetTemperature());
+//		System.err.println(machine.getTool(toolhead).getTargetTemperature());
 		// super uses current toolhead, not specific toolhead
 		return machine.getTool(toolhead).getTargetTemperature();//super.getTemperatureSetting();
 	}

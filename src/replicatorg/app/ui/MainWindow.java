@@ -592,9 +592,7 @@ ToolpathGenerator.GeneratorListener
 			((SkeinforgeGenerator)generator).setPostProcessor(spp);
 			
 			spp.setMachineType(machineLoader.getMachineInterface().getMachineType());
-			spp.setPrependStart(true);
 			spp.setPrependMetaInfo(true);
-			spp.setAppendEnd(true);
 			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()));
 			spp.setEndCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()));
 			spp.setMultiHead(isDualDriver());
@@ -2431,7 +2429,7 @@ ToolpathGenerator.GeneratorListener
 			// this is stuff that DualStrusion, and until there's a better way to get it there...
 			MachineType type = machineLoader.getMachineInterface().getMachineType();
 			MutableGCodeSource startCode = 
-					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode());
+					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getDualstartBookendCode());
 			MutableGCodeSource endCode = 
 					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode());
 			
