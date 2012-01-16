@@ -594,7 +594,7 @@ ToolpathGenerator.GeneratorListener
 			
 			spp.setMachineType(machineLoader.getMachineInterface().getMachineType());
 			spp.setPrependMetaInfo(true);
-			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()));
+			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getDualstartBookendCode()));
 			spp.setEndCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()));
 			spp.setMultiHead(isDualDriver());
 			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)

@@ -129,7 +129,7 @@ public class DualStrusionWindow extends JFrame{
 	 * @param s the path of the gcode currently open in RepG
 	 */
 	public DualStrusionWindow(MachineType type, MutableGCodeSource startCode, MutableGCodeSource endCode, String path) {
-		super("DualStrusion Window (EXPERIMENTAL functionality)");
+		super("DualStrusion Window");
 
 		Base.logger.log(Level.FINE, "Dualstrusion window booting up...");
 		
@@ -152,6 +152,10 @@ public class DualStrusionWindow extends JFrame{
 		Base.logger.log(Level.FINE, "Finishing construction of Dualstrusion window");
 	}
 	
+	/**
+	 * This creates the panel where a user can select the stls they want to merge
+	 * @return
+	 */
 	private JPanel createSelectionPanel()
 	{
 		final JPanel panel = new JPanel(new MigLayout("fill"));
@@ -279,6 +283,9 @@ public class DualStrusionWindow extends JFrame{
 		merge.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				/*
+				 * Check that each of the files exists, and is either gcode or stl
+				 */
 				if(leftToolhead.getText().equals(rightToolhead.getText()))
 				{
 					int option = JOptionPane.showConfirmDialog(null, "You are trying to combine two of the same file. Are you sure you want to do this?",
@@ -327,6 +334,7 @@ public class DualStrusionWindow extends JFrame{
 				
 				dest = new File(destinationTextField.getText());
 				
+				//Wipes are untested
 //				uWipe = useWipes.isSelected();
 				uWipe = false;
 
@@ -338,12 +346,14 @@ public class DualStrusionWindow extends JFrame{
 				if(rightGcode != null)
 					completed.countDown();
 				
+				// if they're both gcode, we don't need to do any skeinforging
 				if(completed.getCount() == 0)
 				{
 					combineGcodes();
 					return;
 				}
 
+				// if there're stls, convert 'em to gcode
 				if(leftStl != null)
 				{
 					leftGcode = new File(replaceExtension(leftStl.getAbsolutePath(), "gcode"));
@@ -355,7 +365,7 @@ public class DualStrusionWindow extends JFrame{
 					stlToGcode(rightStl, rightGcode, ToolheadAlias.RIGHT, DualStrusionWindow.this.type);
 				}
 
-//				panels.show(DualStrusionWindow.this, SKEINFORGE_PANEL);
+				// show the 'waiting for skeinforge' panel
 				((CardLayout)panels.getLayout()).show(panels, SKEINFORGE_PANEL);
 			}
 
@@ -415,6 +425,10 @@ public class DualStrusionWindow extends JFrame{
 		return panel;
 	}
 	
+	/*
+	 * run the selected toolpath generator to convert the stl to gcode,
+	 * skeinforge takes special pre- and post- processing
+	 */
 	private void stlToGcode(File stl, File gcode, ToolheadAlias tool, MachineType machineType)
 	{
 		try{
@@ -502,6 +516,9 @@ public class DualStrusionWindow extends JFrame{
 		return s;
 	}
 	
+	/*
+	 * use a dualstrusion construction to do the gcode merge
+	 */
 	private void combineGcodes()
 	{
 		((CardLayout)panels.getLayout()).show(panels, WAITING_PANEL);
