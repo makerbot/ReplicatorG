@@ -183,9 +183,9 @@ public class MutableGCodeSource implements GCodeSource {
 		int sourceSize = source.size();
 		ArrayList<String> newSource = new ArrayList<String>();
 		/// TRICKY: M73 P0 is required by The Replicator to enable % display
-		// and M73 P100. is required at the end. 
-		/// These are in TheReplicator start.gcode
-		// and end.gcode
+		// and M73 P100. is required at the end. These are in TheReplicator start.gcode
+		// and end.gcode.  P0 and P100 are flags to send the build_start and build_end  notifications
+		// to the firmware.  A possible less tricky fix is to make a separate command for these
 		for(String line : source)
 		{
 			if( line.startsWith("(<layer>") )
