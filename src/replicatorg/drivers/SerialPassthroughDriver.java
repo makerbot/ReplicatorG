@@ -345,10 +345,10 @@ public class SerialPassthroughDriver extends SerialDriver {
 	 * Motor interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setMotorRPM(double rpm) throws RetryException {
+	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 		sendCommand(_getToolCode() + "M108 R" + df.format(rpm));
 
-		super.setMotorRPM(rpm);
+		super.setMotorRPM(rpm, toolhead);
 	}
 
 	public void setMotorSpeedPWM(int pwm) throws RetryException {

@@ -1,13 +1,15 @@
 package replicatorg.drivers;
 
-// A fake, but agreeable driver.
+/// A fake, but agreeable driver.
 
+import java.awt.Color;
 import java.util.EnumSet;
 
 import javax.vecmath.Point3d;
 
 import org.w3c.dom.Node;
 
+import replicatorg.app.Base;
 import replicatorg.app.exceptions.BuildFailureException;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
@@ -19,7 +21,7 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	final Version version = new Version(0,0);
 	final Version minimumVersion = new Version(0,0);
 	final Version preferredVersion = new Version(0,0);
-	final boolean hasSoftStop = true;
+	final boolean hasSoftStop = true;	
 	final boolean hasEStop = true;
 	
 	double toolTemperature = 0;
@@ -325,7 +327,7 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 
 	@Override
-	public void setMotorRPM(double rpm) throws RetryException {
+	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 		// TODO Auto-generated method stub
 
 	}
@@ -415,11 +417,23 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 
 	@Override
+	public void setTemperature(double temperature, int toolhead) throws RetryException {
+		toolTemperature = temperature;
+		toolTemperatureSetting = temperature;
+	}
+
+	@Override
 	public void readTemperature() {
 	}
 
 	@Override
+	@Deprecated
 	public double getTemperature() {
+		return toolTemperature;
+	}
+
+	@Override
+	public double getTemperature(int toolheadIndex) {
 		return toolTemperature;
 	}
 
@@ -436,11 +450,25 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 
 	@Override
+	public void setPlatformTemperature(double temperature, int toolhead) throws RetryException {
+		platformTemperature = temperature;
+		platformTemperatureSetting = temperature;
+	}
+
+	
+	@Override
 	public void readPlatformTemperature() {
 	}
 
 	@Override
 	public double getPlatformTemperature() {
+		return platformTemperature;
+	}
+
+	/** relies on timing to have the 'right selected toolhead', deprecated */
+	@Override
+	@Deprecated
+	public double getPlatformTemperature(int toolheadIndex) {
 		return platformTemperature;
 	}
 
@@ -520,6 +548,41 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 
 	}
 
+	public void setStepperVoltage(int stepperId, int referenceValue)
+	{
+		Base.logger.finer("VirtualPrinter::setStepperVoltage");
+		//generated method stub
+	}
+
+	public int getStepperVoltage(int stepperId)
+	{
+		Base.logger.finer("VirtualPrinter::setStepperVoltage");
+		return 0;
+		//generated method stub
+	}
+	
+
+	public void storeStepperVoltage(int stepperId, int referenceValue)
+	{
+		Base.logger.finer("VirtualPrinter::storeStepperVoltage");
+		//generated method stub
+	}
+
+	
+	public void setLedStrip(Color color, int effectId)
+	{
+		Base.logger.finer("VirtualPrinter::setLedStrip");
+		//generated method stub
+	}
+	
+	
+	public void sendBeep(int frequencyHz, int durationMs,int effect) throws RetryException
+	{
+		Base.logger.finer("VirtualPrinter::sendBeep");
+		//generated method stub
+	}
+
+	
 	@Override
 	public void openCollet() {
 		// TODO Auto-generated method stub
@@ -584,6 +647,68 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	public boolean hasAutomatedBuildPlatform() {
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	@Override
+	public void readAllTemperatures() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void readAllPlatformTemperatures() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+	@Override
+	public void setMotorDirection(int dir, int toolhead) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void enableMotor(int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void enableMotor(long millis, int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void disableMotor(int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void enableFan(int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void disableFan(int toolhead) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setAutomatedBuildPlatformRunning(boolean state, int toolhead)
+			throws RetryException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

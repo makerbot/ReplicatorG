@@ -64,6 +64,24 @@ public class PacketBuilder implements PacketConstants {
 		add16((int) (v & 0xffff));
 		add16((int) ((v >> 16) & 0xffff));
 	}
+	
+	/**
+	 * add string to this packet, up to count of MaxSize (not including null terminator
+	 * @param string string to add
+	 * @param maxSize maximum characters we may add to this packet
+	 * @return count of characters added,not including null terminator
+	 */
+	int addString(String string, int maxSize){
+		int roomRemaining = maxSize;
+		int cursor = 0;
+		while (roomRemaining > 0 && cursor < string.length()) {
+			add8(string.charAt(cursor));
+			cursor++;
+			roomRemaining--;
+		}
+		add8('\0');
+		return cursor;
+	}
 
 	/**
 	 * Complete the packet.

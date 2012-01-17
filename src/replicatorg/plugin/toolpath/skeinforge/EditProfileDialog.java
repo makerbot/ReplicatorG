@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -25,7 +26,6 @@ import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.Profile;
-import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
 class EditProfileDialog extends JDialog {
 	final boolean postProcessToolheadIndex = true;
@@ -38,6 +38,8 @@ class EditProfileDialog extends JDialog {
 	
 	JButton doneButton = new JButton("Done");
 	
+	JCheckBox filterBox = new JCheckBox("Show profiles for every machine.");
+	
 	/* these must be explicitly nulled at close because of a java bug:
 	 * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6497929
 	 * 
@@ -49,7 +51,6 @@ class EditProfileDialog extends JDialog {
 	private List<Profile> profiles = null;
 	
 	JPanel profilePanel = new JPanel();
-	JPanel buttonPanel = new JPanel();
 	
 	private void loadList(JList list) {
 		list.removeAll();
@@ -58,7 +59,10 @@ class EditProfileDialog extends JDialog {
 		int i=0;
 		int foundLastProfile = -1;
 		for (Profile p : profiles) {
-			model.addElement(p.toString());
+			
+			// Check that this profile says it's for this machine
+			if(displayProfile(p))
+				model.addElement(p.toString());
 			if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
 			{
 				Base.logger.fine("Selecting last used element: " + p);
@@ -74,6 +78,19 @@ class EditProfileDialog extends JDialog {
 			doneButton.requestFocusInWindow();
 			doneButton.setFocusPainted(true);
 		}			
+	}
+
+	//used to check if we want to display a specific profile, based on selected machine, etc.
+	private boolean displayProfile(Profile p) {
+
+		String selectedMachine = Base.preferences.get("machine.name", "no machine selected");
+		
+		if("no machine selected".equals(selectedMachine) ||
+			filterBox.isSelected() ||
+			p.getTargetMachines().isEmpty()  || // if the profile specifies no targets
+			p.getTargetMachines().contains(selectedMachine)) // if the profile targets the selected machine
+			return true;
+		return false;
 	}
 
 	/**
@@ -116,8 +133,8 @@ class EditProfileDialog extends JDialog {
 		deleteButton.setEnabled(false);
 		duplicateButton.setEnabled(false);
 
-		profilePanel.setLayout(new MigLayout("top, ins 0, fillx"));
-		profilePanel.add(new JLabel("Select a Skeinforge profile:"), "wrap");
+		profilePanel.setLayout(new MigLayout("top, ins 0, fill, flowy"));
+		profilePanel.add(new JLabel("Select a Skeinforge profile:"), "split");
 
 		prefList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		prefList.addListSelectionListener(new ListSelectionListener() {
@@ -169,7 +186,17 @@ class EditProfileDialog extends JDialog {
 			}
 	     }
 		);
-		profilePanel.add(editButton, "split,flowy,growx");
+		
+		filterBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				loadList(prefList);
+			}
+			
+		});
+		profilePanel.add(filterBox, "growx, wrap");
+		
+		profilePanel.add(editButton, "split, growx");
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
@@ -183,7 +210,7 @@ class EditProfileDialog extends JDialog {
 			}
 		});
 
-		profilePanel.add(duplicateButton, "growx,flowy");
+		profilePanel.add(duplicateButton, "split, growx");
 		duplicateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
@@ -200,7 +227,7 @@ class EditProfileDialog extends JDialog {
 			}
 		});
 		
-		profilePanel.add(locateButton, "split,flowy,growx");
+		profilePanel.add(locateButton, "split, growx");
 		locateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
@@ -215,7 +242,7 @@ class EditProfileDialog extends JDialog {
 		});
 
 
-		profilePanel.add(deleteButton, "wrap,growx");
+		profilePanel.add(deleteButton, "growx");
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
@@ -237,8 +264,6 @@ class EditProfileDialog extends JDialog {
 		});
 		
 		add(profilePanel, "wrap, growx");
-
-		buttonPanel.setLayout(new MigLayout("aligny, top, ins 0"));
 		
 		add(doneButton, "tag ok, split 2");
 		doneButton.addActionListener(new ActionListener() {
