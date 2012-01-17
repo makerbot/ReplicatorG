@@ -3,13 +3,11 @@ package replicatorg.machine;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
-import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.DriverError;
 import replicatorg.drivers.DriverFactory;
@@ -23,8 +21,8 @@ import replicatorg.drivers.commands.AssessState;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.Machine.JobTarget;
 import replicatorg.machine.Machine.RequestType;
-import replicatorg.machine.builder.MachineBuilder;
 import replicatorg.machine.builder.Direct;
+import replicatorg.machine.builder.MachineBuilder;
 import replicatorg.machine.builder.ToLocalFile;
 import replicatorg.machine.builder.ToRemoteFile;
 import replicatorg.machine.builder.UsingRemoteFile;
@@ -76,7 +74,7 @@ class MachineThread extends Thread {
 	class MachineTimer {
 		private long lastEventTime = 0;
 		private boolean enabled = false;
-		private long intervalMs = 1000;
+		private long intervalMs = 3000;
 		
 		public void start(long interval) {
 			enabled = true;
@@ -158,6 +156,8 @@ class MachineThread extends Thread {
 		
 		statusThread = new AssessStatusThread(this);
 		statusThread.start();
+
+
 	}
 
 	/**
@@ -276,7 +276,7 @@ class MachineThread extends Thread {
 			}
 			break;
 		case DISCONNECT:
-			// TODO: This seems wrong
+
 			if (state.isConnected()) {
 				driver.uninitialize();
 				setState(new MachineState(MachineState.State.NOT_ATTACHED), notConnectedMessage());
@@ -286,6 +286,13 @@ class MachineThread extends Thread {
 					us.closeSerial();
 				}
 			}
+			/// for some reason we want to advertise we are still not connected....
+			else { 
+				//TRICKY: in this case way may be disconnected, and re-advertising disconnected. 
+				//setState() will ignore the duplicate state, so we dircetly emit.
+				controller.emitStateChange(new MachineState(MachineState.State.NOT_ATTACHED), "Not Connected");
+			}
+
 			break;
 		case RESET:
 			if (state.isConnected()) {
@@ -333,6 +340,7 @@ class MachineThread extends Thread {
 				ToRemoteFile trf = new ToRemoteFile(driver, simulator, combinedSource, command.remoteName);
 				if(trf.setupFailed)
 				{
+					//TRICKY:
 					//I am ashamed of this, but without adding a new state of "BUILD_CANCELLED"
 					// and making some changes to MainWindow.MachineStateChanged(), or by 
 					// changing the whole process by which this gets called, there is, apparently,
@@ -371,6 +379,7 @@ class MachineThread extends Thread {
 				ToLocalFile lf = new ToLocalFile(driver, simulator,	combinedSource, command.remoteName);
 				if(lf.setupFailed)
 				{
+					//TRICKY:
 					// This is even worse than above, because we might already be NOT_ATTACHED
 					// and we don't emit repeated changes for the same state, we have to switch
 					// to something other than NOT_ATTACHED which WILL NOT end the build,
@@ -438,8 +447,8 @@ class MachineThread extends Thread {
 			break;
 		case STOP_ALL:
 			// TODO: This should be handled at the driver level?
-			driver.getMachine().currentTool().setTargetTemperature(0);
-			driver.getMachine().currentTool().setPlatformTargetTemperature(0);
+			//driver.getMachine().currentTool().setTargetTemperature(0);
+			//driver.getMachine().currentTool().setPlatformTargetTemperature(0);
 			
 			driver.stop(true);
 			
@@ -489,12 +498,12 @@ class MachineThread extends Thread {
 	}
 	
 	/**
-	 * Main machine thread loop.
+	 * Main machine thread loop for managing the connection to the bot.
 	 */
 	public void run() {
 		
 		
-		// This is our main loop.
+		/// This is our main loop.
 		while (true) {
 			
 			// First, check if the driver registered any errors
@@ -502,34 +511,31 @@ class MachineThread extends Thread {
 				DriverError error = driver.getError();
 
 				if(state.isConnected() && error.getDisconnected()) {
-					// If we were connected, but this error causes us to disconnect,
-					// transition to a disconnected state
-					setState(new MachineState(MachineState.State.NOT_ATTACHED),
-							error.getMessage());
+					// If we were connected & the error is a disconnect, set disconnected state
+					setState(new MachineState(MachineState.State.NOT_ATTACHED),error.getMessage());
 				}
 				else {
-					// Otherwise, transition to an error state, where we can still
-					// configure the machine, but can't print.
-					setState(new MachineState(MachineState.State.ERROR),
-							error.getMessage());
+					// transition to an error state, 
+					// in error state we can still configure the machine, but can't print.
+					setState(new MachineState(MachineState.State.ERROR), error.getMessage());
 				}
 			}
-			
-			//
 			
 			// Check for and run any control requests that might be in the queue.
 			while (!pendingQueue.isEmpty()) {
 				runCommand(pendingQueue.remove());
 			}
+
 			
 			if(state.isConnected())
 			{
-				// Check the status poll machine.
-				if (pollingTimer.elapsed()) {
-					// if we're not building, check temp
-					// if we are, check preferences for whether we want to check temp
-					if ((!state.isBuilding()) || Base.preferences.getBoolean("build.monitor_temp",false)) {
-						driver.readTemperature();
+				/// Check the status poll machine.
+				if ( pollingTimer.elapsed() ) {
+					/// if we're not building, request temp update
+					/// if we are, check preferences for whether we want to check temp
+					if (( !state.isBuilding() ) || Base.preferences.getBoolean("build.monitor_temp",false)) {
+						MachineCommand pollCmd = new MachineCommand( RequestType.RUN_COMMAND, new replicatorg.drivers.commands.ReadTemperature() );
+						this.scheduleRequest( pollCmd );
 						Vector<ToolModel> tools = controller.getModel().getTools();
 						for (ToolModel t : tools) {
 							controller.emitToolStatus(t);
@@ -706,6 +712,7 @@ class MachineThread extends Thread {
 				name = n;
 			}
 			else {
+				Base.logger.fine("No name on the machine. Using the XML name of the machine");
 				parseName(); // Use name from XML file instead of reusing name from last connected machine
 			}
 		}

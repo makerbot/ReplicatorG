@@ -78,7 +78,7 @@ public class InfoPanel extends JFrame {
 		info += "Machine" + "\n";
 		info += " Profile Name: " + Base.preferences.get("machine.name", "") + "\n";
 		info += " Driver Type: " + Base.getMachineLoader().getDriver().getDriverName() + "\n";
-		info += " Name: " + Base.getMachineLoader().getMachine().getMachineName() + "\n";
+		info += " Name: " + Base.getMachineLoader().getMachineInterface().getMachineName() + "\n";
 
 		// TODO: Only if a printer is connected?
 		info += " Motherboard firmware version: " + driver.getFirmwareInfo() + "\n";

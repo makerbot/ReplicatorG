@@ -4,6 +4,7 @@
 package replicatorg.model;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -20,6 +21,10 @@ public class StringListSource implements GCodeSource {
 	
 	public Iterator<String> iterator() {
 		return gcode.iterator();
+	}
+	
+	public List<String> asList() {
+		return gcode;
 	}
 
 	public int getLineCount() { return gcode.size(); }

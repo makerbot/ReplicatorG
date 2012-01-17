@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
@@ -71,6 +72,28 @@ public class ScalingTool extends Tool {
 			}
 		});
 		p.add(b,"growx,wrap");
+		
+		final JButton emBiggen = createToolButton("Fill Build Space!","");
+		emBiggen.setToolTipText("Keith it! (Make the object as large as possible)");
+
+		emBiggen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				double newScale = parent.getModel().scaleMax();
+				JOptionPane.showConfirmDialog(null, "Scaled by "+newScale, "Scale to max", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+			}
+		});	
+		
+		
+		//cute easter egg, but causes gui to resize in an annoying way..
+//		emBiggen.addMouseListener(new java.awt.event.MouseAdapter() {
+//			public void mouseEntered(java.awt.event.MouseEvent evt) {
+//				emBiggen.setText("Keith It! Big!");
+//			}
+//			public void mouseExited(java.awt.event.MouseEvent evt) {
+//				emBiggen.setText("Fill Build Space!");
+//			}
+//		});
+		p.add(emBiggen,"growx,wrap");
 
 		return p;
 	}

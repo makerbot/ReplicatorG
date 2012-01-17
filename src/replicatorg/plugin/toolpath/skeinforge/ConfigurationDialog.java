@@ -99,11 +99,11 @@ class ConfigurationDialog extends JDialog {
 				generateButton.setFocusPainted(true);
 			}
 		});
-		loadList(prefPulldown);
+		loadList(prefPulldown); /// Filles UI with the list of Skeinforge settings/options
 		add(prefPulldown, "wrap, growx");
 
-		for (SkeinforgePreference preference: parentGenerator.preferences) {
-			add(preference.getUI(), "wrap");
+		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
+			add(preference.getUI(), "growx, wrap");
 		}
 
 		final JCheckBox autoGen = new JCheckBox("Automatically generate when building.");
