@@ -182,8 +182,6 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	public ExtruderPanel(MachineInterface machine, ToolModel tool) {
 		this.machine = machine;
 		this.toolModel = tool;
-		
-		Dimension panelSize = new Dimension(420, 30);
 
 		extrudeTimePattern = Pattern.compile("([.0-9]+)");
 		
@@ -202,8 +200,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 				JLabel label = makeLabel("Motor Speed (PWM)");
 				
 				JFormattedTextField field = new CallbackTextField(this, "handleTextField", "motor-speed-pwm", 9, Base.getLocalFormat());
-				field.setValue(Integer.toString(tool.getMotorSpeedReadingPWM()) );// <-- should be
-				//field.setValue(Integer.toString(machine.getDriver().getMotorSpeedPWM()));
+				field.setValue(machine.getDriverQueryInterface().getMotorSpeedPWM());
 				add(label);
 				add(field,"wrap");
 			}
@@ -434,20 +431,20 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		}
 	}
 
-	private Element findMappingNode(Node xml,String portName) {
-		// scan the remapping nodes.
-		NodeList children = xml.getChildNodes();
-		for (int j=0; j<children.getLength(); j++) {
-			Node child = children.item(j);
-			if (child.getNodeName().equals("remap")) {
-				Element e = (Element)child;
-				if (e.getAttribute("port").equals(portName)) {
-					return e;
-				}
-			}
-		}
-		return null;
-	}
+//	private Element findMappingNode(Node xml,String portName) {
+//		// scan the remapping nodes.
+//		NodeList children = xml.getChildNodes();
+//		for (int j=0; j<children.getLength(); j++) {
+//			Node child = children.item(j);
+//			if (child.getNodeName().equals("remap")) {
+//				Element e = (Element)child;
+//				if (e.getAttribute("port").equals(portName)) {
+//					return e;
+//				}
+//			}
+//		}
+//		return null;
+//	}
 
 	public void updateStatus() {
 		
