@@ -360,13 +360,19 @@ public class ExtruderOnboardParameters extends JPanel {
 			commitList.add(rcf);
 		}
 
-		JButton commitButton = new JButton("Commit Changes");
-		commitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (ExtruderOnboardParameters.this.commit()) {
+		String machineType = target.getMachineType();
+		if(!(machineType.equals("MightyBoard") || 
+			machineType.equals("The Replicator") || 
+			machineType.equals("MightyBoard(unverified)")))
+		{
+			JButton commitButton = new JButton("Commit Changes");
+			commitButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent arg0) {
+					if (ExtruderOnboardParameters.this.commit()) {
+					}
 				}
-			}
-		});
-		add(commitButton, "newline, span 2");
+			});
+			add(commitButton, "newline, span 2");
+		}
 	}
 }

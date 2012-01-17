@@ -86,14 +86,12 @@ public class MachineOnboardParameters extends JPanel {
 	 */
 	private void requestResetFromUser() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
-				"<html>Before these changes can take effect, you'll need to reset your <br/>"+
-				"motherboard.  If you choose not to reset the board now, some old settings <br/>"+
-				"will remain in effect until you manually reset.<br/><br/>Reset the " +
-				"motherboard now?</html>",
-				"Reset board?", 
-				JOptionPane.YES_NO_OPTION,
-				JOptionPane.WARNING_MESSAGE);
-		if (confirm == JOptionPane.YES_OPTION) {
+				"<html>For these changes to take effect your motherboard needs yo be reset. <br/>"+
+				"This may take up to <b>10 seconds</b>.</html>",
+				"Reset board.", 
+				JOptionPane.DEFAULT_OPTION,
+				JOptionPane.INFORMATION_MESSAGE);
+		if (confirm == JOptionPane.OK_OPTION) {
 			this.disconnectNeededOnExit = true;
 			driver.reset();
 		}

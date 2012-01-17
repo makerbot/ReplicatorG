@@ -108,35 +108,25 @@ public class DualStrusionConstruction
 		 * 
 		 * 
 		 */
-System.out.println("pre read");
 		left = new MutableGCodeSource(leftFile);
 		right = new MutableGCodeSource(rightFile);
-System.out.println("post read");
 		
 		left.stripStartEndBestEffort();
 		right.stripStartEndBestEffort();
 		
 		stripNonLayerTagComments(left);
 		stripNonLayerTagComments(right);
-System.out.println("post strip");
 
 		LinkedList<Layer> leftLayers = newOldParseLayers(left);
 		LinkedList<Layer> rightLayers = newOldParseLayers(right);
-System.out.println("post parse");
 
 		final LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
 		
 		//process start & end before adding them
 //		duplicateToolheadLines(start); we have dual-start.gcode to do this, now
-		duplicateToolheadLines(end);
+//		duplicateToolheadLines(end);
 
-		//debug code///////////////////////////
-		merged.add(0, new Layer(0d, new ArrayList<String>(){{add("(********************************************************************************post-start**************************************************************)");}}));
-		//////////////////////////////////////
 		merged.add(0, new Layer(0d, start.asList()));
-		//debug code///////////////////////////
-		merged.add(new Layer(0d, new ArrayList<String>(){{add("(********************************************************************************pre-start**************************************************************)");}}));
-		//////////////////////////////////////
 		merged.add(new Layer(Double.MAX_VALUE, end.asList()));
 
 		result = new MutableGCodeSource();
@@ -200,7 +190,7 @@ System.out.println("post parse");
 		final Queue<String> read = new LinkedList<String>();
 
 		//debug code///////////////////////////
-		layers.add(new Layer(0d, new ArrayList<String>(){{add("(********************************************************************************start layer**************************************************************)");}}));
+		layers.add(new Layer(0d, new ArrayList<String>(){{add("(*************start layer*************)");}}));
 		//////////////////////////////////////
 		String lastM103 = null;
 		double lastZHeight = Double.MIN_VALUE;
@@ -245,7 +235,7 @@ System.out.println("post parse");
 		}
 
 		//debug code///////////////////////////
-		layers.add(new Layer(0d, new ArrayList<String>(){{add("(********************************************************************************end layer**************************************************************)");}}));
+		layers.add(new Layer(0d, new ArrayList<String>(){{add("(*************end layer*************)");}}));
 		//////////////////////////////////////
 		return layers;
 	}
@@ -338,7 +328,7 @@ System.out.println("post parse");
 		 */
 		final ArrayList<String> result = new ArrayList<String>();
 		//debug code///////////////////////////
-		result.add("(********************************************************************************start toolchange**************************************************************)");
+		result.add("(*************start toolchange*************)");
 		//////////////////////////////////////
 		if(useWipes)
 		{
@@ -382,7 +372,7 @@ System.out.println("post parse");
 
 		
 		//debug code///////////////////////////
-		result.add("(********************************************************************************end toolchange**************************************************************)");
+		result.add("(*************end toolchange*************)");
 		//////////////////////////////////////
 		// The 'height' of the toolchange. just the average of the surrounding layers because why not?
 		final double height = (toLayer.getHeight() - fromLayer.getHeight())/2;
@@ -486,7 +476,7 @@ System.out.println("post parse");
 		final ArrayList<String> result = new ArrayList<String>();
 
 		//debug code///////////////////////////
-		result.add("(********************************************************************************start wipe**************************************************************)");
+		result.add("(*************start wipe*************)");
 		//////////////////////////////////////
 
 		// This is a not-entirely-arbitrarily chosen number
@@ -519,7 +509,7 @@ System.out.println("post parse");
 		result.add("G1 " + toolWipe.getX2() +" "+ toolWipe.getY2() +" "+ toolWipe.getZ2() +" "+ feedrate);
 
 		//debug code///////////////////////////
-		result.add("(********************************************************************************end wipe**************************************************************)");
+		result.add("(*************end wipe*************)");
 		//////////////////////////////////////
 		return result;
 	}
@@ -648,27 +638,27 @@ System.out.println("post parse");
 		return result;
 	}
 	
-	// This is a hack, really we should be getting the dual-head start code
-	private void duplicateToolheadLines(final MutableGCodeSource source)
-	{
-		int idx = 0;
-		String line;
-		double toolhead;
-		final List<String> sourceList = source.asList();
-		for(int i = 0; i < source.getLineCount(); i++)
-		{
-			line = sourceList.get(i);
-			idx++;
-			GCodeCommand gcode = new GCodeCommand(line);
-			
-			toolhead = gcode.getCodeValue('T');
-			if(toolhead == 0)
-				source.add(idx, line.replace("T0", "T1"));
-			if(toolhead == 1)
-				source.add(line.replace("T1", "T0"));
-			if(toolhead != -1)
-				i++;
-			
-		}
-	}
+//	// This is a hack, really we should be getting the dual-head start code
+//	private void duplicateToolheadLines(final MutableGCodeSource source)
+//	{
+//		int idx = 0;
+//		String line;
+//		double toolhead;
+//		final List<String> sourceList = source.asList();
+//		for(int i = 0; i < source.getLineCount(); i++)
+//		{
+//			line = sourceList.get(i);
+//			idx++;
+//			GCodeCommand gcode = new GCodeCommand(line);
+//			
+//			toolhead = gcode.getCodeValue('T');
+//			if(toolhead == 0)
+//				source.add(idx, line.replace("T0", "T1"));
+//			if(toolhead == 1)
+//				source.add(line.replace("T1", "T0"));
+//			if(toolhead != -1)
+//				i++;
+//			
+//		}
+//	}
 }

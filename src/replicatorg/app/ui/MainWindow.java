@@ -293,7 +293,7 @@ ToolpathGenerator.GeneratorListener
 		MRJApplicationUtils.registerOpenDocumentHandler(this);
 
 		PythonUtils.setSelector(new SwingPythonSelector(this));
-
+		
 		machineLoader = Base.getMachineLoader();
 
 		// load up the most recently used files list
@@ -443,7 +443,7 @@ ToolpathGenerator.GeneratorListener
 		// Have UI elements listen to machine state.
 		machineLoader.addMachineListener(this);
 		machineLoader.addMachineListener(machineStatusPanel);
-		machineLoader.addMachineListener(buttons);			
+		machineLoader.addMachineListener(buttons);
 	}
 
 	// ...................................................................
@@ -2426,7 +2426,7 @@ ToolpathGenerator.GeneratorListener
 		{
 			DualStrusionWindow dsw;
 			
-			// this is stuff that DualStrusion, and until there's a better way to get it there...
+			// this is stuff that DualStrusionConstruction needs, and until there's a better way to get it there...
 			MachineType type = machineLoader.getMachineInterface().getMachineType();
 			MutableGCodeSource startCode = 
 					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getDualstartBookendCode());
