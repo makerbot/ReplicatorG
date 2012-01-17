@@ -326,6 +326,8 @@ public class ExtruderOnboardParameters extends JPanel {
 			v = ((Sanguino3GDriver)target).getToolVersion();
 		}
 		
+		setLayout(new MigLayout());
+		
 		ThermistorTablePanel ttp;
 
 		if(tool.hasExtruderThermistor() )
