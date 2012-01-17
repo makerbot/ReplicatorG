@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Vector;
 
 import replicatorg.app.Base;
-import replicatorg.machine.model.MachineModel;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic5D;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;

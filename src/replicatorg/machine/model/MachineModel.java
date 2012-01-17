@@ -36,7 +36,6 @@ import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
-import replicatorg.model.GCodeSource;
 import replicatorg.util.Point5d;
 
 /**
