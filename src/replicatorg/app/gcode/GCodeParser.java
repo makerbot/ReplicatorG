@@ -282,7 +282,6 @@ public class GCodeParser {
 		// you may wish to avoid using M6.
 		if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools())
 		{
-			
 			commands.add(new replicatorg.drivers.commands.SelectTool((int) gcode.getCodeValue('T')));
 			tool = (int) gcode.getCodeValue('T');
 		}
