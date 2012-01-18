@@ -2256,7 +2256,8 @@ ToolpathGenerator.GeneratorListener
 		boolean showIndexing = 
 			evt.getState().isConfigurable() &&
 			machineLoader.getDriver() instanceof MultiTool &&
-			((MultiTool)machineLoader.getDriver()).toolsCanBeReindexed();
+			((MultiTool)machineLoader.getDriver()).toolsCanBeReindexed() &&
+			machineLoader.getMachineInterface().getMachineType() != MachineType.THE_REPLICATOR;
 		toolheadIndexingItem.setVisible(showIndexing);
 
 		boolean showRealtimeTuning = 
