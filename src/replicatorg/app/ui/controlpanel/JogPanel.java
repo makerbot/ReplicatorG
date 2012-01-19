@@ -9,7 +9,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.BufferedImage;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,13 +28,13 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.vecmath.Point2d;
 import javax.vecmath.Point2i;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.AxisId;
+import replicatorg.machine.model.MachineType;
 import replicatorg.util.Point5d;
 
 public class JogPanel extends JPanel implements ActionListener, MouseListener
@@ -118,102 +117,8 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			return img.getScaledInstance((int)(img.getWidth(null)*xScale), (int)(img.getHeight(null)*yScale), Image.SCALE_SMOOTH);
 		}
 	}
-
-	private class ThingomaticArrangement extends ButtonArrangement {
-		public ThingomaticArrangement() {
-			buttonFolder = "images/jog-new/thingomatic/";
-			
-			backgroundImageString = "tom";
-			backgroundImageLocation = new Point2i(0, 0);
-			extruderImageLocation = new Point2i(0, 0);
-			dualextruderImageLocation = new Point2i(0, 0);
-			buildplateImageLocation = new Point2i(0, 0);
-
-			xMinusButtonLocation = new Point2i(140, 190);
-			xPlusButtonLocation = new Point2i(50, 190);
-			yMinusButtonLocation = new Point2i(75, 65);
-			yPlusButtonLocation = new Point2i(10, 90);
-			zMinusButtonLocation = new Point2i(255, 120);
-			zPlusButtonLocation = new Point2i(255, 25);
-			
-			stopButtonLocation = new Point2i(0, 0);
-		}
-
-		@Override
-		public JPanel getButtonPanel(MachineInterface machine) {
-			
-			JPanel panel = new JPanel(new MigLayout());
-			
-			JButton button = createJogButton(xMinusButtonString, xMinusTooltip, this);
-			panel.add(button, "pos "+xMinusButtonLocation.x+" "+xMinusButtonLocation.y);
-			button = createJogButton(xPlusButtonString, xPlusTooltip, this);
-			panel.add(button, "pos "+xPlusButtonLocation.x+" "+xPlusButtonLocation.y);
-			button = createJogButton(yMinusButtonString, yMinusTooltip, this);
-			panel.add(button, "pos "+yMinusButtonLocation.x+" "+yMinusButtonLocation.y);
-			button = createJogButton(yPlusButtonString, yPlusTooltip, this);
-			panel.add(button, "pos "+yPlusButtonLocation.x+" "+yPlusButtonLocation.y);
-			button = createJogButton(zMinusButtonString, zMinusTooltip, this);
-			panel.add(button, "pos "+zMinusButtonLocation.x+" "+zMinusButtonLocation.y);
-			button = createJogButton(zPlusButtonString, zPlusTooltip, this);
-			panel.add(button, "pos "+zPlusButtonLocation.x+" "+zPlusButtonLocation.y);
-			
-			button = createJogButton(stopButtonString, stopTooltip, this);
-			panel.add(button, "pos "+stopButtonLocation.x+" "+stopButtonLocation.y);
-
-			Image buildplate = Base.getImage(buttonFolder+buildplateImageString+".png", panel);
-			panel.add(new JLabel(new ImageIcon(buildplate)), 
-								"pos "+buildplateImageLocation.x+" "+buildplateImageLocation.y);
-			Image extruder = Base.getImage(buttonFolder+extruderImageString+".png", panel);
-			panel.add(new JLabel(new ImageIcon(extruder)), 
-								"pos "+extruderImageLocation.x+" "+extruderImageLocation.y);
-			Image background = Base.getImage(buttonFolder+backgroundImageString+".png", panel); 
-			panel.add(new JLabel(new ImageIcon(background)), 
-								"pos "+backgroundImageLocation.x+" "+backgroundImageLocation.y);
-			return panel;
-		}
-	}
 	
-	private class CupcakeArrangement extends ButtonArrangement {
-		{
-			buttonFolder = "images/jog-new/cupcake/";
-		}
-
-		@Override
-		public JPanel getButtonPanel(MachineInterface machine) {
-			return null;
-			// TODO Auto-generated method stub
-			
-		}
-	}
-	
-	private class ReplicatorArrangement extends ButtonArrangement {
-		public ReplicatorArrangement() {
-			buttonFolder = "images/jog-new/replicator/";
-
-			xScale = .45;
-			yScale = .45;
-			
-			backgroundImageString = "replicator";
-			
-			/*
-			 * Yes, these numbers ARE magic. They're just some button
-			 * positions I found to look okay.
-			 */
-			backgroundImageLocation = scalePoint(0, 0);
-			extruderImageLocation = scalePoint(188, 60);
-			dualextruderImageLocation = scalePoint(144, 60);
-			buildplateImageLocation = scalePoint(100, 150);
-
-			xMinusButtonLocation = scalePoint(185, 200);
-			xPlusButtonLocation = scalePoint(95, 200);
-			yMinusButtonLocation = scalePoint(65, 65);
-			yPlusButtonLocation = scalePoint(0, 90);
-			zMinusButtonLocation = scalePoint(357, 40);
-			zPlusButtonLocation = scalePoint(357, 135);
-			
-			stopButtonLocation = scalePoint(165, 100);
-		}
-
+	private abstract class MakerbotArrangement extends ButtonArrangement {
 		@Override
 		public JPanel getButtonPanel(MachineInterface machine) {
 			
@@ -256,6 +161,74 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 								"pos "+backgroundImageLocation.x+" "+backgroundImageLocation.y);
 			return panel;
 		}
+	}
+
+	private class ThingomaticArrangement extends MakerbotArrangement {
+		public ThingomaticArrangement() {
+			buttonFolder = "images/jog-new/thingomatic/";
+
+			xScale = 1;
+			yScale = 1;
+			
+			backgroundImageString = "tom";
+			
+			/*
+			 * Yes, these numbers ARE magic. They're just some button
+			 * positions I found to look okay.
+			 */
+			backgroundImageLocation = scalePoint(0, 0);
+			extruderImageLocation = scalePoint(118, 60);
+			dualextruderImageLocation = scalePoint(74, 60);
+			buildplateImageLocation = scalePoint(80, 150);
+
+			xMinusButtonLocation = scalePoint(105, 200);
+			xPlusButtonLocation = scalePoint(15, 200);
+			yMinusButtonLocation = scalePoint(65, 55);
+			yPlusButtonLocation = scalePoint(0, 80);
+			zMinusButtonLocation = scalePoint(207, 135);
+			zPlusButtonLocation = scalePoint(207, 40);
+			
+			stopButtonLocation = scalePoint(165, 100);
+		}
+
+	}
+	
+	private class CupcakeArrangement extends MakerbotArrangement {
+		{
+			buttonFolder = "images/jog-new/cupcake/";
+		}
+
+	}
+	
+	private class ReplicatorArrangement extends MakerbotArrangement {
+		public ReplicatorArrangement() {
+			buttonFolder = "images/jog-new/replicator/";
+
+			xScale = .45;
+			yScale = .45;
+			
+			backgroundImageString = "replicator";
+			
+			/*
+			 * Yes, these numbers ARE magic. They're just some button
+			 * positions I found to look okay.
+			 */
+			backgroundImageLocation = scalePoint(0, 0);
+			extruderImageLocation = scalePoint(188, 60);
+			dualextruderImageLocation = scalePoint(144, 60);
+			buildplateImageLocation = scalePoint(100, 150);
+
+			xMinusButtonLocation = scalePoint(185, 200);
+			xPlusButtonLocation = scalePoint(95, 200);
+			yMinusButtonLocation = scalePoint(65, 65);
+			yPlusButtonLocation = scalePoint(0, 90);
+			zMinusButtonLocation = scalePoint(357, 40);
+			zPlusButtonLocation = scalePoint(357, 135);
+			
+			stopButtonLocation = scalePoint(165, 100);
+		}
+
+
 	}
 	
 	private class OldArrangement extends ButtonArrangement {
@@ -567,8 +540,19 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		if (axes.contains(AxisId.B)) {
 			new FeedrateControl("B Speed",AxisId.B,feedratePanel);
 		}
+		
+		ButtonArrangement arrangement;
+		if(machine.getMachineType() == MachineType.THE_REPLICATOR)
+			arrangement = new ReplicatorArrangement();
+		else if(machine.getMachineType() == MachineType.THINGOMATIC)
+			arrangement = new ThingomaticArrangement();
+		else if(machine.getMachineType() == MachineType.CUPCAKE)
+			arrangement = new CupcakeArrangement();
+		else
+			arrangement = new OldArrangement();
+		
 		// add it all to our jog panel
-		add(new ReplicatorArrangement().getButtonPanel(machine), "split");
+		add(arrangement.getButtonPanel(machine), "split");
 		add(buildPositionPanel(), "growx, wrap");
 		add(feedratePanel, "growx");
 

@@ -941,11 +941,11 @@ public class Base {
 			img2.getGraphics().drawImage(image,0,0,null);
 			image = img2;
 		} catch (InterruptedException e) {
-			Base.logger.log(Level.INFO, "Could not load image: "+name, e);
+			Base.logger.log(Level.FINE, "Could not load image: "+name, e);
 		} catch (IOException ioe) {
-			Base.logger.log(Level.INFO, "Could not load image: "+name, ioe);
+			Base.logger.log(Level.FINE, "Could not load image: "+name, ioe);
 		} catch (IllegalArgumentException iae) {
-			Base.logger.log(Level.INFO, "Could not load image: "+name, iae);
+			Base.logger.log(Level.FINE, "Could not load image: "+name, iae);
 		}
 		return image;
 	}
