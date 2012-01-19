@@ -2,6 +2,7 @@ package replicatorg.app.ui.controlpanel;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -9,13 +10,10 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -31,10 +29,11 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.vecmath.Point2d;
+import javax.vecmath.Point2i;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.AxisId;
 import replicatorg.util.Point5d;
@@ -57,6 +56,220 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 	protected MachineInterface machine;
 
+	/*
+	 * ButtonArrangement defines the variables needed for creating any 
+	 * JogButton we might show. Subclasses of ButtonArrangement may 
+	 * choose not use every available button.
+	 * 
+	 * ButtonArrangement also defines a function for retrieving the 
+	 * jogbutton panel.
+	 */
+	private abstract class ButtonArrangement {
+		public String buttonFolder = "images/jog/";
+		
+		public String overButtonString = "Over";
+		public String pressedButtonString = "Down";
+
+		public String backgroundImageString = null;
+		public Point2i backgroundImageLocation = null;
+		public String extruderImageString = "extruder";
+		public Point2i extruderImageLocation = null;
+		public String dualextruderImageString = "dual-extruder";
+		public Point2i dualextruderImageLocation = null;
+		public String buildplateImageString = "buildplate";
+		public Point2i buildplateImageLocation = null;
+
+		public String xMinusButtonString = "X-";
+		public String xPlusButtonString = "X+";
+		public String yMinusButtonString = "Y-";
+		public String yPlusButtonString = "Y+";
+		public String zMinusButtonString = "Z-";
+		public String zPlusButtonString = "Z+";
+		
+		public String xMinusTooltip = "Jog X axis in negative direction";
+		public String xPlusTooltip = "Jog X axis in positive direction";
+		public String yMinusTooltip = "Jog Y axis in negative direction";
+		public String yPlusTooltip = "Jog Y axis in positive direction";
+		public String zMinusTooltip = "Jog Z axis in negative direction";
+		public String zPlusTooltip = "Jog Z axis in positive direction";
+		
+		public Point2i xMinusButtonLocation;
+		public Point2i xPlusButtonLocation;
+		public Point2i yMinusButtonLocation;
+		public Point2i yPlusButtonLocation;
+		public Point2i zMinusButtonLocation;
+		public Point2i zPlusButtonLocation;
+		
+		public String stopButtonString = "Stop";
+		public String stopTooltip = "Emergency stop";
+		public Point2i stopButtonLocation = null;
+
+		public Point2i axisAPanelLocation;
+		public Point2i axisBPanelLocation;
+
+		public double xScale = 1;
+		public double yScale = 1;
+		
+		public abstract JPanel getButtonPanel(MachineInterface machine);
+		public Point2i scalePoint(double x, double y) {
+			return new Point2i((int)(x * xScale), (int)(y * yScale));
+		}
+		public Image scaleImage(Image img) {
+			return img.getScaledInstance((int)(img.getWidth(null)*xScale), (int)(img.getHeight(null)*yScale), Image.SCALE_SMOOTH);
+		}
+	}
+
+	private class ThingomaticArrangement extends ButtonArrangement {
+		public ThingomaticArrangement() {
+			buttonFolder = "images/jog-new/thingomatic/";
+			
+			backgroundImageString = "tom";
+			backgroundImageLocation = new Point2i(0, 0);
+			extruderImageLocation = new Point2i(0, 0);
+			dualextruderImageLocation = new Point2i(0, 0);
+			buildplateImageLocation = new Point2i(0, 0);
+
+			xMinusButtonLocation = new Point2i(140, 190);
+			xPlusButtonLocation = new Point2i(50, 190);
+			yMinusButtonLocation = new Point2i(75, 65);
+			yPlusButtonLocation = new Point2i(10, 90);
+			zMinusButtonLocation = new Point2i(255, 120);
+			zPlusButtonLocation = new Point2i(255, 25);
+			
+			stopButtonLocation = new Point2i(0, 0);
+		}
+
+		@Override
+		public JPanel getButtonPanel(MachineInterface machine) {
+			
+			JPanel panel = new JPanel(new MigLayout());
+			
+			JButton button = createJogButton(xMinusButtonString, xMinusTooltip, this);
+			panel.add(button, "pos "+xMinusButtonLocation.x+" "+xMinusButtonLocation.y);
+			button = createJogButton(xPlusButtonString, xPlusTooltip, this);
+			panel.add(button, "pos "+xPlusButtonLocation.x+" "+xPlusButtonLocation.y);
+			button = createJogButton(yMinusButtonString, yMinusTooltip, this);
+			panel.add(button, "pos "+yMinusButtonLocation.x+" "+yMinusButtonLocation.y);
+			button = createJogButton(yPlusButtonString, yPlusTooltip, this);
+			panel.add(button, "pos "+yPlusButtonLocation.x+" "+yPlusButtonLocation.y);
+			button = createJogButton(zMinusButtonString, zMinusTooltip, this);
+			panel.add(button, "pos "+zMinusButtonLocation.x+" "+zMinusButtonLocation.y);
+			button = createJogButton(zPlusButtonString, zPlusTooltip, this);
+			panel.add(button, "pos "+zPlusButtonLocation.x+" "+zPlusButtonLocation.y);
+			
+			button = createJogButton(stopButtonString, stopTooltip, this);
+			panel.add(button, "pos "+stopButtonLocation.x+" "+stopButtonLocation.y);
+
+			Image buildplate = Base.getImage(buttonFolder+buildplateImageString+".png", panel);
+			panel.add(new JLabel(new ImageIcon(buildplate)), 
+								"pos "+buildplateImageLocation.x+" "+buildplateImageLocation.y);
+			Image extruder = Base.getImage(buttonFolder+extruderImageString+".png", panel);
+			panel.add(new JLabel(new ImageIcon(extruder)), 
+								"pos "+extruderImageLocation.x+" "+extruderImageLocation.y);
+			Image background = Base.getImage(buttonFolder+backgroundImageString+".png", panel); 
+			panel.add(new JLabel(new ImageIcon(background)), 
+								"pos "+backgroundImageLocation.x+" "+backgroundImageLocation.y);
+			return panel;
+		}
+	}
+	
+	private class CupcakeArrangement extends ButtonArrangement {
+		{
+			buttonFolder = "images/jog-new/cupcake/";
+		}
+
+		@Override
+		public JPanel getButtonPanel(MachineInterface machine) {
+			return null;
+			// TODO Auto-generated method stub
+			
+		}
+	}
+	
+	private class ReplicatorArrangement extends ButtonArrangement {
+		public ReplicatorArrangement() {
+			buttonFolder = "images/jog-new/replicator/";
+
+			xScale = .45;
+			yScale = .45;
+			
+			backgroundImageString = "replicator";
+			
+			/*
+			 * Yes, these numbers ARE magic. They're just some button
+			 * positions I found to look okay.
+			 */
+			backgroundImageLocation = scalePoint(0, 0);
+			extruderImageLocation = scalePoint(188, 60);
+			dualextruderImageLocation = scalePoint(144, 60);
+			buildplateImageLocation = scalePoint(100, 150);
+
+			xMinusButtonLocation = scalePoint(185, 200);
+			xPlusButtonLocation = scalePoint(95, 200);
+			yMinusButtonLocation = scalePoint(65, 65);
+			yPlusButtonLocation = scalePoint(0, 90);
+			zMinusButtonLocation = scalePoint(357, 40);
+			zPlusButtonLocation = scalePoint(357, 135);
+			
+			stopButtonLocation = scalePoint(165, 100);
+		}
+
+		@Override
+		public JPanel getButtonPanel(MachineInterface machine) {
+			
+			JPanel panel = new JPanel(new MigLayout());
+			
+			JButton button = createJogButton(xMinusButtonString, xMinusTooltip, this);
+			panel.add(button, "pos "+xMinusButtonLocation.x+" "+xMinusButtonLocation.y);
+			button = createJogButton(xPlusButtonString, xPlusTooltip, this);
+			panel.add(button, "pos "+xPlusButtonLocation.x+" "+xPlusButtonLocation.y);
+			button = createJogButton(yMinusButtonString, yMinusTooltip, this);
+			panel.add(button, "pos "+yMinusButtonLocation.x+" "+yMinusButtonLocation.y);
+			button = createJogButton(yPlusButtonString, yPlusTooltip, this);
+			panel.add(button, "pos "+yPlusButtonLocation.x+" "+yPlusButtonLocation.y);
+			button = createJogButton(zMinusButtonString, zMinusTooltip, this);
+			panel.add(button, "pos "+zMinusButtonLocation.x+" "+zMinusButtonLocation.y);
+			button = createJogButton(zPlusButtonString, zPlusTooltip, this);
+			panel.add(button, "pos "+zPlusButtonLocation.x+" "+zPlusButtonLocation.y);
+			
+			button = createJogButton(stopButtonString, stopTooltip, this);
+			panel.add(button, "pos "+stopButtonLocation.x+" "+stopButtonLocation.y);
+
+			Image buildplate = Base.getImage(buttonFolder+buildplateImageString+".png", panel);
+			panel.add(new JLabel(new ImageIcon(scaleImage(buildplate))), 
+								"pos "+buildplateImageLocation.x+" "+buildplateImageLocation.y);
+			
+			if(machine.getModel().getTools().size() > 1) {
+				Image dualextruder = Base.getImage(buttonFolder+dualextruderImageString+".png", panel);
+				panel.add(new JLabel(new ImageIcon(scaleImage(dualextruder))), 
+									"pos "+dualextruderImageLocation.x+" "+dualextruderImageLocation.y);
+			}
+			else
+			{
+				Image extruder = Base.getImage(buttonFolder+extruderImageString+".png", panel);
+				panel.add(new JLabel(new ImageIcon(scaleImage(extruder))), 
+									"pos "+extruderImageLocation.x+" "+extruderImageLocation.y);
+			}
+			
+			Image background = Base.getImage(buttonFolder+backgroundImageString+".png", panel); 
+			panel.add(new JLabel(new ImageIcon(scaleImage(background))),
+								"pos "+backgroundImageLocation.x+" "+backgroundImageLocation.y);
+			return panel;
+		}
+	}
+	
+	private class OldArrangement extends ButtonArrangement {
+		{
+			buttonFolder = "images/jog/";
+		}
+
+		@Override
+		public JPanel getButtonPanel(MachineInterface machine) {
+			return null;
+			// TODO Auto-generated method stub
+			
+		}
+	}
 	
 	/**
 	 * Creates a jog button, automatically fetching image resources from resources
@@ -66,17 +279,21 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	 */
 	public class JogButton extends JButton {
 		
-		public JogButton(String root, String tooltip) {
-			BufferedImage img = Base.getImage("images/"+root+".png", this);					
+		public JogButton(String root, String tooltip, ButtonArrangement arrangement) {
+			String baseImage = arrangement.buttonFolder + root;
+			Image img = Base.getImage(baseImage + ".png", this);
+			img = arrangement.scaleImage(img);
 			setIcon(new ImageIcon(img));
-			BufferedImage overImg = Base.getImage("images/"+root+"Over.png",this);
+			Image overImg = Base.getImage(baseImage + arrangement.overButtonString + ".png",this);
 			if (overImg != null) {
+				overImg = arrangement.scaleImage(overImg);
 				setRolloverIcon(new ImageIcon(overImg));
 				setRolloverEnabled(true);
 			}
-			BufferedImage downImg = Base.getImage("images/"+root+"Down.png",this);
+			Image downImg = Base.getImage(baseImage + arrangement.pressedButtonString + ".png",this);
 			if (downImg == null) { downImg = overImg; }
 			if (downImg != null) {
+				downImg = arrangement.scaleImage(downImg);
 				setSelectedIcon(new ImageIcon(downImg));
 			}
 			Dimension imgSize = new Dimension(img.getWidth(null),img.getHeight(null));
@@ -87,7 +304,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			setFocusPainted(false);
 			setBorderPainted(false);
 			setContentAreaFilled(false);
-			setBorder(BorderFactory.createEmptyBorder(4,4,4,4));
+			setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 			setToolTipText(tooltip);
 		}
 	}
@@ -100,11 +317,15 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	 * @param tooltip the text to display when the mouse hovers over the button.
 	 * @return the generated button.
 	 */
-	protected JButton createJogButton(String root, String tooltip) {
-		JogButton b = new JogButton(root,tooltip);
+	private JButton createJogButton(String root, String tooltip, ButtonArrangement arrangement) {
+		JogButton b = new JogButton(root,tooltip,arrangement);
 		b.addActionListener(this);
 		b.addMouseListener(this);
+		b.setActionCommand(root);
 		return b;
+	}
+	private JButton createJogButton(String root, String tooltip) {
+		return createJogButton(root,tooltip,new OldArrangement());
 	}
 
 	/**
@@ -116,10 +337,13 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	 * @param action the string representing the action.
 	 * @return the generated button.
 	 */
-	protected JButton createJogButton(String root, String tooltip, String action) {
-		JButton button = createJogButton(root,tooltip);
+	private JButton createJogButton(String root, String tooltip, ButtonArrangement arrangement, String action) {
+		JButton button = createJogButton(root,tooltip,arrangement);
 		button.setActionCommand(action);
 		return button;
+	}
+	private JButton createJogButton(String root, String tooltip, String action) {
+		return createJogButton(root,tooltip,new OldArrangement(),action);
 	}
 
 	/**
@@ -156,7 +380,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	
 	private JPanel buildPositionPanel() {
 		// create our position panel
-		JPanel positionPanel = new JPanel(new MigLayout("flowy,fillx"));
+		JPanel positionPanel = new JPanel(new MigLayout("flowy"));
 		// our label
 		positionPanel.add(new JLabel("Jog Mode"),"growx");
 		// create our jog size dropdown
@@ -204,13 +428,14 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			slider.setMaximum(maxFeedrate);
 			slider.setValue(currentFeedrate);
 			slider.addChangeListener(this);
-			parent.add(slider,"growx");
-			field.setMinimumSize(new Dimension(75, 22));
+			parent.add(slider);
+//			field.setMinimumSize(new Dimension(75, 22));
+			field.setColumns(5);
 			field.setEnabled(true);
 			field.setText(Integer.toString(currentFeedrate));
 			field.addFocusListener(this);
 			field.addActionListener(this);
-			parent.add(field,"growx");
+			parent.add(field);
 			parent.add(new JLabel("mm/min."),"wrap");
 		}
 
@@ -245,9 +470,9 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	}
 
 	// Make a rotation tool (for A and B axes)
-	private JPanel makeRotationPanel(AxisId axis) {
-		JButton cwButton = createJogButton("jog/CW", "Jog "+axis.name()+" axis in clockwise direction", axis.name()+"+");
-		JButton ccwButton = createJogButton("jog/CCW", "Jog "+axis.name()+" axis in counterclockwise direction", axis.name()+"-");
+	private JPanel makeRotationPanel(AxisId axis, ButtonArrangement arrangement) {
+		JButton cwButton = createJogButton("CW", "Jog "+axis.name()+" axis in clockwise direction", axis.name()+"+");
+		JButton ccwButton = createJogButton("CCW", "Jog "+axis.name()+" axis in counterclockwise direction", axis.name()+"-");
 		JPanel panel = new JPanel(new MigLayout());
 		panel.add(new JLabel(axis.name()));
 		panel.add(cwButton,"split 2,flowy");
@@ -260,13 +485,13 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		this.machine = machine;
 		Set<AxisId> axes = machine.getModel().getAvailableAxes();
 		
-		OnboardParameters onboardParam =  (OnboardParameters)machine.getDriver();
+//		OnboardParameters onboardParam =  (OnboardParameters)machine.getDriver();
 		
-		Set<AxisId> invertedAxes = EnumSet.noneOf(AxisId.class);
-		if(onboardParam != null )
-		{
-			invertedAxes = onboardParam.getInvertedAxes();
-		}
+//		Set<AxisId> invertedAxes = EnumSet.noneOf(AxisId.class);
+//		if(onboardParam != null )
+//		{
+//			invertedAxes = onboardParam.getInvertedAxes();
+//		}
 		setLayout(new MigLayout("gap 0, ins 0"));
 		
 		// compile our regexes
@@ -280,77 +505,72 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			list.removeAll(Arrays.asList("Continuous Jog"));
 			jogStrings = list.toArray(jogStrings);
 		}
-		
-		
-		
-		
-		JButton xPlusButton = createJogButton("jog/X+", "Jog X axis in positive direction", "X+");
-		JButton xMinusButton = createJogButton("jog/X-", "Jog X axis in negative direction", "X-");
-		JButton yPlusButton = createJogButton("jog/Y+", "Jog Y axis in positive direction", "Y+");
-		JButton yMinusButton = createJogButton("jog/Y-", "Jog Y axis in negative direction", "Y-");
-		JButton panicButton = createJogButton("jog/panic","Emergency stop","Stop");
-
-		JPanel jogButtonPanel = new JPanel(new MigLayout("nogrid, ins 0"));
-		JPanel xyPanel = new JPanel(new MigLayout("ins 0","[]2[]2[]","[]2[]2[]"));
-        //xyzPanel.add(zCenterButton, );
-		xyPanel.add(yPlusButton, "skip 1,wrap,growx,growy");
-		xyPanel.add(xMinusButton,"growx,growy");
-		if(this.machine.getDriver().hasEmergencyStop()) {
-			xyPanel.add(panicButton,"growx,growy");
-		} else
-		{
-			JButton dummyButton = createJogButton("jog/dummy","");
-			xyPanel.add(dummyButton,"growx,growy");
-		}
-		xyPanel.add(xPlusButton,"growx,growy,wrap");
-		xyPanel.add(yMinusButton, "skip 1,growx,growy,wrap");
-		jogButtonPanel.add(xyPanel);
-
-		if (axes.contains(AxisId.Z)) {
-			JPanel zPanel = new JPanel(new MigLayout("flowy"));
-			if (invertedAxes.contains(AxisId.Z) )
-			{
-				JButton zPlusButton = createJogButton("jog/DownZ+", "Jog Z axis in positive direction", "Z+");
-				JButton zMinusButton = createJogButton("jog/UpZ-", "Jog Z axis in negative direction", "Z-");
-				zPanel.add(zMinusButton);
-				zPanel.add(zPlusButton);
-			}
-			else {
-				JButton zMinusButton = createJogButton("jog/Z-", "Jog Z axis in negative direction", "Z-");
-				JButton zPlusButton = createJogButton("jog/Z+", "Jog Z axis in positive direction", "Z+");
-				zPanel.add(zPlusButton);
-				zPanel.add(zMinusButton);
-				
-			}
-			jogButtonPanel.add(zPanel,"wrap");
-		}
-		if (axes.contains(AxisId.A)) {
-			jogButtonPanel.add(makeRotationPanel(AxisId.A));
-		}		
-		if (axes.contains(AxisId.B)) {
-			jogButtonPanel.add(makeRotationPanel(AxisId.B));
-		}
+//		
+//		MachineType machineType = machine.getMachineType();
+//		
+//		JButton xPlusButton = createJogButton("X+", "Jog X axis in positive direction", machineType, "X+");
+//		JButton xMinusButton = createJogButton("X-", "Jog X axis in negative direction", machineType, "X-");
+//		JButton yPlusButton = createJogButton("Y+", "Jog Y axis in positive direction", machineType, "Y+");
+//		JButton yMinusButton = createJogButton("Y-", "Jog Y axis in negative direction", machineType, "Y-");
+//		JButton panicButton = createJogButton("panic","Emergency stop","Stop");
+//
+//		JPanel jogButtonPanel = new JPanel(new MigLayout("nogrid, ins 0"));
+//		JPanel xyPanel = new JPanel(new MigLayout("ins 0","[]2[]2[]","[]2[]2[]"));
+//        //xyzPanel.add(zCenterButton, );
+//		xyPanel.add(yPlusButton, "skip 1,wrap,growx,growy");
+//		xyPanel.add(xMinusButton,"growx,growy");
+//		if(this.machine.getDriver().hasEmergencyStop())
+//			xyPanel.add(panicButton,"growx,growy");
+//		
+//		xyPanel.add(xPlusButton,"growx,growy,wrap");
+//		xyPanel.add(yMinusButton, "skip 1,growx,growy,wrap");
+//		jogButtonPanel.add(xyPanel);
+//
+//		if (axes.contains(AxisId.Z)) {
+//			JPanel zPanel = new JPanel(new MigLayout("flowy"));
+////			if (invertedAxes.contains(AxisId.Z) )
+////			{
+////				JButton zPlusButton = createJogButton("DownZ+", "Jog Z axis in positive direction", machineType, "Z+");
+////				JButton zMinusButton = createJogButton("UpZ-", "Jog Z axis in negative direction", machineType, "Z-");
+////				zPanel.add(zMinusButton);
+////				zPanel.add(zPlusButton);
+////			}
+////			else {
+//				JButton zMinusButton = createJogButton("Z-", "Jog Z axis in negative direction", machineType, "Z-");
+//				JButton zPlusButton = createJogButton("Z+", "Jog Z axis in positive direction", machineType, "Z+");
+//				zPanel.add(zPlusButton);
+//				zPanel.add(zMinusButton);
+//				
+////			}
+//			jogButtonPanel.add(zPanel,"wrap");
+//		}
+//		if (axes.contains(AxisId.A)) {
+//			jogButtonPanel.add(makeRotationPanel(AxisId.A));
+//		}		
+//		if (axes.contains(AxisId.B)) {
+//			jogButtonPanel.add(makeRotationPanel(AxisId.B));
+//		}
 
 		// create the xyfeedrate panel
 		JPanel feedratePanel = new JPanel(new MigLayout());
 
 		if (axes.contains(AxisId.X) || axes.contains(AxisId.Y)) {
-			new FeedrateControl("XY Feedrate",AxisId.X,feedratePanel);
+			new FeedrateControl("XY Speed",AxisId.X,feedratePanel);
 		}
 
 		if (axes.contains(AxisId.Z)) {
-			new FeedrateControl("Z Feedrate",AxisId.Z,feedratePanel);
+			new FeedrateControl("Z Speed",AxisId.Z,feedratePanel);
 		}
 		if (axes.contains(AxisId.A)) {
-			new FeedrateControl("A Feedrate",AxisId.A,feedratePanel);
+			new FeedrateControl("A Speed",AxisId.A,feedratePanel);
 		}
 		if (axes.contains(AxisId.B)) {
-			new FeedrateControl("B Feedrate",AxisId.B,feedratePanel);
+			new FeedrateControl("B Speed",AxisId.B,feedratePanel);
 		}
 		// add it all to our jog panel
-		add(jogButtonPanel);
-		add(buildPositionPanel(),"growx,wrap");
-		add(feedratePanel,"growx,spanx");
+		add(new ReplicatorArrangement().getButtonPanel(machine), "split");
+		add(buildPositionPanel(), "growx, wrap");
+		add(feedratePanel, "growx");
 
 		// add jog panel border and stuff.
 		setBorder(BorderFactory.createTitledBorder("Jog Controls"));
