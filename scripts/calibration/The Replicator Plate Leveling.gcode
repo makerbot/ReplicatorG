@@ -1,5 +1,6 @@
 (**** This is a build-platform calibration script for a Dual-Head MakerBot Replicator ****)
 (**** Do not run this code on any other kind of machine! ****)
+M73 P0 (Start print job)
 G21
 G90
 M71 (Tighten down all    thumbnuts, please!                       Press to Continue)
@@ -45,6 +46,7 @@ M70 (Moving to next      Positon)
 G1 Z5
 G1 X0 Y0
 G1 Z0
-M71 (Check all           thumbnuts!                             Press to Continue)
+M71 (Check all           thumbnuts!                               Press to Continue)
 M70 (Moving to next      Positon)
 M71 (Plate    calibration      complete!                          Press to Continue)
+M73 P100
