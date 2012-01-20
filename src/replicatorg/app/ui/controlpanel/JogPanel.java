@@ -49,6 +49,14 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	protected String[] jogStrings = { "0.01mm", "0.05mm", "0.1mm", "0.5mm",
 			"1mm", "5mm", "10mm", "20mm", "50mm", "Continuous Jog" };
 
+	protected final String jogXMinusAction = "X-";
+	protected final String jogXPlusAction = "X+";
+	protected final String jogYMinusAction = "Y-";
+	protected final String jogYPlusAction = "Y+";
+	protected final String jogZMinusAction = "Z-";
+	protected final String jogZPlusAction = "Z+";
+	protected final String stopAction = "Stop";
+	
 	protected final Point5d feedrate;
 
 	protected EnumMap<AxisId,JTextField> positionFields = new EnumMap<AxisId,JTextField>(AxisId.class);
@@ -64,6 +72,9 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	 * jogbutton panel.
 	 */
 	private abstract class ButtonArrangement {
+		
+		public final MachineInterface machine;
+		
 		public String buttonFolder = "images/jog/";
 		
 		public String overButtonString = "Over";
@@ -71,12 +82,6 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 		public String backgroundImageString = null;
 		public Point2i backgroundImageLocation = null;
-		public String extruderImageString = "extruder";
-		public Point2i extruderImageLocation = null;
-		public String dualextruderImageString = "dual-extruder";
-		public Point2i dualextruderImageLocation = null;
-		public String buildplateImageString = "buildplate";
-		public Point2i buildplateImageLocation = null;
 
 		public String xMinusButtonString = "X-";
 		public String xPlusButtonString = "X+";
@@ -99,7 +104,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		public Point2i zMinusButtonLocation;
 		public Point2i zPlusButtonLocation;
 		
-		public String stopButtonString = "Stop";
+		public String stopButtonString = "panic";
 		public String stopTooltip = "Emergency stop";
 		public Point2i stopButtonLocation = null;
 
@@ -109,7 +114,12 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		public double xScale = 1;
 		public double yScale = 1;
 		
-		public abstract JPanel getButtonPanel(MachineInterface machine);
+		public ButtonArrangement(MachineInterface machine) {
+			this.machine = machine;
+		}
+		
+		public abstract JPanel getButtonPanel();
+		
 		public Point2i scalePoint(double x, double y) {
 			return new Point2i((int)(x * xScale), (int)(y * yScale));
 		}
@@ -118,104 +128,203 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		}
 	}
 	
-	private abstract class MakerbotArrangement extends ButtonArrangement {
+	private class DefaultArrangement extends ButtonArrangement {
+		
+		public DefaultArrangement(MachineInterface machine) {
+			super(machine);
+			buttonFolder = "images/jog/original/";
+			
+			xScale = 1;
+			yScale = 1;
+			
+			/*
+			 * Yes, these numbers ARE magic. They're just some button
+			 * positions I found to look okay.
+			 */
+			backgroundImageLocation = scalePoint(0, 0);
+
+			xMinusButtonLocation = scalePoint(15, 60);
+			xPlusButtonLocation = scalePoint(113, 60);
+			yMinusButtonLocation = scalePoint(60, 113);
+			yPlusButtonLocation = scalePoint(60, 15);
+			zMinusButtonLocation = scalePoint(165, 90);
+			zPlusButtonLocation = scalePoint(165, 38);
+			
+			axisAPanelLocation = scalePoint(5, 0);
+			axisBPanelLocation = scalePoint(115, 0);
+			
+			stopButtonLocation = scalePoint(65, 65);
+		}
+
 		@Override
-		public JPanel getButtonPanel(MachineInterface machine) {
+		public JPanel getButtonPanel() {
 			
 			JPanel panel = new JPanel(new MigLayout());
 			
-			JButton button = createJogButton(xMinusButtonString, xMinusTooltip, this);
+			Set<AxisId> axes = machine.getModel().getAvailableAxes();
+		
+			JButton button = createJogButton(xMinusButtonString, xMinusTooltip, this, jogXMinusAction);
 			panel.add(button, "pos "+xMinusButtonLocation.x+" "+xMinusButtonLocation.y);
-			button = createJogButton(xPlusButtonString, xPlusTooltip, this);
+			button = createJogButton(xPlusButtonString, xPlusTooltip, this, jogXPlusAction);
 			panel.add(button, "pos "+xPlusButtonLocation.x+" "+xPlusButtonLocation.y);
-			button = createJogButton(yMinusButtonString, yMinusTooltip, this);
+			button = createJogButton(yMinusButtonString, yMinusTooltip, this, jogYMinusAction);
 			panel.add(button, "pos "+yMinusButtonLocation.x+" "+yMinusButtonLocation.y);
-			button = createJogButton(yPlusButtonString, yPlusTooltip, this);
+			button = createJogButton(yPlusButtonString, yPlusTooltip, this, jogYPlusAction);
 			panel.add(button, "pos "+yPlusButtonLocation.x+" "+yPlusButtonLocation.y);
-			button = createJogButton(zMinusButtonString, zMinusTooltip, this);
-			panel.add(button, "pos "+zMinusButtonLocation.x+" "+zMinusButtonLocation.y);
-			button = createJogButton(zPlusButtonString, zPlusTooltip, this);
-			panel.add(button, "pos "+zPlusButtonLocation.x+" "+zPlusButtonLocation.y);
+	
+			if(machine.getDriver().hasEmergencyStop()) {
+				JButton panicButton = createJogButton(stopButtonString, stopTooltip, this, stopAction);
+				panel.add(panicButton, "pos "+stopButtonLocation.x+" "+stopButtonLocation.y);
+			}
+	
+			if (axes.contains(AxisId.Z)) {
+				button = createJogButton(zMinusButtonString, zMinusTooltip, this, jogZMinusAction);
+				panel.add(button, "pos "+zMinusButtonLocation.x+" "+zMinusButtonLocation.y);
+				button = createJogButton(zPlusButtonString, zPlusTooltip, this, jogZPlusAction);
+				panel.add(button, "pos "+zPlusButtonLocation.x+" "+zPlusButtonLocation.y);
+			}
+			if (axes.contains(AxisId.A)) {
+				panel.add(makeRotationPanel(AxisId.A), "pos "+axisAPanelLocation.x+" "+axisAPanelLocation.y);
+			}		
+			if (axes.contains(AxisId.B)) {
+				panel.add(makeRotationPanel(AxisId.B), "pos "+axisBPanelLocation.x+" "+axisBPanelLocation.y);
+			}
 			
-			button = createJogButton(stopButtonString, stopTooltip, this);
-			panel.add(button, "pos "+stopButtonLocation.x+" "+stopButtonLocation.y);
+			return panel;
+		}
+	}
+	
+	private abstract class MakerbotArrangement extends DefaultArrangement {
+		
+		public String extruderImageString = "extruder";
+		public Point2i extruderImageLocation = null;
+		public String buildplateImageString = "buildplate";
+		public Point2i buildplateImageLocation = null;
+		
+		public MakerbotArrangement(MachineInterface machine) {
+			super(machine);
+			buttonFolder = "images/jog/makerbot/";
+
+			xScale = .5;
+			yScale = .5;
+			
+			stopButtonString = "Stop";
+
+			if(machine.getModel().getTools().size() > 1)
+				extruderImageString = "dual-extruder";
+		}
+		
+		@Override
+		public JPanel getButtonPanel() {
+			JPanel panel = super.getButtonPanel();
 
 			Image buildplate = Base.getImage(buttonFolder+buildplateImageString+".png", panel);
 			panel.add(new JLabel(new ImageIcon(scaleImage(buildplate))), 
 								"pos "+buildplateImageLocation.x+" "+buildplateImageLocation.y);
-			
-			if(machine.getModel().getTools().size() > 1) {
-				Image dualextruder = Base.getImage(buttonFolder+dualextruderImageString+".png", panel);
-				panel.add(new JLabel(new ImageIcon(scaleImage(dualextruder))), 
-									"pos "+dualextruderImageLocation.x+" "+dualextruderImageLocation.y);
-			}
-			else
-			{
-				Image extruder = Base.getImage(buttonFolder+extruderImageString+".png", panel);
-				panel.add(new JLabel(new ImageIcon(scaleImage(extruder))), 
-									"pos "+extruderImageLocation.x+" "+extruderImageLocation.y);
-			}
+		
+			Image extruder = Base.getImage(buttonFolder+extruderImageString+".png", panel);
+			panel.add(new JLabel(new ImageIcon(scaleImage(extruder))), 
+								"pos "+extruderImageLocation.x+" "+extruderImageLocation.y);
 			
 			Image background = Base.getImage(buttonFolder+backgroundImageString+".png", panel); 
 			panel.add(new JLabel(new ImageIcon(scaleImage(background))),
 								"pos "+backgroundImageLocation.x+" "+backgroundImageLocation.y);
+			
 			return panel;
 		}
 	}
 
 	private class ThingomaticArrangement extends MakerbotArrangement {
-		public ThingomaticArrangement() {
-			buttonFolder = "images/jog-new/thingomatic/";
-
-			xScale = 1;
-			yScale = 1;
-			
+		public ThingomaticArrangement(MachineInterface machine) {
+			super(machine);
 			backgroundImageString = "tom";
+			buildplateImageString = "tom-buildplate";
+			
+			zMinusButtonString = "DownZ-";
+			zPlusButtonString = "UpZ+";
 			
 			/*
 			 * Yes, these numbers ARE magic. They're just some button
 			 * positions I found to look okay.
 			 */
-			backgroundImageLocation = scalePoint(0, 0);
-			extruderImageLocation = scalePoint(118, 60);
-			dualextruderImageLocation = scalePoint(74, 60);
-			buildplateImageLocation = scalePoint(80, 150);
+			backgroundImageLocation = scalePoint(30, 0);
+			if(machine.getModel().getTools().size() > 1)
+				extruderImageLocation = scalePoint(105, 60);
+			else
+				extruderImageLocation = scalePoint(118, 60);
+			buildplateImageLocation = scalePoint(100, 150);
 
-			xMinusButtonLocation = scalePoint(105, 200);
-			xPlusButtonLocation = scalePoint(15, 200);
+			xMinusButtonLocation = scalePoint(138, 210);
+			xPlusButtonLocation = scalePoint(42, 210);
 			yMinusButtonLocation = scalePoint(65, 55);
 			yPlusButtonLocation = scalePoint(0, 80);
-			zMinusButtonLocation = scalePoint(207, 135);
-			zPlusButtonLocation = scalePoint(207, 40);
+			zMinusButtonLocation = scalePoint(237, 135);
+			zPlusButtonLocation = scalePoint(237, 40);
 			
-			stopButtonLocation = scalePoint(165, 100);
+			axisAPanelLocation = scalePoint(415, 0);
+			axisBPanelLocation = scalePoint(415, 170);
+			
+			stopButtonLocation = scalePoint(330, 100);
 		}
 
 	}
 	
 	private class CupcakeArrangement extends MakerbotArrangement {
-		{
-			buttonFolder = "images/jog-new/cupcake/";
+		public CupcakeArrangement(MachineInterface machine) {
+			super(machine);
+			backgroundImageString = "cupcake";
+			buildplateImageString = "cupcake-buildplate";
+			
+			zMinusButtonString = "DownZ-";
+			zPlusButtonString = "UpZ+";
+			
+			/*
+			 * Yes, these numbers ARE magic. They're just some button
+			 * positions I found to look okay.
+			 * 
+			 * The scalePoint (along with scaleImage) function allows
+			 * us to define 
+			 */
+			backgroundImageLocation = scalePoint(30, 0);
+			if(machine.getModel().getTools().size() > 1)
+				extruderImageLocation = scalePoint(105, 50);
+			else
+				extruderImageLocation = scalePoint(118, 50);
+			buildplateImageLocation = scalePoint(85, 135);
+
+			xMinusButtonLocation = scalePoint(136, 175);
+			xPlusButtonLocation = scalePoint(40, 175);
+			yMinusButtonLocation = scalePoint(65, 55);
+			yPlusButtonLocation = scalePoint(0, 80);
+			zMinusButtonLocation = scalePoint(223, 115);
+			zPlusButtonLocation = scalePoint(223, 20);
+
+			axisAPanelLocation = scalePoint(385, 0);
+			axisBPanelLocation = scalePoint(385, 140);
+			
+			stopButtonLocation = scalePoint(300, 85);
 		}
 
 	}
 	
 	private class ReplicatorArrangement extends MakerbotArrangement {
-		public ReplicatorArrangement() {
-			buttonFolder = "images/jog-new/replicator/";
-
-			xScale = .45;
-			yScale = .45;
-			
+		public ReplicatorArrangement(MachineInterface machine) {
+			super(machine);
 			backgroundImageString = "replicator";
+			buildplateImageString = "replicator-buildplate";
+			
+			zMinusButtonString = "UpZ-";
+			zPlusButtonString = "DownZ+";
 			
 			/*
 			 * Yes, these numbers ARE magic. They're just some button
 			 * positions I found to look okay.
 			 */
 			backgroundImageLocation = scalePoint(0, 0);
-			extruderImageLocation = scalePoint(188, 60);
-			dualextruderImageLocation = scalePoint(144, 60);
+			if(machine.getModel().getTools().size() > 1)
+				extruderImageLocation = scalePoint(144, 60);
+			else
+				extruderImageLocation = scalePoint(188, 60);
 			buildplateImageLocation = scalePoint(100, 150);
 
 			xMinusButtonLocation = scalePoint(185, 200);
@@ -225,23 +334,10 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			zMinusButtonLocation = scalePoint(357, 40);
 			zPlusButtonLocation = scalePoint(357, 135);
 			
-			stopButtonLocation = scalePoint(165, 100);
+			stopButtonLocation = scalePoint(455, 100);
 		}
 
 
-	}
-	
-	private class OldArrangement extends ButtonArrangement {
-		{
-			buttonFolder = "images/jog/";
-		}
-
-		@Override
-		public JPanel getButtonPanel(MachineInterface machine) {
-			return null;
-			// TODO Auto-generated method stub
-			
-		}
 	}
 	
 	/**
@@ -297,9 +393,6 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		b.setActionCommand(root);
 		return b;
 	}
-	private JButton createJogButton(String root, String tooltip) {
-		return createJogButton(root,tooltip,new OldArrangement());
-	}
 
 	/**
 	 * Create a jog-style button with the given name and tooltip.  The action
@@ -314,9 +407,6 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		JButton button = createJogButton(root,tooltip,arrangement);
 		button.setActionCommand(action);
 		return button;
-	}
-	private JButton createJogButton(String root, String tooltip, String action) {
-		return createJogButton(root,tooltip,new OldArrangement(),action);
 	}
 
 	/**
@@ -393,7 +483,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			this.axis = axis;
 			slider = new JSlider(JSlider.HORIZONTAL);
 			field = new JTextField();
-			parent.add(new JLabel(display));
+			parent.add(new JLabel(display), "split 4");
 			int maxFeedrate = (int)machine.getModel().getMaximumFeedrates().axis(axis);
 			int currentFeedrate = Math.min(maxFeedrate, Base.preferences.getInt(getPrefName(),480));
 			feedrate.setAxis(axis, currentFeedrate);
@@ -401,7 +491,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			slider.setMaximum(maxFeedrate);
 			slider.setValue(currentFeedrate);
 			slider.addChangeListener(this);
-			parent.add(slider);
+			parent.add(slider, "growx");
 //			field.setMinimumSize(new Dimension(75, 22));
 			field.setColumns(5);
 			field.setEnabled(true);
@@ -443,13 +533,25 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	}
 
 	// Make a rotation tool (for A and B axes)
-	private JPanel makeRotationPanel(AxisId axis, ButtonArrangement arrangement) {
-		JButton cwButton = createJogButton("CW", "Jog "+axis.name()+" axis in clockwise direction", axis.name()+"+");
-		JButton ccwButton = createJogButton("CCW", "Jog "+axis.name()+" axis in counterclockwise direction", axis.name()+"-");
+	private JPanel makeRotationPanel(AxisId axis) {
+		ButtonArrangement arrangement = new ButtonArrangement(machine){
+			{
+				buttonFolder = "images/jog/original/";
+				xScale = 1;
+				yScale = 1;
+			}
+			@Override
+			public JPanel getButtonPanel() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		};
+		JButton cwButton = createJogButton("CW", "Jog "+axis.name()+" axis in clockwise direction", arrangement, axis.name()+"+");
+		JButton ccwButton = createJogButton("CCW", "Jog "+axis.name()+" axis in counterclockwise direction", arrangement, axis.name()+"-");
 		JPanel panel = new JPanel(new MigLayout());
-		panel.add(new JLabel(axis.name()));
-		panel.add(cwButton,"split 2,flowy");
-		panel.add(ccwButton);
+		panel.add(cwButton,"pos 0 0");
+		panel.add(new JLabel(axis.name()), "pos 20 20");
+		panel.add(ccwButton, "pos 0 28 ");
 		return panel;
 	}
 	
@@ -458,13 +560,6 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		this.machine = machine;
 		Set<AxisId> axes = machine.getModel().getAvailableAxes();
 		
-//		OnboardParameters onboardParam =  (OnboardParameters)machine.getDriver();
-		
-//		Set<AxisId> invertedAxes = EnumSet.noneOf(AxisId.class);
-//		if(onboardParam != null )
-//		{
-//			invertedAxes = onboardParam.getInvertedAxes();
-//		}
 		setLayout(new MigLayout("gap 0, ins 0"));
 		
 		// compile our regexes
@@ -478,54 +573,9 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			list.removeAll(Arrays.asList("Continuous Jog"));
 			jogStrings = list.toArray(jogStrings);
 		}
-//		
-//		MachineType machineType = machine.getMachineType();
-//		
-//		JButton xPlusButton = createJogButton("X+", "Jog X axis in positive direction", machineType, "X+");
-//		JButton xMinusButton = createJogButton("X-", "Jog X axis in negative direction", machineType, "X-");
-//		JButton yPlusButton = createJogButton("Y+", "Jog Y axis in positive direction", machineType, "Y+");
-//		JButton yMinusButton = createJogButton("Y-", "Jog Y axis in negative direction", machineType, "Y-");
-//		JButton panicButton = createJogButton("panic","Emergency stop","Stop");
-//
-//		JPanel jogButtonPanel = new JPanel(new MigLayout("nogrid, ins 0"));
-//		JPanel xyPanel = new JPanel(new MigLayout("ins 0","[]2[]2[]","[]2[]2[]"));
-//        //xyzPanel.add(zCenterButton, );
-//		xyPanel.add(yPlusButton, "skip 1,wrap,growx,growy");
-//		xyPanel.add(xMinusButton,"growx,growy");
-//		if(this.machine.getDriver().hasEmergencyStop())
-//			xyPanel.add(panicButton,"growx,growy");
-//		
-//		xyPanel.add(xPlusButton,"growx,growy,wrap");
-//		xyPanel.add(yMinusButton, "skip 1,growx,growy,wrap");
-//		jogButtonPanel.add(xyPanel);
-//
-//		if (axes.contains(AxisId.Z)) {
-//			JPanel zPanel = new JPanel(new MigLayout("flowy"));
-////			if (invertedAxes.contains(AxisId.Z) )
-////			{
-////				JButton zPlusButton = createJogButton("DownZ+", "Jog Z axis in positive direction", machineType, "Z+");
-////				JButton zMinusButton = createJogButton("UpZ-", "Jog Z axis in negative direction", machineType, "Z-");
-////				zPanel.add(zMinusButton);
-////				zPanel.add(zPlusButton);
-////			}
-////			else {
-//				JButton zMinusButton = createJogButton("Z-", "Jog Z axis in negative direction", machineType, "Z-");
-//				JButton zPlusButton = createJogButton("Z+", "Jog Z axis in positive direction", machineType, "Z+");
-//				zPanel.add(zPlusButton);
-//				zPanel.add(zMinusButton);
-//				
-////			}
-//			jogButtonPanel.add(zPanel,"wrap");
-//		}
-//		if (axes.contains(AxisId.A)) {
-//			jogButtonPanel.add(makeRotationPanel(AxisId.A));
-//		}		
-//		if (axes.contains(AxisId.B)) {
-//			jogButtonPanel.add(makeRotationPanel(AxisId.B));
-//		}
 
 		// create the xyfeedrate panel
-		JPanel feedratePanel = new JPanel(new MigLayout());
+		JPanel feedratePanel = new JPanel(new MigLayout("fill"));
 
 		if (axes.contains(AxisId.X) || axes.contains(AxisId.Y)) {
 			new FeedrateControl("XY Speed",AxisId.X,feedratePanel);
@@ -543,18 +593,18 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		
 		ButtonArrangement arrangement;
 		if(machine.getMachineType() == MachineType.THE_REPLICATOR)
-			arrangement = new ReplicatorArrangement();
+			arrangement = new ReplicatorArrangement(machine);
 		else if(machine.getMachineType() == MachineType.THINGOMATIC)
-			arrangement = new ThingomaticArrangement();
+			arrangement = new ThingomaticArrangement(machine);
 		else if(machine.getMachineType() == MachineType.CUPCAKE)
-			arrangement = new CupcakeArrangement();
+			arrangement = new CupcakeArrangement(machine);
 		else
-			arrangement = new OldArrangement();
+			arrangement = new DefaultArrangement(machine);
 		
 		// add it all to our jog panel
-		add(arrangement.getButtonPanel(machine), "split");
+		add(arrangement.getButtonPanel());
 		add(buildPositionPanel(), "growx, wrap");
-		add(feedratePanel, "growx");
+		add(feedratePanel, "spanx, growx");
 
 		// add jog panel border and stuff.
 		setBorder(BorderFactory.createTitledBorder("Jog Controls"));
@@ -594,7 +644,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 				machine.runCommand(new replicatorg.drivers.commands.SetFeedrate(f));
 				machine.runCommand(new replicatorg.drivers.commands.QueuePoint(current));
 			}
-		} else if (s.equals("Stop")) {
+		} else if (s.equals(stopAction)) {
 			machine.stopMotion();
 			// FIXME: If we reenable the control panel while printing, 
 			// we should check this, call this.machine.stop(),
