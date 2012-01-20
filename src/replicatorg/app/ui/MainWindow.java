@@ -825,7 +825,7 @@ ToolpathGenerator.GeneratorListener
 		if(java.awt.Desktop.isDesktopSupported())
 		{
 			try {
-				java.awt.Desktop.getDesktop().browse(new java.net.URI("http://www.thingiverse.com/tag:dualstrusion"));
+				java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
 			} catch (IOException e) {
 				Base.logger.log(Level.WARNING, "Could not load URL.");
 			} catch (java.net.URISyntaxException e) {
