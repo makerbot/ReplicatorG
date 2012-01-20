@@ -125,7 +125,7 @@ public class ToolpathGeneratorFactory {
 					new SkeinforgeChoicePreference("Use support material",
 							"replicatorg.skeinforge.choiceSupport", "None",
 							"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
-							"structure that you can later remove.");
+							"structure that you can later remove. Requires that Raft/Support be checked.");
 				supportPref.addOption("None", new SkeinforgeOption("raft.csv","None", "true"));
 				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
 				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Everywhere", "false"));
@@ -183,7 +183,7 @@ public class ToolpathGeneratorFactory {
 					new SkeinforgeChoicePreference("Use support material",
 							"replicatorg.skeinforge.choiceSupport", "None",
 							"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
-							"structure that you can later remove.");
+							"structure that you can later remove. Requires that Raft/Support be checked.");
 				supportPref.addOption("None", new SkeinforgeOption("raft.csv","None", "true"));
 				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
 				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Everywhere", "false"));

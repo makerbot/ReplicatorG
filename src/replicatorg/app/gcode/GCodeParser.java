@@ -282,7 +282,6 @@ public class GCodeParser {
 		// you may wish to avoid using M6.
 		if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools())
 		{
-			
 			commands.add(new replicatorg.drivers.commands.SelectTool((int) gcode.getCodeValue('T')));
 			tool = (int) gcode.getCodeValue('T');
 		}
@@ -442,8 +441,12 @@ public class GCodeParser {
 			break;
 			// turn extruder on, forward
 		case M70:
-			// print message
-			commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment()));
+			// print message			
+			if (gcode.hasCode('P'))
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment()));
+			else
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment()));
+			
 			break;
 		case M71:
 			// User-clearable pause

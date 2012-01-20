@@ -825,7 +825,7 @@ ToolpathGenerator.GeneratorListener
 		if(java.awt.Desktop.isDesktopSupported())
 		{
 			try {
-				java.awt.Desktop.getDesktop().browse(new java.net.URI("http://www.thingiverse.com/tag:dualstrusion"));
+				java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
 			} catch (IOException e) {
 				Base.logger.log(Level.WARNING, "Could not load URL.");
 			} catch (java.net.URISyntaxException e) {
@@ -2256,7 +2256,8 @@ ToolpathGenerator.GeneratorListener
 		boolean showIndexing = 
 			evt.getState().isConfigurable() &&
 			machineLoader.getDriver() instanceof MultiTool &&
-			((MultiTool)machineLoader.getDriver()).toolsCanBeReindexed();
+			((MultiTool)machineLoader.getDriver()).toolsCanBeReindexed() &&
+			machineLoader.getMachineInterface().getMachineType() != MachineType.THE_REPLICATOR;
 		toolheadIndexingItem.setVisible(showIndexing);
 
 		boolean showRealtimeTuning = 

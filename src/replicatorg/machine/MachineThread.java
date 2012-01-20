@@ -262,13 +262,11 @@ class MachineThread extends Thread {
 					setState(new MachineState(MachineState.State.NOT_ATTACHED), errorMessage);
 				}
 				else {
-					
 					// If the port is open, try to talk to the machine over it.
 					driver.initialize();
 					if (driver.isInitialized()) {
 						readName();
-						setState(new MachineState(MachineState.State.READY),
-								readyMessage());
+						setState(new MachineState(MachineState.State.READY), readyMessage());
 					} else {
 						setState(new MachineState(MachineState.State.NOT_ATTACHED));
 					}

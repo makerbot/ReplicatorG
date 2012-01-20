@@ -43,9 +43,6 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeTableXYDataset;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.CallbackTextField;
@@ -89,7 +86,6 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 	protected long extrudeTime;
 	private final String EXTRUDE_TIME_PREF_NAME = "extruderpanel.extrudetime";
 	
-//	protected Driver driver;
 	
 	
 	/**
@@ -194,7 +190,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder. (it's not!)
-			if ((tool.getMotorStepperAxisName() == null) && 
+			if ((tool.getMotorStepperAxisName() == "") && 
 					!(tool.motorHasEncoder() || tool.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
@@ -587,6 +583,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 //				machine.runCommand(new replicatorg.drivers.commands.EnableFan(toolhead));
 			else if (name.equals("abp-check")) {
 				machine.runCommand(new replicatorg.drivers.commands.ToggleAutomatedBuildPlatform(true,toolhead));
+				machine.runCommand(new replicatorg.drivers.commands.EnableFan(toolhead));
 			}
 //			else if (name.equals("valve-check"))
 //				machine.runCommand(new replicatorg.drivers.commands.OpenValve(toolhead));

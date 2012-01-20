@@ -86,7 +86,7 @@ public class MachineOnboardParameters extends JPanel {
 	 */
 	private void requestResetFromUser() {
 		int confirm = JOptionPane.showConfirmDialog(this, 
-				"<html>For these changes to take effect your motherboard needs yo be reset. <br/>"+
+				"<html>For these changes to take effect your motherboard needs to reset. <br/>"+
 				"This may take up to <b>10 seconds</b>.</html>",
 				"Reset board.", 
 				JOptionPane.DEFAULT_OPTION,
