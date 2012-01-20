@@ -441,8 +441,12 @@ public class GCodeParser {
 			break;
 			// turn extruder on, forward
 		case M70:
-			// print message
-			commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment()));
+			// print message			
+			if (gcode.hasCode('P'))
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment()));
+			else
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment()));
+			
 			break;
 		case M71:
 			// User-clearable pause
