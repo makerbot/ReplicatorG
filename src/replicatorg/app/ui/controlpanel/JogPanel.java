@@ -28,7 +28,6 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.vecmath.Point2i;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -39,6 +38,14 @@ import replicatorg.util.Point5d;
 
 public class JogPanel extends JPanel implements ActionListener, MouseListener
 {
+	
+	private class Point2i {
+		public int x, y;
+		public Point2i(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+	}
 	private final String JOGMODE_PREF_NAME = "controlpanel.jogmode";
 	
 	protected boolean continuousJogMode = false;
