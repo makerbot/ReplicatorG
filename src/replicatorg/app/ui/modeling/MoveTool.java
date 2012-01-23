@@ -104,14 +104,18 @@ public class MoveTool extends Tool {
 		});
 		transZplus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				if(!lockZ.isSelected()){
 				double transZval = ((Number)transZ.getValue()).doubleValue();
 				parent.getModel().translateObject(0, 0, transZval);
+				}
 			}
 		});
 		transZminus.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				if(!lockZ.isSelected()){
 				double transZval = ((Number)transZ.getValue()).doubleValue();
 				parent.getModel().translateObject(0, 0, -transZval);
+				}
 			}
 		});
 		lockZ = new JCheckBox("Lock height");
