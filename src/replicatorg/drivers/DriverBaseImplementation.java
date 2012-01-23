@@ -480,7 +480,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 
 	@Override
 	public void setMotorDirection(int dir, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		/// toolhead -1 indicate auto-detect. Fast hack to get software out..
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
 
 		machine.getTool(toolhead).setMotorDirection(dir);		
@@ -489,7 +489,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 
 	@Override
 	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		/// toolhead -1 indicate auto-detect. Fast hack to get software out..
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
 
 		machine.getTool(toolhead).setMotorSpeedRPM(rpm);

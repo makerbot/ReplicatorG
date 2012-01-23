@@ -149,13 +149,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 		if (isInitialized()) {
 			// okay, take care of version info /etc.
 			if (version.compareTo(getMinimumVersion()) < 0) {
-				Base.logger
-						.log(Level.WARNING,
-								"\n********************************************************\n"
-										+ "This version of ReplicatorG is not reccomended for use with firmware before version "
-										+ getMinimumVersion()
-										+ ". Either update your firmware or proceed with caution.\n"
-										+ "********************************************************");
+				Base.logger.log(Level.WARNING,
+					"\n********************************************************\n"
+					+ "This version of ReplicatorG is not reccomended for use with firmware before version "
+					+ getMinimumVersion()
+					+ ". Either update your firmware or proceed with caution.\n"
+					+ "********************************************************");
 			}
 			sendInit();
 			super.initialize();
@@ -408,8 +407,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 						break;
 					}
 					if (retries > 1) {
-						Base.logger
-								.severe("Read timed out; retries remaining: "
+						Base.logger.severe("Read timed out; retries remaining: "
 										+ Integer.toString(retries));
 					}
 					if (retries == -1) {
@@ -463,8 +461,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		int v = pr.get8();
 		if (pr.getResponseCode() == PacketResponse.ResponseCode.UNSUPPORTED) {
 			if (!isNotifiedFinishedFeature) {
-				Base.logger
-						.severe("IsFinished not supported by this firmware. Update your firmware.");
+				Base.logger.severe("IsFinished not supported by this firmware. " +
+						"Update your firmware.");
 				isNotifiedFinishedFeature = true;
 			}
 			return true;
@@ -487,8 +485,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		int v = pr.get8();
 		if (pr.getResponseCode() == PacketResponse.ResponseCode.UNSUPPORTED) {
 			if (!isNotifiedFinishedFeature) {
-				Base.logger
-						.severe("IsFinished not supported by this firmware. Update your firmware.");
+				Base.logger.severe("IsFinished not supported by this firmware. " +
+						"Update your firmware.");
 				isNotifiedFinishedFeature = true;
 			}
 			return true;
@@ -598,7 +596,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		if (slaveVersionNum == 0) {
 			String message = "Toolhead "
 					+ Integer.toString(toolhead)
-					+ ": Not found.\nMake sure the toolhead is connected, the power supply is plugged in and turned on, and the power switch on the motherboard is on.";
+					+ ": Not found.\nMake sure the toolhead is connected, " +
+					"the power supply is plugged in and turned on, and the " +
+					"power switch on the motherboard is on.";
 
 			setError(new DriverError(message, false));
 			Base.logger.severe(message);
@@ -615,14 +615,27 @@ public class Sanguino3GDriver extends SerialDriver implements
 		
 		ToolModel curToolMod = getMachine().getTool(toolhead);
 		if (curToolMod != null) {
-			double targetRPM =  curToolMod.getMotorSpeedRPM();
-			///set 'running RPM' to be the same as the default RPM
-			try { 
-				this.setMotorRPM( targetRPM, toolhead );
+			if(curToolMod.motorIsStepper()) {
+				double targetRPM =  curToolMod.getMotorSpeedRPM();
+				///set 'running RPM' to be the same as the default RPM
+				try { 
+					this.setMotorRPM( targetRPM, toolhead );
+				}
+				catch (replicatorg.drivers.RetryException e)
+				{
+					Base.logger.severe("could not init motor RPM, got exception" + e );
+				}
 			}
-			catch (replicatorg.drivers.RetryException e)
-			{
-				Base.logger.severe("could not init motor RPM, got exception" + e );
+			else {
+				int targetPWM =  curToolMod.getMotorSpeedPWM();
+				///set 'running PWM' to be the same as the default PWM
+				try { 
+					this.setMotorSpeedPWM( targetPWM, toolhead );
+				}
+				catch (replicatorg.drivers.RetryException e)
+				{
+					Base.logger.severe("could not init motor RPM, got exception" + e );
+				}
 			}
 		}
 //		//TRICKY: this is just called to get the value cached into the ToolModel
@@ -661,8 +674,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 			double feedrate = getSafeFeedrate(delta);
 
 			// how fast are we doing it?
-			long micros = convertFeedrateToMicros(getCurrentPosition(false), p,
-					feedrate);
+			long micros = convertFeedrateToMicros(getCurrentPosition(false), p,	feedrate);
 
 			// System.err.println("Steps :"+steps.toString()+" micros "+Long.toString(micros));
 
@@ -705,6 +717,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 */
 	protected void queueAbsolutePoint(Point5d steps, long micros)
 			throws RetryException {
+		
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.QUEUE_POINT_ABS.getCode());
 
@@ -950,10 +963,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add32(microseconds);
 		runCommand(pb.getPacket());
 
-		//TRICKY: WAS vvvv , but this seems not to work right. Seems to set default motor value(motorSppedRPM , not 'running' motor value. Caused gui to show bad values
-		//super.setMotorRPM(rpm); 
-		machine.getTool(toolhead).setMotorSpeedReadingRPM(rpm);
-		
+		//TRICKY: WAS 'super.setMotorRPM(rpm);', but this seems not to work right.
+		// Seems to set default motor value(motorSpeedRPM , not 'running' motor
+		// value. Caused gui to show bad values
+//		machine.getTool(toolhead).setMotorSpeedReadingRPM(rpm);
+//		Changed back - Ted
+		super.setMotorRPM(rpm, toolhead);
 	}
 
 	
@@ -1004,8 +1019,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		if (machine.getTool(toolhead).getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
 			flags += 2;
 
-		Base.logger.fine("Toggling motor 1 w/ flags: "
-				+ Integer.toBinaryString(flags));
+		Base.logger.fine("Toggling motor 1 w/ flags: " + Integer.toBinaryString(flags));
 
 		// send it!
 		PacketBuilder pb = new PacketBuilder(
@@ -1215,8 +1229,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 			command = ToolCommandCode.SET_SERVO_2_POS.getCode();
 		} else {
 			// throw?
-			Base.logger.severe("Servo index " + index
-					+ " not supported, ignoring");
+			Base.logger.severe("Servo index " + index + " not supported, ignoring");
 			return;
 		}
 
@@ -1621,7 +1634,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
 		pb.add8((byte) toolhead);
-		// pb.add8((byte) 0); // target 0 TODO FIXME !!!
 		Base.logger.fine("Tool index " +toolhead );
 		pb.add8(ToolCommandCode.TOGGLE_FAN.getCode());
 		pb.add8((byte) 1); // payload length
@@ -1639,7 +1651,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
 
-		Base.logger.severe("Disabling fan");
+		Base.logger.fine("Disabling fan");
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
@@ -1663,9 +1675,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
 
-		// why is this severe?
-
-		Base.logger.severe("Toggling ABP to " + state);
+		Base.logger.fine("Toggling ABP to " + state);
 		byte newState = state ? (byte) 1 : (byte) 0;
 
 		PacketBuilder pb = new PacketBuilder(
@@ -1816,7 +1826,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	protected double getLongestLength(Point5d p) {
 		// find the dominant axis.
 		double longest = 0d;
-		for (int i = 0; i < 5; i++) { // TODO: we'll ignore a and b for now
+		for (int i = 0; i < 5; i++) {
 			longest = Math.max(longest, p.get(i));
 		}
 		return longest;
@@ -2704,7 +2714,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	public double getPlatformTemperatureSetting() {
 		return this.getPlatformTemperatureSetting(machine.currentTool().getIndex());
 	}
-	
+
 	public double getPlatformTemperatureSetting(int toolhead) {
 		/// toolhead -1 indicates auto-detect. Fast hack to get software out...
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
@@ -2720,7 +2730,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 			machine.getTool(toolhead).setPlatformTargetTemperature(sp);
 		}
 		// super uses current toolhead, not specific toolhead
-		return machine.getTool(toolhead).getPlatformTargetTemperature();//super.getPlatformTemperatureSetting();
+//		super.getPlatformTemperatureSetting();
+		return machine.getTool(toolhead).getPlatformTargetTemperature();
 	}
 
 	@Deprecated
@@ -2744,7 +2755,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		}
 //		System.err.println(machine.getTool(toolhead).getTargetTemperature());
 		// super uses current toolhead, not specific toolhead
-		return machine.getTool(toolhead).getTargetTemperature();//super.getTemperatureSetting();
+		//super.getTemperatureSetting();
+		return machine.getTool(toolhead).getTargetTemperature();
 	}
 
 	public Version getToolVersion() {
