@@ -999,7 +999,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add8((byte) ((pwm > 255) ? 255 : pwm));
 		runCommand(pb.getPacket());
 
-		super.setMotorSpeedPWM(pwm);
+		super.setMotorSpeedPWM(pwm, toolhead);
 	}
 
 	@Deprecated
