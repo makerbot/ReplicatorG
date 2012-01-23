@@ -583,19 +583,46 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	}
 
 	public void setSpindleRPM(double rpm) throws RetryException {
-		machine.currentTool().setSpindleSpeedRPM(rpm);
+		setSpindleRPM(rpm, -1);
 	}
 
 	public void setSpindleSpeedPWM(int pwm) throws RetryException {
-		machine.currentTool().setSpindleSpeedPWM(pwm);
+		setSpindleSpeedPWM(pwm, -1);
 	}
 
 	public void enableSpindle() throws RetryException {
-		machine.currentTool().enableSpindle();
+		enableSpindle(-1);
 	}
 
 	public void disableSpindle() throws RetryException {
-		machine.currentTool().disableSpindle();
+		disableSpindle(-1);
+	}
+	public void setSpindleRPM(double rpm, int toolhead) throws RetryException {
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+
+		machine.getTool(toolhead).setSpindleSpeedRPM(rpm);
+	}
+
+	public void setSpindleSpeedPWM(int pwm, int toolhead) throws RetryException {
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+
+		machine.getTool(toolhead).setSpindleSpeedPWM(pwm);
+	}
+
+	public void enableSpindle(int toolhead) throws RetryException {
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+
+		machine.getTool(toolhead).enableSpindle();
+	}
+
+	public void disableSpindle(int toolhead) throws RetryException {
+		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+
+		machine.getTool(toolhead).disableSpindle();
 	}
 
 	public double getSpindleRPM() {
@@ -624,6 +651,9 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	}
 
 	public void readTemperature() {
+
+	}
+	public void readTemperature(int toolhead) {
 
 	}
 
@@ -764,11 +794,20 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	 * @throws RetryException 
 	 **************************************************************************/
 	public void openValve() throws RetryException {
-		machine.currentTool().openValve();
+		openValve(-1);
 	}
 
 	public void closeValve() throws RetryException {
-		machine.currentTool().closeValve();
+		closeValve(-1);
+	}
+	public void openValve(int toolhead) throws RetryException {
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		machine.getTool(toolhead).openValve();
+	}
+
+	public void closeValve(int toolhead) throws RetryException {
+		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		machine.getTool(toolhead).closeValve();
 	}
 
 	public void setStepperVoltage(int stepperId, int referenceValue) throws RetryException

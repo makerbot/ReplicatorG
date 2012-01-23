@@ -1290,7 +1290,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add32(microseconds);
 		runCommand(pb.getPacket());
 
-		super.setSpindleRPM(rpm);
+		super.setSpindleRPM(rpm, toolhead);
 	}
 
 	@Deprecated
@@ -1314,7 +1314,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add8((byte) pwm);
 		runCommand(pb.getPacket());
 
-		super.setSpindleSpeedPWM(pwm);
+		super.setSpindleSpeedPWM(pwm, toolhead);
 	}
 
 	@Deprecated
@@ -1346,7 +1346,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add8(flags);
 		runCommand(pb.getPacket());
 
-		super.enableSpindle();
+		super.enableSpindle(toolhead);
 	}
 
 	@Deprecated
@@ -1374,7 +1374,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add8(flags);
 		runCommand(pb.getPacket());
 
-		super.disableSpindle();
+		super.disableSpindle(toolhead);
 	}
 
 	@Deprecated
@@ -1507,7 +1507,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 			this.readPlatformTemperature(toolhead);
 		}
 
-		super.readTemperature();
+		super.readTemperature(toolhead);
 	}
 
 	/***************************************************************************
@@ -1639,7 +1639,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add8((byte) 1); // payload length
 		pb.add8((byte) 1); // enable
 		runCommand(pb.getPacket());
-		super.enableFan();
+		super.enableFan(toolhead);
 	}
 
 	@Deprecated
@@ -1661,7 +1661,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add8((byte) 0); // disable
 		runCommand(pb.getPacket());
 
-		super.disableFan();
+		super.disableFan(toolhead);
 	}
 
 	@Deprecated
@@ -1686,7 +1686,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add8((byte) newState); // enable(1)disable(0)
 		runCommand(pb.getPacket());
 
-		super.setAutomatedBuildPlatformRunning(state);
+		super.setAutomatedBuildPlatformRunning(state, toolhead);
 
 	}
 
@@ -1715,7 +1715,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add8((byte) 1); // enable
 		runCommand(pb.getPacket());
 
-		super.openValve();
+		super.openValve(toolhead);
 	}
 
 
@@ -1739,7 +1739,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add8((byte) 0); // disable
 		runCommand(pb.getPacket());
 
-		super.closeValve();
+		super.closeValve(toolhead);
 	}
 
 	/***************************************************************************
