@@ -59,6 +59,9 @@ import replicatorg.drivers.SimulationDriver;
 import replicatorg.drivers.StopException;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.MachineState.State;
+import replicatorg.machine.model.AxisId;
+import replicatorg.machine.model.BuildVolume;
+import replicatorg.machine.model.Endstops;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolModel;
@@ -342,20 +345,38 @@ public class Machine implements MachineInterface {
 	{
 		int nToolheads = machineThread.getModel().getTools().size();
 		Point5d maxRates = machineThread.getModel().getMaximumFeedrates();
-
+		
+//		BuildVolume buildVolume = new BuildVolume();
+//		buildVolume.setX(machineThread.getModel().getBuildVolume().getX()/2);
+//		buildVolume.setY(machineThread.getModel().getBuildVolume().getY()/2);
+//		buildVolume.setZ(machineThread.getModel().getBuildVolume().getZ()/2);
+		
 		GCodeCommand gcode;
-		String message;
+		String message, cmd, mainCode;
 		Integer lineNumber = 0;
 		
 		for(String line : source)
 		{
-			gcode = new GCodeCommand(line);
+			try
+			{
+				gcode = new GCodeCommand(line);
+			} //Catching every kind of exception is generally bad form,
+			//  It can hide where the problem is happening, and should be avoided
+			//  But I'm doing it anyway.
+			catch(Exception e)
+			{
+				message = "ReplicatorG can't parse '" + line +"'";
 
-			String cmd = gcode.getCommand();
+				messages.put(message, lineNumber);
+				Base.logger.log(Level.SEVERE, message);
+				continue;
+			}
+
+			cmd = gcode.getCommand();
 			if(cmd.split(" ").length < 1) continue; //to avoid null index problems
 			
-			String mainCode = cmd.split(" ")[0];
-			
+			mainCode = cmd.split(" ")[0];
+
 			if(!("").equals(mainCode) && GCodeEnumeration.getGCode(mainCode) == null)
 			{
 				message = "ReplicatorG doesn't recognize GCode '" + line +"'";
@@ -364,6 +385,15 @@ public class Machine implements MachineInterface {
 				Base.logger.log(Level.SEVERE, message);
 			}
 			
+			// Check for homing in the wrong direction
+			if(!homingDirectionIsSafe(gcode))
+			{
+				message = "Homing in the wrong direction can damage your machine: '" + line +"'";
+
+				messages.put(message, lineNumber);
+				Base.logger.log(Level.SEVERE, message);
+			}
+
 			// we're going to check for the correct number of toolheads in each command
 			// the list of exceptions keeps growing, do we really need to do this check?
 			// maybe we should just specify the things to check, rather than the reverse
@@ -398,6 +428,40 @@ public class Machine implements MachineInterface {
 			
 			lineNumber++;
 		}
+	}
+	
+	private boolean homingDirectionIsSafe(GCodeCommand gcode) {
+		Endstops xstop, ystop, zstop;
+		
+		// If it doesn't have the code, ignore it
+		xstop = ystop = zstop = Endstops.BOTH;
+		
+		if(gcode.hasCode('X'))
+			xstop = machineThread.getModel().getEndstops(AxisId.X);
+		if(gcode.hasCode('Y'))
+			ystop = machineThread.getModel().getEndstops(AxisId.Y);
+		if(gcode.hasCode('Z'))
+			zstop = machineThread.getModel().getEndstops(AxisId.Z);
+		
+		if(gcode.getCodeValue('G') == 161)
+		{
+			if((xstop != Endstops.MIN) && (xstop != Endstops.BOTH))
+				return false;
+			if((ystop != Endstops.MIN) && (ystop != Endstops.BOTH))
+				return false;
+			if((zstop != Endstops.MIN) && (zstop != Endstops.BOTH))
+				return false;
+		}
+		else if(gcode.getCodeValue('G') == 162)
+		{
+			if((xstop != Endstops.MAX) && (xstop != Endstops.BOTH))
+				return false;
+			if((ystop != Endstops.MAX) && (ystop != Endstops.BOTH))
+				return false;
+			if((zstop != Endstops.MAX) && (zstop != Endstops.BOTH))
+				return false;
+		}
+		return true;
 	}
 	
 	// TODO: Spawn a new thread to handle this for us?

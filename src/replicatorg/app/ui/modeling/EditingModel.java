@@ -242,6 +242,43 @@ public class EditingModel {
 		model.setTransform(old,"move",isNewOp());
 	}
 
+	/**
+	 * Width is the size of the object along the X axis
+	 * @return
+	 */
+	public double getWidth() {
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		getBoundingBox().getLower(lower);
+		getBoundingBox().getUpper(upper);
+
+		return upper.x - lower.x;
+	}
+	/**
+	 * Depth is the size of the object along the Y axis
+	 * @return
+	 */
+	public double getDepth() {
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		getBoundingBox().getLower(lower);
+		getBoundingBox().getUpper(upper);
+
+		return upper.y - lower.y;
+	}
+	/**
+	 * Height is the size of the object along the Z axis
+	 * @return
+	 */
+	public double getHeight() {
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		getBoundingBox().getLower(lower);
+		getBoundingBox().getUpper(upper);
+
+		return upper.z - lower.z;
+	}
+	
 	private BoundingBox getBoundingBox(Group group) {
 		return getBoundingBox(group, new Transform3D());
 	}

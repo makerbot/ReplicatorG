@@ -116,6 +116,7 @@ import replicatorg.app.syntax.PdeTextAreaDefaults;
 import replicatorg.app.syntax.SyntaxDocument;
 import replicatorg.app.syntax.TextAreaPainter;
 import replicatorg.app.ui.controlpanel.ControlPanelWindow;
+import replicatorg.app.ui.modeling.EditingModel;
 import replicatorg.app.ui.modeling.PreviewPanel;
 import replicatorg.app.ui.onboard.OnboardParametersWindow;
 import replicatorg.app.util.PythonUtils;
@@ -135,6 +136,7 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineState;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
+import replicatorg.machine.model.BuildVolume;
 import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.Build;
@@ -585,6 +587,15 @@ ToolpathGenerator.GeneratorListener
 				handleSave(true);
 			}
 		}
+
+		// Check for too-big model
+		if (modelTooBig()) {
+			final String message = "<html>This model is bigger than your machine can build, <br>" +
+			"Are you sure you want to generate code for it?</html>";
+			int option = JOptionPane.showConfirmDialog(this, message, "Generate oversize model?", 
+					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (option != JOptionPane.YES_OPTION) { return; }
+		}
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
 		
 		if(generator instanceof SkeinforgeGenerator) {
@@ -607,6 +618,23 @@ ToolpathGenerator.GeneratorListener
 
 	}
 
+	private boolean modelTooBig() {
+		/*
+		 * I'm avoiding using the javax.vecmath classes here because
+		 * there were some problems with them in the control panel 
+		 */
+		EditingModel model = previewPanel.getModel();
+		BuildVolume machineVolume = machineLoader.getMachineInterface().getModel().getBuildVolume();
+
+		if(model.getWidth() > machineVolume.getX())
+			return true;
+		if(model.getDepth() > machineVolume.getY())
+			return true;
+		if(model.getHeight() > machineVolume.getZ())
+			return true;
+		
+		return false;
+	}
 
 	private JMenu serialMenu = null;
 

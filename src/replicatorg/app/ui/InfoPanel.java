@@ -7,6 +7,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import java.awt.BorderLayout;
+import java.awt.Color;
+
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -35,6 +37,8 @@ public class InfoPanel extends JFrame {
 
 		infoArea = new JTextArea("ReplicatorG:",40,80);
 		infoArea.setFont(infoArea.getFont().deriveFont(11f));
+		infoArea.setEditable(false);
+		infoArea.setBackground(getBackground());
 		panel.setLayout(new BorderLayout());
 		panel.add(new JScrollPane(infoArea),BorderLayout.CENTER);
 
