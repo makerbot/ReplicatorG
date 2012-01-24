@@ -146,7 +146,8 @@ public class ToolpathGeneratorFactory {
 				// This will be done by the SkeinforgePostProcessor
 				SkeinforgeBooleanPreference bookendPref = 	
 					new SkeinforgeBooleanPreference("Use machine-specific start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
-						"If this option is checked, skeinforge will use the start.gcode and end.gcode defined for the currently selected machine");
+						"<html>Use the start and end.gcode defined in machines/*.xml for the currently selected machine.<br/>" +
+						"If unchecked, uses start and end.gcode in the skeinforge profile.</html>");
 				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
 				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
 				prefs.add(bookendPref);
