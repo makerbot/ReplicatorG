@@ -63,7 +63,6 @@ import replicatorg.drivers.commands.DriverCommand.LinearDirection;
 import replicatorg.drivers.commands.HomeAxes;
 import replicatorg.drivers.commands.InvalidatePosition;
 import replicatorg.drivers.commands.SendBeep;
-import replicatorg.drivers.commands.SetLedStrip;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineProgressEvent;
@@ -72,9 +71,8 @@ import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.Endstops;
+import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolModel;
-
-
 
 public class ControlPanelWindow extends JFrame implements
 		ChangeListener, WindowListener,	
@@ -134,10 +132,6 @@ public class ControlPanelWindow extends JFrame implements
 		// no menu bar.
 		setJMenuBar(createMenuBar());
 
-		// create all our GUI interfaces
-		mainPanel = new JPanel();
-		mainPanel.setLayout(new MigLayout("gap 5, ins 5"));
-		
 		chooser = new JColorChooser(Color.BLACK);
 
 		ActionListener okListener = new ActionListener()
@@ -155,39 +149,21 @@ public class ControlPanelWindow extends JFrame implements
 			}
 		};
 		
-		JPanel beepPanel = new JPanel();
-
-		final JFormattedTextField beepFreq = new JFormattedTextField(Base.getLocalFormat());
-		final JFormattedTextField beepDur = new JFormattedTextField(Base.getLocalFormat());
-		final JButton beepButton = new JButton("Beep Beep!");
-		
-		beepFreq.setColumns(5);
-		beepDur.setColumns(5);
-		
-		final int EFFECT_DO_IMMEDATELY= 0; /// 
-		beepButton.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				Base.logger.severe("running sendBeep");
-				machine.runCommand(new SendBeep(((Number)beepFreq.getValue()).intValue(),
-												((Number) beepDur.getValue()).intValue(),
-												EFFECT_DO_IMMEDATELY));
-			}
-		});
-
-		beepPanel.add(new JLabel("Frequency"), "split");
-		beepPanel.add(beepFreq, "growy");
-		beepPanel.add(new JLabel("Duration"), "gap unrel");
-		beepPanel.add(beepDur, "growx");
-		beepPanel.add(beepButton, "gap unrel");
-
-		jogPanel = new JogPanel(machine);
 		ledStripButton = new JButton(new ShowColorChooserAction(this, chooser, okListener, null,Color.BLACK));
-		mainPanel.add(jogPanel,"split 4, flowy, growx");
-		mainPanel.add(createActivationPanel(),"split, flowy, growx");
-		mainPanel.add(ledStripButton ,"flowy, growx");
-		mainPanel.add(beepPanel, "flowy, growx");
-		mainPanel.add(createToolsPanel(),"growy, flowy,");
+		
+		// create all our GUI interfaces
+		mainPanel = new JPanel();
+		mainPanel.setLayout(new MigLayout("gap 5, ins 5, flowy"));
+		
+		jogPanel = new JogPanel(machine);
+		mainPanel.add(jogPanel,"split 4, growx");
+		mainPanel.add(createActivationPanel(),"split, growx");
+		if(newMachine.getMachineType() == MachineType.THE_REPLICATOR)
+		{
+			mainPanel.add(ledStripButton ,"growx");
+			mainPanel.add(createBeepPanel(), "growx");
+		}
+		mainPanel.add(createToolsPanel(),"newline, growy");
 		
 		this.setResizable(false);
 		add(mainPanel);
@@ -260,6 +236,34 @@ public class ControlPanelWindow extends JFrame implements
 	}
 
 	
+	protected JComponent createBeepPanel() {
+		JPanel beepPanel = new JPanel();
+		
+		final JFormattedTextField beepFreq = new JFormattedTextField(Base.getLocalFormat());
+		final JFormattedTextField beepDur = new JFormattedTextField(Base.getLocalFormat());
+		final JButton beepButton = new JButton("Beep Beep!");
+		
+		beepFreq.setColumns(5);
+		beepDur.setColumns(5);
+		
+		final int EFFECT_DO_IMMEDATELY= 0; /// 
+		beepButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Base.logger.severe("running sendBeep");
+				machine.runCommand(new SendBeep(((Number)beepFreq.getValue()).intValue(),
+												((Number) beepDur.getValue()).intValue(),
+												EFFECT_DO_IMMEDATELY));
+			}
+		});
+
+		beepPanel.add(new JLabel("Frequency"), "split");
+		beepPanel.add(beepFreq, "growy");
+		beepPanel.add(new JLabel("Duration"), "gap unrel");
+		beepPanel.add(beepDur, "growx");
+		beepPanel.add(beepButton, "gap unrel");
+		return beepPanel;
+	}
 	/**
 	 * The activation panel contains functions related to pausing, starting, and
 	 * powering the steppers up or down.
