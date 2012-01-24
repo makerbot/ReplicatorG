@@ -427,12 +427,12 @@ public class ExtruderPanel extends JPanel{
 		if(tool0 != null)
 		{
 			if (tool0.hasHeater()) {
-				JLabel targetTempLabel = makeKeyLabel("<html>Target (&deg;C)</html>",t0TargetColor);
+				JLabel targetTempLabel = makeKeyLabel("<html>"+tool0.getName()+" Target (&deg;C)</html>",t0TargetColor);
 				
 				t0TargetTemperatureField = new CallbackTextField(temperatureListener, "handleTextField", "target-temp", 9, Base.getLocalFormat());
 				t0TargetTemperatureField.setValue(tool0.getTargetTemperature());
 				
-				JLabel currentTempLabel = makeKeyLabel("<html>Current (&deg;C)</html>",t0MeasuredColor);
+				JLabel currentTempLabel = makeKeyLabel("<html>"+tool0.getName()+" Current (&deg;C)</html>",t0MeasuredColor);
 				t0CurrentTemperatureField = new JFormattedTextField(Base.getLocalFormat());
 				t0CurrentTemperatureField.setColumns(9);
 				t0CurrentTemperatureField.setEnabled(false);
@@ -446,12 +446,12 @@ public class ExtruderPanel extends JPanel{
 		if(tool1 != null)
 		{
 			if (tool1.hasHeater()) {
-				JLabel targetTempLabel = makeKeyLabel("<html>Target (&deg;C)</html>",t1TargetColor);
+				JLabel targetTempLabel = makeKeyLabel("<html>"+tool1.getName()+" Target (&deg;C)</html>",t1TargetColor);
 				
 				t1TargetTemperatureField = new CallbackTextField(temperatureListener, "handleTextField", "target-temp", 9, Base.getLocalFormat());
 				t1TargetTemperatureField.setValue(tool1.getTargetTemperature());
 				
-				JLabel currentTempLabel = makeKeyLabel("<html>Current (&deg;C)</html>",t1MeasuredColor);
+				JLabel currentTempLabel = makeKeyLabel("<html>"+tool1.getName()+" Current (&deg;C)</html>",t1MeasuredColor);
 				t1CurrentTemperatureField = new JFormattedTextField(Base.getLocalFormat());
 				t1CurrentTemperatureField.setColumns(9);
 				t1CurrentTemperatureField.setEnabled(false);

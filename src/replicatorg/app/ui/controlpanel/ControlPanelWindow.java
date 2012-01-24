@@ -160,7 +160,7 @@ public class ControlPanelWindow extends JFrame implements
 		if(newMachine.getMachineType() == MachineType.THE_REPLICATOR)
 		{
 			mainPanel.add(ledStripButton ,"growx");
-			mainPanel.add(createBeepPanel(), "growx");
+//			mainPanel.add(createBeepPanel(), "growx");
 		}
 		mainPanel.add(alternateToolsPanel(),"newline, growy");
 		
