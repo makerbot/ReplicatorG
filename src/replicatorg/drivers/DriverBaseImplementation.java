@@ -657,7 +657,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 
 	}
 
-	/** relies on timing to have the 'right selected toolhead', deprecated */
+	/** relies on timing to have the 'correct selected toolhead', deprecated */
 	@Override
 	@Deprecated
 	public double getTemperature() {

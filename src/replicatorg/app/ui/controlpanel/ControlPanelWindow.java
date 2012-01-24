@@ -311,7 +311,7 @@ public class ControlPanelWindow extends JFrame implements
 			if (t.getType().equals("extruder")) {
 				Base.logger.fine("Creating panel for " + t.getName());
 				ExtruderPanel extruderPanel = new ExtruderPanel(machine,t);
-				toolsPane.addTab(t.getName(),extruderPanel);
+				toolsPane.addTab(t.getName() + " Plastic Extruder",extruderPanel);
 				extruderPanels.add(extruderPanel);
 				if (machine.getModel().currentTool() == t) {
 					toolsPane.setSelectedComponent(extruderPanel);
@@ -329,7 +329,7 @@ public class ControlPanelWindow extends JFrame implements
 		});
 		return toolsPane;
 	}
-	
+
 	public void updateStatus() {
 		if(jogPanel != null)	jogPanel.updateStatus();
 		else					Base.logger.severe("null jog panel");

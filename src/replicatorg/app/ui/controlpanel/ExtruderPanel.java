@@ -57,7 +57,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 
 	public ToolModel getTool() { 
 		return toolModel; 
-		}
+	}
 	
 	protected JFormattedTextField currentTempField;
 	
@@ -183,7 +183,7 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		// create our initial panel
 		setLayout(new MigLayout());
-		
+		add(new JLabel("Plastic Extruder Controls"), "align 50%, spanx, wrap, gapbottom 10");
 		// create our motor options
 		if (tool.hasMotor()) {
 			
@@ -446,13 +446,13 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 		
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
 		
+		// Some changes to the way (& frequency) temperatures are read make it easier
+		// to just read this cached value which will be updated regularly
 		if ( toolModel.hasHeater() ) {
-			double temperature = machine.getDriverQueryInterface().getTemperature(toolModel.getIndex());
-			updateTemperature(second, temperature);
+			updateTemperature(second, toolModel.getCurrentTemperature());
 		}
 		if ( toolModel.hasHeatedPlatform() ) {
-			double temperature = machine.getDriverQueryInterface().getPlatformTemperature(toolModel.getIndex());
-			updatePlatformTemperature(second, temperature);
+			updatePlatformTemperature(second, toolModel.getPlatformCurrentTemperature());
 		}
 	}
 	
@@ -671,6 +671,4 @@ public class ExtruderPanel extends JPanel implements FocusListener, ActionListen
 			}
 		}
 	}
-
-
 }
