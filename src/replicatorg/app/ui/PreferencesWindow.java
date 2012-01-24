@@ -340,7 +340,11 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		}
 		
 		{
+			final int defaultTemp = 75;
+			final String tooltip = "When build is pressed, begin bringing bot up to this temperature";
+			
 			final JCheckBox preheatCb = new JCheckBox("Preheat builds");
+			preheatCb.setToolTipText(tooltip);
 			content.add(preheatCb, "split");
 			
 			preheatCb.addActionListener(new ActionListener(){
@@ -355,58 +359,64 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			final JLabel t1Label = new JLabel("Toolhead1:");
 			final JLabel pLabel = new JLabel("Platform:");
 			
-			Integer t0Value = Base.preferences.getInt("build.preheatTool0", 75);
-			Integer t1Value = Base.preferences.getInt("build.preheatTool1", 75);
-			Integer pValue = Base.preferences.getInt("build.preheatPlatform", 75);
+			Integer t0Value = Base.preferences.getInt("build.preheatTool0", defaultTemp);
+			Integer t1Value = Base.preferences.getInt("build.preheatTool1", defaultTemp);
+			Integer pValue = Base.preferences.getInt("build.preheatPlatform", defaultTemp);
 			
 			final JFormattedTextField t0Field = new JFormattedTextField(Base.getLocalFormat());
 			final JFormattedTextField t1Field = new JFormattedTextField(Base.getLocalFormat());
 			final JFormattedTextField pField = new JFormattedTextField(Base.getLocalFormat());
+			
+			t0Field.setToolTipText(tooltip);
+			t1Field.setToolTipText(tooltip);
+			pField.setToolTipText(tooltip);
 
 			t0Field.setValue(t0Value);
 			t1Field.setValue(t1Value);
 			pField.setValue(pValue);
 			
-			// let's avoid creating too many ActionListeners, also is fewer lines (and just as clear)!
-			ActionListener a = new ActionListener(){
-				@Override
-				public void actionPerformed(ActionEvent ae) {
-					double target;
-					if(ae.getSource() == t0Field)
-					{
-						// casting to long because that's what it is
-						target = ((Number)t0Field.getValue()).doubleValue();
-						target = confirmTemperature(target,"temperature.acceptedLimit",200.0);
-						if (target == Double.MIN_VALUE) {
-							return;
+			// let's avoid creating too many Anon. inner Listeners, also is fewer lines (and just as clear)!
+			PropertyChangeListener p = new PropertyChangeListener() {
+				public void propertyChange(PropertyChangeEvent evt) {
+					if (evt.getPropertyName() == "value") {
+						double target;
+						if(evt.getSource() == t0Field)
+						{
+							target = ((Number)t0Field.getValue()).doubleValue();
+							target = confirmTemperature(target,"temperature.acceptedLimit",200.0);
+							if (target == Double.MIN_VALUE) {
+								t0Field.setValue(Base.preferences.getInt("build.preheatTool0", defaultTemp));
+								return;
+							}
+							Base.preferences.putInt("build.preheatTool0", (int)target);
 						}
-						Base.preferences.putInt("build.preheatTool0", (int)target);
-					}
-					else if(ae.getSource() == t1Field)
-					{
-						// casting to long because that's what it is
-						target = ((Number)t1Field.getValue()).doubleValue();
-						target = confirmTemperature(target,"temperature.acceptedLimit",200.0);
-						if (target == Double.MIN_VALUE) {
-							return;
+						else if(evt.getSource() == t1Field)
+						{
+							target = ((Number)t1Field.getValue()).doubleValue();
+							target = confirmTemperature(target,"temperature.acceptedLimit",200.0);
+							if (target == Double.MIN_VALUE) {
+								t0Field.setValue(Base.preferences.getInt("build.preheatTool1", defaultTemp));
+								return;
+							}
+							Base.preferences.putInt("build.preheatTool1", (int)target);
 						}
-						Base.preferences.putInt("build.preheatTool1", (int)target);
-					}
-					else if(ae.getSource() == pField)
-					{
-						// casting to long because that's what it is
-						target = ((Number)pField.getValue()).doubleValue();
-						target = confirmTemperature(target,"temperature.acceptedLimit.bed",90.0);
-						if (target == Double.MIN_VALUE) {
-							return;
+						else if(evt.getSource() == pField)
+						{
+							target = ((Number)pField.getValue()).doubleValue();
+							target = confirmTemperature(target,"temperature.acceptedLimit.bed",90.0);
+							if (target == Double.MIN_VALUE) {
+								t0Field.setValue(Base.preferences.getInt("build.preheatPlatform", defaultTemp));
+								return;
+							}
+							Base.preferences.putInt("build.preheatPlatform", (int)target);
 						}
-						Base.preferences.putInt("build.preheatPlatform", (int)target);
 					}
 				}
 			};
-			t0Field.addActionListener(a);
-			t1Field.addActionListener(a);
-			pField.addActionListener(a);
+
+			t0Field.addPropertyChangeListener(p);
+			t1Field.addPropertyChangeListener(p);
+			pField.addPropertyChangeListener(p);
 
 			content.add(t0Label, "split, gap 20px");
 			content.add(t0Field, "split, growx");
