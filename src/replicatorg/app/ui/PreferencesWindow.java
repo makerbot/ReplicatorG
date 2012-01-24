@@ -403,7 +403,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 						else if(evt.getSource() == pField)
 						{
 							target = ((Number)pField.getValue()).doubleValue();
-							target = confirmTemperature(target,"temperature.acceptedLimit.bed",90.0);
+							target = confirmTemperature(target,"temperature.acceptedLimit.bed",110.0);
 							if (target == Double.MIN_VALUE) {
 								t0Field.setValue(Base.preferences.getInt("build.preheatPlatform", defaultTemp));
 								return;
