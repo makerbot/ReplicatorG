@@ -439,14 +439,14 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	public void setLedStrip(Color color, int effectId) throws RetryException {
 		Base.logger.severe("MightBoard sending setLedStrip");
 
-		PacketBuilder pb1 = new PacketBuilder(MotherboardCommandCode.SET_LED_STRIP_COLOR.getCode());
+	/*	PacketBuilder pb1 = new PacketBuilder(MotherboardCommandCode.SET_LED_STRIP_COLOR.getCode());
 		pb1.add8(3);//color.getRed());
 		pb1.add8(0);//color.getBlue());
 		pb1.add8(0);//color.getGreen());
 		pb1.add8(0xFF);
 		pb1.add8(0);
 		runCommand(pb1.getPacket());
-
+*/
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_LED_STRIP_COLOR.getCode());
 
 		int Channel = 3;
@@ -457,10 +457,11 @@ public class MightyBoard extends Makerbot4GAlternateDriver
        // {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11}
        colorSelect = getColorBits(color);
        
-		pb.add8(Channel);//color.getRed());
-		pb.add8(BlinkRate);//color.getBlue());
-		pb.add8(Brightness);//color.getGreen());
-		pb.add8(colorSelect);
+		pb.add8(color.getRed());
+		pb.add8(color.getGreen());
+		pb.add8(color.getBlue());	
+		pb.add8(BlinkRate);
+		//pb.add8(colorSelect);
 		pb.add8(0);
 
 		PacketResponse resp =  runCommand(pb.getPacket());
