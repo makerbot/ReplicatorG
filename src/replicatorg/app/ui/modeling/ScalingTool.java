@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
+import java.lang.Double;
+
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
@@ -52,7 +54,14 @@ public class ScalingTool extends Tool {
 		b.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				double scale = ((Number)scaleFactor.getValue()).doubleValue();
+				if(scale == 0.0)
+				{
+					JOptionPane.showConfirmDialog(null, "Cannot Scale by 0.0!!", "Scale", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				}
+				else
+				{
 				parent.getModel().scale(scale,parent.getModel().isOnPlatform());
+				}
 			}
 		});
 		p.add(b,"growx,wrap");
@@ -78,8 +87,16 @@ public class ScalingTool extends Tool {
 
 		emBiggen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				double newScale = parent.getModel().scaleMax();
-				JOptionPane.showConfirmDialog(null, "Scaled by "+newScale, "Scale to max", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				Double newScale = parent.getModel().scaleMax();
+				if(newScale.isNaN())
+				{
+					JOptionPane.showConfirmDialog(null, "No Machine is Selected!  Cannot scale to max size!!", "Scale to max", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
+				}
+				else
+				{
+					JOptionPane.showConfirmDialog(null, "Scaled by "+newScale.doubleValue(), "Scale to max", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				}
 			}
 		});	
 		

@@ -2,7 +2,7 @@ package replicatorg.app.ui.modeling;
 
 import java.awt.Color;
 import java.util.Enumeration;
-
+import java.lang.Double;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingBox;
 import javax.media.j3d.BranchGroup;
@@ -356,7 +356,7 @@ public class EditingModel {
 		model.setTransform(t,"resize",isNewOp());		
 	}
 	
-	public double scaleMax() {
+	public Double scaleMax() {
 		//center
 		putOnPlatform();
 		
@@ -370,15 +370,18 @@ public class EditingModel {
 		BuildVolume bv = mainWindow.previewPanel.buildVol;
 
 		Point3d size = new Point3d(upper.x - lower.x, upper.y - lower.y, upper.z - lower.z);
-		
+		if(bv == null)
+		{
+			return Double.NaN;
+		}
 		//We shrink x and y a little bit, because slight calibration problems could cause problems.
 		Point3d scale = new Point3d(((double)bv.getX() -10)/size.x, ((double)bv.getY() -10)/size.y, ((double)bv.getZ())/size.z);
 //		Point3d scale = new Point3d(((double)bv.getX())/size.x, ((double)bv.getY())/size.y, ((double)bv.getZ())/size.z);
 		
 		//take least of those three, call scale for that value
-		double newScale = Math.min(scale.x, Math.min(scale.y, scale.z));
+		Double newScale = new Double(Math.min(scale.x, Math.min(scale.y, scale.z)));
 		
-		scale(newScale, true);
+		scale(newScale.doubleValue(), true);
 
 		return newScale;
 	}
