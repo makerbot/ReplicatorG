@@ -72,7 +72,6 @@ import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.Endstops;
 import replicatorg.machine.model.MachineType;
-import replicatorg.machine.model.ToolModel;
 
 public class ControlPanelWindow extends JFrame implements
 		ChangeListener, WindowListener,	
@@ -156,14 +155,14 @@ public class ControlPanelWindow extends JFrame implements
 		mainPanel.setLayout(new MigLayout("gap 5, ins 5, flowy"));
 		
 		jogPanel = new JogPanel(machine);
-		mainPanel.add(jogPanel,"split 4, growx");
+		mainPanel.add(jogPanel,"split 4, growx, growy");
 		mainPanel.add(createActivationPanel(),"split, growx");
 		if(newMachine.getMachineType() == MachineType.THE_REPLICATOR)
 		{
 			mainPanel.add(ledStripButton ,"growx");
 			mainPanel.add(createBeepPanel(), "growx");
 		}
-		mainPanel.add(createToolsPanel(),"newline, growy");
+		mainPanel.add(alternateToolsPanel(),"newline, growy");
 		
 		this.setResizable(false);
 		add(mainPanel);
@@ -299,40 +298,48 @@ public class ControlPanelWindow extends JFrame implements
 
 	Vector<ExtruderPanel> extruderPanels = new Vector<ExtruderPanel>();
 	
-	protected JComponent createToolsPanel() {
-		toolsPane = new JTabbedPane();
-
-		// reverse list, such that Left/Right appears natural to users
-		for( int i = machine.getModel().getTools().size(); i > 0; i--) {
-			ToolModel t = machine.getModel().getTools().elementAt(i -1); 
-//		for (Enumeration<ToolModel> e = machine.getModel().getTools().elements(); e.hasMoreElements();) {		
-//			ToolModel t = e.nextElement();
-			if (t == null) continue;
-			if (t.getType().equals("extruder")) {
-				Base.logger.fine("Creating panel for " + t.getName());
-				ExtruderPanel extruderPanel = new ExtruderPanel(machine,t);
-				toolsPane.addTab(t.getName() + " Plastic Extruder",extruderPanel);
-				extruderPanels.add(extruderPanel);
-				if (machine.getModel().currentTool() == t) {
-					toolsPane.setSelectedComponent(extruderPanel);
-				}
-			} else {
-				Base.logger.warning("Unsupported tool for control panel.");
-			}
-		} 
-		toolsPane.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent ce) {
-				final JTabbedPane tp = (JTabbedPane)ce.getSource();
-				final ExtruderPanel ep = (ExtruderPanel)tp.getSelectedComponent();
-				machine.runCommand(new replicatorg.drivers.commands.SelectTool(ep.getTool().getIndex()));
-			}
-		});
-		return toolsPane;
+//	protected JComponent createToolsPanel() {
+//		toolsPane = new JTabbedPane();
+//
+//		// reverse list, such that Left/Right appears natural to users
+//		for( int i = machine.getModel().getTools().size(); i > 0; i--) {
+//			ToolModel t = machine.getModel().getTools().elementAt(i -1); 
+////		for (Enumeration<ToolModel> e = machine.getModel().getTools().elements(); e.hasMoreElements();) {		
+////			ToolModel t = e.nextElement();
+//			if (t == null) continue;
+//			if (t.getType().equals("extruder")) {
+//				Base.logger.fine("Creating panel for " + t.getName());
+//				ExtruderPanel extruderPanel = new ExtruderPanel(machine,t);
+//				toolsPane.addTab(t.getName() + " Plastic Extruder",extruderPanel);
+//				extruderPanels.add(extruderPanel);
+//				if (machine.getModel().currentTool() == t) {
+//					toolsPane.setSelectedComponent(extruderPanel);
+//				}
+//			} else {
+//				Base.logger.warning("Unsupported tool for control panel.");
+//			}
+//		} 
+//		// This is no longer necessary, stuff just sends commands to the correct tool
+////		toolsPane.addChangeListener(new ChangeListener() {
+////			public void stateChanged(ChangeEvent ce) {
+////				final JTabbedPane tp = (JTabbedPane)ce.getSource();
+////				final ExtruderPanel ep = (ExtruderPanel)tp.getSelectedComponent();
+////				machine.runCommand(new replicatorg.drivers.commands.SelectTool(ep.getTool().getIndex()));
+////			}
+////		});
+//		return toolsPane;
+//	}
+	
+	protected JComponent alternateToolsPanel() {
+		extruderPanels.add(0, new ExtruderPanel(machine));
+		return extruderPanels.firstElement();
 	}
 
 	public void updateStatus() {
-		if(jogPanel != null)	jogPanel.updateStatus();
-		else					Base.logger.severe("null jog panel");
+		if(jogPanel != null)
+			jogPanel.updateStatus();
+		else
+			Base.logger.severe("null jog panel");
 
 		for (ExtruderPanel e : extruderPanels) {
 			e.updateStatus();

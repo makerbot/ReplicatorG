@@ -249,6 +249,10 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			
 			zMinusButtonString = "DownZ-";
 			zPlusButtonString = "UpZ+";
+			xMinusButtonString = "RightX-";
+			xPlusButtonString = "LeftX+";
+			yMinusButtonString = "RightY-";
+			yPlusButtonString = "LeftY+";
 			
 			/*
 			 * Yes, these numbers ARE magic. They're just some button
@@ -284,6 +288,12 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			
 			zMinusButtonString = "DownZ-";
 			zPlusButtonString = "UpZ+";
+			zMinusButtonString = "DownZ-";
+			zPlusButtonString = "UpZ+";
+			xMinusButtonString = "RightX-";
+			xPlusButtonString = "LeftX+";
+			yMinusButtonString = "RightY-";
+			yPlusButtonString = "LeftY+";
 			
 			/*
 			 * Yes, these numbers ARE magic. They're just some button
@@ -322,6 +332,10 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			
 			zMinusButtonString = "UpZ-";
 			zPlusButtonString = "DownZ+";
+			xMinusButtonString = "LeftX-";
+			xPlusButtonString = "RightX+";
+			yMinusButtonString = "LeftY-";
+			yPlusButtonString = "RightY+";
 			
 			/*
 			 * Yes, these numbers ARE magic. They're just some button
@@ -334,10 +348,10 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 				extruderImageLocation = scalePoint(188, 60);
 			buildplateImageLocation = scalePoint(100, 150);
 
-			xMinusButtonLocation = scalePoint(185, 200);
-			xPlusButtonLocation = scalePoint(95, 200);
-			yMinusButtonLocation = scalePoint(65, 65);
-			yPlusButtonLocation = scalePoint(0, 90);
+			xMinusButtonLocation = scalePoint(95, 200);
+			xPlusButtonLocation = scalePoint(185, 200);
+			yMinusButtonLocation = scalePoint(0, 90);
+			yPlusButtonLocation = scalePoint(65, 65);
 			zMinusButtonLocation = scalePoint(357, 40);
 			zPlusButtonLocation = scalePoint(357, 135);
 			
