@@ -60,7 +60,6 @@ import replicatorg.drivers.StopException;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.machine.MachineState.State;
 import replicatorg.machine.model.AxisId;
-import replicatorg.machine.model.BuildVolume;
 import replicatorg.machine.model.Endstops;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.MachineType;
