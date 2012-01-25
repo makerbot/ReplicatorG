@@ -273,7 +273,7 @@ public class ExtruderPanel extends JPanel{
 							machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedPWM((int)newValue, tool.getIndex()));
 						}
 					}
-				}, "handleTextField", "motor-speed-pwm", 9, Base.getLocalFormat());
+				}, "handleTextField", "motor-speed-pwm", 5, Base.getLocalFormat());
 				field.setValue(machine.getDriverQueryInterface().getMotorSpeedPWM());
 				panel.add(label);
 				panel.add(field,"wrap");
@@ -291,10 +291,10 @@ public class ExtruderPanel extends JPanel{
 							machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(newValue, tool.getIndex()));
 						}
 					}
-				}, "handleTextField", "motor-speed", 9, Base.getLocalFormat());
+				}, "handleTextField", "motor-speed", 5, Base.getLocalFormat());
 				field.setValue(tool.getMotorSpeedReadingRPM() );// <-- should be
 				//field.setValue(machine.getDriver().getMotorRPM());
-				panel.add(label);
+				panel.add(label, "");
 				panel.add(field,"wrap");
 
 				if (tool.getMotorStepperAxisName() != null) {
@@ -375,8 +375,8 @@ public class ExtruderPanel extends JPanel{
 			abpCheck.setName("abp-check");
 			abpCheck.addItemListener(itemListener);
 	
-			add(abpLabel);
-			add(abpCheck,"wrap");
+			panel.add(abpLabel);
+			panel.add(abpCheck,"wrap");
 		}
 		return panel;
 	}
@@ -407,13 +407,11 @@ public class ExtruderPanel extends JPanel{
 		setLayout(new MigLayout("fill"));
 		
 		// Display the motor controls
-
-		// The temperature display
-		JPanel temperaturePanel = new JPanel(new MigLayout("fillx, filly"));
-		temperaturePanel.setBorder(BorderFactory.createTitledBorder("Extruder Temperature Controls"));
 		if(tools.size() == 1)
 		{
-			add(getMotorControls(tool0), "aligny top, spanx, growx, wrap");
+			JPanel motorControl = getMotorControls(tool0);
+			motorControl.setBorder(BorderFactory.createTitledBorder("Extruder Motor Control"));
+			add(motorControl, "aligny top, spanx, growx, wrap");
 		}
 		else if(tools.size() > 1)
 		{
@@ -424,17 +422,21 @@ public class ExtruderPanel extends JPanel{
 			add(motorTabs, "aligny top, spanx, growx, wrap");
 		}
 		
+		// The temperature display
+		JPanel temperaturePanel = new JPanel(new MigLayout("fillx, filly"));
+		temperaturePanel.setBorder(BorderFactory.createTitledBorder("Extruder Temperature Controls"));
+		
 		if(tool0 != null)
 		{
 			if (tool0.hasHeater()) {
 				JLabel targetTempLabel = makeKeyLabel("<html>"+tool0.getName()+" Target (&deg;C)</html>",t0TargetColor);
 				
-				t0TargetTemperatureField = new CallbackTextField(temperatureListener, "handleTextField", "target-temp", 9, Base.getLocalFormat());
+				t0TargetTemperatureField = new CallbackTextField(temperatureListener, "handleTextField", "target-temp", 5, Base.getLocalFormat());
 				t0TargetTemperatureField.setValue(tool0.getTargetTemperature());
 				
 				JLabel currentTempLabel = makeKeyLabel("<html>"+tool0.getName()+" Current (&deg;C)</html>",t0MeasuredColor);
 				t0CurrentTemperatureField = new JFormattedTextField(Base.getLocalFormat());
-				t0CurrentTemperatureField.setColumns(9);
+				t0CurrentTemperatureField.setColumns(5);
 				t0CurrentTemperatureField.setEnabled(false);
 				
 				temperaturePanel.add(targetTempLabel);
@@ -448,12 +450,12 @@ public class ExtruderPanel extends JPanel{
 			if (tool1.hasHeater()) {
 				JLabel targetTempLabel = makeKeyLabel("<html>"+tool1.getName()+" Target (&deg;C)</html>",t1TargetColor);
 				
-				t1TargetTemperatureField = new CallbackTextField(temperatureListener, "handleTextField", "target-temp", 9, Base.getLocalFormat());
+				t1TargetTemperatureField = new CallbackTextField(temperatureListener, "handleTextField", "target-temp", 5, Base.getLocalFormat());
 				t1TargetTemperatureField.setValue(tool1.getTargetTemperature());
 				
 				JLabel currentTempLabel = makeKeyLabel("<html>"+tool1.getName()+" Current (&deg;C)</html>",t1MeasuredColor);
 				t1CurrentTemperatureField = new JFormattedTextField(Base.getLocalFormat());
-				t1CurrentTemperatureField.setColumns(9);
+				t1CurrentTemperatureField.setColumns(5);
 				t1CurrentTemperatureField.setEnabled(false);
 				
 				temperaturePanel.add(targetTempLabel);
@@ -470,13 +472,13 @@ public class ExtruderPanel extends JPanel{
 			
 			JLabel targetTempLabel = makeKeyLabel("<html>Platform Target (&deg;C)</html>",pTargetColor);
 			
-			pTargetTemperatureField = new CallbackTextField(temperatureListener, "handleTextField", "platform-target-temp", 9, Base.getLocalFormat());
+			pTargetTemperatureField = new CallbackTextField(temperatureListener, "handleTextField", "platform-target-temp", 5, Base.getLocalFormat());
 			pTargetTemperatureField.setValue(tool.getPlatformTargetTemperature());
 
 			JLabel currentTempLabel = makeKeyLabel("<html>Platform Current (&deg;C)</html>",pMeasuredColor);
 			
 			pCurrentTemperatureField = new JFormattedTextField(Base.getLocalFormat());
-			pCurrentTemperatureField.setColumns(9);
+			pCurrentTemperatureField.setColumns(5);
 			pCurrentTemperatureField.setEnabled(false);
 
 			temperaturePanel.add(targetTempLabel);
