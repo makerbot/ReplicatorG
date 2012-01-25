@@ -929,8 +929,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
 
 		
-		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
+		//WARNING: this in unsafe, since tool is checked
 		//async from when command is set. Tool should be a param
+		ToolModel curTool = machine.getTool(toolhead);
 		Iterable<AxisId>  axes = getHijackedAxes(curTool);
 
 		// Hack conversion to match datapoints. ToDo: convert all to Interable or all to EnumSet, 
