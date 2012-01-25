@@ -381,9 +381,12 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 				setRolloverEnabled(true);
 			}
 			Image downImg = Base.getImage(baseImage + arrangement.pressedButtonString + ".png",this);
-			if (downImg == null) { downImg = overImg; }
 			if (downImg != null) {
 				downImg = arrangement.scaleImage(downImg);
+				setSelectedIcon(new ImageIcon(downImg));
+			}
+			else if (downImg == null && overImg != null) {
+				downImg = overImg;
 				setSelectedIcon(new ImageIcon(downImg));
 			}
 			Dimension imgSize = new Dimension(img.getWidth(null),img.getHeight(null));
