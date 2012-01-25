@@ -563,7 +563,7 @@ public class Base {
 				});
 				
 				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
-				String machineName = preferences.get("machine.name",null);
+				String machineName = preferences.get("machine.name", "The Replicator Dual");
 				
 				editor.loadMachine(machineName, autoconnect);
 				

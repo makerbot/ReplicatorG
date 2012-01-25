@@ -1,7 +1,7 @@
 /*
  MightyBoard.java
 
- This is a driver to control a machine that uses the MightBoard electronics.
+ This is a driver to control a machine that uses the MightyBoard electronics.
 
  Part of the ReplicatorG project - http://www.replicat.org
  Copyright (c) 2008 Zach Smith
@@ -248,7 +248,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		super();
 		ledColorByEffect = new Hashtable();
 		ledColorByEffect.put(0, Color.BLACK);
-		Base.logger.info("Created a MightBoard");
+		Base.logger.info("Created a MightyBoard");
 
 		stepperValues= new Hashtable();
 
@@ -310,7 +310,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	private void getStepperValues() {
 		
 		int stepperCountMightyBoard = 5;
-		Base.logger.fine("MightBoard initial Sync");
+		Base.logger.fine("MightyBoard initial Sync");
 		for(int i = 0; i < stepperCountMightyBoard; i++)
 		{
 			int vRef = getStoredStepperVoltage(i); 
@@ -330,7 +330,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 */
 	@Override
 	public void setStepperVoltage(int stepperId, int referenceValue) throws RetryException {
-		Base.logger.severe("MightBoard sending setStepperVoltage: " + stepperId + " " + referenceValue);
+		Base.logger.fine("MightyBoard sending setStepperVoltage: " + stepperId + " " + referenceValue);
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_STEPPER_REFERENCE_POT.getCode());
 		
 		if(stepperId > 5) {
@@ -395,7 +395,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	@Override
 	public void setStoredStepperVoltage(int stepperId, int referenceValue) {
-		Base.logger.finer("MightBoard sending storeStepperVoltage");
+		Base.logger.finer("MightyBoard sending storeStepperVoltage");
 
 		if(stepperId > 5) {
 			Base.logger.severe("store invalid stepper Id" + Integer.toString(stepperId) );
@@ -437,7 +437,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 */
 	@Override
 	public void setLedStrip(Color color, int effectId) throws RetryException {
-		Base.logger.severe("MightBoard sending setLedStrip");
+		Base.logger.fine("MightyBoard sending setLedStrip");
 
 	/*	PacketBuilder pb1 = new PacketBuilder(MotherboardCommandCode.SET_LED_STRIP_COLOR.getCode());
 		pb1.add8(3);//color.getRed());
@@ -466,7 +466,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		PacketResponse resp =  runCommand(pb.getPacket());
 		if(resp.isOK()) {
-			Base.logger.severe("MightBoard setLedStrip went OK");
+			Base.logger.fine("MightyBoard setLedStrip went OK");
 			ledColorByEffect.put(effectId, color);	
 		}
 	}
@@ -481,15 +481,15 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * @throws RetryException
 	 */
 	public void sendBeep(int frequencyHz, int durationMs, int effectId) throws RetryException {
-		Base.logger.severe("MightBoard sending setBeep" + frequencyHz + durationMs + " effect" + effectId);
-		Base.logger.severe("max " + Integer.MAX_VALUE);
+		Base.logger.fine("MightyBoard sending setBeep" + frequencyHz + durationMs + " effect" + effectId);
+		Base.logger.fine("max " + Integer.MAX_VALUE);
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_BEEP.getCode());
 		pb.add16(frequencyHz);
 		pb.add16(durationMs);
 		pb.add8(effectId);		
 		PacketResponse resp =  runCommand(pb.getPacket());
 		if(resp.isOK()) {
-			Base.logger.severe("MightBoard sendBeep went OK");
+			Base.logger.fine("MightyBoard sendBeep went OK");
 			//beepByEffect.put(effectId, color);	
 		}
 

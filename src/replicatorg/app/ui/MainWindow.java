@@ -1445,7 +1445,7 @@ ToolpathGenerator.GeneratorListener
 		for (String name : names ) {
 
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
-			item.setSelected(name.equals(Base.preferences.get("machine.name",null)));
+			item.setSelected(name.equals(Base.preferences.get("machine.name","The Replicator Dual")));
 			item.addActionListener(machineMenuListener);			
 
 			radiogroup.add(item);
@@ -1739,7 +1739,7 @@ ToolpathGenerator.GeneratorListener
 			return;
 		}
 
-		String name = Base.preferences.get("machine.name", null);
+		String name = Base.preferences.get("machine.name", "The Replicator Dual");
 		if ( name != null ) {
 			loadMachine(name, true);
 		}

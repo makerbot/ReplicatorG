@@ -297,7 +297,7 @@ public class ExtruderPanel extends JPanel{
 				panel.add(label, "");
 				panel.add(field,"wrap");
 
-				if (tool.getMotorStepperAxisName() != null) {
+				if (tool.getMotorStepperAxisName() != "") {
 					label = makeLabel("Extrude duration");
 				
 					JComboBox timeList = new JComboBox(extrudeTimeStrings);
@@ -830,7 +830,7 @@ public class ExtruderPanel extends JPanel{
 		/* Handle stepper extruder commands */
 		if (actionName.equals("forward")) {
 			
-			if (tool.getMotorStepperAxisName() != null) {
+			if (tool.getMotorStepperAxisName() != "") {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE,toolhead));
 				// Reverted to one single command for RepRap5D driver
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
@@ -842,7 +842,7 @@ public class ExtruderPanel extends JPanel{
 				}
 			}
 		} else if (actionName.equals("reverse")) {
-			if (tool.getMotorStepperAxisName() != null) {
+			if (tool.getMotorStepperAxisName() != "") {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE,toolhead));
 				// Reverted to one single command for RepRap5D driver
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
@@ -856,7 +856,7 @@ public class ExtruderPanel extends JPanel{
 		} else if (actionName.equals("stop")) {
 			machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
 			
-			if (tool.getMotorStepperAxisName() != null) {
+			if (tool.getMotorStepperAxisName() != "") {
 				machine.stopMotion();
 			}
 		}
