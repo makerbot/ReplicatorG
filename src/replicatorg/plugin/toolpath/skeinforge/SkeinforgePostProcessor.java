@@ -137,7 +137,6 @@ public class SkeinforgePostProcessor {
 		// This allows us to display stuff in the configuration dialog,
 		//and to send option overrides to skeinforge
 		ppp = new PostProcessorPreference(this);
-		generator.getPreferences().add(0, ppp);
 	}
 	
 	/**
@@ -146,25 +145,6 @@ public class SkeinforgePostProcessor {
 	 */
 	protected BuildCode runPostProcessing()
 	{
-		
-		// Check to see if we need to do anything based on selected prefs
-		List<SkeinforgePreference> prefs = generator.getPreferences();
-		
-		// look for prefs we care about
-		for(SkeinforgePreference sp : prefs)
-		{
-			// This works because we know that in ToolpathGeneratorFactory options
-			// are only added for this pref if it's true
-			if(sp.getName().equals("Use machine-specific start/end gcode"))
-			{
-				if(!sp.getOptions().isEmpty())
-				{
-					prependStart = true;
-					appendEnd = true;
-				}
-			}
-		}
-		
 		// Load our code to a source iterator
 		source = new MutableGCodeSource(generator.output.file);
 		
@@ -387,5 +367,15 @@ public class SkeinforgePostProcessor {
 	public void setAddProgressUpdates(boolean doAdd)
 	{
 		addProgressUpdates = doAdd;
+	}
+	
+	/**
+	 * getter for the PostProcessorPreference, used to display post processing steps in the 
+	 * Skeinforge ConfigurationDialog.
+	 * @return
+	 */
+	public PostProcessorPreference getPreference()
+	{
+		return ppp;
 	}
 }

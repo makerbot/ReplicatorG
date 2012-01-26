@@ -1,9 +1,13 @@
 package replicatorg.plugin.toolpath;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+
+import javax.swing.JCheckBox;
 
 import replicatorg.app.Base;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic;
@@ -113,6 +117,9 @@ public class ToolpathGeneratorFactory {
 			}
 			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				
+				prefs.add(postprocess.getPreference());
+				
 				SkeinforgeBooleanPreference raftPref = 			
 					new SkeinforgeBooleanPreference("Use Raft/Support",
 						"replicatorg.skeinforge.useRaft", false,
@@ -150,6 +157,22 @@ public class ToolpathGeneratorFactory {
 						"If unchecked, uses start and end.gcode in the skeinforge profile.</html>");
 				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
 				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
+				final JCheckBox bookendBox = (JCheckBox)bookendPref.getUI();
+				final ActionListener a = new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						if(bookendBox.isSelected()) {
+							postprocess.setPrependStart(true);
+							postprocess.setAppendEnd(true);
+						} else {
+							postprocess.setPrependStart(false);
+							postprocess.setAppendEnd(false);
+						}
+					}
+				};
+				bookendBox.addActionListener(a);
+				// set initial state
+				a.actionPerformed(null);
 				prefs.add(bookendPref);
 				
 				PrintOMatic printOMatic = new PrintOMatic();
@@ -245,6 +268,67 @@ public class ToolpathGeneratorFactory {
 			}
 			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+
+				prefs.add(postprocess.getPreference());
+				
+				SkeinforgeBooleanPreference raftPref = 			
+					new SkeinforgeBooleanPreference("Use Raft/Support",
+						"replicatorg.skeinforge.useRaft", false,
+						"Enables Raft and/or support material.  " + 
+						"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
+				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
+				prefs.add(raftPref);
+				
+				SkeinforgeChoicePreference supportPref =
+					new SkeinforgeChoicePreference("Use support material",
+							"replicatorg.skeinforge.choiceSupport", "None",
+							"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
+							"structure that you can later remove. Requires that Raft/Support be checked.");
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","None", "true"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","None", "false"));
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Exterior Only", "true"));
+
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","None", "false"));
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Everywhere", "true"));
+				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+				
+				prefs.add(supportPref);
+
+				// This will be done by the SkeinforgePostProcessor
+				SkeinforgeBooleanPreference bookendPref = 	
+					new SkeinforgeBooleanPreference("Use machine-specific start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
+						"<html>Use the start and end.gcode defined in machines/*.xml for the currently selected machine.<br/>" +
+						"If unchecked, uses start and end.gcode in the skeinforge profile.</html>");
+				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
+				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
+				final JCheckBox bookendBox = (JCheckBox)bookendPref.getUI();
+				final ActionListener a = new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						if(bookendBox.isSelected()) {
+							postprocess.setPrependStart(true);
+							postprocess.setAppendEnd(true);
+						} else {
+							postprocess.setPrependStart(false);
+							postprocess.setAppendEnd(false);
+						}
+					}
+				};
+				bookendBox.addActionListener(a);
+				// set initial state
+				a.actionPerformed(null);
+				prefs.add(bookendPref);
+				
+				PrintOMatic5D printOMatic5D = new PrintOMatic5D();
+				prefs.add(printOMatic5D);
+				
 				return prefs;
 			}
 		};

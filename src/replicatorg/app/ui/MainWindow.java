@@ -599,8 +599,7 @@ ToolpathGenerator.GeneratorListener
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
 		
 		if(generator instanceof SkeinforgeGenerator) {
-			SkeinforgePostProcessor spp = new SkeinforgePostProcessor((SkeinforgeGenerator)generator);
-			((SkeinforgeGenerator)generator).setPostProcessor(spp);
+			SkeinforgePostProcessor spp = ((SkeinforgeGenerator)generator).getPostProcessor();
 			
 			spp.setMachineType(machineLoader.getMachineInterface().getMachineType());
 			spp.setPrependMetaInfo(true);
