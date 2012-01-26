@@ -231,6 +231,24 @@ public class ToolpathGeneratorFactory {
 			}
 		};
 		
+		class Skeinforge47 extends SkeinforgeGenerator {
+
+			{
+				displayName = "Skeinforge (47) - experimental";
+			}
+			
+			public File getDefaultSkeinforgeDir() {
+		    	return Base.getApplicationFile("skein_engines/skeinforge-47/skeinforge_application");
+			}
+			public File getUserProfilesDir() {
+		    	return Base.getUserFile("sf_47_profiles");
+			}
+			public List<SkeinforgePreference> initPreferences() {
+				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				return prefs;
+			}
+		};
+		
 		if((new Skeinforge35()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge35.displayName, 
 				"This is a decent version of skeinforge.", Skeinforge35.class));
@@ -240,6 +258,9 @@ public class ToolpathGeneratorFactory {
 		if((new Skeinforge44()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge44.displayName, 
 				"This is an experimental version of skeinforge.", Skeinforge44.class));
+		if((new Skeinforge47()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge47.displayName, 
+				"This is an experimental version of skeinforge.", Skeinforge47.class));
 		if((new Skeinforge31()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge31.displayName, 
 				"This is an old version of skeinforge.", Skeinforge31.class));
