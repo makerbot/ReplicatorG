@@ -45,7 +45,7 @@ M18 (Turn off steppers after a build.)
 		<cooldown>
 M18 (Turn off steppers after a build.)
 		</cooldown>
-		<bookend start="machines/cupcake/start+ABP.gcode" end="machines/cupcake/end +ABP.gcode"/>		
+		<bookend start="machines/cupcake/start+ABP.gcode" end="machines/cupcake/end+ABP.gcode"/>		
 	</machine>
 	<machine>
 		<name>Cupcake w/ heated build platform</name>
