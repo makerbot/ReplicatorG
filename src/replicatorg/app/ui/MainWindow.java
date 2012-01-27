@@ -1109,7 +1109,7 @@ ToolpathGenerator.GeneratorListener
 		changeToolheadMenu.add(left);
 		changeToolheadMenu.add(right);
 		menu.add(changeToolheadMenu);
-		dualstrusionItem = newJMenuItem("Merge .stl for DualExtrusion (experimental)", 'D');
+		dualstrusionItem = newJMenuItem("Merge .stl for DualExtrusion", 'D');
 		dualstrusionItem.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)
