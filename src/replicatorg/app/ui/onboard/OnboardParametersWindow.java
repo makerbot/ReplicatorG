@@ -5,8 +5,6 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -55,7 +53,7 @@ public class OnboardParametersWindow extends JFrame {
 			paramsTabs.addTab("Extruder " + t.getIndex(), new ExtruderOnboardParameters(targetParams, t,(JFrame)this));
 		}
 
-		JLabel verifyString = new JLabel("Warning: Machine Type is not verifyable.");
+		JLabel verifyString = new JLabel("Warning: Machine Type is not verifiable.");
 		verifyString.setToolTipText("this machine has no way to verify the EEPORM is a valid layout");
 		if(targetParams.canVerifyMachine())
 		{

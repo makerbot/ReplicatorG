@@ -720,13 +720,6 @@ public class GCodeParser {
 		case G1:
 			// set our target.
 			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
-			
-			//I'm in a rush. simple solution: if our G1 has no axes, there's no move.
-			//DualstrusionConstruction relies on this, so if you change this, change that
-			if(!gcode.hasCode('X') && !gcode.hasCode('Y') && !gcode.hasCode('Z') &&
-					!gcode.hasCode('A') && !gcode.hasCode('B'))
-				break;
-			
 			commands.add(new replicatorg.drivers.commands.QueuePoint(pos));
 			break;
 		// Clockwise arc

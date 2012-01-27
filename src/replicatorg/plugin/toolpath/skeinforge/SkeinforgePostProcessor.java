@@ -69,7 +69,7 @@ public class SkeinforgePostProcessor {
 				final DefaultComboBoxModel model= new DefaultComboBoxModel(extruders);
 				
 				JComboBox input = new JComboBox(model);
-				final JCheckBox toolSwap = new JCheckBox("Replace toolhead references with");
+				final JCheckBox toolSwap = new JCheckBox("Always use");
 				panel.add(toolSwap, "split");
 				panel.add(input, "split");
 				panel.add(new JLabel("extruder"), "wrap");
