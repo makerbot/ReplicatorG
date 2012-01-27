@@ -443,21 +443,21 @@ public class GCodeParser {
 		case M70:
 			// print message			
 			if (gcode.hasCode('P'))
-				commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment()));
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment(), false));
 			else
-				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment()));
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment(), false));
 			
 			break;
 		case M71:
 			// User-clearable pause
 			// First send message, if any...
 			if (gcode.getComment().length() > 0) {
-				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment()));
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment(), true));
 			} else {
-				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,"Paused, press button\nto continue"));
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,"Paused, press button\nto continue", true));
 			}
 			// ...then send user pause command. 
-			commands.add(new replicatorg.drivers.commands.UserPause(gcode.getCodeValue('P'),true,0xff));
+			//commands.add(new replicatorg.drivers.commands.UserPause(gcode.getCodeValue('P'),true,0xff));
 			break;
 		case M72:
 			// Play a tone or song as stored on the machine

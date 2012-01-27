@@ -5,7 +5,7 @@ package replicatorg.drivers;
  * connected to the machine (such as displaying messages or waiting for keypresses).
  */
 public interface InteractiveDisplay {
-	public void displayMessage(double seconds, String message) throws RetryException;
+	public void displayMessage(double seconds, String message, boolean ButtonWait) throws RetryException;
 	public void userPause(double seconds, boolean resetOnTimeout, int buttonMask) throws RetryException;
 	
 	public void playSong(int songId) throws RetryException;
