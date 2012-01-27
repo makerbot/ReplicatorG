@@ -12,6 +12,7 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -68,24 +69,33 @@ public class SkeinforgePostProcessor {
 				final DefaultComboBoxModel model= new DefaultComboBoxModel(extruders);
 				
 				JComboBox input = new JComboBox(model);
-				panel.add(new JLabel("Extruder: "), "split");
-				panel.add(input, "wrap");
+				final JCheckBox toolSwap = new JCheckBox("Replace toolhead references with");
+				panel.add(toolSwap, "split");
+				panel.add(input, "split");
+				panel.add(new JLabel("extruder"), "wrap");
 
 				ActionListener toolSelected = new ActionListener(){
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						
-						if(model.getSelectedItem().equals(ToolheadAlias.LEFT.guiName)) {
-							processor.toolheadTarget = ToolheadAlias.LEFT;
-							Base.preferences.put("replicatorg.skeinforge.toolheadOrientation", ToolheadAlias.LEFT.guiName);
+						if(toolSwap.isSelected()) {
+							if(model.getSelectedItem().equals(ToolheadAlias.LEFT.guiName)) {
+								processor.toolheadTarget = ToolheadAlias.LEFT;
+								Base.preferences.put("replicatorg.skeinforge.toolheadOrientation", ToolheadAlias.LEFT.guiName);
+							}
+							else if(model.getSelectedItem().equals(ToolheadAlias.RIGHT.guiName)) {
+								processor.toolheadTarget = ToolheadAlias.RIGHT;
+								Base.preferences.put("replicatorg.skeinforge.toolheadOrientation", ToolheadAlias.RIGHT.guiName);
+							}
 						}
-						else if(model.getSelectedItem().equals(ToolheadAlias.RIGHT.guiName)) {
-							processor.toolheadTarget = ToolheadAlias.RIGHT;
-							Base.preferences.put("replicatorg.skeinforge.toolheadOrientation", ToolheadAlias.RIGHT.guiName);
+						else {
+							processor.toolheadTarget = null;
+							Base.preferences.put("replicatorg.skeinforge.toolheadOrientation", "-");
 						}
 					}
 				};
 				input.addActionListener(toolSelected);
+				toolSwap.addActionListener(toolSelected);
 				toolSelected.actionPerformed(null);
 
 				model.setSelectedItem(value);

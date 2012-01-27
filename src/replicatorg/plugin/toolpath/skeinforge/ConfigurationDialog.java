@@ -100,7 +100,7 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 		loadList(prefPulldown); /// Filles UI with the list of Skeinforge settings/options
-		add(prefPulldown, "wrap, growx");
+		add(prefPulldown, "wrap, growx, gapbottom 10");
 
 		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
 			add(preference.getUI(), "growx, wrap");

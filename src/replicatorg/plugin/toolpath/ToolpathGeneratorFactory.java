@@ -270,44 +270,14 @@ public class ToolpathGeneratorFactory {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 
 				prefs.add(postprocess.getPreference());
-				
-				SkeinforgeBooleanPreference raftPref = 			
-					new SkeinforgeBooleanPreference("Use Raft/Support",
-						"replicatorg.skeinforge.useRaft", false,
-						"Enables Raft and/or support material.  " + 
-						"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
-				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
-				prefs.add(raftPref);
-				
-				SkeinforgeChoicePreference supportPref =
-					new SkeinforgeChoicePreference("Use support material",
-							"replicatorg.skeinforge.choiceSupport", "None",
-							"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
-							"structure that you can later remove. Requires that Raft/Support be checked.");
-				supportPref.addOption("None", new SkeinforgeOption("raft.csv","None", "true"));
-				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
-				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Everywhere", "false"));
-				supportPref.addOption("None", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
-
-				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","None", "false"));
-				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
-				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Everywhere", "false"));
-				supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Exterior Only", "true"));
-
-				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","None", "false"));
-				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
-				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Everywhere", "true"));
-				supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
-				
-				prefs.add(supportPref);
 
 				// This will be done by the SkeinforgePostProcessor
 				SkeinforgeBooleanPreference bookendPref = 	
 					new SkeinforgeBooleanPreference("Use machine-specific start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
 						"<html>Use the start and end.gcode defined in machines/*.xml for the currently selected machine.<br/>" +
 						"If unchecked, uses start and end.gcode in the skeinforge profile.</html>");
-				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
-				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
+				bookendPref.addTrueOption(new SkeinforgeOption("alteration.csv", "Name of Start File:", ""));
+				bookendPref.addTrueOption(new SkeinforgeOption("alteration.csv", "Name of End File:", ""));
 				final JCheckBox bookendBox = (JCheckBox)bookendPref.getUI();
 				final ActionListener a = new ActionListener() {
 					@Override
