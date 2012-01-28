@@ -54,25 +54,24 @@ import replicatorg.machine.model.ToolModel;
 public class ExtruderPanel extends JPanel{
 	private final MachineInterface machine;
 	private final ToolModel tool0, tool1;
+	
 	private JFormattedTextField t0CurrentTemperatureField;
 	private JFormattedTextField t1CurrentTemperatureField;
 	private JFormattedTextField pCurrentTemperatureField;
 	private JFormattedTextField t0TargetTemperatureField;
 	private JFormattedTextField t1TargetTemperatureField;
 	private JFormattedTextField pTargetTemperatureField;
-//	private int t0CurrentTemperature;
-//	private int t1CurrentTemperature;
-//	private int pCurrentTemperature;
+
 	private double t0TargetTemperature;
 	private double t1TargetTemperature;
 	private double pTargetTemperature;
 
-	final private static Color t0TargetColor = Color.PINK;
+	final private static Color t0TargetColor = Color.MAGENTA;
 	final private static Color t0MeasuredColor = Color.RED;
 	final private static Color t1TargetColor = Color.CYAN;
 	final private static Color t1MeasuredColor = Color.BLUE;
 	final private static Color pTargetColor = Color.YELLOW;
-	final private static Color pMeasuredColor = Color.WHITE;
+	final private static Color pMeasuredColor = Color.GREEN;
 	
 	long startMillis = System.currentTimeMillis();
 
