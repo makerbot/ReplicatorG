@@ -103,8 +103,6 @@ public class PrintOMatic implements SkeinforgePreference {
 		
 	}
 	
-	
-	
 	private double getValue(String optionName) {
 		// TODO: record the default values somewhere, so that we can retrieve them here!
 		String value = Base.preferences.get(baseName + optionName, null);
@@ -174,11 +172,11 @@ public class PrintOMatic implements SkeinforgePreference {
 
 	// Double braces create a static block in which to declare the values of our variables
 	private class Mk8Defaults extends Defaults {{
-		infillPercent = "15";
+		infillPercent = "10";
 		desiredLayerHeight = ".30";
 		numberOfShells = "1";
-		desiredFeedrate = "30";
-		filamentDiameter = "1.8";
+		desiredFeedrate = "40";
+		filamentDiameter = "1.85";
 		nozzleDiameter = ".4";
 		driveGearDiameter = "10.58";
 	}}

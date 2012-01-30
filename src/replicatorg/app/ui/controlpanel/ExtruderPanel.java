@@ -416,8 +416,8 @@ public class ExtruderPanel extends JPanel{
 		else if(tools.size() > 1)
 		{
 			JTabbedPane motorTabs = new JTabbedPane();
-			for(ToolModel tool : tools)
-				motorTabs.addTab(tool.getName() + " Plastic Extruder", getMotorControls(tool));
+			motorTabs.addTab(tool0.getName() + " Plastic Extruder", getMotorControls(tool0));
+			motorTabs.addTab(tool1.getName() + " Plastic Extruder", getMotorControls(tool1));
 
 			add(motorTabs, "aligny top, spanx, growx, wrap");
 		}
