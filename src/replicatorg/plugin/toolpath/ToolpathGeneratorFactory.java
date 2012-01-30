@@ -1,9 +1,13 @@
 package replicatorg.plugin.toolpath;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
+
+import javax.swing.JCheckBox;
 
 import replicatorg.app.Base;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic;
@@ -113,6 +117,9 @@ public class ToolpathGeneratorFactory {
 			}
 			public List<SkeinforgePreference> initPreferences() {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+				
+				prefs.add(postprocess.getPreference());
+				
 				SkeinforgeBooleanPreference raftPref = 			
 					new SkeinforgeBooleanPreference("Use Raft/Support",
 						"replicatorg.skeinforge.useRaft", false,
@@ -150,6 +157,22 @@ public class ToolpathGeneratorFactory {
 						"If unchecked, uses start and end.gcode in the skeinforge profile.</html>");
 				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
 				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
+				final JCheckBox bookendBox = (JCheckBox)bookendPref.getUI();
+				final ActionListener a = new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						if(bookendBox.isSelected()) {
+							postprocess.setPrependStart(true);
+							postprocess.setAppendEnd(true);
+						} else {
+							postprocess.setPrependStart(false);
+							postprocess.setAppendEnd(false);
+						}
+					}
+				};
+				bookendBox.addActionListener(a);
+				// set initial state
+				a.actionPerformed(null);
 				prefs.add(bookendPref);
 				
 				PrintOMatic printOMatic = new PrintOMatic();
@@ -231,6 +254,55 @@ public class ToolpathGeneratorFactory {
 			}
 		};
 		
+		class Skeinforge47 extends SkeinforgeGenerator {
+
+			{
+				displayName = "Skeinforge (47) - experimental";
+			}
+			
+			public File getDefaultSkeinforgeDir() {
+		    	return Base.getApplicationFile("skein_engines/skeinforge-47/skeinforge_application");
+			}
+			public File getUserProfilesDir() {
+		    	return Base.getUserFile("sf_47_profiles");
+			}
+			public List<SkeinforgePreference> initPreferences() {
+				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+
+				prefs.add(postprocess.getPreference());
+
+				// This will be done by the SkeinforgePostProcessor
+				SkeinforgeBooleanPreference bookendPref = 	
+					new SkeinforgeBooleanPreference("Use machine-specific start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
+						"<html>Use the start and end.gcode defined in machines/*.xml for the currently selected machine.<br/>" +
+						"If unchecked, uses start and end.gcode in the skeinforge profile.</html>");
+				bookendPref.addTrueOption(new SkeinforgeOption("alteration.csv", "Name of Start File:", ""));
+				bookendPref.addTrueOption(new SkeinforgeOption("alteration.csv", "Name of End File:", ""));
+				final JCheckBox bookendBox = (JCheckBox)bookendPref.getUI();
+				final ActionListener a = new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						if(bookendBox.isSelected()) {
+							postprocess.setPrependStart(true);
+							postprocess.setAppendEnd(true);
+						} else {
+							postprocess.setPrependStart(false);
+							postprocess.setAppendEnd(false);
+						}
+					}
+				};
+				bookendBox.addActionListener(a);
+				// set initial state
+				a.actionPerformed(null);
+				prefs.add(bookendPref);
+				
+				PrintOMatic5D printOMatic5D = new PrintOMatic5D();
+				prefs.add(printOMatic5D);
+				
+				return prefs;
+			}
+		};
+		
 		if((new Skeinforge35()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge35.displayName, 
 				"This is a decent version of skeinforge.", Skeinforge35.class));
@@ -240,6 +312,9 @@ public class ToolpathGeneratorFactory {
 		if((new Skeinforge44()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge44.displayName, 
 				"This is an experimental version of skeinforge.", Skeinforge44.class));
+		if((new Skeinforge47()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge47.displayName, 
+				"This is an experimental version of skeinforge.", Skeinforge47.class));
 		if((new Skeinforge31()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge31.displayName, 
 				"This is an old version of skeinforge.", Skeinforge31.class));

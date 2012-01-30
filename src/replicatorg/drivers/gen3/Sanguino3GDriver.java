@@ -1004,13 +1004,15 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	@Deprecated
 	public void enableMotor() throws RetryException {
-		this.enableMotor(machine.currentTool().getIndex());
+		/// toolhead -1 indicate auto-detect
+		this.enableMotor(-1);
 	}
 	
 	public void enableMotor(int toolhead) throws RetryException {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		if(toolhead == -1 )
+			toolhead = machine.currentTool().getIndex();
 
 		// our flag variable starts with motors enabled.
 		byte flags = 1;

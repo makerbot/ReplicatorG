@@ -599,8 +599,7 @@ ToolpathGenerator.GeneratorListener
 		ToolpathGenerator generator = ToolpathGeneratorFactory.createSelectedGenerator();
 		
 		if(generator instanceof SkeinforgeGenerator) {
-			SkeinforgePostProcessor spp = new SkeinforgePostProcessor((SkeinforgeGenerator)generator);
-			((SkeinforgeGenerator)generator).setPostProcessor(spp);
+			SkeinforgePostProcessor spp = ((SkeinforgeGenerator)generator).getPostProcessor();
 			
 			spp.setMachineType(machineLoader.getMachineInterface().getMachineType());
 			spp.setPrependMetaInfo(true);
@@ -1110,7 +1109,7 @@ ToolpathGenerator.GeneratorListener
 		changeToolheadMenu.add(left);
 		changeToolheadMenu.add(right);
 		menu.add(changeToolheadMenu);
-		dualstrusionItem = newJMenuItem("Merge .stl for DualExtrusion (experimental)", 'D');
+		dualstrusionItem = newJMenuItem("Merge .stl for DualExtrusion", 'D');
 		dualstrusionItem.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent arg0)

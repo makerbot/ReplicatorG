@@ -110,7 +110,12 @@ class EditProfileDialog extends JDialog {
 	final JList prefList = new JList();
 
 	private Profile getListedProfile(int idx) {
-		return profiles.get(idx);
+		String selected = (String)prefList.getModel().getElementAt(idx);
+		for(Profile p : profiles)
+			if(selected.equals(p.toString()))
+				return p;
+		Base.logger.severe("Could not find profile! The programmer has done something foolish.");
+		return null;
 	}
 
 	public EditProfileDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {

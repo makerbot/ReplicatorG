@@ -298,7 +298,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 				public void propertyChange(PropertyChangeEvent evt) {
 					if (evt.getPropertyName() == "value") {
 						try {
-							Integer v = (Integer)evt.getNewValue();
+							Integer v = ((Number)evt.getNewValue()).intValue();
 							if (v == null) return;
 							Base.preferences.putInt("replicatorg.skeinforge.timeout", v.intValue());
 						} catch (ClassCastException cce) {

@@ -1,4 +1,4 @@
-0031 ReplicatorG
+0031_Beta ReplicatorG
 * Extensive Rewrite of RepG to support The Replicator
 * Post Processing of Skeinforge changes added
 * Start and end gcode can now be specified from machines/*.xml

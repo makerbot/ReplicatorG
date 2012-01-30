@@ -229,7 +229,7 @@ public class Machine implements MachineInterface {
 						testLabel.setFont(new JLabel().getFont());
 						testLabel.setText("The pre-run check has found some potentially problematic GCode. This may be a result of trying" +
 								" to run code on a machine other than the one it's intended for (i.e. running dual headed GCode on a " +
-								"single headed machine).");
+								"single headed machine).\n\nClick on a message to see the last place it occurred.");
 						displayPanel.add(testLabel, "growx, wrap");
 						
 						final JPanel messagePanel = new JPanel(new MigLayout("fill, ins 0"));
@@ -405,7 +405,8 @@ public class Machine implements MachineInterface {
 				messages.put(message, lineNumber);
 				Base.logger.log(Level.SEVERE, message);
 				/// this error may happen a TON of times in a big model, in this case exit on the first instance.
-				return; 
+				// I disagree. - Ted
+//				return; 
 			}
 			if(gcode.hasCode('F'))
 			{

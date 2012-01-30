@@ -446,8 +446,7 @@ public class DualStrusionWindow extends JFrame{
 
 			if(gen instanceof SkeinforgeGenerator)
 			{
-				SkeinforgePostProcessor spp = new SkeinforgePostProcessor((SkeinforgeGenerator)gen);
-				((SkeinforgeGenerator)gen).setPostProcessor(spp);
+				SkeinforgePostProcessor spp = ((SkeinforgeGenerator)gen).getPostProcessor();
 				
 				spp.enableDualstrusion();
 				spp.setMachineType(machineType);

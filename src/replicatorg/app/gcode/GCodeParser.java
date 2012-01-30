@@ -443,21 +443,21 @@ public class GCodeParser {
 		case M70:
 			// print message			
 			if (gcode.hasCode('P'))
-				commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment()));
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(gcode.getCodeValue('P'),gcode.getComment(), false));
 			else
-				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment()));
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment(), false));
 			
 			break;
 		case M71:
 			// User-clearable pause
 			// First send message, if any...
 			if (gcode.getComment().length() > 0) {
-				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment()));
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,gcode.getComment(), true));
 			} else {
-				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,"Paused, press button\nto continue"));
+				commands.add(new replicatorg.drivers.commands.DisplayMessage(0,"Paused, press button\nto continue", true));
 			}
 			// ...then send user pause command. 
-			commands.add(new replicatorg.drivers.commands.UserPause(gcode.getCodeValue('P'),true,0xff));
+			//commands.add(new replicatorg.drivers.commands.UserPause(gcode.getCodeValue('P'),true,0xff));
 			break;
 		case M72:
 			// Play a tone or song as stored on the machine
@@ -720,13 +720,6 @@ public class GCodeParser {
 		case G1:
 			// set our target.
 			commands.add(new replicatorg.drivers.commands.SetFeedrate(feedrate));
-			
-			//I'm in a rush. simple solution: if our G1 has no axes, there's no move.
-			//DualstrusionConstruction relies on this, so if you change this, change that
-			if(!gcode.hasCode('X') && !gcode.hasCode('Y') && !gcode.hasCode('Z') &&
-					!gcode.hasCode('A') && !gcode.hasCode('B'))
-				break;
-			
 			commands.add(new replicatorg.drivers.commands.QueuePoint(pos));
 			break;
 		// Clockwise arc

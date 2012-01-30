@@ -46,10 +46,11 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	List <SkeinforgePreference> preferences;
 	
 	BuildCode output;
-	SkeinforgePostProcessor postprocess = null;
+	protected final SkeinforgePostProcessor postprocess;
 	
 	// "skein_engines/skeinforge-0006","sf_profiles");
 	public SkeinforgeGenerator() {
+		postprocess = new SkeinforgePostProcessor(this);
 	}
 
 	public boolean runSanityChecks() {
@@ -564,8 +565,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		return preferences;
 	}
 
-	public void setPostProcessor(SkeinforgePostProcessor spp) {
-		postprocess = spp;
+	public SkeinforgePostProcessor getPostProcessor() {
+		return postprocess;
 	}
 	
 	public BuildCode generateToolpath() {

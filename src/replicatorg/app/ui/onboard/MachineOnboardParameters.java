@@ -241,43 +241,43 @@ public class MachineOnboardParameters extends JPanel {
 
 		add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
 		machineNameField.setColumns(MAX_NAME_LENGTH);
-		add(machineNameField,"span 3, wrap");
+		add(machineNameField,"span 2, wrap");
 
   		if( target.hasToolCountOnboard() ) {
   			add(new JLabel("Reported Tool Count:"));
-  			add(toolCountField, "span 3, wrap");
+  			add(toolCountField, "span 2, wrap");
   		}
 		
 		
 		add(new JLabel("Invert X axis"));		
-		add(xAxisInvertBox,"span 3, wrap");
+		add(xAxisInvertBox,"span 2, wrap");
 		
 		add(new JLabel("Invert Y axis"));
-		add(yAxisInvertBox,"span 3, wrap");
+		add(yAxisInvertBox,"span 2, wrap");
 		
 		add(new JLabel("Invert Z axis"));
-		add(zAxisInvertBox,"span 3, wrap");
+		add(zAxisInvertBox,"span 2, wrap");
 
 		String aName = "Invert A axis";
 		if( axesAltNamesMap.containsKey(AxisId.A) )
 			aName = aName + " (" + axesAltNamesMap.get(AxisId.A) + ") ";
 		add(new JLabel(aName));
-		add(aAxisInvertBox,"span 3, wrap");
+		add(aAxisInvertBox,"span 2, wrap");
 		
 		String bName = "Invert B axis";
 		if( axesAltNamesMap.containsKey(AxisId.B) )
 			bName = bName + " (" + axesAltNamesMap.get(AxisId.B) + ") ";
 		add(new JLabel(bName));
 		
-		add(bAxisInvertBox,"span 3, wrap");
+		add(bAxisInvertBox,"span 2, wrap");
 		add(new JLabel("Hold Z axis"));
 		
-		add(zHoldBox,"span 3, wrap");
+		add(zHoldBox,"span 2, wrap");
 		add(new JLabel("Invert endstops"));
 		
-		add(endstopInversionSelection,"span 3, wrap");
+		add(endstopInversionSelection,"span 2, wrap");
 		add(new JLabel("Emergency stop"));
-		add(estopSelection,"span 3, wrap");
+		add(estopSelection,"spanx, wrap");
 		
 		xAxisHomeOffsetField.setColumns(10);
 		yAxisHomeOffsetField.setColumns(10);
@@ -287,26 +287,31 @@ public class MachineOnboardParameters extends JPanel {
 		
 		if(target.hasVrefSupport())
 		{
+			vref0.setColumns(4);
+			vref1.setColumns(4);
+			vref2.setColumns(4);
+			vref3.setColumns(4);
+			vref4.setColumns(4);
 			add(new JLabel("X home offset (mm)"));
 			add(xAxisHomeOffsetField);
-			add(new JLabel("VREF Pot. 0"));
-			add(vref0, "growx, wrap");
+			add(new JLabel("VREF Pot. 0"), "split");
+			add(vref0, "wrap");
 			add(new JLabel("Y home offset (mm)"));
 			add(yAxisHomeOffsetField);
-			add(new JLabel("VREF Pot. 1"));
-			add(vref1, "growx, wrap");
+			add(new JLabel("VREF Pot. 1"), "split");
+			add(vref1, "wrap");
 			add(new JLabel("Z home offset (mm)"));
 			add(zAxisHomeOffsetField);
-			add(new JLabel("VREF Pot. 2"));
-			add(vref2, "growx, wrap");
+			add(new JLabel("VREF Pot. 2"), "split");
+			add(vref2, "wrap");
 			add(new JLabel("A home offset (mm)"));
 			add(aAxisHomeOffsetField);
-			add(new JLabel("VREF Pot. 3"));
-			add(vref3, "growx, wrap");
+			add(new JLabel("VREF Pot. 3"), "split");
+			add(vref3, "wrap");
 			add(new JLabel("B home offset (mm)"));
 			add(bAxisHomeOffsetField);
-			add(new JLabel("VREF Pot. 4"));
-			add(vref4, "growx, wrap");
+			add(new JLabel("VREF Pot. 4"), "split");
+			add(vref4, "wrap");
 		}
 		else
 		{
@@ -322,14 +327,6 @@ public class MachineOnboardParameters extends JPanel {
 			add(bAxisHomeOffsetField,"wrap");
 		}
 
-		commitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				MachineOnboardParameters.this.commit();
-				disconnectNeededOnExit = true;
-				MachineOnboardParameters.this.dispose();
-			}
-		});
-		add(commitButton);
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -339,7 +336,7 @@ public class MachineOnboardParameters extends JPanel {
 			}
 		});
 		resetToFactoryButton.setToolTipText("Reest the onboard settings to the factory defaults");
-		add(resetToFactoryButton);
+		add(resetToFactoryButton, "split 1");
 
 		
 		resetToBlankButton.addActionListener(new ActionListener() {
@@ -352,6 +349,14 @@ public class MachineOnboardParameters extends JPanel {
 		resetToBlankButton.setToolTipText("Reest the onboard settings to the *completely blank*");
 		add(resetToBlankButton);
 
+		commitButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				MachineOnboardParameters.this.commit();
+				disconnectNeededOnExit = true;
+				MachineOnboardParameters.this.dispose();
+			}
+		});
+		add(commitButton, "al right");
 		loadParameters();
 	}
 

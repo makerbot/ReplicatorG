@@ -238,6 +238,7 @@ public class ExtruderPanel extends JPanel{
 	protected JPanel getMotorControls(final ToolModel tool) {
 		JPanel panel = new JPanel(new MigLayout("fill"));
 		
+		// Call handleItemChange with this particular tool
 		ItemListener itemListener = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
@@ -245,7 +246,8 @@ public class ExtruderPanel extends JPanel{
 			}
 			
 		};
-		
+
+		// Call handleMotorAction with this particular tool
 		ActionListener actionListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -255,7 +257,6 @@ public class ExtruderPanel extends JPanel{
 		};
 		
 		if (tool.hasMotor()) {
-			
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder. (it's not!)
@@ -263,7 +264,7 @@ public class ExtruderPanel extends JPanel{
 					!(tool.motorHasEncoder() || tool.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
-				
+
 				JFormattedTextField field = new CallbackTextField(new ActionListener(){
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -282,6 +283,7 @@ public class ExtruderPanel extends JPanel{
 			if (tool.motorHasEncoder() || tool.motorIsStepper()) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (RPM)");
+
 				JFormattedTextField field = new CallbackTextField(new ActionListener(){
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -299,7 +301,7 @@ public class ExtruderPanel extends JPanel{
 
 				if (tool.getMotorStepperAxisName() != "") {
 					label = makeLabel("Extrude duration");
-				
+
 					JComboBox timeList = new JComboBox(extrudeTimeStrings);
 					timeList.setSelectedItem(Base.preferences.get(EXTRUDE_TIME_PREF_NAME,"5s"));
 					timeList.setActionCommand("Extrude-duration");
@@ -314,6 +316,7 @@ public class ExtruderPanel extends JPanel{
 			JLabel motorEnabledLabel = makeLabel("Motor Control");
 			
 			if (tool.motorHasEncoder() || (tool.motorIsStepper() && tool.getMotorStepperAxisName() != "")) {
+
 				JButton motorReverseButton = new JButton("reverse");
 				motorReverseButton.setActionCommand("reverse");
 				motorReverseButton.addActionListener(actionListener);
@@ -381,7 +384,7 @@ public class ExtruderPanel extends JPanel{
 		return panel;
 	}
 	
-	public ExtruderPanel(MachineInterface machine) {
+	public ExtruderPanel(final MachineInterface machine) {
 		this.machine = machine;
 		List<ToolModel> tools = machine.getModel().getTools();
 		if(tools.size() > 0)
@@ -416,9 +419,19 @@ public class ExtruderPanel extends JPanel{
 		else if(tools.size() > 1)
 		{
 			JTabbedPane motorTabs = new JTabbedPane();
-			motorTabs.addTab(tool0.getName() + " Plastic Extruder", getMotorControls(tool0));
-			motorTabs.addTab(tool1.getName() + " Plastic Extruder", getMotorControls(tool1));
 
+			final String tool0Name = tool0.getName() + " Plastic Extruder";
+			final String tool1Name = tool1.getName() + " Plastic Extruder";
+			// Left on the left
+			if(tool0.getIndex() == 0) {
+				motorTabs.addTab(tool1Name, getMotorControls(tool1));
+				motorTabs.addTab(tool0Name, getMotorControls(tool0));
+			}
+			else if(tool0.getIndex() == 1) {
+				motorTabs.addTab(tool0Name, getMotorControls(tool0));
+				motorTabs.addTab(tool1Name, getMotorControls(tool1));
+			}
+			
 			add(motorTabs, "aligny top, spanx, growx, wrap");
 		}
 		
@@ -829,13 +842,16 @@ public class ExtruderPanel extends JPanel{
 		}
 		/* Handle stepper extruder commands */
 		if (actionName.equals("forward")) {
-			
+
 			if (tool.getMotorStepperAxisName() != "") {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE,toolhead));
 				// Reverted to one single command for RepRap5D driver
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
 					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000,toolhead));
 				} else {
+					// See Note (***) Below:
+					machine.runCommand(new replicatorg.drivers.commands.SelectTool(toolhead));
+
 					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
 					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000,toolhead));
 					machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
@@ -848,6 +864,9 @@ public class ExtruderPanel extends JPanel{
 				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
 					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000,toolhead));
 				} else {
+					// See Note (***) Below:
+					machine.runCommand(new replicatorg.drivers.commands.SelectTool(toolhead));
+
 					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
 					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000,toolhead));
 					machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
@@ -860,5 +879,12 @@ public class ExtruderPanel extends JPanel{
 				machine.stopMotion();
 			}
 		}
+		/* Note (***):
+		 *   For some reason passing the toolhead into the driver commands isn't working for one of
+		 *   the heads. However, selecting the tool before sending commands does seem to work.
+		 *   It could, however, have unintended consequences. We'll see, I guess.
+		 *     -Ted
+		 */
+		
 	}
 }

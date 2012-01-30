@@ -929,8 +929,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
 
 		
-		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
+		//WARNING: this in unsafe, since tool is checked
 		//async from when command is set. Tool should be a param
+		ToolModel curTool = machine.getTool(toolhead);
 		Iterable<AxisId>  axes = getHijackedAxes(curTool);
 
 		// Hack conversion to match datapoints. ToDo: convert all to Interable or all to EnumSet, 
@@ -1200,8 +1201,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 	
 	// Display a message on the user interface
-	public void displayMessage(double seconds, String message) throws RetryException {
-		///TRICKY: for word-wrapping of long lines, line wrap order is 0,2,1,3. Don't ask, it's complicated.
+	public void displayMessage(double seconds, String message, boolean buttonWait) throws RetryException {
 		byte options = 0; //bit 1 true cause the buffer to clear, bit 2 true indicates message complete
 		final int MAX_MSG_PER_PACKET = 20;
 		int sentTotal = 0; /// set 'clear buffer' flag
@@ -1209,13 +1209,17 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 		/// send message in 25 char blocks. Set 'clear buffer' on the first,
 		/// and set the timeout only on the last block
+        /// send message complete on the last block
 		while (sentTotal < message.length()) {
 			PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.DISPLAY_MESSAGE.getCode());
 			
 			// if this is the last packet, set timeout and indicate that message is complete
+            // set the "wait on button" flag if specified
 			if(!(sentTotal + MAX_MSG_PER_PACKET <  message.length())){
 				timeout = seconds;
 				options |= 0x02;
+                if(buttonWait)
+                    options |= 0x04;
 			}
 			if(sentTotal  > 0 ) 
 				options |= 0x01; //do not clear flag
