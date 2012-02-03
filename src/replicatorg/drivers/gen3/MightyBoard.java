@@ -392,7 +392,99 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 	}
 
+	@Override
+	public void queuePoint(final Point5d p) throws RetryException {
 
+		/*
+		 * So, it looks like points specified in A/E/B commands turn in the opposite direction from
+		 * turning based on tool RPM
+		 * 
+		 * I recieve all points as absolute values, and, really, all extruder values should be sent
+		 * as relative values, just in case we end up with an overflow?
+		 *
+		 */
+		Point5d target = new Point5d(p);
+		Point5d current = new Point5d(getPosition());
+		
+		// is this point even step-worthy? Only compute nonzero moves
+		Point5d deltaSteps = getAbsDeltaSteps(current, target);
+		if (deltaSteps.length() > 0.0) {
+			// relative motion in mm
+			Point5d deltaMM = new Point5d();
+			deltaMM.sub(target, current); // delta = p - current
+			
+			// A and B are always sent as relative, rec'd as absolute, so adjust our target accordingly
+			// Also, our machine turns the wrong way? make it negative.
+			target.setA(-deltaMM.a());
+			target.setB(-deltaMM.b());
+
+			// calculate the time to make the move
+			Point5d delta3d = new Point5d();
+			delta3d.setX(deltaMM.x());
+			delta3d.setY(deltaMM.y());
+			delta3d.setZ(deltaMM.z());
+			double minutes = delta3d.distance(new Point5d())/ getSafeFeedrate(deltaMM);
+			
+			// if minutes == 0 here, we know that this is just an extrusion in place
+			// so we need to figure out how long it will take
+			if(minutes == 0) {
+				Point5d delta2d = new Point5d();
+				delta2d.setA(deltaMM.a());
+				delta2d.setB(deltaMM.b());
+				
+				minutes = delta2d.distance(new Point5d())/ getSafeFeedrate(deltaMM);
+			}
+			
+			Point5d stepsPerMM = machine.getStepsPerMM();
+			
+			// if either a or b is 0, but their motor is on, create a distance for them
+			if(deltaMM.a() == 0) {
+				ToolModel aTool = extruderHijackedMap.get(AxisId.A);
+				if(aTool != null && aTool.isMotorEnabled()) {
+					// minute * revolution/minute
+					double numRevolutions = minutes * aTool.getMotorSpeedRPM();
+					// steps/revolution * mm/steps 	
+					double mmPerRevolution = aTool.getMotorSteps() * (1/stepsPerMM.a());
+					// set distance
+					target.setA( -(numRevolutions * mmPerRevolution));
+				}
+			}
+			if(deltaMM.b() == 0) {
+				ToolModel bTool = extruderHijackedMap.get(AxisId.B);
+				if(bTool != null && bTool.isMotorEnabled()) {
+					// minute * revolution/minute
+					double numRevolutions = minutes * bTool.getMotorSpeedRPM();
+					// steps/revolution * mm/steps 	
+					double mmPerRevolution = bTool.getMotorSteps() * (1/stepsPerMM.b());
+					// set distance
+					target.setB( -(numRevolutions * mmPerRevolution));
+				}
+			}
+			
+			// calculate absolute position of target in steps
+			Point5d excess = new Point5d(stepExcess);
+			Point5d steps = machine.mmToSteps(target,excess);	
+			
+			double usec = (60 * 1000 * 1000 * minutes);
+
+//			System.out.println(p.toString());
+//			System.out.println(target.toString());
+//			System.out.println("\t steps: " + steps.toString() +"\t usec: " + usec);
+			int relativeAxes = (1 << AxisId.A.getIndex()) | (1 << AxisId.B.getIndex());
+			queueNewPoint(steps, (long) usec, relativeAxes);
+
+			// Only update excess if no retry was thrown.
+			stepExcess = excess;
+
+			// because of the hinky stuff we've been doing with A & B axes, just pretend we've
+			// moved where we thought we were moving
+			Point5d fakeOut = new Point5d(target);
+			fakeOut.setA(p.a());
+			fakeOut.setB(p.b());
+			setInternalPosition(fakeOut);
+		}
+	}
+	
 	@Override
 	public void setStoredStepperVoltage(int stepperId, int referenceValue) {
 		Base.logger.finer("MightyBoard sending storeStepperVoltage");

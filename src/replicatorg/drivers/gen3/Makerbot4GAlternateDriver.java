@@ -33,7 +33,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	}
 	
 	/** The excess, in steps, from previous operations. */ 
-	private Point5d stepExcess = new Point5d();
+	protected Point5d stepExcess = new Point5d();
 	
 	/**
 	 * Overloaded to manage a hijacked axis and run this axis in relative mode instead of the extruder DC motor

@@ -62,6 +62,7 @@ import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.commands.DriverCommand;
 import replicatorg.drivers.commands.DriverCommand.LinearDirection;
 import replicatorg.machine.model.AxisId;
+import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.util.Point5d;
 
 
@@ -175,7 +176,7 @@ public class GCodeParser {
 	double feedrate = 0.0;
 
 	// current selected tool
-	protected int tool = -1;
+	protected int tool = ToolheadAlias.SINGLE.number;
 
 	// unit variables.
 	public static int UNITS_MM = 0;

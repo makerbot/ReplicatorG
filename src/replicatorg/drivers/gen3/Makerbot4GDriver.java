@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 
-import javax.vecmath.Point3d;
-
 import org.w3c.dom.Element;
 
 import replicatorg.app.Base;
@@ -175,7 +173,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
 	 */
 	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
-		machine.currentTool().setMotorSpeedRPM(rpm);
+		machine.getTool(toolhead).setMotorSpeedRPM(rpm);
 	}
 	
 	
@@ -255,6 +253,8 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 					if (m.hasAxis(axis)) {
 						// If we're seizing an axis for an extruder, remove it from the available axes and get
 						// the data associated with that axis.
+						// Ted says: but we don't seem to be removing it from the available axes.
+						//   We do that in the 4ga driver, but not here. 
 						extruderHijackedMap.put(axis,tm);
 					} else {
 						Base.logger.severe("Tool claims unavailable axis "+axis.name());
