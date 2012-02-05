@@ -141,6 +141,7 @@ public class EditorHeader extends BGPanel implements ActionListener {
 	}
 	
 	JLabel titleLabel = new JLabel("Untitled");
+    JLabel linesLabel = new JLabel ("");
 	
 	MainWindow editor;
 
@@ -157,7 +158,7 @@ public class EditorHeader extends BGPanel implements ActionListener {
 		this.editor = mainWindow;
 
 		add(titleLabel);
-        	titleLabel.setToolTipText("(0)");
+        add(linesLabel);
 		backgroundColor = new Color(0x92, 0xA0, 0x6B);
 		textSelectedColor = Base.getColorPref("header.text.selected.color","#1A1A00");
 		textUnselectedColor = Base.getColorPref("header.text.unselected.color","#ffffff");
@@ -183,17 +184,18 @@ public class EditorHeader extends BGPanel implements ActionListener {
 	}
 	
 	void setBuild(Build build) {
-		int lines = 0;
 		removeTabs();
+        linesLabel.setText("");
 		if (build.getModel() != null) {
 			addTabForElement(build,build.getModel());
 		}
 		if (build.getCode() != null) {
 			addTabForElement(build,build.getCode());
-            		lines = build.getLines();
+            int lines = build.getLines();
+            if (0 < lines)
+                linesLabel.setText("(" + lines + " lines)");
 		}
 		titleLabel.setText(build.getName());
-		titleLabel.setToolTipText("lines: "+lines);
 		validate();
 		repaint();
 	}
