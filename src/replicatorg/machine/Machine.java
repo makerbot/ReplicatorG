@@ -387,7 +387,7 @@ public class Machine implements MachineInterface {
 			// Check for homing in the wrong direction
 			if(!homingDirectionIsSafe(gcode))
 			{
-				message = "Homing in the wrong direction can damage your machine: '" + line +"'";
+				message = "Homing in the wrong direction for selected machine: '" + line +"'";
 
 				messages.put(message, lineNumber);
 				Base.logger.log(Level.SEVERE, message);
