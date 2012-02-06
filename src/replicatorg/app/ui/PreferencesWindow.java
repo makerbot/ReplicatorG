@@ -341,10 +341,13 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		
 		{
 			final int defaultTemp = 75;
-			final String tooltip = "When build is pressed, begin bringing bot up to this temperature";
+			final String tooltipGeneral = "When enabled, starting all builds heats components to this temperature";
+			final String tooltipHead = "Set preheat temperature for the specified toolhead";
+			final String tooltipPlatform = "Set preheat temperature for the build platfom";
+			
 			
 			final JCheckBox preheatCb = new JCheckBox("Preheat builds");
-			preheatCb.setToolTipText(tooltip);
+			preheatCb.setToolTipText(tooltipGeneral);
 			content.add(preheatCb, "split");
 			
 			preheatCb.addActionListener(new ActionListener(){
@@ -355,9 +358,9 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			});
 			preheatCb.setSelected(Base.preferences.getBoolean("build.doPreheat", false));
 			
-			final JLabel t0Label = new JLabel("Toolhead0:");
-			final JLabel t1Label = new JLabel("Toolhead1:");
-			final JLabel pLabel = new JLabel("Platform:");
+			final JLabel t0Label = new JLabel("Toolhead Right: ");
+			final JLabel t1Label = new JLabel("Toolhead Left: ");
+			final JLabel pLabel = new JLabel("Platform: ");
 			
 			Integer t0Value = Base.preferences.getInt("build.preheatTool0", defaultTemp);
 			Integer t1Value = Base.preferences.getInt("build.preheatTool1", defaultTemp);
@@ -367,9 +370,12 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			final JFormattedTextField t1Field = new JFormattedTextField(Base.getLocalFormat());
 			final JFormattedTextField pField = new JFormattedTextField(Base.getLocalFormat());
 			
-			t0Field.setToolTipText(tooltip);
-			t1Field.setToolTipText(tooltip);
-			pField.setToolTipText(tooltip);
+			t0Field.setToolTipText(tooltipHead);
+			t0Label.setToolTipText(tooltipHead);
+			t1Field.setToolTipText(tooltipHead);
+			t1Label.setToolTipText(tooltipHead);
+			pField.setToolTipText(tooltipPlatform);
+			pLabel.setToolTipText(tooltipPlatform);
 
 			t0Field.setValue(t0Value);
 			t1Field.setValue(t1Value);
