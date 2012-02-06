@@ -400,13 +400,12 @@ public class Machine implements MachineInterface {
 													   && gcode.getCodeValue('M') != 106
 													   && gcode.getCodeValue('M') != 107)
 			{
-				message = "Too Many Toolheads! You don't have a toolhead numbered " + gcode.getCodeValue('T');
-				
+				message = "Toolheads index error! You don't have a toolhead numbered " + gcode.getCodeValue('T');
+				messages.put(message, lineNumber);
+				message = "Only the first Toolhead index error is logged. Please regenrate your GCode or manually check your gcode to correct.";
 				messages.put(message, lineNumber);
 				Base.logger.log(Level.SEVERE, message);
-				/// this error may happen a TON of times in a big model, in this case exit on the first instance.
-				// I disagree. - Ted
-//				return; 
+				return; //TRICKY: see footnote [1]
 			}
 			if(gcode.hasCode('F'))
 			{
@@ -419,7 +418,7 @@ public class Machine implements MachineInterface {
 					(gcode.hasCode('B') && fVal > maxRates.b()))
 				{
 					message = "You're moving too fast! " + line +
-							 " turns at least one axis faster than its max speed.";
+							 " turns at least one axis faster than it's max speed.";
 
 					messages.put(message, lineNumber);
 					Base.logger.log(Level.WARNING, message);
@@ -429,6 +428,10 @@ public class Machine implements MachineInterface {
 			lineNumber++;
 		}
 	}
+	//footnote [1]:
+	/// Because this error can be thrown thounsands of times in a file, and is generally a 'all wrong, or all right' error,
+	// we shortcut return on the first instance of a toolhead count error.  This avoids long timeouts before displaying errors, and avoids (literally) hundreds to 
+	// thousands of exactly the same error
 	
 	private boolean homingDirectionIsSafe(GCodeCommand gcode) {
 		Endstops xstop, ystop, zstop;
