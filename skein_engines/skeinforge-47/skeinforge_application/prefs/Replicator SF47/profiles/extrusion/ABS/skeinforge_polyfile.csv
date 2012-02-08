@@ -1,0 +1,5 @@
+Format is tab separated skeinforge polyfile settings.
+_Name                          	Value
+WindowPosition	600+0
+Execute All Unmodified Files in a Directory	False
+Execute File	True

@@ -1,0 +1,12 @@
+Format is tab separated skeinforge analyze settings.
+_Name                          	Value
+WindowPosition	600+0
+Open File for Analyze	
+clairvoyance	False
+comment	False
+interpret	True
+skeiniso	False
+skeinlayer	False
+statistic	False
+synopsis	False
+vectorwrite	False
