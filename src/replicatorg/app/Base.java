@@ -546,6 +546,11 @@ public class Base {
 //		    private TrayIcon trayIcon;
 
 			public void run() {
+				// default load The Replicator
+				String machine = Base.preferences.get("machine.name", null);
+				if(machine == null)
+					Base.preferences.put("machine.name", "The Replicator Dual");
+				
 				// build the editor object
 				editor = new MainWindow();
 				
@@ -563,7 +568,7 @@ public class Base {
 				});
 				
 				boolean autoconnect = Base.preferences.getBoolean("replicatorg.autoconnect",true);
-				String machineName = preferences.get("machine.name", "The Replicator Dual");
+				String machineName = preferences.get("machine.name", "");
 				
 				editor.loadMachine(machineName, autoconnect);
 				
