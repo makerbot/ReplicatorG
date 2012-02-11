@@ -360,13 +360,7 @@ public class Build {
 	}
 
 	protected int countLines(String what) {
-		char c[] = what.toCharArray();
-		int count = 0;
-		for (int i = 0; i < c.length; i++) {
-			if (c[i] == '\n')
-				count++;
-		}
-		return count;
+		return what.split("\n").length - 1;
 	}
 
 	static public String scrubComments(String what) {
