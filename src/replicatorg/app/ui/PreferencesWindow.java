@@ -197,7 +197,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Show starfield in model preview window","ui.show_starfield",false);
 		addCheckboxForPref(content,"Notifications in System tray","ui.preferSystemTrayNotifications",false);
 		addCheckboxForPref(content,"Show warning when building from model w/ existing gcode","build.showRegenCheck",true);
-		
+		addCheckboxForPref(content, "use native avrdude for uploading code","uploader.useNative",false);	
 		JPanel advanced = new JPanel();
 		content = advanced;
 		content.setLayout(new MigLayout("fill"));

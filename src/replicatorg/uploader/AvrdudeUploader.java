@@ -102,8 +102,10 @@ public class AvrdudeUploader extends AbstractFirmwareUploader {
   public boolean upload() {
     Vector<String> commandDownloader = new Vector<String>();
     String avrBasePath = Base.getToolsPath();
-    
-    commandDownloader.add(avrBasePath + File.separator + "avrdude");
+    if(Base.preferences.getBoolean("uploader.useNative",true) )
+	commandDownloader.add("avrdude");    
+    else 
+    	commandDownloader.add(avrBasePath + File.separator + "avrdude");
     commandDownloader.add("-C" + avrBasePath + File.separator + "avrdude.conf");
     commandDownloader.add("-c" + protocol);
     commandDownloader.add("-P" + (Base.isWindows() ? "\\\\.\\" : "") + serialName);
