@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -30,7 +29,7 @@ public class InfoPanel extends JFrame {
     JTextArea infoArea;
 	
 	public InfoPanel() {
-		super("About this Makerbot");
+		super("About this Machine");
 		setLayout(new MigLayout("fill"));
 
 		infoArea = new JTextArea("ReplicatorG:",40,80);
