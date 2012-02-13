@@ -29,7 +29,7 @@ import javax.vecmath.Point3d;
 
 import replicatorg.util.Point5d;
 
-public class EstimationDriver extends DriverBaseImplementation {
+public class EstimationDriver extends DriverBaseImplementation implements InteractiveDisplay{
 	// build time in milliseconds
 	private double buildTime = 0.0;
 
@@ -153,5 +153,49 @@ public class EstimationDriver extends DriverBaseImplementation {
 		}
 
 		return val;
+	}
+
+	
+	/*
+	 * From InteractiveDisplay:
+	 * prevents annoying error messages, allows us to account for these pauses in estimation
+	 */
+	@Override
+	public void displayMessage(double seconds, String message,
+			boolean ButtonWait) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void userPause(double seconds, boolean resetOnTimeout, int buttonMask)
+			throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void playSong(int songId) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateBuildPercent(int percentDone) throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void sendBuildStartNotification(String string, int i)
+			throws RetryException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void sendBuildEndNotification(int endCode) throws RetryException {
+		// TODO Auto-generated method stub
+		
 	}
 }
