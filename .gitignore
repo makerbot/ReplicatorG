@@ -17,3 +17,4 @@ ReplicatorG.app
 .classpath
 .project
 *.diff
+.DS_Store

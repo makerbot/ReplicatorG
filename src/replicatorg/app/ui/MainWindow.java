@@ -75,7 +75,6 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -106,6 +105,7 @@ import javax.swing.undo.UndoManager;
 import net.iharder.dnd.FileDrop;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
+import replicatorg.app.util.StreamLoggerThread;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.MRUList;
 import replicatorg.app.gcode.GCodeEnumeration;
@@ -1931,54 +1931,16 @@ ToolpathGenerator.GeneratorListener
 	public BuildFlag detectBuildIntention()
 	{
 		BuildFlag flag = BuildFlag.NONE;
-
-		// if we have gcode selected, simply build
-		BuildElement elementInVew = header.getSelectedElement(); 
-		if( elementInVew == null ) {
-			Base.logger.severe("cannot determine build intention, no view selected.");
-			return flag; ///fail 
-		}
-
-		if( elementInVew.getType() == BuildElement.Type.GCODE)
+		
+		if(getBuild() != null)
 		{
-			flag = BuildFlag.JUST_BUILD;
+			if(getBuild().getCode() != null)
+				flag = BuildFlag.JUST_BUILD;
+			else
+				flag = BuildFlag.GEN_AND_BUILD;
 		}
 		
-		else if(getBuild() != null)
-		{
-			//no code. Generate code and build
-			if(getBuild().getCode() == null)
-			{
-				flag = BuildFlag.GEN_AND_BUILD;
-			}
-			else if(Base.preferences.getBoolean("build.showRegenCheck", true))
-			{
-				JCheckBox showCheck = new JCheckBox("Print from Model View always regenerates gcode.");
-				Object[] choices = {"Regenerate GCode", "Use existing GCode"};
-				Object[] message = new Object[]{
-						"WARNING: Printing from Model View. \n","Overwrite existing gcode for this model?\n\n",
-						showCheck
-						};
-				int option = JOptionPane.showOptionDialog(this, message, "Re-generate Gcode?", 
-					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-					null, choices, choices[1]);
-
-				if(showCheck.isSelected())
-					Base.preferences.putBoolean("build.showRegenCheck", false); 
-				 
-				if(option == JOptionPane.CLOSED_OPTION) 	
-					flag = BuildFlag.NONE; //exit clicked
-				else if(option == 0 )  
-					flag = BuildFlag.GEN_AND_BUILD; //gen and build
-				else if (option == 1) 
-					flag = BuildFlag.JUST_BUILD; //build from old generation
-			}
-			else
-			{
-				// If showRegenCheck is false, the user wants us to always regenerate
-				flag = BuildFlag.GEN_AND_BUILD;
-			}
-		}
+		///fail.
 		return flag;
 	}
 	
@@ -2036,6 +1998,7 @@ ToolpathGenerator.GeneratorListener
 //				setEditorBusy(false);
 //				building = false;
 //			}
+			maybeRunScript("scripts/start.sh", handleOpenPath, String.valueOf(buildStart.getTime()));
 		}
 	}
 
@@ -2343,9 +2306,11 @@ ToolpathGenerator.GeneratorListener
 
 		long elapsed = finished.getTime() - started.getTime();
 
-		String message = "Build finished.\n\n";
-		message += "Completed in "
-			+ EstimationDriver.getBuildTimeString(elapsed);
+		String time_string = EstimationDriver.getBuildTimeString(elapsed);
+		String message = "Build finished.\n\nCompleted in "	+ time_string;
+
+		maybeRunScript("scripts/complete.sh", handleOpenPath, String.valueOf(elapsed / 1000), time_string);
+
 		Base.showMessage("Build finished", message);
 	}
 
@@ -2413,6 +2378,12 @@ ToolpathGenerator.GeneratorListener
 		// called by menu or buttons or during panel ops
 		doStop();
 		setEditorBusy(false);
+
+		Date started = buildStart;
+		Date finished = new Date();
+		long elapsed = finished.getTime() - started.getTime();
+		String time_string = EstimationDriver.getBuildTimeString(elapsed);
+		maybeRunScript("scripts/stop.sh", handleOpenPath,  String.valueOf(elapsed / 1000), time_string);
 	}
 
 	class EstimationThread extends Thread {
@@ -3256,5 +3227,25 @@ ToolpathGenerator.GeneratorListener
 	@Override
 	public void updateGenerator(GeneratorEvent evt) {
 		// ignore
+	}
+
+	private void maybeRunScript(String path, String ... arguments) {
+		// Run a shell script if possible. Fail silently.
+		try {
+			List<String> command = new LinkedList<String>();
+			command.add(path);
+			for (int i = 0; i < arguments.length; i++)
+				command.add(arguments[i]);
+			ProcessBuilder pb = new ProcessBuilder(command);
+			Process process = pb.start();
+			Base.logger.log(Level.INFO, "Running script: " + path);
+			// Fire off some loggers
+			StreamLoggerThread ist = new StreamLoggerThread(process.getInputStream());
+			ist.setDefaultLevel(Level.INFO);
+			ist.start();
+			StreamLoggerThread est = new StreamLoggerThread(process.getErrorStream());
+			est.setDefaultLevel(Level.WARNING);
+			est.start();
+		} catch (java.io.IOException e) {}
 	}
 }

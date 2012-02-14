@@ -105,18 +105,6 @@ class ConfigurationDialog extends JDialog {
 		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
 			add(preference.getUI(), "growx, wrap");
 		}
-
-		final JCheckBox autoGen = new JCheckBox("Automatically generate when building.");
-		autoGen.setToolTipText("When building from the model view with this checked " +
-				"GCode will automatically be generated, bypassing this dialog.");
-		add(autoGen, "wrap");
-		autoGen.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				Base.preferences.putBoolean("build.autoGenerateGcode", autoGen.isSelected());
-			}
-		});
-		autoGen.setSelected(Base.preferences.getBoolean("build.autoGenerateGcode", false));
 		
 		add(generateButton, "tag ok, split 2");
 		add(cancelButton, "tag cancel");
