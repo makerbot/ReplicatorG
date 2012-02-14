@@ -196,7 +196,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Break Z motion into seperate moves (normally false)","replicatorg.parser.breakzmoves",false);
 		addCheckboxForPref(content,"Show starfield in model preview window","ui.show_starfield",false);
 		addCheckboxForPref(content,"Notifications in System tray","ui.preferSystemTrayNotifications",false);
-		addCheckboxForPref(content, "use native avrdude for uploading code","uploader.useNative",false);
+		addCheckboxForPref(content,"Automatically re-generate gcode when building from model view.","build.autoGenerateGcode",true);
+		addCheckboxForPref(content,"Use native avrdude for uploading code","uploader.useNative",false);
 
 		JPanel advanced = new JPanel();
 		content = advanced;

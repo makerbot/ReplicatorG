@@ -1932,7 +1932,18 @@ ToolpathGenerator.GeneratorListener
 	{
 		BuildFlag flag = BuildFlag.NONE;
 		
-		if(getBuild() != null)
+		BuildElement elementInView = header.getSelectedElement();
+		if(elementInView.getType() == BuildElement.Type.GCODE)
+		{
+			flag = BuildFlag.JUST_BUILD;
+		}
+		else if(elementInView.getType() == BuildElement.Type.MODEL)
+		{
+			if(Base.preferences.getBoolean("build.autoGenerateGcode", true))
+				flag = BuildFlag.GEN_AND_BUILD;
+		}
+		
+		if(flag == BuildFlag.NONE && getBuild() != null)
 		{
 			if(getBuild().getCode() != null)
 				flag = BuildFlag.JUST_BUILD;
@@ -1960,7 +1971,7 @@ ToolpathGenerator.GeneratorListener
 			//'rewrite' clicked
 			buildOnComplete = true;
 			doPreheat(Base.preferences.getBoolean("build.doPreheat", false));				
-			runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", false));
+			runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", true));
 		}
 		if(buildFlag == BuildFlag.JUST_BUILD) {
 			//'use existing' clicked
