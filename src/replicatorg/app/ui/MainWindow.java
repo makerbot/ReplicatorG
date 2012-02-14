@@ -2469,6 +2469,7 @@ ToolpathGenerator.GeneratorListener
 		doPreheat(false);
 		building = false;
 		simulating = false;
+		buildOnComplete = false;
 	}
 
 	public void handleReset() {
