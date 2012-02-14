@@ -270,7 +270,37 @@ public class ToolpathGeneratorFactory {
 				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
 
 				prefs.add(postprocess.getPreference());
+				
+				SkeinforgeBooleanPreference raftPref = 			
+						new SkeinforgeBooleanPreference("Use Raft/Support",
+							"replicatorg.skeinforge.useRaft", false,
+							"Enables Raft and/or support material.  " + 
+							"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
+					raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
+					prefs.add(raftPref);
+					
+					SkeinforgeChoicePreference supportPref =
+						new SkeinforgeChoicePreference("Use support material",
+								"replicatorg.skeinforge.choiceSupport", "None",
+								"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
+								"structure that you can later remove. Requires that Raft/Support be checked.");
+					supportPref.addOption("None", new SkeinforgeOption("raft.csv","None", "true"));
+					supportPref.addOption("None", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+					supportPref.addOption("None", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+					supportPref.addOption("None", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
 
+					supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","None", "false"));
+					supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+					supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+					supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Exterior Only", "true"));
+
+					supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","None", "false"));
+					supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+					supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Everywhere", "true"));
+					supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+					
+					prefs.add(supportPref);
+					
 				// This will be done by the SkeinforgePostProcessor
 				SkeinforgeBooleanPreference bookendPref = 	
 					new SkeinforgeBooleanPreference("Use machine-specific start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
@@ -303,30 +333,30 @@ public class ToolpathGeneratorFactory {
 			}
 		};
 		
-		if((new Skeinforge35()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor(Skeinforge35.displayName, 
-				"This is a decent version of skeinforge.", Skeinforge35.class));
-		if((new Skeinforge40()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor(Skeinforge40.displayName, 
-				"This is a recent version of skeinforge.", Skeinforge40.class));
+		if((new Skeinforge47()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge47.displayName, 
+				"This is the default version of skeinforge.", Skeinforge47.class));
 		if((new Skeinforge44()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge44.displayName, 
 				"This is an experimental version of skeinforge.", Skeinforge44.class));
-		if((new Skeinforge47()).getDefaultSkeinforgeDir().exists())
-			list.add(new ToolpathGeneratorDescriptor(Skeinforge47.displayName, 
-				"This is an experimental version of skeinforge.", Skeinforge47.class));
+		if((new Skeinforge40()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge40.displayName, 
+				"This is a recent version of skeinforge.", Skeinforge40.class));
+		if((new Skeinforge35()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge35.displayName, 
+				"This is a decent version of skeinforge.", Skeinforge35.class));
 		if((new Skeinforge31()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge31.displayName, 
 				"This is an old version of skeinforge.", Skeinforge31.class));
 		if((new Skeinforge6()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge6.displayName, 
-				"This is an old version of skeinforge.", Skeinforge6.class));
+				"This is an ancient version of skeinforge.", Skeinforge6.class));
 		
 		return list;
 	}
 
 	static public String getSelectedName() {
-		String name = Base.preferences.get("replicatorg.generator.name", "Skeinforge (35)");
+		String name = Base.preferences.get("replicatorg.generator.name", "Skeinforge (47)");
 		return name;
 	}
 

@@ -215,15 +215,15 @@ public class PrintOMatic5D implements SkeinforgePreference {
                 JComponent supportPanel = new JPanel(new MigLayout("fillx"));
 		
 		addTextParameter(printPanel, "infillPercent",
-				"Object infill (%)", "30",
+				"Object infill (%)", "10",
 				"0= hollow object, 100=solid object");
 		
 		addTextParameter(printPanel, "desiredLayerHeight",
-					"Layer Height (mm)", "0.35",
+					"Layer Height (mm)", "0.2",
 					"Set the desired layer height");
 
 		addTextParameter(printPanel, "desiredPathWidth",
-					"Path Width (mm)", "0.5",
+					"Path Width (mm)", "0.4",
 					"Set the desired layer width");
 
 		addTextParameter(printPanel, "numberOfShells",
@@ -244,14 +244,14 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				"Select the type of plastic to use during print");
 		
 		addTextParameter(materialPanel, "filamentDiameter",
-				"Filament Diameter (mm)", "2.94",
+				"Filament Diameter (mm)", "1.75",
 				"measure feedstock");
                 
                 // TODO: Tie the materialType to this text box, so that switching the puldown changes this default
 		addTextParameter(materialPanel, "packingDensity",
 				"Final Volume (%)", "85",
 				"Between 85 and 100.");
-		
+		/*
 		addBooleanParameter(supportPanel, "useRaft",
 				"Use Raft/Support", true,
 				"If this option is checked, skeinforge can generate use support material, and will lay down a rectangular 'raft' of plastic below the build.  "
@@ -286,7 +286,6 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
 	
 		prefs.add(supportPref);
-		*/
 		
 		Vector<String> supportTypes = new Vector<String>();
 		supportTypes.add("None");
@@ -298,10 +297,11 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
 				"structure that you can later remove.");
 	
+		*/
 		
 		printOMatic5D.addTab("Settings", printPanel);
 		printOMatic5D.addTab("Plastic", materialPanel);
-                printOMatic5D.addTab("Support", supportPanel);
+//                printOMatic5D.addTab("Support", supportPanel);
 		component.add(printOMatic5D, "spanx");
 		printOMatic5D.setVisible(enabled.isSelected());
 	}
