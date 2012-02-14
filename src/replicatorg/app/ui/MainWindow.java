@@ -75,7 +75,6 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -1931,54 +1930,16 @@ ToolpathGenerator.GeneratorListener
 	public BuildFlag detectBuildIntention()
 	{
 		BuildFlag flag = BuildFlag.NONE;
-
-		// if we have gcode selected, simply build
-		BuildElement elementInVew = header.getSelectedElement(); 
-		if( elementInVew == null ) {
-			Base.logger.severe("cannot determine build intention, no view selected.");
-			return flag; ///fail 
-		}
-
-		if( elementInVew.getType() == BuildElement.Type.GCODE)
+		
+		if(getBuild() != null)
 		{
-			flag = BuildFlag.JUST_BUILD;
+			if(getBuild().getCode() != null)
+				flag = BuildFlag.JUST_BUILD;
+			else
+				flag = BuildFlag.GEN_AND_BUILD;
 		}
 		
-		else if(getBuild() != null)
-		{
-			//no code. Generate code and build
-			if(getBuild().getCode() == null)
-			{
-				flag = BuildFlag.GEN_AND_BUILD;
-			}
-			else if(Base.preferences.getBoolean("build.showRegenCheck", true))
-			{
-				JCheckBox showCheck = new JCheckBox("Print from Model View always regenerates gcode.");
-				Object[] choices = {"Regenerate GCode", "Use existing GCode"};
-				Object[] message = new Object[]{
-						"WARNING: Printing from Model View. \n","Overwrite existing gcode for this model?\n\n",
-						showCheck
-						};
-				int option = JOptionPane.showOptionDialog(this, message, "Re-generate Gcode?", 
-					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
-					null, choices, choices[1]);
-
-				if(showCheck.isSelected())
-					Base.preferences.putBoolean("build.showRegenCheck", false); 
-				 
-				if(option == JOptionPane.CLOSED_OPTION) 	
-					flag = BuildFlag.NONE; //exit clicked
-				else if(option == 0 )  
-					flag = BuildFlag.GEN_AND_BUILD; //gen and build
-				else if (option == 1) 
-					flag = BuildFlag.JUST_BUILD; //build from old generation
-			}
-			else
-			{
-				// If showRegenCheck is false, the user wants us to always regenerate
-				flag = BuildFlag.GEN_AND_BUILD;
-			}
-		}
+		///fail.
 		return flag;
 	}
 	
