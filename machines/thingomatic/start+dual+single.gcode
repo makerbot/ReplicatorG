@@ -1,4 +1,4 @@
-(**** end of start.gcode ****)
+(**** beginning of start.gcode ****)
 (**** This file is for a Thing-O-Matic outfitted for experimental dualstrusion ONLY! ****)
 G21 (set units to mm)
 G90 (set positioning to absolute)

@@ -1,4 +1,4 @@
-(**** start.gcode for The Replicator, dual material ****)
+(**** start.gcode for The Replicator, Dualstrusion! ****)
 M73 P0 (enable build progress)
 G21 (set units to mm)
 G90 (set positioning to absolute)
@@ -24,5 +24,6 @@ M6 T0
 M6 T1
 G0 X105 Y-70 (Position Nozzle)
 G0 Z0.6     (Position Height)
-G1 F600 A4 B4
+G1 A5.0 B5.0 F600 (Extrude 5mm)
+G04 P1000 (Wait)
 (**** end of start.gcode ****)
