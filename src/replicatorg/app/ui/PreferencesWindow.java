@@ -44,6 +44,7 @@ import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.SwingPythonSelector;
 import replicatorg.machine.MachineInterface;
+import replicatorg.machine.model.MachineType;
 import replicatorg.uploader.FirmwareUploader;
 
 /**
@@ -189,15 +190,16 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content.add(fontSizeField);
 		content.add(new JLabel("  (requires restart of ReplicatorG)"), "wrap");
 
-		addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp",false);
+		addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp", (machine.getMachineType() == MachineType.THE_REPLICATOR));
 		addCheckboxForPref(content,"Automatically connect to machine at startup","replicatorg.autoconnect",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
 		addCheckboxForPref(content,"Review GCode for potential toolhead problems before building","build.safetyChecks",true);
 		addCheckboxForPref(content,"Break Z motion into seperate moves (normally false)","replicatorg.parser.breakzmoves",false);
 		addCheckboxForPref(content,"Show starfield in model preview window","ui.show_starfield",false);
 		addCheckboxForPref(content,"Notifications in System tray","ui.preferSystemTrayNotifications",false);
-		addCheckboxForPref(content,"Show warning when building from model w/ existing gcode","build.showRegenCheck",true);
-		addCheckboxForPref(content, "use native avrdude for uploading code","uploader.useNative",false);	
+		addCheckboxForPref(content,"Automatically re-generate gcode when building from model view.","build.autoGenerateGcode",true);
+		addCheckboxForPref(content,"Use native avrdude for uploading code","uploader.useNative",false);
+
 		JPanel advanced = new JPanel();
 		content = advanced;
 		content.setLayout(new MigLayout("fill"));

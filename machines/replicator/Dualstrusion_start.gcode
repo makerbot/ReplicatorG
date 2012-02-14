@@ -24,6 +24,6 @@ M6 T0
 M6 T1
 G0 X105 Y-70 (Position Nozzle)
 G0 Z0.6     (Position Height)
-M108 R4.0   (Set Extruder Speed)
-G1 A5.0 B5.0 F600
+G1 A5.0 B5.0 F600 (Extrude 5mm)
+G04 P1000 (Wait)
 (**** end of start.gcode ****)

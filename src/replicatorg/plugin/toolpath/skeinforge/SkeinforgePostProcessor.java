@@ -69,15 +69,17 @@ public class SkeinforgePostProcessor {
 				final DefaultComboBoxModel model= new DefaultComboBoxModel(extruders);
 				
 				JComboBox input = new JComboBox(model);
-				final JCheckBox toolSwap = new JCheckBox("Always use");
+				final JCheckBox toolSwap = new JCheckBox("Use");
 				panel.add(toolSwap, "split");
 				panel.add(input, "split");
 				panel.add(new JLabel("extruder"), "wrap");
-
+				System.out.println("1" +toolSwap.isSelected());
 				ActionListener toolSelected = new ActionListener(){
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
+						System.out.println("2" +toolSwap.isSelected());
 						
+						Base.preferences.putBoolean("replicatorg.skeinforge.setToolheadOrientation", toolSwap.isSelected());
 						if(toolSwap.isSelected()) {
 							if(model.getSelectedItem().equals(ToolheadAlias.LEFT.guiName)) {
 								processor.toolheadTarget = ToolheadAlias.LEFT;
@@ -96,10 +98,13 @@ public class SkeinforgePostProcessor {
 				};
 				input.addActionListener(toolSelected);
 				toolSwap.addActionListener(toolSelected);
-				toolSelected.actionPerformed(null);
 
+				System.out.println("3" +toolSwap.isSelected());
+				toolSwap.setSelected(Base.preferences.getBoolean("replicatorg.skeinforge.setToolheadOrientation", true));
 				model.setSelectedItem(value);
-				
+//				toolSelected.actionPerformed(null);
+
+				System.out.println("4" +toolSwap.isSelected());
 				input.setToolTipText("select which extruder this gcode prints on");
 			}
 		}
