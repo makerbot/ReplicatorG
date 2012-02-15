@@ -18,8 +18,8 @@ Infill Begin Rotation Repeat (layers):	1
 Infill Interior Density over Exterior Density (ratio):	0.9
 Infill Odd Layer Extra Rotation (degrees):	90.0
 Grid Circular	False
-Grid Hexagonal	False
-Grid Rectangular	True
+Grid Hexagonal	True
+Grid Rectangular	False
 Line	False
 Infill Perimeter Overlap (ratio):	0.32
 Infill Solidity (ratio):	0.1
