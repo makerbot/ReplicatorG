@@ -342,7 +342,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	public boolean configure(Frame parent, String name)
 	{
 		if (name == null)
-			name = "Generating gcode";
+			name = "Generate GCode";
 		
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
@@ -359,6 +359,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		if(parent != null)
 			parent.setName(name);
 		cd = new ConfigurationDialog(parent, this);
+		cd.setName(name);
+		cd.setTitle(name);
 
 		if (Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false)) {
 			
@@ -391,9 +393,6 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 		//cd.setSize(500, 760);
 		configure(parent, name);
-
-		cd.setName(name);
-		cd.setTitle(name);
 		
 		if (x == -1 || y == -1) {
 			double x2 = parent.getBounds().getCenterX();

@@ -84,6 +84,7 @@ class ConfigurationDialog extends JDialog {
 
 	public ConfigurationDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
 		super(parent, true);
+
 		parentGenerator = parentGeneratorIn;
 		setTitle("GCode Generator");
 		setLayout(new MigLayout("aligny, top, ins 5, fill"));

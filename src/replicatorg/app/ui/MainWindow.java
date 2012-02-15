@@ -105,7 +105,6 @@ import javax.swing.undo.UndoManager;
 import net.iharder.dnd.FileDrop;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.app.util.StreamLoggerThread;
 import replicatorg.app.Base.InitialOpenBehavior;
 import replicatorg.app.MRUList;
 import replicatorg.app.gcode.GCodeEnumeration;
@@ -120,6 +119,7 @@ import replicatorg.app.ui.modeling.EditingModel;
 import replicatorg.app.ui.modeling.PreviewPanel;
 import replicatorg.app.ui.onboard.OnboardParametersWindow;
 import replicatorg.app.util.PythonUtils;
+import replicatorg.app.util.StreamLoggerThread;
 import replicatorg.app.util.SwingPythonSelector;
 import replicatorg.app.util.serial.Name;
 import replicatorg.app.util.serial.Serial;
@@ -249,8 +249,6 @@ ToolpathGenerator.GeneratorListener
 	private boolean preheatMachine = false;
 	
 	PreferencesWindow preferences;
-	
-	// boolean presenting;
 
 	// undo fellers
 	JMenuItem undoItem, redoItem;
@@ -1135,7 +1133,7 @@ ToolpathGenerator.GeneratorListener
 	}
 
 	JMenuItem onboardParamsItem = new JMenuItem("Onboard Preferences...");
-	JMenuItem toolheadIndexingItem = new JMenuItem("Set Toolhead Index...");
+//	JMenuItem toolheadIndexingItem = new JMenuItem("Set Toolhead Index...");
 	JMenuItem realtimeControlItem = new JMenuItem("Open real time controls window...");
 	JMenuItem infoPanelItem = new JMenuItem("Machine information...");
 	JMenuItem preheatItem;
@@ -1169,14 +1167,14 @@ ToolpathGenerator.GeneratorListener
 		onboardParamsItem.setVisible(false);
 		menu.add(onboardParamsItem);
 
-		toolheadIndexingItem.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent arg0) {
-				handleToolheadIndexing();
-			}
-		});
-
-		toolheadIndexingItem.setVisible(false);
-		menu.add(toolheadIndexingItem);
+//		toolheadIndexingItem.addActionListener(new ActionListener(){
+//			public void actionPerformed(ActionEvent arg0) {
+//				handleToolheadIndexing();
+//			}
+//		});
+//
+//		toolheadIndexingItem.setVisible(false);
+//		menu.add(toolheadIndexingItem);
 
 		realtimeControlItem.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
@@ -2254,12 +2252,12 @@ ToolpathGenerator.GeneratorListener
 		onboardParamsItem.setEnabled(showParams);
 		preheatItem.setEnabled(evt.getState().isConnected() && !building);
 		
-		boolean showIndexing = 
-			evt.getState().isConfigurable() &&
-			machineLoader.getDriver() instanceof MultiTool &&
-			((MultiTool)machineLoader.getDriver()).toolsCanBeReindexed() &&
-			machineLoader.getMachineInterface().getMachineType() != MachineType.THE_REPLICATOR;
-		toolheadIndexingItem.setVisible(showIndexing);
+//		boolean showIndexing = 
+//			evt.getState().isConfigurable() &&
+//			machineLoader.getDriver() instanceof MultiTool &&
+//			((MultiTool)machineLoader.getDriver()).toolsCanBeReindexed() &&
+//			machineLoader.getMachineInterface().getMachineType() != MachineType.THE_REPLICATOR;
+//		toolheadIndexingItem.setVisible(showIndexing);
 
 		boolean showRealtimeTuning = 
 			evt.getState().isConnected() &&

@@ -152,9 +152,9 @@ public class ToolpathGeneratorFactory {
 
 				// This will be done by the SkeinforgePostProcessor
 				SkeinforgeBooleanPreference bookendPref = 	
-					new SkeinforgeBooleanPreference("Use machine-specific start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
+					new SkeinforgeBooleanPreference("Use default start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
 						"<html>Use the start and end.gcode defined in machines/*.xml for the currently selected machine.<br/>" +
-						"If unchecked, uses start and end.gcode in the skeinforge profile.</html>");
+						"Uncheck this to use custom start and end.gcode from the skeinforge profile.</html>");
 				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
 				bookendPref.addTrueOption(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
 				final JCheckBox bookendBox = (JCheckBox)bookendPref.getUI();
@@ -257,7 +257,7 @@ public class ToolpathGeneratorFactory {
 		class Skeinforge47 extends SkeinforgeGenerator {
 
 			{
-				displayName = "Skeinforge (47) - experimental";
+				displayName = "Skeinforge (47)";
 			}
 			
 			public File getDefaultSkeinforgeDir() {
@@ -303,9 +303,9 @@ public class ToolpathGeneratorFactory {
 					
 				// This will be done by the SkeinforgePostProcessor
 				SkeinforgeBooleanPreference bookendPref = 	
-					new SkeinforgeBooleanPreference("Use machine-specific start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
+					new SkeinforgeBooleanPreference("Use default start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
 						"<html>Use the start and end.gcode defined in machines/*.xml for the currently selected machine.<br/>" +
-						"If unchecked, uses start and end.gcode in the skeinforge profile.</html>");
+						"Uncheck this to use custom start and end.gcode from the skeinforge profile.</html>");
 				bookendPref.addTrueOption(new SkeinforgeOption("alteration.csv", "Name of Start File:", ""));
 				bookendPref.addTrueOption(new SkeinforgeOption("alteration.csv", "Name of End File:", ""));
 				final JCheckBox bookendBox = (JCheckBox)bookendPref.getUI();
