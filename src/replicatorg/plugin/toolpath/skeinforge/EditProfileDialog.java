@@ -61,7 +61,7 @@ class EditProfileDialog extends JDialog {
 		for (Profile p : profiles) {
 			
 			// Check that this profile says it's for this machine
-			if(displayProfile(p))
+			if(ProfileUtils.shouldDisplay(p) || filterBox.isSelected())
 				model.addElement(p.toString());
 			if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
 			{
@@ -80,19 +80,6 @@ class EditProfileDialog extends JDialog {
 		}			
 	}
 
-	//used to check if we want to display a specific profile, based on selected machine, etc.
-	private boolean displayProfile(Profile p) {
-
-		String selectedMachine = Base.preferences.get("machine.name", "no machine selected");
-		
-		if("no machine selected".equals(selectedMachine) ||
-			filterBox.isSelected() ||
-			p.getTargetMachines().isEmpty()  || // if the profile specifies no targets
-			p.getTargetMachines().contains(selectedMachine)) // if the profile targets the selected machine
-			return true;
-		return false;
-	}
-
 	/**
 	 * Help reduce effects of miserable memory leak.
 	 * see declarations above.
@@ -108,15 +95,6 @@ class EditProfileDialog extends JDialog {
 	}
 
 	final JList prefList = new JList();
-
-	private Profile getListedProfile(int idx) {
-		String selected = (String)prefList.getModel().getElementAt(idx);
-		for(Profile p : profiles)
-			if(selected.equals(p.toString()))
-				return p;
-		Base.logger.severe("Could not find profile! The programmer has done something foolish.");
-		return null;
-	}
 
 	public EditProfileDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
 		super(parent, true);
@@ -161,7 +139,7 @@ class EditProfileDialog extends JDialog {
 		        JList list = (JList)evt.getSource();
 		        if (evt.getClickCount() == 2) { // Double-click generates with this profile
 		            int idx = list.locationToIndex(evt.getPoint());
-		            Profile p = getListedProfile(idx);
+		            Profile p = ProfileUtils.getListedProfile(list.getModel(), profiles, idx);
 					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 					parentGenerator.configSuccess = true;
 					parentGenerator.profile = p.getFullPath();
@@ -179,7 +157,7 @@ class EditProfileDialog extends JDialog {
 				{
 					int idx = prefList.getSelectedIndex();
 					Base.logger.fine("idx="+idx);
-					Profile p = getListedProfile(idx);
+					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 					parentGenerator.configSuccess = true;
 					parentGenerator.profile = p.getFullPath();
@@ -209,7 +187,7 @@ class EditProfileDialog extends JDialog {
 					JOptionPane.showMessageDialog(parent,
 							"Select a profile to edit.");
 				} else {
-					Profile p = getListedProfile(idx);
+					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					parentGenerator.editProfile(p);
 				}
 			}
@@ -222,7 +200,7 @@ class EditProfileDialog extends JDialog {
 				String newName = JOptionPane.showInputDialog(parent,
 						"Name your new profile:");
 				if (newName != null) {
-					Profile p = getListedProfile(idx);
+					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					Profile newp = parentGenerator.duplicateProfile(p, newName);
 					loadList(prefList);
 					// Select new profile
@@ -238,7 +216,7 @@ class EditProfileDialog extends JDialog {
 				int idx = prefList.getSelectedIndex();
 				if (idx == -1) {
 				} else {
-					Profile p = getListedProfile(idx);
+					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					boolean result = new ProfileUtils().openFolder(p);
 					Base.logger.log(Level.FINEST,
 							"Opening directory for profile: "+ result);
@@ -251,7 +229,7 @@ class EditProfileDialog extends JDialog {
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
-				Profile p = getListedProfile(idx);
+				Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 				
 				int userResponse = JOptionPane.showConfirmDialog(null,
 						"Are you sure you want to delete profile " 
