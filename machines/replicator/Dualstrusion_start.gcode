@@ -25,5 +25,6 @@ M6 T1
 G0 X105 Y-70 (Position Nozzle)
 G0 Z0.6     (Position Height)
 G1 A5.0 B5.0 F600 (Extrude 5mm)
+G92 A0 B0 (Reset extrusion distance)
 G04 P1000 (Wait)
 (**** end of start.gcode ****)
