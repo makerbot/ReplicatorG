@@ -484,7 +484,10 @@ public class DualStrusionWindow extends JFrame{
 				}
 				
 			});
-			tgt.setDualStrusionSupportFlag(true, 200, 300, stl.getName());
+			if(tool == ToolheadAlias.LEFT)
+				tgt.setDualStrusionSupportFlag(true, 200, 300, stl.getName());
+			else
+				tgt.setDualStrusionSupportFlag(true, 500, 300, stl.getName());
 
 			Base.logger.log(Level.FINE, "Init finished, starting conversion");
 			
