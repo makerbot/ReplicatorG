@@ -226,6 +226,7 @@ ToolpathGenerator.GeneratorListener
 
 	JMenuItem saveMenuItem;
 	JMenuItem saveAsMenuItem;
+	JMenuItem generateItem;
 	JMenuItem stopItem;
 	JMenuItem pauseItem;
 	JMenuItem controlPanelItem;
@@ -233,6 +234,9 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem profilesMenuItem;
 	JMenuItem dualstrusionItem;
 	JMenuItem combineItem;
+	JMenuItem editDualstartItem;
+	JMenuItem editStartItem;
+	JMenuItem editEndItem;
 	JMenu changeToolheadMenu = new JMenu("Swap Toolhead in .gcode");
 
 	
@@ -1003,6 +1007,14 @@ ToolpathGenerator.GeneratorListener
 		item.setEnabled(false);
 		menu.add(item);
 
+		generateItem = newJMenuItem("Generate", 'G', true);
+		generateItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				runToolpathGenerator(false);
+			}
+		});
+		menu.add(generateItem);
+
 		buildMenuItem = newJMenuItem("Build", 'B');
 		buildMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -1128,6 +1140,43 @@ ToolpathGenerator.GeneratorListener
 		menu.add(combineItem);
 		combineItem.setEnabled(true);
 */
+		menu.addSeparator();
+
+		editDualstartItem = new JMenuItem("Edit Dual-Start gcode");
+		editDualstartItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
+					File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
+					if(dualstart != null)
+						handleOpenFile(dualstart);
+				}
+			}
+		});
+		menu.add(editDualstartItem);
+
+		editStartItem = new JMenuItem("Edit Start gcode");
+		editStartItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
+					File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
+					if(start != null)
+						handleOpenFile(start);
+				}
+			}
+		});
+		menu.add(editStartItem);
+		
+		editEndItem = new JMenuItem("Edit End gcode");
+		editEndItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
+					File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
+					if(end != null)
+						handleOpenFile(end);
+				}
+			}
+		});
+		menu.add(editEndItem);
 		
 		return menu;
 	}
@@ -2239,6 +2288,7 @@ ToolpathGenerator.GeneratorListener
 		}
 
 		boolean hasGcode = getBuild().getCode() != null;
+		boolean hasModel = getBuild().getModel() != null;
 
 		//		serialMenu.setEnabled(!evt.getState().isConnected());
 		//		machineMenu.setEnabled(!evt.getState().isConnected());
@@ -2251,6 +2301,20 @@ ToolpathGenerator.GeneratorListener
 		onboardParamsItem.setVisible(showParams);
 		onboardParamsItem.setEnabled(showParams);
 		preheatItem.setEnabled(evt.getState().isConnected() && !building);
+		generateItem.setEnabled(hasModel && !building);
+
+		if(machineLoader.getMachineInterface() != null) {
+			File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
+			editDualstartItem.setEnabled(dualstart != null);
+		}
+		if(machineLoader.getMachineInterface() != null) {
+			File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
+			editStartItem.setEnabled(start != null);
+		}
+		if(machineLoader.getMachineInterface() != null) {
+			File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
+			editEndItem.setEnabled(end != null);
+		}
 		
 //		boolean showIndexing = 
 //			evt.getState().isConfigurable() &&
@@ -2784,6 +2848,7 @@ ToolpathGenerator.GeneratorListener
 			setModel(build.getModel());
 			updateBuild();
 			buttons.updateFromMachine(machineLoader.getMachineInterface());
+			generateItem.setEnabled(build.getModel() != null);
 			if (null != path) {
 				handleOpenPath = path;
 				mruList.update(path);
