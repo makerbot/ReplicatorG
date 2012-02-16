@@ -73,11 +73,10 @@ public class SkeinforgePostProcessor {
 				panel.add(toolSwap, "split");
 				panel.add(input, "split");
 				panel.add(new JLabel("extruder"), "wrap");
-				System.out.println("1" +toolSwap.isSelected());
+
 				ActionListener toolSelected = new ActionListener(){
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
-						System.out.println("2" +toolSwap.isSelected());
 						
 						Base.preferences.putBoolean("replicatorg.skeinforge.setToolheadOrientation", toolSwap.isSelected());
 						if(toolSwap.isSelected()) {
@@ -99,12 +98,9 @@ public class SkeinforgePostProcessor {
 				input.addActionListener(toolSelected);
 				toolSwap.addActionListener(toolSelected);
 
-				System.out.println("3" +toolSwap.isSelected());
 				toolSwap.setSelected(Base.preferences.getBoolean("replicatorg.skeinforge.setToolheadOrientation", true));
 				model.setSelectedItem(value);
-//				toolSelected.actionPerformed(null);
 
-				System.out.println("4" +toolSwap.isSelected());
 				input.setToolTipText("select which extruder this gcode prints on");
 			}
 		}
