@@ -248,7 +248,25 @@ public class Base {
 		return dir;
 	}
 	
+	/** 
+	 * Retrieves the application data directory via OS specific voodoo.
+	 * Defaults to the current directory if no os specific settings exist, 
+	 * @return File object pointing to the OS specific ApplicationsDirectory
+	 */
 	static public File getApplicationDirectory() {
+		if( isMacOS() ) { 
+			try { 
+				File x = new File(".");
+				String baseDir = x.getCanonicalPath();
+				baseDir = baseDir + "/ReplicatorG.app/Contents/Resources";
+				//Base.logger.severe("OSX AppDir at " + baseDir );
+				//we want to use ReplicatorG.app/Content as our app dir.
+				return new File(baseDir);
+			}
+			catch (java.io.IOException e) {
+				// This space intentionally left blank. Fall through.
+			}
+		}
 		return new File(System.getProperty("user.dir"));
 	}
 	

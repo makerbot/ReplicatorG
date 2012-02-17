@@ -180,6 +180,7 @@
 	<target name="dist-macosx" depends="jar" description="Builds OS X ReplicatorG distribution">
 		<property name="target.dir"   value="dist/macosx/${release.name}"/>
 		<property name="dist.dir"     value="build/macosx/dist"/>
+		<property name="reso.dir"     value="dist/macosx/${release.name}/ReplicatorG.app/Contents/Resources"/>
 
 		<taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
 		<antcall target="dist-common-plain"/>
@@ -211,13 +212,43 @@
 			<javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
 			<javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
 		</jarbundler>
-		<copy todir="${target.dir}">
+		<copy todir="${reso.dir}">
 			<fileset dir="${dist.dir}" includes="drivers/*.dmg"/>
 		</copy>
-		<copy todir="${target.dir}/tools">
+		<copy todir="${reso.dir}/tools">
 			<filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
 		</copy>
-		<chmod file="${target.dir}/tools/avrdude" perm="ugo+rx"/>
+
+		<copy todir="${reso.dir}">
+			<filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt"/>
+		</copy>
+		<copy todir="${reso.dir}/skein_engines">
+			<fileset dir="skein_engines" excludes="*.pyc"/>
+		</copy>
+		<copy todir="${reso.dir}/machines">
+			<fileset dir="machines"/>
+		</copy>
+		<copy todir="${reso.dir}/examples">
+			<fileset dir="examples"/>
+		</copy>
+		<copy todir="${reso.dir}/scripts">
+			<fileset dir="scripts"/>
+		</copy>
+		<copy todir="${reso.dir}/docs">
+			<fileset dir="docs/" excludes="HOWTO-add-new-skeinforge.txt,overview.odg"/>
+		</copy>
+		<!-- delete the copies in the base dir, to make installer build easier -->
+		<delete dir="${target.dir}/docs"/>
+		<delete dir="${target.dir}/examples"/>
+		<delete dir="${target.dir}/machines"/>
+		<delete dir="${target.dir}/scripts"/>
+		<delete dir="${target.dir}/skein_engines"/>
+		<delete file="${target.dir}/todo.txt"/>
+		<delete file="${target.dir}/contributors.txt"/>
+		<delete file="${target.dir}/readme.txt"/>
+		<delete file="${target.dir}/license.txt"/>
+
+		<chmod file="${reso.dir}/tools/avrdude" perm="ugo+rx"/>
 		<!-- This process is now done manually and the resulting file is checked in to allow for the package to be build on other OS'es.
     <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
       <arg value="-remove"/>
