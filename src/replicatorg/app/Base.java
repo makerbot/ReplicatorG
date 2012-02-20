@@ -258,11 +258,14 @@ public class Base {
 			try { 
 				File x = new File(".");
 				String baseDir = x.getCanonicalPath();
-				baseDir = baseDir + "/ReplicatorG.app/Contents/Resources";
+				//baseDir = baseDir + "/ReplicatorG.app/Contents/Resources";
 				//Base.logger.severe("OSX AppDir at " + baseDir );
 				//we want to use ReplicatorG.app/Content as our app dir.
-				return new File(baseDir);
-			}
+				if(new File(baseDir + "/ReplicatorG.app/Contents/Resources").exists())
+					return new File(baseDir + "/ReplicatorG.app/Contents/Resources");
+				else
+					return new File(baseDir);
+				}
 			catch (java.io.IOException e) {
 				// This space intentionally left blank. Fall through.
 			}
@@ -271,7 +274,11 @@ public class Base {
 	}
 	
 	static public File getApplicationFile(String path) {
-		return new File(getApplicationDirectory(),path);
+		File f = new File(getApplicationDirectory(),path);
+		if(f.exists())
+			return f;
+		else
+			return new File(path);
 	}
 
 	static public File getUserFile(String path) {
