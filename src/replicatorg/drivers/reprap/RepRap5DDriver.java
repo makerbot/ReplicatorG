@@ -882,6 +882,22 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 			} else if (line.startsWith("t:") || line.startsWith("c:")) {
 				// temperature, position handled above
+			} else if (line.startsWith("x:")) {
+				// ToDo: fix firmware to send an ok: first
+				Pattern r = Pattern.compile("x:?([-0-9\\.]+) *y:?([-0-9\\.]+) *z:?([-0-9\\.]+)");
+				Matcher m = r.matcher(line);
+				if (m.find()) {
+					double x = Double.parseDouble(m.group(1));
+					double y = Double.parseDouble(m.group(2));
+					double z = Double.parseDouble(m.group(3));
+					// super to avoid parroting back a G92
+					try {
+						super.setCurrentPosition(new Point5d(x, y, z));
+						//Base.logger.fine("setting currentposition to:"+x+","+y+","+z+".");
+					} catch (RetryException e) {
+						// do or do not, there is no retry
+					}
+				}
 			} else {
 				Base.logger.severe("Unknown: " + line);
 			}
@@ -1048,16 +1064,20 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		super.setMotorRPM(rpm, toolhead);
 	}
 
-	public void setMotorSpeedPWM(int pwm) throws RetryException {
+	@Override
+	public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		if (fiveD == false)
 		{
 			sendCommand(_getToolCode() + "M108 S" + df.format(pwm));
 		}
 
-		super.setMotorSpeedPWM(pwm);
+		super.setMotorSpeedPWM(pwm, toolhead);
 	}
 	
-	public synchronized void enableMotor() throws RetryException {
+	@Override
+	public synchronized void enableMotor(int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		String command = _getToolCode();
 
 		if (fiveD == false)
@@ -1076,31 +1096,34 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			extrusionUpdater.startExtruding();
 		}
 
-		super.enableMotor();
+		super.enableMotor(toolhead);
 	}
 
 	/**
 	 * Unified enable+delay+disable to allow us to use G1 E
 	 */
-	public synchronized void enableMotor(long millis) throws RetryException {
+	@Override
+	public synchronized void enableMotor(long millis, int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		if (fiveD == false)
 		{
-			super.enableMotor(millis);
+			super.enableMotor(millis, toolhead);
 		}
 		else
 		{
-			super.enableMotor();
+			super.enableMotor(toolhead);
 			double feedrate = machine.currentTool().getMotorSpeedRPM();
 			double distance = millis * feedrate / 60 / 1000;
 			if (machine.currentTool().getMotorDirection() != 1) {
 				distance *= -1;
 			}
 			sendCommand(_getToolCode() + "G1 E" + (ePosition.get() + distance) + " F" + feedrate);
-			super.disableMotor();
+			super.disableMotor(toolhead);
 		}
 	}
 
-	public void disableMotor() throws RetryException {
+	public void disableMotor(int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		if (fiveD == false)
 		{
 			sendCommand(_getToolCode() + "M103");
@@ -1110,20 +1133,23 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			extrusionUpdater.stopExtruding();
 		}
 
-		super.disableMotor();
+		super.disableMotor(toolhead);
 	}
 
 	/***************************************************************************
 	 * Spindle interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setSpindleRPM(double rpm) throws RetryException {
+	public void setSpindleRPM(double rpm, int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		sendCommand(_getToolCode() + "S" + df.format(rpm));
 
-		super.setSpindleRPM(rpm);
+		super.setSpindleRPM(rpm, toolhead);
 	}
 
-	public void enableSpindle() throws RetryException {
+	@Override
+	public void enableSpindle(int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		String command = _getToolCode();
 
 		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
@@ -1133,40 +1159,54 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 		sendCommand(command);
 
-		super.enableSpindle();
+		super.enableSpindle(toolhead);
 	}
 
-	public void disableSpindle() throws RetryException {
+	public void disableSpindle(int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		sendCommand(_getToolCode() + "M5");
 
-		super.disableSpindle();
+		super.disableSpindle(toolhead);
 	}
 
 	/***************************************************************************
 	 * Temperature interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setTemperature(double temperature) throws RetryException {
+	@Override
+	public void setTemperature(double temperature, int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		sendCommand(_getToolCode() + "M104 S" + df.format(temperature));
 
-		super.setTemperature(temperature);
+		super.setTemperature(temperature, toolhead);
 	}
 
-	public void readTemperature() {
+	public void readTemperature(int toolhead) {
+		// only one toolhead, ignore parameter
 		sendCommand(_getToolCode() + "M105");
 
-		super.readTemperature();
+		super.readTemperature(toolhead);
 	}
 
-	public double getPlatformTemperature(){
+	@Override
+	public double getPlatformTemperature(int toolhead){
+		// only one toolhead, ignore parameter
 		return machine.currentTool().getPlatformCurrentTemperature();
 	}
 
-	public void setPlatformTemperature(double temperature) throws RetryException {
+	@Override
+	public void setPlatformTemperature(double temperature, int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		sendCommand(_getToolCode() + "M140 S" + df.format(temperature));
 		
-		super.setPlatformTemperature(temperature);
+		super.setPlatformTemperature(temperature, toolhead);
 	}
+
+	@Override
+	public void readAllTemperatures() {
+		readTemperature(-1);
+	}
+
 	/***************************************************************************
 	 * Flood Coolant interface functions
 	 **************************************************************************/
@@ -1201,32 +1241,36 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * Fan interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void enableFan() throws RetryException {
+	public void enableFan(int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		sendCommand(_getToolCode() + "M106");
 
-		super.enableFan();
+		super.enableFan(toolhead);
 	}
 
-	public void disableFan() throws RetryException {
+	public void disableFan(int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		sendCommand(_getToolCode() + "M107");
 
-		super.disableFan();
+		super.disableFan(toolhead);
 	}
 
 	/***************************************************************************
 	 * Valve interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void openValve() throws RetryException {
+	public void openValve(int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		sendCommand(_getToolCode() + "M126");
 
-		super.openValve();
+		super.openValve(toolhead);
 	}
 
-	public void closeValve() throws RetryException {
+	public void closeValve(int toolhead) throws RetryException {
+		// only one toolhead, ignore parameter
 		sendCommand(_getToolCode() + "M127");
 
-		super.closeValve();
+		super.closeValve(toolhead);
 	}
 
 	/***************************************************************************
