@@ -390,7 +390,7 @@ public class ControlPanelWindow extends JFrame implements
 			try {
 				while (true) {
 					machine.runCommand(new replicatorg.drivers.commands.UpdateManualControl());
-					// driver.readTemperature();
+					machine.runCommand(new replicatorg.drivers.commands.ReadTemperature());
 					Thread.sleep(700);  // update every .7 s
 				}
 			} catch (InterruptedException e) {
