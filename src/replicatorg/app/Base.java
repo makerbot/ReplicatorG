@@ -274,11 +274,7 @@ public class Base {
 	}
 	
 	static public File getApplicationFile(String path) {
-		File f = new File(getApplicationDirectory(),path);
-		if(f.exists())
-			return f;
-		else
-			return new File(path);
+		return new File(getApplicationDirectory(), path);
 	}
 
 	static public File getUserFile(String path) {
