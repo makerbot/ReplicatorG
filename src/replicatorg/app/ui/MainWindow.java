@@ -880,8 +880,7 @@ ToolpathGenerator.GeneratorListener
 				if(java.awt.Desktop.isDesktopSupported())
 				{
 					try {
-						File toOpen = new File("docs/replicat.org/index.html");
-						java.awt.Desktop.getDesktop().browse(toOpen.toURI());
+						java.awt.Desktop.getDesktop().browse(Base.getApplicationFile("docs/replicat.org/index.html").toURI());
 					} catch (IOException e) {
 						Base.logger.log(Level.WARNING, "Could not load offline documentation.");
 					}
