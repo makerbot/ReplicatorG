@@ -386,11 +386,11 @@ public class MachineModel
 			String startLocation = XML.getAttributeValue(bookend, "start");
 			String endLocation = XML.getAttributeValue(bookend, "end");
 			if(dualstartLocation != null) 
-				dualstartBookendCode = new File(Base.getLibContents(dualstartLocation));
+				dualstartBookendCode = Base.getApplicationFile(dualstartLocation);
 			if(startLocation != null) 
-				startBookendCode = new File(Base.getLibContents(startLocation));
+				startBookendCode = Base.getApplicationFile(startLocation);
 			if(endLocation != null) 
-				endBookendCode = new File(Base.getLibContents(endLocation));
+				endBookendCode = Base.getApplicationFile(endLocation);
 		}
 		else {
 			Base.logger.severe("No bookend metadata specified for this machine");
