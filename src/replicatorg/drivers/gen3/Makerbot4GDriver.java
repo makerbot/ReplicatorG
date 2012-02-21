@@ -173,7 +173,11 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
 	 */
 	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
-		machine.getTool(toolhead).setMotorSpeedRPM(rpm);
+	  if (toolhead == -1) {
+		  machine.currentTool().setMotorSpeedRPM(rpm);
+	  } else {
+	    machine.getTool(toolhead).setMotorSpeedRPM(rpm);
+	  }
 	}
 	
 	
