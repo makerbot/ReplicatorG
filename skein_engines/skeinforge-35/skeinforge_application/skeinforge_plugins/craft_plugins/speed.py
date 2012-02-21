@@ -166,6 +166,7 @@ class SpeedRepository:
 		self.bridgeFlowRateMultiplier = settings.FloatSpin().getFromValue( 0.8, 'Bridge Flow Rate Multiplier (ratio):', self, 1.2, 1.0 )
 		settings.LabelSeparator().getFromRepository(self)
 		settings.LabelDisplay().getFromName('- Duty Cyle -', self )
+		self.addPWM = settings.BooleanSetting().getFromValue('Add PWM:', self, True )
 		self.dutyCycleAtBeginning = settings.FloatSpin().getFromValue( 0.0, 'Duty Cyle at Beginning (portion):', self, 1.0, 1.0 )
 		self.dutyCycleAtEnding = settings.FloatSpin().getFromValue( 0.0, 'Duty Cyle at Ending (portion):', self, 1.0, 0.0 )
 		settings.LabelSeparator().getFromRepository(self)
@@ -222,7 +223,8 @@ class SpeedSkein:
 		self.parseInitialization()
 		for line in self.lines[self.lineIndex :]:
 			self.parseLine(line)
-		self.addParameterString('M113', self.repository.dutyCycleAtEnding.value ) # Set duty cycle .
+		if self.repository.addPWM.value:
+			self.addParameterString('M113', self.repository.dutyCycleAtEnding.value ) # Set duty cycle .
 		return self.distanceFeedRate.output.getvalue()
 
 	def getFlowRateString(self):
@@ -280,7 +282,8 @@ class SpeedSkein:
 		firstWord = splitLine[0]
 		if firstWord == '(<extrusion>)':
 			self.distanceFeedRate.addLine(line)
-			self.addParameterString('M113', self.repository.dutyCycleAtBeginning.value ) # Set duty cycle .
+			if self.repository.addPWM.value:
+				self.addParameterString('M113', self.repository.dutyCycleAtBeginning.value ) # Set duty cycle .
 			return
 		elif firstWord == 'G1':
 			line = self.getSpeededLine(line, splitLine)
