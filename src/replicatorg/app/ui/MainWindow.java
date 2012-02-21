@@ -1144,41 +1144,42 @@ ToolpathGenerator.GeneratorListener
 */
 		menu.addSeparator();
 
-		editDualstartItem = new JMenuItem("Edit Dual-Start gcode");
-		editDualstartItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
-					File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
-					if(dualstart != null)
-						handleOpenFile(dualstart);
-				}
-			}
-		});
-		menu.add(editDualstartItem);
+		/// Removed. Too late to add to build
+//		editDualstartItem = new JMenuItem("Edit Dual-Start gcode");
+//		editDualstartItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
+//					File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
+//					if(dualstart != null)
+//						handleOpenFile(dualstart);
+//				}
+//			}
+//		});
+//		menu.add(editDualstartItem);
 
-		editStartItem = new JMenuItem("Edit Start gcode");
-		editStartItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
-					File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
-					if(start != null)
-						handleOpenFile(start);
-				}
-			}
-		});
-		menu.add(editStartItem);
+//		editStartItem = new JMenuItem("Edit Start gcode");
+//		editStartItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
+//					File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
+//					if(start != null)
+//						handleOpenFile(start);
+//				}
+//			}
+//		});
+//		menu.add(editStartItem);
 		
-		editEndItem = new JMenuItem("Edit End gcode");
-		editEndItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
-					File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
-					if(end != null)
-						handleOpenFile(end);
-				}
-			}
-		});
-		menu.add(editEndItem);
+//		editEndItem = new JMenuItem("Edit End gcode");
+//		editEndItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
+//					File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
+//					if(end != null)
+//						handleOpenFile(end);
+//				}
+//			}
+//		});
+//		menu.add(editEndItem);
 		
 		return menu;
 	}
