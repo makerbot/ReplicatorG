@@ -58,6 +58,7 @@ import java.awt.print.PageFormat;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.Collections;
@@ -881,7 +882,8 @@ ToolpathGenerator.GeneratorListener
 				{
 					try {
 						File toOpen = new File("docs/replicat.org/index.html");
-						java.awt.Desktop.getDesktop().browse(toOpen.toURI());
+						URI uri = toOpen.toURI();
+						java.awt.Desktop.getDesktop().browse(uri);
 					} catch (IOException e) {
 						Base.logger.log(Level.WARNING, "Could not load offline documentation.");
 					}

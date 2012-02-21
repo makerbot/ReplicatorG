@@ -158,7 +158,7 @@ public class EditorHeader extends BGPanel implements ActionListener {
 		this.editor = mainWindow;
 
 		add(titleLabel);
-        add(linesLabel);
+		add(linesLabel);
 		backgroundColor = new Color(0x92, 0xA0, 0x6B);
 		textSelectedColor = Base.getColorPref("header.text.selected.color","#1A1A00");
 		textUnselectedColor = Base.getColorPref("header.text.unselected.color","#ffffff");
@@ -185,15 +185,15 @@ public class EditorHeader extends BGPanel implements ActionListener {
 	
 	void setBuild(Build build) {
 		removeTabs();
-        linesLabel.setText("");
+		linesLabel.setText("");
 		if (build.getModel() != null) {
 			addTabForElement(build,build.getModel());
 		}
 		if (build.getCode() != null) {
 			addTabForElement(build,build.getCode());
-            int lines = build.getLines();
-            if (0 < lines)
-                linesLabel.setText("(" + lines + " lines)");
+			int lines = build.getLines();
+			if (0 < lines)
+				linesLabel.setText("(" + lines + " lines)");
 		}
 		titleLabel.setText(build.getName());
 		validate();

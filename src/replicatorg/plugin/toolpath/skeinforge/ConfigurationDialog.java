@@ -107,6 +107,8 @@ class ConfigurationDialog extends JDialog {
 			add(preference.getUI(), "growx, wrap");
 		}
 		
+		generateButton.setToolTipText("Generates GCode instructions for your machine.");
+		
 		add(generateButton, "tag ok, split 2");
 		add(cancelButton, "tag cancel");
 		generateButton.addActionListener(new ActionListener() {
