@@ -279,7 +279,7 @@ public class DualStrusionConstruction
 					next = it.next();
 				}
 				//skip empty layers
-				if(!accumulate.isEmpty())
+				if(accumulate.size() > 1)
 					result.add(new Layer(layerHeight, accumulate));
 			}
 		}
