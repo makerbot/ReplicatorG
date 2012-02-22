@@ -228,7 +228,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				"Select the type of plastic to use during print");
 		
 		addTextParameter(materialPanel, "filamentDiameter",
-				"Filament Diameter (mm)", "1.77",
+				"Filament Diameter (mm)", "1.82",
 				"measure feedstock");
                 
                 // TODO: Tie the materialType to this text box, so that switching the puldown changes this default
@@ -267,7 +267,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				setValue("numberOfShells", "1");
 				setValue("desiredFeedrate", "40");
 				setValue("travelFeedrate", "55");
-				setValue("filamentDiameter", "1.77");
+				setValue("filamentDiameter", "1.82");
 				setValue("packingDensity", "85");
 				setValue("desiredPathWidth", ".4");
 					
