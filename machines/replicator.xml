@@ -1,0 +1,64 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+<machine experimental="0">
+		<name>The Replicator Dual</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="227" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="148" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="150" maxfeedrate="1400" homingfeedrate="1100" stepspermm="400" endstops="min"/> <!-- Actual length is 157mm, we reserve ~5mm for safety. TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
+			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
+		</geometry>
+		<tools>
+			<tool name="Mk8 Left" model="Mk8" diameter="0.4" stepper_axis="b" index="1" type="extruder" motor="true" fan="true"  heatedplatform="false" motor_steps="3200" default_rpm="3" heater="true"/>
+			<tool name="Mk8 Right" model="Mk8" diameter="0.4" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
+		</tools>
+		<wipes>
+			<wipe index="0" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+			<wipe index="1" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+		</wipes>
+		<clamps></clamps>
+		<driver name="mightyboard">
+			<!-- optional: <portname>COM1</portname> -->
+			<rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+M18 (Turn off steppers after a build.)
+		</cooldown>
+		<bookend dualstart="machines/replicator/Dualstrusion_start.gcode" start="machines/replicator/Dual_Head_start.gcode" end="machines/replicator/end.gcode"/>
+	</machine>
+<machine experimental="0">
+		<name>The Replicator Single</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="227" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="148" maxfeedrate="5000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="z" length="150" maxfeedrate="1400" homingfeedrate="1100" stepspermm="400" endstops="min"/> <!-- Actual length is 157mm, we reserve ~5mm for safety.TR-8x8 Z axis = 1/(8/1600) -->
+			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
+		</geometry>
+		<tools>
+			<tool name="Mk8" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
+		</tools>
+		<wipes>
+			<wipe index="0" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+			<wipe index="1" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+		</wipes>
+		<clamps></clamps>
+		<driver name="mightyboard">
+			<!-- optional: <portname>COM1</portname> -->
+			<rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+M18 (Turn off steppers after a build.)
+		</cooldown>
+		<bookend start="machines/replicator/Single_Head_start.gcode" end="machines/replicator/end.gcode"/>
+	</machine></machines>
+<!-- explanation of steps per mm:
+	 Steps/mm is calculated by dividing the 'drive gear steps per revolution' (in this case, equal to motor_steps) by the 'drive gear circumference' (drive gear diameter = 10.58)
+	 So we get: 3200/(PI*10.58) = 96.275...
+ -->

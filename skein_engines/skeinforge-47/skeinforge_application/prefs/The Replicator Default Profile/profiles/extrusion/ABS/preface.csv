@@ -1,0 +1,10 @@
+Format is tab separated preface settings.
+_Name                          	Value
+WindowPosition	700+0
+Open File for Preface	
+Meta:	
+Set Positioning to Absolute	False
+Set Units to Millimeters	False
+Start at Home	False
+Turn Extruder Off at Shut Down	False
+Turn Extruder Off at Start Up	False

@@ -170,9 +170,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		buildButton = makeButton("Build", "images/button-build.png");
 		add(buildButton);
 
-		playbackButton = makeButton("Build from SD card", "images/button-playback.png");
+		playbackButton = makeButton("Build from SD card currently in printer", "images/button-playback.png");
 		add(playbackButton);
-		fileButton = makeButton("Build to file", "images/button-to-file.png");
+		fileButton = makeButton("Build to file for use with SD card", "images/button-to-file.png");
 		add(fileButton);
 		generateButton = makeButton("Model to GCode", "images/button-to-gcode.png");
 		add(generateButton);
@@ -200,6 +200,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		statusLabel.setForeground(statusColor);
 		add(statusLabel, "gap unrelated");
 
+		playbackButton.setToolTipText("This will build an object from an SD card currently inserted in the printer");
+		fileButton.setToolTipText("This will generate an .s3g file that can be put on an SD card and printed locally on the printer.");
 		generateButton.setToolTipText("This will generate gcode for the currently open model.");
 		buildButton.setToolTipText("This will start building the object on the machine.");
 		pauseButton.setToolTipText("This will pause or resume the build.");
@@ -259,7 +261,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		} else if (e.getSource() == connectButton) {
 			editor.handleConnect();
 		} else if (e.getSource() == disconnectButton) {
-			editor.handleDisconnect(/*leavePreheatRunning=*/false);
+			editor.handleDisconnect(/*leavePreheatRunning=*/false, /*delete machine singleton*/false);
 		} else if (e.getSource() == rcButton) {
 			editor.handleRealTimeControl();
 		}

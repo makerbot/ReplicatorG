@@ -5,13 +5,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 
 import javax.swing.DefaultComboBoxModel;
@@ -26,25 +30,33 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.app.util.PythonUtils;
 import replicatorg.app.util.StreamLoggerThread;
+import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
 
 public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
-	boolean configSuccess = false;
+	{
+		displayName = "Skeinforge";
+	}
+	
+	public boolean configSuccess = false;
 	ConfigurationDialog cd;
 	String profile = null;
 	List <SkeinforgePreference> preferences;
-
+	
+	BuildCode output;
+	protected final SkeinforgePostProcessor postprocess;
+	
 	// "skein_engines/skeinforge-0006","sf_profiles");
 	public SkeinforgeGenerator() {
-		preferences = getPreferences();
+		postprocess = new SkeinforgePostProcessor(this);
 	}
 
 	public boolean runSanityChecks() {
 		String errors = "";
 		
-		for (SkeinforgePreference preference : preferences) {
+		for (SkeinforgePreference preference : getPreferences()) {
 			String error = preference.valueSanityCheck();
 			if( error != null) {
 				errors += error;
@@ -76,6 +88,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	static class Profile implements Comparable<Profile> {
 		private String fullPath;
 		private String name;
+		// targetMachines is a filter that will allow this profile to only be show for specified machines
+		private Set<String> targetMachines = new TreeSet<String>();
 
 		public Profile(String fullPath) {
 			this.fullPath = fullPath;
@@ -85,6 +99,29 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			} else {
 				name = fullPath;
 			}
+			
+			File targetsFile = new File(fullPath+File.separator+"targetMachines.csv");
+			if(targetsFile.exists()) {
+				try {
+					BufferedReader bir = new BufferedReader(new FileReader(targetsFile));
+					String curline = bir.readLine();
+					while (curline != null) {
+						targetMachines.addAll(Arrays.asList(curline.split(",")));
+						curline = bir.readLine();
+					}
+					bir.close();
+					
+					for(String machine : targetMachines)
+						machine = machine.trim();
+					
+				} catch (FileNotFoundException e) {
+					Base.logger.log(Level.FINEST, "Didn't find a targetMachines file in " + fullPath, e);
+				} catch (IOException e) {
+					Base.logger.log(Level.FINEST, "Didn't find a targetMachines file in " + fullPath, e);
+				}
+			} else {
+				
+			}
 		}
 
 		public String getFullPath() {
@@ -93,6 +130,10 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 		public String toString() {
 			return name;
+		}
+		
+		public Set<String> getTargetMachines() {
+			return targetMachines;
 		}
 
 		public int compareTo(Profile o) {
@@ -158,7 +199,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	 * A SkeinforgePreference describes a user-visible preference that appears in the 
 	 * configuration dialog.  SkeinforgePreferences should give a list of options
 	 * that will be set at runtime.
-	 * @param name The human-readable name of the preference.
+	 * @param displayName The human-readable name of the preference.
 	 * @param pereferenceName If you wish to cache the last selected value of this option in
 	 * the java application preferences, specify it here.
 	 * @param defaultState the default state of this preference, to be used if the
@@ -170,6 +211,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		public JComponent getUI();
 		public List<SkeinforgeOption> getOptions();
 		public String valueSanityCheck();
+		public String getName();
 	}
 	
 	public static class SkeinforgeChoicePreference implements SkeinforgePreference {
@@ -177,6 +219,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		private JPanel component;
 		private DefaultComboBoxModel model;
 		private String chosen;
+		private String name;
 		
 		public SkeinforgeChoicePreference(String name, final String preferenceName, String defaultState, String toolTip) {
 			component = new JPanel(new MigLayout("ins 5"));
@@ -186,6 +229,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			}
 			model = new DefaultComboBoxModel();
 			model.setSelectedItem(chosen);
+			this.name = name;
 			component.add(new JLabel(name));
 			JComboBox cb = new JComboBox(model);
 			component.add(cb);
@@ -230,6 +274,11 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			return null;
 		}
 
+		@Override
+		public String getName() {
+			return name;
+		}
+		
 	}
 	
 	protected static class SkeinforgeBooleanPreference implements SkeinforgePreference {
@@ -237,12 +286,14 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		private JCheckBox component;
 		private List<SkeinforgeOption> trueOptions = new LinkedList<SkeinforgeOption>();
 		private List<SkeinforgeOption> falseOptions = new LinkedList<SkeinforgeOption>();
+		private String name;
 		
 		public SkeinforgeBooleanPreference(String name, final String preferenceName, boolean defaultState, String toolTip) {
 			isSet = defaultState;
 			if (preferenceName != null) {
 				isSet = Base.preferences.getBoolean(preferenceName, defaultState);
 			}
+			this.name = name;
 			component = new JCheckBox(name, isSet);
 			component.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -275,6 +326,11 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		public String valueSanityCheck() {
 			return null;
 		}
+		
+		@Override
+		public String getName() {
+			return name;
+		}
 	}
 
 	/**
@@ -286,7 +342,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	public boolean configure(Frame parent, String name)
 	{
 		if (name == null)
-			name = "Generating gcode";
+			name = "Generate GCode";
 		
 		// First check for Python.
 		boolean hasPython = PythonUtils.interactiveCheckVersion(parent,
@@ -303,6 +359,19 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		if(parent != null)
 			parent.setName(name);
 		cd = new ConfigurationDialog(parent, this);
+		cd.setName(name);
+		cd.setTitle(name);
+
+		if (Base.preferences.getBoolean("replicatorg.skeinforge.printOMatic.enabled", false)) {
+			
+			//Figure out if we're looking to do a toolhead swap
+			String extruderChoice = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", "does not exist");
+			
+			if(extruderChoice.equalsIgnoreCase("right"))
+				postprocess.setToolheadTarget(ToolheadAlias.RIGHT);
+			else if(extruderChoice.equalsIgnoreCase("left"))
+				postprocess.setToolheadTarget(ToolheadAlias.LEFT);
+		}
 		return true;
 	}
 	
@@ -316,6 +385,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		cd.pack();
 		cd.setLocation(x, y);
 		cd.setVisible(true);
+		emitUpdate("Config Done");
 		return cd;
 	}
 	
@@ -323,9 +393,6 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 
 		//cd.setSize(500, 760);
 		configure(parent, name);
-
-		cd.setName(name);
-		cd.setTitle(name);
 		
 		if (x == -1 || y == -1) {
 			double x2 = parent.getBounds().getCenterX();
@@ -353,6 +420,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	{
 		configure(null, "");
 		configSuccess = cd.configureGenerator();
+		emitUpdate("Config Done");
 		return configSuccess;
 	}
 
@@ -485,7 +553,20 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 	}
 
-	abstract public List<SkeinforgePreference> getPreferences();
+
+	// renamed to actually reflect what it does, also making way for an internal getPrefs
+	abstract public List<SkeinforgePreference> initPreferences();
+	
+	public List<SkeinforgePreference> getPreferences()
+	{
+		if(preferences == null)
+			preferences = initPreferences();
+		return preferences;
+	}
+
+	public SkeinforgePostProcessor getPostProcessor() {
+		return postprocess;
+	}
 	
 	public BuildCode generateToolpath() {
 		String path = model.getPath();
@@ -497,7 +578,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		for (String arg : baseArguments) {
 			arguments.add(arg);
 		}
-		for (SkeinforgePreference preference : preferences) {
+		for (SkeinforgePreference preference : getPreferences()) {
 			List<SkeinforgeOption> options = preference.getOptions();
 			if (options != null) {
 				for (SkeinforgeOption option : options) {
@@ -508,7 +589,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			}
 		}
 		arguments.add(path);
-
+for(String a : arguments) System.out.println(a);
 		ProcessBuilder pb = new ProcessBuilder(arguments);
 		pb.directory(getSkeinforgeDir());
 		Process process = null;
@@ -550,6 +631,20 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 		int lastIdx = path.lastIndexOf('.');
 		String root = (lastIdx >= 0) ? path.substring(0, lastIdx) : path;
-		return new BuildCode(root, new File(root + ".gcode"));
+		output = new BuildCode(root, new File(root + ".gcode"));
+
+		if(postprocess != null)
+		{
+			Base.logger.log(Level.FINER, "pre-post-processor");
+			postprocess.runPostProcessing();
+			Base.logger.log(Level.FINER, "post-post-processor");
+		}
+		
+		return output;
+	}
+	
+	public BuildCode getGeneratedToolpath()
+	{
+		return output;
 	}
 }

@@ -2,7 +2,7 @@ package replicatorg.app.ui.modeling;
 
 import java.awt.Color;
 import java.util.Enumeration;
-
+import java.lang.Double;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingBox;
 import javax.media.j3d.BranchGroup;
@@ -22,6 +22,7 @@ import javax.vecmath.Vector3d;
 
 import replicatorg.app.Base;
 import replicatorg.app.ui.MainWindow;
+import replicatorg.machine.model.BuildVolume;
 import replicatorg.model.BuildModel;
 
 /**
@@ -241,6 +242,43 @@ public class EditingModel {
 		model.setTransform(old,"move",isNewOp());
 	}
 
+	/**
+	 * Width is the size of the object along the X axis
+	 * @return
+	 */
+	public double getWidth() {
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		getBoundingBox().getLower(lower);
+		getBoundingBox().getUpper(upper);
+
+		return upper.x - lower.x;
+	}
+	/**
+	 * Depth is the size of the object along the Y axis
+	 * @return
+	 */
+	public double getDepth() {
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		getBoundingBox().getLower(lower);
+		getBoundingBox().getUpper(upper);
+
+		return upper.y - lower.y;
+	}
+	/**
+	 * Height is the size of the object along the Z axis
+	 * @return
+	 */
+	public double getHeight() {
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		getBoundingBox().getLower(lower);
+		getBoundingBox().getUpper(upper);
+
+		return upper.z - lower.z;
+	}
+	
 	private BoundingBox getBoundingBox(Group group) {
 		return getBoundingBox(group, new Transform3D());
 	}
@@ -318,6 +356,35 @@ public class EditingModel {
 		model.setTransform(t,"resize",isNewOp());		
 	}
 	
+	public Double scaleMax() {
+		//center
+		putOnPlatform();
+		
+		//get each axis of model and calculate scalar to bounds
+		BoundingBox bb = getBoundingBox();
+		Point3d lower = new Point3d();
+		Point3d upper = new Point3d();
+		bb.getLower(lower);
+		bb.getUpper(upper);
+		
+		BuildVolume bv = mainWindow.previewPanel.buildVol;
+
+		Point3d size = new Point3d(upper.x - lower.x, upper.y - lower.y, upper.z - lower.z);
+		if(bv == null)
+		{
+			return Double.NaN;
+		}
+		//We shrink x and y a little bit, because slight calibration problems could cause problems.
+		Point3d scale = new Point3d(((double)bv.getX() -10)/size.x, ((double)bv.getY() -10)/size.y, ((double)bv.getZ())/size.z);
+//		Point3d scale = new Point3d(((double)bv.getX())/size.x, ((double)bv.getY())/size.y, ((double)bv.getZ())/size.z);
+		
+		//take least of those three, call scale for that value
+		Double newScale = new Double(Math.min(scale.x, Math.min(scale.y, scale.z)));
+		
+		scale(newScale.doubleValue(), true);
+
+		return newScale;
+	}
 
 	private BoundingBox getBoundingBox(Group group, Transform3D transformation) {
 		BoundingBox bb = new BoundingBox(new Point3d(Double.MAX_VALUE,Double.MAX_VALUE,Double.MAX_VALUE),

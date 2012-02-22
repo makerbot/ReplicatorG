@@ -19,9 +19,9 @@
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/thingomatic/start+ABP.gcode" end="machines/thingomatic/end+ABP.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ HBP and Extruder MK5</name>
@@ -43,9 +43,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/thingomatic/start.gcode" end="machines/thingomatic/end+DC.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ HBP and Extruder MK6</name>
@@ -68,9 +68,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/thingomatic/start+HBP+Stepstruder.gcode" end="machines/thingomatic/end+Stepstruder.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ ABP and Extruder MK6</name>
@@ -92,9 +92,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/thingomatic/start+ABP+Stepstruder.gcode" end="machines/thingomatic/end+ABP+Stepstruder.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ ABP and Stepstruder MK7</name>
@@ -116,11 +116,10 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/thingomatic/start+ABP+Stepstruder.gcode" end="machines/thingomatic/end+ABP+Stepstruder.gcode"/>		
 	</machine>
-
 	<machine>
 		<name>Thingomatic w/ HBP and Stepstruder MK7</name>
 		<geometry type="cartesian">
@@ -141,9 +140,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/thingomatic/start+HBP+Stepstruder.gcode" end="machines/thingomatic/end+Stepstruder.gcode"/>		
 	</machine>
 	<machine experimental="0">
 		<name>Thingomatic w/ HBP and Dual Stepstruder MK7</name>
@@ -160,13 +159,13 @@ M18
 			<tool name="Left (A)" index="1" type="extruder" motor="true" fan="false" heatedplatform="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
 		</tools>
 		<wipes>
-		<wipe index="0" X1="44.0" Y1="55.0" Z1="9" X2="44.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
-		<wipe index="1" X1="-36.0" Y1="55.0" Z1="9" X2="-45.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
-		<exclusion>
-		<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 1"/>
-		<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 2"/>
-		
-		</exclusion>
+			<wipe index="0" X1="44.0" Y1="55.0" Z1="9" X2="44.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
+			<wipe index="1" X1="-36.0" Y1="55.0" Z1="9" X2="-45.0" Y2="55.0" Z2="9" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="25.0"/>
+			<exclusion>
+			<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 1"/>
+			<exclusion_zone topleftback="x,y,z" bottomrightfront="x,y,z" reason="box 2"/>
+			
+			</exclusion>
 		</wipes>
 		<clamps></clamps>
 		<driver name="makerbot4ga">
@@ -176,9 +175,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend dualstart="machines/thingomatic/start+dual.gcode" start="machines/thingomatic/start+dual+single.gcode" end="machines/thingomatic/end+dual.gcode"/>		
 	</machine>
 	<machine>
 		<name>Thingomatic w/ Frostruder</name>
@@ -202,10 +201,10 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
-	</machine>
+<bookend start="machines/thingomatic/start+Frostruder.gcode" end="machines/thingomatic/end+Frostruder.gcode"/>
+</machine>
 	<machine experimental="1">
 		<name>EXPERIMENTAL - Thingomatic - 4 axes</name>
 		<geometry type="cartesian">
@@ -216,7 +215,7 @@ M18
 			<axis id="a" length="100" maxfeedrate="200" stepspermm="200" endstops="none"/>
 		</geometry>
 		<tools>
-			<tool name="Plastruder MK5" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" heater="true"/>
+			<tool name="Extruder" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" heater="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4g">
@@ -226,8 +225,8 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/thingomatic/start+Stepstruder.gcode" end="machines/thingomatic/end+Stepstruder.gcode"/>
 	</machine>
 </machines>

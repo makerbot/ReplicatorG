@@ -1,9 +1,11 @@
 package replicatorg.drivers;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 
 import replicatorg.machine.model.AxisId;
+import replicatorg.machine.model.ToolModel;
 
 
 public interface OnboardParameters {
@@ -16,21 +18,38 @@ public interface OnboardParameters {
 	//// Get a list of all toolheads for which we save onboard preferences
 	List<Integer> toolheadsWithStoredData();
 	
-	EnumSet<AxisId> getInvertedParameters();
-	void setInvertedParameters(EnumSet<AxisId> axes);
+	///Return a list of Axes that are flagged as inverted in the firmware
+	EnumSet<AxisId> getInvertedAxes();
+
+	/// Returns a set of Axes that are overridden or hijacked, 
+	/// and a string to indicate what they are overridden or hijacked for.
+	EnumMap<AxisId,String> getAxisAlises();
+	
+	void setInvertedAxes(EnumSet<AxisId> axes);
 	
 	String getMachineName();
 	void setMachineName(String machineName);
 	
+	/// Returns true if this machine can verify the connected hardware
+	/// is valid 
+	public boolean canVerifyMachine(); 
+	
+	/// Returns true if the connected machine is verified to be the 
+	/// proper type
+	public boolean verifyMachineId();
+
+	
 	double getAxisHomeOffset(int axis);
 	void setAxisHomeOffset(int axis, double d);
 	
+	
 	public enum EndstopType {
-		NOT_PRESENT((byte)0x00),
-		INVERTED((byte)0x9F),
-		NON_INVERTED((byte)0x80);
 		
-		final byte value;
+		NOT_PRESENT((byte)0x00), //no endstops present 
+		ALL_INVERTED((byte)0x9F),// 5 ends stops (bits 0:4) plus has_endstops flag (bit 7)
+		NON_INVERTED((byte)0x80); // only has_endstops flag (bit 7)
+		
+		final byte value; //byte flag for endstop inversion status
 		
 		EndstopType(byte value) {
 			this.value = value;
@@ -39,10 +58,12 @@ public interface OnboardParameters {
 		public byte getValue() { return value; }
 		
 		public static EndstopType endstopTypeForValue(byte value) {
-			if ((value & 1<<7) == 0) { return NOT_PRESENT; }
-			return ((value & 1) == 0)?NON_INVERTED:INVERTED;
+			if ((value & 1<<7) == 0) 
+			{ return NOT_PRESENT; }
+			return ((value & 1) == 0)?NON_INVERTED:ALL_INVERTED;
 		}
 	}
+	
 	
 	EndstopType getInvertedEndstops();
 	void setInvertedEndstops(EndstopType endstops);
@@ -53,6 +74,7 @@ public interface OnboardParameters {
 	 */
 	boolean hasFeatureOnboardParameters();
 		
+	
 	void createThermistorTable(int which, double r0, double t0, double beta, int toolIndex);
 	int getR0(int which, int toolIndex);
 	int getT0(int which, int toolIndex);
@@ -118,12 +140,23 @@ public interface OnboardParameters {
 	EstopType getEstopConfig();
 	void setEstopConfig(EstopType estop);
 
-	/** Reset the onboard parameters on the motherboard to factory settings. */ 
-	void resetToFactory();
+	/** Reset the onboard parameters on the motherboard to factory settings. 
+	 * @throws RetryException */ 
+	void resetSettingsToFactory() throws RetryException;
+
+	/** reset the onboard params to be totally blank */
+	void resetSettingsToBlank() throws RetryException;
 
 	/** Reset the onboard parameters on the extruder controller to factory settings. */ 
 	void resetToolToFactory(int toolIndex);
+	void resetToolToBlank(int toolIndex);
 
+	
+	boolean hasVrefSupport();
+	/** set the Stepper Voltage Reference */
+	void setStoredStepperVoltage(int stepperId, int referenceValue);
+	/** get the Stepper Voltage Reference */
+	int getStoredStepperVoltage(int stepperId);
 	
 	public class CommunicationStatistics {
 		public int packetCount;
@@ -134,4 +167,15 @@ public interface OnboardParameters {
 	}
 	
 	CommunicationStatistics getCommunicationStatistics();
+
+	String getMachineType();
+
+	/// Returns the number of tools as saved on the machine (not as per XML count)
+	int toolCountOnboard();
+
+	/// Returns true of tool count is save on the machine  (not as per XML count)
+	boolean hasToolCountOnboard();
+
+	/// Sets the number of tool count as saved on the machine (not as per XML count)
+	void setToolCountOnboard(int i);
 }

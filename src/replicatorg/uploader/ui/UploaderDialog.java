@@ -153,7 +153,7 @@ public class UploaderDialog extends JDialog implements ActionListener {
 	}
 
 	AbstractFirmwareUploader createUploader() {
-		MachineInterface machine = Base.getMachineLoader().getMachine();
+		MachineInterface machine = Base.getMachineLoader().getMachineInterface();
 		
 		if (machine != null) { machine.dispose(); }
 		NodeList nl = selectedBoard.getChildNodes();

@@ -343,14 +343,24 @@ public class Build {
 		return null;
 	}
 
+    /**
+     * The line count.
+     * @return the number of lines in the gcode.
+     */
+    public int getLines() {
+        int ret;
+
+        BuildCode code = getCode();
+        if (null != code)
+            ret = countLines(code.program);
+        else
+            ret = 0;
+
+        return (ret);
+	}
+
 	protected int countLines(String what) {
-		char c[] = what.toCharArray();
-		int count = 0;
-		for (int i = 0; i < c.length; i++) {
-			if (c[i] == '\n')
-				count++;
-		}
-		return count;
+		return what.split("\n").length - 1;
 	}
 
 	static public String scrubComments(String what) {

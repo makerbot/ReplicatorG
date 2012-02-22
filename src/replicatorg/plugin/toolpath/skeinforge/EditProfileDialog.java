@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -25,7 +26,6 @@ import javax.swing.event.ListSelectionListener;
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.Profile;
-import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
 class EditProfileDialog extends JDialog {
 	final boolean postProcessToolheadIndex = true;
@@ -38,6 +38,8 @@ class EditProfileDialog extends JDialog {
 	
 	JButton doneButton = new JButton("Done");
 	
+	JCheckBox filterBox = new JCheckBox("Show profiles for every machine.");
+	
 	/* these must be explicitly nulled at close because of a java bug:
 	 * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6497929
 	 * 
@@ -49,7 +51,6 @@ class EditProfileDialog extends JDialog {
 	private List<Profile> profiles = null;
 	
 	JPanel profilePanel = new JPanel();
-	JPanel buttonPanel = new JPanel();
 	
 	private void loadList(JList list) {
 		list.removeAll();
@@ -58,7 +59,10 @@ class EditProfileDialog extends JDialog {
 		int i=0;
 		int foundLastProfile = -1;
 		for (Profile p : profiles) {
-			model.addElement(p.toString());
+			
+			// Check that this profile says it's for this machine
+			if(ProfileUtils.shouldDisplay(p) || filterBox.isSelected())
+				model.addElement(p.toString());
 			if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
 			{
 				Base.logger.fine("Selecting last used element: " + p);
@@ -92,10 +96,6 @@ class EditProfileDialog extends JDialog {
 
 	final JList prefList = new JList();
 
-	private Profile getListedProfile(int idx) {
-		return profiles.get(idx);
-	}
-
 	public EditProfileDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
 		super(parent, true);
 		parentGenerator = parentGeneratorIn;
@@ -116,8 +116,8 @@ class EditProfileDialog extends JDialog {
 		deleteButton.setEnabled(false);
 		duplicateButton.setEnabled(false);
 
-		profilePanel.setLayout(new MigLayout("top, ins 0, fillx"));
-		profilePanel.add(new JLabel("Select a Skeinforge profile:"), "wrap");
+		profilePanel.setLayout(new MigLayout("top, ins 0, fill, flowy"));
+		profilePanel.add(new JLabel("Select a Skeinforge profile:"), "split");
 
 		prefList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		prefList.addListSelectionListener(new ListSelectionListener() {
@@ -139,7 +139,7 @@ class EditProfileDialog extends JDialog {
 		        JList list = (JList)evt.getSource();
 		        if (evt.getClickCount() == 2) { // Double-click generates with this profile
 		            int idx = list.locationToIndex(evt.getPoint());
-		            Profile p = getListedProfile(idx);
+		            Profile p = ProfileUtils.getListedProfile(list.getModel(), profiles, idx);
 					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 					parentGenerator.configSuccess = true;
 					parentGenerator.profile = p.getFullPath();
@@ -157,7 +157,7 @@ class EditProfileDialog extends JDialog {
 				{
 					int idx = prefList.getSelectedIndex();
 					Base.logger.fine("idx="+idx);
-					Profile p = getListedProfile(idx);
+					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 					parentGenerator.configSuccess = true;
 					parentGenerator.profile = p.getFullPath();
@@ -169,7 +169,17 @@ class EditProfileDialog extends JDialog {
 			}
 	     }
 		);
-		profilePanel.add(editButton, "split,flowy,growx");
+		
+		filterBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				loadList(prefList);
+			}
+			
+		});
+		profilePanel.add(filterBox, "growx, wrap");
+		
+		profilePanel.add(editButton, "split, growx");
 		editButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
@@ -177,20 +187,20 @@ class EditProfileDialog extends JDialog {
 					JOptionPane.showMessageDialog(parent,
 							"Select a profile to edit.");
 				} else {
-					Profile p = getListedProfile(idx);
+					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					parentGenerator.editProfile(p);
 				}
 			}
 		});
 
-		profilePanel.add(duplicateButton, "growx,flowy");
+		profilePanel.add(duplicateButton, "split, growx");
 		duplicateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
 				String newName = JOptionPane.showInputDialog(parent,
 						"Name your new profile:");
 				if (newName != null) {
-					Profile p = getListedProfile(idx);
+					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					Profile newp = parentGenerator.duplicateProfile(p, newName);
 					loadList(prefList);
 					// Select new profile
@@ -200,13 +210,13 @@ class EditProfileDialog extends JDialog {
 			}
 		});
 		
-		profilePanel.add(locateButton, "split,flowy,growx");
+		profilePanel.add(locateButton, "split, growx");
 		locateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
 				if (idx == -1) {
 				} else {
-					Profile p = getListedProfile(idx);
+					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					boolean result = new ProfileUtils().openFolder(p);
 					Base.logger.log(Level.FINEST,
 							"Opening directory for profile: "+ result);
@@ -215,11 +225,11 @@ class EditProfileDialog extends JDialog {
 		});
 
 
-		profilePanel.add(deleteButton, "wrap,growx");
+		profilePanel.add(deleteButton, "growx");
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
-				Profile p = getListedProfile(idx);
+				Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 				
 				int userResponse = JOptionPane.showConfirmDialog(null,
 						"Are you sure you want to delete profile " 
@@ -237,8 +247,6 @@ class EditProfileDialog extends JDialog {
 		});
 		
 		add(profilePanel, "wrap, growx");
-
-		buttonPanel.setLayout(new MigLayout("aligny, top, ins 0"));
 		
 		add(doneButton, "tag ok, split 2");
 		doneButton.addActionListener(new ActionListener() {

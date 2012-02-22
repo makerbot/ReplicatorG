@@ -20,9 +20,9 @@
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/cupcake/start-HBP.gcode" end="machines/cupcake/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Cupcake w/ automated build platform</name>
@@ -43,9 +43,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/cupcake/start+ABP.gcode" end="machines/cupcake/end+ABP.gcode"/>		
 	</machine>
 	<machine>
 		<name>Cupcake w/ heated build platform</name>
@@ -71,9 +71,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/cupcake/start+HBP.gcode" end="machines/cupcake/end.gcode"/>		
 	</machine>
 	<machine  experimental="1">
 		<name>Cupcake w/ heated build platform and stepper extruder</name>
@@ -99,9 +99,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/cupcake/start.gcode" end="machines/cupcake/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Cupcake w/ Gen4 electronics and ABP</name>
@@ -122,9 +122,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/cupcake/start.gcode" end="machines/cupcake/end.gcode"/>		
 	</machine>
 
 	<machine experimental="1">
@@ -147,9 +147,9 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/cupcake/start.gcode" end="machines/cupcake/end.gcode"/>		
 	</machine>
 	<machine>
 		<name>Cupcake w/ Frostruder</name>
@@ -174,8 +174,8 @@ M18
 		<warmup>
 		</warmup>
 		<cooldown>
-(Turn off steppers after a build.)
-M18
+M18 (Turn off steppers after a build.)
 		</cooldown>
+		<bookend start="machines/cupcake/start+Frostruder" end="machines/cupcake/end+Frostruder"/>		
 	</machine>
 </machines>

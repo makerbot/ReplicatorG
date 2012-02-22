@@ -1,0 +1,34 @@
+Format is tab separated raft settings.
+Name                          	Value
+WindowPosition	700+0
+Open File for Raft	
+Activate Raft	True
+Add Raft, Elevate Nozzle, Orbit and Set Altitude:	True
+Base Feed Rate Multiplier (ratio):	0.75
+Base Flow Rate Multiplier (ratio):	0.6
+Base Infill Density (ratio):	0.3
+Base Layer Thickness over Layer Thickness:	2.2
+Base Layers (integer):	1
+Base Nozzle Lift over Base Layer Thickness (ratio):	0.3
+Initial Circling:	False
+Infill Overhang over Extrusion Width (ratio):	0.1
+Interface Feed Rate Multiplier (ratio):	1.5
+Interface Flow Rate Multiplier (ratio):	0.7
+Interface Infill Density (ratio):	0.4
+Interface Layer Thickness over Layer Thickness:	1.8
+Interface Layers (integer):	2
+Interface Nozzle Lift over Interface Layer Thickness (ratio):	0.3
+Object First Layer Feed Rate Infill Multiplier (ratio):	0.9
+Object First Layer Feed Rate Perimeter Multiplier (ratio):	0.9
+Object First Layer Flow Rate Multiplier (ratio):	0.9
+Operating Nozzle Lift over Layer Thickness (ratio):	0.0
+Raft Additional Margin over Length (%):	2.5
+Raft Margin (mm):	2.5
+Support Cross Hatch	False
+Support Flow Rate over Operating Flow Rate (ratio):	0.7
+Support Gap over Perimeter Extrusion Width (ratio):	0.005
+None	False
+Empty Layers Only	False
+Everywhere	False
+Exterior Only	True
+Support Minimum Angle (degrees):	45.0

@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -48,13 +47,18 @@ class ConfigurationDialog extends JDialog {
 		int i=0;
 		int foundLastProfile = -1;
 		for (Profile p : profiles) {
-			model.addElement(p.toString());
-			if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
+			// Check that this profile says it's for this machine
+			if(ProfileUtils.shouldDisplay(p))
 			{
-				Base.logger.fine("Selecting last used element: " + p);
-				foundLastProfile = i;
+				model.addElement(p.toString());
+				
+				if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
+				{
+					Base.logger.fine("Selecting last used element: " + p);
+					foundLastProfile = i;
+				}
+				i++;
 			}
-			i++;
 		}
 		comboBox.setModel(model);
 		if(foundLastProfile != -1) {
@@ -78,12 +82,9 @@ class ConfigurationDialog extends JDialog {
 
 	final JComboBox prefPulldown = new JComboBox();
 
-	private Profile getListedProfile(int idx) {
-		return profiles.get(idx);
-	}
-
 	public ConfigurationDialog(final Frame parent, final SkeinforgeGenerator parentGeneratorIn) {
 		super(parent, true);
+
 		parentGenerator = parentGeneratorIn;
 		setTitle("GCode Generator");
 		setLayout(new MigLayout("aligny, top, ins 5, fill"));
@@ -99,24 +100,14 @@ class ConfigurationDialog extends JDialog {
 				generateButton.setFocusPainted(true);
 			}
 		});
-		loadList(prefPulldown);
-		add(prefPulldown, "wrap, growx");
+		loadList(prefPulldown); /// Filles UI with the list of Skeinforge settings/options
+		add(prefPulldown, "wrap, growx, gapbottom 10");
 
-		for (SkeinforgePreference preference: parentGenerator.preferences) {
-			add(preference.getUI(), "wrap");
+		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
+			add(preference.getUI(), "growx, wrap");
 		}
-
-		final JCheckBox autoGen = new JCheckBox("Automatically generate when building.");
-		autoGen.setToolTipText("When building from the model view with this checked " +
-				"GCode will automatically be generated, bypassing this dialog.");
-		add(autoGen, "wrap");
-		autoGen.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				Base.preferences.putBoolean("build.autoGenerateGcode", autoGen.isSelected());
-			}
-		});
-		autoGen.setSelected(Base.preferences.getBoolean("build.autoGenerateGcode", false));
+		
+		generateButton.setToolTipText("Generates GCode instructions for your machine.");
 		
 		add(generateButton, "tag ok, split 2");
 		add(cancelButton, "tag cancel");
@@ -150,7 +141,7 @@ class ConfigurationDialog extends JDialog {
 			return false;
 		}
 		
-		Profile p = getListedProfile(idx);
+		Profile p = ProfileUtils.getListedProfile(prefPulldown.getModel(), profiles, idx);
 		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 		parentGenerator.profile = p.getFullPath();
 		SkeinforgeGenerator.setSelectedProfile(p.toString());

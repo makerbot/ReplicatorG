@@ -1,5 +1,4 @@
-/*
-  MachineModel.java
+/*  MachineModel.java
 
   A class to model a 3-axis machine.
 
@@ -25,6 +24,7 @@
 
 package replicatorg.machine.model;
 
+import java.io.File;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Set;
@@ -38,6 +38,13 @@ import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
 import replicatorg.util.Point5d;
 
+/**
+ * Loads a machine model from XML, and contains data related to that XML setup for the 
+ * machine model, and a lot (but not all) of machine state values
+ * 
+ * @author unknows
+ *
+ */
 public class MachineModel
 {
 	//our xml config info
@@ -74,8 +81,15 @@ public class MachineModel
 	//our wipe models @Noah
 	protected  Vector<WipeModel> wipes = new Vector<WipeModel>();
 	
+	// our machine-specific start & end gcode
+	protected File dualstartBookendCode = null;
+	protected File startBookendCode = null;
+	protected File endBookendCode = null;
+	
 	// our build volume
 	protected BuildVolume buildVolume;
+	
+	private MachineType machineType = null;
 
 	/*************************************
 	*  Creates the model object.
@@ -97,18 +111,42 @@ public class MachineModel
 		currentTool.set(nullTool);
 	}
 	
+	
 	//load data from xml config
 	public void loadXML(Node node)
 	{
 		xml = node;
 		
+		parseType();
 		parseAxes();
 		parseClamps();
 		parseTools();
 		parseBuildVolume();
 		parseWipes();
 		parseExclusion();
+		parseGCode();
 	}
+	
+
+	private void parseType() {
+		NodeList kids = xml.getChildNodes();
+
+		for (int j = 0; j < kids.getLength(); j++) {
+			Node kid = kids.item(j);
+
+			if (kid.getNodeName().equals("name")) {
+				String name = kid.getFirstChild().getNodeValue().trim();
+				if(name.startsWith("The Replicator"))
+					machineType = MachineType.THE_REPLICATOR;
+				else if(name.startsWith("Thingomatic"))
+					machineType = MachineType.THINGOMATIC;
+				else if(name.startsWith("Cupcake"))
+					machineType = MachineType.CUPCAKE;
+				return;
+			}
+		}
+	}
+	
 	private void parseExclusion()
 	{
 		if(XML.hasChildNode(xml, "exclusion"))
@@ -127,6 +165,8 @@ public class MachineModel
 			}
 		}
 	}
+	
+	
 	private void parseWipes()
 	{
 		if(XML.hasChildNode(xml, "wipes"))
@@ -147,6 +187,8 @@ public class MachineModel
 			}
 		}
 	}
+	
+	
 	//load axes configuration
 	private void parseAxes()
 	{
@@ -334,6 +376,26 @@ public class MachineModel
 		}
 		
 	}
+	
+	private void parseGCode()
+	{
+		if(XML.hasChildNode(xml, "bookend"))
+		{
+			Node bookend = XML.getChildNodeByName(xml, "bookend");
+			String dualstartLocation = XML.getAttributeValue(bookend, "dualstart");
+			String startLocation = XML.getAttributeValue(bookend, "start");
+			String endLocation = XML.getAttributeValue(bookend, "end");
+			if(dualstartLocation != null) 
+				dualstartBookendCode = Base.getApplicationFile(dualstartLocation);
+			if(startLocation != null) 
+				startBookendCode = Base.getApplicationFile(startLocation);
+			if(endLocation != null) 
+				endBookendCode = Base.getApplicationFile(endLocation);
+		}
+		else {
+			Base.logger.severe("No bookend metadata specified for this machine");
+		}
+	}
 
 	/*************************************
 	*  Reporting available axes
@@ -484,21 +546,6 @@ public class MachineModel
 	{
 		return tools;
 	}
-	public Vector<WipeModel> getWipes()
-	{
-		return wipes;
-	}
-	public WipeModel getWipeByIndex(int index)
-	{
-		for(WipeModel wm : wipes)
-		{
-			if(wm.getIndex() == index)
-			{
-				return wm;
-			}
-		}
-		return null;
-	}
 	public void addTool(ToolModel t)
 	{
 		tools.add(t);
@@ -515,22 +562,63 @@ public class MachineModel
 		}
 	}
 
-  public Point5d getMaximumFeedrates() {
-    return maximumFeedrates;
-  }
-
-  public Point5d getHomingFeedrates() {
-	    return homingFeedrates;
-	  }
+	public Point5d getMaximumFeedrates() {
+		return maximumFeedrates;
+	}
+	
+	public Point5d getHomingFeedrates() {
+		return homingFeedrates;
+	}
+	  
+	public Point5d getTimeOut() {
+		return timeOut;
+	}
+	  
+	/** returns the endstop configuration for the given axis */
+	public Endstops getEndstops(AxisId axis)
+	{
+		return this.endstops.get(axis);
+	}
   
-  public Point5d getTimeOut() {
-      return timeOut;
-	  }
-  
-  /** returns the endstop configuration for the given axis */
-  public Endstops getEndstops(AxisId axis)
-  {
-	  return this.endstops.get(axis);
-  }
+	/*************************************
+	*  Wipe functions
+	*************************************/
+	public Vector<WipeModel> getWipes() {
+		return wipes;
+	}
+	
+	public WipeModel getWipeFor(ToolheadAlias tool) {
+		for(WipeModel wm : wipes)
+		{
+			if(wm.getTool() == tool)
+			{
+				return wm;
+			}
+		}
+		return null;
+	}
 
+	/*************************************
+	*  Gcode functions
+	*************************************/
+
+	/// returns the start code filename specified in machines.xml
+	public File getDualstartBookendCode() {
+		return dualstartBookendCode;
+	}
+	
+	/// returns the start code filename specified in machines.xml
+	public File getStartBookendCode() {
+		return startBookendCode;
+	}
+
+	/// returns the end code filename specified in machines.xml
+	public File getEndBookendCode() {
+		return endBookendCode;
+	}
+	
+	public MachineType getMachineType() {
+		return machineType;
+	}
+	
 }

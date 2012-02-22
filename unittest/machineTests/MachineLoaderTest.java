@@ -79,7 +79,7 @@ public class MachineLoaderTest {
 	@Test
 	public void testGetMachine() {
 		// Without initializing the machine loader, this should return null.
-		assertNull(loader.getMachine());
+		assertNull(loader.getMachineInterface());
 	}
 
 	@Test
@@ -103,25 +103,25 @@ public class MachineLoaderTest {
 	@Test
 	public void testLoad() {
 		// Try loading a garbage machine
-		assertFalse(loader.load("fake machine"));
+		assertFalse(loader.getMachineInterface("fake machine"));
 		
 		// Now try loading a known good machine
-		assertTrue(loader.load("Cupcake Basic"));
+		assertTrue(loader.getMachineInterface("Cupcake Basic"));
 		
 		// Test that the isLoaded() function actually works 
 		assertTrue(loader.isLoaded());
 		
 		// Now, try loading another garbage machine on top of the known good one.
-		assertFalse(loader.load("fake machine"));
+		assertFalse(loader.getMachineInterface("fake machine"));
 		
 		// Finally, load the good one again to make sure it can recover.
-		assertTrue(loader.load("Cupcake Basic"));
+		assertTrue(loader.getMachineInterface("Cupcake Basic"));
 	}
 
 	@Test
 	public void testUnload() {
 		// See if we can bring up and then dispose of a machine
-		assertTrue(loader.load("Cupcake Basic"));
+		assertTrue(loader.getMachineInterface("Cupcake Basic"));
 		
 		loader.unload();
 		
@@ -136,7 +136,7 @@ public class MachineLoaderTest {
 		// This should give us a couple of messages: CONNECTING ERROR
 		// Make sure that we get them both back in order, within a reasonable time.
 		// Finally, unload the machine to receive NOT_ATTACHED.
-		assertTrue(loader.load("Cupcake Basic"));
+		assertTrue(loader.getMachineInterface("Cupcake Basic"));
 		loader.connect("");
 		
 		event = listener.getMachineStateChangedEvent(commTimeout);
@@ -174,7 +174,7 @@ public class MachineLoaderTest {
 		// Finally, unload the machine to receive NOT_ATTACHED.
 		for(int i = 0; i < 1; i++) {
 			Base.logger.info("i = " + i );
-			assertTrue(loader.load("Thingomatic w/ HBP and Stepstruder MK6"));
+			assertTrue(loader.getMachineInterface("Thingomatic w/ HBP and Stepstruder MK6"));
 			loader.connect("/dev/ttyUSB0");
 			
 			event = listener.getMachineStateChangedEvent(commTimeout);
@@ -204,7 +204,7 @@ public class MachineLoaderTest {
 	public void testDisconnect() {
 		MachineStateChangeEvent event;
 		
-		assertTrue(loader.load("Thingomatic w/ HBP and Stepstruder MK6"));
+		assertTrue(loader.getMachineInterface("Thingomatic w/ HBP and Stepstruder MK6"));
 		loader.connect("/dev/ttyUSB0");
 		
 		event = listener.getMachineStateChangedEvent(commTimeout);
@@ -241,7 +241,7 @@ public class MachineLoaderTest {
 	public void testUserDisconnect() {
 		MachineStateChangeEvent event;
 		
-		assertTrue(loader.load("Thingomatic w/ HBP and Stepstruder MK6"));
+		assertTrue(loader.getMachineInterface("Thingomatic w/ HBP and Stepstruder MK6"));
 		loader.connect("/dev/ttyUSB0");
 		
 		event = listener.getMachineStateChangedEvent(commTimeout);
