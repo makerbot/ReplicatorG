@@ -1,3 +1,8 @@
+0031 ReplicatorG
+* Updated start and end gcode
+* Fixed dual extrusion bugs
+* Full support for skeinforge 47
+
 0031_Beta ReplicatorG
 * Extensive Rewrite of RepG to support The Replicator
 * Post Processing of Skeinforge changes added
