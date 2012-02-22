@@ -392,19 +392,18 @@ public class DualStrusionWindow extends JFrame{
 	private JPanel createWaitingPanel()
 	{
 		final JPanel panel = new JPanel(new MigLayout("fill"));
-		
 		panel.add(new JLabel("Running dualstrusion..."), "growx, growy");
-		
 		return panel;
 	}
+	
 	private JPanel createSFWaitingPanel()
 	{
-		final JPanel panel = new JPanel(new MigLayout("fill"));
-		
+		final JPanel panel = new JPanel(new MigLayout("fill"));	
 		panel.add(new JLabel("Waiting for SkeinForge..."), "growx, growy");
-		
 		return panel;
 	}
+	
+	
 	private JPanel createApologyPanel()
 	{
 		final JPanel panel = new JPanel(new MigLayout("fill"));

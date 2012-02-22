@@ -235,9 +235,9 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem profilesMenuItem;
 	JMenuItem dualstrusionItem;
 	JMenuItem combineItem;
-	JMenuItem editDualstartItem;
-	JMenuItem editStartItem;
-	JMenuItem editEndItem;
+//	JMenuItem editDualstartItem;
+//	JMenuItem editStartItem;
+//	JMenuItem editEndItem;
 	JMenu changeToolheadMenu = new JMenu("Swap Toolhead in .gcode");
 
 	
@@ -1080,7 +1080,7 @@ ToolpathGenerator.GeneratorListener
 		{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
+				//:TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
 				MutableGCodeSource code = new MutableGCodeSource(build.getCode().file);
 				code.changeToolhead(ToolheadAlias.LEFT);
@@ -1291,17 +1291,15 @@ ToolpathGenerator.GeneratorListener
 		
 		preheatMachine = preheat;
 		
-		if(preheatMachine)
-		{
+		// update preheat menu info
+		if(preheatMachine) {
 			preheatItem.setText("Turn off preheat");
 			preheatItem.setToolTipText("Allows the machine to cool down (i.e. not maintain temperature)");
 		}
-		else
-		{
+		else {
 			preheatItem.setText("Preheat Machine");
 			preheatItem.setToolTipText("Tells the machine to begin warming up to the temperature specified in preferences");
 		}
-		//preheatItem.setArmed(preheatMachine);
 		
 		MachineInterface machine = Base.getMachineLoader().getMachineInterface();
 		
@@ -1375,7 +1373,9 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 		
-	/// Returns True of the currently running machine singleton has 2 or more toolheads
+	/**
+	 * @returns True  if the selected machine has 2 toolheads
+	 */
 	public boolean isDualDriver()
 	{
 		try
@@ -1471,7 +1471,7 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 	
-	/* Function to generate a list of
+	/** Function to generate a list of
 	 * supported machines to be displayed in the Driver menu item.
 	 */
 	protected void populateMachineMenu() {
@@ -1502,6 +1502,9 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 
+	/**
+	 * Constructs and returns the menu under 'Edit' 
+	 */
 	public JMenu buildEditMenu() {
 		JMenu menu = new JMenu("Edit");
 		JMenuItem item;
@@ -2306,18 +2309,18 @@ ToolpathGenerator.GeneratorListener
 		preheatItem.setEnabled(evt.getState().isConnected() && !building);
 		generateItem.setEnabled(hasModel && !building);
 
-		if(machineLoader.getMachineInterface() != null) {
-			File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
-			editDualstartItem.setEnabled(dualstart != null);
-		}
-		if(machineLoader.getMachineInterface() != null) {
-			File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
-			editStartItem.setEnabled(start != null);
-		}
-		if(machineLoader.getMachineInterface() != null) {
-			File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
-			editEndItem.setEnabled(end != null);
-		}
+//		if(machineLoader.getMachineInterface() != null) {
+//			File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
+//			editDualstartItem.setEnabled(dualstart != null);
+//		}
+//		if(machineLoader.getMachineInterface() != null) {
+//			File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
+//			editStartItem.setEnabled(start != null);
+//		}
+//		if(machineLoader.getMachineInterface() != null) {
+//			File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
+//			editEndItem.setEnabled(end != null);
+//		}
 		
 //		boolean showIndexing = 
 //			evt.getState().isConfigurable() &&
