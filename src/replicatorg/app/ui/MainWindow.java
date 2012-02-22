@@ -881,7 +881,7 @@ ToolpathGenerator.GeneratorListener
 				if(java.awt.Desktop.isDesktopSupported())
 				{
 					try {
-						File toOpen = new File("docs/replicat.org/index.html");
+						File toOpen = Base.getApplicationFile("docs/replicat.org/index.html");
 						URI uri = toOpen.toURI();
 						java.awt.Desktop.getDesktop().browse(uri);
 					} catch (IOException e) {
