@@ -185,7 +185,7 @@ public class PrintOMatic implements SkeinforgePreference {
 		desiredLayerHeight = ".30";
 		numberOfShells = "1";
 		desiredFeedrate = "30";
-		filamentDiameter = "1.8";
+		filamentDiameter = "1.82";
 		nozzleDiameter = ".4";
 		driveGearDiameter = "10.58";
 	}}
