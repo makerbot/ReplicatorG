@@ -489,6 +489,23 @@ ToolpathGenerator.GeneratorListener
 		applyPreferences();
 	}
 
+	/** Reset all preferences systemwide. This is a destructive operation and 
+	 * terminates the program, so the user is presented with a confirmation
+	 * dialog.
+	 */
+	public void resetPreferences() {
+		int option = JOptionPane.showConfirmDialog(this, 
+				"This will delete all your current preference settings and customizations,\nand immediately exit ReplicatorG. Are you sure?",
+				"Reset preferences and reset?",
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		if (option == JOptionPane.NO_OPTION) { return; }
+		if (option == JOptionPane.YES_OPTION) {
+			Base.resetPreferences();
+			System.exit(0);
+		}
+	}
+
+
 	/**
 	 * Read and apply new values from the preferences, either because the app is
 	 * just starting up, or the user just finished messing with things in the
@@ -784,6 +801,12 @@ ToolpathGenerator.GeneratorListener
 		menu.add(buildExamplesMenu()); 
 		menu.add(buildScriptsMenu()); 
 
+		JMenuItem resetParamsItem = new JMenuItem("Reset all preferences to defaults");
+		resetParamsItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				resetPreferences();
+			}
+		});
 		// macosx already has its own preferences and quit menu
 		if (!Base.isMacOS()) {
 			menu.addSeparator();
@@ -795,7 +818,7 @@ ToolpathGenerator.GeneratorListener
 				}
 			});
 			menu.add(item);
-
+			menu.add(resetParamsItem);
 			menu.addSeparator();
 			item = newJMenuItem("Quit", 'Q');
 			item.addActionListener(new ActionListener() {
@@ -804,7 +827,10 @@ ToolpathGenerator.GeneratorListener
 				}
 			});
 			menu.add(item);
+		} else {
+			menu.add(resetParamsItem);
 		}
+		
 		return menu;
 	}
 

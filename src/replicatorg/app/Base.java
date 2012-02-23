@@ -206,6 +206,25 @@ public class Base {
 		return prefs;
 	}
 	
+	static private void moveAll(File source, File target) {
+		try {
+			if (source.isDirectory()) {
+				if (!target.exists()) {
+					target.mkdir();
+				}
+				for (String s : source.list()) {
+					moveAll(new File(source, s), new File(target, s));
+				}
+				source.delete();
+			}
+			else if (source.isFile()) {
+				source.renameTo(target);
+			}
+		} catch (Exception e) {
+			Base.logger.severe(e.getMessage());
+		}
+	}
+	
 	/**
 	 * Reset the preferences for ReplicatorG to a clean state.
 	 */
@@ -216,6 +235,15 @@ public class Base {
 			preferences = getUserPreferences();
 		} catch (BackingStoreException bse) {
 			bse.printStackTrace();
+		}
+		File userDir = getUserDirectory();
+		try {
+			// Create backup
+			File backupDir = new File(userDir.getParentFile(),".replicatorg-backup-" + Long.toString(System.nanoTime()) );
+			backupDir.mkdir();
+			moveAll(userDir,backupDir);
+		} catch (Exception e) {
+			Base.logger.severe(e.getMessage());
 		}
 	}
 	

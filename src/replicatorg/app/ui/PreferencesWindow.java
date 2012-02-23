@@ -467,15 +467,9 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			}
 		});
 
-		JButton delPrefs = new JButton("Restore all defaults (includes driver choice, etc.)");
-		content.add(delPrefs);
-		delPrefs.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				Base.resetPreferences();
-				showCurrentSettings();
-			}
-		});
-
+		// The reset preferences button has been removed and replaced with a menu item.
+		// See the reset preferences item in MainWindow.java.
+		
 		JButton button;
 		button = new JButton("Close");
 		button.addActionListener(new ActionListener() {
