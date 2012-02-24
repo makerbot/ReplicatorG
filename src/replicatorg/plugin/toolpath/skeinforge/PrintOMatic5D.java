@@ -166,24 +166,24 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		return value;
 	}
 	
-	private double getScalingFactor() {
-		// TODO: record the default values somewhere, so that we can retrieve them here!
-		String value = Base.preferences.get(baseName + "materialType", null);
-		
-		double scalingFactor = 1;
-		
-		if (value.equals("ABS")) {
-			scalingFactor = .85;
-		}
-		else if (value.equals("PLA")) {
-			scalingFactor = 1;
-		}
-		else {
-			Base.logger.severe("Couldn't determine scaling factor for material " + value + ", defaulting to 1");
-		}
-		
-		return scalingFactor;
-	}
+//	private double getScalingFactor() {
+//		// TODO: record the default values somewhere, so that we can retrieve them here!
+//		String value = Base.preferences.get(baseName + "materialType", null);
+//		
+//		double scalingFactor = 1;
+//		
+//		if (value.equals("ABS")) {
+//			scalingFactor = .85;
+//		}
+//		else if (value.equals("PLA")) {
+//			scalingFactor = 1;
+//		}
+//		else {
+//			Base.logger.severe("Couldn't determine scaling factor for material " + value + ", defaulting to 1");
+//		}
+//		
+//		return scalingFactor;
+//	}
 	
 	
 	JTabbedPane printOMatic5D;
@@ -219,22 +219,22 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 		JComponent materialPanel = new JPanel(new MigLayout("fillx"));
 		
-		Vector<String> materialTypes = new Vector<String>();
-		materialTypes.add("ABS");
-		materialTypes.add("PLA");
-		
-		addDropDownParameter(materialPanel, "materialType",
-				"Material type:", materialTypes,
-				"Select the type of plastic to use during print");
+//		Vector<String> materialTypes = new Vector<String>();
+//		materialTypes.add("ABS");
+//		materialTypes.add("PLA");
+//		
+//		addDropDownParameter(materialPanel, "materialType",
+//				"Material type:", materialTypes,
+//				"Select the type of plastic to use during print");
 		
 		addTextParameter(materialPanel, "filamentDiameter",
 				"Filament Diameter (mm)", "1.82",
 				"measure feedstock");
                 
                 // TODO: Tie the materialType to this text box, so that switching the puldown changes this default
-		addTextParameter(materialPanel, "packingDensity",
-				"Packing Density", "85",
-				"% Final Volume");
+//		addTextParameter(materialPanel, "packingDensity",
+//				"Packing Density", "85",
+//				"% Final Volume");
 		
 		return materialPanel;
 	}
@@ -254,7 +254,8 @@ public class PrintOMatic5D implements SkeinforgePreference {
 
 		JComponent defaultsPanel = new JPanel(new MigLayout("fillx"));
 
-		final JButton def = new JButton("Load Defaults");
+		final JButton def = new JButton("Load Replicator Defaults");
+
 		
 		ActionListener loadDefaults = new ActionListener(){
 			@Override
@@ -268,7 +269,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				setValue("desiredFeedrate", "40");
 				setValue("travelFeedrate", "55");
 				setValue("filamentDiameter", "1.82");
-				setValue("packingDensity", "85");
+//				setValue("packingDensity", "85");
 				setValue("desiredPathWidth", ".4");
 					
 				// Refresh the other three tabs
@@ -299,7 +300,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 
 		// Add a checkbox to switch print-o-matic on and off
 		final String enabledName = baseName + "enabled";
-		enabled = new JCheckBox("Use Print-O-Matic (stepper extruders only)", Base.preferences.getBoolean(enabledName,false));
+		enabled = new JCheckBox("Use Print-O-Matic (stepper extruders only)", Base.preferences.getBoolean(enabledName,true));
 		enabled.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (enabledName != null) {
@@ -357,7 +358,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 			double  infillRatio                        = getValue("infillPercent")/100;
 			double  filamentDiameter                   = getValue("filamentDiameter");
-			double  packingDensity                     = getValue("packingDensity")/100;
+//			double  packingDensity                     = getValue("packingDensity")/100;
 			double  perimeterWidthOverThickness        = getValue("desiredPathWidth")/getValue("desiredLayerHeight");
 			double  infillWidthOverThickness           = perimeterWidthOverThickness;
 			double  feedRate                           = getValue("desiredFeedrate");
@@ -370,7 +371,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 			Base.logger.fine("Print-O-Matic settings:"
 					+ "\n infillRatio=" + infillRatio
 					+ "\n filamentDiameter=" + filamentDiameter
-					+ "\n packingDensity=" + packingDensity
+//					+ "\n packingDensity=" + packingDensity
 					+ "\n perimeterWidthOverThickness=" + perimeterWidthOverThickness
 					+ "\n infillWidthOverThickness=" + infillWidthOverThickness
 					+ "\n feedRate=" + feedRate
@@ -385,7 +386,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 			options.add(new SkeinforgeOption("speed.csv", "Travel Feed Rate (mm/s):", Double.toString(travelFeedRate)));
 			options.add(new SkeinforgeOption("speed.csv", "Flow Rate Setting (float):", Double.toString(feedRate)));
 			options.add(new SkeinforgeOption("dimension.csv", "Filament Diameter (mm):", Double.toString(filamentDiameter)));
-			options.add(new SkeinforgeOption("dimension.csv", "Filament Packing Density (ratio):", Double.toString(packingDensity)));
+//			options.add(new SkeinforgeOption("dimension.csv", "Filament Packing Density (ratio):", Double.toString(packingDensity)));
 			options.add(new SkeinforgeOption("carve.csv", "Perimeter Width over Thickness (ratio):", Double.toString(perimeterWidthOverThickness)));
 			options.add(new SkeinforgeOption("fill.csv", "Infill Width over Thickness (ratio):", Double.toString(infillWidthOverThickness)));
 			options.add(new SkeinforgeOption("carve.csv", "Layer Thickness (mm):", Double.toString(layerHeight)));
