@@ -1,3 +1,7 @@
+0032 ReplicatorG
+* Extensive polishing of ReplicatorG
+* Set various settings as the new default, such as Skeinforge47, etc
+
 0031 ReplicatorG
 * Updated start and end gcode
 * Fixed dual extrusion bugs
