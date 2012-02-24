@@ -89,6 +89,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -1513,19 +1514,63 @@ ToolpathGenerator.GeneratorListener
 			System.out.println("error retrieving machine list");
 			exception.printStackTrace();
 		}
-		Collections.sort(names);
 		
+
+		String[] mBots = {"Cupcake", "Thingomatic", "Replicator"};
+		for(String bot : mBots)
+		{
+			moveTypeToHead(names, bot);
+		}
 		
-		ButtonGroup radiogroup = new ButtonGroup();
+		ButtonGroup botButtons = new ButtonGroup();
+		JMenu otherBotMenu = new JMenu("Other Bots");
 		for (String name : names ) {
 
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
 			item.setSelected(name.equals(Base.preferences.get("machine.name","The Replicator Dual")));
 			item.addActionListener(machineMenuListener);			
 
-			radiogroup.add(item);
-			machineMenu.add(item);
+			botButtons.add(item);
+			
+			if(isMBot(mBots, name)) machineMenu.add(item);
+			
+			else otherBotMenu.add(item);
 		}
+		machineMenu.add(new JSeparator());
+		machineMenu.add(otherBotMenu);
+	}
+	
+	private boolean isMBot(String[] mBots, String name)
+	{
+		for(String bot : mBots)
+		{
+			if(name.contains(bot)) return true;
+		}
+		return false;
+	}
+	
+	/***
+	 * Sorts all bots of a certain type in a given vector to the head of the list
+	 * @param v; a vector of bot names
+	 * @param type; a type of bot to be sorted
+	 */
+	private void moveTypeToHead(Vector<String> v, String type)
+	{
+		Vector<String> temp = (Vector<String>) v.clone();
+		for(String name : temp)
+		{
+			if(name.contains(type))
+			{
+				moveElementToHead(v, name);
+			}
+		}
+	}
+	
+	private void moveElementToHead(Vector<String> v, String s)
+	{
+		if(!v.contains(s)) return;
+		v.remove(s);
+		v.add(0, s);
 	}
 
 	/**
