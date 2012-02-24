@@ -1089,7 +1089,7 @@ ToolpathGenerator.GeneratorListener
 		menu.add(genMenu);
 
 		// BASE PROFILES
-		profilesMenuItem = newJMenuItem("Edit Base Profiles...", 'R');
+		profilesMenuItem = newJMenuItem("Edit Slicing Profiles...", 'R');
 		profilesMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleEditProfiles();

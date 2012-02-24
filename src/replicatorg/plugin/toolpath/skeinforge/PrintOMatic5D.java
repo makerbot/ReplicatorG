@@ -254,7 +254,8 @@ public class PrintOMatic5D implements SkeinforgePreference {
 
 		JComponent defaultsPanel = new JPanel(new MigLayout("fillx"));
 
-		final JButton def = new JButton("Load Defaults");
+		final JButton def = new JButton("Load Replicator Defaults");
+
 		
 		ActionListener loadDefaults = new ActionListener(){
 			@Override
