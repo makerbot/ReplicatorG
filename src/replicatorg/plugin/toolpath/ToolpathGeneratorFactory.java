@@ -122,7 +122,7 @@ public class ToolpathGeneratorFactory {
 				
 				SkeinforgeBooleanPreference raftPref = 			
 					new SkeinforgeBooleanPreference("Use Raft/Support",
-						"replicatorg.skeinforge.useRaft", false,
+						"replicatorg.skeinforge.useRaft", true,
 						"Enables Raft and/or support material.  " + 
 						"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
 				raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit and Set Altitude:", "true"));
@@ -273,7 +273,7 @@ public class ToolpathGeneratorFactory {
 				
 				SkeinforgeBooleanPreference raftPref = 			
 						new SkeinforgeBooleanPreference("Use Raft/Support",
-							"replicatorg.skeinforge.useRaft", false,
+							"replicatorg.skeinforge.useRaft", true,
 							"Enables Raft and/or support material.  " + 
 							"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
 					raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit:", "true"));

@@ -89,7 +89,7 @@ class ConfigurationDialog extends JDialog {
 		setTitle("GCode Generator");
 		setLayout(new MigLayout("aligny, top, ins 5, fill"));
 		
-		add(new JLabel("Base Profile:"), "split 2");
+		add(new JLabel("Slicing Profile:"), "split 2");
 		
 		// This is intended to fix a bug where the "Generate Gcode" button doesn't get enabled 
 		prefPulldown.addActionListener(new ActionListener(){

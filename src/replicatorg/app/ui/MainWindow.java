@@ -89,6 +89,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -235,9 +236,9 @@ ToolpathGenerator.GeneratorListener
 	JMenuItem profilesMenuItem;
 	JMenuItem dualstrusionItem;
 	JMenuItem combineItem;
-	JMenuItem editDualstartItem;
-	JMenuItem editStartItem;
-	JMenuItem editEndItem;
+//	JMenuItem editDualstartItem;
+//	JMenuItem editStartItem;
+//	JMenuItem editEndItem;
 	JMenu changeToolheadMenu = new JMenu("Swap Toolhead in .gcode");
 
 	
@@ -488,6 +489,23 @@ ToolpathGenerator.GeneratorListener
 		// read the preferences that are settable in the preferences window
 		applyPreferences();
 	}
+
+	/** Reset all preferences systemwide. This is a destructive operation and 
+	 * terminates the program, so the user is presented with a confirmation
+	 * dialog.
+	 */
+	public void resetPreferences() {
+		int option = JOptionPane.showConfirmDialog(this, 
+				"This will delete all your current preference settings and customizations,\nand immediately exit ReplicatorG. Are you sure?",
+				"Reset preferences and reset?",
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		if (option == JOptionPane.NO_OPTION) { return; }
+		if (option == JOptionPane.YES_OPTION) {
+			Base.resetPreferences();
+			System.exit(0);
+		}
+	}
+
 
 	/**
 	 * Read and apply new values from the preferences, either because the app is
@@ -784,6 +802,12 @@ ToolpathGenerator.GeneratorListener
 		menu.add(buildExamplesMenu()); 
 		menu.add(buildScriptsMenu()); 
 
+		JMenuItem resetParamsItem = new JMenuItem("Reset all preferences to defaults");
+		resetParamsItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				resetPreferences();
+			}
+		});
 		// macosx already has its own preferences and quit menu
 		if (!Base.isMacOS()) {
 			menu.addSeparator();
@@ -795,7 +819,7 @@ ToolpathGenerator.GeneratorListener
 				}
 			});
 			menu.add(item);
-
+			menu.add(resetParamsItem);
 			menu.addSeparator();
 			item = newJMenuItem("Quit", 'Q');
 			item.addActionListener(new ActionListener() {
@@ -804,7 +828,10 @@ ToolpathGenerator.GeneratorListener
 				}
 			});
 			menu.add(item);
+		} else {
+			menu.add(resetParamsItem);
 		}
+		
 		return menu;
 	}
 
@@ -881,7 +908,7 @@ ToolpathGenerator.GeneratorListener
 				if(java.awt.Desktop.isDesktopSupported())
 				{
 					try {
-						File toOpen = new File("docs/replicat.org/index.html");
+						File toOpen = Base.getApplicationFile("docs/replicat.org/index.html");
 						URI uri = toOpen.toURI();
 						java.awt.Desktop.getDesktop().browse(uri);
 					} catch (IOException e) {
@@ -1063,7 +1090,7 @@ ToolpathGenerator.GeneratorListener
 		menu.add(genMenu);
 
 		// BASE PROFILES
-		profilesMenuItem = newJMenuItem("Edit Base Profiles...", 'R');
+		profilesMenuItem = newJMenuItem("Edit Slicing Profiles...", 'R');
 		profilesMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleEditProfiles();
@@ -1080,7 +1107,7 @@ ToolpathGenerator.GeneratorListener
 		{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				//TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
+				//:TODO: check here for 2+ tool changes ( G45, G55) to find dual-extrusion files,
 				// and in those cases, send a message box 'dual heads used, cannot convert'
 				MutableGCodeSource code = new MutableGCodeSource(build.getCode().file);
 				code.changeToolhead(ToolheadAlias.LEFT);
@@ -1144,41 +1171,42 @@ ToolpathGenerator.GeneratorListener
 */
 		menu.addSeparator();
 
-		editDualstartItem = new JMenuItem("Edit Dual-Start gcode");
-		editDualstartItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
-					File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
-					if(dualstart != null)
-						handleOpenFile(dualstart);
-				}
-			}
-		});
-		menu.add(editDualstartItem);
+		/// Removed. Too late to add to build
+//		editDualstartItem = new JMenuItem("Edit Dual-Start gcode");
+//		editDualstartItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
+//					File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
+//					if(dualstart != null)
+//						handleOpenFile(dualstart);
+//				}
+//			}
+//		});
+//		menu.add(editDualstartItem);
 
-		editStartItem = new JMenuItem("Edit Start gcode");
-		editStartItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
-					File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
-					if(start != null)
-						handleOpenFile(start);
-				}
-			}
-		});
-		menu.add(editStartItem);
+//		editStartItem = new JMenuItem("Edit Start gcode");
+//		editStartItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
+//					File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
+//					if(start != null)
+//						handleOpenFile(start);
+//				}
+//			}
+//		});
+//		menu.add(editStartItem);
 		
-		editEndItem = new JMenuItem("Edit End gcode");
-		editEndItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
-					File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
-					if(end != null)
-						handleOpenFile(end);
-				}
-			}
-		});
-		menu.add(editEndItem);
+//		editEndItem = new JMenuItem("Edit End gcode");
+//		editEndItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				if(machineLoader != null && machineLoader.getMachineInterface() != null) {
+//					File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
+//					if(end != null)
+//						handleOpenFile(end);
+//				}
+//			}
+//		});
+//		menu.add(editEndItem);
 		
 		return menu;
 	}
@@ -1290,17 +1318,15 @@ ToolpathGenerator.GeneratorListener
 		
 		preheatMachine = preheat;
 		
-		if(preheatMachine)
-		{
+		// update preheat menu info
+		if(preheatMachine) {
 			preheatItem.setText("Turn off preheat");
 			preheatItem.setToolTipText("Allows the machine to cool down (i.e. not maintain temperature)");
 		}
-		else
-		{
+		else {
 			preheatItem.setText("Preheat Machine");
 			preheatItem.setToolTipText("Tells the machine to begin warming up to the temperature specified in preferences");
 		}
-		//preheatItem.setArmed(preheatMachine);
 		
 		MachineInterface machine = Base.getMachineLoader().getMachineInterface();
 		
@@ -1374,7 +1400,9 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 		
-	/// Returns True of the currently running machine singleton has 2 or more toolheads
+	/**
+	 * @returns True  if the selected machine has 2 toolheads
+	 */
 	public boolean isDualDriver()
 	{
 		try
@@ -1470,7 +1498,7 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 	
-	/* Function to generate a list of
+	/** Function to generate a list of
 	 * supported machines to be displayed in the Driver menu item.
 	 */
 	protected void populateMachineMenu() {
@@ -1486,21 +1514,68 @@ ToolpathGenerator.GeneratorListener
 			System.out.println("error retrieving machine list");
 			exception.printStackTrace();
 		}
-		Collections.sort(names);
 		
+
+		String[] mBots = {"Cupcake", "Thingomatic", "Replicator"};
+		for(String bot : mBots)
+		{
+			moveTypeToHead(names, bot);
+		}
 		
-		ButtonGroup radiogroup = new ButtonGroup();
+		ButtonGroup botButtons = new ButtonGroup();
+		JMenu otherBotMenu = new JMenu("Other Bots");
 		for (String name : names ) {
 
 			JRadioButtonMenuItem item = new JRadioButtonMenuItem(name);
 			item.setSelected(name.equals(Base.preferences.get("machine.name","The Replicator Dual")));
 			item.addActionListener(machineMenuListener);			
 
-			radiogroup.add(item);
-			machineMenu.add(item);
+			botButtons.add(item);
+			
+			if(isMBot(mBots, name)) machineMenu.add(item);
+			
+			else otherBotMenu.add(item);
+		}
+		machineMenu.add(new JSeparator());
+		machineMenu.add(otherBotMenu);
+	}
+	
+	private boolean isMBot(String[] mBots, String name)
+	{
+		for(String bot : mBots)
+		{
+			if(name.contains(bot)) return true;
+		}
+		return false;
+	}
+	
+	/***
+	 * Sorts all bots of a certain type in a given vector to the head of the list
+	 * @param v; a vector of bot names
+	 * @param type; a type of bot to be sorted
+	 */
+	private void moveTypeToHead(Vector<String> v, String type)
+	{
+		Vector<String> temp = (Vector<String>) v.clone();
+		for(String name : temp)
+		{
+			if(name.contains(type))
+			{
+				moveElementToHead(v, name);
+			}
 		}
 	}
+	
+	private void moveElementToHead(Vector<String> v, String s)
+	{
+		if(!v.contains(s)) return;
+		v.remove(s);
+		v.add(0, s);
+	}
 
+	/**
+	 * Constructs and returns the menu under 'Edit' 
+	 */
 	public JMenu buildEditMenu() {
 		JMenu menu = new JMenu("Edit");
 		JMenuItem item;
@@ -2305,18 +2380,18 @@ ToolpathGenerator.GeneratorListener
 		preheatItem.setEnabled(evt.getState().isConnected() && !building);
 		generateItem.setEnabled(hasModel && !building);
 
-		if(machineLoader.getMachineInterface() != null) {
-			File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
-			editDualstartItem.setEnabled(dualstart != null);
-		}
-		if(machineLoader.getMachineInterface() != null) {
-			File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
-			editStartItem.setEnabled(start != null);
-		}
-		if(machineLoader.getMachineInterface() != null) {
-			File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
-			editEndItem.setEnabled(end != null);
-		}
+//		if(machineLoader.getMachineInterface() != null) {
+//			File dualstart = machineLoader.getMachineInterface().getModel().getDualstartBookendCode();
+//			editDualstartItem.setEnabled(dualstart != null);
+//		}
+//		if(machineLoader.getMachineInterface() != null) {
+//			File start = machineLoader.getMachineInterface().getModel().getStartBookendCode();
+//			editStartItem.setEnabled(start != null);
+//		}
+//		if(machineLoader.getMachineInterface() != null) {
+//			File end = machineLoader.getMachineInterface().getModel().getEndBookendCode();
+//			editEndItem.setEnabled(end != null);
+//		}
 		
 //		boolean showIndexing = 
 //			evt.getState().isConfigurable() &&
