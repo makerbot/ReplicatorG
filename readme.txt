@@ -28,6 +28,6 @@ People who have worked on ReplicatorG include:
 Zach 'Hoeken' Smith (http://www.zachhoeken.com)
 Marius Kintel (http://reprap.soup.io)
 Adam Mayer (http://makerbot.com)
-
+Far McKon (http://makerbot.com)
 A full list of contributers is in contributers.txt
 
