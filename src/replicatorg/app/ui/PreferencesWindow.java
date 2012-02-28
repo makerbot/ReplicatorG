@@ -458,7 +458,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		
 		content.add(prefTabs, "wrap");
 		
-		JButton allPrefs = new JButton("View All Prefs");
+		JButton allPrefs = new JButton("View Preferences Table");
 		content.add(allPrefs, "split");
 		allPrefs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -467,8 +467,14 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			}
 		});
 
-		// The reset preferences button has been removed and replaced with a menu item.
-		// See the reset preferences item in MainWindow.java.
+		// Also available as a menu item in the main gui.
+		JButton delPrefs = new JButton("Reset all preferences");
+		content.add(delPrefs);
+		delPrefs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				editor.resetPreferences();
+			}
+		});
 		
 		JButton button;
 		button = new JButton("Close");
@@ -482,8 +488,8 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		
 		showCurrentSettings();
 
+		
 		// closing the window is same as hitting cancel button
-
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				dispose();
