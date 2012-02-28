@@ -490,7 +490,8 @@ ToolpathGenerator.GeneratorListener
 		applyPreferences();
 	}
 
-	/** Reset all preferences systemwide. This is a destructive operation and 
+	/** 
+	 * Reset all preferences systemwide. This is a destructive operation and 
 	 * terminates the program, so the user is presented with a confirmation
 	 * dialog.
 	 */
@@ -802,7 +803,7 @@ ToolpathGenerator.GeneratorListener
 		menu.add(buildExamplesMenu()); 
 		menu.add(buildScriptsMenu()); 
 
-		JMenuItem resetParamsItem = new JMenuItem("Reset all preferences to defaults");
+		JMenuItem resetParamsItem = new JMenuItem("Reset all preferences");
 		resetParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				resetPreferences();
