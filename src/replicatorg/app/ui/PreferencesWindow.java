@@ -458,7 +458,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		
 		content.add(prefTabs, "wrap");
 		
-		JButton allPrefs = new JButton("Open Preferences Table");
+		JButton allPrefs = new JButton("View Preferences Table");
 		content.add(allPrefs, "split");
 		allPrefs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
