@@ -514,7 +514,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add16(Base.VERSION);
 
 		PacketResponse pr = runQuery(pb.getPacket(), 1);
-		if (pr.isEmpty())
+		if (pr.isEmpty() || !pr.isOK())
 			return null;
 		int versionNum = pr.get16();
 
@@ -523,7 +523,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		String buildname = "";
 		pr = runQuery(pb.getPacket(), 1);
-		if (!pr.isEmpty()) {
+		if (!pr.isEmpty() && pr.isOK()) {
 			byte[] payload = pr.getPayload();
 			byte[] subarray = new byte[payload.length - 1];
 			System.arraycopy(payload, 1, subarray, 0, subarray.length);
