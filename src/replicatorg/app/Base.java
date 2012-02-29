@@ -35,7 +35,6 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
-//import java.awt.TrayIcon;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -105,7 +104,7 @@ public class Base {
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */
-	public static final String VERSION_NAME = String.format("%04d",VERSION) + "-Beta";
+	public static final String VERSION_NAME = String.format("%04d",VERSION);
 
 	/**
 	 * The machine controller in use.
