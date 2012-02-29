@@ -178,8 +178,11 @@ public class MutableGCodeSource implements GCodeSource {
 	
 	/// adds any safety stuff that's needed after all other steps have been taken
 	/// atm. it just turns off any unused extruder
-	public void addSafetyMeasures()
+	public void addSafetyMeasures(boolean isDualHead)
 	{
+		if(!isDualHead)
+			return;
+		
 		GCodeCommand gcode;
 		String line;
 

@@ -195,7 +195,7 @@ public class SkeinforgePostProcessor {
 			runPrepend(metaInfo);
 		}
 		
-		source.addSafetyMeasures();
+		source.addSafetyMeasures(multiHead);
 		
 		//Write the modified source back to our file
 		source.writeToFile(generator.output.file);
