@@ -112,15 +112,16 @@ public class Build {
 				parentPath = ".";
 			}
 			folder = new File(parentPath);
-			if ("stl".equalsIgnoreCase(suffix) || "obj".equalsIgnoreCase(suffix) || "dae".equalsIgnoreCase(suffix)) {
-				modelFile = mainFile;
-			}
+//			if ("stl".equalsIgnoreCase(suffix) || "obj".equalsIgnoreCase(suffix) || "dae".equalsIgnoreCase(suffix)) {
+//				modelFile = mainFile;
+//			}
 			loadCode();
-			loadModel();
-			if (("gcode".equalsIgnoreCase(suffix) || "ngc".equalsIgnoreCase(suffix)) && getCode() != null) {
+			//loadModel();
+			if (("gcode".equalsIgnoreCase(suffix) || "ngc".equalsIgnoreCase(suffix)) && getCode() != null) 			
+			{
 				openedElement = getCode();
-			} else {
-				openedElement = getModel();
+//			} else {
+//				openedElement = getModel();
 			}
 		}
 	}
@@ -171,16 +172,16 @@ public class Build {
 				parentPath = ".";
 			}
 			folder = new File(parentPath);
-			if ("stl".equalsIgnoreCase(suffix) || "obj".equalsIgnoreCase(suffix) || "dae".equalsIgnoreCase(suffix)) {
-				modelFile = mainFile;
-			}
+//			if ("stl".equalsIgnoreCase(suffix) || "obj".equalsIgnoreCase(suffix) || "dae".equalsIgnoreCase(suffix)) {
+//				modelFile = mainFile;
+//			}
 			loadCode();
-			loadModel();
-			if (("gcode".equalsIgnoreCase(suffix) || "ngc".equalsIgnoreCase(suffix)) && getCode() != null) {
-				openedElement = getCode();
-			} else {
-				openedElement = getModel();
-			}
+			//loadModel();
+//			if (("gcode".equalsIgnoreCase(suffix) || "ngc".equalsIgnoreCase(suffix)) && getCode() != null) {
+//				openedElement = getCode();
+//			} else {
+//				openedElement = getModel();
+//			}
 			
 			crashCheck.delete();
 		}
@@ -210,16 +211,16 @@ public class Build {
 		}
 	}
 
-	File modelFile = null;
+//	File modelFile = null;
 
-	public void loadModel() {
-		if (modelFile == null || !modelFile.exists()) {
-			modelFile = new File(folder, name + ".stl");
-		}
-		if (modelFile.exists()) {
-			elements.add(new BuildModel(this, modelFile));
-		}		
-	}
+//	public void loadModel() {
+//		if (modelFile == null || !modelFile.exists()) {
+//			modelFile = new File(folder, name + ".stl");
+//		}
+//		if (modelFile.exists()) {
+//			elements.add(new BuildModel(this, modelFile));
+//		}		
+//	}
 
 
 	/**
@@ -252,12 +253,12 @@ public class Build {
 				}
 			}
 		}
-		BuildModel model = getModel();
-		if (model != null) {
-			if (model.isModified()) {
-				model.save();
-			}
-		}
+//		BuildModel model = getModel();
+//		if (model != null) {
+//			if (model.isModified()) {
+//				model.save();
+//			}
+//		}
 		return true;
 	}
 
@@ -311,11 +312,11 @@ public class Build {
 			code.saveAs(newFile);
 		}
 
-		BuildModel model = getModel();
-		if (model != null) {
-			File newFile = new File(folder, newName+".stl");
-			model.saveAs(newFile);
-		}
+//		BuildModel model = getModel();
+//		if (model != null) {
+//			File newFile = new File(folder, newName+".stl");
+//			model.saveAs(newFile);
+//		}
 
 		this.name = newName;
 		this.mainFilename = fd.getFile();
@@ -333,15 +334,15 @@ public class Build {
 		return null;
 	}
 
-	/**
-	 * Return the model object.
-	 */
-	public BuildModel getModel() {
-		for (BuildElement e : elements) {
-			if (e instanceof BuildModel) { return (BuildModel)e; }
-		}
-		return null;
-	}
+//	/**
+//	 * Return the model object.
+//	 */
+//	public BuildModel getModel() {
+//		for (BuildElement e : elements) {
+//			if (e instanceof BuildModel) { return (BuildModel)e; }
+//		}
+//		return null;
+//	}
 
     /**
      * The line count.

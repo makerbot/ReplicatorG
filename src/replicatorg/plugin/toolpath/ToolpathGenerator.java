@@ -5,7 +5,7 @@ import java.util.EventObject;
 import java.util.LinkedList;
 
 import replicatorg.model.BuildCode;
-import replicatorg.model.BuildModel;
+//import replicatorg.model.BuildModel;
 import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorListener.Completion;
 
 /**
@@ -47,16 +47,16 @@ public abstract class ToolpathGenerator {
 	}
 	public static String displayName = "A Toolpath Generator";
 	
-	protected BuildModel model;
+//	protected BuildModel model;
 	protected LinkedList<GeneratorListener> listeners = new LinkedList<GeneratorListener>();
 	
 	public void addListener(GeneratorListener listener) {
 		listeners.add(listener);
 	}
 	
-	public void setModel(BuildModel model) {
-		this.model = model;
-	}
+//	public void setModel(BuildModel model) {
+//		this.model = model;
+//	}
 	
 	/**
 	 * Returns true if configuration successful; false if aborted.
@@ -64,7 +64,7 @@ public abstract class ToolpathGenerator {
 	public boolean visualConfigure(Frame parent) {
 		//TODO: Why does this exist? Test/refactor
 		assert parent != null;
-		assert model != null;
+//		assert model != null;
 		return true;
 	}
 	
@@ -74,7 +74,7 @@ public abstract class ToolpathGenerator {
 	public boolean visualConfigure(Frame parent, int x, int y, String name) {
 		//TODO: Why does this exist? Test/refactor
 		assert parent != null;
-		assert model != null;
+//		assert model != null;
 		return true;
 	}
 	
@@ -84,7 +84,7 @@ public abstract class ToolpathGenerator {
 	public boolean nonvisualConfigure()
 	{
 		//TODO: Why does this exist? Test/refactor
-		assert model != null;
+//		assert model != null;
 		return true;
 	}
 	

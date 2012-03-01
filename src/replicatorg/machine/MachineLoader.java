@@ -34,6 +34,10 @@ import replicatorg.drivers.Driver;
 		 * @return whatever the current singleton machine interface is.
 		 */
 		public MachineInterface getMachineInterface() {
+			if( singletonMI == null) {
+				String machineType = Base.preferences.get("machine.name","The Replicator Dual");
+				return getMachineInterface(machineType);
+			}
 			return singletonMI;
 		}
 		
