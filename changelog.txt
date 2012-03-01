@@ -1,6 +1,7 @@
 0033 ReplicatorG
 * Updated version number to avoid confusion
 * Minor UI changes
+* Added check for success flag in packet, to avoid loopback devices pretending to be machines
 
 0032 ReplicatorG 
 * Extensive polishing of ReplicatorG
