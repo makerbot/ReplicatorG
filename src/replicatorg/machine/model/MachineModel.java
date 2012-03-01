@@ -187,6 +187,27 @@ public class MachineModel
 			}
 		}
 	}
+        
+        private void parseOffsets()
+	{
+		if(XML.hasChildNode(xml, "offsets"))
+		{
+			Node offsetsNode = XML.getChildNodeByName(xml, "offsets");
+			
+			//look through the axes.
+			NodeList wipesKids = offsetsNode.getChildNodes();
+			for (int i=0; i<wipesKids.getLength(); i++)
+			{
+				Node wipeNode = wipesKids.item(i);
+				
+				if (wipeNode.getNodeName().equals("wipe"))
+				{
+					WipeModel wipe = new WipeModel(wipeNode);
+					wipes.add(wipe);
+				}
+			}
+		}
+	}
 	
 	
 	//load axes configuration

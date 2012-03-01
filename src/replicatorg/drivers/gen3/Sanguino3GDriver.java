@@ -2167,6 +2167,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		return val;
 	}
+        
 
 	public void setAxisHomeOffset(int axis, double offset) {
 		if ((axis < 0) || (axis > 4)) {
@@ -2198,6 +2199,14 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_AXIS_HOME_POSITIONS_OFFSET
 				+ axis * 4, intToLE(offsetSteps));
 	}
+        
+        public double getNozzleOffset(int axis) {
+            return 0.0;
+        }
+        
+        public void setNozzleOffset(int axis, double offset){
+            return;
+        }
 
 	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
 		byte b = 0;
