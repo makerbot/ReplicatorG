@@ -41,6 +41,9 @@ public interface OnboardParameters {
 	
 	double getAxisHomeOffset(int axis);
 	void setAxisHomeOffset(int axis, double d);
+        
+        double getNozzleOffset(int axis);
+        void setNozzleOffset(int axis, double d);
 	
 	
 	public enum EndstopType {

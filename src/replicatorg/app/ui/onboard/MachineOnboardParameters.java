@@ -80,6 +80,10 @@ public class MachineOnboardParameters extends JPanel {
 	private JFormattedTextField vref2 = new JFormattedTextField(threePlaces);
 	private JFormattedTextField vref3 = new JFormattedTextField(threePlaces);
 	private JFormattedTextField vref4 = new JFormattedTextField(threePlaces);
+        
+        private JFormattedTextField xNozzleOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField yNozzleOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField zNozzleOffsetField = new JFormattedTextField(threePlaces);
 
 	
 	/** Prompts the user to fire a bot  reset after the changes have been sent to the board.
@@ -152,7 +156,12 @@ public class MachineOnboardParameters extends JPanel {
 			target.setStoredStepperVoltage(3, ((Number)vref3.getValue()).intValue());
 			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
 		}
-		requestResetFromUser();
+                
+                target.setNozzleOffset(0, ((Number)xNozzleOffsetField.getValue()).doubleValue());
+                target.setNozzleOffset(1, ((Number)yNozzleOffsetField.getValue()).doubleValue());
+                target.setNozzleOffset(2, ((Number)zNozzleOffsetField.getValue()).doubleValue());
+		
+                requestResetFromUser();
 	}
 
 	/// Causes the EEPROM to be reset to a totally blank state, and during dispose
@@ -225,6 +234,11 @@ public class MachineOnboardParameters extends JPanel {
 			vref3.setValue(this.target.getStoredStepperVoltage(3));
 			vref4.setValue(this.target.getStoredStepperVoltage(4));
 		}
+                
+                xNozzleOffsetField.setValue(this.target.getNozzleOffset(0));
+                yNozzleOffsetField.setValue(this.target.getNozzleOffset(1));
+                zNozzleOffsetField.setValue(this.target.getNozzleOffset(2));
+                
 	}
 
 	protected void dispose() {
@@ -326,6 +340,19 @@ public class MachineOnboardParameters extends JPanel {
 			add(new JLabel("B home offset (mm)"));
 			add(bAxisHomeOffsetField,"wrap");
 		}
+                
+                xNozzleOffsetField.setColumns(10);
+                yNozzleOffsetField.setColumns(10);
+                zNozzleOffsetField.setColumns(10);
+                
+                add(new JLabel("X nozzle offset (mm)"));
+                add(xNozzleOffsetField, "wrap");
+                
+                add(new JLabel("Y nozzle offset (mm)"));
+                add(yNozzleOffsetField, "wrap");
+                
+                add(new JLabel("Z nozzle offset (mm)"));
+                add(zNozzleOffsetField, "wrap");
 
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {

@@ -148,6 +148,12 @@ class MightyBoardEEPROM implements EEPROMClass
 	final public static int BUZZ_SETTINGS		= 0x014A;
 	///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 	final public static int FIRST_BOOT_FLAG	= 0x0156;
+        /// 7 bytes, short int x 3 entries, 1 byte on/off
+        final public static int PREHEAT_SETTINGS = 0x0158;
+        /// 1 byte,  0x01 for help menus on, 0x00 for off
+        final public static int FILAMENT_HELP_SETTINGS = 0x0160;
+        /// nozzle offsets XYZ,  3 x 32 bits = 12 bytes
+        final public static int NOZZLE_OFFSET_SETTINGS = 0x0162;
 
 	/// start of free space
 	final public static int FREE_EEPROM_STARTS = 0x0158;
@@ -754,6 +760,60 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 				break;
 		}
 		write32ToEEPROM32(MightyBoardEEPROM.AXIS_HOME_POSITIONS + axis*4,offsetSteps);
+	}
+
+        @Override
+	public double getNozzleOffset(int axis) {
+
+		Base.logger.finest("MigtyBoard getNozzleOffset" + axis);
+		if ((axis < 0) || (axis > 2)) {
+			// TODO: handle this
+			Base.logger.severe("axis out of range" + axis);
+			return 0;
+		}
+		
+		checkEEPROM();
+
+		double val = read32FromEEPROM(MightyBoardEEPROM.NOZZLE_OFFSET_SETTINGS + axis*4);
+
+		Point5d stepsPerMM = getMachine().getStepsPerMM();
+		switch(axis) {
+			case 0:
+				val = (val*2.0)/stepsPerMM.x()/10.0 + 33.0;
+				break;
+			case 1:
+				val = (val*2.0)/stepsPerMM.y()/10.0;
+				break;
+			case 2:
+				val = (val*2.0)/stepsPerMM.z()/10.0;
+				break;
+		}
+				
+		return val;
+	}
+        
+        @Override
+	public void setNozzleOffset(int axis, double offset) {
+		if ((axis < 0) || (axis > 2)) {
+			// TODO: handle this
+			return;
+		}
+		
+		int offsetSteps = 0;
+		
+		Point5d stepsPerMM = getMachine().getStepsPerMM();
+		switch(axis) {
+			case 0:
+				offsetSteps = (int)((offset-33)*stepsPerMM.x()*10.0 / 2.0);
+				break;
+			case 1:
+				offsetSteps = (int)(offset*stepsPerMM.y()*10.0 / 2.0);
+				break;
+			case 2:
+				offsetSteps = (int)(offset*stepsPerMM.z()*10.0 / 2.0);
+				break;
+		}
+		write32ToEEPROM32(MightyBoardEEPROM.NOZZLE_OFFSET_SETTINGS + axis*4,offsetSteps);
 	}
 
 
