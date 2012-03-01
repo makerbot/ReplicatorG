@@ -1,10 +1,6 @@
 package replicatorg.machine.builder;
 
-import java.util.EnumMap;
-import java.util.Map;
 import java.util.logging.Level;
-
-import javax.swing.JOptionPane;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
@@ -13,11 +9,6 @@ import replicatorg.drivers.SimulationDriver;
 import replicatorg.machine.Machine.JobTarget;
 import replicatorg.model.GCodeSource;
 
-/** 
- * 
- * 
- *
- */
 public class ToRemoteFile implements MachineBuilder {
 	
 	Direct directBuilder;
