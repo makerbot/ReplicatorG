@@ -35,6 +35,7 @@ import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.AxisId;
+import replicatorg.machine.model.NozzleOffset;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
@@ -776,16 +777,17 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		double val = read32FromEEPROM(MightyBoardEEPROM.NOZZLE_OFFSET_SETTINGS + axis*4);
 
-		Point5d stepsPerMM = getMachine().getStepsPerMM();
+		NozzleOffset nozzleOffsets = getMachine().getNozzleOffsets();
+                Point5d stepsPerMM = getMachine().getStepsPerMM();
 		switch(axis) {
 			case 0:
-				val = (val*2.0)/stepsPerMM.x()/10.0 + 33.0;
+				val = (val*2.0)/stepsPerMM.x()/10.0 + nozzleOffsets.x();
 				break;
 			case 1:
-				val = (val*2.0)/stepsPerMM.y()/10.0;
+				val = (val*2.0)/stepsPerMM.y()/10.0 + nozzleOffsets.y();
 				break;
 			case 2:
-				val = (val*2.0)/stepsPerMM.z()/10.0;
+				val = (val*2.0)/stepsPerMM.z()/10.0 + nozzleOffsets.z();
 				break;
 		}
 				
@@ -802,15 +804,16 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		int offsetSteps = 0;
 		
 		Point5d stepsPerMM = getMachine().getStepsPerMM();
+                NozzleOffset nozzleOffsets = getMachine().getNozzleOffsets();
 		switch(axis) {
 			case 0:
-				offsetSteps = (int)((offset-33)*stepsPerMM.x()*10.0 / 2.0);
+				offsetSteps = (int)((offset-nozzleOffsets.x())*stepsPerMM.x()*10.0 / 2.0);
 				break;
 			case 1:
-				offsetSteps = (int)(offset*stepsPerMM.y()*10.0 / 2.0);
+				offsetSteps = (int)((offset-nozzleOffsets.y())*stepsPerMM.y()*10.0 / 2.0);
 				break;
 			case 2:
-				offsetSteps = (int)(offset*stepsPerMM.z()*10.0 / 2.0);
+				offsetSteps = (int)((offset-nozzleOffsets.z())*stepsPerMM.z()*10.0 / 2.0);
 				break;
 		}
 		write32ToEEPROM32(MightyBoardEEPROM.NOZZLE_OFFSET_SETTINGS + axis*4,offsetSteps);

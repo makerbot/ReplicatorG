@@ -88,6 +88,9 @@ public class MachineModel
 	
 	// our build volume
 	protected BuildVolume buildVolume;
+        
+        // nozzle offsets
+        protected NozzleOffset nozzleOffsets;
 	
 	private MachineType machineType = null;
 
@@ -99,6 +102,7 @@ public class MachineModel
 		clamps = new Vector<ClampModel>();
 		tools = new Vector<ToolModel>();
 		buildVolume = new BuildVolume(100,100,100); // preload it with the default values
+                nozzleOffsets = new NozzleOffset(0.0, 0.0, 0.0);
 		
 		//currentPosition = new Point3d();
 		minimum = new Point5d();
@@ -125,6 +129,7 @@ public class MachineModel
 		parseWipes();
 		parseExclusion();
 		parseGCode();
+                parseOffsets();
 	}
 	
 
@@ -195,15 +200,30 @@ public class MachineModel
 			Node offsetsNode = XML.getChildNodeByName(xml, "offsets");
 			
 			//look through the axes.
-			NodeList wipesKids = offsetsNode.getChildNodes();
-			for (int i=0; i<wipesKids.getLength(); i++)
+			NodeList offsetsKids = offsetsNode.getChildNodes();
+			for (int i=0; i<offsetsKids.getLength(); i++)
 			{
-				Node wipeNode = wipesKids.item(i);
+				Node offsetNode = offsetsKids.item(i);
 				
-				if (wipeNode.getNodeName().equals("wipe"))
+				if (offsetNode.getNodeName().equals("offset"))
 				{
-					WipeModel wipe = new WipeModel(wipeNode);
-					wipes.add(wipe);
+                                    double xNozzleOffset = 0.0;
+                                    double yNozzleOffset = 0.0;
+                                    double zNozzleOffset = 0.0;
+                                    
+                                    try {
+                                            xNozzleOffset = Double.parseDouble(XML.getAttributeValue(offsetNode, "xNozzle"));
+                                    } catch (Exception e) {}
+                                        try {
+                                            yNozzleOffset = Double.parseDouble(XML.getAttributeValue(offsetNode, "yNozzle"));
+                                    } catch (Exception e) {}
+                                        try {
+                                            zNozzleOffset = Double.parseDouble(XML.getAttributeValue(offsetNode, "zNozzle"));
+                                    } catch (Exception e) {}
+                                        
+                                        nozzleOffsets.setX(xNozzleOffset);
+                                        nozzleOffsets.setY(yNozzleOffset);
+                                        nozzleOffsets.setZ(zNozzleOffset);
 				}
 			}
 		}
@@ -447,6 +467,11 @@ public class MachineModel
 	 * Get steps-mm conversion value
 	 */
 	public Point5d getStepsPerMM() { return stepsPerMM; }
+        
+        /**
+	 * Get steps-mm conversion value
+	 */
+	public NozzleOffset getNozzleOffsets() { return nozzleOffsets; }
 
 	/*************************************
 	*  Convert millimeters to machine steps
