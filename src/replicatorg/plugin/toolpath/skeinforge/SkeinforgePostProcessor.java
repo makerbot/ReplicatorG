@@ -196,8 +196,8 @@ public class SkeinforgePostProcessor {
 		}
 		
 		// scans to cool unused head if required
-		if( multiHead )	
-			source.coolUnusedToolhead();
+//		if( multiHead )	
+//			source.coolUnusedToolhead();
 		
 		//Write the modified source back to our file
 		source.writeToFile(generator.output.file);
