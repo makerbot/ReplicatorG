@@ -4,6 +4,13 @@ import javax.vecmath.Point3d;
 
 import replicatorg.machine.model.AxisId;
 
+/**
+ * Class to represent a 5D destiation, consisting of xyz location,
+ * and a/b feed distance.
+ * 
+ * @author farmckon
+ *
+ */
 public class Point5d {
 	private final static int DIMENSIONS = 5;
 	final private double values[] = new double[DIMENSIONS];
@@ -145,6 +152,10 @@ public class Point5d {
 		return Math.sqrt(acc);		
 	}
 	
+	/**
+	 * Pretty print contents of this object as a string 
+	 * @return a text string of 5 numbers, comma split
+	 */
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append('(');

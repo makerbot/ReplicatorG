@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.Version;
-import replicatorg.uploader.ui.UploaderDialog;
+//import replicatorg.uploader.ui.UploaderDialog;
 
 public class FirmwareUploader {
 	/**
@@ -56,13 +56,13 @@ public class FirmwareUploader {
 	}
 
 	public void run() {
-		// Load firmware.xml
-		UploaderDialog selector = new UploaderDialog(parent, this);
-		selector.setVisible(true);
-		// wait for dialog to close
-		synchronized(FirmwareUploader.class) {
-			uploader = null;
-		}
+//		// Load firmware.xml
+//		UploaderDialog selector = new UploaderDialog(parent, this);
+//		selector.setVisible(true);
+//		// wait for dialog to close
+//		synchronized(FirmwareUploader.class) {
+//			uploader = null;
+//		}
 	}
 
 	static Document firmwareDoc = null;
