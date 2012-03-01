@@ -176,13 +176,13 @@ public class MutableGCodeSource implements GCodeSource {
 		source = newSource;
 	}
 	
-	/// adds any safety stuff that's needed after all other steps have been taken
-	/// atm. it just turns off any unused extruder
-	public void addSafetyMeasures(boolean isDualHead)
-	{
-		if(!isDualHead)
-			return;
-		
+	/**
+	 * If only one toolhead is used, a cool command for the unused head is added
+	 * to this gcode source object.  Created to avoid smell/problems for single prints on a dual machine
+	 * when prior build was cancelled, or a toolhead is left hot from pre-heating. 
+	 */
+	public void coolUnusedToolhead()
+	{		
 		GCodeCommand gcode;
 		String line;
 
@@ -200,10 +200,8 @@ public class MutableGCodeSource implements GCodeSource {
 			
 			tval = gcode.getCodeValue('T');
 			
-			if(tval == 0)
-				seenT0 = true;
-			if(tval == 1)
-				seenT1 = true;
+			if(tval == 0)	seenT0 = true;
+			if(tval == 1)	seenT1 = true;
 			
 			if(!addPointFound)
 				additionPoint++;
