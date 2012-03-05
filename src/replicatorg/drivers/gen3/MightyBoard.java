@@ -259,6 +259,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		Base.logger.info("Created a MightyBoard");
 
 		stepperValues= new Hashtable();
+		
+		// Make sure this accurately reflects what versions this supports
+		minimumVersion = new Version(5, 3);
+		preferredVersion = new Version(5, 3);
 
 	}
 	
@@ -795,12 +799,15 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		return val;
 	}
 
-	/**Stores to EEPROM in motor steps counts, how far out of 
-	 * tolerance the toolhead0 to toolhead1 distance is
-	 * 
+	/**
+	 * Stores to EEPROM in motor steps counts, how far out of 
+	 * tolerance the toolhead0 to toolhead1 distance is. XML settings are used
+	 * to calculate expected distance to sublect to tolerance error from.
+	 * @param axis axis to store 
+	 * @param distanceMm total distance of measured offset, tool0 to too1
 	 */
 	@Override
-	public void eepromStoreToolDelta(int axis, double offset) {
+	public void eepromStoreToolDelta(int axis, double distanceMm) {
 		if ((axis < 0) || (axis > 2)) {
 			// TODO: handle this
 			return;
@@ -813,13 +820,13 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 		switch(axis) {
 			case 0:
-				offsetSteps = (int)((offset-nozzleOffsets.x())*stepsPerMM.x()*10.0);
+				offsetSteps = (int)((distanceMm-nozzleOffsets.x())*stepsPerMM.x()*10.0);
 				break;
 			case 1:
-				offsetSteps = (int)((offset-nozzleOffsets.y())*stepsPerMM.y()*10.0);
+				offsetSteps = (int)((distanceMm-nozzleOffsets.y())*stepsPerMM.y()*10.0);
 				break;
 			case 2:
-				offsetSteps = (int)((offset-nozzleOffsets.z())*stepsPerMM.z()*10.0);
+				offsetSteps = (int)((distanceMm-nozzleOffsets.z())*stepsPerMM.z()*10.0);
 				break;
 		}
 		write32ToEEPROM32(MightyBoardEEPROM.TOLERANCE_ERROR_STEPS + axis*4,offsetSteps);
