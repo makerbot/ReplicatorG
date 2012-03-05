@@ -2201,10 +2201,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
         
         public double getNozzleOffset(int axis) {
+        	Base.logger.info("Cannot get tolerance error for S3G driver");
             return 0.0;
         }
         
-        public void setNozzleOffset(int axis, double offset){
+        public void eepromStoreToolDelta(int axis, double offset){
+        	Base.logger.info("Cannot store tolerance error for S3G driver");
             return;
         }
 

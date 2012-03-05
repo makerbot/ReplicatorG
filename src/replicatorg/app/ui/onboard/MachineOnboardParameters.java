@@ -157,11 +157,11 @@ public class MachineOnboardParameters extends JPanel {
 			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
 		}
                 
-                target.setNozzleOffset(0, ((Number)xNozzleOffsetField.getValue()).doubleValue());
-                target.setNozzleOffset(1, ((Number)yNozzleOffsetField.getValue()).doubleValue());
-                target.setNozzleOffset(2, ((Number)zNozzleOffsetField.getValue()).doubleValue());
-		
-                requestResetFromUser();
+        target.eepromStoreToolDelta(0, ((Number)xNozzleOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(1, ((Number)yNozzleOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(2, ((Number)zNozzleOffsetField.getValue()).doubleValue());
+
+        requestResetFromUser();
 	}
 
 	/// Causes the EEPROM to be reset to a totally blank state, and during dispose

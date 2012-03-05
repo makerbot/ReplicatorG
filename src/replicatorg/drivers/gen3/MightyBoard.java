@@ -149,12 +149,13 @@ class MightyBoardEEPROM implements EEPROMClass
 	final public static int BUZZ_SETTINGS		= 0x014A;
 	///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 	final public static int FIRST_BOOT_FLAG	= 0x0156;
-        /// 7 bytes, short int x 3 entries, 1 byte on/off
-        final public static int PREHEAT_SETTINGS = 0x0158;
-        /// 1 byte,  0x01 for help menus on, 0x00 for off
-        final public static int FILAMENT_HELP_SETTINGS = 0x0160;
-        /// nozzle offsets XYZ,  3 x 32 bits = 12 bytes
-        final public static int NOZZLE_OFFSET_SETTINGS = 0x0162;
+    /// 7 bytes, short int x 3 entries, 1 byte on/off
+    final public static int PREHEAT_SETTINGS = 0x0158;
+    /// 1 byte,  0x01 for help menus on, 0x00 for off
+    final public static int FILAMENT_HELP_SETTINGS = 0x0160;
+    /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
+    /// in steps.  3 x 32 bits = 12 bytes
+    final public static int TOLERANCE_ERROR_STEPS = 0x0162;
 
 	/// start of free space
 	final public static int FREE_EEPROM_STARTS = 0x0158;
@@ -258,6 +259,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		Base.logger.info("Created a MightyBoard");
 
 		stepperValues= new Hashtable();
+		
+		// Make sure this accurately reflects what versions this supports
+		minimumVersion = new Version(5, 3);
+		preferredVersion = new Version(5, 3);
 
 	}
 	
@@ -763,7 +768,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		write32ToEEPROM32(MightyBoardEEPROM.AXIS_HOME_POSITIONS + axis*4,offsetSteps);
 	}
 
-        @Override
+	@Override
 	public double getNozzleOffset(int axis) {
 
 		Base.logger.finest("MigtyBoard getNozzleOffset" + axis);
@@ -775,27 +780,34 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 		checkEEPROM();
 
-		double val = read32FromEEPROM(MightyBoardEEPROM.NOZZLE_OFFSET_SETTINGS + axis*4);
+		double val = read32FromEEPROM(MightyBoardEEPROM.TOLERANCE_ERROR_STEPS + axis*4);
 
 		NozzleOffset nozzleOffsets = getMachine().getNozzleOffsets();
                 Point5d stepsPerMM = getMachine().getStepsPerMM();
 		switch(axis) {
 			case 0:
-				val = (val*2.0)/stepsPerMM.x()/10.0 + nozzleOffsets.x();
+				val = (val)/stepsPerMM.x()/10.0 + nozzleOffsets.x();
 				break;
 			case 1:
-				val = (val*2.0)/stepsPerMM.y()/10.0 + nozzleOffsets.y();
+				val = (val)/stepsPerMM.y()/10.0 + nozzleOffsets.y();
 				break;
 			case 2:
-				val = (val*2.0)/stepsPerMM.z()/10.0 + nozzleOffsets.z();
+				val = (val)/stepsPerMM.z()/10.0 + nozzleOffsets.z();
 				break;
 		}
 				
 		return val;
 	}
-        
-        @Override
-	public void setNozzleOffset(int axis, double offset) {
+
+	/**
+	 * Stores to EEPROM in motor steps counts, how far out of 
+	 * tolerance the toolhead0 to toolhead1 distance is. XML settings are used
+	 * to calculate expected distance to sublect to tolerance error from.
+	 * @param axis axis to store 
+	 * @param distanceMm total distance of measured offset, tool0 to too1
+	 */
+	@Override
+	public void eepromStoreToolDelta(int axis, double distanceMm) {
 		if ((axis < 0) || (axis > 2)) {
 			// TODO: handle this
 			return;
@@ -804,19 +816,20 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		int offsetSteps = 0;
 		
 		Point5d stepsPerMM = getMachine().getStepsPerMM();
-                NozzleOffset nozzleOffsets = getMachine().getNozzleOffsets();
+		NozzleOffset nozzleOffsets = getMachine().getNozzleOffsets();
+		
 		switch(axis) {
 			case 0:
-				offsetSteps = (int)((offset-nozzleOffsets.x())*stepsPerMM.x()*10.0 / 2.0);
+				offsetSteps = (int)((distanceMm-nozzleOffsets.x())*stepsPerMM.x()*10.0);
 				break;
 			case 1:
-				offsetSteps = (int)((offset-nozzleOffsets.y())*stepsPerMM.y()*10.0 / 2.0);
+				offsetSteps = (int)((distanceMm-nozzleOffsets.y())*stepsPerMM.y()*10.0);
 				break;
 			case 2:
-				offsetSteps = (int)((offset-nozzleOffsets.z())*stepsPerMM.z()*10.0 / 2.0);
+				offsetSteps = (int)((distanceMm-nozzleOffsets.z())*stepsPerMM.z()*10.0);
 				break;
 		}
-		write32ToEEPROM32(MightyBoardEEPROM.NOZZLE_OFFSET_SETTINGS + axis*4,offsetSteps);
+		write32ToEEPROM32(MightyBoardEEPROM.TOLERANCE_ERROR_STEPS + axis*4,offsetSteps);
 	}
 
 
