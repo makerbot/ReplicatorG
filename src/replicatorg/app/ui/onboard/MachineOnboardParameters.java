@@ -362,7 +362,7 @@ public class MachineOnboardParameters extends JPanel {
 //				loadParameters();
 			}
 		});
-		resetToFactoryButton.setToolTipText("Reest the onboard settings to the factory defaults");
+		resetToFactoryButton.setToolTipText("Reset the onboard settings to the factory defaults");
 		add(resetToFactoryButton, "split 1");
 
 		
@@ -373,7 +373,7 @@ public class MachineOnboardParameters extends JPanel {
 //				loadParameters();
 			}
 		});
-		resetToBlankButton.setToolTipText("Reest the onboard settings to the *completely blank*");
+		resetToBlankButton.setToolTipText("Reset the onboard settings to the *completely blank*");
 		add(resetToBlankButton);
 
 		commitButton.addActionListener(new ActionListener() {
