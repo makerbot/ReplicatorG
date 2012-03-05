@@ -42,8 +42,11 @@ public interface OnboardParameters {
 	double getAxisHomeOffset(int axis);
 	void setAxisHomeOffset(int axis, double d);
         
-        double getNozzleOffset(int axis);
-        void setNozzleOffset(int axis, double d);
+    double getNozzleOffset(int axis);
+
+    /// set to EEPROM the distance out of tolerance the 
+    /// specified axis is
+    void eepromStoreToolDelta(int axis, double distanceMm);
 	
 	
 	public enum EndstopType {
