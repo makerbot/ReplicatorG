@@ -231,7 +231,7 @@ MachineListener, ChangeListener
 //	JMenuItem generateItem;
 	JMenuItem stopItem;
 	JMenuItem pauseItem;
-	JMenuItem controlPanelItem;
+//	JMenuItem controlPanelItem;
 	JMenuItem buildMenuItem;
 	JMenuItem profilesMenuItem;
 //	JMenuItem dualstrusionItem;
@@ -2368,14 +2368,14 @@ MachineListener, ChangeListener
 			}
 		}
 
-		boolean hasGcode = getBuild().getCode() != null;
+		boolean hasGcode = (null != getBuild()) && (null != getBuild().getCode());
 		boolean hasModel = false ; //getBuild().getModel() != null;
 
 		//		serialMenu.setEnabled(!evt.getState().isConnected());
 		//		machineMenu.setEnabled(!evt.getState().isConnected());
 
 		// enable the control panel menu item when the machine is ready
-		controlPanelItem.setEnabled(evt.getState().isConfigurable());
+//		controlPanelItem.setEnabled(evt.getState().isConfigurable());
 
 		// enable the build menu item when the machine is ready and there is gcode in the editor
 		buildMenuItem.setEnabled(hasGcode && evt.getState().isConfigurable());
