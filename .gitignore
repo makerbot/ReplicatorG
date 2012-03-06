@@ -19,3 +19,4 @@ ReplicatorG.app
 *.diff
 .DS_Store
 *.tmp
+.*.sw?
