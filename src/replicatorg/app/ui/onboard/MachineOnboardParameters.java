@@ -376,7 +376,7 @@ public class MachineOnboardParameters extends JPanel {
 //				loadParameters();
 			}
 		});
-		resetToBlankButton.setToolTipText("Reset the onboard settings to the *completely blank*");
+		resetToBlankButton.setToolTipText("Reset the onboard settings to *completely blank*");
 		add(resetToBlankButton);
 
 		commitButton.addActionListener(new ActionListener() {
