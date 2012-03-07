@@ -5,7 +5,6 @@ package replicatorg.model;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * @author phooky
@@ -13,9 +12,9 @@ import java.util.Vector;
  */
 public class StringListSource implements GCodeSource {
 	
-	private Vector<String> gcode;
+	private List<String> gcode;
 	
-	public StringListSource(Vector<String> codes) {
+	public StringListSource(List<String> codes) {
 		gcode = codes;
 	}
 	

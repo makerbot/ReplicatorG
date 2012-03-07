@@ -67,6 +67,7 @@
 		<mkdir dir="${classes.dir}"/>
 		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5" includeAntRuntime="false">
 			<!-- Uncomment to aid in Java debugging
+			<compilerarg value="-Xlint:all,-path"/>
 			<compilerarg value="-Xlint:deprecation" />
 			<compilerarg value="-Xlint:unchecked" />
 			-->
@@ -93,13 +94,14 @@
 	</target>
 
 	<target name="run" depends="jar">
-		<java fork="true" classname="replicatorg.app.Base">
+		<java fork="true" classname="replicatorg.app.service.ServiceMain">
 			<!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
 
 			<jvmarg value="-ea"/>
 			<jvmarg value="-Xmx512m"/>
 			<jvmarg value="-XX:+HeapDumpOnOutOfMemoryError"/>
 			<jvmarg value="${native.java.flags}"/>
+			<jvmarg value="-Djava.awt.headless=true"/>
 			<classpath>
 				<path refid="classpath"/>
 				<pathelement location="${jar.dir}/${ant.project.name}.jar"/>
@@ -107,6 +109,7 @@
 			<sysproperty key="java.library.path" path="${native.lib.dir}"/>
 			<sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
 			<sysproperty key="replicatorg.toolpath" path="${native.tools.dir}"/>
+			<arg line="${arguments}"/>
 		</java>
 	</target>
 
