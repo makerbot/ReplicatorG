@@ -9,7 +9,12 @@ import org.apache.commons.io.FileUtils;
 
 import replicatorg.app.Base;
 import replicatorg.machine.MachineInterface;
+import replicatorg.machine.MachineListener;
 import replicatorg.machine.MachineLoader;
+import replicatorg.machine.MachineProgressEvent;
+import replicatorg.machine.MachineState;
+import replicatorg.machine.MachineStateChangeEvent;
+import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
 
@@ -21,14 +26,19 @@ public class BuildServiceCommand implements ServiceCommand
 {
     private final String filename;
 
+    private final Object lock;
+
     public BuildServiceCommand(final String filename)
     {
         this.filename = filename;
+        this.lock = new Object();
     }
 
     public void execute(final ServiceContext serviceContext)
     {
         final MachineLoader machineLoader = Base.getMachineLoader();
+        final Listener listener = new Listener();
+        machineLoader.addMachineListener(listener);
 
         final String machineName = Base.preferences.get("machine.name", "The Replicator Dual");
         if (null == machineName)
@@ -54,14 +64,10 @@ public class BuildServiceCommand implements ServiceCommand
                 else
                 {
                     machineLoader.connect(serial);
-                    try
-                    {
-                        // TODO: omg use some sort of listener hoobajoob
-                        Thread.sleep(5000);
-                    }
-                    catch (final InterruptedException exception)
-                    {
-                    }
+                    System.out.printf("i am waiting to connect%n");
+                    waitForConnected(machineInterface);
+                    System.out.printf("i am connected%n");
+
                     if (false == machineLoader.isLoaded())
                     {
                         throw new RuntimeException("i'm not ready to build");
@@ -74,19 +80,13 @@ public class BuildServiceCommand implements ServiceCommand
                     else
                     {
                         final GCodeSource gcodeSource = getGCodeSource();
+                        System.out.printf("i am starting a build%n");
                         machineInterface.buildDirect(gcodeSource);
-
-                        while (true)
-                        {
-                            try
-                            {
-                                // TODO: omg you have to ^C when the print is done
-                                Thread.sleep(1000);
-                            }
-                            catch (final InterruptedException exception)
-                            {
-                            }
-                        }
+                        System.out.printf("i am waiting for the build to start%n");
+                        waitForBuilding(machineInterface);
+                        System.out.printf("i am waiting for the build to end%n");
+                        waitForReady(machineInterface);
+                        System.out.printf("done!!%n");
                     }
                 }
             }
@@ -100,7 +100,9 @@ public class BuildServiceCommand implements ServiceCommand
         {
             System.out.printf("fail!%n");
             throw new RuntimeException("your file doesn't exist and the error handling needs to be wired up in a sensible manner");
-        } else {
+        }
+        else
+        {
             final List<String> lines;
             try
             {
@@ -112,6 +114,134 @@ public class BuildServiceCommand implements ServiceCommand
             }
             final GCodeSource gcodeSource = new StringListSource(lines);
             return gcodeSource;
+        }
+    }
+
+    private void waitOnLock(final long timeout) throws InterruptedException
+    {
+        synchronized (this.lock)
+        {
+            this.lock.wait(timeout);
+        }
+    }
+
+    private void waitForConnected(final MachineInterface machineInterface)
+    {
+        final long start = System.currentTimeMillis();
+        final long end = start + 60000;
+        for (;;)
+        {
+            final MachineState machineState
+                = machineInterface.getMachineState();
+            if (machineState.isConnected())
+            {
+                break;
+            }
+            else
+            {
+                final long now = System.currentTimeMillis();
+                final long remaining = end - now;
+                if (remaining < 0)
+                {
+                    throw new RuntimeException("took too long");
+                }
+                else
+                {
+                    try
+                    {
+                        waitOnLock(remaining);
+                    }
+                    catch (final InterruptedException exception)
+                    {
+                        // IGNORED
+                    }
+                }
+            }
+        }
+    }
+
+    private void waitForBuilding(final MachineInterface machineInterface)
+    {
+        final long start = System.currentTimeMillis();
+        final long end = start + 60000;
+        for (;;)
+        {
+            final MachineState machineState
+                = machineInterface.getMachineState();
+            if (machineState.isBuilding())
+            {
+                break;
+            }
+            else
+            {
+                final long now = System.currentTimeMillis();
+                final long remaining = end - now;
+                if (remaining < 0)
+                {
+                    throw new RuntimeException("took too long");
+                }
+                else
+                {
+                    try
+                    {
+                        waitOnLock(remaining);
+                    }
+                    catch (final InterruptedException exception)
+                    {
+                        // IGNORED
+                    }
+                }
+            }
+        }
+    }
+
+    private void waitForReady(final MachineInterface machineInterface)
+    {
+        for (;;)
+        {
+            final MachineState machineState
+                = machineInterface.getMachineState();
+            if (machineState.canPrint())
+            {
+                break;
+            }
+            else
+            {
+                try
+                {
+                    waitOnLock(0);
+                }
+                catch (final InterruptedException exception)
+                {
+                    // IGNORED
+                }
+            }
+        }
+    }
+
+    private class Listener implements MachineListener
+    {
+        public void machineStateChanged(final MachineStateChangeEvent event)
+        {
+            notifyLock();
+        }
+
+        public void machineProgress(final MachineProgressEvent event)
+        {
+            notifyLock();
+        }
+
+        public void toolStatusChanged(final MachineToolStatusEvent event)
+        {
+            notifyLock();
+        }
+
+        private void notifyLock()
+        {
+            synchronized (BuildServiceCommand.this.lock)
+            {
+                BuildServiceCommand.this.lock.notify();
+            }
         }
     }
 }
