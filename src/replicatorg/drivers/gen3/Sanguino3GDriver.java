@@ -285,6 +285,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	protected PacketResponse runQuery(byte[] packet) {
 		return runQuery(packet, 1);
 	}
+
 	//// Get a list of all toolheads we save onboard preferences for 
 	public List<Integer> toolheadsWithStoredData()
 	{
@@ -2199,16 +2200,21 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_AXIS_HOME_POSITIONS_OFFSET
 				+ axis * 4, intToLE(offsetSteps));
 	}
-        
-        public double getNozzleOffset(int axis) {
-        	Base.logger.info("Cannot get tolerance error for S3G driver");
-            return 0.0;
-        }
-        
-        public void eepromStoreToolDelta(int axis, double offset){
-        	Base.logger.info("Cannot store tolerance error for S3G driver");
-            return;
-        }
+    
+	@Override
+	public boolean hasToolheadsOffset() { return false;}
+	
+	@Override
+    public double getToolheadsOffset(int axis) {
+    	Base.logger.info("Cannot get tolerance error for S3G driver");
+        return 0.0;
+    }
+
+	@Override
+    public void eepromStoreToolDelta(int axis, double offset){
+    	Base.logger.info("Cannot store tolerance error for S3G driver");
+        return;
+    }
 
 	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
 		byte b = 0;

@@ -81,9 +81,9 @@ public class MachineOnboardParameters extends JPanel {
 	private JFormattedTextField vref3 = new JFormattedTextField(threePlaces);
 	private JFormattedTextField vref4 = new JFormattedTextField(threePlaces);
         
-        private JFormattedTextField xNozzleOffsetField = new JFormattedTextField(threePlaces);
-        private JFormattedTextField yNozzleOffsetField = new JFormattedTextField(threePlaces);
-        private JFormattedTextField zNozzleOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField xToolheadOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField yToolheadOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField zToolheadOffsetField = new JFormattedTextField(threePlaces);
 
 	
 	/** Prompts the user to fire a bot  reset after the changes have been sent to the board.
@@ -157,9 +157,9 @@ public class MachineOnboardParameters extends JPanel {
 			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
 		}
                 
-        target.eepromStoreToolDelta(0, ((Number)xNozzleOffsetField.getValue()).doubleValue());
-        target.eepromStoreToolDelta(1, ((Number)yNozzleOffsetField.getValue()).doubleValue());
-        target.eepromStoreToolDelta(2, ((Number)zNozzleOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
 
         requestResetFromUser();
 	}
@@ -234,11 +234,12 @@ public class MachineOnboardParameters extends JPanel {
 			vref3.setValue(this.target.getStoredStepperVoltage(3));
 			vref4.setValue(this.target.getStoredStepperVoltage(4));
 		}
-                
-                xNozzleOffsetField.setValue(this.target.getNozzleOffset(0));
-                yNozzleOffsetField.setValue(this.target.getNozzleOffset(1));
-                zNozzleOffsetField.setValue(this.target.getNozzleOffset(2));
-                
+
+		if(target.hasToolheadsOffset()) {
+			xToolheadOffsetField.setValue(this.target.getToolheadsOffset(0));
+			yToolheadOffsetField.setValue(this.target.getToolheadsOffset(1));
+			zToolheadOffsetField.setValue(this.target.getToolheadsOffset(2));
+		}    
 	}
 
 	protected void dispose() {
@@ -340,19 +341,21 @@ public class MachineOnboardParameters extends JPanel {
 			add(new JLabel("B home offset (mm)"));
 			add(bAxisHomeOffsetField,"wrap");
 		}
-                
-                xNozzleOffsetField.setColumns(10);
-                yNozzleOffsetField.setColumns(10);
-                zNozzleOffsetField.setColumns(10);
-                
-                add(new JLabel("X nozzle offset (mm)"));
-                add(xNozzleOffsetField, "wrap");
-                
-                add(new JLabel("Y nozzle offset (mm)"));
-                add(yNozzleOffsetField, "wrap");
-                
-                add(new JLabel("Z nozzle offset (mm)"));
-                add(zNozzleOffsetField, "wrap");
+
+		if(target.hasToolheadsOffset()) {
+		    xToolheadOffsetField.setColumns(10);
+		    yToolheadOffsetField.setColumns(10);
+		    zToolheadOffsetField.setColumns(10);
+		    
+		    add(new JLabel("X toolhead offset (mm)"));
+		    add(xToolheadOffsetField, "wrap");
+		    
+		    add(new JLabel("Y toolhead offset (mm)"));
+		    add(yToolheadOffsetField, "wrap");
+		    
+		    add(new JLabel("Z toolhead offset (mm)"));
+		    add(zToolheadOffsetField, "wrap");
+		}
 
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {

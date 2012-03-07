@@ -1,22 +1,22 @@
 package replicatorg.machine.model;
 
 /**
- *
+ * Class to contain a machine specific toolheads offset. 
+ * 
+ * NOTE: This breaks our object model a bit (these should be stored per-tool, 
+ * not per-machine) but frankly, we just need to ship this.
  * @author alison
  */
-public class NozzleOffset {
+public class ToolheadsOffset {
    
 	private double x;
 	private double y;
 	private double z;
-	/* 
-	 * TODO: This, more complex class could implement things like a cut-outs and places to avoid such as tool-changers. 
-	 * Perhaps managed whether it's confirmed to be empty or contains objects that we need to travel around? 
-	 */	
-	public NozzleOffset(){
+	
+	public ToolheadsOffset(){
 	}
 	
-	public NozzleOffset(double x, double y, double z){
+	public ToolheadsOffset(double x, double y, double z){
 		this.setX(x);
 		this.setY(y);
 		this.setZ(z);

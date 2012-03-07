@@ -35,7 +35,7 @@ import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.AxisId;
-import replicatorg.machine.model.NozzleOffset;
+import replicatorg.machine.model.ToolheadsOffset;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
@@ -260,9 +260,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		stepperValues= new Hashtable();
 		
-		// Make sure this accurately reflects what versions this supports
-		minimumVersion = new Version(5, 3);
-		preferredVersion = new Version(5, 3);
+		// Make sure this accurately reflects the minimum prefered 
+		// firmware version we want this driver to support.
+		minimumVersion = new Version(5,2);
+		preferredVersion = new Version(5,2);
 
 	}
 	
@@ -769,9 +770,12 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 	@Override
-	public double getNozzleOffset(int axis) {
+	public boolean hasToolheadsOffset() { return true;}
 
-		Base.logger.finest("MigtyBoard getNozzleOffset" + axis);
+	@Override
+	public double getToolheadsOffset(int axis) {
+
+		Base.logger.finest("MigtyBoard getToolheadsOffset" + axis);
 		if ((axis < 0) || (axis > 2)) {
 			// TODO: handle this
 			Base.logger.severe("axis out of range" + axis);
@@ -782,23 +786,24 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		double val = read32FromEEPROM(MightyBoardEEPROM.TOLERANCE_ERROR_STEPS + axis*4);
 
-		NozzleOffset nozzleOffsets = getMachine().getNozzleOffsets();
-                Point5d stepsPerMM = getMachine().getStepsPerMM();
+		ToolheadsOffset toolheadsOffset = getMachine().getToolheadsOffsets();
+		Point5d stepsPerMM = getMachine().getStepsPerMM();
 		switch(axis) {
 			case 0:
-				val = (val)/stepsPerMM.x()/10.0 + nozzleOffsets.x();
+				val = (val)/stepsPerMM.x()/10.0 + toolheadsOffset.x();
 				break;
 			case 1:
-				val = (val)/stepsPerMM.y()/10.0 + nozzleOffsets.y();
+				val = (val)/stepsPerMM.y()/10.0 + toolheadsOffset.y();
 				break;
 			case 2:
-				val = (val)/stepsPerMM.z()/10.0 + nozzleOffsets.z();
+				val = (val)/stepsPerMM.z()/10.0 + toolheadsOffset.z();
 				break;
 		}
 				
 		return val;
 	}
 
+	
 	/**
 	 * Stores to EEPROM in motor steps counts, how far out of 
 	 * tolerance the toolhead0 to toolhead1 distance is. XML settings are used
@@ -816,17 +821,17 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		int offsetSteps = 0;
 		
 		Point5d stepsPerMM = getMachine().getStepsPerMM();
-		NozzleOffset nozzleOffsets = getMachine().getNozzleOffsets();
+		ToolheadsOffset toolheadsOffset = getMachine().getToolheadsOffsets();
 		
 		switch(axis) {
 			case 0:
-				offsetSteps = (int)((distanceMm-nozzleOffsets.x())*stepsPerMM.x()*10.0);
+				offsetSteps = (int)((distanceMm-toolheadsOffset.x())*stepsPerMM.x()*10.0);
 				break;
 			case 1:
-				offsetSteps = (int)((distanceMm-nozzleOffsets.y())*stepsPerMM.y()*10.0);
+				offsetSteps = (int)((distanceMm-toolheadsOffset.y())*stepsPerMM.y()*10.0);
 				break;
 			case 2:
-				offsetSteps = (int)((distanceMm-nozzleOffsets.z())*stepsPerMM.z()*10.0);
+				offsetSteps = (int)((distanceMm-toolheadsOffset.z())*stepsPerMM.z()*10.0);
 				break;
 		}
 		write32ToEEPROM32(MightyBoardEEPROM.TOLERANCE_ERROR_STEPS + axis*4,offsetSteps);
