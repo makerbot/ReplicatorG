@@ -155,7 +155,7 @@ class MightyBoardEEPROM implements EEPROMClass
     final public static int FILAMENT_HELP_SETTINGS = 0x0160;
     /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
     /// in steps.  3 x 32 bits = 12 bytes
-    final public static int TOLERANCE_ERROR_STEPS = 0x0162;
+    final public static int TOOLHEAD_OFFSET_SETTINGS = 0x0162;
 
 	/// start of free space
 	final public static int FREE_EEPROM_STARTS = 0x0158;
@@ -780,7 +780,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 		checkEEPROM();
 
-		double val = read32FromEEPROM(MightyBoardEEPROM.TOLERANCE_ERROR_STEPS + axis*4);
+		double val = read32FromEEPROM(MightyBoardEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4);
 
 		NozzleOffset nozzleOffsets = getMachine().getNozzleOffsets();
                 Point5d stepsPerMM = getMachine().getStepsPerMM();
@@ -829,7 +829,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 				offsetSteps = (int)((distanceMm-nozzleOffsets.z())*stepsPerMM.z()*10.0);
 				break;
 		}
-		write32ToEEPROM32(MightyBoardEEPROM.TOLERANCE_ERROR_STEPS + axis*4,offsetSteps);
+		write32ToEEPROM32(MightyBoardEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4,offsetSteps);
 	}
 
 
