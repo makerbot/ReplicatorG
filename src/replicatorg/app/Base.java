@@ -486,6 +486,11 @@ public class Base {
 			}
 		}
 		
+
+		// reload the preferences in case the user has specified
+		// --alternate-prefs
+		preferences = getUserPreferences();
+
 		// Use the default system proxy settings
 		System.setProperty("java.net.useSystemProxies", "true");
     	// Use antialiasing implicitly
