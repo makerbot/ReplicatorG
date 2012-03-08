@@ -770,7 +770,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 	@Override
-	public boolean hasToolheadsOffset() { return true;}
+	public boolean hasToolheadsOffset() {
+		if (machine.getTools().size() == 1)	return false;
+		return true;
+	}
 
 	@Override
 	public double getToolheadsOffset(int axis) {
