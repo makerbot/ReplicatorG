@@ -193,7 +193,20 @@ public class Base {
 	 * set.
 	 */
 	static private String alternatePrefs = null;
-	
+
+	/**
+	 * Set the name of the alternate preferences to use. This will reload
+	 * the preferences. It must be called only from the main method before
+	 * any preference values are used.
+	 *
+	 * @param name the alternate preferences name.
+	 */
+	public static void setAlternatePrefs(final String name)
+	{
+		alternatePrefs = name;
+		preferences = getUserPreferences();
+	}
+
 	/**
 	 * Get the preferences node for ReplicatorG.
 	 */
@@ -448,7 +461,7 @@ public class Base {
 			if (args[i].equals("--alternate-prefs")) {
 				if((i+1) < args.length) {
 					i++;
-					alternatePrefs = args[i];
+					setAlternatePrefs(args[i]);
 				}
 			} else if (args[i].equals("--clean-prefs")) {
 				cleanPrefs = true;
@@ -486,10 +499,6 @@ public class Base {
 			}
 		}
 		
-
-		// reload the preferences in case the user has specified
-		// --alternate-prefs
-		preferences = getUserPreferences();
 
 		// Use the default system proxy settings
 		System.setProperty("java.net.useSystemProxies", "true");
