@@ -109,7 +109,7 @@
 			<sysproperty key="java.library.path" path="${native.lib.dir}"/>
 			<sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
 			<sysproperty key="replicatorg.toolpath" path="${native.tools.dir}"/>
-			<arg line="${arguments}"/>
+			<arg line="${run.arguments}"/>
 		</java>
 	</target>
 
