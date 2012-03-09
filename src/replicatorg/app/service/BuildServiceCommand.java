@@ -64,9 +64,9 @@ public class BuildServiceCommand implements ServiceCommand
                 else
                 {
                     machineLoader.connect(serial);
-                    System.out.printf("i am waiting to connect%n");
+                    Base.logger.info("Waiting for connection.");
                     waitForConnected(machineInterface);
-                    System.out.printf("i am connected%n");
+                    Base.logger.info("Connected");
 
                     if (false == machineLoader.isLoaded())
                     {
@@ -80,13 +80,13 @@ public class BuildServiceCommand implements ServiceCommand
                     else
                     {
                         final GCodeSource gcodeSource = getGCodeSource();
-                        System.out.printf("i am starting a build%n");
+                        Base.logger.info("Starting build.");
                         machineInterface.buildDirect(gcodeSource);
-                        System.out.printf("i am waiting for the build to start%n");
+                        Base.logger.info("Waiting for the build to start.");
                         waitForBuilding(machineInterface);
-                        System.out.printf("i am waiting for the build to end%n");
+                        Base.logger.info("Waiting for the build to end.");
                         waitForReady(machineInterface);
-                        System.out.printf("done!!%n");
+                        Base.logger.info("Build is done.");
                     }
                 }
             }
@@ -98,7 +98,6 @@ public class BuildServiceCommand implements ServiceCommand
         final File file = new File(filename);
         if (false == file.exists())
         {
-            System.out.printf("fail!%n");
             throw new RuntimeException("your file doesn't exist and the error handling needs to be wired up in a sensible manner");
         }
         else
@@ -125,98 +124,82 @@ public class BuildServiceCommand implements ServiceCommand
         }
     }
 
-    private void waitForConnected(final MachineInterface machineInterface)
+    private void waitForStates(
+        final MachineInterface machineInterface,
+        final long timeout,
+        final MachineState.State ... states)
     {
         final long start = System.currentTimeMillis();
-        final long end = start + 60000;
+        final long end = start + timeout;
         for (;;)
         {
             final MachineState machineState
                 = machineInterface.getMachineState();
-            if (machineState.isConnected())
+            if (isInState(machineInterface, states))
             {
                 break;
             }
             else
             {
-                final long now = System.currentTimeMillis();
-                final long remaining = end - now;
-                if (remaining < 0)
+                final long remaining;
+                if (0 == timeout)
                 {
-                    throw new RuntimeException("took too long");
+                    remaining = 0;
                 }
                 else
                 {
-                    try
+                    final long now = System.currentTimeMillis();
+                    remaining = end - now;
+                    if (remaining <= 0)
                     {
-                        waitOnLock(remaining);
+                        throw new RuntimeException("took too long");
                     }
-                    catch (final InterruptedException exception)
-                    {
-                        // IGNORED
-                    }
+                }
+                try
+                {
+                    waitOnLock(remaining);
+                }
+                catch (final InterruptedException exception)
+                {
+                    // Ignored, but it causes us to re-check the state and
+                    // either resume waiting or return.
                 }
             }
         }
+    }
+
+    private boolean isInState(
+        final MachineInterface machineInterface,
+        final MachineState.State ... states)
+    {
+        final MachineState.State currentState
+            = machineInterface.getMachineState().getState();
+        for (final MachineState.State state : states)
+        {
+            if (currentState == state)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void waitForConnected(final MachineInterface machineInterface)
+    {
+        waitForStates(machineInterface, 60000, MachineState.State.READY,
+            MachineState.State.BUILDING, MachineState.State.PAUSED,
+            MachineState.State.ERROR);
     }
 
     private void waitForBuilding(final MachineInterface machineInterface)
     {
-        final long start = System.currentTimeMillis();
-        final long end = start + 60000;
-        for (;;)
-        {
-            final MachineState machineState
-                = machineInterface.getMachineState();
-            if (machineState.isBuilding())
-            {
-                break;
-            }
-            else
-            {
-                final long now = System.currentTimeMillis();
-                final long remaining = end - now;
-                if (remaining < 0)
-                {
-                    throw new RuntimeException("took too long");
-                }
-                else
-                {
-                    try
-                    {
-                        waitOnLock(remaining);
-                    }
-                    catch (final InterruptedException exception)
-                    {
-                        // IGNORED
-                    }
-                }
-            }
-        }
+        waitForStates(machineInterface, 60000, MachineState.State.BUILDING,
+            MachineState.State.PAUSED, MachineState.State.BUILDING_OFFLINE);
     }
 
     private void waitForReady(final MachineInterface machineInterface)
     {
-        for (;;)
-        {
-            final MachineState machineState
-                = machineInterface.getMachineState();
-            if (machineState.canPrint())
-            {
-                break;
-            }
-            else
-            {
-                try
-                {
-                    waitOnLock(0);
-                }
-                catch (final InterruptedException exception)
-                {
-                    // IGNORED
-                }
-            }
-        }
+        waitForStates(machineInterface, 0, MachineState.State.READY);
     }
 
     private class Listener implements MachineListener

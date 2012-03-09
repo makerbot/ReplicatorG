@@ -6,6 +6,12 @@ import java.util.List;
 
 public class UnpauseServiceCommandFactory implements ServiceCommandFactory
 {
+    public boolean isMatch(final String commandName)
+    {
+        final boolean result = "unpause".equals(commandName);
+        return result;
+    }
+
     public ServiceCommand createServiceCommand(final List<String> arguments)
         throws ExtraArgumentsException
     {

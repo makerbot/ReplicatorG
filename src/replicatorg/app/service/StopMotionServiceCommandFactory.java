@@ -6,6 +6,12 @@ import java.util.List;
 
 public class StopMotionServiceCommandFactory implements ServiceCommandFactory
 {
+    public boolean isMatch(final String commandName)
+    {
+        final boolean result = "stopMotion".equals(commandName);
+        return result;
+    }
+
     public ServiceCommand createServiceCommand(final List<String> arguments)
         throws ExtraArgumentsException
     {

@@ -6,12 +6,18 @@ import java.util.List;
 
 public class BuildServiceCommandFactory implements ServiceCommandFactory
 {
+    public boolean isMatch(final String commandName)
+    {
+        final boolean result = "build".equals(commandName);
+        return result;
+    }
+
     public ServiceCommand createServiceCommand(final List<String> arguments)
         throws MissingArgumentException, ExtraArgumentsException
     {
         if (0 == arguments.size())
         {
-            throw new MissingArgumentException("build", "filename");
+            throw new MissingArgumentException("build", "FILENAME");
         }
         else
         if (arguments.size() > 1)
