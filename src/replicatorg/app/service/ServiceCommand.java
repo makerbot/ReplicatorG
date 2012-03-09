@@ -2,8 +2,11 @@
 
 package replicatorg.app.service;
 
+import java.io.IOException;
+
 interface ServiceCommand
 {
-    void execute(ServiceContext serviceContext)
-        throws ServiceCommandException;
+    void execute(ServiceContext serviceContext) throws IOException,
+        NoFileException, NoMachineInterfaceException, NoPortException,
+        NotConnectedException, NotReadyException, TimeoutException;
 }

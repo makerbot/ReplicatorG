@@ -2,6 +2,8 @@
 
 package replicatorg.app.service;
 
-public abstract class ServiceCommandException extends Exception
+public class NoPortException extends Exception
 {
 }
+
+

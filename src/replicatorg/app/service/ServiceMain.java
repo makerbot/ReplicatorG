@@ -2,6 +2,7 @@
 
 package replicatorg.app.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -144,16 +145,39 @@ public class ServiceMain
             handleExtraArgumentsException(exception);
             status = 1;
         }
-        catch (final ServiceCommandException exception)
+        catch (final IOException exception)
         {
-            // TODO: handle the specific sub-classes on ServiceCommandException
-            // before this.
-
-            //
-            // This branch must follow any catch-clauses for subclasses of
-            // ServiceCommandException.
-            //
-
+            handleIOException(exception);
+            status = 1;
+        }
+        catch (final NoFileException exception)
+        {
+            handleNoFileException(exception);
+            status = 1;
+        }
+        catch (final NoMachineInterfaceException exception)
+        {
+            handleNoMachineInterfaceException(exception);
+            status = 1;
+        }
+        catch (final NoPortException exception)
+        {
+            handleNoPortException(exception);
+            status = 1;
+        }
+        catch (final NotConnectedException exception)
+        {
+            handleNotConnectedException(exception);
+            status = 1;
+        }
+        catch (final NotReadyException exception)
+        {
+            handleNotReadyException(exception);
+            status = 1;
+        }
+        catch (final TimeoutException exception)
+        {
+            handleTimeoutException(exception);
             status = 1;
         }
         return status;
@@ -296,8 +320,10 @@ public class ServiceMain
 
     private void executeCommandLine(final CommandLine commandLine)
         throws NoCommandException, UnknownCommandException, ParseException,
-            replicatorg.app.service.MissingArgumentException,
-            ExtraArgumentsException, ServiceCommandException
+        replicatorg.app.service.MissingArgumentException,
+        ExtraArgumentsException, IOException, NoFileException,
+        NoMachineInterfaceException, NoPortException, NotConnectedException,
+        NotReadyException, TimeoutException
     {
         final ServiceContext serviceContext
             = createServiceContext(commandLine);
@@ -443,6 +469,45 @@ public class ServiceMain
             "The '%s' command received extra unsupported arguments ('%s').%n",
             commandName, extraArgumentsString);
         printErrorFooter();
+    }
+
+    private void handleIOException(final IOException exception)
+    {
+        final String message = exception.getMessage();
+        System.err.printf("Received an I/O error: %s%n", message);
+    }
+
+    private void handleNoFileException(final NoFileException exception)
+    {
+        final String filename = exception.getFilename();
+        System.err.printf("Missing file '%s'.", filename);
+    }
+
+    private void handleNoMachineInterfaceException(
+        final NoMachineInterfaceException exception)
+    {
+        System.err.println("No machine interface.");
+    }
+
+    private void handleNoPortException(final NoPortException exception)
+    {
+        System.err.println("No port.");
+    }
+
+    private void handleNotConnectedException(
+        final NotConnectedException exception)
+    {
+        System.err.println("Not connected.");
+    }
+
+    private void handleNotReadyException(final NotReadyException exception)
+    {
+        System.err.println("Not ready.");
+    }
+
+    private void handleTimeoutException(final TimeoutException exception)
+    {
+        System.err.println("Timed out.");
     }
 
     private String getOptionName(final Option option)

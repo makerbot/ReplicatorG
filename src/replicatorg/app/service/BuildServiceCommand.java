@@ -35,82 +35,69 @@ public class BuildServiceCommand implements ServiceCommand
     }
 
     public void execute(final ServiceContext serviceContext)
+        throws IOException, NoFileException, NoMachineInterfaceException,
+        NoPortException, NotConnectedException, NotReadyException,
+        TimeoutException
     {
         final MachineLoader machineLoader = Base.getMachineLoader();
         final Listener listener = new Listener();
         machineLoader.addMachineListener(listener);
 
-        final String machineName = Base.preferences.get("machine.name", "The Replicator Dual");
-        if (null == machineName)
+        final MachineInterface machineInterface
+            = machineLoader.getMachineInterface();
+        if (null == machineInterface)
         {
-            throw new RuntimeException("i have no idea what my machine name is");
+            throw new NoMachineInterfaceException();
         }
         else
         {
-            final MachineInterface machineInterface
-                = machineLoader.getMachineInterface(machineName);
-            if (null == machineInterface)
+            final String serial
+                = Base.preferences.get("serial.last_selected", null);
+            if (null == serial)
             {
-                throw new RuntimeException("i don't have an interface");
+                throw new NoPortException();
             }
             else
             {
-                final String serial
-                    = Base.preferences.get("serial.last_selected", null);
-                if (null == serial)
+                machineLoader.connect(serial);
+                Base.logger.info("Waiting for connection.");
+                waitForConnected(machineInterface);
+                Base.logger.info("Connected");
+
+                if (false == machineLoader.isLoaded())
                 {
-                    throw new RuntimeException("i don't have a port");
+                    throw new NotReadyException();
+                }
+                else
+                if (false == machineLoader.isConnected())
+                {
+                    throw new NotConnectedException();
                 }
                 else
                 {
-                    machineLoader.connect(serial);
-                    Base.logger.info("Waiting for connection.");
-                    waitForConnected(machineInterface);
-                    Base.logger.info("Connected");
-
-                    if (false == machineLoader.isLoaded())
-                    {
-                        throw new RuntimeException("i'm not ready to build");
-                    }
-                    else
-                    if (false == machineLoader.isConnected())
-                    {
-                        throw new RuntimeException("i'm not connected");
-                    }
-                    else
-                    {
-                        final GCodeSource gcodeSource = getGCodeSource();
-                        Base.logger.info("Starting build.");
-                        machineInterface.buildDirect(gcodeSource);
-                        Base.logger.info("Waiting for the build to start.");
-                        waitForBuilding(machineInterface);
-                        Base.logger.info("Waiting for the build to end.");
-                        waitForReady(machineInterface);
-                        Base.logger.info("Build is done.");
-                    }
+                    final GCodeSource gcodeSource = getGCodeSource();
+                    Base.logger.info("Starting build.");
+                    machineInterface.buildDirect(gcodeSource);
+                    Base.logger.info("Waiting for the build to start.");
+                    waitForBuilding(machineInterface);
+                    Base.logger.info("Waiting for the build to end.");
+                    waitForReady(machineInterface);
+                    Base.logger.info("Build is done.");
                 }
             }
         }
     }
 
-    private GCodeSource getGCodeSource()
+    private GCodeSource getGCodeSource() throws IOException, NoFileException
     {
         final File file = new File(filename);
         if (false == file.exists())
         {
-            throw new RuntimeException("your file doesn't exist and the error handling needs to be wired up in a sensible manner");
+            throw new NoFileException(filename);
         }
         else
         {
-            final List<String> lines;
-            try
-            {
-                lines = FileUtils.readLines(file);
-            }
-            catch (final IOException exception)
-            {
-                throw new RuntimeException(exception);
-            }
+            final List<String> lines = FileUtils.readLines(file);
             final GCodeSource gcodeSource = new StringListSource(lines);
             return gcodeSource;
         }
@@ -128,6 +115,7 @@ public class BuildServiceCommand implements ServiceCommand
         final MachineInterface machineInterface,
         final long timeout,
         final MachineState.State ... states)
+        throws TimeoutException
     {
         final long start = System.currentTimeMillis();
         final long end = start + timeout;
@@ -152,7 +140,7 @@ public class BuildServiceCommand implements ServiceCommand
                     remaining = end - now;
                     if (remaining <= 0)
                     {
-                        throw new RuntimeException("took too long");
+                        throw new TimeoutException();
                     }
                 }
                 try
@@ -185,6 +173,7 @@ public class BuildServiceCommand implements ServiceCommand
     }
 
     private void waitForConnected(final MachineInterface machineInterface)
+        throws TimeoutException
     {
         waitForStates(machineInterface, 60000, MachineState.State.READY,
             MachineState.State.BUILDING, MachineState.State.PAUSED,
@@ -192,12 +181,14 @@ public class BuildServiceCommand implements ServiceCommand
     }
 
     private void waitForBuilding(final MachineInterface machineInterface)
+        throws TimeoutException
     {
         waitForStates(machineInterface, 60000, MachineState.State.BUILDING,
             MachineState.State.PAUSED, MachineState.State.BUILDING_OFFLINE);
     }
 
     private void waitForReady(final MachineInterface machineInterface)
+        throws TimeoutException
     {
         waitForStates(machineInterface, 0, MachineState.State.READY);
     }
