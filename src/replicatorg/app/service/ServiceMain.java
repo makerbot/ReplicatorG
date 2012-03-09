@@ -282,19 +282,6 @@ public class ServiceMain
         System.out.println("  stopAll       stop the machine");
     }
 
-    private String getFooter()
-    {
-        final String footer = String.format(
-            "The supported commands are:%n"
-            + "%n"
-            + "  build         build%n"
-            + "  pause         pause the machine%n"
-            + "  unpause       unpause the machine%n"
-            + "  stopMotion    stop machine motion%n"
-            + "  stopAll       stop the machine%n");
-        return footer;
-    }
-
     private void handleVersion(final CommandLine commandLine)
     {
         if (commandLine.hasOption("version"))
