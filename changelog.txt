@@ -1,10 +1,16 @@
-0034-Beta ReplicatorG
- * Updated t0 to t1 tolerance code 
-
+0034 ReplicatorG
+ * Updated toolhead offset t0 to t1 code to store offset of out of tolerance 
+ * Tools directory location sourcing updated to fix avr-dude on mac problems. 
+ * Toolhead start heating gcode updates for faster heating-up on slow HBP's
+ * Fixes and updates to alternative preferences system.
+ * Ant run command line commands support
+ * Expected Toolhead offset stored as part of machine settings
+ * Spelling mistake fixes
+ * Updated print anchor code 
+ 
 0033 ReplicatorG
 * Updated version number to avoid confusion
 * Minor UI changes
-* Added check for success flag in packet, to avoid loopback devices pretending to be machines
 
 0032 ReplicatorG 
 * Extensive polishing of ReplicatorG
