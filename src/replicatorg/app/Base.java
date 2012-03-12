@@ -267,8 +267,8 @@ public class Base {
 	static public String getToolsPath() {
 	    String toolsDir = System.getProperty("replicatorg.toolpath");
 	    if (toolsDir == null || (toolsDir.length() == 0)) {
-		    String path = System.getProperty("user.dir");
-	    	toolsDir = path + File.separator + "tools";
+		    File appDir = Base.getApplicationDirectory();
+	    	toolsDir = appDir.getAbsolutePath() + File.separator + "tools";
 	    }
 	    return toolsDir;
 	}
@@ -952,8 +952,8 @@ public class Base {
 	}
 
 	static public String getContents(String what) {
-		String basePath = System.getProperty("user.dir");
-		return basePath + File.separator + what;
+		File appBase = 	Base.getApplicationDirectory();
+		return appBase.getAbsolutePath() + File.separator + what;
 	}
 
 	static public String getLibContents(String what) {
