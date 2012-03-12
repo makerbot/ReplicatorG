@@ -35,7 +35,6 @@ import java.awt.Font;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.Toolkit;
-//import java.awt.TrayIcon;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -100,7 +99,7 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 33;
+	public static final int VERSION = 34;
 	
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
@@ -194,7 +193,20 @@ public class Base {
 	 * set.
 	 */
 	static private String alternatePrefs = null;
-	
+
+	/**
+	 * Set the name of the alternate preferences to use. This will reload
+	 * the preferences. It must be called only from the main method before
+	 * any preference values are used.
+	 *
+	 * @param name the alternate preferences name.
+	 */
+	public static void setAlternatePrefs(final String name)
+	{
+		alternatePrefs = name;
+		preferences = getUserPreferences();
+	}
+
 	/**
 	 * Get the preferences node for ReplicatorG.
 	 */
@@ -255,8 +267,8 @@ public class Base {
 	static public String getToolsPath() {
 	    String toolsDir = System.getProperty("replicatorg.toolpath");
 	    if (toolsDir == null || (toolsDir.length() == 0)) {
-		    String path = System.getProperty("user.dir");
-	    	toolsDir = path + File.separator + "tools";
+		    File appDir = Base.getApplicationDirectory();
+	    	toolsDir = appDir.getAbsolutePath() + File.separator + "tools";
 	    }
 	    return toolsDir;
 	}
@@ -449,7 +461,7 @@ public class Base {
 			if (args[i].equals("--alternate-prefs")) {
 				if((i+1) < args.length) {
 					i++;
-					alternatePrefs = args[i];
+					setAlternatePrefs(args[i]);
 				}
 			} else if (args[i].equals("--clean-prefs")) {
 				cleanPrefs = true;
@@ -487,6 +499,7 @@ public class Base {
 			}
 		}
 		
+
 		// Use the default system proxy settings
 		System.setProperty("java.net.useSystemProxies", "true");
     	// Use antialiasing implicitly
@@ -939,8 +952,8 @@ public class Base {
 	}
 
 	static public String getContents(String what) {
-		String basePath = System.getProperty("user.dir");
-		return basePath + File.separator + what;
+		File appBase = 	Base.getApplicationDirectory();
+		return appBase.getAbsolutePath() + File.separator + what;
 	}
 
 	static public String getLibContents(String what) {

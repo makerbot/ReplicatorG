@@ -28,7 +28,6 @@ public class MutableGCodeSource implements GCodeSource {
 	/// all gcode source, one command per line
 	ArrayList<String> source = new ArrayList<String>();
 	
-	
 	public MutableGCodeSource() { }
 	
 	
@@ -144,11 +143,12 @@ public class MutableGCodeSource implements GCodeSource {
 	public void changeToolhead(ToolheadAlias tool) {
 		GCodeCommand gcode;
 		int value;
+		String line;
+		///FUTURE: create a synchronize block here someday
 		ArrayList<String> newSource = new ArrayList<String>(source.size());
-		///FUTURE: create a syncronize block here someday
 		for(Iterator<String> it = source.iterator(); it.hasNext(); )
 		{
-			String line = it.next();
+			line = it.next();
 			gcode = new GCodeCommand(line);
 
 			if(gcode.hasCode('T'))
@@ -172,8 +172,53 @@ public class MutableGCodeSource implements GCodeSource {
 			}
 			newSource.add(line);
 		}
+		
 		source = newSource;
-	}	
+	}
+	
+	/**
+	 * If only one toolhead is used, a cool command for the unused head is added
+	 * to this gcode source object.  Created to avoid smell/problems for single prints on a dual machine
+	 * when prior build was cancelled, or a toolhead is left hot from pre-heating. 
+	 */
+	public void coolUnusedToolhead()
+	{		
+		GCodeCommand gcode;
+		String line;
+
+		double tval;
+		int additionPoint = 0;
+		boolean addPointFound = false;
+		
+		boolean seenT0 = false;
+		boolean seenT1 = false;
+		
+		for(Iterator<String> it = source.iterator(); it.hasNext(); )
+		{
+			line = it.next();
+			gcode = new GCodeCommand(line);
+			
+			tval = gcode.getCodeValue('T');
+			
+			if(tval == 0)	seenT0 = true;
+			if(tval == 1)	seenT1 = true;
+			
+			if(!addPointFound)
+				additionPoint++;
+			
+			if(gcode.getCodeValue('M') == 104)
+				addPointFound = true;
+			
+			if(seenT0 && seenT1)
+				return;
+		}
+		
+		if(seenT0 && !seenT1)
+			add(additionPoint, "M104 T1 S0");
+		if(seenT1 && !seenT0)
+			add(additionPoint, "M104 T0 S0");
+		
+	}
 	
 	/// Scans gcode for layer start/ends. Adds gcode for approx % done 
 	/// by that layer via using line count

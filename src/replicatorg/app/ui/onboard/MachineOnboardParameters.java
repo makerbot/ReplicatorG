@@ -80,6 +80,10 @@ public class MachineOnboardParameters extends JPanel {
 	private JFormattedTextField vref2 = new JFormattedTextField(threePlaces);
 	private JFormattedTextField vref3 = new JFormattedTextField(threePlaces);
 	private JFormattedTextField vref4 = new JFormattedTextField(threePlaces);
+        
+        private JFormattedTextField xToolheadOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField yToolheadOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField zToolheadOffsetField = new JFormattedTextField(threePlaces);
 
 	
 	/** Prompts the user to fire a bot  reset after the changes have been sent to the board.
@@ -152,7 +156,12 @@ public class MachineOnboardParameters extends JPanel {
 			target.setStoredStepperVoltage(3, ((Number)vref3.getValue()).intValue());
 			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
 		}
-		requestResetFromUser();
+                
+        target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
+
+        requestResetFromUser();
 	}
 
 	/// Causes the EEPROM to be reset to a totally blank state, and during dispose
@@ -225,6 +234,12 @@ public class MachineOnboardParameters extends JPanel {
 			vref3.setValue(this.target.getStoredStepperVoltage(3));
 			vref4.setValue(this.target.getStoredStepperVoltage(4));
 		}
+
+		if(target.hasToolheadsOffset()) {
+			xToolheadOffsetField.setValue(this.target.getToolheadsOffset(0));
+			yToolheadOffsetField.setValue(this.target.getToolheadsOffset(1));
+			zToolheadOffsetField.setValue(this.target.getToolheadsOffset(2));
+		}    
 	}
 
 	protected void dispose() {
@@ -327,6 +342,21 @@ public class MachineOnboardParameters extends JPanel {
 			add(bAxisHomeOffsetField,"wrap");
 		}
 
+		if(target.hasToolheadsOffset()) {
+		    xToolheadOffsetField.setColumns(10);
+		    yToolheadOffsetField.setColumns(10);
+		    zToolheadOffsetField.setColumns(10);
+		    
+		    add(new JLabel("X toolhead offset (mm)"));
+		    add(xToolheadOffsetField, "wrap");
+		    
+		    add(new JLabel("Y toolhead offset (mm)"));
+		    add(yToolheadOffsetField, "wrap");
+		    
+		    add(new JLabel("Z toolhead offset (mm)"));
+		    add(zToolheadOffsetField, "wrap");
+		}
+
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -335,7 +365,7 @@ public class MachineOnboardParameters extends JPanel {
 //				loadParameters();
 			}
 		});
-		resetToFactoryButton.setToolTipText("Reest the onboard settings to the factory defaults");
+		resetToFactoryButton.setToolTipText("Reset the onboard settings to the factory defaults");
 		add(resetToFactoryButton, "split 1");
 
 		
@@ -346,7 +376,7 @@ public class MachineOnboardParameters extends JPanel {
 //				loadParameters();
 			}
 		});
-		resetToBlankButton.setToolTipText("Reest the onboard settings to the *completely blank*");
+		resetToBlankButton.setToolTipText("Reset the onboard settings to *completely blank*");
 		add(resetToBlankButton);
 
 		commitButton.addActionListener(new ActionListener() {

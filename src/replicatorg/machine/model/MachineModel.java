@@ -30,6 +30,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
+import replicatorg.machine.*;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -88,6 +89,9 @@ public class MachineModel
 	
 	// our build volume
 	protected BuildVolume buildVolume;
+        
+    // nozzle offsets
+    protected ToolheadsOffset toolheadsOfffsets;
 	
 	private MachineType machineType = null;
 
@@ -99,6 +103,7 @@ public class MachineModel
 		clamps = new Vector<ClampModel>();
 		tools = new Vector<ToolModel>();
 		buildVolume = new BuildVolume(100,100,100); // preload it with the default values
+                toolheadsOfffsets = new ToolheadsOffset(0.0, 0.0, 0.0);
 		
 		//currentPosition = new Point3d();
 		minimum = new Point5d();
@@ -125,6 +130,7 @@ public class MachineModel
 		parseWipes();
 		parseExclusion();
 		parseGCode();
+                parseOffsets();
 	}
 	
 
@@ -183,6 +189,42 @@ public class MachineModel
 				{
 					WipeModel wipe = new WipeModel(wipeNode);
 					wipes.add(wipe);
+				}
+			}
+		}
+	}
+        
+        private void parseOffsets()
+	{
+		if(XML.hasChildNode(xml, "offsets"))
+		{
+			Node offsetsNode = XML.getChildNodeByName(xml, "offsets");
+			
+			//look through the axes.
+			NodeList offsetsKids = offsetsNode.getChildNodes();
+			for (int i=0; i<offsetsKids.getLength(); i++)
+			{
+				Node offsetNode = offsetsKids.item(i);
+				
+				if (offsetNode.getNodeName().equals("offset"))
+				{
+                                    double xNozzleOffset = 0.0;
+                                    double yNozzleOffset = 0.0;
+                                    double zNozzleOffset = 0.0;
+                                    
+                                    try {
+                                            xNozzleOffset = Double.parseDouble(XML.getAttributeValue(offsetNode, "xNozzle"));
+                                    } catch (Exception e) {}
+                                        try {
+                                            yNozzleOffset = Double.parseDouble(XML.getAttributeValue(offsetNode, "yNozzle"));
+                                    } catch (Exception e) {}
+                                        try {
+                                            zNozzleOffset = Double.parseDouble(XML.getAttributeValue(offsetNode, "zNozzle"));
+                                    } catch (Exception e) {}
+                                        
+                                        toolheadsOfffsets.setX(xNozzleOffset);
+                                        toolheadsOfffsets.setY(yNozzleOffset);
+                                        toolheadsOfffsets.setZ(zNozzleOffset);
 				}
 			}
 		}
@@ -426,6 +468,11 @@ public class MachineModel
 	 * Get steps-mm conversion value
 	 */
 	public Point5d getStepsPerMM() { return stepsPerMM; }
+        
+        /**
+	 * Get steps-mm conversion value
+	 */
+	public ToolheadsOffset getToolheadsOffsets() { return toolheadsOfffsets; }
 
 	/*************************************
 	*  Convert millimeters to machine steps

@@ -35,6 +35,7 @@ import replicatorg.drivers.OnboardParameters;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.Version;
 import replicatorg.machine.model.AxisId;
+import replicatorg.machine.model.ToolheadsOffset;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
@@ -148,6 +149,13 @@ class MightyBoardEEPROM implements EEPROMClass
 	final public static int BUZZ_SETTINGS		= 0x014A;
 	///  1 byte. 0x01 for 'never booted before' 0x00 for 'have been booted before)
 	final public static int FIRST_BOOT_FLAG	= 0x0156;
+    /// 7 bytes, short int x 3 entries, 1 byte on/off
+    final public static int PREHEAT_SETTINGS = 0x0158;
+    /// 1 byte,  0x01 for help menus on, 0x00 for off
+    final public static int FILAMENT_HELP_SETTINGS = 0x0160;
+    /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
+    /// in steps.  3 x 32 bits = 12 bytes
+    final public static int TOOLHEAD_OFFSET_SETTINGS = 0x0162;
 
 	/// start of free space
 	final public static int FREE_EEPROM_STARTS = 0x0158;
@@ -251,6 +259,11 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		Base.logger.info("Created a MightyBoard");
 
 		stepperValues= new Hashtable();
+		
+		// Make sure this accurately reflects the minimum prefered 
+		// firmware version we want this driver to support.
+		minimumVersion = new Version(5,2);
+		preferredVersion = new Version(5,2);
 
 	}
 	
@@ -754,6 +767,77 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 				break;
 		}
 		write32ToEEPROM32(MightyBoardEEPROM.AXIS_HOME_POSITIONS + axis*4,offsetSteps);
+	}
+
+	@Override
+	public boolean hasToolheadsOffset() {
+		if (machine.getTools().size() == 1)	return false;
+		return true;
+	}
+
+	@Override
+	public double getToolheadsOffset(int axis) {
+
+		Base.logger.finest("MigtyBoard getToolheadsOffset" + axis);
+		if ((axis < 0) || (axis > 2)) {
+			// TODO: handle this
+			Base.logger.severe("axis out of range" + axis);
+			return 0;
+		}
+		
+		checkEEPROM();
+
+		double val = read32FromEEPROM(MightyBoardEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4);
+
+		ToolheadsOffset toolheadsOffset = getMachine().getToolheadsOffsets();
+		Point5d stepsPerMM = getMachine().getStepsPerMM();
+		switch(axis) {
+			case 0:
+				val = (val)/stepsPerMM.x()/10.0 + toolheadsOffset.x();
+				break;
+			case 1:
+				val = (val)/stepsPerMM.y()/10.0 + toolheadsOffset.y();
+				break;
+			case 2:
+				val = (val)/stepsPerMM.z()/10.0 + toolheadsOffset.z();
+				break;
+		}
+				
+		return val;
+	}
+
+	
+	/**
+	 * Stores to EEPROM in motor steps counts, how far out of 
+	 * tolerance the toolhead0 to toolhead1 distance is. XML settings are used
+	 * to calculate expected distance to sublect to tolerance error from.
+	 * @param axis axis to store 
+	 * @param distanceMm total distance of measured offset, tool0 to too1
+	 */
+	@Override
+	public void eepromStoreToolDelta(int axis, double distanceMm) {
+		if ((axis < 0) || (axis > 2)) {
+			// TODO: handle this
+			return;
+		}
+		
+		int offsetSteps = 0;
+		
+		Point5d stepsPerMM = getMachine().getStepsPerMM();
+		ToolheadsOffset toolheadsOffset = getMachine().getToolheadsOffsets();
+		
+		switch(axis) {
+			case 0:
+				offsetSteps = (int)((distanceMm-toolheadsOffset.x())*stepsPerMM.x()*10.0);
+				break;
+			case 1:
+				offsetSteps = (int)((distanceMm-toolheadsOffset.y())*stepsPerMM.y()*10.0);
+				break;
+			case 2:
+				offsetSteps = (int)((distanceMm-toolheadsOffset.z())*stepsPerMM.z()*10.0);
+				break;
+		}
+		write32ToEEPROM32(MightyBoardEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4,offsetSteps);
 	}
 
 

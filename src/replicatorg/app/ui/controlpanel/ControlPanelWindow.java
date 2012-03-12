@@ -29,17 +29,20 @@ package replicatorg.app.ui.controlpanel;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 import java.util.EnumSet;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
@@ -144,11 +147,18 @@ public class ControlPanelWindow extends JFrame implements
 					Base.logger.severe("foo" + f.toString());
 				}
 				//machine.runCommand(new SetLedStrip(ledColor, 0));	
-				ledStripButton.setText(ShowColorChooserAction.buttonStringFromColor(ledColor));
+//				ledStripButton.setText(ShowColorChooserAction.buttonStringFromColor(ledColor));
+				BufferedImage image = new BufferedImage(10,10,BufferedImage.TYPE_INT_RGB);
+				Graphics g = image.getGraphics();
+				g.setColor(ledColor);
+				g.fillRect(0,0,10,10);
+				//image.getGraphics().fillRect(0,0,10,10);
+				ledStripButton.setIcon(new ImageIcon(image));
 			}
 		};
 		
 		ledStripButton = new JButton(new ShowColorChooserAction(this, chooser, okListener, null,Color.BLACK));
+		ledStripButton.setText("LED Color");
 		
 		// create all our GUI interfaces
 		mainPanel = new JPanel();

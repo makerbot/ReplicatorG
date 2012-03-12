@@ -18,6 +18,9 @@
 			<wipe index="0" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
 			<wipe index="1" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
 		</wipes>
+		<offsets>
+			<offset xNozzle="33.0" yNozzle="0.0" zNozzle="0.0" />
+		</offsets>
 		<clamps></clamps>
 		<driver name="mightyboard">
 			<!-- optional: <portname>COM1</portname> -->
