@@ -6,7 +6,7 @@ import java.io.IOException;
 
 interface ServiceCommand
 {
-    void execute(ServiceContext serviceContext) throws IOException,
-        NoFileException, NoMachineInterfaceException, NoPortException,
-        NotConnectedException, NotReadyException, TimeoutException;
+    void execute() throws IOException, NoFileException,
+        NoMachineInterfaceException, NoPortException, NotConnectedException,
+        NotReadyException, TimeoutException, FailedSafetyCheckException;
 }

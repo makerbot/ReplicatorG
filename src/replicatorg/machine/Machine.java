@@ -19,12 +19,6 @@
 
 package replicatorg.machine;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,17 +27,6 @@ import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
-import net.miginfocom.swing.MigLayout;
 
 import org.w3c.dom.Node;
 
@@ -187,142 +170,47 @@ public class Machine implements MachineInterface {
 	 * Begin running a job.
 	 */
 	@Override
-	public void buildDirect(final GCodeSource source) {
+	public boolean buildDirect(final GCodeSource source) {
+		// start simulator
 
-		Runnable prepareAndStart = new Runnable(){
+		// TODO: Re-enable the simulator.
+		// if (simulator != null &&
+		// Base.preferences.getBoolean("build.showSimulator",false))
+		// simulator.createWindow();
+		
+		Base.logger.info("Estimating build time and scanning code for errors...");
 
-			private Map<String, Integer> messages = new TreeMap<String, Integer>();
-			private boolean cancelled = false;
-			@Override
-			public void run() {
+		boolean build = true;
+		if(Base.preferences.getBoolean("build.safetyChecks", true))
+		{
+			emitStateChange(new MachineState(State.BUILDING), "Running safety checks...");
 
-				// start simulator
+			final Map<String, Integer> messages = new TreeMap<String, Integer>();
+			safetyCheck(source, messages);
 
-				// TODO: Re-enable the simulator.
-				// if (simulator != null &&
-				// Base.preferences.getBoolean("build.showSimulator",false))
-				// simulator.createWindow();
-				
-				Base.logger.info("Estimating build time and scanning code for errors...");
-				
-				if(Base.preferences.getBoolean("build.safetyChecks", true))
-				{
-					emitStateChange(new MachineState(State.BUILDING), "Running safety checks...");
-					
-					safetyCheck(source, messages);
-
-					if(! messages.isEmpty())
-					{
-						System.out.println("errors");
-						final JPanel displayPanel = new JPanel(new MigLayout("fill"));
-						final JDialog dialog = new JDialog(Base.getEditor(), "GCode warning", true);
-//						
-//						displayPanel.add(new JLabel("<html>The pre-run check has found some potentially problematic GCode.<br/>" +
-//								"This may be a result of trying to run code on a machine other than the one it's<br/>" +
-//								"intended for (i.e. running dual headed GCode on a single headed machine).</html>"), "growx, wrap");
-						JTextArea testLabel = new JTextArea();
-						testLabel.setLineWrap(true);
-						testLabel.setWrapStyleWord(true);
-						testLabel.setEditable(false);
-						testLabel.setOpaque(false);
-						testLabel.setBorder(BorderFactory.createEmptyBorder());
-						testLabel.setFont(new JLabel().getFont());
-						testLabel.setText("The pre-run check has found some potentially problematic GCode. This may be a result of trying" +
-								" to run code on a machine other than the one it's intended for (i.e. running dual headed GCode on a " +
-								"single headed machine).\n\nClick on a message to see the last place it occurred.");
-						displayPanel.add(testLabel, "growx, wrap");
-						
-						final JPanel messagePanel = new JPanel(new MigLayout("fill, ins 0"));
-						
-						List<String> displayMessages = new ArrayList<String>(messages.keySet());
-						if(displayMessages.size() > 10)
-						{
-							String moreMessage = "And " + (displayMessages.size()-10) + " more...";
-							displayMessages = displayMessages.subList(0, 10);
-							displayMessages.add(moreMessage);
-						}
-						final JList messageList = new JList(displayMessages.toArray());
-						
-						messageList.addMouseListener(new MouseAdapter(){
-							@Override
-							public void mouseClicked(MouseEvent arg0) {
-								if(arg0.getClickCount() == 1)
-									highlightLine(messageList.getSelectedValue());
-							}
-						});
-						/// do initial highlight and selection of default item (the 0th)
-						messageList.setSelectedIndex(0);
-						highlightLine(displayMessages.get(0));
-						
-						messageList.addKeyListener(new KeyAdapter(){
-							@Override
-							public void keyPressed(KeyEvent arg0) {
-								if(arg0.getKeyCode() == KeyEvent.VK_ENTER)
-								{
-									highlightLine(messageList.getSelectedValue());
-								} else if(arg0.getKeyCode() == KeyEvent.VK_UP) {
-									messageList.setSelectedIndex(Math.max(messageList.getSelectedIndex(), 0));
-								} else if(arg0.getKeyCode() == KeyEvent.VK_DOWN) {
-									messageList.setSelectedIndex(Math.min(messageList.getSelectedIndex(), messageList.getModel().getSize()));
-								}
-							}
-						});
-						
-						messagePanel.add(messageList, "growx, growy");
-						displayPanel.add(new JScrollPane(messagePanel), "growx, growy, wrap");
-						
-						JButton proceedButton = new JButton("Proceed anyway");
-						proceedButton.addActionListener(new ActionListener(){
-							@Override
-							public void actionPerformed(ActionEvent arg0) {
-								dialog.dispose();
-							}
-						});
-						displayPanel.add(proceedButton, "align right, split");
-	
-						JButton cancelButton = new JButton("Cancel build");
-						cancelButton.addActionListener(new ActionListener(){
-							@Override
-							public void actionPerformed(ActionEvent arg0) {
-								cancelled = true;
-								// TRICKY:
-								// see machine thread for a full explanation of this.
-								// basically, we need to get mainwindow to forget it was printing
-								boolean connected = getMachineState().canPrint();
-								emitStateChange(new MachineState(State.ERROR), "Print cancelled");
-								emitStateChange(new MachineState(State.NOT_ATTACHED), "Print cancelled");
-								if(connected)
-									emitStateChange(new MachineState(State.READY), "Print cancelled");
-								dialog.dispose();
-							}
-						});
-						displayPanel.add(cancelButton, "align right, wrap");
-						
-						dialog.add(displayPanel);
-						dialog.pack();
-						dialog.setVisible(true);
-					}
-				}
-
-				if(!cancelled)
-				{
-					// estimate build time.
-					emitStateChange(new MachineState(State.BUILDING), "Estimating time to completion...");
-					estimate(source);
-					
-					// do that build!
-					Base.logger.info("Beginning build.");
-	
-					machineThread.scheduleRequest(new MachineCommand(RequestType.BUILD_DIRECT, source, null));
-				}
-			}
-			
-			private void highlightLine(Object atWhichLine)
+			if(! messages.isEmpty())
 			{
-				Base.getEditor().highlightLine(messages.get(atWhichLine));
+				build = false;
+				Base.logger.severe("Errors");
+				Base.logger.severe("The pre-run check has found some potentially problematic GCode. This may be a result of trying" +
+						" to run code on a machine other than the one it's intended for (i.e. running dual headed GCode on a " +
+						"single headed machine).");
 			}
-		};
-		Executors.newSingleThreadExecutor().execute(prepareAndStart);
+		}
+
+		if(build)
+		{
+			// estimate build time.
+			emitStateChange(new MachineState(State.BUILDING), "Estimating time to completion...");
+			estimate(source);
+			
+			// do that build!
+			Base.logger.info("Beginning build.");
+
+			machineThread.scheduleRequest(new MachineCommand(RequestType.BUILD_DIRECT, source, null));
+		}
+
+		return build;
 	}
 
 	public void simulate(GCodeSource source) {

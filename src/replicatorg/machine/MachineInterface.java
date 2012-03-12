@@ -77,7 +77,7 @@ public interface MachineInterface {
 	 */
 	public void simulate(GCodeSource source);
 	
-	public void buildDirect(GCodeSource source);
+	public boolean buildDirect(GCodeSource source);
 	public boolean buildRemote(String remoteName);
 	public void buildToFile(GCodeSource source, String path);
 	public void upload(GCodeSource source, String remoteName);

@@ -2,6 +2,6 @@
 
 package replicatorg.app.service;
 
-public class ServiceContext
+public class FailedSafetyCheckException extends Exception
 {
 }

@@ -34,10 +34,10 @@ public class BuildServiceCommand implements ServiceCommand
         this.lock = new Object();
     }
 
-    public void execute(final ServiceContext serviceContext)
+    public void execute()
         throws IOException, NoFileException, NoMachineInterfaceException,
         NoPortException, NotConnectedException, NotReadyException,
-        TimeoutException
+        TimeoutException, FailedSafetyCheckException
     {
         final MachineLoader machineLoader = Base.getMachineLoader();
         final Listener listener = new Listener();
@@ -77,12 +77,19 @@ public class BuildServiceCommand implements ServiceCommand
                 {
                     final GCodeSource gcodeSource = getGCodeSource();
                     Base.logger.info("Starting build.");
-                    machineInterface.buildDirect(gcodeSource);
-                    Base.logger.info("Waiting for the build to start.");
-                    waitForBuilding(machineInterface);
-                    Base.logger.info("Waiting for the build to end.");
-                    waitForReady(machineInterface);
-                    Base.logger.info("Build is done.");
+                    final boolean build = machineInterface.buildDirect(gcodeSource);
+                    if (false == build)
+                    {
+                        throw new FailedSafetyCheckException();
+                    }
+                    else
+                    {
+                        Base.logger.info("Waiting for the build to start.");
+                        waitForBuilding(machineInterface);
+                        Base.logger.info("Waiting for the build to end.");
+                        waitForReady(machineInterface);
+                        Base.logger.info("Build is done.");
+                    }
                 }
             }
         }

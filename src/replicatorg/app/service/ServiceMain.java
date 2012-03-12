@@ -180,6 +180,11 @@ public class ServiceMain
             handleTimeoutException(exception);
             status = 1;
         }
+        catch (final FailedSafetyCheckException exception)
+        {
+            handleFailedSafetyCheckException(exception);
+            status = 1;
+        }
         return status;
     }
 
@@ -310,10 +315,8 @@ public class ServiceMain
         replicatorg.app.service.MissingArgumentException,
         ExtraArgumentsException, IOException, NoFileException,
         NoMachineInterfaceException, NoPortException, NotConnectedException,
-        NotReadyException, TimeoutException
+        NotReadyException, TimeoutException, FailedSafetyCheckException
     {
-        final ServiceContext serviceContext
-            = createServiceContext(commandLine);
         final String commandName = getCommandName(commandLine);
         final List<String> commandArguments
             = getCommandArguments(commandLine);
@@ -321,12 +324,7 @@ public class ServiceMain
             = createServiceCommandFactory(commandName);
         final ServiceCommand serviceCommand
             = serviceCommandFactory.createServiceCommand(commandArguments);
-        serviceCommand.execute(serviceContext);
-    }
-
-    private ServiceContext createServiceContext(final CommandLine commandLine)
-    {
-        return null;
+        serviceCommand.execute();
     }
 
     private String getCommandName(final CommandLine commandLine)
@@ -495,6 +493,12 @@ public class ServiceMain
     private void handleTimeoutException(final TimeoutException exception)
     {
         System.err.println("Timed out.");
+    }
+
+    private void handleFailedSafetyCheckException(
+        final FailedSafetyCheckException exception)
+    {
+        System.err.println("Failed safety check.");
     }
 
     private String getOptionName(final Option option)
