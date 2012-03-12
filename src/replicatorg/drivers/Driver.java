@@ -263,84 +263,79 @@ public interface Driver {
 	 */
 	public void changeGearRatio(int ratioIndex);
 	
-	public void readToolStatus();
+	public void readToolStatus(int toolhead);
 	
-	public int getToolStatus();
+	public int getToolStatus(int toolhead);
+	
 
 	/***************************************************************************
 	 * Motor interface functions
 	 **************************************************************************/
-	public void setMotorDirection(int dir);
 	public void setMotorDirection(int dir, int toolhead);
 
 	public void setMotorRPM(double rpm, int toolhead) throws RetryException;
 
-	public void setMotorSpeedPWM(int pwm) throws RetryException;
 	public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException;
 
-	public double getMotorRPM();
+	public double getMotorRPM(int toolhead);
 
-	public int getMotorSpeedPWM();
+	public int getMotorSpeedPWM(int toolhead);
 
 	/**
 	 * Enable motor until stopped by disableMotor
 	 * @throws RetryException 
 	 */
-	public void enableMotor() throws RetryException;
 	public void enableMotor(int toolhead) throws RetryException;
 
 	/**
 	 * Enable motor for a fixed duration, then disable
 	 * @throws RetryException 
 	 */
-	public void enableMotor(long millis) throws RetryException;
 	public void enableMotor(long millis, int toolhead) throws RetryException;
 
-	public void disableMotor() throws RetryException;
 	public void disableMotor(int toolhead) throws RetryException;
 
 	/***************************************************************************
 	 * Spindle interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setSpindleRPM(double rpm) throws RetryException;
+	public void setSpindleRPM(double rpm, int toolhead) throws RetryException;
 
-	public void setSpindleSpeedPWM(int pwm) throws RetryException;
+	public void setSpindleSpeedPWM(int pwm, int toolhead) throws RetryException;
 
-	public void setSpindleDirection(int dir);
+	public void setSpindleDirection(int dir, int toolhead);
 
-	public double getSpindleRPM();
+	public double getSpindleRPM(int toolhead);
 
-	public int getSpindleSpeedPWM();
+	public int getSpindleSpeedPWM(int toolhead);
 
-	public void enableSpindle() throws RetryException;
+	public void enableSpindle(int toolhead) throws RetryException;
 
-	public void disableSpindle() throws RetryException;
+	public void disableSpindle(int toolhead) throws RetryException;
 
 	/***************************************************************************
 	 * Temperature interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setTemperature(double temperature) throws RetryException;
 	public void setTemperature(double temperature, int toolIndex) throws RetryException;
-	public void readTemperature();
 	
-	public double getTemperature();
+	public void readTemperature(int toolhead);
 	
-	public double getTemperatureSetting();
+	public double getTemperature(int toolhead);
+	
+	public double getTemperatureSetting(int toolhead);
 	
 	/***************************************************************************
 	 * Platform Temperature interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setPlatformTemperature(double temperature) throws RetryException;
 	public void setPlatformTemperature(double temperature, int toolIndex) throws RetryException;
 	
-	public void readPlatformTemperature();
+	public void readPlatformTemperature(int toolhead);
 	
-	public double getPlatformTemperature();
+	public double getPlatformTemperature(int toolhead);
 
-	public double getPlatformTemperatureSetting();
+	public double getPlatformTemperatureSetting(int toolhead);
 
 	/***************************************************************************
 	 * Build chamber interface functions
@@ -369,10 +364,8 @@ public interface Driver {
 	 * Fan interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void enableFan() throws RetryException;
 	public void enableFan(int toolhead) throws RetryException;
 
-	public void disableFan() throws RetryException;
 	public void disableFan(int toolhead) throws RetryException;
 
 	
@@ -380,16 +373,15 @@ public interface Driver {
 	 * abp interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setAutomatedBuildPlatformRunning(boolean state) throws RetryException;
 	public void setAutomatedBuildPlatformRunning(boolean state, int toolhead) throws RetryException;
 	
 	/***************************************************************************
 	 * Valve interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void openValve() throws RetryException;
+	public void openValve(int toolhead) throws RetryException;
 
-	public void closeValve() throws RetryException;
+	public void closeValve(int toolhead) throws RetryException;
 
 	/*************************************************************************
 	 * Potentiometer interface
@@ -454,7 +446,5 @@ public interface Driver {
 	 * reads temperature from all heated build platforms
 	 */
 	public void readAllPlatformTemperatures();
-	
-
 
 }

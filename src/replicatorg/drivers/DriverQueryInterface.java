@@ -11,31 +11,30 @@ import replicatorg.util.Point5d;
  * @author matt.mets
  */
 public interface DriverQueryInterface {
+	public int getCurrentToolIndex();
+	
+	public String getDriverName();
+	public boolean hasEmergencyStop();
+	public boolean hasSoftStop();
+	
 	public Point3d getOffset(int i);
 	
 	public Point5d getMaximumFeedrates();
 
-	public double getSpindleRPM();
+	public double getSpindleRPM(int toolhead);
 	
-	public double getMotorRPM();
+	public double getMotorRPM(int toolhead);
 	
-	public int getMotorSpeedPWM();
-
-	/** relies on timing to have the 'right selected toolhead', deprecated */
-	@Deprecated
-	public double getTemperature();
+	public int getMotorSpeedPWM(int toolhead);
 
 	public double getTemperature(int toolhead);
 
-	public double getTemperatureSetting();
+	public double getTemperatureSetting(int toolhead);
 
-	public boolean hasAutomatedBuildPlatform();
+	public boolean hasAutomatedBuildPlatform(int toolhead);
 	
-	/** relies on timing to have the 'right selected toolhead', deprecated */
-	@Deprecated
-	public double getPlatformTemperature();
 	public double getPlatformTemperature(int toolhead);
-	public double getPlatformTemperatureSetting();
+	public double getPlatformTemperatureSetting(int toolhead);
 
 	public Point5d getCurrentPosition(boolean b);
 

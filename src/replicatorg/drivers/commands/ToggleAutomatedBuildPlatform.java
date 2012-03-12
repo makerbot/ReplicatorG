@@ -1,28 +1,24 @@
 package replicatorg.drivers.commands;
 
+import static replicatorg.util.Preconditions.*;
+
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 
 public class ToggleAutomatedBuildPlatform implements DriverCommand {
-
-	boolean state;
-	int toolhead = -1;
-	public ToggleAutomatedBuildPlatform(boolean state)
-	{
-		super();
-		this.state = state;
-	}
-
+	private final boolean state;
+	private final int toolhead;
+	
 	public ToggleAutomatedBuildPlatform(boolean state, int toolhead)
 	{
-		super();
 		this.state = state;
-		this.toolhead = toolhead;
+		this.toolhead = checkNonNegative(toolhead,
+				"Tool indices should not be negative");
 	}
 
 	@Override
 	public void run(Driver driver) throws RetryException {
-		driver.setAutomatedBuildPlatformRunning(state,toolhead );
+		driver.setAutomatedBuildPlatformRunning(state, toolhead);
 	}
 
 }

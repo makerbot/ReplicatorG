@@ -5,7 +5,6 @@ import java.util.EnumSet;
 import java.util.List;
 
 import replicatorg.machine.model.AxisId;
-import replicatorg.machine.model.ToolModel;
 
 
 public interface OnboardParameters {

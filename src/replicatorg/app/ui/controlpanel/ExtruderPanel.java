@@ -274,7 +274,7 @@ public class ExtruderPanel extends JPanel{
 						}
 					}
 				}, "handleTextField", "motor-speed-pwm", 5, Base.getLocalFormat());
-				field.setValue(machine.getDriverQueryInterface().getMotorSpeedPWM());
+				field.setValue(machine.getDriverQueryInterface().getMotorSpeedPWM(tool.getIndex()));
 				panel.add(label);
 				panel.add(field,"wrap");
 			}
@@ -748,6 +748,7 @@ public class ExtruderPanel extends JPanel{
 	{
 		String name = source.getName();
 		int toolhead;
+		boolean platform = false;
 		double newValue = Double.NaN;
 
 		// tools position may not match index
@@ -755,9 +756,10 @@ public class ExtruderPanel extends JPanel{
 			toolhead = tool0.getIndex();
 		else if(source == t1TargetTemperatureField)
 			toolhead = tool1.getIndex();
-		else if(source == pTargetTemperatureField)
-			toolhead = -1; // -1 means autodetect
-		else {
+		else if(source == pTargetTemperatureField) {
+			toolhead = tool0.getIndex();
+			platform = true;
+		} else {
 			Base.logger.warning("Unhandled text field: "+name);
 			return;
 		}
@@ -767,7 +769,7 @@ public class ExtruderPanel extends JPanel{
 			newValue = ((Number)source.getValue()).doubleValue();
 			
 			// if we have a toolhead temperature
-			if(toolhead != -1) {
+			if (!platform) {
 				newValue = confirmTemperature(newValue,"temperature.acceptedLimit",260.0);
 				if (newValue == Double.MIN_VALUE) {
 					return;
@@ -781,7 +783,7 @@ public class ExtruderPanel extends JPanel{
 				machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(newValue, toolhead));
 			}
 		}
-		if(newValue != Double.NaN) {
+		if(!Double.isNaN(newValue)) {
 			if(source == t0TargetTemperatureField)
 				t0TargetTemperature = newValue;
 			else if(source == t1TargetTemperatureField)
@@ -801,14 +803,14 @@ public class ExtruderPanel extends JPanel{
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE,toolhead));
 				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
 				if (tool.motorHasEncoder() || tool.motorIsStepper()) {
-					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM(),toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriverQueryInterface().getMotorRPM(toolhead), toolhead));
 				}
 				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
 			} else if (name.equals("motor-reverse")) {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE,toolhead));
 				// TODO: Hack to support RepRap/Ultimaker- always re-send RPM
 				if (tool.motorHasEncoder() || tool.motorIsStepper()) {
-					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriver().getMotorRPM(),toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.SetMotorSpeedRPM(machine.getDriverQueryInterface().getMotorRPM(toolhead), toolhead));
 				}
 				machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
 			} else if (name.equals("motor-stop")) {
@@ -845,14 +847,14 @@ public class ExtruderPanel extends JPanel{
 			if (tool.getMotorStepperAxisName() != "") {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.CLOCKWISE,toolhead));
 				// Reverted to one single command for RepRap5D driver
-				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+				if (machine.getDriverQueryInterface().getDriverName().equals("RepRap5D")) {
 					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000,toolhead));
 				} else {
 					// See Note (***) Below:
 					machine.runCommand(new replicatorg.drivers.commands.SelectTool(toolhead));
 
 					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
-					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000,toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
 					machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
 				}
 			}
@@ -860,14 +862,14 @@ public class ExtruderPanel extends JPanel{
 			if (tool.getMotorStepperAxisName() != "") {
 				machine.runCommand(new replicatorg.drivers.commands.SetMotorDirection(AxialDirection.COUNTERCLOCKWISE,toolhead));
 				// Reverted to one single command for RepRap5D driver
-				if (machine.getDriver().getDriverName().equals("RepRap5D")) {
+				if (machine.getDriverQueryInterface().getDriverName().equals("RepRap5D")) {
 					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(extrudeTime*1000,toolhead));
 				} else {
 					// See Note (***) Below:
 					machine.runCommand(new replicatorg.drivers.commands.SelectTool(toolhead));
 
 					machine.runCommand(new replicatorg.drivers.commands.EnableExtruderMotor(toolhead));
-					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000,toolhead));
+					machine.runCommand(new replicatorg.drivers.commands.Delay(extrudeTime*1000));
 					machine.runCommand(new replicatorg.drivers.commands.DisableMotor(toolhead));
 				}
 			}

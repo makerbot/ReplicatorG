@@ -1,16 +1,16 @@
 package replicatorg.drivers.commands;
 
+import static replicatorg.util.Preconditions.*;
+
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 
 public class DisableMotor implements DriverCommand {
-	int toolhead = -1 ; ///
+	private final int toolhead;
 	
-
-	public DisableMotor() {}
-
 	public DisableMotor(int toolhead) {
-		this.toolhead = toolhead;
+		this.toolhead = checkNonNegative(toolhead,
+				"Tool indices should not be negative");
 	}
 	
 	@Override

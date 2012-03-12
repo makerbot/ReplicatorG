@@ -46,11 +46,11 @@ public class EstimationDriver extends DriverBaseImplementation implements Intera
 
 	public Rectangle2D.Double getBounds() { return bounds; }
 	
-	public void delay(long millis) {
+	@Override public void delay(long millis) {
 		buildTime += (double) millis / 1000;
 	}
 
-	protected Point5d reconcilePosition() {
+	@Override protected Point5d reconcilePosition() {
 		// The estimation driver doesn't even care where it is.
 		return new Point5d();
 	}
@@ -60,7 +60,7 @@ public class EstimationDriver extends DriverBaseImplementation implements Intera
 	 * @param p The point, in mm.
 	 * @throws RetryException 
 	 */
-	public void queuePoint(Point5d p) throws RetryException {
+	@Override public void queuePoint(Point5d p) throws RetryException {
 		Point5d delta = getDelta(p);
 
 		// add to the total length

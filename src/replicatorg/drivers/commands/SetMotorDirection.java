@@ -1,20 +1,19 @@
 package replicatorg.drivers.commands;
 
+import static replicatorg.util.Preconditions.*;
+
 import replicatorg.drivers.Driver;
 import replicatorg.machine.model.ToolModel;
 
 public class SetMotorDirection implements DriverCommand {
 
-	AxialDirection direction;
-	int toolhead = -1; /// lazy autodetect
+	private final AxialDirection direction;
+	private final int toolhead;
 	
-	public SetMotorDirection(AxialDirection direction) {
-		this.direction = direction;
-	}
-
 	public SetMotorDirection(AxialDirection direction, int toolhead) {
 		this.direction = direction;
-		this.toolhead = toolhead;
+		this.toolhead = checkNonNegative(toolhead,
+				"Tool indices should not be negative");
 	}
 
 	@Override

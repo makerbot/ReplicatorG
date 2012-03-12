@@ -1,20 +1,19 @@
 package replicatorg.drivers.commands;
 
+import static replicatorg.util.Preconditions.*;
+
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 
 public class SetMotorSpeedRPM implements DriverCommand {
 
-	double rpm;
-	int toolhead = -1; /// by default, get current tool at dispatch time
+	private final double rpm;
+	private final int toolhead;
 	
-	public SetMotorSpeedRPM(double rpm) {
-		this.rpm = rpm;
-	}
-
 	public SetMotorSpeedRPM(double rpm, int toolhead) {
 		this.rpm = rpm;
-		this.toolhead = toolhead;
+		this.toolhead = checkNonNegative(toolhead,
+				"Tool indices should not be negative");
 	}
 
 	@Override

@@ -47,7 +47,7 @@ public class StopException extends Exception {
 		return output.toString();
 	}
 	
-	public String getMessage() {
+	@Override public String getMessage() {
 		return getFormattedMessage(message);
 	}
 }

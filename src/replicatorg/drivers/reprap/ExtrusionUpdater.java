@@ -66,9 +66,9 @@ public class ExtrusionUpdater {
 //		Base.logger.info("commandPeriod="+this.commandPeriod);
 		if (driver.feedrate.get() != feedrate)
 		{
-			driver.sendCommand(driver._getToolCode() + "G1 F"+feedrateString);
+			driver.sendCommand(driver._getCurrentToolCode() + "G1 F"+feedrateString);
 		}
-		driver.sendCommand(driver._getToolCode() + "G1 E"+
+		driver.sendCommand(driver._getCurrentToolCode() + "G1 E"+
 				driver.df.format(distance+driver.ePosition.get())+" F"+feedrateString);
 	}
 	

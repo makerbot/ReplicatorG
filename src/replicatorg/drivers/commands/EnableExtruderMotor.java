@@ -1,27 +1,23 @@
 package replicatorg.drivers.commands;
 
+import static replicatorg.util.Preconditions.*;
+
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 
 public class EnableExtruderMotor implements DriverCommand {
 	
-	long millis = 0;
-	int toolhead = -1;
-	
-	public EnableExtruderMotor() {}
+	private final long millis;
+	private final int toolhead;
 	
 	public EnableExtruderMotor(int toolhead) {
-		this.millis = 0;
-		this.toolhead = toolhead;
-	}
-	
-	public EnableExtruderMotor(long millis) {
-		this.millis = millis;
+		this(0, toolhead);
 	}
 	
 	public EnableExtruderMotor(long millis, int toolhead) {
 		this.millis = millis;
-		this.toolhead = toolhead;
+		this.toolhead = checkNonNegative(toolhead,
+				"Tool indices should not be negative");
 	}
 	
 	@Override

@@ -9,25 +9,29 @@ public class Version implements Comparable<Version> {
 		this.minor = minor;
 	}
 	
-	public boolean equals(Object o) {
+	@Override public boolean equals(Object o) {
 		if (o instanceof Version) {
 			Version v = (Version)o;
 			return major == v.major && minor == v.minor;
 		}
 		return false;
 	}
+	
+	@Override public int hashCode() {
+		return (major * 31) + minor;
+	}
 
 	public boolean atLeast(Version v) {
 		return compareTo(v) >= 0;
 	}
 	
-	public int compareTo(Version v) {
+	@Override public int compareTo(Version v) {
 		if (major > v.major || ((major == v.major) && (minor > v.minor))) return 1;
 		if (equals(v)) return 0;
 		return -1;
 	}
 	
-	public String toString() {
+	@Override public String toString() {
 		return Integer.toString(major) + "." + Integer.toString(minor);
 	}
 

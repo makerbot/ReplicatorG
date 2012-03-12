@@ -37,8 +37,6 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.w3c.dom.Node;
-
 import replicatorg.app.Base;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
@@ -85,15 +83,11 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		df = new DecimalFormat("#.######", dfs);
 	}
 
-	public String getDriverName() {
+	@Override public String getDriverName() {
 		return "SimpleRepRap5D";
 	}
 
-	public void loadXML(Node xml) {
-		super.loadXML(xml);
-	}
-
-	public void initialize() {
+	@Override public void initialize() {
 		// declare our serial guy.
 		if (serial == null) {
 			Base.logger.severe("No Serial Port found.\n");
@@ -136,14 +130,14 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		sendCommand("G90");
 	}
 
-	public boolean isPassthroughDriver() {
+	@Override public boolean isPassthroughDriver() {
 		return true;
 	}
 	
 	/**
 	 * Actually execute the GCode we just parsed.
 	 */
-	public void executeGCodeLine(String code) {
+	@Override public void executeGCodeLine(String code) {
 		// we *DONT* want to use the parents one,
 		// as that will call all sorts of misc functions.
 		// we'll simply pass it along.
@@ -155,7 +149,7 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 	 * Actually sends command over serial. If the Arduino buffer is full, this
 	 * method will block until the command has been sent.
 	 */
-	protected void sendCommand(String next) {
+	private void sendCommand(String next) {
 		assert (isInitialized());
 		assert (serial != null);
 		// System.out.println("sending: " + next);
@@ -188,7 +182,7 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		// commands)");
 	}
 
-	public String clean(String str) {
+	private static String clean(String str) {
 		String clean = str;
 
 		// trim whitespace
@@ -199,7 +193,8 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 
 		return clean;
 	}
-	public String fix(String str) {
+	
+	private static String fix(String str) {
 		String fixed = str;
 		// The 5D firmware expects E codes for extrusion control instead of M101, M102, M103
 		
@@ -235,7 +230,7 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 	    return fixed; // no change!
 	}
 	
-	public void readResponse() {
+	private void readResponse() {
 		assert (serial != null);
 		synchronized (serial) {
 			try {
@@ -305,14 +300,14 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		}
 	}
 
-	public boolean isFinished() {
+	@Override public boolean isFinished() {
 		return isBufferEmpty();
 	}
 
 	/**
 	 * Is our buffer empty? If don't have a buffer, its always true.
 	 */
-	public boolean isBufferEmpty() {
+	@Override public boolean isBufferEmpty() {
 		try {
 			readResponse();
 		} catch (Exception e) {
@@ -320,7 +315,7 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		return (bufferSize == 0);
 	}
 
-	public void dispose() {
+	@Override public void dispose() {
 		super.dispose();
 		commands = null;
 	}
@@ -330,7 +325,7 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 	 * @throws RetryException 
 	 **************************************************************************/
 
-	public void queuePoint(Point5d p) throws RetryException {
+	@Override public void queuePoint(Point5d p) throws RetryException {
 		String cmd = "G1 F" + df.format(getCurrentFeedrate());
 		
 		sendCommand(cmd);
@@ -343,7 +338,7 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		super.queuePoint(p);
 	}
 
-	public void setCurrentPosition(Point5d p) throws RetryException {
+	@Override public void setCurrentPosition(Point5d p) throws RetryException {
 		sendCommand("G92 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
 				+ df.format(p.z()));
 
@@ -363,7 +358,7 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		super.homeAxes(axes,false,0);
 	}
 
-	public void delay(long millis) {
+	@Override public void delay(long millis) {
 		int seconds = Math.round(millis / 1000);
 
 		sendCommand("G4 P" + seconds);
@@ -371,31 +366,31 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		// no super call requried.
 	}
 
-	public void openClamp(int clampIndex) {
+	@Override public void openClamp(int clampIndex) {
 		sendCommand("M11 Q" + clampIndex);
 
 		super.openClamp(clampIndex);
 	}
 
-	public void closeClamp(int clampIndex) {
+	@Override public void closeClamp(int clampIndex) {
 		sendCommand("M10 Q" + clampIndex);
 
 		super.closeClamp(clampIndex);
 	}
 
-	public void enableDrives() throws RetryException {
+	@Override public void enableDrives() throws RetryException {
 		sendCommand("M17");
 
 		super.enableDrives();
 	}
 
-	public void disableDrives() throws RetryException {
+	@Override public void disableDrives() throws RetryException {
 		sendCommand("M18");
 
 		super.disableDrives();
 	}
 
-	public void changeGearRatio(int ratioIndex) {
+	@Override public void changeGearRatio(int ratioIndex) {
 		// gear ratio codes are M40-M46
 		int code = 40 + ratioIndex;
 		code = Math.max(40, code);
@@ -406,101 +401,105 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 		super.changeGearRatio(ratioIndex);
 	}
 
-	protected String _getToolCode() {
-		return "T" + machine.currentTool().getIndex() + " ";
+	private String _getToolCode(int toolhead) {
+		return "T" + fixToolIndex(toolhead)  + " ";
+	}
+	
+	private String _getCurrentToolCode() {
+		return _getToolCode(machine.currentTool().getIndex());
 	}
 
 	/***************************************************************************
 	 * Motor interface functions
 	 **************************************************************************/
-	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
-		sendCommand(_getToolCode() + "M108 R" + df.format(rpm));
+	@Override public void setMotorRPM(double rpm, int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M108 R" + df.format(rpm));
 
 		super.setMotorRPM(rpm, toolhead);
 	}
 
-	public void setMotorSpeedPWM(int pwm) throws RetryException {
-		sendCommand(_getToolCode() + "M108 S" + df.format(pwm));
+	@Override public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M108 S" + df.format(pwm));
 
-		super.setMotorSpeedPWM(pwm);
+		super.setMotorSpeedPWM(pwm, toolhead);
 	}
 
-	public void enableMotor() throws RetryException {
-		String command = _getToolCode();
+	@Override public void enableMotor(int toolhead) throws RetryException {
+		String command = _getToolCode(toolhead);
 
-		if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.getTool(toolhead).getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
 			command += "M101";
 		else
 			command += "M102";
 
 		sendCommand(command);
 
-		super.enableMotor();
+		super.enableMotor(toolhead);
 	}
 
-	public void disableMotor() throws RetryException {
-		sendCommand(_getToolCode() + "M103");
+	@Override public void disableMotor(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M103");
 
-		super.disableMotor();
+		super.disableMotor(toolhead);
 	}
 
 	/***************************************************************************
 	 * Spindle interface functions
 	 **************************************************************************/
-	public void setSpindleRPM(double rpm) throws RetryException {
-		sendCommand(_getToolCode() + "S" + df.format(rpm));
+	@Override public void setSpindleRPM(double rpm, int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "S" + df.format(rpm));
 
-		super.setSpindleRPM(rpm);
+		super.setSpindleRPM(rpm, toolhead);
 	}
 
-	public void enableSpindle() throws RetryException {
-		String command = _getToolCode();
+	@Override public void enableSpindle(int toolhead) throws RetryException {
+		String command = _getToolCode(toolhead);
 
-		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.getTool(toolhead).getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
 			command += "M3";
 		else
 			command += "M4";
 
 		sendCommand(command);
 
-		super.enableSpindle();
+		super.enableSpindle(toolhead);
 	}
 
-	public void disableSpindle() throws RetryException {
-		sendCommand(_getToolCode() + "M5");
+	@Override public void disableSpindle(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M5");
 
-		super.disableSpindle();
+		super.disableSpindle(toolhead);
 	}
 
 	/***************************************************************************
 	 * Temperature interface functions
 	 **************************************************************************/
-	public void setTemperature(double temperature) throws RetryException {
-		sendCommand(_getToolCode() + "M104 S" + df.format(temperature));
+	@Override public void setTemperature(double temperature, int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M104 S" + df.format(temperature));
 
-		super.setTemperature(temperature);
+		super.setTemperature(temperature, toolhead);
 	}
 
-	public void readTemperature() {
-		sendCommand(_getToolCode() + "M105");
+	@Override public void readTemperature(int toolhead) {
+		sendCommand(_getToolCode(toolhead) + "M105");
 
-		super.readTemperature();
+		super.readTemperature(toolhead);
 	}
 
-	public double getPlatformTemperature(){
-		return machine.currentTool().getPlatformCurrentTemperature();
+	@Override public double getPlatformTemperature(int toolhead){
+		return machine.getTool(toolhead).getPlatformCurrentTemperature();
 	}
 	/***************************************************************************
 	 * Flood Coolant interface functions
 	 **************************************************************************/
-	public void enableFloodCoolant() {
-		sendCommand(_getToolCode() + "M7");
+	@Override public void enableFloodCoolant() {
+		sendCommand(_getCurrentToolCode() + "M7");
 
 		super.enableFloodCoolant();
 	}
 
-	public void disableFloodCoolant() {
-		sendCommand(_getToolCode() + "M9");
+	@Override public void disableFloodCoolant() {
+		sendCommand(_getCurrentToolCode() + "M9");
 
 		super.disableFloodCoolant();
 	}
@@ -508,14 +507,14 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 	/***************************************************************************
 	 * Mist Coolant interface functions
 	 **************************************************************************/
-	public void enableMistCoolant() {
-		sendCommand(_getToolCode() + "M8");
+	@Override public void enableMistCoolant() {
+		sendCommand(_getCurrentToolCode() + "M8");
 
 		super.enableMistCoolant();
 	}
 
-	public void disableMistCoolant() {
-		sendCommand(_getToolCode() + "M9");
+	@Override public void disableMistCoolant() {
+		sendCommand(_getCurrentToolCode() + "M9");
 
 		super.disableMistCoolant();
 	}
@@ -523,55 +522,55 @@ public class SimpleRepRap5DDriver extends SerialDriver {
 	/***************************************************************************
 	 * Fan interface functions
 	 **************************************************************************/
-	public void enableFan() throws RetryException {
-		sendCommand(_getToolCode() + "M106");
+	@Override public void enableFan(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M106");
 
-		super.enableFan();
+		super.enableFan(toolhead);
 	}
 
-	public void disableFan() throws RetryException {
-		sendCommand(_getToolCode() + "M107");
+	@Override public void disableFan(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M107");
 
-		super.disableFan();
+		super.disableFan(toolhead);
 	}
 
 	/***************************************************************************
 	 * Valve interface functions
 	 **************************************************************************/
-	public void openValve() throws RetryException {
-		sendCommand(_getToolCode() + "M126");
+	@Override public void openValve(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M126");
 
-		super.openValve();
+		super.openValve(toolhead);
 	}
 
-	public void closeValve() throws RetryException {
-		sendCommand(_getToolCode() + "M127");
+	@Override public void closeValve(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M127");
 
-		super.closeValve();
+		super.closeValve(toolhead);
 	}
 
 	/***************************************************************************
 	 * Collet interface functions
 	 **************************************************************************/
-	public void openCollet() {
-		sendCommand(_getToolCode() + "M21");
+	@Override public void openCollet() {
+		sendCommand(_getCurrentToolCode() + "M21");
 
 		super.openCollet();
 	}
 
-	public void closeCollet() {
-		sendCommand(_getToolCode() + "M22");
+	@Override public void closeCollet() {
+		sendCommand(_getCurrentToolCode() + "M22");
 
 		super.closeCollet();
 	}
 
-	public void reset() {
+	@Override public void reset() {
 		Base.logger.info("Reset.");
 		setInitialized(false);
 		initialize();
 	}
 
-	protected Point5d reconcilePosition() {
+	@Override protected Point5d reconcilePosition() {
 		return new Point5d();
 	}
 }

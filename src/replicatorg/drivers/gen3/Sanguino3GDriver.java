@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 
-import org.w3c.dom.Node;
-
 import replicatorg.app.Base;
 import replicatorg.drivers.DriverError;
 import replicatorg.drivers.MultiTool;
@@ -51,8 +49,6 @@ import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.uploader.FirmwareUploader;
 import replicatorg.util.Point5d;
-
-import replicatorg.drivers.gen3.EEPROMClass;
 
 class Sanguino3GEEPRPOM implements EEPROMClass {
 
@@ -105,12 +101,11 @@ public class Sanguino3GDriver extends SerialDriver implements
 		OnboardParameters, SDCardCapture, PenPlotter, MultiTool {
 	protected final static int DEFAULT_RETRIES = 5;
 
-	Version toolVersion = new Version(0, 0);
+	private Version toolVersion = new Version(0, 0);
 
 	private boolean eepromChecked = false;
 
 	public Sanguino3GDriver() {
-		super();
 		hasEmergencyStop = true;
 		hasSoftStop = true;
 
@@ -121,12 +116,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		setInitialized(false);
 	}
 
-	public void loadXML(Node xml) {
-		super.loadXML(xml);
-
-	}
-
-	public void initialize() {
+	@Override public void initialize() {
 		Base.logger.fine("Attempting to initialize device");
 
 		// Assert: serial port present.
@@ -159,8 +149,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 			sendInit();
 			super.initialize();
 			invalidatePosition();
-
-			return;
 		} else {
 			Base.logger.info("Unable to connect to firmware.");
 			// Dispose of driver to free up any resources
@@ -168,7 +156,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		}
 	}
 	
-	public boolean initializeBot()
+	protected boolean initializeBot()
 	{
 		// Scan for each slave
 		for (ToolModel t : getMachine().getTools()) {
@@ -204,7 +192,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return isInitialized();
 	}
 
-	public void assessState() {
+	@Override public void assessState() {
 		// If we are supposed to have a serial connection, see if it is still
 		// active
 		if (isInitialized() && !serial.isConnected()) {
@@ -220,7 +208,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 *                handshake.
 	 * @return true if we received a handshake; false if we timed out.
 	 */
-	protected void connectToDevice(int timeoutMillis) {
+	private void connectToDevice(int timeoutMillis) {
 		assert (serial != null);
 		synchronized (serial) {
 			serial.clear();
@@ -287,7 +275,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	//// Get a list of all toolheads we save onboard preferences for 
-	public List<Integer> toolheadsWithStoredData()
+	@Override public List<Integer> toolheadsWithStoredData()
 	{
 		Vector<ToolModel> tools = this.getMachine().getTools();
 		Vector<Integer> toolsList = new Vector<Integer>();
@@ -299,7 +287,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	
-	void printDebugData(String title, byte[] data) {
+	private void printDebugData(String title, byte[] data) {
 		StringBuffer buf = new StringBuffer(title + ": ");
 		for (int i = 0; i < data.length; i++) {
 			buf.append(Integer.toHexString((int) data[i] & 0xff));
@@ -325,7 +313,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * @return
 	 * @throws RetryException
 	 */
-	protected PacketResponse runCommand(byte[] packet, int retries)
+	private PacketResponse runCommand(byte[] packet, int retries)
 			throws RetryException {
 
 		if (retries == 0) {
@@ -382,11 +370,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 			}
 
 			pp = new PacketProcessor();
-			
-			if(packet == null) {
-				Base.logger.severe("null packet in runCommand");
-				return PacketResponse.timeoutResponse();
-			}
 			
 			// This can actually happen during shutdown.
 			if (serial == null){
@@ -447,9 +430,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return pr;
 	}
 
-	static boolean isNotifiedFinishedFeature = false;
+	private static boolean isNotifiedFinishedFeature = false;
 
-	public boolean isFinished() {
+	@Override public boolean isFinished() {
 		if (fileCaptureOstream != null) {
 			return true;
 		} // always done instantly if writing to file
@@ -475,7 +458,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	
 	
-	public boolean isBufferEmpty() {
+	@Override public boolean isBufferEmpty() {
 		// TODO: Make sure this is right
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.IS_FINISHED.getCode());
@@ -497,10 +480,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return finished;
 	}
 
-	public void dispose() {
-		super.dispose();
-	}
-
 	/***************************************************************************
 	 * commands used internally to driver
 	 **************************************************************************/
@@ -509,7 +488,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * Make an inital connection to read the version code.
 	 * @return
 	 */
-	public Version getVersionInternal() {
+	private Version getVersionInternal() {
 		
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.VERSION.getCode());
 		pb.add16(Base.VERSION);
@@ -543,7 +522,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 
-	public CommunicationStatistics getCommunicationStatistics() {
+	@Override public CommunicationStatistics getCommunicationStatistics() {
 		CommunicationStatistics stats = new CommunicationStatistics();
 
 		PacketBuilder pb = new PacketBuilder(
@@ -560,11 +539,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		return stats;
 	}
-
+	
 	private void initSlave(int toolhead) {
-		
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		PacketBuilder slavepb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
@@ -639,13 +616,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 				}
 			}
 		}
-//		//TRICKY: this is just called to get the value cached into the ToolModel
-//		double ignore = getMotorRPM(toolIndex);
-	
-
 	}
 
-	public void sendInit() {
+	private void sendInit() {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.INIT.getCode());
 		runQuery(pb.getPacket());
@@ -657,7 +630,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * @throws RetryException
 	 **************************************************************************/
 
-	public void queuePoint(Point5d p) throws RetryException {
+	@Override public void queuePoint(Point5d p) throws RetryException {
 		// TODO: check if our current position is valid?
 
 		Base.logger.finer("Queued point " + p);
@@ -685,10 +658,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 			super.queuePoint(p);
 		}
 	}
-
-	// public Point3d getPosition() {
-	// return new Point3d();
-	// }
 
 	/*
 	 * //figure out the axis with the most steps. Point3d steps =
@@ -734,12 +703,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		runCommand(pb.getPacket());
 	}
 
-	public void setCurrentPosition(Point5d p) throws RetryException {
-		// System.err.println("   SCP: "+p.toString()+
-		// " (current "+getCurrentPosition().toString()+")");
-		// if (super.getCurrentPosition().equals(p)) return;
-		// System.err.println("COMMIT: "+p.toString()+
-		// " (current "+getCurrentPosition().toString()+")");
+	@Override public void setCurrentPosition(Point5d p) throws RetryException {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.SET_POSITION.getCode());
 
@@ -758,7 +722,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/// TODO: this says it homes the first three axes, but it actually homes
 	/// whatever's passed
 	/// Homes the three first axes
-	public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate)
+	@Override public void homeAxes(EnumSet<AxisId> axes, boolean positive, double feedrate)
 			throws RetryException {
 		Base.logger.fine("Homing axes " + axes.toString());
 		byte flags = 0x00;
@@ -798,7 +762,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		invalidatePosition();
 	}
 
-	public void delay(long millis) throws RetryException {
+	@Override public void delay(long millis) throws RetryException {
 		Base.logger.finer("Delaying " + millis + " millis.");
 		Base.logger.fine("Sanguino3GDriver.enableMotor()");//REMOVE:
 
@@ -809,17 +773,17 @@ public class Sanguino3GDriver extends SerialDriver implements
 		runCommand(pb.getPacket());
 	}
 
-	public void openClamp(int clampIndex) {
+	@Override public void openClamp(int clampIndex) {
 		// TODO: throw some sort of unsupported exception.
 		super.openClamp(clampIndex);
 	}
 
-	public void closeClamp(int clampIndex) {
+	@Override public void closeClamp(int clampIndex) {
 		// TODO: throw some sort of unsupported exception.
 		super.closeClamp(clampIndex);
 	}
 
-	public void enableDrives() throws RetryException {
+	@Override public void enableDrives() throws RetryException {
 		// Command RMB to enable its steppers. Note that they are
 		// already automagically enabled by most commands and need
 		// not be explicitly enabled.
@@ -830,7 +794,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.enableDrives();
 	}
 
-	public void disableDrives() throws RetryException {
+	@Override public void disableDrives() throws RetryException {
 		// Command RMB to disable its steppers.
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.ENABLE_AXES.getCode());
@@ -860,7 +824,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	* already automagically enabled by most commands and need
 	* not be explicitly enabled.
 	*/
-	public void enableAxes(EnumSet<AxisId> axes) throws RetryException {
+	@Override public void enableAxes(EnumSet<AxisId> axes) throws RetryException {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.ENABLE_AXES.getCode());
 		pb.add8(0x80 + (axesToBitfield(axes) & 0x1f)); // enable axes
@@ -869,7 +833,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	/// Command machine to disable some steppers.
-	public void disableAxes(EnumSet<AxisId> axes) throws RetryException {
+	@Override public void disableAxes(EnumSet<AxisId> axes) throws RetryException {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.ENABLE_AXES.getCode());
 		pb.add8(axesToBitfield(axes) & 0x1f); // disable axes
@@ -877,7 +841,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.disableAxes(axes);
 	}
 
-	public void changeGearRatio(int ratioIndex) {
+	@Override public void changeGearRatio(int ratioIndex) {
 		// TODO: throw some sort of unsupported exception.
 		super.changeGearRatio(ratioIndex);
 	}
@@ -890,7 +854,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * timeout is given in seconds. If the tool isn't ready by then, the machine
 	 * will continue anyway.
 	 */
-	public void requestToolChange(int toolhead, int timeout)
+	@Override public void requestToolChange(int toolhead, int timeout)
 			throws RetryException {
 
 		selectTool(toolhead);
@@ -926,7 +890,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	
-	public void selectTool(int toolIndex) throws RetryException {
+	@Override public void selectTool(int toolIndex) throws RetryException {
 		Base.logger.fine("Selecting tool #" + toolIndex);
 
 		// send it!
@@ -942,10 +906,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/***************************************************************************
 	 * Motor interface functions
 	 **************************************************************************/
-	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
+	@Override public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 		// convert RPM into microseconds and then send.
 		long microseconds = rpm == 0 ? 0 : Math.round(60.0 * 1000000.0 / rpm); // no
 		// unsigned
@@ -964,24 +927,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add32(microseconds);
 		runCommand(pb.getPacket());
 
-		//TRICKY: WAS 'super.setMotorRPM(rpm);', but this seems not to work right.
-		// Seems to set default motor value(motorSpeedRPM , not 'running' motor
-		// value. Caused gui to show bad values
-//		machine.getTool(toolhead).setMotorSpeedReadingRPM(rpm);
-//		Changed back - Ted
 		super.setMotorRPM(rpm, toolhead);
 	}
 
+	@Override public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException {
 	
-	public void setMotorSpeedPWM(int pwm) throws RetryException {
-		this.setMotorSpeedPWM(pwm, machine.currentTool().getIndex());
-	}
-	
-	
-	public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException {
-	
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		// If we are using a relay, make sure that we don't enable the PWM
 		if (machine.getTool(toolhead).getMotorUsesRelay() && pwm > 0) {
@@ -1003,17 +954,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setMotorSpeedPWM(pwm, toolhead);
 	}
 
-	@Deprecated
-	public void enableMotor() throws RetryException {
-		/// toolhead -1 indicate auto-detect
-		this.enableMotor(-1);
-	}
-	
-	public void enableMotor(int toolhead) throws RetryException {
+	@Override public void enableMotor(int toolhead) throws RetryException {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 )
-			toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		// our flag variable starts with motors enabled.
 		byte flags = 1;
@@ -1039,8 +982,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	@Override
 	public void disableMotor(int toolhead) throws RetryException {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		// bit 1 determines direction...
 		byte flags = 0;
@@ -1060,14 +1002,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.disableMotor(toolhead);
 	}
 
-	@Deprecated
-	public int getMotorSpeedPWM() {
-		return this.getMotorSpeedPWM(machine.currentTool().getIndex());
-	}
-	public int getMotorSpeedPWM(int toolhead) {
+	@Override public int getMotorSpeedPWM(int toolhead) {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
@@ -1087,15 +1024,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return pwm;
 	}
 
-	public double getMotorRPM()
-	{
-		return getMotorRPM(machine.currentTool().getIndex());
-	}
-	
-	public double getMotorRPM(int toolhead) {
+	@Override public double getMotorRPM(int toolhead) {
 		
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
@@ -1117,16 +1048,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return rpm;
 	}
 
-	
-	@Deprecated
-	public void readToolStatus() {
-		this.readToolStatus(machine.currentTool().getIndex());
-	}
-	
-	public void readToolStatus(int toolhead) {
-
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public void readToolStatus(int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
@@ -1151,7 +1074,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 					+ (((status & 0x01) != 0) ? "READY" : "NOT READY") + " ");
 		}
 
-		readToolPIDState();
+		readToolPIDState(toolhead);
 	}
 
 	// TODO: This doesn't belong here
@@ -1163,15 +1086,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return value;
 	}
 
-	@Deprecated 
-	public void readToolPIDState() {
-		this.readToolPIDState(machine.currentTool().getIndex());
-	}
 	// TODO: Implement a way for this to reach the outside
-	public void readToolPIDState(int toolhead) {
+	private void readToolPIDState(int toolhead) {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		if (Base.logger.isLoggable(Level.FINE)) {
 
@@ -1207,21 +1125,14 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * 
 	 * @throws RetryException
 	 **************************************************************************/
-	// public void moveServo(int degree) {}
-
-	// public void enableServo() {}
-
-	// public void disableServo() {}
-
-	@Deprecated
+	@Override @Deprecated
 	public void setServoPos(int index, double degree) throws RetryException {
 		this.setServoPos(index, degree, machine.currentTool().getIndex());
 	}
 	
-	public void setServoPos(int index, double degree, int toolhead) throws RetryException {
+	private void setServoPos(int index, double degree, int toolhead) throws RetryException {
 		
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		int command = 0;
 
@@ -1266,14 +1177,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/***************************************************************************
 	 * Spindle interface functions
 	 **************************************************************************/
-	@Deprecated
-	public void setSpindleRPM(double rpm) throws RetryException {
-		this.setSpindleRPM(rpm, machine.currentTool().getIndex() );
-	}
-	public void setSpindleRPM(double rpm, int toolhead) throws RetryException {
+	@Override public void setSpindleRPM(double rpm, int toolhead) throws RetryException {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		// convert RPM into microseconds and then send.
 		long microseconds = (int) Math.round(60 * 1000000 / rpm); // no
@@ -1296,15 +1202,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setSpindleRPM(rpm, toolhead);
 	}
 
-	@Deprecated
-	public void setSpindleSpeedPWM(int pwm) throws RetryException {
-		this.setSpindleSpeedPWM(pwm, machine.currentTool().getIndex());
-	}
-		
-	public void setSpindleSpeedPWM(int pwm, int toolhead) throws RetryException {
+	@Override public void setSpindleSpeedPWM(int pwm, int toolhead) throws RetryException {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		Base.logger.fine("Setting motor 2 speed to " + pwm + " PWM");
 
@@ -1320,15 +1220,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setSpindleSpeedPWM(pwm, toolhead);
 	}
 
-	@Deprecated
-	public void enableSpindle() throws RetryException {
-		this.enableSpindle(machine.currentTool().getIndex());
-		}
+	@Override public void enableSpindle(int toolhead) throws RetryException {
 
-	public void enableSpindle(int toolhead) throws RetryException {
-
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		// our flag variable starts with spindles enabled.
 		byte flags = 1;
@@ -1352,15 +1246,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.enableSpindle(toolhead);
 	}
 
-	@Deprecated
-	public void disableSpindle() throws RetryException {
-		disableSpindle(machine.currentTool().getIndex());
-	}
-	
-	public void disableSpindle(int toolhead) throws RetryException {
+	@Override public void disableSpindle(int toolhead) throws RetryException {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		// bit 1 determines direction...
 		byte flags = 0;
@@ -1380,21 +1268,15 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.disableSpindle(toolhead);
 	}
 
-	@Deprecated
-	public double getSpindleSpeedRPM() throws RetryException {
-		return this.getSpindleSpeedRPM(machine.currentTool().getIndex());
-	}
+	@Override public double getSpindleRPM(int toolhead) {
 
-	public double getSpindleSpeedRPM(int toolhead) throws RetryException {
-
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) toolhead);
 		pb.add8(ToolCommandCode.GET_MOTOR_2_RPM.getCode());
-		PacketResponse pr = runCommand(pb.getPacket());
+		PacketResponse pr = runQuery(pb.getPacket());
 
 		// convert back to RPM
 		long micros = pr.get32();
@@ -1408,15 +1290,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return rpm;
 	}
 
-	@Deprecated
-	public int getSpindleSpeedPWM() {
-		return this.getSpindleSpeedPWM(machine.currentTool().getIndex());
-	}
-	
-	public int getSpindleSpeedPWM(int toolhead) {
+	@Override public int getSpindleSpeedPWM(int toolhead) {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
@@ -1440,15 +1316,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * Temperature interface functions
 	 * @throws RetryException
 	 **************************************************************************/
-	@Deprecated
-	public void setTemperature(double temperature) throws RetryException {
-		this.setTemperature(temperature, machine.currentTool().getIndex());
-	}
+	@Override public void setTemperature(double temperature, int toolhead) throws RetryException {
 
-	public void setTemperature(double temperature, int toolhead) throws RetryException {
-
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		// constrain our temperature.
 		int temp = (int) Math.round(temperature);
@@ -1467,12 +1337,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setTemperature(temperature, toolhead);
 	}
 
-	@Deprecated
-	public void readTemperature() {
-		readAllTemperatures(); /// for safety, read all the temps we can
-		//readTemperature(machine.currentTool().getIndex());
-	}
-	
 	@Override
 	public void readAllTemperatures() {
 		Vector<ToolModel> tools = machine.getTools();
@@ -1483,11 +1347,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 		}
 	}
 	
-	public void readTemperature(int toolhead) 
+	@Override public void readTemperature(int toolhead) 
 	{	
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_QUERY.getCode());
@@ -1519,15 +1382,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * @throws RetryException
 	 **************************************************************************/
 
-	@Deprecated
-	public void setPlatformTemperature(double temperature) 	throws RetryException {
-		setAllPlatformTemperatures(temperature);
-	}
+	@Override public void setPlatformTemperature(double temperature, int toolhead)  throws RetryException {
 
-	public void setPlatformTemperature(double temperature, int toolhead)  throws RetryException {
-
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		int temp = (int) Math.round(temperature);
 		temp = Math.min(temp, 65535);
@@ -1544,23 +1401,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 	}
 
-	public void setAllPlatformTemperatures(double temperature) throws RetryException {
-		// constrain our temperature.
-		//Set the platform temperature for any & every tool with an HBP
-		for(ToolModel t : machine.getTools())
-		{
-			this.setPlatformTemperature(temperature, t.getIndex());
-		}
-	}
-
-	@Deprecated
-	public void readPlatformTemperature() {
-		this.readAllPlatformTemperatures();
-	}
-	
-	public void readPlatformTemperature(int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public void readPlatformTemperature(int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
 		pb.add8((byte) toolhead);
@@ -1576,7 +1418,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		
 	}
 
-	public void readAllPlatformTemperatures()
+	@Override public void readAllPlatformTemperatures()
 	{
 		
 		for(ToolModel tool : machine.getTools() )
@@ -1590,13 +1432,13 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/***************************************************************************
 	 * Flood Coolant interface functions
 	 **************************************************************************/
-	public void enableFloodCoolant() {
+	@Override public void enableFloodCoolant() {
 		// TODO: throw unsupported exception
 
 		super.enableFloodCoolant();
 	}
 
-	public void disableFloodCoolant() {
+	@Override public void disableFloodCoolant() {
 		// TODO: throw unsupported exception
 
 		super.disableFloodCoolant();
@@ -1605,13 +1447,13 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/***************************************************************************
 	 * Mist Coolant interface functions
 	 **************************************************************************/
-	public void enableMistCoolant() {
+	@Override public void enableMistCoolant() {
 		// TODO: throw unsupported exception
 
 		super.enableMistCoolant();
 	}
 
-	public void disableMistCoolant() {
+	@Override public void disableMistCoolant() {
 		// TODO: throw unsupported exception
 
 		super.disableMistCoolant();
@@ -1622,15 +1464,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * 
 	 * @throws RetryException
 	 **************************************************************************/
-	@Deprecated
-	public void enableFan() throws RetryException {
-		this.enableFan(machine.currentTool().getIndex() );
-	}
-	
-	public void enableFan(int toolhead) throws RetryException {
+	@Override public void enableFan(int toolhead) throws RetryException {
 		
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		Base.logger.fine("Enabling fan");
 
@@ -1645,14 +1481,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.enableFan(toolhead);
 	}
 
-	@Deprecated
-	public void disableFan() throws RetryException {
-		this.disableFan(machine.currentTool().getIndex());
-	}
-	public void disableFan(int toolhead) throws RetryException {
+	@Override public void disableFan(int toolhead) throws RetryException {
 		
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		Base.logger.fine("Disabling fan");
 
@@ -1667,16 +1498,9 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.disableFan(toolhead);
 	}
 
-	@Deprecated
-	public void setAutomatedBuildPlatformRunning(boolean state)
-		throws RetryException {
-		this.setAutomatedBuildPlatformRunning(state, machine.currentTool().getIndex());
-	}
-	
-	public void setAutomatedBuildPlatformRunning(boolean state, int toolhead)
+	@Override public void setAutomatedBuildPlatformRunning(boolean state, int toolhead)
 			throws RetryException {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		Base.logger.fine("Toggling ABP to " + state);
 		byte newState = state ? (byte) 1 : (byte) 0;
@@ -1698,16 +1522,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * 
 	 * @throws RetryException
 	 **************************************************************************/
-	@Deprecated
-	public void openValve() throws RetryException {
-		openValve(machine.currentTool().getIndex());
-	}
-	
-	public void openValve(int toolhead) throws RetryException {
+	@Override public void openValve(int toolhead) throws RetryException {
 		Base.logger.fine("Opening valve");
 		
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 
 		PacketBuilder pb = new PacketBuilder(
@@ -1722,17 +1540,11 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 
-	@Deprecated
-	public void closeValve() throws RetryException {
-		closeValve(machine.currentTool().getIndex());
-	}
-
 	
-	public void closeValve(int toolhead) throws RetryException {
+	@Override public void closeValve(int toolhead) throws RetryException {
 		Base.logger.fine("Closing valve");
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.TOOL_COMMAND.getCode());
@@ -1748,13 +1560,13 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/***************************************************************************
 	 * Collet interface functions
 	 **************************************************************************/
-	public void openCollet() {
+	@Override public void openCollet() {
 		// TODO: throw unsupported exception.
 
 		super.openCollet();
 	}
 
-	public void closeCollet() {
+	@Override public void closeCollet() {
 		// TODO: throw unsupported exception.
 
 		super.closeCollet();
@@ -1763,14 +1575,14 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/***************************************************************************
 	 * Pause/unpause functionality for asynchronous devices
 	 **************************************************************************/
-	public void pause() {
+	@Override public void pause() {
 		Base.logger.fine("Sending asynch pause command");
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.PAUSE.getCode());
 		runQuery(pb.getPacket());
 	}
 
-	public void unpause() {
+	@Override public void unpause() {
 		Base.logger.fine("Sending asynch unpause command");
 		// There is no explicit unpause command on the Sanguino3G; instead we
 		// use the pause command to toggle the pause state.
@@ -1804,7 +1616,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 *            Feedrate in mm per minute
 	 * @return
 	 */
-	protected long convertFeedrateToMicros(Point5d current, Point5d target,
+	private long convertFeedrateToMicros(Point5d current, Point5d target,
 			double feedrate) {
 		Point5d deltaDistance = getAbsDeltaDistance(current, target);
 		Point5d deltaSteps = machine.mmToSteps(deltaDistance);
@@ -1826,7 +1638,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return (long) Math.round(step_delay);
 	}
 
-	protected double getLongestLength(Point5d p) {
+	private double getLongestLength(Point5d p) {
 		// find the dominant axis.
 		double longest = 0d;
 		for (int i = 0; i < 5; i++) {
@@ -1835,7 +1647,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return longest;
 	}
 
-	public String getDriverName() {
+	@Override public String getDriverName() {
 		return "Sanguino3G";
 	}
 
@@ -1845,7 +1657,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	final private Version extendedStopVersion = new Version(2, 7);
 
 	/// resets the bot, doesn't stop threads
-	public void stop(boolean abort) {
+	@Override public void stop(boolean abort) {
 		PacketBuilder pb;
 		if (!abort && version.atLeast(extendedStopVersion)) {
 			Base.logger.fine("Stop motion.");
@@ -1864,7 +1676,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		invalidatePosition();
 	}
 
-	protected Point5d reconcilePosition() throws RetryException {
+	@Override protected Point5d reconcilePosition() throws RetryException {
 		// If we're writing to a file, we can't actually know what the current
 		// position is.
 		if (fileCaptureOstream != null) {
@@ -1880,7 +1692,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	
-	public void reset() {
+	@Override public void reset() {
 		Base.logger.info("Reset Board");
 		if (isInitialized() && version.compareTo(new Version(1, 4)) >= 0) {
 			// WDT reset introduced in version 1.4 firmware
@@ -1939,16 +1751,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 		assert pr.get8() == data.length;
 	}
 
-	@Deprecated
-	protected byte[] readFromToolEEPROM(int offset, int len)
-	{
-		return readFromToolEEPROM(offset, len, machine.currentTool().getIndex());
-	}
 
 	protected byte[] readFromToolEEPROM(int offset, int len, int toolhead) {
 		
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_QUERY.getCode());
@@ -1976,22 +1782,11 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * 
 	 * @param offset
 	 * @param data
-	 */
-	@Deprecated
-	protected void writeToToolEEPROM(int offset, byte[] data) {
-		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
-	}
-
-	/**
-	 * 
-	 * @param offset
-	 * @param data
 	 * @param toolhead
 	 */
 	protected void writeToToolEEPROM(int offset, byte[] data, int toolhead) {
 		
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		final int MAX_PAYLOAD = 11;
 		while (data.length > MAX_PAYLOAD) {
@@ -2054,7 +1849,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return null;
 	}
 
-	public EnumSet<AxisId> getInvertedAxes() {
+	@Override public EnumSet<AxisId> getInvertedAxes() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(
 				Sanguino3GEEPRPOM.EEPROM_AXIS_INVERSION_OFFSET, 1);
@@ -2074,7 +1869,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return r;
 	}
 
-	public void setInvertedAxes(EnumSet<AxisId> axes) {
+	@Override public void setInvertedAxes(EnumSet<AxisId> axes) {
 		byte b[] = new byte[1];
 		if (axes.contains(AxisId.X))
 			b[0] = (byte) (b[0] | (0x01 << 0));
@@ -2091,7 +1886,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_AXIS_INVERSION_OFFSET, b);
 	}
 
-	public String getMachineName() {
+	@Override public String getMachineName() {
 		checkEEPROM();
 		byte[] data = readFromEEPROM(
 				Sanguino3GEEPRPOM.EEPROM_MACHINE_NAME_OFFSET,
@@ -2111,7 +1906,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		}
 	}
 
-	public void setMachineName(String machineName) {
+	@Override public void setMachineName(String machineName) {
 		machineName = new String(machineName);
 		if (machineName.length() > 16) {
 			machineName = machineName.substring(0, 16);
@@ -2132,7 +1927,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * Reads a 32 bit double from EEPROM on the MightyBoard to indicate the 
 	 * number of steps of offset from end-stop to home on the specified axis
 	 */
-	public double getAxisHomeOffset(int axis) {
+	@Override public double getAxisHomeOffset(int axis) {
 		if ((axis < 0) || (axis > 4)) {
 			// TODO: handle this
 			return 0;
@@ -2170,7 +1965,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
         
 
-	public void setAxisHomeOffset(int axis, double offset) {
+	@Override public void setAxisHomeOffset(int axis, double offset) {
 		if ((axis < 0) || (axis > 4)) {
 			// TODO: handle this
 			return;
@@ -2216,7 +2011,7 @@ public class Sanguino3GDriver extends SerialDriver implements
         return;
     }
 
-	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
+	@Override public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
 		byte b = 0;
 		if (axes.contains(AxisId.X))
 			b = (byte) (b | (0x01 << 0));
@@ -2243,7 +2038,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		runCommand(pb.getPacket());
 	}
 
-	public void recallHomePositions(EnumSet<AxisId> axes) throws RetryException {
+	@Override public void recallHomePositions(EnumSet<AxisId> axes) throws RetryException {
 		byte b = 0;
 		if (axes.contains(AxisId.X))
 			b = (byte) (b | (0x01 << 0));
@@ -2272,16 +2067,15 @@ public class Sanguino3GDriver extends SerialDriver implements
 		invalidatePosition();
 	}
 
-	public boolean hasFeatureOnboardParameters() {
+	@Override public boolean hasFeatureOnboardParameters() {
 		if (!isInitialized())
 			return false;
 		return version.compareTo(new Version(1, 2)) >= 0;
 	}
 
-	public void createThermistorTable(int which, double r0, double t0, double beta, int toolhead) {
+	@Override public void createThermistorTable(int which, double r0, double t0, double beta, int toolhead) {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		// Generate a thermistor table for r0 = 100K.
 		final int ADC_RANGE = 1024;
@@ -2337,24 +2131,21 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToToolEEPROM(Sanguino3GEEPRPOM.ECThermistorOffsets.data(which), table, toolhead);
 		}
 
-	public boolean getCoolingFanEnabled(int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public boolean getCoolingFanEnabled(int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 		
 		byte[] a = readFromToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE, 1, toolhead);
 
 		return (a[0] == 1);
 	}
 
-	public int getCoolingFanSetpoint(int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public int getCoolingFanSetpoint(int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 		return read16FromToolEEPROM(CoolingFanOffsets.COOLING_FAN_SETPOINT_C, 50, toolhead);
 	}
 
-	public void setCoolingFanParameters(boolean enabled, int setpoint, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public void setCoolingFanParameters(boolean enabled, int setpoint, int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 		if (enabled) {
 			writeToToolEEPROM(CoolingFanOffsets.COOLING_FAN_ENABLE, new byte[] { 0x1 }, toolhead);
 		} else {
@@ -2387,7 +2178,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return intToLE(s, 4);
 	}
 
-	ResponseCode convertSDCode(int code) {
+	private ResponseCode convertSDCode(int code) {
 		switch (code) {
 		case 0:
 			return ResponseCode.SUCCESS;
@@ -2410,18 +2201,18 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return ResponseCode.FAIL_GENERIC;
 	}
 
-	FileOutputStream fileCaptureOstream = null;
+	protected FileOutputStream fileCaptureOstream = null;
 
-	public void beginFileCapture(String path) throws FileNotFoundException {
+	@Override public void beginFileCapture(String path) throws FileNotFoundException {
 		fileCaptureOstream = new FileOutputStream(new File(path));
 	}
 
-	public void endFileCapture() throws IOException {
+	@Override public void endFileCapture() throws IOException {
 		fileCaptureOstream.close();
 		fileCaptureOstream = null;
 	}
 
-	public ResponseCode beginCapture(String filename) {
+	@Override public ResponseCode beginCapture(String filename) {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.CAPTURE_TO_FILE.getCode());
 		for (byte b : filename.getBytes()) {
@@ -2432,14 +2223,14 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return convertSDCode(pr.get8());
 	}
 
-	public int endCapture() {
+	@Override public int endCapture() {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.END_CAPTURE.getCode());
 		PacketResponse pr = runQuery(pb.getPacket());
 		return pr.get32();
 	}
 
-	public ResponseCode playback(String filename) {
+	@Override public ResponseCode playback(String filename) {
 		PacketBuilder pb = new PacketBuilder(
 				MotherboardCommandCode.PLAYBACK_CAPTURE.getCode());
 		for (byte b : filename.getBytes()) {
@@ -2450,13 +2241,13 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return convertSDCode(pr.get8());
 	}
 
-	public boolean hasFeatureSDCardCapture() {
+	@Override public boolean hasFeatureSDCardCapture() {
 		if (!isInitialized())
 			return false;
 		return version.compareTo(new Version(1, 3)) >= 0;
 	}
 
-	public List<String> getFileList() {
+	@Override public List<String> getFileList() {
 		Vector<String> fileList = new Vector<String>();
 		boolean reset = true;
 		while (true) {
@@ -2483,9 +2274,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return fileList;
 	}
 
-	public int getBeta(int which, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public int getBeta(int which, int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 
 		byte r[] = readFromToolEEPROM(Sanguino3GEEPRPOM.ECThermistorOffsets.beta(which),4,toolhead);
 		int val = 0;
@@ -2499,9 +2289,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return val;
 	}
 
-	public int getR0(int which, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public int getR0(int which, int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 		byte r[] = readFromToolEEPROM(Sanguino3GEEPRPOM.ECThermistorOffsets.r0(which),4,toolhead);
 		int val = 0;
 		if( r == null || r.length < 4 ) {
@@ -2514,9 +2303,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return val;
 	}
 
-	public int getT0(int which, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public int getT0(int which, int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 		byte r[] = readFromToolEEPROM(Sanguino3GEEPRPOM.ECThermistorOffsets.t0(which),4,toolhead);
 		int val = 0;
 		if( r == null || r.length < 4 ) {
@@ -2556,14 +2344,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 	};
 
 
-	@Deprecated
-	protected int read16FromToolEEPROM(int offset, int defaultValue) {
-		return read16FromToolEEPROM(offset, defaultValue, machine.currentTool().getIndex());
-	}
-	
 	protected int read16FromToolEEPROM(int offset, int defaultValue, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 		byte r[] = readFromToolEEPROM(offset, 2, toolhead);
 		int val = ((int) r[0]) & 0xff;
 		val += (((int) r[1]) & 0xff) << 8;
@@ -2577,8 +2359,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	private float readFloat16FromToolEEPROM(int offset, float defaultValue, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 		byte r[] = readFromToolEEPROM(offset, 2, toolhead);
 		if (r == null) {
 			Base.logger.severe("null read from tool at " + offset + " for tool " + toolhead + " default " +defaultValue);
@@ -2589,9 +2370,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return (float) byteToInt(r[0]) + ((float) byteToInt(r[1])) / 256.0f;
 	}
 
-	public BackoffParameters getBackoffParameters(int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public BackoffParameters getBackoffParameters(int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 
 		BackoffParameters bp = new BackoffParameters();
 		bp.forwardMs = read16FromToolEEPROM(ECBackoffOffsets.FORWARD_MS, 300, toolhead);
@@ -2601,9 +2381,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return bp;
 	}
 	
-	public void setBackoffParameters(BackoffParameters bp, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public void setBackoffParameters(BackoffParameters bp, int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 
 		writeToToolEEPROM(ECBackoffOffsets.FORWARD_MS,intToLE(bp.forwardMs,2), toolhead);
 		writeToToolEEPROM(ECBackoffOffsets.STOP_MS,intToLE(bp.stopMs,2), toolhead);
@@ -2611,9 +2390,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToToolEEPROM(ECBackoffOffsets.TRIGGER_MS,intToLE(bp.triggerMs,2), toolhead);
 	}
 
-	public PIDParameters getPIDParameters(int which, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public PIDParameters getPIDParameters(int which, int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 		PIDParameters pp = new PIDParameters();
 		int offset = (which == OnboardParameters.EXTRUDER)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
 		pp.p = readFloat16FromToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET, 7.0f, toolhead);
@@ -2622,9 +2400,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return pp;
 	}
 	
-	public void setPIDParameters(int which, PIDParameters pp, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public void setPIDParameters(int which, PIDParameters pp, int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 		int offset = (which == OnboardParameters.EXTRUDER)?PIDOffsets.PID_EXTRUDER:PIDOffsets.PID_HBP;
 		writeToToolEEPROM(offset+PIDOffsets.P_TERM_OFFSET,floatToLE(pp.p),toolhead);
 		writeToToolEEPROM(offset+PIDOffsets.I_TERM_OFFSET,floatToLE(pp.i),toolhead);
@@ -2654,14 +2431,12 @@ public class Sanguino3GDriver extends SerialDriver implements
 	
 	@Override
 	public void resetToolToFactory(int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 		resetToolToBlank(toolhead); /// for generic S3G, just wipe the EEPROM
 	}
 	
-	public void resetToolToBlank(int toolhead){
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public void resetToolToBlank(int toolhead){
+		toolhead = fixToolIndex(toolhead);
 
 		byte eepromWipe[] = new byte[16];
 		Arrays.fill(eepromWipe,(byte)0xff);
@@ -2671,22 +2446,21 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 
-	public EndstopType getInvertedEndstops() {
+	@Override public EndstopType getInvertedEndstops() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(
 				Sanguino3GEEPRPOM.EEPROM_ENDSTOP_INVERSION_OFFSET, 1);
 		return EndstopType.endstopTypeForValue(b[0]);
 	}
 
-	public void setInvertedEndstops(EndstopType endstops) {
+	@Override public void setInvertedEndstops(EndstopType endstops) {
 		byte b[] = new byte[1];
 		b[0] = endstops.getValue();
 		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_ENDSTOP_INVERSION_OFFSET, b);
 	}
 
-	public ExtraFeatures getExtraFeatures(int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public ExtraFeatures getExtraFeatures(int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 		int efdat = read16FromToolEEPROM(Sanguino3GEEPRPOM.EC_EEPROM_EXTRA_FEATURES, 0x4084, toolhead);
 		ExtraFeatures ef = new ExtraFeatures();
 		ef.swapMotorController = (efdat & 0x0001) != 0;
@@ -2700,9 +2474,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return ef;
 	}
 	
-	public void setExtraFeatures(ExtraFeatures features, int toolhead) {
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public void setExtraFeatures(ExtraFeatures features, int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 
 		int efdat = 0x4000;
 		if (features.swapMotorController) {
@@ -2716,27 +2489,21 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToToolEEPROM(Sanguino3GEEPRPOM.EC_EEPROM_EXTRA_FEATURES,intToLE(efdat,2), toolhead);
 	}
 
-	public EstopType getEstopConfig() {
+	@Override public EstopType getEstopConfig() {
 		checkEEPROM();
 		byte[] b = readFromEEPROM(
 				Sanguino3GEEPRPOM.EEPROM_ESTOP_CONFIGURATION_OFFSET, 1);
 		return EstopType.estopTypeForValue(b[0]);
 	}
 
-	public void setEstopConfig(EstopType estop) {
+	@Override public void setEstopConfig(EstopType estop) {
 		byte b[] = new byte[1];
 		b[0] = estop.getValue();
 		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_ESTOP_CONFIGURATION_OFFSET, b);
 	}
 
-	@Deprecated
-	public double getPlatformTemperatureSetting() {
-		return this.getPlatformTemperatureSetting(machine.currentTool().getIndex());
-	}
-
-	public double getPlatformTemperatureSetting(int toolhead) {
-		/// toolhead -1 indicates auto-detect. Fast hack to get software out...
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public double getPlatformTemperatureSetting(int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2, 3))) {
@@ -2753,14 +2520,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return machine.getTool(toolhead).getPlatformTargetTemperature();
 	}
 
-	@Deprecated
-	public double getTemperatureSetting() {
-		return this.getTemperatureSetting(machine.currentTool().getIndex());
-	}
-
-	public double getTemperatureSetting(int toolhead) {
-		/// toolhead -1 indicates auto-detect. Fast hack to get software out...
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+	@Override public double getTemperatureSetting(int toolhead) {
+		toolhead = fixToolIndex(toolhead);
 
 		// This call was introduced in version 2.3
 		if (toolVersion.atLeast(new Version(2, 3))) {
@@ -2782,7 +2543,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return toolVersion;
 	}
 
-	public boolean setConnectedToolIndex(int index) {
+	@Override public boolean setConnectedToolIndex(int index) {
 
 		byte[] data = new byte[1];
 		data[0] = (byte) index;
@@ -2795,11 +2556,11 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return false;
 	}
 
-	public boolean toolsCanBeReindexed() {
+	@Override public boolean toolsCanBeReindexed() {
 		return true;
 	}
 
-	public boolean supportsSimultaneousTools() {
+	@Override public boolean supportsSimultaneousTools() {
 		return true;
 	}
 

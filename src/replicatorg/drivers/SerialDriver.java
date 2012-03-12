@@ -18,7 +18,7 @@ import replicatorg.app.util.serial.SerialFifoEventListener;
  * @author phooky
  *
  */
-public class SerialDriver extends DriverBaseImplementation implements UsesSerial {
+public abstract class SerialDriver extends DriverBaseImplementation implements UsesSerial {
 
 	protected Serial serial;
 	
@@ -49,7 +49,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
         stopbits = Base.preferences.getInt("serial.stopbits",1);
     }
     
-	public void loadXML(Node xml) {
+	@Override public void loadXML(Node xml) {
 		super.loadXML(xml);
         // load from our XML config, if we have it.
         if (XML.hasChildNode(xml, "portname")) {
@@ -66,7 +66,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
                 stopbits = Integer.parseInt(XML.getChildNodeValue(xml, "stopbits"));
 	}
 	
-	public synchronized void openSerial(String portName) {
+	@Override public synchronized void openSerial(String portName) {
 		// Grab a lock
 		serialLock.writeLock().lock();
 		
@@ -105,7 +105,7 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 	}
 	
 	// TODO: Move all of this to a new object that causes this when it is destroyed.
-	public void closeSerial() {
+	@Override public void closeSerial() {
 		serialLock.writeLock().lock();
 		if (serial != null)
 			serial.dispose();
@@ -113,35 +113,35 @@ public class SerialDriver extends DriverBaseImplementation implements UsesSerial
 		serialLock.writeLock().unlock();
 	}
 
-	public boolean isConnected() {
+	@Override public boolean isConnected() {
 		return (this.serial != null && this.serial.isConnected());
 	}
 	
-	public char getParity() {
+	@Override public char getParity() {
 		return parity;
 	}
 
-	public String getPortName() {
+	@Override public String getPortName() {
 		return portName;
 	}
 
-	public int getDataBits() {
+	@Override public int getDataBits() {
 		return databits;
 	}
 	
-	public int getRate() {
+	@Override public int getRate() {
 		return rate;
 	}
 
-	public float getStopBits() {
+	@Override public float getStopBits() {
 		return stopbits;
 	}
 		
-	public boolean isExplicit() {
+	@Override public boolean isExplicit() {
 		return explicit;
 	}
 	
-	public void dispose() {
+	@Override public void dispose() {
 		closeSerial();
 		super.dispose();
 	}

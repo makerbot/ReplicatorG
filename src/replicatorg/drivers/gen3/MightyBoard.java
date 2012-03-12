@@ -297,11 +297,13 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		for (ToolModel t : getMachine().getTools()) {
 			if (t != null) {
 				initSlave(t.getIndex());
+				getMotorRPM(t.getIndex());		//load our motor RPM from firmware if we can.
+				// I have no idea why we still do this, we may want to test and refactor away
+				getSpindleSpeedPWM(t.getIndex());
 			}
 		}
 
 		getStepperValues(); //read our current steppers into a local cache
-		getMotorRPM();		//load our motor RPM from firmware if we can.
 		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
 		{
 			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
@@ -314,8 +316,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			Base.logger.severe("Please double-check your selected machine.");
 		}
 		
-		// I have no idea why we still do this, we may want to test and refactor away
-		getSpindleSpeedPWM();
 		return true;
 	}
 
@@ -475,8 +475,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			}
 			
 			// calculate absolute position of target in steps
-			Point5d excess = new Point5d(stepExcess);
-			Point5d steps = machine.mmToSteps(target,excess);	
+			Point5d steps = machine.mmToSteps(target);	
 			
 			double usec = (60 * 1000 * 1000 * minutes);
 
@@ -485,9 +484,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 //			System.out.println("\t steps: " + steps.toString() +"\t usec: " + usec);
 			int relativeAxes = (1 << AxisId.A.getIndex()) | (1 << AxisId.B.getIndex());
 			queueNewPoint(steps, (long) usec, relativeAxes);
-
-			// Only update excess if no retry was thrown.
-			stepExcess = excess;
 
 			// because of the hinky stuff we've been doing with A & B axes, just pretend we've
 			// moved where we thought we were moving
@@ -883,7 +879,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		byte eepromIndicator[] = new byte[2];
 		eepromIndicator[0] = MightyBoardEEPROM.EEPROM_CHECK_LOW;
 		eepromIndicator[1] = MightyBoardEEPROM.EEPROM_CHECK_HIGH;
-		writeToToolEEPROM(0,eepromIndicator);
+		writeToToolEEPROM(0, eepromIndicator, machine.currentTool().getIndex());
 
 		writeToEEPROM(MightyBoardEEPROM.ECThermistorOffsets.beta(which),intToLE((int)beta));
 		writeToEEPROM(MightyBoardEEPROM.ECThermistorOffsets.r0(which),intToLE((int)r0));
@@ -943,7 +939,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		efdat |= features.hbpChannel << 4;
 		efdat |= features.abpChannel << 6;
 		//System.err.println("Writing to EF: "+Integer.toHexString(efdat));
-		writeToToolEEPROM(ToolheadEEPROM.FEATURES, intToLE(efdat,2));
+		writeToToolEEPROM(ToolheadEEPROM.FEATURES, intToLE(efdat,2), machine.currentTool().getIndex());
 	}
 
 	@Override
@@ -1024,13 +1020,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 
 	@Override
-	@Deprecated
-	protected void writeToToolEEPROM(int offset, byte[] data) {
-		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
-	}
-	
-
-	@Override
 	protected void writeToToolEEPROM(int offset, byte[] data, int toolIndex) {
 		final int MAX_PAYLOAD = 11;
 		while (data.length > MAX_PAYLOAD) {
@@ -1101,8 +1090,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public void enableMotor(int toolhead) throws RetryException {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		
 		//WARNING: this in unsafe, since tool is checked
@@ -1126,8 +1114,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public void disableMotor(int toolhead) throws RetryException {
 
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 		
 		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
 
@@ -1186,12 +1173,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		return val;
 	}
 
-	@Override
-	@Deprecated
-	protected int read16FromToolEEPROM(int offset, int defaultValue) {
-		return read16FromToolEEPROM(offset, defaultValue, machine.currentTool().getIndex());
-	}
-	
 	@Override
 	protected int read16FromToolEEPROM(int offset, int defaultValue, int toolIndex) {
 		byte r[] = readFromToolEEPROM(offset, 2, toolIndex);
@@ -1476,8 +1457,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 	
-		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
-		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		toolhead = fixToolIndex(toolhead);
 
 		ToolModel curTool = machine.getTool(toolhead);//WARNING: this in unsafe, since tool is checked
 

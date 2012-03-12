@@ -179,7 +179,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			button = createJogButton(yPlusButtonString, yPlusTooltip, this, jogYPlusAction);
 			panel.add(button, "pos "+yPlusButtonLocation.x+" "+yPlusButtonLocation.y);
 	
-			if(machine.getDriver().hasEmergencyStop()) {
+			if(machine.getDriverQueryInterface().hasEmergencyStop()) {
 				JButton panicButton = createJogButton(stopButtonString, stopTooltip, this, stopAction);
 				panel.add(panicButton, "pos "+stopButtonLocation.x+" "+stopButtonLocation.y);
 			}
@@ -445,7 +445,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	
 	private void setJogMode(String mode) {
 		if ("Continuous Jog".equals(mode)) {
-			if(this.machine.getDriver().hasSoftStop())
+			if(this.machine.getDriverQueryInterface().hasSoftStop())
 			{
 				continuousJogMode = true;
 				jogRate = 0;
@@ -537,18 +537,18 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 			slider.setValue(val);
 		}
 		
-		public void actionPerformed(ActionEvent e) {
+		@Override public void actionPerformed(ActionEvent e) {
 			updateFromField();
 		}
 
-		public void focusGained(FocusEvent e) {
+		@Override public void focusGained(FocusEvent e) {
 		}
 
-		public void focusLost(FocusEvent e) {
+		@Override public void focusLost(FocusEvent e) {
 			updateFromField();
 		}
 
-		public void stateChanged(ChangeEvent e) {
+		@Override public void stateChanged(ChangeEvent e) {
 			int val = slider.getValue();
 			feedrate.setAxis(axis, val);
 			Base.preferences.putInt(getPrefName(), val);			
@@ -591,7 +591,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		jogPattern = Pattern.compile("([.0-9]+)");
 		
 		// If it does have soft stops, happy continuous jogging!!
-		if(!this.machine.getDriver().hasSoftStop())
+		if(!this.machine.getDriverQueryInterface().hasSoftStop())
 		{
 			List<String> list = new ArrayList<String>(Arrays.asList(jogStrings));
 			list.removeAll(Arrays.asList("Continuous Jog"));
@@ -649,7 +649,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 	Pattern jogActionParser = Pattern.compile("([XYZAB])([\\+\\-])");
 	Pattern centerActionParser = Pattern.compile("Center ([XYZAB])");
 	
-	public void actionPerformed(ActionEvent e) {
+	@Override public void actionPerformed(ActionEvent e) {
 		Point5d current = machine.getDriverQueryInterface().getCurrentPosition(false);
 
 		String s = e.getActionCommand();
@@ -697,19 +697,19 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		}
 	}
 
-	public void mouseClicked(MouseEvent arg0) {
+	@Override public void mouseClicked(MouseEvent arg0) {
 		// Ignore; let default handler take care of it
 	}
 
-	public void mouseEntered(MouseEvent arg0) {
+	@Override public void mouseEntered(MouseEvent arg0) {
 		// Ignore; let default handler take care of it
 	}
 
-	public void mouseExited(MouseEvent arg0) {
+	@Override public void mouseExited(MouseEvent arg0) {
 		// Ignore; let default handler take care of it
 	}
 
-	public void mousePressed(MouseEvent e) {
+	@Override public void mousePressed(MouseEvent e) {
 		if (continuousJogMode) {
 			Point5d current = machine.getDriverQueryInterface().getCurrentPosition(false);
 
@@ -729,7 +729,7 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		}
 	}
 
-	public void mouseReleased(MouseEvent arg0) {
+	@Override public void mouseReleased(MouseEvent arg0) {
 		if (continuousJogMode) {
 			machine.stopMotion();
 		}

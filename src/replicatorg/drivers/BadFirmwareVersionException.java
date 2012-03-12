@@ -22,7 +22,7 @@ public class BadFirmwareVersionException extends VersionException {
 	
 	public Version getNeeds() { return needs; }
 
-	public String getMessage() {
+	@Override public String getMessage() {
 		return "Firmware version "+getDetected()+" detected; firmware version "+needs+" required.";
 	}
 	

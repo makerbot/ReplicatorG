@@ -1,24 +1,15 @@
 package replicatorg.drivers.commands;
 
+import static replicatorg.util.Preconditions.*;
+
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 
 public class SetTemperature implements DriverCommand {
 
-	double temperature;
-	int toolhead = -1;
+	private final double temperature;
+	private final int toolhead;
 	
-	/**
-	 * Set temperature, trusting and hoping the right toolhead is active
-	 * when we do. 
-	 * @param temperature
-	 */
-	@Deprecated
-	public SetTemperature(double temperature) {
-		this.temperature = temperature;
-		this.toolhead = -1;/// do problematic 'get current toolhead
-	}
-
 	/**
 	 * Set temperature, specifying the toolhead index. 
 	 * @param temperature
@@ -26,15 +17,13 @@ public class SetTemperature implements DriverCommand {
 	 */
 	public SetTemperature(double temperature, int toolIndex) {
 		this.temperature = temperature;
-		this.toolhead = toolIndex;
+		this.toolhead = checkNonNegative(toolIndex,
+				"Tool indices should not be negative");
 	}
 
 	
 	@Override
 	public void run(Driver driver) throws RetryException {
-		if (this.toolhead == -1)
-			driver.setTemperature(temperature); /// do problematic 'get current toolhead
-		else
-			driver.setTemperature(temperature, toolhead);
+		driver.setTemperature(temperature, toolhead);
 	}
 }

@@ -1,7 +1,6 @@
 package replicatorg.app.gcode;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -113,13 +112,38 @@ public class GCodeCommand {
 	}
 
 	public double getCodeValue(char searchCode) {
+		return getCodeValue(searchCode, -1);
+	}
+	
+	public double getCodeValue(char searchCode, double fallback) {
 		for (gCodeParameter parameter : parameters) {
 			if (parameter.code == searchCode) {
 				return parameter.value;
 			}
 		}
 		
-		return -1;	// TODO: What do we return if there is no code?
+		return fallback;
+	}
+	
+	public int getCodeValueInt(char searchCode, int fallback) {
+		return (int) getCodeValue(searchCode, fallback);
+	}
+	
+	/*
+	 * Note: unlike getCodeValue(char) above, this has no magic default
+	 * return value.  If used on a nonexistent code, it throws to indicate
+	 * a programming error (in RepG, not the GCode).
+	 */
+	public int getCodeValueInt(char searchCode) {
+		for (gCodeParameter parameter : parameters) {
+			if (parameter.code == searchCode) {
+				return parameter.value.intValue();
+			}
+		}
+		
+		throw new IllegalStateException(
+				"getCodeValueInt called for nonexistent code " + searchCode
+				+ "; caller should have checked hasCode first!");
 	}
 	
 //	public Double removeCode(Character searchCode) {

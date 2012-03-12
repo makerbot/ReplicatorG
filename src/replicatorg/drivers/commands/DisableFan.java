@@ -1,18 +1,18 @@
 package replicatorg.drivers.commands;
 
+import static replicatorg.util.Preconditions.*;
+
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.RetryException;
 
 public class DisableFan implements DriverCommand {
 
-	int toolhead = -1; ///lazy auto-detect tool
+	private final int toolhead;
 
-	public DisableFan() {} 
-
-	
 	public DisableFan(int toolhead)
 	{
-		this.toolhead = toolhead;
+		this.toolhead = checkNonNegative(toolhead,
+				"Tool indices should not be negative");
 	}
 	
 	@Override

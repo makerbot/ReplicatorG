@@ -1,13 +1,9 @@
 package replicatorg.drivers.gen3;
 
-import java.util.EnumMap;
 import java.util.Map;
 import java.util.Vector;
-import java.util.logging.Level;
 
 import javax.vecmath.Point3d;
-
-import org.w3c.dom.Element;
 
 import replicatorg.app.Base;
 import replicatorg.drivers.RetryException;
@@ -17,28 +13,15 @@ import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
 public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
-	
-	private boolean stepperExtruderFanEnabled = false;
 
-	public String getDriverName() {
+	@Override public String getDriverName() {
 		return "Makerbot4GAlternate";
 	}
-	
-	public void reset() {
-		// We should poll the machine for it's state here, but it is more important to have the
-		// fan on than off.
-		stepperExtruderFanEnabled = false;
-
-		super.reset();
-	}
-	
-	/** The excess, in steps, from previous operations. */ 
-	protected Point5d stepExcess = new Point5d();
 	
 	/**
 	 * Overloaded to manage a hijacked axis and run this axis in relative mode instead of the extruder DC motor
 	 */
-	public void queuePoint(Point5d p) throws RetryException {
+	@Override public void queuePoint(Point5d p) throws RetryException {
 		// If we don't know our current position, make this move an old-style move, ignoring any hijacked axes. 
 		if (positionLost()) {
 			Base.logger.fine("Position invalid, reverting to default speed for next motion");
@@ -69,10 +52,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			
 			// okay, send it off!
 			// TODO: bug: We move all axes (even ones that shouldn't be moved) How to avoid?
-			Point5d excess = new Point5d(stepExcess);
-			queueAbsolutePoint(machine.mmToSteps(filteredPoint, excess), longestDDA);
-			// Only update excess if no retry was thrown.
-			stepExcess = excess;
+			queueAbsolutePoint(machine.mmToSteps(filteredPoint), longestDDA);
 			// Finally, recored the position, and mark it as valid.
 			setInternalPosition(filteredPoint);
 		} else {
@@ -100,18 +80,14 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 				delta.add(axesmovement);
 				filteredpoint.add(axesmovement);
 				
-				Point5d excess = new Point5d(stepExcess);
 				// Calculate time for move in usec
-				Point5d steps = machine.mmToSteps(filteredpoint,excess);		
+				Point5d steps = machine.mmToSteps(filteredpoint);		
 	
 				// okay, send it off!
 				// The 4. and 5. dimensions doesn't have a spatial interpretation. Calculate time in 3D space
 				double minutes = delta.get3D().distance(new Point3d())/ getSafeFeedrate(delta);
 				
 				queueNewPoint(steps, (long) (60 * 1000 * 1000 * minutes), relative);
-
-				// Only update excess if no retry was thrown.
-				stepExcess = excess;
 
 				setInternalPosition(filteredpoint);
 			}
@@ -122,7 +98,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 * In legacy use, delayed while a DC motor ran. For compatiblity, this function
 	 * creates a Point5D to do 'extrude while sitting still'. 
 	 */
-	public void delay(long millis) throws RetryException {
+	@Override public void delay(long millis) throws RetryException {
 		Base.logger.finer("Delaying " + millis + " millis.");	
 	
 		Point5d steps = pointsFromHijackedAxes( machine.currentTool(), millis / 60000d);
@@ -138,10 +114,10 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	}
 	
 	/** 
-	 * Each Axis can be overriden (hijacked) by XML settings. Return all overridden
+	 * Each Axis can be overridden (hijacked) by XML settings. Return all overridden
 	 * axes associated with tool curTool.
 	 * @param curTool target tool to find overrides for
-	 * @return a list of AxisId containing all overriden axis for tool curTool
+	 * @return a list of AxisId containing all overridden axis for tool curTool
 	 */
 	protected Iterable<AxisId> getHijackedAxes(ToolModel curTool) {
 		//NOTE:
@@ -157,21 +133,6 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		return axes;
 	}
 
-	
-	/** 
-	 * Each Axis can be overriden (hijacked) by XML settings. Return all overridden
-	 * axes for the currently loaded machine.
-	 * @return a list of AxisId containing all overriden axis for the loaded machine profile
-	 */
-	protected Iterable<AxisId> getAllHijackedAxes() {
-		Vector<AxisId> axes = new Vector<AxisId>();
-
-		for ( Map.Entry<AxisId,ToolModel> entry : extruderHijackedMap.entrySet()) {
-			AxisId axis = entry.getKey();
-			axes.add(axis);
-		}
-		return axes;
-	}
 	
 	/**
 	 * Calculate and return the corresponding movement of any hijacked axes where the extruder is on.
@@ -209,13 +170,11 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 * by @minutes. If no axis is enabled and hijacked, returns an 'empty' Point5d with no motion.
 	 */
 	private Point5d pointsFromHijackedAxes(ToolModel curTool, double minutes) {
-		int relative = 0;
 		Point5d steps = new Point5d();
 		Base.logger.finer("modify hijacked axes");
 		
 		for (AxisId axis : getHijackedAxes(machine.currentTool())) {
 			Base.logger.finer("modify hijacked axes doing " + axis.toString() );
-			relative |= 1 << axis.getIndex();
 			double extruderSteps = 0;
 			
 			if (curTool.isMotorEnabled()) {
@@ -233,24 +192,13 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		return steps;
 	}
 
-	public void stop(boolean abort) {
-		// Record the toolstate as off, so we don't excite the extruder motor in future moves.
-		machine.currentTool().disableMotor();
-
-		// We should stop the fan here, but it will be stopped for us by the super.
-		stepperExtruderFanEnabled = false;
-
-		super.stop(abort);
-	}
-
 	protected void queueNewPoint(Point5d steps, long us, int relative) throws RetryException {
-
 		Base.logger.finer("Makerbot4GAlternateDriver queueNewPoint");
 
 		// Turn on fan if necessary
 		for (AxisId axis : getHijackedAxes( machine.currentTool()) ) {
 			if (steps.axis(axis) != 0) {
-				enableStepperExtruderFan(true);
+				enableStepperExtruderFan(true, machine.currentTool().getIndex());
 			}
 		}
 		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_NEW.getCode());
@@ -270,124 +218,28 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 
 		runCommand(pb.getPacket());
 	}
-	
-	/**
-	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
-	 */
-	public void enableMotor() throws RetryException {
-		machine.currentTool().enableMotor();
-	}
-	
-	/**
-	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
-	 */
-	public void disableMotor() throws RetryException {
-		machine.currentTool().disableMotor();
-	}
-	
-	/**
-	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
-	 */
-	public void setMotorSpeedPWM(int pwm) throws RetryException {
-		machine.currentTool().setMotorSpeedPWM(pwm);
-	}
 
-	/**
-	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
-	 */
-	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
-		machine.currentTool().setMotorSpeedRPM(rpm);
-	}
-
-	public void enableDrives() throws RetryException {
-		enableStepperExtruderFan(true);
-		
-		super.enableDrives();
-	}
-
-	public void disableDrives() throws RetryException {
-		enableStepperExtruderFan(false);
-		
-		super.disableDrives();
-	}
-	
-	/**
-	 * Will turn on/off the stepper extruder fan if it's not already in the correct state.
-	 * 
-	 */
-	public void enableStepperExtruderFan(boolean enabled) throws RetryException {
-		
-		// Always re-enable the fan when 
-		if (this.stepperExtruderFanEnabled == enabled) return;
-		
-		// FIXME: Should be called per hijacked axis with the correct tool
-		// our flag variable starts with motors enabled.
-		byte flags = (byte) (enabled ? 1 : 0);
-
-		// bit 1 determines direction...
-		flags |= 2;
-
-		Base.logger.log(Level.FINE,"Stepper Extruder fan w/flags: "
-					+ Integer.toBinaryString(flags));
-
-		// send it!
-		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.TOGGLE_MOTOR_1.getCode());
-		pb.add8((byte) 1); // payload length
-		pb.add8(flags);
-		runCommand(pb.getPacket());
-
-		// Always use max PWM
-		pb = new PacketBuilder(MotherboardCommandCode.TOOL_COMMAND.getCode());
-		pb.add8((byte) machine.currentTool().getIndex());
-		pb.add8(ToolCommandCode.SET_MOTOR_1_PWM.getCode());
-		pb.add8((byte) 1); // length of payload.
-		pb.add8((byte) 255);
-		runCommand(pb.getPacket());
-		
-		this.stepperExtruderFanEnabled = enabled;
-	}
-
-	/// This is a list of which axis are hijacked for extruder use.
-	EnumMap<AxisId,ToolModel> extruderHijackedMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
-	
-	@Override
 	/**
 	 * When the machine is set for this driver, some toolheads may poach the an extrusion axis.
 	 */
-	public void setMachine(MachineModel m) {
+	@Override public void setMachine(MachineModel m) {
 		super.setMachine(m);
-		for (ToolModel tm : m.getTools()) {
-			Element e = (Element)tm.getXml();
-			if (e.hasAttribute("stepper_axis")) {
-				final String stepAxisStr = e.getAttribute("stepper_axis");
-				try {
-					AxisId axis = AxisId.valueOf(stepAxisStr.toUpperCase());
-					if (m.hasAxis(axis)) {
-						Base.logger.finer("seize the axis for extrusion!  Hijacking axis "+axis.name());
-						// If we're seizing an axis for an extruder, remove it from the available axes and get
-						// the data associated with that axis.
-						extruderHijackedMap.put(axis,tm);
-						m.getAvailableAxes().remove(axis);
-					} else {
-						Base.logger.severe("Tool claims unavailable axis "+axis.name());
-					}
-				} catch (IllegalArgumentException iae) {
-					Base.logger.severe("Unintelligible axis designator "+stepAxisStr);
-				}
-			}
+		
+		// Curiously, this driver removes axes from the available list;
+		// the parent does not.
+		for (AxisId axis : extruderHijackedMap.keySet()) {
+			m.getAvailableAxes().remove(axis);
 		}
 	}
 	
-	@Override
 	/**
 	 * Overridden to not ask the board for the RPM as it would report the RPM from the extruder 
 	 * controller, which doesn't know about it in this case.
 	 */
-	public double getMotorRPM() {
-		double rpm = machine.currentTool().getMotorSpeedRPM();
-		machine.currentTool().setMotorSpeedReadingRPM(rpm);
+	@Override public double getMotorRPM(int toolhead) {
+		ToolModel tool = machine.getTool(toolhead);
+		double rpm = tool.getMotorSpeedRPM();
+		tool.setMotorSpeedReadingRPM(rpm);
 		return rpm;
 	}
 	

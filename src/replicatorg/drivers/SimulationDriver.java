@@ -59,12 +59,12 @@ public class SimulationDriver extends DriverBaseImplementation {
 		simulation = null;
 	}
 
-	public void dispose() {
+	@Override public void dispose() {
 		destroyWindow();
 		super.dispose();
 	}
 
-	public void queuePoint(Point5d p) throws RetryException {
+	@Override public void queuePoint(Point5d p) throws RetryException {
 		simulation.queuePoint(p);
 
 		super.queuePoint(p);
@@ -103,7 +103,7 @@ public class SimulationDriver extends DriverBaseImplementation {
 		queuePoint(pos);
 	}
 
-	protected Point5d reconcilePosition() {
+	@Override protected Point5d reconcilePosition() {
 		// Initial position irrelevant for this driver; it's all relative to the start pos
 		return new Point5d();
 	}

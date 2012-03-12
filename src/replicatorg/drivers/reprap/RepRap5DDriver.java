@@ -146,11 +146,6 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	private final ExtrusionUpdater extrusionUpdater = new ExtrusionUpdater(this);
 
 	/**
-	 * the size of the buffer on the GCode host
-	 */
-	private int maxBufferSize = 128;
-
-	/**
 	 * The commands sent but not yet acknowledged by the firmware. Stored so they can be resent 
 	 * if there is a checksum problem.
 	 */
@@ -181,11 +176,11 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		df = new DecimalFormat("#.######", dfs);
 	}
 
-        public String getDriverName() {
+        @Override public String getDriverName() {
                 return "RepRap5D";
         }
 
-	public synchronized void loadXML(Node xml) {
+	@Override public synchronized void loadXML(Node xml) {
 		super.loadXML(xml);
         // load from our XML config, if we have it.
         if (XML.hasChildNode(xml, "waitforstart")) {
@@ -245,7 +240,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
         }
     }
 
-	public void updateManualControl()
+	@Override public void updateManualControl()
 	{
 		try {
 			extrusionUpdater.update();
@@ -260,14 +255,14 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * the firmware state.  Sent on startup and if we see "start"
 	 * indicating an uncommanded firmware reset.
 	 */
-	public void sendInitializationGcode(boolean synchronous) {
+	private void sendInitializationGcode(boolean synchronous) {
 		sendCommand("M110", synchronous);  // may be duplicate, that's ok
 		// default us to absolute positioning
 		sendCommand("G90", synchronous);
 		sendCommand("G92 X0 Y0 Z0 E0", synchronous);
 	}
 
-	public synchronized void initialize() {
+	@Override public synchronized void initialize() {
 		// declare our serial guy.
 		if (serial == null) {
 			Base.logger.severe("No Serial Port found.\n");
@@ -387,14 +382,14 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		}
 	}
 
-	public boolean isPassthroughDriver() {
+	@Override public boolean isPassthroughDriver() {
 		return true;
 	}
 	
 	/**
 	 * Actually execute the GCode we just parsed.
 	 */
-	public void executeGCodeLine(String code) {
+	@Override public void executeGCodeLine(String code) {
 		//If we're not initialized (ie. disconnected) do not execute commands on the disconnected machine.
 		if(!isInitialized()) return;
 
@@ -439,7 +434,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	}
 
 	
-	protected void resendCommand(String command) {
+	private void resendCommand(String command) {
 		synchronized (sendCommandLock)
 		{
 			numResends++;
@@ -452,7 +447,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/**
 	 * inner method. not for use outside sendCommand and resendCommand
 	 */
-	protected void _sendCommand(String next, boolean synchronous, boolean resending) {
+	private void _sendCommand(String next, boolean synchronous, boolean resending) {
 				
 		// If this line is uncommented, it simply sends the next line instead of doing a retransmit!
 		if (!resending) 
@@ -559,7 +554,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			sendCommandLock.unlock();
 	}
 
-	public String clean(String str) {
+	private static String clean(String str) {
 		String clean = str;
 
 		// trim whitespace
@@ -573,7 +568,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 		return clean;
 	}
-	public String fix(String str) {
+	private String fix(String str) {
 		String fixed = str;
 		// The 5D firmware expects E codes for extrusion control instead of M101, M102, M103
 
@@ -644,7 +639,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/**
 	 * takes a line of gcode and returns that gcode with a line number and checksum
 	 */
-	public String applyNandChecksum(String gcode) {
+	private String applyNandChecksum(String gcode) {
 		// RepRap Syntax: N<linenumber> <cmd> *<chksum>\n
 
 		if (gcode.contains("M110"))
@@ -662,7 +657,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		return applyChecksum(gcode);
 	}
 
-	public String applyChecksum(String gcode) {
+	private String applyChecksum(String gcode) {
 		// chksum = 0 xor each byte of the gcode (including the line number and trailing space)
 		byte checksum = 0;
 		byte[] gcodeBytes = gcode.getBytes();
@@ -673,7 +668,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		return gcode+'*'+checksum;
 	}
 	
-	public void serialByteReceivedEvent(ByteFifo fifo) {
+	@Override public void serialByteReceivedEvent(ByteFifo fifo) {
 		readResponseLock.lock();
 
 		serialInUse.lock();
@@ -890,7 +885,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		readResponseLock.unlock();
 	}
 
-	public boolean isFinished() {
+	@Override public boolean isFinished() {
 		return isBufferEmpty();
 	}
 
@@ -913,7 +908,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/**
 	 * Is our buffer empty? If don't have a buffer, its always true.
 	 */
-	public boolean isBufferEmpty() {
+	@Override public boolean isBufferEmpty() {
 		bufferLock.lock();
 		boolean isEmpty = buffer.isEmpty();
 		bufferLock.unlock();
@@ -937,7 +932,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		bufferLock.unlock();
 	}
 
-	public synchronized void dispose() {
+	@Override public synchronized void dispose() {
 		bufferLock.lock();
 		flushBuffer();
 		super.dispose();
@@ -949,7 +944,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * @throws RetryException 
 	 **************************************************************************/
 
-	public void queuePoint(Point5d p) throws RetryException {
+	@Override public void queuePoint(Point5d p) throws RetryException {
 		String cmd = "G1 F" + df.format(getCurrentFeedrate());
 		
 		sendCommand(cmd);
@@ -962,7 +957,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		super.queuePoint(p);
 	}
 
-	public void setCurrentPosition(Point5d p) throws RetryException {
+	@Override public void setCurrentPosition(Point5d p) throws RetryException {
 		sendCommand("G92 X" + df.format(p.x()) + " Y" + df.format(p.y()) + " Z"
 				+ df.format(p.z()));
 
@@ -983,7 +978,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		super.homeAxes(axes,false,0);
 	}
 
-	public void delay(long millis) {
+	@Override public void delay(long millis) {
 		int seconds = Math.round(millis / 1000);
 
 		sendCommand("G4 P" + seconds);
@@ -991,32 +986,32 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		// no super call requried.
 	}
 
-	public void openClamp(int clampIndex) {
+	@Override public void openClamp(int clampIndex) {
 		sendCommand("M11 Q" + clampIndex);
 
 		super.openClamp(clampIndex);
 	}
 
-	public void closeClamp(int clampIndex) {
+	@Override public void closeClamp(int clampIndex) {
 		sendCommand("M10 Q" + clampIndex);
 
 		super.closeClamp(clampIndex);
 	}
 
-	public void enableDrives() throws RetryException {
+	@Override public void enableDrives() throws RetryException {
 		sendCommand("M17");
 
 		super.enableDrives();
 	}
 
-	public void disableDrives() throws RetryException {
+	@Override public void disableDrives() throws RetryException {
 		sendCommand("M18");
 		sendCommand("M84");     // Klimentkip
 
 		super.disableDrives();
 	}
 
-	public void changeGearRatio(int ratioIndex) {
+	@Override public void changeGearRatio(int ratioIndex) {
 		// gear ratio codes are M40-M46
 		int code = 40 + ratioIndex;
 		code = Math.max(40, code);
@@ -1027,18 +1022,22 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		super.changeGearRatio(ratioIndex);
 	}
 
-	protected String _getToolCode() {
-		return "T" + machine.currentTool().getIndex() + " ";
+	private String _getToolCode(int toolhead) {
+		return "T" + fixToolIndex(toolhead) + " ";
+	}
+	
+	String _getCurrentToolCode() {
+		return _getToolCode(machine.currentTool().getIndex());
 	}
 
 	/***************************************************************************
 	 * Motor interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
+	@Override public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 		if (fiveD == false)
 		{
-			sendCommand(_getToolCode() + "M108 R" + df.format(rpm));
+			sendCommand(_getToolCode(toolhead) + "M108 R" + df.format(rpm));
 		}
 		else
 		{
@@ -1048,21 +1047,21 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		super.setMotorRPM(rpm, toolhead);
 	}
 
-	public void setMotorSpeedPWM(int pwm) throws RetryException {
+	@Override public void setMotorSpeedPWM(int pwm, int toolhead) throws RetryException {
 		if (fiveD == false)
 		{
-			sendCommand(_getToolCode() + "M108 S" + df.format(pwm));
+			sendCommand(_getToolCode(toolhead) + "M108 S" + df.format(pwm));
 		}
 
-		super.setMotorSpeedPWM(pwm);
+		super.setMotorSpeedPWM(pwm, toolhead);
 	}
 	
-	public synchronized void enableMotor() throws RetryException {
-		String command = _getToolCode();
+	@Override public synchronized void enableMotor(int toolhead) throws RetryException {
+		String command = _getToolCode(toolhead);
 
 		if (fiveD == false)
 		{
-			if (machine.currentTool().getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
+			if (machine.getTool(toolhead).getMotorDirection() == ToolModel.MOTOR_CLOCKWISE)
 				command += "M101";
 			else
 				command += "M102";
@@ -1076,108 +1075,108 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			extrusionUpdater.startExtruding();
 		}
 
-		super.enableMotor();
+		super.enableMotor(toolhead);
 	}
 
 	/**
 	 * Unified enable+delay+disable to allow us to use G1 E
 	 */
-	public synchronized void enableMotor(long millis) throws RetryException {
+	@Override public synchronized void enableMotor(long millis, int toolhead) throws RetryException {
 		if (fiveD == false)
 		{
-			super.enableMotor(millis);
+			super.enableMotor(millis, toolhead);
 		}
 		else
 		{
-			super.enableMotor();
-			double feedrate = machine.currentTool().getMotorSpeedRPM();
+			super.enableMotor(toolhead);
+			double feedrate = machine.getTool(toolhead).getMotorSpeedRPM();
 			double distance = millis * feedrate / 60 / 1000;
-			if (machine.currentTool().getMotorDirection() != 1) {
+			if (machine.getTool(toolhead).getMotorDirection() != 1) {
 				distance *= -1;
 			}
-			sendCommand(_getToolCode() + "G1 E" + (ePosition.get() + distance) + " F" + feedrate);
-			super.disableMotor();
+			sendCommand(_getToolCode(toolhead) + "G1 E" + (ePosition.get() + distance) + " F" + feedrate);
+			super.disableMotor(toolhead);
 		}
 	}
 
-	public void disableMotor() throws RetryException {
+	@Override public void disableMotor(int toolhead) throws RetryException {
 		if (fiveD == false)
 		{
-			sendCommand(_getToolCode() + "M103");
+			sendCommand(_getToolCode(toolhead) + "M103");
 		}
 		else
 		{
 			extrusionUpdater.stopExtruding();
 		}
 
-		super.disableMotor();
+		super.disableMotor(toolhead);
 	}
 
 	/***************************************************************************
 	 * Spindle interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setSpindleRPM(double rpm) throws RetryException {
-		sendCommand(_getToolCode() + "S" + df.format(rpm));
+	@Override public void setSpindleRPM(double rpm, int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "S" + df.format(rpm));
 
-		super.setSpindleRPM(rpm);
+		super.setSpindleRPM(rpm, toolhead);
 	}
 
-	public void enableSpindle() throws RetryException {
-		String command = _getToolCode();
+	@Override public void enableSpindle(int toolhead) throws RetryException {
+		String command = _getToolCode(toolhead);
 
-		if (machine.currentTool().getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
+		if (machine.getTool(toolhead).getSpindleDirection() == ToolModel.MOTOR_CLOCKWISE)
 			command += "M3";
 		else
 			command += "M4";
 
 		sendCommand(command);
 
-		super.enableSpindle();
+		super.enableSpindle(toolhead);
 	}
 
-	public void disableSpindle() throws RetryException {
-		sendCommand(_getToolCode() + "M5");
+	@Override public void disableSpindle(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M5");
 
-		super.disableSpindle();
+		super.disableSpindle(toolhead);
 	}
 
 	/***************************************************************************
 	 * Temperature interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void setTemperature(double temperature) throws RetryException {
-		sendCommand(_getToolCode() + "M104 S" + df.format(temperature));
+	@Override public void setTemperature(double temperature, int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M104 S" + df.format(temperature));
 
-		super.setTemperature(temperature);
+		super.setTemperature(temperature, toolhead);
 	}
 
-	public void readTemperature() {
-		sendCommand(_getToolCode() + "M105");
+	@Override public void readTemperature(int toolhead) {
+		sendCommand(_getToolCode(toolhead) + "M105");
 
-		super.readTemperature();
+		super.readTemperature(toolhead);
 	}
 
-	public double getPlatformTemperature(){
-		return machine.currentTool().getPlatformCurrentTemperature();
+	@Override public double getPlatformTemperature(int toolhead){
+		return machine.getTool(toolhead).getPlatformCurrentTemperature();
 	}
 
-	public void setPlatformTemperature(double temperature) throws RetryException {
-		sendCommand(_getToolCode() + "M140 S" + df.format(temperature));
+	@Override public void setPlatformTemperature(double temperature, int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M140 S" + df.format(temperature));
 		
-		super.setPlatformTemperature(temperature);
+		super.setPlatformTemperature(temperature, toolhead);
 	}
 	/***************************************************************************
 	 * Flood Coolant interface functions
 	 **************************************************************************/
-	public void enableFloodCoolant() {
-		sendCommand(_getToolCode() + "M7");
+	@Override public void enableFloodCoolant() {
+		sendCommand(_getCurrentToolCode() + "M7");
 
 		super.enableFloodCoolant();
 	}
 
-	public void disableFloodCoolant() {
-		sendCommand(_getToolCode() + "M9");
+	@Override public void disableFloodCoolant() {
+		sendCommand(_getCurrentToolCode() + "M9");
 
 		super.disableFloodCoolant();
 	}
@@ -1185,14 +1184,14 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/***************************************************************************
 	 * Mist Coolant interface functions
 	 **************************************************************************/
-	public void enableMistCoolant() {
-		sendCommand(_getToolCode() + "M8");
+	@Override public void enableMistCoolant() {
+		sendCommand(_getCurrentToolCode() + "M8");
 
 		super.enableMistCoolant();
 	}
 
-	public void disableMistCoolant() {
-		sendCommand(_getToolCode() + "M9");
+	@Override public void disableMistCoolant() {
+		sendCommand(_getCurrentToolCode() + "M9");
 
 		super.disableMistCoolant();
 	}
@@ -1201,56 +1200,56 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * Fan interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void enableFan() throws RetryException {
-		sendCommand(_getToolCode() + "M106");
+	@Override public void enableFan(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M106");
 
-		super.enableFan();
+		super.enableFan(toolhead);
 	}
 
-	public void disableFan() throws RetryException {
-		sendCommand(_getToolCode() + "M107");
+	@Override public void disableFan(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M107");
 
-		super.disableFan();
+		super.disableFan(toolhead);
 	}
 
 	/***************************************************************************
 	 * Valve interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void openValve() throws RetryException {
-		sendCommand(_getToolCode() + "M126");
+	@Override public void openValve(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M126");
 
-		super.openValve();
+		super.openValve(toolhead);
 	}
 
-	public void closeValve() throws RetryException {
-		sendCommand(_getToolCode() + "M127");
+	@Override public void closeValve(int toolhead) throws RetryException {
+		sendCommand(_getToolCode(toolhead) + "M127");
 
-		super.closeValve();
+		super.closeValve(toolhead);
 	}
 
 	/***************************************************************************
 	 * Collet interface functions
 	 **************************************************************************/
-	public void openCollet() {
-		sendCommand(_getToolCode() + "M21");
+	@Override public void openCollet() {
+		sendCommand(_getCurrentToolCode() + "M21");
 
 		super.openCollet();
 	}
 
-	public void closeCollet() {
-		sendCommand(_getToolCode() + "M22");
+	@Override public void closeCollet() {
+		sendCommand(_getCurrentToolCode() + "M22");
 
 		super.closeCollet();
 	}
 
-	public void reset() {
+	@Override public void reset() {
 		Base.logger.info("Reset.");
 		setInitialized(false);
 		initialize();
 	}
 
-	public void stop(boolean abort) {
+	@Override public void stop(boolean abort) {
 		// No implementation needed for synchronous machines.
 		//sendCommand("M0");
 		// M0 is the same as emergency stop: will hang all communications. You don't really want that...
@@ -1258,7 +1257,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		Base.logger.info("RepRap/Ultimaker Machine stop called.");
 	}
 
-	protected Point5d reconcilePosition() {
+	@Override protected Point5d reconcilePosition() {
 		sendCommand("M114");
 		// If the firmware returned a position then the reply parser
 		// already set the current position.  Return null to tell
@@ -1271,60 +1270,60 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	/* ===============
 	 * This driver has real time control over feedrate and extrusion parameters, allowing real-time tuning!
 	 */
-	public boolean hasFeatureRealtimeControl() {
+	@Override public boolean hasFeatureRealtimeControl() {
 		Base.logger.info("Yes, I have a Realtime Control feature." );
 		return true;
 	}
 
-	public void enableRealtimeControl(boolean enable) {
+	@Override public void enableRealtimeControl(boolean enable) {
 		realtimeControl = enable;
 		Base.logger.info("Realtime Control (RC) is: "+ realtimeControl );
 	}
 	
-	public double getExtrusionMultiplier() {
+	@Override public double getExtrusionMultiplier() {
 		return rcExtrusionMultiply;
 	}
 
-	public double getFeedrateMultiplier() {
+	@Override public double getFeedrateMultiplier() {
 		return rcFeedrateMultiply;
 	}
 	
-	public double getTravelFeedrateMultiplier() {
+	@Override public double getTravelFeedrateMultiplier() {
 		return rcTravelFeedrateMultiply;
 	}
 
-	public boolean setExtrusionMultiplier(double multiplier) {
+	@Override public boolean setExtrusionMultiplier(double multiplier) {
 		rcExtrusionMultiply = multiplier;
 		if(debugLevel == 2)
 			Base.logger.info("RC muplipliers: extrusion="+rcExtrusionMultiply+"x, feedrate="+rcFeedrateMultiply+"x" );
 		return true;
 	}
 
-	public boolean setFeedrateMultiplier(double multiplier) {
+	@Override public boolean setFeedrateMultiplier(double multiplier) {
 		rcFeedrateMultiply = multiplier;
 		if(debugLevel == 2)
 			Base.logger.info("RC muplipliers: extrusion="+rcExtrusionMultiply+"x, feedrate="+rcFeedrateMultiply+"x" );
 		return true;
 	}
-	public boolean setTravelFeedrateMultiplier(double multiplier) {
+	@Override public boolean setTravelFeedrateMultiplier(double multiplier) {
 		rcTravelFeedrateMultiply = multiplier;
 		if(debugLevel == 2)
 			Base.logger.info("RC muplipliers: extrusion="+rcExtrusionMultiply+"x, feedrate="+rcFeedrateMultiply+"x, travel feedrate="+rcTravelFeedrateMultiply+"x" );
 		return true;
 	}
 
-	public void setDebugLevel(int level) {
+	@Override public void setDebugLevel(int level) {
 		debugLevel = level;
 	}
-	public int getDebugLevel() {
+	@Override public int getDebugLevel() {
 		return debugLevel;
 	}
 
-	public double getFeedrateLimit() {
+	@Override public double getFeedrateLimit() {
 		return rcFeedrateLimit;
 	}
 
-	public boolean setFeedrateLimit(double limit) {
+	@Override public boolean setFeedrateLimit(double limit) {
 		rcFeedrateLimit = limit;
 		return true;
 	}
