@@ -40,6 +40,9 @@
 		<fileset dir="build/macosx" includes="*.jar"/>
 		<fileset dir="${lib.dir}" includes="*.jar"/>
 		<pathelement path="/System/Library/Java"/>
+		<pathelement path="/usr/share/java/dbus-2.7.jar"/>
+		<pathelement path="/usr/share/java/unix-0.5.jar"/>
+		<pathelement path="/usr/share/java/hexdump-0.2.jar"/>
 	</path>
 
 	<path id="test.cp">
@@ -106,7 +109,7 @@
 				<path refid="classpath"/>
 				<pathelement location="${jar.dir}/${ant.project.name}.jar"/>
 			</classpath>
-			<sysproperty key="java.library.path" path="${native.lib.dir}"/>
+			<sysproperty key="java.library.path" path="${native.lib.dir}:/usr/lib/jni"/>
 			<sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
 			<sysproperty key="replicatorg.toolpath" path="${native.tools.dir}"/>
 			<arg line="${run.arguments}"/>
