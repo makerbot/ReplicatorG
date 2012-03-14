@@ -6,11 +6,10 @@ import java.util.List;
 
 import org.apache.commons.cli.ParseException;
 
-interface ServiceCommandFactory
+interface CommandFactory
 {
     boolean isMatch(String commandName);
 
-    ServiceCommand createServiceCommand(List<String> arguments)
-        throws ParseException, MissingArgumentException,
-            ExtraArgumentsException;
+    Command createCommand(List<String> arguments) throws ParseException,
+        MissingArgumentException, ExtraArgumentsException;
 }

@@ -4,7 +4,7 @@ package replicatorg.app.service;
 
 import java.util.List;
 
-public class BuildServiceCommandFactory implements ServiceCommandFactory
+public class BuildCommandFactory implements CommandFactory
 {
     public boolean isMatch(final String commandName)
     {
@@ -12,7 +12,7 @@ public class BuildServiceCommandFactory implements ServiceCommandFactory
         return result;
     }
 
-    public ServiceCommand createServiceCommand(final List<String> arguments)
+    public Command createCommand(final List<String> arguments)
         throws MissingArgumentException, ExtraArgumentsException
     {
         if (0 == arguments.size())
@@ -29,8 +29,7 @@ public class BuildServiceCommandFactory implements ServiceCommandFactory
         else
         {
             final String filename = arguments.get(0);
-            final ServiceCommand serviceCommand
-                = new BuildServiceCommand(filename);
+            final Command serviceCommand = new BuildCommand(filename);
             return serviceCommand;
         }
     }

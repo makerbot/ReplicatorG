@@ -4,20 +4,20 @@ package replicatorg.app.service;
 
 import java.util.List;
 
-public class PauseServiceCommandFactory implements ServiceCommandFactory
+public class StopAllCommandFactory implements CommandFactory
 {
     public boolean isMatch(final String commandName)
     {
-        final boolean result = "pause".equals(commandName);
+        final boolean result = "stopAll".equals(commandName);
         return result;
     }
 
-    public ServiceCommand createServiceCommand(final List<String> arguments)
+    public Command createCommand(final List<String> arguments)
         throws ExtraArgumentsException
     {
         if (0 != arguments.size())
         {
-            throw new ExtraArgumentsException("pause", arguments);
+            throw new ExtraArgumentsException("stopAll", arguments);
         }
         else
         {

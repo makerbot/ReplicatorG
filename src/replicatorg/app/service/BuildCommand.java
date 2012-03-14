@@ -18,23 +18,24 @@ import replicatorg.machine.MachineToolStatusEvent;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
 
-//
-// TODO: fix exception badness!!
-//
-
-public class BuildServiceCommand implements ServiceCommand
+public class BuildCommand implements Command
 {
     private final String filename;
 
     private final Object lock;
 
-    public BuildServiceCommand(final String filename)
+    public BuildCommand(final String filename)
     {
         this.filename = filename;
         this.lock = new Object();
     }
 
-    public void execute()
+    public int execute()
+    {
+        return 0;
+    }
+
+    private void executeImpl()
         throws IOException, NoFileException, NoMachineInterfaceException,
         NoPortException, NotConnectedException, NotReadyException,
         TimeoutException, FailedSafetyCheckException
@@ -219,9 +220,9 @@ public class BuildServiceCommand implements ServiceCommand
 
         private void notifyLock()
         {
-            synchronized (BuildServiceCommand.this.lock)
+            synchronized (BuildCommand.this.lock)
             {
-                BuildServiceCommand.this.lock.notify();
+                BuildCommand.this.lock.notify();
             }
         }
     }

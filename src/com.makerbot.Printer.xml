@@ -1,0 +1,41 @@
+<!-- vim:set ai et fenc=utf-8 ff=unix sw=4 ts=4: -->
+<!DOCTYPE node PUBLIC
+  "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+  "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd"
+  >
+<node
+  xmlns:tp="http://telepathy.freedesktop.org/wiki/DbusSpec#extensions-v0"
+  name="/com/makerbot/Printer"
+  >
+    <interface name="com.makerbot.Printer">
+        <property name="State" access="read" type="u" tp:type="PrinterState"/>
+
+        <method name="Build">
+            <arg name="filename" type="s" direction="in"/>
+        </method>
+
+        <method name="Pause"/>
+
+        <method name="Unpause"/>
+
+        <method name="StopMotion"/>
+
+        <method name="StopAll"/>
+
+        <signal name="StateChanged">
+            <arg name="oldState" type="u" tp:type="PrinterState"/>
+            <arg name="newState" type="u"/>
+        </signal>
+
+        <!--
+        <tp:enum name="PrinterState" type="u">
+            <tp:enumvalue value="0" suffix="NotAttached"/>
+            <tp:enumvalue value="1" suffix="Connecting"/>
+            <tp:enumvalue value="2" suffix="Ready"/>
+            <tp:enumvalue value="3" suffix="Building"/>
+            <tp:enumvalue value="4" suffix="Paused"/>
+            <tp:enumvalue value="5" suffix="Error"/>
+        </tp:enum>
+        -->
+    </interface>
+</node>

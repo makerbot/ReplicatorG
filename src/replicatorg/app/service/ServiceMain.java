@@ -17,8 +17,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.UnrecognizedOptionException;
 import org.apache.commons.lang3.StringUtils;
@@ -36,32 +36,25 @@ public class ServiceMain
 
     private static ServiceMain createServiceMain()
     {
-        final Iterable<ServiceCommandFactory> serviceCommandFactories
-            = createServiceCommandFactories();
-        final ServiceMain serviceMain
-            = new ServiceMain(serviceCommandFactories);
+        final Iterable<CommandFactory> commandFactories
+            = createCommandFactories();
+        final ServiceMain serviceMain = new ServiceMain(commandFactories);
         return serviceMain;
     }
 
-    private static Iterable<ServiceCommandFactory>
-        createServiceCommandFactories()
+    private static Iterable<CommandFactory>
+        createCommandFactories()
     {
-        final List<ServiceCommandFactory> list
-            = new ArrayList<ServiceCommandFactory>();
-        list.add(new BuildServiceCommandFactory());
-        list.add(new PauseServiceCommandFactory());
-        list.add(new StopAllServiceCommandFactory());
-        list.add(new StopMotionServiceCommandFactory());
-        list.add(new UnpauseServiceCommandFactory());
+        final List<CommandFactory> list = new ArrayList<CommandFactory>();
+        list.add(new PrinterCommandFactory());
         return list;
     }
 
-    private final Iterable<ServiceCommandFactory> serviceCommandFactories;
+    private final Iterable<CommandFactory> commandFactories;
 
-    private ServiceMain(
-        final Iterable<ServiceCommandFactory> serviceCommandFactories)
+    private ServiceMain(final Iterable<CommandFactory> commandFactories)
     {
-        this.serviceCommandFactories = serviceCommandFactories;
+        this.commandFactories = commandFactories;
     }
 
     public int run(final String[] arguments)
@@ -72,17 +65,19 @@ public class ServiceMain
         try
         {
             final CommandLine commandLine = commandLineParser.parse(
-                options, arguments);
+                options, arguments, true);
             handleDebug(commandLine);
             handleHelp(commandLine, options);
             handleVersion(commandLine);
-            if (false == commandLine.hasOption("help")
-                && false == commandLine.hasOption("version"))
+            if (commandLine.hasOption("help") || commandLine.hasOption("version"))
+            {
+                status = 0;
+            }
+            else
             {
                 handleAlternatePrefs(commandLine);
-                executeCommandLine(commandLine);
+                status = executeCommandLine(commandLine);
             }
-            status = 0;
         }
         catch (final AlreadySelectedException exception)
         {
@@ -143,46 +138,6 @@ public class ServiceMain
         catch (final ExtraArgumentsException exception)
         {
             handleExtraArgumentsException(exception);
-            status = 1;
-        }
-        catch (final IOException exception)
-        {
-            handleIOException(exception);
-            status = 1;
-        }
-        catch (final NoFileException exception)
-        {
-            handleNoFileException(exception);
-            status = 1;
-        }
-        catch (final NoMachineInterfaceException exception)
-        {
-            handleNoMachineInterfaceException(exception);
-            status = 1;
-        }
-        catch (final NoPortException exception)
-        {
-            handleNoPortException(exception);
-            status = 1;
-        }
-        catch (final NotConnectedException exception)
-        {
-            handleNotConnectedException(exception);
-            status = 1;
-        }
-        catch (final NotReadyException exception)
-        {
-            handleNotReadyException(exception);
-            status = 1;
-        }
-        catch (final TimeoutException exception)
-        {
-            handleTimeoutException(exception);
-            status = 1;
-        }
-        catch (final FailedSafetyCheckException exception)
-        {
-            handleFailedSafetyCheckException(exception);
             status = 1;
         }
         return status;
@@ -310,21 +265,20 @@ public class ServiceMain
         }
     }
 
-    private void executeCommandLine(final CommandLine commandLine)
+    private int executeCommandLine(final CommandLine commandLine)
         throws NoCommandException, UnknownCommandException, ParseException,
         replicatorg.app.service.MissingArgumentException,
-        ExtraArgumentsException, IOException, NoFileException,
-        NoMachineInterfaceException, NoPortException, NotConnectedException,
-        NotReadyException, TimeoutException, FailedSafetyCheckException
+        ExtraArgumentsException
     {
         final String commandName = getCommandName(commandLine);
         final List<String> commandArguments
             = getCommandArguments(commandLine);
-        final ServiceCommandFactory serviceCommandFactory
-            = createServiceCommandFactory(commandName);
-        final ServiceCommand serviceCommand
-            = serviceCommandFactory.createServiceCommand(commandArguments);
-        serviceCommand.execute();
+        final CommandFactory commandFactory
+            = createCommandFactory(commandName);
+        final Command command
+            = commandFactory.createCommand(commandArguments);
+        final int status = command.execute();
+        return status;
     }
 
     private String getCommandName(final CommandLine commandLine)
@@ -350,16 +304,16 @@ public class ServiceMain
         return subList;
     }
 
-    private ServiceCommandFactory createServiceCommandFactory(
+    private CommandFactory createCommandFactory(
         final String commandName)
         throws UnknownCommandException
     {
-        for (final ServiceCommandFactory serviceCommandFactory
-            : this.serviceCommandFactories)
+        for (final CommandFactory commandFactory
+            : this.commandFactories)
         {
-            if (serviceCommandFactory.isMatch(commandName))
+            if (commandFactory.isMatch(commandName))
             {
-                return serviceCommandFactory;
+                return commandFactory;
             }
         }
         throw new UnknownCommandException(commandName);
@@ -454,51 +408,6 @@ public class ServiceMain
             "The '%s' command received extra unsupported arguments ('%s').%n",
             commandName, extraArgumentsString);
         printErrorFooter();
-    }
-
-    private void handleIOException(final IOException exception)
-    {
-        final String message = exception.getMessage();
-        System.err.printf("Received an I/O error: %s%n", message);
-    }
-
-    private void handleNoFileException(final NoFileException exception)
-    {
-        final String filename = exception.getFilename();
-        System.err.printf("Missing file '%s'.", filename);
-    }
-
-    private void handleNoMachineInterfaceException(
-        final NoMachineInterfaceException exception)
-    {
-        System.err.println("No machine interface.");
-    }
-
-    private void handleNoPortException(final NoPortException exception)
-    {
-        System.err.println("No port.");
-    }
-
-    private void handleNotConnectedException(
-        final NotConnectedException exception)
-    {
-        System.err.println("Not connected.");
-    }
-
-    private void handleNotReadyException(final NotReadyException exception)
-    {
-        System.err.println("Not ready.");
-    }
-
-    private void handleTimeoutException(final TimeoutException exception)
-    {
-        System.err.println("Timed out.");
-    }
-
-    private void handleFailedSafetyCheckException(
-        final FailedSafetyCheckException exception)
-    {
-        System.err.println("Failed safety check.");
     }
 
     private String getOptionName(final Option option)
