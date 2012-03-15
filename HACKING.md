@@ -22,6 +22,10 @@ If specified it must occur *before* the 'printer' command on the command-line:
 
 # Invoking a Job by D-Bus
 
+> ant run -Drun.arguments="build --bus-name com.makerbot.Printer.printer0 /home/you/ReplicatorG/examples/20mm_Calibration_Box.gcode"
+
+# Invoking a Job by a Third-Party D-Bus Client
+
 Use d-feet.
 
 > sudo apt-get install d-feet
