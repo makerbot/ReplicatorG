@@ -6,7 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.freedesktop.dbus.DBusConnection;
+import org.freedesktop.dbus.exceptions.DBusException;
 
+import com.makerbot.Printer;
 import replicatorg.app.Base;
 import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineListener;
@@ -20,210 +23,33 @@ import replicatorg.model.StringListSource;
 
 public class BuildCommand implements Command
 {
+    private final String busName;
+
     private final String filename;
 
-    private final Object lock;
-
-    public BuildCommand(final String filename)
+    public BuildCommand(final String busName, final String filename)
     {
+        this.busName = busName;
         this.filename = filename;
-        this.lock = new Object();
     }
 
     public int execute()
     {
-        return 0;
-    }
-
-    private void executeImpl()
-        throws IOException, NoFileException, NoMachineInterfaceException,
-        NoPortException, NotConnectedException, NotReadyException,
-        TimeoutException, FailedSafetyCheckException
-    {
-        final MachineLoader machineLoader = Base.getMachineLoader();
-        final Listener listener = new Listener();
-        machineLoader.addMachineListener(listener);
-
-        final MachineInterface machineInterface
-            = machineLoader.getMachineInterface();
-        if (null == machineInterface)
+        int status;
+        try
         {
-            throw new NoMachineInterfaceException();
+            final DBusConnection connection
+                = DBusConnection.getConnection(DBusConnection.SESSION);
+            final Printer printer = connection.getRemoteObject(this.busName,
+                "/com/makerbot/Printer", Printer.class);
+            printer.Build(this.filename);
+            status = 0;
         }
-        else
+        catch (final DBusException exception)
         {
-            final String serial
-                = Base.preferences.get("serial.last_selected", null);
-            if (null == serial)
-            {
-                throw new NoPortException();
-            }
-            else
-            {
-                machineLoader.connect(serial);
-                Base.logger.info("Waiting for connection.");
-                waitForConnected(machineInterface);
-                Base.logger.info("Connected");
-
-                if (false == machineLoader.isLoaded())
-                {
-                    throw new NotReadyException();
-                }
-                else
-                if (false == machineLoader.isConnected())
-                {
-                    throw new NotConnectedException();
-                }
-                else
-                {
-                    final GCodeSource gcodeSource = getGCodeSource();
-                    Base.logger.info("Starting build.");
-                    final boolean build = machineInterface.buildDirect(gcodeSource);
-                    if (false == build)
-                    {
-                        throw new FailedSafetyCheckException();
-                    }
-                    else
-                    {
-                        Base.logger.info("Waiting for the build to start.");
-                        waitForBuilding(machineInterface);
-                        Base.logger.info("Waiting for the build to end.");
-                        waitForReady(machineInterface);
-                        Base.logger.info("Build is done.");
-                    }
-                }
-            }
+            exception.printStackTrace();
+            status = 1;
         }
-    }
-
-    private GCodeSource getGCodeSource() throws IOException, NoFileException
-    {
-        final File file = new File(filename);
-        if (false == file.exists())
-        {
-            throw new NoFileException(filename);
-        }
-        else
-        {
-            final List<String> lines = FileUtils.readLines(file);
-            final GCodeSource gcodeSource = new StringListSource(lines);
-            return gcodeSource;
-        }
-    }
-
-    private void waitOnLock(final long timeout) throws InterruptedException
-    {
-        synchronized (this.lock)
-        {
-            this.lock.wait(timeout);
-        }
-    }
-
-    private void waitForStates(
-        final MachineInterface machineInterface,
-        final long timeout,
-        final MachineState.State ... states)
-        throws TimeoutException
-    {
-        final long start = System.currentTimeMillis();
-        final long end = start + timeout;
-        for (;;)
-        {
-            final MachineState machineState
-                = machineInterface.getMachineState();
-            if (isInState(machineInterface, states))
-            {
-                break;
-            }
-            else
-            {
-                final long remaining;
-                if (0 == timeout)
-                {
-                    remaining = 0;
-                }
-                else
-                {
-                    final long now = System.currentTimeMillis();
-                    remaining = end - now;
-                    if (remaining <= 0)
-                    {
-                        throw new TimeoutException();
-                    }
-                }
-                try
-                {
-                    waitOnLock(remaining);
-                }
-                catch (final InterruptedException exception)
-                {
-                    // Ignored, but it causes us to re-check the state and
-                    // either resume waiting or return.
-                }
-            }
-        }
-    }
-
-    private boolean isInState(
-        final MachineInterface machineInterface,
-        final MachineState.State ... states)
-    {
-        final MachineState.State currentState
-            = machineInterface.getMachineState().getState();
-        for (final MachineState.State state : states)
-        {
-            if (currentState == state)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void waitForConnected(final MachineInterface machineInterface)
-        throws TimeoutException
-    {
-        waitForStates(machineInterface, 60000, MachineState.State.READY,
-            MachineState.State.BUILDING, MachineState.State.PAUSED,
-            MachineState.State.ERROR);
-    }
-
-    private void waitForBuilding(final MachineInterface machineInterface)
-        throws TimeoutException
-    {
-        waitForStates(machineInterface, 60000, MachineState.State.BUILDING,
-            MachineState.State.PAUSED, MachineState.State.BUILDING_OFFLINE);
-    }
-
-    private void waitForReady(final MachineInterface machineInterface)
-        throws TimeoutException
-    {
-        waitForStates(machineInterface, 0, MachineState.State.READY);
-    }
-
-    private class Listener implements MachineListener
-    {
-        public void machineStateChanged(final MachineStateChangeEvent event)
-        {
-            notifyLock();
-        }
-
-        public void machineProgress(final MachineProgressEvent event)
-        {
-            notifyLock();
-        }
-
-        public void toolStatusChanged(final MachineToolStatusEvent event)
-        {
-            notifyLock();
-        }
-
-        private void notifyLock()
-        {
-            synchronized (BuildCommand.this.lock)
-            {
-                BuildCommand.this.lock.notify();
-            }
-        }
+        return status;
     }
 }

@@ -46,7 +46,12 @@ public class ServiceMain
         createCommandFactories()
     {
         final List<CommandFactory> list = new ArrayList<CommandFactory>();
+        list.add(new BuildCommandFactory());
+        list.add(new PauseCommandFactory());
         list.add(new PrinterCommandFactory());
+        list.add(new StopAllCommandFactory());
+        list.add(new StopMotionCommandFactory());
+        list.add(new UnpauseCommandFactory());
         return list;
     }
 

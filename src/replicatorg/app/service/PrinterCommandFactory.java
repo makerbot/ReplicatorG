@@ -46,13 +46,6 @@ public class PrinterCommandFactory implements CommandFactory
         }
     }
 
-    private List<String> getArgumentsAsList(final CommandLine commandLine)
-    {
-        final String[] array = commandLine.getArgs();
-        final List<String> list = Arrays.asList(array);
-        return list;
-    }
-
     private Options createOptions()
     {
         final Options options = new Options();
@@ -75,6 +68,13 @@ public class PrinterCommandFactory implements CommandFactory
             .withDescription("set the D-Bus bus name")
             .create());
         return options;
+    }
+
+    private List<String> getArgumentsAsList(final CommandLine commandLine)
+    {
+        final String[] array = commandLine.getArgs();
+        final List<String> list = Arrays.asList(array);
+        return list;
     }
 
     private String handleMachineName(final CommandLine commandLine)
