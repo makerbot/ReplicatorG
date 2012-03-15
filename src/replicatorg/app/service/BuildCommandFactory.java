@@ -11,7 +11,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-public class BuildCommandFactory implements CommandFactory
+public class BuildCommandFactory extends RemoteCommandFactory
 {
     public boolean isMatch(final String commandName)
     {
@@ -19,15 +19,10 @@ public class BuildCommandFactory implements CommandFactory
         return result;
     }
 
-    public Command createCommand(final List<String> arguments)
-        throws ParseException, MissingArgumentException,
-        ExtraArgumentsException
+    @Override
+    protected Command createCommand(final CommandLine commandLine)
+        throws MissingArgumentException, ExtraArgumentsException
     {
-        final String[] array = arguments.toArray(new String[0]);
-        final CommandLineParser commandLineParser = new GnuParser();
-        final Options options = createOptions();
-        final CommandLine commandLine = commandLineParser.parse(
-            options, array, false);
         final List<String> buildArguments = getArgumentsAsList(commandLine);
         if (0 == buildArguments.size())
         {
@@ -37,49 +32,15 @@ public class BuildCommandFactory implements CommandFactory
         if (buildArguments.size() > 1)
         {
             final List<String> extraArguments
-                = arguments.subList(1, buildArguments.size());
+                = buildArguments.subList(1, buildArguments.size());
             throw new ExtraArgumentsException("build", extraArguments);
         }
         else
         {
             final String busName = handleBusName(commandLine);
             final String filename = buildArguments.get(0);
-            final Command serviceCommand = new BuildCommand(busName, filename);
-            return serviceCommand;
+            final Command command = new BuildCommand(busName, filename);
+            return command;
         }
-    }
-
-    private Options createOptions()
-    {
-        final Options options = new Options();
-        options.addOption(OptionBuilder
-            .withLongOpt("bus-name")
-            .hasArg()
-            .withArgName("BUS-NAME")
-            .withDescription("set the D-Bus bus name")
-            .isRequired()
-            .create());
-        return options;
-    }
-
-    private List<String> getArgumentsAsList(final CommandLine commandLine)
-    {
-        final String[] array = commandLine.getArgs();
-        final List<String> list = Arrays.asList(array);
-        return list;
-    }
-
-    private String handleBusName(final CommandLine commandLine)
-    {
-        final String busName;
-        if (commandLine.hasOption("bus-name"))
-        {
-            busName = commandLine.getOptionValue("bus-name");
-        }
-        else
-        {
-            busName = null;
-        }
-        return busName;
     }
 }

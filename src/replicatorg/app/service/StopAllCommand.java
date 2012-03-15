@@ -2,41 +2,17 @@
 
 package replicatorg.app.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import org.apache.commons.io.FileUtils;
-import org.freedesktop.dbus.DBusConnection;
-import org.freedesktop.dbus.exceptions.DBusException;
-
 import com.makerbot.Printer;
 
-public class StopAllCommand implements Command
+public class StopAllCommand extends RemoteCommand
 {
-    private final String busName;
-
     public StopAllCommand(final String busName)
     {
-        this.busName = busName;
+        super(busName);
     }
 
-    public int execute()
+    public void executeRemoteCommand(final Printer printer)
     {
-        int status;
-        try
-        {
-            final DBusConnection connection
-                = DBusConnection.getConnection(DBusConnection.SESSION);
-            final Printer printer = connection.getRemoteObject(this.busName,
-                "/com/makerbot/Printer", Printer.class);
-            printer.StopAll();
-            status = 0;
-        }
-        catch (final DBusException exception)
-        {
-            exception.printStackTrace();
-            status = 1;
-        }
-        return status;
+        printer.StopAll();
     }
 }

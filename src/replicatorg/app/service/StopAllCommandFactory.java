@@ -11,7 +11,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-public class StopAllCommandFactory implements CommandFactory
+public class StopAllCommandFactory extends RemoteCommandFactory
 {
     public boolean isMatch(final String commandName)
     {
@@ -19,58 +19,20 @@ public class StopAllCommandFactory implements CommandFactory
         return result;
     }
 
-    public Command createCommand(final List<String> arguments)
-        throws ParseException, ExtraArgumentsException
+    @Override
+    protected Command createCommand(final CommandLine commandLine)
+        throws MissingArgumentException, ExtraArgumentsException
     {
-        final String[] array = arguments.toArray(new String[0]);
-        final CommandLineParser commandLineParser = new GnuParser();
-        final Options options = createOptions();
-        final CommandLine commandLine = commandLineParser.parse(
-            options, array, false);
         final List<String> buildArguments = getArgumentsAsList(commandLine);
         if (0 != buildArguments.size())
         {
-            throw new ExtraArgumentsException("stopAll", arguments);
+            throw new ExtraArgumentsException("stopAll", buildArguments);
         }
         else
         {
             final String busName = handleBusName(commandLine);
-            final Command serviceCommand = new StopAllCommand(busName);
-            return serviceCommand;
+            final Command command = new StopAllCommand(busName);
+            return command;
         }
-    }
-
-    private Options createOptions()
-    {
-        final Options options = new Options();
-        options.addOption(OptionBuilder
-            .withLongOpt("bus-name")
-            .hasArg()
-            .withArgName("BUS-NAME")
-            .withDescription("set the D-Bus bus name")
-            .isRequired()
-            .create());
-        return options;
-    }
-
-    private List<String> getArgumentsAsList(final CommandLine commandLine)
-    {
-        final String[] array = commandLine.getArgs();
-        final List<String> list = Arrays.asList(array);
-        return list;
-    }
-
-    private String handleBusName(final CommandLine commandLine)
-    {
-        final String busName;
-        if (commandLine.hasOption("bus-name"))
-        {
-            busName = commandLine.getOptionValue("bus-name");
-        }
-        else
-        {
-            busName = null;
-        }
-        return busName;
     }
 }

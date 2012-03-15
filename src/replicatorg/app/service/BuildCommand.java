@@ -2,44 +2,21 @@
 
 package replicatorg.app.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import org.apache.commons.io.FileUtils;
-import org.freedesktop.dbus.DBusConnection;
-import org.freedesktop.dbus.exceptions.DBusException;
-
 import com.makerbot.Printer;
 
-public class BuildCommand implements Command
+public class BuildCommand extends RemoteCommand
 {
-    private final String busName;
-
     private final String filename;
 
     public BuildCommand(final String busName, final String filename)
     {
-        this.busName = busName;
+        super(busName);
         this.filename = filename;
     }
 
-    public int execute()
+    @Override
+    protected void executeRemoteCommand(final Printer printer)
     {
-        int status;
-        try
-        {
-            final DBusConnection connection
-                = DBusConnection.getConnection(DBusConnection.SESSION);
-            final Printer printer = connection.getRemoteObject(this.busName,
-                "/com/makerbot/Printer", Printer.class);
-            printer.Build(this.filename);
-            status = 0;
-        }
-        catch (final DBusException exception)
-        {
-            exception.printStackTrace();
-            status = 1;
-        }
-        return status;
+        printer.Build(this.filename);
     }
 }
