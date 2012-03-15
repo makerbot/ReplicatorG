@@ -13,7 +13,7 @@ import org.apache.commons.cli.ParseException;
 
 import replicatorg.app.Base;
 
-public class PrinterCommandFactory implements CommandFactory
+public class PrinterCommandFactory extends AbstractCommandFactory
 {
     public boolean isMatch(final String commandName)
     {
@@ -21,15 +21,10 @@ public class PrinterCommandFactory implements CommandFactory
         return result;
     }
 
-    public Command createCommand(final List<String> arguments)
-        throws ParseException, MissingArgumentException,
-        ExtraArgumentsException
+    @Override
+    protected Command createCommand(final CommandLine commandLine)
+        throws MissingArgumentException, ExtraArgumentsException
     {
-        final String[] array = arguments.toArray(new String[0]);
-        final CommandLineParser commandLineParser = new GnuParser();
-        final Options options = createOptions();
-        final CommandLine commandLine = commandLineParser.parse(
-            options, array, false);
         final List<String> extraArguments = getArgumentsAsList(commandLine);
         if (0 != extraArguments.size())
         {
@@ -46,7 +41,8 @@ public class PrinterCommandFactory implements CommandFactory
         }
     }
 
-    private Options createOptions()
+    @Override
+    protected Options createOptions()
     {
         final Options options = new Options();
         options.addOption(OptionBuilder
@@ -68,13 +64,6 @@ public class PrinterCommandFactory implements CommandFactory
             .withDescription("set the D-Bus bus name")
             .create());
         return options;
-    }
-
-    private List<String> getArgumentsAsList(final CommandLine commandLine)
-    {
-        final String[] array = commandLine.getArgs();
-        final List<String> list = Arrays.asList(array);
-        return list;
     }
 
     private String handleMachineName(final CommandLine commandLine)
@@ -103,19 +92,5 @@ public class PrinterCommandFactory implements CommandFactory
             port = Base.preferences.get("serial.last_selected", null);
         }
         return port;
-    }
-
-    private String handleBusName(final CommandLine commandLine)
-    {
-        final String busName;
-        if (commandLine.hasOption("bus-name"))
-        {
-            busName = commandLine.getOptionValue("bus-name");
-        }
-        else
-        {
-            busName = null;
-        }
-        return busName;
     }
 }
