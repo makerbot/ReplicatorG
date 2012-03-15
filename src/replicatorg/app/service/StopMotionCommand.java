@@ -11,16 +11,13 @@ import org.freedesktop.dbus.exceptions.DBusException;
 
 import com.makerbot.Printer;
 
-public class BuildCommand implements Command
+public class StopMotionCommand implements Command
 {
     private final String busName;
 
-    private final String filename;
-
-    public BuildCommand(final String busName, final String filename)
+    public StopMotionCommand(final String busName)
     {
         this.busName = busName;
-        this.filename = filename;
     }
 
     public int execute()
@@ -32,7 +29,7 @@ public class BuildCommand implements Command
                 = DBusConnection.getConnection(DBusConnection.SESSION);
             final Printer printer = connection.getRemoteObject(this.busName,
                 "/com/makerbot/Printer", Printer.class);
-            printer.Build(this.filename);
+            printer.StopMotion();
             status = 0;
         }
         catch (final DBusException exception)
