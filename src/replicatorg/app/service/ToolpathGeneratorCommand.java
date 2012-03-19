@@ -13,19 +13,16 @@ import replicatorg.machine.MachineProgressEvent;
 import replicatorg.machine.MachineStateChangeEvent;
 import replicatorg.machine.MachineToolStatusEvent;
 
-public class PrinterCommand implements Command
+public class ToolpathGeneratorCommand implements Command
 {
     private final String machineName;
 
-    private final String port;
-
     private final String busName;
 
-    public PrinterCommand(final String machineName, final String port,
+    public ToolpathGeneratorCommand(final String machineName,
         final String busName)
     {
         this.machineName = machineName;
-        this.port = port;
         this.busName = busName;
     }
 
@@ -41,15 +38,14 @@ public class PrinterCommand implements Command
                 connection.requestBusName(busName);
             }
             final MachineLoader machineLoader = Base.getMachineLoader();
-            final MachineListener listener = new PrinterListener(connection,
-                this.busName);
-            machineLoader.addMachineListener(listener);
             final MachineInterface machineInterface
                 = machineLoader.getMachineInterface(this.machineName);
-            final PrinterImpl printerImpl = new PrinterImpl(machineInterface,
-                this.port);
-            connection.exportObject("/com/makerbot/Printer", printerImpl);
-            printerImpl.run();
+            final ToolpathGeneratorImpl toolpathGeneratorImpl
+                = new ToolpathGeneratorImpl(machineInterface, connection);
+            connection.exportObject("/com/makerbot/ToolpathGenerator",
+                toolpathGeneratorImpl);
+            toolpathGeneratorImpl.run();
+
             status = 0;
         }
         catch (final DBusException exception)

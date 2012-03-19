@@ -2,7 +2,7 @@
 
 package replicatorg.app.service;
 
-import com.makerbot.Printer;
+import com.makerbot.alpha.Printer1;
 
 public class PauseCommand extends RemoteCommand
 {
@@ -12,7 +12,7 @@ public class PauseCommand extends RemoteCommand
     }
 
     @Override
-    protected void executeRemoteCommand(final Printer printer)
+    protected void executeRemoteCommand(final Printer1 printer)
     {
         printer.Pause();
     }

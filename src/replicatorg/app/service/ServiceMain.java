@@ -51,6 +51,7 @@ public class ServiceMain
         list.add(new PrinterCommandFactory());
         list.add(new StopAllCommandFactory());
         list.add(new StopMotionCommandFactory());
+        list.add(new ToolpathGeneratorCommandFactory());
         list.add(new UnpauseCommandFactory());
         return list;
     }
@@ -240,11 +241,13 @@ public class ServiceMain
             "", options, "", false);
         System.out.println("The supported commands are:");
         System.out.println("");
-        System.out.println("  build         build");
-        System.out.println("  pause         pause the machine");
-        System.out.println("  unpause       unpause the machine");
-        System.out.println("  stopMotion    stop machine motion");
-        System.out.println("  stopAll       stop the machine");
+        System.out.println("  build                build");
+        System.out.println("  pause                pause the machine");
+        System.out.println("  printer              run a printer process");
+        System.out.println("  unpause              unpause the machine");
+        System.out.println("  stopMotion           stop machine motion");
+        System.out.println("  stopAll              stop the machine");
+        System.out.println("  toolpathGenerator    run a toolpath generator process");
     }
 
     private void handleVersion(final CommandLine commandLine)

@@ -12,12 +12,12 @@ import org.apache.commons.io.FileUtils;
 // import org.freedesktop.DBus.Properties;
 // import org.freedesktop.dbus.Variant;
 
-import com.makerbot.Printer;
+import com.makerbot.alpha.Printer1;
 import replicatorg.machine.MachineInterface;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
 
-public class PrinterImpl implements Printer // , Introspectable, Properties
+public class PrinterImpl implements Printer1 // , Introspectable, Properties
 {
     private final MachineInterface machineInterface;
 

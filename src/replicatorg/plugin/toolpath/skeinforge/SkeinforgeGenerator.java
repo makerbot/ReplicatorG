@@ -53,6 +53,10 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		postprocess = new SkeinforgePostProcessor(this);
 	}
 
+	public void setProfile(final String profile) {
+		this.profile = profile;
+	}
+
 	public boolean runSanityChecks() {
 		String errors = "";
 		

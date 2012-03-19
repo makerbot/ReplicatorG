@@ -2,7 +2,7 @@
 
 package replicatorg.app.service;
 
-import com.makerbot.Printer;
+import com.makerbot.alpha.Printer1;
 
 public class StopAllCommand extends RemoteCommand
 {
@@ -11,7 +11,7 @@ public class StopAllCommand extends RemoteCommand
         super(busName);
     }
 
-    public void executeRemoteCommand(final Printer printer)
+    public void executeRemoteCommand(final Printer1 printer)
     {
         printer.StopAll();
     }

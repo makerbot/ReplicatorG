@@ -9,7 +9,7 @@ import org.apache.commons.io.FileUtils;
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 
-import com.makerbot.Printer;
+import com.makerbot.alpha.Printer1;
 
 public abstract class RemoteCommand implements Command
 {
@@ -27,8 +27,8 @@ public abstract class RemoteCommand implements Command
         {
             final DBusConnection connection
                 = DBusConnection.getConnection(DBusConnection.SESSION);
-            final Printer printer = connection.getRemoteObject(this.busName,
-                "/com/makerbot/Printer", Printer.class);
+            final Printer1 printer = connection.getRemoteObject(this.busName,
+                "/com/makerbot/Printer", Printer1.class);
             executeRemoteCommand(printer);
             status = 0;
         }
@@ -40,5 +40,5 @@ public abstract class RemoteCommand implements Command
         return status;
     }
 
-    protected abstract void executeRemoteCommand(Printer printer);
+    protected abstract void executeRemoteCommand(Printer1 printer);
 }

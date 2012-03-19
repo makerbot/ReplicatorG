@@ -143,7 +143,7 @@ class ConfigurationDialog extends JDialog {
 		
 		Profile p = ProfileUtils.getListedProfile(prefPulldown.getModel(), profiles, idx);
 		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
-		parentGenerator.profile = p.getFullPath();
+		parentGenerator.setProfile(p.getFullPath());
 		SkeinforgeGenerator.setSelectedProfile(p.toString());
 		return true;
 	}
