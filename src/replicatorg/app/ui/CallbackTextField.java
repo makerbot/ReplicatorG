@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.text.Format;
 
 import replicatorg.app.Base;
+import replicatorg.app.ui.controlpanel.ExtruderPanel;
 
 public class CallbackTextField extends ActionTextField {
 	ActionListener panel;

@@ -149,9 +149,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 
 	final static Color BACK_COLOR = new Color(0x5F, 0x73, 0x25); 
 	MainButton simButton, pauseButton, stopButton;
-	MainButton buildButton, resetButton;
-	//MainButton cpButton;
-	MainButton rcButton;
+	MainButton buildButton, resetButton, cpButton, rcButton;
 	MainButton disconnectButton, connectButton, generateButton;
 	
 	MainButton uploadButton, playbackButton, fileButton;
@@ -185,9 +183,9 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		add(stopButton);
 
 
-		//cpButton = makeButton("Control panel", "images/button-control-panel.png");
+		cpButton = makeButton("Control panel", "images/button-control-panel.png");
 		rcButton = makeButton("Live tuning", "images/button-realtime-panel.png");
-		//add(cpButton,"gap unrelated");
+		add(cpButton,"gap unrelated");
 		add(rcButton, "hidemode 1");
 		
 		resetButton = makeButton("Reset machine", "images/button-reset.png");
@@ -208,7 +206,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		buildButton.setToolTipText("This will start building the object on the machine.");
 		pauseButton.setToolTipText("This will pause or resume the build.");
 		stopButton.setToolTipText("This will abort the build in progress.");
-		//cpButton.setToolTipText("Here you'll find manual controls for the machine.");
+		cpButton.setToolTipText("Here you'll find manual controls for the machine.");
 		rcButton.setToolTipText("This can be used to tune the process, in real time, during a print job.");
 		resetButton.setToolTipText("This will restart the firmware on the machine.");
 		connectButton.setToolTipText("Connect to the machine.");
@@ -258,8 +256,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 			editor.handleStop();
 		} else if (e.getSource() == resetButton) {
 			editor.handleReset();
-//		} else if (e.getSource() == cpButton) {
-//			editor.handleControlPanel();
+		} else if (e.getSource() == cpButton) {
+			editor.handleControlPanel();
 		} else if (e.getSource() == connectButton) {
 			editor.handleConnect();
 		} else if (e.getSource() == disconnectButton) {
@@ -295,8 +293,8 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 				(((SDCardCapture)machine.getDriver()).hasFeatureSDCardCapture());
 		boolean hasGcode = (editor != null) && (editor.getBuild() != null) &&
 				editor.getBuild().getCode() != null;
-		boolean hasModel = (editor != null) && (editor.getBuild() != null);
-		//&& editor.getBuild().getModel() != null;
+		boolean hasModel = (editor != null) && (editor.getBuild() != null) &&
+				editor.getBuild().getModel() != null;
 		
 		fileButton.setEnabled(!building && hasGcode);
 		buildButton.setEnabled(readyToPrint);
@@ -317,7 +315,7 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 		resetButton.setEnabled(connected); 
 		disconnectButton.setEnabled(connected);
 		connectButton.setEnabled(!connected);
-//		cpButton.setEnabled(configurable);
+		cpButton.setEnabled(configurable);
 		rcButton.setVisible(editor.supportsRealTimeControl());
 		
 //		if (!editor.supportsRealTimeControl()) 
@@ -331,10 +329,6 @@ public class MainButtonPanel extends BGPanel implements MachineListener, ActionL
 	}
 
 	public void updateFromMachine(final MachineInterface machine) {
-		if(machine == null) {
-			Base.logger.severe("MachineInterface null in updateFromMachine");
-			return;
-		}
 		MachineState s = new MachineState(MachineState.State.NOT_ATTACHED);
 		if (machine != null) {
 			s = machine.getMachineState();

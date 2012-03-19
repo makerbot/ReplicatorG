@@ -204,46 +204,46 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content = advanced;
 		content.setLayout(new MigLayout("fill"));
 		
-//		JButton modelColorButton;
-//		modelColorButton = new JButton("Choose model color");
-//		modelColorButton.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				// Note that this color is also defined in EditingModel.java
-//				Color modelColor = new Color(Base.preferences.getInt("ui.modelColor",-19635));
-//				modelColor = JColorChooser.showDialog(
-//						null,
-//		                "Choose Model Color",
-//		                modelColor);
-//		        if(modelColor == null)
-//		        	return;
-//				
-//		        Base.preferences.putInt("ui.modelColor", modelColor.getRGB());
-//		        Base.getEditor().refreshPreviewPanel();
-//			}
-//		});
-//		modelColorButton.setVisible(true);
-//		content.add(modelColorButton,"split");
+		JButton modelColorButton;
+		modelColorButton = new JButton("Choose model color");
+		modelColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Note that this color is also defined in EditingModel.java
+				Color modelColor = new Color(Base.preferences.getInt("ui.modelColor",-19635));
+				modelColor = JColorChooser.showDialog(
+						null,
+		                "Choose Model Color",
+		                modelColor);
+		        if(modelColor == null)
+		        	return;
+				
+		        Base.preferences.putInt("ui.modelColor", modelColor.getRGB());
+		        Base.getEditor().refreshPreviewPanel();
+			}
+		});
+		modelColorButton.setVisible(true);
+		content.add(modelColorButton,"split");
 		
 		
-//		JButton backgroundColorButton;
-//		backgroundColorButton = new JButton("Choose background color");
-//		backgroundColorButton.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				// Note that this color is also defined in EditingModel.java
-//				Color backgroundColor = new Color(Base.preferences.getInt("ui.backgroundColor", 0));
-//				backgroundColor = JColorChooser.showDialog(
-//						null,
-//		                "Choose Background Color",
-//		                backgroundColor);
-//		        if(backgroundColor == null)
-//		        	return;
-//		                
-//		        Base.preferences.putInt("ui.backgroundColor", backgroundColor.getRGB());
-//		        Base.getEditor().refreshPreviewPanel();
-//			}
-//		});
-//		backgroundColorButton.setVisible(true);
-//		content.add(backgroundColorButton,"wrap");
+		JButton backgroundColorButton;
+		backgroundColorButton = new JButton("Choose background color");
+		backgroundColorButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Note that this color is also defined in EditingModel.java
+				Color backgroundColor = new Color(Base.preferences.getInt("ui.backgroundColor", 0));
+				backgroundColor = JColorChooser.showDialog(
+						null,
+		                "Choose Background Color",
+		                backgroundColor);
+		        if(backgroundColor == null)
+		        	return;
+		                
+		        Base.preferences.putInt("ui.backgroundColor", backgroundColor.getRGB());
+		        Base.getEditor().refreshPreviewPanel();
+			}
+		});
+		backgroundColorButton.setVisible(true);
+		content.add(backgroundColorButton,"wrap");
 		
 		
 		content.add(new JLabel("Firmware update URL: "),"split");
