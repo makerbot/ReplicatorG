@@ -156,9 +156,11 @@ class MightyBoardEEPROM implements EEPROMClass
     /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
     /// in steps.  3 x 32 bits = 12 bytes
     final public static int TOOLHEAD_OFFSET_SETTINGS = 0x0162;
+    /// Acceleraton settings 1byte + 2 bytes
+    final public static int ACCELERATION_SETTINGS = 0x016E;
 
-	/// start of free space
-	final public static int FREE_EEPROM_STARTS = 0x0158;
+    /// start of free space
+    final public static int FREE_EEPROM_STARTS = 0x0172;
 
 }
 
@@ -248,6 +250,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	private int toolCountOnboard = -1; /// no count aka FFFF
 	
 	Version toolVersion = new Version(0,0);
+        Version accelerationVersion = new Version(0,0);
 
 	/** 
 	 * Standard Constructor
@@ -264,6 +267,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		// firmware version we want this driver to support.
 		minimumVersion = new Version(5,2);
 		preferredVersion = new Version(5,2);
+                minimumAccelerationVersion = new Version(9,3);
 
 	}
 	
@@ -302,6 +306,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		getStepperValues(); //read our current steppers into a local cache
 		getMotorRPM();		//load our motor RPM from firmware if we can.
+                getAccelerationState();
 		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
 		{
 			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
@@ -318,6 +323,16 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		getSpindleSpeedPWM();
 		return true;
 	}
+        
+        /// Read acceleration OFF/ON status from Bot
+        private void getAccelerationState(){
+            
+            Base.logger.fine("Geting Acceleration Status from Bot");
+            acceleratedFirmware = getAccelerationStatus();
+            if(acceleratedFirmware)
+                Base.logger.severe("Found accelerated firmware active");
+            
+        }
 
 	/// Read stepper refernce voltage values from the bot EEPROM.
 	private void getStepperValues() {
@@ -778,7 +793,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public double getToolheadsOffset(int axis) {
 
-		Base.logger.finest("MigtyBoard getToolheadsOffset" + axis);
+		Base.logger.finest("MightyBoard getToolheadsOffset" + axis);
 		if ((axis < 0) || (axis > 2)) {
 			// TODO: handle this
 			Base.logger.severe("axis out of range" + axis);
@@ -839,6 +854,68 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		}
 		write32ToEEPROM32(MightyBoardEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4,offsetSteps);
 	}
+        
+        @Override
+        /// get stored acceleration rate from bot
+        /// acceleration rate is applied to all moves when acceleration is active in firmware
+        public int getAccelerationRate(){
+                
+                Base.logger.finest("MightyBoard getAccelerationRate" );
+		
+		checkEEPROM();
+
+		int val = read16FromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 2);
+				
+		return val;
+        }
+        
+        @Override
+        /// set acceleration rate store on bot
+        /// acceleration rate is applied to all moves when acceleration is active in firmware
+        public void setAccelerationRate(int rate){
+            
+            Base.logger.finest("MightyBoard setAccelerationRate" );
+
+            // limit rate to 16 bit integer max
+            if(rate  > 32767)
+                rate = 32767;
+            if(rate < -32768)
+                rate = -32768;
+                
+            write16ToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 2, rate);
+        }
+        
+        @Override
+        // get stored acceleration status: either ON of OFF
+        // acceleration is applied to all moves, except homing when ON
+        public boolean getAccelerationStatus(){
+                
+                Base.logger.finest("MightyBoard getAccelerationStatus");
+            
+                checkEEPROM();
+
+		byte[] val = readFromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS,1);
+				
+		return (val[0] > 0 ? true : false);
+        }
+        
+        @Override
+        // set stored acceleration status: either ON of OFF
+        // acceleration is applied to all moves, except homing when ON
+        public void setAccelerationStatus(byte status){
+            Base.logger.info("MightyBoard setAccelerationStatus");
+            
+            byte b[] = new byte[1];
+            b[0] = status;
+            writeToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS, b);
+        }
+        
+        @Override
+	public boolean hasAcceleration() { 
+            if (version.compareTo(getMinimumAccelerationVersion()) < 0)
+                return false;
+            return true;
+        }
 
 
 
@@ -1308,7 +1385,31 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 				s = s >>> 8;
 		}
 		writeToEEPROM(offset,buf);
-}
+        }
+        
+        /// read a 16 bit int from EEPROM at location 'offset'
+	private int read16FromEEPROM(int offset)
+	{
+		int val = 0;
+		byte[] r = readFromEEPROM(offset, 2);
+		if( r == null || r.length < 2) {
+			Base.logger.severe("invalid read from read16FromEEPROM at "+ offset);
+			return val;
+		}
+		for (int i = 0; i < 2; i++)
+			val = val + (((int)r[i] & 0xff) << 8*i);
+		return val;
+	}
+
+	private void write16ToEEPROM(int offset, int value ) {
+		int s = value;
+		byte buf[] = new byte[2];
+		for (int i = 0; i < 2; i++) {
+			buf[i] = (byte) (s & 0xff);
+				s = s >>> 8;
+		}
+		writeToEEPROM(offset,buf);
+        }
 
 
 	
