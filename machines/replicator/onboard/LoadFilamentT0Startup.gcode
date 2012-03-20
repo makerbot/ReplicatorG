@@ -1,0 +1,30 @@
+(**** The Replicator Utility ****)
+( Change filament in extruder T0 )
+
+M70 (Please wait)
+G0 Z75
+M104 S225 T0 (set extruder temperature)
+M71 (Let's remove the    black filament guidetube so that we can feed plastic easily.)
+M71 (Press down on the   grey ring on top of the extruder and    pull the guide tube.) 
+M71 (Now feed filament   through guide tube  from the back until it pops out in front)
+M71 (I'm heating up my   extruder so we can  feed the filament   through.)
+M70 P10(This might take a   few minutes.        And watch out, the  nozzle will get HOT!)
+G21 (set units to mm)
+G90 (set positioning to absolute)
+M108 R3.0 T0 (set extruder speed left)
+M103 T0 (Make sure extruder is off)
+
+M73 P0 (enable build progress 'Change Filament')
+M6 T0 (wait for toolhead parts, nozzle, HBP, etc., to reach temperature)
+
+
+M101 T0 (Extruder on, forward)
+M70 (OK I'm ready! Push  filament in through the grey ring until the motor tugs it in)
+G04 P100000 (Wait t/1000 seconds)
+M71 (I'm done loading my filament! If plasticisn't loaded go to  makerbot.com/help   )
+M103 T0 (Extruder off)
+(**** begin cool for safety ****)
+M104 S0 T0 (set extruder temperature)
+M73 P100 (build end notification)
+(**** end cool for safety ****)
+(**** end of end.gcode ****)

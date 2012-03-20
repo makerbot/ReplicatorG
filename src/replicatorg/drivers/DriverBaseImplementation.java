@@ -56,6 +56,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	protected Version version = new Version(0,0);
 	protected Version preferredVersion = new Version(0,0);
 	protected Version minimumVersion = new Version(0,0);
+        protected Version minimumAccelerationVersion = new Version(0,0);
 	
 	// our point offsets
 	private Point3d[] offsets;
@@ -218,6 +219,9 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	public Version getMinimumVersion() {
 		return minimumVersion;
 	}
+        public Version getMinimumAccelerationVersion(){
+                return minimumAccelerationVersion;
+        }
 	
 	public Version getPreferredVersion() {
 		return preferredVersion;
