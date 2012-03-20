@@ -47,6 +47,7 @@ public class ServiceMain
     {
         final List<CommandFactory> list = new ArrayList<CommandFactory>();
         list.add(new BuildCommandFactory());
+        list.add(new BuildToFileCommandFactory());
         list.add(new PauseCommandFactory());
         list.add(new PrinterCommandFactory());
         list.add(new StopAllCommandFactory());
@@ -242,6 +243,7 @@ public class ServiceMain
         System.out.println("The supported commands are:");
         System.out.println("");
         System.out.println("  build                build");
+        System.out.println("  buildToFile          build to a file");
         System.out.println("  pause                pause the machine");
         System.out.println("  printer              run a printer process");
         System.out.println("  unpause              unpause the machine");

@@ -40,7 +40,12 @@ public class PrinterImpl implements Printer1 // , Introspectable, Properties
 
     public void Build(final String filename)
     {
-        System.out.println("Build: filename=" + filename);
+        System.out.printf("Build: filename=%1$s%n", filename);
+
+        if (false == this.machineInterface.isConnected())
+        {
+            this.machineInterface.connect(this.port);
+        }
 
         try
         {
@@ -50,6 +55,24 @@ public class PrinterImpl implements Printer1 // , Introspectable, Properties
         catch (final IOException exception)
         {
             throw new RuntimeException(exception); // TODO: shameful....
+        }
+    }
+
+    public void BuildToFile(final String inputFilename,
+        final String outputFilename)
+    {
+        System.out.printf(
+            "BuildToFilename: inputFilename=%1$s, outputFilename=%2$s%n",
+            inputFilename, outputFilename);
+
+        try
+        {
+            final GCodeSource gcodeSource = getGCodeSource(inputFilename);
+            this.machineInterface.buildToFile(gcodeSource, outputFilename);
+        }
+        catch (final IOException exception)
+        {
+            throw new RuntimeException(exception); // TODO: more shameful....
         }
     }
 
@@ -79,8 +102,6 @@ public class PrinterImpl implements Printer1 // , Introspectable, Properties
 
     public void run()
     {
-        machineInterface.connect(this.port);
-
         while (this.run)
         {
             try
