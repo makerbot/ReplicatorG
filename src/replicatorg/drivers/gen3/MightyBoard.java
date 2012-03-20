@@ -330,7 +330,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
             Base.logger.fine("Geting Acceleration Status from Bot");
             acceleratedFirmware = getAccelerationStatus();
             if(acceleratedFirmware)
-                Base.logger.severe("Found accelerated firmware active");
+                Base.logger.finest("Found accelerated firmware active");
             
         }
 
