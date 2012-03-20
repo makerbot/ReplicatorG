@@ -40,14 +40,6 @@
 		<fileset dir="build/macosx" includes="*.jar"/>
 		<fileset dir="${lib.dir}" includes="*.jar"/>
 		<pathelement path="/System/Library/Java"/>
-		<pathelement path="/usr/share/java/dbus.jar"/>
-		<pathelement path="/usr/share/java/dbus-java/dbus.jar"/>
-		<pathelement path="/usr/share/java/unix.jar"/>
-		<pathelement path="/usr/lib64/libmatthew-java/unix.jar"/>
-		<pathelement path="/usr/lib/libmatthew-java/unix.jar"/>
-		<pathelement path="/usr/share/java/hexdump.jar"/>
-		<pathelement path="/usr/lib64/libmatthew-java/hexdump.jar"/>
-		<pathelement path="/usr/lib/libmatthew-java/hexdump.jar"/>
 	</path>
 
 	<path id="test.cp">
