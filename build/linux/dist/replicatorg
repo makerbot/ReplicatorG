@@ -20,7 +20,7 @@ export LD_LIBRARY_PATH
 
 if [ ${http_proxy} ]; then
   PROXY=`echo -n -e ${http_proxy} | sed -n 's/http:\/\/\([^:]\+\):\([1234567890]\+\)/-DproxySet=true -DproxyHost=\1 -DproxyPort=\2/p'`
-  java $PROXY replicatorg.app.Base "$@"
+  java $PROXY replicatorg.app.service.ServiceMain "$@"
 else
-  java replicatorg.app.Base "$@"
+  java replicatorg.app.service.ServiceMain "$@"
 fi

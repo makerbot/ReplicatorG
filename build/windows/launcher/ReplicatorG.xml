@@ -1,6 +1,6 @@
 <launch4jConfig>
   <dontWrapJar>true</dontWrapJar>
-  <headerType>gui</headerType>
+  <headerType>console</headerType>
   <jar>lib\ReplicatorG.jar</jar>
   <outfile>ReplicatorG.exe</outfile>
   <errTitle></errTitle>
@@ -14,7 +14,7 @@
   <manifest></manifest>
   <icon>application.ico</icon>
   <classPath>
-    <mainClass>replicatorg.app.Base</mainClass>
+    <mainClass>replicatorg.app.service.ServiceMain</mainClass>
     <cp>./lib</cp>
     <cp>./lib/j3dcore.jar</cp>
     <cp>./lib/j3dutils.jar</cp>
@@ -26,6 +26,11 @@
     <cp>./lib/vecmath.jar</cp>
     <cp>./lib/filedrop.jar</cp>
     <cp>./lib/ReplicatorG.jar</cp>
+    <cp>./lib/commons-cli-1.2.jar</cp>
+    <cp>./lib/commons-io-2.1.jar</cp>
+    <cp>./lib/commons-lang3-3.1.jar</cp>
+    <cp>./lib/dbus.jar</cp>
+    <cp>./lib/hexdump.jar</cp>
   </classPath>
   <jre>
     <path>java\</path>
