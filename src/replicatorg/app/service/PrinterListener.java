@@ -104,7 +104,6 @@ public class PrinterListener implements MachineListener
         //
 
         final int lines = event.getLines();
-        System.out.printf("lines=%d%n", lines);
         if (-1 == this.lastLines || this.lastLines != lines)
         {
             this.lastLines = lines;
