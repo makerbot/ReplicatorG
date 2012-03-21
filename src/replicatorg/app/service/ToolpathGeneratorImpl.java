@@ -3,10 +3,8 @@
 package replicatorg.app.service;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import org.freedesktop.dbus.DBusConnection;
-// import org.freedesktop.DBus.Introspectable;
-// import org.freedesktop.DBus.Properties;
-// import org.freedesktop.dbus.Variant;
 
 import com.makerbot.alpha.ToolpathGenerator1;
 import replicatorg.app.Base;
@@ -20,7 +18,7 @@ import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgePostProcessor;
 
-public class ToolpathGeneratorImpl implements ToolpathGenerator1 // , Introspectable, Properties
+public class ToolpathGeneratorImpl implements ToolpathGenerator1
 {
     private final MachineInterface machineInterface;
 
@@ -43,7 +41,7 @@ public class ToolpathGeneratorImpl implements ToolpathGenerator1 // , Introspect
 
     public void Generate(final String filename)
     {
-        System.out.println("Generate: filename=" + filename);
+        Base.logger.log(Level.INFO, "Generate: filename={0}", filename);
         try
         {
             final ToolpathGenerator generator
@@ -102,6 +100,7 @@ public class ToolpathGeneratorImpl implements ToolpathGenerator1 // , Introspect
             }
             catch (final InterruptedException exception)
             {
+                // Ignored
             }
         }
     }

@@ -7,17 +7,16 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
-// import org.freedesktop.DBus.Introspectable;
-// import org.freedesktop.DBus.Properties;
-// import org.freedesktop.dbus.Variant;
 
 import com.makerbot.alpha.Printer1;
+import replicatorg.app.Base;
 import replicatorg.machine.MachineInterface;
 import replicatorg.model.GCodeSource;
 import replicatorg.model.StringListSource;
 
-public class PrinterImpl implements Printer1 // , Introspectable, Properties
+public class PrinterImpl implements Printer1
 {
     private final MachineInterface machineInterface;
 
@@ -40,7 +39,7 @@ public class PrinterImpl implements Printer1 // , Introspectable, Properties
 
     public void Build(final String filename)
     {
-        System.out.printf("Build: filename=%1$s%n", filename);
+        Base.logger.log(Level.INFO, "Build: filename={0}", filename);
 
         if (false == this.machineInterface.isConnected())
         {
@@ -54,16 +53,16 @@ public class PrinterImpl implements Printer1 // , Introspectable, Properties
         }
         catch (final IOException exception)
         {
-            throw new RuntimeException(exception); // TODO: shameful....
+            throw new RuntimeException(exception);
         }
     }
 
     public void BuildToFile(final String inputFilename,
         final String outputFilename)
     {
-        System.out.printf(
-            "BuildToFilename: inputFilename=%1$s, outputFilename=%2$s%n",
-            inputFilename, outputFilename);
+        Base.logger.log(Level.INFO,
+            "BuildToFile: inputFilename={0}, outputFilename={1}",
+            new Object[] {inputFilename, outputFilename});
 
         try
         {
@@ -72,31 +71,31 @@ public class PrinterImpl implements Printer1 // , Introspectable, Properties
         }
         catch (final IOException exception)
         {
-            throw new RuntimeException(exception); // TODO: more shameful....
+            throw new RuntimeException(exception);
         }
     }
 
     public void Pause()
     {
-        System.out.println("Pause");
+        Base.logger.log(Level.INFO, "Pause");
         this.machineInterface.pause();
     }
 
     public void Unpause()
     {
-        System.out.println("Unpause");
+        Base.logger.log(Level.INFO, "Unpause");
         this.machineInterface.unpause();
     }
 
     public void StopMotion()
     {
-        System.out.println("StopMotion");
+        Base.logger.log(Level.INFO, "StopMotion");
         this.machineInterface.stopMotion();
     }
 
     public void StopAll()
     {
-        System.out.println("StopAll");
+        Base.logger.log(Level.INFO, "StopAll");
         this.machineInterface.stopAll();
     }
 
@@ -110,6 +109,7 @@ public class PrinterImpl implements Printer1 // , Introspectable, Properties
             }
             catch (final InterruptedException exception)
             {
+                // Ignored
             }
         }
     }
