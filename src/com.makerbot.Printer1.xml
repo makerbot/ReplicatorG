@@ -27,6 +27,11 @@
 
         <method name="StopAll"/>
 
+        <signal name="Progress">
+            <arg name="lines" type="i"/>
+            <arg name="totalLines" type="i"/>
+        </signal>
+
         <!--
         <tp:enum name="PrinterState" type="u">
             <tp:enumvalue value="0" suffix="NotAttached"/>

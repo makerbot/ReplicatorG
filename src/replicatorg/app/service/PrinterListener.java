@@ -32,11 +32,14 @@ public class PrinterListener implements MachineListener
 
     private final String busName;
 
+    private int lastLines;
+
     public PrinterListener(final DBusConnection connection,
         final String busName)
     {
         this.connection = connection;
         this.busName = busName;
+        this.lastLines = -1;
     }
 
     public void machineStateChanged(final MachineStateChangeEvent event)
@@ -93,6 +96,29 @@ public class PrinterListener implements MachineListener
 
     public void machineProgress(final MachineProgressEvent event)
     {
+        //
+        // The progress events are absolutely spam-tastic. We only send an
+        // event if the lastLines field is -1 (which means the listener is
+        // fresh and has never reported a progress event) or if the lastLines
+        // field is actually different than the event's lines.
+        //
+
+        final int lines = event.getLines();
+        System.out.printf("lines=%d%n", lines);
+        if (-1 == this.lastLines || this.lastLines != lines)
+        {
+            this.lastLines = lines;
+            try
+            {
+                final DBusSignal signal = new Printer1.Progress(
+                    "/com/makerbot/Printer", lines, event.getTotalLines());
+                this.connection.sendSignal(signal);
+            }
+            catch (final DBusException exception)
+            {
+                exception.printStackTrace();
+            }
+        }
     }
 
     public void toolStatusChanged(final MachineToolStatusEvent event)
