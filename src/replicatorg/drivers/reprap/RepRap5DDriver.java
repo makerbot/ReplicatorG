@@ -1201,16 +1201,26 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	 * Fan interface functions
 	 * @throws RetryException 
 	 **************************************************************************/
-	public void enableFan() throws RetryException {
+	public void enableFan() {
 		sendCommand(_getToolCode() + "M106");
 
-		super.enableFan();
+		try {
+			super.enableFan();
+		} catch (RetryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	public void disableFan() throws RetryException {
+	public void disableFan() {
 		sendCommand(_getToolCode() + "M107");
 
-		super.disableFan();
+		try {
+			super.disableFan();
+		} catch (RetryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/***************************************************************************

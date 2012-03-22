@@ -18,6 +18,8 @@ public interface RealtimeControl {
 	public double getFeedrateLimit();
 	public void setDebugLevel(int level);
 	public int getDebugLevel();
+	public void enableFan();
+	public void disableFan();
 	// TODO: realtime backlash compensation?
 	// TODO: realtime X-Y offsetting? (for when it has skipped steps)
 	
