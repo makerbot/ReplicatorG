@@ -6,6 +6,11 @@ dbus-java 2.7
 
 > sudo apt-get install libdbus-java
 
+# Windows
+
+The dbus-java jars are now included in the ReplicatorG repository.
+A windows installer for dbus exists, though we haven't tested it much. It can be found at http://code.google.com/p/dbus-windows-installer/
+
 # Running a Printer Process
 
 > ant run -Drun.arguments="printer --bus-name com.makerbot.Printer.printer0 --machine-name 'The Replicator Dual' --port /dev/ttyACM0"
