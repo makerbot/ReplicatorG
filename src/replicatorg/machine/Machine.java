@@ -423,13 +423,22 @@ public class Machine implements MachineInterface {
 					messages.put(message, lineNumber);
 					Base.logger.log(Level.WARNING, message);
 				}
+				//BUGFIX! Can cause problems when used on reprap machines!
+				if (fVal < 0)
+				{
+					message = "Negative feedrate detected! '" + line +
+							 "' causes crashes in the reprap driver.";
+
+					messages.put(message, lineNumber);
+					Base.logger.log(Level.SEVERE, message);
+				}
 			}
 			
 			lineNumber++;
 		}
 	}
 	//footnote [1]:
-	/// Because this error can be thrown thounsands of times in a file, and is generally a 'all wrong, or all right' error,
+	/// Because this error can be thrown thousands of times in a file, and is generally a 'all wrong, or all right' error,
 	// we shortcut return on the first instance of a toolhead count error.  This avoids long timeouts before displaying errors, and avoids (literally) hundreds to 
 	// thousands of exactly the same error
 	
