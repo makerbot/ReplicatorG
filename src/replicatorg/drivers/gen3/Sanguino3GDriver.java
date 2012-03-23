@@ -140,10 +140,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 				// Default timeout should be 2.6s. Timeout can be sped up for
 				// v2, but let's play it safe.
 				int timeout = 2600;
-                                // dial down timeout for accelerated firmware so that we can refill
-                                // firmware command buffer as quickly as possible
-                                if(acceleratedFirmware)
-                                    timeout = 200;
 				connectToDevice(timeout);
 			} catch (Exception e) {
 				// todo: handle init exceptions here
@@ -164,6 +160,11 @@ public class Sanguino3GDriver extends SerialDriver implements
 			}
 			sendInit();
 			super.initialize();
+			// dial down timeout for accelerated firmware so that we can refill
+			// firmware command buffer as quickly as possible
+			if(acceleratedFirmware){
+				serial.setTimeout(200);
+			}
 			invalidatePosition();
 
 			return;
