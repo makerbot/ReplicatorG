@@ -14,6 +14,12 @@
             <arg name="filename" type="s" direction="in"/>
         </method>
 
+        <method name="GenerateDualStrusion">
+            <arg name="inputFilename0" type="s" direction="in"/>
+            <arg name="inputFilename1" type="s" direction="in"/>
+            <arg name="outputFilename" type="s" direction="in"/>
+        </method>
+
         <signal name="Progress"/>
 
         <signal name="Complete"/>

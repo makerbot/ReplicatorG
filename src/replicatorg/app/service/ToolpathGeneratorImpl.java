@@ -2,6 +2,7 @@
 
 package replicatorg.app.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.freedesktop.dbus.DBusConnection;
@@ -88,6 +89,18 @@ public class ToolpathGeneratorImpl implements ToolpathGenerator1
         {
             throw new RuntimeException(exception);
         }
+    }
+
+    public void GenerateDualStrusion(final String inputFilename0,
+        final String inputFilename1, final String outputFilename)
+    {
+        final File inputFile0 = new File(inputFilename0);
+        final File inputFile1 = new File(inputFilename1);
+        final File outputFile = new File(outputFilename);
+        final DualStrusionThread thread = new DualStrusionThread(
+            this.machineInterface, this.connection, inputFile0, inputFile1,
+            outputFile);
+        thread.start();
     }
 
     public void run()

@@ -20,5 +20,6 @@ public interface ToolpathGenerator1 extends DBusInterface
    }
 
   public void Generate(String filename);
+  public void GenerateDualStrusion(String inputFilename0, String inputFilename1, String outputFilename);
 
 }
