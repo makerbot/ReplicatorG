@@ -335,7 +335,7 @@ public class Base {
 	 * when generating gcode (minimum one decimal places) using . as decimal separator
 	 */
 	static private NumberFormat gcodeNF;
-	{
+	static {
 		// We don't use DFS.getInstance here to maintain compatibility with Java 5
         DecimalFormatSymbols dfs;
  	 	gcodeNF = new DecimalFormat("##0.0##");
