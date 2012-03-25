@@ -80,6 +80,14 @@ public class MachineOnboardParameters extends JPanel {
 	private JFormattedTextField vref2 = new JFormattedTextField(threePlaces);
 	private JFormattedTextField vref3 = new JFormattedTextField(threePlaces);
 	private JFormattedTextField vref4 = new JFormattedTextField(threePlaces);
+        
+        private JFormattedTextField xToolheadOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField yToolheadOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField zToolheadOffsetField = new JFormattedTextField(threePlaces);
+        
+        private JCheckBox accelerationBox = new JCheckBox();
+        private JFormattedTextField accelerationRate = new JFormattedTextField(threePlaces);
+        
 
 	
 	/** Prompts the user to fire a bot  reset after the changes have been sent to the board.
@@ -123,6 +131,7 @@ public class MachineOnboardParameters extends JPanel {
 		// V is in the 7th bit position, and it's set to NOT hold Z
 		// From the firmware: "Bit 7 is used for HoldZ OFF: 1 = off, 0 = on"
 		if ( !zHoldBox.isSelected() )	axesInverted.add(AxisId.V);
+              
 
 		target.setInvertedAxes(axesInverted);
 		{
@@ -152,7 +161,16 @@ public class MachineOnboardParameters extends JPanel {
 			target.setStoredStepperVoltage(3, ((Number)vref3.getValue()).intValue());
 			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
 		}
-		requestResetFromUser();
+                
+        target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
+        
+        byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
+        target.setAccelerationStatus(status);
+        target.setAccelerationRate(((Number)accelerationRate.getValue()).intValue());
+
+        requestResetFromUser();
 	}
 
 	/// Causes the EEPROM to be reset to a totally blank state, and during dispose
@@ -204,6 +222,7 @@ public class MachineOnboardParameters extends JPanel {
 		aAxisInvertBox.setSelected(invertedAxes.contains(AxisId.A));
 		bAxisInvertBox.setSelected(invertedAxes.contains(AxisId.B));
 		zHoldBox.setSelected(     !invertedAxes.contains(AxisId.V));
+                
 		// 0 == inverted, 1 == not inverted
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
 		endstopInversionSelection.setSelectedIndex(endstops.ordinal());
@@ -225,6 +244,17 @@ public class MachineOnboardParameters extends JPanel {
 			vref3.setValue(this.target.getStoredStepperVoltage(3));
 			vref4.setValue(this.target.getStoredStepperVoltage(4));
 		}
+
+		if(target.hasToolheadsOffset()) {
+			xToolheadOffsetField.setValue(this.target.getToolheadsOffset(0));
+			yToolheadOffsetField.setValue(this.target.getToolheadsOffset(1));
+			zToolheadOffsetField.setValue(this.target.getToolheadsOffset(2));
+		}   
+                
+                if(target.hasAcceleration()){
+                    accelerationBox.setSelected(this.target.getAccelerationStatus());
+                    accelerationRate.setValue(this.target.getAccelerationRate());
+                }
 	}
 
 	protected void dispose() {
@@ -325,7 +355,31 @@ public class MachineOnboardParameters extends JPanel {
 			add(aAxisHomeOffsetField,"wrap");
 			add(new JLabel("B home offset (mm)"));
 			add(bAxisHomeOffsetField,"wrap");
+                        
 		}
+
+		if(target.hasToolheadsOffset()) {
+		    xToolheadOffsetField.setColumns(10);
+		    yToolheadOffsetField.setColumns(10);
+		    zToolheadOffsetField.setColumns(10);
+		    
+		    add(new JLabel("X toolhead offset (mm)"));
+		    add(xToolheadOffsetField, "wrap");
+		    
+		    add(new JLabel("Y toolhead offset (mm)"));
+		    add(yToolheadOffsetField, "wrap");
+		    
+		    add(new JLabel("Z toolhead offset (mm)"));
+		    add(zToolheadOffsetField, "wrap");
+                   
+		}
+                if(target.hasAcceleration()){
+                    accelerationRate.setColumns(6);
+                    add(new JLabel("Acceleration On"));	
+                    add(accelerationBox,"span 2, wrap");
+                    add(new JLabel("Acceleration Rate (mm/s)"));
+                    add(accelerationRate, "wrap");
+                }
 
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {
@@ -335,7 +389,7 @@ public class MachineOnboardParameters extends JPanel {
 //				loadParameters();
 			}
 		});
-		resetToFactoryButton.setToolTipText("Reest the onboard settings to the factory defaults");
+		resetToFactoryButton.setToolTipText("Reset the onboard settings to the factory defaults");
 		add(resetToFactoryButton, "split 1");
 
 		
@@ -346,7 +400,7 @@ public class MachineOnboardParameters extends JPanel {
 //				loadParameters();
 			}
 		});
-		resetToBlankButton.setToolTipText("Reest the onboard settings to the *completely blank*");
+		resetToBlankButton.setToolTipText("Reset the onboard settings to *completely blank*");
 		add(resetToBlankButton);
 
 		commitButton.addActionListener(new ActionListener() {

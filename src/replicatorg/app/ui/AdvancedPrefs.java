@@ -3,6 +3,7 @@ package replicatorg.app.ui;
 import java.awt.Container;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.Dimension;
 import java.io.BufferedOutputStream;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
@@ -35,6 +36,7 @@ public class AdvancedPrefs extends JFrame {
 				}
 			}
 		});
+		this.setMinimumSize(new Dimension(300,300));
 		pack();
 	}
 	

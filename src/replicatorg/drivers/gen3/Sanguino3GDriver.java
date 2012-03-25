@@ -108,6 +108,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 	Version toolVersion = new Version(0, 0);
 
 	private boolean eepromChecked = false;
+        
+        protected boolean acceleratedFirmware = false;
 
 	public Sanguino3GDriver() {
 		super();
@@ -150,14 +152,19 @@ public class Sanguino3GDriver extends SerialDriver implements
 			// okay, take care of version info /etc.
 			if (version.compareTo(getMinimumVersion()) < 0) {
 				Base.logger.log(Level.WARNING,
-					"\n********************************************************\n"
-					+ "This version of ReplicatorG is not reccomended for use with firmware before version "
-					+ getMinimumVersion()
-					+ ". Either update your firmware or proceed with caution.\n"
-					+ "********************************************************");
+                            "\n********************************************************\n"
+                            + "This version of ReplicatorG is not reccomended for use with firmware before version "
+                            + getMinimumVersion()
+                            + ". Either update your firmware or proceed with caution.\n"
+                            + "********************************************************");
 			}
 			sendInit();
 			super.initialize();
+			// dial down timeout for accelerated firmware so that we can refill
+			// firmware command buffer as quickly as possible
+			if(acceleratedFirmware){
+				serial.setTimeout(200);
+			}
 			invalidatePosition();
 
 			return;
@@ -285,6 +292,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 	protected PacketResponse runQuery(byte[] packet) {
 		return runQuery(packet, 1);
 	}
+
 	//// Get a list of all toolheads we save onboard preferences for 
 	public List<Integer> toolheadsWithStoredData()
 	{
@@ -407,8 +415,17 @@ public class Sanguino3GDriver extends SerialDriver implements
 						break;
 					}
 					if (retries > 1) {
-						Base.logger.severe("Read timed out; retries remaining: "
+                                            
+                                            // accelerated Firmware has a low timeout period and times out frequently
+                                            // dial down timeout logging because there will be a LOT of it
+                                            if(acceleratedFirmware){
+						Base.logger.finest("Read timed out; retries remaining: "
 										+ Integer.toString(retries));
+                                            }
+                                            else{
+                                                Base.logger.severe("Read timed out; retries remaining: "
+										+ Integer.toString(retries));
+                                            }
 					}
 					if (retries == -1) {
 						// silently return a timeout response
@@ -514,7 +531,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		pb.add16(Base.VERSION);
 
 		PacketResponse pr = runQuery(pb.getPacket(), 1);
-		if (pr.isEmpty())
+		if (pr.isEmpty() || !pr.isOK())
 			return null;
 		int versionNum = pr.get16();
 
@@ -523,7 +540,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		String buildname = "";
 		pr = runQuery(pb.getPacket(), 1);
-		if (!pr.isEmpty()) {
+		if (!pr.isEmpty() && pr.isOK()) {
 			byte[] payload = pr.getPayload();
 			byte[] subarray = new byte[payload.length - 1];
 			System.arraycopy(payload, 1, subarray, 0, subarray.length);
@@ -2167,6 +2184,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		return val;
 	}
+        
 
 	public void setAxisHomeOffset(int axis, double offset) {
 		if ((axis < 0) || (axis > 4)) {
@@ -2198,6 +2216,48 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_AXIS_HOME_POSITIONS_OFFSET
 				+ axis * 4, intToLE(offsetSteps));
 	}
+    
+	@Override
+	public boolean hasToolheadsOffset() { return false;}
+	
+	@Override
+        public double getToolheadsOffset(int axis) {
+            Base.logger.info("Cannot get tolerance error for S3G driver");
+            return 0.0;
+        }
+
+	@Override
+        public void eepromStoreToolDelta(int axis, double offset){
+            Base.logger.info("Cannot store tolerance error for S3G driver");
+            return;
+        }
+        
+        @Override
+        public int getAccelerationRate(){
+            Base.logger.info("Cannot get acceleration rate for S3G driver");
+            return 0;
+        }
+        
+        @Override
+        public void setAccelerationRate(int rate){
+            Base.logger.info("Cannot set acceleration rate for S3G driver");
+
+        }
+        
+        @Override
+        public boolean getAccelerationStatus(){
+            Base.logger.info("Cannot get acceleration status for S3G driver");
+            return false;
+        }
+        
+        @Override
+        public void setAccelerationStatus(byte status){
+            Base.logger.info("Cannot set acceleration status for S3G driver");
+        }
+        
+        @Override
+	public boolean hasAcceleration() { return false;}
+   
 
 	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
 		byte b = 0;
