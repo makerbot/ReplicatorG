@@ -132,12 +132,12 @@ public class EstimationDriver extends DriverBaseImplementation implements Intera
 			// string formatting
 			if (days > 0 || hours > 0)
 				val += ", ";
-			val += minutes + " min.";
+			val += minutes + " minute";
 			if (minutes > 1)
 				val += "s";
 		}
 
-		// figure out minutes
+		// figure out seconds
 		if (useSeconds) {
 			int seconds = (int) Math.floor(tempTime / 1000.0);
 			if (seconds > 0) {

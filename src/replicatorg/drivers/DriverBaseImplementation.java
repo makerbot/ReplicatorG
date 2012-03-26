@@ -331,7 +331,13 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	 * sets the feedrate in mm/minute
 	 */
 	public void setFeedrate(double feed) {
-		currentFeedrate = feed;
+		// in Marlin code setting the feedrate to zero is ignored:
+		//  if(code_seen('F')) {
+		//	    next_feedrate = code_value();
+		//	    if(next_feedrate > 0.0) feedrate = next_feedrate;
+		//	  }
+		if (0 < feed)
+			currentFeedrate = feed;
 	}
 
 	/**
@@ -372,7 +378,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		// faster than it's maximum feedrate, lower the system feedrate so
 		// that it will be compliant.
 		for (int i=0;i<5;i++) {
-			if (delta.get(i) != 0) {
+			if ((delta.get(i) != 0) && (0 != maxFeedrates.get(i))) {
 				if (feedrate * delta.get(i) / length > maxFeedrates.get(i)) {
 					feedrate = maxFeedrates.get(i) * length / delta.get(i);
 				}
