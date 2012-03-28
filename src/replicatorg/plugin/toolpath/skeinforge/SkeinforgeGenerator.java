@@ -53,8 +53,18 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		postprocess = new SkeinforgePostProcessor(this);
 	}
 
-	public void setProfile(final String profile) {
-		this.profile = profile;
+	public void setProfile(final String name) {
+		final Profile p = findProfile(name);
+		this.profile = p.getFullPath();
+	}
+
+	private Profile findProfile(final String name) {
+		for (final Profile p : getProfiles()) {
+			if (p.toString().equals(name)) {
+				return p;
+			}
+		}
+		return null;
 	}
 
 	public boolean runSanityChecks() {
