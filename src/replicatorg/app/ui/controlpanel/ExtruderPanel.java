@@ -13,6 +13,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.FileWriter;
+import java.util.concurrent.TimeUnit;
+import java.util.Calendar;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -43,6 +46,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.time.Second;
+import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeTableXYDataset;
 
 import replicatorg.app.Base;
@@ -682,12 +686,24 @@ public class ExtruderPanel extends JPanel{
 
 	public void updateStatus() {
 		Second second = new Second(new Date(System.currentTimeMillis() - startMillis));
-
 		ToolModel platform = null;
 		
 		// Some changes to the way (& frequency) temperatures are read make it easier
 		// to just read this cached value which will be updated regularly
 		if (tool0 != null) {
+			/*try{
+			FileWriter out = new FileWriter("temperatureData.txt", true);
+			Calendar now = Calendar.getInstance();
+			int hour = now.get(Calendar.HOUR_OF_DAY);
+			int minute = now.get(Calendar.MINUTE);
+			int seconds = now.get(Calendar.SECOND);
+			out.write(Double.toString(hour)+":"+Double.toString(minute)+":"+Double.toString(seconds) + ", ");
+			out.write(Double.toString(tool0.getCurrentTemperature())+'\n');
+			out.close();
+			}catch(Exception e)
+			{
+			System.out.println("O GNOES");
+			}*/
 			t0CurrentTemperatureField.setValue(tool0.getCurrentTemperature());
 			t0MeasuredDataset.add(second, tool0.getCurrentTemperature(),"a");
 			t0TargetDataset.add(second, t0TargetTemperature,"a");

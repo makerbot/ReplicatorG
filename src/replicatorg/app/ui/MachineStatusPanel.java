@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.util.Vector;
+import java.util.Calendar;
+import java.io.FileWriter;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -203,18 +205,35 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		final MachineToolStatusEvent e = event;
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				Vector<ToolModel> tools = e.getSource().getModel().getTools();
-				String tempString = "";
-				
+			Vector<ToolModel> tools = e.getSource().getModel().getTools();
+			String tempString = "";
+			String temps = "";
+			for(ToolModel t : tools)
+			{
+				temps += t.getName() + ": " + Double.toString(t.getCurrentTemperature()) + ", ";
+			}
+				try{
+			FileWriter out = new FileWriter("temperatureData.txt", true);
+			Calendar now = Calendar.getInstance();
+			int hour = now.get(Calendar.HOUR_OF_DAY);
+			int minute = now.get(Calendar.MINUTE);
+			int seconds = now.get(Calendar.SECOND);
+			out.write(Double.toString(hour)+":"+Double.toString(minute)+":"+Double.toString(seconds) + ", ");
+			out.write(temps+'\n');
+			out.close();
+			}catch(Exception e)
+			{
+			System.out.println("O GNOES");
+			}
 				/// TRICKY: we assume that the MachineThread is calling these functions 
 				/// for us, at least once every few seconds, to keep the local temperaure cache up to date.
 				/// re-enable this if you want to test that, or if MachineThread stops checking temp
 				//e.getSource().getDriver().readAllPlatformTemperatures();
 				//e.getSource().getDriver().readAllTemperatures(); 
-				
 				for(ToolModel t : tools)
 				{
 					double temp= t.getCurrentTemperature();
+					//stream.write(temp);
 					tempString += String.format(" "+t.getName()+": %1$3.1f\u00B0C  ", temp);
 					if(t.hasHeatedPlatform())
 					{
@@ -222,7 +241,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 						tempString += String.format("Platform: %1$3.1f\u00B0C", ptemp);
 					}
 				}
-				
+				//stream.close();
 				tempLabel.setText(tempString);
 			}
 		});
