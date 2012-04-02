@@ -14,7 +14,7 @@ comb	False
 cool	False
 dimension	False
 drill	False
-export	False
+export	True
 feed	False
 fill	False
 fillet	False
@@ -31,7 +31,7 @@ multiply	False
 oozebane	False
 outset	False
 preface	False
-raft	True
+raft	False
 scale	False
 skin	False
 skirt	False
