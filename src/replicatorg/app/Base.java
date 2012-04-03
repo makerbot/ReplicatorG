@@ -304,7 +304,8 @@ public class Base {
 				if(new File(baseDir + "/ReplicatorG.app/Contents/Resources").exists())
 					return new File(baseDir + "/ReplicatorG.app/Contents/Resources");
 				else
-					return new File(baseDir);
+					Base.logger.severe(baseDir + "/ReplicatorG.app not found, using " + baseDir + "/replicatorg/");
+					return new File(baseDir + "/replicatorg");
 				}
 			catch (java.io.IOException e) {
 				// This space intentionally left blank. Fall through.
