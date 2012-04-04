@@ -578,6 +578,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		for (String arg : baseArguments) {
 			arguments.add(arg);
 		}
+		/*
 		for (SkeinforgePreference preference : getPreferences()) {
 			List<SkeinforgeOption> options = preference.getOptions();
 			if (options != null) {
@@ -587,7 +588,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 					if (arg.length() > 0) arguments.add(arg);
 				}
 			}
-		}
+		}*/
 		arguments.add(path);
 for(String a : arguments) System.out.println(a);
 		ProcessBuilder pb = new ProcessBuilder(arguments);
@@ -631,8 +632,13 @@ for(String a : arguments) System.out.println(a);
 		}
 		int lastIdx = path.lastIndexOf('.');
 		String root = (lastIdx >= 0) ? path.substring(0, lastIdx) : path;
-		output = new BuildCode(root, new File(root + ".gcode"));
-
+		output = new BuildCode(root, new File(root + "_export.gcode"));
+		if (output == null)
+		{
+			Base.logger.log(Level.WARNING, "using " + root + ".gcode");
+			output = new BuildCode(root, new File(root + ".gcode"));
+		}
+		
 		if(postprocess != null)
 		{
 			Base.logger.log(Level.FINER, "pre-post-processor");

@@ -205,6 +205,10 @@
                     extensions="gcode" 
                     iconFile="${dist.dir}/replicatorg.icns"
                     role="Editor"/>
+			<documenttype name="CNC GCode document" 
+                    extensions="g" 
+                    iconFile="${dist.dir}/replicatorg.icns"
+                    role="Editor"/>
 			<documenttype name="STL 3D model" 
                     extensions="stl" 
                     iconFile="${dist.dir}/replicatorg.icns"
@@ -223,6 +227,9 @@
 		<copy todir="${reso.dir}">
 			<filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt"/>
 		</copy>
+		<copy todir="${reso.dir}/slic3r">
+			<fileset dir="slic3r_engines/macosx"/>
+		</copy>				
 		<copy todir="${reso.dir}/skein_engines">
 			<fileset dir="skein_engines" excludes="*.pyc"/>
 		</copy>
@@ -242,6 +249,7 @@
 		<delete dir="${target.dir}/docs"/>
 		<delete dir="${target.dir}/examples"/>
 		<delete dir="${target.dir}/machines"/>
+		<delete dir="${target.dir}/slic3r"/>		
 		<delete dir="${target.dir}/scripts"/>
 		<delete dir="${target.dir}/skein_engines"/>
 		<delete file="${target.dir}/todo.txt"/>
@@ -340,6 +348,9 @@
 		<copy todir="${target.dir}">
 			<filelist dir="${dist.dir}" files="replicatorg"/>
 		</copy>
+		<copy todir="${target.dir}/slic3r">
+			<fileset dir="slic3r_engines/linux"/>
+		</copy>		
 		<copy todir="${target.dir}/tools">
 			<filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
 		</copy>
@@ -368,6 +379,9 @@
 		<!-- standard files -->
 		<antcall target="dist-common"/>
 		<!-- platform-specific files -->
+		<copy todir="${target.dir}/slic3r">
+			<fileset dir="slic3r_engines/windows"/>
+		</copy>		
 		<copy todir="${target.dir}">
 			<fileset dir="${dist.dir}" includes="*.dll"/>
 			<filelist dir="${dist.dir}" files="ReplicatorG.exe"/>
