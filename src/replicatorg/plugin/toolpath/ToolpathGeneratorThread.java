@@ -69,7 +69,7 @@ public class ToolpathGeneratorThread extends Thread {
 				}
 			}
 			
-			progressDialog = new ProgressDialog(parent,build,this);
+			progressDialog = new ProgressDialog(parent,build,this,generator.displayName);
 			generator.addListener(progressDialog);
 			// This actually works because it's a modal dialog;
 			// a new nested event loop is generated in the event loop

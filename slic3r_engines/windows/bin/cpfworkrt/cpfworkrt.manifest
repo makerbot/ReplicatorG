@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+    <noInheritable></noInheritable>
+    <assemblyIdentity type="win32" name="cpfworkrt" version="1.0.0.0" processorArchitecture="x86" ></assemblyIdentity>
+    <file name="libstdc++-6.dll"></file>
+    <file name="libgcc_s_sjlj-1.dll"></file>
+    <file name="perl514.dll"></file>
+</assembly>
