@@ -44,6 +44,12 @@ public class ToolpathGeneratorCommandFactory extends AbstractCommandFactory
     {
         final Options options = new Options();
         options.addOption(OptionBuilder
+            .withLongOpt("machine-name")
+            .hasArg()
+            .withArgName("MACHINE-NAME")
+            .withDescription("set the machine name")
+            .create());
+        options.addOption(OptionBuilder
             .withLongOpt("bus-name")
             .hasArg()
             .withArgName("BUS-NAME")
