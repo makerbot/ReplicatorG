@@ -4,6 +4,8 @@ import javax.vecmath.Point3d;
 
 import replicatorg.util.Point5d;
 
+import replicatorg.machine.model.MachineModel;
+
 /**
  * Interface for querying a Driver about its current state. This is used by
  * the parser when devolving GCodes into DriverCommands.
@@ -49,4 +51,6 @@ public interface DriverQueryInterface {
 	/** relies on timing to have the 'right selected toolhead', deprecated */
 	@Deprecated
 	public double getPlatformTemperature();
+	
+	public MachineModel getMachine();
 }
