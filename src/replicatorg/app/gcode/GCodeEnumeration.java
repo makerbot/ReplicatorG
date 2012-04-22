@@ -107,7 +107,9 @@ public enum GCodeEnumeration {
 	G97("G", 97, "Spindle speed rate"),
 	G130("G", 130, "Set given axes potentiometer Value"),
 	G161("G", 161, "Home given axes to minimum"),
-	G162("G", 162, "Home given axes to maximum");
+	G162("G", 162, "Home given axes to maximum"),
+	T0("T", 0, "Set Current Tool 0"),
+	T1("T", 1, "Set Current Tool 1");
 	
 	final String GCodeVersion = "2011.01.04"; //just for our own reference, what version of gcode (date of Replicat.org gcode commands)this can use
 
