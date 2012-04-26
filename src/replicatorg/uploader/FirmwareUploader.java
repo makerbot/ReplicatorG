@@ -92,7 +92,12 @@ public class FirmwareUploader {
 		try {
 			String url = Base.preferences.get("replicatorg.updates.url",
 					DEFAULT_UPDATES_URL);
-			return new URL(url);
+			URL parsedUrl = new URL(url);
+			if (parsedUrl.getProtocol().equals("https")) {
+				parsedUrl = new URL("http", parsedUrl.getHost(), parsedUrl.getPort(), parsedUrl.getFile());
+				Base.logger.fine("Forcing non-SSL firmware url: " + parsedUrl.toExternalForm());
+			}
+			return parsedUrl;
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return null;
