@@ -1,6 +1,6 @@
 (******* End.gcode*******)
 M73 P100 ( End  build progress )
-G0 Z155 ( Send Z axis to bottom of machine )
+G0 Z150 ( Send Z axis to bottom of machine )
 M18 ( Disable steppers )
 M109 S0 T0 ( Cool down the build platform )
 M104 S0 T0 ( Cool down the Right Extruder )
