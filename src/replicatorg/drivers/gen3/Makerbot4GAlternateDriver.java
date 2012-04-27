@@ -32,9 +32,6 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		super.reset();
 	}
 	
-	/** The excess, in steps, from previous operations. */ 
-	protected Point5d stepExcess = new Point5d();
-	
 	/**
 	 * Overloaded to manage a hijacked axis and run this axis in relative mode instead of the extruder DC motor
 	 */
@@ -69,10 +66,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			
 			// okay, send it off!
 			// TODO: bug: We move all axes (even ones that shouldn't be moved) How to avoid?
-			Point5d excess = new Point5d(stepExcess);
-			queueAbsolutePoint(machine.mmToSteps(filteredPoint, excess), longestDDA);
-			// Only update excess if no retry was thrown.
-			stepExcess = excess;
+			queueAbsolutePoint(machine.mmToSteps(filteredPoint), longestDDA);
 			// Finally, recored the position, and mark it as valid.
 			setInternalPosition(filteredPoint);
 		} else {
@@ -100,18 +94,14 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 				delta.add(axesmovement);
 				filteredpoint.add(axesmovement);
 				
-				Point5d excess = new Point5d(stepExcess);
 				// Calculate time for move in usec
-				Point5d steps = machine.mmToSteps(filteredpoint,excess);		
+				Point5d steps = machine.mmToSteps(filteredpoint);		
 	
 				// okay, send it off!
 				// The 4. and 5. dimensions doesn't have a spatial interpretation. Calculate time in 3D space
 				double minutes = delta.get3D().distance(new Point3d())/ getSafeFeedrate(delta);
 				
 				queueNewPoint(steps, (long) (60 * 1000 * 1000 * minutes), relative);
-
-				// Only update excess if no retry was thrown.
-				stepExcess = excess;
 
 				setInternalPosition(filteredpoint);
 			}

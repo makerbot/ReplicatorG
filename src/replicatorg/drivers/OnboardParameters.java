@@ -6,6 +6,7 @@ import java.util.List;
 
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
+import replicatorg.util.Point5d;
 
 
 public interface OnboardParameters {
@@ -179,6 +180,20 @@ public interface OnboardParameters {
 	void setStoredStepperVoltage(int stepperId, int referenceValue);
 	/** get the Stepper Voltage Reference */
 	int getStoredStepperVoltage(int stepperId);
+
+
+	boolean hasAccelerationSupport();
+	Point5d getAxisAccelerationRates();
+	void setAxisAccelerationRates(Point5d acceleration);
+	int getMasterAccelerationRate();
+	void setMasterAccelerationRate(int acceleration);
+	boolean checkEepromStepsPerMM();
+	void setEepromStepsPerMM();
+	Point5d getAxisJunctionJerks();
+	void setAxisJunctionJerks(Point5d jerks);
+	double getMinimumPlannerSpeed();
+	void setMinimumPlannerSpeed(double minPlannerSpeed);
+
 	
 	public class CommunicationStatistics {
 		public int packetCount;

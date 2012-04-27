@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 
+import javax.swing.JOptionPane;
+
 import org.w3c.dom.Node;
 
 import replicatorg.app.Base;
@@ -63,12 +65,17 @@ class Sanguino3GEEPRPOM implements EEPROMClass {
 	// / 00-01 - EEPROM data version
 	// / 02 - Axis inversion byte
 	// / 32-47 - Machine name (max. 16 chars)
-	final public static int EEPROM_CHECK_OFFSET = 0;
-	final public static int EEPROM_AXIS_INVERSION_OFFSET = 2;
-	final public static int EEPROM_ENDSTOP_INVERSION_OFFSET = 3;
-	final public static int EEPROM_MACHINE_NAME_OFFSET = 32;
-	final public static int EEPROM_AXIS_HOME_POSITIONS_OFFSET = 96;
-	final public static int EEPROM_ESTOP_CONFIGURATION_OFFSET = 116;
+	final public static int EEPROM_CHECK_OFFSET                 = 0;
+	final public static int EEPROM_AXIS_INVERSION_OFFSET        = 0x0002;
+	final public static int EEPROM_ENDSTOP_INVERSION_OFFSET     = 0x0003;
+	final public static int EEPROM_MACHINE_NAME_OFFSET          = 0x0020;
+	final public static int EEPROM_AXIS_HOME_POSITIONS_OFFSET   = 0x0060;
+	final public static int EEPROM_ESTOP_CONFIGURATION_OFFSET   = 0x0074;
+	final public static int EEPROM_STEPS_PER_MM_OFFSET          = 0x0078;
+	final public static int EEPROM_ACCELERATION_RATE_OFFSET     = 0x008C;
+	final public static int EEPROM_AXIS_ACC_RATE_OFFSET         = 0x0090;
+	final public static int EEPROM_AXIS_JUNCTION_JERK_OFFSET    = 0x00A4;
+	final public static int EEPROM_MINIMUM_PLANNER_SPEED_OFFSET = 0x00B4;
 
 	final static class ECThermistorOffsets {
 		final public static int[] TABLE_OFFSETS = { 0x00f0, 0x0170 };
@@ -183,8 +190,18 @@ public class Sanguino3GDriver extends SerialDriver implements
 				initSlave(t.getIndex());
 			}
 		}
-	return true;
-
+		
+		boolean stepsPerMMMatched = checkEepromStepsPerMM();
+		if (!stepsPerMMMatched) {
+			int n = JOptionPane.showConfirmDialog(null, "The motherboard's stored steps/mm settings\ndon't match the selected machine profile.\nWould you like to update the motherboard\nsettings to match the profile and close the connection?\n", "Steps/mm mismatch", JOptionPane.YES_NO_OPTION);
+			if (n == JOptionPane.YES_OPTION) {
+				setEepromStepsPerMM();
+				reset(/*reconnect*/ false);
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	private boolean attemptConnection() {
@@ -1895,8 +1912,11 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return machine.stepsToMM(steps);
 	}
 
-	
 	public void reset() {
+		reset(true);
+	}
+
+	public void reset(boolean reconnect) {
 		Base.logger.info("Reset Board");
 		if (isInitialized() && version.compareTo(new Version(1, 4)) >= 0) {
 			// WDT reset introduced in version 1.4 firmware
@@ -1907,8 +1927,10 @@ public class Sanguino3GDriver extends SerialDriver implements
 			// invalidate position, force reconciliation.
 			invalidatePosition();
 		}
-		setInitialized(false);
-		initialize();
+		if (reconnect) {
+			setInitialized(false);
+			initialize();
+		}
 	}
 
 	/**
@@ -2038,6 +2060,27 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	/**
+	 * Sends a request to the MoBo to read an eeprom address,
+	 * returning the default if the result is all 0xff.
+	 * @param offset Offset from the bottom of EEPROM memory
+	 * @param len	number of bytes to read from EEPROM
+	 * @param default	the default array to return, may be null
+	 * @return a byte array of size length on success, a null object on failure
+	 */
+	protected byte[] readFromEEPROMwithDefault(int offset, int len, byte[] defaultValue) {
+		byte[] empty = new byte[len];
+		Arrays.fill(empty, (byte)0xff);
+		
+		byte[] r = readFromEEPROM(offset, len);
+		
+		// establish defaults, obviously not for all bots, but lower is better than too high
+		if (Arrays.equals(r, empty)) {
+			return defaultValue;
+		}
+		return r;
+	}
+	
+	/**
 	 * Sends a request to the MoBo to read an eeprom address
 	 * @param offset Offset from the bottom of EEPROM memory
 	 * @param len	number of bytes to read from EEPROM
@@ -2045,28 +2088,42 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 */
 	protected byte[] readFromEEPROM(int offset, int len) {
 		final int MAX_EEPROM_READ_SZ = 16;
+/*
 		if(len > MAX_EEPROM_READ_SZ)
 			Base.logger.severe("readFromEEPROM too big for: " + offset + " size: " + len);
 
 		assert len <= 16;
-
-		PacketBuilder pb = new PacketBuilder(
-				MotherboardCommandCode.READ_EEPROM.getCode());
-		pb.add16(offset);
-		pb.add8(len);
-
+*/
 		
-		PacketResponse pr = runQuery(pb.getPacket());
-		if (pr.isOK()) {
-			Base.logger.finest("readFromEEPROM ok for: " + offset + " size: " + len);
-			int rvlen = Math.min(pr.getPayload().length - 1, len);
-			byte[] rv = new byte[rvlen];
-			// Copy removes the first response byte from the packet payload.
-			System.arraycopy(pr.getPayload(), 1, rv, 0, rvlen);
+		int amt_read = 0;
+		byte[] buffer = new byte[len];
+		while (amt_read < len) {
+			int read_size = Math.min(MAX_EEPROM_READ_SZ, (len-amt_read));
+			PacketBuilder pb = new PacketBuilder(
+					MotherboardCommandCode.READ_EEPROM.getCode());
+			pb.add16((int)(offset+amt_read));
+			pb.add8(read_size);
+			PacketResponse pr = runQuery(pb.getPacket());
+			if (pr.isOK()) {
+				Base.logger.finest("readFromEEPROM ok for: " + ((int)offset+amt_read) + " size: " + read_size);
+				int rvlen = Math.min(pr.getPayload().length - 1, read_size);
+				// Copy removes the first response byte from the packet payload.
+				System.arraycopy(pr.getPayload(), 1, buffer, amt_read, rvlen);
+				
+				if (rvlen < read_size) // we returned less then requested for some reason ... bail!
+					break;
+				amt_read += rvlen;
+			} else {
+				Base.logger.severe("readFromEEPROM fail for: " + offset + " size: " + len);
+				Base.logger.severe("readFromEEPROM PR is: " + pr.toString());
+			}
+		}
+		
+		if (amt_read > 0) {
+			byte[] rv = new byte[amt_read];
+			System.arraycopy(buffer, 0, rv, 0, amt_read);
 			return rv;
 		}
-		Base.logger.severe("readFromEEPROM fail for: " + offset + " size: " + len);
-		Base.logger.severe("readFromEEPROM PR is: " + pr.toString());
 		return null;
 	}
 
@@ -2315,6 +2372,181 @@ public class Sanguino3GDriver extends SerialDriver implements
 		invalidatePosition();
 	}
 
+	/**
+	 * Returns true of the current firmware supports acceleration.
+	 * FIXME FIXME FIXME FIXME FIXME FIXME FIXME FIXME
+	 */
+	public boolean hasAccelerationSupport() {
+		return true;
+	}
+
+	/**
+	 * Reads a Point5d that is the individual acceleration rates of each axis,
+	 * in steps/mm.
+	 */
+	public Point5d getAxisAccelerationRates() {
+		checkEEPROM();
+		byte[] defaultValue = {
+			(byte)0xD0, (byte)0x07, (byte)0x00, (byte)0x00, /* X 2000 */
+			(byte)0xD0, (byte)0x07, (byte)0x00, (byte)0x00, /* Y 2000 */
+			(byte)0x0A, (byte)0x00, (byte)0x00, (byte)0x00, /* Z 10   */
+			(byte)0x88, (byte)0x13, (byte)0x00, (byte)0x00, /* A 5000 */
+			(byte)0x88, (byte)0x13, (byte)0x00, (byte)0x00, /* B 5000 */
+		};
+		byte[] r = readFromEEPROMwithDefault(
+				Sanguino3GEEPRPOM.EEPROM_AXIS_ACC_RATE_OFFSET, 20, defaultValue
+			);
+				
+		// Point5d stepsPerMM = getMachine().getStepsPerMM();
+		Point5d acceleration = new Point5d();
+		for (int axis = 0; axis < 5; axis++) {
+			int val = 0;
+			for (int i = 0; i < 4; i++) {
+				val = val | (((int) r[i+(axis*4)] & 0xff) << 8 * i);
+			}
+			acceleration.set(axis, (double)val);
+		}
+		return acceleration;
+	}
+
+	/**
+	 * Writes a Point5d that is the individual acceleration rates of each axis,
+	 * in steps/mm, to the motherboard EEPROM.
+	 */
+	public void setAxisAccelerationRates(Point5d acceleration) {
+		// Point5d stepsPerMM = getMachine().getStepsPerMM();
+		for (int axis = 0; axis < 5; axis++) {
+			int val = (int)Math.ceil(acceleration.get(axis));
+			writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_AXIS_ACC_RATE_OFFSET + (axis * 4), intToLE(val));
+		}
+	}
+
+	/**
+	 * Reads an int that contains the master acceleration rate (for integrated calculations).
+	 */
+	public int getMasterAccelerationRate() {
+		checkEEPROM();
+		byte[] defaultValue = {(byte)0xd0, (byte)0x07, (byte)0x00, (byte)0x00, /* 2000 */};
+		byte[] r = readFromEEPROMwithDefault(
+				Sanguino3GEEPRPOM.EEPROM_ACCELERATION_RATE_OFFSET, 4, defaultValue);
+
+		int val = 0;
+		for (int i = 0; i < 4; i++) {
+			val = val | (((int) r[i] & 0xff) << 8 * i);
+		}
+		
+		return val;
+	}
+
+	/**
+	 * Writes an int that contains the master acceleration rate (for integrated calculations)
+	 * to the motherboard EEPROM.
+	 */
+	public void setMasterAccelerationRate(int acceleration) {
+		checkEEPROM();
+		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_ACCELERATION_RATE_OFFSET, intToLE(acceleration));
+	}
+
+	/**
+	 * Checks that the StepsPerMM EEPROM settings on the motherboard matches those in the machine profile.
+	 * StepsPerMM are stored in fixed-point Q16 (top 16 bits are integert, bottom 16 are fractional).
+	 */
+	public boolean checkEepromStepsPerMM() {
+		checkEEPROM();
+		byte[] r = readFromEEPROM(
+				Sanguino3GEEPRPOM.EEPROM_STEPS_PER_MM_OFFSET, 20);
+
+		Point5d stepsPerMM = getMachine().getStepsPerMM();
+		for (int axis = 0; axis < 5; axis++) {
+			byte[] check = floatTo32LE((float)stepsPerMM.get(axis));
+			for (int i = 0; i < 4; i++) {
+				if (r[i+(axis * 4)] != check[i])
+					return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Writes the StepsPerMM from the machine profile to the EEPROM settings on the motherboard.
+	 * StepsPerMM are stored in fixed-point Q16 (top 16 bits are integert, bottom 16 are fractional).
+	 */
+	public void setEepromStepsPerMM() {
+		Point5d stepsPerMM = getMachine().getStepsPerMM();
+		for (int axis = 0; axis < 5; axis++) {
+			float val = (float)stepsPerMM.get(axis);
+			writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_STEPS_PER_MM_OFFSET + (axis * 4), floatTo32LE(val));
+		}
+	}
+
+	/**
+	 * Reads the junction jerk values from the EEPROM settings on the motherboard and returns a Point5d.
+	 * NOTE: X and Y have an integrated junction jerk, so the Y value will always be 0.
+	 * Jerks are stored in fixed-point Q16 (top 16 bits are integert, bottom 16 are fractional).
+	 */
+	public Point5d getAxisJunctionJerks() {
+		checkEEPROM();
+		byte[] defaultValue = {
+			0x00, 0x00, 0x08, 0x00, /* X/Y = 8 */
+			0x00, 0x00, 0x08, 0x00, /* Z = 8 */
+			0x00, 0x00, 0x0A, 0x00, /* A = 10 */
+			0x00, 0x00, 0x0A, 0x00, /* A = 10 */
+		};
+		byte[] r = readFromEEPROMwithDefault(
+				Sanguino3GEEPRPOM.EEPROM_AXIS_JUNCTION_JERK_OFFSET, 16, defaultValue
+			);
+
+		// Point5d stepsPerMM = getMachine().getStepsPerMM();
+		Point5d jerks = new Point5d();
+		int offset = 0;
+		for (int axis = 0; axis < 5; axis++) {
+			if (axis == 1)
+				continue;
+			double val = byte32LEToFloat(r, offset);
+			jerks.set(axis, val);
+			offset += 4;
+		}
+		return jerks;
+	}
+
+	/**
+	 * Writes the junction jerk values to the EEPROM settings on the motherboard from a Point5d.
+	 * NOTE: X and Y have an integrated junction jerk, so the Y value will be ignored.
+	 * Jerks are stored in fixed-point Q16 (top 16 bits are integert, bottom 16 are fractional).
+	 */
+	public void setAxisJunctionJerks(Point5d jerks) {
+		// Point5d stepsPerMM = getMachine().getStepsPerMM();
+		int offset = 0;
+		for (int axis = 0; axis < 5; axis++) {
+			if (axis == 1)
+				continue;
+			double val = jerks.get(axis);
+			writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_AXIS_JUNCTION_JERK_OFFSET + (offset * 4), floatTo32LE((float)val));
+			offset++;
+		}
+	}
+
+	/**
+	 * Reads an double that contains the minimum planner speed.
+	 */
+	public double getMinimumPlannerSpeed() {
+		checkEEPROM();
+		byte[] defaultValue = floatTo32LE(4.0f);
+		byte[] r = readFromEEPROMwithDefault(
+				Sanguino3GEEPRPOM.EEPROM_MINIMUM_PLANNER_SPEED_OFFSET, 4, defaultValue);
+
+		double val = byte32LEToFloat(r);
+		return val;
+	}
+
+	/**
+	 * Writes an double that contains the minimum planner speed to the motherboard EEPROM.
+	 */
+	public void setMinimumPlannerSpeed(double minPlannerSpeed) {
+		checkEEPROM();
+		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_MINIMUM_PLANNER_SPEED_OFFSET, floatTo32LE((float)minPlannerSpeed));
+	}
+
 	public boolean hasFeatureOnboardParameters() {
 		if (!isInitialized())
 			return false;
@@ -2425,6 +2657,21 @@ public class Sanguino3GDriver extends SerialDriver implements
 		buf[1] = (byte) fracPart;
 		return buf;
 	}
+	
+	// This converts a float to a 32-bit (4-byte), litte-endien array.
+	// 16-bits are used for the integer part, and 16-bits are for the fractional part.
+	protected byte[] floatTo32LE(float f) {
+		double d = f;
+		int q16 = (int)Math.floor(d * 65536.0);
+		return intToLE(q16, 4);
+	}
+
+	protected float byte32LEToFloat(byte[] r, int offset) {
+		return (float)(byteToInt(r[offset]) | byteToInt(r[offset+1])<<8 | byteToInt(r[offset+2])<<16 | byteToInt(r[offset+3])<<24)/65536.0f;
+	}
+	protected float byte32LEToFloat(byte[] r) {
+		return byte32LEToFloat(r, 0);
+	}
 
 	protected byte[] intToLE(int s) {
 		return intToLE(s, 4);
@@ -2507,6 +2754,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 					MotherboardCommandCode.NEXT_FILENAME.getCode());
 			pb.add8(reset ? 1 : 0);
 			reset = false;
+			printDebugData("SD NEXT_FILENAME", pb.getPacket());
+			
 			PacketResponse pr = runQuery(pb.getPacket());
 			ResponseCode rc = convertSDCode(pr.get8());
 			if (rc != ResponseCode.SUCCESS) {
