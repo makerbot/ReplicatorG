@@ -202,6 +202,11 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	 * Firmware information functions
 	 **************************************************************************/
 
+	public void setFirmwareName(String firmware)
+	{
+		firmwareName = firmware;
+	}
+	
 	public String getFirmwareInfo() {
 		return firmwareName + " v" + getVersion();
 	}

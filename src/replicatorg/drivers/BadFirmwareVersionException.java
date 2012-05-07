@@ -3,6 +3,8 @@
  */
 package replicatorg.drivers;
 
+import replicatorg.app.Base;
+
 /**
  * Indicate that initialization failed because the machine is using obsolete firmware.
  * This should be used to indicate that the firmware version is absolutely unusable
@@ -18,6 +20,7 @@ public class BadFirmwareVersionException extends VersionException {
 	public BadFirmwareVersionException(Version has, Version needs) {
 		super(has);
 		this.needs = needs;
+		Base.logger.warning(getMessage());
 	}
 	
 	public Version getNeeds() { return needs; }
