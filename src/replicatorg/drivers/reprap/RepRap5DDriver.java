@@ -720,7 +720,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					machine.currentTool().setCurrentTemperature(
 							Double.parseDouble(temp));
 			    }
-				r = Pattern.compile("^ok.*b:([0-9\\.]+)$");
+				r = Pattern.compile("^ok.*b:([0-9\\.]+)");
 			    m = r.matcher(line);
 			    if (m.find( )) {
 			    	String bedTemp = m.group(1);
