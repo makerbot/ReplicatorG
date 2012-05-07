@@ -138,7 +138,7 @@ public class Slic3rPostProcessor {
 	private boolean appendEnd = false;
 	private boolean prependMetaInfo = false;
 	private boolean multiHead = false;
-	private boolean addProgressUpdates = false;
+	private boolean addProgressUpdates = true;
 	private PostProcessorPreference ppp;
 	
 	public Slic3rPostProcessor(Slic3rGenerator generator)
@@ -176,7 +176,7 @@ public class Slic3rPostProcessor {
 		// these display the build % on The Replicator
 		if(addProgressUpdates)
 		{
-			source.addProgressUpdates();
+			source.addSlic3rProgressUpdates();
 		}
 		
 		if(prependMetaInfo)
