@@ -14,6 +14,7 @@ import replicatorg.plugin.toolpath.skeinforge.PrintOMatic;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic5D;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
 import replicatorg.plugin.toolpath.slic3r.Slic3rGenerator;
+import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator;
 
 public class ToolpathGeneratorFactory {
 	public static class ToolpathGeneratorDescriptor {
@@ -51,7 +52,6 @@ public class ToolpathGeneratorFactory {
 	static private Vector<ToolpathGeneratorDescriptor> buildGeneratorList() {
 		Vector<ToolpathGeneratorDescriptor> list = new Vector<ToolpathGeneratorDescriptor>();
 		
-
 		class Slic3r071 extends Slic3rGenerator {
 			{
 				displayName = "Slic3r 0.7.1";
@@ -346,6 +346,36 @@ public class ToolpathGeneratorFactory {
 			}
 		};
 		
+		class MiracleGrueBeta extends MiracleGrueGenerator {
+			{
+				displayName = "MiraleGrue Beta 0.?";
+			}
+			
+			public File getDefaultMiracleGrueDir() {
+				String MiracleGrueDir = "MiracleGrue";
+				if (Base.isMacOS())
+				{
+					MiracleGrueDir = MiracleGrueDir + "/Slic3r.app/Contents/MacOS";
+				}
+				if (Base.isLinux())
+				{
+					MiracleGrueDir = MiracleGrueDir + "/bin";
+				}
+				return Base.getApplicationFile(MiracleGrueDir);
+			}
+			public File getUserProfilesDir() {
+		    	return Base.getUserFile("miracle_grue_profiles");
+			}
+			public List<MiracleGruePreference> initPreferences() {				
+				List <MiracleGruePreference> prefs = new LinkedList<MiracleGruePreference>();
+				return prefs;
+			}
+		};
+		
+		
+		if((new MiracleGrueBeta()).getDefaultMiracleGrueDir().exists())
+			list.add(new ToolpathGeneratorDescriptor(MiracleGrueBeta.displayName, 
+				"This is the latest version of MiracleGrue.", MiracleGrueBeta.class));
 		if((new Slic3r071()).getDefaultSlic3rDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Slic3r071.displayName, 
 				"This is the latest version of Slic3r.", Slic3r071.class));

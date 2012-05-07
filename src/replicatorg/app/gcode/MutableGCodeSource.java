@@ -238,7 +238,6 @@ public class MutableGCodeSource implements GCodeSource {
 				if(percentDone == 0) percentDone = 1; 
 				if(percentDone == 100)	percentDone = 99; 
 				//^^See Footnote 1
-	            Base.logger.log(Level.SEVERE, "Could not write MutableGCodeSource to file.", e);
 				newSource.add("M73 P"+percentDone+" (display progress)");
 			}
 			newSource.add(line);
