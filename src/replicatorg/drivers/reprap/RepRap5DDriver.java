@@ -47,10 +47,13 @@ import org.w3c.dom.Node;
 import replicatorg.app.Base;
 import replicatorg.app.tools.XML;
 import replicatorg.app.util.serial.ByteFifo;
+import replicatorg.app.util.serial.Serial;
 import replicatorg.app.util.serial.SerialFifoEventListener;
+import replicatorg.drivers.BadFirmwareVersionException;
 import replicatorg.drivers.RealtimeControl;
 import replicatorg.drivers.RetryException;
 import replicatorg.drivers.SerialDriver;
+import replicatorg.drivers.Version;
 import replicatorg.drivers.reprap.ExtrusionUpdater.Direction;
 import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.ToolModel;
@@ -163,12 +166,17 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	protected DecimalFormat df;
 
 	private AtomicInteger lineNumber = new AtomicInteger(-1);
-
+	
+	public String getMachineName(){
+		return "Ultimaker";
+	}
+	
 	public RepRap5DDriver() {
 		super();
 		// Support for emergency stop is not assumed until it is detected. Detection of this feature should be in initialization.
 		hasEmergencyStop = false;
-		
+		minimumVersion = new Version(0,1);
+		preferredVersion = new Version(0,9);
 		// Support for soft stop is not assumed until it is detected. Detection of this feature should be in initialization.
 		hasSoftStop = false;
 		
@@ -338,6 +346,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			sendInitializationGcode(true);
 			Base.logger.info("Ready.");
 			this.setInitialized(true);
+			sendCommand("M115",true);
 		}
 	}
 	
@@ -640,7 +649,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 	    
 	    return fixed; // no change!
 	}
-
+	
 	/**
 	 * takes a line of gcode and returns that gcode with a line number and checksum
 	 */
@@ -709,7 +718,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				Base.logger.fine("empty line received");
 			else if (line.startsWith("echo:")) {
 					//if echo is turned on relay it to the user for debugging
-					Base.logger.info(line);
+					Base.logger.info(line.substring(5));
 			}
 			else if (line.startsWith("ok t:")||line.startsWith("t:")) {
 				Pattern r = Pattern.compile("t:([0-9\\.]+)");
@@ -753,7 +762,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 				}
 
 				bufferLock.lock();
-				//Notify the thread waitining in this gcode's sendCommand method that the gcode has been received.
+				//Notify the thread waiting in this gcode's sendCommand method that the gcode has been received.
 				if (buffer.isEmpty()) {
 					Base.logger.severe("Received OK with nothing queued!");
 				} else {
@@ -770,12 +779,122 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					bufferLock.notifyAll();
 				}
 			}
-
-			// old arduino firmware sends "start"
+			else if(line.contains("sd"))
+			{
+				if (line.contains("fail"))
+				{
+					Base.logger.warning("SD card failure!");
+				}
+				else
+				{
+					Base.logger.info("SD card connected");
+				}
+			}
+			else if (line.startsWith("marlin"))
+			{
+				Pattern p = Pattern.compile("marlin u([0-9]).([0-9]).*");
+				Matcher m = p.matcher(line);
+				m.find();
+				version = new Version(Integer.parseInt(m.group(1)),Integer.parseInt(m.group(2)));
+				//Some marlin versions send out their code...
+				if (version.atLeast(minimumVersion))
+				{
+					if (version.compareTo(preferredVersion) == 1)
+					{
+						//We are running an unsupported version
+						Base.logger.warning("You are running an unsupported firmware version!");
+					}
+				}
+				else
+				{
+					this.uninitialize();
+					throw new BadFirmwareVersionException(version,preferredVersion);
+				}
+			}
+			else if (line.startsWith("echo"))
+			{
+				//Do nothing
+			}
+			else if (line.contains("firmware_name"))
+			{
+				Pattern p = Pattern.compile("firmware_name:([0-9a-z.]{0,}).*firmware_url:([\\S.]{0,}.*).*protocol_version:([0-9]{0,}).([0-9]{0,}).*machine_type:([a-z]{0,}).*extruder_count:([0-9]{0,})");
+				Matcher m = p.matcher(line);
+				m.find();
+				Base.logger.fine("Detecting firmware!");
+				//Assume we got an answer to M115, lets see what we got:
+				if (m.group(1).startsWith("marlin"))
+				{
+					Base.logger.fine("setting marlin");
+					setFirmwareName("Marlin");
+				}
+				else
+				{
+					setFirmwareName("Unknown");
+				}
+				if (m.group(2).contains("ultimaker") || m.group(5).contains("ultimaker"))
+				{
+					//We got an ultimaker, hurray!
+				}
+				else
+				{
+					Base.logger.warning("Could not detect Ultimaker firmware.");
+				}
+				version = new Version(Integer.parseInt(m.group(3)),Integer.parseInt(m.group(4)));
+				//infosetup[5] = extruder amount!
+				if (version.atLeast(minimumVersion))
+				{
+					if (version.compareTo(preferredVersion) == 1)
+					{
+						//We are running an unsupported version
+						Base.logger.warning("You are running an unsupported firmware version!");
+					}
+				}
+				else
+				{
+					this.uninitialize();
+					throw new BadFirmwareVersionException(version,preferredVersion);
+				}
+			}
+			else if (line.startsWith("x:"))
+			{
+				String[] curlocation = line.split("[a-z]:");
+				
+				try {
+					super.setCurrentPosition(new Point5d(Double.parseDouble(curlocation[1]), Double.parseDouble(curlocation[2]), Double.parseDouble(curlocation[3])));
+				} catch (NumberFormatException e) {
+					// TODO Auto-generated catch block
+					Base.logger.warning("Firmware sent unknown string: " + line);
+				} catch (RetryException e) {
+				}
+				Base.logger.fine("E: " + curlocation[4]);
+			}
+			// Ultimakers send start
 			else if (line.contains("start")) {
+				if (version.getMajor() == 0 && version.getMinor() == 0)
+				{
+					version = new Version(0,1);
+					setFirmwareName("5D");
+				}
 				// Reset line number first in case gcode is sent below
 				lineNumber.set(-1);
-
+				
+				String[] infosetup = line.split("start\\s.*BATCH=([0-9a-z.]{0,}).*PCB=([^,]{0,}).*ATMEGA=([^\\s]{0,}).*FW:V=([^,]{0,}).*BUILD=([^,]{0,}).*E0:([^,]{0,}).*SPEED=([^\\s]{0,}).*Z:PITCH=([^\\s]{0,})");
+				
+				if (line.contains("ULTIMAKER"))
+				{
+					//Assume its an old 5D Ultimaker
+					Base.logger.info("Ultimaker 5D firmware detected.");
+					Base.logger.info(line);
+					Base.logger.finer("Batchnumber = "+infosetup[1]);
+					Base.logger.finer("PCB version = "+infosetup[2]);
+					Base.logger.finer("ATMega = " + infosetup[3]);
+					Base.logger.finer("Firmware version = " + infosetup[4]);
+					Base.logger.finer("Build version = " + infosetup[5]);
+					Base.logger.finer("Extruder = " + infosetup[6]);
+					Base.logger.finer("Speed = " + infosetup[7]);
+					Base.logger.finer("Z PITCH = " + infosetup[8]);
+				}
+				
 				boolean active = !buffer.isEmpty();
 				flushBuffer();
 
@@ -796,7 +915,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 					buffer.addLast(";start-ok");
 					bufferLock.unlock();
 				}
-
+				
 				// todo: set version
 				synchronized (startReceived) {
 					startReceived.set(true);
@@ -812,7 +931,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 			} else if (line.startsWith("extruder fail")) {
 				setError("Extruder failed:  cannot extrude as this rate.");
 
-			} else if (line.startsWith("resend:")||line.startsWith("rs ")) {
+			} else if (line.startsWith("resend")||line.startsWith("rs ")) {
 				// Bad checksum, resend requested
 				Matcher badLineMatch = resendLinePattern.matcher(line);
 
@@ -882,7 +1001,18 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 			} else if (line.startsWith("t:") || line.startsWith("c:")) {
 				// temperature, position handled above
-			} else {
+			}
+			else{
+				//Check for unknown lines, this means baudrate is off!
+				Pattern p = Pattern.compile("[^\\x20-\\x7E].*");
+				Matcher m = p.matcher(line);
+				if (version.equals(new Version(0,0)) && m.find())
+				{
+					Base.logger.severe("Wrong baud rate or faulty firmware detected.");
+					Base.logger.severe("Please select the right machine Driver and try again.");
+					this.uninitialize();
+					throw new BadFirmwareVersionException(version,preferredVersion);
+				}
 				Base.logger.severe("Unknown: " + line);
 			}
 		}
@@ -1122,7 +1252,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 		super.setSpindleRPM(rpm);
 	}
-
+	
 	public void enableSpindle() throws RetryException {
 		String command = _getToolCode();
 
@@ -1151,13 +1281,44 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 
 		super.setTemperature(temperature);
 	}
+	
+	public void setNewTemperature(double temperature) throws RetryException{
+		setTemperature(temperature);
+	}
+	
+	public void setTemperature(double temperature, int toolIndex) throws RetryException
+	{
+		sendCommand("T"+toolIndex + " M104 S" + df.format(temperature));
+		super.setTemperature(temperature, toolIndex);
+	}
+	
+	public void readAllTemperatures()
+	{
+		Vector<ToolModel> tools = machine.getTools();
 
+		for (ToolModel t : tools) {
+			this.readTemperature(t.getIndex());
+		}
+	}
+
+	@Deprecated
 	public void readTemperature() {
+		readAllTemperatures(); /// for safety, read all the temps we can
+		/*
 		sendCommand(_getToolCode() + "M105");
 
 		super.readTemperature();
+		*/
+	}
+	public void readTemperature(int toolcode) {
+		machine.selectTool(toolcode);
+		sendCommand("T"+toolcode + " M105");
+
+		super.readTemperature(toolcode);
 	}
 
+	public String getMachineType(){ return "Ultimaker"; }
+	
 	public double getPlatformTemperature(){
 		return machine.currentTool().getPlatformCurrentTemperature();
 	}
@@ -1265,7 +1426,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		//sendCommand("M0");
 		// M0 is the same as emergency stop: will hang all communications. You don't really want that...
 		invalidatePosition();
-		Base.logger.info("RepRap/Ultimaker Machine stop called.");
+		Base.logger.info("Ultimaker Machine stop called.");
 	}
 
 	protected Point5d reconcilePosition() {
@@ -1278,7 +1439,7 @@ public class RepRap5DDriver extends SerialDriver implements SerialFifoEventListe
 		return null;
 	}
 
-	/* ===============
+	/* 
 	 * This driver has real time control over feedrate and extrusion parameters, allowing real-time tuning!
 	 */
 	public boolean hasFeatureRealtimeControl() {
