@@ -244,7 +244,12 @@ public class GCodeParser {
 				}
 				else if (gcode.hasCode('M')) {
 					buildMCodes(gcode, commandQueue);
-				}
+				} else if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {				  
+    			tool = (int) gcode.getCodeValue('T');
+    			commandQueue.add(new replicatorg.drivers.commands.SelectTool(tool));
+    			currentOffset = driver.getOffset(tool+1);
+          // Base.logger.warning("Set Tool Index: " + tool + " Axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());
+    		}
 			} catch (GCodeException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -638,10 +643,14 @@ public class GCodeParser {
 			if (gcode.hasCode('A'))
 				pos.setA(aVal);
 			if (gcode.hasCode('E')) {
-				if (tool == 0)
-					pos.setA(eVal);
-				else if (tool == 1)
+			  // can't assume tool 0 == a, it's configurable in machine.xml!
+				if (driver.getMachine().getTool(tool).getMotorStepperAxis().name() == "B") {
+          // Base.logger.warning("Mapping axis E to axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());
 					pos.setB(eVal);
+				} else {
+          // Base.logger.warning("Mapping axis E to axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());
+					pos.setA(eVal);
+				}
 			}
 			if (gcode.hasCode('B'))
 				pos.setB(bVal);
@@ -657,10 +666,14 @@ public class GCodeParser {
 			if (gcode.hasCode('A'))
 				pos.setA(pos.a() + aVal);
 			if (gcode.hasCode('E')) {
-				if (tool == 0)
-					pos.setA(pos.a() + eVal);
-				else if (tool == 1)
+			  // can't assume tool 0 == a, it's configurable in machine.xml!
+				if (driver.getMachine().getTool(tool).getMotorStepperAxis().name() == "B") {
+          // Base.logger.warning("Mapping axis E to axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());
 					pos.setB(pos.b() + eVal);
+				} else {
+          // Base.logger.warning("Mapping axis E to axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());
+					pos.setA(pos.a() + eVal);
+				}
 			}
 			if (gcode.hasCode('B'))
 				pos.setB(pos.b() + bVal);
@@ -869,9 +882,16 @@ public class GCodeParser {
 				current.setZ(zVal);
 			if (gcode.hasCode('A'))
 				current.setA(aVal);
-			// Note: The E axis is treated internally as the A axis
-			if (gcode.hasCode('E'))
-				current.setA(eVal);
+			if (gcode.hasCode('E')) {
+			  // can't assume tool 0 == a, it's configurable in machine.xml!			  
+				if (driver.getMachine().getTool(tool).getMotorStepperAxis().name() == "B") {
+          // Base.logger.warning("Resetting position of axis E to axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());          
+					current.setB(eVal);
+				} else {
+          // Base.logger.warning("Resetting position of axis E to axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());          
+					current.setA(eVal);
+				}
+			}
 			if (gcode.hasCode('B'))
 				current.setB(bVal);
 			
