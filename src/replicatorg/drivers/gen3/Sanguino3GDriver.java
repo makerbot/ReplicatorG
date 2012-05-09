@@ -2893,4 +2893,125 @@ public class Sanguino3GDriver extends SerialDriver implements
 	@Override 
 	public void setToolCountOnboard(int i){ }; 
 
+        public void setMaxAcceleration(double x, double y, double z, double a) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_MAX_ACCEL.getCode());
+
+		pb.add32((int)x);
+		pb.add32((int)y);
+		pb.add32((int)z);
+		pb.add32((int)a);
+
+		Base.logger.log(Level.FINE,"SetMaxAcceleration (" + x + " " + y + " " + z + " " + a + ")" );
+
+		runCommand(pb.getPacket());
+	}
+
+        public void setMaxFeedRate(double x, double y, double z, double a) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_MAX_FEEDRATE.getCode());
+
+		pb.add32((int)x);
+		pb.add32((int)y);
+		pb.add32((int)z);
+		pb.add32((int)a);
+
+		Base.logger.log(Level.FINE,"SetMaxFeedRate (" + x + " " + y + " " + z + " " + a + ")" );
+
+		runCommand(pb.getPacket());
+	}
+
+        public void setDefaultAcceleration(double s, double t) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_DEFAULT_ACCEL.getCode());
+
+		pb.add32((int)s);
+		pb.add32((int)t);
+
+		Base.logger.log(Level.FINE,"SetDefaultAcceleration (" + s + " " + t + ")" );
+
+		runCommand(pb.getPacket());
+	}
+
+        public void setAdvancedSettings(double s, double t, double z) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_ADVANCED_ACCEL.getCode());
+
+		pb.add32((int)(s*10.0));
+		pb.add32((int)(t*10.0));
+		pb.add32((int)(z*10.0));
+
+		Base.logger.log(Level.FINE,"SetAdvancedSettings (" + s + " " + t + " " + z + ")" );
+
+		runCommand(pb.getPacket());
+	}
+
+        public void setAdvancedSettings2(double s, double a, double k, double x, double y) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_ADVANCED_ACCEL2.getCode());
+
+		pb.add32((int)(s * 100.0));
+		pb.add32((int)(a));
+		pb.add32((int)(k * 10.0));
+		pb.add32((int)(x));
+		pb.add32((int)(y));
+
+		Base.logger.log(Level.FINE,"SetAdvancedSettings2 (" + s + " " + a + " " + k + " " + x + " " + y + ")" );
+
+		runCommand(pb.getPacket());
+	}
+
+        public void setAdvanceK(double s, double a, double k) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_ADVANCE_K.getCode());
+
+		pb.add32((int)(s * 100000.0));
+		pb.add32((int)(a * 100000.0));
+		pb.add32((int)(k * 10000.0));
+
+		Base.logger.log(Level.FINE,"SetAdvanceK (" + s + " " + a + " " + k + ")" );
+
+		runCommand(pb.getPacket());
+	}
+
+        public void setExtruderStepsPerMM(double a) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_EXTRUDER_STEPSMM.getCode());
+
+		pb.add32((int)(a * 10.0));
+
+		Base.logger.log(Level.FINE,"SetExtruderStepsPerMM (" + a + ")" );
+
+		runCommand(pb.getPacket());
+	}
+
+        public void setAccelerationControl(double s) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_ACCELERATION.getCode());
+
+		if (( s == 0 ) || ( s == 1 ) || ( s == 3 ))	pb.add8((int)s);
+		else						pb.add8(0);
+
+		Base.logger.log(Level.FINE,"SetAccelerationControl (" + s + ")" );
+
+		runCommand(pb.getPacket());
+	}
+
+        public void setAxisStepsPerMM(double x, double y, double z, double a) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_AXIS_STEPS_MM.getCode());
+
+		pb.add32((long)(x * 100000.0));
+		pb.add32((long)(y * 100000.0));
+		pb.add32((long)(z * 100000.0));
+		pb.add32((long)(a * 100000.0));
+
+		Base.logger.log(Level.FINE,"SetAxisStepsPerMM (" + x + " " + y + " " + z + " " + a + ")" );
+
+		runCommand(pb.getPacket());
+	}
+
+        public void setMaxSpeedChange(double x, double y, double z, double a) throws RetryException {
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_MAX_SPEED_CHANGE.getCode());
+
+		pb.add32((int)(x*10.0));
+		pb.add32((int)(y*10.0));
+		pb.add32((int)(z*10.0));
+		pb.add32((int)(a*10.0));
+
+		Base.logger.log(Level.FINE,"SetMaxSpeedChange (" + x + " " + y + " " + z + " " + a + ")" );
+
+		runCommand(pb.getPacket());
+	}
 }

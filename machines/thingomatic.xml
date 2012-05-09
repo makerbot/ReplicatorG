@@ -1,11 +1,12 @@
 <?xml version="1.1" encoding="utf-8"?>
+
 <machines>
 	<machine>
 		<name>Thingomatic w/ ABP and Extruder MK5</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" timeout="30" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 		</geometry>
 		<tools>
@@ -28,7 +29,7 @@ M18 (Turn off steppers after a build.)
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" timeout="30" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 		</geometry>
 		<tools>
@@ -52,7 +53,7 @@ M18 (Turn off steppers after a build.)
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" timeout="30" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
@@ -77,7 +78,7 @@ M18 (Turn off steppers after a build.)
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" timeout="30" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
@@ -101,7 +102,7 @@ M18 (Turn off steppers after a build.)
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" timeout="30" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
@@ -125,7 +126,7 @@ M18 (Turn off steppers after a build.)
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" timeout="30" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
@@ -149,7 +150,7 @@ M18 (Turn off steppers after a build.)
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="80" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="80" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="80" maxfeedrate="4000" homingfeedrate="500" timeout="30" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="50.235478806907409" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
@@ -184,7 +185,7 @@ M18 (Turn off steppers after a build.)
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" timeout="30" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 		</geometry>
 		<tools>
@@ -210,7 +211,7 @@ M18 (Turn off steppers after a build.)
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
-			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
+			<axis id="y" length="120" maxfeedrate="4000" homingfeedrate="500" timeout="30" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="1000" homingfeedrate="500" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
 			<axis id="a" length="100" maxfeedrate="200" stepspermm="200" endstops="none"/>
 		</geometry>

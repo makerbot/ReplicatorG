@@ -588,6 +588,175 @@ public class GCodeParser {
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.DataCaptureNote(gcode.getComment()));
 			break;
+
+		case M201: //Set max acceleration
+			{
+				double x = gcode.getCodeValue('X');
+				double y = gcode.getCodeValue('Y');
+				double z = gcode.getCodeValue('Z');
+				double a = gcode.getCodeValue('A');
+				commands.add(new replicatorg.drivers.commands.SetMaxAcceleration(x,y,z,a));
+			}
+			break;
+
+		case M203: //Set max feedrate
+			{
+				double x = gcode.getCodeValue('X');
+				double y = gcode.getCodeValue('Y');
+				double z = gcode.getCodeValue('Z');
+				double a = gcode.getCodeValue('A');
+				commands.add(new replicatorg.drivers.commands.SetMaxFeedRate(x,y,z,a));
+			}
+			break;
+
+		case M204: //Set default acceleration
+			{
+				double s = gcode.getCodeValue('S');
+				double t = gcode.getCodeValue('K');
+				commands.add(new replicatorg.drivers.commands.SetDefaultAcceleration(s,t));
+			}
+			break;
+
+		case M205: //Set Advanced Settings
+			{
+				double s = (double)gcode.getCodeValue('S') / 10.0;
+				double t = (double)gcode.getCodeValue('K') / 10.0;
+				double z = (double)gcode.getCodeValue('Z') / 10.0;
+				commands.add(new replicatorg.drivers.commands.SetAdvancedSettings(s,t,z));
+			}
+			break;
+
+		case M206: //Set Advanced Settings 2
+			{
+				double s = (double)gcode.getCodeValue('S') / 100.0;
+				double a = (double)gcode.getCodeValue('A');
+				double k = (double)gcode.getCodeValue('K') / 10.0;
+				double x = (double)gcode.getCodeValue('X');
+				double y = (double)gcode.getCodeValue('Y');
+				commands.add(new replicatorg.drivers.commands.SetAdvancedSettings2(s,a,k,x,y));
+			}
+			break;
+
+		case M207: //Set JKN Advance K/K2 and Minimum Segment Time
+			{
+				double s = (double)gcode.getCodeValue('S') / 100000.0;
+				double a = (double)gcode.getCodeValue('A') / 100000.0;
+				double k = (double)gcode.getCodeValue('K') / 10000.0;
+				commands.add(new replicatorg.drivers.commands.SetAdvanceK(s,a,k));
+			}
+			break;
+
+		case M208: //Set Extruder Steps:mm
+			{
+				double a = gcode.getCodeValue('A') / 10.0;
+				commands.add(new replicatorg.drivers.commands.SetExtruderStepsPerMM(a));
+			}
+			break;
+
+		case M209: //Set Acceleration Control
+			{
+				double s = gcode.getCodeValue('S');
+				commands.add(new replicatorg.drivers.commands.SetAccelerationControl(s));
+			}
+			break;
+
+		case M210: // Mood Light Set RGB Color
+			double fadeSpeed = (int)gcode.getCodeValue('S');
+			if ( fadeSpeed == -1 )	fadeSpeed = 8;		//The default
+
+			double writeToEeprom = (int)gcode.getCodeValue('E');
+			if ( writeToEeprom == -1 )	writeToEeprom = 0;		//The default
+
+			if (( fadeSpeed < 0 ) || ( fadeSpeed > 255 )) {
+				throw new GCodeException("The S parameter must, range from 0-255. (M210)");
+			}
+
+			double red   = gcode.getCodeValue('I');
+			double green = gcode.getCodeValue('J');
+			double blue  = gcode.getCodeValue('K');
+
+			if (( red >= 0.0 ) && ( red<=255.0) && ( green >= 0.0 ) && ( green<=255.0) && ( blue >= 0.0 ) && ( blue<=255.0)) {
+				commands.add(new replicatorg.drivers.commands.MoodLightSetRGB((int)red, (int)green, (int)blue, (int)fadeSpeed, (int)writeToEeprom));
+			} else {
+				throw new GCodeException("The IJK parameters are required for mood light changes, ranging from 0-255. (M210)");
+			}
+			break;
+
+		case M211: // Mood Light Set HSB Color
+			fadeSpeed = (int)gcode.getCodeValue('S');
+			if ( fadeSpeed == -1 )	fadeSpeed = 8;		//The default
+
+			if (( fadeSpeed < 0 ) || ( fadeSpeed > 255 )) {
+				throw new GCodeException("The S parameter must, range from 0-255. (M211)");
+			}
+
+			double hue   	   = gcode.getCodeValue('I');
+			double saturation  = gcode.getCodeValue('J');
+			double brightness  = gcode.getCodeValue('K');
+
+			if (( hue >= 0.0 ) && ( hue<=255.0) && ( saturation >= 0.0 ) && ( saturation<=255.0) && ( brightness >= 0.0 ) && ( brightness<=255.0)) {
+				commands.add(new replicatorg.drivers.commands.MoodLightSetHSB((int)hue, (int)saturation, (int)brightness, (int)fadeSpeed));
+			} else {
+				throw new GCodeException("The IJK parameters are required for mood light changes, ranging from 0-255. (M211)");
+			}
+			break;
+
+		case M212: // Mood Light Play Script
+			double scriptId = (int)gcode.getCodeValue('S');
+
+			writeToEeprom = (int)gcode.getCodeValue('E');
+			if ( writeToEeprom == -1 )	writeToEeprom = 0;		//The default
+
+			if (( scriptId >= 0 ) && ( scriptId <= 255 )) {
+				commands.add(new replicatorg.drivers.commands.MoodLightPlayScript((int)scriptId, (int)writeToEeprom));
+			} else {
+				throw new GCodeException("The S parameter is required and must, range from 0-255. (M212)");
+			}
+			break;
+		case M213: // Set Buzzer Repetitions
+			int repeats = (int)gcode.getCodeValue('K');
+
+			if (( repeats >= 0 ) && ( repeats <= 254 )) {
+				commands.add(new replicatorg.drivers.commands.SetBuzzerRepetitions(repeats));
+			} else {
+				throw new GCodeException("The K parameter is required and must, range from 0-254. (M213)");
+			}
+			break;
+
+		case M214: // Buzz
+			int buzzes  = (int)gcode.getCodeValue('I');	
+			int duration = (int)gcode.getCodeValue('J');	
+			repeats  = (int)gcode.getCodeValue('K');	
+
+			if	((buzzes < 0) || ( buzzes > 255 ))
+				throw new GCodeException("The I parameter is required and must, range from 0-255. (M214)");
+			else if (( duration < 1 ) || ( duration > 255))
+				throw new GCodeException("The J parameter is required and must, range from 1 - 255. (M214)");
+			else if (( repeats < 1 ) || ( repeats > 255))
+				throw new GCodeException("The K parameter is required and must, range from 1 - 255. (M214)");
+			else	commands.add(new replicatorg.drivers.commands.Buzz(buzzes, duration, repeats));
+			break;
+
+		case M215: //Set Axis Steps Per:mm
+			{
+				double x = (double)gcode.getCodeValue('X') / 10000.0;
+				double y = (double)gcode.getCodeValue('Y') / 10000.0;
+				double z = (double)gcode.getCodeValue('Z') / 10000.0;
+				double a = (double)gcode.getCodeValue('A') / 10000.0;
+				commands.add(new replicatorg.drivers.commands.SetAxisStepsPerMM(x,y,z,a));
+			}
+			break;
+
+		case M216: //Set Maximum Speed Change
+			{
+				double x = (double)gcode.getCodeValue('X') / 10.0;
+				double y = (double)gcode.getCodeValue('Y') / 10.0;
+				double z = (double)gcode.getCodeValue('Z') / 10.0;
+				double a = (double)gcode.getCodeValue('A') / 10.0;
+				commands.add(new replicatorg.drivers.commands.SetMaxSpeedChange(x,y,z,a));
+			}
+			break;
+
 		default:
 			throw new GCodeException("Unknown M code: M" + (int) gcode.getCodeValue('M'));
 		}

@@ -63,9 +63,25 @@ public enum MotherboardCommandCode {
 	DISPLAY_MESSAGE(149, "Display a user message on the machine display"),
 	SET_BUILD_PERCENT(150, "Manually override Build % info"),
 	QUEUE_SONG(151, "Trigger a song stored by by ID on the machine"),
-	RESET_TO_FACTORY(152, "Reset onboard preferences to the factory settings");
+	RESET_TO_FACTORY(152, "Reset onboard preferences to the factory settings"),
+
+	SET_MAX_ACCEL(201,""),
+	SET_MAX_FEEDRATE(203,""),
+	SET_DEFAULT_ACCEL(204,""),
+	SET_ADVANCED_ACCEL(205,""),
+	SET_ADVANCED_ACCEL2(206,""),
+	SET_ADVANCE_K(207,""),
+	SET_EXTRUDER_STEPSMM(208,""),
+	SET_ACCELERATION(209,""),
+	MOOD_LIGHT_SET_RGB(210,""),
+	MOOD_LIGHT_SET_HSB(211,""),
+	MOOD_LIGHT_PLAY_SCRIPT(212,""),
+	BUZZER_REPEATS(213,""),
+	BUZZER_BUZZ(214,""),
+	SET_AXIS_STEPS_MM(215,""),
+	SET_MAX_SPEED_CHANGE(216,"");
 	
-	
+
 	private int code; 	/// id code of this packet in the s3g protocol
 	private String info;/// rough info on what this packet does
 

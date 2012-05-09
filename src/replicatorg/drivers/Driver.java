@@ -224,6 +224,45 @@ public interface Driver {
 	public double getCurrentFeedrate();
 
 	/**
+	 * Moodlight Methods
+	 */
+	public void moodLightSetRGB(int red, int green, int blue, int fadeSpeed, int writeToEeprom) throws RetryException;
+
+	public void moodLightSetHSB(int hue, int saturation, int brightness, int fadeSpeed) throws RetryException;
+
+	public void moodLightPlayScript(int scriptId, int writeToEeprom) throws RetryException;
+
+	/**
+	 * Buzzer Methods
+	 */
+	public void setBuzzerRepetitions(int repeats) throws RetryException;
+
+	public void buzz(int buzzes, int duration, int repeats) throws RetryException;
+
+	/**
+	 * Acceleration Methods
+	 */
+	public void setMaxAcceleration(double x, double y, double z, double a) throws RetryException;
+
+	public void setMaxFeedRate(double x, double y, double z, double a) throws RetryException;
+
+	public void setDefaultAcceleration(double s, double t) throws RetryException;
+
+	public void setAdvancedSettings(double s, double t, double z) throws RetryException;
+
+	public void setAdvancedSettings2(double s, double a, double k, double x, double y) throws RetryException;
+
+	public void setAdvanceK(double s, double a, double k) throws RetryException;
+
+	public void setExtruderStepsPerMM(double a) throws RetryException;
+
+	public void setAccelerationControl(double s) throws RetryException;
+
+	public void setAxisStepsPerMM(double x, double y, double z, double a) throws RetryException;
+
+	public void setMaxSpeedChange(double x, double y, double z, double a) throws RetryException;
+ 
+	/**
 	 * Home the given set of axes at the given feedrate.  If the feedrate is <=0, run at
 	 * maximum feedrate for the appropriate axes.
 	 * @throws RetryException 
