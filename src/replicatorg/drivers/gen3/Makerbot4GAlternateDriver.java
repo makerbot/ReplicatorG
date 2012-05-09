@@ -20,11 +20,11 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	
 	private boolean stepperExtruderFanEnabled = false;
 
-	public String getDriverName() {
+	@Override public String getDriverName() {
 		return "Makerbot4GAlternate";
 	}
 	
-	public void reset() {
+	@Override public void reset() {
 		// We should poll the machine for it's state here, but it is more important to have the
 		// fan on than off.
 		stepperExtruderFanEnabled = false;
@@ -32,13 +32,10 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		super.reset();
 	}
 	
-	/** The excess, in steps, from previous operations. */ 
-	protected Point5d stepExcess = new Point5d();
-	
 	/**
 	 * Overloaded to manage a hijacked axis and run this axis in relative mode instead of the extruder DC motor
 	 */
-	public void queuePoint(Point5d p) throws RetryException {
+	@Override public void queuePoint(Point5d p) throws RetryException {
 		// If we don't know our current position, make this move an old-style move, ignoring any hijacked axes. 
 		if (positionLost()) {
 			Base.logger.fine("Position invalid, reverting to default speed for next motion");
@@ -69,10 +66,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 			
 			// okay, send it off!
 			// TODO: bug: We move all axes (even ones that shouldn't be moved) How to avoid?
-			Point5d excess = new Point5d(stepExcess);
-			queueAbsolutePoint(machine.mmToSteps(filteredPoint, excess), longestDDA);
-			// Only update excess if no retry was thrown.
-			stepExcess = excess;
+			queueAbsolutePoint(machine.mmToSteps(filteredPoint), longestDDA);
 			// Finally, recored the position, and mark it as valid.
 			setInternalPosition(filteredPoint);
 		} else {
@@ -100,18 +94,14 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 				delta.add(axesmovement);
 				filteredpoint.add(axesmovement);
 				
-				Point5d excess = new Point5d(stepExcess);
 				// Calculate time for move in usec
-				Point5d steps = machine.mmToSteps(filteredpoint,excess);		
+				Point5d steps = machine.mmToSteps(filteredpoint);		
 	
 				// okay, send it off!
 				// The 4. and 5. dimensions doesn't have a spatial interpretation. Calculate time in 3D space
 				double minutes = delta.get3D().distance(new Point3d())/ getSafeFeedrate(delta);
 				
 				queueNewPoint(steps, (long) (60 * 1000 * 1000 * minutes), relative);
-
-				// Only update excess if no retry was thrown.
-				stepExcess = excess;
 
 				setInternalPosition(filteredpoint);
 			}
@@ -122,7 +112,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 * In legacy use, delayed while a DC motor ran. For compatiblity, this function
 	 * creates a Point5D to do 'extrude while sitting still'. 
 	 */
-	public void delay(long millis) throws RetryException {
+	@Override public void delay(long millis) throws RetryException {
 		Base.logger.finer("Delaying " + millis + " millis.");	
 	
 		Point5d steps = pointsFromHijackedAxes( machine.currentTool(), millis / 60000d);
@@ -233,7 +223,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		return steps;
 	}
 
-	public void stop(boolean abort) {
+	@Override public void stop(boolean abort) {
 		// Record the toolstate as off, so we don't excite the extruder motor in future moves.
 		machine.currentTool().disableMotor();
 
@@ -274,38 +264,41 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	/**
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
 	 */
-	public void enableMotor() throws RetryException {
-		machine.currentTool().enableMotor();
+	@Override public void enableMotor(int toolhead) throws RetryException {
+        if (toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+		machine.getTool(toolhead).enableMotor();
 	}
 	
 	/**
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
 	 */
-	public void disableMotor() throws RetryException {
-		machine.currentTool().disableMotor();
+	@Override public void disableMotor(int toolhead) throws RetryException {
+	    if (toolhead == -1 ) toolhead = machine.currentTool().getIndex();
+
+		machine.getTool(toolhead).disableMotor();
 	}
 	
 	/**
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
 	 */
-	public void setMotorSpeedPWM(int pwm) throws RetryException {
+	@Override public void setMotorSpeedPWM(int pwm) throws RetryException {
 		machine.currentTool().setMotorSpeedPWM(pwm);
 	}
 
 	/**
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
 	 */
-	public void setMotorRPM(double rpm, int toolhead) throws RetryException {
+	@Override public void setMotorRPM(double rpm, int toolhead) throws RetryException {
 		machine.currentTool().setMotorSpeedRPM(rpm);
 	}
 
-	public void enableDrives() throws RetryException {
+	@Override public void enableDrives() throws RetryException {
 		enableStepperExtruderFan(true);
 		
 		super.enableDrives();
 	}
 
-	public void disableDrives() throws RetryException {
+	@Override public void disableDrives() throws RetryException {
 		enableStepperExtruderFan(false);
 		
 		super.disableDrives();
@@ -315,7 +308,7 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	 * Will turn on/off the stepper extruder fan if it's not already in the correct state.
 	 * 
 	 */
-	public void enableStepperExtruderFan(boolean enabled) throws RetryException {
+	@Override public void enableStepperExtruderFan(boolean enabled) throws RetryException {
 		
 		// Always re-enable the fan when 
 		if (this.stepperExtruderFanEnabled == enabled) return;
@@ -352,11 +345,10 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	/// This is a list of which axis are hijacked for extruder use.
 	EnumMap<AxisId,ToolModel> extruderHijackedMap = new EnumMap<AxisId,ToolModel>(AxisId.class);
 	
-	@Override
 	/**
 	 * When the machine is set for this driver, some toolheads may poach the an extrusion axis.
 	 */
-	public void setMachine(MachineModel m) {
+	@Override public void setMachine(MachineModel m) {
 		super.setMachine(m);
 		for (ToolModel tm : m.getTools()) {
 			Element e = (Element)tm.getXml();
@@ -380,12 +372,11 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		}
 	}
 	
-	@Override
 	/**
 	 * Overridden to not ask the board for the RPM as it would report the RPM from the extruder 
 	 * controller, which doesn't know about it in this case.
 	 */
-	public double getMotorRPM() {
+	@Override public double getMotorRPM() {
 		double rpm = machine.currentTool().getMotorSpeedRPM();
 		machine.currentTool().setMotorSpeedReadingRPM(rpm);
 		return rpm;

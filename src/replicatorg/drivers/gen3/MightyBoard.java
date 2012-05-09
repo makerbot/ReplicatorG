@@ -490,8 +490,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			}
 			
 			// calculate absolute position of target in steps
-			Point5d excess = new Point5d(stepExcess);
-			Point5d steps = machine.mmToSteps(target,excess);	
+			Point5d steps = machine.mmToSteps(target);	
 			
 			double usec = (60 * 1000 * 1000 * minutes);
 
@@ -500,9 +499,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 //			System.out.println("\t steps: " + steps.toString() +"\t usec: " + usec);
 			int relativeAxes = (1 << AxisId.A.getIndex()) | (1 << AxisId.B.getIndex());
 			queueNewPoint(steps, (long) usec, relativeAxes);
-
-			// Only update excess if no retry was thrown.
-			stepExcess = excess;
 
 			// because of the hinky stuff we've been doing with A & B axes, just pretend we've
 			// moved where we thought we were moving
@@ -1100,7 +1096,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 
-	@Override
 	@Deprecated
 	protected void writeToToolEEPROM(int offset, byte[] data) {
 		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
@@ -1263,7 +1258,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		return val;
 	}
 
-	@Override
 	@Deprecated
 	protected int read16FromToolEEPROM(int offset, int defaultValue) {
 		return read16FromToolEEPROM(offset, defaultValue, machine.currentTool().getIndex());

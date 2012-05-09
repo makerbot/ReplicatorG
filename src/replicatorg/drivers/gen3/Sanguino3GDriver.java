@@ -1019,12 +1019,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setMotorSpeedPWM(pwm, toolhead);
 	}
 
-	@Deprecated
-	public void enableMotor() throws RetryException {
-		/// toolhead -1 indicate auto-detect
-		this.enableMotor(-1);
-	}
-	
 	public void enableMotor(int toolhead) throws RetryException {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1076,10 +1070,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.disableMotor(toolhead);
 	}
 
-	@Deprecated
-	public int getMotorSpeedPWM() {
-		return this.getMotorSpeedPWM(machine.currentTool().getIndex());
-	}
 	public int getMotorSpeedPWM(int toolhead) {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1134,11 +1124,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 	}
 
 	
-	@Deprecated
-	public void readToolStatus() {
-		this.readToolStatus(machine.currentTool().getIndex());
-	}
-	
 	public void readToolStatus(int toolhead) {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1167,7 +1152,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 					+ (((status & 0x01) != 0) ? "READY" : "NOT READY") + " ");
 		}
 
-		readToolPIDState();
+		readToolPIDState(toolhead);
 	}
 
 	// TODO: This doesn't belong here
@@ -1179,10 +1164,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return value;
 	}
 
-	@Deprecated 
-	public void readToolPIDState() {
-		this.readToolPIDState(machine.currentTool().getIndex());
-	}
 	// TODO: Implement a way for this to reach the outside
 	public void readToolPIDState(int toolhead) {
 
@@ -1282,10 +1263,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 	/***************************************************************************
 	 * Spindle interface functions
 	 **************************************************************************/
-	@Deprecated
-	public void setSpindleRPM(double rpm) throws RetryException {
-		this.setSpindleRPM(rpm, machine.currentTool().getIndex() );
-	}
 	public void setSpindleRPM(double rpm, int toolhead) throws RetryException {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1312,11 +1289,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setSpindleRPM(rpm, toolhead);
 	}
 
-	@Deprecated
-	public void setSpindleSpeedPWM(int pwm) throws RetryException {
-		this.setSpindleSpeedPWM(pwm, machine.currentTool().getIndex());
-	}
-		
 	public void setSpindleSpeedPWM(int pwm, int toolhead) throws RetryException {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1335,11 +1307,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 
 		super.setSpindleSpeedPWM(pwm, toolhead);
 	}
-
-	@Deprecated
-	public void enableSpindle() throws RetryException {
-		this.enableSpindle(machine.currentTool().getIndex());
-		}
 
 	public void enableSpindle(int toolhead) throws RetryException {
 
@@ -1368,11 +1335,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.enableSpindle(toolhead);
 	}
 
-	@Deprecated
-	public void disableSpindle() throws RetryException {
-		disableSpindle(machine.currentTool().getIndex());
-	}
-	
 	public void disableSpindle(int toolhead) throws RetryException {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1394,11 +1356,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		runCommand(pb.getPacket());
 
 		super.disableSpindle(toolhead);
-	}
-
-	@Deprecated
-	public double getSpindleSpeedRPM() throws RetryException {
-		return this.getSpindleSpeedRPM(machine.currentTool().getIndex());
 	}
 
 	public double getSpindleSpeedRPM(int toolhead) throws RetryException {
@@ -1424,11 +1381,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return rpm;
 	}
 
-	@Deprecated
-	public int getSpindleSpeedPWM() {
-		return this.getSpindleSpeedPWM(machine.currentTool().getIndex());
-	}
-	
 	public int getSpindleSpeedPWM(int toolhead) {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1456,11 +1408,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * Temperature interface functions
 	 * @throws RetryException
 	 **************************************************************************/
-	@Deprecated
-	public void setTemperature(double temperature) throws RetryException {
-		this.setTemperature(temperature, machine.currentTool().getIndex());
-	}
-
 	public void setTemperature(double temperature, int toolhead) throws RetryException {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1483,12 +1430,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.setTemperature(temperature, toolhead);
 	}
 
-	@Deprecated
-	public void readTemperature() {
-		readAllTemperatures(); /// for safety, read all the temps we can
-		//readTemperature(machine.currentTool().getIndex());
-	}
-	
 	@Override
 	public void readAllTemperatures() {
 		Vector<ToolModel> tools = machine.getTools();
@@ -1535,11 +1476,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * @throws RetryException
 	 **************************************************************************/
 
-	@Deprecated
-	public void setPlatformTemperature(double temperature) 	throws RetryException {
-		setAllPlatformTemperatures(temperature);
-	}
-
 	public void setPlatformTemperature(double temperature, int toolhead)  throws RetryException {
 
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1569,11 +1505,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		}
 	}
 
-	@Deprecated
-	public void readPlatformTemperature() {
-		this.readAllPlatformTemperatures();
-	}
-	
 	public void readPlatformTemperature(int toolhead) {
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
@@ -1638,11 +1569,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * 
 	 * @throws RetryException
 	 **************************************************************************/
-	@Deprecated
-	public void enableFan() throws RetryException {
-		this.enableFan(machine.currentTool().getIndex() );
-	}
-	
 	public void enableFan(int toolhead) throws RetryException {
 		
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1661,10 +1587,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.enableFan(toolhead);
 	}
 
-	@Deprecated
-	public void disableFan() throws RetryException {
-		this.disableFan(machine.currentTool().getIndex());
-	}
 	public void disableFan(int toolhead) throws RetryException {
 		
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1683,12 +1605,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.disableFan(toolhead);
 	}
 
-	@Deprecated
-	public void setAutomatedBuildPlatformRunning(boolean state)
-		throws RetryException {
-		this.setAutomatedBuildPlatformRunning(state, machine.currentTool().getIndex());
-	}
-	
 	public void setAutomatedBuildPlatformRunning(boolean state, int toolhead)
 			throws RetryException {
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
@@ -1714,11 +1630,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 	 * 
 	 * @throws RetryException
 	 **************************************************************************/
-	@Deprecated
-	public void openValve() throws RetryException {
-		openValve(machine.currentTool().getIndex());
-	}
-	
 	public void openValve(int toolhead) throws RetryException {
 		Base.logger.fine("Opening valve");
 		
@@ -1737,11 +1648,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		super.openValve(toolhead);
 	}
 
-
-	@Deprecated
-	public void closeValve() throws RetryException {
-		closeValve(machine.currentTool().getIndex());
-	}
 
 	
 	public void closeValve(int toolhead) throws RetryException {
@@ -1955,11 +1861,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		assert pr.get8() == data.length;
 	}
 
-	@Deprecated
-	protected byte[] readFromToolEEPROM(int offset, int len)
-	{
-		return readFromToolEEPROM(offset, len, machine.currentTool().getIndex());
-	}
 
 	protected byte[] readFromToolEEPROM(int offset, int len, int toolhead) {
 		
@@ -1986,16 +1887,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		}
 		Base.logger.severe("readFromToolEEPROM null" + offset +" " + len + " " + toolhead);
 		return null;
-	}
-
-	/**
-	 * 
-	 * @param offset
-	 * @param data
-	 */
-	@Deprecated
-	protected void writeToToolEEPROM(int offset, byte[] data) {
-		writeToToolEEPROM(offset, data, machine.currentTool().getIndex());
 	}
 
 	/**
@@ -2599,11 +2490,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 	};
 
 
-	@Deprecated
-	protected int read16FromToolEEPROM(int offset, int defaultValue) {
-		return read16FromToolEEPROM(offset, defaultValue, machine.currentTool().getIndex());
-	}
-	
 	protected int read16FromToolEEPROM(int offset, int defaultValue, int toolhead) {
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
@@ -2772,11 +2658,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		writeToEEPROM(Sanguino3GEEPRPOM.EEPROM_ESTOP_CONFIGURATION_OFFSET, b);
 	}
 
-	@Deprecated
-	public double getPlatformTemperatureSetting() {
-		return this.getPlatformTemperatureSetting(machine.currentTool().getIndex());
-	}
-
 	public double getPlatformTemperatureSetting(int toolhead) {
 		/// toolhead -1 indicates auto-detect. Fast hack to get software out...
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();
@@ -2794,11 +2675,6 @@ public class Sanguino3GDriver extends SerialDriver implements
 		// super uses current toolhead, not specific toolhead
 //		super.getPlatformTemperatureSetting();
 		return machine.getTool(toolhead).getPlatformTargetTemperature();
-	}
-
-	@Deprecated
-	public double getTemperatureSetting() {
-		return this.getTemperatureSetting(machine.currentTool().getIndex());
 	}
 
 	public double getTemperatureSetting(int toolhead) {
