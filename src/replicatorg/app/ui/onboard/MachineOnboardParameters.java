@@ -85,9 +85,7 @@ public class MachineOnboardParameters extends JPanel {
         private JFormattedTextField yToolheadOffsetField = new JFormattedTextField(threePlaces);
         private JFormattedTextField zToolheadOffsetField = new JFormattedTextField(threePlaces);
         
-        private JCheckBox accelerationBox = new JCheckBox();
-        private JFormattedTextField accelerationRate = new JFormattedTextField(threePlaces);
-        
+        private JCheckBox accelerationBox = new JCheckBox();   
 
 	
 	/** Prompts the user to fire a bot  reset after the changes have been sent to the board.
@@ -168,7 +166,6 @@ public class MachineOnboardParameters extends JPanel {
         
         byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
         target.setAccelerationStatus(status);
-        target.setAccelerationRate(((Number)accelerationRate.getValue()).intValue());
 
         requestResetFromUser();
 	}
@@ -253,7 +250,6 @@ public class MachineOnboardParameters extends JPanel {
                 
                 if(target.hasAcceleration()){
                     accelerationBox.setSelected(this.target.getAccelerationStatus());
-                    accelerationRate.setValue(this.target.getAccelerationRate());
                 }
 	}
 
@@ -374,11 +370,8 @@ public class MachineOnboardParameters extends JPanel {
                    
 		}
                 if(target.hasAcceleration()){
-                    accelerationRate.setColumns(6);
                     add(new JLabel("Acceleration On"));	
                     add(accelerationBox,"span 2, wrap");
-                    add(new JLabel("Acceleration Rate (mm/s)"));
-                    add(accelerationRate, "wrap");
                 }
 
 		

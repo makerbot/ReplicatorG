@@ -267,7 +267,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		// firmware version we want this driver to support.
 		minimumVersion = new Version(5,2);
 		preferredVersion = new Version(5,2);
-                minimumAccelerationVersion = new Version(9,3);
+                minimumAccelerationVersion = new Version(5,3);
 
 	}
 	
