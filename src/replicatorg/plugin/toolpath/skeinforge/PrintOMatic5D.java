@@ -319,8 +319,10 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				setValue("infillPercent", "10");
 				setValue("desiredLayerHeight", ".27");
 				setValue("numberOfShells", "1");
-				setValue("desiredFeedrate", "40");
-				setValue("travelFeedrate", "55");
+				String desiredFeedrate = situationBestFit("desiredFeedrate", "40");
+				String travelFeedrate = situationBestFit("travelFeedrate","55");
+				setValue("desiredFeedrate", desiredFeedrate);
+				setValue("travelFeedrate", travelFeedrate );
 				setValue("filamentDiameter", "1.82");
 //				setValue("packingDensity", "85");
 				setValue("desiredPathWidth", ".4");
