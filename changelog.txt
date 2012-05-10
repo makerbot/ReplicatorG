@@ -1,3 +1,6 @@
+0035-Beta ReplicatorG
+ * Updated to handle accleration for The Replicator
+
 0034-Beta ReplicatorG
  * Updated t0 to t1 tolerance code 
 
