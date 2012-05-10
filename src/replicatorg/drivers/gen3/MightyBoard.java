@@ -828,7 +828,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override 
 	public String getConfigValue(String key, String baseline)
 	{
-		Base.logger.severe("MightyBoard fetching from getConfig");
+		//Base.logger.severe("MightyBoard fetching from getConfig");
 
 		if( this.getAccelerationStatus() == true ) {
 			//Base.logger.severe("MightyBoard is accel");
