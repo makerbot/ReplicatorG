@@ -28,7 +28,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 	private JPanel component;
 	private JCheckBox enabled;
 	private String baseName;
-	
+
 	private class ComboListener implements ActionListener {
 		final String name;
 		final DefaultComboBoxModel input;
@@ -49,9 +49,49 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		}
 	}
 	
-	// Note: This could be better represented as a separate class, however we want to be able to line up
-	// the text boxes and input fields in the main print-o-matic dialog. So they stay here!
-	private void addTextParameter(JComponent target, String name, String description, String defaultValue, String toolTip) {
+	public PrintOMatic5D() {
+		component = new JPanel(new MigLayout("ins 0, fillx, hidemode 1"));
+		
+		baseName = "replicatorg.skeinforge.printOMatic5D.";
+
+		// Add a checkbox to switch print-o-matic on and off
+		final String enabledName = baseName + "enabled";
+		enabled = new JCheckBox("Use Print-O-Matic (stepper extruders only)", Base.preferences.getBoolean(enabledName,true));
+		enabled.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (enabledName != null) {
+					Base.preferences.putBoolean(enabledName,enabled.isSelected());
+					
+					printOMatic5D.setVisible(enabled.isSelected());
+					printOMatic5D.invalidate();
+					Window w = SwingUtilities.getWindowAncestor(printOMatic5D);
+					w.pack();
+				
+				}
+			}
+		});
+		
+		component.add(enabled, "wrap, spanx");
+		
+		// Make a tabbed pane to sort basic and advanced components 
+		printOMatic5D = new JTabbedPane();
+
+		// Handles the creation of the various tabs and adds them to printOMatic
+		makeTabs();
+		
+		component.add(printOMatic5D, "spanx");
+		printOMatic5D.setVisible(enabled.isSelected());
+	}
+
+	
+	/** 
+	// add the specified Text Parameter to this display window
+	// Note: This could be better represented as a separate class, 
+	// however we want to be able to line up the text boxes and 
+	// input fields in the main print-o-matic dialog. So they stay here!
+	**/
+	private void addTextParameter(JComponent target, String name, 
+			String description,	String defaultValue, String toolTip) {
 		String fullName = baseName + name;
 		String value = null;
 		
@@ -125,9 +165,11 @@ public class PrintOMatic5D implements SkeinforgePreference {
 	}
 	
 	
-	
 	private double getValue(String optionName) {
-		// TODO: record the default values somewhere, so that we can retrieve them here!
+		
+		// TODO: record the default values for optionName somewhere, 
+		// so that we can retrieve them here!
+		
 		String value = Base.preferences.get(baseName + optionName, null);
 		
 		Base.logger.fine("Saved value for preference " + baseName + optionName + " is " + value);
@@ -188,7 +230,8 @@ public class PrintOMatic5D implements SkeinforgePreference {
 	
 	JTabbedPane printOMatic5D;
 	
-	private JComponent printPanel() {
+	
+	private JComponent generatePrintPanel() {
 		
 		JComponent printPanel = new JPanel(new MigLayout("fillx"));
 
@@ -204,15 +247,25 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				"Number of shells:", "1",
 				"Number of shells to add to the perimeter of an object. Set this to 0 if you are printing a model with thin features.");
 
+		String desiredFeedrate = situationBestFit("desiredFeedrate", "40");
 		addTextParameter(printPanel, "desiredFeedrate",
-				"Feedrate (mm/s)", "40",
-				"slow: 0-20, default: 30, Fast: 40+");
+				"Feedrate (mm/s)", desiredFeedrate, 
+				"slow: 0-20, default: 30, Fast: 40+, Acclerated-fast:100");
 		
+		String travelFeedrate = situationBestFit("travelFeedrate","55");
 		addTextParameter(printPanel, "travelFeedrate",
-				"Travel Feedrate", "55",
-				"slow: 0-20, default: 30, Fast: 40+");
+				"Travel Feedrate", travelFeedrate,
+				"slow: 0-20, default: 30, Fast: 50+, Acclerated-fast:150");
 		
 		return printPanel;
+	}
+	
+	/// use some install/situation related tools to decide on a best value
+	/// for a specific setting
+	private String situationBestFit(String valueKey,String baseline)
+	{
+		//Base.logger.severe("Print-o-Matic fetching from base");
+		return Base.situationBestFit(valueKey, baseline);
 	}
 	
 	private JComponent materialPanel() {
@@ -287,45 +340,12 @@ public class PrintOMatic5D implements SkeinforgePreference {
 	// Handles the creation of the various tabs and adds them to printOMatic
 	private void makeTabs()
 	{
-		printOMatic5D.addTab("Settings", printPanel());
+		printOMatic5D.addTab("Settings", generatePrintPanel());
 		printOMatic5D.addTab("Plastic", materialPanel());
 		printOMatic5D.addTab("Extruder", machinePanel());
 		printOMatic5D.addTab("Defaults", defaultsPanel());
 	}
 	
-	public PrintOMatic5D() {
-		component = new JPanel(new MigLayout("ins 0, fillx, hidemode 1"));
-		
-		baseName = "replicatorg.skeinforge.printOMatic5D.";
-
-		// Add a checkbox to switch print-o-matic on and off
-		final String enabledName = baseName + "enabled";
-		enabled = new JCheckBox("Use Print-O-Matic (stepper extruders only)", Base.preferences.getBoolean(enabledName,true));
-		enabled.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (enabledName != null) {
-					Base.preferences.putBoolean(enabledName,enabled.isSelected());
-					
-					printOMatic5D.setVisible(enabled.isSelected());
-					printOMatic5D.invalidate();
-					Window w = SwingUtilities.getWindowAncestor(printOMatic5D);
-					w.pack();
-				
-				}
-			}
-		});
-		
-		component.add(enabled, "wrap, spanx");
-		
-		// Make a tabbed pane to sort basic and advanced components 
-		printOMatic5D = new JTabbedPane();
-
-		// Handles the creation of the various tabs and adds them to printOMatic
-		makeTabs();
-		
-		component.add(printOMatic5D, "spanx");
-		printOMatic5D.setVisible(enabled.isSelected());
-	}
 
 	public JComponent getUI() { return component; }
 	
@@ -362,7 +382,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 			double  perimeterWidthOverThickness        = getValue("desiredPathWidth")/getValue("desiredLayerHeight");
 			double  infillWidthOverThickness           = perimeterWidthOverThickness;
 			double  feedRate                           = getValue("desiredFeedrate");
-			double  travelFeedRate                           = getValue("travelFeedrate");
+			double  travelFeedRate                     = getValue("travelFeedrate");
 			double  layerHeight                        = getValue("desiredLayerHeight");
 			double  extraShellsOnAlternatingSolidLayer = getValue("numberOfShells");
 			double  extraShellsOnBase                  = getValue("numberOfShells");

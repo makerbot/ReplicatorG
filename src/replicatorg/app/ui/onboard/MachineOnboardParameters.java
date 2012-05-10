@@ -90,10 +90,15 @@ public class MachineOnboardParameters extends JPanel {
 	
 	/** Prompts the user to fire a bot  reset after the changes have been sent to the board.
 	 */
-	private void requestResetFromUser() {
+	private void requestResetFromUser(String extendedMessage) {
+
+		String message = "For these changes to take effect your motherboard needs to reset. <br/>"+
+				"This may take up to <b>10 seconds</b>.";
+		if(extendedMessage != null)
+			message = message + extendedMessage;
+
 		int confirm = JOptionPane.showConfirmDialog(this, 
-				"<html>For these changes to take effect your motherboard needs to reset. <br/>"+
-				"This may take up to <b>10 seconds</b>.</html>",
+				"<html>" + message + "</html>",
 				"Reset board.", 
 				JOptionPane.DEFAULT_OPTION,
 				JOptionPane.INFORMATION_MESSAGE);
@@ -167,16 +172,42 @@ public class MachineOnboardParameters extends JPanel {
         byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
         target.setAccelerationStatus(status);
 
-        requestResetFromUser();
+    	int feedrate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", 40);
+        int travelRate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.travelFeedrate", 55);
+
+        String extendedMessage = null;
+        if( accelerationBox.isSelected() ) {
+        	///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are slow,
+        	// for speed them up.         	
+			Base.logger.finest("forced skeinforge speedup");
+            if(feedrate <= 40 ) 
+            	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "100");
+            if( travelRate <= 55)
+                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "150");
+            extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
+        }
+        else { 
+        	///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are fast,
+        	// for slow them down. 
+        	Base.logger.finest("forced skeinforge slowdown");
+            if(feedrate > 40 )
+            	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "40");
+            if( travelRate > 55)
+                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "55");
+            extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
+        }
+        
+        requestResetFromUser(extendedMessage);
 	}
 
+	
 	/// Causes the EEPROM to be reset to a totally blank state, and during dispose
 	/// tells caller to reset/reconnect the eeprom.
 	private void resetToBlank()
 	{
 		try { 
 			target.resetSettingsToBlank();
-			requestResetFromUser();
+			requestResetFromUser("<b>Resetting EEPROM to completely blank</b>");
 			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){
@@ -190,7 +221,7 @@ public class MachineOnboardParameters extends JPanel {
 	private void resetToFactory() {
 		try { 
 			target.resetSettingsToFactory();
-			requestResetFromUser();
+			requestResetFromUser("<b>Resetting EEPROM to Factory Default.</b>");
 			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){

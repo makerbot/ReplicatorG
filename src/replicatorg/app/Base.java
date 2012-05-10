@@ -77,7 +77,10 @@ import javax.swing.UIManager;
 
 import replicatorg.app.ui.MainWindow;
 import replicatorg.app.ui.NotificationHandler;
+import replicatorg.drivers.DriverQueryInterface;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineLoader;
+import replicatorg.machine.model.MachineType;
 import replicatorg.uploader.FirmwareUploader;
 import ch.randelshofer.quaqua.QuaquaManager;
 
@@ -235,6 +238,21 @@ public class Base {
 		} catch (Exception e) {
 			Base.logger.severe(e.getMessage());
 		}
+	}
+	
+	/// Checks for a connected bot to get settings from, in case
+	/// there are override setting stored on a bot itself
+	static public String situationBestFit(String valueKey, String baseline)
+	{
+		MachineInterface mi = getMachineLoader().getMachineInterface();
+		DriverQueryInterface qi = mi.getDriverQueryInterface();
+
+		// 1) if we are attached, get machine specific value(s)
+		if( mi.isConnected()) { 
+			//Base.logger.severe("situationBestFet fetching from qi");
+			return qi.getConfigValue(valueKey, baseline);
+		}
+		return baseline;
 	}
 	
 	/**

@@ -33,6 +33,7 @@ public class MachineState extends Object implements Cloneable {
 	
 	private State state;
 
+	
 	/** Create a machine state with the given state characteristic and no target. */
 	public MachineState(State state) {
 		this.state = state;
@@ -40,10 +41,12 @@ public class MachineState extends Object implements Cloneable {
 	
 	public State getState() { return state; }
 	
+	
 	/** True if the machine is actively building */
 	public boolean isBuilding() {
 		return state == State.BUILDING || state == State.PAUSED || state == State.BUILDING_OFFLINE; 
 	}
+	
 	
 	// TODO: Error state could possibly be considered connected???
 	public boolean isConnected() {
@@ -52,6 +55,7 @@ public class MachineState extends Object implements Cloneable {
 			|| state == State.PAUSED
 			|| state == State.ERROR;
 	}
+
 	
 	/**
 	 * @return True if the machine is ready to start printing
@@ -59,16 +63,19 @@ public class MachineState extends Object implements Cloneable {
 	public boolean canPrint() {
 		return state == State.READY;
 	}
-		
+	
+	
 	public boolean isPrinting() {
 		return state == State.BUILDING
 			|| state == State.BUILDING_OFFLINE
 			|| state == State.PAUSED;
 	}
 	
+	
 	public boolean isPaused() {
 		return (state == State.PAUSED);
 	}
+	
 	
 	public boolean isConfigurable() {
 		return (isConnected() && !isPrinting());
@@ -84,6 +91,7 @@ public class MachineState extends Object implements Cloneable {
 			throw new RuntimeException(e);
 		}
 	}
+	
 	
 	public boolean equals(MachineState other) {
 		return other.state == state;

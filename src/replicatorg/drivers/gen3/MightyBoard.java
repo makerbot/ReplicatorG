@@ -250,7 +250,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	private int toolCountOnboard = -1; /// no count aka FFFF
 	
 	Version toolVersion = new Version(0,0);
-        Version accelerationVersion = new Version(0,0);
+	Version accelerationVersion = new Version(0,0);
 
 	/** 
 	 * Standard Constructor
@@ -263,11 +263,11 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		stepperValues= new Hashtable();
 		
-		// Make sure this accurately reflects the minimum prefered 
+		// Make sure this accurately reflects the minimum preferred
 		// firmware version we want this driver to support.
 		minimumVersion = new Version(5,2);
 		preferredVersion = new Version(5,2);
-                minimumAccelerationVersion = new Version(5,3);
+		minimumAccelerationVersion = new Version(5,3);
 
 	}
 	
@@ -306,7 +306,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		getStepperValues(); //read our current steppers into a local cache
 		getMotorRPM();		//load our motor RPM from firmware if we can.
-                getAccelerationState();
+		getAccelerationState();
+		
 		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
 		{
 			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
@@ -318,23 +319,23 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			Base.logger.severe("Tool Count Mismatch. Expecting "+ machine.getTools().size() + " tools, reported " + this.toolCountOnboard + "tools");
 			Base.logger.severe("Please double-check your selected machine.");
 		}
-		
+			
 		// I have no idea why we still do this, we may want to test and refactor away
 		getSpindleSpeedPWM();
 		return true;
 	}
+	
         
-        /// Read acceleration OFF/ON status from Bot
-        private void getAccelerationState(){
-            
-            Base.logger.fine("Geting Acceleration Status from Bot");
-            acceleratedFirmware = getAccelerationStatus();
-            if(acceleratedFirmware)
-                Base.logger.finest("Found accelerated firmware active");
-            
-        }
+    /// Read acceleration OFF/ON status from Bot
+    private void getAccelerationState(){
+        Base.logger.fine("Geting Acceleration Status from Bot");
+        acceleratedFirmware = getAccelerationStatus();
+        if(acceleratedFirmware)
+            Base.logger.finest("Found accelerated firmware active");
+        
+    }
 
-	/// Read stepper refernce voltage values from the bot EEPROM.
+	/// Read stepper reference voltage values from the bot EEPROM.
 	private void getStepperValues() {
 		
 		int stepperCountMightyBoard = 5;
@@ -819,6 +820,26 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		}
 				
 		return val;
+	}
+
+	/// Looks up a key value based on the machine setting/status.
+	/// Only used for getting baseline acceleration values for
+	// Print-O-Matic
+	@Override 
+	public String getConfigValue(String key, String baseline)
+	{
+		Base.logger.severe("MightyBoard fetching from getConfig");
+
+		if( this.getAccelerationStatus() == true ) {
+			//Base.logger.severe("MightyBoard is accel");
+			if ( key.equals("desiredFeedrate")	)	return "100";
+			if ( key.equals("travelFeedrate") )		return "150";
+		} else  {
+			//Base.logger.severe("MightyBoard is not accel");
+			if ( key.equals("desiredFeedrate")	)	return "40";
+			if ( key.equals("travelFeedrate") )		return "55";
+		}
+		return baseline;
 	}
 
 	

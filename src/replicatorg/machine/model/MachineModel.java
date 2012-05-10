@@ -65,7 +65,7 @@ public class MachineModel
 	private Point5d maximumFeedrates;
 	private Point5d homingFeedrates;
 	private Point5d stepsPerMM;
-        private Point5d timeOut;
+    private Point5d timeOut;
 	
 	//our drive status
 	protected boolean drivesEnabled = true;

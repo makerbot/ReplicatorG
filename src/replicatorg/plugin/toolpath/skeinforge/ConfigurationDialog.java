@@ -41,6 +41,7 @@ class ConfigurationDialog extends JDialog {
 	 * @param comboBox to fill with list of skeinforge profiles
 	 */
 	private void loadList(JComboBox comboBox) {
+		
 		comboBox.removeAllItems();
 		profiles = parentGenerator.getProfiles();
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
@@ -91,7 +92,8 @@ class ConfigurationDialog extends JDialog {
 		
 		add(new JLabel("Slicing Profile:"), "split 2");
 		
-		// This is intended to fix a bug where the "Generate Gcode" button doesn't get enabled 
+		// This is intended to fix a bug where the "Generate Gcode"
+		// button doesn't get enabled 
 		prefPulldown.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -100,7 +102,9 @@ class ConfigurationDialog extends JDialog {
 				generateButton.setFocusPainted(true);
 			}
 		});
-		loadList(prefPulldown); /// Filles UI with the list of Skeinforge settings/options
+		
+		/// Fills UI with the list of Skeinforge settings/options
+		loadList(prefPulldown); 
 		add(prefPulldown, "wrap, growx, gapbottom 10");
 
 		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
@@ -111,6 +115,7 @@ class ConfigurationDialog extends JDialog {
 		
 		add(generateButton, "tag ok, split 2");
 		add(cancelButton, "tag cancel");
+
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parentGenerator.configSuccess = configureGenerator();
@@ -141,7 +146,8 @@ class ConfigurationDialog extends JDialog {
 			return false;
 		}
 		
-		Profile p = ProfileUtils.getListedProfile(prefPulldown.getModel(), profiles, idx);
+		Profile p = ProfileUtils.getListedProfile(
+				prefPulldown.getModel(), profiles, idx);
 		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 		parentGenerator.profile = p.getFullPath();
 		SkeinforgeGenerator.setSelectedProfile(p.toString());
