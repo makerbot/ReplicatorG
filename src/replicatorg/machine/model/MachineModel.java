@@ -30,6 +30,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicReference;
+import replicatorg.machine.*;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -89,8 +90,8 @@ public class MachineModel
 	// our build volume
 	protected BuildVolume buildVolume;
         
-        // nozzle offsets
-        protected NozzleOffset nozzleOffsets;
+    // nozzle offsets
+    protected ToolheadsOffset toolheadsOfffsets;
 	
 	private MachineType machineType = null;
 
@@ -102,7 +103,7 @@ public class MachineModel
 		clamps = new Vector<ClampModel>();
 		tools = new Vector<ToolModel>();
 		buildVolume = new BuildVolume(100,100,100); // preload it with the default values
-                nozzleOffsets = new NozzleOffset(0.0, 0.0, 0.0);
+                toolheadsOfffsets = new ToolheadsOffset(0.0, 0.0, 0.0);
 		
 		//currentPosition = new Point3d();
 		minimum = new Point5d();
@@ -221,9 +222,9 @@ public class MachineModel
                                             zNozzleOffset = Double.parseDouble(XML.getAttributeValue(offsetNode, "zNozzle"));
                                     } catch (Exception e) {}
                                         
-                                        nozzleOffsets.setX(xNozzleOffset);
-                                        nozzleOffsets.setY(yNozzleOffset);
-                                        nozzleOffsets.setZ(zNozzleOffset);
+                                        toolheadsOfffsets.setX(xNozzleOffset);
+                                        toolheadsOfffsets.setY(yNozzleOffset);
+                                        toolheadsOfffsets.setZ(zNozzleOffset);
 				}
 			}
 		}
@@ -471,7 +472,7 @@ public class MachineModel
         /**
 	 * Get steps-mm conversion value
 	 */
-	public NozzleOffset getNozzleOffsets() { return nozzleOffsets; }
+	public ToolheadsOffset getToolheadsOffsets() { return toolheadsOfffsets; }
 
 	/*************************************
 	*  Convert millimeters to machine steps

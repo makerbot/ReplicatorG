@@ -141,6 +141,8 @@ public interface Driver {
 	public void updateManualControl();
 
 	public Version getMinimumVersion();
+        
+        public Version getMinimumAccelerationVersion();
 	
 	public Version getPreferredVersion();
 	

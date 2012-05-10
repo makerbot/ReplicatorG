@@ -1,3 +1,6 @@
+0034-Beta ReplicatorG
+ * Updated t0 to t1 tolerance code 
+
 0033 ReplicatorG
 * Updated version number to avoid confusion
 * Minor UI changes
