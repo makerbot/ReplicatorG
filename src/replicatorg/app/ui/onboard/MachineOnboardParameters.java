@@ -9,6 +9,7 @@ import java.text.NumberFormat;
 import java.util.EnumMap;
 import java.util.EnumSet;
 
+import java.util.prefs.BackingStoreException;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -24,6 +25,7 @@ import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.AxisId;
+
 
 /**
  * A panel for editing the options stored onboard a machine.
@@ -183,7 +185,8 @@ public class MachineOnboardParameters extends JPanel {
             if(feedrate <= 40 ) 
             	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "100");
             if( travelRate <= 55)
-                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "150");
+                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "150");          
+
             extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
         }
         else { 
@@ -194,6 +197,23 @@ public class MachineOnboardParameters extends JPanel {
             	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "40");
             if( travelRate > 55)
                 Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "55");
+
+        	int xJog = 0; 
+            int zJog = 0; 
+            try {  
+		        if( Base.preferences.nodeExists("controlpanel.feedrate.z") )
+		        		zJog = Base.preferences.getInt("controlpanel.feedrate.z", 480);
+		        if(Base.preferences.nodeExists("controlpanel.feedrate.y") )
+		        		xJog = Base.preferences.getInt("controlpanel.feedrate.x", 480);
+		        if(zJog < 480)
+		    		Base.preferences.put("controlpanel.feedrate.z", "480");
+		        if(xJog < 480)
+		    		Base.preferences.put("controlpanel.feedrate.x", "480");
+            }
+            catch (BackingStoreException e) {
+            	Base.logger.severe(e.toString());
+            }
+            
             extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
         }
         
