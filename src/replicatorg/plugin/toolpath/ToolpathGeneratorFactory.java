@@ -345,6 +345,89 @@ public class ToolpathGeneratorFactory {
 				return prefs;
 			}
 		};
+
+		class Skeinforge50 extends SkeinforgeGenerator {
+
+			{
+				displayName = "Skeinforge (50)";
+			}
+			
+			public File getDefaultSkeinforgeDir() {
+				Base.logger.severe("getting skeinforge base dir");
+		    	return Base.getApplicationFile("skein_engines/skeinforge-50/skeinforge_application");
+			}
+			
+			public File getUserProfilesDir() {
+		    	return Base.getUserFile("sf_50_profiles");
+			}
+			
+			public List<SkeinforgePreference> initPreferences() {
+				List <SkeinforgePreference> prefs = new LinkedList<SkeinforgePreference>();
+
+				prefs.add(postprocess.getPreference());
+				
+				SkeinforgeBooleanPreference raftPref = 			
+						new SkeinforgeBooleanPreference("Use Raft/Support",
+							"replicatorg.skeinforge.useRaft", true,
+							"Enables Raft and/or support material.  " + 
+							"Enabled: add a 'raft' of plastic before starting the build. If overhangs are detected, add support material.");
+					raftPref.addNegateableOption(new SkeinforgeOption("raft.csv", "Add Raft, Elevate Nozzle, Orbit:", "true"));
+					prefs.add(raftPref);
+					
+					SkeinforgeChoicePreference supportPref =
+						new SkeinforgeChoicePreference("Use support material",
+								"replicatorg.skeinforge.choiceSupport", "None",
+								"If this option is selected, skeinforge will attempt to support large overhangs by laying down a support "+
+								"structure that you can later remove. Requires that Raft/Support be checked.");
+					supportPref.addOption("None", new SkeinforgeOption("raft.csv","None", "true"));
+					supportPref.addOption("None", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+					supportPref.addOption("None", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+					supportPref.addOption("None", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+
+					supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","None", "false"));
+					supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+					supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Everywhere", "false"));
+					supportPref.addOption("Exterior support", new SkeinforgeOption("raft.csv","Exterior Only", "true"));
+
+					supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","None", "false"));
+					supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Empty Layers Only", "false"));
+					supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Everywhere", "true"));
+					supportPref.addOption("Full support", new SkeinforgeOption("raft.csv","Exterior Only", "false"));
+					
+					prefs.add(supportPref);
+					
+				// This will be done by the SkeinforgePostProcessor
+				SkeinforgeBooleanPreference bookendPref = 	
+					new SkeinforgeBooleanPreference("Use default start/end gcode",	"replicatorg.skeinforge.useMachineBookend", true,
+						"<html>Use the start and end.gcode defined in machines/*.xml for the currently selected machine.<br/>" +
+						"Uncheck this to use custom start and end.gcode from the skeinforge profile.</html>");
+				bookendPref.addTrueOption(new SkeinforgeOption("alteration.csv", "Name of Start File:", ""));
+				bookendPref.addTrueOption(new SkeinforgeOption("alteration.csv", "Name of End File:", ""));
+				final JCheckBox bookendBox = (JCheckBox)bookendPref.getUI();
+				final ActionListener a = new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						if(bookendBox.isSelected()) {
+							postprocess.setPrependStart(true);
+							postprocess.setAppendEnd(true);
+						} else {
+							postprocess.setPrependStart(false);
+							postprocess.setAppendEnd(false);
+						}
+					}
+				};
+				bookendBox.addActionListener(a);
+				// set initial state
+				a.actionPerformed(null);
+				prefs.add(bookendPref);
+				
+				PrintOMatic5D printOMatic5D = new PrintOMatic5D();
+				prefs.add(printOMatic5D);
+				
+				return prefs;
+			}
+		};
+
 		
 		class MiracleGrueBeta extends MiracleGrueGenerator {
 			{
@@ -379,9 +462,12 @@ public class ToolpathGeneratorFactory {
 		if((new Slic3r071()).getDefaultSlic3rDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Slic3r071.displayName, 
 				"This is the latest version of Slic3r.", Slic3r071.class));
+		if((new Skeinforge50()).getDefaultSkeinforgeDir().exists())
+			list.add(new ToolpathGeneratorDescriptor(Skeinforge50.displayName, 
+				"This is the default version of skeinforge.", Skeinforge50.class));
 		if((new Skeinforge47()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge47.displayName, 
-				"This is the default version of skeinforge.", Skeinforge47.class));
+				"This is the an older version of skeinforge.", Skeinforge47.class));
 		if((new Skeinforge44()).getDefaultSkeinforgeDir().exists())
 			list.add(new ToolpathGeneratorDescriptor(Skeinforge44.displayName, 
 				"This is an experimental version of skeinforge.", Skeinforge44.class));
