@@ -220,9 +220,10 @@ public class GCodeParser {
 	}
 
 	/**
-	 * Parses a line of GCode, sets up the variables, etc.
+	 * Function parses a line of GCode, packages that line into an executable event
+	 * for the s3g driver code to execute, and queues the event for execution
 	 * 
-	 * @param String cmd a line of GCode to parse
+	 * @param cmd a single line of GCode to parse, package, and send to the driver.
 	 */
 	public boolean parse(String cmd, Queue< DriverCommand > commandQueue) {
 		
@@ -238,18 +239,14 @@ public class GCodeParser {
 		}
 		else {
 			try {
-				// TODO:
 				if (gcode.hasCode('G')) {
 					buildGCodes(gcode, commandQueue);
 				}
 				else if (gcode.hasCode('M')) {
 					buildMCodes(gcode, commandQueue);
-				} else if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools()) {				  
-    			tool = (int) gcode.getCodeValue('T');
-    			commandQueue.add(new replicatorg.drivers.commands.SelectTool(tool));
-    			currentOffset = driver.getOffset(tool+1);
-          // Base.logger.warning("Set Tool Index: " + tool + " Axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());
-    		}
+				} else if (gcode.hasCode('T'))	{
+					buildTCodes(gcode, commandQueue);
+				}
 			} catch (GCodeException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -278,14 +275,24 @@ public class GCodeParser {
 		
 		return axes;
 	}
+	
+	private void buildTCodes(GCodeCommand gcode, Queue< DriverCommand > commands) throws GCodeException 
+	{
+		// M6 was historically used to wait for toolheads to get up to temperature, so
+		// you may wish to avoid using M6 by using T
+		if (driver instanceof MultiTool &&  ((MultiTool)driver).supportsSimultaneousTools() )
+			throw new GCodeException("the current driver" + driver.toString() + " does not support multipleTools" );
+
+		tool = (int) gcode.getCodeValue('T');
+		commands.add(new replicatorg.drivers.commands.SelectTool(tool));
+		currentOffset = driver.getOffset(tool+1);
+	}
 
 	private void buildMCodes(GCodeCommand gcode, Queue< DriverCommand > commands) throws GCodeException {
 		// If this machine handles multiple active toolheads, we always honor a T code
 		// as being a annotation to send the given command to the given toolheads.  Be
 		// aware that appending a T code to an M code will not necessarily generate a
 		// change tool request!  Use M6 for that.
-		// M6 was historically used to wait for toolheads to get up to temperature, so
-		// you may wish to avoid using M6.
 		if (gcode.hasCode('T') && driver instanceof MultiTool && ((MultiTool)driver).supportsSimultaneousTools())
 		{
 			commands.add(new replicatorg.drivers.commands.SelectTool((int) gcode.getCodeValue('T')));
@@ -807,7 +814,7 @@ public class GCodeParser {
 				}
 			}
 			break;
-		// New code: home negative.
+		// home negative.
 		case G161:
 			{
 				// home all axes?
@@ -821,7 +828,7 @@ public class GCodeParser {
 				}
 			}
 			break;
-			// New code: home positive.
+			// home positive.
 		case G162:
 			{
 				// home all axes?
