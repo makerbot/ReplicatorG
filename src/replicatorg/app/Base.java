@@ -77,7 +77,10 @@ import javax.swing.UIManager;
 
 import replicatorg.app.ui.MainWindow;
 import replicatorg.app.ui.NotificationHandler;
+import replicatorg.drivers.DriverQueryInterface;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineLoader;
+import replicatorg.machine.model.MachineType;
 import replicatorg.uploader.FirmwareUploader;
 import ch.randelshofer.quaqua.QuaquaManager;
 
@@ -99,12 +102,12 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 33;
+	public static final int VERSION = 35;
 	
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
 	 */
-	public static final String VERSION_NAME = String.format("%04d",VERSION);
+	public static final String VERSION_NAME = String.format("%04d-Beta",VERSION);
 
 	/**
 	 * The machine controller in use.
@@ -193,7 +196,20 @@ public class Base {
 	 * set.
 	 */
 	static private String alternatePrefs = null;
-	
+
+	/**
+	 * Set the name of the alternate preferences to use. This will reload
+	 * the preferences. It must be called only from the main method before
+	 * any preference values are used.
+	 *
+	 * @param name the alternate preferences name.
+	 */
+	public static void setAlternatePrefs(final String name)
+	{
+		alternatePrefs = name;
+		preferences = getUserPreferences();
+	}
+
 	/**
 	 * Get the preferences node for ReplicatorG.
 	 */
@@ -222,6 +238,21 @@ public class Base {
 		} catch (Exception e) {
 			Base.logger.severe(e.getMessage());
 		}
+	}
+	
+	/// Checks for a connected bot to get settings from, in case
+	/// there are override setting stored on a bot itself
+	static public String situationBestFit(String valueKey, String baseline)
+	{
+		MachineInterface mi = getMachineLoader().getMachineInterface();
+		DriverQueryInterface qi = mi.getDriverQueryInterface();
+
+		// 1) if we are attached, get machine specific value(s)
+		if( mi.isConnected()) { 
+			//Base.logger.severe("situationBestFet fetching from qi");
+			return qi.getConfigValue(valueKey, baseline);
+		}
+		return baseline;
 	}
 	
 	/**
@@ -254,8 +285,8 @@ public class Base {
 	static public String getToolsPath() {
 	    String toolsDir = System.getProperty("replicatorg.toolpath");
 	    if (toolsDir == null || (toolsDir.length() == 0)) {
-		    String path = System.getProperty("user.dir");
-	    	toolsDir = path + File.separator + "tools";
+		    File appDir = Base.getApplicationDirectory();
+	    	toolsDir = appDir.getAbsolutePath() + File.separator + "tools";
 	    }
 	    return toolsDir;
 	}
@@ -448,7 +479,7 @@ public class Base {
 			if (args[i].equals("--alternate-prefs")) {
 				if((i+1) < args.length) {
 					i++;
-					alternatePrefs = args[i];
+					setAlternatePrefs(args[i]);
 				}
 			} else if (args[i].equals("--clean-prefs")) {
 				cleanPrefs = true;
@@ -486,6 +517,7 @@ public class Base {
 			}
 		}
 		
+
 		// Use the default system proxy settings
 		System.setProperty("java.net.useSystemProxies", "true");
     	// Use antialiasing implicitly
@@ -938,8 +970,8 @@ public class Base {
 	}
 
 	static public String getContents(String what) {
-		String basePath = System.getProperty("user.dir");
-		return basePath + File.separator + what;
+		File appBase = 	Base.getApplicationDirectory();
+		return appBase.getAbsolutePath() + File.separator + what;
 	}
 
 	static public String getLibContents(String what) {

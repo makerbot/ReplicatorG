@@ -106,7 +106,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		c.add(new JLabel("On ReplicatorG launch:"),"split");
 		// We don't have SELECTED_KEY in Java 1.5, so we'll do things the old-fashioned, ugly way.
 		JRadioButton b;
-		b = new JRadioButton(new RadioAction("Open last opened or save file",InitialOpenBehavior.OPEN_LAST));
+		b = new JRadioButton(new RadioAction("Open last opened or saved file",InitialOpenBehavior.OPEN_LAST));
     	if (InitialOpenBehavior.OPEN_LAST == openBehavior) { b.setSelected(true); }
 		bg.add(b);
 		c.add(b,"split");
@@ -194,10 +194,10 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		addCheckboxForPref(content,"Automatically connect to machine at startup","replicatorg.autoconnect",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
 		addCheckboxForPref(content,"Review GCode for potential toolhead problems before building","build.safetyChecks",true);
-		addCheckboxForPref(content,"Break Z motion into seperate moves (normally false)","replicatorg.parser.breakzmoves",false);
+		addCheckboxForPref(content,"Break Z motion into separate moves (normally false)","replicatorg.parser.breakzmoves",false);
 		addCheckboxForPref(content,"Show starfield in model preview window","ui.show_starfield",false);
 		addCheckboxForPref(content,"Notifications in System tray","ui.preferSystemTrayNotifications",false);
-		addCheckboxForPref(content,"Automatically re-generate gcode when building from model view.","build.autoGenerateGcode",true);
+		addCheckboxForPref(content,"Automatically regenerate gcode when building from model view.","build.autoGenerateGcode",true);
 		addCheckboxForPref(content,"Use native avrdude for uploading code","uploader.useNative",false);
 
 		JPanel advanced = new JPanel();

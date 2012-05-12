@@ -73,7 +73,8 @@ public class Serial implements SerialPortEventListener {
 	/**
 	 * The amount of time we're willing to wait for a read to timeout.  Defaults to 500ms.
 	 */
-	private int timeoutMillis = 500;
+    private static int TIMEOUT_DEFAULT = 500; 
+	private int timeoutMillis = TIMEOUT_DEFAULT;            
 	
 	private ByteFifo readFifo = new ByteFifo();
 	
@@ -330,7 +331,15 @@ public class Serial implements SerialPortEventListener {
 				byte b = readFifo.dequeue();
 				return b & 0xff; 
 			} else {
-				Base.logger.warning("Read timed out.");
+				// dial down timeout error reporting if timeoutMillis is set
+				// below the default.  In this case, the packets will time out
+				// frequently and messaging will flood the console
+				if(timeoutMillis < TIMEOUT_DEFAULT){
+					Base.logger.finest("Read timed out.");
+				}
+				else{
+					Base.logger.warning("Read timed out.");
+				}
 				return -1;
 			}
 		}

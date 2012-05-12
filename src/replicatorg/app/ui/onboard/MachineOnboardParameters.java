@@ -9,6 +9,7 @@ import java.text.NumberFormat;
 import java.util.EnumMap;
 import java.util.EnumSet;
 
+import java.util.prefs.BackingStoreException;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -24,6 +25,7 @@ import replicatorg.app.Base;
 import replicatorg.drivers.Driver;
 import replicatorg.drivers.OnboardParameters;
 import replicatorg.machine.model.AxisId;
+
 
 /**
  * A panel for editing the options stored onboard a machine.
@@ -81,17 +83,24 @@ public class MachineOnboardParameters extends JPanel {
 	private JFormattedTextField vref3 = new JFormattedTextField(threePlaces);
 	private JFormattedTextField vref4 = new JFormattedTextField(threePlaces);
         
-        private JFormattedTextField xNozzleOffsetField = new JFormattedTextField(threePlaces);
-        private JFormattedTextField yNozzleOffsetField = new JFormattedTextField(threePlaces);
-        private JFormattedTextField zNozzleOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField xToolheadOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField yToolheadOffsetField = new JFormattedTextField(threePlaces);
+        private JFormattedTextField zToolheadOffsetField = new JFormattedTextField(threePlaces);
+        
+        private JCheckBox accelerationBox = new JCheckBox();   
 
 	
 	/** Prompts the user to fire a bot  reset after the changes have been sent to the board.
 	 */
-	private void requestResetFromUser() {
+	private void requestResetFromUser(String extendedMessage) {
+
+		String message = "For these changes to take effect your motherboard needs to reset. <br/>"+
+				"This may take up to <b>10 seconds</b>.";
+		if(extendedMessage != null)
+			message = message + extendedMessage;
+
 		int confirm = JOptionPane.showConfirmDialog(this, 
-				"<html>For these changes to take effect your motherboard needs to reset. <br/>"+
-				"This may take up to <b>10 seconds</b>.</html>",
+				"<html>" + message + "</html>",
 				"Reset board.", 
 				JOptionPane.DEFAULT_OPTION,
 				JOptionPane.INFORMATION_MESSAGE);
@@ -127,6 +136,7 @@ public class MachineOnboardParameters extends JPanel {
 		// V is in the 7th bit position, and it's set to NOT hold Z
 		// From the firmware: "Bit 7 is used for HoldZ OFF: 1 = off, 0 = on"
 		if ( !zHoldBox.isSelected() )	axesInverted.add(AxisId.V);
+              
 
 		target.setInvertedAxes(axesInverted);
 		{
@@ -157,20 +167,67 @@ public class MachineOnboardParameters extends JPanel {
 			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
 		}
                 
-                target.setNozzleOffset(0, ((Number)xNozzleOffsetField.getValue()).doubleValue());
-                target.setNozzleOffset(1, ((Number)yNozzleOffsetField.getValue()).doubleValue());
-                target.setNozzleOffset(2, ((Number)zNozzleOffsetField.getValue()).doubleValue());
-		
-                requestResetFromUser();
+        target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
+        target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
+        
+        byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
+        target.setAccelerationStatus(status);
+
+    	int feedrate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", 40);
+        int travelRate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.travelFeedrate", 55);
+
+        String extendedMessage = null;
+        if( accelerationBox.isSelected() ) {
+        	///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are slow,
+        	// for speed them up.         	
+			Base.logger.finest("forced skeinforge speedup");
+            if(feedrate <= 40 ) 
+            	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "100");
+            if( travelRate <= 55)
+                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "150");          
+
+            extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
+        }
+        else { 
+        	///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are fast,
+        	// for slow them down. 
+        	Base.logger.finest("forced skeinforge slowdown");
+            if(feedrate > 40 )
+            	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "40");
+            if( travelRate > 55)
+                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "55");
+
+        	int xJog = 0; 
+            int zJog = 0; 
+            try {  
+		        if( Base.preferences.nodeExists("controlpanel.feedrate.z") )
+		        		zJog = Base.preferences.getInt("controlpanel.feedrate.z", 480);
+		        if(Base.preferences.nodeExists("controlpanel.feedrate.y") )
+		        		xJog = Base.preferences.getInt("controlpanel.feedrate.x", 480);
+		        if(zJog < 480)
+		    		Base.preferences.put("controlpanel.feedrate.z", "480");
+		        if(xJog < 480)
+		    		Base.preferences.put("controlpanel.feedrate.x", "480");
+            }
+            catch (BackingStoreException e) {
+            	Base.logger.severe(e.toString());
+            }
+            
+            extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
+        }
+        
+        requestResetFromUser(extendedMessage);
 	}
 
+	
 	/// Causes the EEPROM to be reset to a totally blank state, and during dispose
 	/// tells caller to reset/reconnect the eeprom.
 	private void resetToBlank()
 	{
 		try { 
 			target.resetSettingsToBlank();
-			requestResetFromUser();
+			requestResetFromUser("<b>Resetting EEPROM to completely blank</b>");
 			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){
@@ -184,7 +241,7 @@ public class MachineOnboardParameters extends JPanel {
 	private void resetToFactory() {
 		try { 
 			target.resetSettingsToFactory();
-			requestResetFromUser();
+			requestResetFromUser("<b>Resetting EEPROM to Factory Default.</b>");
 			MachineOnboardParameters.this.dispose();
 		}
 		catch (replicatorg.drivers.RetryException e){
@@ -213,6 +270,7 @@ public class MachineOnboardParameters extends JPanel {
 		aAxisInvertBox.setSelected(invertedAxes.contains(AxisId.A));
 		bAxisInvertBox.setSelected(invertedAxes.contains(AxisId.B));
 		zHoldBox.setSelected(     !invertedAxes.contains(AxisId.V));
+                
 		// 0 == inverted, 1 == not inverted
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
 		endstopInversionSelection.setSelectedIndex(endstops.ordinal());
@@ -234,11 +292,16 @@ public class MachineOnboardParameters extends JPanel {
 			vref3.setValue(this.target.getStoredStepperVoltage(3));
 			vref4.setValue(this.target.getStoredStepperVoltage(4));
 		}
+
+		if(target.hasToolheadsOffset()) {
+			xToolheadOffsetField.setValue(this.target.getToolheadsOffset(0));
+			yToolheadOffsetField.setValue(this.target.getToolheadsOffset(1));
+			zToolheadOffsetField.setValue(this.target.getToolheadsOffset(2));
+		}   
                 
-                xNozzleOffsetField.setValue(this.target.getNozzleOffset(0));
-                yNozzleOffsetField.setValue(this.target.getNozzleOffset(1));
-                zNozzleOffsetField.setValue(this.target.getNozzleOffset(2));
-                
+                if(target.hasAcceleration()){
+                    accelerationBox.setSelected(this.target.getAccelerationStatus());
+                }
 	}
 
 	protected void dispose() {
@@ -339,20 +402,28 @@ public class MachineOnboardParameters extends JPanel {
 			add(aAxisHomeOffsetField,"wrap");
 			add(new JLabel("B home offset (mm)"));
 			add(bAxisHomeOffsetField,"wrap");
+                        
 		}
-                
-                xNozzleOffsetField.setColumns(10);
-                yNozzleOffsetField.setColumns(10);
-                zNozzleOffsetField.setColumns(10);
-                
-                add(new JLabel("X nozzle offset (mm)"));
-                add(xNozzleOffsetField, "wrap");
-                
-                add(new JLabel("Y nozzle offset (mm)"));
-                add(yNozzleOffsetField, "wrap");
-                
-                add(new JLabel("Z nozzle offset (mm)"));
-                add(zNozzleOffsetField, "wrap");
+
+		if(target.hasToolheadsOffset()) {
+		    xToolheadOffsetField.setColumns(10);
+		    yToolheadOffsetField.setColumns(10);
+		    zToolheadOffsetField.setColumns(10);
+		    
+		    add(new JLabel("X toolhead offset (mm)"));
+		    add(xToolheadOffsetField, "wrap");
+		    
+		    add(new JLabel("Y toolhead offset (mm)"));
+		    add(yToolheadOffsetField, "wrap");
+		    
+		    add(new JLabel("Z toolhead offset (mm)"));
+		    add(zToolheadOffsetField, "wrap");
+                   
+		}
+                if(target.hasAcceleration()){
+                    add(new JLabel("Acceleration On"));	
+                    add(accelerationBox,"span 2, wrap");
+                }
 
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {
@@ -362,7 +433,7 @@ public class MachineOnboardParameters extends JPanel {
 //				loadParameters();
 			}
 		});
-		resetToFactoryButton.setToolTipText("Reest the onboard settings to the factory defaults");
+		resetToFactoryButton.setToolTipText("Reset the onboard settings to the factory defaults");
 		add(resetToFactoryButton, "split 1");
 
 		
@@ -373,7 +444,7 @@ public class MachineOnboardParameters extends JPanel {
 //				loadParameters();
 			}
 		});
-		resetToBlankButton.setToolTipText("Reest the onboard settings to the *completely blank*");
+		resetToBlankButton.setToolTipText("Reset the onboard settings to *completely blank*");
 		add(resetToBlankButton);
 
 		commitButton.addActionListener(new ActionListener() {
