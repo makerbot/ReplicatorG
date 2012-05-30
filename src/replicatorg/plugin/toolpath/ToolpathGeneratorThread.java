@@ -35,7 +35,12 @@ public class ToolpathGeneratorThread extends Thread {
 	
 	
 	public void addListener(ToolpathGenerator.GeneratorListener listener) {
-		this.generator.addListener(listener);
+		if( listener == null )
+			Base.logger.severe("add listener failsauce for "+ listener);
+		else if( this.generator == null )
+			Base.logger.severe("add listener failsauce for "+ this);
+		else
+			this.generator.addListener(listener);
 	}
 	
 	
@@ -70,6 +75,7 @@ public class ToolpathGeneratorThread extends Thread {
 			}
 			
 			progressDialog = new ProgressDialog(parent,build,this,generator.displayName);
+			//Base.logger.severe("adding progressDialog. is it null? " + progressDialog);
 			generator.addListener(progressDialog);
 			// This actually works because it's a modal dialog;
 			// a new nested event loop is generated in the event loop
@@ -114,18 +120,20 @@ public class ToolpathGeneratorThread extends Thread {
 			}
 		}
 		Base.logger.info("Beginning toolpath generation.");
+
 		try {
 			BuildCode code = generator.generateToolpath();
+			//Base.logger.severe("Toolpath generation POST generateToolpath!");
 			if (code != null) {
 				build.reloadCode();
 				generator.emitCompletion(GeneratorListener.Completion.SUCCESS);
-				Base.logger.info("Toolpath generation complete!");
+				//Base.logger.severe("Toolpath generation complete!");
 			} else {
 				generator.emitCompletion(GeneratorListener.Completion.FAILURE);
-				Base.logger.severe("Toolpath generation failed!");
+				//Base.logger.severe("Toolpath generation failed!" + code);
 			}
 		} catch (Exception e) {
-			Base.logger.log(Level.SEVERE,"Toolpath generation failed!",e);
+			//Base.logger.severe("Toolpath generation failed!" + e);
 			generator.emitCompletion(GeneratorListener.Completion.FAILURE);
 		} finally {
 			if (progressDialog != null) {

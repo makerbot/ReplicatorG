@@ -20,7 +20,16 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.model.Build;
 
+
+/**
+ * This is the slicing Progress Dialog used to keep the user updated on slice 
+ * progress for all slice engines. 
+ * 
+ * @author farmckon
+ *
+ */
 class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListener {
+	
 	Thread parentThread;
 	JLabel topLabel;
 	JLabel progressLabel;
@@ -32,6 +41,7 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 	int layerTotal;
     int currentProcessI = -1;
     String currentSlicer;
+
     SkeinStep slicer[] = {
     		new SkeinStep("Processing triangulated mesh",12),
     		new SkeinStep("Generating perimeters",8),
@@ -60,6 +70,7 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 		super(parent);
 		currentSlicer = generator;
 		this.parentThread = parentThread;
+		//Base.logger.severe("creating ProgressDialog. ParentThread" + parentThread.toString());
 		ImageIcon icon = new ImageIcon(Base.getDirectImage("images/slicing-icon.gif",this));
 		setTitle("Generating toolpath for "+build.getName());
 		topLabel = new JLabel("Generating toolpath for "+build.getName(),icon,SwingConstants.LEFT);
@@ -72,6 +83,7 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 		subProgressBar.setStringPainted(false);
 		subProgressBar.setValue(0);
 		totalProgressBar.setStringPainted(false);
+		
 		setLayout(new MigLayout());
 		add(topLabel,"wrap");
 		add(new JLabel("Generator: "+generator),"wrap");
@@ -110,6 +122,7 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 		return done;
 	}
 	
+	
 	/**
 	 * SetVisible is overridden to ensure that we don't retain dangling references
 	 * to the toolpath generation thread after it's done.  This helps reduce the
@@ -129,11 +142,17 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 	}
 
 	private void abortGeneration() {
-		Base.logger.severe("Aborted toolpath generation!");
-		parentThread.interrupt();
+		//Base.logger.severe("Aborted toolpath generation!");
+		if(parentThread != null) 
+			parentThread.interrupt();
+		synchronized(this) {
+			setVisible(false);
+			setDone(true);
+		}
+		
 	}
 
-	// Parsing for progress messages.  There is no need to compile all these patterns every single time.
+	// Parsing for progress messages.  Precompile patterns to save runtime.
 	static private Pattern patOfNum = Pattern.compile(" of ([0-9]+)...");
     static private Pattern patLayerCount = Pattern.compile("([A-Za-z]+) layer count ([0-9]+)");
 	static private Pattern patOldLayerTotal = Pattern.compile("total Layer count is[^0-9]([0-9]+)[^0-9]");
@@ -173,269 +192,257 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 	@Override
 	public void updateGenerator(final ToolpathGenerator.GeneratorEvent evt) {
 
+		/// internal runnable class for setting updates
 		SwingUtilities.invokeLater(new Runnable() {
+
+			String processName = "";
+			boolean logIt = true;
+			boolean showIt = true;
+			boolean showProgress = false;
+			int sub;
+			Matcher m = null;
+
+			/// Parse newMessage and select slic3r specific data
+			/// to display as part of the update.
+			/// @param: line of text sent by slicing program
+			/// @returns: updated tex to display display data 
+			String doSlic3rUpdate(String newMessage)
+			{
+				m = patOfRemoveWall.matcher(newMessage);
+				if (m.find())
+				{
+					logIt = false;
+					subProgressBar.setIndeterminate(true);
+					layerIndex = Integer.parseInt(m.group(2));
+					subProgressBar.setIndeterminate(false);
+					newMessage = "Removing unprintable perimeter at layer " + m.group(2);
+				}
+				
+				m = patOfBridgeSupport.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfWalls.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfPower.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfLines.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfFillBridge.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfBridgeInfill.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfOverhang.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfSmallSurface.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfMembrane.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfDetection.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfInternalSurface.matcher(newMessage);
+					if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfHorizontal.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+
+				m = patOfReverseBridge.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfZLevel.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfPoly.matcher(newMessage);
+				if (m.find()) { logIt = false; showIt = false; }
+				
+				m = patOfFacets.matcher(newMessage);
+				if (m.find())
+				{
+					logIt = false;
+					subProgressBar.setIndeterminate(true);
+					newMessage = "Processing facet " + m.group(1);
+				}
+				
+				m = patOfLayers.matcher(newMessage);
+				if (m.find())
+				{
+					logIt = false;
+					showIt = false;
+					int temp = Integer.parseInt(m.group(2));
+					if (temp > layerTotal)
+					{
+						layerTotal = temp;
+					}
+				}
+				
+				m = patOfSurfaces.matcher(newMessage);
+				if (m.find())
+				{
+					logIt = false;
+					layerIndex = Integer.parseInt(m.group(1));
+					subProgressBar.setIndeterminate(false);
+					showProgress = true;
+					processName = "Making surfaces";
+					newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
+				}
+				
+				m = patOfPerimeters.matcher(newMessage);
+				if (m.find())
+				{
+					logIt = false;
+					layerIndex = Integer.parseInt(m.group(1));
+					subProgressBar.setIndeterminate(false);
+					showProgress = true;
+					processName = "Making perimeters";
+					newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
+				}
+				
+				m = patOfSolids.matcher(newMessage);
+				if (m.find())
+				{
+					logIt = false;
+					layerIndex = Integer.parseInt(m.group(1));
+					subProgressBar.setIndeterminate(false);
+					showProgress = true;
+					processName = "Detecting solid surfaces...";
+					newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
+				}
+				m = patOfSolidShells.matcher(newMessage);
+				if (m.find())
+				{
+					logIt = false;
+					layerIndex = Integer.parseInt(m.group(1));
+					subProgressBar.setIndeterminate(false);
+					showProgress = true;
+					processName = "looking for neighbors";
+					newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
+				}
+				m = patOfFillLayer.matcher(newMessage);
+				if (m.find())
+				{
+					logIt = false;
+					layerIndex = Integer.parseInt(m.group(1));
+					subProgressBar.setIndeterminate(false);
+					showProgress = true;
+					processName = "Filling";
+					newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
+				}	
+				return newMessage;
+			}
+
+			/// @param: line of text sent by slicing program
+			/// @returns: updated tex to display display data 
+			String doSkeinforge33Update(String newMessage)
+			{
+				
+				if(newMessage.startsWith(""+'\033'))
+				{
+					newMessage = newMessage.substring(4);
+				}
+				// skeinforBase.logger.info("DEBUG: " + slicer[currentProcessI].getStepPercentage(layerIndex,layerTotal));ge 33 (and up) format: \033[1AFill layer count 28 of 35...
+				m = patOfNum.matcher(newMessage);
+				if (m.find( )) {
+					logIt = false;
+					layerTotal = Integer.parseInt(m.group(1));
+				}
+				// skeinforge 33 (and up)
+				m = patLayerCount.matcher(newMessage);
+				if (m.find( )) {
+					processName = m.group(1);
+					layerIndex = Integer.parseInt(m.group(2));
+					logIt = false;
+					if(layerTotal > 0) {
+						subProgressBar.setIndeterminate(false);
+						showProgress = true;
+						newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
+					} else {
+						newMessage = processName + " (layer " + layerIndex +")";
+						subProgressBar.setIndeterminate(true);
+					}
+				}
+
+				// Older skeinforge's
+				m = patOldLayerTotal.matcher(newMessage);
+				if (m.find( )) {
+					layerTotal = Integer.parseInt(m.group(1));
+				}
+				m = patFillingLayer.matcher(newMessage);
+				if (m.find( ))
+				{
+					layerIndex = Integer.parseInt(m.group(1));
+					showProgress = true;
+					logIt = false;
+					sub = (int) (55*((double) layerIndex)/ layerTotal);
+					totalProgressBar.setValue(10 + sub);				    	
+				}
+
+				// THE ONE BELOW IS JUST FOR THE OLDER SKEINFORGE < 31!
+				m = patOldFillingLayer.matcher(newMessage);
+				if (m.find( )) {
+					layerIndex = Integer.parseInt(m.group(1));
+					layerTotal = Integer.parseInt(m.group(2));
+					showProgress = true;
+					logIt = false;
+					sub = (int) (55*((double) layerIndex)/ layerTotal);
+					totalProgressBar.setValue(10 + sub);
+				}				    
+
+				m = patSliceToGcode.matcher(newMessage);
+				if (m.find( ))
+				{
+					layerIndex = Integer.parseInt(m.group(1));
+					showProgress = true;
+					logIt = false;
+					sub = (int) (2*((double) layerIndex)/ layerTotal);
+					totalProgressBar.setValue(2 + sub);				    	
+				}	
+				return newMessage;
+			}
+			
+			/// may also set % complete info via class member
+			/// @param: line of text sent by slicing program
+			/// @returns: updated tex to display display data 
+			String doMiracleGrueUpdate(String newMessage)
+			{
+				
+				//Base.logger.severe("doMiracleGrueUpdate: " + newMessage);
+				int split = newMessage.indexOf("[");
+				String base = (split >= 0) ? newMessage.substring(0, split) : newMessage;
+				//Base.logger.severe("doMiracleGrueUpdate: split " + split);
+				newMessage = base.trim();
+				logIt = true;
+				showIt = true;
+				//Base.logger.severe("doMiracleGrueUpdate: newMessage " + newMessage);				
+				return newMessage;
+					
+			}
+
+			
+			/// run event to post slice progress updates to GUI,
+			/// each time this is called the new event message is checked, 
+			/// and an update message/progress is created
 			public void run() {
+
+				String newMessage = evt.getMessage();
+
 				synchronized(ProgressDialog.this) {
-					String newMessage = evt.getMessage();
-					String processName = "";
-					boolean logIt = true;
-					boolean showIt = true;
-					boolean showProgress = false;
-					int sub;
-					Matcher m = null;
+
+				
 					if (currentSlicer.startsWith("Slic3r"))
-					{
-						m = patOfRemoveWall.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							subProgressBar.setIndeterminate(true);
-							layerIndex = Integer.parseInt(m.group(2));
-							subProgressBar.setIndeterminate(false);
-							newMessage = "Removing unprintable perimeter at layer " + m.group(2);
-						}
-						
-						m = patOfBridgeSupport.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfWalls.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfPower.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfLines.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfFillBridge.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfBridgeInfill.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfOverhang.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfSmallSurface.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfMembrane.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfDetection.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfInternalSurface.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfHorizontal.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						m = patOfReverseBridge.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfZLevel.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfPoly.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-						}
-						
-						m = patOfFacets.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							subProgressBar.setIndeterminate(true);
-							newMessage = "Processing facet " + m.group(1);
-						}
-						
-						m = patOfLayers.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							showIt = false;
-							int temp = Integer.parseInt(m.group(2));
-							if (temp > layerTotal)
-							{
-								layerTotal = temp;
-							}
-						}
-						
-						m = patOfSurfaces.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							layerIndex = Integer.parseInt(m.group(1));
-							subProgressBar.setIndeterminate(false);
-							showProgress = true;
-							processName = "Making surfaces";
-							newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
-						}
-						
-						m = patOfPerimeters.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							layerIndex = Integer.parseInt(m.group(1));
-							subProgressBar.setIndeterminate(false);
-							showProgress = true;
-							processName = "Making perimeters";
-							newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
-						}
-						
-						m = patOfSolids.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							layerIndex = Integer.parseInt(m.group(1));
-							subProgressBar.setIndeterminate(false);
-							showProgress = true;
-							processName = "Detecting solid surfaces...";
-							newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
-						}
-						m = patOfSolidShells.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							layerIndex = Integer.parseInt(m.group(1));
-							subProgressBar.setIndeterminate(false);
-							showProgress = true;
-							processName = "looking for neighbors";
-							newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
-						}
-						m = patOfFillLayer.matcher(newMessage);
-						if (m.find())
-						{
-							logIt = false;
-							layerIndex = Integer.parseInt(m.group(1));
-							subProgressBar.setIndeterminate(false);
-							showProgress = true;
-							processName = "Filling";
-							newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
-						}
-					}
+						newMessage = doSlic3rUpdate(newMessage);
+					else if( currentSlicer.startsWith("Miracle"))
+						newMessage = doMiracleGrueUpdate(newMessage);
 					else
-					{
-						if(newMessage.startsWith(""+'\033'))
-						{
-							newMessage = newMessage.substring(4);
-						}
-						// skeinforBase.logger.info("DEBUG: " + slicer[currentProcessI].getStepPercentage(layerIndex,layerTotal));ge 33 (and up) format: \033[1AFill layer count 28 of 35...
-						m = patOfNum.matcher(newMessage);
-						if (m.find( )) {
-							logIt = false;
-							layerTotal = Integer.parseInt(m.group(1));
-						}
-						// skeinforge 33 (and up)
-						m = patLayerCount.matcher(newMessage);
-						if (m.find( )) {
-							processName = m.group(1);
-							layerIndex = Integer.parseInt(m.group(2));
-							logIt = false;
-							if(layerTotal > 0) {
-								subProgressBar.setIndeterminate(false);
-								showProgress = true;
-								newMessage = processName + " (layer " + layerIndex +" of "+ layerTotal +")";
-							} else {
-								newMessage = processName + " (layer " + layerIndex +")";
-								subProgressBar.setIndeterminate(true);
-							}
-						}
-
-						// Older skeinforge's
-						m = patOldLayerTotal.matcher(newMessage);
-						if (m.find( )) {
-							layerTotal = Integer.parseInt(m.group(1));
-						}
-						m = patFillingLayer.matcher(newMessage);
-						if (m.find( ))
-						{
-							layerIndex = Integer.parseInt(m.group(1));
-							showProgress = true;
-							logIt = false;
-							sub = (int) (55*((double) layerIndex)/ layerTotal);
-							totalProgressBar.setValue(10 + sub);				    	
-						}
-
-						// THE ONE BELOW IS JUST FOR THE OLDER SKEINFORGE < 31!
-						m = patOldFillingLayer.matcher(newMessage);
-						if (m.find( )) {
-							layerIndex = Integer.parseInt(m.group(1));
-							layerTotal = Integer.parseInt(m.group(2));
-							showProgress = true;
-							logIt = false;
-							sub = (int) (55*((double) layerIndex)/ layerTotal);
-							totalProgressBar.setValue(10 + sub);
-						}				    
-
-						m = patSliceToGcode.matcher(newMessage);
-						if (m.find( ))
-						{
-							layerIndex = Integer.parseInt(m.group(1));
-							showProgress = true;
-							logIt = false;
-							sub = (int) (2*((double) layerIndex)/ layerTotal);
-							totalProgressBar.setValue(2 + sub);				    	
-						}
-					}
+						newMessage = doSkeinforge33Update(newMessage);
+					
 					if(showProgress)
 					{
 						String j = new Integer(layerTotal).toString();
@@ -446,6 +453,7 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 						}
 						subProgressBar.setValue((int) (100*completion));
 					}
+					
 					m = patProcedureTook.matcher(newMessage);
 					if (m.find( ))
 					{	
@@ -484,16 +492,13 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 							}
 						}
 					}
+					
 					if(currentProcessI >= 0)
 					{
 						if (currentSlicer.startsWith("Slic3r"))
-						{
 							totalProgressBar.setValue(2 * ((int) slicer[currentProcessI].getStepPercentage(layerIndex,layerTotal)));
-						}
 						else
-						{
 							totalProgressBar.setValue((int) steps[currentProcessI].getStepPercentage(layerIndex,layerTotal));
-						}
 					}else {
 						if(layerTotal > 0)
 						{

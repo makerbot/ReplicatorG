@@ -87,7 +87,8 @@ public abstract class Slic3rGenerator extends ToolpathGenerator {
 	static class Profile implements Comparable<Profile> {
 		private String fullPath;
 		private String name;
-		// targetMachines is a filter that will allow this profile to only be show for specified machines
+		// targetMachines is a filter that will allow this profile to only 
+		// be show for specified machines
 		private Set<String> targetMachines = new TreeSet<String>();
 
 		public Profile(String fullPath) {

@@ -60,12 +60,10 @@ public class ToolpathGeneratorFactory {
 			
 			public File getDefaultSlic3rDir() {
 				String Slic3rDir = "slic3r";
-				if (Base.isMacOS())
-				{
+				if (Base.isMacOS()) {
 					Slic3rDir = Slic3rDir + "/Slic3r.app/Contents/MacOS";
 				}
-				if (Base.isLinux())
-				{
+				if (Base.isLinux()) {
 					Slic3rDir = Slic3rDir + "/bin";
 				}
 				return Base.getApplicationFile(Slic3rDir);
@@ -353,7 +351,6 @@ public class ToolpathGeneratorFactory {
 			}
 			
 			public File getDefaultSkeinforgeDir() {
-				Base.logger.severe("getting skeinforge base dir");
 		    	return Base.getApplicationFile("skein_engines/skeinforge-50/skeinforge_application");
 			}
 			
@@ -431,17 +428,15 @@ public class ToolpathGeneratorFactory {
 		
 		class MiracleGrueBeta extends MiracleGrueGenerator {
 			{
-				displayName = "MiraleGrue Beta 0.?";
+				displayName = "Miracle-Grue Beta 0.0.4.0";
 			}
 			
 			public File getDefaultMiracleGrueDir() {
-				String MiracleGrueDir = "MiracleGrue";
-				if (Base.isMacOS())
-				{
-					MiracleGrueDir = MiracleGrueDir + "/Slic3r.app/Contents/MacOS";
+				String MiracleGrueDir = "miracle_grue";
+				if (Base.isMacOS()) {
+					MiracleGrueDir = MiracleGrueDir + "/MiracleGrue.app/Contents/MacOS";
 				}
-				if (Base.isLinux())
-				{
+				if (Base.isLinux()) {
 					MiracleGrueDir = MiracleGrueDir + "/bin";
 				}
 				return Base.getApplicationFile(MiracleGrueDir);

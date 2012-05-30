@@ -20,7 +20,7 @@ public class ProfileUtils {
 	public ProfileUtils() {
 	}
 	
-	/** delete the profile, aka the directory which is represented by this profile.
+	/** delete the profile, aka the file which is represented by this profile.
 	 * 
 	 * @param p the profile
 	 * @return true on success
@@ -70,28 +70,27 @@ public class ProfileUtils {
 				try {
 					Base.openFolder(file);
 				} finally {
-					
+					// this space intentionally left blank
 				}
 				return true;
 			}
 		}
-		else {
-			return false;
-		}
 		return false;
 	}
 
-	//used to check if we want to display a specific profile, based on selected machine, etc.
+	//used to check if we want to display a specific profile, 
+	// based on selected machine, etc.
 	public static boolean shouldDisplay(MiracleGrueGenerator.Profile p) {
 
 		String selectedMachine = Base.preferences.get("machine.name", "no machine selected");
 		
-		if("no machine selected".equals(selectedMachine) ||
-			p.getTargetMachines().isEmpty()  || // if the profile specifies no targets
-			p.getTargetMachines().contains(selectedMachine)) // if the profile targets the selected machine
-			return true;
-		return false;
+		// for MiracleGrue, display options for all machines, don't match machine names
+		// to display yet.
+		
+		return true;
 	}
+	
+	
 	public static Profile getListedProfile(ListModel model, Collection<Profile> profiles, int idx) {
 		String selected = (String)model.getElementAt(idx);
 		for(Profile p : profiles)

@@ -76,48 +76,53 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 	}
 	
 	static public String getSelectedProfile() {
-		String name = Base.preferences.get("replicatorg.slic3r.profile", "");
+		String name = Base.preferences.get("replicatorg.miracle_grue.profile", "");
 		return name;
 	}
 
 	static public void setSelectedProfile(String name) {
-		Base.preferences.put("replicatorg.slic3r.profile", name);
+		Base.preferences.put("replicatorg.miracle_grue.profile", name);
 	}
 
+	/// Class to represent a profile for miracle grue
+	
 	static class Profile implements Comparable<Profile> {
-		private String fullPath;
-		private String name;
+		
+		private String fullPath; //full path of config file
+		private String name; //display name of config file
 		// targetMachines is a filter that will allow this profile to only be show for specified machines
 		private Set<String> targetMachines = new TreeSet<String>();
 
+		/// takes a XXX.config file from Miracle Grue and makes it an option
 		public Profile(String fullPath) {
+
+			//Base.logger.severe("CCCCC Building Profile: " + fullPath );
+
 			this.fullPath = fullPath;
 			int idx = fullPath.lastIndexOf(File.separatorChar);
-			if (idx >= 0) {
-				name = fullPath.substring(idx + 1);
-			} else {
-				name = fullPath;
-			}
-			
-			File targetsFile = new File(fullPath+File.separator+"targetMachines.csv");
-			if(targetsFile.exists()) {
-				try {
-					BufferedReader bir = new BufferedReader(new FileReader(targetsFile));
-					String curline = bir.readLine();
-					while (curline != null) {
-						targetMachines.addAll(Arrays.asList(curline.split(",")));
-						curline = bir.readLine();
-					}
-					bir.close();
-					
-					for(String machine : targetMachines)
-						machine = machine.trim();
-					
-				} catch (FileNotFoundException e) {
-					Base.logger.log(Level.FINEST, "Didn't find a targetMachines file in " + fullPath, e);
-				} catch (IOException e) {
-					Base.logger.log(Level.FINEST, "Didn't find a targetMachines file in " + fullPath, e);
-				}
+
+		
+			File targetFile = new File(fullPath);
+			if(targetFile.exists()) {
+				String name = targetFile.getName();
+				final int lastPeriodPos = name.lastIndexOf('.');
+			    if (lastPeriodPos <= 0)
+			    {
+			        // No period after first character - return name as it was passed in
+			        name = fullPath;
+			    }
+			    else
+			    {
+			        // Remove the last period and everything after it
+			    	name = name.substring(0, lastPeriodPos);
+			    }
+				//Base.logger.severe("CCCCC set name : " + name );
+				targetMachines.add(name);
+				this.name = name;
+
+				for(String machine : targetMachines)
+					machine = machine.trim();
+
 			} else {
 				
 			}
@@ -140,12 +145,14 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		}
 	}
 
+	/// Function to lookup and build profile objects from a directory
 	void getProfilesIn(File dir, List<Profile> profiles) {
 		if (dir.exists() && dir.isDirectory()) {
-			for (String subpath : dir.list()) {
-				File subDir = new File(dir, subpath);
-				if (subDir.isDirectory()) {
-					profiles.add(new Profile(subDir.getAbsolutePath()));
+			for(String cfgFile : dir.list() ) {
+				if(cfgFile.endsWith(".config")) {
+					File file = new File(dir, cfgFile);
+					profiles.add( new Profile( file.getAbsolutePath() ) );
+					//Base.logger.severe("new profile added");
 				}
 			}
 		}
@@ -155,14 +162,18 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 
 	List<Profile> getProfiles() {
 		final List<Profile> profiles = new LinkedList<Profile>(); 
+
 		// Get default installed profiles
-		File dir = new File(Base.getApplicationFile("slic3r"),"prefs");
-		Base.logger.finest("Looking for profiles in: "+ dir.toString());
+		File dir = Base.getApplicationFile("miracle_grue");
+		//Base.logger.severe("Looking for profiles in: "+ dir.toString());
 		getProfilesIn(dir, profiles);
-		dir = getUserProfilesDir();
-		Base.logger.finest("Looking for profiles in: "+ dir.toString());
-		getProfilesIn(dir, profiles);
+
+//		dir = getUserProfilesDir();
+//		Base.logger.finest("Looking for profiles in: "+ dir.toString());
+//		getProfilesIn(dir, profiles);
+
 		Collections.sort(profiles);
+		
 		return profiles;
 	}
 
@@ -359,10 +370,10 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		cd.setName(name);
 		cd.setTitle(name);
 
-		if (Base.preferences.getBoolean("replicatorg.slic3r.printOMatic.enabled", false)) {
+		if (Base.preferences.getBoolean("replicatorg.miracle_grue.printOMatic.enabled", false)) {
 			
 			//Figure out if we're looking to do a toolhead swap
-			String extruderChoice = Base.preferences.get("replicatorg.slic3r.printOMatic.toolheadOrientation", "does not exist");
+			String extruderChoice = Base.preferences.get("replicatorg.miracle_grue.printOMatic.toolheadOrientation", "does not exist");
 			
 			if(extruderChoice.equalsIgnoreCase("right"))
 				postprocess.setToolheadTarget(ToolheadAlias.RIGHT);
@@ -436,12 +447,12 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 	abstract public File getDefaultMiracleGrueDir();
 
 	public File getMiracleGrueDir() {
-		String slic3rPath = System
-				.getProperty("replicatorg.slic3r.path");
-		if (slic3rPath == null || (slic3rPath.length() == 0)) {
+		String miracleGruePath = System
+				.getProperty("replicatorg.miracle_grue.path");
+		if (miracleGruePath == null || (miracleGruePath.length() == 0)) {
 			return getDefaultMiracleGrueDir();
 		}
-		return new File(slic3rPath);
+		return new File(miracleGruePath);
 	}
 
 	public Profile duplicateProfile(Profile originalProfile, String newName) {
@@ -464,18 +475,18 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		ProcessBuilder pb = null;
 		if (Base.isWindows())
 		{
-			String[] arguments = { getMiracleGrueDir()+"\\slic3r.exe",
+			String[] arguments = { getMiracleGrueDir()+"\\miracle_grue.exe",
 					"--ignore-nonexistent-config","--load", profile.getFullPath() + "\\config.ini" };
 			pb = new ProcessBuilder(arguments);
 		}
 		else
 		{
-			String[] arguments = { getMiracleGrueDir()+"/slic3r",
+			String[] arguments = { getMiracleGrueDir()+"/miracle_grue",
 					"--ignore-nonexistent-config","--load", profile.getFullPath() + "/config.ini"};
 				pb = new ProcessBuilder(arguments);
 		}
-		File slic3rDir = getMiracleGrueDir();
-		pb.directory(slic3rDir);
+		File mgDir = getMiracleGrueDir();
+		pb.directory(mgDir);
 		Process process = null;
 		Base.logger.log(Level.FINEST, "Starting MiracleGrue process...");
 		
@@ -487,7 +498,7 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 			// force failure if something goes wrong
 			int value = 1;
 			
-			long timeoutValue = Base.preferences.getInt("replicatorg.slic3r.timeout", -1);
+			long timeoutValue = Base.preferences.getInt("replicatorg.miracle_grue.timeout", -1);
 			
 			process = pb.start();
 			
@@ -528,19 +539,22 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 			}
 			Base.logger.log(Level.FINEST, "MiracleGrue process returned");
 			if (value != 0) {
-				Base.logger.severe("Unrecognized error code returned by MiracleGrue.");
+				//Base.logger.severe("Unrecognized error code returned by MiracleGrue.");
+				// this space intentionally left blank
 			}
 			else
 			{
-				Base.logger.log(Level.FINEST, "Normal Exit on MiracleGrue close");
+				// Base.logger.log(Level.FINEST, "Normal Exit on MiracleGrue close");
+				// this space intentionally left blank
 			}
 		} catch (IOException ioe) {
-			Base.logger.log(Level.SEVERE, "Could not run MiracleGrue.", ioe);
+			//Base.logger.info("Could not run MiracleGrue.", ioe);
+			// this space intentionally left blank
 		} catch (InterruptedException e) {
 			// We are most likely shutting down, or the process has been
 			// manually aborted.
 			// Kill the background process and bail out.
-			System.out.println("MiracleGrueGenerator.editProfile() interrupted: " + e);
+			Base.logger.info("MiracleGrueGenerator.editProfile() interrupted: " + e);
 			if (process != null) {
 				process.destroy();
 			}
@@ -563,21 +577,34 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 	}
 	
 	public BuildCode generateToolpath() {
+		Base.logger.severe("Miracle-Grue generateToolpath started");
+		
 		String path = model.getPath();
 
 		List<String> arguments = new LinkedList<String>();
 		
 		String[] baseArguments = {};
 		
+		int split = path.lastIndexOf('.');
+		String root2 = (split >= 0) ? path.substring(0, split) : path;
+		String outFilename= root2 + ".gcode";
+
+		
 		if (Base.isWindows())
 		{
-			baseArguments = new String[]{ getMiracleGrueDir()+"\\slic3r-console.exe",
+			//Base.logger.severe("Destroy windows");
+			baseArguments = new String[]{ 
+					getMiracleGrueDir()+"\\miracle_grue-console.exe",
 				"--debug","--ignore-nonexistent-config","--load", profile + "\\config.ini"};
 		}
 		else
 		{
-			baseArguments = new String[]{ getMiracleGrueDir()+"/slic3r",
-					"--debug","--ignore-nonexistent-config","--load", profile + "/config.ini" };
+			//Base.logger.severe("Destroy Linux/OSX");
+			baseArguments = new String[]{ 
+					getMiracleGrueDir()+"/miracle_grue",
+					"-c", profile, 
+					"-o", outFilename
+			};
 		}
 		for (String arg : baseArguments) {
 			arguments.add(arg);
@@ -593,16 +620,20 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 			}
 		}
 		arguments.add(path);
-for(String a : arguments) System.out.println(a);
+
+//		for(String a : arguments) 
+//			Base.logger.severe(a);
+		
 		ProcessBuilder pb = new ProcessBuilder(arguments);
 		pb.directory(getMiracleGrueDir());
 		Process process = null;
 		try {
+			//Base.logger.severe("Miracle-Grue try ");
 			process = pb.start();
-			StreamLoggerThread ist = new StreamLoggerThread(
-					process.getInputStream()) {
+			StreamLoggerThread ist = new StreamLoggerThread( process.getInputStream()) {
 				@Override
 				protected void logMessage(String line) {
+					//Base.logger.severe("emitting update");
 					emitUpdate(line);
 					super.logMessage(line);
 				}
@@ -613,11 +644,17 @@ for(String a : arguments) System.out.println(a);
 			ist.setDefaultLevel(Level.FINE);
 			ist.start();
 			est.start();
+			//Base.logger.severe("process pre wait-for");
 			int value = process.waitFor();
+			//Base.logger.severe("process post wait-for value=" + value);
 			if (value != 0) {
-				Base.logger
-						.severe("Unrecognized error code returned by MiracleGrue.");
+//				Base.logger.severe(
+//						"Unrecognized error code returned by MiracleGrue.");
 				// Throw ToolpathGeneratorException
+				if (process != null) {
+					//Base.logger.severe("process is not yet null, destroy it");
+					process.destroy();
+				}
 				return null;
 			}
 		} catch (IOException ioe) {
@@ -625,12 +662,16 @@ for(String a : arguments) System.out.println(a);
 			// Throw ToolpathGeneratorException
 			return null;
 		} catch (InterruptedException e) {
+			//Base.logger.severe("run interrupted ");
 			// We are most likely shutting down, or the process has been
 			// manually aborted.
 			// Kill the background process and bail out.
 			if (process != null) {
+				//Base.logger.severe("process is not yet null, destroy it");
 				process.destroy();
 			}
+			
+			//Base.logger.severe("process interrputed for unkown reason");
 			return null;
 		}
 		int lastIdx = path.lastIndexOf('.');
