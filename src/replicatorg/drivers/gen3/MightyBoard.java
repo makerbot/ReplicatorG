@@ -100,6 +100,17 @@ class MightyBoardEEPROM implements EEPROMClass
 		public static int beta(int which) { return BETA + THERM_TABLE; }
 		public static int data(int which) { return DATA + THERM_TABLE; }
 	};
+        
+        final static class AccelerationOffsets {
+	
+		final public static int Active = 0x00;
+		final public static int Rate = 0x02;
+		final public static int AxisRate = 0x04;
+		final public static int AxisJerk = 0x0E;
+                final public static int MinimumSpeed = 0x18;
+                final public static int DefaultsFlag = 0x1A;
+		
+	};
 	
 	
 	
@@ -160,7 +171,7 @@ class MightyBoardEEPROM implements EEPROMClass
     final public static int ACCELERATION_SETTINGS = 0x016E;
 
     /// start of free space
-    final public static int FREE_EEPROM_STARTS = 0x0172;
+    final public static int FREE_EEPROM_STARTS = 0x018A;
 
 }
 
@@ -885,7 +896,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 		checkEEPROM();
 
-		int val = read16FromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 2);
+		int val = read16FromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.Rate);
 				
 		return val;
         }
@@ -903,8 +915,83 @@ public class MightyBoard extends Makerbot4GAlternateDriver
             if(rate < -32768)
                 rate = -32768;
                 
-            write16ToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 2, rate);
+            write16ToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                    MightyBoardEEPROM.AccelerationOffsets.Rate, rate);
         }
+        
+        /**
+	 * Reads the individual acceleration rates of each axis,
+	 * in mm/s.
+	 */
+	@Override
+	public int getAxisAccelerationRate(int axis) {
+		checkEEPROM();
+                int val = read16FromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS +
+                        MightyBoardEEPROM.AccelerationOffsets.AxisRate + (axis * 2));
+
+		return val;
+	}
+
+	/**
+	 * Writes the individual acceleration rates of each axis,
+	 * in mm/s, to the motherboard EEPROM.
+	 */
+	@Override
+	public void setAxisAccelerationRate(int axis, int rate) {
+
+		write16ToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.AxisRate + (axis * 2), rate);
+	}
+        
+        /**
+	 * Reads the individual acceleration rates of each axis,
+	 * in mm/s.
+	 */
+	@Override
+	public int getAccelerationMinimumSpeed() {
+		checkEEPROM();
+                int val = read16FromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.MinimumSpeed);
+
+		return val;
+	}
+
+	/**
+	 * Writes the individual acceleration rates of each axis,
+	 * in mm/s, to the motherboard EEPROM.
+	 */
+	@Override
+	public void setAccelerationMinimumSpeed(int speed) {
+
+		write16ToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.MinimumSpeed, speed);
+	}
+        
+        /**
+	 * Reads the individual acceleration rates of each axis,
+	 * in mm/s.
+	 */
+	@Override
+	public double getAxisJerk(int axis) {
+		checkEEPROM();
+                byte[] stored = readFromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.AxisJerk + (axis * 2),2);
+                
+                double val = byte16LEToFloat(stored);
+		return val;
+	}
+
+	/**
+	 * Writes the individual acceleration rates of each axis,
+	 * in mm/s, to the motherboard EEPROM.
+	 */
+	@Override
+	public void setAxisJerk(int axis, double jerk) {
+
+		writeToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.AxisJerk + (axis * 2), floatToLE((float)jerk));
+	}
+
         
         @Override
         // get stored acceleration status: either ON of OFF
