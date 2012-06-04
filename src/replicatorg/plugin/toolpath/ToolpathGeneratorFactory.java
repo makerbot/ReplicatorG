@@ -53,14 +53,22 @@ public class ToolpathGeneratorFactory {
 		Vector<ToolpathGeneratorDescriptor> list = new Vector<ToolpathGeneratorDescriptor>();
 		
 		class Slic3r071 extends Slic3rGenerator {
-			{
-				displayName = "Slic3r 0.7.1";
-			}
+			{ 	displayName = "Slic3r 0.7.1"; }
 			
+			/** return directory where slicer exists */
 			public File getDefaultSlic3rDir() {
 				String Slic3rDir = "skein_engines/slic3r_engines";
 				if (Base.isMacOS()) {
-					Slic3rDir +=  "/mac";
+					/// For mac, we want to use the slic3r app bundle. Odd, I know
+					Slic3rDir = "/Applications/Slic3r.app/Contents/MacOS";
+					Base.logger.finer("Slic3r in app data");
+					File absSlicerLocation = new File(Slic3rDir);
+					if( absSlicerLocation.exists() == false ) {
+						Base.logger.severe("Slic3r on mac requires Slicer.app is installed in Applications");
+						//throw new RuntimeException("Slic3r on Mac requires Slicer.app is installed in Applications");
+						return Base.getApplicationFile("slicer_unavailable");
+					}
+					return absSlicerLocation;
 				}
 				if (Base.isLinux()) {
 					Slic3rDir +=  "/linux/bin";
@@ -95,9 +103,7 @@ public class ToolpathGeneratorFactory {
 		
 		class Skeinforge31 extends SkeinforgeGenerator {
 
-			{
-				displayName = "Skeinforge (31)";
-			}
+			{ displayName = "Skeinforge (31)"; }
 			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-31/skeinforge_application");
@@ -122,9 +128,7 @@ public class ToolpathGeneratorFactory {
 	
 		class Skeinforge35 extends SkeinforgeGenerator {
 
-			{
-				displayName = "Skeinforge (35)";
-			}
+			{ displayName = "Skeinforge (35)"; }
 			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-35/skeinforge_application");

@@ -204,8 +204,8 @@
 			<filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt" />
 		</copy>
 <!--		<copy todir="${reso.dir}/slic3r">
-			<fileset dir="slic3r_engines/mac" /> -->
-		</copy>
+			<fileset dir="slic3r_engines/mac" /> 
+		</copy>-->
 		<copy todir="${reso.dir}/skein_engines">
 			<fileset dir="skein_engines" excludes="*.pyc" />
 		</copy>
