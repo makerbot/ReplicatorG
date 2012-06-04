@@ -55,21 +55,27 @@ public class ToolpathGeneratorFactory {
 		class Slic3r071 extends Slic3rGenerator {
 			{
 				displayName = "Slic3r 0.7.1";
-
 			}
 			
 			public File getDefaultSlic3rDir() {
-				String Slic3rDir = "slic3r";
+				String Slic3rDir = "skein_engines/slic3r_engines";
 				if (Base.isMacOS()) {
-					Slic3rDir = Slic3rDir + "/Slic3r.app/Contents/MacOS";
+					Slic3rDir +=  "/mac";
 				}
 				if (Base.isLinux()) {
-					Slic3rDir = Slic3rDir + "/bin";
+					Slic3rDir +=  "/linux/bin";
 				}
-				return Base.getApplicationFile(Slic3rDir);
+				if (Base.isWindows()) {
+					Slic3rDir +=  "/windows";
+				}
+				File x = Base.getApplicationFile(Slic3rDir);
+				return x;
 			}
+
+			/// Returns the directory containing preference directories. Each sub-directory in the 
+			/// returned directory is a specific preference
 			public File getUserProfilesDir() {
-		    	return Base.getUserFile("slic3r_profiles");
+		    	return Base.getUserDir("skein_engines/slic3r_engines/prefs");
 			}
 			public List<Slic3rPreference> initPreferences() {				
 				List <Slic3rPreference> prefs = new LinkedList<Slic3rPreference>();
@@ -432,18 +438,27 @@ public class ToolpathGeneratorFactory {
 			}
 			
 			public File getDefaultMiracleGrueDir() {
-				String MiracleGrueDir = "miracle_grue";
+				String target = "skein_engines/mg_engines";
 				if (Base.isMacOS()) {
-					MiracleGrueDir = MiracleGrueDir + "/MiracleGrue.app/Contents/MacOS";
+					target += "/osx/miracle-grue";
 				}
 				if (Base.isLinux()) {
-					MiracleGrueDir = MiracleGrueDir + "/bin";
+					if(Base.isx86_64()) target += "/linux/x86_64";
+					else  target += "/linux/x86";
+				}	
+				if (Base.isWindows() ) {
+					target += "/windows/miracle-grue.exe";
 				}
-				return Base.getApplicationFile(MiracleGrueDir);
+				File x = Base.getApplicationFile(target);
+				return x;
 			}
+
+			/// Returns the directory of profiles, if needed copies those to a local 
+			// users preferences location
 			public File getUserProfilesDir() {
-		    	return Base.getUserFile("miracle_grue_profiles");
+		    	return Base.getUserDir("skein_engines/mg_engines/profiles");
 			}
+
 			public List<MiracleGruePreference> initPreferences() {				
 				List <MiracleGruePreference> prefs = new LinkedList<MiracleGruePreference>();
 				return prefs;

@@ -329,7 +329,7 @@ public class PrintOMatic implements MiracleGruePreference {
 	public PrintOMatic() {
 		component = new JPanel(new MigLayout("ins 0, fillx, hidemode 1"));
 		
-		baseName = "replicatorg.slic3r.printOMatic.";
+		baseName = "replicatorg.miracle_grue.printOMatic.";
 
 		// Add a checkbox to switch print-o-matic on and off
 		final String enabledName = baseName + "enabled";

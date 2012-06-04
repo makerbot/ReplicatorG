@@ -7,7 +7,7 @@ import java.util.Collection;
 import javax.swing.ListModel;
 
 import replicatorg.app.Base;
-import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator.Profile;
+import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator.MgProfile;
 
 /**
  * Helper utilities for profiles.
@@ -25,7 +25,7 @@ public class ProfileUtils {
 	 * @param p the profile
 	 * @return true on success
 	 */
-	public boolean delete(MiracleGrueGenerator.Profile p) {
+	public boolean delete(MiracleGrueGenerator.MgProfile p) {
 		return delete(new File(p.getFullPath()));
 		
 	}
@@ -53,7 +53,7 @@ public class ProfileUtils {
 			return false;
 		}
 	}
-	public boolean openFolder(MiracleGrueGenerator.Profile p) {
+	public boolean openFolder(MiracleGrueGenerator.MgProfile p) {
 		return openFolder(new File(p.getFullPath()));
 		
 	}
@@ -80,7 +80,7 @@ public class ProfileUtils {
 
 	//used to check if we want to display a specific profile, 
 	// based on selected machine, etc.
-	public static boolean shouldDisplay(MiracleGrueGenerator.Profile p) {
+	public static boolean shouldDisplay(MiracleGrueGenerator.MgProfile p) {
 
 		String selectedMachine = Base.preferences.get("machine.name", "no machine selected");
 		
@@ -91,9 +91,9 @@ public class ProfileUtils {
 	}
 	
 	
-	public static Profile getListedProfile(ListModel model, Collection<Profile> profiles, int idx) {
+	public static MgProfile getListedProfile(ListModel model, Collection<MgProfile> profiles, int idx) {
 		String selected = (String)model.getElementAt(idx);
-		for(Profile p : profiles)
+		for(MgProfile p : profiles)
 			if(selected.equals(p.toString()))
 				return p;
 		Base.logger.severe("Could not find profile! The programmer has done something foolish.");

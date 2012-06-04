@@ -340,6 +340,9 @@ public class Base {
 		return getUserFile(path,true);
 	}
 
+	static public File getUserDir(String path) {
+		return getUserDir(path,true);
+	}
 	
 	/**
 	 * Singleton NumberFormat used for parsing and displaying numbers to GUI in the 
@@ -396,6 +399,32 @@ public class Base {
 		return f;
 	}
 
+	static public File getUserDir(String path, boolean autoCopy) {
+		if (path.contains("..")) {
+			Base.logger.info("Attempted to access parent directory in "+path+", skipping");
+			return null;
+		}
+		// First look in the user's local .replicatorG directory for the path.
+		File f = new File(getUserDirectory(),path);
+		// Make the parent file if not already there
+		File dir = f.getParentFile();
+		if (!dir.exists()) { dir.mkdirs(); }
+		if (autoCopy && !f.exists()) {
+			// Check if there's an application-level version
+			File original = getApplicationFile(path);
+			// If so, copy it over
+			if (original.exists()) {
+				try {
+					Base.copyDir(original,f);
+				} catch (IOException ioe) {
+					Base.logger.log(Level.SEVERE,"Couldn't copy "+path+" to your local .replicatorG directory",f);
+				}
+			}
+		}
+		return f;
+	}
+
+	
 	static public Font getFontPref(String name, String defaultValue) {
 		String s = preferences.get(name,defaultValue);
 		StringTokenizer st = new StringTokenizer(s, ",");
@@ -666,10 +695,15 @@ public class Base {
 		}
 	}
 
+	/** enum for fast/easy OS checking */
 	public enum Platform {
 		WINDOWS, MACOS9, MACOSX, LINUX, OTHER
 	}
-
+	/** enum for fast/easy arch checking */
+	public enum Arch {
+		x86_64, x86, ARM, PPC, OTHER
+	}
+	
 	/**
 	 * Full name of the Java version (i.e. 1.5.0_11). Prior to 0125, this was
 	 * only the first three digits.
@@ -688,11 +722,14 @@ public class Base {
 	 * the preproc.
 	 */
 	public static final float javaVersion = new Float(javaVersionName.substring(0, 3)).floatValue();
+
 	/**
 	 * Current platform in use
 	 */
 	static public Platform platform;
 
+	static public Arch arch; 
+	
 	/**
 	 * Current platform in use.
 	 * <P>
@@ -725,6 +762,18 @@ public class Base {
 			} else {
 				platform = Platform.OTHER;
 			}
+			String aString = System.getProperty("os.arch");
+			if("i386".equals(aString)) 
+				arch = Arch.x86;
+			else if("x86_64".equals(aString) || "amd64".equals(aString) )
+				arch =  Arch.x86_64;
+			else if("universal".equals(aString) || "ppc".equals(aString)) {
+				arch = Arch.OTHER;
+				throw new RuntimeException("Can not use use arch: '" + arch + "'");
+			}
+			
+
+			
 		}
 	}
 
@@ -752,6 +801,13 @@ public class Base {
 		return platform == Platform.LINUX;
 	}
 
+	static public boolean isx86_64(){
+		return arch == Arch.x86_64;
+	}
+	static public boolean isx86(){
+		return arch == Arch.x86;
+	}
+	
 	/**
 	 * Registers key events for a Ctrl-W and ESC with an ActionListener that
 	 * will take care of disposing the window.

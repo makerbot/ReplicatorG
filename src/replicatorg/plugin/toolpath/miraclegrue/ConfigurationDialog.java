@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator.Profile;
+import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator.MgProfile;
 import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator.MiracleGruePreference;
 
 class ConfigurationDialog extends JDialog {
@@ -32,7 +32,7 @@ class ConfigurationDialog extends JDialog {
 	 * we allow them to be removed.
 	 */
 	private MiracleGrueGenerator parentGenerator = null;
-	private List<Profile> profiles = null;
+	private List<MgProfile> profiles = null;
 	
 	JPanel profilePanel = new JPanel();
 	
@@ -46,7 +46,7 @@ class ConfigurationDialog extends JDialog {
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		int i=0;
 		int foundLastProfile = -1;
-		for (Profile p : profiles) {
+		for (MgProfile p : profiles) {
 			// Check that this profile says it's for this machine
 			if(ProfileUtils.shouldDisplay(p))
 			{
@@ -141,7 +141,7 @@ class ConfigurationDialog extends JDialog {
 			return false;
 		}
 		
-		Profile p = ProfileUtils.getListedProfile(prefPulldown.getModel(), profiles, idx);
+		MgProfile p = ProfileUtils.getListedProfile(prefPulldown.getModel(), profiles, idx);
 		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 		parentGenerator.profile = p.getFullPath();
 		MiracleGrueGenerator.setSelectedProfile(p.toString());

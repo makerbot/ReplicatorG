@@ -25,12 +25,12 @@ import javax.swing.event.ListSelectionListener;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
-import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator.Profile;
+import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator.MgProfile;
 
 class EditProfileDialog extends JDialog {
 	final boolean postProcessToolheadIndex = true;
 	final String manageStr = "Manage profiles...";
-	final String profilePref = "replicatorg.slic3r.profilePref";
+	final String profilePref = "replicatorg.miracle_grue.profilePref";
 	JButton editButton = new JButton("Edit...");
 	JButton duplicateButton = new JButton("Duplicate...");
 	JButton locateButton = new JButton("Locate...");
@@ -48,7 +48,7 @@ class EditProfileDialog extends JDialog {
 	 * we allow them to be removed.
 	 */
 	private MiracleGrueGenerator parentGenerator = null;
-	private List<Profile> profiles = null;
+	private List<MgProfile> profiles = null;
 	
 	JPanel profilePanel = new JPanel();
 	
@@ -58,7 +58,7 @@ class EditProfileDialog extends JDialog {
 		DefaultListModel model = new DefaultListModel();
 		int i=0;
 		int foundLastProfile = -1;
-		for (Profile p : profiles) {
+		for (MgProfile p : profiles) {
 			
 			// Check that this profile says it's for this machine
 			if(ProfileUtils.shouldDisplay(p) || filterBox.isSelected())
@@ -139,7 +139,7 @@ class EditProfileDialog extends JDialog {
 		        JList list = (JList)evt.getSource();
 		        if (evt.getClickCount() == 2) { // Double-click generates with this profile
 		            int idx = list.locationToIndex(evt.getPoint());
-		            Profile p = ProfileUtils.getListedProfile(list.getModel(), profiles, idx);
+		            MgProfile p = ProfileUtils.getListedProfile(list.getModel(), profiles, idx);
 					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 					parentGenerator.configSuccess = true;
 					parentGenerator.profile = p.getFullPath();
@@ -157,7 +157,7 @@ class EditProfileDialog extends JDialog {
 				{
 					int idx = prefList.getSelectedIndex();
 					Base.logger.fine("idx="+idx);
-					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
+					MgProfile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 					parentGenerator.configSuccess = true;
 					parentGenerator.profile = p.getFullPath();
@@ -187,7 +187,7 @@ class EditProfileDialog extends JDialog {
 					JOptionPane.showMessageDialog(parent,
 							"Select a profile to edit.");
 				} else {
-					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
+					MgProfile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					parentGenerator.editProfile(p);
 				}
 			}
@@ -200,8 +200,8 @@ class EditProfileDialog extends JDialog {
 				String newName = JOptionPane.showInputDialog(parent,
 						"Name your new profile:");
 				if (newName != null) {
-					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
-					Profile newp = parentGenerator.duplicateProfile(p, newName);
+					MgProfile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
+					MgProfile newp = parentGenerator.duplicateProfile(p, newName);
 					loadList(prefList);
 					// Select new profile
 					if (newp != null) prefList.setSelectedValue(newp.toString(), true);
@@ -216,7 +216,7 @@ class EditProfileDialog extends JDialog {
 				int idx = prefList.getSelectedIndex();
 				if (idx == -1) {
 				} else {
-					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
+					MgProfile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 					boolean result = new ProfileUtils().openFolder(p);
 					Base.logger.log(Level.FINEST,
 							"Opening directory for profile: "+ result);
@@ -229,7 +229,7 @@ class EditProfileDialog extends JDialog {
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int idx = prefList.getSelectedIndex();
-				Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
+				MgProfile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
 				
 				int userResponse = JOptionPane.showConfirmDialog(null,
 						"Are you sure you want to delete profile " 
