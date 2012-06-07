@@ -1,3 +1,9 @@
+0036-Beta ReplicatorG
+ * Updated for acceleration behavior
+ * Updated to have temperature as part of PrintOMatic settings
+ * Updated for smarter acceleration related configuration
+  
+
 0034-Beta ReplicatorG
  * Updated t0 to t1 tolerance code 
 
