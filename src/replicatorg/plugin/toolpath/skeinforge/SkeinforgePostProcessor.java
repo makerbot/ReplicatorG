@@ -252,31 +252,22 @@ public class SkeinforgePostProcessor {
 			Matcher m = p.matcher(line);
 			if(m.matches() ){
 				int newTemp = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.printTemp", 220);
-				Base.logger.severe("new temp" + newTemp);
+				Base.logger.finest("new temp" + newTemp);
 				String newStr = "M104 S" + newTemp + " T"+ m.group(2);
 				if(m.groupCount() >= 3)
 					newStr = newStr + " " + m.group(3) ;
 				newStr = newStr + " (temp updated by printOMatic)";
-				Base.logger.severe("New Temp String: " + newStr);
+				Base.logger.finest("New Temp String: " + newStr);
 				matched++;
 				newStart.add(newStr);
-				Base.logger.severe("baz");
 			}
 			else {
-				Base.logger.severe("foo");
 				newStart.add(line);
 				
 			}
 		}
 		sourceGCode.add(0, newStart);
-		Base.logger.severe("Match Count : " + matched);
-		
-		
-		//updatedStartCode.replaceTemp('replicator','printTemp');
-		//GCodeEnumeration m104 = replicatorg.app.gcode.GCodeEnumeration.M104();
-		//M104 S220 T0 (set extruder temperature)
-		
-		//prepend the local copy of start code to our gcode
+		Base.logger.finest("printTemp replace count : " + matched);
 		
 	}
 		
