@@ -62,10 +62,10 @@ public class MachineModel
 	private Set<AxisId> axes = EnumSet.noneOf(AxisId.class);
 	
 	//feedrate information
-	private Point5d maximumFeedrates;
+	private Point5d maximumFeedrateSteps;
 	private Point5d homingFeedrates;
 	private Point5d stepsPerMM;
-        private Point5d timeOut;
+	private Point5d timeOut;
 	
 	//our drive status
 	protected boolean drivesEnabled = true;
@@ -108,7 +108,7 @@ public class MachineModel
 		//currentPosition = new Point3d();
 		minimum = new Point5d();
 		maximum = new Point5d();
-		maximumFeedrates = new Point5d();
+		maximumFeedrateSteps = new Point5d();
 		homingFeedrates = new Point5d();
 		timeOut = new Point5d();
 		stepsPerMM = new Point5d(1, 1, 1, 1, 1); //use ones, because we divide by this!
@@ -294,7 +294,7 @@ public class MachineModel
 							}
 						}
 						maximum.setAxis(id,length);
-						maximumFeedrates.setAxis(id,maxFeedrate);
+						maximumFeedrateSteps.setAxis(id,maxFeedrate);
 						homingFeedrates.setAxis(id,homingFeedrate);
 						stepsPerMM.setAxis(id,stepspermm);
 						timeOut.setAxis(id,timeout);
@@ -609,8 +609,9 @@ public class MachineModel
 		}
 	}
 
+	/// Maximum feedrate in stepper steps/sec
 	public Point5d getMaximumFeedrates() {
-		return maximumFeedrates;
+		return maximumFeedrateSteps;
 	}
 	
 	public Point5d getHomingFeedrates() {
