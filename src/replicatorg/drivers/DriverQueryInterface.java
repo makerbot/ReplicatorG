@@ -21,19 +21,12 @@ public interface DriverQueryInterface {
 	
 	public int getMotorSpeedPWM();
 
-	/** relies on timing to have the 'right selected toolhead', deprecated */
-	@Deprecated
-	public double getTemperature();
-
 	public double getTemperature(int toolhead);
 
 	public double getTemperatureSetting();
 
 	public boolean hasAutomatedBuildPlatform();
 	
-	/** relies on timing to have the 'right selected toolhead', deprecated */
-	@Deprecated
-	public double getPlatformTemperature();
 	public double getPlatformTemperature(int toolhead);
 	public double getPlatformTemperatureSetting();
 
@@ -43,4 +36,8 @@ public interface DriverQueryInterface {
 	
 	public Version getVersion();
 	public Version getPreferredVersion();
+	
+
+	/// Queries the machine for a machine specific config value
+	public String getConfigValue(String value, String baseline);		
 }

@@ -718,4 +718,9 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 		
 	}
 
+	@Override 
+	public String getConfigValue(String value, String baseline)
+	{
+		return baseline;
+	}
 }
