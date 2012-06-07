@@ -17,6 +17,7 @@ import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.machine.model.WipeModel;
 import replicatorg.model.GCodeSource;
 import replicatorg.util.Point5d;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgePostProcessor;
 
 
 /**
@@ -33,14 +34,13 @@ import replicatorg.util.Point5d;
 public class DualStrusionConstruction
 {
 
-	private MutableGCodeSource result;
 	private final File leftFile, rightFile;
-	private MutableGCodeSource left, right;
-	private final MutableGCodeSource start, end;
+	private final MutableGCodeSource startGCode, endGCode;
 	private final boolean useWipes;
 	private final WipeModel leftWipe;
 	private final WipeModel rightWipe;
 	private final MachineType machineType;
+	private MutableGCodeSource  result;
 	
 	public DualStrusionConstruction(File leftFile, File rightFile,
 									MutableGCodeSource startSource, MutableGCodeSource endSource,
@@ -50,8 +50,8 @@ public class DualStrusionConstruction
 		this.rightFile = rightFile;
 		this.useWipes = useWipes;
 		this.machineType = type;
-		start = startSource.copy();
-		end = endSource.copy();
+		startGCode = startSource.copy();
+		endGCode = endSource.copy();
 		if(useWipes)
 		{
 			leftWipe = Base.getMachineLoader().getMachineInterface().getModel().getWipeFor(ToolheadAlias.LEFT);
@@ -85,74 +85,53 @@ public class DualStrusionConstruction
 	 */
 	public void combine()
 	{
+		MutableGCodeSource left, right, m_result;
 
-		/* Potential order of things to do:
-		 * 
-		 * load up files (do we know if they're coming from old gcode or just-processed stl?
-		 *   does it change how we do things? I think it's too hard to get that info here.
-		 *   let's not bother.)
-		 * 
-		 * remove start/end if we can find it
-		 * 
-		 * parse into layers
-		 * 
-		 * make sure every layer starts by setting the correct toolhead
-		 * 
-		 * merge layers, adding any tweening code that's necessary
-		 *   changing tools (tweening) is only necessary when the next layer is not the same toolhead as this one?
-		 *   wipes need to be toggleable (really, "use machine's wipe" should be toggleable, there'll be other tween code)
-		 * do we need special setup code based on which layer is the first?
-		 * 
-		 * 
-		 * add start and end gcode
-		 * 
-		 * 
-		 */
+		// load our layers into something we can use 
 		left = new MutableGCodeSource(leftFile);
 		right = new MutableGCodeSource(rightFile);
-		
-		left.stripStartEndBestEffort();
-		right.stripStartEndBestEffort();
-		
-		stripNonLayerTagComments(left);
-		stripNonLayerTagComments(right);
 
-		LinkedList<Layer> leftLayers = newOldParseLayers(left);
-		LinkedList<Layer> rightLayers = newOldParseLayers(right);
+		// remove  some tags we don't want/get 
+		SkeinforgePostProcessor.stripNonLayerTagComments(left);
+		SkeinforgePostProcessor.stripNonLayerTagComments(right);
 
-		final LinkedList<Layer> merged = doMerge(leftLayers, rightLayers);
-		
-		//process start & end before adding them
-//		duplicateToolheadLines(start); we have dual-start.gcode to do this, now
-//		duplicateToolheadLines(end);
+		// load our layers into something we can *really* use
+		LinkedList<Layer> leftLayers = parseLayers(left);
+		LinkedList<Layer> rightLayers = parseLayers(right);
 
-		merged.add(0, new Layer(0d, start.asList()));
-		merged.add(new Layer(Double.MAX_VALUE, end.asList()));
+		// merge our layers into one list
+		final LinkedList<Layer> layers = doMerge(leftLayers, rightLayers);
 
+		// refresh and repopulate our result
 		result = new MutableGCodeSource();
-		for(Layer l : merged)
-		{
+		for(Layer l : layers) {
 			result.add(l.getCommands());
 		}
-		
+
+		// add start gcode, updated based on settings
+		SkeinforgePostProcessor.prependToPassedCode(result, startGCode);
+		// add end code
+		Layer endLayer = new Layer(Double.MAX_VALUE, endGCode.asList());
+		result.add(endLayer.toString());
+		// interlace progress updates
 		result.addProgressUpdates();
 	}
 	
-	/**
-	 * removes all lines that are skeinforge tag comments, but not layer tags.
-	 */
-	public void stripNonLayerTagComments(MutableGCodeSource source) {
-		String line;
-		for(Iterator<String> i = source.iterator(); i.hasNext();)
-		{
-			line = i.next();
-			
-			if(line.startsWith("(<") &&	!(line.startsWith("(<layer>") || line.startsWith("(</layer")))
-			{
-				i.remove();
-			}
-		}
-	}
+//	/**
+//	 * removes all lines that are skeinforge tag comments, but not layer tags.
+//	 */
+//	public void stripNonLayerTagComments(MutableGCodeSource source) {
+//		String line;
+//		for(Iterator<String> i = source.iterator(); i.hasNext();)
+//		{
+//			line = i.next();
+//			
+//			if(line.startsWith("(<") &&	!(line.startsWith("(<layer>") || line.startsWith("(</layer")))
+//			{
+//				i.remove();
+//			}
+//		}
+//	}
 	
 	/**
 	 * Takes a GCodeSource, assumed to be lacking any start- or end- specific blocks of code
@@ -170,7 +149,7 @@ public class DualStrusionConstruction
 	 * @param source
 	 * @return
 	 */
-	private LinkedList<Layer> parseLayers(final GCodeSource source)
+	private LinkedList<Layer> testParseLayers(final GCodeSource source)
 	{
 		/*
 		 * So this is a little more complicated than just breaking up stuff by Z height,
@@ -241,13 +220,13 @@ public class DualStrusionConstruction
 	}
 	
 	/**
-	 * newOldParseLayers is an improvement on the old parseLayers from Noah, etc. 's dualstrusion,
+	 * parseLayers is an improvement on the old parseLayers from Noah, etc. 's dualstrusion,
 	 * but uses the same basic method because skeinforge is what it is.
 	 * look for layer tags, break up the file using those tags.
 	 * @param source
 	 * @return
 	 */
-	private LinkedList<Layer> newOldParseLayers(GCodeSource source)
+	private LinkedList<Layer> parseLayers(GCodeSource source)
 	{
 		final LinkedList<Layer> result = new LinkedList<Layer>();
 		String line;

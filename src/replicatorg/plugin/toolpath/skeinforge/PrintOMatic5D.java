@@ -212,6 +212,9 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				"Travel Feedrate", "55",
 				"slow: 0-20, default: 30, Fast: 40+");
 		
+		addTextParameter(printPanel, "printTemp",
+				"Print temperature ", "220",
+				"220= default, 240=high temp");		
 		return printPanel;
 	}
 	
@@ -254,10 +257,11 @@ public class PrintOMatic5D implements SkeinforgePreference {
 
 		JComponent defaultsPanel = new JPanel(new MigLayout("fillx"));
 
-		final JButton def = new JButton("Load Replicator Defaults");
+		final JButton repDefaults = new JButton("Load Replicator Defaults");
+		final JButton repAccelDefaults = new JButton("Load Replicator:Accelerated Defaults");
 
 		
-		ActionListener loadDefaults = new ActionListener(){
+		ActionListener loadRepDefaults = new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent evt) {
 				
@@ -271,15 +275,43 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				setValue("filamentDiameter", "1.82");
 //				setValue("packingDensity", "85");
 				setValue("desiredPathWidth", ".4");
+				setValue("printTemp", "220");
 					
 				// Refresh the other three tabs
 				printOMatic5D.removeAll();
 				makeTabs();
 			}
 		};
-		def.addActionListener(loadDefaults);
+
+		ActionListener loadRepAccelDefaults = new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				
+				// Set all the values based on the selected default
+				// Keep this up to date! if the set of defaults changes, so does this set of calls!
+				setValue("infillPercent", "10");
+				setValue("desiredLayerHeight", ".27");
+				setValue("numberOfShells", "1");
+				String desiredFeedrate = situationBestFit("desiredFeedrate", "80");
+				String travelFeedrate = situationBestFit("travelFeedrate","150");
+				setValue("desiredFeedrate", desiredFeedrate);
+				setValue("travelFeedrate", travelFeedrate );
+				setValue("filamentDiameter", "1.82");
+//				setValue("packingDensity", "85");
+				setValue("desiredPathWidth", ".4");
+				setValue("printTemp", "240");
+					
+				// Refresh the other three tabs
+				printOMatic5D.removeAll();
+				makeTabs();
+			}
+		};
 		
-		defaultsPanel.add(def, "growx, wrap");
+		repDefaults.addActionListener(loadRepDefaults);
+		repAccelDefaults.addActionListener(loadRepAccelDefaults);
+		
+		defaultsPanel.add(repDefaults, "growx, wrap");
+		defaultsPanel.add(repAccelDefaults, "growx, wrap");
 		
 		return defaultsPanel;
 	}
