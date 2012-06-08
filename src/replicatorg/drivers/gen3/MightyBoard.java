@@ -307,10 +307,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		getStepperValues(); //read our current steppers into a local cache
 		getMotorRPM();		//load our motor RPM from firmware if we can.
 		getAccelerationState();
-		
+
 		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
 		{
-			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
+			Base.logger.fine("Machine ID Mismatch. Please re-select your machine.");
 			return true;//TEST just for now, due to EEPROM munging
 		}
 		
@@ -326,16 +326,18 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 	
         
-    /// Read acceleration OFF/ON status from Bot
-    private void getAccelerationState(){
-        Base.logger.fine("Geting Acceleration Status from Bot");
-        acceleratedFirmware = getAccelerationStatus();
-        if(acceleratedFirmware)
-            Base.logger.finest("Found accelerated firmware active");
-        
-    }
+	/// Read acceleration OFF/ON status from Bot
+	private void getAccelerationState(){
+	    
+	    Base.logger.fine("Geting Acceleration Status from Bot");
+	    acceleratedFirmware = getAccelerationStatus();
+	    if(acceleratedFirmware)
+	        Base.logger.finest("Found accelerated firmware active");
+	    
+	}
 
-	/// Read stepper reference voltage values from the bot EEPROM.
+	
+	/// Read stepper reference voltage values from the Bot's EEPROM.
 	private void getStepperValues() {
 		
 		int stepperCountMightyBoard = 5;
@@ -829,19 +831,20 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	public String getConfigValue(String key, String baseline)
 	{
 		//Base.logger.severe("MightyBoard fetching from getConfig");
-
 		if( this.getAccelerationStatus() == true ) {
 			//Base.logger.severe("MightyBoard is accel");
-			if ( key.equals("desiredFeedrate")	)	return "100";
-			if ( key.equals("travelFeedrate") )		return "150";
+			if ( key.equals("desiredFeedrate")  )  return "100";
+			if ( key.equals("travelFeedrate") )    return "150";
+			if ( key.equals("printTemp") )    		return "240";
+			
 		} else  {
 			//Base.logger.severe("MightyBoard is not accel");
-			if ( key.equals("desiredFeedrate")	)	return "40";
-			if ( key.equals("travelFeedrate") )		return "55";
+			if ( key.equals("desiredFeedrate")  )  return "40";
+			if ( key.equals("travelFeedrate") )    return "55";
+			if ( key.equals("printTemp") )    		return "220";
 		}
 		return baseline;
 	}
-
 	
 	/**
 	 * Stores to EEPROM in motor steps counts, how far out of 

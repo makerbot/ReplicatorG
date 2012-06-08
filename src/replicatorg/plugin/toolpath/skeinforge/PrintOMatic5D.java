@@ -24,11 +24,17 @@ import replicatorg.app.ui.SavingTextField;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeOption;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
 
+/**
+ PrintOMatic 5D Preferences Dialog
+ * @author farmckon
+ *
+ */
 public class PrintOMatic5D implements SkeinforgePreference {
 	private JPanel component;
 	private JCheckBox enabled;
 	private String baseName;
 
+	//  internal combo listener
 	private class ComboListener implements ActionListener {
 		final String name;
 		final DefaultComboBoxModel input;
@@ -84,18 +90,41 @@ public class PrintOMatic5D implements SkeinforgePreference {
 	}
 
 	
-	/** 
-	// add the specified Text Parameter to this display window
-	// Note: This could be better represented as a separate class, 
-	// however we want to be able to line up the text boxes and 
-	// input fields in the main print-o-matic dialog. So they stay here!
-	**/
-	private void addTextParameter(JComponent target, String name, 
-			String description,	String defaultValue, String toolTip) {
+	// Note: These could be better represented as a separate class, however we want to be able
+	// to line up the text boxes and input fields in the main print-o-matic dialog. So they 
+	// stay here!
+
+	/**
+	 * Creates a text parameter UI object, as well as the backing store and settings data
+	 * Grabs the value form backing store if possible, otherwise uses default.
+	 * 
+	 * @param target component to add the UI objects into 
+	 * @param name mini-name of the parameter for backing store key
+	 * @param description display name of the parameter
+	 * @param defaultValue default string value if no settings exist
+	 * @param toolTip - tooltop text
+	 */
+	private void addTextParameter(JComponent target, 
+			String name, String description,
+			String defaultValue, String toolTip) 
+	{
 		String fullName = baseName + name;
 		String value = null;
 		
+		
+		/// if this has a java param backing, try to fetch it.
 		if (fullName != null) {
+
+			/// we have no last settings, look up the default value 
+			/// based on the situation
+			try { 
+				if( false == Base.preferences.nodeExists(fullName) )
+					defaultValue = Base.findDefaultByGlobalStatus(name, defaultValue);
+			}
+			catch (java.util.prefs.BackingStoreException e)
+				{ /* this space intentionally left blank! */ }
+
+			/// in all cases, try to fetch value from preferences store
 			value = Base.preferences.get(fullName, defaultValue);
 			
 			// Store it back so that we can be assured that it is set.
@@ -111,6 +140,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 			input.setToolTipText(toolTip);
 		}
 	}
+
 	
 	private void addDropDownParameter(JComponent target, String name, String description, Vector<String> options, String toolTip) {
 		String fullName = baseName + name;
@@ -186,9 +216,11 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		return number;
 	}
 
+	
 	private void setValue(String optionName, String value) {
 		Base.preferences.put(baseName + optionName, value);
 	}
+	
 	
 	private boolean getBooleanValue(String optionName) {
 		// TODO: record the default values somewhere, so that we can retrieve them here!
@@ -199,6 +231,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		return value;
 	}
 	
+	
 	private String getStringValue(String optionName) {
 		// TODO: record the default values somewhere, so that we can retrieve them here!
 		String value = Base.preferences.get(baseName + optionName, null);
@@ -207,25 +240,6 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 		return value;
 	}
-	
-//	private double getScalingFactor() {
-//		// TODO: record the default values somewhere, so that we can retrieve them here!
-//		String value = Base.preferences.get(baseName + "materialType", null);
-//		
-//		double scalingFactor = 1;
-//		
-//		if (value.equals("ABS")) {
-//			scalingFactor = .85;
-//		}
-//		else if (value.equals("PLA")) {
-//			scalingFactor = 1;
-//		}
-//		else {
-//			Base.logger.severe("Couldn't determine scaling factor for material " + value + ", defaulting to 1");
-//		}
-//		
-//		return scalingFactor;
-//	}
 	
 	
 	JTabbedPane printOMatic5D;
@@ -247,16 +261,17 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				"Number of shells:", "1",
 				"Number of shells to add to the perimeter of an object. Set this to 0 if you are printing a model with thin features.");
 
-		String desiredFeedrate = situationBestFit("desiredFeedrate", "40");
 		addTextParameter(printPanel, "desiredFeedrate",
-				"Feedrate (mm/s)", desiredFeedrate, 
-				"slow: 0-20, default: 30, Fast: 40+, Acclerated-fast:100");
-		
-		String travelFeedrate = situationBestFit("travelFeedrate","55");
+				"Feedrate (mm/s)", "41",
+				"slow: 0-20, default: 30, Fast: 40+, Accelerated: 80+");
+
 		addTextParameter(printPanel, "travelFeedrate",
-				"Travel Feedrate", travelFeedrate,
-				"slow: 0-20, default: 30, Fast: 50+, Acclerated-fast:150");
+				"Travel Feedrate", "56",
+				"slow: 0-20, default: 30, Fast: 50+, Accelerated:150+");
 		
+		addTextParameter(printPanel, "printTemp",
+				"Print temperature ", "220",
+				"220= default, 240=Accelerated");		
 		return printPanel;
 	}
 	
@@ -272,6 +287,10 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 		JComponent materialPanel = new JPanel(new MigLayout("fillx"));
 		
+		addTextParameter(materialPanel, "filamentDiameter",
+				"Filament Diameter (mm)", "1.82",
+				"measure feedstock");
+                
 //		Vector<String> materialTypes = new Vector<String>();
 //		materialTypes.add("ABS");
 //		materialTypes.add("PLA");
@@ -280,11 +299,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 //				"Material type:", materialTypes,
 //				"Select the type of plastic to use during print");
 		
-		addTextParameter(materialPanel, "filamentDiameter",
-				"Filament Diameter (mm)", "1.82",
-				"measure feedstock");
-                
-                // TODO: Tie the materialType to this text box, so that switching the puldown changes this default
+		// TODO: Tie the materialType to this text box, so that switching the puldown changes this default
 //		addTextParameter(materialPanel, "packingDensity",
 //				"Packing Density", "85",
 //				"% Final Volume");
@@ -307,10 +322,11 @@ public class PrintOMatic5D implements SkeinforgePreference {
 
 		JComponent defaultsPanel = new JPanel(new MigLayout("fillx"));
 
-		final JButton def = new JButton("Load Replicator Defaults");
+		final JButton repDefaults = new JButton("Load Replicator Defaults");
+		final JButton repAccelDefaults = new JButton("Load Replicator:Accelerated Defaults");
 
 		
-		ActionListener loadDefaults = new ActionListener(){
+		ActionListener loadRepDefaults = new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent evt) {
 				
@@ -326,15 +342,45 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				setValue("filamentDiameter", "1.82");
 //				setValue("packingDensity", "85");
 				setValue("desiredPathWidth", ".4");
+				setValue("printTemp", "220");
 					
 				// Refresh the other three tabs
 				printOMatic5D.removeAll();
 				makeTabs();
 			}
 		};
-		def.addActionListener(loadDefaults);
+
+		ActionListener loadRepAccelDefaults = new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				
+				// Set all the values based on the selected default
+				// Keep this up to date! if the set of defaults changes, so does this set of calls!
+				setValue("infillPercent", "10");
+				setValue("desiredLayerHeight", ".27");
+				setValue("numberOfShells", "1");
+				setValue("desiredFeedrate", "80");
+				setValue("travelFeedrate", "150");
+//				String desiredFeedrate = situationBestFit("desiredFeedrate", "80");
+//				String travelFeedrate = situationBestFit("travelFeedrate","150");
+//				setValue("desiredFeedrate", desiredFeedrate);
+//				setValue("travelFeedrate", travelFeedrate );
+				setValue("filamentDiameter", "1.82");
+//				setValue("packingDensity", "85");
+				setValue("desiredPathWidth", ".4");
+				setValue("printTemp", "240");
+					
+				// Refresh the other three tabs
+				printOMatic5D.removeAll();
+				makeTabs();
+			}
+		};
 		
-		defaultsPanel.add(def, "growx, wrap");
+		repDefaults.addActionListener(loadRepDefaults);
+		repAccelDefaults.addActionListener(loadRepAccelDefaults);
+		
+		defaultsPanel.add(repDefaults, "growx, wrap");
+		defaultsPanel.add(repAccelDefaults, "growx, wrap");
 		
 		return defaultsPanel;
 	}
@@ -358,13 +404,13 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		if (enabled.isSelected()) {
 			// Check that width/thickness is ok
 /*
-                        double perimeterWidthOverThickness = getValue("desiredPathWidth")/getValue("desiredLayerHeight");
-                        if (perimeterWidthOverThickness > 1.8) {
-                                return "Layer height is smaller than recommended for the specified nozzle. Try increasing the layer height, or changing to a smaller nozzle.";
-                        }
-                        if (perimeterWidthOverThickness < 1.2) {
-                                return "Layer height is larger than recommended for the specified nozzle. Try decreasing the layer height, or changing to a larger nozzle.";
-                        }
+                double perimeterWidthOverThickness = getValue("desiredPathWidth")/getValue("desiredLayerHeight");
+                if (perimeterWidthOverThickness > 1.8) {
+                        return "Layer height is smaller than recommended for the specified nozzle. Try increasing the layer height, or changing to a smaller nozzle.";
+                }
+                if (perimeterWidthOverThickness < 1.2) {
+                        return "Layer height is larger than recommended for the specified nozzle. Try decreasing the layer height, or changing to a larger nozzle.";
+                }
 */
 			
 		}

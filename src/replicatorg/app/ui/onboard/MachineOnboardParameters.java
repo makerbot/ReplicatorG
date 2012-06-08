@@ -113,7 +113,11 @@ public class MachineOnboardParameters extends JPanel {
 
 	}
 	
+	/** 
+	 * commit machine onboard parameters 
+	 **/
 	private void commit() {
+
 		String newName = machineNameField.getText();
 		if(newName.length() > MAX_NAME_LENGTH)
 			machineNameField.setText(newName.substring(0, MAX_NAME_LENGTH ) );
