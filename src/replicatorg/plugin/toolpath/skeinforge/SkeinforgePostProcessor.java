@@ -7,9 +7,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -18,8 +20,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import java.util.regex.*;
 
 import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
@@ -232,15 +232,15 @@ public class SkeinforgePostProcessor {
 	 */
 	private void runPrependStartCode()
 	{
-		prependToPassedCode(source, startCode);
+		prependAndModifyStartCode(source, startCode);
 	}
 
 	/**
-	 * prepends start code to the file, this may modify some  start code data based on settings.
+	 * prepends start code to the file, this may modify some start code data based on settings.
 	 * @param sourceGCode code to append start to
 	 * @param startGCode code to hack/verify/modify and append to the start of sourceGCode
 	 */
-	static public void prependToPassedCode(MutableGCodeSource sourceGCode, MutableGCodeSource startGCode)
+	static public void prependAndModifyStartCode(MutableGCodeSource sourceGCode, MutableGCodeSource startGCode)
 	{
 		MutableGCodeSource newStart = new MutableGCodeSource();
 		///modify local copy of start code based on settings
@@ -272,7 +272,7 @@ public class SkeinforgePostProcessor {
 	}
 		
 	/**
-	 * prepends code to the file to the member source 
+	 * prepends code in the passed file to the source file
 	 * @param newCode
 	 */
 	private void runPrepend(GCodeSource newCode)
@@ -367,8 +367,6 @@ public class SkeinforgePostProcessor {
 			}
 		}
 	}
-
-	
 	
 	/**
 	 * sets the toolhead the code is being generated for

@@ -16,8 +16,8 @@ import replicatorg.machine.model.MachineType;
 import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.machine.model.WipeModel;
 import replicatorg.model.GCodeSource;
-import replicatorg.util.Point5d;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgePostProcessor;
+import replicatorg.util.Point5d;
 
 
 /**
@@ -85,7 +85,7 @@ public class DualStrusionConstruction
 	 */
 	public void combine()
 	{
-		MutableGCodeSource left, right, m_result;
+		MutableGCodeSource left, right;
 
 		// load our layers into something we can use 
 		left = new MutableGCodeSource(leftFile);
@@ -109,7 +109,7 @@ public class DualStrusionConstruction
 		}
 
 		// add start gcode, updated based on settings
-		SkeinforgePostProcessor.prependToPassedCode(result, startGCode);
+		SkeinforgePostProcessor.prependAndModifyStartCode(result, startGCode);
 		// add end code
 		Layer endLayer = new Layer(Double.MAX_VALUE, endGCode.asList());
 		result.add(endLayer.toString());
