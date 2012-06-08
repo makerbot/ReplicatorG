@@ -926,21 +926,13 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	@Override
 	public void readAllTemperatures() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void readAllPlatformTemperatures() {
 		// TODO Auto-generated method stub
-		
 	}
 	
-	@Override 
-	public String getConfigValue(String value, String baseline)
-	{
-		return baseline;
-	}
-
 	@Override
 	//// get machine or situation specific configs
 	public String getConfigValue(String value, String baseline) {
