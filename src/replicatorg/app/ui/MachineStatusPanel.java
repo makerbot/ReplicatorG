@@ -140,7 +140,7 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 		if( evt.getState().isConnected() == false )
 			tempLabel.setText("");
 
-		if( evt.getState().isBuilding() && !(Base.preferences.getBoolean("build.monitor_temp", false) ))
+		if( evt.getState().isBuilding() && !(Base.preferences.getBoolean("build.monitor_temp", true) ))
 			tempLabel.setText("Monitor build temp.: off");
 		
 		// And mark which state we are in.
