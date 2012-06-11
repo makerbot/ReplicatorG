@@ -92,11 +92,13 @@ public class ProfileUtils {
 	
 	
 	public static MgProfile getListedProfile(ListModel model, Collection<MgProfile> profiles, int idx) {
+
 		String selected = (String)model.getElementAt(idx);
-		for(MgProfile p : profiles)
+		for(MgProfile p : profiles) {
 			if(selected.equals(p.toString()))
 				return p;
-		Base.logger.severe("Could not find profile! The programmer has done something foolish.");
+		}
+		Base.logger.severe("Could not find profile for MG! The programmer has done something foolish.");
 		return null;
 	}
 }

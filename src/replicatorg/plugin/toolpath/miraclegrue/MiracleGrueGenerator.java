@@ -95,8 +95,6 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		/// takes a XXX.config file from Miracle Grue and makes it an option
 		public MgProfile(String fullPath) {
 
-			//Base.logger.severe("CCCCC Building Profile: " + fullPath );
-
 			this.fullPath = fullPath;
 			int idx = fullPath.lastIndexOf(File.separatorChar);
 
@@ -115,7 +113,6 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 			        // Remove the last period and everything after it
 			    	name = name.substring(0, lastPeriodPos);
 			    }
-				//Base.logger.severe("CCCCC set name : " + name );
 				targetMachines.add(name);
 				this.name = name;
 
@@ -144,15 +141,14 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		}
 	}
 
-	/// Function to lookup and build profile objects from a directory
+	/** Function to lookup and build profile objects from a directory
+	 * @param profiles: list of profiles to add to */
 	void getProfilesIn(File dir, List<MgProfile> profiles) {
 		if (dir.exists() && dir.isDirectory()) {
-			Base.logger.severe(dir.getAbsolutePath());
 			for(String cfgFile : dir.list() ) {
 				if(cfgFile.endsWith(".config")) {
-					File file = new File(dir, cfgFile);
+					File file = new File(dir, cfgFile);					
 					profiles.add( new MgProfile( file.getAbsolutePath() ) );
-					//Base.logger.severe("new profile added");
 				}
 			}
 		}
@@ -167,7 +163,6 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 
 		// Get default installed profiles
 		File dir = getUserProfilesDir();
-		//Base.logger.severe("Looking for profiles in: "+ dir.toString());
 		getProfilesIn(dir, profiles);
 
 		Collections.sort(profiles);
@@ -453,9 +448,10 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		return new File(miracleGruePath);
 	}
 
+	/** duplicates the passed profile, generating a new profle with name @newName */
 	public MgProfile duplicateProfile(MgProfile originalProfile, String newName) {
-		File newProf = new File(getUserProfilesDir(), newName);
-		File oldProf= new File(originalProfile.getFullPath());
+		File newProf = new File(getUserProfilesDir(), newName + ".config");
+		File oldProf = new File(originalProfile.getFullPath());
 		try {
 			Base.copyFile(oldProf, newProf);
 			MgProfile newProfEdit = new MgProfile(newProf.getAbsolutePath());
@@ -469,9 +465,11 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 	
 	public void editProfile(MgProfile profile) {
 		ProcessBuilder pb = null;
+
+		Base.logger.fine("Edit Profile: " + profile.getFullPath() );
 		if (Base.isWindows()) {
 			///use 'start' to find the right program
-			String[] arguments = {	"cmd /c \"start ", profile.getFullPath(), "\""};
+			String[] arguments = {	"cmd", "/c" + "\"start", profile.getFullPath(), "\""};
 			pb = new ProcessBuilder(arguments);
 		}
 		if (Base.isLinux()) {
@@ -482,84 +480,83 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		else //assume mac
 		{	
 			///open it with TextEdit always
-			String[] arguments = {	"open -a TextEdit", profile.getFullPath()};
+			String[] arguments = {	"open","-a","TextEdit", profile.getFullPath()};
 			pb = new ProcessBuilder(arguments);
 		}
 
 		File mgDir = getMiracleGrueDir();
-//		pb.directory(mgDir);
-//		Process process = null;
-//		Base.logger.log(Level.FINEST, "Starting MiracleGrue process...");
-//		
-//		/**
-//		 * Run the process and wait for it to return. Because of an issue with process.waitfor() failing to
-//		 * return, we now also do a busy wait with a timeout. The timeout value is loaded from timeout.txt
-//		 */
-//		try {
-//			// force failure if something goes wrong
-//			int value = 1;
-//			
-//			long timeoutValue = Base.preferences.getInt("replicatorg.miracle_grue.timeout", -1);
-//			
-//			process = pb.start();
-//			
-//			//if no timeout set
-//			if(timeoutValue == -1)
-//			{
-//				Base.logger.log(Level.FINEST, "\tRunning MiracleGrue without a timeout");
-//				value = process.waitFor();
-//			}
-//			else // run for timeoutValue cycles trying to get an exit value from the process
-//			{
-//				Base.logger.log(Level.FINEST, "\tRunning MiracleGrue with a timeout");
-//				while(timeoutValue > 0)
-//				{
-//					Thread.sleep(1000);
-//					try
-//					{
-//						value = process.exitValue(); 
-//						break;
-//					}
-//					catch (IllegalThreadStateException itse)
-//					{
-//						timeoutValue--;
-//					}
-//				}
-//				if(timeoutValue == 0)
-//				{
-//					JOptionPane.showConfirmDialog(null, 
-//							"\tMiracleGrue has not returned, This may be due to a communication error\n" +
-//							"between MiracleGrue and ReplicatorG. If you are still editing a MiracleGrue\n" +
-//							"profile, ignore this message; any changes you make in the MiracleGrue window\n" +
-//							"and save will be used when generating the gcode file.\n\n" +
-//							"\tAdjusting the \"MiracleGrue timeout\" in the preferences window will affect how\n" +
-//							"long ReplicatorG waits before assuming that MiracleGrue has failed, if you\n" +
-//							"frequently encounter this message you may want to increase the timeout.",
-//							"SF Timeout", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
-//				}
-//			}
-//			Base.logger.log(Level.FINEST, "MiracleGrue process returned");
-//			if (value != 0) {
-//				//Base.logger.severe("Unrecognized error code returned by MiracleGrue.");
-//				// this space intentionally left blank
-//			}
-//			else
-//			{
-//				// Base.logger.log(Level.FINEST, "Normal Exit on MiracleGrue close");
-//				// this space intentionally left blank
-//			}
-//		} catch (IOException ioe) {
-//			//Base.logger.info("Could not run MiracleGrue.", ioe);
-//			// this space intentionally left blank
-//		} catch (InterruptedException e) {
-//			// We are most likely shutting down, or the process has been
-//			// manually aborted.
-//			// Kill the background process and bail out.
-//			Base.logger.info("MiracleGrueGenerator.editProfile() interrupted: " + e);
-//			if (process != null) {
-//				process.destroy();
-//			}
-//		}
+		pb.directory(mgDir);
+		Process process = null;
+		Base.logger.info( "Starting MiracleGrue process...");
+		
+		/**
+		 * Run the process and wait for it to return. Because of an issue with process.waitfor() failing to
+		 * return, we now also do a busy wait with a timeout. The timeout value is loaded from timeout.txt
+		 */
+		try {
+			// force failure if something goes wrong
+			int value = 1;
+			long timeoutValue = Base.preferences.getInt("replicatorg.miracle_grue.timeout", -1);
+			
+			process = pb.start();
+
+			//if no timeout set
+			if(timeoutValue == -1)
+			{
+				Base.logger.finest("\tRunning MiracleGrue without a timeout");
+				value = process.waitFor();
+			}
+			else // run for timeoutValue cycles trying to get an exit value from the process
+			{
+				Base.logger.finest( "\tRunning MiracleGrue with a timeout");
+				while(timeoutValue > 0)
+				{
+					Thread.sleep(1000);
+					try
+					{
+						value = process.exitValue(); 
+						break;
+					}
+					catch (IllegalThreadStateException itse)
+					{
+						timeoutValue--;
+					}
+				}
+				if(timeoutValue == 0)
+				{
+					JOptionPane.showConfirmDialog(null, 
+							"\tMiracleGrue has not returned, This may be due to a communication error\n" +
+							"between MiracleGrue and ReplicatorG. If you are still editing a MiracleGrue\n" +
+							"profile, ignore this message; any changes you make in the MiracleGrue window\n" +
+							"and save will be used when generating the gcode file.\n\n" +
+							"\tAdjusting the \"MiracleGrue timeout\" in the preferences window will affect how\n" +
+							"long ReplicatorG waits before assuming that MiracleGrue has failed, if you\n" +
+							"frequently encounter this message you may want to increase the timeout.",
+							"SF Timeout", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+			Base.logger.log(Level.FINEST, "MiracleGrue process returned");
+			if (value != 0) {
+				Base.logger.severe("Unrecognized error code returned by MiracleGrue.");
+				// this space intentionally left blank
+			}
+			else
+			{
+				Base.logger.finer( "Normal Exit on MiracleGrue edit close");
+				// this space intentionally left blank
+			}
+		} catch (IOException ioe) {
+			Base.logger.severe("Could not run MiracleGrue edit: "+ ioe.toString());
+			// this space intentionally left blank
+		} catch (InterruptedException e) {
+			// We are most likely shutting down, or the process has been
+			// manually aborted.
+			// Kill the background process and bail out.
+			Base.logger.info("MiracleGrueGenerator.editProfile() interrupted: " + e);
+			if (process != null) {
+				process.destroy();
+			}
+		}
 	}
 
 
@@ -593,14 +590,12 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		
 		if (Base.isWindows())
 		{
-			//Base.logger.severe("Destroy windows");
 			baseArguments = new String[]{ 
 					getMiracleGrueDir()+"\\miracle_grue.exe",
 				"--debug","--ignore-nonexistent-config","--load", profile + "\\config.ini"};
 		}
 		else
 		{
-			//Base.logger.severe("Destroy Linux/OSX");
 			baseArguments = new String[]{ 
 					getMiracleGrueDir()+"/miracle_grue",
 					"-c", profile, 
@@ -645,15 +640,14 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 			ist.setDefaultLevel(Level.FINE);
 			ist.start();
 			est.start();
-			//Base.logger.severe("process pre wait-for");
+
 			int value = process.waitFor();
-			//Base.logger.severe("process post wait-for value=" + value);
 			if (value != 0) {
-//				Base.logger.severe(
-//						"Unrecognized error code returned by MiracleGrue.");
+				Base.logger.info(
+						"Unrecognized error code returned by MiracleGrue.");
 				// Throw ToolpathGeneratorException
 				if (process != null) {
-					//Base.logger.severe("process is not yet null, destroy it");
+					Base.logger.severe("process is not yet null, destroy it manually");
 					process.destroy();
 				}
 				return null;
@@ -668,7 +662,7 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 			// manually aborted.
 			// Kill the background process and bail out.
 			if (process != null) {
-				//Base.logger.severe("process is not yet null, destroy it");
+				Base.logger.severe("process is not yet null, destroy it");
 				process.destroy();
 			}
 			
