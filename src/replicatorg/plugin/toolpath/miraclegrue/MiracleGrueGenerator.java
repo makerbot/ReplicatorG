@@ -95,7 +95,7 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		/// takes a XXX.config file from Miracle Grue and makes it an option
 		public MgProfile(String fullPath) {
 
-			Base.logger.severe("CCCCC Building Profile: " + fullPath );
+			//Base.logger.severe("CCCCC Building Profile: " + fullPath );
 
 			this.fullPath = fullPath;
 			int idx = fullPath.lastIndexOf(File.separatorChar);
@@ -167,12 +167,8 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 
 		// Get default installed profiles
 		File dir = getUserProfilesDir();
-		Base.logger.severe("Looking for profiles in: "+ dir.toString());
+		//Base.logger.severe("Looking for profiles in: "+ dir.toString());
 		getProfilesIn(dir, profiles);
-
-//		dir = getUserProfilesDir();
-//		Base.logger.finest("Looking for profiles in: "+ dir.toString());
-//		getProfilesIn(dir, profiles);
 
 		Collections.sort(profiles);
 		

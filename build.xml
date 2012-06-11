@@ -221,6 +221,10 @@
 		<copy todir="${reso.dir}/docs">
 			<fileset dir="docs/" excludes="HOWTO-add-new-skeinforge.txt,overview.odg" />
 		</copy>
+	
+		<!-- permissions -->
+		<chmod file="${reso.dir}/skein_engines/mg_engines/mac/miracle_grue" perm="ugo+rx" />
+
 		<!-- delete the copies in the base dir, to make installer build easier -->
 		<delete dir="${target.dir}/docs" />
 		<delete dir="${target.dir}/examples" />

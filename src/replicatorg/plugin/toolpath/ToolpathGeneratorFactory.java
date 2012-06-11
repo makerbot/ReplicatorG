@@ -444,14 +444,15 @@ public class ToolpathGeneratorFactory {
 			public File getDefaultMiracleGrueDir() {
 				String target = "skein_engines/mg_engines";
 				if (Base.isMacOS()) {
-					target += "/osx/miracle-grue";
+					target += "/mac";
+					//Base.logger.severe("base dir:" + target);
 				}
 				if (Base.isLinux()) {
 					if(Base.isx86_64()) target += "/linux/x86_64";
 					else  target += "/linux/x86";
 				}	
 				if (Base.isWindows() ) {
-					target += "/windows/miracle-grue.exe";
+					target += "/windows";
 				}
 				File x = Base.getApplicationFile(target);
 				return x;
