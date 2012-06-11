@@ -578,7 +578,7 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 	}
 	
 	public BuildCode generateToolpath() {
-		Base.logger.severe("Miracle-Grue generateToolpath started");
+		//Base.logger.severe("Miracle-Grue generateToolpath started");
 		
 		String path = model.getPath();
 
