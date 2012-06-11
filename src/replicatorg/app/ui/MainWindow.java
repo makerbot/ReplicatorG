@@ -149,6 +149,7 @@ import replicatorg.model.JEditTextAreaSource;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
 import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorEvent;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory;
+import replicatorg.plugin.toolpath.ToolpathGenerator.GeneratorListener.Completion;
 import replicatorg.plugin.toolpath.ToolpathGeneratorFactory.ToolpathGeneratorDescriptor;
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
@@ -582,7 +583,15 @@ ToolpathGenerator.GeneratorListener
 		}
 	}
 
+	/**
+	 * Builds and runs a toolpath generator to slice the model,
+	 * sets up callbacks so this will be notified when a build is finished.
+	 * 
+	 * @param skipConfig true if we want to skip skeinforge config, and simply
+	 * slice the model with the existing settings
+	 */
 	public void runToolpathGenerator(boolean skipConfig) {
+		
 		// Check if the model is on the platform
 		if (!getPreviewPanel().getModel().isOnPlatform()) {
 			String message = "The bottom of the model doesn't appear to be touching the build surface, and attempting to print it could damage your machine. Ok to move it to the build platform?";
@@ -595,6 +604,7 @@ ToolpathGenerator.GeneratorListener
 			}
 
 		}
+		Base.logger.severe("pre regenerate");
 
 		// Check for modified STL
 		if (build.getModel().isModified()) {
@@ -2062,9 +2072,16 @@ ToolpathGenerator.GeneratorListener
 		{
 			flag = BuildFlag.JUST_BUILD;
 		}
+		
 		else if(elementInView.getType() == BuildElement.Type.MODEL)
 		{
-			if(Base.preferences.getBoolean("build.autoGenerateGcode", true))
+			// if our gcode exist and model was not changed, no re-gen needed
+			if(build.getCode() != null && 
+					build.getModel().isModified() == false) 
+			{
+				flag = BuildFlag.JUST_BUILD;
+			}
+			else if(Base.preferences.getBoolean("build.autoGenerateGcode", true))
 				flag = BuildFlag.GEN_AND_BUILD;
 		}
 		
@@ -2097,6 +2114,8 @@ ToolpathGenerator.GeneratorListener
 			buildOnComplete = true;
 			doPreheat(Base.preferences.getBoolean("build.doPreheat", false));				
 			runToolpathGenerator(Base.preferences.getBoolean("build.autoGenerateGcode", true));
+			//TRICKY: runToolpathGenerator will fire a 'slice done' 
+			// which MainWindows listens for, and fires doBuild from
 		}
 		if(buildFlag == BuildFlag.JUST_BUILD) {
 			//'use existing' clicked
