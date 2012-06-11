@@ -1071,10 +1071,10 @@ ToolpathGenerator.GeneratorListener
 		stopItem.setEnabled(false);
 		menu.add(stopItem);
 
-		// GENERATOR
+		// Create gcode generator menu item(s)
 		JMenu genMenu = new JMenu("GCode Generator");
-		Vector<ToolpathGeneratorDescriptor> generators = ToolpathGeneratorFactory.getGeneratorList();
-		String name = ToolpathGeneratorFactory.getSelectedName();
+		Vector<ToolpathGeneratorDescriptor> generators = ToolpathGeneratorFactory.getGeneratorList();		
+		String name = ToolpathGeneratorFactory.getSelectedName(); /// <get configured 'current' slicer
 		ButtonGroup group = new ButtonGroup();
 		for (ToolpathGeneratorDescriptor tgd : generators) {
 			JRadioButtonMenuItem i = new JRadioButtonMenuItem(tgd.name);
@@ -1085,7 +1085,8 @@ ToolpathGenerator.GeneratorListener
 					ToolpathGeneratorFactory.setSelectedName(n);
 				}
 			});
-			if (name.equals(tgd.name)) { i.setSelected(true); }
+			if (name.equals(tgd.name)) {
+				i.setSelected(true); }
 			genMenu.add(i);
 		}
 		menu.add(genMenu);
@@ -2555,6 +2556,16 @@ ToolpathGenerator.GeneratorListener
 
 	public void handleDualStrusion()
 	{
+		//check if we are using skeinforge. 
+		String name = Base.preferences.get("replicatorg.generator.name", "Skeinforge (50)");
+		if(name.startsWith("Skeinforge") == false) {
+			final String message = "<html>Dual Material Extrusion only available using skeinforge engines.<br>" +
+			"Under <b>GCode Generator</b> menu select any <b>Skeinforge</b> slicer and retry.</html>";
+			JOptionPane.showMessageDialog(this, message, "Save model?", JOptionPane.WARNING_MESSAGE);
+			return;
+			
+		}
+		
 		if(getBuild().getCode() != null && getBuild().getCode().isModified())
 		{
 			final String message = "<html>In order to dualstrude you need to save<br>" +

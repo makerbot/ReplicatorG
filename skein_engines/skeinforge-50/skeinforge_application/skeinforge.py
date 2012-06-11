@@ -565,9 +565,9 @@ def writeOutput(fileName):
 	'Craft a file, display dialog.'
 	repository = getNewRepository()
 	repository.fileNameInput.value = fileName
-	repository.execute()
-	settings.startMainLoopFromConstructor(repository)
-
+	#repository.execute()
+	#settings.startMainLoopFromConstructor(repository)
+	settings.startMainLoopFromWindow(repository.execute())
 
 class SkeinforgeRepository:
 	'A class to handle the skeinforge settings.'
@@ -588,8 +588,11 @@ class SkeinforgeRepository:
 	def execute(self):
 		'Skeinforge button has been clicked.'
 		fileNames = skeinforge_polyfile.getFileOrDirectoryTypesUnmodifiedGcode(self.fileNameInput.value, fabmetheus_interpret.getImportPluginFileNames(), self.fileNameInput.wasCancelled)
+		window = None
 		for fileName in fileNames:
-			skeinforge_craft.writeOutput(fileName)
+			#skeinforge_craft.writeOutput(fileName)
+			window = skeinforge_craft.writeOutput(fileName)
+		return window
 
 	def save(self):
 		'Profile has been saved and profile menu should be updated.'
@@ -619,7 +622,8 @@ def main():
 		for prefSpec in options.preferences:
 			(moduleName, prefSpec) = prefSpec.split(':', 1)
 			(prefName, valueName) = prefSpec.split('=', 1)
-			settings.addPreferenceOverride(moduleName, prefName, valueName)
+			#settings.addPreferenceOverride(moduleName, prefName, valueName)
+			settings.temporaryAddPreferenceOverride(moduleName, prefName, valueName)
 	sys.argv = [sys.argv[0]] + args
 	if len( args ) > 0:
 		writeOutput( ' '.join(args) )
