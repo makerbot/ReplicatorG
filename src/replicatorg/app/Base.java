@@ -224,7 +224,7 @@ public class Base {
 	static private void moveAll(File source, File target) {
 		try {
 			if (source.isDirectory()) {
-				if (!target.exists()) {
+				if (!target.exists() ) {
 					target.mkdir();
 				}
 				for (String s : source.list()) {
@@ -302,7 +302,12 @@ public class Base {
 		File dir = new File(path);
 		if (!dir.exists()) {
 			dir.mkdirs();
+			if( ! dir.exists() )  { // we failed to create our user dir. Log the failure, try to continue
+				Base.logger.severe("We could not create a user directory at: "+ path );
+				return null; 
+			}
 		}
+
 		return dir;
 	}
 	

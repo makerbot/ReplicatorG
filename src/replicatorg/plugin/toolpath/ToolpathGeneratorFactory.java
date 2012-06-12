@@ -57,12 +57,12 @@ public class ToolpathGeneratorFactory {
 			
 			/** return directory where slicer exists */
 			public File getDefaultSlic3rDir() {
-				String Slic3rDir = "skein_engines/slic3r_engines";
+				String slic3rDir = "skein_engines/slic3r_engines";
 				if (Base.isMacOS()) {
 					/// For mac, we want to use the slic3r app bundle. Odd, I know
-					Slic3rDir = "/Applications/Slic3r.app/Contents/MacOS";
+					slic3rDir = "/Applications/Slic3r.app/Contents/MacOS";
 					Base.logger.finer("Slic3r in app data");
-					File absSlicerLocation = new File(Slic3rDir);
+					File absSlicerLocation = new File(slic3rDir);
 					if( absSlicerLocation.exists() == false ) {
 						Base.logger.severe("Slic3r on mac requires Slicer.app is installed in Applications");
 						//throw new RuntimeException("Slic3r on Mac requires Slicer.app is installed in Applications");
@@ -71,12 +71,12 @@ public class ToolpathGeneratorFactory {
 					return absSlicerLocation;
 				}
 				if (Base.isLinux()) {
-					Slic3rDir +=  "/linux/bin";
+					slic3rDir +=  "/linux/bin";
 				}
 				if (Base.isWindows()) {
-					Slic3rDir +=  "/windows";
+					slic3rDir +=  "/windows";
 				}
-				File x = Base.getApplicationFile(Slic3rDir);
+				File x = Base.getApplicationFile(slic3rDir);
 				return x;
 			}
 

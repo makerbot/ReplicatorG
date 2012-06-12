@@ -164,7 +164,6 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		// Get default installed profiles
 		File dir = getUserProfilesDir();
 		getProfilesIn(dir, profiles);
-
 		Collections.sort(profiles);
 		
 		return profiles;
@@ -575,7 +574,6 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 	}
 	
 	public BuildCode generateToolpath() {
-		//Base.logger.severe("Miracle-Grue generateToolpath started");
 		
 		String path = model.getPath();
 
