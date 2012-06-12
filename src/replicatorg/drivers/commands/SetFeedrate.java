@@ -13,6 +13,6 @@ public class SetFeedrate implements DriverCommand {
 	
 	@Override
 	public void run(Driver driver) throws RetryException {
-		driver.setFeedrate(feedrate);
+		driver.setFeedrateMM(feedrate);
 	}
 }

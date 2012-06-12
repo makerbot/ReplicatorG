@@ -216,7 +216,7 @@ public interface Driver {
 	/**
 	 * sets the feedrate in mm/minute
 	 */
-	public void setFeedrate(double feed);
+	public void setFeedrateMM(double feed);
 
 	/**
 	 * sets the feedrate in mm/minute

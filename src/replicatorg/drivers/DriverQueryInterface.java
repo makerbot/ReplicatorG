@@ -42,15 +42,7 @@ public interface DriverQueryInterface {
 	public Version getPreferredVersion();
 
 	/// Queries the machine for a machine specific config value
-	public String getConfigValue(String value, String baseline);
+	public String getConfigValue(String value, String baseline);		
 
-	/** relies on timing to have the 'right selected toolhead', deprecated */
-	@Deprecated
-	public double getTemperature();
-
-	/** relies on timing to have the 'right selected toolhead', deprecated */
-	@Deprecated
-	public double getPlatformTemperature();
-	
 	public MachineModel getMachine();
 }

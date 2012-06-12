@@ -47,9 +47,15 @@ public interface OnboardParameters {
         /// Store acceleration settings to eeprom 
         void setAccelerationStatus(byte status);
         void setAccelerationRate(int rate);
+        void setAxisAccelerationRate(int axis, int rate);
+        void setAxisJerk(int axis, double jerk);
+        void setAccelerationMinimumSpeed(int speed);
         /// Read acceleration settings from eeprom
         boolean getAccelerationStatus();
         int getAccelerationRate();
+        int getAxisAccelerationRate(int axis);
+        double getAxisJerk(int axis);
+        int getAccelerationMinimumSpeed();
 	
         
 	

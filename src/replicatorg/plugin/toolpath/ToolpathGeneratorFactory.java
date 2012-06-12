@@ -53,7 +53,7 @@ public class ToolpathGeneratorFactory {
 		Vector<ToolpathGeneratorDescriptor> list = new Vector<ToolpathGeneratorDescriptor>();
 		
 		class Slic3r071 extends Slic3rGenerator {
-			{ 	displayName = "Slic3r 0.7.1"; }
+			{ 	displayName = "Slic3r 0.7.1 -Experimental"; }
 			
 			/** return directory where slicer exists */
 			public File getDefaultSlic3rDir() {
@@ -103,7 +103,7 @@ public class ToolpathGeneratorFactory {
 		
 		class Skeinforge31 extends SkeinforgeGenerator {
 
-			{ displayName = "Skeinforge (31)"; }
+			{ displayName = "Skeinforge (31) - Legacy"; }
 			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-31/skeinforge_application");
@@ -128,7 +128,7 @@ public class ToolpathGeneratorFactory {
 	
 		class Skeinforge35 extends SkeinforgeGenerator {
 
-			{ displayName = "Skeinforge (35)"; }
+			{ displayName = "Skeinforge (35) - Legacy"; }
 			
 			public File getDefaultSkeinforgeDir() {
 		    	return Base.getApplicationFile("skein_engines/skeinforge-35/skeinforge_application");
@@ -206,7 +206,7 @@ public class ToolpathGeneratorFactory {
 		class Skeinforge40 extends SkeinforgeGenerator {
 
 			{
-				displayName = "Skeinforge (40) - experimental";
+				displayName = "Skeinforge (40) - Legacy ";
 			}
 			
 			public File getDefaultSkeinforgeDir() {
@@ -256,7 +256,7 @@ public class ToolpathGeneratorFactory {
 		class Skeinforge44 extends SkeinforgeGenerator {
 
 			{
-				displayName = "Skeinforge (44) - experimental";
+				displayName = "Skeinforge (44) - Legacy";
 			}
 			
 			public File getDefaultSkeinforgeDir() {
@@ -278,7 +278,7 @@ public class ToolpathGeneratorFactory {
 		class Skeinforge47 extends SkeinforgeGenerator {
 
 			{
-				displayName = "Skeinforge (47)";
+				displayName = "Skeinforge (47)  - Legacy";
 			}
 			
 			public File getDefaultSkeinforgeDir() {
@@ -438,7 +438,7 @@ public class ToolpathGeneratorFactory {
 		
 		class MiracleGrueBeta extends MiracleGrueGenerator {
 			{
-				displayName = "Miracle-Grue Beta 0.0.4.0";
+				displayName = "Miracle-Grue Beta 0.0.4.0 - Experimental";
 			}
 			
 			public File getDefaultMiracleGrueDir() {

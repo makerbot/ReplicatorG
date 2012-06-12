@@ -252,7 +252,7 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 
 	@Override
-	public void setFeedrate(double feed) {
+	public void setFeedrateMM(double feed) {
 		// TODO Auto-generated method stub
 
 	}
@@ -723,5 +723,4 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	public String getConfigValue(String value, String baseline) {
 		return baseline;
 	}
-
 }

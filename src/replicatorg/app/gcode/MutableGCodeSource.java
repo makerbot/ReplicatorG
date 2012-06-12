@@ -125,17 +125,17 @@ public class MutableGCodeSource implements GCodeSource {
 		}
 	}
 	
-	/**
-	 * This looks for and tries to remove sections that match what we expect from the start and end code
-	 * It is not guaranteed to remove start and end code, just to try its best.
-	 * @param source
-	 * @return
-	 */
-	public void stripStartEndBestEffort() {
-		//TODO: try harder
-		Base.logger.finer("stripStartEndBestEffort ToDo: TryHarder" );
-		return;
-	}
+//	/**
+//	 * This looks for and tries to remove sections that match what we expect from the start and end code
+//	 * It is not guaranteed to remove start and end code, just to try its best.
+//	 * @param source
+//	 * @return
+//	 */
+//	public void stripStartEndBestEffort() {
+//		//TODO: try harder
+//		Base.logger.finer("stripStartEndBestEffort ToDo: TryHarder" );
+//		return;
+//	}
 	
 
 	/// Runs through this gcode file, swapping all references to the the current toolhead 
