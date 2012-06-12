@@ -224,6 +224,7 @@
 	
 		<!-- permissions -->
 		<chmod file="${reso.dir}/skein_engines/mg_engines/mac/miracle_grue" perm="ugo+rx" />
+		<chmod file="${reso.dir}/skein_engines/slic3r_engines/mac/slic3r" perm="ugo+rx" />
 
 		<!-- delete the copies in the base dir, to make installer build easier -->
 		<delete dir="${target.dir}/docs" />
@@ -345,7 +346,7 @@
 		<chmod file="${target.dir}/tools/avrdude" perm="ugo+rx" />
 		<chmod file="${target.dir}/skein_engines/slic3r_engines/linux/bin/slic3r" perm="ugo+rx" />
 		<chmod file="${target.dir}/skein_engines/mg_engines/linux/x86_64/miracle_grue" perm="ugo+rx" />
-		<!--<chmod file="${target.dir}/skein_engines/mg_engines/linux/x86/miracle_grue" perm="ugo+rx" />-->
+
 		<tar destfile="dist/${release.name}-linux.tgz" compression="gzip" longfile="gnu">
 			<tarfileset dir="dist/linux/${release.name}" prefix="${release.name}" />
 			<tarfileset dir="dist/linux/${release.name}" prefix="${release.name}" filemode="755">
