@@ -472,7 +472,7 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 			String[] arguments = {	"cmd", "/c" + "\"start", profile.getFullPath(), "\""};
 			pb = new ProcessBuilder(arguments);
 		}
-		if (Base.isLinux()) {
+		else if (Base.isLinux()) {
 			///use 'xdg-open' to find the right program
 			String[] arguments = { "xdg-open", profile.getFullPath() };
 			pb = new ProcessBuilder(arguments);		
@@ -592,7 +592,8 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		{
 			baseArguments = new String[]{ 
 					getMiracleGrueDir()+"\\miracle_grue.exe",
-				"--debug","--ignore-nonexistent-config","--load", profile + "\\config.ini"};
+					"-c", profile, 
+					"-o", outFilename};
 		}
 		else
 		{
