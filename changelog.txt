@@ -2,6 +2,7 @@
 * Updated for acceleration behavior
 * Updated to have temperature as part of PrintOMatic settings
 * Updated for smarter acceleration related configuration
+* Added Slic3r and Miracle Grue engines, engine editors, etc
 
 0035-Beta ReplicatorG
 * Updated to handle accleration for The Replicator
