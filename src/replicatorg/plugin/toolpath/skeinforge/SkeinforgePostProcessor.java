@@ -199,10 +199,6 @@ public class SkeinforgePostProcessor {
 			runPrepend(metaInfo);
 		}
 		
-		// scans to cool unused head if required
-//		if( multiHead )	
-//			source.coolUnusedToolhead();
-		
 		//Write the modified source back to our file
 		source.writeToFile(generator.output.file);
 		
@@ -243,8 +239,8 @@ public class SkeinforgePostProcessor {
 	static public void prependAndModifyStartCode(MutableGCodeSource sourceGCode, MutableGCodeSource startGCode)
 	{
 		MutableGCodeSource newStart = new MutableGCodeSource();
+
 		///modify local copy of start code based on settings
-		Base.logger.severe("in run prepend start");
 		int matched = 0;
 		for(String line : startGCode)
 		{
@@ -252,12 +248,12 @@ public class SkeinforgePostProcessor {
 			Matcher m = p.matcher(line);
 			if(m.matches() ){
 				int newTemp = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.printTemp", 220);
-				Base.logger.finest("new temp" + newTemp);
+				Base.logger.fineist("new temp" + newTemp);
 				String newStr = "M104 S" + newTemp + " T"+ m.group(2);
 				if(m.groupCount() >= 3)
 					newStr = newStr + " " + m.group(3) ;
 				newStr = newStr + " (temp updated by printOMatic)";
-				Base.logger.finest("New Temp String: " + newStr);
+				Base.logger.fineist("New Temp String: " + newStr);
 				matched++;
 				newStart.add(newStr);
 			}
@@ -267,7 +263,7 @@ public class SkeinforgePostProcessor {
 			}
 		}
 		sourceGCode.add(0, newStart);
-		Base.logger.finest("printTemp replace count : " + matched);
+		Base.logger.finer("printTemp replace count : " + matched);
 		
 	}
 		
