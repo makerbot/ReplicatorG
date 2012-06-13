@@ -35,10 +35,10 @@ public class ToolpathGeneratorThread extends Thread {
 	
 	
 	public void addListener(ToolpathGenerator.GeneratorListener listener) {
-		if( listener == null )
-			Base.logger.severe("add listener failsauce for "+ listener);
+		if( listener == null ) 
+			Base.logger.severe("AddListener failure. Please check your GCode generator" + listener );
 		else if( this.generator == null )
-			Base.logger.severe("add listener failsauce for "+ this);
+			Base.logger.severe("AddListener failure. Please check your GCode generator (2):"+ this.generator);
 		else
 			this.generator.addListener(listener);
 	}

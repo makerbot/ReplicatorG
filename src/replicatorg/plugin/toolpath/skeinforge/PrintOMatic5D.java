@@ -275,14 +275,6 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		return printPanel;
 	}
 	
-	/// use some install/situation related tools to decide on a best value
-	/// for a specific setting
-	private String situationBestFit(String valueKey,String baseline)
-	{
-		//Base.logger.severe("Print-o-Matic fetching from base");
-		return Base.situationBestFit(valueKey, baseline);
-	}
-	
 	private JComponent materialPanel() {
 		
 		JComponent materialPanel = new JPanel(new MigLayout("fillx"));
@@ -335,10 +327,8 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				setValue("infillPercent", "10");
 				setValue("desiredLayerHeight", ".27");
 				setValue("numberOfShells", "1");
-				String desiredFeedrate = situationBestFit("desiredFeedrate", "40");
-				String travelFeedrate = situationBestFit("travelFeedrate","55");
-				setValue("desiredFeedrate", desiredFeedrate);
-				setValue("travelFeedrate", travelFeedrate );
+				setValue("desiredFeedrate", "40");
+				setValue("travelFeedrate", "55");
 				setValue("filamentDiameter", "1.82");
 //				setValue("packingDensity", "85");
 				setValue("desiredPathWidth", ".4");
@@ -361,10 +351,6 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				setValue("numberOfShells", "1");
 				setValue("desiredFeedrate", "80");
 				setValue("travelFeedrate", "150");
-//				String desiredFeedrate = situationBestFit("desiredFeedrate", "80");
-//				String travelFeedrate = situationBestFit("travelFeedrate","150");
-//				setValue("desiredFeedrate", desiredFeedrate);
-//				setValue("travelFeedrate", travelFeedrate );
 				setValue("filamentDiameter", "1.82");
 //				setValue("packingDensity", "85");
 				setValue("desiredPathWidth", ".4");

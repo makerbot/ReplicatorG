@@ -2,13 +2,14 @@ package replicatorg.plugin.toolpath;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JCheckBox;
-
+import javax.swing.JOptionPane;
 import replicatorg.app.Base;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic;
 import replicatorg.plugin.toolpath.skeinforge.PrintOMatic5D;
@@ -53,7 +54,7 @@ public class ToolpathGeneratorFactory {
 		Vector<ToolpathGeneratorDescriptor> list = new Vector<ToolpathGeneratorDescriptor>();
 		
 		class Slic3r071 extends Slic3rGenerator {
-			{ 	displayName = "Slic3r 0.7.1 -Experimental"; }
+			{ 	displayName = "Slic3r 0.X - Experimental"; }
 			
 			/** return directory where slicer exists */
 			public File getDefaultSlic3rDir() {
@@ -278,7 +279,7 @@ public class ToolpathGeneratorFactory {
 		class Skeinforge47 extends SkeinforgeGenerator {
 
 			{
-				displayName = "Skeinforge (47)  - Legacy";
+				displayName = "Skeinforge (47) - Legacy";
 			}
 			
 			public File getDefaultSkeinforgeDir() {
@@ -512,8 +513,19 @@ public class ToolpathGeneratorFactory {
 		String name = getSelectedName();
 		Vector<ToolpathGeneratorDescriptor> list = getGeneratorList();
 		ToolpathGenerator tg = null;
+		boolean isSelected = false;
+
 		for (ToolpathGeneratorDescriptor tgd : list) {
-			if (name.equals(tgd.name)) { tg = tgd.instantiate(); break; }
+			if (name.equals(tgd.name)) { 
+				tg = tgd.instantiate();
+				isSelected = true;
+				break;
+			}
+		}
+		if( isSelected == false ) {
+			String message = "No Gcode Generator selected. Select a GCode generator \n in the GCode menu, under GCode Generator ";
+			JOptionPane.showConfirmDialog(null, message , "No GCode Generator Selected.", 
+				JOptionPane.OK_OPTION, JOptionPane.QUESTION_MESSAGE);
 		}
 		return tg;
 	}

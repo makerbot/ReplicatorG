@@ -604,7 +604,6 @@ ToolpathGenerator.GeneratorListener
 			}
 
 		}
-		Base.logger.severe("pre regenerate");
 
 		// Check for modified STL
 		if (build.getModel().isModified()) {

@@ -454,10 +454,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	public File getSkeinforgeDir() {
 		String skeinforgePath = System
 				.getProperty("replicatorg.skeinforge.path");
-		if (skeinforgePath == null || (skeinforgePath.length() == 0)) {
-			Base.logger.severe("fishing for skeinforge base dir");
+		if (skeinforgePath == null || (skeinforgePath.length() == 0)) 
 			return getDefaultSkeinforgeDir();
-		}
 		return new File(skeinforgePath);
 	}
 
