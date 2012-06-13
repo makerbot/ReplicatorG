@@ -22,7 +22,7 @@ Grid Rectangular	False
 Line	False
 Infill Perimeter Overlap (ratio):	0.3
 Infill Solidity (ratio):	0.1
-Infill Width over Thickness (ratio):	1.45
+Sharpest Angle (degrees):	60.0
 Solid Surface Thickness (layers):	3
 Lower Left	True
 Nearest	False
