@@ -34,8 +34,8 @@ import replicatorg.machine.model.ToolheadAlias;
 import replicatorg.model.BuildCode;
 import replicatorg.plugin.toolpath.ToolpathGenerator;
 
-public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 
+public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 	{
 		displayName = "MiracleGrue";
 	}
@@ -599,6 +599,9 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 					getMiracleGrueDir()+"/miracle_grue",
 					"-c", profile, 
 					"-o", outFilename, 
+					//"-s", startGCodeFilename,//doing this in java post processor
+					//"-e", endGCodeFilename, //doing this in java post processor
+					
 			};
 		}
 		for (String arg : baseArguments) {
@@ -623,12 +626,11 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 		pb.directory(getMiracleGrueDir());
 		Process process = null;
 		try {
-			//Base.logger.severe("Miracle-Grue try ");
+
 			process = pb.start();
 			StreamLoggerThread ist = new StreamLoggerThread( process.getInputStream()) {
 				@Override
 				protected void logMessage(String line) {
-					//Base.logger.severe("emitting update");
 					emitUpdate(line);
 					super.logMessage(line);
 				}
@@ -656,7 +658,7 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 			// Throw ToolpathGeneratorException
 			return null;
 		} catch (InterruptedException e) {
-			//Base.logger.severe("run interrupted ");
+			Base.logger.severe("MiracleGrueGenerator run interrupted ");
 			// We are most likely shutting down, or the process has been
 			// manually aborted.
 			// Kill the background process and bail out.
@@ -665,16 +667,16 @@ public abstract class MiracleGrueGenerator extends ToolpathGenerator {
 				process.destroy();
 			}
 			
-			//Base.logger.severe("process interrputed for unkown reason");
 			return null;
 		}
 		int lastIdx = path.lastIndexOf('.');
 		String root = (lastIdx >= 0) ? path.substring(0, lastIdx) : path;
 		output = new BuildCode(root, new File(root + ".gcode"));
+		Base.logger.log(Level.FINER, "pre-post-processor");
 		
 		if(postprocess != null)
 		{
-			Base.logger.log(Level.FINER, "pre-post-processor");
+			/// settings for this are set in MainWindow, oddly
 			postprocess.runPostProcessing();
 			Base.logger.log(Level.FINER, "post-post-processor");
 		}

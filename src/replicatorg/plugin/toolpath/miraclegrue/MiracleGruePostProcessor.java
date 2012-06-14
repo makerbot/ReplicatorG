@@ -159,7 +159,7 @@ public class MiracleGruePostProcessor {
 		// Load our code to a source iterator
 		source = new MutableGCodeSource(generator.output.file);
 		
-		if(!dualstruding)
+		if( ! dualstruding )
 		{
 			if(prependStart)
 				runPrepend(startCode);

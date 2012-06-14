@@ -154,6 +154,8 @@ import replicatorg.plugin.toolpath.ToolpathGeneratorFactory.ToolpathGeneratorDes
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgePostProcessor;
+import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator;
+import replicatorg.plugin.toolpath.miraclegrue.MiracleGruePostProcessor;
 import replicatorg.uploader.FirmwareUploader;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -639,6 +641,20 @@ ToolpathGenerator.GeneratorListener
 			spp.setMultiHead(isDualDriver());
 			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
 				spp.setAddProgressUpdates(true);
+		}
+		else if (generator instanceof MiracleGrueGenerator) {
+			MiracleGruePostProcessor spp = ((MiracleGrueGenerator)generator).getPostProcessor();
+			
+			spp.setMachineType(machineLoader.getMachineInterface().getMachineType());
+			spp.setPrependMetaInfo(true);
+			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()));
+			spp.setEndCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()));
+			spp.setMultiHead(isDualDriver());
+			spp.setPrependStart(true);
+			spp.setAppendEnd(true);
+			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
+				spp.setAddProgressUpdates(true);
+
 		}
 
 
