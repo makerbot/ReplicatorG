@@ -46,24 +46,26 @@ class ConfigurationDialog extends JDialog {
 		profiles = parentGenerator.getProfiles();
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		int i=0;
-		int foundLastProfile = -1;
+		int selectedProfile = -1;
 		for (Profile p : profiles) {
-			// Check that this profile says it's for this machine
-			if(ProfileUtils.shouldDisplay(p))
+			///we display all profiles for all machines.
+			// at MBI customer support's request.
+			model.addElement(p.toString());
+			
+			if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
 			{
-				model.addElement(p.toString());
-				
-				if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
-				{
-					Base.logger.fine("Selecting last used element: " + p);
-					foundLastProfile = i;
+				Base.logger.fine("Selecting last used element: " + p);
+				/// default select the last profile that matches 
+				// the currently selected machine type
+				if(ProfileUtils.shouldDisplay(p)) {
+					selectedProfile = i;
 				}
-				i++;
 			}
+			i++;
 		}
 		comboBox.setModel(model);
-		if(foundLastProfile != -1) {
-			comboBox.setSelectedIndex(foundLastProfile);
+		if(selectedProfile != -1) {
+			comboBox.setSelectedIndex(selectedProfile);
 		}
 	}
 

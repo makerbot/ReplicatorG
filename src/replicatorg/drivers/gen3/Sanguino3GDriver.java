@@ -2256,6 +2256,39 @@ public class Sanguino3GDriver extends SerialDriver implements
         }
         
         @Override
+        public int getAxisAccelerationRate(int axis){
+            Base.logger.info("Cannot get acceleration axis rate for S3G driver");
+            return 0;
+        }
+        
+        @Override
+        public void setAxisAccelerationRate(int axis, int rate){
+            Base.logger.info("Cannot set acceleration axis rate for S3G driver");
+        }
+        
+        @Override
+        public double getAxisJerk(int axis){
+            Base.logger.info("Cannot get acceleration axis jerk for S3G driver");
+            return 0.0;
+        }
+        
+        @Override
+        public void setAxisJerk(int axis, double jerk){
+            Base.logger.info("Cannot set acceleration axis rate for S3G driver");
+        }
+        
+        @Override
+        public int getAccelerationMinimumSpeed(){
+            Base.logger.info("Cannot get acceleration minimum speed for S3G driver");
+            return 0;
+        }
+        
+        @Override
+        public void setAccelerationMinimumSpeed(int speed){
+            Base.logger.info("Cannot set acceleration minimum speed for S3G driver");
+        }
+        
+        @Override
 	public boolean hasAcceleration() { return false;}
    
 
@@ -2429,6 +2462,14 @@ public class Sanguino3GDriver extends SerialDriver implements
 	protected byte[] intToLE(int s) {
 		return intToLE(s, 4);
 	}
+        
+        protected float byte16LEToFloat(byte[] r, int offset) {
+		return (float)(byteToInt(r[offset+1]) | byteToInt(r[offset])<<8)/255.0f;
+	}
+	protected float byte16LEToFloat(byte[] r) {
+		return byte16LEToFloat(r, 0);
+	}
+
 
 	ResponseCode convertSDCode(int code) {
 		switch (code) {

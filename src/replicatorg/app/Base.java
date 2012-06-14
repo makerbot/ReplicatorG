@@ -78,8 +78,8 @@ import javax.swing.UIManager;
 import replicatorg.app.ui.MainWindow;
 import replicatorg.app.ui.NotificationHandler;
 import replicatorg.drivers.DriverQueryInterface;
-import replicatorg.machine.MachineInterface;
 import replicatorg.machine.MachineLoader;
+import replicatorg.machine.MachineInterface;
 import replicatorg.machine.model.MachineType;
 import replicatorg.uploader.FirmwareUploader;
 import ch.randelshofer.quaqua.QuaquaManager;
@@ -102,7 +102,7 @@ public class Base {
 	/**
 	 * The version number of this edition of replicatorG.
 	 */
-	public static final int VERSION = 35;
+	public static final int VERSION = 36;
 	
 	/**
 	 * The textual representation of this version (4 digits, zero padded).
@@ -1169,5 +1169,23 @@ public class Base {
 			machineLoader = new MachineLoader();
 		}
 		return machineLoader;
+	}
+
+
+	
+
+	/// Checks global stautus and bot settings to find out if there 
+	/// is a bot specific setting for this key 
+	static public String findDefaultByGlobalStatus(String valueKey, String defaultValue)
+	{
+		MachineInterface mi = getMachineLoader().getMachineInterface();
+		DriverQueryInterface qi = mi.getDriverQueryInterface();
+	
+		// 1) if we are attached, get machine specific value(s)
+		if( mi.isConnected()) { 
+			//Base.logger.severe("situationBestFet fetching from qi");
+			return qi.getConfigValue(valueKey, defaultValue);
+		}
+		return defaultValue;
 	}
 }

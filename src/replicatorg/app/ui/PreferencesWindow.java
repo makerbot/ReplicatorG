@@ -190,7 +190,9 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content.add(fontSizeField);
 		content.add(new JLabel("  (requires restart of ReplicatorG)"), "wrap");
 
-		addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp", (machine.getMachineType() == MachineType.THE_REPLICATOR));
+		boolean checkTempDuringBuild = Base.preferences.getBoolean("build.monitor_temp", true);
+		
+		addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp", checkTempDuringBuild);
 		addCheckboxForPref(content,"Automatically connect to machine at startup","replicatorg.autoconnect",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
 		addCheckboxForPref(content,"Review GCode for potential toolhead problems before building","build.safetyChecks",true);
