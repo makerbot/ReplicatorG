@@ -1,0 +1,17 @@
+#!/bin/sh
+
+DIR=`echo $0| sed 's/\/.*//'`
+
+if [ ! -x miracle_grue_found ]; then
+   echo Searching
+   for BINARY in $DIR/*_glibc_*; do
+   	    if $BINARY > /dev/null; then
+	   	  WORKING=$BINARY
+		  break
+		fi
+	done
+
+	ln -s $WORKING $DIR/miracle_grue_found
+fi
+
+exec $DIR/miracle_grue_found
