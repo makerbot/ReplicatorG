@@ -71,7 +71,7 @@ public class SwingPythonSelector implements Selector {
 	 * Mountain Lion filters out /usr/bin/python, we manually put it back :) 
 	 * if it's missing.
 	*/
-	private patchPythonCandidateForMountainLion(Vector<String> candidates){
+	private void patchPythonCandidateForMountainLion(Vector<String> candidates){
 		Base.logger.severe("patchPythonCandidatesForMountainLion");
 		for (String candid: candidates) {
 			if ("/usr/bin/python".equals(candidate) )
