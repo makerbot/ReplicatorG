@@ -208,7 +208,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	 */
 	protected interface SkeinforgePreference {
 		public JComponent getUI();
-		public List<SkeinforgeOption> getOptions();
+		public List<SkeinforgeOption> getOptions(String displayName);
 		public String valueSanityCheck();
 		public String getName();
 	}
@@ -258,7 +258,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			list.add(o);
 		}
 
-		public List<SkeinforgeOption> getOptions() {
+		public List<SkeinforgeOption> getOptions(String displayName) {
 			if (optionsMap.containsKey(chosen)) {
 				List<SkeinforgeOption> l = optionsMap.get(chosen);
 				for (SkeinforgeOption o : l) {
@@ -317,7 +317,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			falseOptions.add(new SkeinforgeOption(o.module,o.preference,negated));
 		}
 
-		public List<SkeinforgeOption> getOptions() {
+		public List<SkeinforgeOption> getOptions(String displayName) {
 			return isSet?trueOptions:falseOptions;
 		}
 
@@ -578,7 +578,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 
 		for (SkeinforgePreference preference : getPreferences()) {
-			List<SkeinforgeOption> options = preference.getOptions();
+			List<SkeinforgeOption> options = preference.getOptions(displayName);
 			if (options != null) {
 				for (SkeinforgeOption option : options) {
 					arguments.add(option.getParameter());

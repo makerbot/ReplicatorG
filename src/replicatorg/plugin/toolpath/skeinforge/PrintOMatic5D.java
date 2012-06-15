@@ -404,7 +404,15 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		return null;
 	}
 	
-	public List<SkeinforgeOption> getOptions() {
+	/**
+	 * Returns a list of skeinforge options to use/populate GUI
+	 * 
+	 * @param displayName : key used to change some settings based on
+	 * the version of skeinforge in use. No pretty, merely a quick fix on old
+	 * code. Needs refactoring.
+	 * 
+	 */
+	public List<SkeinforgeOption> getOptions(String displayName) {
 		
 		List<SkeinforgeOption> options = new LinkedList<SkeinforgeOption>();
 
@@ -439,11 +447,23 @@ public class PrintOMatic5D implements SkeinforgePreference {
 			options.add(new SkeinforgeOption("speed.csv", "Feed Rate (mm/s):", Double.toString(feedRate)));
 			options.add(new SkeinforgeOption("speed.csv", "Travel Feed Rate (mm/s):", Double.toString(travelFeedRate)));
 			options.add(new SkeinforgeOption("speed.csv", "Flow Rate Setting (float):", Double.toString(feedRate)));
+
+			//options.add(new SkeinforgeOption("dimension.csv", "Filament Packing Density (ratio):", Double.toString(packingDensity)));
 			options.add(new SkeinforgeOption("dimension.csv", "Filament Diameter (mm):", Double.toString(filamentDiameter)));
-//			options.add(new SkeinforgeOption("dimension.csv", "Filament Packing Density (ratio):", Double.toString(packingDensity)));
-			options.add(new SkeinforgeOption("carve.csv", "Perimeter Width over Thickness (ratio):", Double.toString(perimeterWidthOverThickness)));
-			options.add(new SkeinforgeOption("fill.csv", "Infill Width over Thickness (ratio):", Double.toString(infillWidthOverThickness)));
-			options.add(new SkeinforgeOption("carve.csv", "Layer Thickness (mm):", Double.toString(layerHeight)));
+
+			if( displayName.equalsIgnoreCase("Skeinforge (50)") ) {
+				Base.logger.severe("printomatic 5D sf 50");
+				options.add(new SkeinforgeOption("carve.csv", "Edge Width over Height (ratio):", Double.toString(perimeterWidthOverThickness)));
+				options.add(new SkeinforgeOption("inset.csv", "Infill Width over Thickness (ratio):", Double.toString(infillWidthOverThickness)));
+				options.add(new SkeinforgeOption("carve.csv", "Layer Height (mm):", Double.toString(layerHeight)));
+			}
+			else {
+				Base.logger.severe("printomatic 5D sf other");
+				options.add(new SkeinforgeOption("carve.csv", "Perimeter Width over Thickness (ratio):", Double.toString(perimeterWidthOverThickness)));
+				options.add(new SkeinforgeOption("fill.csv", "Infill Width over Thickness (ratio):", Double.toString(infillWidthOverThickness)));
+				options.add(new SkeinforgeOption("carve.csv", "Layer Thickness (mm):", Double.toString(layerHeight)));
+			}
+
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Alternating Solid Layer (layers):", Double.toString(extraShellsOnAlternatingSolidLayer)));
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Base (layers):", Double.toString(extraShellsOnBase)));
 			options.add(new SkeinforgeOption("fill.csv", "Extra Shells on Sparse Layer (layers):", Double.toString(extraShellsOnSparseLayer)));

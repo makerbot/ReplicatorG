@@ -113,7 +113,7 @@ public class SkeinforgePostProcessor {
 			return panel;
 		}
 		@Override
-		public List<SkeinforgeOption> getOptions() {
+		public List<SkeinforgeOption> getOptions(String displayName) {
 			return new ArrayList<SkeinforgeOption>();
 		}
 		@Override
@@ -328,12 +328,12 @@ public class SkeinforgePostProcessor {
 				return panel;
 			}
 			@Override
-			public List<SkeinforgeOption> getOptions() {
+			public List<SkeinforgeOption> getOptions(String displayName) {
 				List<SkeinforgeOption> result = new ArrayList<SkeinforgeOption>();
 				result.add(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
 				result.add(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
-				result.addAll(outlineActive.getOptions());
-				result.addAll(coolActive.getOptions());
+				result.addAll(outlineActive.getOptions(""));
+				result.addAll(coolActive.getOptions(""));
 				return result;
 			}
 			@Override
