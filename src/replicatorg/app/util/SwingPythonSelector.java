@@ -27,12 +27,16 @@ public class SwingPythonSelector implements Selector {
 	}
 	
 	public String selectPythonPath(Vector<String> candidates) {
+		
 		if (candidates != null && candidates.size() >= 2) {
 			return selectCandidatePath(candidates);
 		} else {
 			// Linux users should have zero problems setting up python on their system or putting it in
 			// the path.  Even n00bs.  Thank you, Debian/Ubuntu. 
-			if (candidates != null && Base.isLinux()) { return null; }
+			if (candidates != null && Base.isLinux()) 
+			{ 
+				return null;
+			}
 			String s = "<html>"+
 				"<p>ReplicatorG couldn't find a Python interpreter on your computer.</p>"+
 				"<p>Would you like to visit the Python download page, or manually select your Python installation?</p>"+
@@ -63,13 +67,34 @@ public class SwingPythonSelector implements Selector {
 	
 	private String selectedCandidate = null;
 	
+	/* 
+	 * Mountain Lion filters out /usr/bin/python, we manually put it back :) 
+	 * if it's missing.
+	*/
+	private patchPythonCandidateForMountainLion(Vector<String> candidates){
+		Base.logger.severe("patchPythonCandidatesForMountainLion");
+		for (String candid: candidates) {
+			if ("/usr/bin/python".equals(candidate) )
+					return;
+		}
+		Base.logger.severe("patchPythonCandidatesForMountainLion done");
+		candidates.add("/usr/bin/python");
+	}
+
+	
 	private String selectCandidatePath(Vector<String> candidates) {
+		
 		final JDialog dialog = new JDialog(frame, "Select Python binary", true);
 		Container content = dialog.getContentPane();
 		content.setLayout(new MigLayout());
 		String msg = "<html>Multiple Python binaries have been found on your computer.<br>"+
 			"Select one from the list below, or click 'Other...' to find another version.</html>";
 		content.add(new JLabel(msg),"growx,wrap");
+	
+		if(base.isMacOs() ) {
+			patchPythonCandidateForMountainLion(candidates);
+		}
+		
 		final JList list = new JList(candidates);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		content.add(list,"growx,wrap");
