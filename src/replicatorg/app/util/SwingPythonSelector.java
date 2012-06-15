@@ -74,7 +74,7 @@ public class SwingPythonSelector implements Selector {
 	private void patchPythonCandidateForMountainLion(Vector<String> candidates){
 		Base.logger.severe("patchPythonCandidatesForMountainLion");
 		for (String candid: candidates) {
-			if ("/usr/bin/python".equals(candidate) )
+			if ("/usr/bin/python".equals(candid) )
 					return;
 		}
 		Base.logger.severe("patchPythonCandidatesForMountainLion done");
@@ -91,7 +91,7 @@ public class SwingPythonSelector implements Selector {
 			"Select one from the list below, or click 'Other...' to find another version.</html>";
 		content.add(new JLabel(msg),"growx,wrap");
 	
-		if(base.isMacOs() ) {
+		if(Base.isMacOS() ) {
 			patchPythonCandidateForMountainLion(candidates);
 		}
 		
