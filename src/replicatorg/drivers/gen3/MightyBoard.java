@@ -100,6 +100,17 @@ class MightyBoardEEPROM implements EEPROMClass
 		public static int beta(int which) { return BETA + THERM_TABLE; }
 		public static int data(int which) { return DATA + THERM_TABLE; }
 	};
+        
+        final static class AccelerationOffsets {
+	
+		final public static int Active = 0x00;
+		final public static int Rate = 0x02;
+		final public static int AxisRate = 0x04;
+		final public static int AxisJerk = 0x0E;
+                final public static int MinimumSpeed = 0x18;
+                final public static int DefaultsFlag = 0x1A;
+		
+	};
 	
 	
 	
@@ -156,9 +167,11 @@ class MightyBoardEEPROM implements EEPROMClass
     /// This indicates how far out of tolerance the toolhead0 toolhead1 distance is
     /// in steps.  3 x 32 bits = 12 bytes
     final public static int TOOLHEAD_OFFSET_SETTINGS = 0x0162;
+    /// Acceleraton settings 1byte + 2 bytes
+    final public static int ACCELERATION_SETTINGS = 0x016E;
 
-	/// start of free space
-	final public static int FREE_EEPROM_STARTS = 0x0158;
+    /// start of free space
+    final public static int FREE_EEPROM_STARTS = 0x018A;
 
 }
 
@@ -248,6 +261,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	private int toolCountOnboard = -1; /// no count aka FFFF
 	
 	Version toolVersion = new Version(0,0);
+	Version accelerationVersion = new Version(0,0);
 
 	/** 
 	 * Standard Constructor
@@ -260,10 +274,11 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		stepperValues= new Hashtable();
 		
-		// Make sure this accurately reflects the minimum prefered 
+		// Make sure this accurately reflects the minimum preferred
 		// firmware version we want this driver to support.
 		minimumVersion = new Version(5,2);
 		preferredVersion = new Version(5,2);
+		minimumAccelerationVersion = new Version(5,3);
 
 	}
 	
@@ -302,9 +317,11 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		getStepperValues(); //read our current steppers into a local cache
 		getMotorRPM();		//load our motor RPM from firmware if we can.
+		getAccelerationState();
+
 		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
 		{
-			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
+			Base.logger.fine("Machine ID Mismatch. Please re-select your machine.");
 			return true;//TEST just for now, due to EEPROM munging
 		}
 		
@@ -313,13 +330,25 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			Base.logger.severe("Tool Count Mismatch. Expecting "+ machine.getTools().size() + " tools, reported " + this.toolCountOnboard + "tools");
 			Base.logger.severe("Please double-check your selected machine.");
 		}
-		
+			
 		// I have no idea why we still do this, we may want to test and refactor away
 		getSpindleSpeedPWM();
 		return true;
 	}
+	
+        
+	/// Read acceleration OFF/ON status from Bot
+	private void getAccelerationState(){
+	    
+	    Base.logger.fine("Geting Acceleration Status from Bot");
+	    acceleratedFirmware = getAccelerationStatus();
+	    if(acceleratedFirmware)
+	        Base.logger.finest("Found accelerated firmware active");
+	    
+	}
 
-	/// Read stepper refernce voltage values from the bot EEPROM.
+	
+	/// Read stepper reference voltage values from the Bot's EEPROM.
 	private void getStepperValues() {
 		
 		int stepperCountMightyBoard = 5;
@@ -778,7 +807,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public double getToolheadsOffset(int axis) {
 
-		Base.logger.finest("MigtyBoard getToolheadsOffset" + axis);
+		Base.logger.finest("MightyBoard getToolheadsOffset" + axis);
 		if ((axis < 0) || (axis > 2)) {
 			// TODO: handle this
 			Base.logger.severe("axis out of range" + axis);
@@ -806,6 +835,27 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		return val;
 	}
 
+	/// Looks up a key value based on the machine setting/status.
+	/// Only used for getting baseline acceleration values for
+	// Print-O-Matic
+	@Override 
+	public String getConfigValue(String key, String baseline)
+	{
+		//Base.logger.severe("MightyBoard fetching from getConfig");
+		if( this.getAccelerationStatus() == true ) {
+			//Base.logger.severe("MightyBoard is accel");
+			if ( key.equals("desiredFeedrate")  )  return "80";
+			if ( key.equals("travelFeedrate") )    return "150";
+			if ( key.equals("printTemp") )    		return "240";
+			
+		} else  {
+			//Base.logger.severe("MightyBoard is not accel");
+			if ( key.equals("desiredFeedrate")  )  return "40";
+			if ( key.equals("travelFeedrate") )    return "55";
+			if ( key.equals("printTemp") )    		return "220";
+		}
+		return baseline;
+	}
 	
 	/**
 	 * Stores to EEPROM in motor steps counts, how far out of 
@@ -839,6 +889,144 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		}
 		write32ToEEPROM32(MightyBoardEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4,offsetSteps);
 	}
+        
+        @Override
+        /// get stored acceleration rate from bot
+        /// acceleration rate is applied to all moves when acceleration is active in firmware
+        public int getAccelerationRate(){
+                
+                Base.logger.finest("MightyBoard getAccelerationRate" );
+		
+		checkEEPROM();
+
+		int val = read16FromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.Rate);
+				
+		return val;
+        }
+        
+        @Override
+        /// set acceleration rate store on bot
+        /// acceleration rate is applied to all moves when acceleration is active in firmware
+        public void setAccelerationRate(int rate){
+            
+            Base.logger.finest("MightyBoard setAccelerationRate" );
+
+            // limit rate to 16 bit integer max
+            if(rate  > 32767)
+                rate = 32767;
+            if(rate < -32768)
+                rate = -32768;
+                
+            write16ToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                    MightyBoardEEPROM.AccelerationOffsets.Rate, rate);
+        }
+        
+        /**
+	 * Reads the individual acceleration rates of each axis,
+	 * in mm/s.
+	 */
+	@Override
+	public int getAxisAccelerationRate(int axis) {
+		checkEEPROM();
+                int val = read16FromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS +
+                        MightyBoardEEPROM.AccelerationOffsets.AxisRate + (axis * 2));
+
+		return val;
+	}
+
+	/**
+	 * Writes the individual acceleration rates of each axis,
+	 * in mm/s, to the motherboard EEPROM.
+	 */
+	@Override
+	public void setAxisAccelerationRate(int axis, int rate) {
+
+		write16ToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.AxisRate + (axis * 2), rate);
+	}
+        
+        /**
+	 * Reads the individual acceleration rates of each axis,
+	 * in mm/s.
+	 */
+	@Override
+	public int getAccelerationMinimumSpeed() {
+		checkEEPROM();
+                int val = read16FromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.MinimumSpeed);
+
+		return val;
+	}
+
+	/**
+	 * Writes the individual acceleration rates of each axis,
+	 * in mm/s, to the motherboard EEPROM.
+	 */
+	@Override
+	public void setAccelerationMinimumSpeed(int speed) {
+
+		write16ToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.MinimumSpeed, speed);
+	}
+        
+        /**
+	 * Reads the individual acceleration rates of each axis,
+	 * in mm/s.
+	 */
+	@Override
+	public double getAxisJerk(int axis) {
+		checkEEPROM();
+                byte[] stored = readFromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.AxisJerk + (axis * 2),2);
+                
+                double val = byte16LEToFloat(stored);
+		return val;
+	}
+
+	/**
+	 * Writes the individual acceleration rates of each axis,
+	 * in mm/s, to the motherboard EEPROM.
+	 */
+	@Override
+	public void setAxisJerk(int axis, double jerk) {
+
+		writeToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS + 
+                        MightyBoardEEPROM.AccelerationOffsets.AxisJerk + (axis * 2), floatToLE((float)jerk));
+	}
+
+        
+        @Override
+        // get stored acceleration status: either ON of OFF
+        // acceleration is applied to all moves, except homing when ON
+        public boolean getAccelerationStatus(){
+                
+                Base.logger.finest("MightyBoard getAccelerationStatus");
+            
+                checkEEPROM();
+
+		byte[] val = readFromEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS,1);
+				
+		return (val[0] > 0 ? true : false);
+        }
+        
+        @Override
+        // set stored acceleration status: either ON of OFF
+        // acceleration is applied to all moves, except homing when ON
+        public void setAccelerationStatus(byte status){
+            Base.logger.info("MightyBoard setAccelerationStatus");
+            
+            byte b[] = new byte[1];
+            b[0] = status;
+            writeToEEPROM(MightyBoardEEPROM.ACCELERATION_SETTINGS, b);
+        }
+        
+        @Override
+	public boolean hasAcceleration() { 
+            if (version.compareTo(getMinimumAccelerationVersion()) < 0)
+                return false;
+            return true;
+        }
 
 
 
@@ -1308,7 +1496,31 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 				s = s >>> 8;
 		}
 		writeToEEPROM(offset,buf);
-}
+        }
+        
+        /// read a 16 bit int from EEPROM at location 'offset'
+	private int read16FromEEPROM(int offset)
+	{
+		int val = 0;
+		byte[] r = readFromEEPROM(offset, 2);
+		if( r == null || r.length < 2) {
+			Base.logger.severe("invalid read from read16FromEEPROM at "+ offset);
+			return val;
+		}
+		for (int i = 0; i < 2; i++)
+			val = val + (((int)r[i] & 0xff) << 8*i);
+		return val;
+	}
+
+	private void write16ToEEPROM(int offset, int value ) {
+		int s = value;
+		byte buf[] = new byte[2];
+		for (int i = 0; i < 2; i++) {
+			buf[i] = (byte) (s & 0xff);
+				s = s >>> 8;
+		}
+		writeToEEPROM(offset,buf);
+        }
 
 
 	

@@ -48,7 +48,6 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	BuildCode output;
 	protected final SkeinforgePostProcessor postprocess;
 	
-	// "skein_engines/skeinforge-0006","sf_profiles");
 	public SkeinforgeGenerator() {
 		postprocess = new SkeinforgePostProcessor(this);
 	}
@@ -209,7 +208,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	 */
 	protected interface SkeinforgePreference {
 		public JComponent getUI();
-		public List<SkeinforgeOption> getOptions();
+		public List<SkeinforgeOption> getOptions(String displayName);
 		public String valueSanityCheck();
 		public String getName();
 	}
@@ -259,7 +258,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			list.add(o);
 		}
 
-		public List<SkeinforgeOption> getOptions() {
+		public List<SkeinforgeOption> getOptions(String displayName) {
 			if (optionsMap.containsKey(chosen)) {
 				List<SkeinforgeOption> l = optionsMap.get(chosen);
 				for (SkeinforgeOption o : l) {
@@ -318,7 +317,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			falseOptions.add(new SkeinforgeOption(o.module,o.preference,negated));
 		}
 
-		public List<SkeinforgeOption> getOptions() {
+		public List<SkeinforgeOption> getOptions(String displayName) {
 			return isSet?trueOptions:falseOptions;
 		}
 
@@ -454,9 +453,8 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	public File getSkeinforgeDir() {
 		String skeinforgePath = System
 				.getProperty("replicatorg.skeinforge.path");
-		if (skeinforgePath == null || (skeinforgePath.length() == 0)) {
+		if (skeinforgePath == null || (skeinforgePath.length() == 0)) 
 			return getDefaultSkeinforgeDir();
-		}
 		return new File(skeinforgePath);
 	}
 
@@ -578,8 +576,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		for (String arg : baseArguments) {
 			arguments.add(arg);
 		}
+
 		for (SkeinforgePreference preference : getPreferences()) {
-			List<SkeinforgeOption> options = preference.getOptions();
+			List<SkeinforgeOption> options = preference.getOptions(displayName);
 			if (options != null) {
 				for (SkeinforgeOption option : options) {
 					arguments.add(option.getParameter());
@@ -588,8 +587,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				}
 			}
 		}
+		
 		arguments.add(path);
-for(String a : arguments) System.out.println(a);
+		for(String a : arguments) System.out.println(a);
 		ProcessBuilder pb = new ProcessBuilder(arguments);
 		pb.directory(getSkeinforgeDir());
 		Process process = null;
@@ -632,13 +632,9 @@ for(String a : arguments) System.out.println(a);
 		int lastIdx = path.lastIndexOf('.');
 		String root = (lastIdx >= 0) ? path.substring(0, lastIdx) : path;
 		output = new BuildCode(root, new File(root + ".gcode"));
-
+		
 		if(postprocess != null)
-		{
-			Base.logger.log(Level.FINER, "pre-post-processor");
 			postprocess.runPostProcessing();
-			Base.logger.log(Level.FINER, "post-post-processor");
-		}
 		
 		return output;
 	}

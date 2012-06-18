@@ -26,10 +26,6 @@ import replicatorg.model.GCodeSource;
  */
 
 public interface MachineInterface {
-		/** Get the driver instance. Note that this interface will not be supported in the future; instead use getDriverQueryInterface() **/
-	@Deprecated
-	public Driver getDriver();
-	
 	/** Get an interface to use to query the driver **/
 	public DriverQueryInterface getDriverQueryInterface();
 	
@@ -57,12 +53,11 @@ public interface MachineInterface {
 	 */
 	public MachineModel getModel();
 	
-	
 	public String getMachineName();
 	public MachineType getMachineType();
 	
-	
 	// Job level commands
+	
 	
 	/** Estimate the time required to process a job
 	 * @param source GCode source of job to estimate
@@ -102,4 +97,9 @@ public interface MachineInterface {
 	public boolean isConnected();
 	public boolean isSimulating();
 	public boolean isInteractiveTarget();
+
+	/** Get the driver instance. Note that this interface will not be supported in the future; instead use getDriverQueryInterface() **/
+	@Deprecated
+	public Driver getDriver();
+
 }

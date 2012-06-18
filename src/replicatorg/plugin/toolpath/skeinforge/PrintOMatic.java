@@ -382,7 +382,15 @@ public class PrintOMatic implements SkeinforgePreference {
 		return ((Math.pow(getValue("nozzleDiameter")/2,2)*Math.PI)/getValue("desiredLayerHeight"))/getValue("desiredLayerHeight");
 	}
 	
-	public List<SkeinforgeOption> getOptions() {
+	/**
+	 * Returns a list of skeinforge options to use/populate GUI
+	 * 
+	 * @param displayName : key used to change some settings based on
+	 * the version of skeinforge in use. No pretty, merely a quick fix on old
+	 * code. Needs refactoring.
+	 * 
+	 */
+	public List<SkeinforgeOption> getOptions(String displayName) {
 		
 		List<SkeinforgeOption> options = new LinkedList<SkeinforgeOption>();
 

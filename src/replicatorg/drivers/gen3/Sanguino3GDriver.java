@@ -108,6 +108,8 @@ public class Sanguino3GDriver extends SerialDriver implements
 	Version toolVersion = new Version(0, 0);
 
 	private boolean eepromChecked = false;
+        
+        protected boolean acceleratedFirmware = false;
 
 	public Sanguino3GDriver() {
 		super();
@@ -150,14 +152,19 @@ public class Sanguino3GDriver extends SerialDriver implements
 			// okay, take care of version info /etc.
 			if (version.compareTo(getMinimumVersion()) < 0) {
 				Base.logger.log(Level.WARNING,
-					"\n********************************************************\n"
-					+ "This version of ReplicatorG is not reccomended for use with firmware before version "
-					+ getMinimumVersion()
-					+ ". Either update your firmware or proceed with caution.\n"
-					+ "********************************************************");
+                            "\n********************************************************\n"
+                            + "This version of ReplicatorG is not reccomended for use with firmware before version "
+                            + getMinimumVersion()
+                            + ". Either update your firmware or proceed with caution.\n"
+                            + "********************************************************");
 			}
 			sendInit();
 			super.initialize();
+			// dial down timeout for accelerated firmware so that we can refill
+			// firmware command buffer as quickly as possible
+			if(acceleratedFirmware){
+				serial.setTimeout(200);
+			}
 			invalidatePosition();
 
 			return;
@@ -408,8 +415,17 @@ public class Sanguino3GDriver extends SerialDriver implements
 						break;
 					}
 					if (retries > 1) {
-						Base.logger.severe("Read timed out; retries remaining: "
+                                            
+                                            // accelerated Firmware has a low timeout period and times out frequently
+                                            // dial down timeout logging because there will be a LOT of it
+                                            if(acceleratedFirmware){
+						Base.logger.finest("Read timed out; retries remaining: "
 										+ Integer.toString(retries));
+                                            }
+                                            else{
+                                                Base.logger.severe("Read timed out; retries remaining: "
+										+ Integer.toString(retries));
+                                            }
 					}
 					if (retries == -1) {
 						// silently return a timeout response
@@ -2205,16 +2221,76 @@ public class Sanguino3GDriver extends SerialDriver implements
 	public boolean hasToolheadsOffset() { return false;}
 	
 	@Override
-    public double getToolheadsOffset(int axis) {
-    	Base.logger.info("Cannot get tolerance error for S3G driver");
-        return 0.0;
-    }
+        public double getToolheadsOffset(int axis) {
+            Base.logger.info("Cannot get tolerance error for S3G driver");
+            return 0.0;
+        }
 
 	@Override
-    public void eepromStoreToolDelta(int axis, double offset){
-    	Base.logger.info("Cannot store tolerance error for S3G driver");
-        return;
-    }
+        public void eepromStoreToolDelta(int axis, double offset){
+            Base.logger.info("Cannot store tolerance error for S3G driver");
+            return;
+        }
+        
+        @Override
+        public int getAccelerationRate(){
+            Base.logger.info("Cannot get acceleration rate for S3G driver");
+            return 0;
+        }
+        
+        @Override
+        public void setAccelerationRate(int rate){
+            Base.logger.info("Cannot set acceleration rate for S3G driver");
+
+        }
+        
+        @Override
+        public boolean getAccelerationStatus(){
+            Base.logger.info("Cannot get acceleration status for S3G driver");
+            return false;
+        }
+        
+        @Override
+        public void setAccelerationStatus(byte status){
+            Base.logger.info("Cannot set acceleration status for S3G driver");
+        }
+        
+        @Override
+        public int getAxisAccelerationRate(int axis){
+            Base.logger.info("Cannot get acceleration axis rate for S3G driver");
+            return 0;
+        }
+        
+        @Override
+        public void setAxisAccelerationRate(int axis, int rate){
+            Base.logger.info("Cannot set acceleration axis rate for S3G driver");
+        }
+        
+        @Override
+        public double getAxisJerk(int axis){
+            Base.logger.info("Cannot get acceleration axis jerk for S3G driver");
+            return 0.0;
+        }
+        
+        @Override
+        public void setAxisJerk(int axis, double jerk){
+            Base.logger.info("Cannot set acceleration axis rate for S3G driver");
+        }
+        
+        @Override
+        public int getAccelerationMinimumSpeed(){
+            Base.logger.info("Cannot get acceleration minimum speed for S3G driver");
+            return 0;
+        }
+        
+        @Override
+        public void setAccelerationMinimumSpeed(int speed){
+            Base.logger.info("Cannot set acceleration minimum speed for S3G driver");
+        }
+        
+        @Override
+	public boolean hasAcceleration() { return false;}
+   
 
 	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
 		byte b = 0;
@@ -2386,6 +2462,14 @@ public class Sanguino3GDriver extends SerialDriver implements
 	protected byte[] intToLE(int s) {
 		return intToLE(s, 4);
 	}
+        
+        protected float byte16LEToFloat(byte[] r, int offset) {
+		return (float)(byteToInt(r[offset+1]) | byteToInt(r[offset])<<8)/255.0f;
+	}
+	protected float byte16LEToFloat(byte[] r) {
+		return byte16LEToFloat(r, 0);
+	}
+
 
 	ResponseCode convertSDCode(int code) {
 		switch (code) {

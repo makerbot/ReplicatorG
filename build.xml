@@ -2,19 +2,16 @@
 
 	<!-- Project name -->
 
-	<property name="project" value="replicatorg"/>
+	<property name="project" value="replicatorg" />
 
 	<!-- Set the platform property based on the current environment -->
-	<condition property="platform" 
-	     value="macosx">
+	<condition property="platform" value="macosx">
 		<os family="mac" />
 	</condition>
-	<condition property="platform" 
-	     value="windows">
+	<condition property="platform" value="windows">
 		<os family="windows" />
 	</condition>
-	<condition property="platform" 
-	     value="linux">
+	<condition property="platform" value="linux">
 		<os family="unix" />
 	</condition>
 
@@ -22,30 +19,30 @@
 	<property file="ant.includes/${os.name}-${os.arch}.properties" />
 	<echo>${os.name}-${os.arch}</echo>
 
-	<property name="src.dir"       value="src"/>
-	<property name="build.dir"     value="build"/>
-	<property name="classes.dir"   value="${build.dir}/classes"/>
-	<property name="jar.dir"       value="${build.dir}/jar"/>
-	<property name="resources.dir" value="resources"/>
-	<property name="shared.dir"    value="${build.dir}/shared"/>
-	<property name="lib.dir"       value="${shared.dir}/lib"/>
-	<property name="ant.build.javac.target" value="1.5"/>
-	<property name="test.src.dir"       value="test/src"/>
-	<property name="release.name" value="${project}-${replicatorg.version}"/>
+	<property name="src.dir" value="src" />
+	<property name="build.dir" value="build" />
+	<property name="classes.dir" value="${build.dir}/classes" />
+	<property name="jar.dir" value="${build.dir}/jar" />
+	<property name="resources.dir" value="resources" />
+	<property name="shared.dir" value="${build.dir}/shared" />
+	<property name="lib.dir" value="${shared.dir}/lib" />
+	<property name="ant.build.javac.target" value="1.5" />
+	<property name="test.src.dir" value="test/src" />
+	<property name="release.name" value="${project}-${replicatorg.version}" />
 
-	<property name="protocols.dir" value="${src.dir}/fabman/messages"/>
+	<property name="protocols.dir" value="${src.dir}/fabman/messages" />
 
 	<path id="classpath">
 		<!-- include jarbundler -->
-		<fileset dir="build/macosx" includes="*.jar"/>
-		<fileset dir="${lib.dir}" includes="*.jar"/>
-		<pathelement path="/System/Library/Java"/>
+		<fileset dir="build/macosx" includes="*.jar" />
+		<fileset dir="${lib.dir}" includes="*.jar" />
+		<pathelement path="/System/Library/Java" />
 	</path>
 
 	<path id="test.cp">
-		<path refid="classpath"/>
-		<pathelement path="test/lib/testng.jar"/>
-		<pathelement path="${classes.dir}"/>
+		<path refid="classpath" />
+		<pathelement path="test/lib/testng.jar" />
+		<pathelement path="${classes.dir}" />
 	</path>
 
 	<target name="protoc">
@@ -58,13 +55,13 @@
 	</target>
 
 	<target name="clean">
-		<delete dir="${classes.dir}"/>
-		<delete dir="${jar.dir}"/>
-		<delete dir="dist"/>
+		<delete dir="${classes.dir}" />
+		<delete dir="${jar.dir}" />
+		<delete dir="dist" />
 	</target>
 
 	<target name="compile">
-		<mkdir dir="${classes.dir}"/>
+		<mkdir dir="${classes.dir}" />
 		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5" includeAntRuntime="false">
 			<!-- Uncomment to aid in Java debugging
 			<compilerarg value="-Xlint:deprecation" />
@@ -74,7 +71,7 @@
 	</target>
 
 	<target name="compile-tests">
-		<mkdir dir="${classes.dir}"/>
+		<mkdir dir="${classes.dir}" />
 		<javac srcdir="${test.src.dir}" destdir="${classes.dir}" classpathref="test.cp" debug="true" debuglevel="lines,vars,source" source="1.5">
 			<!-- Uncomment to aid in Java debugging
 			<compilerarg value="-Xlint:deprecation" />
@@ -84,9 +81,9 @@
 	</target>
 
 	<target name="jar" depends="compile">
-		<mkdir dir="${jar.dir}"/>
+		<mkdir dir="${jar.dir}" />
 		<copy todir="${classes.dir}">
-			<fileset dir="${resources.dir}"/>
+			<fileset dir="${resources.dir}" />
 		</copy>
 		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
 		</jar>
@@ -96,32 +93,32 @@
 		<java fork="true" classname="replicatorg.app.Base">
 			<!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
 
-			<jvmarg value="-ea"/>
-			<jvmarg value="-Xmx512m"/>
-			<jvmarg value="-XX:+HeapDumpOnOutOfMemoryError"/>
-			<jvmarg value="${native.java.flags}"/>
+			<jvmarg value="-ea" />
+			<jvmarg value="-Xmx512m" />
+			<jvmarg value="-XX:+HeapDumpOnOutOfMemoryError" />
+			<jvmarg value="${native.java.flags}" />
 			<classpath>
-				<path refid="classpath"/>
-				<pathelement location="${jar.dir}/${ant.project.name}.jar"/>
+				<path refid="classpath" />
+				<pathelement location="${jar.dir}/${ant.project.name}.jar" />
 			</classpath>
-			<sysproperty key="java.library.path" path="${native.lib.dir}"/>
-			<sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
-			<sysproperty key="replicatorg.toolpath" path="${native.tools.dir}"/>
-			<arg line="${run.arguments}"/>
+			<sysproperty key="java.library.path" path="${native.lib.dir}" />
+			<sysproperty key="replicatorg.app-resources" path="${lib.dir}" />
+			<sysproperty key="replicatorg.toolpath" path="${native.tools.dir}" />
+			<arg line="${run.arguments}" />
 		</java>
 	</target>
 
 	<target name="run-clean" depends="jar">
-		<delete dir="${user.home}/.replicatorg/temp"/>		
+		<delete dir="${user.home}/.replicatorg/temp" />
 		<java fork="true" classname="replicatorg.app.Base">
 			<!-- jvm="/usr/lib/jvm/java-1.5.0-sun/bin/java" -->
 			<jvmarg value="-ea" />
 			<jvmarg value="-Xmx512m" />
 			<jvmarg value="-XX:+HeapDumpOnOutOfMemoryError" />
 			<jvmarg value="${native.java.flags}" />
-			<arg value="--alternate-prefs"/>
-			<arg value="temp"/>
-			<arg value="--clean-prefs"/>
+			<arg value="--alternate-prefs" />
+			<arg value="temp" />
+			<arg value="--clean-prefs" />
 			<classpath>
 				<path refid="classpath" />
 				<pathelement location="${jar.dir}/${ant.project.name}.jar" />
@@ -139,8 +136,8 @@
 			<jvmarg value="-Xmx512m" />
 			<jvmarg value="-XX:+HeapDumpOnOutOfMemoryError" />
 			<jvmarg value="${native.java.flags}" />
-			<arg value="--alternate-prefs"/>
-			<arg value="temp"/>
+			<arg value="--alternate-prefs" />
+			<arg value="temp" />
 			<classpath>
 				<path refid="classpath" />
 				<pathelement location="${jar.dir}/${ant.project.name}.jar" />
@@ -167,89 +164,78 @@
 
 	<target name="debug" depends="compile">
 		<java fork="true" classname="replicatorg.app.Base">
-			<jvmarg value="-ea"/>
-			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
+			<jvmarg value="-ea" />
+			<jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000" />
 			<classpath>
-				<path refid="classpath"/>
-				<pathelement location="${classes.dir}"/>
+				<path refid="classpath" />
+				<pathelement location="${classes.dir}" />
 			</classpath>
-			<sysproperty key="java.library.path" path="${native.lib.dir}"/>
-			<sysproperty key="replicatorg.app-resources" path="${lib.dir}"/>
+			<sysproperty key="java.library.path" path="${native.lib.dir}" />
+			<sysproperty key="replicatorg.app-resources" path="${lib.dir}" />
 		</java>
 	</target>
 
 	<target name="dist-macosx" depends="jar" description="Builds OS X ReplicatorG distribution">
-		<property name="target.dir"   value="dist/macosx/${release.name}"/>
-		<property name="dist.dir"     value="build/macosx/dist"/>
-		<property name="reso.dir"     value="dist/macosx/${release.name}/ReplicatorG.app/Contents/Resources"/>
+		<property name="target.dir" value="dist/macosx/${release.name}" />
+		<property name="dist.dir" value="build/macosx/dist" />
+		<property name="reso.dir" value="dist/macosx/${release.name}/ReplicatorG.app/Contents/Resources" />
 
 		<taskdef name="jarbundler" classname="net.sourceforge.jarbundler.JarBundler" />
-		<antcall target="dist-common-plain"/>
-		<jarbundler
-       dir="${target.dir}"
-       name="ReplicatorG" 
-       bundleid="org.replicatorg.app" 
-       mainclass="replicatorg.app.Base" 
-       icon="${dist.dir}/replicatorg.icns"
-       extraclasspath="/System/Library/Java"
-       vmoptions="-d32 -ea -Xmx1G"
-       infostring="ReplicatorG ${replicatorg.version}, © 2009-${current.year} MakerBot Industries" 
-       version="${replicatorg.version}"
-       jvmversion="1.5+"
-       stubfile="${dist.dir}/ReplicatorG"
-       >
-			<jarfileset dir="${jar.dir}" includes="ReplicatorG.jar"/>
-			<jarfileset dir="${lib.dir}" includes="*.jar"/>
-			<jarfileset dir="${dist.dir}" includes="*.jnilib"/>
-			<documenttype name="CNC GCode document" 
-                    extensions="gcode" 
-                    iconFile="${dist.dir}/replicatorg.icns"
-                    role="Editor"/>
-			<documenttype name="STL 3D model" 
-                    extensions="stl" 
-                    iconFile="${dist.dir}/replicatorg.icns"
-                    role="Editor"/>
-			<resourcefileset dir="${lib.dir}" includes="*.gif"/>
-			<javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources"/>
-			<javaproperty name="apple.laf.useScreenMenuBar" value="true"/>
+		<antcall target="dist-common-plain" />
+		<jarbundler dir="${target.dir}" name="ReplicatorG" bundleid="org.replicatorg.app" mainclass="replicatorg.app.Base" icon="${dist.dir}/replicatorg.icns" extraclasspath="/System/Library/Java" vmoptions="-d32 -ea -Xmx1G" infostring="ReplicatorG ${replicatorg.version}, © 2009-${current.year} MakerBot Industries" version="${replicatorg.version}" jvmversion="1.5+" stubfile="${dist.dir}/ReplicatorG">
+			<jarfileset dir="${jar.dir}" includes="ReplicatorG.jar" />
+			<jarfileset dir="${lib.dir}" includes="*.jar" />
+			<jarfileset dir="${dist.dir}" includes="*.jnilib" />
+			<documenttype name="CNC GCode document" extensions="gcode" iconFile="${dist.dir}/replicatorg.icns" role="Editor" />
+			<documenttype name="CNC GCode document" extensions="g" iconFile="${dist.dir}/replicatorg.icns" role="Editor" />
+			<documenttype name="STL 3D model" extensions="stl" iconFile="${dist.dir}/replicatorg.icns" role="Editor" />
+			<resourcefileset dir="${lib.dir}" includes="*.gif" />
+			<javaproperty name="replicatorg.app-resources" value="$APP_PACKAGE/Contents/Resources" />
+			<javaproperty name="apple.laf.useScreenMenuBar" value="true" />
 		</jarbundler>
 		<copy todir="${reso.dir}">
-			<fileset dir="${dist.dir}" includes="drivers/*.dmg"/>
+			<fileset dir="${dist.dir}" includes="drivers/*.dmg" />
 		</copy>
 		<copy todir="${reso.dir}/tools">
-			<filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
+			<filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf" />
 		</copy>
 
 		<copy todir="${reso.dir}">
-			<filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt"/>
+			<filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt" />
 		</copy>
 		<copy todir="${reso.dir}/skein_engines">
-			<fileset dir="skein_engines" excludes="*.pyc"/>
+			<fileset dir="skein_engines" excludes="*.pyc" />
 		</copy>
 		<copy todir="${reso.dir}/machines">
-			<fileset dir="machines"/>
+			<fileset dir="machines" />
 		</copy>
 		<copy todir="${reso.dir}/examples">
-			<fileset dir="examples"/>
+			<fileset dir="examples" />
 		</copy>
 		<copy todir="${reso.dir}/scripts">
-			<fileset dir="scripts"/>
+			<fileset dir="scripts" />
 		</copy>
 		<copy todir="${reso.dir}/docs">
-			<fileset dir="docs/" excludes="HOWTO-add-new-skeinforge.txt,overview.odg"/>
+			<fileset dir="docs/" excludes="HOWTO-add-new-skeinforge.txt,overview.odg" />
 		</copy>
-		<!-- delete the copies in the base dir, to make installer build easier -->
-		<delete dir="${target.dir}/docs"/>
-		<delete dir="${target.dir}/examples"/>
-		<delete dir="${target.dir}/machines"/>
-		<delete dir="${target.dir}/scripts"/>
-		<delete dir="${target.dir}/skein_engines"/>
-		<delete file="${target.dir}/todo.txt"/>
-		<delete file="${target.dir}/contributors.txt"/>
-		<delete file="${target.dir}/readme.txt"/>
-		<delete file="${target.dir}/license.txt"/>
+	
+		<!-- permissions -->
+		<chmod file="${reso.dir}/skein_engines/mg_engines/mac/miracle_grue" perm="ugo+rx" />
+		<chmod file="${reso.dir}/skein_engines/slic3r_engines/mac/slic3r" perm="ugo+rx" />
 
-		<chmod file="${reso.dir}/tools/avrdude" perm="ugo+rx"/>
+		<!-- delete the copies in the base dir, to make installer build easier -->
+		<delete dir="${target.dir}/docs" />
+		<delete dir="${target.dir}/examples" />
+		<delete dir="${target.dir}/machines" />
+		<delete dir="${target.dir}/slic3r" />
+		<delete dir="${target.dir}/scripts" />
+		<delete dir="${target.dir}/skein_engines" />
+		<delete file="${target.dir}/todo.txt" />
+		<delete file="${target.dir}/contributors.txt" />
+		<delete file="${target.dir}/readme.txt" />
+		<delete file="${target.dir}/license.txt" />
+
+		<chmod file="${reso.dir}/tools/avrdude" perm="ugo+rx" />
 		<!-- This process is now done manually and the resulting file is checked in to allow for the package to be build on other OS'es.
     <exec dir="." os="Mac OS X" executable="/usr/bin/lipo">
       <arg value="-remove"/>
@@ -260,126 +246,141 @@
     </exec> -->
 
 		<condition property="macosx">
-			<os family="mac"/>
+			<os family="mac" />
 		</condition>
-		<antcall target="dist-macosx-zip"/>
-		<antcall target="dist-macosx-dmg"/>
+		<antcall target="dist-macosx-zip" />
+		<antcall target="dist-macosx-dmg" />
 	</target>
 
 	<target name="dist-macosx-zip" unless="macosx">
 		<zip destfile="dist/${release.name}-mac.zip" update="false">
 			<zipfileset dir="dist/macosx/${release.name}" prefix="${release.name}">
-				<exclude name="tools/avrdude"/>
-				<exclude name="ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
+				<exclude name="tools/avrdude" />
+				<exclude name="ReplicatorG.app/Contents/MacOS/ReplicatorG" />
 			</zipfileset>
 			<zipfileset dir="dist/macosx/${release.name}" prefix="${release.name}" filemode="755">
-				<include name="tools/avrdude"/>
-				<include name="ReplicatorG.app/Contents/MacOS/ReplicatorG"/>
+				<include name="tools/avrdude" />
+				<include name="ReplicatorG.app/Contents/MacOS/ReplicatorG" />
+				<include name="ReplicatorG.app/Contents/Resources/skein_engines/mg_engines/mac/miracle_grue" />
+				<include name="ReplicatorG.app/Contents/Resources/skein_engines/slic3r_engines/mac/slic3r"/>
 			</zipfileset>
 		</zip>
 	</target>
 	<target name="dist-macosx-dmg" if="macosx">
 		<exec dir="." os="Mac OS X" executable="/bin/sh">
-			<arg value="-c"/>
-			<arg value="${dist.dir}/mkdmg.sh ./dist ../${target.dir} image ${release.name}-mac"/>
+			<arg value="-c" />
+			<arg value="${dist.dir}/mkdmg.sh ./dist ../${target.dir} image ${release.name}-mac" />
 		</exec>
 	</target>
 
 	<target name="dist-common-plain" depends="jar" description="Copies plaintext files common to all ReplicatorG distributions.">
 		<echo message="Preparing replicatorG. Version: ${replicatorg.version}" />
-		<mkdir dir="${target.dir}"/>
+		<mkdir dir="${target.dir}" />
 		<copy todir="${target.dir}">
-			<filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt"/>
+			<filelist dir="." files="license.txt,readme.txt,todo.txt,contributors.txt" />
 		</copy>
 		<copy todir="${target.dir}/skein_engines">
-			<fileset dir="skein_engines" excludes="*.pyc"/>
+			<fileset dir="skein_engines" excludes="*.pyc" />
 		</copy>
 		<copy todir="${target.dir}/machines">
-			<fileset dir="machines"/>
+			<fileset dir="machines" />
 		</copy>
 		<copy todir="${target.dir}/examples">
-			<fileset dir="examples"/>
+			<fileset dir="examples" />
 		</copy>
 		<copy todir="${target.dir}/scripts">
-			<fileset dir="scripts"/>
+			<fileset dir="scripts" />
 		</copy>
 		<copy todir="${target.dir}/docs">
-			<fileset dir="docs/" excludes="HOWTO-add-new-skeinforge.txt,overview.odg"/>
+			<fileset dir="docs/" excludes="HOWTO-add-new-skeinforge.txt,overview.odg" />
 		</copy>
 	</target>
 
 	<target name="cache-local-docs" description="Downloads the ReplicatorG documentation on replicat.org (and other websites?)">
 		<exec executable="wget">
-			<arg value="-r"/>
-			<arg value="-k"/>
-			<arg value="--directory-prefix=./docs"/>
-			<arg value="--timestamping"/>
-			<arg value="replicat.org"/>
+			<arg value="-r" />
+			<arg value="-k" />
+			<arg value="--directory-prefix=./docs" />
+			<arg value="--timestamping" />
+			<arg value="replicat.org" />
 		</exec>
 	</target>
 
 	<target name="dist-common" description="Builds files common to all ReplicatorG distributions, excepting jarbundler-based distros.">
-		<antcall target="dist-common-plain"/>
+		<antcall target="dist-common-plain" />
 		<copy todir="${target.dir}">
-			<fileset dir="${build.dir}/shared" includes="lib/*.jar"/>
+			<fileset dir="${build.dir}/shared" includes="lib/*.jar" />
 		</copy>
 		<copy todir="${target.dir}/lib">
-			<fileset dir="${lib.dir}" includes="*.gif"/>
-			<filelist dir="${lib.dir}" files="keywords.txt"/>
-			<fileset dir="${jar.dir}" includes="*.jar"/>
+			<fileset dir="${lib.dir}" includes="*.gif" />
+			<filelist dir="${lib.dir}" files="keywords.txt" />
+			<fileset dir="${jar.dir}" includes="*.jar" />
 		</copy>
 	</target>
 
 	<target name="dist-linux" depends="jar" description="Builds Linux ReplicatorG distribution">
-		<property name="target.dir"   value="dist/linux/${release.name}"/>
-		<property name="dist.dir"     value="build/linux/dist"/>
+		<property name="target.dir" value="dist/linux/${release.name}" />
+		<property name="dist.dir" value="build/linux/dist" />
 
 		<!-- standard files -->
-		<antcall target="dist-common"/>
+		<antcall target="dist-common" />
 		<!-- platform-specific files -->
 		<copy todir="${target.dir}">
-			<filelist dir="${dist.dir}" files="replicatorg"/>
+			<filelist dir="${dist.dir}" files="replicatorg" />
 		</copy>
+		<!--		<copy todir="${target.dir}/slic3r">
+			<fileset dir="slic3r_engines/linux"/>
+		</copy>		-->
 		<copy todir="${target.dir}/tools">
-			<filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf"/>
+			<filelist dir="${dist.dir}/tools" files="avrdude,avrdude.conf" />
 		</copy>
 		<copy todir="${target.dir}/lib-i686">
-			<fileset dir="${dist.dir}/lib-i686" includes="*.so"/>
+			<fileset dir="${dist.dir}/lib-i686" includes="*.so" />
 		</copy>
 		<copy todir="${target.dir}/lib-x86_64">
-			<fileset dir="${dist.dir}/lib-x86_64" includes="*.so"/>
+			<fileset dir="${dist.dir}/lib-x86_64" includes="*.so" />
 		</copy>
 		<!-- permissions -->
-		<chmod file="${target.dir}/replicatorg" perm="ugo+rx"/>
-		<chmod file="${target.dir}/tools/avrdude" perm="ugo+rx"/>
+		<chmod file="${target.dir}/replicatorg" perm="ugo+rx" />
+		<chmod file="${target.dir}/tools/avrdude" perm="ugo+rx" />
+		<chmod file="${target.dir}/skein_engines/slic3r_engines/linux/bin/slic3r" perm="ugo+rx" />
+		<chmod file="${target.dir}/skein_engines/slic3r_engines/linux/bin/do_install" perm="ugo+rx" />
+		<chmod file="${target.dir}/skein_engines/mg_engines/linux/x86_64/miracle_grue" perm="ugo+rx" />
+		<chmod file="${target.dir}/skein_engines/mg_engines/linux/x86_64/miracle_grue_glibc_2_14" perm="ugo+rx" />
+		<chmod file="${target.dir}/skein_engines/mg_engines/linux/x86_64/miracle_grue_glibc_2_13" perm="ugo+rx" />
 
 		<tar destfile="dist/${release.name}-linux.tgz" compression="gzip" longfile="gnu">
-			<tarfileset dir="dist/linux/${release.name}" prefix="${release.name}"/>
+			<tarfileset dir="dist/linux/${release.name}" prefix="${release.name}" />
 			<tarfileset dir="dist/linux/${release.name}" prefix="${release.name}" filemode="755">
 				<include name="replicatorg" />
 				<include name="tools/avrdude" />
+				<include name="skein_engines/slic3r_engines/linux/bin/slic3r" />
+				<include name="skein_engines/slic3r_engines/linux/bin/do_install" />
+				<include name="skein_engines/mg_engines/linux/x86_64/miracle_grue" />
+				<include name="skein_engines/mg_engines/linux/x86_64/miracle_grue_glibc_2_14" />
+				<include name="skein_engines/mg_engines/linux/x86_64/miracle_grue_glibc_2_13" />
 			</tarfileset>
 		</tar>
 	</target>
-
 	<target name="dist-windows" depends="jar" description="Builds Windows ReplicatorG distribution">
-		<property name="target.dir"   value="dist/windows/${release.name}"/>
-		<property name="dist.dir"     value="build/windows/dist"/>
+		<property name="target.dir" value="dist/windows/${release.name}" />
+		<property name="dist.dir" value="build/windows/dist" />
 		<!-- standard files -->
-		<antcall target="dist-common"/>
+		<antcall target="dist-common" />
 		<!-- platform-specific files -->
+		<!--		<copy todir="${target.dir}/slic3r">
+			<fileset dir="slic3r_engines/windows" />
+		</copy> -->
 		<copy todir="${target.dir}">
-			<fileset dir="${dist.dir}" includes="*.dll"/>
-			<filelist dir="${dist.dir}" files="ReplicatorG.exe"/>
-			<fileset dir="${dist.dir}" includes="drivers/**/*"/>
-			<fileset dir="${dist.dir}" includes="java/**/*"/>
+			<fileset dir="${dist.dir}" includes="*.dll" />
+			<filelist dir="${dist.dir}" files="ReplicatorG.exe" />
+			<fileset dir="${dist.dir}" includes="drivers/**/*" />
+			<fileset dir="${dist.dir}" includes="java/**/*" />
 		</copy>
 		<copy todir="${target.dir}/tools">
-			<fileset dir="${dist.dir}/tools"/>
+			<fileset dir="${dist.dir}/tools" />
 		</copy>
-		<zip
-       destfile="dist/${project}-${replicatorg.version}-windows.zip"
-       basedir="${target.dir}/..">
+		<zip destfile="dist/${project}-${replicatorg.version}-windows.zip" basedir="${target.dir}/..">
 		</zip>
 	</target>
 
@@ -388,9 +389,9 @@
 
 	<!-- Help -->
 	<target name="help" description="Targets for this project">
-		<echo message="Targets for this project"/>
+		<echo message="Targets for this project" />
 		<exec executable="ant">
-			<arg value="-p"/>
+			<arg value="-p" />
 		</exec>
 		<antcall target="test" />
 	</target>

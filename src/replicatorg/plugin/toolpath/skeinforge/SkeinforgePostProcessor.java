@@ -7,8 +7,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -110,7 +113,7 @@ public class SkeinforgePostProcessor {
 			return panel;
 		}
 		@Override
-		public List<SkeinforgeOption> getOptions() {
+		public List<SkeinforgeOption> getOptions(String displayName) {
 			return new ArrayList<SkeinforgeOption>();
 		}
 		@Override
@@ -159,10 +162,10 @@ public class SkeinforgePostProcessor {
 		// Load our code to a source iterator
 		source = new MutableGCodeSource(generator.output.file);
 		
-		if(!dualstruding)
+		if( ! dualstruding )
 		{
 			if(prependStart)
-				runPrepend(startCode);
+				runPrependStartCode();
 			if(appendEnd)
 				runAppend(endCode);
 
@@ -172,6 +175,7 @@ public class SkeinforgePostProcessor {
 			if(toolheadTarget != null)
 				runToolheadSwap(toolheadTarget);
 		}
+		
 		
 		// these display the build % on The Replicator
 		if(addProgressUpdates)
@@ -195,10 +199,6 @@ public class SkeinforgePostProcessor {
 			runPrepend(metaInfo);
 		}
 		
-		// scans to cool unused head if required
-//		if( multiHead )	
-//			source.coolUnusedToolhead();
-		
 		//Write the modified source back to our file
 		source.writeToFile(generator.output.file);
 		
@@ -211,7 +211,8 @@ public class SkeinforgePostProcessor {
 		Date date = new Date();
 		return dateFormat.format(date);
 	}
-		   
+	   
+	
 	/**
 	 * switches all toolhead specific code to the target toolhead
 	 * @param switchTo
@@ -223,7 +224,51 @@ public class SkeinforgePostProcessor {
 	}
 	
 	/**
-	 * prepends code to the file
+	 * prepends start code to the file, this may modify some  start code data based on settings.
+	 */
+	private void runPrependStartCode()
+	{
+		prependAndModifyStartCode(source, startCode);
+	}
+
+	/**
+	 * prepends start code to the file, this may modify some start code data based on settings.
+	 * @param sourceGCode code to append start to
+	 * @param startGCode code to hack/verify/modify and append to the start of sourceGCode
+	 */
+	static public void prependAndModifyStartCode(MutableGCodeSource sourceGCode, MutableGCodeSource startGCode)
+	{
+		MutableGCodeSource newStart = new MutableGCodeSource();
+
+		///modify local copy of start code based on settings
+		int matched = 0;
+		for(String line : startGCode)
+		{
+			Pattern p = Pattern.compile("^M104\\s+S(\\d+)\\s+T(\\d)\\s+(.*)\\s*$");
+			Matcher m = p.matcher(line);
+			if(m.matches() ){
+				int newTemp = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.printTemp", 220);
+				Base.logger.finer("new temp" + newTemp);
+				String newStr = "M104 S" + newTemp + " T"+ m.group(2);
+				if(m.groupCount() >= 3)
+					newStr = newStr + " " + m.group(3) ;
+				newStr = newStr + " (temp updated by printOMatic)";
+				Base.logger.finer("New Temp String: " + newStr);
+				matched++;
+				newStart.add(newStr);
+			}
+			else {
+				newStart.add(line);
+				
+			}
+		}
+		sourceGCode.add(0, newStart);
+		Base.logger.finer("printTemp replace count : " + matched);
+		
+	}
+		
+	/**
+	 * prepends code in the passed file to the source file
 	 * @param newCode
 	 */
 	private void runPrepend(GCodeSource newCode)
@@ -283,12 +328,12 @@ public class SkeinforgePostProcessor {
 				return panel;
 			}
 			@Override
-			public List<SkeinforgeOption> getOptions() {
+			public List<SkeinforgeOption> getOptions(String displayName) {
 				List<SkeinforgeOption> result = new ArrayList<SkeinforgeOption>();
 				result.add(new SkeinforgeOption("preface.csv", "Name of Start File:", ""));
 				result.add(new SkeinforgeOption("preface.csv", "Name of End File:", ""));
-				result.addAll(outlineActive.getOptions());
-				result.addAll(coolActive.getOptions());
+				result.addAll(outlineActive.getOptions(""));
+				result.addAll(coolActive.getOptions(""));
 				return result;
 			}
 			@Override
@@ -302,6 +347,23 @@ public class SkeinforgePostProcessor {
 			}
 		});
 	}
+	
+	/**
+	 * removes all lines that are skeinforge tag comments, but not layer tags.
+	 */
+	static public void stripNonLayerTagComments(MutableGCodeSource source) {
+		String line;
+		for(Iterator<String> i = source.iterator(); i.hasNext();)
+		{
+			line = i.next();
+			
+			if(line.startsWith("(<") &&	!(line.startsWith("(<layer>") || line.startsWith("(</layer")))
+			{
+				i.remove();
+			}
+		}
+	}
+	
 	/**
 	 * sets the toolhead the code is being generated for
 	 * @param tool

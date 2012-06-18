@@ -1,3 +1,14 @@
+0036 ReplicatorG
+* Updated for acceleration behavior
+* Updated to have temperature as part of PrintOMatic settings
+* Updated for smarter acceleration related configuration
+* Added Slic3r and Miracle Grue engines, engine editors, etc
+
+0035-Beta ReplicatorG
+* Updated to handle accleration for The Replicator
+0034-Beta ReplicatorG
+* Updated t0 to t1 tolerance code 
+
 0034 ReplicatorG
  * Updated toolhead offset t0 to t1 code to store offset of out of tolerance 
  * Tools directory location sourcing updated to fix avr-dude on mac problems. 

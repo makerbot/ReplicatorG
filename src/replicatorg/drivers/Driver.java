@@ -141,6 +141,8 @@ public interface Driver {
 	public void updateManualControl();
 
 	public Version getMinimumVersion();
+        
+        public Version getMinimumAccelerationVersion();
 	
 	public Version getPreferredVersion();
 	
@@ -214,7 +216,7 @@ public interface Driver {
 	/**
 	 * sets the feedrate in mm/minute
 	 */
-	public void setFeedrate(double feed);
+	public void setFeedrateMM(double feed);
 
 	/**
 	 * sets the feedrate in mm/minute

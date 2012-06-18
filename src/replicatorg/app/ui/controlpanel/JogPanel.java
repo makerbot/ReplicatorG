@@ -505,11 +505,18 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 
 		private FeedrateControl(String display, AxisId axis, JPanel parent) {
 			this.axis = axis;
+
 			slider = new JSlider(JSlider.HORIZONTAL);
+			
 			field = new JTextField();
 			parent.add(new JLabel(display), "split 4");
-			int maxFeedrate = (int)machine.getModel().getMaximumFeedrates().axis(axis);
+			
+			Point5d maxFeedrateSteps = machine.getModel().getMaximumFeedrates();
+			//Point5d maxFeedrateMM = machine.getModel().stepsToMM(maxFeedrateSteps);
+			
+			int maxFeedrate = (int)maxFeedrateSteps.axis(axis);
 			int currentFeedrate = Math.min(maxFeedrate, Base.preferences.getInt(getPrefName(),480));
+
 			feedrate.setAxis(axis, currentFeedrate);
 			slider.setMinimum(1);
 			slider.setMaximum(maxFeedrate);

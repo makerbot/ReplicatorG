@@ -42,6 +42,22 @@ public interface OnboardParameters {
 	double getAxisHomeOffset(int axis);
 	void setAxisHomeOffset(int axis, double d);
         
+        /// returns true if the target machine stores toolhead offsets
+	boolean hasAcceleration();
+        /// Store acceleration settings to eeprom 
+        void setAccelerationStatus(byte status);
+        void setAccelerationRate(int rate);
+        void setAxisAccelerationRate(int axis, int rate);
+        void setAxisJerk(int axis, double jerk);
+        void setAccelerationMinimumSpeed(int speed);
+        /// Read acceleration settings from eeprom
+        boolean getAccelerationStatus();
+        int getAccelerationRate();
+        int getAxisAccelerationRate(int axis);
+        double getAxisJerk(int axis);
+        int getAccelerationMinimumSpeed();
+	
+        
 	
 	/// returns true if the target machine stores toolhead offsets
 	boolean hasToolheadsOffset();
@@ -50,9 +66,9 @@ public interface OnboardParameters {
 	/// standard toolhead distance) in mm
 	double getToolheadsOffset(int axis);
 
-    /// set to EEPROM the distance out of tolerance the 
-    /// specified axis is
-    void eepromStoreToolDelta(int axis, double distanceMm);
+        /// set to EEPROM the distance out of tolerance the 
+        /// specified axis is
+        void eepromStoreToolDelta(int axis, double distanceMm);
 	
 	
 	public enum EndstopType {

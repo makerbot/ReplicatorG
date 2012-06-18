@@ -27,6 +27,13 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.Profile;
 
+
+/**
+ * Dialog to prompt users to select/edit/clone 
+ * Skeinforge Profile data
+ * @author farmckon
+ *
+ */
 class EditProfileDialog extends JDialog {
 	final boolean postProcessToolheadIndex = true;
 	final String manageStr = "Manage profiles...";
