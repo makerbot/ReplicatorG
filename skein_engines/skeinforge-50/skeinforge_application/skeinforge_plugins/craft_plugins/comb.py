@@ -146,7 +146,10 @@ class BoundarySegment:
 		nextBegin = nextBoundarySegment.segment[0]
 		end = getJumpPointIfInside(self.boundary, nextBegin, edgeWidth, runningJumpSpace)
 		if end == None:
-			end = self.boundary.segment[1]
+			if(isinstance(self.boundary,list)):
+				end = self.boundary[1]
+			else:
+				end = self.boundary.segment[1]
 		nextBegin = getJumpPointIfInside(nextBoundarySegment.boundary, end, edgeWidth, runningJumpSpace)
 		if nextBegin != None:
 			nextBoundarySegment.segment[0] = nextBegin
