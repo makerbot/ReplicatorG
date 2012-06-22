@@ -269,9 +269,12 @@ public class MachineOnboardParameters extends JPanel {
 			Base.logger.severe("Please restart your machine for safety");
 		}		
 	}
+
 	
-	/// Causes the EEPROM to be reset to a 'from the factory' state, and during dispose
-	/// tells caller to reset/reconnect the eeprom.
+	/***
+	 *  Causes the EEPROM to be reset to a 'from the factory' state, and during dispose
+	 *  tells caller to reset/reconnect the eeprom.
+	 */
 	private void resetToFactory() {
 		try { 
 			target.resetSettingsToFactory();
@@ -545,6 +548,7 @@ public class MachineOnboardParameters extends JPanel {
 
 		
 		resetToFactoryButton.addActionListener(new ActionListener() {
+
 			public void actionPerformed(ActionEvent e) {
 				MachineOnboardParameters.this.resetToFactory();
 				// This gets called in resetToFactory()
@@ -565,6 +569,7 @@ public class MachineOnboardParameters extends JPanel {
 		resetToBlankButton.setToolTipText("Reset the onboard settings to *completely blank*");
 		add(resetToBlankButton);
 
+		
 		commitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				MachineOnboardParameters.this.commit();
