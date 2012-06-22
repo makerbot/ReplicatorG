@@ -41,28 +41,31 @@ class ConfigurationDialog extends JDialog {
 	 * @param comboBox to fill with list of skeinforge profiles
 	 */
 	private void loadList(JComboBox comboBox) {
+		
 		comboBox.removeAllItems();
 		profiles = parentGenerator.getProfiles();
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		int i=0;
-		int foundLastProfile = -1;
+		int selectedProfile = -1;
 		for (Profile p : profiles) {
-			// Check that this profile says it's for this machine
-			if(ProfileUtils.shouldDisplay(p))
+			///we display all profiles for all machines.
+			// at MBI customer support's request.
+			model.addElement(p.toString());
+			
+			if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
 			{
-				model.addElement(p.toString());
-				
-				if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
-				{
-					Base.logger.fine("Selecting last used element: " + p);
-					foundLastProfile = i;
+				Base.logger.fine("Selecting last used element: " + p);
+				/// default select the last profile that matches 
+				// the currently selected machine type
+				if(ProfileUtils.shouldDisplay(p)) {
+					selectedProfile = i;
 				}
-				i++;
 			}
+			i++;
 		}
 		comboBox.setModel(model);
-		if(foundLastProfile != -1) {
-			comboBox.setSelectedIndex(foundLastProfile);
+		if(selectedProfile != -1) {
+			comboBox.setSelectedIndex(selectedProfile);
 		}
 	}
 
@@ -91,7 +94,8 @@ class ConfigurationDialog extends JDialog {
 		
 		add(new JLabel("Slicing Profile:"), "split 2");
 		
-		// This is intended to fix a bug where the "Generate Gcode" button doesn't get enabled 
+		// This is intended to fix a bug where the "Generate Gcode"
+		// button doesn't get enabled 
 		prefPulldown.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -100,7 +104,9 @@ class ConfigurationDialog extends JDialog {
 				generateButton.setFocusPainted(true);
 			}
 		});
-		loadList(prefPulldown); /// Filles UI with the list of Skeinforge settings/options
+		
+		/// Fills UI with the list of Skeinforge settings/options
+		loadList(prefPulldown); 
 		add(prefPulldown, "wrap, growx, gapbottom 10");
 
 		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
@@ -111,6 +117,7 @@ class ConfigurationDialog extends JDialog {
 		
 		add(generateButton, "tag ok, split 2");
 		add(cancelButton, "tag cancel");
+
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				parentGenerator.configSuccess = configureGenerator();
@@ -141,7 +148,8 @@ class ConfigurationDialog extends JDialog {
 			return false;
 		}
 		
-		Profile p = ProfileUtils.getListedProfile(prefPulldown.getModel(), profiles, idx);
+		Profile p = ProfileUtils.getListedProfile(
+				prefPulldown.getModel(), profiles, idx);
 		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 		parentGenerator.profile = p.getFullPath();
 		SkeinforgeGenerator.setSelectedProfile(p.toString());
