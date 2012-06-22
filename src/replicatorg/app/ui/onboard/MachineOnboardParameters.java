@@ -155,6 +155,7 @@ public class MachineOnboardParameters extends JPanel {
 		// From the firmware: "Bit 7 is used for HoldZ OFF: 1 = off, 0 = on"
 		if ( !zHoldBox.isSelected() )	axesInverted.add(AxisId.V);
               
+        Base.logger.severe("commiting machine onboard prefs 2");
 
 		target.setInvertedAxes(axesInverted);
 		{
@@ -170,7 +171,9 @@ public class MachineOnboardParameters extends JPanel {
 			target.setEstopConfig(estop);
 		}
 		
-		target.setAxisHomeOffset(0, ((Number)xAxisHomeOffsetField.getValue()).doubleValue());
+        Base.logger.severe("commiting machine onboard prefs 3");
+
+        target.setAxisHomeOffset(0, ((Number)xAxisHomeOffsetField.getValue()).doubleValue());
 		target.setAxisHomeOffset(1, ((Number)yAxisHomeOffsetField.getValue()).doubleValue());
 		target.setAxisHomeOffset(2, ((Number)zAxisHomeOffsetField.getValue()).doubleValue());
 		target.setAxisHomeOffset(3, ((Number)aAxisHomeOffsetField.getValue()).doubleValue());
@@ -185,6 +188,7 @@ public class MachineOnboardParameters extends JPanel {
 			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
 		}
                 
+        Base.logger.severe("commiting machine onboard prefs 4");
         target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
         target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
         target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
@@ -205,6 +209,8 @@ public class MachineOnboardParameters extends JPanel {
         target.setAxisJerk(3, ((Number) aJunctionJerk.getValue()).doubleValue());
         target.setAxisJerk(4, ((Number) bJunctionJerk.getValue()).doubleValue());
         
+        Base.logger.severe("commiting machine onboard prefs 5");
+
         target.setAccelerationMinimumSpeed(((Number)minimumSpeed.getValue()).intValue());
 
     	int feedrate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", 40);
@@ -221,6 +227,8 @@ public class MachineOnboardParameters extends JPanel {
                 Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "150");          
 
             extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
+            Base.logger.severe("commiting machine onboard prefs 6");
+
         }
         else { 
         	///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are fast,
@@ -246,9 +254,11 @@ public class MachineOnboardParameters extends JPanel {
             catch (BackingStoreException e) {
             	Base.logger.severe(e.toString());
             }
-            
+            Base.logger.severe("commiting machine onboard prefs 7");
+
             extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
         }
+        Base.logger.severe("commiting machine onboard prefs 8");
         Base.logger.severe("request update A");
         requestResetFromUser(extendedMessage);
 	}
@@ -288,6 +298,7 @@ public class MachineOnboardParameters extends JPanel {
 		}
 	}
 	
+
 
 	private void loadParameters() {
 		machineNameField.setText( this.target.getMachineName() );
