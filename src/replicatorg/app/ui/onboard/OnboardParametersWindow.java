@@ -85,6 +85,7 @@ public class OnboardParametersWindow extends JFrame {
 	public void dispose()
 	{
 		this.disconnectOnExit = onboardParamsTab.disconnectOnExit();	
+		Base.logger.severe("check child disconnect on exit, it's " + disconnectOnExit);
 		if(mainwin != null && this.disconnectOnExit){
 			//leave pre-heat, we expect users to reconnect;
 			mainwin.handleDisconnect(/*leavePreheatRunning*/true, /*dispose machine model*/true); 

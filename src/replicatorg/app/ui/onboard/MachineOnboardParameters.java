@@ -106,18 +106,22 @@ public class MachineOnboardParameters extends JPanel {
 				"This may take up to <b>10 seconds</b>.";
 		if(extendedMessage != null)
 			message = message + extendedMessage;
+        Base.logger.severe("requestResetFromUser pre");
 
 		int confirm = JOptionPane.showConfirmDialog(this, 
 				"<html>" + message + "</html>",
-				"Reset board.", 
+				"Reset board", 
 				JOptionPane.DEFAULT_OPTION,
 				JOptionPane.INFORMATION_MESSAGE);
 		if (confirm == JOptionPane.OK_OPTION) {
+	        Base.logger.severe("requestResetFromUser OK");
 			this.disconnectNeededOnExit = true;
 			driver.reset();
 		}
-		else
+		else {
+	        Base.logger.severe("requestResetFromUser NOPE");
 			this.disconnectNeededOnExit = false;
+		}
 
 	}
 	
@@ -125,6 +129,8 @@ public class MachineOnboardParameters extends JPanel {
 	 * commit machine onboard parameters 
 	 **/
 	private void commit() {
+
+        Base.logger.severe("commiting machine onboard prefs");
 
 		String newName = machineNameField.getText();
 		if(newName.length() > MAX_NAME_LENGTH)
@@ -243,7 +249,7 @@ public class MachineOnboardParameters extends JPanel {
             
             extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
         }
-        
+        Base.logger.severe("request update A");
         requestResetFromUser(extendedMessage);
 	}
 
@@ -254,6 +260,7 @@ public class MachineOnboardParameters extends JPanel {
 	{
 		try { 
 			target.resetSettingsToBlank();
+	        Base.logger.severe("request update B");
 			requestResetFromUser("<b>Resetting EEPROM to completely blank</b>");
 			MachineOnboardParameters.this.dispose();
 		}
@@ -268,6 +275,7 @@ public class MachineOnboardParameters extends JPanel {
 	private void resetToFactory() {
 		try { 
 			target.resetSettingsToFactory();
+	        Base.logger.severe("request update C");
 			requestResetFromUser("<b>Resetting EEPROM to Factory Default.</b>");
 			MachineOnboardParameters.this.dispose();
 		}
@@ -280,6 +288,7 @@ public class MachineOnboardParameters extends JPanel {
 
 	private void loadParameters() {
 		machineNameField.setText( this.target.getMachineName() );
+        Base.logger.severe("Loading machine onboard prefs");
 
 		if(target.hasToolCountOnboard()){
 			int toolCount = target.toolCountOnboard();
@@ -346,6 +355,7 @@ public class MachineOnboardParameters extends JPanel {
 	}
 
 	protected void dispose() {
+		Base.logger.severe("deposing onboard prefs");
 		parent.dispose();
 	}
 
@@ -354,7 +364,9 @@ public class MachineOnboardParameters extends JPanel {
 		this.driver = driver;
 		this.parent = parent;
                 
-                setLayout(new MigLayout("fill", "[r][l][r]"));
+		setLayout(new MigLayout("fill", "[r][l][r]"));
+
+		Base.logger.severe("build onboard prefs");
 
 		add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
 		machineNameField.setColumns(MAX_NAME_LENGTH);
@@ -565,6 +577,8 @@ public class MachineOnboardParameters extends JPanel {
 	}
 
 	public boolean disconnectOnExit() {
+		Base.logger.severe("disconnect on exit is" + disconnectNeededOnExit);
+
 		return disconnectNeededOnExit;
 	}
 
