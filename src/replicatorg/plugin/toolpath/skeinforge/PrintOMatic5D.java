@@ -271,7 +271,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		
 		addTextParameter(printPanel, "printTemp",
 				"Print temperature ", "220",
-				"220= default, 240=Accelerated");		
+				"220= default, 230=Accelerated");		
 		return printPanel;
 	}
 	
@@ -340,6 +340,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 			}
 		};
 
+		/** action to load The Replicator:Accelerated defaults */
 		ActionListener loadRepAccelDefaults = new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent evt) {
@@ -354,7 +355,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				setValue("filamentDiameter", "1.82");
 //				setValue("packingDensity", "85");
 				setValue("desiredPathWidth", ".4");
-				setValue("printTemp", "240");
+				setValue("printTemp", "230");
 					
 				// Refresh the other three tabs
 				printOMatic5D.removeAll();
