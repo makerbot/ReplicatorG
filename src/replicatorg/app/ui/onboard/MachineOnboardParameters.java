@@ -189,30 +189,38 @@ public class MachineOnboardParameters extends JPanel {
 		}
                 
         Base.logger.severe("commiting machine onboard prefs 4");
-
+        Thread.sleep(50);
         target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
         Base.logger.severe("commiting machine onboard prefs 4.1");
+        Thread.sleep(500);
         target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
         Base.logger.severe("commiting machine onboard prefs 4.2");
+        Thread.sleep(50);
         target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
         Base.logger.severe("commiting machine onboard prefs 4.3");
+        Thread.sleep(500);
         
         byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
         Base.logger.severe("commiting machine onboard prefs 4.4");
+        Thread.sleep(50);
         target.setAccelerationStatus(status);
         Base.logger.severe("commiting machine onboard prefs 4.5");
+        Thread.sleep(500);
 
         target.setAccelerationRate(((Number)masterAcceleration.getValue()).intValue());
         Base.logger.severe("commiting machine onboard prefs 4.6");
+        Thread.sleep(50);
 			
         target.setAxisAccelerationRate(0, ((Number)xAxisAcceleration.getValue()).intValue());
         Base.logger.severe("commiting machine onboard prefs 4.7");
+        Thread.sleep(50);
         target.setAxisAccelerationRate(1, ((Number)yAxisAcceleration.getValue()).intValue());
         target.setAxisAccelerationRate(2, ((Number)zAxisAcceleration.getValue()).intValue());
         Base.logger.severe("commiting machine onboard prefs 4.8");
         target.setAxisAccelerationRate(3, ((Number)aAxisAcceleration.getValue()).intValue());
         target.setAxisAccelerationRate(4, ((Number)bAxisAcceleration.getValue()).intValue());
         Base.logger.severe("commiting machine onboard prefs 4.9");
+        Thread.sleep(500);
 
         target.setAxisJerk(0, ((Number)xyJunctionJerk.getValue()).doubleValue());
         Base.logger.severe("commiting machine onboard prefs 4.10");
@@ -220,6 +228,7 @@ public class MachineOnboardParameters extends JPanel {
         target.setAxisJerk(3, ((Number) aJunctionJerk.getValue()).doubleValue());
         Base.logger.severe("commiting machine onboard prefs 4.11");
         target.setAxisJerk(4, ((Number) bJunctionJerk.getValue()).doubleValue());
+        Thread.sleep(500);
         
         Base.logger.severe("commiting machine onboard prefs 5");
 
