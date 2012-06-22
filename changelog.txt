@@ -1,4 +1,9 @@
-0036 ReplicatorG
+0037 ReplicatorG
+* bugfix for comb in skeinforge
+* lowered The Replicator:Accelerated temperature
+* changed start gcode to handle firmware 5.5 stepper power bugfix
+
+0036-Beta ReplicatorG
 * Updated for acceleration behavior
 * Updated to have temperature as part of PrintOMatic settings
 * Updated for smarter acceleration related configuration
