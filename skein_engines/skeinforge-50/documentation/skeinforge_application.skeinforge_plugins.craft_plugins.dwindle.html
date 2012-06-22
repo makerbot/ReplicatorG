@@ -1,0 +1,197 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module skeinforge_application.skeinforge_plugins.craft_plugins.dwindle</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="skeinforge_application.html"><font color="#ffffff">skeinforge_application</font></a>.<a href="skeinforge_application.skeinforge_plugins.html"><font color="#ffffff">skeinforge_plugins</font></a>.<a href="skeinforge_application.skeinforge_plugins.craft_plugins.html"><font color="#ffffff">craft_plugins</font></a>.dwindle</strong></big></big> ($Date: 2008/21/04 $)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/enrique/Desktop/backup/babbleold/script/reprap/fabmetheus/skeinforge_application/skeinforge_plugins/craft_plugins/dwindle.py">/home/enrique/Desktop/backup/babbleold/script/reprap/fabmetheus/skeinforge_application/skeinforge_plugins/craft_plugins/dwindle.py</a></font></td></tr></table>
+    <p>
+<a href="skeinforge_application.skeinforge_plugins.craft_plugins.drill.html">Previous</a> / <a href="skeinforge_application.skeinforge_plugins.craft_plugins.export.html">Next</a> / <a href="contents.html">Contents</a>
+</p>
+<p><tt><br>
+Dwindle is a plugin to reduce the feed rate and flow rate at the end of the thread, in order to reduce the ooze when traveling. It reduces the flow rate by a bit more than the feed rate, in order to use up the pent up plastic in the thread so that there is less remaining in the ooze.<br>
+ <br>
+The dwindle manual page is at:<br>
+<a href="http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Dwindle">http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Dwindle</a><br>
+ <br>
+<br />
+<a href="#Operation">Operation</a><br />
+<a href="#Settings">Settings</a><br />
+&nbsp;&nbsp;<a href="#End Rate Multiplier">End Rate Multiplier</a><br />
+&nbsp;&nbsp;<a href="#Pent Up Volume">Pent Up Volume</a><br />
+&nbsp;&nbsp;<a href="#Slowdown Steps">Slowdown Steps</a><br />
+&nbsp;&nbsp;<a href="#Slowdown Volume">Slowdown Volume</a><br />
+<a href="#Examples">Examples</a><br />
+<br />
+<a name="Operation" id="Operation"></a><h2>Operation</h2>
+<hr>
+
+The default 'Activate Dwindle' checkbox is off.  When it is on, the functions described below will work, when it is off, nothing will be done.<br>
+ <br>
+<a name="Settings" id="Settings"></a><h2>Settings</h2>
+<hr>
+
+<a name="End Rate Multiplier" id="End Rate Multiplier"></a><h3>End Rate Multiplier</h3>
+
+Default: 0.5<br>
+ <br>
+Defines the ratio of the feed and flow rate at the end over the feed and flow rate of the rest of the thread. With reasonable values for the 'Pent Up Volume' and 'Slowdown Volume', the amount of ooze should be roughly proportional to the square of the 'End Rate Multiplier'. If the 'End Rate Multiplier' is too low, the printing will be very slow because the feed rate will be lower. If the 'End Rate Multiplier' is too high, there will still be a lot of ooze.<br>
+ <br>
+<a name="Pent Up Volume" id="Pent Up Volume"></a><h3>Pent Up Volume</h3>
+
+Default: 0.4 mm3<br>
+ <br>
+When the filament is stopped, there is a pent up volume of plastic that comes out afterwards. For best results, the 'Pent Up Volume' in dwindle should be set to that amount. If the 'Pent Up Volume' is too small, there will still be a lot of ooze. If the 'Pent Up Volume' is too large, the end of the thread will be thinner than the rest of the thread.<br>
+ <br>
+<a name="Slowdown Steps" id="Slowdown Steps"></a><h3>Slowdown Steps</h3>
+
+Default: 3<br>
+ <br>
+Dwindle reduces the feed rate and flow rate in steps so the thread will remain at roughly the same thickness until the end.  The "Slowdown Steps" setting is the number of steps, the more steps the smaller the variation in the thread thickness, but the larger the size of the resulting gcode file and the more time spent pausing between segments.<br>
+ <br>
+<a name="Slowdown Volume" id="Slowdown Volume"></a><h3>Slowdown Volume</h3>
+
+Default: 5 mm3<br>
+ <br>
+The 'Slowdown Volume' is the volume of the end of the thread where the feed and flow rates will be decreased. If the 'Slowdown Volume' is too small, there won't be enough time to get rid of the pent up plastic, so there will still be a lot of ooze. If the 'Slowdown Volume' is too large, a bit of time will be wasted because for a large portion of the thread, the feed rate will be slow. Overall, it is best to err on being too large, because too large would only waste machine time in production, rather than the more important string removal labor time.<br>
+ <br>
+<a name="Examples" id="Examples"></a><h2>Examples</h2>
+<hr>
+
+The following examples dwindle the file Screw Holder Bottom.stl.  The examples are run in a terminal in the folder which contains Screw Holder Bottom.stl and dwindle.py.<br>
+ <br>
+&gt; python dwindle.py<br>
+This brings up the dwindle dialog.<br>
+ <br>
+&gt; python dwindle.py Screw Holder Bottom.stl<br>
+The dwindle tool is parsing the file:<br>
+Screw Holder Bottom.stl<br>
+..<br>
+The dwindle tool has created the file:<br>
+.. Screw Holder Bottom_dwindle.gcode</tt>
+<br />
+<br />
+<p>
+<a href="skeinforge_application.skeinforge_plugins.craft_plugins.drill.html">Previous</a> / <a href="skeinforge_application.skeinforge_plugins.craft_plugins.export.html">Next</a> / <a href="contents.html">Contents</a>
+</p>
+<hr>
+</p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="__init__.html">__init__</a><br>
+<a href="fabmetheus_utilities.archive.html">fabmetheus_utilities.archive</a><br>
+<a href="fabmetheus_utilities.euclidean.html">fabmetheus_utilities.euclidean</a><br>
+</td><td width="25%" valign=top><a href="fabmetheus_utilities.fabmetheus_tools.fabmetheus_interpret.html">fabmetheus_utilities.fabmetheus_tools.fabmetheus_interpret</a><br>
+<a href="fabmetheus_utilities.gcodec.html">fabmetheus_utilities.gcodec</a><br>
+<a href="math.html">math</a><br>
+</td><td width="25%" valign=top><a href="fabmetheus_utilities.settings.html">fabmetheus_utilities.settings</a><br>
+<a href="skeinforge_application.skeinforge_utilities.skeinforge_craft.html">skeinforge_application.skeinforge_utilities.skeinforge_craft</a><br>
+<a href="skeinforge_application.skeinforge_utilities.skeinforge_polyfile.html">skeinforge_application.skeinforge_utilities.skeinforge_polyfile</a><br>
+</td><td width="25%" valign=top><a href="skeinforge_application.skeinforge_utilities.skeinforge_profile.html">skeinforge_application.skeinforge_utilities.skeinforge_profile</a><br>
+<a href="sys.html">sys</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="skeinforge_application.skeinforge_plugins.craft_plugins.dwindle.html#DwindleRepository">DwindleRepository</a>
+</font></dt><dt><font face="helvetica, arial"><a href="skeinforge_application.skeinforge_plugins.craft_plugins.dwindle.html#DwindleSkein">DwindleSkein</a>
+</font></dt><dt><font face="helvetica, arial"><a href="skeinforge_application.skeinforge_plugins.craft_plugins.dwindle.html#ThreadSection">ThreadSection</a>
+</font></dt></dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DwindleRepository">class <strong>DwindleRepository</strong></a></font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;class&nbsp;to&nbsp;handle&nbsp;the&nbsp;dwindle&nbsp;settings.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="DwindleRepository-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>Set&nbsp;the&nbsp;default&nbsp;settings,&nbsp;execute&nbsp;title&nbsp;&amp;&nbsp;settings&nbsp;fileName.</tt></dd></dl>
+
+<dl><dt><a name="DwindleRepository-execute"><strong>execute</strong></a>(self)</dt><dd><tt>Dwindle&nbsp;button&nbsp;has&nbsp;been&nbsp;clicked.</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="DwindleSkein">class <strong>DwindleSkein</strong></a></font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;class&nbsp;to&nbsp;dwindle&nbsp;a&nbsp;skein&nbsp;of&nbsp;extrusions.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="DwindleSkein-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>Initialize.</tt></dd></dl>
+
+<dl><dt><a name="DwindleSkein-addThread"><strong>addThread</strong></a>(self)</dt><dd><tt>Add&nbsp;the&nbsp;thread&nbsp;sections&nbsp;to&nbsp;the&nbsp;gcode.</tt></dd></dl>
+
+<dl><dt><a name="DwindleSkein-getCraftedGcode"><strong>getCraftedGcode</strong></a>(self, gcodeText, repository)</dt><dd><tt>Parse&nbsp;gcode&nbsp;text&nbsp;and&nbsp;store&nbsp;the&nbsp;dwindle&nbsp;gcode.</tt></dd></dl>
+
+<dl><dt><a name="DwindleSkein-parseInitialization"><strong>parseInitialization</strong></a>(self)</dt><dd><tt>Parse&nbsp;gcode&nbsp;initialization&nbsp;and&nbsp;store&nbsp;the&nbsp;parameters.</tt></dd></dl>
+
+<dl><dt><a name="DwindleSkein-parseLine"><strong>parseLine</strong></a>(self, line)</dt><dd><tt>Parse&nbsp;a&nbsp;gcode&nbsp;line&nbsp;and&nbsp;add&nbsp;it&nbsp;to&nbsp;the&nbsp;dwindle&nbsp;skein.</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="ThreadSection">class <strong>ThreadSection</strong></a></font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>A&nbsp;class&nbsp;to&nbsp;handle&nbsp;a&nbsp;volumetric&nbsp;section&nbsp;of&nbsp;a&nbsp;thread.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="ThreadSection-__init__"><strong>__init__</strong></a>(self, feedRateMinute, flowRate, location, oldLocation)</dt><dd><tt>Initialize.</tt></dd></dl>
+
+<dl><dt><a name="ThreadSection-addGcodeMovementByRate"><strong>addGcodeMovementByRate</strong></a>(self, distanceFeedRate, endRateMultiplier, location, rateMultiplier, slowdownFlowRateMultiplier)</dt><dd><tt>Add&nbsp;gcode&nbsp;movement&nbsp;by&nbsp;rate&nbsp;multiplier.</tt></dd></dl>
+
+<dl><dt><a name="ThreadSection-addGcodeThreadSection"><strong>addGcodeThreadSection</strong></a>(self, distanceFeedRate, endRateMultiplier, halfOverSteps, oneOverSteps, slowdownFlowRateMultiplier)</dt><dd><tt>Add&nbsp;gcode&nbsp;thread&nbsp;section.</tt></dd></dl>
+
+<dl><dt><a name="ThreadSection-getDwindlePortion"><strong>getDwindlePortion</strong></a>(self, area, dwindlePortion, operatingFeedRateMinute, operatingFlowRate, slowdownVolume)</dt><dd><tt>Get&nbsp;cumulative&nbsp;dwindle&nbsp;portion.</tt></dd></dl>
+
+<dl><dt><a name="ThreadSection-getLocation"><strong>getLocation</strong></a>(self, along)</dt><dd><tt>Get&nbsp;location&nbsp;along&nbsp;way.</tt></dd></dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-getCraftedText"><strong>getCraftedText</strong></a>(fileName, gcodeText, repository<font color="#909090">=None</font>)</dt><dd><tt>Dwindle&nbsp;a&nbsp;gcode&nbsp;linear&nbsp;move&nbsp;text.</tt></dd></dl>
+ <dl><dt><a name="-getCraftedTextFromText"><strong>getCraftedTextFromText</strong></a>(gcodeText, repository<font color="#909090">=None</font>)</dt><dd><tt>Dwindle&nbsp;a&nbsp;gcode&nbsp;linear&nbsp;move&nbsp;text.</tt></dd></dl>
+ <dl><dt><a name="-getNewRepository"><strong>getNewRepository</strong></a>()</dt><dd><tt>Get&nbsp;new&nbsp;repository.</tt></dd></dl>
+ <dl><dt><a name="-main"><strong>main</strong></a>()</dt><dd><tt>Display&nbsp;the&nbsp;dwindle&nbsp;dialog.</tt></dd></dl>
+ <dl><dt><a name="-writeOutput"><strong>writeOutput</strong></a>(fileName, shouldAnalyze<font color="#909090">=True</font>)</dt><dd><tt>Dwindle&nbsp;a&nbsp;gcode&nbsp;linear&nbsp;move&nbsp;file.&nbsp;&nbsp;Chain&nbsp;dwindle&nbsp;the&nbsp;gcode&nbsp;if&nbsp;it&nbsp;is&nbsp;not&nbsp;already&nbsp;dwindle.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__author__</strong> = 'Enrique Perez (perez_enrique aht yahoo.com)'<br>
+<strong>__date__</strong> = '$Date: 2008/21/04 $'<br>
+<strong>__license__</strong> = 'GNU Affero General Public License http://www.gnu.org/licenses/agpl.html'<br>
+<strong>absolute_import</strong> = _Feature((2, 5, 0, 'alpha', 1), (2, 7, 0, 'alpha', 0), 16384)</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Enrique&nbsp;Perez&nbsp;(perez_enrique&nbsp;aht&nbsp;yahoo.com)</td></tr></table>
+</body></html>

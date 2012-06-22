@@ -4,6 +4,8 @@ import javax.vecmath.Point3d;
 
 import replicatorg.util.Point5d;
 
+import replicatorg.machine.model.MachineModel;
+
 /**
  * Interface for querying a Driver about its current state. This is used by
  * the parser when devolving GCodes into DriverCommands.
@@ -42,4 +44,5 @@ public interface DriverQueryInterface {
 	/// Queries the machine for a machine specific config value
 	public String getConfigValue(String value, String baseline);		
 
+	public MachineModel getMachine();
 }

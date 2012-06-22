@@ -16,7 +16,7 @@ public class SetPlatformTemperature implements DriverCommand {
 	@Deprecated
 	public SetPlatformTemperature(double temperature) {
 		this.temperature = temperature;
-		this.toolIndex  = -1;// do problematic 'getcurrent tool' when comand runs
+		this.toolIndex  = -1;// do problematic 'getcurrent tool' when command runs
 	}
 	
 	/**

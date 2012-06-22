@@ -30,12 +30,12 @@ import replicatorg.app.Base;
 class FirmwareRetriever {
 	File firmwareXml;
 	URL firmwareSourceURL;
-	
+
 	public FirmwareRetriever(File firmwareXml, URL firmwareSourceURL) {
 		this.firmwareXml = firmwareXml;
 		this.firmwareSourceURL = firmwareSourceURL;
 	}
-	
+
 	public enum UpdateStatus {
 		NETWORK_UNAVAILABLE,
 		NO_NEW_UPDATES,
@@ -72,7 +72,7 @@ class FirmwareRetriever {
 			// Check the xml file for parseability.  If it is unparseable, set the timestamp
 			// to 0 to force it to pull a new version from the server.
 			if (file.exists()) {
-				try {	
+				try {
 					DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 					db.parse(file);
 				} catch (Exception e) {
@@ -92,21 +92,22 @@ class FirmwareRetriever {
 				connection.connect();
 				if (connection instanceof HttpURLConnection) {
 					int rc = ((HttpURLConnection)connection).getResponseCode();
-					if (rc == HttpURLConnection.HTTP_NOT_MODIFIED) {
+					if ((rc == HttpURLConnection.HTTP_NOT_MODIFIED) ||
+						(connection.getIfModifiedSince() > connection.getLastModified())) {
 						return UpdateStatus.NO_NEW_UPDATES;
 					}
 					if (rc != HttpURLConnection.HTTP_OK) {
 						// Do not attempt to pull down the file if the connection failed.
 						return UpdateStatus.NETWORK_UNAVAILABLE;
 					}
-				}	
+				}
 			}
-			
+
 			// Pull down the file.  The content should be an input stream.
 			InputStream content = (InputStream)urlConnection.getContent();
 			FileOutputStream out = new FileOutputStream(file);
 			// Welcome to 1994!  Seriously, there's no standard util for this?  Lame.
-			final int BUF_SIZE=2048; 
+			final int BUF_SIZE=2048;
 			byte buf[] = new byte[BUF_SIZE];
 			int bytesWritten = 0;
 			while (true) {
@@ -138,7 +139,7 @@ class FirmwareRetriever {
 		}
 		return UpdateStatus.NETWORK_UNAVAILABLE;
 	}
-	
+
 	protected void retrieveNewFirmware() {
 		Document doc = FirmwareUploader.loadFirmwareDoc();
 		if (doc == null) { return; }

@@ -1,0 +1,12 @@
+Format is tab separated inset settings.
+_Name                          	Value
+WindowPosition	700+0
+Open File for Inset	
+Add Custom Code for Temperature Reading	True
+Infill in Direction of Bridge	False
+Infill Width over Thickness (ratio):	1.45
+Ascending Area	True
+Descending Area	False
+Overlap Removal Width over Perimeter Width (ratio):	0.7
+Turn Extruder Heater Off at Shut Down	True
+Volume Fraction (ratio):	0.82

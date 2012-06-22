@@ -154,6 +154,8 @@ import replicatorg.plugin.toolpath.ToolpathGeneratorFactory.ToolpathGeneratorDes
 import replicatorg.plugin.toolpath.ToolpathGeneratorThread;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgePostProcessor;
+import replicatorg.plugin.toolpath.miraclegrue.MiracleGrueGenerator;
+import replicatorg.plugin.toolpath.miraclegrue.MiracleGruePostProcessor;
 import replicatorg.uploader.FirmwareUploader;
 
 import com.apple.mrj.MRJAboutHandler;
@@ -603,7 +605,6 @@ ToolpathGenerator.GeneratorListener
 			}
 
 		}
-		Base.logger.severe("pre regenerate");
 
 		// Check for modified STL
 		if (build.getModel().isModified()) {
@@ -639,6 +640,20 @@ ToolpathGenerator.GeneratorListener
 			spp.setMultiHead(isDualDriver());
 			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
 				spp.setAddProgressUpdates(true);
+		}
+		else if (generator instanceof MiracleGrueGenerator) {
+			MiracleGruePostProcessor spp = ((MiracleGrueGenerator)generator).getPostProcessor();
+			
+			spp.setMachineType(machineLoader.getMachineInterface().getMachineType());
+			spp.setPrependMetaInfo(true);
+			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()));
+			spp.setEndCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()));
+			spp.setMultiHead(isDualDriver());
+			spp.setPrependStart(true);
+			spp.setAppendEnd(true);
+			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
+				spp.setAddProgressUpdates(true);
+
 		}
 
 
@@ -1080,10 +1095,10 @@ ToolpathGenerator.GeneratorListener
 		stopItem.setEnabled(false);
 		menu.add(stopItem);
 
-		// GENERATOR
+		// Create gcode generator menu item(s)
 		JMenu genMenu = new JMenu("GCode Generator");
-		Vector<ToolpathGeneratorDescriptor> generators = ToolpathGeneratorFactory.getGeneratorList();
-		String name = ToolpathGeneratorFactory.getSelectedName();
+		Vector<ToolpathGeneratorDescriptor> generators = ToolpathGeneratorFactory.getGeneratorList();		
+		String name = ToolpathGeneratorFactory.getSelectedName(); /// <get configured 'current' slicer
 		ButtonGroup group = new ButtonGroup();
 		for (ToolpathGeneratorDescriptor tgd : generators) {
 			JRadioButtonMenuItem i = new JRadioButtonMenuItem(tgd.name);
@@ -1094,7 +1109,8 @@ ToolpathGenerator.GeneratorListener
 					ToolpathGeneratorFactory.setSelectedName(n);
 				}
 			});
-			if (name.equals(tgd.name)) { i.setSelected(true); }
+			if (name.equals(tgd.name)) {
+				i.setSelected(true); }
 			genMenu.add(i);
 		}
 		menu.add(genMenu);
@@ -2573,6 +2589,16 @@ ToolpathGenerator.GeneratorListener
 
 	public void handleDualStrusion()
 	{
+		//check if we are using skeinforge. 
+		String name = Base.preferences.get("replicatorg.generator.name", "Skeinforge (50)");
+		if(name.startsWith("Skeinforge") == false) {
+			final String message = "<html>Dual Material Extrusion only available using skeinforge engines.<br>" +
+			"Under <b>GCode Generator</b> menu select any <b>Skeinforge</b> slicer and retry.</html>";
+			JOptionPane.showMessageDialog(this, message, "Save model?", JOptionPane.WARNING_MESSAGE);
+			return;
+			
+		}
+		
 		if(getBuild().getCode() != null && getBuild().getCode().isModified())
 		{
 			final String message = "<html>In order to dualstrude you need to save<br>" +

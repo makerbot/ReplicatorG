@@ -1,0 +1,22 @@
+Format is tab separated export settings.
+_Name                          	Value
+WindowPosition	700+0
+Open File for Export	
+Activate Export	True
+Add Descriptive Extension	False
+Add Export Suffix	False
+Add Profile Extension	False
+Add Timestamp Extension	False
+Also Send Output To:	
+Analyze Gcode	True
+Do Not Delete Comments	True
+Delete Crafting Comments	False
+Delete All Comments	False
+Do Not Change Output	True
+binary_16_byte	False
+gcode_step	False
+gcode_time_segment	False
+gcode_small	False
+File Extension:	gcode
+Name of Replace File:	replace.csv
+Save Penultimate Gcode	False

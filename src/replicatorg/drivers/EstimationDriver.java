@@ -78,6 +78,9 @@ public class EstimationDriver extends DriverBaseImplementation implements Intera
 		
 		// add it in!
 		if (millis > 0) {
+			//Take into account the time it takes to send a command!
+			millis = millis + 12;
+			
 			buildTime = buildTime + millis;
 //			System.out.println(moveLength + "mm at " + feedrate + " takes " + Math.round(millis) + " millis (" + buildTime + "	total).");
 		}
@@ -132,7 +135,7 @@ public class EstimationDriver extends DriverBaseImplementation implements Intera
 			// string formatting
 			if (days > 0 || hours > 0)
 				val += ", ";
-			val += minutes + " min.";
+			val += minutes + " min";
 			if (minutes > 1)
 				val += "s";
 		}

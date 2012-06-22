@@ -11,15 +11,18 @@ package replicatorg.drivers;
 public interface MultiTool {
 
 	/**
-	 * Returns true if the driver is capable of explicitly setting the hardware index of an attached tool.
+	 * Returns true if the driver is capable of explicitly setting the hardware index of an 
+	 * attached tool.
 	 * @see setConnectedToolIndex(int)
 	 * @return true if tools can have their indexes set.
 	 */
 	public boolean toolsCanBeReindexed();
+	
 	/**
-	 * If multiple identical hardware toolheads are available, it may be necessary to program a tool with its
-	 * identifier so that multiple toolheads do not share a slot.  This is usually accomplished by disconnecting
-	 * all other toolheads and explicitly setting the index of the remaining tool.
+	 * If multiple identical hardware toolheads are available, it may be necessary to program a
+	 * tool with its identifier so that multiple toolheads do not share a slot.  This is usually
+	 * accomplished by disconnecting all other toolheads and explicitly setting the index of the 
+	 * remaining tool.
 	 * 
 	 * If toolsCanBeReindexed() does not return true, this purpose of this function is undefined.
 	 * 

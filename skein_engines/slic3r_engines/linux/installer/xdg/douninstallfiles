@@ -1,0 +1,4 @@
+#!/bin/sh
+cd "CAVAINSTALLPATH/bin/.xdg"
+rm -rf "CAVAINSTALLPATH"
+

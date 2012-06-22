@@ -1,0 +1,7 @@
+Format is tab separated synopsis settings.
+_Name                          	Value
+WindowPosition	700+0
+Activate Synopsis	False
+Open File to Write Synopsis for	
+Export Profile As CSV File	True
+Export Profile As Zip File	False

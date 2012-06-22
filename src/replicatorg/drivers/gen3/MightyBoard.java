@@ -844,7 +844,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		//Base.logger.severe("MightyBoard fetching from getConfig");
 		if( this.getAccelerationStatus() == true ) {
 			//Base.logger.severe("MightyBoard is accel");
-			if ( key.equals("desiredFeedrate")  )  return "100";
+			if ( key.equals("desiredFeedrate")  )  return "80";
 			if ( key.equals("travelFeedrate") )    return "150";
 			if ( key.equals("printTemp") )    		return "240";
 			

@@ -1,0 +1,5 @@
+#!/bin/sh
+cd "CAVAINSTALLPATH/bin/.xdg"
+
+sh ./douninstallfiles
+
