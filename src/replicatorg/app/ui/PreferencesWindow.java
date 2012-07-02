@@ -269,7 +269,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			arcResolutionField.setColumns(10);
 			arcResolutionField.addPropertyChangeListener(new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent evt) {
-					if (evt.getPropertyName() == "value") {
+					if (evt.getPropertyName().equals("value")) {
 						try {
 							Double v = (Double)evt.getNewValue();
 							if (v == null) return;
@@ -300,7 +300,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			sfTimeoutField.setColumns(10);
 			sfTimeoutField.addPropertyChangeListener(new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent evt) {
-					if (evt.getPropertyName() == "value") {
+					if (evt.getPropertyName().equals("value")) {
 						try {
 							Integer v = ((Number)evt.getNewValue()).intValue();
 							if (v == null) return;
@@ -388,7 +388,7 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 			// let's avoid creating too many Anon. inner Listeners, also is fewer lines (and just as clear)!
 			PropertyChangeListener p = new PropertyChangeListener() {
 				public void propertyChange(PropertyChangeEvent evt) {
-					if (evt.getPropertyName() == "value") {
+					if (evt.getPropertyName().equals("value")) {
 						double target;
 						if(evt.getSource() == t0Field)
 						{

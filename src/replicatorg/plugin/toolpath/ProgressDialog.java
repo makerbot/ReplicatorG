@@ -447,7 +447,7 @@ class ProgressDialog extends JDialog implements ToolpathGenerator.GeneratorListe
 					{
 						String j = new Integer(layerTotal).toString();
 						double completion =  ((double) layerIndex/layerTotal);
-						if((layerIndex>0) && (processName == ""))
+						if((layerIndex>0) && (processName.length() == 0))
 						{
 							newMessage += " ("+j+" layers)";//
 						}

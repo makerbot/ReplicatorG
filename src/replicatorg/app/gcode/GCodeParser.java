@@ -651,7 +651,7 @@ public class GCodeParser {
 				pos.setA(aVal);
 			if (gcode.hasCode('E')) {
 			  // can't assume tool 0 == a, it's configurable in machine.xml!
-				if (driver.getMachine().getTool(tool).getMotorStepperAxis().name() == "B") {
+				if (driver.getMachine().getTool(tool).getMotorStepperAxis().name().equals("B")) {
           // Base.logger.warning("Mapping axis E to axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());
 					pos.setB(eVal);
 				} else {
@@ -674,7 +674,7 @@ public class GCodeParser {
 				pos.setA(pos.a() + aVal);
 			if (gcode.hasCode('E')) {
 			  // can't assume tool 0 == a, it's configurable in machine.xml!
-				if (driver.getMachine().getTool(tool).getMotorStepperAxis().name() == "B") {
+				if (driver.getMachine().getTool(tool).getMotorStepperAxis().name().equals("B")) {
           // Base.logger.warning("Mapping axis E to axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());
 					pos.setB(pos.b() + eVal);
 				} else {
@@ -891,7 +891,7 @@ public class GCodeParser {
 				current.setA(aVal);
 			if (gcode.hasCode('E')) {
 			  // can't assume tool 0 == a, it's configurable in machine.xml!			  
-				if (driver.getMachine().getTool(tool).getMotorStepperAxis().name() == "B") {
+				if (driver.getMachine().getTool(tool).getMotorStepperAxis().name().equals("B")) {
           // Base.logger.warning("Resetting position of axis E to axis: " + driver.getMachine().getTool(tool).getMotorStepperAxis().name());          
 					current.setB(eVal);
 				} else {
