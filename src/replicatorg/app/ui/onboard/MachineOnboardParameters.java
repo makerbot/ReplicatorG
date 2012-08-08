@@ -179,72 +179,74 @@ public class MachineOnboardParameters extends JPanel {
 			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
 		}
                 
-        target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
-        target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
-        target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
+		if(target.hasToolheadsOffset())
+		{
+        		target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
+        		target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
+        		target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
+        	}
+       		byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
+        	target.setAccelerationStatus(status);
         
-        byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
-        target.setAccelerationStatus(status);
-        
-        target.setAccelerationRate(((Number)masterAcceleration.getValue()).intValue());
+        	target.setAccelerationRate(((Number)masterAcceleration.getValue()).intValue());
 			
-        target.setAxisAccelerationRate(0, ((Number)xAxisAcceleration.getValue()).intValue());
-        target.setAxisAccelerationRate(1, ((Number)yAxisAcceleration.getValue()).intValue());
-        target.setAxisAccelerationRate(2, ((Number)zAxisAcceleration.getValue()).intValue());
-        target.setAxisAccelerationRate(3, ((Number)aAxisAcceleration.getValue()).intValue());
-        target.setAxisAccelerationRate(4, ((Number)bAxisAcceleration.getValue()).intValue());
+        	target.setAxisAccelerationRate(0, ((Number)xAxisAcceleration.getValue()).intValue());
+        	target.setAxisAccelerationRate(1, ((Number)yAxisAcceleration.getValue()).intValue());
+        	target.setAxisAccelerationRate(2, ((Number)zAxisAcceleration.getValue()).intValue());
+        	target.setAxisAccelerationRate(3, ((Number)aAxisAcceleration.getValue()).intValue());
+        	target.setAxisAccelerationRate(4, ((Number)bAxisAcceleration.getValue()).intValue());
 
-        target.setAxisJerk(0, ((Number)xyJunctionJerk.getValue()).doubleValue());
-        target.setAxisJerk(2, ((Number) zJunctionJerk.getValue()).doubleValue());
-        target.setAxisJerk(3, ((Number) aJunctionJerk.getValue()).doubleValue());
-        target.setAxisJerk(4, ((Number) bJunctionJerk.getValue()).doubleValue());
+        	target.setAxisJerk(0, ((Number)xyJunctionJerk.getValue()).doubleValue());
+        	target.setAxisJerk(2, ((Number) zJunctionJerk.getValue()).doubleValue());
+        	target.setAxisJerk(3, ((Number) aJunctionJerk.getValue()).doubleValue());
+        	target.setAxisJerk(4, ((Number) bJunctionJerk.getValue()).doubleValue());
         
-        target.setAccelerationMinimumSpeed(((Number)minimumSpeed.getValue()).intValue());
+        	target.setAccelerationMinimumSpeed(((Number)minimumSpeed.getValue()).intValue());
 
-    	int feedrate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", 40);
-        int travelRate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.travelFeedrate", 55);
+    		int feedrate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", 40);
+        	int travelRate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.travelFeedrate", 55);
 
-        String extendedMessage = null;
-        if( accelerationBox.isSelected() ) {
-        	///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are slow,
-        	// for speed them up.         	
+        	String extendedMessage = null;
+        	if( accelerationBox.isSelected() ) {
+        		///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are slow,
+        		// for speed them up.         	
 			Base.logger.finest("forced skeinforge speedup");
-            if(feedrate <= 40 ) 
-            	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "100");
-            if( travelRate <= 55)
-                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "150");          
+            		if(feedrate <= 40 ) 
+            			Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "100");
+            		if( travelRate <= 55)
+                		Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", 					"150");          
 
-            extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
-        }
-        else { 
-        	///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are fast,
-        	// for slow them down. 
-        	Base.logger.finest("forced skeinforge slowdown");
-            if(feedrate > 40 )
-            	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "40");
-            if( travelRate > 55)
-                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "55");
+           	extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
+        	}
+        	else { 
+        		///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are fast,
+        		// for slow them down. 
+        		Base.logger.finest("forced skeinforge slowdown");
+           	 	if(feedrate > 40 )
+            			Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "40");
+            		if( travelRate > 55)
+                		Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "55");
 
-        	int xJog = 0; 
-            int zJog = 0; 
-            try {  
-		        if( Base.preferences.nodeExists("controlpanel.feedrate.z") )
+        		int xJog = 0; 
+           		 int zJog = 0; 
+            		try {  
+		        	if( Base.preferences.nodeExists("controlpanel.feedrate.z") )
 		        		zJog = Base.preferences.getInt("controlpanel.feedrate.z", 480);
-		        if(Base.preferences.nodeExists("controlpanel.feedrate.y") )
+		        	if(Base.preferences.nodeExists("controlpanel.feedrate.y") )
 		        		xJog = Base.preferences.getInt("controlpanel.feedrate.x", 480);
-		        if(zJog < 480)
-		    		Base.preferences.put("controlpanel.feedrate.z", "480");
-		        if(xJog < 480)
-		    		Base.preferences.put("controlpanel.feedrate.x", "480");
-            }
-            catch (BackingStoreException e) {
-            	Base.logger.severe(e.toString());
-            }
+		        	if(zJog < 480)
+		    			Base.preferences.put("controlpanel.feedrate.z", "480");
+		        	if(xJog < 480)
+		    			Base.preferences.put("controlpanel.feedrate.x", "480");
+            		}
+            		catch (BackingStoreException e) {
+            			Base.logger.severe(e.toString());
+            		}
             
-            extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
-        }
+            		extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
+        	}
         
-        requestResetFromUser(extendedMessage);
+        	requestResetFromUser(extendedMessage);
 	}
 
 	
