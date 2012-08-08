@@ -1,3 +1,6 @@
+0038-Beta ReplicatorG
+* bugfix for setting onboard preferences on single extruder machine
+
 0037-Beta ReplicatorG
 * bugfix for comb in skeinforge
 * lowered The Replicator:Accelerated temperature
