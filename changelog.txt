@@ -1,5 +1,6 @@
 0038-Beta ReplicatorG
-* bugfix for setting onboard preferences on single extruder machine
+* bugfix for commiting onboard preferences to Replicator(Single Extruder)
+* bugfix for commiting oboard preferences to Thing-O-Matic
 
 0037-Beta ReplicatorG
 * bugfix for comb in skeinforge
