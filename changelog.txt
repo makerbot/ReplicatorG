@@ -1,4 +1,4 @@
-0038-Beta ReplicatorG
+0038 ReplicatorG
 * bugfix for commiting onboard preferences to Replicator(Single Extruder)
 * bugfix for commiting oboard preferences to Thing-O-Matic
 
