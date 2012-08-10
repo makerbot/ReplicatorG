@@ -185,23 +185,27 @@ public class MachineOnboardParameters extends JPanel {
         		target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
         		target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
         	}
-       		byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
-        	target.setAccelerationStatus(status);
-        
-        	target.setAccelerationRate(((Number)masterAcceleration.getValue()).intValue());
-			
-        	target.setAxisAccelerationRate(0, ((Number)xAxisAcceleration.getValue()).intValue());
-        	target.setAxisAccelerationRate(1, ((Number)yAxisAcceleration.getValue()).intValue());
-        	target.setAxisAccelerationRate(2, ((Number)zAxisAcceleration.getValue()).intValue());
-        	target.setAxisAccelerationRate(3, ((Number)aAxisAcceleration.getValue()).intValue());
-        	target.setAxisAccelerationRate(4, ((Number)bAxisAcceleration.getValue()).intValue());
 
-        	target.setAxisJerk(0, ((Number)xyJunctionJerk.getValue()).doubleValue());
-        	target.setAxisJerk(2, ((Number) zJunctionJerk.getValue()).doubleValue());
-        	target.setAxisJerk(3, ((Number) aJunctionJerk.getValue()).doubleValue());
-        	target.setAxisJerk(4, ((Number) bJunctionJerk.getValue()).doubleValue());
+		if(target.hasAcceleration())
+		{
+       		byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
+        		target.setAccelerationStatus(status);
         
-        	target.setAccelerationMinimumSpeed(((Number)minimumSpeed.getValue()).intValue());
+        		target.setAccelerationRate(((Number)masterAcceleration.getValue()).intValue());
+			
+        		target.setAxisAccelerationRate(0, ((Number)xAxisAcceleration.getValue()).intValue());
+        		target.setAxisAccelerationRate(1, ((Number)yAxisAcceleration.getValue()).intValue());
+        		target.setAxisAccelerationRate(2, ((Number)zAxisAcceleration.getValue()).intValue());
+        		target.setAxisAccelerationRate(3, ((Number)aAxisAcceleration.getValue()).intValue());
+        		target.setAxisAccelerationRate(4, ((Number)bAxisAcceleration.getValue()).intValue());
+
+        		target.setAxisJerk(0, ((Number)xyJunctionJerk.getValue()).doubleValue());
+        		target.setAxisJerk(2, ((Number) zJunctionJerk.getValue()).doubleValue());
+        		target.setAxisJerk(3, ((Number) aJunctionJerk.getValue()).doubleValue());
+        		target.setAxisJerk(4, ((Number) bJunctionJerk.getValue()).doubleValue());
+        
+        		target.setAccelerationMinimumSpeed(((Number)minimumSpeed.getValue()).intValue());
+		}
 
     		int feedrate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", 40);
         	int travelRate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.travelFeedrate", 55);
