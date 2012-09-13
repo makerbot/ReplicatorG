@@ -1,3 +1,6 @@
+0039-Beta ReplicatorG
+* Added Replicator 2 Machine profile
+
 0038-Beta ReplicatorG
 * bugfix for commiting onboard preferences to Replicator(Single Extruder)
 * bugfix for commiting oboard preferences to Thing-O-Matic

@@ -1,0 +1,38 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+<machine experimental="0">
+		<name>Replicator 2</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="285" maxfeedrate="18000" homingfeedrate="2500" stepspermm="88.573186" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/16 step = 1/(10.82 * pi / 3200) -->
+			<axis id="y" length="150" maxfeedrate="18000" homingfeedrate="2500" stepspermm="88.573186" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/16 step = 1/(10.82 * pi / 3200) -->
+			<axis id="z" length="150" maxfeedrate="1170" homingfeedrate="1100" stepspermm="400" endstops="min"/> <!-- Actual length is 157mm, we reserve ~5mm for safety. TR-8x8 Z axis = 1/(8/3200) -->
+			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
+		</geometry>
+		<tools>
+			<tool name="PLA Extruder" model="Mk8" diameter="0.4" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" heatedplatform="false" motor_steps="3200" default_rpm="3" heater="true"/>
+		</tools>
+		<wipes>
+			<wipe index="0" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+			<wipe index="1" X1="-135.0" Y1="55.0" X2="-135.0" Y2="45.0" wait="1000.0" purge_duration="1000" reverse_duration="15" purge_rpm="5.0" reverse_rpm="35.0"/>
+		</wipes>
+		<offsets>
+			<offset xNozzle="33.0" yNozzle="0.0" zNozzle="0.0" />
+		</offsets>
+		<clamps></clamps>
+		<driver name="replicator2">
+			<!-- optional: <portname>COM1</portname> -->
+			<rate>115200</rate>
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+M18 (Turn off steppers after a build.)
+		</cooldown>
+		<bookend dualstart="machines/replicator2/Single_Head_start.gcode" start="start.gcode" end="machines/replicator2/end.gcode"/>
+	</machine>
+</machines>
+<!-- explanation of steps per mm:
+	 Steps/mm is calculated by dividing the 'drive gear steps per revolution' (in this case, equal to motor_steps) by the 'drive gear circumference' (drive gear diameter = 10.58)
+	 So we get: 3200/(PI*10.58) = 96.275...
+ -->

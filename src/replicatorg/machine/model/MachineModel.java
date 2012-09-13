@@ -130,7 +130,7 @@ public class MachineModel
 		parseWipes();
 		parseExclusion();
 		parseGCode();
-                parseOffsets();
+		parseOffsets();
 	}
 	
 
@@ -427,6 +427,10 @@ public class MachineModel
 			String dualstartLocation = XML.getAttributeValue(bookend, "dualstart");
 			String startLocation = XML.getAttributeValue(bookend, "start");
 			String endLocation = XML.getAttributeValue(bookend, "end");
+			
+			Base.logger.severe("bookend metadata specified for this machine"+ dualstartLocation);
+			Base.logger.severe("bookend metadata specified for this machine"+ startLocation);
+			Base.logger.severe("bookend metadata specified for this machine"+ endLocation);
 			if(dualstartLocation != null) 
 				dualstartBookendCode = Base.getApplicationFile(dualstartLocation);
 			if(startLocation != null) 
