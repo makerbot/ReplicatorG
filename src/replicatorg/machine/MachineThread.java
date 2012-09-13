@@ -735,6 +735,7 @@ class MachineThread extends Thread {
 	
 	private MachineModel loadModel() {
 		MachineModel model = new MachineModel();
+		Base.logger.severe("loadModel call");
 		model.loadXML(machineNode);
 		return model;
 	}

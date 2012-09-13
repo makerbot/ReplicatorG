@@ -3,7 +3,6 @@ M103 (disable RPM)
 M73 P0 (enable build progress)
 G21 (set units to mm)
 G90 (set positioning to absolute)
-M109 S110 T0 (set HBP temperature)
 M104 S220 T0 (set extruder temperature)
 (**** begin homing ****)
 G162 X Y F2500 (home XY axes maximum

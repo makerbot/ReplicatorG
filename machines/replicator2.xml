@@ -29,7 +29,7 @@
 		<cooldown>
 M18 (Turn off steppers after a build.)
 		</cooldown>
-		<bookend dualstart="machines/replicator2/Single_Head_start.gcode" start="start.gcode" end="machines/replicator2/end.gcode"/>
+		<bookend start="machines/replicator2/Single_Head_start.gcode"  end="machines/replicator2/end.gcode"/>
 	</machine>
 </machines>
 <!-- explanation of steps per mm:
