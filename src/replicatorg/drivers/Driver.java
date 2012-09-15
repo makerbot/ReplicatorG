@@ -143,6 +143,8 @@ public interface Driver {
 	public Version getMinimumVersion();
         
         public Version getMinimumAccelerationVersion();
+
+        public Version getMinimumJettyAccelerationVersion();
 	
 	public Version getPreferredVersion();
 	
@@ -222,6 +224,11 @@ public interface Driver {
 	 * sets the feedrate in mm/minute
 	 */
 	public double getCurrentFeedrate();
+
+	/**
+	 * sets acceleration on or off for subsequent commands
+	 */
+	public void setAccelerationToggle(boolean on) throws RetryException;
 
 	/**
 	 * Home the given set of axes at the given feedrate.  If the feedrate is <=0, run at

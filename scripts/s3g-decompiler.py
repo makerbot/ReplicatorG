@@ -38,6 +38,38 @@ def printToolAction(tuple):
     if type(disp) == type(""):
         print disp % parsed
 
+def parseDisplayMessageAction():
+    global s3gFile
+    packetStr = s3gFile.read(4)
+    if len(packetStr) < 4:
+        raise "Incomplete s3g file during tool command parse"
+    (options,offsetX,offsetY,timeout) = struct.unpack("<BBBB",packetStr)
+    message = "";
+    while True:
+       c = s3gFile.read(1);
+       if c == '\0':
+          break;
+       else:
+          message += c;
+
+    return (options,offsetX,offsetY,timeout,message)
+
+def parseBuildStartNotificationAction():
+    global s3gFile
+    packetStr = s3gFile.read(4)
+    if len(packetStr) < 4:
+        raise "Incomplete s3g file during tool command parse"
+    (steps) = struct.unpack("<i",packetStr)
+    buildName = "";
+    while True:
+       c = s3gFile.read(1);
+       if c == '\0':
+          break;
+       else:
+          buildName += c;
+
+    return (steps[0],buildName)
+
 # Command table entries consist of:
 # * The key: the integer command code
 # * A tuple:
@@ -68,6 +100,18 @@ commandTable = {
     142: ("<iiiiiIB","Move to (%i,%i,%i,%i,%i) in %i us (relative: %X)"),
     143: ("<b","Store home position for axes %d"),
     144: ("<b","Recall home position for axes %d"),
+    145: ("<BB","Set pot axis %i to %i"),
+    146: ("<BBBBB","Set RGB led red %i, green %i, blue %i, blink rate %i, effect %i"),
+    147: ("<HHB","Set beep, frequency %i, length %i, effect %i"),
+    148: ("<BHB","Pause for button 0x%X, timeout %i s, timeout_bevavior %i"),
+    149: (parseDisplayMessageAction, "Display message, options 0x%X at %i,%i timeout %i s: %s"),
+    150: ("<BB","Set build percent %i%%, ignore %i"),
+    151: ("<B","Queue song %i"),
+    152: ("<B","Reset to factory, options 0x%X"),
+    153: (parseBuildStartNotificationAction, "Start build, steps %i: %s"),
+    154: ("<B","End build, flags 0x%X"),
+    155: ("<iiiiiIBfh","Move to (%i,%i,%i,%i,%i) dda_rate: %i (relative: %X) distance: %f feedrateX64: %i"),
+    156: ("<B","Set acceleration to %i"),
 }
 
 def parseNextCommand():

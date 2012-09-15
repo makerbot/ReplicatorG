@@ -1,251 +1,237 @@
 /**
- * 
- */
-package replicatorg.app.ui.onboard;
+  * 
+  */
+ package replicatorg.app.ui.onboard;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.text.NumberFormat;
-import java.util.EnumMap;
-import java.util.EnumSet;
+ import java.awt.event.ActionEvent;
+ import java.awt.event.ActionListener;
+ import java.awt.Color;
+ import java.text.NumberFormat;
+ import java.util.EnumMap;
+ import java.util.EnumSet;
+ import java.util.Arrays;
 
-import java.util.prefs.BackingStoreException;
-import javax.swing.*;
+ import java.util.prefs.BackingStoreException;
+ import javax.swing.*;
+ import javax.swing.text.InternationalFormatter;
 
-import net.miginfocom.swing.MigLayout;
-import replicatorg.app.Base;
-import replicatorg.drivers.Driver;
-import replicatorg.drivers.OnboardParameters;
-import replicatorg.machine.model.AxisId;
+ import net.miginfocom.swing.MigLayout;
+ import replicatorg.app.Base;
+ import replicatorg.drivers.Driver;
+ import replicatorg.drivers.OnboardParameters;
+ import replicatorg.machine.model.AxisId;
 
 
-/**
- * A panel for editing the options stored onboard a machine.
- * @author phooky
- *
- */
-public class MachineOnboardParameters extends JPanel {
-	private static final long serialVersionUID = 7876192459063774731L;
-	private final OnboardParameters target;
-	private final Driver driver;
-	private final JFrame parent;
-        private final JTabbedPane subTabs;
+ /**
+  * A panel for editing the options stored onboard a machine.
+  * @author phooky
+  *
+  */
+ public class MachineOnboardParameters extends JPanel {
+	 private static final long serialVersionUID = 7876192459063774731L;
+	 private final OnboardParameters target;
+	 private final Driver driver;
+	 private final JFrame parent;
+	 private final JTabbedPane subTabs;
+	 private final MachineOnboardAccelerationParameters accelUI;
+
+	 private boolean isMightyBoard = false;
+	 private JTextField machineNameField = new JTextField();
+	 private static final String[] toolCountChoices = {"unavailable","1", "2"};
+	 private JComboBox toolCountField = new JComboBox(toolCountChoices);
+	 private JCheckBox xAxisInvertBox = new JCheckBox();
+	 private JCheckBox yAxisInvertBox = new JCheckBox();
+	 private JCheckBox zAxisInvertBox = new JCheckBox();
+	 private JCheckBox aAxisInvertBox = new JCheckBox();
+	 private JCheckBox bAxisInvertBox = new JCheckBox();
+	 private JCheckBox zHoldBox = new JCheckBox();
+	 private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
+	 private JButton resetToBlankButton = new JButton("Reset motherboard completely");
+	 private JButton commitButton = new JButton("Commit Changes");
+	 private static final String[]  endstopInversionChoices = {
+		 "No endstops installed",
+		 "Inverted (Default; Mechanical switch or H21LOB-based enstops)",
+		 "Non-inverted (H21LOI-based endstops)"
+	 };
+	 private JComboBox endstopInversionSelection = new JComboBox(endstopInversionChoices);
+
+	 private static final String[]  estopChoices = {
+		 "No emergency stop installed",
+		 "Active high emergency stop (safety cutoff kit)",
+		 "Active low emergency stop (custom solution)"
+	 };
+	 private JComboBox estopSelection = new JComboBox(estopChoices);
+	 private static final int MAX_NAME_LENGTH = 16;
+
+	 private boolean disconnectNeededOnExit = false; ///
+
+	 // Default column width for wrapping tool tip text
+	 private static final int defaultToolTipWidth = 60;
+
 	
-	private JTextField machineNameField = new JTextField();
-	private static final String[] toolCountChoices = {"unavailable","1", "2"};
-	private JComboBox toolCountField = new JComboBox(toolCountChoices);
-	private JCheckBox xAxisInvertBox = new JCheckBox();
-	private JCheckBox yAxisInvertBox = new JCheckBox();
-	private JCheckBox zAxisInvertBox = new JCheckBox();
-	private JCheckBox aAxisInvertBox = new JCheckBox();
-	private JCheckBox bAxisInvertBox = new JCheckBox();
-	private JCheckBox zHoldBox = new JCheckBox();
-	private JButton resetToFactoryButton = new JButton("Reset motherboard to factory settings");
-	private JButton resetToBlankButton = new JButton("Reset motherboard completely");
-	private JButton commitButton = new JButton("Commit Changes");
-	private static final String[]  endstopInversionChoices = {
-		"No endstops installed",
-		"Inverted (Default; Mechanical switch or H21LOB-based enstops)",
-		"Non-inverted (H21LOI-based endstops)"
-	};
-	private JComboBox endstopInversionSelection = new JComboBox(endstopInversionChoices);
-	private static final String[]  estopChoices = {
-		"No emergency stop installed",
-		"Active high emergency stop (safety cutoff kit)",
-		"Active low emergency stop (custom solution)"
-	};
-	private JComboBox estopSelection = new JComboBox(estopChoices);
-	private static final int MAX_NAME_LENGTH = 16;
+	 // WARNING: the following code is poking the settings for the global localNF NumberFormat!
+	 //          threePlaces is merely a reference to Base.localNF.  A copy of it which can be
+	 //          manipulated without impacting Base.localNF itself can be had by doing
+	 //          (NumberFormat)(Base.getLocalFormat().clone());
 
-	private boolean disconnectNeededOnExit = false; ///
-	
     private NumberFormat threePlaces = Base.getLocalFormat();
     {
         threePlaces.setMaximumFractionDigits(3);
     }
-    
-	private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(threePlaces);
-	private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(threePlaces);
-	private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(threePlaces);
-	private JFormattedTextField aAxisHomeOffsetField = new JFormattedTextField(threePlaces);
-	private JFormattedTextField bAxisHomeOffsetField = new JFormattedTextField(threePlaces);
-	
-	private JFormattedTextField vref0 = new JFormattedTextField(threePlaces);
-	private JFormattedTextField vref1 = new JFormattedTextField(threePlaces);
-	private JFormattedTextField vref2 = new JFormattedTextField(threePlaces);
-	private JFormattedTextField vref3 = new JFormattedTextField(threePlaces);
-	private JFormattedTextField vref4 = new JFormattedTextField(threePlaces);
-        
-        private JFormattedTextField xToolheadOffsetField = new JFormattedTextField(threePlaces);
-        private JFormattedTextField yToolheadOffsetField = new JFormattedTextField(threePlaces);
-        private JFormattedTextField zToolheadOffsetField = new JFormattedTextField(threePlaces);
-        
-        private JCheckBox accelerationBox = new JCheckBox();   
-        
-        private JFormattedTextField masterAcceleration = new JFormattedTextField(threePlaces);
 
-	private JFormattedTextField xAxisAcceleration = new JFormattedTextField(threePlaces);
-	private JFormattedTextField yAxisAcceleration = new JFormattedTextField(threePlaces);
-	private JFormattedTextField zAxisAcceleration = new JFormattedTextField(threePlaces);
-	private JFormattedTextField aAxisAcceleration = new JFormattedTextField(threePlaces);
-	private JFormattedTextField bAxisAcceleration = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField xAxisHomeOffsetField = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField yAxisHomeOffsetField = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField zAxisHomeOffsetField = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField aAxisHomeOffsetField = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField bAxisHomeOffsetField = new JFormattedTextField(threePlaces);
 
-	private JFormattedTextField xyJunctionJerk = new JFormattedTextField(threePlaces);
-	private JFormattedTextField  zJunctionJerk = new JFormattedTextField(threePlaces);
-	private JFormattedTextField  aJunctionJerk = new JFormattedTextField(threePlaces);
-	private JFormattedTextField  bJunctionJerk = new JFormattedTextField(threePlaces);
-        
-        private JFormattedTextField minimumSpeed = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField vref0 = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField vref1 = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField vref2 = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField vref3 = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField vref4 = new JFormattedTextField(threePlaces);
 
-	
-	/** Prompts the user to fire a bot  reset after the changes have been sent to the board.
-	 */
-	private void requestResetFromUser(String extendedMessage) {
+	 private JFormattedTextField xToolheadOffsetField = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField yToolheadOffsetField = new JFormattedTextField(threePlaces);
+	 private JFormattedTextField zToolheadOffsetField = new JFormattedTextField(threePlaces);
 
-		String message = "For these changes to take effect your motherboard needs to reset. <br/>"+
-				"This may take up to <b>10 seconds</b>.";
-		if(extendedMessage != null)
-			message = message + extendedMessage;
 
-		int confirm = JOptionPane.showConfirmDialog(this, 
-				"<html>" + message + "</html>",
-				"Reset board.", 
-				JOptionPane.DEFAULT_OPTION,
-				JOptionPane.INFORMATION_MESSAGE);
-		if (confirm == JOptionPane.OK_OPTION) {
-			this.disconnectNeededOnExit = true;
-			driver.reset();
-		}
-		else
-			this.disconnectNeededOnExit = false;
+	 /** Prompts the user to fire a bot  reset after the changes have been sent to the board.
+	  */
+	 private void requestResetFromUser(String extendedMessage) {
 
-	}
-	
-	/** 
-	 * commit machine onboard parameters 
-	 **/
-	private void commit() {
+		 String message = "For these changes to take effect your motherboard needs to reset. <br/>"+
+				 "This may take up to <b>10 seconds</b>.";
+		 if(extendedMessage != null)
+			 message = message + extendedMessage;
 
-		String newName = machineNameField.getText();
-		if(newName.length() > MAX_NAME_LENGTH)
-			machineNameField.setText(newName.substring(0, MAX_NAME_LENGTH ) );
-		target.setMachineName(machineNameField.getText());
-		
-		if( target.hasToolCountOnboard() ) {
-			if (toolCountField.getSelectedIndex() > 0) 
-				target.setToolCountOnboard( toolCountField.getSelectedIndex() );
-			else 
-				target.setToolCountOnboard( -1 );
-		}
-		
-		EnumSet<AxisId> axesInverted = EnumSet.noneOf(AxisId.class);
-		if (xAxisInvertBox.isSelected()) axesInverted.add(AxisId.X);
-		if (yAxisInvertBox.isSelected()) axesInverted.add(AxisId.Y);
-		if (zAxisInvertBox.isSelected()) axesInverted.add(AxisId.Z);
-		if (aAxisInvertBox.isSelected()) axesInverted.add(AxisId.A);
-		if (bAxisInvertBox.isSelected()) axesInverted.add(AxisId.B);
+		 int confirm = JOptionPane.showConfirmDialog(this, 
+				 "<html>" + message + "</html>",
+				 "Reset board.", 
+				 JOptionPane.DEFAULT_OPTION,
+				 JOptionPane.INFORMATION_MESSAGE);
+		 if (confirm == JOptionPane.OK_OPTION) {
+			 this.disconnectNeededOnExit = true;
+			 driver.reset();
+		 }
+		 else
+			 this.disconnectNeededOnExit = false;
 
-		// V is in the 7th bit position, and it's set to NOT hold Z
-		// From the firmware: "Bit 7 is used for HoldZ OFF: 1 = off, 0 = on"
-		if ( !zHoldBox.isSelected() )	axesInverted.add(AxisId.V);
-              
+	 }
 
-		target.setInvertedAxes(axesInverted);
-		{
-			int idx = endstopInversionSelection.getSelectedIndex();
-			OnboardParameters.EndstopType endstops = 
-				OnboardParameters.EndstopType.values()[idx]; 
-			target.setInvertedEndstops(endstops);
-		}
-		{
-			int idx = estopSelection.getSelectedIndex();
-			OnboardParameters.EstopType estop = 
-				OnboardParameters.EstopType.estopTypeForValue((byte)idx); 
-			target.setEstopConfig(estop);
-		}
-		
-		target.setAxisHomeOffset(0, ((Number)xAxisHomeOffsetField.getValue()).doubleValue());
-		target.setAxisHomeOffset(1, ((Number)yAxisHomeOffsetField.getValue()).doubleValue());
-		target.setAxisHomeOffset(2, ((Number)zAxisHomeOffsetField.getValue()).doubleValue());
-		target.setAxisHomeOffset(3, ((Number)aAxisHomeOffsetField.getValue()).doubleValue());
-		target.setAxisHomeOffset(4, ((Number)bAxisHomeOffsetField.getValue()).doubleValue());
-		
-		if(target.hasVrefSupport())
-		{
-			target.setStoredStepperVoltage(0, ((Number)vref0.getValue()).intValue());
-			target.setStoredStepperVoltage(1, ((Number)vref1.getValue()).intValue());
-			target.setStoredStepperVoltage(2, ((Number)vref2.getValue()).intValue());
-			target.setStoredStepperVoltage(3, ((Number)vref3.getValue()).intValue());
-			target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
-		}
-                
-        target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
-        target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
-        target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
-        
-        byte status = accelerationBox.isSelected() ? (byte)1: (byte)0;
-        target.setAccelerationStatus(status);
-        
-        target.setAccelerationRate(((Number)masterAcceleration.getValue()).intValue());
-			
-        target.setAxisAccelerationRate(0, ((Number)xAxisAcceleration.getValue()).intValue());
-        target.setAxisAccelerationRate(1, ((Number)yAxisAcceleration.getValue()).intValue());
-        target.setAxisAccelerationRate(2, ((Number)zAxisAcceleration.getValue()).intValue());
-        target.setAxisAccelerationRate(3, ((Number)aAxisAcceleration.getValue()).intValue());
-        target.setAxisAccelerationRate(4, ((Number)bAxisAcceleration.getValue()).intValue());
+	 /** 
+	  * commit machine onboard parameters 
+	  **/
+	 private void commit() {
+		 String newName = machineNameField.getText();
+		 if(newName.length() > MAX_NAME_LENGTH)
+			 machineNameField.setText(newName.substring(0, MAX_NAME_LENGTH ) );
+		 target.setMachineName(machineNameField.getText());
 
-        target.setAxisJerk(0, ((Number)xyJunctionJerk.getValue()).doubleValue());
-        target.setAxisJerk(2, ((Number) zJunctionJerk.getValue()).doubleValue());
-        target.setAxisJerk(3, ((Number) aJunctionJerk.getValue()).doubleValue());
-        target.setAxisJerk(4, ((Number) bJunctionJerk.getValue()).doubleValue());
-        
-        target.setAccelerationMinimumSpeed(((Number)minimumSpeed.getValue()).intValue());
+		 if( target.hasToolCountOnboard() ) {
+			 if (toolCountField.getSelectedIndex() > 0) 
+				 target.setToolCountOnboard( toolCountField.getSelectedIndex() );
+			 else 
+				 target.setToolCountOnboard( -1 );
+		 }
 
-    	int feedrate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", 40);
-        int travelRate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.travelFeedrate", 55);
+		 EnumSet<AxisId> axesInverted = EnumSet.noneOf(AxisId.class);
+		 if (xAxisInvertBox.isSelected()) axesInverted.add(AxisId.X);
+		 if (yAxisInvertBox.isSelected()) axesInverted.add(AxisId.Y);
+		 if (zAxisInvertBox.isSelected()) axesInverted.add(AxisId.Z);
+		 if (aAxisInvertBox.isSelected()) axesInverted.add(AxisId.A);
+		 if (bAxisInvertBox.isSelected()) axesInverted.add(AxisId.B);
 
-        String extendedMessage = null;
-        if( accelerationBox.isSelected() ) {
-        	///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are slow,
-        	// for speed them up.         	
-			Base.logger.finest("forced skeinforge speedup");
-            if(feedrate <= 40 ) 
-            	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "100");
-            if( travelRate <= 55)
-                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "150");          
+		 // V is in the 7th bit position, and it's set to NOT hold Z
+		 // From the firmware: "Bit 7 is used for HoldZ OFF: 1 = off, 0 = on"
+		 if ( !zHoldBox.isSelected() )	axesInverted.add(AxisId.V);
 
-            extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
-        }
-        else { 
-        	///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are fast,
-        	// for slow them down. 
-        	Base.logger.finest("forced skeinforge slowdown");
-            if(feedrate > 40 )
-            	Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "40");
-            if( travelRate > 55)
-                Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "55");
 
-        	int xJog = 0; 
-            int zJog = 0; 
-            try {  
-		        if( Base.preferences.nodeExists("controlpanel.feedrate.z") )
-		        		zJog = Base.preferences.getInt("controlpanel.feedrate.z", 480);
-		        if(Base.preferences.nodeExists("controlpanel.feedrate.y") )
-		        		xJog = Base.preferences.getInt("controlpanel.feedrate.x", 480);
-		        if(zJog < 480)
-		    		Base.preferences.put("controlpanel.feedrate.z", "480");
-		        if(xJog < 480)
-		    		Base.preferences.put("controlpanel.feedrate.x", "480");
-            }
-            catch (BackingStoreException e) {
-            	Base.logger.severe(e.toString());
-            }
-            
-            extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
-        }
-        
-        requestResetFromUser(extendedMessage);
-	}
+		 target.setInvertedAxes(axesInverted);
+		 {
+			 int idx = endstopInversionSelection.getSelectedIndex();
+			 OnboardParameters.EndstopType endstops = 
+				 OnboardParameters.EndstopType.values()[idx]; 
+			 target.setInvertedEndstops(endstops);
+		 }
+		 {
+			 int idx = estopSelection.getSelectedIndex();
+			 OnboardParameters.EstopType estop = 
+				 OnboardParameters.EstopType.estopTypeForValue((byte)idx); 
+			 target.setEstopConfig(estop);
+		 }
+
+		 target.setAxisHomeOffset(0, ((Number)xAxisHomeOffsetField.getValue()).doubleValue());
+		 target.setAxisHomeOffset(1, ((Number)yAxisHomeOffsetField.getValue()).doubleValue());
+		 target.setAxisHomeOffset(2, ((Number)zAxisHomeOffsetField.getValue()).doubleValue());
+		 target.setAxisHomeOffset(3, ((Number)aAxisHomeOffsetField.getValue()).doubleValue());
+		 target.setAxisHomeOffset(4, ((Number)bAxisHomeOffsetField.getValue()).doubleValue());
+
+		 if(target.hasVrefSupport())
+		 {
+			 target.setStoredStepperVoltage(0, ((Number)vref0.getValue()).intValue());
+			 target.setStoredStepperVoltage(1, ((Number)vref1.getValue()).intValue());
+			 target.setStoredStepperVoltage(2, ((Number)vref2.getValue()).intValue());
+			 target.setStoredStepperVoltage(3, ((Number)vref3.getValue()).intValue());
+			 target.setStoredStepperVoltage(4, ((Number)vref4.getValue()).intValue());
+		 }
+
+		 if (target.hasToolheadsOffset()) {
+			 target.eepromStoreToolDelta(0, ((Number)xToolheadOffsetField.getValue()).doubleValue());
+			 target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
+			 target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
+		 }
+
+		 // Set acceleration related parameters
+		 accelUI.setEEPROMFromUI();
+
+		 String extendedMessage = null;
+
+		 if (target.hasAcceleration() && isMightyBoard) {
+			 int feedrate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", 40);
+			 int travelRate = Base.preferences.getInt("replicatorg.skeinforge.printOMatic5D.travelFeedrate", 55);
+
+			 if (accelUI.isAccelerationEnabled()) {
+				 ///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are slow,
+				 // for speed them up.         	
+				 Base.logger.finest("forced skeinforge speedup");
+				 if(feedrate <= 40 ) 
+					 Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "100");
+				 if( travelRate <= 55)
+					 Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "150");          
+
+				 extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
+			 }
+			 else {
+				 ///TRCIKY: hack, if enabling acceleration AND print-o-matic old feedrates are fast,
+				 // for slow them down. 
+				 Base.logger.finest("forced skeinforge slowdown");
+				 if(feedrate > 40 )
+					 Base.preferences.put("replicatorg.skeinforge.printOMatic5D.desiredFeedrate", "40");
+				 if( travelRate > 55)
+					 Base.preferences.put("replicatorg.skeinforge.printOMatic5D.travelFeedrate", "55");
+
+				 int xJog = 0; 
+				 int zJog = 0; 
+				 try {  
+					 if( Base.preferences.nodeExists("controlpanel.feedrate.z") )
+						 zJog = Base.preferences.getInt("controlpanel.feedrate.z", 480);
+					 if(Base.preferences.nodeExists("controlpanel.feedrate.y") )
+						 xJog = Base.preferences.getInt("controlpanel.feedrate.x", 480);
+					 if(zJog < 480)
+						 Base.preferences.put("controlpanel.feedrate.z", "480");
+					 if(xJog < 480)
+						 Base.preferences.put("controlpanel.feedrate.x", "480");
+				 }
+				 catch (BackingStoreException e) {
+					 Base.logger.severe(e.toString());
+				 }
+
+				 extendedMessage = "  <br/><b>Also updating Print-O-Matic speed settings!</b>";
+			 }
+		 }
+		 requestResetFromUser(extendedMessage);
+	 }
 
 	
 	/// Causes the EEPROM to be reset to a totally blank state, and during dispose
@@ -326,23 +312,7 @@ public class MachineOnboardParameters extends JPanel {
 			zToolheadOffsetField.setValue(this.target.getToolheadsOffset(2));
 		}   
                 
-                if(target.hasAcceleration()){
-                    accelerationBox.setSelected(this.target.getAccelerationStatus());
-                    masterAcceleration.setValue(target.getAccelerationRate());
-			
-                    xAxisAcceleration.setValue(this.target.getAxisAccelerationRate(0));
-                    yAxisAcceleration.setValue(this.target.getAxisAccelerationRate(1));
-                    zAxisAcceleration.setValue(this.target.getAxisAccelerationRate(2));
-                    aAxisAcceleration.setValue(this.target.getAxisAccelerationRate(3));
-                    bAxisAcceleration.setValue(this.target.getAxisAccelerationRate(4));
-
-                    xyJunctionJerk.setValue(this.target.getAxisJerk(0));
-                    zJunctionJerk.setValue(this.target.getAxisJerk(2));
-                    aJunctionJerk.setValue(this.target.getAxisJerk(3));
-                    bJunctionJerk.setValue(this.target.getAxisJerk(4));
-                    
-                    minimumSpeed.setValue(this.target.getAccelerationMinimumSpeed());
-                }
+		accelUI.setUIFromEEPROM();
 	}
 
 	protected void dispose() {
@@ -353,7 +323,10 @@ public class MachineOnboardParameters extends JPanel {
 		this.target = target;
 		this.driver = driver;
 		this.parent = parent;
-                
+
+		String driverName = target.getDriverName();  // can return null
+		isMightyBoard = (driverName != null) && driverName.equalsIgnoreCase("mightyboard");
+
                 setLayout(new MigLayout("fill", "[r][l][r]"));
 
 		add(new JLabel("Machine Name (max. "+Integer.toString(MAX_NAME_LENGTH)+" chars)"));
@@ -477,61 +450,22 @@ public class MachineOnboardParameters extends JPanel {
 		    homeVrefsTab.add(zToolheadOffsetField, "wrap");
                    
 		}
-                if(target.hasAcceleration()){
 
-                    JPanel accelerationTab = new JPanel(new MigLayout("fill", "[r][l][r][l]"));
-                    subTabs.addTab("Acceleration", accelerationTab);
+		if (target.hasAcceleration()) {
+			if (isMightyBoard) {
+				if (target.hasJettyAcceleration())
+					accelUI = new JettyMightyBoardMachineOnboardAccelerationParameters(target, driver, subTabs);
+				else
+					accelUI = new MightyBoardMachineOnboardAccelerationParameters(target, driver, subTabs);
+			}
+			else
+				accelUI = new G3FirmwareMachineOnboardAccelerationParameters(target, driver, subTabs);
+		}
+		else
+			accelUI = new MachineOnboardAccelerationParameters(target, driver, subTabs);
 
-                    masterAcceleration.setColumns(4);
+		accelUI.buildUI();
 
-                    xAxisAcceleration.setColumns(8);
-                    xyJunctionJerk.setColumns(4);
-
-                    yAxisAcceleration.setColumns(8);
-
-                    zAxisAcceleration.setColumns(8);
-                    zJunctionJerk.setColumns(4);
-
-                    aAxisAcceleration.setColumns(8);
-                    aJunctionJerk.setColumns(4);
-
-                    bAxisAcceleration.setColumns(8);
-                    bJunctionJerk.setColumns(4);
-
-                    accelerationTab.add(new JLabel("Acceleration On"));
-                    accelerationTab.add(accelerationBox, "span 2, wrap");
-
-                    accelerationTab.add(new JLabel("Master acceleration rate (mm/s/s)"));
-                    accelerationTab.add(masterAcceleration, "span 2, wrap");
-
-                    accelerationTab.add(new JLabel("X acceleration rate (mm/s/s)"));
-                    accelerationTab.add(xAxisAcceleration);
-                    accelerationTab.add(new JLabel("X/Y max junction jerk (mm/s)"));
-                    accelerationTab.add(xyJunctionJerk, "wrap");
-
-                    accelerationTab.add(new JLabel("Y acceleration rate (mm/s/s)"));
-                    accelerationTab.add(yAxisAcceleration, "span 2, wrap");
-
-                    accelerationTab.add(new JLabel("Z acceleration rate (mm/s/s)"));
-                    accelerationTab.add(zAxisAcceleration);
-                    accelerationTab.add(new JLabel("Z maximum junction jerk (mm/s)"));
-                    accelerationTab.add(zJunctionJerk, "wrap");
-
-                    accelerationTab.add(new JLabel("A acceleration rate (mm/s/s)"));
-                    accelerationTab.add(aAxisAcceleration);
-                    accelerationTab.add(new JLabel("A maximum junction jerk (mm/s)"));
-                    accelerationTab.add(aJunctionJerk, "wrap");
-
-                    accelerationTab.add(new JLabel("B acceleration rate (mm/s/s)"));
-                    accelerationTab.add(bAxisAcceleration);
-                    accelerationTab.add(new JLabel("B maximum junction jerk (mm/s)"));
-                    accelerationTab.add(bJunctionJerk, "wrap");
-                    
-                    accelerationTab.add(new JLabel("Minimum Print Speed (mm/s)"));
-                    accelerationTab.add(minimumSpeed, "wrap");
-                }
-
-		
 		resetToFactoryButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				MachineOnboardParameters.this.resetToFactory();
@@ -568,4 +502,1480 @@ public class MachineOnboardParameters extends JPanel {
 		return disconnectNeededOnExit;
 	}
 
-}
+	public boolean leavePreheatRunning() {
+		return isMightyBoard;
+	}
+
+	 // If a string is longer than 'width' characters then convert it to minimal, headless,
+	 // bodyless HTML with line breaks, <br>, placed such that no line is longer than 'width'
+	 // characters if possible (and with line breaks at white space).
+
+	 // This is useful for making tool tip text which doesn't run off the screen.
+
+	 private static final String wrap2HTML(int width, String str) { return wrap2HTML(width, str, -1); }
+
+	 private static final String wrap2HTML(int width, String str, int max) {
+
+		 if (str.length() < width && max <= 0)
+			 return str;
+
+		 char[] s;
+		 if (max <= 0)
+			 s = str.toCharArray();
+		 else {
+			 str += "  This value must be non-negative and not exceed " + max + ".";
+			 s = str.toCharArray();
+		 }
+
+		 StringBuilder html = new StringBuilder();
+		 StringBuilder line = new StringBuilder();
+		 StringBuilder word = new StringBuilder();
+
+		 html.append("<HTML>");
+		 for (int i = 0; i < s.length; i++) {
+			 word.append(s[i]);
+			 if (Character.isWhitespace(s[i])) {
+				 if (line.length() == 0) {
+					 // Just append word to line
+					 line.append(word);
+					 word.delete(0, word.length());
+				 }
+				 if ((line.length() + word.length()) > width) {
+					 if (html.length() > 6)
+						 html.append("<br>");
+					 html.append(line);
+					 line.delete(0, line.length());
+				 }
+				 if (word.length() > 0) {
+					 line.append(word);
+					 word.delete(0, word.length());
+				 }
+			 }
+		 }
+
+		 line.append(word);
+		 if (html.length() > 6)
+			 html.append("<br>");
+		 html.append(line);
+		 html.append("</HTML>");
+
+		 return html.toString();
+	 }
+
+	 // JFormattedTextField which disallows negative values and no upper limit on positive values
+
+	 // The range limits are enacted by going after the Formatter which gets associated with
+	 // the text field.  Much easier than extending the NumberFormat and trying to filter the
+	 // text associated with it or playing with the negation charactes.
+
+	 private static final JFormattedTextField PositiveTextFieldDouble(NumberFormat nf, String tip)
+	 {
+		 JFormattedTextField textField = new JFormattedTextField(nf);
+		 Object fmtr = textField.getFormatter();
+		 if (fmtr instanceof InternationalFormatter) {
+			 InternationalFormatter ifr = (InternationalFormatter)fmtr;
+			 ifr.setMinimum(new Double(0d));
+		 }
+                 if (tip != null) textField.setToolTipText(wrap2HTML(defaultToolTipWidth, tip));
+		 return textField;
+	 }
+
+	 // JFormattedTextField which disallows negative values and no upper limit on positive values
+
+	 private static final JFormattedTextField PositiveTextFieldInt(NumberFormat nf, String tip)
+	 {
+		 JFormattedTextField textField = new JFormattedTextField(nf);
+		 Object fmtr = textField.getFormatter();
+		 if (fmtr instanceof InternationalFormatter) {
+			 InternationalFormatter ifr = (InternationalFormatter)fmtr;
+			 ifr.setMinimum(new Integer(0));
+		 }
+                 if (tip != null) textField.setToolTipText(wrap2HTML(defaultToolTipWidth, tip));
+		 return textField;
+	 }
+
+	 // JFormattedTextField which disallows negative values "max" as an upper limit
+
+	 private static final JFormattedTextField PositiveTextFieldInt(NumberFormat nf, int max, String tip)
+	 {
+		 JFormattedTextField textField = new JFormattedTextField(nf);
+		 Object fmtr = textField.getFormatter();
+		 if (fmtr instanceof InternationalFormatter) {
+			 InternationalFormatter ifr = (InternationalFormatter)fmtr;
+			 ifr.setMinimum(new Integer(0));
+			 ifr.setMaximum(new Integer(max));
+		 }
+		 if (tip != null) textField.setToolTipText(wrap2HTML(defaultToolTipWidth, tip, max));
+		 return textField;
+	 }
+
+	 // Give a label the same tool tip text as the field it is labelleling.  This is especially
+	 // use for check boxes which seem to have a very tight hover-over area which triggers display
+	 // of the tool tip.
+
+	 private static final void addWithSharedToolTips(JPanel panel, String labelText, JComponent buddy)
+	 {
+		 JLabel label = new JLabel(labelText);
+		 label.setToolTipText(buddy.getToolTipText());
+		 panel.add(label);
+		 panel.add(buddy);
+	 }
+
+	 private static final void addWithSharedToolTips(JPanel panel, String labelText, JComponent buddy,
+					    String layoutGoodies2)
+	 {
+		 JLabel label = new JLabel(labelText);
+		 label.setToolTipText(buddy.getToolTipText());
+		 panel.add(label);
+		 panel.add(buddy, layoutGoodies2);
+	 }
+
+	 private static final void addWithSharedToolTips(JPanel panel, String labelText, String layoutGoodies1,
+					    JComponent buddy,
+				  String layoutGoodies2)
+	 {
+		 JLabel label = new JLabel(labelText);
+		 label.setToolTipText(buddy.getToolTipText());
+		 panel.add(label, layoutGoodies1);
+		 panel.add(buddy, layoutGoodies2);
+	 }
+
+	 private static final void addWithSharedToolTips(JPanel panel, String labelText, String layoutGoodies1,
+					    JComponent buddy)
+	 {
+		 JLabel label = new JLabel(labelText);
+		 label.setToolTipText(buddy.getToolTipText());
+		 panel.add(label, layoutGoodies1);
+		 panel.add(buddy);
+	 }
+
+
+	 // Class for containing additional subtabs of EEPROM acceleration parameters
+
+	 // Use the base class for unaccelerated firmwares.  For accelerated firmwares,
+	 // use the appropriate extension for the firmware.
+
+	 private class MachineOnboardAccelerationParameters {
+
+		 protected final OnboardParameters target;
+		 protected final Driver driver;
+		 protected final JTabbedPane subtabs;
+
+		 public MachineOnboardAccelerationParameters(OnboardParameters target,
+							     Driver driver,
+							     JTabbedPane subtabs) {
+			 this.target = target;
+			 this.driver = driver;
+			 this.subtabs = subtabs;
+		 }
+
+		 // See if the acceleration check box is checked
+		 public boolean isAccelerationEnabled() { return false; }
+
+		 // Build the UI (subtabs)
+		 public void buildUI() { }
+
+		 // Set the UI fields from the values stored in EEPROM
+		 public void setUIFromEEPROM() { }
+
+		 // Store the field values to the machine's onboard EEPROM space
+		 public void setEEPROMFromUI() { }
+	 }
+
+	 // Replicator MightyBoard with pre-Jetty acceleration (v5.5 and earlier)
+
+	 private class MightyBoardMachineOnboardAccelerationParameters extends MachineOnboardAccelerationParameters {
+
+		 private JCheckBox accelerationBox = new JCheckBox();
+		 private JFormattedTextField masterAcceleration = new JFormattedTextField(threePlaces);
+
+		 private JFormattedTextField xAxisAcceleration = new JFormattedTextField(threePlaces);
+		 private JFormattedTextField yAxisAcceleration = new JFormattedTextField(threePlaces);
+		 private JFormattedTextField zAxisAcceleration = new JFormattedTextField(threePlaces);
+		 private JFormattedTextField aAxisAcceleration = new JFormattedTextField(threePlaces);
+		 private JFormattedTextField bAxisAcceleration = new JFormattedTextField(threePlaces);
+
+		 private JFormattedTextField xyJunctionJerk = new JFormattedTextField(threePlaces);
+		 private JFormattedTextField  zJunctionJerk = new JFormattedTextField(threePlaces);
+		 private JFormattedTextField  aJunctionJerk = new JFormattedTextField(threePlaces);
+		 private JFormattedTextField  bJunctionJerk = new JFormattedTextField(threePlaces);
+
+		 private JFormattedTextField minimumSpeed = new JFormattedTextField(threePlaces);
+
+		 public MightyBoardMachineOnboardAccelerationParameters(OnboardParameters target,
+							     Driver driver,
+							     JTabbedPane subtabs) {
+			 super(target, driver, subtabs);
+		 }
+		 
+		 @Override
+		 public boolean isAccelerationEnabled() {
+			 return accelerationBox.isSelected();
+		 }
+
+		 @Override
+		 public void buildUI() {
+			 JPanel accelerationTab = new JPanel(new MigLayout("fill", "[r][l][r][l]"));
+			 subTabs.addTab("Acceleration", accelerationTab);
+
+			 masterAcceleration.setColumns(4);
+
+			 xAxisAcceleration.setColumns(8);
+			 xyJunctionJerk.setColumns(4);
+
+			 yAxisAcceleration.setColumns(8);
+
+			 zAxisAcceleration.setColumns(8);
+			 zJunctionJerk.setColumns(4);
+
+			 aAxisAcceleration.setColumns(8);
+			 aJunctionJerk.setColumns(4);
+
+			 bAxisAcceleration.setColumns(8);
+			 bJunctionJerk.setColumns(4);
+
+			 accelerationTab.add(new JLabel("Acceleration On"));
+			 accelerationTab.add(accelerationBox, "span 2, wrap");
+
+			 accelerationTab.add(new JLabel("Master acceleration rate (mm/s/s)"));
+			 accelerationTab.add(masterAcceleration, "span 2, wrap");
+
+			 accelerationTab.add(new JLabel("X acceleration rate (mm/s/s)"));
+			 accelerationTab.add(xAxisAcceleration);
+			 accelerationTab.add(new JLabel("X/Y max junction jerk (mm/s)"));
+			 accelerationTab.add(xyJunctionJerk, "wrap");
+
+			 accelerationTab.add(new JLabel("Y acceleration rate (mm/s/s)"));
+			 accelerationTab.add(yAxisAcceleration, "span 2, wrap");
+
+			 accelerationTab.add(new JLabel("Z acceleration rate (mm/s/s)"));
+			 accelerationTab.add(zAxisAcceleration);
+			 accelerationTab.add(new JLabel("Z maximum junction jerk (mm/s)"));
+			 accelerationTab.add(zJunctionJerk, "wrap");
+
+			 accelerationTab.add(new JLabel("A acceleration rate (mm/s/s)"));
+			 accelerationTab.add(aAxisAcceleration);
+			 accelerationTab.add(new JLabel("A maximum junction jerk (mm/s)"));
+			 accelerationTab.add(aJunctionJerk, "wrap");
+
+			 accelerationTab.add(new JLabel("B acceleration rate (mm/s/s)"));
+			 accelerationTab.add(bAxisAcceleration);
+			 accelerationTab.add(new JLabel("B maximum junction jerk (mm/s)"));
+			 accelerationTab.add(bJunctionJerk, "wrap");
+                    
+			 accelerationTab.add(new JLabel("Minimum Print Speed (mm/s)"));
+			 accelerationTab.add(minimumSpeed, "wrap");
+		 }
+
+		 @Override
+		 public void setEEPROMFromUI() {
+			 target.setAccelerationStatus(accelerationBox.isSelected() ? (byte)1 : (byte)0);
+
+			 target.setAccelerationRate(((Number)masterAcceleration.getValue()).intValue());
+
+			 target.setAxisAccelerationRate(0, ((Number)xAxisAcceleration.getValue()).intValue());
+			 target.setAxisAccelerationRate(1, ((Number)yAxisAcceleration.getValue()).intValue());
+			 target.setAxisAccelerationRate(2, ((Number)zAxisAcceleration.getValue()).intValue());
+			 target.setAxisAccelerationRate(3, ((Number)aAxisAcceleration.getValue()).intValue());
+			 target.setAxisAccelerationRate(4, ((Number)bAxisAcceleration.getValue()).intValue());
+
+			 target.setAxisJerk(0, ((Number)xyJunctionJerk.getValue()).doubleValue());
+			 target.setAxisJerk(2, ((Number) zJunctionJerk.getValue()).doubleValue());
+			 target.setAxisJerk(3, ((Number) aJunctionJerk.getValue()).doubleValue());
+			 target.setAxisJerk(4, ((Number) bJunctionJerk.getValue()).doubleValue());
+
+			 target.setAccelerationMinimumSpeed(((Number)minimumSpeed.getValue()).intValue());
+		 }
+
+		 @Override
+		 public void setUIFromEEPROM() {
+			 accelerationBox.setSelected(target.getAccelerationStatus() != 0);
+			 masterAcceleration.setValue(target.getAccelerationRate());
+
+			 xAxisAcceleration.setValue(target.getAxisAccelerationRate(0));
+			 yAxisAcceleration.setValue(target.getAxisAccelerationRate(1));
+			 zAxisAcceleration.setValue(target.getAxisAccelerationRate(2));
+			 aAxisAcceleration.setValue(target.getAxisAccelerationRate(3));
+			 bAxisAcceleration.setValue(target.getAxisAccelerationRate(4));
+
+			 xyJunctionJerk.setValue(target.getAxisJerk(0));
+			 zJunctionJerk.setValue(target.getAxisJerk(2));
+			 aJunctionJerk.setValue(target.getAxisJerk(3));
+			 bJunctionJerk.setValue(target.getAxisJerk(4));
+
+			 minimumSpeed.setValue(target.getAccelerationMinimumSpeed());
+		 }
+	 }
+
+	 // Replicator MightyBoard with Jetty acceleration (v5.6 and later)
+
+	 private class JettyMightyBoardMachineOnboardAccelerationParameters extends MachineOnboardAccelerationParameters {
+
+		 // Replicator Jetty Firmware specific acceleration parameters
+
+		 // Bitmask bits indicating which tabs to set
+		 // We worry about this aspect as part of supporting the "draft" and "quality" buttons
+		 final int UI_TAB_1 = 0x01;
+		 final int UI_TAB_2 = 0x02;
+
+		 // Accel Parameters of Tab 1
+		 class AccelParamsTab1 {
+			 boolean accelerationEnabled;
+			 int[] accelerations;
+			 int[] maxAccelerations;
+			 int[] maxSpeedChanges;
+
+			 AccelParamsTab1(boolean accelerationEnabled,
+				     int[] accelerations,
+				     int[] maxAccelerations,
+				     int[] maxSpeedChanges)
+			 {
+				 this.accelerationEnabled = accelerationEnabled;
+				 this.accelerations       = accelerations;
+				 this.maxAccelerations    = maxAccelerations;
+				 this.maxSpeedChanges     = maxSpeedChanges;
+			 }
+
+			 boolean isEqual(AccelParamsTab1 params)
+			 {
+				 if (this == params)
+					 return true;
+
+				 return (accelerationEnabled == params.accelerationEnabled) &&
+					 Arrays.equals(accelerations, params.accelerations) &&
+					 Arrays.equals(maxAccelerations, params.maxAccelerations) &&
+					 Arrays.equals(maxSpeedChanges, params.maxSpeedChanges);
+			 }
+		 }
+
+		 // Accel Parameters of Tab 2
+		 class AccelParamsTab2 {
+			 boolean slowdownEnabled;
+			 boolean overrideGCodeTempEnabled;
+			 boolean preheatDuringPauseEnabled;
+			 int[] deprime;
+			 double[] JKNadvance;
+
+			 AccelParamsTab2(boolean slowdownEnabled,
+					 boolean overrideGCodeTempEnabled,
+					 boolean preheatDuringPauseEnabled,
+					 int[] deprime,
+					 double[] JKNadvance)
+			 {
+				 this.slowdownEnabled           = slowdownEnabled;
+				 this.overrideGCodeTempEnabled  = overrideGCodeTempEnabled;
+				 this.preheatDuringPauseEnabled = preheatDuringPauseEnabled;
+				 this.deprime                   = deprime;
+				 this.JKNadvance                = JKNadvance;
+			 }
+		 }
+
+		 private class AccelParams {
+			 public AccelParamsTab1 tab1;
+			 public AccelParamsTab2 tab2;
+
+			 AccelParams(AccelParamsTab1 params1, AccelParamsTab2 params2) {
+				 this.tab1 = params1;
+				 this.tab2 = params2;
+			 }
+		 }
+
+		 AccelParamsTab1 draftParams = new AccelParamsTab1(true,                                   // acceleration enabled
+								   new int[] {2000, 2000},                 // p_accel, p_retract_accel
+								   new int[] {1000, 1000, 150, 2000, 2000}, // max accelerations x,y,z,a,b
+								   new int[] {40, 40, 10, 40, 40});        // max speed changes x,y,z,a,b
+
+		 AccelParamsTab1 qualityParams = new AccelParamsTab1(true,                                 // acceleration enabled
+								     new int[] {2000, 2000},               // p_accel, p_retract_accel
+								     new int[] {1000, 1000, 150, 2000, 2000}, // max accelerations x,y,z,a,b
+								     new int[] {15, 15, 10, 20, 20});      // max speed changes x,y,z,a,b
+
+		 // Column width for formatting tool tip text
+		 final int width = defaultToolTipWidth;
+
+		 // Many of the values stored in EEPROM for the replicator are uint16_t
+		 //   So, we want 0 < val < 0xffff
+
+		 private NumberFormat repNF = NumberFormat.getIntegerInstance();
+
+		 private JCheckBox accelerationBox = new JCheckBox();
+		 {
+			 accelerationBox.setToolTipText(wrap2HTML(width, "Enable or disable printing with acceleration"));
+		 }
+
+		 private JButton draftButton = new JButton("Quick Draft");
+		 {
+			 draftButton.setToolTipText(wrap2HTML(width,
+           "By clicking this button, the on-screen acceleration parameters will be changed to suggested values for " +
+	   "rapid draft-quality builds.  The values will not be committed to your Replicator until you click the " +
+	   "Commit button.  You may adjust the settings before committing them to your Replicator."));
+		 }
+
+		 private JButton qualityButton = new JButton("Fine Quality");
+		 {
+			 qualityButton.setToolTipText(wrap2HTML(width,
+           "By clicking this button, the on-screen acceleration parameters will be changed to suggested values for " +
+	   "fine-quality builds.  The values will not be committed to your Replicator until you click the " +
+	   "Commit button.  You may adjust the settings before committing them to your Replicator."));
+		 }
+
+		 private JFormattedTextField xAxisMaxAcceleration = PositiveTextFieldInt(repNF, 10000,
+	   "The maximum acceleration and deceleration along the X axis in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the X axis.");
+
+		 private JFormattedTextField yAxisMaxAcceleration = PositiveTextFieldInt(repNF, 10000,
+	   "The maximum acceleration and deceleration along the Y axis in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the Y axis.");
+
+		 private JFormattedTextField zAxisMaxAcceleration = PositiveTextFieldInt(repNF, 2600,
+	   "The maximum acceleration and deceleration along the Z axis in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the Z axis.");
+
+		 private JFormattedTextField aAxisMaxAcceleration = PositiveTextFieldInt(repNF, 10000,
+	   "The maximum acceleration and deceleration experienced by the right extruder in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the right extruder's filament axis.");
+
+		 private JFormattedTextField bAxisMaxAcceleration = PositiveTextFieldInt(repNF, 10000,
+	   "The maximum acceleration and deceleration experienced by the left extruder in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the left extruder's filament axis.");
+
+		 private JFormattedTextField xAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the X axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the X axis.");
+
+		 private JFormattedTextField yAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the Y axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the Y axis.");
+
+		 private JFormattedTextField zAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the Z axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the Z axis.");
+
+		 private JFormattedTextField aAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate for the right extruder when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change for the right extruder.");
+
+		 private JFormattedTextField bAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate for the left extruder when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change for the left extruder.");
+
+		 private JFormattedTextField normalMoveAcceleration = PositiveTextFieldInt(repNF, 10000,
+           "The maximum rate of acceleration for normal printing moves in which filament is extruded and " +
+           "there is motion along any or all of the X, Y, or Z axes.  I.e., the maximum magnitude of the " +
+	   "acceleration vector in units of millimeters per second squared, mm/s\u00B2.");
+
+		 private JFormattedTextField extruderMoveAcceleration = PositiveTextFieldInt(repNF, 10000,
+            "The maximum acceleration or deceleration in mm/s\u00B2 to use in an extruder-only move.  An extruder-only " +
+            "move is a move in which there is no motion along the X, Y, or Z axes: the only motion is the extruder " +
+            "extruding or retracting filament.  Typically this value should be at least as large as the A and B axis max " +
+	    "accelerations.");
+
+		 // Advance K1 & K2: nn.nnnnn
+		 private NumberFormat kNF = NumberFormat.getNumberInstance();
+		 {
+			 kNF.setMaximumFractionDigits(5);
+			 kNF.setMaximumIntegerDigits(2);   // Even 1 may be excessive
+		 }
+
+		 private JFormattedTextField JKNAdvance1 = PositiveTextFieldDouble(kNF,
+           "The value of the empirically fit Jetty-Kubicek-Newman Advance parameter K which helps control " +
+           "the amount of additional plastic that should be extruded during the acceleration phase and not " +
+           "extruded during the deceleration phase of each move.  It can be used to remove blobbing and " +
+           "splaying on the corners of cubes or at the junctions between line segments.  Typical values " +
+           "for this parameter range from around 0.0001 to 0.01.  Set to a value of 0 to disable use of " +
+           "this compensation.");
+
+		 private JFormattedTextField JKNAdvance2 = PositiveTextFieldDouble(kNF,
+           "The value of the empirically fit Jetty-Kubicek-Newman Advance parameter K2, which helps during the " +
+           "deceleration phase of moves to reduce built up pressure in the extruder nozzle.  Typical values for " +
+           "this parameter range from around 0.001 to 0.1.  Set to a value of 0 to disable use of this " +
+           "compensation.");
+
+		 private JFormattedTextField extruderDeprimeA = PositiveTextFieldInt(repNF, 10000,
+           "The number of steps to retract the right extruder's filament when the pipeline of buffered moves empties or " +
+           "a travel-only move is encountered. Set to a value of 0 to disable this feature.  Do not use with " +
+           "Skeinforge's Reversal plugin: use one or the other but not both.");
+
+		 private JFormattedTextField extruderDeprimeB = PositiveTextFieldInt(repNF, 10000,
+           "The number of steps to retract the left extruder's filament when the pipeline of buffered moves empties or " +
+           "a travel-only move is encountered. Set to a value of 0 to disable this feature.  Do not use with " +
+           "Skeinforge's Reversal plugin: use one or the other but not both.");
+
+		 private JCheckBox overrideGCodeTempBox = new JCheckBox();
+		 {
+			 overrideGCodeTempBox.setToolTipText(wrap2HTML(width,
+                    "When enabled, override the gcode temperature settings using the preheat " +
+		    "temperature settings for the extruders and build platform."));
+		 }
+           
+		 private JCheckBox preheatDuringPauseBox = new JCheckBox();
+		 {
+			 preheatDuringPauseBox.setToolTipText(wrap2HTML(width,
+                    "When enabled, leave the extruder and platform heaters enabled whilst paused."));
+		 }
+           
+		 // Slowdown is a flag for the Replicator
+		 private JCheckBox slowdownFlagBox = new JCheckBox();
+		 {
+			 slowdownFlagBox.setToolTipText(wrap2HTML(width,
+            "If you are printing an object with fine details or at very fast speeds, it is possible " +
+            "that the planner will be unable to keep up with printing.  This may be evidenced by frequent " +
+            "pauses accompanied by unwanted plastic blobs or zits.  You may be able to mitigate this by " +
+            "enabling \"slowdown\".  When slowdown is enabled and the planner is having difficulty keeping " +
+            "up, the printing feed rate is reduced so as to cause each segment to take more time to print.  " +
+	    "The reduction in printing speed then gives the planner a chance to catch up."));
+		 }
+
+		 private JettyMightyBoardMachineOnboardAccelerationParameters(OnboardParameters target,
+									      Driver driver,
+									      JTabbedPane subtabs) {
+			 super(target, driver, subtabs);
+
+			 int dismissDelay = ToolTipManager.sharedInstance().getDismissDelay();
+			 if (dismissDelay < 10*1000)
+				 ToolTipManager.sharedInstance().setDismissDelay(10*1000);
+
+			 draftButton.addActionListener(new ActionListener() {
+					 public void actionPerformed(ActionEvent arg0) {
+						 JettyMightyBoardMachineOnboardAccelerationParameters.this.setUIFields(draftParams);
+					 }
+			 });
+
+			 qualityButton.addActionListener(new ActionListener() {
+					 public void actionPerformed(ActionEvent arg0) {
+						 JettyMightyBoardMachineOnboardAccelerationParameters.this.setUIFields(qualityParams);
+					 }
+			 });
+		 }
+
+		 private AccelParams getAccelParamsFromUI() {
+			 return new AccelParams(new AccelParamsTab1(accelerationBox.isSelected(),
+								    new int[] {((Number)normalMoveAcceleration.getValue()).intValue(),
+									       ((Number)extruderMoveAcceleration.getValue()).intValue()},
+								    new int[] {((Number)xAxisMaxAcceleration.getValue()).intValue(),
+									       ((Number)yAxisMaxAcceleration.getValue()).intValue(),
+									       ((Number)zAxisMaxAcceleration.getValue()).intValue(),
+									       ((Number)aAxisMaxAcceleration.getValue()).intValue(),
+									       ((Number)bAxisMaxAcceleration.getValue()).intValue()},
+								    new int[] {((Number)xAxisMaxSpeedChange.getValue()).intValue(),
+									       ((Number)yAxisMaxSpeedChange.getValue()).intValue(),
+									       ((Number)zAxisMaxSpeedChange.getValue()).intValue(),
+									       ((Number)aAxisMaxSpeedChange.getValue()).intValue(),
+									       ((Number)bAxisMaxSpeedChange.getValue()).intValue()}),
+						new AccelParamsTab2(slowdownFlagBox.isSelected(),
+								    overrideGCodeTempBox.isSelected(),
+								    preheatDuringPauseBox.isSelected(),
+								    new int[] {((Number)extruderDeprimeA.getValue()).intValue(),
+									       ((Number)extruderDeprimeB.getValue()).intValue()},
+								    new double[] {((Number)JKNAdvance1.getValue()).doubleValue(),
+										  ((Number)JKNAdvance2.getValue()).doubleValue()}));
+		 }
+
+		 @Override
+		 public boolean isAccelerationEnabled() {
+			 return accelerationBox.isSelected();
+		 }
+
+		 private void setEEPROMFromUI(AccelParams params) {
+			 target.setAccelerationStatus(params.tab1.accelerationEnabled ? (byte)1 : (byte)0);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP, params.tab2.overrideGCodeTempEnabled ? 1 : 0);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.PREHEAT_DURING_PAUSE, params.tab2.preheatDuringPauseEnabled ? 1 : 0);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_FLAG, params.tab2.slowdownEnabled ? 1 : 0);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_NORM,    params.tab1.accelerations[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_RETRACT, params.tab1.accelerations[1]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_X, params.tab1.maxAccelerations[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Y, params.tab1.maxAccelerations[1]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Z, params.tab1.maxAccelerations[2]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_A, params.tab1.maxAccelerations[3]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_B, params.tab1.maxAccelerations[4]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_X, params.tab1.maxSpeedChanges[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Y, params.tab1.maxSpeedChanges[1]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Z, params.tab1.maxSpeedChanges[2]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_A, params.tab1.maxSpeedChanges[3]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_B, params.tab1.maxSpeedChanges[4]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K,  params.tab2.JKNadvance[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K2, params.tab2.JKNadvance[1]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A, params.tab2.deprime[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_B, params.tab2.deprime[1]);
+		 }
+
+		 @Override
+		 public void setEEPROMFromUI() {
+			 setEEPROMFromUI(getAccelParamsFromUI());
+		 }
+
+		 private void setUIFields(AccelParamsTab1 params) {
+			 setUIFields(UI_TAB_1,
+				     params.accelerationEnabled,
+				     false,
+				     false,
+				     false,
+				     params.accelerations,
+				     params.maxAccelerations,
+				     params.maxSpeedChanges,
+				     null,
+				     null);
+		 }
+
+		 private void setUIFields(int tabs,
+					  boolean accelerationEnabled,
+					  boolean slowdownEnabled,
+					  boolean overrideGCodeTempEnabled,
+					  boolean preheatDuringPauseEnabled,
+					  int[] accelerations,
+					  int[] maxAccelerations,
+					  int[] maxSpeedChanges,
+					  double[] JKNadvance,
+					  int[] deprime) {
+
+			 if ((tabs & UI_TAB_1) != 0) {
+				 accelerationBox.setSelected(accelerationEnabled);
+
+				 if (accelerations != null) {
+					 normalMoveAcceleration.setValue(accelerations[0]);
+					 extruderMoveAcceleration.setValue(accelerations[1]);
+				 }
+
+				 if (maxAccelerations != null) {
+					 xAxisMaxAcceleration.setValue(maxAccelerations[0]);
+					 yAxisMaxAcceleration.setValue(maxAccelerations[1]);
+					 zAxisMaxAcceleration.setValue(maxAccelerations[2]);
+					 aAxisMaxAcceleration.setValue(maxAccelerations[3]);
+					 bAxisMaxAcceleration.setValue(maxAccelerations[4]);
+				 }
+
+				 if (maxSpeedChanges != null) {
+					 xAxisMaxSpeedChange.setValue(maxSpeedChanges[0]);
+					 yAxisMaxSpeedChange.setValue(maxSpeedChanges[1]);
+					 zAxisMaxSpeedChange.setValue(maxSpeedChanges[2]);
+					 aAxisMaxSpeedChange.setValue(maxSpeedChanges[3]);
+					 bAxisMaxSpeedChange.setValue(maxSpeedChanges[4]);
+				 }
+			 }
+
+			 if ((tabs & UI_TAB_2) != 0) {
+				 slowdownFlagBox.setSelected(slowdownEnabled);
+				 overrideGCodeTempBox.setSelected(overrideGCodeTempEnabled);
+				 preheatDuringPauseBox.setSelected(preheatDuringPauseEnabled);
+
+				 if (JKNadvance != null) {
+					 JKNAdvance1.setValue(JKNadvance[0]);
+					 JKNAdvance2.setValue(JKNadvance[1]);
+				 }
+
+				 if (deprime != null) {
+					 extruderDeprimeA.setValue(deprime[0]);
+					 extruderDeprimeB.setValue(deprime[1]);
+				 }
+			 }
+
+			 // Enable/disable the draft & quality buttons based upon the UI field values
+			 // propertyChange(null);
+		 }
+
+		 @Override
+		 public void setUIFromEEPROM() {
+			 boolean accelerationEnabled = target.getAccelerationStatus() != 0;
+			 boolean slowdownEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_FLAG) != 0;
+			 boolean overrideGCodeTempEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP) != 0;
+			 boolean preheatDuringPauseEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.PREHEAT_DURING_PAUSE) != 0;
+			 int[] maxAccelerations = new int[] {
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_X),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Y),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Z),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_A),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_B) };
+
+			 int[] maxSpeedChanges = new int[] {
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_X),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Y),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Z),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_A),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_B) };
+
+			 int[] accelerations = new int[] {
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_NORM),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_RETRACT) };
+
+			 double[] JKNadvance = new double[] {
+				 target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K),
+				 target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K2) };
+
+			 int[] deprime = new int[] {
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_B) };
+		 
+			 setUIFields(UI_TAB_1 | UI_TAB_2, accelerationEnabled, slowdownEnabled, overrideGCodeTempEnabled,
+				     preheatDuringPauseEnabled, accelerations, maxAccelerations, maxSpeedChanges,
+				     JKNadvance, deprime);
+		 }
+
+		 @Override
+		 public void buildUI() {
+			 JPanel accelerationTab = new JPanel(new MigLayout("fill", "[r][l][r][l]"));
+			 subTabs.addTab("Acceleration", accelerationTab);
+
+			 JPanel accelerationMiscTab = new JPanel(new MigLayout("fill", "[r][l]"));
+			 subTabs.addTab("Acceleration (Misc)", accelerationMiscTab);
+
+			 normalMoveAcceleration.setColumns(8);
+			 extruderMoveAcceleration.setColumns(8);
+
+			 xAxisMaxAcceleration.setColumns(8);
+			 xAxisMaxSpeedChange.setColumns(4);
+
+			 yAxisMaxAcceleration.setColumns(8);
+			 yAxisMaxSpeedChange.setColumns(4);
+
+			 zAxisMaxAcceleration.setColumns(8);
+			 zAxisMaxSpeedChange.setColumns(4);
+
+			 aAxisMaxAcceleration.setColumns(8);
+			 aAxisMaxSpeedChange.setColumns(4);
+
+			 bAxisMaxAcceleration.setColumns(8);
+			 bAxisMaxSpeedChange.setColumns(4);
+
+			 addWithSharedToolTips(accelerationTab, "Acceleration enabled", accelerationBox, "wrap");
+
+			 addWithSharedToolTips(accelerationTab,
+					       "Max acceleration (magnitude of acceleration vector; mm/s\u00B2)", "span 2, gapleft push",
+					       normalMoveAcceleration, "wrap, gapright push ");
+
+			 addWithSharedToolTips(accelerationTab,
+					       "Max acceleration for extruder-only moves (mm/s\u00B2)", "span 2, gapleft push", //"split 2, span 3",
+					       extruderMoveAcceleration, "wrap, gapright push");
+
+			 addWithSharedToolTips(accelerationTab, "X max acceleration (mm/s\u00B2)",
+					       xAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "X max speed change (mm/s)",
+					       xAxisMaxSpeedChange, "wrap");
+ 
+			 addWithSharedToolTips(accelerationTab, "Y max acceleration (mm/s\u00B2)",
+					       yAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "Y max speed change (mm/s)",
+					       yAxisMaxSpeedChange, "wrap");
+
+			 addWithSharedToolTips(accelerationTab, "Z max acceleration (mm/s\u00B2)",
+					       zAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "Z max speed change (mm/s)",
+					       zAxisMaxSpeedChange, "wrap");
+
+			 addWithSharedToolTips(accelerationTab, "Right extruder max acceleration (mm/s\u00B2)",
+					       aAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "Right extruder max speed change (mm/s)",
+					       aAxisMaxSpeedChange, "wrap");
+ 
+			 addWithSharedToolTips(accelerationTab, "Left extruder acceleration (mm/s\u00B2)",
+					       bAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "Left extruder max speed change (mm/s)",
+					       bAxisMaxSpeedChange, "wrap");
+
+			 accelerationTab.add(qualityButton, "span 2, gapleft push");
+			 accelerationTab.add(draftButton, "span 2, gapright push");
+
+			 // Acceleration - Misc
+
+			 JKNAdvance1.setColumns(8);
+			 JKNAdvance2.setColumns(8);
+
+			 extruderDeprimeA.setColumns(8);
+			 extruderDeprimeB.setColumns(8);
+
+			 addWithSharedToolTips(accelerationMiscTab, "Override the target temperatures in the gcode", overrideGCodeTempBox, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "Preheat during paused operations", preheatDuringPauseBox, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "Slow printing when acceleration planing falls behind", slowdownFlagBox, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K", JKNAdvance1, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K2", JKNAdvance2, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "Right extruder deprime (steps)", extruderDeprimeA, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "Left extruder deprime (steps)", extruderDeprimeB, "wrap");
+		 }
+	 }
+
+	 // Thing-o-Matics and Cupcake's with the Jetty Firmware (3.2 and later)
+
+	 private class G3FirmwareMachineOnboardAccelerationParameters extends MachineOnboardAccelerationParameters {
+
+		 // Cupcake & Thing-o-Matic Jetty Firmware specific acceleration parameters
+
+		 // Column width to wrap tool text tips to
+		 final int width = defaultToolTipWidth;
+
+		 // The following NumberFormats are used to restrict the various fields to
+		 //   integer or floating point values only and to restrict the number of
+		 //   whole or fractional digits permitted.
+		 //
+		 // Further we use a private routine for creating JFormattedTextFields.  This
+		 //   private routine tweaks the formatter associated with the field to disallow
+		 //   negative values and, in some cases, to place additional range restrictions
+		 //   on the fields.  These restrictions cannot easily be placed on the NumberFormats
+		 //   and are more easily applied by going after the Formatter used by the text field.
+
+		 // Feedrate: nnnn (mm/s) [allows up to 10 meters/s which is pretty fast]
+		 private NumberFormat frNF = NumberFormat.getIntegerInstance();
+		 {
+			 frNF.setMaximumIntegerDigits(4);
+		 }
+
+		 // Acceleration: nnnnnnnn (mm/s)
+		 private NumberFormat accNF = NumberFormat.getIntegerInstance();
+
+		 // Advance K1 & K2: nn.nnnnn
+		 private NumberFormat kNF = NumberFormat.getNumberInstance();
+		 {
+			 kNF.setMaximumFractionDigits(5);
+			 kNF.setMaximumIntegerDigits(2);   // Even 1 may be excessive
+		 }
+
+		 // Minimum Segment Time: 0.nnnn (seconds)
+		 private NumberFormat minSegTimeNF = NumberFormat.getNumberInstance();
+		 {
+			 minSegTimeNF.setMaximumFractionDigits(4);
+			 minSegTimeNF.setMaximumIntegerDigits(1);
+		 }
+
+		 // max speed change: nnnn.n (mm/s)
+		 private NumberFormat jerkNF = NumberFormat.getNumberInstance();
+		 {
+			 jerkNF.setMaximumFractionDigits(1);
+			 jerkNF.setMaximumIntegerDigits(4);
+		 }
+
+		 // Temp and other integer values >= 0
+		 private NumberFormat tempNF = NumberFormat.getIntegerInstance();
+		 {
+			 tempNF.setMaximumIntegerDigits(3);
+		 }
+
+		 // Slowdown limit: single digit
+		 private NumberFormat sdNF = NumberFormat.getIntegerInstance();
+		 {
+			 sdNF.setMaximumIntegerDigits(1);
+		 }
+
+		 private JCheckBox accelerationBox = new JCheckBox();
+		 {
+			 accelerationBox.setToolTipText(wrap2HTML(width, "Enable or disable printing with acceleration"));
+		 }
+
+		 private JCheckBox accelerationPlannerBox = new JCheckBox();
+		 {
+			 accelerationPlannerBox.setToolTipText(wrap2HTML(width,
+                    "The accelerated stepper driver attempts to plan moves ahead of the actual printing.  " +
+                    "This is done because planning can be slow relative to the time it takes to print small, " +
+                    "fine details.  Planning ahead of printing avoids situations where printing pauses while " +
+                    "waiting for the next accelerated move to be computed.  Printing pauses produce blobs " +
+                    "and zits when unwanted plastic oozes at one spot on the build from the idle extruder. " +
+                    "Consequently, it is strongly recommended that you leave the planner enabled."));
+		 }
+
+		 private JCheckBox accelerationStrangledBox = new JCheckBox();
+		 {
+			 accelerationStrangledBox.setToolTipText(wrap2HTML(width,
+                    "By checking this box, the accelerated stepper driver will be used but acceleration " +
+                    "will not be used.  Each segment will print at the target feedrate without gently " +
+                    "accelerating up to (or down to) that speed.  Check this box when you wish to print " +
+                    "an object without acceleration but using the accelerated stepper driver.  You may " +
+		    "also want to decrease the per-axis max feedrates."));
+		 }
+
+		 // Basic acceleration parameters
+
+		 private JFormattedTextField xAxisMaxFeedrate = PositiveTextFieldInt(frNF,
+           "The maximum feedrate along the X axis measured in units of mm/s.  " +
+           "I.e., the maximum magnitude of the component of the feedrate vector along the X axis.");
+
+		 private JFormattedTextField yAxisMaxFeedrate = PositiveTextFieldInt(frNF,
+           "The maximum feedrate along the Y axis measured in units of mm/s.  " +
+           "I.e., the maximum magnitude of the component of the feedrate vector along the Y axis.");
+
+		 private JFormattedTextField zAxisMaxFeedrate = PositiveTextFieldInt(frNF,
+           "The maximum feedrate along the Z axis measured in units of mm/s.  " +
+           "I.e., the maximum magnitude of the component of the feedrate vector along the Z axis.");
+
+		 private JFormattedTextField aAxisMaxFeedrate = PositiveTextFieldInt(frNF,
+           "The maximum feedrate to be experienced by extruder in units of mm/s.  " +
+           "I.e., the maximum magnitude of the component of the feedrate vector along the extruder's axis.");
+
+		 // NOTE: could use masterAcceleration except it doesn't limit range to >= 0
+		 private JFormattedTextField normalMoveAcceleration = PositiveTextFieldInt(accNF,
+           "The maximum rate of acceleration for normal printing moves in which filament is extruded and " +
+           "there is motion along any or all of the X, Y, or Z axes.  I.e., the maximum magnitude of the " +
+	   "acceleration vector in units of millimeters per second squared, mm/s\u00B2.");
+
+		 // NOTE: Could use _AxisAcceleration, except those do no limit range to >= 0
+
+		 private JFormattedTextField xAxisMaxAcceleration = PositiveTextFieldInt(accNF,
+	   "The maximum acceleration and deceleration along the X axis in units of mm/\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the X axis.");
+
+		 private JFormattedTextField yAxisMaxAcceleration = PositiveTextFieldInt(accNF,
+	   "The maximum acceleration and deceleration along the Y axis in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the Y axis.");
+
+		 private JFormattedTextField zAxisMaxAcceleration = PositiveTextFieldInt(accNF,
+	   "The maximum acceleration and deceleration along the Z axis in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the Z axis.");
+
+		 private JFormattedTextField aAxisMaxAcceleration = PositiveTextFieldInt(accNF,
+	   "The maximum acceleration and deceleration experienced by the extruder in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the extruder's axis.");
+
+		 private JFormattedTextField xAxisMaxSpeedChange = PositiveTextFieldDouble(jerkNF,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the X axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the X axis.");
+
+		 private JFormattedTextField yAxisMaxSpeedChange = PositiveTextFieldDouble(jerkNF,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the Y axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the Y axis.");
+
+		 private JFormattedTextField zAxisMaxSpeedChange = PositiveTextFieldDouble(jerkNF,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the Z axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the Z axis.");
+
+		 private JFormattedTextField aAxisMaxSpeedChange = PositiveTextFieldDouble(jerkNF,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the A axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the A axis.");
+
+		 // Advanced accel, misc
+
+		 private JFormattedTextField JKNAdvance1 = PositiveTextFieldDouble(kNF,
+           "The value of the empirically fit Jetty-Kubicek-Newman Advance parameter K which helps control " +
+           "the amount of additional plastic that should be extruded during the acceleration phase and not " +
+           "extruded during the deceleration phase of each move.  It can be used to remove blobbing and " +
+           "splaying on the corners of cubes or at the junctions between line segments.  Typical values " +
+           "for this parameter range from around 0.0001 to 0.01.  Set to a value of 0 to disable use of " +
+           "this compensation.");
+
+		 private JFormattedTextField JKNAdvance2 = PositiveTextFieldDouble(kNF,
+           "The value of the empirically fit Jetty-Kubicek-Newman Advance parameter K2, which helps during the " +
+           "deceleration phase of moves to reduce built up pressure in the extruder nozzle.  Typical values for " +
+           "this parameter range from around 0.001 to 0.02.  Set to a value of 0 to disable use of this " +
+           "compensation.");
+
+
+		 private JCheckBox clockwiseExtruderChoice = new JCheckBox();
+		 {
+			 clockwiseExtruderChoice.setToolTipText(wrap2HTML(width,
+                   "Select the direction you need the extruder to turn in order to extrude filament.  For most " +
+                   "Thing-o-Matic Stepstruders, this box is left unchecked when using 5D and checked when not " + 
+		   "using 5D.  You may need to do the opposite if your extruder's stepper motor is wired " +
+                   "differently.  The same effect can be had by inverting the A-axis; this option primarily " +
+		   "exists for users with a Gen 4 LCD interface."));
+		 }
+
+		 private JFormattedTextField extruderStepsPerMM = PositiveTextFieldDouble(jerkNF,
+           "The number of extruder steps required to extrude a single millimeter of filament.  Not to be confused with " +
+           "the number of extruder steps per millimeter of raw, input filament -- the \"stepspermm\" value used by " +
+           "ReplicatorG.  Typical values for a Stepstruder Mk7 with 1.75mm filament range from about 3.8 to 4.8 " +
+           "steps/mm.  For a Mk6 with 3.00 mm filament, typical values range from about 1.2 to 1.7.");
+
+		 private JFormattedTextField extruderDeprime = PositiveTextFieldDouble(jerkNF,
+           "The number of millimeters to retract the extruded filament when the pipeline of buffered moves empties or " +
+           "a travel-only move is encountered.  The default value is 4.0 mm.  Set to a value of 0 to disable this " +
+           "feature.  Do not use with Skeinforge's Reversal plugin: use one or the other but not both.");
+
+		 private JFormattedTextField revMaxFeedrate = PositiveTextFieldInt(frNF,
+            "The maximum feedrate in mm/s to use in an extruder-only move.  An extruder-only move is a move in which " +
+            "there is no motion along the X, Y, or Z axes: the only motion is the extruder extruding or retracting " +
+            "filament.  Typically this value should be at least as large as the max A axis feedrate.");
+
+		 private JFormattedTextField extruderMoveAcceleration = PositiveTextFieldInt(accNF,
+            "The maximum acceleration or deceleration in mm/s\u00B2 to use in an extruder-only move.  An extruder-only " +
+            "move is a move in which there is no motion along the X, Y, or Z axes: the only motion is the extruder " +
+            "extruding or retracting filament.  Typically this value should be at least as large as the A axis max " +
+	    "acceleration.");
+
+		 private JFormattedTextField minFeedrate = PositiveTextFieldDouble(jerkNF,
+            "The slowest feedrate to print at, in mm/s.  Use of this may help prevent some forms of blobbing.  " +
+            "This feature is useful when using older versions of Skeinforge which did not offer this functionality.");
+
+		 private JFormattedTextField minTravelFeedrate = PositiveTextFieldDouble(jerkNF,
+            "The slowest feedrate to travel at, in mm/s.  This feature is useful when using older versions of " +
+            "Skeinforge which did not offer this functionality.");
+
+		 // NOTE: Could use minimumSpeed except that it doesn't limit range to >= 0
+		 private JFormattedTextField minPlannerSpeed = PositiveTextFieldInt(frNF,
+            "The slowest feedrate in mm/s to use at the junctions between adjoining line segments.  It is " +
+            "unlikely that this parameter needs to be adjusted.  Increasing its value will not speed up " +
+            "your printing.  Nearly always the acceleration planner ends up with junction speeds far in excess " +
+            "of this value (but within the maximum feedrate and acceleration limits).");
+
+		 private JFormattedTextField minSegmentTime = PositiveTextFieldDouble(minSegTimeNF,
+            "The minimum time in seconds that printing a segment should take when the planning buffer " +
+            "is running dry (i.e., printing is proceeding faster than the microprocessor can plan ahead).  " +
+            "Increase this value if you see blobs or pauses while printing models with very fine " +
+            "details or when printing at high speed.");
+
+		 private JFormattedTextField slowDownLimit = PositiveTextFieldInt(sdNF, 8,
+            "WARNING: you probably do not want to adjust this parameter.  The slowdown limit sets " +
+            "a threshhold for the plan ahead logic instructing it when to start enforcing the " +
+            "minimum segment print time.  The larger the value, the sooner it starts enforcing the " +
+            "slowdown limit.  Acceptable values are 3, 4, 5, 6, 7, and 8.  A value of 0 disables " +
+            "this feature.  Any attempt to use a value of 1 or 2 will result in a value of 3 being " +
+            "used instead.");
+ 
+		 // Misc. Jetty params not specific to the Gen 4 LCD interface
+
+		 private final String[] lcdDimensionChoices = { "16 x 4", "20 x 4", "24 x 4" };
+		 private JComboBox lcdDimensionsChoice = new JComboBox(lcdDimensionChoices);
+		 {
+			 lcdDimensionsChoice.setToolTipText(wrap2HTML(width,
+		   "Select the dimensions of the LCD screen display in your Gen 4 LCD " +
+		   "interface.  Measurements are the number of character columns by the " +
+                   "number of character rows.  The standard Gen 4 LCD display is 16 x 4."));
+		 }
+
+		 private final int moodLightChoiceIndex_DEFAULT = 0; // Default choice in moodLightChoices
+		 private static final int moodLightScriptId_DEFAULT = 2; // Default Script Id
+		 private final String[] moodLightChoices = {
+			 "Off (2)",
+			 "Bot status (0)",
+			 "Custom color (1)",
+			 "Almond (12)",
+			 "Blue (6)",
+			 "Blue, Alice (15)",
+			 "Blue, Deep Sky (22)",
+			 "Blue, Midnight (21)",
+			 "Cyan (7)",
+			 "Gold (25)",
+			 "Gray (19)",
+			 "Gray, Light (20)",
+			 "Gray, Slate (18)",
+			 "Green (5)",
+			 "Green, Forest (24)",
+			 "Green, Olive (23)",
+			 "Hot Pink (26)",
+			 "Lavender (16)",
+			 "Linen (27)",
+			 "Magenta (8)",
+			 "Mint Cream (14)",
+			 "Orange (11)",
+			 "Peach Puff (13)",
+			 "Purple (10)",
+			 "Red (4)",
+			 "Rose, Misty (17)",
+			 "White (3)",
+			 "Yellow (9)",
+			 "Cycle Rainbow (110)",
+			 "Cycle Random (111)",
+			 "Cycle Red/Green/Blue (101)",
+			 "Cycle S.O.S. (118)",
+			 "Cycle Seasons (115)",
+			 "Cycle Traffic Lights (117)",
+			 "Cycle White/Red/Green/Blue/Off (100)",
+			 "Random Candle (112)",
+			 "Random Neon Reds (114)",
+			 "Random Thunderstorms (116)",
+			 "Random Water (113)",
+			 "Flashing Blue (105)",
+			 "Flashing Cyan (106)",
+			 "Flashing Green (104)",
+			 "Flashing Magenta (107)",
+			 "Flashing Red (103)",
+			 "Flashing White (102)",
+			 "Flashing Yellow (108)"
+		 };
+
+		 private JCheckBox overrideGCodeTempBox = new JCheckBox();
+		 {
+			 overrideGCodeTempBox.setToolTipText(wrap2HTML(width,
+                    "When enabled, override the gcode temperature settings using the preheat " +
+		    "temperature settings for the extruders and build platform."));
+		 }
+           
+		 private JFormattedTextField tool0Temp = PositiveTextFieldInt(tempNF, 255,
+           "Temperature in degrees Celsius to preheat extruder 0 to.  This temperature is " +
+           "also used as the override temperature when the \"override gcode temperature\" " +
+           "feature is enabled.");
+
+		 private JFormattedTextField tool1Temp = PositiveTextFieldInt(tempNF, 255,
+           "Temperature in degrees Celsius to preheat extruder 1 to.  This temperature is " +
+           "also used as the override temperature when the \"override gcode temperature\" " +
+           "feature is enabled.");
+
+		 private JFormattedTextField platformTemp = PositiveTextFieldInt(tempNF, 255,
+           "Temperature in degrees Celsius to preheat the build platform to.  This temperature is " +
+           "also used as the override temperature when the \"override gcode temperature\" " +
+           "feature is enabled.");
+
+		 private JFormattedTextField buzzerRepeats = PositiveTextFieldInt(tempNF, 255,
+           "The number of times the buzzer should buzz when activated.  Use of this feature " +
+           "requires installation of a buzzer as per Thingiverse Thing 16170, \"Buzzer Support\".");
+
+		 private JColorChooser moodLightCustomColor = new JColorChooser();
+		 {
+			 moodLightCustomColor.setToolTipText(wrap2HTML(width,
+		   "Select the custom color used when the \"Custom Color\" mood light script " +
+		   "is selected.  Use of this feature requires installation of Thingiverse " +
+		   "Thing 15347, \"Mood Lighting For ToM\"."));
+		 }
+
+		 private JComboBox moodLightScript = new JComboBox(moodLightChoices);
+		 {
+			 moodLightScript.setToolTipText(wrap2HTML(width,
+                   "Select the mood light script to be played by the mood lighting.  Use of this " +
+		   "feature requires installation of Thingiverse Thing 15347, \"Mood Lighting " +
+                   "For ToM\"."));
+		 }
+
+		 private G3FirmwareMachineOnboardAccelerationParameters(OnboardParameters target,
+									 Driver driver,
+									 JTabbedPane subtabs) {
+			 super(target, driver, subtabs);
+
+			 int dismissDelay = ToolTipManager.sharedInstance().getDismissDelay();
+			 if (dismissDelay < 10*1000)
+				 ToolTipManager.sharedInstance().setDismissDelay(10*1000);
+		 }
+
+		 // Given a Mood Light Script Id, find the corresponding choice in the
+		 // Mood Light choice list
+		 private int findMoodLightChoice(int scriptId) {
+			 String str = "(" + scriptId + ")";
+			 for (int i = 0; i < moodLightChoices.length; i++) {
+				 if (moodLightChoices[i].contains(str))
+					 return i;
+			 }
+			 return -1;
+		 }
+
+		 // Given an index in the list of Mood Light choices, find the corresponding Script Id
+		 private int findMoodLightScriptId(int choiceIndex) {
+			 if (choiceIndex < 0 || choiceIndex > moodLightChoices.length)
+				 return -1;
+			 int start = moodLightChoices[choiceIndex].indexOf('(');
+			 if (start < 0)
+				 return -1;
+			 ++start;
+			 int end = moodLightChoices[choiceIndex].indexOf(')', start);
+			 if (end < 0)
+				 return -1;
+			 int scriptId = -1;
+			 try {
+				 scriptId = Integer.parseInt(moodLightChoices[choiceIndex].substring(start, end));
+			 }
+			 catch (Exception e) {
+			 }
+			 return scriptId;
+		 }
+
+		 @Override
+		 public boolean isAccelerationEnabled() {
+			 return accelerationBox.isSelected();
+		 }
+
+		 @Override
+		 public void setEEPROMFromUI() {
+			 // Jetty firmware
+			 byte status = (byte)0;
+			 if (accelerationBox.isSelected())
+				 status |= (byte)0x01;
+			 if (accelerationPlannerBox.isSelected())
+				 status |= (byte)0x02;
+			 if (accelerationStrangledBox.isSelected())
+				 status |= (byte)0x04;
+			 target.setAccelerationStatus(status);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_NORM,
+					       ((Number)normalMoveAcceleration.getValue()).longValue());
+
+			 // TODO: Warn when the max feedrates in the machine defs are less than these values
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_FEEDRATE_X,
+					       ((Number)xAxisMaxFeedrate.getValue()).longValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_FEEDRATE_Y,
+					       ((Number)yAxisMaxFeedrate.getValue()).longValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_FEEDRATE_Z,
+					       ((Number)zAxisMaxFeedrate.getValue()).longValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_FEEDRATE_A,
+					       ((Number)aAxisMaxFeedrate.getValue()).longValue());
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_X,
+					       ((Number)xAxisMaxAcceleration.getValue()).longValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Y,
+					       ((Number)yAxisMaxAcceleration.getValue()).longValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Z,
+					       ((Number)zAxisMaxAcceleration.getValue()).longValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_A,
+					       ((Number)aAxisMaxAcceleration.getValue()).longValue());
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_X,
+					       ((Number)xAxisMaxSpeedChange.getValue()).doubleValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Y,
+					       ((Number)yAxisMaxSpeedChange.getValue()).doubleValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Z,
+					       ((Number)zAxisMaxSpeedChange.getValue()).doubleValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_A,
+					       ((Number)aAxisMaxSpeedChange.getValue()).doubleValue());
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MIN_PLANNER_SPEED,
+					       ((Number)minPlannerSpeed.getValue()).longValue());
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K,
+					       ((Number)JKNAdvance1.getValue()).doubleValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K2,
+					       ((Number)JKNAdvance2.getValue()).doubleValue());
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_E_STEPS_PER_MM,
+					       ((Number)extruderStepsPerMM.getValue()).doubleValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_REV_MAX_FEED_RATE,
+					       ((Number)revMaxFeedrate.getValue()).longValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_RETRACT,
+					       ((Number)extruderMoveAcceleration.getValue()).longValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A,
+					       ((Number)extruderDeprime.getValue()).doubleValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_CLOCKWISE_EXTRUDER,
+					       clockwiseExtruderChoice.isSelected() ? 1L : 0L);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MIN_FEED_RATE,
+					       ((Number)minFeedrate.getValue()).doubleValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MIN_TRAVEL_FEED_RATE,
+					       ((Number)minTravelFeedrate.getValue()).doubleValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MIN_SEGMENT_TIME,
+					       ((Number)minSegmentTime.getValue()).doubleValue());
+			 long lv = ((Number)slowDownLimit.getValue()).longValue();
+			 if (lv < 0)
+				 lv = 0;
+			 else if (lv == 1 || lv == 2)
+				 lv = 3;
+			 else if (lv > 8)
+				 lv = 8;
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_LIMIT, lv);
+
+			 int lcd = lcdDimensionsChoice.getSelectedIndex();
+			 int lcdType = 0; // lcd == 0 --> lcdType = 0
+			 if (lcd == 1) lcdType = 50;
+			 else if (lcd == 2) lcdType = 51;
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.LCD_TYPE, lcdType);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP,
+					       overrideGCodeTempBox.isSelected() ? 1 : 0);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.TOOL0_TEMP,
+					       ((Number)tool0Temp.getValue()).intValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.TOOL1_TEMP,
+					       ((Number)tool0Temp.getValue()).intValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.PLATFORM_TEMP,
+					       ((Number)platformTemp.getValue()).intValue());
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.BUZZER_REPEATS,
+					       ((Number)buzzerRepeats.getValue()).intValue());
+
+			 int scriptId = findMoodLightScriptId(moodLightScript.getSelectedIndex());
+			 if (scriptId < 0)
+				 scriptId = moodLightScriptId_DEFAULT;
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.MOOD_LIGHT_SCRIPT, scriptId);
+			 Color c = moodLightCustomColor.getColor();
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_RED,   c.getRed());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_GREEN, c.getGreen());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_BLUE,  c.getBlue());
+		 }
+
+		 @Override
+		 public void setUIFromEEPROM() {
+			 byte aStatus = target.getAccelerationStatus();
+			 accelerationBox.setSelected((aStatus & 0x01) != 0);
+			 accelerationPlannerBox.setSelected((aStatus & 0x02) != 0);
+			 accelerationStrangledBox.setSelected((aStatus & 0x04) != 0);
+
+			 xAxisMaxFeedrate.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_FEEDRATE_X));
+			 yAxisMaxFeedrate.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_FEEDRATE_Y));
+			 zAxisMaxFeedrate.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_FEEDRATE_Z));
+			 aAxisMaxFeedrate.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_FEEDRATE_A));
+
+			 xAxisMaxAcceleration.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_X));
+			 yAxisMaxAcceleration.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Y));
+			 zAxisMaxAcceleration.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Z));
+			 aAxisMaxAcceleration.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_A));
+
+			 xAxisMaxSpeedChange.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_X));
+			 yAxisMaxSpeedChange.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Y));
+			 zAxisMaxSpeedChange.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Z));
+			 aAxisMaxSpeedChange.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_A));
+
+			 JKNAdvance1.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K));
+			 JKNAdvance2.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K2));
+ 
+			 minPlannerSpeed.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MIN_PLANNER_SPEED));
+			 normalMoveAcceleration.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_NORM));
+
+			 extruderStepsPerMM.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_E_STEPS_PER_MM));
+			 revMaxFeedrate.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_REV_MAX_FEED_RATE));
+			 extruderMoveAcceleration.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_RETRACT));
+			 extruderDeprime.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A));
+			 clockwiseExtruderChoice.setSelected(1L == target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_CLOCKWISE_EXTRUDER));
+			 minFeedrate.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MIN_FEED_RATE));
+			 minTravelFeedrate.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MIN_TRAVEL_FEED_RATE));
+			 minSegmentTime.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MIN_SEGMENT_TIME));
+			 slowDownLimit.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_LIMIT));
+
+			 int lcdType = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.LCD_TYPE);
+			 if (lcdType == 50) lcdDimensionsChoice.setSelectedIndex(1);
+			 else if (lcdType == 51) lcdDimensionsChoice.setSelectedIndex(2);
+			 else lcdDimensionsChoice.setSelectedIndex(0);
+
+			 overrideGCodeTempBox.setSelected(target.getEEPROMParamInt(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP) != 0);
+			 tool0Temp.setValue(target.getEEPROMParamInt(OnboardParameters.EEPROMParams.TOOL0_TEMP));
+			 tool1Temp.setValue(target.getEEPROMParamInt(OnboardParameters.EEPROMParams.TOOL1_TEMP));
+			 platformTemp.setValue(target.getEEPROMParamInt(OnboardParameters.EEPROMParams.PLATFORM_TEMP));
+
+			 buzzerRepeats.setValue(target.getEEPROMParamInt(OnboardParameters.EEPROMParams.BUZZER_REPEATS));
+			 int moodLightChoice = findMoodLightChoice(target.getEEPROMParamInt(OnboardParameters.EEPROMParams.MOOD_LIGHT_SCRIPT));
+			 if (moodLightChoice < 0)
+				 moodLightChoice = moodLightChoiceIndex_DEFAULT;
+			 moodLightScript.setSelectedIndex(moodLightChoice);
+			 moodLightCustomColor.setColor(target.getEEPROMParamInt(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_RED),
+						       target.getEEPROMParamInt(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_GREEN),
+						       target.getEEPROMParamInt(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_BLUE));
+		 }
+
+		 @Override
+		 public void buildUI() {
+			 JPanel accelerationTab = new JPanel(new MigLayout("fill", "[r][l][r][l]"));
+			 subTabs.addTab("Acceleration", accelerationTab);
+
+			 JPanel accelerationMiscTab = new JPanel(new MigLayout("fill", "[r][l][r][l]"));
+			 subTabs.addTab("Acceleration (Advanced)", accelerationMiscTab);
+
+			 JPanel miscTab = new JPanel(new MigLayout("fill", "[r][l][r][l]"));
+			 subTabs.addTab("Misc", miscTab);
+
+			 normalMoveAcceleration.setColumns(8);
+
+			 xAxisMaxFeedrate.setColumns(4);
+			 xAxisMaxAcceleration.setColumns(8);
+
+			 yAxisMaxFeedrate.setColumns(4);
+			 yAxisMaxAcceleration.setColumns(8);
+
+			 zAxisMaxFeedrate.setColumns(4);
+			 zAxisMaxAcceleration.setColumns(8);
+
+			 aAxisMaxFeedrate.setColumns(4);
+			 aAxisMaxAcceleration.setColumns(8);
+
+			 xAxisMaxSpeedChange.setColumns(4);
+			 yAxisMaxSpeedChange.setColumns(4);
+			 zAxisMaxSpeedChange.setColumns(4);
+			 aAxisMaxSpeedChange.setColumns(4);
+
+			 addWithSharedToolTips(accelerationTab, "Acceleration enabled", "split 2", accelerationBox);
+			 addWithSharedToolTips(accelerationTab,
+					       "Max acceleration (magnitude of acceleration vector; mm/s\u00B2)", "span 2, gapleft push",
+					       normalMoveAcceleration, "wrap");
+
+			 addWithSharedToolTips(accelerationTab, "X max feedrate (mm/s)", xAxisMaxFeedrate);
+			 addWithSharedToolTips(accelerationTab, "X max acceleration (mm/s\u00B2)",
+					       xAxisMaxAcceleration, "wrap");
+
+			 addWithSharedToolTips(accelerationTab, "Y max feedrate (mm/s)", yAxisMaxFeedrate);
+			 addWithSharedToolTips(accelerationTab, "Y max acceleration (mm/s\u00B2)", yAxisMaxAcceleration, "wrap");
+
+			 addWithSharedToolTips(accelerationTab, "Z max feedrate (mm/s)", zAxisMaxFeedrate);
+			 addWithSharedToolTips(accelerationTab, "Z max acceleration (mm/s\u00B2)",
+					       zAxisMaxAcceleration, "wrap");
+
+			 addWithSharedToolTips(accelerationTab, "A max feedrate (mm/s)", aAxisMaxFeedrate);
+			 addWithSharedToolTips(accelerationTab, "A max acceleration (mm/s\u00B2)", aAxisMaxAcceleration, "wrap");
+
+			 addWithSharedToolTips(accelerationTab, "X max speed change (mm/s)",
+					       xAxisMaxSpeedChange, "span 2, wrap");
+
+			 addWithSharedToolTips(accelerationTab, "Y max speed change (mm/s)",
+					       yAxisMaxSpeedChange, "span 2, wrap");
+
+			 addWithSharedToolTips(accelerationTab, "Z max speed change (mm/s)",
+					       zAxisMaxSpeedChange, "span 2, wrap");
+
+			 addWithSharedToolTips(accelerationTab, "A max speed change (mm/s)",
+					       aAxisMaxSpeedChange, "span 2, wrap");
+
+			 // Acceleration - Misc
+
+			 JKNAdvance1.setColumns(8);
+			 JKNAdvance2.setColumns(8);
+			 extruderMoveAcceleration.setColumns(8);
+			 revMaxFeedrate.setColumns(4);
+			 minPlannerSpeed.setColumns(4);
+			 minSegmentTime.setColumns(4);
+			 slowDownLimit.setColumns(4);
+
+			 extruderDeprime.setColumns(4);
+			 extruderStepsPerMM.setColumns(4);
+			 minFeedrate.setColumns(4);
+			 minTravelFeedrate.setColumns(4);
+
+			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K", JKNAdvance1);
+			 addWithSharedToolTips(accelerationMiscTab, "Extruder deprime (mm)",
+					       extruderDeprime, "wrap");
+
+			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K2", JKNAdvance2);
+			 addWithSharedToolTips(accelerationMiscTab, "Extruder steps/mm",
+					       extruderStepsPerMM, "wrap");
+
+			 addWithSharedToolTips(accelerationMiscTab,
+					       "Max acceleration for extruder-only moves (mm/s\u00B2)",
+					       extruderMoveAcceleration);
+			 addWithSharedToolTips(accelerationMiscTab, "Min printing feedrate (mm/s)",
+					       minFeedrate, "wrap");
+
+			 addWithSharedToolTips(accelerationMiscTab,
+					       "Max feedrate for extruder-only moves (mm/s)",
+					       revMaxFeedrate);
+			 addWithSharedToolTips(accelerationMiscTab, "Min travel feedrate (mm/s)",
+					       minTravelFeedrate, "wrap");
+
+			 addWithSharedToolTips(accelerationMiscTab, "Min feedrate at junctions (mm/s)",
+					       minPlannerSpeed);
+			 addWithSharedToolTips(accelerationMiscTab, "Clockwise extruder",
+					       clockwiseExtruderChoice, "wrap");
+
+			 addWithSharedToolTips(accelerationMiscTab, "Min segment printing time (s)",
+					       minSegmentTime);
+			 addWithSharedToolTips(accelerationMiscTab, "Acceleration planner enabled",
+					       accelerationPlannerBox, "wrap");
+
+			 addWithSharedToolTips(accelerationMiscTab,
+					       "Planner slowdown limit", "gapbottom push",
+					       slowDownLimit, "gapbottom push");
+			 addWithSharedToolTips(accelerationMiscTab, "Acceleration strangled", "gapbottom push",
+					       accelerationStrangledBox, "wrap");
+
+			 // Misc tab
+			 tool0Temp.setColumns(8);
+			 tool1Temp.setColumns(8);
+			 platformTemp.setColumns(8);
+			 buzzerRepeats.setColumns(8);
+
+			 addWithSharedToolTips(miscTab, "Override gcode temperatures", overrideGCodeTempBox);
+			 addWithSharedToolTips(miscTab, "Gen 4 LCD dimensions", lcdDimensionsChoice, "wrap");
+
+			 addWithSharedToolTips(miscTab, "Extruder 0 preheat & override temperature (C)",
+					       tool0Temp);
+			 addWithSharedToolTips(miscTab, "Buzzer repeats", buzzerRepeats, "wrap");
+
+			 addWithSharedToolTips(miscTab, "Extruder 1 preheat & override temperature (C)",
+					       tool1Temp);
+			 addWithSharedToolTips(miscTab, "Mood light script", moodLightScript, "wrap");
+
+			 addWithSharedToolTips(miscTab, "Platform preheat & override temperature (C)",
+					       platformTemp, "wrap");
+
+			 addWithSharedToolTips(miscTab, "Mood light color",
+					       moodLightCustomColor, "span 4, wrap, gapbottom push, gapright push");
+		 }
+	 }
+ }
