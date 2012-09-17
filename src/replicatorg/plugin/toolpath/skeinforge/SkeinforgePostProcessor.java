@@ -67,7 +67,7 @@ public class SkeinforgePostProcessor {
 				extruders.add(ToolheadAlias.RIGHT.guiName);
 				extruders.add(ToolheadAlias.LEFT.guiName);
 
-				String value = Base.preferences.get("replicatorg.skeinforge.toolheadOrientation", extruders.firstElement());
+				String value = Base.preferences.get("replicatorg.skeinforge.printOMatic.toolheadOrientation", extruders.firstElement());
 				
 				final DefaultComboBoxModel model= new DefaultComboBoxModel(extruders);
 				
@@ -85,16 +85,16 @@ public class SkeinforgePostProcessor {
 						if(toolSwap.isSelected()) {
 							if(model.getSelectedItem().equals(ToolheadAlias.LEFT.guiName)) {
 								processor.toolheadTarget = ToolheadAlias.LEFT;
-								Base.preferences.put("replicatorg.skeinforge.toolheadOrientation", ToolheadAlias.LEFT.guiName);
+								Base.preferences.put("replicatorg.skeinforge.printOMatic.toolheadOrientation", ToolheadAlias.LEFT.guiName);
 							}
 							else if(model.getSelectedItem().equals(ToolheadAlias.RIGHT.guiName)) {
 								processor.toolheadTarget = ToolheadAlias.RIGHT;
-								Base.preferences.put("replicatorg.skeinforge.toolheadOrientation", ToolheadAlias.RIGHT.guiName);
+								Base.preferences.put("replicatorg.skeinforge.printOMatic.toolheadOrientation", ToolheadAlias.RIGHT.guiName);
 							}
 						}
 						else {
 							processor.toolheadTarget = null;
-							Base.preferences.put("replicatorg.skeinforge.toolheadOrientation", "-");
+							Base.preferences.put("replicatorg.skeinforge.printOMatic.toolheadOrientation", "-");
 						}
 					}
 				};

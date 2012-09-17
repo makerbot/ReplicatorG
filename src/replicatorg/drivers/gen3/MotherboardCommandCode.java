@@ -34,6 +34,8 @@ public enum MotherboardCommandCode {
 	
 	BUILD_START_NOTIFICATION(153, "Notify the bot this is an object build, and what it is called"),
 	BUILD_END_NOTIFICATION(154, "Notify the bot object build is complete."),
+	QUEUE_POINT_NEW_EXT(155, ""),
+	SET_ACCELERATION_TOGGLE(156, ""),
 
 	GET_COMMUNICATION_STATS(25,""),
 	
@@ -64,7 +66,7 @@ public enum MotherboardCommandCode {
 	SET_BUILD_PERCENT(150, "Manually override Build % info"),
 	QUEUE_SONG(151, "Trigger a song stored by by ID on the machine"),
 	RESET_TO_FACTORY(152, "Reset onboard preferences to the factory settings");
-	
+
 	
 	private int code; 	/// id code of this packet in the s3g protocol
 	private String info;/// rough info on what this packet does

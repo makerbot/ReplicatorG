@@ -600,6 +600,14 @@ public class GCodeParser {
 			commands.add(new replicatorg.drivers.commands.WaitUntilBufferEmpty());
 			commands.add(new replicatorg.drivers.commands.DataCaptureNote(gcode.getComment()));
 			break;
+		// Acceleration on
+		case M320:
+			commands.add(new replicatorg.drivers.commands.SetAccelerationToggle(true));
+			break;
+		// Acceleration off
+		case M321:
+			commands.add(new replicatorg.drivers.commands.SetAccelerationToggle(false));
+			break;
 		default:
 			throw new GCodeException("Unknown M code: M" + (int) gcode.getCodeValue('M'));
 		}
