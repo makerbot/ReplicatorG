@@ -57,6 +57,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	protected Version preferredVersion = new Version(0,0);
 	protected Version minimumVersion = new Version(0,0);
         protected Version minimumAccelerationVersion = new Version(0,0);
+        protected Version minimumJettyAccelerationVersion = new Version(0,0);
 	
 	// our point offsets
 	private Point3d[] offsets;
@@ -225,9 +226,13 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		return minimumVersion;
 	}
 
-	public Version getMinimumAccelerationVersion(){
-            return minimumAccelerationVersion;
-    }
+  public Version getMinimumAccelerationVersion(){
+          return minimumAccelerationVersion;
+  }
+
+  public Version getMinimumJettyAccelerationVersion(){
+          return minimumJettyAccelerationVersion;
+  }
 	
 	public Version getPreferredVersion() {
 		return preferredVersion;
@@ -427,6 +432,14 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 
 	public void selectTool(int toolIndex) throws RetryException {
 		machine.selectTool(toolIndex);
+	}
+	
+	/***************************************************************************
+	 * Acceleration interface functions
+	 * @throws RetryException 
+	 **************************************************************************/
+
+	public void setAccelerationToggle(boolean on) throws RetryException {
 	}
 
 	/***************************************************************************

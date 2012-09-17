@@ -125,6 +125,7 @@ import replicatorg.app.util.StreamLoggerThread;
 import replicatorg.app.util.SwingPythonSelector;
 import replicatorg.app.util.serial.Name;
 import replicatorg.app.util.serial.Serial;
+import replicatorg.drivers.Driver;
 import replicatorg.drivers.EstimationDriver;
 import replicatorg.drivers.MultiTool;
 import replicatorg.drivers.OnboardParameters;
@@ -2675,7 +2676,7 @@ ToolpathGenerator.GeneratorListener
 	 */
 	public void doPause() {
 		if (machineLoader.getMachineInterface().isPaused()) {
-			machineLoader.getMachineInterface().unpause();
+			machineLoader.getMachineInterface().getDriver().unpause();
 
 			if (simulating) {
 				message("Simulating...");
@@ -2685,11 +2686,10 @@ ToolpathGenerator.GeneratorListener
 
 			//buttons.inactivate(MainButtonPanel.PAUSE);
 		} else {
-			machineLoader.getMachineInterface().pause();
+			machineLoader.getMachineInterface().getDriver().pause();
 			int atWhichLine = machineLoader.getMachineInterface().getLinesProcessed();
 			highlightLine(atWhichLine);
 			message("Paused at line "+ atWhichLine +".");
-
 			//buttons.clear();
 			//buttons.activate(MainButtonPanel.PAUSE);
 		}

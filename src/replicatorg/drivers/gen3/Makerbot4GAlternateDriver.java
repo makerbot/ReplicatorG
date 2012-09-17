@@ -15,6 +15,7 @@ import replicatorg.machine.model.AxisId;
 import replicatorg.machine.model.MachineModel;
 import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
+import replicatorg.drivers.Version;
 
 public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 	
@@ -270,6 +271,37 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 
 		runCommand(pb.getPacket());
 	}
+
+	protected void queueNewExtPoint(Point5d steps, long dda_rate, int relative, float distance, float feedrate) throws RetryException {
+
+		Base.logger.finer("Makerbot4GAlternateDriver queueNewExtPoint");
+
+		// Turn on fan if necessary
+		for (AxisId axis : getHijackedAxes( machine.currentTool()) ) {
+			if (steps.axis(axis) != 0) {
+				enableStepperExtruderFan(true);
+			}
+		}
+		PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.QUEUE_POINT_NEW_EXT.getCode());
+
+		Base.logger.finer("Queued new-style extended point " + steps + " over "
+					+ Long.toString(dda_rate) + " steps per sec., relative " + Integer.toString(relative)
+					+ ", distance " + Float.toString(distance)
+					+ ", feedrate " + Float.toString(feedrate));
+
+		// just add them in now.
+		pb.add32((int) steps.x());
+		pb.add32((int) steps.y());
+		pb.add32((int) steps.z());
+		pb.add32((int) steps.a());
+		pb.add32((int) steps.b());
+		pb.add32((int) dda_rate);
+		pb.add8((int) relative);
+		pb.addFloat(distance);
+		pb.add16((int) (feedrate * 64.0));
+
+		runCommand(pb.getPacket());
+	}
 	
 	/**
 	 * Overridden to not talk to the DC motor driver. This driver is reused for the stepper motor fan
@@ -348,6 +380,22 @@ public class Makerbot4GAlternateDriver extends Makerbot4GDriver {
 		
 		this.stepperExtruderFanEnabled = enabled;
 	}
+
+
+	/**
+	 * Turn acceleration on/off for subsequent commands
+	 */
+        public void setAccelerationToggle(boolean on) throws RetryException {
+                Base.logger.finer("SetAccelerationToggle (" + on + ")" );
+
+                PacketBuilder pb = new PacketBuilder(MotherboardCommandCode.SET_ACCELERATION_TOGGLE.getCode());
+
+		if ( on )	pb.add8(1);
+		else		pb.add8(0);
+
+                runCommand(pb.getPacket());
+        }
+
 
 	/// This is a list of which axis are hijacked for extruder use.
 	EnumMap<AxisId,ToolModel> extruderHijackedMap = new EnumMap<AxisId,ToolModel>(AxisId.class);

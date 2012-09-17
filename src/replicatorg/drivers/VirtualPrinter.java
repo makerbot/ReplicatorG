@@ -22,6 +22,7 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	final Version minimumVersion = new Version(0,0);
 	final Version preferredVersion = new Version(0,0);
         final Version minimumAccelerationVersion = new Version(0,0);
+        final Version minimumJettyAccelerationVersion = new Version(0,0);
 	final boolean hasSoftStop = true;	
 	final boolean hasEStop = true;
 	
@@ -161,6 +162,12 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 		return minimumAccelerationVersion;
 	}
 
+        @Override
+	public Version getMinimumJettyAccelerationVersion() {
+		// TODO Auto-generated method stub
+		return minimumJettyAccelerationVersion;
+	}
+
 	@Override
 	public Version getPreferredVersion() {
 		// TODO Auto-generated method stub
@@ -261,6 +268,12 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	public double getCurrentFeedrate() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public void setAccelerationToggle(boolean on)
+			throws RetryException {
+		// TODO Auto-generated method stub
 	}
 
 	@Override
