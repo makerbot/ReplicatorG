@@ -1470,8 +1470,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		//throw new UnsupportedOperationException("setConnectedToolIndex not supported in MightyBoard");
 		
 		// The broadcast address has changed. The safest solution is to try both.
-		//writeToToolEEPROM(MightyBoardEEPROM.EC_EEPROM_SLAVE_ID, data, 255); //old firmware used 255, new fw ignores this
-		//writeToToolEEPROM(MightyBoardEEPROM.EC_EEPROM_SLAVE_ID, data, 127); //new firmware used 127, old fw ignores this
+		//writeToToolEEPROM(MightyBoard5XEEPROM.EC_EEPROM_SLAVE_ID, data, 255); //old firmware used 255, new fw ignores this
+		//writeToToolEEPROM(MightyBoard5XEEPROM.EC_EEPROM_SLAVE_ID, data, 127); //new firmware used 127, old fw ignores this
 		return false;
 	}
 
