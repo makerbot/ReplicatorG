@@ -514,7 +514,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		boolean needsReset = false;
 		int stepperCountMightyBoard = 5;
 		for(int i = 0; i < stepperCountMightyBoard; i++) {
-			double firmwareAxisStepsPerMM = read32FromEEPROM(MightyBoardEEPROM.AXIS_STEPS_PER_MM + i*4);
+			double firmwareAxisStepsPerMM = read32FromEEPROM(MightyBoard5XEEPROM.AXIS_STEPS_PER_MM + i*4);
 
 			double val = 0.0;
 
@@ -542,7 +542,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			if ( firmwareAxisStepsPerMM != val ) {
 				Base.logger.info("Bot StepsPerMM Axis " + i + ": " + firmwareAxisStepsPerMM / 1000000.0 + 
 						 " machine xml has: " + val / 1000000.0+ ", updating bot");
-				write32ToEEPROM32(MightyBoardEEPROM.AXIS_STEPS_PER_MM + i*4, (int)val);
+				write32ToEEPROM32(MightyBoard5XEEPROM.AXIS_STEPS_PER_MM + i*4, (int)val);
 				needsReset = true;
 			}
 		}
@@ -564,7 +564,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		boolean needsReset = false;
 		int stepperCountMightyBoard = 5;
 		for(int i = 0; i < stepperCountMightyBoard; i++) {
-			double firmwareAxisMaximumFeedRate = read32FromEEPROM(MightyBoardEEPROM.AXIS_MAX_FEEDRATES + i*4);
+			double firmwareAxisMaximumFeedRate = read32FromEEPROM(MightyBoard5XEEPROM.AXIS_MAX_FEEDRATES + i*4);
 
 			double val = 0.0;
 
@@ -590,7 +590,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			if ( firmwareAxisMaximumFeedRate != val ) {
 				Base.logger.info("Bot Maximum Feed Rate Axis " + i + ": " + firmwareAxisMaximumFeedRate + 
 						 " machine xml has: " + val + ", updating bot");
-				write32ToEEPROM32(MightyBoardEEPROM.AXIS_MAX_FEEDRATES + i*4, (int)val);
+				write32ToEEPROM32(MightyBoard5XEEPROM.AXIS_MAX_FEEDRATES + i*4, (int)val);
 				needsReset = true;
 			}
 		}
@@ -613,7 +613,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		boolean needsReset = false;
 		int stepperCountMightyBoard = 5;
 		for(int i = 0; i < stepperCountMightyBoard; i++) {
-			int firmwareAxisLength = read32FromEEPROM(MightyBoardEEPROM.AXIS_LENGTHS + i*4);
+			int firmwareAxisLength = read32FromEEPROM(MightyBoard5XEEPROM.AXIS_LENGTHS + i*4);
 
 			int val = 0;
 
@@ -639,7 +639,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			if ( firmwareAxisLength != val ) {
 				Base.logger.info("Bot Length Axis " + i + ": " + firmwareAxisLength + 
 						 " machine xml has: " + val + ", updating bot");
-				write32ToEEPROM32(MightyBoardEEPROM.AXIS_LENGTHS + i*4, val);
+				write32ToEEPROM32(MightyBoard5XEEPROM.AXIS_LENGTHS + i*4, val);
 				needsReset = true;
 			}
 		}
