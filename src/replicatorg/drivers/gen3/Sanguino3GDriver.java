@@ -2934,4 +2934,18 @@ public class Sanguino3GDriver extends SerialDriver implements
 	@Override 
 	public void setToolCountOnboard(int i){ }; 
 
+	public boolean hasHbp(){return false;}
+
+	@Override
+	public byte getHbpSetting() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setHbpSetting(boolean on_off) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 }

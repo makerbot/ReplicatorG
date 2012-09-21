@@ -1859,7 +1859,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			b[0] = (byte)i;
 		writeToEEPROM(MightyBoard5XEEPROM.TOOL_COUNT,b);
 		
-	}; 
+	};
+	
 }
 
 

@@ -206,4 +206,8 @@ public interface OnboardParameters {
 
 	/// Sets the number of tool count as saved on the machine (not as per XML count)
 	void setToolCountOnboard(int i);
+	
+	byte getHbpSetting();
+	boolean hasHbp();
+	public void setHbpSetting(boolean on_off);
 }

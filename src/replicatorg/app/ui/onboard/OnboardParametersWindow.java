@@ -52,6 +52,14 @@ public class OnboardParametersWindow extends JFrame {
 		{
 			paramsTabs.addTab("Extruder " + t.getIndex(), new ExtruderOnboardParameters(targetParams, t,(JFrame)this));
 		}
+		
+		/*String machineType = targetParams.getMachineType();
+		if((machineType.equals("MightyBoard") || 
+			machineType.equals("The Replicator") || 
+			machineType.equals("MightyBoard(unverified)")))
+		{
+			paramsTabs.addTab("Bot Settings", new BotParameters());
+		}*/
 
 		JLabel verifyString = new JLabel("Warning: Machine Type is not verifiable.");
 		verifyString.setToolTipText("this machine has no way to verify the EEPORM is a valid layout");

@@ -31,7 +31,7 @@
 		<cooldown>
 M18 (Turn off steppers after a build.)
 		</cooldown>
-		<bookend dualstart="machines/replicator/Dualstrusion_start.gcode" start="machines/replicator/Dual_Head_start.gcode" end="machines/replicator/end.gcode"/>
+		<bookend dualstart="replicator/Dualstrusion_start.gcode" start="replicator/Dual_Head_start.gcode" end="replicator/end.gcode"/>
 	</machine>
 <machine experimental="0">
 		<name>The Replicator Single</name>
@@ -59,7 +59,7 @@ M18 (Turn off steppers after a build.)
 		<cooldown>
 M18 (Turn off steppers after a build.)
 		</cooldown>
-		<bookend start="machines/replicator/Single_Head_start.gcode" end="machines/replicator/end.gcode"/>
+		<bookend start="replicator/Single_Head_start.gcode" end="replicator/end.gcode"/>
 	</machine></machines>
 <!-- explanation of steps per mm:
 	 Steps/mm is calculated by dividing the 'drive gear steps per revolution' (in this case, equal to motor_steps) by the 'drive gear circumference' (drive gear diameter = 10.58)
