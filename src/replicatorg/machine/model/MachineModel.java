@@ -426,11 +426,7 @@ public class MachineModel
 			Node bookend = XML.getChildNodeByName(xml, "bookend");
 			String dualstartLocation = XML.getAttributeValue(bookend, "dualstart");
 			String startLocation = XML.getAttributeValue(bookend, "start");
-			String endLocation = XML.getAttributeValue(bookend, "end");
-			
-			Base.logger.severe("bookend metadata specified for this machine"+ dualstartLocation);
-			Base.logger.severe("bookend metadata specified for this machine"+ startLocation);
-			Base.logger.severe("bookend metadata specified for this machine"+ endLocation);
+			String endLocation = XML.getAttributeValue(bookend, "end");			
 			if(dualstartLocation != null) 
 				dualstartBookendCode = Base.getApplicationFile(dualstartLocation);
 			if(startLocation != null) 

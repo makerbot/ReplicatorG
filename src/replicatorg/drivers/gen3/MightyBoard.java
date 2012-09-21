@@ -1233,7 +1233,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	
 	/// Function to grab cached count of tools
 	@Override
-	public int toolCountOnboard() { return toolCountOnboard; } 
+	public int toolCountOnboard() { 
+		return getToolheadCount(); //forward to the (new) fetch from board function 
+		} 
 
 	
 	public boolean verifyToolCount()
