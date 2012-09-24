@@ -139,14 +139,17 @@ public class MachineOnboardParameters extends JPanel {
 				target.setToolCountOnboard( -1 );
 		}
 		
-		if((target.currentHbpSetting() == 0) && hbpToggleBox.isSelected())
+		if(target.hasHbp())
 		{
-			target.setHbpSetting(true);
-		}
+			if((target.currentHbpSetting() == 0) && hbpToggleBox.isSelected())
+			{
+				target.setHbpSetting(true);
+			}
 				
-		else if(((target.currentHbpSetting() > 0) && !hbpToggleBox.isSelected()))
-		{
-			target.setHbpSetting(false);
+			else if(((target.currentHbpSetting() > 0) && !hbpToggleBox.isSelected()))
+			{
+				target.setHbpSetting(false);
+			}
 		}
 		
 		EnumSet<AxisId> axesInverted = EnumSet.noneOf(AxisId.class);

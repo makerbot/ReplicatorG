@@ -218,27 +218,5 @@ public class Replicator2 extends MightyBoard
 		 */
 		return false;
 	}
-	
-	public boolean hasHbp(){
-		byte[] eeprom_hbp_present = readFromEEPROM(MightyBoard6XEEPROM.HBP_PRESENT, 1);
-		byte hbp_on_off = eeprom_hbp_present[0];
-		if(hbp_on_off >= 0)
-			return true;
-		else
-			return false;
-	}
-	
-	public byte currentHbpSetting(){
-		byte[] eeprom_hbp_present = readFromEEPROM(MightyBoard6XEEPROM.HBP_PRESENT, 1);
-		byte hbp_on_off = eeprom_hbp_present[0];
-		return hbp_on_off;
-	}
-	
-	public void setHbpSetting(boolean on_off){
-		if(on_off)		
-			writeToEEPROM(MightyBoard6XEEPROM.HBP_PRESENT, intToLE(1));
-		else
-			writeToEEPROM(MightyBoard6XEEPROM.HBP_PRESENT, intToLE(0));
-	}
 
 }
