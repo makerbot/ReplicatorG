@@ -1365,29 +1365,17 @@ ToolpathGenerator.GeneratorListener
 					platTarget = Base.preferences.getInt("build.preheatPlatform", 75);
 					if(isDualDriver())
 						tool1Target = Base.preferences.getInt("build.preheatTool1", 75);
-			
-				machine.runCommand(new replicatorg.drivers.commands.SelectTool(0)); /// for paranoia to get the right tool
-				machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool0Target,0));
-				machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(platTarget,0));
-				if(isDualDriver())
-				{
+			}
+			machine.runCommand(new replicatorg.drivers.commands.SelectTool(0)); /// for paranoia to get the right tool
+			machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool0Target,0));
+			machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(platTarget,0));
+			if(isDualDriver())
+			{
 					machine.runCommand(new replicatorg.drivers.commands.SelectTool(1)); /// for paranoia to get the right tool
 					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool1Target,1));
-				}
-			}
-			
-			if(!preheatMachine)
-			{
-				machine.runCommand(new replicatorg.drivers.commands.SelectTool(0)); /// for paranoia to get the right tool
-				machine.runCommand(new replicatorg.drivers.commands.SetTemperature(0,0));
-				machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(0,0));
-				if(isDualDriver())
-				{
-					machine.runCommand(new replicatorg.drivers.commands.SelectTool(1)); /// for paranoia to get the right tool
-					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(0,1));
-				}
 			}
 		}
+			
 	}
 
 
