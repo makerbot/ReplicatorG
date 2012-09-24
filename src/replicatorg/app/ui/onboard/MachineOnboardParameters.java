@@ -34,6 +34,7 @@ public class MachineOnboardParameters extends JPanel {
 	private JTextField machineNameField = new JTextField();
 	private static final String[] toolCountChoices = {"unavailable","1", "2"};
 	private JComboBox toolCountField = new JComboBox(toolCountChoices);
+	private JCheckBox hbpToggleBox = new JCheckBox();
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
 	private JCheckBox zAxisInvertBox = new JCheckBox();
@@ -136,6 +137,19 @@ public class MachineOnboardParameters extends JPanel {
 				target.setToolCountOnboard( toolCountField.getSelectedIndex() );
 			else 
 				target.setToolCountOnboard( -1 );
+		}
+		
+		if(target.hasHbp())
+		{
+			if((target.currentHbpSetting() == 0) && hbpToggleBox.isSelected())
+			{
+				target.setHbpSetting(true);
+			}
+				
+			else if(((target.currentHbpSetting() > 0) && !hbpToggleBox.isSelected()))
+			{
+				target.setHbpSetting(false);
+			}
 		}
 		
 		EnumSet<AxisId> axesInverted = EnumSet.noneOf(AxisId.class);
@@ -296,13 +310,21 @@ public class MachineOnboardParameters extends JPanel {
 		}
 		
 		EnumSet<AxisId> invertedAxes = this.target.getInvertedAxes();
-		
+	
 		xAxisInvertBox.setSelected(invertedAxes.contains(AxisId.X));
 		yAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Y));
 		zAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Z));
 		aAxisInvertBox.setSelected(invertedAxes.contains(AxisId.A));
 		bAxisInvertBox.setSelected(invertedAxes.contains(AxisId.B));
 		zHoldBox.setSelected(     !invertedAxes.contains(AxisId.V));
+		
+		if(target.hasHbp()){
+			byte hbp_setting = target.currentHbpSetting();
+			if(hbp_setting > 0)
+				hbpToggleBox.setSelected(true);
+			else
+				hbpToggleBox.setSelected(false);
+		}
                 
 		// 0 == inverted, 1 == not inverted
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
@@ -387,7 +409,10 @@ public class MachineOnboardParameters extends JPanel {
   			endstopsTab.add(new JLabel("Reported Tool Count:"));
   			endstopsTab.add(toolCountField, "span 2, wrap");
   		}
-		
+		if(target.hasHbp()){
+			endstopsTab.add(new JLabel("HBP on/off"));
+			endstopsTab.add(hbpToggleBox,"span 2, wrap");
+		}
 		
 		endstopsTab.add(new JLabel("Invert X axis"));		
 		endstopsTab.add(xAxisInvertBox,"span 2, wrap");
@@ -418,6 +443,7 @@ public class MachineOnboardParameters extends JPanel {
 		endstopsTab.add(endstopInversionSelection,"span 2, wrap");
 		endstopsTab.add(new JLabel("Emergency stop"));
 		endstopsTab.add(estopSelection,"spanx, wrap");
+		
 		
 		xAxisHomeOffsetField.setColumns(10);
 		yAxisHomeOffsetField.setColumns(10);
