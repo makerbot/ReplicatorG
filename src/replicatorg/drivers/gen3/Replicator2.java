@@ -228,7 +228,7 @@ public class Replicator2 extends MightyBoard
 			return false;
 	}
 	
-	public byte getHbpSetting(){
+	public byte currentHbpSetting(){
 		byte[] eeprom_hbp_present = readFromEEPROM(MightyBoard6XEEPROM.HBP_PRESENT, 1);
 		byte hbp_on_off = eeprom_hbp_present[0];
 		return hbp_on_off;

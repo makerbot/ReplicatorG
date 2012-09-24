@@ -34,7 +34,7 @@ public class MachineOnboardParameters extends JPanel {
 	private JTextField machineNameField = new JTextField();
 	private static final String[] toolCountChoices = {"unavailable","1", "2"};
 	private JComboBox toolCountField = new JComboBox(toolCountChoices);
-	private JCheckBox hbp_toggle = new JCheckBox();
+	private JCheckBox hbpToggleBox = new JCheckBox();
 	private JCheckBox xAxisInvertBox = new JCheckBox();
 	private JCheckBox yAxisInvertBox = new JCheckBox();
 	private JCheckBox zAxisInvertBox = new JCheckBox();
@@ -139,12 +139,12 @@ public class MachineOnboardParameters extends JPanel {
 				target.setToolCountOnboard( -1 );
 		}
 		
-		if((target.getHbpSetting() == 0) && hbp_toggle.isSelected())
+		if((target.currentHbpSetting() == 0) && hbpToggleBox.isSelected())
 		{
 			target.setHbpSetting(true);
 		}
 				
-		else if(((target.getHbpSetting() > 0) && !hbp_toggle.isSelected()))
+		else if(((target.currentHbpSetting() > 0) && !hbpToggleBox.isSelected()))
 		{
 			target.setHbpSetting(false);
 		}
@@ -316,11 +316,11 @@ public class MachineOnboardParameters extends JPanel {
 		zHoldBox.setSelected(     !invertedAxes.contains(AxisId.V));
 		
 		if(target.hasHbp()){
-			byte hbp_setting = target.getHbpSetting();
+			byte hbp_setting = target.currentHbpSetting();
 			if(hbp_setting > 0)
-				hbp_toggle.setSelected(true);
+				hbpToggleBox.setSelected(true);
 			else
-				hbp_toggle.setSelected(false);
+				hbpToggleBox.setSelected(false);
 		}
                 
 		// 0 == inverted, 1 == not inverted
@@ -408,7 +408,7 @@ public class MachineOnboardParameters extends JPanel {
   		}
 		if(target.hasHbp()){
 			endstopsTab.add(new JLabel("HBP on/off"));
-			endstopsTab.add(hbp_toggle,"span 2, wrap");
+			endstopsTab.add(hbpToggleBox,"span 2, wrap");
 		}
 		
 		endstopsTab.add(new JLabel("Invert X axis"));		

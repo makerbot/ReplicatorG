@@ -1361,21 +1361,35 @@ ToolpathGenerator.GeneratorListener
 		{
 			if(preheatMachine)
 			{
-				tool0Target = Base.preferences.getInt("build.preheatTool0", 75);
-				platTarget = Base.preferences.getInt("build.preheatPlatform", 75);
+					tool0Target = Base.preferences.getInt("build.preheatTool0", 75);
+					platTarget = Base.preferences.getInt("build.preheatPlatform", 75);
+					if(isDualDriver())
+						tool1Target = Base.preferences.getInt("build.preheatTool1", 75);
+			
+				machine.runCommand(new replicatorg.drivers.commands.SelectTool(0)); /// for paranoia to get the right tool
+				machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool0Target,0));
+				machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(platTarget,0));
 				if(isDualDriver())
-					tool1Target = Base.preferences.getInt("build.preheatTool1", 75);
+				{
+					machine.runCommand(new replicatorg.drivers.commands.SelectTool(1)); /// for paranoia to get the right tool
+					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool1Target,1));
+				}
 			}
-			machine.runCommand(new replicatorg.drivers.commands.SelectTool(0)); /// for paranoia to get the right tool
-			machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool0Target,0));
-			machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(platTarget,0));
-			if(isDualDriver())
+			
+			if(!preheatMachine)
 			{
-				machine.runCommand(new replicatorg.drivers.commands.SelectTool(1)); /// for paranoia to get the right tool
-				machine.runCommand(new replicatorg.drivers.commands.SetTemperature(tool1Target,1));
+				machine.runCommand(new replicatorg.drivers.commands.SelectTool(0)); /// for paranoia to get the right tool
+				machine.runCommand(new replicatorg.drivers.commands.SetTemperature(0,0));
+				machine.runCommand(new replicatorg.drivers.commands.SetPlatformTemperature(0,0));
+				if(isDualDriver())
+				{
+					machine.runCommand(new replicatorg.drivers.commands.SelectTool(1)); /// for paranoia to get the right tool
+					machine.runCommand(new replicatorg.drivers.commands.SetTemperature(0,1));
+				}
 			}
 		}
 	}
+
 
 	protected void handleToolheadIndexing() {
 		if (!(machineLoader.getDriver() instanceof MultiTool)) {
@@ -1442,7 +1456,10 @@ ToolpathGenerator.GeneratorListener
 				Base.logger.fine("no valid machine for " + mname);
 				return false; //assume it's a single extruder
 			}
-			System.out.println(machineInter.getModel().getTools().size());
+			
+			//HEREHERE
+			
+			System.out.println("test" + machineInter.getModel().getTools().size());
 			if( machineInter.getModel().getTools().size() == 2 ) {
 				return true;
 			}
