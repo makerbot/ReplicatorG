@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import struct
 import sys
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 toolCommandTable = {
     3: ("<H", "Set target temperature to %i"),
@@ -38,6 +40,42 @@ def printToolAction(tuple):
     if type(disp) == type(""):
         print disp % parsed
 
+def parseBuildStart():
+    global s3gFile
+    packetStr = s3gFile.read(4)
+    if len(packetStr) != 4:
+      raise "Incomplete s3g file during tool parse build start"
+    (stepCount,) = struct.unpack("<I",packetStr)
+    buildName = ""
+    while (1):
+      nextChar = s3gFile.read(1)
+      if nextChar == "\0":
+        break
+      buildName += nextChar
+    return (stepCount, buildName)
+
+def printBuildStart(tuple):
+  # pp.pprint(tuple)
+  print "Build start (%i): %s" % (0, tuple[1])
+
+def parseMessage():
+    global s3gFile
+    packetStr = s3gFile.read(4)
+    if len(packetStr) != 4:
+      raise "Incomplete s3g file during tool parse build start"
+    (options,x,y,seconds) = struct.unpack("<bbbb",packetStr)
+    message = ""
+    while (1):
+      nextChar = s3gFile.read(1)
+      if nextChar == "\0":
+        break
+      message += nextChar
+    return (options,x,y,seconds, message)
+
+def printMessage(tuple):
+  # pp.pprint(tuple)
+  print "Display message (options %d, x: %d y: %d for %d seconds):\n  %s" % (tuple[0], tuple[1], tuple[2], tuple[3], tuple[4])
+
 # Command table entries consist of:
 # * The key: the integer command code
 # * A tuple:
@@ -68,6 +106,15 @@ commandTable = {
     142: ("<iiiiiIB","Move to (%i,%i,%i,%i,%i) in %i us (relative: %X)"),
     143: ("<b","Store home position for axes %d"),
     144: ("<b","Recall home position for axes %d"),
+    145: ("<bb","Set stepper #%ddigital pot value to %d"),
+    146: ("<bbbb","Set LED strip color to R:%d G:%d B:%d Blink rate:%d Reserved:%d"),
+    147: ("<HHb","Beep at %iHz for %i ms with Effect ID:%d"),
+    148: ("<bHb","Pause for button with mask %X, timout in %i seconds, with options %d"),
+    149: (parseMessage,printMessage),
+    150: ("<bb","Set build to %d%% (%d)"),
+    151: ("<b","Queue song id %d"),
+    153: (parseBuildStart,printBuildStart),
+    154: ("<b","End build (%d)"),
 }
 
 def parseNextCommand():
@@ -80,6 +127,7 @@ def parseNextCommand():
         print "EOF"
         return False
     (command) = struct.unpack("B",commandStr)
+    # print command[0]
     (parse, disp) = commandTable[command[0]]
     if type(parse) == type(""):
         packetLen = struct.calcsize(parse)
@@ -98,3 +146,4 @@ def parseNextCommand():
 s3gFile = open(sys.argv[1],'rb')
 while parseNextCommand():
     pass
+
