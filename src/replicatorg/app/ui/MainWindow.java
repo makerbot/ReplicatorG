@@ -1875,7 +1875,8 @@ ToolpathGenerator.GeneratorListener
 				return;
 			}
 		}
-		doPreheat(leavePreheatRunning);
+		//HEREHERE
+		//doPreheat(leavePreheatRunning);
 		machineLoader.disconnect();
 		if(clearMLSingleton) /// this causes the singleton to reload (so post-eeprom-reset/write bots reload data)
 			machineLoader.clearSingleton();
