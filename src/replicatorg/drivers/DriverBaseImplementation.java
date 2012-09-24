@@ -59,7 +59,7 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
         protected Version minimumAccelerationVersion = new Version(0,0);
 	
 	// our point offsets
-	private Point3d[] offsets;
+	protected Point3d[] offsets;
 
 	// are we initialized?
 	private AtomicBoolean isInitialized = new AtomicBoolean(false);

@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Hashtable;
 
+import javax.vecmath.Point3d;
+
 import replicatorg.app.Base;
 import replicatorg.drivers.InteractiveDisplay;
 import replicatorg.drivers.OnboardParameters;
@@ -1846,7 +1848,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			readToolheadCount();
 		return toolCountOnboard;
 	}
-	
 
 
 	/// Returns true of tool count is save on the machine  (not as per XML count)
@@ -1854,7 +1855,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	public boolean hasToolCountOnboard() {return true; }
 
 	/// Sets the number of tool count as saved on the machine (not as per XML count)
-	@Override 
+	@Override
 	public void setToolCountOnboard(int i){ 
 		byte b[] = {(byte)-1};
 		if (i == 1 ||  i == 2)		
@@ -1862,7 +1863,44 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		writeToEEPROM(MightyBoard5XEEPROM.TOOL_COUNT,b);
 		
 	}; 
+
+	@Override
+	/// for 6.0 or later, we do not use offset system See footnote[2]
+	public Point3d getOffset(int i) {
+		if(this.version.getMajor() < 6)
+			return offsets[i];
+		Base.logger.info("offsets deprecated in firmware: " + version.toString());
+		return offsets[0];
+	}
+
+	@Override
+	/// for 6.0 or later, we do not use offset system See footnote[2]
+	public void setOffsetX(int offsetSystemNum, double j) {
+		if(this.version.getMajor() < 6)
+			offsets[offsetSystemNum].x = j;
+		Base.logger.info("offsets deprecated in firmware: " + version.toString());
+	}
+
+	@Override
+	/// for 6.0 or later, we do not use offset system See footnote[2]
+	public void setOffsetY(int offsetSystemNum, double j) {
+		if(this.version.getMajor() < 6)
+			offsets[offsetSystemNum].y = j;
+		Base.logger.info("offsets deprecated in firmware: " + version.toString());
+	}
+
+	@Override
+	/// for 6.0 or later, we do not use offset system See footnote[2]
+	public void setOffsetZ(int offsetSystemNum, double j) {
+		if(this.version.getMajor() < 6)
+			offsets[offsetSystemNum].z = j;
+		Base.logger.info("offsets deprecated in firmware: " + version.toString());	
+	}
+
+
 }
+
+
 
 
 /* footnote[1]:
@@ -1871,3 +1909,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
  For that reason, this class has some switching of functionality based on version, so Replicator can 
  get to those features.  Mostly those new features are in the Replicator2 driver class
 */ 
+
+/* footnote[2]:
+ * These functions are brought up here, since offset behavior changes for Firmware 6.0+ . TL;DR: G10, G54,
+ * G55 should have no effect on firmware 6.0+, and should simply post an error
+ */
