@@ -468,6 +468,11 @@ public class MachineModel
 	 * Get steps-mm conversion value
 	 */
 	public Point5d getStepsPerMM() { return stepsPerMM; }
+
+	/**
+	 * Get axis lengths
+	 */
+	public Point5d getAxisLengths() { return maximum; }
         
         /**
 	 * Get steps-mm conversion value

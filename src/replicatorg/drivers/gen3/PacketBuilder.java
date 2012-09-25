@@ -64,6 +64,22 @@ public class PacketBuilder implements PacketConstants {
 		add16((int) (v & 0xffff));
 		add16((int) ((v >> 16) & 0xffff));
 	}
+
+	/**
+	 * Add a 32-bit float to the end of the packet payload.
+	 *
+	 * @param v
+	 *	      the value to append.  Must be float.
+	 */
+	void addFloat(float v) {
+		//Java doesn't handle funky pointer stuff, so
+		//Convert float into bits as so:
+		//Bit  31 = Sign
+		//Bits 30-23 = Exponent
+		//Bits 22-0 = Mantissa
+		int i = Float.floatToIntBits(v);
+		add32((long)i);
+	}
 	
 	/**
 	 * add string to this packet, up to count of MaxSize (not including null terminator

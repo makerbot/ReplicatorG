@@ -93,9 +93,11 @@ public class OnboardParametersWindow extends JFrame {
 	public void dispose()
 	{
 		this.disconnectOnExit = onboardParamsTab.disconnectOnExit();	
+		boolean leavePreheatRunning = onboardParamsTab.leavePreheatRunning();
 		if(mainwin != null && this.disconnectOnExit){
-			//leave pre-heat, we expect users to reconnect;
-			mainwin.handleDisconnect(/*leavePreheatRunning*/true, /*dispose machine model*/true); 
+			//REPLICATOR: leave pre-heat, we expect users to reconnect;
+			//ToM, Cupcake: keep behavior unchanged, do not start pre-heat
+			mainwin.handleDisconnect(leavePreheatRunning, /*dispose machine model*/true); 
 		}
 		super.dispose();
 	}

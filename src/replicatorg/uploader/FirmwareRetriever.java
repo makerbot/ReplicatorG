@@ -12,10 +12,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
-import java.io.FileWriter;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -54,7 +50,7 @@ class FirmwareRetriever {
 	 * @return an UpdateStatus reflecting the result of the update check.
 	 */
 	UpdateStatus checkForUpdates() {
-		Base.logger.fine("Firmware Source URL : "+ firmwareSourceURL);
+		//System.err.println("PATH : "+ firmwareSourceURL.getPath());
 		UpdateStatus status;
 		synchronized(getClass()) {
 			status = updateURL(firmwareSourceURL,firmwareXml,true);
@@ -108,31 +104,20 @@ class FirmwareRetriever {
 			}
 
 			// Pull down the file.  The content should be an input stream.
-                        //Get content doesn't work if the "Content-Type: text/plain" header is not present in the HTTP header.
-                        //Some servers don't know how exactly to treat .hex files and so it's safe to assume that this will not be around in most packet responses.
-			//Therefore, we must use the raw input stream piped to a buffered stream for getting our data
-
-			BufferedReader packetData = new BufferedReader( new InputStreamReader( urlConnection.getInputStream() ) );
-			FileWriter fileOutput = new FileWriter( file.getAbsoluteFile() );
-			BufferedWriter fileBufferedOutput = new BufferedWriter(fileOutput);
-
+			InputStream content = (InputStream)urlConnection.getContent();
+			FileOutputStream out = new FileOutputStream(file);
 			// Welcome to 1994!  Seriously, there's no standard util for this?  Lame.
-
-			int bytesWritten = 0;
 			final int BUF_SIZE=2048;
-			char buf[] = new char[BUF_SIZE];
-			
+			byte buf[] = new byte[BUF_SIZE];
+			int bytesWritten = 0;
 			while (true) {
-				int count = packetData.read(buf,0,BUF_SIZE);
+				int count = content.read(buf);
 				if (count == -1) break;
 				bytesWritten = bytesWritten + count;
-				fileBufferedOutput.write(buf, 0, count);
+				out.write(buf, 0, count);
 			}
-			packetData.close();
-
-			fileBufferedOutput.close();
-			fileOutput.close();
-
+			out.close();
+			content.close();
 			Base.logger.info(Integer.toString(bytesWritten) + " bytes written to "+file.getCanonicalPath());
 			return UpdateStatus.NEW_UPDATES;
 		} catch (MalformedURLException e) {
@@ -165,7 +150,6 @@ class FirmwareRetriever {
 			URL url;
 			try {
 				url = new URL(firmwareSourceURL,path);
-				Base.logger.fine("Checking remote file: "+ url);
 				File file = Base.getUserFile(path);
 				updateURL(url,file);
 			} catch (MalformedURLException e) {
@@ -174,7 +158,6 @@ class FirmwareRetriever {
 			String eeprom = new FirmwareVersion(n).getEepromPath();
 			if (eeprom != null) try {
 				url = new URL(firmwareSourceURL,eeprom);
-				Base.logger.fine("Checking remote file: "+ url);
 				File file = Base.getUserFile(path);
 				updateURL(url,file);
 			} catch (MalformedURLException e) {

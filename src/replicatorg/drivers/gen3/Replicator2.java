@@ -18,6 +18,7 @@ public class Replicator2 extends MightyBoard
 		preferredVersion = new Version(6,0);
 		minimumAccelerationVersion = new Version(6,0);
 		minAdvancedFeatureVersion = new Version(6,0);
+		minimumJettyAccelerationVersion = new Version(6,1);
 	}
 	
 	

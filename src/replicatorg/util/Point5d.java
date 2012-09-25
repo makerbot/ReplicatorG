@@ -144,6 +144,19 @@ public class Point5d {
 		}
 		return Math.sqrt(acc);		
 	}
+
+	/*
+	  The abs value of the largest axis.
+	  This is equivalent to max_delta / event_count.
+	*/
+	public double absolute_maximum() {
+		double ret = 0d;
+		for (int idx = 0; idx < DIMENSIONS; idx++) {
+			double absValue = Math.abs(values[idx]);
+			if ( absValue > ret )	ret = absValue;
+		}
+		return ret;	
+	}
 	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
