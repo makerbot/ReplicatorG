@@ -2056,7 +2056,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		writeToEEPROM(MightyBoard5XEEPROM.TOOL_COUNT,b);
 		
 	}; 
-<<<<<<< HEAD
 
 	@Override
 	/// for 6.0 or later, we do not use offset system See footnote[2]
@@ -2092,10 +2091,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 
-}
-=======
->>>>>>> surprise/alison_rep2_jetty_support
-
+	
 	/// read a 32 bit unsigned int from EEPROM at location 'offset'
 	private long readUInt32FromEEPROM(int offset)
 	{
