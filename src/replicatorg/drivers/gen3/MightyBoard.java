@@ -603,6 +603,19 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	@Override
 	public void queuePoint(final Point5d p) throws RetryException {
+		// If we don't know our current position, make this move an old-style move.
+		// Typically we need this after home offsets are recalled otherwise an axis
+		// can overspeed or underspeed due to the current position not being known
+		// as we're not connected to a bot, so we can't query it.
+		// Because we don't know our position, we can't calculate the feedrate
+		// or distance correctly, so we demote to a non accelerated command with a
+		// fixed dda calculated by Makerbot4GAlternateDriver.java.
+		if (positionLost()) {
+			//System.out.println(p.toString());
+			//System.out.println("Position Lost");
+			super.queuePoint(p);
+			return;
+		}
 
 		/*
 		 * So, it looks like points specified in A/E/B commands turn in the opposite direction from
@@ -614,6 +627,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		 */
 		Point5d target = new Point5d(p);
 		Point5d current = new Point5d(getPosition());
+		//System.out.println("From: " + current.toString() + " To: " + target.toString());
 		
 		// is this point even step-worthy? Only compute nonzero moves
 		Point5d deltaSteps = getAbsDeltaSteps(current, target);
@@ -633,7 +647,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			delta3d.setY(deltaMM.y());
 			delta3d.setZ(deltaMM.z());
 			double distance = delta3d.distance(new Point5d());
-			double feedrate = getSafeFeedrate(deltaMM);	//Feedrate in mm/min
+
+			Point5d deltaMMAbs = new Point5d(deltaMM);
+			deltaMMAbs.absolute();
+			double feedrate = getSafeFeedrate(deltaMMAbs);	//Feedrate in mm/min
 			double minutes = distance / feedrate;
 			
 			// if minutes == 0 here, we know that this is just an extrusion in place
@@ -693,8 +710,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			//System.out.println(p.toString());
 			//System.out.println(target.toString());
 			//System.out.println("\t steps: " + steps.toString() +"\t dda_rate: " + dda_rate);
-			//System.out.println("\t usec: " + usec + " dda_interval: " + dda_interval + " absolute_maximum: " + steps.absolute_maximum());
-			//System.out.println("\t deltaSteps: " + deltaStepsFinal.toString() + " distance: " + distance);
+			//System.out.println("\t usec: " + usec + " dda_interval: " + dda_interval + " absolute_maximum: " + deltaSteps.absolute_maximum());
+			//System.out.println("\t deltaSteps: " + deltaStepsFinal.toString() + " distance: " + distance + " feedrate: " + feedrate);
 			int relativeAxes = (1 << AxisId.A.getIndex()) | (1 << AxisId.B.getIndex());
 			queueNewExtPoint(steps, (long) dda_rate, relativeAxes, (float)distance, (float)feedrate);
 
