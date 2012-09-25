@@ -2245,9 +2245,9 @@ public class Sanguino3GDriver extends SerialDriver implements
         }
         
         @Override
-        public boolean getAccelerationStatus(){
+        public byte getAccelerationStatus(){
             Base.logger.info("Cannot get acceleration status for S3G driver");
-            return false;
+            return (byte)0;
         }
         
         @Override
@@ -2290,7 +2290,42 @@ public class Sanguino3GDriver extends SerialDriver implements
         
         @Override
 	public boolean hasAcceleration() { return false;}
-   
+ 
+        @Override
+	public boolean hasJettyAcceleration() { return false;}
+ 
+	@Override
+	public int getEEPROMParamInt(EEPROMParams param) {
+            Base.logger.info("This EEPROM interface, getEEPROMParamInt, is not supported for this driver");
+            return 0;
+        }
+
+	@Override
+	public long getEEPROMParamUInt(EEPROMParams param){
+            Base.logger.info("This EEPROM interface, getEEPROMParamUInt, is not supported for this driver");
+            return 0l;
+        }
+
+	@Override
+	public double getEEPROMParamFloat(EEPROMParams param) {
+            Base.logger.info("This EEPROM interface, getEEPROMParamDouble, is not supported for this driver");
+            return 0f;
+        }
+
+	@Override
+	public void setEEPROMParam(EEPROMParams param, int value) {
+            Base.logger.info("This EEPROM interface, setEEPROMParam(param,int), is not supported for this driver");
+        }
+
+	@Override
+	public void setEEPROMParam(EEPROMParams param, long value) {
+            Base.logger.info("This EEPROM interface, setEEPROMParam(param,long), is not supported for this driver");
+        }
+
+	@Override
+	public void setEEPROMParam(EEPROMParams param, double value) {
+            Base.logger.info("This EEPROM interface, setEEPROMParam(param,double), is not supported for this driver");
+        }
 
 	public void storeHomePositions(EnumSet<AxisId> axes) throws RetryException {
 		byte b = 0;
