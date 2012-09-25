@@ -123,6 +123,7 @@ def parseNextCommand():
     if len(commandStr) == 0:
         print "EOF"
         return False
+    sys.stdout.write(str(lineNumber) + ': ')
     (command) = struct.unpack("B",commandStr)
     (parse, disp) = commandTable[command[0]]
     if type(parse) == type(""):
@@ -140,5 +141,6 @@ def parseNextCommand():
     return True
 
 s3gFile = open(sys.argv[1],'rb')
+lineNumber = 0
 while parseNextCommand():
-    pass
+    lineNumber  = lineNumber + 1
