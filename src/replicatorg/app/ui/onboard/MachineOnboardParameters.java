@@ -997,14 +997,14 @@
            "compensation.");
 
 		 private JFormattedTextField extruderDeprimeA = PositiveTextFieldInt(repNF, 10000,
-           "The number of steps to retract the right extruder's filament when the pipeline of buffered moves empties or " +
-           "a travel-only move is encountered. Set to a value of 0 to disable this feature.  Do not use with " +
-           "Skeinforge's Reversal plugin: use one or the other but not both.");
+           "The number of steps to retract the right extruder's filament when the pipeline of buffered moves empties " +
+           "or a travel-only move is encountered.  Set to a value of 0 to disable this feature for this extruder.  " +
+           "Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's \"Retraction Distance\".");
 
 		 private JFormattedTextField extruderDeprimeB = PositiveTextFieldInt(repNF, 10000,
-           "The number of steps to retract the left extruder's filament when the pipeline of buffered moves empties or " +
-           "a travel-only move is encountered. Set to a value of 0 to disable this feature.  Do not use with " +
-           "Skeinforge's Reversal plugin: use one or the other but not both.");
+           "The number of steps to retract the left extruder's filament when the pipeline of buffered moves empties " +
+           "or a travel-only move is encountered.  Set to a value of 0 to disable this feature for this extruder.  " +
+           "Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's \"Retraction Distance\".");
 
 		 private JCheckBox overrideGCodeTempBox = new JCheckBox();
 		 {
@@ -1487,7 +1487,8 @@
 		 private JFormattedTextField extruderDeprime = PositiveTextFieldDouble(jerkNF,
            "The number of millimeters to retract the extruded filament when the pipeline of buffered moves empties or " +
            "a travel-only move is encountered.  The default value is 4.0 mm.  Set to a value of 0 to disable this " +
-           "feature.  Do not use with Skeinforge's Reversal plugin: use one or the other but not both.");
+           "feature.  Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's " +
+	   "\"Retraction Distance\".");
 
 		 private JFormattedTextField revMaxFeedrate = PositiveTextFieldInt(frNF,
             "The maximum feedrate in mm/s to use in an extruder-only move.  An extruder-only move is a move in which " +
