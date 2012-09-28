@@ -22,13 +22,13 @@ fillet	False
 flow	False
 home	False
 hop	False
-inset	True
+inset	False
 jitter	False
 lash	False
 lift	False
 limit	False
 mill	False
-multiply	False
+multiply	True
 oozebane	False
 outset	False
 preface	False
