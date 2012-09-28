@@ -3,6 +3,7 @@ _Name                          	Value
 WindowPosition	600+0
 Open File for Craft	
 alteration	False
+altshell	False
 bottom	False
 carve	False
 chamber	False
@@ -17,7 +18,7 @@ drill	False
 dwindle	False
 export	False
 feed	False
-fill	False
+fill	True
 fillet	False
 flow	False
 home	False

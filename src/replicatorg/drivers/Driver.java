@@ -142,10 +142,11 @@ public interface Driver {
 
 	public Version getMinimumVersion();
         
-        public Version getMinimumAccelerationVersion();
+  public Version getMinimumAccelerationVersion();
 
-        public Version getMinimumJettyAccelerationVersion();
-	
+  public Version getMinimumJettyAccelerationVersion();
+
+  public Version getMinimumAdvancedFeatureVersion();
 	public Version getPreferredVersion();
 	
 	/**
