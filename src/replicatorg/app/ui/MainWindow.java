@@ -2285,7 +2285,12 @@ ToolpathGenerator.GeneratorListener
 			return;
 		}
 
-		String sourceName = build.getName() + ".s3g";
+    String sourceName;
+    if(machineLoader.getDriver() instanceof OnboardParameters && ((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration()){
+		  sourceName = build.getName() + ".s4g";
+    } else {
+      sourceName = build.getName() + ".s3g";
+    }
 		String path = selectOutputFile(sourceName);
 		if (path != null) {
 			// build specific stuff

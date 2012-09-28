@@ -108,7 +108,7 @@ M18
 			<axis id="x" length="106" maxfeedrate="9600" homingfeedrate="2500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="y" length="120" maxfeedrate="9600" homingfeedrate="2500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="106" maxfeedrate="3000" homingfeedrate="1000" stepspermm="200" endstops="max"/> <!-- TR-8x8 Z axis = 1/(8/1600) -->
-			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="48.1376009351726" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
+			<axis id="a" length="100000" maxfeedrate="6000" stepspermm="48.1376009351726" endstops="none"/> <!-- stepspermm is incoming filament length, 127 is ca. 4 RPM, 1600 ca. 50 RPM -->
 		</geometry>
 		<tools>
 			<tool name="Stepstruder MK7" type="extruder" material="abs" motor="true" fan="true" heatedplatform="true" motor_steps="1600" default_rpm="3" heater="true" stepper_axis="a"/>
