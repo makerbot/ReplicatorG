@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Hashtable;
 import java.util.logging.Level;
-
 import javax.vecmath.Point3d;
 
 import replicatorg.app.Base;
@@ -348,15 +347,14 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 		// Check the steps per mm and axis lengths stored in the firmware for the XYZAB axis, and if they
 		// don't match the machine definition, write them and reset the bot
-//		boolean needsReset = checkAndWriteStepsPerMM();
-//		needsReset |= checkAndWriteAxisLengths();
-//		needsReset |= checkAndWriteMaxFeedRates();
-//		if ( needsReset ) {
-//               		setInitialized(true);	//Needed to get a proper reset
-//			reset();
-//               		setInitialized(false);
-//		}
-
+		boolean needsReset = checkAndWriteStepsPerMM();
+		needsReset |= checkAndWriteAxisLengths();
+		needsReset |= checkAndWriteMaxFeedRates();
+		if ( needsReset ) {
+               		setInitialized(true);	//Needed to get a proper reset
+			reset();
+               		setInitialized(false);
+		}
 		return true;
 	}
 	
@@ -530,7 +528,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	// Checks the axis lengths stored in the firmware for all axis, and updates them to
 	// match the ones stored in the machine xml if they are different
-  // NOTE: this function is not currently implemented and needs to be updated for MightyBoard6X1EEPROM
 	public boolean checkAndWriteAxisLengths() {
 
 		if (!hasJettyAcceleration())
@@ -543,24 +540,23 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		int stepperCountMightyBoard = 5;
 		for(int i = 0; i < stepperCountMightyBoard; i++) {
 			int firmwareAxisLength = read32FromEEPROM(MightyBoard5XEEPROM.AXIS_LENGTHS + i*4);
-
 			int val = 0;
 
 			switch (i) {
 				case 0:
-					val = (int)(axisLengths.x() * machineStepsPerMM.x());
+					val = (int)(axisLengths.x());
 					break;
 				case 1:
-					val = (int)(axisLengths.y() * machineStepsPerMM.y());
+					val = (int)(axisLengths.y());
 					break;
 				case 2:
-					val = (int)(axisLengths.z() * machineStepsPerMM.z());
+					val = (int)(axisLengths.z());
 					break;
 				case 3:
-					val = (int)(axisLengths.a() * machineStepsPerMM.a());
+					val = (int)(axisLengths.a());
 					break;
 				case 4:
-					val = (int)(axisLengths.b() * machineStepsPerMM.b());
+					val = (int)(axisLengths.b());
 					break;
 
 			}
@@ -607,6 +603,19 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 	@Override
 	public void queuePoint(final Point5d p) throws RetryException {
+		// If we don't know our current position, make this move an old-style move.
+		// Typically we need this after home offsets are recalled otherwise an axis
+		// can overspeed or underspeed due to the current position not being known
+		// as we're not connected to a bot, so we can't query it.
+		// Because we don't know our position, we can't calculate the feedrate
+		// or distance correctly, so we demote to a non accelerated command with a
+		// fixed dda calculated by Makerbot4GAlternateDriver.java.
+		if (positionLost()) {
+			//System.out.println(p.toString());
+			//System.out.println("Position Lost");
+			super.queuePoint(p);
+			return;
+		}
 
 		/*
 		 * So, it looks like points specified in A/E/B commands turn in the opposite direction from
@@ -618,6 +627,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		 */
 		Point5d target = new Point5d(p);
 		Point5d current = new Point5d(getPosition());
+		//System.out.println("From: " + current.toString() + " To: " + target.toString());
 		
 		// is this point even step-worthy? Only compute nonzero moves
 		Point5d deltaSteps = getAbsDeltaSteps(current, target);
@@ -637,7 +647,9 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			delta3d.setY(deltaMM.y());
 			delta3d.setZ(deltaMM.z());
 			double distance = delta3d.distance(new Point5d());
-			double feedrate = getSafeFeedrate(deltaMM);	//Feedrate in mm/min
+			Point5d deltaMMAbs = new Point5d(deltaMM);
+			deltaMMAbs.absolute();
+			double feedrate = getSafeFeedrate(deltaMMAbs);	//Feedrate in mm/min
 			double minutes = distance / feedrate;
 			
 			// if minutes == 0 here, we know that this is just an extrusion in place
@@ -2114,8 +2126,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		write32ToEEPROM32(offset, v);
 	}
 
-
-
 	/// Get a stored unsigned 8bit int from EEPROM
 	/// Made difficult because Java lacks an unsigned byte and thus when converting from
 	/// Byte to Int, the value can go unexpectedly negative and change the bits
@@ -2140,7 +2150,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 	/// Get a stored 32bit unsigned int from EEPROM
-
 	private long getUInt32EEPROM(int offset) {
 		return readUInt32FromEEPROM(offset);
 	}
@@ -2252,4 +2261,3 @@ public class MightyBoard extends Makerbot4GAlternateDriver
  * These functions are brought up here, since offset behavior changes for Firmware 6.0+ . TL;DR: G10, G54,
  * G55 should have no effect on firmware 6.0+, and should simply post an error
  */
-

@@ -40,41 +40,37 @@ def printToolAction(tuple):
     if type(disp) == type(""):
         print disp % parsed
 
-def parseBuildStart():
+def parseDisplayMessageAction():
     global s3gFile
     packetStr = s3gFile.read(4)
-    if len(packetStr) != 4:
-      raise "Incomplete s3g file during tool parse build start"
-    (stepCount,) = struct.unpack("<I",packetStr)
-    buildName = ""
-    while (1):
-      nextChar = s3gFile.read(1)
-      if nextChar == "\0":
-        break
-      buildName += nextChar
-    return (stepCount, buildName)
+    if len(packetStr) < 4:
+        raise "Incomplete s3g file during tool command parse"
+    (options,offsetX,offsetY,timeout) = struct.unpack("<BBBB",packetStr)
+    message = "";
+    while True:
+       c = s3gFile.read(1);
+       if c == '\0':
+          break;
+       else:
+          message += c;
 
-def printBuildStart(tuple):
-  # pp.pprint(tuple)
-  print "Build start (%i): %s" % (0, tuple[1])
+    return (options,offsetX,offsetY,timeout,message)
 
-def parseMessage():
+def parseBuildStartNotificationAction():
     global s3gFile
     packetStr = s3gFile.read(4)
-    if len(packetStr) != 4:
-      raise "Incomplete s3g file during tool parse build start"
-    (options,x,y,seconds) = struct.unpack("<bbbb",packetStr)
-    message = ""
-    while (1):
-      nextChar = s3gFile.read(1)
-      if nextChar == "\0":
-        break
-      message += nextChar
-    return (options,x,y,seconds, message)
+    if len(packetStr) < 4:
+        raise "Incomplete s3g file during tool command parse"
+    (steps) = struct.unpack("<i",packetStr)
+    buildName = "";
+    while True:
+       c = s3gFile.read(1);
+       if c == '\0':
+          break;
+       else:
+          buildName += c;
 
-def printMessage(tuple):
-  # pp.pprint(tuple)
-  print "Display message (options %d, x: %d y: %d for %d seconds):\n  %s" % (tuple[0], tuple[1], tuple[2], tuple[3], tuple[4])
+    return (steps[0],buildName)
 
 # Command table entries consist of:
 # * The key: the integer command code
@@ -106,15 +102,18 @@ commandTable = {
     142: ("<iiiiiIB","Move to (%i,%i,%i,%i,%i) in %i us (relative: %X)"),
     143: ("<b","Store home position for axes %d"),
     144: ("<b","Recall home position for axes %d"),
-    145: ("<bb","Set stepper #%ddigital pot value to %d"),
-    146: ("<bbbb","Set LED strip color to R:%d G:%d B:%d Blink rate:%d Reserved:%d"),
-    147: ("<HHb","Beep at %iHz for %i ms with Effect ID:%d"),
-    148: ("<bHb","Pause for button with mask %X, timout in %i seconds, with options %d"),
-    149: (parseMessage,printMessage),
-    150: ("<bb","Set build to %d%% (%d)"),
-    151: ("<b","Queue song id %d"),
-    153: (parseBuildStart,printBuildStart),
-    154: ("<b","End build (%d)"),
+    145: ("<BB","Set pot axis %i to %i"),
+    146: ("<BBBBB","Set RGB led red %i, green %i, blue %i, blink rate %i, effect %i"),
+    147: ("<HHB","Set beep, frequency %i, length %i, effect %i"),
+    148: ("<BHB","Pause for button 0x%X, timeout %i s, timeout_bevavior %i"),
+    149: (parseDisplayMessageAction, "Display message, options 0x%X at %i,%i timeout %i s: %s"),
+    150: ("<BB","Set build percent %i%%, ignore %i"),
+    151: ("<B","Queue song %i"),
+    152: ("<B","Reset to factory, options 0x%X"),
+    153: (parseBuildStartNotificationAction, "Start build, steps %i: %s"),
+    154: ("<B","End build, flags 0x%X"),
+    155: ("<iiiiiIBfh","Move to (%i,%i,%i,%i,%i) dda_rate: %i (relative: %X) distance: %f feedrateX64: %i"),
+    156: ("<B","Set acceleration to %i"),
 }
 
 def parseNextCommand():
@@ -126,6 +125,7 @@ def parseNextCommand():
     if len(commandStr) == 0:
         print "EOF"
         return False
+    sys.stdout.write(str(lineNumber) + ': ')
     (command) = struct.unpack("B",commandStr)
     # print command[0]
     (parse, disp) = commandTable[command[0]]
@@ -144,6 +144,6 @@ def parseNextCommand():
     return True
 
 s3gFile = open(sys.argv[1],'rb')
+lineNumber = 0
 while parseNextCommand():
-    pass
-
+    lineNumber  = lineNumber + 1

@@ -147,7 +147,6 @@ public interface Driver {
   public Version getMinimumJettyAccelerationVersion();
 
   public Version getMinimumAdvancedFeatureVersion();
-	
 	public Version getPreferredVersion();
 	
 	/**

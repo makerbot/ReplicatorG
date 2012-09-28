@@ -1015,14 +1015,14 @@
            "compensation.");
 
 		 private JFormattedTextField extruderDeprimeA = PositiveTextFieldInt(repNF, 10000,
-           "The number of steps to retract the right extruder's filament when the pipeline of buffered moves empties or " +
-           "a travel-only move is encountered. Set to a value of 0 to disable this feature.  Do not use with " +
-           "Skeinforge's Reversal plugin: use one or the other but not both.");
+           "The number of steps to retract the right extruder's filament when the pipeline of buffered moves empties " +
+           "or a travel-only move is encountered.  Set to a value of 0 to disable this feature for this extruder.  " +
+           "Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's \"Retraction Distance\".");
 
 		 private JFormattedTextField extruderDeprimeB = PositiveTextFieldInt(repNF, 10000,
-           "The number of steps to retract the left extruder's filament when the pipeline of buffered moves empties or " +
-           "a travel-only move is encountered. Set to a value of 0 to disable this feature.  Do not use with " +
-           "Skeinforge's Reversal plugin: use one or the other but not both.");
+           "The number of steps to retract the left extruder's filament when the pipeline of buffered moves empties " +
+           "or a travel-only move is encountered.  Set to a value of 0 to disable this feature for this extruder.  " +
+           "Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's \"Retraction Distance\".");
 
            
 		 // Slowdown is a flag for the Replicator
@@ -1381,6 +1381,13 @@
 		    "also want to decrease the per-axis max feedrates."));
 		 }
 
+		 private JCheckBox inverted5DExtruderBox = new JCheckBox();
+		 {
+			 inverted5DExtruderBox.setToolTipText(wrap2HTML(width,
+				"Enabled when building models sliced using Volumetric 5D and prepared for " +
+				"your printer using the makerbot4g driver."));
+		 }
+
 		 // Basic acceleration parameters
 
 		 private JFormattedTextField xAxisMaxFeedrate = PositiveTextFieldInt(frNF,
@@ -1479,7 +1486,8 @@
 		 private JFormattedTextField extruderDeprime = PositiveTextFieldDouble(jerkNF,
            "The number of millimeters to retract the extruded filament when the pipeline of buffered moves empties or " +
            "a travel-only move is encountered.  The default value is 4.0 mm.  Set to a value of 0 to disable this " +
-           "feature.  Do not use with Skeinforge's Reversal plugin: use one or the other but not both.");
+           "feature.  Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's " +
+	   "\"Retraction Distance\".");
 
 		 private JFormattedTextField revMaxFeedrate = PositiveTextFieldInt(frNF,
             "The maximum feedrate in mm/s to use in an extruder-only move.  An extruder-only move is a move in which " +
@@ -1735,6 +1743,8 @@
 					       clockwiseExtruderChoice.isSelected() ? 1L : 0L);
 			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MIN_FEED_RATE,
 					       ((Number)minFeedrate.getValue()).doubleValue());
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.INVERTED_EXTRUDER_5D,
+					       inverted5DExtruderBox.isSelected() ? 1 : 0);
 			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MIN_TRAVEL_FEED_RATE,
 					       ((Number)minTravelFeedrate.getValue()).doubleValue());
 			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MIN_SEGMENT_TIME,
@@ -1809,6 +1819,7 @@
 			 extruderMoveAcceleration.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_RETRACT));
 			 extruderDeprime.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A));
 			 clockwiseExtruderChoice.setSelected(1L == target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_CLOCKWISE_EXTRUDER));
+			 inverted5DExtruderBox.setSelected(0 != target.getEEPROMParamInt(OnboardParameters.EEPROMParams.INVERTED_EXTRUDER_5D));
 			 minFeedrate.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MIN_FEED_RATE));
 			 minTravelFeedrate.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MIN_TRAVEL_FEED_RATE));
 			 minSegmentTime.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MIN_SEGMENT_TIME));
@@ -1931,9 +1942,7 @@
 					       minTravelFeedrate, "wrap");
 
 			 addWithSharedToolTips(accelerationMiscTab, "Min feedrate at junctions (mm/s)",
-					       minPlannerSpeed);
-			 addWithSharedToolTips(accelerationMiscTab, "Clockwise extruder",
-					       clockwiseExtruderChoice, "wrap");
+					       minPlannerSpeed, "wrap");
 
 			 addWithSharedToolTips(accelerationMiscTab, "Min segment printing time (s)",
 					       minSegmentTime);
@@ -1961,11 +1970,13 @@
 
 			 addWithSharedToolTips(miscTab, "Extruder 1 preheat & override temperature (C)",
 					       tool1Temp);
-			 addWithSharedToolTips(miscTab, "Mood light script", moodLightScript, "wrap");
+			 addWithSharedToolTips(miscTab, "Clockwise extruder", clockwiseExtruderChoice, "wrap");
 
 			 addWithSharedToolTips(miscTab, "Platform preheat & override temperature (C)",
-					       platformTemp, "wrap");
+					       platformTemp);
+			 addWithSharedToolTips(miscTab, "5D extruder", inverted5DExtruderBox, "wrap");
 
+			 addWithSharedToolTips(miscTab, "Mood light script", moodLightScript, "span 4, wrap");
 			 addWithSharedToolTips(miscTab, "Mood light color",
 					       moodLightCustomColor, "span 4, wrap, gapbottom push, gapright push");
 		 }

@@ -238,7 +238,6 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
   public Version getMinimumAdvancedFeatureVersion(){
           return minAdvancedFeatureVersion;
   }
-	
 	public Version getPreferredVersion() {
 		return preferredVersion;
 	}
