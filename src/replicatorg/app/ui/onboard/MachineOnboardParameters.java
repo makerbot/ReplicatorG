@@ -1974,7 +1974,7 @@
 
 			 addWithSharedToolTips(miscTab, "Platform preheat & override temperature (C)",
 					       platformTemp);
-			 addWithSharedToolTips(miscTab, "5D extruder", inverted5DExtruderBox, "wrap");
+			 addWithSharedToolTips(miscTab, "Volumetric 5D extruder", inverted5DExtruderBox, "wrap");
 
 			 addWithSharedToolTips(miscTab, "Mood light script", moodLightScript, "span 4, wrap");
 			 addWithSharedToolTips(miscTab, "Mood light color",

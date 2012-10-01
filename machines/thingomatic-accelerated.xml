@@ -52,7 +52,7 @@ M18
 		<bookend start="machines/thingomatic/start+HBP+Stepstruder.gcode" end="machines/thingomatic/end+Stepstruder.gcode"/>		
 	</machine>
 <machine>
-		<name>Thingomatic w/ HBP and Extruder MK6 (Accelerated 5D)</name>
+		<name>Thingomatic w/ HBP and Extruder MK6 (Accelerated Volumetric)</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="9600" homingfeedrate="2500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
@@ -153,7 +153,7 @@ M18
 		<bookend start="machines/thingomatic/start+HBP+Stepstruder.gcode" end="machines/thingomatic/end+Stepstruder.gcode"/>		
 	</machine>
 <machine>
-		<name>Thingomatic w/ HBP and Stepstruder MK7 (Accelerated 5D)</name>
+		<name>Thingomatic w/ HBP and Stepstruder MK7 (Accelerated Volumetric)</name>
 		<geometry type="cartesian">
 			<!-- different pulleys on X and Y axii -->
 			<axis id="x" length="106" maxfeedrate="9600" homingfeedrate="2500" stepspermm="47.069852" endstops="min"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->

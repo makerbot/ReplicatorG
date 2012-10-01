@@ -1,5 +1,8 @@
 0039-Beta ReplicatorG
 * Added Replicator 2 Machine profile
+* Added Profiles for Thing-o-matic with Skeinforge-50 and volumetric printing
+* Added support for accelerated Thing-o-matic firmware.  MBI is hosting Jetty firmware v3.5
+* bugfix for setting preheat on commit
 
 0038-Beta ReplicatorG
 * bugfix for commiting onboard preferences to Replicator(Single Extruder)
