@@ -2,6 +2,7 @@ Format is tab separated skeinforge craft settings.
 Name                          	Value
 WindowPosition	0+0
 Open File for Craft	
+altshell	False
 bottom	False
 carve	False
 chamber	False
@@ -15,7 +16,7 @@ dimension	False
 drill	False
 export	False
 feed	False
-fill	False
+fill	True
 fillet	False
 flow	False
 home	False
@@ -28,13 +29,15 @@ limit	False
 mill	False
 multiply	False
 oozebane	False
+outline	False
 outset	False
 preface	False
 raft	False
+reversal	False
 speed	False
 splodge	False
 stretch	False
-temperature	True
+temperature	False
 tower	False
 unpause	False
 whittle	False

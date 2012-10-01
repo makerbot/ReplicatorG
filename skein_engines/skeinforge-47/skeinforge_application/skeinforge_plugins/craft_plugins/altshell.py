@@ -83,7 +83,7 @@ class AltshellRepository:
 		"Set the default settings, execute title & settings fileName."
 		skeinforge_profile.addListsToCraftTypeRepository( 'skeinforge_tools.craft_plugins.altshell.html', self )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Altshell', self, '' )
-		self.activateAltshell = settings.BooleanSetting().getFromValue( 'Activate Altshell', self, True )
+		self.activateAltshell = settings.BooleanSetting().getFromValue( 'Activate Altshell', self, False)
 		self.useM320M321 = settings.BooleanSetting().getFromValue( 'Use M320/M321', self, False )
 		self.executeTitle = 'Altshell'
 
