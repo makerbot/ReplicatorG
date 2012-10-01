@@ -2286,7 +2286,8 @@ ToolpathGenerator.GeneratorListener
 		}
 
     String sourceName;
-    if(machineLoader.getDriver() instanceof OnboardParameters && ((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration()){
+    if(machineLoader.getDriver() instanceof OnboardParameters && ((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() &&
+        ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures()){
 		  sourceName = build.getName() + ".s4g";
     } else {
       sourceName = build.getName() + ".s3g";

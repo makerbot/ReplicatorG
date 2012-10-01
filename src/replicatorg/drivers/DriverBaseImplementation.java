@@ -382,7 +382,6 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 
 		// Determine the magnitude of this delta
 		double length = delta.length();
-		
 		// For each axis: if the current feedrate will cause this axis to move
 		// faster than it's maximum feedrate, lower the system feedrate so
 		// that it will be compliant.
@@ -393,7 +392,6 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 				}
 			}
 		}
-		
 		// Return the feedrate, which is how fast the toolhead will be moving (magnitude of the toolhead velocity)
 		return feedrate;
 	}

@@ -28,6 +28,6 @@ Solid Surface Thickness (layers):	2
 Infill > Loops > Perimeter	False
 Infill > Perimeter > Loops	False
 Loops > Infill > Perimeter	False
-Loops > Perimeter > Infill	True
+Loops > Perimeter > Infill	False
 Perimeter > Infill > Loops	False
-Perimeter > Loops > Infill	False
+Perimeter > Loops > Infill	True

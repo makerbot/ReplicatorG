@@ -2,6 +2,7 @@ Format is tab separated skeinforge craft settings.
 Name                          	Value
 WindowPosition	0+0
 Open File for Craft	
+altshell	True
 bottom	False
 carve	False
 chamber	False
@@ -41,4 +42,4 @@ tower	False
 unpause	False
 whittle	False
 widen	False
-wipe	True
+wipe	False

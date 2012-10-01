@@ -18,7 +18,7 @@ drill	False
 dwindle	False
 export	False
 feed	False
-fill	True
+fill	False
 fillet	False
 flow	False
 home	False
@@ -29,7 +29,7 @@ lash	False
 lift	False
 limit	False
 mill	False
-multiply	True
+multiply	False
 oozebane	False
 outset	False
 preface	False
@@ -38,7 +38,7 @@ scale	False
 skin	False
 skirt	False
 smooth	False
-speed	False
+speed	True
 splodge	False
 stretch	False
 temperature	False
