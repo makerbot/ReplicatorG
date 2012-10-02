@@ -1,0 +1,6 @@
+Format is tab separated limit settings.
+_Name                          	Value
+WindowPosition	700+0
+Open File for Limit	
+Activate Limit	False
+Maximum Initial Feed Rate (mm/s):	8.0
