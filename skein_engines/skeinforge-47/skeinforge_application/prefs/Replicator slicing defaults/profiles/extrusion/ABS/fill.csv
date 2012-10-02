@@ -17,8 +17,8 @@ Infill Begin Rotation (degrees):	90.0
 Infill Begin Rotation Repeat (layers):	1
 Infill Odd Layer Extra Rotation (degrees):	90.0
 Grid Circular	False
-Grid Hexagonal	True
-Grid Rectangular	False
+Grid Hexagonal	False
+Grid Rectangular	True
 Line	False
 Infill Perimeter Overlap (ratio):	0.3
 Infill Solidity (ratio):	0.1
@@ -30,6 +30,6 @@ Surrounding Angle (degrees):	60.0
 Infill > Loops > Perimeter	False
 Infill > Perimeter > Loops	False
 Loops > Infill > Perimeter	False
-Loops > Perimeter > Infill	True
+Loops > Perimeter > Infill	False
 Perimeter > Infill > Loops	False
-Perimeter > Loops > Infill	False
+Perimeter > Loops > Infill	True

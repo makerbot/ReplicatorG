@@ -52,6 +52,14 @@ public class OnboardParametersWindow extends JFrame {
 		{
 			paramsTabs.addTab("Extruder " + t.getIndex(), new ExtruderOnboardParameters(targetParams, t,(JFrame)this));
 		}
+		
+		/*String machineType = targetParams.getMachineType();
+		if((machineType.equals("MightyBoard") || 
+			machineType.equals("The Replicator") || 
+			machineType.equals("MightyBoard(unverified)")))
+		{
+			paramsTabs.addTab("Bot Settings", new BotParameters());
+		}*/
 
 		JLabel verifyString = new JLabel("Warning: Machine Type is not verifiable.");
 		verifyString.setToolTipText("this machine has no way to verify the EEPORM is a valid layout");
@@ -85,9 +93,11 @@ public class OnboardParametersWindow extends JFrame {
 	public void dispose()
 	{
 		this.disconnectOnExit = onboardParamsTab.disconnectOnExit();	
+		boolean leavePreheatRunning = onboardParamsTab.leavePreheatRunning();
 		if(mainwin != null && this.disconnectOnExit){
-			//leave pre-heat, we expect users to reconnect;
-			mainwin.handleDisconnect(/*leavePreheatRunning*/true, /*dispose machine model*/true); 
+			//REPLICATOR: leave pre-heat, we expect users to reconnect;
+			//ToM, Cupcake: keep behavior unchanged, do not start pre-heat
+			mainwin.handleDisconnect(leavePreheatRunning, /*dispose machine model*/true); 
 		}
 		super.dispose();
 	}

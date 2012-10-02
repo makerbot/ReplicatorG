@@ -315,7 +315,8 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		JComponent defaultsPanel = new JPanel(new MigLayout("fillx"));
 
 		final JButton repDefaults = new JButton("Load Replicator Defaults");
-		final JButton repAccelDefaults = new JButton("Load Replicator:Accelerated Defaults");
+    final JButton tomDefaults = new JButton("Load Thing-o-matic Defaults");
+		final JButton repAccelDefaults = new JButton("Load Accelerated Defaults");
 
 		
 		ActionListener loadRepDefaults = new ActionListener(){
@@ -329,6 +330,28 @@ public class PrintOMatic5D implements SkeinforgePreference {
 				setValue("numberOfShells", "1");
 				setValue("desiredFeedrate", "40");
 				setValue("travelFeedrate", "55");
+				setValue("filamentDiameter", "1.82");
+//				setValue("packingDensity", "85");
+				setValue("desiredPathWidth", ".4");
+				setValue("printTemp", "220");
+					
+				// Refresh the other three tabs
+				printOMatic5D.removeAll();
+				makeTabs();
+			}
+		};
+  
+		ActionListener loadTomDefaults = new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				
+				// Set all the values based on the selected default
+				// Keep this up to date! if the set of defaults changes, so does this set of calls!
+				setValue("infillPercent", "10");
+				setValue("desiredLayerHeight", ".27");
+				setValue("numberOfShells", "1");
+				setValue("desiredFeedrate", "30");
+				setValue("travelFeedrate", "30");
 				setValue("filamentDiameter", "1.82");
 //				setValue("packingDensity", "85");
 				setValue("desiredPathWidth", ".4");
@@ -364,9 +387,11 @@ public class PrintOMatic5D implements SkeinforgePreference {
 		};
 		
 		repDefaults.addActionListener(loadRepDefaults);
+    tomDefaults.addActionListener(loadTomDefaults);
 		repAccelDefaults.addActionListener(loadRepAccelDefaults);
 		
 		defaultsPanel.add(repDefaults, "growx, wrap");
+    defaultsPanel.add(tomDefaults, "growx, wrap");
 		defaultsPanel.add(repAccelDefaults, "growx, wrap");
 		
 		return defaultsPanel;

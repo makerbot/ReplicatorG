@@ -7,8 +7,8 @@
 			<axis id="x" length="227" maxfeedrate="18000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="y" length="148" maxfeedrate="18000" homingfeedrate="2500" stepspermm="94.139704" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/8 step = 1/(10.82 * pi / 1600) -->
 			<axis id="z" length="150" maxfeedrate="1170" homingfeedrate="1100" stepspermm="400" endstops="min"/> <!-- Actual length is 157mm, we reserve ~5mm for safety. TR-8x8 Z axis = 1/(8/1600) -->
-			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
-			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
+			<axis id="a" length="100000" maxfeedrate="16000" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
+			<axis id="b" length="100000" maxfeedrate="16000" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
 		</geometry>
 		<tools>
 			<tool name="Mk8 Left" model="Mk8" diameter="0.4" stepper_axis="b" index="1" type="extruder" motor="true" fan="true"  heatedplatform="false" motor_steps="3200" default_rpm="3" heater="true"/>

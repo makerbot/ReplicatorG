@@ -1,0 +1,6 @@
+Format is tab separated altshell settings.
+Name                          	Value
+WindowPosition	600+0
+Open File for Altshell	
+Activate Altshell	False
+Use M320/M321	False

@@ -27,6 +27,7 @@ the contributor's full name, I've listed their github handle instead.
 * Noah Levy
 * Ben Rockhold
 * Far McKon
+* Bill Canfield
 
 
 If I've left you off this list, let me know ASAP and I'll add your
