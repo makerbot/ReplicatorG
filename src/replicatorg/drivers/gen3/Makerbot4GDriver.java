@@ -25,7 +25,7 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 		super();
 		// This will be overridden by the MightyBoard driver when it extends this class
 	        minimumAccelerationVersion = new Version(3,2);
-		minimumJettyAccelerationVersion = new Version(3,2);
+		      minimumJettyAccelerationVersion = new Version(3,2);
         }
 
 	public String getDriverName() {

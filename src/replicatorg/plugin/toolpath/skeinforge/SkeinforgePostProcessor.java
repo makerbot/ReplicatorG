@@ -388,6 +388,7 @@ public class SkeinforgePostProcessor {
 	 */
 	public void setStartCode(GCodeSource source)
 	{
+		Base.logger.severe("gcode source" + source);
 		if(source == null)
 			startCode = null;
 		else if(source instanceof MutableGCodeSource)

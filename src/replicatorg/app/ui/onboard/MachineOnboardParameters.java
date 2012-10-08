@@ -21,7 +21,6 @@
  import replicatorg.drivers.OnboardParameters;
  import replicatorg.machine.model.AxisId;
 
-
  /**
   * A panel for editing the options stored onboard a machine.
   * @author phooky
@@ -39,6 +38,7 @@
 	 private JTextField machineNameField = new JTextField();
 	 private static final String[] toolCountChoices = {"unavailable","1", "2"};
 	 private JComboBox toolCountField = new JComboBox(toolCountChoices);
+   private JCheckBox hbpToggleBox = new JCheckBox();
 	 private JCheckBox xAxisInvertBox = new JCheckBox();
 	 private JCheckBox yAxisInvertBox = new JCheckBox();
 	 private JCheckBox zAxisInvertBox = new JCheckBox();
@@ -68,7 +68,6 @@
 	 // Default column width for wrapping tool tip text
 	 private static final int defaultToolTipWidth = 60;
 
-	
 	 // WARNING: the following code is poking the settings for the global localNF NumberFormat!
 	 //          threePlaces is merely a reference to Base.localNF.  A copy of it which can be
 	 //          manipulated without impacting Base.localNF itself can be had by doing
@@ -134,6 +133,19 @@
 			 else 
 				 target.setToolCountOnboard( -1 );
 		 }
+
+      if(target.hasHbp())
+      {
+        if((target.currentHbpSetting() == 0) && hbpToggleBox.isSelected())
+        {
+          target.setHbpSetting(true);
+        }
+          
+        else if(((target.currentHbpSetting() > 0) && !hbpToggleBox.isSelected()))
+        {
+          target.setHbpSetting(false);
+        }
+      }
 
 		 EnumSet<AxisId> axesInverted = EnumSet.noneOf(AxisId.class);
 		 if (xAxisInvertBox.isSelected()) axesInverted.add(AxisId.X);
@@ -276,13 +288,21 @@
 		}
 		
 		EnumSet<AxisId> invertedAxes = this.target.getInvertedAxes();
-		
+	
 		xAxisInvertBox.setSelected(invertedAxes.contains(AxisId.X));
 		yAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Y));
 		zAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Z));
 		aAxisInvertBox.setSelected(invertedAxes.contains(AxisId.A));
 		bAxisInvertBox.setSelected(invertedAxes.contains(AxisId.B));
 		zHoldBox.setSelected(     !invertedAxes.contains(AxisId.V));
+		
+		if(target.hasHbp()){
+			byte hbp_setting = target.currentHbpSetting();
+			if(hbp_setting > 0)
+				hbpToggleBox.setSelected(true);
+			else
+				hbpToggleBox.setSelected(false);
+		}
                 
 		// 0 == inverted, 1 == not inverted
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
@@ -354,7 +374,10 @@
   			endstopsTab.add(new JLabel("Reported Tool Count:"));
   			endstopsTab.add(toolCountField, "span 2, wrap");
   		}
-		
+		if(target.hasHbp()){
+			endstopsTab.add(new JLabel("HBP on/off"));
+			endstopsTab.add(hbpToggleBox,"span 2, wrap");
+		}
 		
 		endstopsTab.add(new JLabel("Invert X axis"));		
 		endstopsTab.add(xAxisInvertBox,"span 2, wrap");
@@ -385,6 +408,7 @@
 		endstopsTab.add(endstopInversionSelection,"span 2, wrap");
 		endstopsTab.add(new JLabel("Emergency stop"));
 		endstopsTab.add(estopSelection,"spanx, wrap");
+		
 		
 		xAxisHomeOffsetField.setColumns(10);
 		yAxisHomeOffsetField.setColumns(10);
@@ -851,20 +875,14 @@
 		 // Accel Parameters of Tab 2
 		 class AccelParamsTab2 {
 			 boolean slowdownEnabled;
-			 boolean overrideGCodeTempEnabled;
-			 boolean preheatDuringPauseEnabled;
 			 int[] deprime;
 			 double[] JKNadvance;
 
 			 AccelParamsTab2(boolean slowdownEnabled,
-					 boolean overrideGCodeTempEnabled,
-					 boolean preheatDuringPauseEnabled,
 					 int[] deprime,
 					 double[] JKNadvance)
 			 {
 				 this.slowdownEnabled           = slowdownEnabled;
-				 this.overrideGCodeTempEnabled  = overrideGCodeTempEnabled;
-				 this.preheatDuringPauseEnabled = preheatDuringPauseEnabled;
 				 this.deprime                   = deprime;
 				 this.JKNadvance                = JKNadvance;
 			 }
@@ -1006,18 +1024,6 @@
            "or a travel-only move is encountered.  Set to a value of 0 to disable this feature for this extruder.  " +
            "Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's \"Retraction Distance\".");
 
-		 private JCheckBox overrideGCodeTempBox = new JCheckBox();
-		 {
-			 overrideGCodeTempBox.setToolTipText(wrap2HTML(width,
-                    "When enabled, override the gcode temperature settings using the preheat " +
-		    "temperature settings for the extruders and build platform."));
-		 }
-           
-		 private JCheckBox preheatDuringPauseBox = new JCheckBox();
-		 {
-			 preheatDuringPauseBox.setToolTipText(wrap2HTML(width,
-                    "When enabled, leave the extruder and platform heaters enabled whilst paused."));
-		 }
            
 		 // Slowdown is a flag for the Replicator
 		 private JCheckBox slowdownFlagBox = new JCheckBox();
@@ -1068,8 +1074,6 @@
 									       ((Number)aAxisMaxSpeedChange.getValue()).intValue(),
 									       ((Number)bAxisMaxSpeedChange.getValue()).intValue()}),
 						new AccelParamsTab2(slowdownFlagBox.isSelected(),
-								    overrideGCodeTempBox.isSelected(),
-								    preheatDuringPauseBox.isSelected(),
 								    new int[] {((Number)extruderDeprimeA.getValue()).intValue(),
 									       ((Number)extruderDeprimeB.getValue()).intValue()},
 								    new double[] {((Number)JKNAdvance1.getValue()).doubleValue(),
@@ -1083,8 +1087,6 @@
 
 		 private void setEEPROMFromUI(AccelParams params) {
 			 target.setAccelerationStatus(params.tab1.accelerationEnabled ? (byte)1 : (byte)0);
-			 target.setEEPROMParam(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP, params.tab2.overrideGCodeTempEnabled ? 1 : 0);
-			 target.setEEPROMParam(OnboardParameters.EEPROMParams.PREHEAT_DURING_PAUSE, params.tab2.preheatDuringPauseEnabled ? 1 : 0);
 			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_FLAG, params.tab2.slowdownEnabled ? 1 : 0);
 
 			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_NORM,    params.tab1.accelerations[0]);
@@ -1118,8 +1120,6 @@
 			 setUIFields(UI_TAB_1,
 				     params.accelerationEnabled,
 				     false,
-				     false,
-				     false,
 				     params.accelerations,
 				     params.maxAccelerations,
 				     params.maxSpeedChanges,
@@ -1130,8 +1130,6 @@
 		 private void setUIFields(int tabs,
 					  boolean accelerationEnabled,
 					  boolean slowdownEnabled,
-					  boolean overrideGCodeTempEnabled,
-					  boolean preheatDuringPauseEnabled,
 					  int[] accelerations,
 					  int[] maxAccelerations,
 					  int[] maxSpeedChanges,
@@ -1165,8 +1163,6 @@
 
 			 if ((tabs & UI_TAB_2) != 0) {
 				 slowdownFlagBox.setSelected(slowdownEnabled);
-				 overrideGCodeTempBox.setSelected(overrideGCodeTempEnabled);
-				 preheatDuringPauseBox.setSelected(preheatDuringPauseEnabled);
 
 				 if (JKNadvance != null) {
 					 JKNAdvance1.setValue(JKNadvance[0]);
@@ -1187,8 +1183,6 @@
 		 public void setUIFromEEPROM() {
 			 boolean accelerationEnabled = target.getAccelerationStatus() != 0;
 			 boolean slowdownEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_FLAG) != 0;
-			 boolean overrideGCodeTempEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP) != 0;
-			 boolean preheatDuringPauseEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.PREHEAT_DURING_PAUSE) != 0;
 			 int[] maxAccelerations = new int[] {
 				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_X),
 				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Y),
@@ -1215,8 +1209,8 @@
 				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A),
 				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_B) };
 		 
-			 setUIFields(UI_TAB_1 | UI_TAB_2, accelerationEnabled, slowdownEnabled, overrideGCodeTempEnabled,
-				     preheatDuringPauseEnabled, accelerations, maxAccelerations, maxSpeedChanges,
+			 setUIFields(UI_TAB_1 | UI_TAB_2, accelerationEnabled, slowdownEnabled, 
+				      accelerations, maxAccelerations, maxSpeedChanges,
 				     JKNadvance, deprime);
 		 }
 
@@ -1292,8 +1286,6 @@
 			 extruderDeprimeA.setColumns(8);
 			 extruderDeprimeB.setColumns(8);
 
-			 addWithSharedToolTips(accelerationMiscTab, "Override the target temperatures in the gcode", overrideGCodeTempBox, "wrap");
-			 addWithSharedToolTips(accelerationMiscTab, "Preheat during paused operations", preheatDuringPauseBox, "wrap");
 			 addWithSharedToolTips(accelerationMiscTab, "Slow printing when acceleration planing falls behind", slowdownFlagBox, "wrap");
 			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K", JKNAdvance1, "wrap");
 			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K2", JKNAdvance2, "wrap");
@@ -1982,7 +1974,7 @@
 
 			 addWithSharedToolTips(miscTab, "Platform preheat & override temperature (C)",
 					       platformTemp);
-			 addWithSharedToolTips(miscTab, "5D extruder", inverted5DExtruderBox, "wrap");
+			 addWithSharedToolTips(miscTab, "Volumetric 5D extruder", inverted5DExtruderBox, "wrap");
 
 			 addWithSharedToolTips(miscTab, "Mood light script", moodLightScript, "span 4, wrap");
 			 addWithSharedToolTips(miscTab, "Mood light color",

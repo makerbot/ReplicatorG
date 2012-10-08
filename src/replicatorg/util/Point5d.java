@@ -129,7 +129,7 @@ public class Point5d {
 	
 	public double length() {
 		double acc = 0d;
-		for (int idx = 0; idx < DIMENSIONS; idx++) {
+	for (int idx = 0; idx < DIMENSIONS; idx++) {
 			double delta = values[idx];
 			acc += (delta*delta);
 		}

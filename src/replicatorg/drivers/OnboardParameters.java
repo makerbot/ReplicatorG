@@ -307,7 +307,16 @@ public interface OnboardParameters {
 
 	/// Sets the number of tool count as saved on the machine (not as per XML count)
 	void setToolCountOnboard(int i);
+	
+	boolean hasHbp();
+		//See if eeprom has hbp_exists defined
+	public void setHbpSetting(boolean on_off);
+		//set the eeprom HBP setting
+	byte currentHbpSetting();
+		//Reads eeprom returns if HBP is on or off
 
 	/// Returns true if the accelerated driver is Jetty flavour
 	boolean hasJettyAcceleration();
+	/// Returns true if the driver has the advanced reporting feature set
+	boolean hasAdvancedFeatures();
 }

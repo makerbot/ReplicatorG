@@ -130,7 +130,7 @@ public class MachineModel
 		parseWipes();
 		parseExclusion();
 		parseGCode();
-                parseOffsets();
+		parseOffsets();
 	}
 	
 
@@ -426,7 +426,7 @@ public class MachineModel
 			Node bookend = XML.getChildNodeByName(xml, "bookend");
 			String dualstartLocation = XML.getAttributeValue(bookend, "dualstart");
 			String startLocation = XML.getAttributeValue(bookend, "start");
-			String endLocation = XML.getAttributeValue(bookend, "end");
+			String endLocation = XML.getAttributeValue(bookend, "end");			
 			if(dualstartLocation != null) 
 				dualstartBookendCode = Base.getApplicationFile(dualstartLocation);
 			if(startLocation != null) 

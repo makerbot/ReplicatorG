@@ -165,6 +165,7 @@ public class PrintOMatic implements SkeinforgePreference {
 		public String filamentDiameter;
 		public String nozzleDiameter;
 		public String driveGearDiameter;
+    public String travelFeedrate;
 	}
 	
 
@@ -177,27 +178,30 @@ public class PrintOMatic implements SkeinforgePreference {
 		filamentDiameter = "1.82";
 		nozzleDiameter = ".4";
 		driveGearDiameter = "10.58";
+    travelFeedrate = "55";
 	}}
 
 	// Double braces create a static block in which to declare the values of our variables
 	private class Mk7Defaults extends Defaults {{
-		infillPercent = "15";
+		infillPercent = "10";
 		desiredLayerHeight = ".30";
 		numberOfShells = "1";
 		desiredFeedrate = "30";
 		filamentDiameter = "1.82";
 		nozzleDiameter = ".4";
 		driveGearDiameter = "10.58";
+    travelFeedrate = "30";
 	}}
 	
 	private class Mk6Defaults extends Defaults {{
-		infillPercent = "15";
+		infillPercent = "10";
 		desiredLayerHeight = ".30";
 		numberOfShells = "1";
 		desiredFeedrate = "30";
 		filamentDiameter = "2.94";
 		nozzleDiameter = ".5";
 		driveGearDiameter = "10.58";
+    travelFeedrate = "30";
 	}}
 	
 	private class Mk6NewStyleDefaults extends Mk6Defaults {{
@@ -226,7 +230,11 @@ public class PrintOMatic implements SkeinforgePreference {
 		
 		addTextParameter(printPanel, "desiredFeedrate",
 				"Feedrate (mm/s)", defaults.desiredFeedrate,
-				"slow: 0-20, default: 30, Fast: 40+");
+				"slow: 0-20, default: 30, Fast: 40+, Accelerated: 80+");
+
+		addTextParameter(printPanel, "travelFeedrate",
+				"Travel Feedrate", defaults.desiredFeedrate,
+				"slow: 0-20, default: 30, Fast: 50+, Accelerated:150+");
 		
 		return printPanel;
 	}
@@ -273,6 +281,7 @@ public class PrintOMatic implements SkeinforgePreference {
 		final JButton mk7 = new JButton("Load Mk7 Defaults");
 		final JButton mk6 = new JButton("Load Mk6 Defaults (0.5 nozzle)");
 		final JButton mk6ns = new JButton("Load Mk6 Defaults (0.4 nozzle)");
+    final JButton accelerated = new JButton("Load Accelerated Defaults");
 
 		ActionListener loadDefaults = new ActionListener(){
 			@Override
@@ -282,7 +291,7 @@ public class PrintOMatic implements SkeinforgePreference {
 				// Select the correct set of defaults based on the button pressed
 				if(evt.getSource() == mk8)
 					def = new Mk8Defaults();
-				else if(evt.getSource() == mk7)
+				else if((evt.getSource() == mk7) || (evt.getSource() == accelerated))
 					def = new Mk7Defaults();
 				else if(evt.getSource() == mk6)
 					def = new Mk6Defaults();
@@ -294,11 +303,16 @@ public class PrintOMatic implements SkeinforgePreference {
 				setValue("infillPercent", def.infillPercent);
 				setValue("desiredLayerHeight", def.desiredLayerHeight);
 				setValue("numberOfShells", def.numberOfShells);
-				setValue("desiredFeedrate", def.desiredFeedrate);
 				setValue("filamentDiameter", def.filamentDiameter);
 				setValue("nozzleDiameter", def.nozzleDiameter);
 				setValue("driveGearDiameter", def.driveGearDiameter);
-					
+        if(evt.getSource() == accelerated){
+          setValue("travelFeedrate", "150");
+          setValue("desiredFeedrate", "80");
+        }else{
+          setValue("travelFeedrate", def.travelFeedrate);
+          setValue("desiredFeedrate", def.desiredFeedrate);
+				}
 				// Refresh the other three tabs
 				printOMatic.removeAll();
 				makeTabs();
@@ -308,11 +322,13 @@ public class PrintOMatic implements SkeinforgePreference {
 		mk7.addActionListener(loadDefaults);
 		mk6.addActionListener(loadDefaults);
 		mk6ns.addActionListener(loadDefaults);
+    accelerated.addActionListener(loadDefaults);
 		
 		defaultsPanel.add(mk8, "growx, wrap");
 		defaultsPanel.add(mk7, "growx, wrap");
 		defaultsPanel.add(mk6, "growx, Wrap");
 		defaultsPanel.add(mk6ns, "growx, Wrap");
+    defaultsPanel.add(accelerated, "growx, Wrap");
 		
 		return defaultsPanel;
 	}
