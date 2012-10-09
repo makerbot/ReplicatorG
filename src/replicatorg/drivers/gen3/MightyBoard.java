@@ -262,10 +262,12 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
     @Override 
 	public boolean hasAdvancedFeatures() { 
-    
+return false;
+/*
       if (version.compareTo(getMinimumAdvancedFeatureVersion()) < 0)
           return false;
       return true;
+*/
 	}
 
 	/** 
