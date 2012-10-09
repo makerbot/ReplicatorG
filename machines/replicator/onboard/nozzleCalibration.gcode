@@ -2,9 +2,7 @@
 M73 P0 (enable build progress)
 G21 (set units to mm)
 G90 (set positioning to absolute)
-G10 P1 X-16.5 Y0 Z0 (Designate T0 Offset)
-G10 P2 X16.5 Y0 Z0 (Designate T1 Offset)
-G54 (Recall offset cooridinate system for T0)
+M108 T0
 M109 S110 T0 (set HBP temperature)
 M104 S220 T0 (set extruder temperature)
 M104 S220 T1 (set extruder temperature)
@@ -20,14 +18,13 @@ G1 X112 Y-73 Z150 F3300.0 (move to waiting position)
 G130 X0 Y0 A0 B0 (Lower stepper Vrefs while heating)
 M6 T0 (wait for toolhead, and HBP to reach temperature)
 M6 T1 (wait for toolhead, and HBP to reach temperature)
+M108 T0(Set tool)
 G130 X127 Y127 A127 B127 (Set Stepper motor Vref to defaults)
 G0 X112 Y-73     (Position Nozzle)
 G0 Z0.5          (Position Height)
 G1 E4 F50.0      (Create Anchor)
 G92 E0
 (**** end of start.gcode ****)
-G54
-M108 T0(Set tool)
 (<layer> 0.175 )
 G1 X-70 Y-60.60 Z0.9 F3300.0
 G1 F798.0
@@ -143,7 +140,6 @@ G1 F798.0
 G1 E92.00
 G1 F743.802
 M103
-G55
 M108 T1
 M18 A B
 G92 E0

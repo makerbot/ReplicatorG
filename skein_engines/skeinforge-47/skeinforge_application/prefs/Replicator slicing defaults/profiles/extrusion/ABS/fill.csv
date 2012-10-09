@@ -30,6 +30,6 @@ Surrounding Angle (degrees):	60.0
 Infill > Loops > Perimeter	False
 Infill > Perimeter > Loops	False
 Loops > Infill > Perimeter	False
-Loops > Perimeter > Infill	False
+Loops > Perimeter > Infill	True
 Perimeter > Infill > Loops	False
-Perimeter > Loops > Infill	True
+Perimeter > Loops > Infill	False
