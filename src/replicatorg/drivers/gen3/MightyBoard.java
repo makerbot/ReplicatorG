@@ -210,7 +210,7 @@ class MightyBoard6X1EEPROM extends MightyBoard5XEEPROM
 	final public static int JKN_ADVANCE_K                  = 0x01D8;
 	final public static int JKN_ADVANCE_K2                 = 0x01D8+0x04;
 	final public static int EXTRUDER_DEPRIME_STEPS         = 0x01D8+0x08;
-	final public static int SLOWDOWN_FLAG                  = 0x01D8+0x0A;
+	final public static int SLOWDOWN_FLAG                  = 0x01D8+0x0C;
 	final public static int DEFAULTS_FLAG                  = 0x016E+0x1A;
 	final public static int FUTURE_USE                     = 0x01D8+0x0C;
 	final public static int AXIS_MAX_FEEDRATES             = 0x01F4;
