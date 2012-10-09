@@ -47,7 +47,7 @@ class JettyG3EEPROM extends Sanguino3GEEPRPOM {
 	final public static int ACCEL_ADVANCE_K2           = 0x015F;
 	final public static int ACCEL_MIN_PLANNER_SPEED    = 0x0163;
 	final public static int ACCEL_ADVANCE_K            = 0x0167;
-	final public static int ACCEL_NOODLE_DIAMETER      = 0x016B;
+	final public static int ACCEL_NOODLE_DIAMETER	   = 0x016B;
 	final public static int ACCEL_MIN_SEGMENT_TIME     = 0x016F;
 	final public static int LCD_TYPE                   = 0x0173;
 	final public static int ENDSTOPS_USED              = 0x0174;
@@ -65,6 +65,19 @@ class JettyG3EEPROM extends Sanguino3GEEPRPOM {
 	final public static int ACCEL_MAX_SPEED_CHANGE_A   = 0x019E;
 	final public static int RAM_USAGE_DEBUG            = 0x01D0;
 }
+
+class SailfishEEPROM extends JettyG3EEPROM {
+	final public static int SLOWDOWN_FLAG			= 0x0189;
+	final public static int ACCEL_MAX_SPEED_CHANGE_B	= 0x01A2;
+	final public static int ACCEL_MAX_ACCELERATION_B	= 0x01A6;
+	final public static int ACCEL_EXTRUDER_DEPRIME_B	= 0x01AA;
+	final public static int TOOL_COUNT			= 0x01AE;
+	final public static int TOOLHEAD_OFFSET_SETTINGS	= 0x01B0;
+	final public static int AXIS_LENGTHS			= 0x01BC;
+	final public static int FILAMENT_LIFETIME_B             = 0x01D4;
+	final public static int DITTO_PRINT_ENABLED             = 0x01DC;
+}
+
 
 class JettyMBEEPROM extends Sanguino3GEEPRPOM {
 	final public static int ACCELERATION_STATE             = 0x023E;

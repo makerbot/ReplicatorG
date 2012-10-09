@@ -1,8 +1,6 @@
 #!/usr/bin/python
 import struct
 import sys
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
 
 toolCommandTable = {
     3: ("<H", "Set target temperature to %i"),
@@ -127,7 +125,6 @@ def parseNextCommand():
         return False
     sys.stdout.write(str(lineNumber) + ': ')
     (command) = struct.unpack("B",commandStr)
-    # print command[0]
     (parse, disp) = commandTable[command[0]]
     if type(parse) == type(""):
         packetLen = struct.calcsize(parse)

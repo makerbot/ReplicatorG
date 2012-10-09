@@ -103,6 +103,8 @@ public class DriverFactory {
 			return loadClass("replicatorg.drivers.gen3.Makerbot4GDriver", xml);
 		else if (driverName.equals("makerbot4ga"))
 			return loadClass("replicatorg.drivers.gen3.Makerbot4GAlternateDriver", xml);
+		else if (driverName.equals("makerbot4gsailfish"))
+			return loadClass("replicatorg.drivers.gen3.Makerbot4GSailfish", xml);
 		else if (driverName.equals("reprap5d"))
 			return loadClass("replicatorg.drivers.reprap.RepRap5DDriver", xml);
 		else if (driverName.equals("simpleReprap5d"))

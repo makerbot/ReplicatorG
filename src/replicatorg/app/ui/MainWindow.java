@@ -640,7 +640,8 @@ ToolpathGenerator.GeneratorListener
 			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()));
 			spp.setEndCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()));
 			spp.setMultiHead(isDualDriver());
-			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
+			if ((machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR) ||
+			    (machineLoader.getDriver().getDriverName().equals("Makerbot4GSailfish")))
 				spp.setAddProgressUpdates(true);
 		}
 		else if (generator instanceof MiracleGrueGenerator) {
@@ -653,7 +654,8 @@ ToolpathGenerator.GeneratorListener
 			spp.setMultiHead(isDualDriver());
 			spp.setPrependStart(true);
 			spp.setAppendEnd(true);
-			if(machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR)
+			if ((machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR) ||
+			    (machineLoader.getDriver().getDriverName().equals("Makerbot4GSailfish")))
 				spp.setAddProgressUpdates(true);
 
 		}

@@ -284,7 +284,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		minimumVersion = new Version(5,5);
 		preferredVersion = new Version(6,1);
 		minimumAccelerationVersion = new Version(5,3);
-		minAdvancedFeatureVersion = new Version(6,0);
+		minAdvancedFeatureVersion = new Version(6,1);
 		minimumJettyAccelerationVersion = new Version(6,1);
 	}
 
@@ -299,14 +299,14 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	 * @param toolIndex
 	 * @return
 	 */
-	public boolean initSlave(int toolIndex)
+	@Override
+	public void initSlave(int toolIndex)
 	{
 		// since our motor speed is controlled by host software,
 		// initalize 'running' motor speed to be the same as the 
 		// default motor speed
 		ToolModel curTool = machine.getTool(toolIndex);
 		curTool.setMotorSpeedReadingRPM( curTool.getMotorSpeedRPM() );
-		return true;
 	}
 
 	/**
@@ -709,8 +709,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			//System.out.println(p.toString());
 			//System.out.println(target.toString());
 			//System.out.println("\t steps: " + steps.toString() +"\t dda_rate: " + dda_rate);
-			//System.out.println("\t usec: " + usec + " dda_interval: " + dda_interval + " absolute_maximum: " + steps.absolute_maximum());
-			//System.out.println("\t deltaSteps: " + deltaStepsFinal.toString() + " distance: " + distance);
+			//System.out.println("\t usec: " + usec + " dda_interval: " + dda_interval + " absolute_maximum: " + deltaSteps.absolute_maximum());
+			//System.out.println("\t deltaSteps: " + deltaStepsFinal.toString() + " distance: " + distance + " feedrate: " + feedrate);
 			int relativeAxes = (1 << AxisId.A.getIndex()) | (1 << AxisId.B.getIndex());
       if(hasJettyAcceleration()){
 			  queueNewExtPoint(steps, (long) dda_rate, relativeAxes, (float)distance, (float)feedrate);
@@ -2180,6 +2180,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		case ACCEL_MAX_SPEED_CHANGE_Y   : return read16FromEEPROM(MightyBoard6X1EEPROM.MAX_SPEED_CHANGE + 1*2);
 		case ACCEL_MAX_SPEED_CHANGE_Z   : return read16FromEEPROM(MightyBoard6X1EEPROM.MAX_SPEED_CHANGE + 2*2);
 		case ACCEL_SLOWDOWN_FLAG        : return getUInt8EEPROM(MightyBoard6X1EEPROM.SLOWDOWN_FLAG);
+		case PREHEAT_DURING_PAUSE       : return getUInt8EEPROM(JettyMBEEPROM.HEAT_DURING_PAUSE);
+		case OVERRIDE_GCODE_TEMP        : return getUInt8EEPROM(JettyMBEEPROM.OVERRIDE_GCODE_TEMP);
 		default :
 			Base.logger.log(Level.WARNING, "getEEPROMParamInt(" + param + ") call failed");
 			return 0;
@@ -2226,6 +2228,8 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		case ACCEL_MAX_SPEED_CHANGE_Y   : write16ToEEPROM(MightyBoard6X1EEPROM.MAX_SPEED_CHANGE + 1*2, val); break;
 		case ACCEL_MAX_SPEED_CHANGE_Z   : write16ToEEPROM(MightyBoard6X1EEPROM.MAX_SPEED_CHANGE + 2*2, val); break;
 		case ACCEL_SLOWDOWN_FLAG        : setUInt8EEPROM(MightyBoard6X1EEPROM.SLOWDOWN_FLAG, (val != 0) ? 1 : 0); break;
+		case PREHEAT_DURING_PAUSE       : setUInt8EEPROM(JettyMBEEPROM.HEAT_DURING_PAUSE, (val != 0) ? 1 : 0); break;
+		case OVERRIDE_GCODE_TEMP        : setUInt8EEPROM(JettyMBEEPROM.OVERRIDE_GCODE_TEMP, (val != 0) ? 1 : 0); break;
 		default : Base.logger.log(Level.WARNING, "setEEPROMParam(" + param + ", " + val + ") call failed"); break;
 		}
 	}

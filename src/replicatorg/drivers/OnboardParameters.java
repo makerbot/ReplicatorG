@@ -53,6 +53,7 @@ public interface OnboardParameters {
 		AXIS_HOME_POSITIONS,        //
 		AXIS_INVERSION,             //
 		BUZZER_REPEATS,             //
+		DITTO_PRINT_ENABLED,	    //
 		ENDSTOPS_USED,              //
 		ENDSTOP_INVERSION,          //
 		ESTOP_CONFIGURATION,        //
