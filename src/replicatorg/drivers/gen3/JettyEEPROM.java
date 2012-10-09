@@ -86,7 +86,6 @@ class JettyMBEEPROM extends Sanguino3GEEPRPOM {
 	final public static int AXIS_STEPS_PER_MM              = 0x01A0;
 	final public static int FILAMENT_LIFETIME              = 0x01B4;
 	final public static int FILAMENT_TRIP                  = 0x01C4;
-	final public static int OVERRIDE_GCODE_TEMP            = 0x01D4;
 	final public static int PROFILES_BASE                  = 0x01D5;
 	final public static int PROFILES_INIT                  = 0x023D;
 	final public static int MAX_ACCELERATION_AXIS          = 0x0240;
@@ -100,5 +99,6 @@ class JettyMBEEPROM extends Sanguino3GEEPRPOM {
 	final public static int DEFAULTS_FLAG                  = 0x0265;
 	final public static int FUTURE_USE                     = 0x0266;
 	final public static int AXIS_MAX_FEEDRATES             = 0x027A;
-	final public static int HEAT_DURING_PAUSE              = 0x028E;
+	final public static int OVERRIDE_GCODE_TEMP            = 0x0FFD;
+	final public static int HEAT_DURING_PAUSE              = 0x0FFE;
 }
