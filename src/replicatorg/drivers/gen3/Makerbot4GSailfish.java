@@ -60,6 +60,8 @@ public class Makerbot4GSailfish extends Makerbot4GAlternateDriver
 	
 	protected final static int DEFAULT_RETRIES = 5;
 	
+ 	protected VidPid machineId = VidPid.UNKNOWN;
+
 	private int toolCountOnboard = -1; /// no count aka FFFF
 
 	Version toolVersion = new Version(0,0);
@@ -105,11 +107,11 @@ public class Makerbot4GSailfish extends Makerbot4GAlternateDriver
 		getMotorRPM();		//load our motor RPM from firmware if we can.
 		getAccelerationState();
 
-		//if (verifyMachineId() == false ) //read and verify our PID/VID if we can
-		//{
-		//	Base.logger.fine("Machine ID Mismatch. Please re-select your machine.");
-		//	return true;//TEST just for now, due to EEPROM munging
-		//}
+		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
+		{
+			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
+			return true;//TEST just for now, due to EEPROM munging
+		}
 		
 		if(verifyToolCount() == false) /// read and verify our tool count
 		{
@@ -720,7 +722,34 @@ public class Makerbot4GSailfish extends Makerbot4GAlternateDriver
 			return true;
 		return false;
 	}
-	
+
+        /** try to verify our acutal machine matches our selected machine
+         * @param vid vendorId (same as usb vendorId)
+         * @param pid product (same as usb productId)
+         * @return true if we can verify this is a valid machine match
+         */
+        @Override
+        public boolean verifyMachineId()
+        {
+                if ( this.machineId == VidPid.UNKNOWN ) {
+                        readMachineVidPid();
+                }
+                return this.machineId.equals(VidPid.SAILFISH_G34);
+        }
+
+        @Override
+        public boolean canVerifyMachine() {
+                return true;
+        }
+
+        /// Check the EEPROM to see what PID/VID the machine believes it has
+        public void readMachineVidPid() {
+                checkEEPROM();
+                byte[] b = readFromEEPROM(SailfishEEPROM.VID_PID_INFO,4);
+
+                this.machineId = VidPid.getPidVid(b);
+        }
+
 	
 	/// read a 32 bit int from EEPROM at location 'offset'
 	private int read32FromEEPROM(int offset)

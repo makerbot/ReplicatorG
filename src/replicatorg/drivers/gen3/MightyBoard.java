@@ -333,7 +333,7 @@ return false;
 
 		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
 		{
-			Base.logger.fine("Machine ID Mismatch. Please re-select your machine.");
+			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
 			return true;//TEST just for now, due to EEPROM mangling
 		}
 		
