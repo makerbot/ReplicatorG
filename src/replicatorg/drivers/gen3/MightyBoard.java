@@ -331,6 +331,8 @@ return false;
 		getMotorRPM();		//load our motor RPM from firmware if we can.
 		getAccelerationState();
 
+		machineId = VidPid.UNKNOWN;
+
 		if (verifyMachineId() == false ) //read and verify our PID/VID if we can
 		{
 			Base.logger.severe("Machine ID Mismatch. Please re-select your machine.");
