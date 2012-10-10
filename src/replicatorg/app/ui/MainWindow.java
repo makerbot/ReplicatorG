@@ -2252,18 +2252,43 @@ ToolpathGenerator.GeneratorListener
 		else {
 			fc = new JFileChooser();
 		}
-
-		fc.setFileFilter(new ExtensionFilter(".s3g","Makerbot build file"));
+//_WDC
+		fc.setAcceptAllFileFilterUsed(false);
+		fc.setFileFilter(new ExtensionFilter(".s3g","S3G (Firmware 6.0 or earlier)"));
+		fc.addChoosableFileFilter(new ExtensionFilter(".s4g", "s4g (Firmware 6.1)"));
 		fc.setDialogTitle("Save Makerbot build as...");
 		fc.setDialogType(JFileChooser.SAVE_DIALOG);
 		fc.setFileHidingEnabled(false);
 		fc.setSelectedFile(new File(directory,defaultName));
 		int rv = fc.showSaveDialog(this);
 		if (rv == JFileChooser.APPROVE_OPTION) {
-			fc.getSelectedFile().getName();
-			Base.preferences.put("ui.open_output_dir",fc.getCurrentDirectory().getAbsolutePath());
-			return fc.getSelectedFile().getAbsolutePath();
-		} else {
+			
+			//Changes the file name to have s3g/s4g extensions and checks if that is
+			//what the userselected
+
+			File currentFile = fc.getSelectedFile();
+			FileFilter filter = fc.getFileFilter();
+			File newFile = new File(currentFile.getAbsolutePath() + ".s3g");
+			if(filter.accept(newFile))
+			{
+				System.out.println("\n############s3g");
+				Base.preferences.put("ui.open_output_dir",fc.getCurrentDirectory().
+					getAbsolutePath());
+				return newFile.getAbsolutePath();
+			}
+
+			newFile = new File(currentFile.getAbsolutePath() + ".s4g");
+
+			if(filter.accept(newFile))
+			{
+				System.out.println("\n############s4g");
+				Base.preferences.put("ui.open_output_dir",fc.getCurrentDirectory().
+					getAbsolutePath());
+				return newFile.getAbsolutePath();
+			}
+			return null;
+		}
+		else {
 			return null;
 		}
 	}
@@ -2286,12 +2311,13 @@ ToolpathGenerator.GeneratorListener
 		}
 
     String sourceName;
-    if(machineLoader.getDriver() instanceof OnboardParameters && ((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() &&
-        ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures()){
-		  sourceName = build.getName() + ".s4g";
-    } else {
-      sourceName = build.getName() + ".s3g";
-    }
+    /*if(machineLoader.getDriver() instanceof OnboardParameters && ((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() &&
+        ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures()){*/
+		  //sourceName = build.getName() + ".s4g";
+		  sourceName = build.getName();
+   // } else {
+   //   sourceName = build.getName() + ".s3g";
+  //  }
 		String path = selectOutputFile(sourceName);
 		if (path != null) {
 			// build specific stuff

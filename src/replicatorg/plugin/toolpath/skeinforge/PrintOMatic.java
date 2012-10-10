@@ -1,3 +1,6 @@
+//Deals with Skeinforge 35
+
+
 package replicatorg.plugin.toolpath.skeinforge;
 
 import java.awt.Window;
@@ -101,7 +104,7 @@ public class PrintOMatic implements SkeinforgePreference {
 		
 	}
 	
-	private double getValue(String optionName) {
+	public double getValue(String optionName) {
 		// TODO: record the default values somewhere, so that we can retrieve them here!
 		String value = Base.preferences.get(baseName + optionName, null);
 		
