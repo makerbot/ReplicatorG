@@ -182,6 +182,12 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 
 	@Override
+        public void setBuildToFileVersion(int v) {
+		// TODO Auto-generated method stub
+        }
+
+
+	@Override
 	public void setCurrentPosition(Point5d p) throws RetryException {
 		currentPosition = p;
 	}

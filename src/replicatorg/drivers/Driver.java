@@ -148,6 +148,8 @@ public interface Driver {
 
   public Version getMinimumAdvancedFeatureVersion();
 	public Version getPreferredVersion();
+
+        public void setBuildToFileVersion(int v);
 	
 	/**
 	 * Positioning Methods
