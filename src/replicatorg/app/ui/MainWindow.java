@@ -2254,8 +2254,8 @@ ToolpathGenerator.GeneratorListener
 		}
 //_WDC
 		fc.setAcceptAllFileFilterUsed(false);
-		fc.setFileFilter(new ExtensionFilter(".s3g","S3G (Firmware 6.0 or earlier)"));
-		fc.addChoosableFileFilter(new ExtensionFilter(".s4g", "s4g (Firmware 6.1)"));
+		fc.setFileFilter(new ExtensionFilter(".s3g",".s3g (Firmware 6.0 or earlier)"));
+		fc.addChoosableFileFilter(new ExtensionFilter(".s4g", ".s4g (Firmware 6.1 or later)"));
 		fc.setDialogTitle("Save Makerbot build as...");
 		fc.setDialogType(JFileChooser.SAVE_DIALOG);
 		fc.setFileHidingEnabled(false);
@@ -2264,7 +2264,7 @@ ToolpathGenerator.GeneratorListener
 		if (rv == JFileChooser.APPROVE_OPTION) {
 			
 			//Changes the file name to have s3g/s4g extensions and checks if that is
-			//what the userselected
+			//what the user selected
 
 			File currentFile = fc.getSelectedFile();
 			FileFilter filter = fc.getFileFilter();
@@ -2319,6 +2319,7 @@ ToolpathGenerator.GeneratorListener
    //   sourceName = build.getName() + ".s3g";
   //  }
 		String path = selectOutputFile(sourceName);
+		System.out.println("\n#####:" + path);
 		if (path != null) {
 			// build specific stuff
 			building = true;
