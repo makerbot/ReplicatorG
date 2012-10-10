@@ -41,12 +41,9 @@ public class Makerbot4GDriver extends Sanguino3GDriver {
 
 	@Override
 	public boolean hasJettyAcceleration() { 
-return true;
-/*
             if (version.compareTo(getMinimumJettyAccelerationVersion()) < 0)
                 return false;
             return hasAcceleration();
-*/
 	}
 
 	public void reset() {

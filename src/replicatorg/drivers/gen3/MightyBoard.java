@@ -951,7 +951,7 @@ return false;
 
 		double val = read32FromEEPROM(MightyBoard5XEEPROM.AXIS_HOME_POSITIONS + axis*4);
 
-    if(!hasJettyAcceleration()){
+    if(hasJettyAcceleration()){
       
       Point5d stepsPerMM = getMachine().getStepsPerMM();
       switch(axis) {
@@ -987,7 +987,7 @@ return false;
 		
 		int offsetSteps = (int)offset;
 
-    if(!hasJettyAcceleration()){
+    if(hasJettyAcceleration()){
       Point5d stepsPerMM = getMachine().getStepsPerMM();
       switch(axis) {
         case 0:
@@ -1029,9 +1029,11 @@ return false;
 		checkEEPROM();
 
 		double val = read32FromEEPROM(MightyBoard5XEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4);
+/*
     if(hasJettyAcceleration()){
       val = val / 1000.0;
     }else if (hasAdvancedFeatures()){
+*/
       Point5d stepsPerMM = getMachine().getStepsPerMM();
       switch(axis) {
         case 0:
@@ -1044,6 +1046,7 @@ return false;
           val = (val)/stepsPerMM.z()/10.0;
           break;
       }
+/*
       
     }else {
       ToolheadsOffset toolheadsOffset = getMachine().getToolheadsOffsets();
@@ -1059,7 +1062,7 @@ return false;
           val = (val)/stepsPerMM.z()/10.0 + toolheadsOffset.z();
           break;
       }
-    }
+    }*/
 				
 		return val;
 	}
@@ -1101,9 +1104,11 @@ return false;
 		}
 		
 		int offsetSteps = 0;
+/*
 	  if(hasJettyAcceleration()){
       offsetSteps = (int)(distanceMm * 1000.0);
     }else if(hasAdvancedFeatures()){
+*/
       Point5d stepsPerMM = getMachine().getStepsPerMM();
       switch(axis) {
         case 0:
@@ -1116,6 +1121,7 @@ return false;
           offsetSteps = (int)(distanceMm*stepsPerMM.z()*10.0);
           break;
       }
+/*
       
     }else{
       Point5d stepsPerMM = getMachine().getStepsPerMM();
@@ -1133,6 +1139,7 @@ return false;
           break;
       }
     }
+*/
 		write32ToEEPROM32(MightyBoard5XEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4,offsetSteps);
 	}
         

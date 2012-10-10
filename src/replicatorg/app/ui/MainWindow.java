@@ -2368,7 +2368,8 @@ ToolpathGenerator.GeneratorListener
 			//System.out.println("Machine connected");
 
 			//If it hasJettyAcceleration and hasAdvancedFeatures then it's likely MightyBoardFirmware >=6.1	and s4g
-			if (((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() && ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures())
+			//if (((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() && ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures())
+			if (((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration())
 				formatExtension = "s4g";
 
 			//If it's Sailfish running on a ToM, then we're s4g
