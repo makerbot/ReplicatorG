@@ -10,7 +10,7 @@ public enum VidPid {
 	UNKNOWN (0X0000, 0X000),
 	MIGHTY_BOARD (0x23C1, 0xB404), //Board 404!
 	THE_REPLICATOR(0x23C1, 0xD314), //Dean 314
-	THE_REPLICATOR_2(0x23C1, 0xB015);  // BOTS as leet
+	REPLICATOR_2(0x23C1, 0xB015);  // BOTS as leet
 	final int pid; //productId (same as USB product id)
 	final int vid; //vendorId (same as USB vendor id)
 	

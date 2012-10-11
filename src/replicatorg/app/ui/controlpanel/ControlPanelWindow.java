@@ -167,7 +167,7 @@ public class ControlPanelWindow extends JFrame implements
 		jogPanel = new JogPanel(machine);
 		mainPanel.add(jogPanel,"split 4, growx, growy");
 		mainPanel.add(createActivationPanel(),"split, growx");
-		if(newMachine.getMachineType() == MachineType.THE_REPLICATOR)
+		if((newMachine.getMachineType() == MachineType.THE_REPLICATOR) || (newMachine.getMachineType() == MachineType.REPLICATOR_2))
 		{
 			mainPanel.add(ledStripButton ,"growx");
 //			mainPanel.add(createBeepPanel(), "growx");

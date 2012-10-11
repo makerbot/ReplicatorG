@@ -623,7 +623,9 @@ public class JogPanel extends JPanel implements ActionListener, MouseListener
 		}
 		
 		ButtonArrangement arrangement;
-		if(machine.getMachineType() == MachineType.THE_REPLICATOR)
+		if(machine.getMachineType() == MachineType.REPLICATOR_2)
+			arrangement = new ReplicatorArrangement(machine);
+		else if(machine.getMachineType() == MachineType.THE_REPLICATOR)
 			arrangement = new ReplicatorArrangement(machine);
 		else if(machine.getMachineType() == MachineType.THINGOMATIC)
 			arrangement = new ThingomaticArrangement(machine);

@@ -33,7 +33,7 @@ public class Replicator2 extends MightyBoard
 		if ( this.machineId == VidPid.UNKNOWN ) {
 			readMachineVidPid();
 		}
-		return this.machineId.equals(VidPid.THE_REPLICATOR_2);
+		return this.machineId.equals(VidPid.REPLICATOR_2);
 	}
 	
 	/**
