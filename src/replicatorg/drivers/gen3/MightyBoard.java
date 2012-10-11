@@ -716,11 +716,21 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 			//System.out.println("\t usec: " + usec + " dda_interval: " + dda_interval + " absolute_maximum: " + steps.absolute_maximum());
 			//System.out.println("\t deltaSteps: " + deltaStepsFinal.toString() + " distance: " + distance);
 			int relativeAxes = (1 << AxisId.A.getIndex()) | (1 << AxisId.B.getIndex());
-      if(hasJettyAcceleration()){
-			  queueNewExtPoint(steps, (long) dda_rate, relativeAxes, (float)distance, (float)feedrate);
-      }else{
-        queueNewPoint(steps, (long)usec, relativeAxes);
-      }
+      //if(hasJettyAcceleration()){
+	//		  queueNewExtPoint(steps, (long) dda_rate, relativeAxes, (float)distance, (float)feedrate);
+    //  }else{
+    //    queueNewPoint(steps, (long)usec, relativeAxes);
+    //  }
+
+	if((isInitialized() && hasJettyAcceleration() && getBuildToFileVersion() == 0) ||
+		(getBuildToFileVersion() >= 4)) 
+	{
+		queueNewExtPoint(steps, (long) dda_rate, relativeAxes, (float)distance, (float)feedrate);
+	}
+	else
+	{
+		queueNewPoint(steps, (long)usec, relativeAxes);
+	}
 
 			// Only update excess if no retry was thrown.
 			stepExcess = excess;

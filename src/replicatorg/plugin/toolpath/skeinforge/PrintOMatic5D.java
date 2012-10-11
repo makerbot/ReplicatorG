@@ -28,6 +28,7 @@ import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePref
  PrintOMatic 5D Preferences Dialog
  * @author farmckon
  *
+ Deals with Skeinforge 47 and 50
  */
 public class PrintOMatic5D implements SkeinforgePreference {
 	private JPanel component;
@@ -195,7 +196,7 @@ public class PrintOMatic5D implements SkeinforgePreference {
 	}
 	
 	
-	private double getValue(String optionName) {
+	public double getValue(String optionName) {
 		
 		// TODO: record the default values for optionName somewhere, 
 		// so that we can retrieve them here!

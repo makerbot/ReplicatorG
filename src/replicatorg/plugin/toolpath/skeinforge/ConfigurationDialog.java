@@ -9,6 +9,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -16,6 +18,7 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.Profile;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
+import replicatorg.plugin.toolpath.skeinforge.PrintOMatic5D;
 
 class ConfigurationDialog extends JDialog {
 	final boolean postProcessToolheadIndex = true;
@@ -120,6 +123,39 @@ class ConfigurationDialog extends JDialog {
 
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+//_WDC			
+				String genname = Base.preferences.get("replicatorg.generator.name", null);
+				System.out.println("\n##" + genname + "##");
+				if(genname.equals("Skeinforge (35) - Legacy"))
+				{
+
+					PrintOMatic pom = new PrintOMatic();
+
+					System.out.println("\n**sf35**\n" + "desired:" + pom.getValue("desiredFeedrate") +
+						"travel:" + pom.getValue("travelFeedrate"));
+
+					if((pom.getValue("desiredFeedrate") > 40) || (pom.getValue("travelFeedrate") > 55))
+					{
+						JFrame frame = new JFrame("JOption_AccelWaring");
+						JOptionPane.showMessageDialog(frame,"You are slicing at acceleration speeds;\n" +
+							"be sure to switch acceleration on, through RepG,\n" +
+							"in Onboard Preferences", "Acceleration Warning", JOptionPane.WARNING_MESSAGE);
+					}
+				}
+				else if(genname.equals("Skeinforge (47) - Legacy") || genname.equals("Skeinforge(50)"))
+				{
+
+					PrintOMatic5D pom5d = new PrintOMatic5D();
+					System.out.println("\n**sf47/50**\n" + "desired:" + pom5d.getValue("desiredFeedrate") +
+						"travel:" + pom5d.getValue("travelFeedrate"));
+					if((pom5d.getValue("desiredFeedrate") > 40) || (pom5d.getValue("travelFeedrate") > 55))
+					{
+						JFrame frame = new JFrame("JOption_AccelWaring");
+						JOptionPane.showMessageDialog(frame,"You are slicing at acceleration speeds;\n" +
+							"be sure to switch acceleration on, in the general settings,\n" +
+							"on the bot's interface.", "Acceleration Warning", JOptionPane.WARNING_MESSAGE);
+					}
+				}			
 				parentGenerator.configSuccess = configureGenerator();
 				setVisible(!parentGenerator.configSuccess);
 			}
