@@ -2263,15 +2263,22 @@ ToolpathGenerator.GeneratorListener
 		else {
 			fc = new JFileChooser();
 		}
-//_WDC
 		fc.setAcceptAllFileFilterUsed(false);
 
-		ExtensionFilter s3gFilter = new ExtensionFilter(".s3g",".s3g (Firmware 6.1 or earlier)");
-		ExtensionFilter s4gFilter = new ExtensionFilter(".s4g", ".s4g (Firmware 6.2 or later)");
+    ExtensionFilter s3gFilter;
+    ExtensionFilter s4gFilter;
+
+    if ((machineLoader.getMachineInterface().getMachineType() != MachineType.THE_REPLICATOR) || (machineLoader.getMachineInterface().getMachineType() != MachineType.REPLICATOR_2)){
+      s3gFilter = new ExtensionFilter(".s3g"," .s3g  (For use with firmware v6.1 or earlier)");
+      s4gFilter = new ExtensionFilter(".s4g"," .s4g  (For use with firmware v6.2 or later)");
+    }
+    else{
+      s3gFilter = new ExtensionFilter(".s3g"," .s3g  (For use with firmware v3.5 or earlier)");
+      s4gFilter = new ExtensionFilter(".s4g"," .s4g  (For use with firmware v3.6 or later)");
+    } 
 		fc.addChoosableFileFilter(s3gFilter);
-//_TODO_add if thingomatic		
 		fc.addChoosableFileFilter(s4gFilter);
-		if(machineLoader.getDriver().getBuildToFileVersion() >=4){
+		if(((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() && ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures()){
 			fc.setFileFilter(s4gFilter);
 		}
 		else{

@@ -123,7 +123,6 @@ class ConfigurationDialog extends JDialog {
 
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-//_WDC			
 				String genname = Base.preferences.get("replicatorg.generator.name", null);
 				System.out.println("\n##" + genname + "##");
 				if(genname.equals("Skeinforge (35) - Legacy"))
@@ -137,9 +136,10 @@ class ConfigurationDialog extends JDialog {
 					if((pom.getValue("desiredFeedrate") > 40) || (pom.getValue("travelFeedrate") > 55))
 					{
 						JFrame frame = new JFrame("JOption_AccelWaring");
-						JOptionPane.showMessageDialog(frame,"You are slicing at acceleration speeds;\n" +
-							"be sure to switch acceleration on, through RepG,\n" +
-							"in Onboard Preferences", "Acceleration Warning", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(frame,"You are now slicing with accelerated build speeds.\n" +
+              "Do not print files generated at these speeds unless you have acceleration turned on.\n" +
+              "Building high speed files with acceleration turned off can harm your Makerbot.\n\n" +
+							"You can turn acceleration on in the Onboard Preferences menu or via your Makerbot's onboard menus", "Acceleration Warning", JOptionPane.WARNING_MESSAGE);
 					}
 				}
 				else if(genname.equals("Skeinforge (47) - Legacy") || genname.equals("Skeinforge(50)"))
@@ -151,9 +151,10 @@ class ConfigurationDialog extends JDialog {
 					if((pom5d.getValue("desiredFeedrate") > 40) || (pom5d.getValue("travelFeedrate") > 55))
 					{
 						JFrame frame = new JFrame("JOption_AccelWaring");
-						JOptionPane.showMessageDialog(frame,"You are slicing at acceleration speeds;\n" +
-							"be sure to switch acceleration on, in the general settings,\n" +
-							"on the bot's interface.", "Acceleration Warning", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(frame,"You are now slicing with accelerated build speeds.\n" +
+              "Do not print files generated at these speeds unless you have acceleration turned on.\n" +
+              "Building high speed files with acceleration turned off can harm your Makerbot.\n\n" +
+							"You can turn acceleration on in the Onboard Preferences menu or via your Makerbot's onboard menus", "Acceleration Warning", JOptionPane.WARNING_MESSAGE);
 					}
 				}			
 				parentGenerator.configSuccess = configureGenerator();
