@@ -2132,6 +2132,9 @@ ToolpathGenerator.GeneratorListener
 		if(buildFlag == BuildFlag.NONE) {
 			return; //exit ro cancel clicked
 		}
+
+		machineLoader.getDriver().setBuildToFileVersion(0);
+
 		if(buildFlag == BuildFlag.GEN_AND_BUILD) {
 			//'rewrite' clicked
 			buildOnComplete = true;
@@ -2239,6 +2242,14 @@ ToolpathGenerator.GeneratorListener
 		}
 	};
 
+	private String getExtension(String s) {
+		String extension = null;
+		int pos = s.lastIndexOf('.');
+		if(pos > 0 && pos < (s.length() -1))
+			extension = s.substring(pos).toLowerCase();
+		return extension;
+	}
+
 	private String selectOutputFile(String defaultName) {
 		File directory = null;
 		String loadDir = Base.preferences.get("ui.open_output_dir", null);
@@ -2254,8 +2265,18 @@ ToolpathGenerator.GeneratorListener
 		}
 //_WDC
 		fc.setAcceptAllFileFilterUsed(false);
-		fc.setFileFilter(new ExtensionFilter(".s3g",".s3g (Firmware 6.0 or earlier)"));
-		fc.addChoosableFileFilter(new ExtensionFilter(".s4g", ".s4g (Firmware 6.1 or later)"));
+
+		ExtensionFilter s3gFilter = new ExtensionFilter(".s3g",".s3g (Firmware 6.1 or earlier)");
+		ExtensionFilter s4gFilter = new ExtensionFilter(".s4g", ".s4g (Firmware 6.2 or later)");
+		fc.addChoosableFileFilter(s3gFilter);
+//_TODO_add if thingomatic		
+		fc.addChoosableFileFilter(s4gFilter);
+		if(machineLoader.getDriver().getBuildToFileVersion() >=4){
+			fc.setFileFilter(s4gFilter);
+		}
+		else{
+			fc.setFileFilter(s3gFilter);
+		}
 		fc.setDialogTitle("Save Makerbot build as...");
 		fc.setDialogType(JFileChooser.SAVE_DIALOG);
 		fc.setFileHidingEnabled(false);
@@ -2310,17 +2331,27 @@ ToolpathGenerator.GeneratorListener
 			return;
 		}
 
-    String sourceName;
-    /*if(machineLoader.getDriver() instanceof OnboardParameters && ((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() &&
-        ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures()){*/
-		  //sourceName = build.getName() + ".s4g";
-		  sourceName = build.getName();
-   // } else {
-   //   sourceName = build.getName() + ".s3g";
-  //  }
+   		String sourceName;
+		System.out.println("\n######:" + machineLoader.getDriver());
+
+		sourceName = build.getName();
+
+		final String sXgVersion_pref = "replicatorg.last.choosen.sxg.format";
+
 		String path = selectOutputFile(sourceName);
 		System.out.println("\n#####:" + path);
+
+		String extension = getExtension(path);
+
 		if (path != null) {
+			//Save prferences for sXg format
+			if(getExtension(path).equals(".s4g"))
+				Base.preferences.putInt(sXgVersion_pref,4);
+			else if(getExtension(path).equals(".s3g"))
+				Base.preferences.putInt(sXgVersion_pref, 3);
+			else
+				Base.preferences.putInt(sXgVersion_pref,3);
+
 			// build specific stuff
 			building = true;
 			//buttons.activate(MainButtonPanel.BUILD);
@@ -2329,6 +2360,7 @@ ToolpathGenerator.GeneratorListener
 
 			// start our building thread.
 			buildStart = new Date();
+			machineLoader.getDriver().setBuildToFileVersion((getExtension(path).equals(".s4g")) ? 4 : 3);
 			machineLoader.getMachineInterface().buildToFile(new JEditTextAreaSource(textarea), path);
 		}
 	}
