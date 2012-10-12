@@ -375,7 +375,7 @@
   			endstopsTab.add(toolCountField, "span 2, wrap");
   		}
 		if(target.hasHbp()){
-			endstopsTab.add(new JLabel("HBP on/off"));
+			endstopsTab.add(new JLabel("HBP present"));
 			endstopsTab.add(hbpToggleBox,"span 2, wrap");
 		}
 		
