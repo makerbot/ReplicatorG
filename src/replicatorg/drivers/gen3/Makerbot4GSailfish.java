@@ -444,11 +444,11 @@ public class Makerbot4GSailfish extends Makerbot4GAlternateDriver
 
 			//System.out.println("getBuildToFileVersion: " + getBuildToFileVersion());
 
-			if (( isInitialized() && hasJettyAcceleration() && getBuildToFileVersion() == 0 ) || ( getBuildToFileVersion() >=4)) {
+//			if (( isInitialized() && hasJettyAcceleration() && getBuildToFileVersion() == 0 ) || ( getBuildToFileVersion() >=4)) {
 				queueNewExtPoint(steps, (long) dda_rate, relativeAxes, (float)distance, (float)feedrate);
-			}else{
-				queueNewPoint(steps, (long)usec, relativeAxes);
-			}
+//			}else{
+//				queueNewPoint(steps, (long)usec, relativeAxes);
+//			}
 
 			// Only update excess if no retry was thrown.
 			stepExcess = excess;
