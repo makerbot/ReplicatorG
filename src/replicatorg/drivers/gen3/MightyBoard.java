@@ -1377,6 +1377,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 
 	@Override
+  @Deprecated
 	public ExtraFeatures getExtraFeatures(int toolIndex) {
 		Base.logger.severe("extra Feat: " + Integer.toString(toolIndex));
 		int efdat = read16FromToolEEPROM(ToolheadEEPROM.FEATURES ,0x4084, toolIndex);
@@ -1651,6 +1652,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 	
 	@Override
+  @Deprecated
 	protected int read16FromToolEEPROM(int offset, int defaultValue, int toolIndex) {
 		byte r[] = readFromToolEEPROM(offset, 2, toolIndex);
 		int val = ((int) r[0]) & 0xff;
@@ -1665,6 +1667,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 
 
 	@Override
+  @Deprecated
 	public BackoffParameters getBackoffParameters(int toolIndex) {
 		BackoffParameters bp = new BackoffParameters();
 		Base.logger.severe("backoff Forward: " + Integer.toString(toolIndex));
@@ -1679,6 +1682,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	}
 	
 	@Override
+  @Deprecated
 	public void setBackoffParameters(BackoffParameters bp, int toolIndex) {
 		writeToToolEEPROM(ToolheadEEPROM.BACKOFF_FORWARD_TIME,intToLE(bp.forwardMs,2), toolIndex);
 		writeToToolEEPROM(ToolheadEEPROM.BACKOFF_STOP_TIME,intToLE(bp.stopMs,2), toolIndex);
@@ -1714,10 +1718,10 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	@Override
 	public void setPIDParameters(int which, PIDParameters pp, int toolIndex) {
 		int offset = (which == OnboardParameters.EXTRUDER)?
-				ToolheadEEPROM.EXTRUDER_PID_BASE:ToolheadEEPROM.HBP_PID_BASE;
-		writeToToolEEPROM(offset+PIDTermOffsets.P_TERM_OFFSET,floatToLE(pp.p),toolIndex);
-		writeToToolEEPROM(offset+PIDTermOffsets.I_TERM_OFFSET,floatToLE(pp.i),toolIndex);
-		writeToToolEEPROM(offset+PIDTermOffsets.D_TERM_OFFSET,floatToLE(pp.d),toolIndex);
+			ToolheadEEPROM.EXTRUDER_PID_BASE:ToolheadEEPROM.HBP_PID_BASE;
+      writeToToolEEPROM(offset+PIDTermOffsets.P_TERM_OFFSET,floatToLE(pp.p),toolIndex);
+      writeToToolEEPROM(offset+PIDTermOffsets.I_TERM_OFFSET,floatToLE(pp.i),toolIndex);
+      writeToToolEEPROM(offset+PIDTermOffsets.D_TERM_OFFSET,floatToLE(pp.d),toolIndex);
 	}
 	
 	

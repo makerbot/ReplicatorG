@@ -46,13 +46,19 @@ public class OnboardParametersWindow extends JFrame {
 		onboardParamsTab = new MachineOnboardParameters(targetParams, driver, (JFrame)this);
 		paramsTabs.addTab("Motherboard", onboardParamsTab);
 		
-		List<ToolModel> tools = driver.getMachine().getTools();
-		
-		for(ToolModel t : tools)
-		{
-			paramsTabs.addTab("Extruder " + t.getIndex(), new ExtruderOnboardParameters(targetParams, t,(JFrame)this));
-		}
-		
+		String machineType = targetParams.getMachineType();
+
+    // we're removing the toolhead panel for the replicator because it doesn't work and it works in makerware.
+    // if you want to use it, fix it and we'll put in a patch
+		if(!(machineType.equals("The Replicator") || machineType.equals("Replicator 2") ||
+         machineType.equals("MightyBoard") || machineType.equals("MightyBoard(unverified)"))){
+      List<ToolModel> tools = driver.getMachine().getTools();
+      
+      for(ToolModel t : tools)
+      {
+        paramsTabs.addTab("Extruder " + t.getIndex(), new ExtruderOnboardParameters(targetParams, t,(JFrame)this));
+      }
+    }		
 		/*String machineType = targetParams.getMachineType();
 		if((machineType.equals("MightyBoard") || 
 			machineType.equals("The Replicator") || 

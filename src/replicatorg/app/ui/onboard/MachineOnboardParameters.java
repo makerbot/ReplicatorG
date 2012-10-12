@@ -193,7 +193,7 @@
 			 target.eepromStoreToolDelta(1, ((Number)yToolheadOffsetField.getValue()).doubleValue());
 			 target.eepromStoreToolDelta(2, ((Number)zToolheadOffsetField.getValue()).doubleValue());
 		 }
-
+    
 		 // Set acceleration related parameters
 		 accelUI.setEEPROMFromUI();
 

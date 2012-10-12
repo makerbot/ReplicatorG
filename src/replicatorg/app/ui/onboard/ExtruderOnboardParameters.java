@@ -241,32 +241,41 @@ public class ExtruderOnboardParameters extends JPanel {
 	    }
 
 	    private JFormattedTextField pField = new JFormattedTextField(floatFormat);
-		private JFormattedTextField iField = new JFormattedTextField(eightPlaces);
-		private JFormattedTextField dField = new JFormattedTextField(floatFormat);
-		private final int which;
-		//private final ToolModel tool;
-		private int toolIndex; 
+      private JFormattedTextField iField = new JFormattedTextField(eightPlaces);
+      private JFormattedTextField dField = new JFormattedTextField(floatFormat);
+      private JButton commitButton = new JButton("Commit Changes");
+      private final int which;
+      //private final ToolModel tool;
+      private int toolIndex; 
 		
-		PIDPanel(int which, String name, int toolIndex) {
-			this.which = which;
-			this.toolIndex= toolIndex;
-			setLayout(new MigLayout());
-			setBorder(BorderFactory.createTitledBorder( name ));
-			pField.setColumns(FIELD_WIDTH);
-			iField.setColumns(FIELD_WIDTH);
-			dField.setColumns(FIELD_WIDTH);
+      PIDPanel(int which, String name, int toolIndex) {
+        this.which = which;
+        this.toolIndex= toolIndex;
+        setLayout(new MigLayout());
+        setBorder(BorderFactory.createTitledBorder( name ));
+        pField.setColumns(FIELD_WIDTH);
+        iField.setColumns(FIELD_WIDTH);
+        dField.setColumns(FIELD_WIDTH);
 
-			add(new JLabel("P parameter"));
-			add(pField,"wrap");
-			add(new JLabel("I parameter"));
-			add(iField,"wrap");
-			add(new JLabel("D parameter"));
-			add(dField,"wrap");
-			OnboardParameters.PIDParameters pp = target.getPIDParameters(which, toolIndex);
-			pField.setValue(pp.p);
-			iField.setValue(pp.i);
-			dField.setValue(pp.d);
-		}
+        add(new JLabel("P parameter"));
+        add(pField,"wrap");
+        add(new JLabel("I parameter"));
+        add(iField,"wrap");
+        add(new JLabel("D parameter"));
+        add(dField,"wrap");
+        OnboardParameters.PIDParameters pp = target.getPIDParameters(which, toolIndex);
+        pField.setValue(pp.p);
+        iField.setValue(pp.i);
+        dField.setValue(pp.d);
+
+        commitButton.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent arg0) {
+            PIDPanel.this.commit();
+          }
+        });
+        add(commitButton, "al right");
+
+      }
 
 		public void commit() {
 			OnboardParameters.PIDParameters pp = new OnboardParameters.PIDParameters();
