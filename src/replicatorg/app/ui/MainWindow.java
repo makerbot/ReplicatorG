@@ -2296,9 +2296,9 @@ ToolpathGenerator.GeneratorListener
 		}
 
 		ExtensionFilter s3gFilter = new ExtensionFilter(".s3g","Makerbot build file (s3g)");
-		ExtensionFilter s4gFilter = new ExtensionFilter(".s4g","Makerbot build file (s4g)");
+		ExtensionFilter j4gFilter = new ExtensionFilter(".j4g","Sailfish build file (j4g)");
 		fc.addChoosableFileFilter(s3gFilter);
-		fc.addChoosableFileFilter(s4gFilter);
+		fc.addChoosableFileFilter(j4gFilter);
 
 		fc.setAcceptAllFileFilterUsed(false);
 
@@ -2330,7 +2330,7 @@ ToolpathGenerator.GeneratorListener
 
 		//Select the correct format for the current file extension
 		if ( getExtension(fc.getSelectedFile()).equals(".s3g"))	fc.setFileFilter(s3gFilter);
-		if ( getExtension(fc.getSelectedFile()).equals(".s4g"))	fc.setFileFilter(s4gFilter);
+		if ( getExtension(fc.getSelectedFile()).equals(".j4g"))	fc.setFileFilter(j4gFilter);
 
 		int rv = fc.showSaveDialog(this);
 		if (rv == JFileChooser.APPROVE_OPTION) {
@@ -2362,19 +2362,19 @@ ToolpathGenerator.GeneratorListener
 		String formatExtension;
 		final String sXgVersion_pref = "replicatorg.last.choosen.sxg.format";
 
-		//Figure out the default (s3g or s4g) we should be using for the save dialog box
+		//Figure out the default (s3g or j4g) we should be using for the save dialog box
 		if ( machineLoader.getDriver() instanceof OnboardParameters && machineLoader.getDriver().isInitialized() ) {
 			//Machine connected
 			//System.out.println("Machine connected");
 
-			//If it hasJettyAcceleration and hasAdvancedFeatures then it's likely MightyBoardFirmware >=6.1	and s4g
+			//If it hasJettyAcceleration and hasAdvancedFeatures then it's likely MightyBoardFirmware >=6.1	and j4g
 			//if (((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() && ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures())
 			if (((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration())
-				formatExtension = "s4g";
+				formatExtension = "j4g";
 
-			//If it's Sailfish running on a ToM, then we're s4g
+			//If it's Sailfish running on a ToM, then we're j4g
 			else if ( machineLoader.getDriver().getDriverName().equals("Makerbot4GSailfish") )
-				formatExtension = "s4g";
+				formatExtension = "j4g";
 
 			//Everything else is likely old, use s3g
 			else	formatExtension = "s3g";
@@ -2384,7 +2384,7 @@ ToolpathGenerator.GeneratorListener
 
 			//Use the last thing we selected
 			if ( Base.preferences.getInt(sXgVersion_pref, 3) == 4 )
-				formatExtension = "s4g";
+				formatExtension = "j4g";
 			else	formatExtension = "s3g";
 		}
 
@@ -2395,7 +2395,7 @@ ToolpathGenerator.GeneratorListener
 		if (path != null) {
 
 			//Save the preference for what the user chose for format
-			if	( getExtension(path).equals(".s4g") )	Base.preferences.putInt(sXgVersion_pref, 4);
+			if	( getExtension(path).equals(".j4g") )	Base.preferences.putInt(sXgVersion_pref, 4);
 			else if ( getExtension(path).equals(".s3g") )	Base.preferences.putInt(sXgVersion_pref, 3);
 			else 						Base.preferences.putInt(sXgVersion_pref, 3);
 
@@ -2407,7 +2407,7 @@ ToolpathGenerator.GeneratorListener
 
 			// start our building thread.
 			buildStart = new Date();
-			machineLoader.getDriver().setBuildToFileVersion((getExtension(path).equals(".s4g")) ? 4 : 3);
+			machineLoader.getDriver().setBuildToFileVersion((getExtension(path).equals(".j4g")) ? 4 : 3);
 			machineLoader.getMachineInterface().buildToFile(new JEditTextAreaSource(textarea), path);
 		}
 	}
