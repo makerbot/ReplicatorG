@@ -284,10 +284,10 @@ return false;
 		// Make sure this accurately reflects the minimum preferred
 		// firmware version we want this driver to support.
 		minimumVersion = new Version(5,5);
-		preferredVersion = new Version(6,1);
+		preferredVersion = new Version(6,2);
 		minimumAccelerationVersion = new Version(5,3);
-		minAdvancedFeatureVersion = new Version(6,1);
-		minimumJettyAccelerationVersion = new Version(6,1);
+		minAdvancedFeatureVersion = new Version(6,2);
+		minimumJettyAccelerationVersion = new Version(6,2);
 	}
 
 	public String getDriverName() {
