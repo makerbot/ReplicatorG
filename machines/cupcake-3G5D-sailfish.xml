@@ -10,7 +10,7 @@
 			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
 		</geometry>
 		<tools>
-			<tool name="Mk5/6/6+" type="extruder" material="abs" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a"/>
+			<tool name="Mk5/6/6+" type="extruder" material="abs" fan="true" valve="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a" index="0" motor="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4gsailfish">
@@ -40,7 +40,7 @@
 			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
 		</geometry>
 		<tools>
-			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a"/>
+			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a" index="0" motor="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4gsailfish">
@@ -70,7 +70,7 @@
 			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
 		</geometry>
 		<tools>
-			<tool name="Mk5/6/6+" type="extruder" material="abs" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a"/>
+			<tool name="Mk5/6/6+" type="extruder" material="abs" fan="true" valve="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a" index="0" motor="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4gsailfish">
@@ -100,7 +100,7 @@
 			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
 		</geometry>
 		<tools>
-			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a"/>
+			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a" index="0" motor="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4gsailfish">
@@ -130,7 +130,7 @@
 			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
 		</geometry>
 		<tools>
-			<tool name="Mk5/6/6+" type="extruder" material="abs" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a"/>
+			<tool name="Mk5/6/6+" type="extruder" material="abs" fan="true" valve="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a" index="0" motor="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4gsailfish">
@@ -160,7 +160,7 @@
 			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
 		</geometry>
 		<tools>
-			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a"/>
+			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a" index="0" motor="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4gsailfish">
@@ -190,7 +190,7 @@
 			<axis id="a" length="100000" maxfeedrate="7200" scale="100.470957613814818"/>
 		</geometry>
 		<tools>
-			<tool name="Mk5/6/6+" type="extruder" material="abs" floodcoolant="false" mistcoolant="false" fan="true" valve="false" collet="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a"/>
+			<tool name="Mk5/6/6+" type="extruder" material="abs" fan="true" valve="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a" index="0" motor="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4gsailfish">
@@ -220,7 +220,7 @@
 			<axis id="a" length="100000" maxfeedrate="7200" scale="100.470957613814818"/>
 		</geometry>
 		<tools>
-			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a"/>
+			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a" index="0" motor="true"/>
 		</tools>
 		<clamps></clamps>
 		<driver name="makerbot4gsailfish">
