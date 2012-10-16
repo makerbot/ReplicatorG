@@ -1,9 +1,10 @@
 0040-Beta ReplicatorG
 * Replicator 2 profile now more robust
-* support for selecting between s3g, s4g file formats (future bots)
+* support for selecting between s3g, s5g file formats (future bots)
 * minor profile updates
 * onboard preferences bug fix
 * warning when printing with accelerated speeds to ensure bot has acceleration turned on
+* added support for Sailfish firmware
 
 0039-Beta ReplicatorG
 * Added Replicator 2 Machine profile
