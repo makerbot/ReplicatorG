@@ -135,8 +135,8 @@ class ConfigurationDialog extends JDialog {
 
 					if((pom.getValue("desiredFeedrate") > 40) || (pom.getValue("travelFeedrate") > 55))
 					{
-						JFrame frame = new JFrame("JOption_AccelWaring");
-						JOptionPane.showMessageDialog(frame,"You are now slicing with accelerated build speeds.\n" +
+						//JFrame frame = new JFrame("JOption_AccelWaring");
+						JOptionPane.showMessageDialog(parent,"You are now slicing with accelerated build speeds.\n" +
               "Do not print files generated at these speeds unless you have acceleration turned on.\n" +
               "Building high speed files with acceleration turned off can harm your Makerbot.\n\n" +
 							"You can turn acceleration on in the Onboard Preferences menu or via your Makerbot's onboard menus", "Acceleration Warning", JOptionPane.WARNING_MESSAGE);
@@ -150,8 +150,8 @@ class ConfigurationDialog extends JDialog {
 						"travel:" + pom5d.getValue("travelFeedrate"));
 					if((pom5d.getValue("desiredFeedrate") > 40) || (pom5d.getValue("travelFeedrate") > 55))
 					{
-						JFrame frame = new JFrame("JOption_AccelWaring");
-						JOptionPane.showMessageDialog(frame,"You are now slicing with accelerated build speeds.\n" +
+						//JFrame frame = new JFrame("JOption_AccelWaring");
+						JOptionPane.showMessageDialog(parent,"You are now slicing with accelerated build speeds.\n" +
               "Do not print files generated at these speeds unless you have acceleration turned on.\n" +
               "Building high speed files with acceleration turned off can harm your Makerbot.\n\n" +
 							"You can turn acceleration on in the Onboard Preferences menu or via your Makerbot's onboard menus", "Acceleration Warning", JOptionPane.WARNING_MESSAGE);

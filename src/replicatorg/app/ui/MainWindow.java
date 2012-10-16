@@ -2263,24 +2263,6 @@ ToolpathGenerator.GeneratorListener
 		return extension;
 	}
 
-	private String getExtension(File f) {
-		return getExtension(f.getAbsolutePath());
-	}
-
-	private File fileReplaceExtension(File f, String extensionReplacement) {
-		String s = f.getName();
-		String trimmed = s;
-
-		int pos = s.lastIndexOf('.');
-		
-		if ( pos > 0 && pos < (s.length() - 1))
-			trimmed = s.substring(0, pos);
-
-		trimmed = trimmed + extensionReplacement;
-
-		return new File(f.getParent(), trimmed);
-	}
-
 	private String selectOutputFile(String defaultName) {
 		File directory = null;
 		String loadDir = Base.preferences.get("ui.open_output_dir", null);
@@ -2321,31 +2303,6 @@ ToolpathGenerator.GeneratorListener
 		fc.setDialogType(JFileChooser.SAVE_DIALOG);
 		fc.setFileHidingEnabled(false);
 		fc.setSelectedFile(new File(directory,defaultName));
-
-		//Add property listener so we can change the file "Save As" name when
-		//we change the file format.  It's a workaround for a bug in JFileChooser
-		fc.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent e) {
-				if(e.getPropertyName().equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
-					//System.out.println("Event1: " + e);
-					//System.out.println("Event1Old: " + e.getOldValue());
-
-					//If Changing filter type has nuked out "Save As" file
-					//change it to the new file type and reset it
-					if ( e.getNewValue() == null && e.getOldValue() != null ) {
-						String replacementExtension = ((ExtensionFilter)fc.getFileFilter()).getFirstExtension();
-						File newFilename = fileReplaceExtension((File)e.getOldValue(), replacementExtension);
-						//System.out.println("New Filename: " + newFilename);
-
-						fc.setSelectedFile(newFilename);
-					}
-				}
-			}
-		});
-
-		//Select the correct format for the current file extension
-		if ( getExtension(fc.getSelectedFile()).equals(".s3g"))	fc.setFileFilter(s3gFilter);
-//		if ( getExtension(fc.getSelectedFile()).equals(".j4g"))	fc.setFileFilter(j4gFilter);
 
 		int rv = fc.showSaveDialog(this);
 		if (rv == JFileChooser.APPROVE_OPTION) {
