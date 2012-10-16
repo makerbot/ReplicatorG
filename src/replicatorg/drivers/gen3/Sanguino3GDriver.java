@@ -577,7 +577,7 @@ public class Sanguino3GDriver extends SerialDriver implements
 		return stats;
 	}
 
-	private void initSlave(int toolhead) {
+	public void initSlave(int toolhead) {
 		
 		/// toolhead -1 indicate auto-detect.Fast hack to get software out..
 		if(toolhead == -1 ) toolhead = machine.currentTool().getIndex();

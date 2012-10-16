@@ -45,6 +45,8 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -640,7 +642,9 @@ ToolpathGenerator.GeneratorListener
 			spp.setStartCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getStartBookendCode()));
 			spp.setEndCode(new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode()));
 			spp.setMultiHead(isDualDriver());
-			if((machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR) || (machineLoader.getMachineInterface().getMachineType() == MachineType.REPLICATOR_2))
+			if((machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR) ||
+            (machineLoader.getMachineInterface().getMachineType() == MachineType.REPLICATOR_2) ||
+            (machineLoader.getDriver().getDriverName().equals("Makerbot4GSailfish")))
 				spp.setAddProgressUpdates(true);
 		}
 		else if (generator instanceof MiracleGrueGenerator) {
@@ -653,7 +657,9 @@ ToolpathGenerator.GeneratorListener
 			spp.setMultiHead(isDualDriver());
 			spp.setPrependStart(true);
 			spp.setAppendEnd(true);
-			if((machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR) || (machineLoader.getMachineInterface().getMachineType() == MachineType.REPLICATOR_2))
+			if((machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR) ||
+            (machineLoader.getMachineInterface().getMachineType() == MachineType.REPLICATOR_2) ||
+            (machineLoader.getDriver().getDriverName().equals("Makerbot4GSailfish")))
 				spp.setAddProgressUpdates(true);
 
 		}
@@ -2240,14 +2246,39 @@ ToolpathGenerator.GeneratorListener
 		public String getDescription() {
 			return description;
 		}
+
+		public String getFirstExtension() {
+			return extensions.getFirst();
+		}
 	};
 
 	private String getExtension(String s) {
 		String extension = null;
+
 		int pos = s.lastIndexOf('.');
-		if(pos > 0 && pos < (s.length() -1))
+		
+		if ( pos > 0 && pos < (s.length() - 1))
 			extension = s.substring(pos).toLowerCase();
+		
 		return extension;
+	}
+
+	private String getExtension(File f) {
+		return getExtension(f.getAbsolutePath());
+	}
+
+	private File fileReplaceExtension(File f, String extensionReplacement) {
+		String s = f.getName();
+		String trimmed = s;
+
+		int pos = s.lastIndexOf('.');
+		
+		if ( pos > 0 && pos < (s.length() - 1))
+			trimmed = s.substring(0, pos);
+
+		trimmed = trimmed + extensionReplacement;
+
+		return new File(f.getParent(), trimmed);
 	}
 
 	private String selectOutputFile(String defaultName) {
@@ -2256,7 +2287,8 @@ ToolpathGenerator.GeneratorListener
 		if (loadDir != null) {
 			directory = new File(loadDir);
 		}
-		JFileChooser fc;
+
+		final JFileChooser fc;
 		if (directory != null) {
 			fc = new JFileChooser(directory);
 		}
@@ -2284,10 +2316,37 @@ ToolpathGenerator.GeneratorListener
 		else{
 			fc.setFileFilter(s3gFilter);
 		}
+
 		fc.setDialogTitle("Save Makerbot build as...");
 		fc.setDialogType(JFileChooser.SAVE_DIALOG);
 		fc.setFileHidingEnabled(false);
 		fc.setSelectedFile(new File(directory,defaultName));
+
+		//Add property listener so we can change the file "Save As" name when
+		//we change the file format.  It's a workaround for a bug in JFileChooser
+		fc.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent e) {
+				if(e.getPropertyName().equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
+					//System.out.println("Event1: " + e);
+					//System.out.println("Event1Old: " + e.getOldValue());
+
+					//If Changing filter type has nuked out "Save As" file
+					//change it to the new file type and reset it
+					if ( e.getNewValue() == null && e.getOldValue() != null ) {
+						String replacementExtension = ((ExtensionFilter)fc.getFileFilter()).getFirstExtension();
+						File newFilename = fileReplaceExtension((File)e.getOldValue(), replacementExtension);
+						//System.out.println("New Filename: " + newFilename);
+
+						fc.setSelectedFile(newFilename);
+					}
+				}
+			}
+		});
+
+		//Select the correct format for the current file extension
+		if ( getExtension(fc.getSelectedFile()).equals(".s3g"))	fc.setFileFilter(s3gFilter);
+//		if ( getExtension(fc.getSelectedFile()).equals(".j4g"))	fc.setFileFilter(j4gFilter);
+
 		int rv = fc.showSaveDialog(this);
 		if (rv == JFileChooser.APPROVE_OPTION) {
 			
@@ -2338,7 +2397,7 @@ ToolpathGenerator.GeneratorListener
 			return;
 		}
 
-   		String sourceName;
+   	String sourceName;
 		System.out.println("\n######:" + machineLoader.getDriver());
 
 		sourceName = build.getName();

@@ -1,0 +1,243 @@
+<?xml version="1.1" encoding="utf-8"?>
+<machines>
+	<machine>
+		<name>3G 5D Cupcake (Gen3 XYZ, Mk5/6+Gen4 Extruder, Sailfish)</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="9600" stepspermm="11.767463" endstops="min"/> 
+			<axis id="y" length="100" maxfeedrate="9600" stepspermm="11.767463" endstops="min"/>
+			<axis id="z" length="100" maxfeedrate="450" stepspermm="320" endstops="min"/>
+			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
+		</geometry>
+		<tools>
+			<tool name="Mk5/6/6+" type="extruder" material="abs" fan="true" valve="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a" index="0" motor="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="makerbot4gsailfish">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<!--<debuglevel>5</debuglevel>-->
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+			(Turn off steppers after a build.)
+			M18
+		</cooldown>
+                <bookend start="machines/cupcake/start+HBP+Sailfish.gcode" end="machines/cupcake/end+Sailfish.gcode"/>
+	</machine>
+	<machine>
+		<name>3G 5D Cupcake+ABP (Gen3 XYZ, Mk5/6+Gen4 Extruder, Sailfish)</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="9600" stepspermm="11.767463" endstops="min"/> 
+			<axis id="y" length="100" maxfeedrate="9600" stepspermm="11.767463" endstops="min"/>
+			<axis id="z" length="100" maxfeedrate="450" stepspermm="320" endstops="min"/>
+			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
+		</geometry>
+		<tools>
+			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a" index="0" motor="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="makerbot4gsailfish">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<!--<debuglevel>5</debuglevel>-->
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+			(Turn off steppers after a build.)
+			M18
+		</cooldown>
+                <bookend start="machines/cupcake/start+ABP+Sailfish.gcode" end="machines/cupcake/end+ABP+Sailfish.gcode"/>
+	</machine>
+	<machine>
+		<name>3G 5D Cupcake (Gen4 XYZ, Mk5/6+Gen4 Extruder, Sailfish)</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="9600" stepspermm="47.069852"/> 
+			<axis id="y" length="100" maxfeedrate="9600" stepspermm="47.069852"/>
+			<axis id="z" length="100" maxfeedrate="450" stepspermm="1280"/>
+			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
+		</geometry>
+		<tools>
+			<tool name="Mk5/6/6+" type="extruder" material="abs" fan="true" valve="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a" index="0" motor="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="makerbot4gsailfish">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<!--<debuglevel>5</debuglevel>-->
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+			(Turn off steppers after a build.)
+			M18
+		</cooldown>
+                <bookend start="machines/cupcake/start+HBP+Sailfish.gcode" end="machines/cupcake/end+Sailfish.gcode"/>
+	</machine>
+	<machine>
+		<name>3G 5D Cupcake+ABP (Gen4 XYZ, Mk5/6+Gen4 Extruder, Sailfish)</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="9600" stepspermm="47.069852"/> 
+			<axis id="y" length="100" maxfeedrate="9600" stepspermm="47.069852"/>
+			<axis id="z" length="100" maxfeedrate="450" stepspermm="1280"/>
+			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
+		</geometry>
+		<tools>
+			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a" index="0" motor="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="makerbot4gsailfish">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<!--<debuglevel>5</debuglevel>-->
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+			(Turn off steppers after a build.)
+			M18
+		</cooldown>
+                <bookend start="machines/cupcake/start+ABP+Sailfish.gcode" end="machines/cupcake/end+ABP+Sailfish.gcode"/>
+	</machine>
+	<machine>
+		<name>3G 5D Cupcake (Pololu XYZ, Mk5/6+Gen4 Extruder, Sailfish)</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="9600" scale="94.1397046"/>  <!-- sixteenth-step driver -->
+			<axis id="y" length="100" maxfeedrate="9600" scale="94.1397046"/>  <!-- sixteenth-step driver -->
+			<axis id="z" length="100" maxfeedrate="450" scale="2560"/> <!-- sixteenth-step driver -->
+			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
+		</geometry>
+		<tools>
+			<tool name="Mk5/6/6+" type="extruder" material="abs" fan="true" valve="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a" index="0" motor="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="makerbot4gsailfish">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<!--<debuglevel>5</debuglevel>-->
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+			(Turn off steppers after a build.)
+			M18
+		</cooldown>
+                <bookend start="machines/cupcake/start+HBP+Sailfish.gcode" end="machines/cupcake/end+Sailfish.gcode"/>
+	</machine>
+	<machine>
+		<name>3G 5D Cupcake+ABP (Pololu XYZ, Mk5/6+Gen4 Extruder, Sailfish)</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="9600" scale="94.1397046"/>  <!-- sixteenth-step driver -->
+			<axis id="y" length="100" maxfeedrate="9600" scale="94.1397046"/>  <!-- sixteenth-step driver -->
+			<axis id="z" length="100" maxfeedrate="450" scale="2560"/> <!-- sixteenth-step driver -->
+			<axis id="a" length="100000" maxfeedrate="7200" scale="50.235478806907409"/>
+		</geometry>
+		<tools>
+			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a" index="0" motor="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="makerbot4gsailfish">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<!--<debuglevel>5</debuglevel>-->
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+			(Turn off steppers after a build.)
+			M18
+		</cooldown>
+                <bookend start="machines/cupcake/start+ABP+Sailfish.gcode" end="machines/cupcake/end+ABP+Sailfish.gcode"/>
+	</machine>
+	<machine>
+		<name>3G 5D Cupcake (Pololu XYZ, Mk5/6+Pololu Extruder, Sailfish)</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="9600" scale="94.1397046"/>  <!-- sixteenth-step driver -->
+			<axis id="y" length="100" maxfeedrate="9600" scale="94.1397046"/>  <!-- sixteenth-step driver -->
+			<axis id="z" length="100" maxfeedrate="450" scale="2560"/> <!-- sixteenth-step driver -->
+			<axis id="a" length="100000" maxfeedrate="7200" scale="100.470957613814818"/>
+		</geometry>
+		<tools>
+			<tool name="Mk5/6/6+" type="extruder" material="abs" fan="true" valve="false" heater="true"  heatedplatform="true" motor_steps="400" stepper_axis="a" index="0" motor="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="makerbot4gsailfish">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<!--<debuglevel>5</debuglevel>-->
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+			(Turn off steppers after a build.)
+			M18
+		</cooldown>
+                <bookend start="machines/cupcake/start+HBP+Sailfish.gcode" end="machines/cupcake/end+Sailfish.gcode"/>
+	</machine>
+	<machine>
+		<name>3G 5D Cupcake+ABP (Pololu XYZ, Mk5/6+Pololu Extruder, Sailfish)</name>
+		<geometry type="cartesian">
+			<!-- different pulleys on X and Y axii -->
+			<axis id="x" length="100" maxfeedrate="9600" scale="94.1397046"/>  <!-- sixteenth-step driver -->
+			<axis id="y" length="100" maxfeedrate="9600" scale="94.1397046"/>  <!-- sixteenth-step driver -->
+			<axis id="z" length="100" maxfeedrate="450" scale="2560"/> <!-- sixteenth-step driver -->
+			<axis id="a" length="100000" maxfeedrate="7200" scale="100.470957613814818"/>
+		</geometry>
+		<tools>
+			<tool name="Mk5/6/6+ w/ABP" type="extruder" material="abs" automatedplatform="true" heatedplatform="true" heater="true" stepper_axis="a" index="0" motor="true"/>
+		</tools>
+		<clamps></clamps>
+		<driver name="makerbot4gsailfish">
+			<!-- optional, defaults to first serial port found.    <portname>COM1</portname> -->
+			<!-- required: we need 8 bit and 38400 baud. -->
+			<rate>38400</rate>
+			<parity>8</parity>
+			<!-- optional, defaults to 1.                          <databits>1</databits> -->
+			<!-- optional, defaults to N.                          <stopbits>N</stopbits> -->
+			<!--<debuglevel>5</debuglevel>-->
+		</driver>
+		<warmup>
+		</warmup>
+		<cooldown>
+			(Turn off steppers after a build.)
+			M18
+		</cooldown>
+                <bookend start="machines/cupcake/start+ABP+Sailfish.gcode" end="machines/cupcake/end+ABP+Sailfish.gcode"/>
+	</machine>
+</machines>

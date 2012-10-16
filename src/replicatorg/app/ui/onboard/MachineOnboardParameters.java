@@ -35,10 +35,11 @@
 	 private final MachineOnboardAccelerationParameters accelUI;
 
 	 private boolean isMightyBoard = false;
+	 private boolean isSailfish = false;
 	 private JTextField machineNameField = new JTextField();
 	 private static final String[] toolCountChoices = {"unavailable","1", "2"};
 	 private JComboBox toolCountField = new JComboBox(toolCountChoices);
-   private JCheckBox hbpToggleBox = new JCheckBox();
+	 private JCheckBox hbpToggleBox = new JCheckBox();
 	 private JCheckBox xAxisInvertBox = new JCheckBox();
 	 private JCheckBox yAxisInvertBox = new JCheckBox();
 	 private JCheckBox zAxisInvertBox = new JCheckBox();
@@ -146,7 +147,7 @@
           target.setHbpSetting(false);
         }
       }
-
+	
 		 EnumSet<AxisId> axesInverted = EnumSet.noneOf(AxisId.class);
 		 if (xAxisInvertBox.isSelected()) axesInverted.add(AxisId.X);
 		 if (yAxisInvertBox.isSelected()) axesInverted.add(AxisId.Y);
@@ -288,7 +289,7 @@
 		}
 		
 		EnumSet<AxisId> invertedAxes = this.target.getInvertedAxes();
-	
+		
 		xAxisInvertBox.setSelected(invertedAxes.contains(AxisId.X));
 		yAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Y));
 		zAxisInvertBox.setSelected(invertedAxes.contains(AxisId.Z));
@@ -303,7 +304,7 @@
 			else
 				hbpToggleBox.setSelected(false);
 		}
-                
+
 		// 0 == inverted, 1 == not inverted
 		OnboardParameters.EndstopType endstops = this.target.getInvertedEndstops();
 		endstopInversionSelection.setSelectedIndex(endstops.ordinal());
@@ -346,6 +347,10 @@
 
 		String driverName = target.getDriverName();  // can return null
 		isMightyBoard = (driverName != null) && driverName.equalsIgnoreCase("mightyboard");
+		if (!isMightyBoard)
+			isSailfish = (driverName != null) && driverName.equalsIgnoreCase("makerbot4gsailfish");
+		else
+			isSailfish = false;
 
                 setLayout(new MigLayout("fill", "[r][l][r]"));
 
@@ -378,7 +383,7 @@
 			endstopsTab.add(new JLabel("HBP present"));
 			endstopsTab.add(hbpToggleBox,"span 2, wrap");
 		}
-		
+
 		endstopsTab.add(new JLabel("Invert X axis"));		
 		endstopsTab.add(xAxisInvertBox,"span 2, wrap");
 		
@@ -482,6 +487,8 @@
 				else
 					accelUI = new MightyBoardMachineOnboardAccelerationParameters(target, driver, subTabs);
 			}
+			else if (isSailfish)
+				accelUI = new SailfishG3MachineOnboardAccelerationParameters(target, driver, subTabs);
 			else
 				accelUI = new G3FirmwareMachineOnboardAccelerationParameters(target, driver, subTabs);
 		}
@@ -875,14 +882,20 @@
 		 // Accel Parameters of Tab 2
 		 class AccelParamsTab2 {
 			 boolean slowdownEnabled;
+			 boolean overrideGCodeTempEnabled;
+			 boolean preheatDuringPauseEnabled;
 			 int[] deprime;
 			 double[] JKNadvance;
 
 			 AccelParamsTab2(boolean slowdownEnabled,
+					 boolean overrideGCodeTempEnabled,
+					 boolean preheatDuringPauseEnabled,
 					 int[] deprime,
 					 double[] JKNadvance)
 			 {
 				 this.slowdownEnabled           = slowdownEnabled;
+				 this.overrideGCodeTempEnabled  = overrideGCodeTempEnabled;
+				 this.preheatDuringPauseEnabled = preheatDuringPauseEnabled;
 				 this.deprime                   = deprime;
 				 this.JKNadvance                = JKNadvance;
 			 }
@@ -1024,6 +1037,18 @@
            "or a travel-only move is encountered.  Set to a value of 0 to disable this feature for this extruder.  " +
            "Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's \"Retraction Distance\".");
 
+		 private JCheckBox overrideGCodeTempBox = new JCheckBox();
+		 {
+			 overrideGCodeTempBox.setToolTipText(wrap2HTML(width,
+                    "When enabled, override the gcode temperature settings using the preheat " +
+		    "temperature settings for the extruders and build platform."));
+		 }
+           
+		 private JCheckBox preheatDuringPauseBox = new JCheckBox();
+		 {
+			 preheatDuringPauseBox.setToolTipText(wrap2HTML(width,
+                    "When enabled, leave the extruder and platform heaters enabled whilst paused."));
+		 }
            
 		 // Slowdown is a flag for the Replicator
 		 private JCheckBox slowdownFlagBox = new JCheckBox();
@@ -1059,7 +1084,7 @@
 			 });
 		 }
 
-		 private AccelParams getAccelParamsFromUI() {
+		 AccelParams getAccelParamsFromUI() {
 			 return new AccelParams(new AccelParamsTab1(accelerationBox.isSelected(),
 								    new int[] {((Number)normalMoveAcceleration.getValue()).intValue(),
 									       ((Number)extruderMoveAcceleration.getValue()).intValue()},
@@ -1074,6 +1099,8 @@
 									       ((Number)aAxisMaxSpeedChange.getValue()).intValue(),
 									       ((Number)bAxisMaxSpeedChange.getValue()).intValue()}),
 						new AccelParamsTab2(slowdownFlagBox.isSelected(),
+								    overrideGCodeTempBox.isSelected(),
+								    preheatDuringPauseBox.isSelected(),
 								    new int[] {((Number)extruderDeprimeA.getValue()).intValue(),
 									       ((Number)extruderDeprimeB.getValue()).intValue()},
 								    new double[] {((Number)JKNAdvance1.getValue()).doubleValue(),
@@ -1087,6 +1114,8 @@
 
 		 private void setEEPROMFromUI(AccelParams params) {
 			 target.setAccelerationStatus(params.tab1.accelerationEnabled ? (byte)1 : (byte)0);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP, params.tab2.overrideGCodeTempEnabled ? 1 : 0);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.PREHEAT_DURING_PAUSE, params.tab2.preheatDuringPauseEnabled ? 1 : 0);
 			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_FLAG, params.tab2.slowdownEnabled ? 1 : 0);
 
 			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_NORM,    params.tab1.accelerations[0]);
@@ -1120,6 +1149,8 @@
 			 setUIFields(UI_TAB_1,
 				     params.accelerationEnabled,
 				     false,
+				     false,
+				     false,
 				     params.accelerations,
 				     params.maxAccelerations,
 				     params.maxSpeedChanges,
@@ -1130,6 +1161,8 @@
 		 private void setUIFields(int tabs,
 					  boolean accelerationEnabled,
 					  boolean slowdownEnabled,
+					  boolean overrideGCodeTempEnabled,
+					  boolean preheatDuringPauseEnabled,
 					  int[] accelerations,
 					  int[] maxAccelerations,
 					  int[] maxSpeedChanges,
@@ -1163,6 +1196,8 @@
 
 			 if ((tabs & UI_TAB_2) != 0) {
 				 slowdownFlagBox.setSelected(slowdownEnabled);
+				 overrideGCodeTempBox.setSelected(overrideGCodeTempEnabled);
+				 preheatDuringPauseBox.setSelected(preheatDuringPauseEnabled);
 
 				 if (JKNadvance != null) {
 					 JKNAdvance1.setValue(JKNadvance[0]);
@@ -1183,6 +1218,8 @@
 		 public void setUIFromEEPROM() {
 			 boolean accelerationEnabled = target.getAccelerationStatus() != 0;
 			 boolean slowdownEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_FLAG) != 0;
+			 boolean overrideGCodeTempEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP) != 0;
+			 boolean preheatDuringPauseEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.PREHEAT_DURING_PAUSE) != 0;
 			 int[] maxAccelerations = new int[] {
 				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_X),
 				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Y),
@@ -1209,8 +1246,8 @@
 				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A),
 				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_B) };
 		 
-			 setUIFields(UI_TAB_1 | UI_TAB_2, accelerationEnabled, slowdownEnabled, 
-				      accelerations, maxAccelerations, maxSpeedChanges,
+			 setUIFields(UI_TAB_1 | UI_TAB_2, accelerationEnabled, slowdownEnabled, overrideGCodeTempEnabled,
+				     preheatDuringPauseEnabled, accelerations, maxAccelerations, maxSpeedChanges,
 				     JKNadvance, deprime);
 		 }
 
@@ -1286,6 +1323,8 @@
 			 extruderDeprimeA.setColumns(8);
 			 extruderDeprimeB.setColumns(8);
 
+			 addWithSharedToolTips(accelerationMiscTab, "Override the target temperatures in the gcode", overrideGCodeTempBox, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "Preheat during paused operations", preheatDuringPauseBox, "wrap");
 			 addWithSharedToolTips(accelerationMiscTab, "Slow printing when acceleration planing falls behind", slowdownFlagBox, "wrap");
 			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K", JKNAdvance1, "wrap");
 			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K2", JKNAdvance2, "wrap");
@@ -1466,7 +1505,7 @@
            "this parameter range from around 0.001 to 0.02.  Set to a value of 0 to disable use of this " +
            "compensation.");
 
-
+	
 		 private JCheckBox clockwiseExtruderChoice = new JCheckBox();
 		 {
 			 clockwiseExtruderChoice.setToolTipText(wrap2HTML(width,
@@ -1540,9 +1579,9 @@
                    "number of character rows.  The standard Gen 4 LCD display is 16 x 4."));
 		 }
 
-		 private final int moodLightChoiceIndex_DEFAULT = 0; // Default choice in moodLightChoices
-		 private static final int moodLightScriptId_DEFAULT = 2; // Default Script Id
-		 private final String[] moodLightChoices = {
+		 public final int moodLightChoiceIndex_DEFAULT = 0; // Default choice in moodLightChoices
+		 public final int moodLightScriptId_DEFAULT = 2; // Default Script Id
+		 public final String[] moodLightChoices = {
 			 "Off (2)",
 			 "Bot status (0)",
 			 "Custom color (1)",
@@ -1645,7 +1684,7 @@
 
 		 // Given a Mood Light Script Id, find the corresponding choice in the
 		 // Mood Light choice list
-		 private int findMoodLightChoice(int scriptId) {
+		 public int findMoodLightChoice(int scriptId) {
 			 String str = "(" + scriptId + ")";
 			 for (int i = 0; i < moodLightChoices.length; i++) {
 				 if (moodLightChoices[i].contains(str))
@@ -1655,7 +1694,7 @@
 		 }
 
 		 // Given an index in the list of Mood Light choices, find the corresponding Script Id
-		 private int findMoodLightScriptId(int choiceIndex) {
+		 public int findMoodLightScriptId(int choiceIndex) {
 			 if (choiceIndex < 0 || choiceIndex > moodLightChoices.length)
 				 return -1;
 			 int start = moodLightChoices[choiceIndex].indexOf('(');
@@ -1743,7 +1782,7 @@
 					       clockwiseExtruderChoice.isSelected() ? 1L : 0L);
 			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MIN_FEED_RATE,
 					       ((Number)minFeedrate.getValue()).doubleValue());
-			 target.setEEPROMParam(OnboardParameters.EEPROMParams.INVERTED_EXTRUDER_5D,
+		 	 target.setEEPROMParam(OnboardParameters.EEPROMParams.INVERTED_EXTRUDER_5D,
 					       inverted5DExtruderBox.isSelected() ? 1 : 0);
 			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MIN_TRAVEL_FEED_RATE,
 					       ((Number)minTravelFeedrate.getValue()).doubleValue());
@@ -1818,7 +1857,7 @@
 			 revMaxFeedrate.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_REV_MAX_FEED_RATE));
 			 extruderMoveAcceleration.setValue(target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_RETRACT));
 			 extruderDeprime.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A));
-			 clockwiseExtruderChoice.setSelected(1L == target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_CLOCKWISE_EXTRUDER));
+			 clockwiseExtruderChoice.setSelected(0L != target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_CLOCKWISE_EXTRUDER));
 			 inverted5DExtruderBox.setSelected(0 != target.getEEPROMParamInt(OnboardParameters.EEPROMParams.INVERTED_EXTRUDER_5D));
 			 minFeedrate.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MIN_FEED_RATE));
 			 minTravelFeedrate.setValue(target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MIN_TRAVEL_FEED_RATE));
@@ -1940,9 +1979,11 @@
 					       revMaxFeedrate);
 			 addWithSharedToolTips(accelerationMiscTab, "Min travel feedrate (mm/s)",
 					       minTravelFeedrate, "wrap");
-
+			
 			 addWithSharedToolTips(accelerationMiscTab, "Min feedrate at junctions (mm/s)",
-					       minPlannerSpeed, "wrap");
+					       minPlannerSpeed);
+			 addWithSharedToolTips(accelerationMiscTab, "Clockwise extruder",
+					       clockwiseExtruderChoice, "wrap");
 
 			 addWithSharedToolTips(accelerationMiscTab, "Min segment printing time (s)",
 					       minSegmentTime);
@@ -1970,6 +2011,7 @@
 
 			 addWithSharedToolTips(miscTab, "Extruder 1 preheat & override temperature (C)",
 					       tool1Temp);
+
 			 addWithSharedToolTips(miscTab, "Clockwise extruder", clockwiseExtruderChoice, "wrap");
 
 			 addWithSharedToolTips(miscTab, "Platform preheat & override temperature (C)",
@@ -1979,6 +2021,740 @@
 			 addWithSharedToolTips(miscTab, "Mood light script", moodLightScript, "span 4, wrap");
 			 addWithSharedToolTips(miscTab, "Mood light color",
 					       moodLightCustomColor, "span 4, wrap, gapbottom push, gapright push");
+		 }
+	 }
+
+	 // Sailfish
+	 // We could implement this class as an extension of the JettyMightyBoardMachineOnboardAccelerationParameters
+	 // class.  But so doing then makes the Sailfish firmware dependent upon the tool tip wording and range
+	 // changes selected by MBI.
+
+	 private class SailfishG3MachineOnboardAccelerationParameters extends MachineOnboardAccelerationParameters {
+
+		 // Sailfish Firmware specific acceleration parameters
+
+		 // Accel Parameters of Tab 1
+		 class AccelParamsTab1 {
+
+			 boolean accelerationEnabled;
+			 long[] accelerations;
+			 long[] maxAccelerations;
+			 double[] maxSpeedChanges;
+
+			 AccelParamsTab1(boolean accelerationEnabled,
+					 long[] accelerations,
+					 long[] maxAccelerations,
+					 double[] maxSpeedChanges)
+			 {
+				 this.accelerationEnabled = accelerationEnabled;
+				 this.accelerations       = accelerations;
+				 this.maxAccelerations    = maxAccelerations;
+				 this.maxSpeedChanges     = maxSpeedChanges;
+			 }
+		 }
+
+		 // Accel Parameters of Tab 2
+		 class AccelParamsTab2 {
+
+			 boolean slowdownEnabled;
+			 long[] deprime;
+			 double[] JKNadvance;
+
+			 AccelParamsTab2(boolean slowdownEnabled,
+					 long[] deprime,
+					 double[] JKNadvance)
+			 {
+				 this.slowdownEnabled           = slowdownEnabled;
+				 this.deprime                   = deprime;
+				 this.JKNadvance                = JKNadvance;
+			 }
+		 }
+
+		 // Accel Parameters of Tab 3
+		 class AccelParamsTab3 {
+
+			 boolean overrideGCodeTempEnabled;
+			 boolean dittoEnabled;
+			 int buzzerRepeats;
+			 int lcdType;
+			 int scriptId;
+			 int [] rgb;
+			 int [] overrideTemps;
+
+			 AccelParamsTab3(boolean overrideGCodeTempEnabled,
+					 boolean dittoEnabled,
+					 int buzzerRepeats,
+					 int lcdType,
+					 int scriptId,
+					 int [] rgb,
+					 int [] overrideTemps)
+			 {
+				 this.overrideGCodeTempEnabled = overrideGCodeTempEnabled;
+				 this.dittoEnabled             = dittoEnabled;
+				 this.buzzerRepeats            = buzzerRepeats;
+				 this.lcdType                  = lcdType;
+				 this.scriptId                 = scriptId;
+				 this.rgb                      = rgb;
+				 this.overrideTemps            = overrideTemps;
+			 }
+		 }
+
+		 private class AccelParams {
+			 public AccelParamsTab1 tab1;
+			 public AccelParamsTab2 tab2;
+			 public AccelParamsTab3 tab3;
+
+			 AccelParams(AccelParamsTab1 params1, AccelParamsTab2 params2, AccelParamsTab3 params3) {
+				 this.tab1 = params1;
+				 this.tab2 = params2;
+				 this.tab3 = params3;
+			 }
+		 }
+
+		 AccelParamsTab1 draftParams = new AccelParamsTab1(true,                                            // acceleration enabled
+								   new long[]   {2000L, 2000L},                     // p_accel, p_retract_accel
+								   new long[]   {1000L, 1000L, 150L, 2000L, 2000L}, // max accelerations x,y,z,a,b
+								   new double[] {40.0, 40.0, 10.0, 40.0, 40.0});    // max speed changes x,y,z,a,b
+
+		 AccelParamsTab1 qualityParams = new AccelParamsTab1(true,                                            // acceleration enabled
+								     new long[]   {2000L, 2000L},                     // p_accel, p_retract_accel
+								     new long[]   {1000L, 1000L, 150L, 2000L, 2000L}, // max accelerations x,y,z,a,b
+								     new double[] {15.0, 15.0, 10.0, 20.0, 20.0});    // max speed changes x,y,z,a,b
+
+		 // Column width for formatting tool tip text
+		 final int width = defaultToolTipWidth;
+
+		 // Many of the values stored in EEPROM for the replicator are uint16_t
+		 //   So, we want 0 < val < 0xffff
+
+		 public final int moodLightChoiceIndex_DEFAULT = 0; // Default choice in moodLightChoices
+		 public final int moodLightScriptId_DEFAULT = 2; // Default Script Id
+		 public final String[] moodLightChoices = {
+			 "Off (2)",
+			 "Bot status (0)",
+			 "Custom color (1)",
+			 "Almond (12)",
+			 "Blue (6)",
+			 "Blue, Alice (15)",
+			 "Blue, Deep Sky (22)",
+			 "Blue, Midnight (21)",
+			 "Cyan (7)",
+			 "Gold (25)",
+			 "Gray (19)",
+			 "Gray, Light (20)",
+			 "Gray, Slate (18)",
+			 "Green (5)",
+			 "Green, Forest (24)",
+			 "Green, Olive (23)",
+			 "Hot Pink (26)",
+			 "Lavender (16)",
+			 "Linen (27)",
+			 "Magenta (8)",
+			 "Mint Cream (14)",
+			 "Orange (11)",
+			 "Peach Puff (13)",
+			 "Purple (10)",
+			 "Red (4)",
+			 "Rose, Misty (17)",
+			 "White (3)",
+			 "Yellow (9)",
+			 "Cycle Rainbow (110)",
+			 "Cycle Random (111)",
+			 "Cycle Red/Green/Blue (101)",
+			 "Cycle S.O.S. (118)",
+			 "Cycle Seasons (115)",
+			 "Cycle Traffic Lights (117)",
+			 "Cycle White/Red/Green/Blue/Off (100)",
+			 "Random Candle (112)",
+			 "Random Neon Reds (114)",
+			 "Random Thunderstorms (116)",
+			 "Random Water (113)",
+			 "Flashing Blue (105)",
+			 "Flashing Cyan (106)",
+			 "Flashing Green (104)",
+			 "Flashing Magenta (107)",
+			 "Flashing Red (103)",
+			 "Flashing White (102)",
+			 "Flashing Yellow (108)"
+		 };
+
+		 private NumberFormat repNF = NumberFormat.getIntegerInstance();
+
+		 // Temp and other integer values >= 0
+		 private NumberFormat tempNF = NumberFormat.getIntegerInstance();
+		 {
+			 tempNF.setMaximumIntegerDigits(3);
+		 }
+
+		 private JCheckBox accelerationBox = new JCheckBox();
+		 {
+			 accelerationBox.setToolTipText(wrap2HTML(width, "Enable or disable printing with acceleration"));
+		 }
+
+		 private JCheckBox dittoBox = new JCheckBox();
+		 {
+			 dittoBox.setToolTipText(wrap2HTML(width,
+           "Enable ditto printing in which two copies of the build will be simultaneously printed, one copy with the " +
+           "left extruder and the other with the right extruder.  The object must be such that the print heads will not " +
+	   "interfere with one another; the firmware will not automatically guard against that."));
+		 }
+
+		 private JButton draftButton = new JButton("Quick Draft");
+		 {
+			 draftButton.setToolTipText(wrap2HTML(width,
+           "By clicking this button, the on-screen acceleration parameters will be changed to suggested values for " +
+	   "rapid draft-quality builds.  The values will not be committed to your Replicator until you click the " +
+	   "Commit button.  You may adjust the settings before committing them to your Replicator."));
+		 }
+
+		 private JButton qualityButton = new JButton("Fine Quality");
+		 {
+			 qualityButton.setToolTipText(wrap2HTML(width,
+           "By clicking this button, the on-screen acceleration parameters will be changed to suggested values for " +
+	   "fine-quality builds.  The values will not be committed to your Replicator until you click the " +
+	   "Commit button.  You may adjust the settings before committing them to your Replicator."));
+		 }
+
+		 private JFormattedTextField xAxisMaxAcceleration = PositiveTextFieldInt(repNF, 22000,
+	   "The maximum acceleration and deceleration along the X axis in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the X axis.");
+
+		 private JFormattedTextField yAxisMaxAcceleration = PositiveTextFieldInt(repNF, 22000,
+	   "The maximum acceleration and deceleration along the Y axis in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the Y axis.");
+
+		 private JFormattedTextField zAxisMaxAcceleration = PositiveTextFieldInt(repNF, 5200,
+	   "The maximum acceleration and deceleration along the Z axis in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the Z axis.");
+
+		 private JFormattedTextField aAxisMaxAcceleration = PositiveTextFieldInt(repNF, 20000,
+	   "The maximum acceleration and deceleration experienced by the right extruder in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the right extruder's filament axis.");
+
+		 private JFormattedTextField bAxisMaxAcceleration = PositiveTextFieldInt(repNF, 20000,
+	   "The maximum acceleration and deceleration experienced by the left extruder in units of mm/s\u00B2.  " +
+	   "I.e., the maximum magnitude of the component of the acceleration vector along the left extruder's filament axis.");
+
+		 private JFormattedTextField xAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the X axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the X axis.");
+
+		 private JFormattedTextField yAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the Y axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the Y axis.");
+
+		 private JFormattedTextField zAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate along the Z axis when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change along the Z axis.");
+
+		 private JFormattedTextField aAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate for the right extruder when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change for the right extruder.");
+
+		 private JFormattedTextField bAxisMaxSpeedChange = PositiveTextFieldInt(repNF, 300,
+           "Yet Another Jerk (YAJ) algorithm's maximum change in feedrate for the left extruder when " +
+           "transitioning from one printed segment to another, measured in units of mm/s.  I.e., the " +
+           "maximum magnitude of the component of the velocity change for the left extruder.");
+
+		 private JFormattedTextField normalMoveAcceleration = PositiveTextFieldInt(repNF, 20000,
+           "The maximum rate of acceleration for normal printing moves in which filament is extruded and " +
+           "there is motion along any or all of the X, Y, or Z axes.  I.e., the maximum magnitude of the " +
+	   "acceleration vector in units of millimeters per second squared, mm/s\u00B2.");
+
+		 private JFormattedTextField extruderMoveAcceleration = PositiveTextFieldInt(repNF, 20000,
+            "The maximum acceleration or deceleration in mm/s\u00B2 to use in an extruder-only move.  An extruder-only " +
+            "move is a move in which there is no motion along the X, Y, or Z axes: the only motion is the extruder " +
+            "extruding or retracting filament.  Typically this value should be at least as large as the A and B axis max " +
+	    "accelerations.");
+
+		 // Advance K1 & K2: nn.nnnnn
+		 private NumberFormat kNF = NumberFormat.getNumberInstance();
+		 {
+			 kNF.setMaximumFractionDigits(5);
+			 kNF.setMaximumIntegerDigits(2);   // Even 1 may be excessive
+		 }
+
+		 private JFormattedTextField JKNAdvance1 = PositiveTextFieldDouble(kNF,
+           "The value of the empirically fit Jetty-Kubicek-Newman Advance parameter K which helps control " +
+           "the amount of additional plastic that should be extruded during the acceleration phase and not " +
+           "extruded during the deceleration phase of each move.  It can be used to remove blobbing and " +
+           "splaying on the corners of cubes or at the junctions between line segments.  Typical values " +
+           "for this parameter range from around 0.0001 to 0.01.  Set to a value of 0 to disable use of " +
+           "this compensation.");
+
+		 private JFormattedTextField JKNAdvance2 = PositiveTextFieldDouble(kNF,
+           "The value of the empirically fit Jetty-Kubicek-Newman Advance parameter K2, which helps during the " +
+           "deceleration phase of moves to reduce built up pressure in the extruder nozzle.  Typical values for " +
+           "this parameter range from around 0.001 to 0.1.  Set to a value of 0 to disable use of this " +
+           "compensation.");
+
+		 private JFormattedTextField extruderDeprimeA = PositiveTextFieldInt(repNF, 10000,
+           "The number of steps to retract the right extruder's filament when the pipeline of buffered moves empties " +
+           "or a travel-only move is encountered.  Set to a value of 0 to disable this feature for this extruder.  " +
+           "Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's \"Retraction Distance\".");
+
+		 private JFormattedTextField extruderDeprimeB = PositiveTextFieldInt(repNF, 10000,
+           "The number of steps to retract the left extruder's filament when the pipeline of buffered moves empties " +
+           "or a travel-only move is encountered.  Set to a value of 0 to disable this feature for this extruder.  " +
+           "Do not use with Skeinforge's Reversal plugin nor Skeinforge's Dimension plugin's \"Retraction Distance\".");
+
+		 private JCheckBox overrideGCodeTempBox = new JCheckBox();
+		 {
+			 overrideGCodeTempBox.setToolTipText(wrap2HTML(width,
+                    "When enabled, override the gcode temperature settings using the preheat " +
+		    "temperature settings for the extruders and build platform."));
+		 }
+           
+		 private JFormattedTextField tool0Temp = PositiveTextFieldInt(tempNF, 255,
+           "Temperature in degrees Celsius to preheat extruder 0 to.  This temperature is " +
+           "also used as the override temperature when the \"override gcode temperature\" " +
+           "feature is enabled.");
+
+		 private JFormattedTextField tool1Temp = PositiveTextFieldInt(tempNF, 255,
+           "Temperature in degrees Celsius to preheat extruder 1 to.  This temperature is " +
+           "also used as the override temperature when the \"override gcode temperature\" " +
+           "feature is enabled.");
+
+		 private JFormattedTextField platformTemp = PositiveTextFieldInt(tempNF, 255,
+           "Temperature in degrees Celsius to preheat the build platform to.  This temperature is " +
+           "also used as the override temperature when the \"override gcode temperature\" " +
+           "feature is enabled.");
+
+		 // Slowdown is a flag for the Replicator
+		 private JCheckBox slowdownFlagBox = new JCheckBox();
+		 {
+			 slowdownFlagBox.setToolTipText(wrap2HTML(width,
+            "If you are printing an object with fine details or at very fast speeds, it is possible " +
+            "that the planner will be unable to keep up with printing.  This may be evidenced by frequent " +
+            "pauses accompanied by unwanted plastic blobs or zits.  You may be able to mitigate this by " +
+            "enabling \"slowdown\".  When slowdown is enabled and the planner is having difficulty keeping " +
+            "up, the printing feed rate is reduced so as to cause each segment to take more time to print.  " +
+	    "The reduction in printing speed then gives the planner a chance to catch up."));
+		 }
+
+		 private final String[] lcdDimensionChoices = { "16 x 4", "20 x 4", "24 x 4" };
+		 private JComboBox lcdDimensionsChoice = new JComboBox(lcdDimensionChoices);
+		 {
+			 lcdDimensionsChoice.setToolTipText(wrap2HTML(width,
+		   "Select the dimensions of the LCD screen display in your Gen 4 LCD " +
+		   "interface.  Measurements are the number of character columns by the " +
+                   "number of character rows.  The standard Gen 4 LCD display is 16 x 4."));
+		 }
+
+		 private JFormattedTextField buzzerRepeats = PositiveTextFieldInt(tempNF, 255,
+           "The number of times the buzzer should buzz when activated.  Use of this feature " +
+           "requires installation of a buzzer as per Thingiverse Thing 16170, \"Buzzer Support\".");
+
+		 private JColorChooser moodLightCustomColor = new JColorChooser();
+		 {
+			 moodLightCustomColor.setToolTipText(wrap2HTML(width,
+		   "Select the custom color used when the \"Custom Color\" mood light script " +
+		   "is selected.  Use of this feature requires installation of Thingiverse " +
+		   "Thing 15347, \"Mood Lighting For ToM\"."));
+		 }
+
+		 private JComboBox moodLightScript = new JComboBox(moodLightChoices);
+		 {
+			 moodLightScript.setToolTipText(wrap2HTML(width,
+                   "Select the mood light script to be played by the mood lighting.  Use of this " +
+		   "feature requires installation of Thingiverse Thing 15347, \"Mood Lighting " +
+                   "For ToM\"."));
+		 }
+
+		 private SailfishG3MachineOnboardAccelerationParameters(OnboardParameters target,
+									      Driver driver,
+									      JTabbedPane subtabs) {
+			 super(target, driver, subtabs);
+
+			 int dismissDelay = ToolTipManager.sharedInstance().getDismissDelay();
+			 if (dismissDelay < 10*1000)
+				 ToolTipManager.sharedInstance().setDismissDelay(10*1000);
+
+			 draftButton.addActionListener(new ActionListener() {
+					 public void actionPerformed(ActionEvent arg0) {
+						 SailfishG3MachineOnboardAccelerationParameters.this.setUIFields(draftParams);
+					 }
+			 });
+
+			 qualityButton.addActionListener(new ActionListener() {
+					 public void actionPerformed(ActionEvent arg0) {
+						 SailfishG3MachineOnboardAccelerationParameters.this.setUIFields(qualityParams);
+					 }
+			 });
+		 }
+
+		 AccelParams getAccelParamsFromUI() {
+
+			 int scriptId = findMoodLightScriptId(moodLightScript.getSelectedIndex());
+			 if (scriptId < 0)
+				 scriptId = moodLightScriptId_DEFAULT;
+
+			 int lcdIndex = ((Number)lcdDimensionsChoice.getSelectedIndex()).intValue();
+			 int lcdType = 0; // lcd == 0 --> lcdType = 0
+			 if (lcdIndex == 1) lcdType = 50;
+			 else if (lcdIndex == 2) lcdType = 51;
+
+			 Color c = moodLightCustomColor.getColor();
+
+			 return new AccelParams(new AccelParamsTab1(accelerationBox.isSelected(),
+								    new long[] {((Number)normalMoveAcceleration.getValue()).longValue(),
+									        ((Number)extruderMoveAcceleration.getValue()).longValue()},
+								    new long[] {((Number)xAxisMaxAcceleration.getValue()).longValue(),
+									        ((Number)yAxisMaxAcceleration.getValue()).longValue(),
+									        ((Number)zAxisMaxAcceleration.getValue()).longValue(),
+									        ((Number)aAxisMaxAcceleration.getValue()).longValue(),
+									        ((Number)bAxisMaxAcceleration.getValue()).longValue()},
+								    new double[] {((Number)xAxisMaxSpeedChange.getValue()).doubleValue(),
+									          ((Number)yAxisMaxSpeedChange.getValue()).doubleValue(),
+									          ((Number)zAxisMaxSpeedChange.getValue()).doubleValue(),
+									          ((Number)aAxisMaxSpeedChange.getValue()).doubleValue(),
+									          ((Number)bAxisMaxSpeedChange.getValue()).doubleValue()}),
+						new AccelParamsTab2(slowdownFlagBox.isSelected(),
+								    new long[] {((Number)extruderDeprimeA.getValue()).longValue(),
+									        ((Number)extruderDeprimeB.getValue()).longValue()},
+								    new double[] {((Number)JKNAdvance1.getValue()).doubleValue(),
+										  ((Number)JKNAdvance2.getValue()).doubleValue()}),
+						new AccelParamsTab3(overrideGCodeTempBox.isSelected(),
+								    dittoBox.isSelected(),
+								    ((Number)buzzerRepeats.getValue()).intValue(),
+								    lcdType,
+								    scriptId,
+								    new int[] {c.getRed(), c.getGreen(), c.getBlue()},
+								    new int[] {((Number)tool0Temp.getValue()).intValue(),
+									       ((Number)tool1Temp.getValue()).intValue(),
+									       ((Number)platformTemp.getValue()).intValue()}));
+		 }
+
+		 @Override
+		 public boolean isAccelerationEnabled() {
+			 return accelerationBox.isSelected();
+		 }
+
+		 private void setEEPROMFromUI(AccelParams params) {
+
+			 target.setAccelerationStatus(params.tab1.accelerationEnabled ? (byte)1 : (byte)0);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.DITTO_PRINT_ENABLED, params.tab3.dittoEnabled ? 1 : 0);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP, params.tab3.overrideGCodeTempEnabled ? 1 : 0);
+
+			 int lv = params.tab2.slowdownEnabled ? 1 : 0;
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_FLAG, lv);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_NORM,    params.tab1.accelerations[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_RETRACT, params.tab1.accelerations[1]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_X, params.tab1.maxAccelerations[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Y, params.tab1.maxAccelerations[1]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Z, params.tab1.maxAccelerations[2]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_A, params.tab1.maxAccelerations[3]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_B, params.tab1.maxAccelerations[4]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_X, params.tab1.maxSpeedChanges[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Y, params.tab1.maxSpeedChanges[1]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Z, params.tab1.maxSpeedChanges[2]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_A, params.tab1.maxSpeedChanges[3]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_B, params.tab1.maxSpeedChanges[4]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K,  params.tab2.JKNadvance[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K2, params.tab2.JKNadvance[1]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A, params.tab2.deprime[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_B, params.tab2.deprime[1]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.LCD_TYPE, params.tab3.lcdType);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP, params.tab3.overrideGCodeTempEnabled ? 1 : 0);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.TOOL0_TEMP, params.tab3.overrideTemps[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.TOOL1_TEMP, params.tab3.overrideTemps[1]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.PLATFORM_TEMP, params.tab3.overrideTemps[2]);
+
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.BUZZER_REPEATS, params.tab3.buzzerRepeats);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.MOOD_LIGHT_SCRIPT, params.tab3.scriptId);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_RED,   params.tab3.rgb[0]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_GREEN, params.tab3.rgb[1]);
+			 target.setEEPROMParam(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_BLUE,  params.tab3.rgb[2]);
+		 }
+
+		 @Override
+		 public void setEEPROMFromUI() {
+			 setEEPROMFromUI(getAccelParamsFromUI());
+		 }
+
+		 private void setUIFields(AccelParamsTab1 params) {
+			 setUIFields(params, null, null);
+		 }
+
+		 private void setUIFields(AccelParamsTab1 tab1,
+					  AccelParamsTab2 tab2,
+					  AccelParamsTab3 tab3) {
+
+			 if (tab1 != null) {
+				 accelerationBox.setSelected(tab1.accelerationEnabled);
+
+				 if (tab1.accelerations != null) {
+					 normalMoveAcceleration.setValue(tab1.accelerations[0]);
+					 extruderMoveAcceleration.setValue(tab1.accelerations[1]);
+				 }
+
+				 if (tab1.maxAccelerations != null) {
+					 xAxisMaxAcceleration.setValue(tab1.maxAccelerations[0]);
+					 yAxisMaxAcceleration.setValue(tab1.maxAccelerations[1]);
+					 zAxisMaxAcceleration.setValue(tab1.maxAccelerations[2]);
+					 aAxisMaxAcceleration.setValue(tab1.maxAccelerations[3]);
+					 bAxisMaxAcceleration.setValue(tab1.maxAccelerations[4]);
+				 }
+
+				 if (tab1.maxSpeedChanges != null) {
+					 xAxisMaxSpeedChange.setValue(tab1.maxSpeedChanges[0]);
+					 yAxisMaxSpeedChange.setValue(tab1.maxSpeedChanges[1]);
+					 zAxisMaxSpeedChange.setValue(tab1.maxSpeedChanges[2]);
+					 aAxisMaxSpeedChange.setValue(tab1.maxSpeedChanges[3]);
+					 bAxisMaxSpeedChange.setValue(tab1.maxSpeedChanges[4]);
+				 }
+			 }
+
+			 if (tab2 != null) {
+				 slowdownFlagBox.setSelected(tab2.slowdownEnabled);
+
+				 if (tab2.JKNadvance != null) {
+					 JKNAdvance1.setValue(tab2.JKNadvance[0]);
+					 JKNAdvance2.setValue(tab2.JKNadvance[1]);
+				 }
+
+				 if (tab2.deprime != null) {
+					 extruderDeprimeA.setValue(tab2.deprime[0]);
+					 extruderDeprimeB.setValue(tab2.deprime[1]);
+				 }
+			 }
+
+			 if (tab3 != null) {
+				 overrideGCodeTempBox.setSelected(tab3.overrideGCodeTempEnabled);
+				 dittoBox.setSelected(tab3.dittoEnabled);
+				 buzzerRepeats.setValue(tab3.buzzerRepeats);
+				 int lcdIndex;
+				 if (tab3.lcdType == 50)
+					 lcdIndex = 1;
+				 else if (tab3.lcdType == 51)
+					 lcdIndex = 2;
+				 else
+					 lcdIndex = 0;
+				 lcdDimensionsChoice.setSelectedIndex(lcdIndex);
+				 int moodLightChoice = findMoodLightChoice(tab3.scriptId);
+				 if (moodLightChoice < 0)
+					 moodLightChoice = moodLightChoiceIndex_DEFAULT;
+				 moodLightScript.setSelectedIndex(moodLightChoice);
+				 if (tab3.rgb != null)
+					 moodLightCustomColor.setColor(tab3.rgb[0], tab3.rgb[1], tab3.rgb[2]);
+				 if (tab3.overrideTemps != null) {
+					 tool0Temp.setValue(tab3.overrideTemps[0]);
+					 tool1Temp.setValue(tab3.overrideTemps[1]);
+					 platformTemp.setValue(tab3.overrideTemps[2]);
+				 }
+			 }
+
+			 // Enable/disable the draft & quality buttons based upon the UI field values
+			 // propertyChange(null);
+		 }
+
+		 @Override
+		 public void setUIFromEEPROM() {
+
+			 boolean accelerationEnabled = target.getAccelerationStatus() != 0;
+			 boolean slowdownEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.ACCEL_SLOWDOWN_FLAG) != 0;
+			 boolean overrideGCodeTempEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.OVERRIDE_GCODE_TEMP) != 0;
+			 boolean dittoEnabled = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.DITTO_PRINT_ENABLED) != 0;
+			 int buzzerRepeats = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.BUZZER_REPEATS);
+			 int scriptId = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.MOOD_LIGHT_SCRIPT);
+			 int lcdType = target.getEEPROMParamInt(OnboardParameters.EEPROMParams.LCD_TYPE);
+
+			 long[] maxAccelerations = new long[] {
+				 target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_X),
+				 target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Y),
+				 target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_Z),
+				 target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_A),
+				 target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_ACCELERATION_B) };
+
+			 double[] maxSpeedChanges = new double[] {
+				 target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_X),
+				 target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Y),
+				 target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_Z),
+				 target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_A),
+				 target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_MAX_SPEED_CHANGE_B) };
+
+			 long[] accelerations = new long[] {
+				 target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_NORM),
+				 target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_MAX_EXTRUDER_RETRACT) };
+
+			 double[] JKNadvance = new double[] {
+				 target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K),
+				 target.getEEPROMParamFloat(OnboardParameters.EEPROMParams.ACCEL_ADVANCE_K2) };
+
+			 long[] deprime = new long[] {
+				 target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_A),
+				 target.getEEPROMParamUInt(OnboardParameters.EEPROMParams.ACCEL_EXTRUDER_DEPRIME_B) };
+		 
+			 int[] rgb = new int[] {
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_RED),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_GREEN),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.MOOD_LIGHT_CUSTOM_BLUE) };
+
+			 int[] overrideTemps = new int[] {
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.TOOL0_TEMP),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.TOOL1_TEMP),
+				 target.getEEPROMParamInt(OnboardParameters.EEPROMParams.PLATFORM_TEMP) };
+
+			 setUIFields(new AccelParamsTab1(accelerationEnabled,
+							 accelerations,
+							 maxAccelerations,
+							 maxSpeedChanges),
+				     new AccelParamsTab2(slowdownEnabled,
+							 deprime,
+							 JKNadvance),
+				     new AccelParamsTab3(overrideGCodeTempEnabled,
+							 dittoEnabled,
+							 buzzerRepeats,
+							 lcdType,
+							 scriptId,
+							 rgb,
+							 overrideTemps));
+		 }
+
+		 @Override
+		 public void buildUI() {
+			 JPanel accelerationTab = new JPanel(new MigLayout("fill", "[r][l][r][l]"));
+			 subTabs.addTab("Acceleration", accelerationTab);
+
+			 JPanel accelerationMiscTab = new JPanel(new MigLayout("fill", "[r][l]"));
+			 subTabs.addTab("Acceleration (Misc)", accelerationMiscTab);
+
+			 JPanel miscTab = new JPanel(new MigLayout("fill", "[r][l][r][l]"));
+			 subTabs.addTab("Misc", miscTab);
+
+			 normalMoveAcceleration.setColumns(8);
+			 extruderMoveAcceleration.setColumns(8);
+
+			 xAxisMaxAcceleration.setColumns(8);
+			 xAxisMaxSpeedChange.setColumns(4);
+
+			 yAxisMaxAcceleration.setColumns(8);
+			 yAxisMaxSpeedChange.setColumns(4);
+
+			 zAxisMaxAcceleration.setColumns(8);
+			 zAxisMaxSpeedChange.setColumns(4);
+
+			 aAxisMaxAcceleration.setColumns(8);
+			 aAxisMaxSpeedChange.setColumns(4);
+
+			 bAxisMaxAcceleration.setColumns(8);
+			 bAxisMaxSpeedChange.setColumns(4);
+
+			 addWithSharedToolTips(accelerationTab, "Acceleration enabled", accelerationBox, "wrap");
+
+			 addWithSharedToolTips(accelerationTab,
+					       "Max acceleration (magnitude of acceleration vector; mm/s\u00B2)", "span 2, gapleft push",
+					       normalMoveAcceleration, "wrap, gapright push ");
+
+			 addWithSharedToolTips(accelerationTab,
+					       "Max acceleration for extruder-only moves (mm/s\u00B2)", "span 2, gapleft push", //"split 2, span 3",
+					       extruderMoveAcceleration, "wrap, gapright push");
+
+			 addWithSharedToolTips(accelerationTab, "X max acceleration (mm/s\u00B2)",
+					       xAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "X max speed change (mm/s)",
+					       xAxisMaxSpeedChange, "wrap");
+ 
+			 addWithSharedToolTips(accelerationTab, "Y max acceleration (mm/s\u00B2)",
+					       yAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "Y max speed change (mm/s)",
+					       yAxisMaxSpeedChange, "wrap");
+
+			 addWithSharedToolTips(accelerationTab, "Z max acceleration (mm/s\u00B2)",
+					       zAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "Z max speed change (mm/s)",
+					       zAxisMaxSpeedChange, "wrap");
+
+			 addWithSharedToolTips(accelerationTab, "Right extruder max acceleration (mm/s\u00B2)",
+					       aAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "Right extruder max speed change (mm/s)",
+					       aAxisMaxSpeedChange, "wrap");
+ 
+			 addWithSharedToolTips(accelerationTab, "Left extruder acceleration (mm/s\u00B2)",
+					       bAxisMaxAcceleration);
+			 addWithSharedToolTips(accelerationTab, "Left extruder max speed change (mm/s)",
+					       bAxisMaxSpeedChange, "wrap");
+
+			 accelerationTab.add(qualityButton, "span 2, gapleft push");
+			 accelerationTab.add(draftButton, "span 2, gapright push");
+
+			 // Acceleration - Misc
+
+			 JKNAdvance1.setColumns(8);
+			 JKNAdvance2.setColumns(8);
+
+			 extruderDeprimeA.setColumns(8);
+			 extruderDeprimeB.setColumns(8);
+
+			 addWithSharedToolTips(accelerationMiscTab, "Slow printing when acceleration planing falls behind", slowdownFlagBox, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K", JKNAdvance1, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "JKN Advance K2", JKNAdvance2, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "Right extruder deprime (steps)", extruderDeprimeA, "wrap");
+			 addWithSharedToolTips(accelerationMiscTab, "Left extruder deprime (steps)", extruderDeprimeB, "wrap");
+
+			 // Misc tab
+			 tool0Temp.setColumns(8);
+			 tool1Temp.setColumns(8);
+			 platformTemp.setColumns(8);
+			 buzzerRepeats.setColumns(8);
+
+			 addWithSharedToolTips(miscTab, "Override gcode temperatures", overrideGCodeTempBox);
+			 addWithSharedToolTips(miscTab, "Gen 4 LCD dimensions", lcdDimensionsChoice, "wrap");
+
+			 addWithSharedToolTips(miscTab, "Right/sole extruder (tool 0) preheat & override temperature (C)", tool0Temp);
+			 addWithSharedToolTips(miscTab, "Buzzer repeats", buzzerRepeats, "wrap");
+
+			 addWithSharedToolTips(miscTab, "Left extruder (tool 1) preheat & override temperature (C)", tool1Temp);
+			 addWithSharedToolTips(miscTab, "Mood light script", moodLightScript, "wrap");
+
+			 addWithSharedToolTips(miscTab, "Platform preheat & override temperature (C)",
+					       platformTemp);
+			 addWithSharedToolTips(miscTab, "Ditto (duplicate) printing enabled", dittoBox, "wrap");
+
+			 addWithSharedToolTips(miscTab, "Mood light color",
+					       moodLightCustomColor, "span 4, wrap, gapbottom push, gapright push");
+		 }
+		 // Given a Mood Light Script Id, find the corresponding choice in the
+		 // Mood Light choice list
+		 public int findMoodLightChoice(int scriptId) {
+			 String str = "(" + scriptId + ")";
+			 for (int i = 0; i < moodLightChoices.length; i++) {
+				 if (moodLightChoices[i].contains(str))
+					 return i;
+			 }
+			 return -1;
+		 }
+
+		 // Given an index in the list of Mood Light choices, find the corresponding Script Id
+		 public int findMoodLightScriptId(int choiceIndex) {
+			 if (choiceIndex < 0 || choiceIndex > moodLightChoices.length)
+				 return -1;
+			 int start = moodLightChoices[choiceIndex].indexOf('(');
+			 if (start < 0)
+				 return -1;
+			 ++start;
+			 int end = moodLightChoices[choiceIndex].indexOf(')', start);
+			 if (end < 0)
+				 return -1;
+			 int scriptId = -1;
+			 try {
+				 scriptId = Integer.parseInt(moodLightChoices[choiceIndex].substring(start, end));
+			 }
+			 catch (Exception e) {
+			 }
+			 return scriptId;
 		 }
 	 }
  }

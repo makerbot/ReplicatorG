@@ -10,7 +10,9 @@ public enum VidPid {
 	UNKNOWN (0X0000, 0X000),
 	MIGHTY_BOARD (0x23C1, 0xB404), //Board 404!
 	THE_REPLICATOR(0x23C1, 0xD314), //Dean 314
-	REPLICATOR_2(0x23C1, 0xB015);  // BOTS as leet
+	REPLICATOR_2(0x23C1, 0xB015),  // BOTS as leet
+	SAILFISH_G34(0x23C1, 0xACDC);  // Sailfish Gen 3 and Gen 4 Motherboard (Cupcake/Thingomatic)
+
 	final int pid; //productId (same as USB product id)
 	final int vid; //vendorId (same as USB vendor id)
 	

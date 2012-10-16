@@ -47,7 +47,7 @@ class JettyG3EEPROM extends Sanguino3GEEPRPOM {
 	final public static int ACCEL_ADVANCE_K2           = 0x015F;
 	final public static int ACCEL_MIN_PLANNER_SPEED    = 0x0163;
 	final public static int ACCEL_ADVANCE_K            = 0x0167;
-	final public static int ACCEL_NOODLE_DIAMETER      = 0x016B;
+	final public static int ACCEL_NOODLE_DIAMETER	   = 0x016B;
 	final public static int ACCEL_MIN_SEGMENT_TIME     = 0x016F;
 	final public static int LCD_TYPE                   = 0x0173;
 	final public static int ENDSTOPS_USED              = 0x0174;
@@ -66,6 +66,20 @@ class JettyG3EEPROM extends Sanguino3GEEPRPOM {
 	final public static int RAM_USAGE_DEBUG            = 0x01D0;
 }
 
+class SailfishEEPROM extends JettyG3EEPROM {
+	final public static int SLOWDOWN_FLAG			= 0x0189;
+	final public static int ACCEL_MAX_SPEED_CHANGE_B	= 0x01A2;
+	final public static int ACCEL_MAX_ACCELERATION_B	= 0x01A6;
+	final public static int ACCEL_EXTRUDER_DEPRIME_B	= 0x01AA;
+	final public static int TOOL_COUNT			= 0x01AE;
+	final public static int TOOLHEAD_OFFSET_SETTINGS	= 0x01B0;
+	final public static int AXIS_LENGTHS			= 0x01BC;
+	final public static int FILAMENT_LIFETIME_B             = 0x01D4;
+	final public static int DITTO_PRINT_ENABLED             = 0x01DC;
+	final public static int VID_PID_INFO		        = 0x01E5;
+}
+
+
 class JettyMBEEPROM extends Sanguino3GEEPRPOM {
 	final public static int ACCELERATION_STATE             = 0x023E;
 	final public static int BOT_STATUS_BYTES               = 0x018A;
@@ -73,7 +87,6 @@ class JettyMBEEPROM extends Sanguino3GEEPRPOM {
 	final public static int AXIS_STEPS_PER_MM              = 0x01A0;
 	final public static int FILAMENT_LIFETIME              = 0x01B4;
 	final public static int FILAMENT_TRIP                  = 0x01C4;
-	final public static int OVERRIDE_GCODE_TEMP            = 0x01D4;
 	final public static int PROFILES_BASE                  = 0x01D5;
 	final public static int PROFILES_INIT                  = 0x023D;
 	final public static int MAX_ACCELERATION_AXIS          = 0x0240;
@@ -87,5 +100,6 @@ class JettyMBEEPROM extends Sanguino3GEEPRPOM {
 	final public static int DEFAULTS_FLAG                  = 0x0265;
 	final public static int FUTURE_USE                     = 0x0266;
 	final public static int AXIS_MAX_FEEDRATES             = 0x027A;
-	final public static int HEAT_DURING_PAUSE              = 0x028E;
+	final public static int OVERRIDE_GCODE_TEMP            = 0x0FFD;
+	final public static int HEAT_DURING_PAUSE              = 0x0FFE;
 }
