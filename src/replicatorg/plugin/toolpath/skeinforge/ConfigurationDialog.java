@@ -124,7 +124,7 @@ class ConfigurationDialog extends JDialog {
 		generateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0)
 			{
-				String genname = Base.preferences.get("replicatorg.generator.name", null);
+				String genname = parentGenerator.displayName;
 				System.out.println("\n##" + genname + "##");
 				if(genname.equals("Skeinforge (35) - Legacy"))
 				{
