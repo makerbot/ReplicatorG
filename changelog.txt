@@ -1,6 +1,6 @@
 0040-Beta ReplicatorG
 * Replicator 2 profile now more robust
-* support for selecting between s3g, s5g file formats (future bots)
+* support for selecting between s3g, x3g file formats (future bots)
 * minor profile updates
 * onboard preferences bug fix
 * warning when printing with accelerated speeds to ensure bot has acceleration turned on

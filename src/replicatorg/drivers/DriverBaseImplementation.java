@@ -244,14 +244,14 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 		return preferredVersion;
 	}
 
-	//Return s3g/s5g version (3 or 5)
+	//Return s3g/x3g version (3 or 4)
 	//Set when build is called, if value = 0
 	//No version has been set(not saving to file)
 	public int getBuildToFileVersion() {
 		return buildToFileVersion;
 	}
 
-	//Sets verision s3g/s5g (3 or 5)
+	//Sets verision s3g/x3g (3 or 4)
 	public void setBuildToFileVersion(int version){
 		buildToFileVersion = version;
 	}

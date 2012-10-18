@@ -2280,20 +2280,20 @@ ToolpathGenerator.GeneratorListener
 		fc.setAcceptAllFileFilterUsed(false);
 
     ExtensionFilter s3gFilter;
-    ExtensionFilter s5gFilter;
+    ExtensionFilter x3gFilter;
 
-    if ((machineLoader.getMachineInterface().getMachineType() != MachineType.THE_REPLICATOR) || (machineLoader.getMachineInterface().getMachineType() != MachineType.REPLICATOR_2)){
+    if ((machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR) || (machineLoader.getMachineInterface().getMachineType() == MachineType.REPLICATOR_2)){
       s3gFilter = new ExtensionFilter(".s3g"," .s3g  (For use with firmware v6.1 or earlier)");
-      s5gFilter = new ExtensionFilter(".s5g"," .s5g  (For use with firmware v6.2 or later)");
+      x3gFilter = new ExtensionFilter(".x3g"," .x3g  (For use with firmware v6.2 or later)");
     }
     else{
       s3gFilter = new ExtensionFilter(".s3g"," .s3g  (For use with firmware v3.5 or earlier)");
-      s5gFilter = new ExtensionFilter(".s5g"," .s5g  (For use with firmware v4.1 or later)");
+      x3gFilter = new ExtensionFilter(".x3g"," .x3g  (For use with firmware v4.1 or later)");
     } 
 		fc.addChoosableFileFilter(s3gFilter);
-		fc.addChoosableFileFilter(s5gFilter);
+		fc.addChoosableFileFilter(x3gFilter);
 		if(((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() && ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures()){
-			fc.setFileFilter(s5gFilter);
+			fc.setFileFilter(x3gFilter);
 		}
 		else{
 			fc.setFileFilter(s3gFilter);
@@ -2307,7 +2307,7 @@ ToolpathGenerator.GeneratorListener
 		int rv = fc.showSaveDialog(this);
 		if (rv == JFileChooser.APPROVE_OPTION) {
 			
-			//Changes the file name to have s3g/s5g extensions and checks if that is
+			//Changes the file name to have s3g/x3g extensions and checks if that is
 			//what the user selected
 
 			File currentFile = fc.getSelectedFile();
@@ -2321,11 +2321,11 @@ ToolpathGenerator.GeneratorListener
 				return newFile.getAbsolutePath();
 			}
 
-			newFile = new File(currentFile.getAbsolutePath() + ".s5g");
+			newFile = new File(currentFile.getAbsolutePath() + ".x3g");
 
 			if(filter.accept(newFile))
 			{
-				System.out.println("\n############s5g");
+				System.out.println("\n############x3g");
 				Base.preferences.put("ui.open_output_dir",fc.getCurrentDirectory().
 					getAbsolutePath());
 				return newFile.getAbsolutePath();
@@ -2368,8 +2368,8 @@ ToolpathGenerator.GeneratorListener
 
 		if (path != null) {
 			//Save prferences for sXg format
-			if(getExtension(path).equals(".s5g"))
-				Base.preferences.putInt(sXgVersion_pref,5);
+			if(getExtension(path).equals(".x3g"))
+				Base.preferences.putInt(sXgVersion_pref,4);
 			else if(getExtension(path).equals(".s3g"))
 				Base.preferences.putInt(sXgVersion_pref, 3);
 			else
@@ -2383,7 +2383,7 @@ ToolpathGenerator.GeneratorListener
 
 			// start our building thread.
 			buildStart = new Date();
-			machineLoader.getDriver().setBuildToFileVersion((getExtension(path).equals(".s5g")) ? 5 : 3);
+			machineLoader.getDriver().setBuildToFileVersion((getExtension(path).equals(".x3g")) ? 4 : 3);
 			machineLoader.getMachineInterface().buildToFile(new JEditTextAreaSource(textarea), path);
 		}
 	}
