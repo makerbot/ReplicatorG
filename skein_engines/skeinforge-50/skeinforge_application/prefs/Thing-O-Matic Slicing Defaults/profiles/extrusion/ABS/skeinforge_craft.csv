@@ -3,7 +3,7 @@ _Name                          	Value
 WindowPosition	600+0
 Open File for Craft	
 alteration	False
-altshell	False
+altshell	True
 bottom	False
 carve	False
 chamber	False
@@ -38,7 +38,7 @@ scale	False
 skin	False
 skirt	False
 smooth	False
-speed	True
+speed	False
 splodge	False
 stretch	False
 temperature	False

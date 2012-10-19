@@ -28,9 +28,9 @@ The default 'Activate Altshell' checkbox is off, enable it if you would like an 
 
 ===Use M320/M321 Commands===
 
-Use M320/M321 to enable  / disable acceleration if checked.
+Use M320/M321 to enable / disable acceleration if checked.
 When unchecked, uses Open/Close Valve (M126/M127).
-Newer firmwares require M320/M321.
+For Makerbot and Sailfish firmwares, use M320/M321.  For the Jetty Firmware (v3.5 and earlier), do not use M320/M321.
 """
 
 from __future__ import absolute_import
@@ -48,8 +48,8 @@ from fabmetheus_utilities import settings
 from skeinforge_application.skeinforge_utilities import skeinforge_craft
 import sys
 
-__author__ = "Len Trigg (lenbok@gmail.com)"
-__date__ = "$Date: 2010/11/20 $"
+__author__ = "Dan Newman (dan.newman@mtbaldy.us)"
+__date__ = "$Date: 2012/04/10 $"
 __license__ = "GPL 3.0"
 
 def getCraftedText( fileName, text='', repository=None ):
@@ -84,7 +84,7 @@ class AltshellRepository:
 		skeinforge_profile.addListsToCraftTypeRepository( 'skeinforge_tools.craft_plugins.altshell.html', self )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Altshell', self, '' )
 		self.activateAltshell = settings.BooleanSetting().getFromValue( 'Activate Altshell', self, False)
-		self.useM320M321 = settings.BooleanSetting().getFromValue( 'Use M320/M321', self, False)
+		self.useM320M321 = settings.BooleanSetting().getFromValue( 'Use M320/M321', self, True)
 		self.executeTitle = 'Altshell'
 
 	def execute( self ):
@@ -122,10 +122,10 @@ class AltshellSkein:
 
 		firstWord = splitLine[ 0 ]
 
-		if line == '(<edge> outer )' or line == '(<edge> inner )':
+		if line == '(<perimeter> outer )' or line == '(<perimeter> inner )':
 			self.state = 1
 	
-		elif firstWord == '(</edge>)':
+		elif firstWord == '(</perimeter>)':
 			if self.state == 3:
 				# Open valve command
 				if self.repository.useM320M321.value:
