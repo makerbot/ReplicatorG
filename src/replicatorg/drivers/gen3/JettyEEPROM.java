@@ -77,6 +77,7 @@ class SailfishEEPROM extends JettyG3EEPROM {
 	final public static int FILAMENT_LIFETIME_B             = 0x01D4;
 	final public static int DITTO_PRINT_ENABLED             = 0x01DC;
 	final public static int VID_PID_INFO		        = 0x01E5;
+	final public static int EXTRUDER_HOLD                   = 0x01E9;
 }
 
 
