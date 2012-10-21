@@ -1026,6 +1026,7 @@ public class Makerbot4GSailfish extends Makerbot4GAlternateDriver
                 switch (param) {
                 case ACCEL_SLOWDOWN_FLAG        : return getUInt8EEPROM(SailfishEEPROM.SLOWDOWN_FLAG);
                 case DITTO_PRINT_ENABLED        : return getUInt8EEPROM(SailfishEEPROM.DITTO_PRINT_ENABLED);
+		case EXTRUDER_HOLD              : return getUInt8EEPROM(SailfishEEPROM.EXTRUDER_HOLD);
 		default				: return super.getEEPROMParamInt(param);
                 }
         }
@@ -1045,6 +1046,7 @@ public class Makerbot4GSailfish extends Makerbot4GAlternateDriver
 		switch (param) {
                 case ACCEL_SLOWDOWN_FLAG        : setUInt8EEPROM(SailfishEEPROM.SLOWDOWN_FLAG, (val != 0) ? 1 : 0); break;
                 case DITTO_PRINT_ENABLED        : setUInt8EEPROM(SailfishEEPROM.DITTO_PRINT_ENABLED, (val != 0) ? 1 : 0); break;
+		case EXTRUDER_HOLD              : setUInt8EEPROM(SailfishEEPROM.EXTRUDER_HOLD, (val != 0) ? 1 : 0); break;
 		default				: super.setEEPROMParam(param, val); break;
 		}
 	}
