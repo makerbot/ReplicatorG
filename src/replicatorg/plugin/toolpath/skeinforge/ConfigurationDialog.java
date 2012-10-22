@@ -164,12 +164,14 @@ class ConfigurationDialog extends JDialog {
 			System.out.println("\n**FEED_RATES**\n" + "desired:" + feed_rate + "travel:" + travel_rate);
 
 			if((feed_rate > 40) || (travel_rate > 55))
-			{
+			{ 
+        if(Base.preferences.getBoolean("build.speed_warning", true)){
 				JOptionPane.showMessageDialog(parent,"You are now slicing with accelerated build speeds.\n" +
             		"Do not print files generated at these speeds unless you have acceleration turned on.\n" +
             		"Building high speed files with acceleration turned off can harm your Makerbot.\n\n" +
 					"You can turn acceleration on in the Onboard Preferences menu or via your Makerbot's onboard menus",
 					"Acceleration Warning", JOptionPane.WARNING_MESSAGE);
+        }
 			}
 	}
 	

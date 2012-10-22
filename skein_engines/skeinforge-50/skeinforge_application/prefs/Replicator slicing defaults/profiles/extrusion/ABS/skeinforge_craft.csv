@@ -3,7 +3,7 @@ _Name                          	Value
 WindowPosition	600+0
 Open File for Craft	
 alteration	False
-altshell	True
+altshell	False
 bottom	False
 carve	False
 chamber	False
@@ -12,7 +12,7 @@ cleave	False
 clip	False
 coil	False
 comb	False
-cool	False
+cool	True
 dimension	False
 drill	False
 dwindle	False

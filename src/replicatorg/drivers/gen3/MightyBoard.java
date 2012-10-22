@@ -1035,11 +1035,11 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		checkEEPROM();
 
 		double val = read32FromEEPROM(MightyBoard5XEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4);
-/*
+
     if(hasJettyAcceleration()){
       val = val / 1000.0;
     }else if (hasAdvancedFeatures()){
-*/
+
       Point5d stepsPerMM = getMachine().getStepsPerMM();
       switch(axis) {
         case 0:
@@ -1052,7 +1052,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
           val = (val)/stepsPerMM.z()/10.0;
           break;
       }
-/*
       
     }else {
       ToolheadsOffset toolheadsOffset = getMachine().getToolheadsOffsets();
@@ -1068,7 +1067,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
           val = (val)/stepsPerMM.z()/10.0 + toolheadsOffset.z();
           break;
       }
-    }*/
+    }
 				
 		return val;
 	}
@@ -1110,11 +1109,11 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		}
 		
 		int offsetSteps = 0;
-/*
+
 	  if(hasJettyAcceleration()){
       offsetSteps = (int)(distanceMm * 1000.0);
     }else if(hasAdvancedFeatures()){
-*/
+
       Point5d stepsPerMM = getMachine().getStepsPerMM();
       switch(axis) {
         case 0:
@@ -1127,8 +1126,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
           offsetSteps = (int)(distanceMm*stepsPerMM.z()*10.0);
           break;
       }
-/*
-      
     }else{
       Point5d stepsPerMM = getMachine().getStepsPerMM();
       ToolheadsOffset toolheadsOffset = getMachine().getToolheadsOffsets();
@@ -1145,7 +1142,6 @@ public class MightyBoard extends Makerbot4GAlternateDriver
           break;
       }
     }
-*/
 		write32ToEEPROM32(MightyBoard5XEEPROM.TOOLHEAD_OFFSET_SETTINGS + axis*4,offsetSteps);
 	}
         
