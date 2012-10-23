@@ -42,10 +42,10 @@ import replicatorg.machine.model.ToolModel;
 import replicatorg.util.Point5d;
 
 /// EEPROM offsets for PID electronics control
-final class PIDTermOffsets implements EEPROMClass {
-	final static int P_TERM_OFFSET = 0x0000;
-	final static int I_TERM_OFFSET = 0x0002;
-	final static int D_TERM_OFFSET = 0x0004;
+final class ExtruderPIDTermOffsets implements EEPROMClass {
+	final static int P_TERM_OFFSET = ToolheadEEPROM.EXTRUDER_PID_BASE + 0x0000;
+	final static int I_TERM_OFFSET = ToolheadEEPROM.EXTRUDER_PID_BASE + 0x0002;
+	final static int D_TERM_OFFSET = ToolheadEEPROM.EXTRUDER_PID_BASE + 0x0004;
 };
 
 
@@ -1693,30 +1693,31 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 	public PIDParameters getPIDParameters(int which, int toolIndex) {
 		PIDParameters pp = new PIDParameters();
 
-		int offset = (which == OnboardParameters.EXTRUDER)?
-				ToolheadEEPROM.EXTRUDER_PID_BASE:ToolheadEEPROM.HBP_PID_BASE;
-		if (which == OnboardParameters.EXTRUDER)
-			Base.logger.finest("** PID FOR ID: Extruder" );
-		else
-			Base.logger.finest("** PID FOR ID: BuildPlatform" );
-
+    int offset = MightyBoard5XEEPROM.T0_DATA_BASE;
+    if (toolIndex == 1)
+      offset = MightyBoard5XEEPROM.T1_DATA_BASE;
 
 		Base.logger.finest("pid p: " + Integer.toString(toolIndex));
-		pp.p = readFloat16FromToolEEPROM(offset + PIDTermOffsets.P_TERM_OFFSET, 7.0f, toolIndex);
+
+		byte stored [] = readFromEEPROM(offset + ExtruderPIDTermOffsets.P_TERM_OFFSET, 2);
+    pp.p  = byte16LEToFloat(stored);
 		Base.logger.finest("pid i: " + Integer.toString(toolIndex));
-		pp.i = readFloat16FromToolEEPROM(offset + PIDTermOffsets.I_TERM_OFFSET, 0.325f, toolIndex);
+		stored = readFromEEPROM(offset + ExtruderPIDTermOffsets.I_TERM_OFFSET, 2);
+    pp.i  = byte16LEToFloat(stored);
 		Base.logger.finest("pid d: " + Integer.toString(toolIndex));
-		pp.d = readFloat16FromToolEEPROM(offset + PIDTermOffsets.D_TERM_OFFSET, 36.0f, toolIndex);
+		stored = readFromEEPROM(offset + ExtruderPIDTermOffsets.D_TERM_OFFSET, 2);
+    pp.d  = byte16LEToFloat(stored);
 		return pp;
 	}
 	
 	@Override
 	public void setPIDParameters(int which, PIDParameters pp, int toolIndex) {
-		int offset = (which == OnboardParameters.EXTRUDER)?
-			ToolheadEEPROM.EXTRUDER_PID_BASE:ToolheadEEPROM.HBP_PID_BASE;
-      writeToToolEEPROM(offset+PIDTermOffsets.P_TERM_OFFSET,floatToLE(pp.p),toolIndex);
-      writeToToolEEPROM(offset+PIDTermOffsets.I_TERM_OFFSET,floatToLE(pp.i),toolIndex);
-      writeToToolEEPROM(offset+PIDTermOffsets.D_TERM_OFFSET,floatToLE(pp.d),toolIndex);
+    int offset = MightyBoard5XEEPROM.T0_DATA_BASE;
+    if (toolIndex == 1)
+      offset = MightyBoard5XEEPROM.T1_DATA_BASE;
+    writeToEEPROM(offset+ExtruderPIDTermOffsets.P_TERM_OFFSET,floatToLE(pp.p));
+    writeToEEPROM(offset+ExtruderPIDTermOffsets.I_TERM_OFFSET,floatToLE(pp.i));
+    writeToEEPROM(offset+ExtruderPIDTermOffsets.D_TERM_OFFSET,floatToLE(pp.d));
 	}
 	
 	
