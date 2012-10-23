@@ -240,10 +240,11 @@ public class ExtruderOnboardParameters extends JPanel {
 	    	eightPlaces.setMaximumFractionDigits(8);
 	    }
 
-	    private JFormattedTextField pField = new JFormattedTextField(floatFormat);
+	    private JFormattedTextField pField = new JFormattedTextField(eightPlaces);
       private JFormattedTextField iField = new JFormattedTextField(eightPlaces);
-      private JFormattedTextField dField = new JFormattedTextField(floatFormat);
+      private JFormattedTextField dField = new JFormattedTextField(eightPlaces);
       private JButton commitButton = new JButton("Commit Changes");
+      private JLabel commit_text = new JLabel("");
       private final int which;
       //private final ToolModel tool;
       private int toolIndex; 
@@ -271,8 +272,10 @@ public class ExtruderOnboardParameters extends JPanel {
         commitButton.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent arg0) {
             PIDPanel.this.commit();
+            commit_text.setText("Commit Successful");
           }
         });
+        add(commit_text);
         add(commitButton, "al right");
 
       }
