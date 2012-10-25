@@ -66,6 +66,8 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
 	// are we initialized?
 	private AtomicBoolean isInitialized = new AtomicBoolean(false);
 
+	private int buildToFileVersion = 0;
+
 	// our error variable.
 	ConcurrentLinkedQueue<DriverError> errorList;
 
@@ -240,6 +242,18 @@ public class DriverBaseImplementation implements Driver, DriverQueryInterface{
   }
 	public Version getPreferredVersion() {
 		return preferredVersion;
+	}
+
+	//Return s3g/x3g version (3 or 4)
+	//Set when build is called, if value = 0
+	//No version has been set(not saving to file)
+	public int getBuildToFileVersion() {
+		return buildToFileVersion;
+	}
+
+	//Sets verision s3g/x3g (3 or 4)
+	public void setBuildToFileVersion(int version){
+		buildToFileVersion = version;
 	}
 
 	/***************************************************************************

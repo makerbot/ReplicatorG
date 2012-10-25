@@ -1,0 +1,6 @@
+Format is tab separated widen settings.
+_Name                          	Value
+WindowPosition	700+0
+Open File for Widen	
+Activate Widen	False
+Widen Width over Edge Width (ratio):	2

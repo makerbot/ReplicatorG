@@ -7,6 +7,7 @@ package replicatorg.machine.model;
  */
 public enum MachineType
 {
+  REPLICATOR_2("Replicator 2"),
 	THE_REPLICATOR("The Replicator"),
 	THINGOMATIC("Thing-O-Matic"),
 	CUPCAKE("Cupcake");

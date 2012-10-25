@@ -1,0 +1,16 @@
+Format is tab separated cool settings.
+_Name                          	Value
+WindowPosition	700+0
+Open File for Cool	
+Activate Cool	True
+Bridge Cool (Celcius):	1.0
+Orbit	False
+Slow Down	True
+Maximum Cool (Celcius):	1.0
+Minimum Layer Time (seconds):	5.0
+Minimum Orbital Radius (millimeters):	10.0
+Name of Cool End File:	cool_end.gcode
+Name of Cool Start File:	cool_start.gcode
+Orbital Outset (millimeters):	2.0
+Turn Fan On at Beginning	True
+Turn Fan Off at Ending	True

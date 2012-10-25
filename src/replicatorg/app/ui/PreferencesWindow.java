@@ -191,8 +191,10 @@ public class PreferencesWindow extends JFrame implements GuiConstants {
 		content.add(new JLabel("  (requires restart of ReplicatorG)"), "wrap");
 
 		boolean checkTempDuringBuild = Base.preferences.getBoolean("build.monitor_temp", true);
+		boolean displaySpeedWarning = Base.preferences.getBoolean("build.speed_warning", true);
 		
 		addCheckboxForPref(content,"Monitor temperature during builds","build.monitor_temp", checkTempDuringBuild);
+		addCheckboxForPref(content,"Display Accelerated Speed Warnings", "build.speed_warning", displaySpeedWarning);
 		addCheckboxForPref(content,"Automatically connect to machine at startup","replicatorg.autoconnect",true);
 		addCheckboxForPref(content,"Show experimental machine profiles","machine.showExperimental",false);
 		addCheckboxForPref(content,"Review GCode for potential toolhead problems before building","build.safetyChecks",true);

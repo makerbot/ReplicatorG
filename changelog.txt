@@ -1,4 +1,12 @@
-0039 ReplicatorG
+0040-Beta ReplicatorG
+* Replicator 2 profile now more robust
+* support for selecting between s3g, x3g file formats (future bots)
+* minor profile updates
+* onboard preferences bug fix
+* warning when printing with accelerated speeds to ensure bot has acceleration turned on
+* added support for Sailfish firmware
+
+0039-Beta ReplicatorG
 * Added Replicator 2 Machine profile
 * Added Profiles for Thing-o-matic with Skeinforge-50 and volumetric printing
 * Added support for accelerated Thing-o-matic firmware.  MBI is hosting Jetty firmware v3.5

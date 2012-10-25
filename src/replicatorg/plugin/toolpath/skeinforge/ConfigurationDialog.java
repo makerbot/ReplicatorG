@@ -9,6 +9,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -16,6 +18,8 @@ import net.miginfocom.swing.MigLayout;
 import replicatorg.app.Base;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.Profile;
 import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgePreference;
+import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.SkeinforgeOption;
+import replicatorg.plugin.toolpath.skeinforge.PrintOMatic5D;
 
 class ConfigurationDialog extends JDialog {
 	final boolean postProcessToolheadIndex = true;
@@ -109,6 +113,7 @@ class ConfigurationDialog extends JDialog {
 		loadList(prefPulldown); 
 		add(prefPulldown, "wrap, growx, gapbottom 10");
 
+
 		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
 			add(preference.getUI(), "growx, wrap");
 		}
@@ -119,7 +124,9 @@ class ConfigurationDialog extends JDialog {
 		add(cancelButton, "tag cancel");
 
 		generateButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(ActionEvent arg0)
+			{
+				checkIfAccelSpeeds(parent);
 				parentGenerator.configSuccess = configureGenerator();
 				setVisible(!parentGenerator.configSuccess);
 			}
@@ -131,6 +138,41 @@ class ConfigurationDialog extends JDialog {
 			}
 		});
 
+	}
+
+	private void checkIfAccelSpeeds(Frame parent)
+	//Checks if speeds are acceleration level and if so displays a very nice message,
+	//so that people will (hopefully) not shake their machines off their desks
+	{
+		double travel_rate = 0;
+		double feed_rate = 0;
+
+		//Parses through Skeinforge options and grabs the two feed speeds
+		for (SkeinforgePreference preference: parentGenerator.getPreferences()) {
+			List<SkeinforgeOption> options = preference.getOptions("Skeinforge (35) - Legacy");
+			if (options != null) {
+				for(SkeinforgeOption option: options) {
+					if(option.getPreference().equals("Travel Feed Rate (mm/s):")){
+						travel_rate = Double.parseDouble(option.getValue());
+					}
+					if(option.getPreference().equals("Feed Rate (mm/s):")){
+							feed_rate = Double.parseDouble(option.getValue());
+					}
+				}
+			}
+		}
+			System.out.println("\n**FEED_RATES**\n" + "desired:" + feed_rate + "travel:" + travel_rate);
+
+			if((feed_rate > 40) || (travel_rate > 55))
+			{ 
+        if(Base.preferences.getBoolean("build.speed_warning", true)){
+				JOptionPane.showMessageDialog(parent,"You are now slicing with accelerated build speeds.\n" +
+            		"Do not print files generated at these speeds unless you have acceleration turned on.\n" +
+            		"Building high speed files with acceleration turned off can harm your Makerbot.\n\n" +
+					"You can turn acceleration on in the Onboard Preferences menu or via your Makerbot's onboard menus",
+					"Acceleration Warning", JOptionPane.WARNING_MESSAGE);
+        }
+			}
 	}
 	
 	/**

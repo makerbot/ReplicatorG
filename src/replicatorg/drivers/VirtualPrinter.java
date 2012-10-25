@@ -180,7 +180,7 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 		// TODO Auto-generated method stub
 		return preferredVersion;
 	}
-
+	
 	@Override
 	public void setCurrentPosition(Point5d p) throws RetryException {
 		currentPosition = p;
@@ -247,12 +247,21 @@ public class VirtualPrinter implements Driver, DriverQueryInterface {
 	}
 
 	@Override
+	public int getBuildToFileVersion() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public void setBuildToFileVersion(int version){
+	}
+
+	@Override
 	public Point5d getPosition() {
 		// TODO Auto-generated method stub
 		return currentPosition;
 	}
 
-	@Override
+	
 	public void requestToolChange(int toolIndex, int timeout)
 			throws RetryException {
 		// TODO Auto-generated method stub

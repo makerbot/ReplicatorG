@@ -15,10 +15,10 @@ public class Replicator2 extends MightyBoard
 	public Replicator2() {
 		super();
 		minimumVersion = new Version(6,0);
-		preferredVersion = new Version(6,0);
+		preferredVersion = new Version(6,1);
 		minimumAccelerationVersion = new Version(6,0);
 		minAdvancedFeatureVersion = new Version(6,0);
-		minimumJettyAccelerationVersion = new Version(6,1);
+		minimumJettyAccelerationVersion = new Version(6,2);
 	}
 	
 	
@@ -33,7 +33,7 @@ public class Replicator2 extends MightyBoard
 		if ( this.machineId == VidPid.UNKNOWN ) {
 			readMachineVidPid();
 		}
-		return this.machineId.equals(VidPid.THE_REPLICATOR_2);
+		return this.machineId.equals(VidPid.REPLICATOR_2);
 	}
 	
 	/**

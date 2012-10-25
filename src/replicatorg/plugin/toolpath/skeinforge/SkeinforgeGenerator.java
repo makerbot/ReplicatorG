@@ -169,7 +169,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	 * A SkeinforgeOption instance describes a single preference override to pass to skeinforge.
 	 * @author phooky
 	 */
-	protected static class SkeinforgeOption {
+	public static class SkeinforgeOption {
 		final String parameter;
 		final String module;
 		final String preference;
@@ -191,6 +191,12 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		}
 		public String getArgument() {
 			return (this.module != null ? this.module + ":" : "") + (this.preference != null ? this.preference + "=" : "") + this.value;
+		}
+		public String getPreference() {
+			return this.preference;
+		}
+		public String getValue() {
+			return this.value;
 		}
 	}
 		
@@ -236,6 +242,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 				public void actionPerformed(ActionEvent e) {
 					chosen = (String)model.getSelectedItem();
 					if (preferenceName != null) {
+						System.out.print("\n##!!" + preferenceName + ":" + chosen);
 						Base.preferences.put(preferenceName,chosen);
 					}
 				}

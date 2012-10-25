@@ -142,6 +142,8 @@ public class MachineModel
 
 			if (kid.getNodeName().equals("name")) {
 				String name = kid.getFirstChild().getNodeValue().trim();
+				if(name.startsWith("Replicator 2"))
+					machineType = MachineType.REPLICATOR_2;
 				if(name.startsWith("The Replicator"))
 					machineType = MachineType.THE_REPLICATOR;
 				else if(name.startsWith("Thingomatic"))
