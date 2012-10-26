@@ -262,16 +262,21 @@ public class MutableGCodeSource implements GCodeSource {
 		// and M73 P100. is required at the end. These are in TheReplicator start.gcode
 		// and end.gcode.  P0 and P100 are flags to send the build_start and build_end  notifications
 		// to the firmware.  A possible less tricky fix is to make a separate command for these
+    boolean new_layer = false;
 		for(String line : source)
 		{
-			if( line.startsWith("(<layer>") )
+			if((line.startsWith("(<layer>)") || line.startsWith("(<infill>")) && new_layer==true)
 			{
 				int percentDone = (int)(index*100)/sourceSize;
 				if(percentDone == 0)	percentDone = 1; 
 				if(percentDone == 100)	percentDone = 99; 
 				//^^See Footnote 1
 				newSource.add("M73 P"+percentDone+" (display progress)");
+        new_layer = false;
 			}
+			if( line.startsWith("(<layer>")){
+        new_layer = true;
+      }   
 			newSource.add(line);
 			index++;
 		}
