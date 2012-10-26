@@ -1,4 +1,4 @@
-0040-Beta ReplicatorG
+0040 ReplicatorG
 * Replicator 2 profile now more robust
 * support for selecting between s3g, x3g file formats (future bots)
 * minor profile updates
