@@ -286,7 +286,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		preferredVersion = new Version(6,0);
 		minimumAccelerationVersion = new Version(5,3);
 		minAdvancedFeatureVersion = new Version(6,0);
-		minimumJettyAccelerationVersion = new Version(6,2);
+		minimumJettyAccelerationVersion = new Version(7,0);
 	}
 
 	public String getDriverName() {
