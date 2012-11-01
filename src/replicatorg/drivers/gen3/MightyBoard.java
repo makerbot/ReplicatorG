@@ -283,7 +283,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		// Make sure this accurately reflects the minimum preferred
 		// firmware version we want this driver to support.
 		minimumVersion = new Version(5,5);
-		preferredVersion = new Version(6,1);
+		preferredVersion = new Version(6,2);
 		minimumAccelerationVersion = new Version(5,3);
 		minAdvancedFeatureVersion = new Version(6,0);
 		minimumJettyAccelerationVersion = new Version(7,0);
@@ -952,7 +952,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
   
     double val;
 
-    if(hasJettyAcceleration()){
+    if(!hasJettyAcceleration()){
       
 		  val = read32FromEEPROM(MightyBoard5XEEPROM.AXIS_HOME_POSITIONS + axis*4);
       Point5d stepsPerMM = getMachine().getStepsPerMM();
@@ -991,7 +991,7 @@ public class MightyBoard extends Makerbot4GAlternateDriver
 		
 		int offsetSteps = (int)offset;
 
-    if(hasJettyAcceleration()){
+    if(!hasJettyAcceleration()){
       Point5d stepsPerMM = getMachine().getStepsPerMM();
       switch(axis) {
         case 0:
