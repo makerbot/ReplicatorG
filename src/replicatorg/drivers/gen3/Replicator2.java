@@ -35,6 +35,15 @@ public class Replicator2 extends MightyBoard
 		}
 		return this.machineId.equals(VidPid.REPLICATOR_2);
 	}
+
+	@Override 
+	public String getMachineType(){
+		if (this.machineId.equals(VidPid.MIGHTY_BOARD))
+			return "MightyBoard"; 
+		else if (this.machineId.equals(VidPid.REPLICATOR_2))
+			return "Replicator 2"; 
+		return "MightyBoard(unverified)"; 			
+	} 
 	
 	/**
 	 * This function is called just after a connection is made, to do initial

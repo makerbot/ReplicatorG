@@ -39,6 +39,7 @@ M18 (Turn off steppers after a build.)
 			<axis id="y" length="150" maxfeedrate="18000" homingfeedrate="2500" stepspermm="88.573186" endstops="max"/>  <!-- Pulley dia: 10.82mm / 1/16 step = 1/(10.82 * pi / 3200) -->
 			<axis id="z" length="160" maxfeedrate="1170" homingfeedrate="1100" stepspermm="400" endstops="min"/> <!-- Actual length is 157mm, we reserve ~5mm for safety. TR-8x8 Z axis = 1/(8/3200) -->
 			<axis id="a" length="100000" maxfeedrate="1600" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
+			<axis id="b" length="100000" maxfeedrate="1600" stepspermm="96.275201870333662468889989185642" endstops="none"/> <!-- stepspermm is incoming filament length, see comment at bottom for explanation -->
 		</geometry>
 		<tools>
 			<tool name="PLA Extruder" model="Mk8" diameter="0.4" stepper_axis="a" index="0" type="extruder" motor="true" fan="true" heatedplatform="true" motor_steps="3200" default_rpm="3" heater="true"/>
