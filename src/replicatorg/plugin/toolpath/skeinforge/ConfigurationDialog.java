@@ -169,7 +169,8 @@ class ConfigurationDialog extends JDialog {
 				JOptionPane.showMessageDialog(parent,"You are now slicing with accelerated build speeds.\n" +
             		"Do not print files generated at these speeds unless you have acceleration turned on.\n" +
             		"Building high speed files with acceleration turned off can harm your Makerbot.\n\n" +
-					"You can turn acceleration on in the Onboard Preferences menu or via your Makerbot's onboard menus",
+					"You can turn acceleration on in the Onboard Preferences menu or via your Makerbot's onboard menus\n\n" +
+          "To disable this message, uncheck 'Display Accelerated Speed Warning' in  File->Preferences",
 					"Acceleration Warning", JOptionPane.WARNING_MESSAGE);
         }
 			}
