@@ -6,7 +6,7 @@ G90 (set positioning to absolute)
 M109 S110 T0 (set HBP temperature)
 M104 S220 T0 (set extruder temperature)
 (**** begin homing ****)
-G162 X Y F2500 (home XY axes maximum
+G162 X Y F2500 (home XY axes maximum)
 G161 Z F1100 (home Z axis minimum)
 G92 Z-5 (set Z to -5)
 G1 Z0.0 (move Z to "0")
