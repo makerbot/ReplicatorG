@@ -31,7 +31,7 @@
 		<cooldown>
 M18 (Turn off steppers after a build.)
 		</cooldown>
-		<bookend dualstart="machines/replicator/Dualstrusion_start.gcode" start="machines/replicator/Single_Head_start.gcode" end="machines/replicator/Dual_Head_end.gcode"/>
+		<bookend dualstart="machines/replicator/Dualstrusion_start.gcode" start="machines/replicator/Dual_Head_start.gcode" end="machines/replicator/Dual_Head_end.gcode"/>
 	</machine>
 <machine experimental="0">
 		<name>The Replicator Single</name>
