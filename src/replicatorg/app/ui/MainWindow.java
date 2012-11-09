@@ -2284,7 +2284,7 @@ ToolpathGenerator.GeneratorListener
 
     if ((machineLoader.getMachineInterface().getMachineType() == MachineType.THE_REPLICATOR) || (machineLoader.getMachineInterface().getMachineType() == MachineType.REPLICATOR_2)){
       s3gFilter = new ExtensionFilter(".s3g"," .s3g  (For use with firmware earlier than v7.0)");
-      x3gFilter = new ExtensionFilter(".x3g"," .x3g  (For use with firmware later than v7.0)");
+      x3gFilter = new ExtensionFilter(".x3g"," .x3g  (For use with firmware v7.0 or later)");
     }
     else{
       s3gFilter = new ExtensionFilter(".s3g"," .s3g  (For use with firmware v3.5 or earlier)");
