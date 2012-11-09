@@ -1,4 +1,4 @@
-(**** start.gcode for The Replicator, Dualstrusion! ****)
+(**** start.gcode for Replicator 2X, Dualstrusion! ****)
 M103 (disable RPM)
 M73 P0 (enable build progress)
 G21 (set units to mm)
