@@ -2292,7 +2292,8 @@ ToolpathGenerator.GeneratorListener
     } 
 		fc.addChoosableFileFilter(s3gFilter);
 		fc.addChoosableFileFilter(x3gFilter);
-		if(((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() && ((OnboardParameters)machineLoader.getDriver()).hasAdvancedFeatures()){
+		if(((OnboardParameters)machineLoader.getDriver()).hasJettyAcceleration() ||
+			(machineLoader.getDriver().getBuildToFileVersion() >= 4) ){
 			fc.setFileFilter(x3gFilter);
 		}
 		else{
