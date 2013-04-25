@@ -113,6 +113,7 @@ commandTable = {
     154: ("<B","End build, flags 0x%X"),
     155: ("<iiiiiIBfh","Move to (%i,%i,%i,%i,%i) dda_rate: %i (relative: %X) distance: %f feedrateX64: %i"),
     156: ("<B","Set acceleration to %i"),
+    157: ("<BBBIHHIIB", "Stream Version %i %i %i %i %i %i %i %i %i"),
 }
 
 def parseNextCommand():
