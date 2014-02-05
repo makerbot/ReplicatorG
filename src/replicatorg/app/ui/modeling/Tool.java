@@ -86,7 +86,7 @@ public abstract class Tool implements MouseMotionListener, MouseListener, MouseW
 		DragMode mode = DragMode.ROTATE_VIEW; 
 		if (Base.isMacOS()) {
 			if (button == MouseEvent.BUTTON1 && !e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
-			else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.ROTATE_VIEW; }
+			else if (button == MouseEvent.BUTTON1 && e.isShiftDown()) { mode = DragMode.TRANSLATE_VIEW; }
 		} else {
 			if (button == MouseEvent.BUTTON1) { mode = DragMode.ROTATE_VIEW; }
 			else if (button == MouseEvent.BUTTON3) { mode = DragMode.ROTATE_VIEW; }
