@@ -259,7 +259,7 @@ public class ExtruderPanel extends JPanel{
 			// Due to current implementation issues, we need to send the PWM
 			// before the RPM for a stepper motor. Thus we display both controls in these
 			// cases. This shouldn't be necessary for a Gen4 stepper extruder. (it's not!)
-			if ((tool.getMotorStepperAxisName() == "") && 
+			if ((tool.getMotorStepperAxisName().length() == 0) && 
 					!(tool.motorHasEncoder() || tool.motorIsStepper())) {
 				// our motor speed vars
 				JLabel label = makeLabel("Motor Speed (PWM)");
