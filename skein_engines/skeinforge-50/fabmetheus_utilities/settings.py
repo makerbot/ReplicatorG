@@ -192,10 +192,8 @@ def getDisplayedDialogFromConstructor(repository):
 	try:
 		getReadRepository(repository)
 		tk = Tkinter.Tk()
-		tkFont.nametofont("TkDefaultFont").configure(size=10)
-		tkFont.nametofont("TkMenuFont").configure(size=10)
-		tkFont.nametofont("TkTextFont").configure(size=10)
-		tkFont.nametofont("TkFixedFont").configure(size=10)
+		for f in tk.splitlist(tk.call("font", "names")):
+			tkFont.nametofont(f).configure(size=10)
 		return RepositoryDialog( repository, tk )
 	except:
 		print('this should never happen, getDisplayedDialogFromConstructor in settings could not open')
