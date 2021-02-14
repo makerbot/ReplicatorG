@@ -373,8 +373,18 @@ def writeFileMessageEnd(end, fileName, fileText, message):
 def writeFileText(fileName, fileText, writeMode='w+'):
 	'Write a text to a file.'
 	try:
+		if os.path.exists(fileName):
+			os.rename(fileName, fileName+ '~')
+	except OSError:
+		print('File "' + fileName + '" cannot be renamed to "' + fileName + '~": ' + strerror(errno))
+		return
+	try:
 		file = open(fileName, writeMode)
+	except OSError:
+		print('File "' + fileName + '" cannot be opened for writing: ' + strerror(errno))
+		return
+	try:
 		file.write(fileText)
 		file.close()
-	except IOError:
-		print('The file ' + fileName + ' can not be written to.')
+	except OSError:
+		print('File "' + fileName + '" cannot be written to: ' + strerror(errno))
