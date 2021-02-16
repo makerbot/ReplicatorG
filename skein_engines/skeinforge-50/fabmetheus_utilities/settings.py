@@ -453,7 +453,7 @@ def openWebPage( webPagePath ):
 
 def printProgress(layerIndex, procedureName):
 	"Print layerIndex followed by a carriage return."
-	printProgressByString('%s layer count %s...' % (procedureName.capitalize(), layerIndex + 1))
+	printProgressByString(' %s layer count %s...' % (procedureName.capitalize(), layerIndex + 1))
 
 def printProgressByNumber(layerIndex, numberOfLayers, procedureName):
 	"Print layerIndex and numberOfLayers followed by a carriage return."
@@ -590,10 +590,6 @@ def setSpinColor( setting ):
 
 def startMainLoopFromConstructor(repository):
 	"Display the repository dialog and start the main loop."
-	try:
-		import Tkinter
-	except:
-		return
 	displayedDialogFromConstructor = getDisplayedDialogFromConstructor(repository)
 	if displayedDialogFromConstructor == None:
 		print('Warning, displayedDialogFromConstructor in settings is none, so the window will not be displayed.')
@@ -873,12 +869,17 @@ class DisplayToolButton:
 		repository.displayEntities.append(self)
 		return self
 
+def setFontRecursive(w, f):
+	if 'font' in w.keys():
+		w.configure(font=f)
+	for child in w.winfo_children():
+		setFontRecursive(child, f)
 
 class FileHelpMenuBar:
 	def __init__( self, root ):
 		"Create a menu bar with a file and help menu."
 		self.underlineLetters = []
-		self.menuBar = Tkinter.Menu( root )
+		self.menuBar = Tkinter.Menu( root)
 		self.root = root
 		root.config( menu = self.menuBar )
 		self.fileMenu = Tkinter.Menu( self.menuBar, tearoff = 0 )
@@ -926,6 +927,8 @@ class FileHelpMenuBar:
 		self.saveFunction()
 		self.closeFunction()
 
+	def setFont(self, f):
+		setFontRecursive(self.menuBar, f)
 
 class FileNameInput( StringSetting ):
 	"A class to display, read & write a fileName."

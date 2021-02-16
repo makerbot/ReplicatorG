@@ -119,6 +119,10 @@ class TableauRepository:
 	def addScaleScreenSlide(self):
 		'Add the scale, screen and slide show settings.'
 		self.scale = settings.FloatSpinNotOnMenu().getFromValue( 10.0, 'Scale (pixels per millimeter):', self, 50.0, 15.0 )
+		# This is needed to adjust for the ratio between the numbers
+		# reported by measure() and the pixel density of the monitor.
+		# unfortunately there seems to be no reliable way of calculating it.
+		self.pixelmagic = settings.FloatSpinNotOnMenu().getFromValue( 0.1, 'Font scale factor:', self, 10.0, 2.0 )
 		settings.LabelSeparator().getFromRepository(self)
 		settings.LabelDisplay().getFromName('- Screen Inset -', self )
 		self.screenHorizontalInset = settings.IntSpin().getFromValue( 80, 'Screen Horizontal Inset (pixels):', self, 1000, 100 )
@@ -154,10 +158,7 @@ class TableauWindow:
 		self.gridPosition.master = self.root
 		self.highlightThickness = 3
 		self.root.title(os.path.basename(skein.fileName) + ' - ' + title)
-		self.rulingExtent = 24
 		self.rulingTargetSeparation = 150.0
-		self.screenSize = skein.screenSize
-		self.skein = skein
 		self.skeinPanes = skein.skeinPanes
 		self.suffix = suffix
 		self.timerID = None
@@ -177,8 +178,8 @@ class TableauWindow:
 		self.gridPosition = settings.GridHorizontal(2, 99)
 		self.gridPosition.master = self.root
 		self.gcodeStringVar = settings.Tkinter.StringVar(self.root)
-		self.gcodeLabel = settings.Tkinter.Label(self.root, anchor = settings.Tkinter.W, textvariable = self.gcodeStringVar)
-		self.gcodeLabel.grid(row = 0, column = 5, columnspan = 93, sticky = settings.Tkinter.W)
+		self.gcodeLabel = settings.Tkinter.Label(self.root, anchor = settings.Tkinter.W, textvariable = self.gcodeStringVar, font = self.sizedfont)
+		self.gcodeLabel.grid(row = 0, column = 5, columnspan = 50, sticky = settings.Tkinter.W)
 		from fabmetheus_utilities.hidden_scrollbar import HiddenScrollbar
 		self.xScrollbar = HiddenScrollbar(self.root, orient = settings.Tkinter.HORIZONTAL)
 		self.xScrollbar.grid(row = 98, column = 2, columnspan = 96, sticky = settings.Tkinter.E + settings.Tkinter.W)
@@ -197,16 +198,17 @@ class TableauWindow:
 			ExportCanvasDialog().addPluginToMenu(self.canvas, skein.fileName, self.exportMenu, exportCanvasPluginFileName, suffix)
 		self.fileHelpMenuBar.fileMenu.add_separator()
 		self.fileHelpMenuBar.completeMenu(self.close, repository, self.save, self)
+		self.fileHelpMenuBar.setFont(self.sizedfont)
 
 	def addLayer( self, gridPosition ):
 		'Add the layer frame items.'
 		self.diveButton = self.getPhotoButtonGridIncrement( self.dive, 'dive.ppm', gridPosition )
 		self.soarButton = self.getPhotoButtonGridIncrement( self.soar, 'soar.ppm', gridPosition )
 		gridPosition.increment()
-		settings.Tkinter.Label( gridPosition.master, text = 'Layer:').grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )
+		settings.Tkinter.Label( gridPosition.master, text = 'Layer:', font = self.sizedfont).grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )
 		gridPosition.increment()
 		self.limitIndex()
-		self.layerEntry = settings.Tkinter.Spinbox( gridPosition.master, command = self.layerEntryReturnPressed, from_ = 0, increment = 1, to = getLengthMinusOneMinimumOne( self.skeinPanes ) )
+		self.layerEntry = settings.Tkinter.Spinbox( gridPosition.master, command = self.layerEntryReturnPressed, from_ = 0, increment = 1, to = getLengthMinusOneMinimumOne( self.skeinPanes ), font = self.sizedfont )
 		self.layerEntry.bind('<Return>', self.layerEntryReturnPressed )
 		self.layerEntry.grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )
 
@@ -215,9 +217,9 @@ class TableauWindow:
 		self.lineDiveButton = self.getPhotoButtonGridIncrement( self.lineDive, 'dive.ppm', gridPosition )
 		self.lineSoarButton = self.getPhotoButtonGridIncrement( self.lineSoar, 'soar.ppm', gridPosition )
 		gridPosition.increment()
-		settings.Tkinter.Label( gridPosition.master, text = 'Line:').grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )
+		settings.Tkinter.Label( gridPosition.master, text = 'Line:', font = self.sizedfont).grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )
 		gridPosition.increment()
-		self.lineEntry = settings.Tkinter.Spinbox( gridPosition.master, command = self.lineEntryReturnPressed, from_ = 0, increment = 1, to = getLengthMinusOneMinimumOne( self.getColoredLines() ) )
+		self.lineEntry = settings.Tkinter.Spinbox( gridPosition.master, command = self.lineEntryReturnPressed, from_ = 0, increment = 1, to = getLengthMinusOneMinimumOne( self.getColoredLines() ), font = self.sizedfont )
 		self.lineEntry.bind('<Return>', self.lineEntryReturnPressed )
 		self.lineEntry.grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )
 
@@ -290,7 +292,7 @@ class TableauWindow:
 		'Get a PhotoImage button, grid the button and increment the grid position.'
 		photoImage = None
 		try:
-			photoImage = settings.Tkinter.PhotoImage( file = os.path.join( self.imagesDirectoryPath, fileName ), master = gridPosition.master )
+			photoImage = settings.Tkinter.PhotoImage( file = os.path.join( self.imagesDirectoryPath, fileName ), master = gridPosition.master)
 		except:
 			print('Image %s was not found in the images directory, so a text button will be substituted.' % fileName )
 		untilDotFileName = archive.getUntilDot(fileName)
@@ -302,15 +304,15 @@ class TableauWindow:
 		self.addMouseInstantTool('zoom_out.ppm', gridPosition, zoom_out.getNewMouseTool() )
 		self.addMouseInstantTool('zoom_in.ppm', gridPosition, zoom_in.getNewMouseTool() )
 		gridPosition.increment()
-		settings.Tkinter.Label( gridPosition.master, text = 'Scale:').grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )
+		settings.Tkinter.Label( gridPosition.master, text = 'Scale:', font = self.sizedfont).grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )
 		gridPosition.increment()
-		self.scaleEntry = settings.Tkinter.Spinbox( gridPosition.master, command = self.scaleEntryReturnPressed, from_ = 10.0, increment = 5.0, to = 100.0 )
+		self.scaleEntry = settings.Tkinter.Spinbox( gridPosition.master, command = self.scaleEntryReturnPressed, from_ = 10.0, increment = 5.0, to = 100.0 , font = self.sizedfont)
 		self.scaleEntry.bind('<Return>', self.scaleEntryReturnPressed )
 		self.scaleEntry.grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )
 
 	def addSettingsMenuSetWindowGeometry( self, center ):
 		'Add the settings menu, center the scroll region, update, and set the window geometry.'
-		self.settingsMenu = settings.Tkinter.Menu( self.fileHelpMenuBar.menuBar, tearoff = 0 )
+		self.settingsMenu = settings.Tkinter.Menu( self.fileHelpMenuBar.menuBar, tearoff = 0, font = self.sizedfont )
 		self.fileHelpMenuBar.addMenuToMenuBar( 'Settings', self.settingsMenu )
 		settings.addMenuEntitiesToMenuFrameable( self.settingsMenu, self.repository.menuEntities )
 		self.relayXview( settings.Tkinter.MOVETO, center.real - self.canvasScreenCenter.real )
@@ -426,7 +428,7 @@ class TableauWindow:
 			anchorTowardCenter += settings.Tkinter.E
 		else:
 			anchorTowardCenter += settings.Tkinter.W
-		return self.canvas.create_text( int( location.real ), int( location.imag ), anchor = anchorTowardCenter, tags = tags, text = text )
+		return self.canvas.create_text( int( location.real ), int( location.imag ), anchor = anchorTowardCenter, tags = tags, text = text, font = self.sizedfont )
 
 	def getEntityFromName(self, name):
 		'Get the entity of the given name.'
@@ -440,7 +442,7 @@ class TableauWindow:
 		gridPosition.increment()
 		untilDotFileName = self.addPhotoImage( fileName, gridPosition )
 		photoImage = self.photoImages[ untilDotFileName ]
-		photoButton = settings.Tkinter.Button( gridPosition.master, activebackground = 'black', activeforeground = 'white', command = commandFunction, text = untilDotFileName )
+		photoButton = settings.Tkinter.Button( gridPosition.master, activebackground = 'black', activeforeground = 'white', command = commandFunction, text = untilDotFileName, font = 'TkDefaultFont')
 		if photoImage != None:
 			photoButton['image'] = photoImage
 		photoButton.grid( row = gridPosition.row, column = gridPosition.column, sticky = settings.Tkinter.W )

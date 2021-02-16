@@ -239,6 +239,8 @@ from skeinforge_application.skeinforge_utilities import skeinforge_polyfile
 from skeinforge_application.skeinforge_utilities import skeinforge_profile
 import math
 import sys
+import Tkinter
+import tkFont
 
 
 __author__ = 'Enrique Perez (perez_enrique@yahoo.com)'
@@ -639,6 +641,9 @@ class Ruling:
 class SkeinWindow( tableau.TableauWindow ):
 	def __init__( self, repository, skein ):
 		"Initialize the skein window."
+		self.sizedfont = tkFont.nametofont('TkDefaultFont').copy()
+		self.screenSize = skein.screenSize
+		self.skein = skein
 		self.arrowshape = ( 24, 30, 9 )
 		self.addCanvasMenuRootScrollSkein( repository, skein, '_skeiniso', 'Skeiniso')
 		self.center = 0.5 * self.screenSize
@@ -680,11 +685,17 @@ class SkeinWindow( tableau.TableauWindow ):
 		self.addMouseToolsBind()
 		self.negativeRulings = []
 		self.positiveRulings = []
+		self.rulingExtent = 0
 		for rulingIndex in xrange( 1, int( math.ceil( self.halfCenterModel / self.rulingSeparationWidthMillimeters ) ) ):
 			modelDistance = rulingIndex * self.rulingSeparationWidthMillimeters
-			self.negativeRulings.append( Ruling( modelDistance, self.getRoundedRulingText( 1, - modelDistance ) ) )
-			self.positiveRulings.append( Ruling( modelDistance, self.getRoundedRulingText( 1, modelDistance ) ) )
-		self.rulingExtentHalf = 0.5 * self.rulingExtent
+			self.val = self.getRoundedRulingText( 1, - modelDistance )
+			self.negativeRulings.append( Ruling( modelDistance, self.val ) )
+			self.rulingExtent = max(self.rulingExtent, self.val)
+			self.val = self.getRoundedRulingText( 1, modelDistance )
+			self.positiveRulings.append( Ruling( modelDistance, self.val ) )
+			self.rulingExtent = max(self.rulingExtent, self.val)
+		self.rulingExtentHalf = self.rulingExtent
+		self.rulingExtent = 2 * self.rulingExtent
 
 	def drawRuling( self, projectiveSpace, relativeRulingEnd, ruling, tags, viewBegin, viewEnd ):
 		"Draw ruling."
@@ -839,6 +850,16 @@ class SkeinWindow( tableau.TableauWindow ):
 	def getScreenView( self, point, projectiveSpace ):
 		"Get the point in screen view perspective."
 		return self.getScreenComplex( projectiveSpace.getDotComplex(point) )
+
+	def digits(self, val):
+		"Convert (float) val to a reasonably short string"
+		if abs(val) >= 10.0:
+			return str(int(val))
+		if abs(val) > 0.1:
+			return str.format('{:.1f}', val)
+		if val == 0.0:
+			return '0'
+		return str.format('{:.2f}', val)
 
 	def printHexadecimalColorName(self, name):
 		"Print the color name in hexadecimal."
