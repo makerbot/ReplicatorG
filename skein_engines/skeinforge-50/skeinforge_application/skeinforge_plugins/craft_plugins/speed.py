@@ -172,7 +172,7 @@ class SpeedRepository:
 			'Object First Layer Flow Rate Infill Multiplier (ratio):' : 'raft.csv',
 			'Object First Layer Flow Rate Perimeter Multiplier (ratio):' : 'raft.csv'}
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Speed', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Speed')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.speed.html')
 		self.activateSpeed = settings.BooleanSetting().getFromValue('Activate Speed', self, True )
 		self.addFlowRate = settings.BooleanSetting().getFromValue('Add Flow Rate:', self, True )
 		settings.LabelSeparator().getFromRepository(self)

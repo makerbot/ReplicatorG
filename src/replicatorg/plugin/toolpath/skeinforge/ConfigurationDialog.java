@@ -23,7 +23,6 @@ import replicatorg.plugin.toolpath.skeinforge.PrintOMatic5D;
 
 class ConfigurationDialog extends JDialog {
 	final boolean postProcessToolheadIndex = true;
-	final String profilePref = "replicatorg.skeinforge.profilePref";
 	
 	JButton generateButton = new JButton("Generate Gcode");
 	JButton cancelButton = new JButton("Cancel");
@@ -51,12 +50,23 @@ class ConfigurationDialog extends JDialog {
 		DefaultComboBoxModel model = new DefaultComboBoxModel();
 		int i=0;
 		int selectedProfile = -1;
+		String lastSelected;
+		if (parentGenerator.getProfile() != null)
+		{
+			// profile already set by DualStrusion
+			lastSelected = parentGenerator.getProfile().toString();
+		}
+		else
+		{
+			lastSelected =
+				Base.preferences.get("lastGeneratorProfileSelected","---");
+		}
 		for (Profile p : profiles) {
 			///we display all profiles for all machines.
 			// at MBI customer support's request.
 			model.addElement(p.toString());
 			
-			if(p.toString().equals(Base.preferences.get("lastGeneratorProfileSelected","---")))
+			if(p.toString().equals(lastSelected))
 			{
 				Base.logger.fine("Selecting last used element: " + p);
 				/// default select the last profile that matches 
@@ -193,9 +203,7 @@ class ConfigurationDialog extends JDialog {
 		
 		Profile p = ProfileUtils.getListedProfile(
 				prefPulldown.getModel(), profiles, idx);
-		Base.preferences.put("lastGeneratorProfileSelected",p.toString());
-		parentGenerator.profile = p.getFullPath();
-		SkeinforgeGenerator.setSelectedProfile(p.toString());
+		parentGenerator.setProfile(p);
 		return true;
 	}
 };

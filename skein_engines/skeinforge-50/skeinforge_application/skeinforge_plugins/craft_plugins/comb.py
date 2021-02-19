@@ -162,7 +162,7 @@ class CombRepository:
 		"Set the default settings, execute title & settings fileName."
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.comb.html', self )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Comb', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Comb')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.comb.html')
 		self.activateComb = settings.BooleanSetting().getFromValue('Activate Comb', self, False )
 		self.runningJumpSpace = settings.FloatSpin().getFromValue(0.0, 'Running Jump Space (mm):', self, 5.0, 2.0)
 		self.executeTitle = 'Comb'

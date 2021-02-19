@@ -123,7 +123,7 @@ class TowerRepository:
 		"Set the default settings, execute title & settings fileName."
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.tower.html', self )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Tower', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Tower')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.tower.html')
 		self.activateTower = settings.BooleanSetting().getFromValue('Activate Tower', self, False )
 		self.extruderPossibleCollisionConeAngle = settings.FloatSpin().getFromValue( 40.0, 'Extruder Possible Collision Cone Angle (degrees):', self, 80.0, 60.0 )
 		self.maximumTowerHeight = settings.IntSpin().getFromValue( 2, 'Maximum Tower Height (layers):', self, 10, 5 )

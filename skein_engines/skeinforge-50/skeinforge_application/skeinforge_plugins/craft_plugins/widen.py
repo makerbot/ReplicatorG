@@ -118,8 +118,7 @@ class WidenRepository:
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.widen.html', self)
 		self.fileNameInput = settings.FileNameInput().getFromFileName(
 			fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Widen', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute(
-			'http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Widen')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.widen.html')
 		self.activateWiden = settings.BooleanSetting().getFromValue('Activate Widen', self, False)
 		self.widenWidthOverEdgeWidth = settings.IntSpin().getFromValue(2, 'Widen Width over Edge Width (ratio):', self, 4, 2)
 		self.executeTitle = 'Widen'

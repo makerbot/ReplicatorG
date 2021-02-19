@@ -298,7 +298,7 @@ class InsetRepository:
 			'Infill in Direction of Bridge' : 'carve.csv',
 			'Infill Width over Thickness (ratio):' : 'fill.csv'}
 		self.fileNameInput = settings.FileNameInput().getFromFileName(fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Inset', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Inset')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.inset.html')
 		self.addCustomCodeForTemperatureReading = settings.BooleanSetting().getFromValue('Add Custom Code for Temperature Reading', self, True)
 		self.infillInDirectionOfBridge = settings.BooleanSetting().getFromValue('Infill in Direction of Bridge', self, True)
 		self.infillWidthOverThickness = settings.FloatSpin().getFromValue(1.3, 'Infill Width over Thickness (ratio):', self, 1.7, 1.5)

@@ -1,4 +1,8 @@
-ReplicatorG is an open-source GCode based controller for RepRap / CNC machines.  It has 3 main goals:
+ReplicatorG is an open-source GCode based controller for RepRap / CNC machines.
+
+This version was forked from makerbot/ReplicatorG, which unfortunately seems to have been orphaned. This version has various bug fixes and improvements including better DualStrusion code.
+
+ReplicatorG has 3 main goals:
 
 1. Be as simple to use, and as easy to install as possible.
 2. Be driver oriented and abstract the GCode away, allowing users to easily create drivers for their own machine.

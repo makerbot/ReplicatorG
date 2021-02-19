@@ -62,6 +62,11 @@ Default: 1.0 millimeter
 
 Defines the minimum distance that the extruder head has to travel from the end of one thread to the beginning of another, in order to trigger the extruder retraction.  Setting this to a high value means the extruder will retract only occasionally, setting it to a low value means the extruder will retract most of the time.
 
+===Z Distance Multiplier===
+Default: 10
+
+Defines the multiplier that is applied to the Z distance when calculating a distance to compare with the Minimum Travel for Retraction. This is set to a large value to force Filament Retraction before a layer change. Dual Extrusion inserts tool switches on a layer change, so this should prevent filament oozing out of the extruder which is currently inactive. It can be set to 1 if you never use Dual Extrusion.
+
 ===Retract Within Island===
 Default is off.
 
@@ -147,7 +152,8 @@ class DimensionRepository:
 		'Set the default settings, execute title & settings fileName.'
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.dimension.html', self )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Dimension', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Dimension')
+		#self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Dimension')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.dimension.html')
 		self.activateDimension = settings.BooleanSetting().getFromValue('Activate Dimension', self, False )
 		extrusionDistanceFormatLatentStringVar = settings.LatentStringVar()
 		self.extrusionDistanceFormatChoiceLabel = settings.LabelDisplay().getFromName('Extrusion Distance Format Choice: ', self )
@@ -161,9 +167,10 @@ class DimensionRepository:
 		settings.LabelSeparator().getFromRepository(self)
 		self.maximumEValueBeforeReset = settings.FloatSpin().getFromValue(0.0, 'Maximum E Value before Reset (float):', self, 999999.9, 91234.0)
 		self.minimumTravelForRetraction = settings.FloatSpin().getFromValue(0.0, 'Minimum Travel for Retraction (millimeters):', self, 2.0, 1.0)
+		self.zDistanceRatio = settings.FloatSpin().getFromValue( 1.0, 'Z Distance Multiplier:', self, 20.0, 10.0 )
 		self.retractWithinIsland = settings.BooleanSetting().getFromValue('Retract Within Island', self, False)
-		self.retractionDistance = settings.FloatSpin().getFromValue( 0.0, 'Retraction Distance (millimeters):', self, 100.0, 0.0 )
-		self.restartExtraDistance = settings.FloatSpin().getFromValue( 0.0, 'Restart Extra Distance (millimeters):', self, 100.0, 0.0 )
+		self.retractionDistance = settings.FloatSpin().getFromValue( 0.0, 'Retraction Distance (millimeters):', self, 10.0, 0.0 )
+		self.restartExtraDistance = settings.FloatSpin().getFromValue( 0.0, 'Restart Extra Distance (millimeters):', self, 10.0, 0.0 )
 		self.executeTitle = 'Dimension'
 
 	def execute(self):
@@ -190,7 +197,8 @@ class DimensionSkein:
 		self.retractionRatio = 1.0
 		self.totalExtrusionDistance = 0.0
 		self.travelFeedRatePerSecond = None
-		self.zDistanceRatio = 5.0
+		self.zDistanceRatio = 10.0
+		self.EarlyShutdownActive = False
 
 	def addLinearMoveExtrusionDistanceLine(self, extrusionDistance):
 		'Get the extrusion distance string from the extrusion distance.'
@@ -216,8 +224,7 @@ class DimensionSkein:
 			return gcodeText
 		self.restartDistance = self.repository.retractionDistance.value + self.repository.restartExtraDistance.value
 		self.extruderRetractionSpeedMinuteString = self.distanceFeedRate.getRounded(60.0 * self.repository.extruderRetractionSpeed.value)
-		if self.maximumZFeedRatePerSecond != None and self.travelFeedRatePerSecond != None:
-			self.zDistanceRatio = self.travelFeedRatePerSecond / self.maximumZFeedRatePerSecond
+		self.firstMove = True
 		for lineIndex in xrange(self.lineIndex, len(self.lines)):
 			self.parseLine( lineIndex )
 		return self.distanceFeedRate.output.getvalue()
@@ -383,15 +390,26 @@ class DimensionSkein:
 			self.layerIndex += 1
 			settings.printProgress(self.layerIndex, 'dimension')
 		elif firstWord == 'M101':
-			self.addLinearMoveExtrusionDistanceLine(self.restartDistance * self.retractionRatio)
+			if not self.firstMove:
+				self.addLinearMoveExtrusionDistanceLine(self.restartDistance * self.retractionRatio)
+			self.firstMove = False
 			if self.totalExtrusionDistance > self.repository.maximumEValueBeforeReset.value: 
 				if not self.repository.relativeExtrusionDistance.value:
 					self.distanceFeedRate.addLine('G92 E0')
 					self.totalExtrusionDistance = 0.0
 			self.isExtruderActive = True
-		elif firstWord == 'M103':
+		elif firstWord == '(<EarlyShutdownActive>)':
+			self.EarlyShutdownActive = True
+		elif firstWord == 'M103' and not self.EarlyShutdownActive:
 			self.retractionRatio = self.getRetractionRatio(lineIndex)
 			self.addLinearMoveExtrusionDistanceLine(-self.repository.retractionDistance.value * self.retractionRatio)
+			self.isExtruderActive = False
+		elif firstWord == '(<EarlyShutdownFinished>)':
+			self.EarlyShutdownActive = False
+			self.retractionRatio = self.getRetractionRatio(lineIndex)
+			self.distanceFeedRate.addLine('M101')
+			self.addLinearMoveExtrusionDistanceLine(-self.repository.retractionDistance.value * self.retractionRatio)
+			self.distanceFeedRate.addLine('M103')
 			self.isExtruderActive = False
 		elif firstWord == 'M108':
 			self.flowRate = float( splitLine[1][1 :] )

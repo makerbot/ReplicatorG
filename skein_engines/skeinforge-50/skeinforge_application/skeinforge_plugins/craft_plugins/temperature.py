@@ -14,48 +14,48 @@ The default cooling rate and heating rate for the extruder were both been derive
 http://bothacker.com/wp-content/uploads/2009/09/18h5m53s9.29.2009.png
 
 ====Cooling Rate====
-Default is three degrees Celcius per second.
+Default is three degrees Celsius per second.
 
 Defines the cooling rate of the extruder.
 
 ====Heating Rate====
-Default is ten degrees Celcius per second.
+Default is ten degrees Celsius per second.
 
 Defines the heating rate of the extruder.
 
 ===Temperature===
 ====Base Temperature====
-Default for ABS is two hundred degrees Celcius.
+Default for ABS is two hundred degrees Celsius.
 
 Defines the raft base temperature.
 
 ====Interface Temperature====
-Default for ABS is two hundred degrees Celcius.
+Default for ABS is two hundred degrees Celsius.
 
 Defines the raft interface temperature.
 
 ====Object First Layer Infill Temperature====
-Default for ABS is 195 degrees Celcius.
+Default for ABS is 195 degrees Celsius.
 
 Defines the infill temperature of the first layer of the object.
 
 ====Object First Layer Perimeter Temperature====
-Default for ABS is two hundred and twenty degrees Celcius.
+Default for ABS is two hundred and twenty degrees Celsius.
 
 Defines the edge temperature of the first layer of the object.
 
 ====Object Next Layers Temperature====
-Default for ABS is two hundred and thirty degrees Celcius.
+Default for ABS is two hundred and thirty degrees Celsius.
 
 Defines the temperature of the next layers of the object.
 
 ====Support Layers Temperature====
-Default for ABS is two hundred degrees Celcius.
+Default for ABS is two hundred degrees Celsius.
 
 Defines the support layers temperature.
 
 ====Supported Layers Temperature====
-Default for ABS is two hundred and thirty degrees Celcius.
+Default for ABS is two hundred and thirty degrees Celsius.
 
 Defines the temperature of the supported layers of the object, those layers which are right above a support layer.
 
@@ -125,21 +125,21 @@ class TemperatureRepository:
 		"Set the default settings, execute title & settings fileName."
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.temperature.html', self )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Temperature', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Temperature')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.temperature.html')
 		self.activateTemperature = settings.BooleanSetting().getFromValue('Activate Temperature', self, True )
 		settings.LabelSeparator().getFromRepository(self)
 		settings.LabelDisplay().getFromName('- Rate -', self )
-		self.coolingRate = settings.FloatSpin().getFromValue( 1.0, 'Cooling Rate (Celcius/second):', self, 20.0, 3.0 )
-		self.heatingRate = settings.FloatSpin().getFromValue( 1.0, 'Heating Rate (Celcius/second):', self, 20.0, 10.0 )
+		self.coolingRate = settings.FloatSpin().getFromValue( 1.0, 'Cooling Rate (Celsius/second):', self, 20.0, 3.0 )
+		self.heatingRate = settings.FloatSpin().getFromValue( 1.0, 'Heating Rate (Celsius/second):', self, 20.0, 10.0 )
 		settings.LabelSeparator().getFromRepository(self)
 		settings.LabelDisplay().getFromName('- Temperature -', self )
-		self.baseTemperature = settings.FloatSpin().getFromValue( 140.0, 'Base Temperature (Celcius):', self, 260.0, 200.0 )
-		self.interfaceTemperature = settings.FloatSpin().getFromValue( 140.0, 'Interface Temperature (Celcius):', self, 260.0, 200.0 )
-		self.objectFirstLayerInfillTemperature = settings.FloatSpin().getFromValue( 140.0, 'Object First Layer Infill Temperature (Celcius):', self, 260.0, 195.0 )
-		self.objectFirstLayerPerimeterTemperature = settings.FloatSpin().getFromValue( 140.0, 'Object First Layer Perimeter Temperature (Celcius):', self, 260.0, 220.0 )
-		self.objectNextLayersTemperature = settings.FloatSpin().getFromValue( 140.0, 'Object Next Layers Temperature (Celcius):', self, 260.0, 230.0 )
-		self.supportLayersTemperature = settings.FloatSpin().getFromValue( 140.0, 'Support Layers Temperature (Celcius):', self, 260.0, 200.0 )
-		self.supportedLayersTemperature = settings.FloatSpin().getFromValue( 140.0, 'Supported Layers Temperature (Celcius):', self, 260.0, 230.0 )
+		self.baseTemperature = settings.FloatSpin().getFromValue( 140.0, 'Base Temperature (Celsius):', self, 260.0, 200.0 )
+		self.interfaceTemperature = settings.FloatSpin().getFromValue( 140.0, 'Interface Temperature (Celsius):', self, 260.0, 200.0 )
+		self.objectFirstLayerInfillTemperature = settings.FloatSpin().getFromValue( 140.0, 'Object First Layer Infill Temperature (Celsius):', self, 260.0, 195.0 )
+		self.objectFirstLayerPerimeterTemperature = settings.FloatSpin().getFromValue( 140.0, 'Object First Layer Perimeter Temperature (Celsius):', self, 260.0, 220.0 )
+		self.objectNextLayersTemperature = settings.FloatSpin().getFromValue( 140.0, 'Object Next Layers Temperature (Celsius):', self, 260.0, 230.0 )
+		self.supportLayersTemperature = settings.FloatSpin().getFromValue( 140.0, 'Support Layers Temperature (Celsius):', self, 260.0, 200.0 )
+		self.supportedLayersTemperature = settings.FloatSpin().getFromValue( 140.0, 'Supported Layers Temperature (Celsius):', self, 260.0, 230.0 )
 		self.executeTitle = 'Temperature'
 
 	def execute(self):

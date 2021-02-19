@@ -52,20 +52,61 @@ Default is on.
 
 When selected, the penultimate gcode will be sent to the analyze plugins to be analyzed and viewed.
 
-===Comment Choice===
-Default is 'Delete All Comments'.
+===Comment Deletion Choices===
+These checkboxes determine which comments, if any, will be removed from the exported gcode. Note they are honoured in the order given, so that for example if Delete <keep> Comments is unchecked (the default), then <keep> comments will not be deleted regardless of the subsequent settings.
 
-====Do Not Delete Comments====
-When selected, export will not delete comments.  Crafting comments slow down the processing in many firmware types, which leads to pauses and therefore a lower quality print.
- 
-====Delete Crafting Comments====
-When selected, export will delete the time consuming crafting comments, but leave the initialization comments.  Since the crafting comments are deleted, there are no pauses during extrusion.  The remaining initialization comments provide some useful information for the analyze tools.
+====Delete <keep> Comments====
+Default is unchecked.
 
-====Delete All Comments====
-When selected, export will delete all comments.  The comments are not necessary to run a fabricator.  Some printers do not support comments at all so the safest way is choose this option.
+If checked, any preface comments starting with <keep> are removed. The code as shipped does not generate any <keep> comments, but user modifications may add some. They can be useful for recording information like the profile or version used to generate the gcode, if other comments are being deleted.
+
+====Delete Trace Comments====
+Default is unchecked.
+
+If checked, any preface comments starting with <trace> are removed. The code as shipped does not generate any <trace> comments, but there is a debugging aid which adds some.
+
+====Delete <layer> Comments====
+Default is unchecked.
+
+If checked, any comments starting with <layer> are removed. The Dual Extrusion gcode merge logic requires the <layer> comments to be left in, so this box should normally remain unchecked unless you have a single extruder printer and never use Dual Extrusion.
+
+====Delete Settings Comments====
+Default is unchecked.
+
+If checked, the block of comments near the start of the gcode reporting the settings used are removed.
+
+====Delete Other Initialisation Comments====
+Default is unchecked.
+
+If checked, the block of comments near the start of the gcode between (<extruderInitialization>) and (</extruderInitialization>), apart from any described above, are removed.
+
+====Delete Other Preface Comments====
+Default is unchecked.
+
+If checked, any preface comments [before (<alteration>)] not mentioned above are removed. If Alteration is not enabled, all comments are preface comments.
+
+====Delete Other Crafting Comments====
+Default is unchecked.
+
+If checked, all comments between (<crafting>) and (</crafting>), other than those described above, are removed. You will usually not want these unless you are debugging the gcode generator.
+
+====Delete Other Tagged Comments====
+Default is False.
+
+If checked, all comments starting with '(<', other than those described above, are removed.
+
+====Delete Other Starred Comments====
+Default is False.
+
+If checked, all comments starting with '(*', other than those described above, are removed.
+
+====Delete All Other Comments====
+Default is False.
+
+If checked, all comments  other than those described above are removed.
 
 ===Export Operations===
-Export presents the user with a choice of the export plugins in the export_plugins folder.  The chosen plugin will then modify the gcode or translate it into another format.  There is also the "Do Not Change Output" choice, which will not change the output.  An export plugin is a script in the export_plugins folder which has the getOutput function, the globalIsReplaceable variable and if it's output is not replaceable, the writeOutput function.
+Export presents the user with a choice of the export plugins in the export_plugins folder.  The chosen plugin will then modify the gcode or translate it into another format.  There is also the "Do Not Change Output" choice, which will not change the output.  An export plugin is a script in the export_plugins folder which has the getOutput function, the globalIsReplaceable variable and if its output is not replaceable, the writeOutput function.
 
 ===File Extension===
 Default is gcode.
@@ -215,7 +256,7 @@ def getReplaceableExportGcode(nameOfReplaceFile, replaceableExportGcode):
 	if len(replaceLines) < 1:
 		return replaceableExportGcode
 	for replaceLine in replaceLines:
-		splitLine = replaceLine.replace('\\n', '\t').split('\t')
+		splitLine = replaceLine.replace('\n', '\t').split('\t')
 		if len(splitLine) > 0:
 			replaceableExportGcode = replaceableExportGcode.replace(splitLine[0], '\n'.join(splitLine[1 :]))
 	output = cStringIO.StringIO()
@@ -266,7 +307,8 @@ def writeOutput(fileName, shouldAnalyze=True):
 	repository = ExportRepository()
 	settings.getReadRepository(repository)
 	startTime = time.time()
-	print('File ' + archive.getSummarizedFileName(fileName) + ' is being chain exported.')
+	summarisedFileName = archive.getSummarizedFileName(fileName)
+	print('File ' + summarisedFileName + ' is being chain exported.')
 	fileNameSuffix = fileName[: fileName.rfind('.')]
 	if repository.addExportSuffix.value:
 		fileNameSuffix += '_export'
@@ -319,7 +361,7 @@ class ExportRepository:
 		'Set the default settings, execute title & settings fileName.'
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.export.html', self)
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Export', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Export')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.export.html')
 		self.activateExport = settings.BooleanSetting().getFromValue('Activate Export', self, True)
 		self.addDescriptiveExtension = settings.BooleanSetting().getFromValue('Add Descriptive Extension', self, False)
 		self.addExportSuffix = settings.BooleanSetting().getFromValue('Add Export Suffix', self, True)
@@ -327,10 +369,17 @@ class ExportRepository:
 		self.addTimestampExtension = settings.BooleanSetting().getFromValue('Add Timestamp Extension', self, False)
 		self.alsoSendOutputTo = settings.StringSetting().getFromValue('Also Send Output To:', self, '')
 		self.analyzeGcode = settings.BooleanSetting().getFromValue('Analyze Gcode', self, True)
-		self.commentChoice = settings.MenuButtonDisplay().getFromName('Comment Choice:', self)
-		self.doNotDeleteComments = settings.MenuRadio().getFromMenuButtonDisplay(self.commentChoice, 'Do Not Delete Comments', self, False)
-		self.deleteCraftingComments = settings.MenuRadio().getFromMenuButtonDisplay(self.commentChoice, 'Delete Crafting Comments', self, False)
-		self.deleteAllComments = settings.MenuRadio().getFromMenuButtonDisplay(self.commentChoice, 'Delete All Comments', self, True)
+		self.commentLabel = settings.LabelDisplay().getFromName('Comment Deletion Choices:', self)
+		self.deleteKeepComments = settings.BooleanSetting().getFromValue('Delete <keep> Comments', self, False)
+		self.deleteTraceComments = settings.BooleanSetting().getFromValue('Delete Trace Comments', self, False)
+		self.deleteLayerComments = settings.BooleanSetting().getFromValue('Delete <layer> Comments', self, False)
+		self.deleteSettingsComments = settings.BooleanSetting().getFromValue('Delete Settings Comments', self, False)
+		self.deleteInitialisationComments = settings.BooleanSetting().getFromValue('Delete Other Initialisation Comments', self, False)
+		self.deletePrefaceComments = settings.BooleanSetting().getFromValue('Delete Other Preface Comments', self, False)
+		self.deleteCraftingComments = settings.BooleanSetting().getFromValue('Delete Other Crafting Comments', self, False)
+		self.deleteTaggedComments = settings.BooleanSetting().getFromValue('Delete Other Tagged Comments', self, False)
+		self.deleteStarredComments = settings.BooleanSetting().getFromValue('Delete Other Starred Comments', self, False)
+		self.deleteOtherComments = settings.BooleanSetting().getFromValue('Delete All Other Comments', self, False)
 		exportPluginsFolderPath = archive.getAbsoluteFrozenFolderPath(archive.getCraftPluginsDirectoryPath('export.py'), 'export_plugins')
 		exportStaticDirectoryPath = os.path.join(exportPluginsFolderPath, 'static_plugins')
 		exportPluginFileNames = archive.getPluginFileNamesFromDirectoryPath(exportPluginsFolderPath)
@@ -378,6 +427,9 @@ class ExportSkein:
 	def getCraftedGcode( self, repository, gcodeText ):
 		'Parse gcode text and store the export gcode.'
 		self.repository = repository
+		self.inPreface = True
+		self.inInitialisation = False
+		self.crafting = False
 		lines = archive.getTextLines(gcodeText)
 		for line in lines:
 			self.parseLine(line)
@@ -397,19 +449,65 @@ class ExportSkein:
 		if len(splitLine) < 1:
 			return
 		firstWord = splitLine[0]
-		if firstWord == '(</crafting>)':
-			self.crafting = False
-		elif firstWord == '(<decimalPlacesCarried>':
-			self.decimalPlacesExported = int(splitLine[1]) - 1
-		if self.repository.deleteAllComments.value or (self.repository.deleteCraftingComments.value and self.crafting):
-			if firstWord[0] == '(':
-				return
-			else:
-				line = line.split(';')[0].split('(')[0].strip()
+		if firstWord == '(<alteration>)':
+			self.inPreface = False
 		if firstWord == '(<crafting>)':
 			self.crafting = True
+			if not self.repository.deleteCraftingComments.value:
+				self.addLine(line)
+			return
+		if firstWord == '(</crafting>)':
+			self.crafting = False
+			if not self.repository.deleteCraftingComments.value:
+				self.addLine(line)
+			return
+		if firstWord == '(<decimalPlacesCarried>':
+			self.decimalPlacesExported = int(splitLine[1]) - 1
+		if firstWord == '(<keep>':
+			if not self.repository.deleteKeepComments.value:
+				self.addLine(line)
+			return
+		if firstWord == '(<layer>' or firstWord.find('(</layer>') == 0:
+			if not self.repository.deleteLayerComments.value:
+				self.addLine(line)
+			return
+		if firstWord == '(<trace>':
+			if not self.repository.deleteTraceComments.value:
+				self.addLine(line)
+			return
+		if firstWord == '(<settings>)' or firstWord == '(<setting>' or firstWord == '(</settings>)':
+			if not self.repository.deleteSettingsComments.value:
+				self.addLine(line)
+			return
+		if firstWord == '(<extruderInitialization>)':
+			self.inInitialisation = True
+			if not self.repository.deleteInitialisationComments.value:
+				self.addLine(line)
+			return
 		if firstWord == '(</extruderInitialization>)':
-			self.addLine(gcodec.getTagBracketedProcedure('export'))
+			self.inInitialisation = False
+			if not self.repository.deleteInitialisationComments.value:
+				self.addLine(gcodec.getTagBracketedProcedure('export'))
+				self.addLine(line)
+			return
+		if firstWord[0] == '(':
+			if self.inPreface:
+				if self.repository.deletePrefaceComments.value: 
+					return
+			elif self.inInitialisation:
+				if self.repository.deleteInitialisationComments.value:
+					return
+			elif firstWord[1] == '<':
+				if self.crafting:
+					if self.repository.deleteCraftingComments.value:
+						return
+				elif self.repository.deleteTaggedComments.value:
+					return
+			elif firstWord[1] == '*':
+				if self.repository.deleteStarredComments.value:
+					return
+			elif self.repository.deleteOtherComments.value:
+				return
 		if firstWord != 'G1' and firstWord != 'G2' and firstWord != 'G3' :
 			self.addLine(line)
 			return

@@ -1,4 +1,6 @@
 ﻿<project name="ReplicatorG" basedir="." default="help">
+	<!-- This really should be synchronised with the version in Base.java. -->
+	<property name="replicatorg.version" value="0041beta" />
 
 	<!-- Project name -->
 
@@ -26,7 +28,7 @@
 	<property name="resources.dir" value="resources" />
 	<property name="shared.dir" value="${build.dir}/shared" />
 	<property name="lib.dir" value="${shared.dir}/lib" />
-	<property name="ant.build.javac.target" value="1.5" />
+	<property name="ant.build.javac.target" value="1.6" />
 	<property name="test.src.dir" value="test/src" />
 	<property name="release.name" value="${project}-${replicatorg.version}" />
 
@@ -62,7 +64,7 @@
 
 	<target name="compile">
 		<mkdir dir="${classes.dir}" />
-		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.5" includeAntRuntime="false">
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" debuglevel="lines,vars,source" source="1.6" includeAntRuntime="false">
 			<!-- Uncomment to aid in Java debugging
 			<compilerarg value="-Xlint:deprecation" />
 			<compilerarg value="-Xlint:unchecked" />
@@ -72,7 +74,7 @@
 
 	<target name="compile-tests">
 		<mkdir dir="${classes.dir}" />
-		<javac srcdir="${test.src.dir}" destdir="${classes.dir}" classpathref="test.cp" debug="true" debuglevel="lines,vars,source" source="1.5">
+		<javac srcdir="${test.src.dir}" destdir="${classes.dir}" classpathref="test.cp" debug="true" debuglevel="lines,vars,source" source="1.6">
 			<!-- Uncomment to aid in Java debugging
 			<compilerarg value="-Xlint:deprecation" />
 			<compilerarg value="-Xlint:unchecked" />

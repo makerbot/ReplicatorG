@@ -124,6 +124,8 @@ public class Direct implements MachineBuilder{
 		// Read and process next line
 		if (retry == false) {
 			String line = i.next();
+			Base.logger.log(Level.INFO,"Sending Line "
+                + linesProcessed + ": " + line);
 			linesProcessed++;
 
 			// Parse a line for the actual machine

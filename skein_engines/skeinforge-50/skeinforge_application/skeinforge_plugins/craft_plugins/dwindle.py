@@ -95,7 +95,7 @@ class DwindleRepository:
 		'Set the default settings, execute title & settings fileName.'
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.dwindle.html', self)
 		self.fileNameInput = settings.FileNameInput().getFromFileName(fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Dwindle', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Dwindle')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.dwindle.html')
 		self.activateDwindle = settings.BooleanSetting().getFromValue('Activate Dwindle', self, False)
 		settings.LabelSeparator().getFromRepository(self)
 		self.endRateMultiplier = settings.FloatSpin().getFromValue(0.4, 'End Rate Multiplier (ratio):', self, 0.8, 0.5)

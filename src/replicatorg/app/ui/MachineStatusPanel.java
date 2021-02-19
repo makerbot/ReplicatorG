@@ -53,27 +53,24 @@ public class MachineStatusPanel extends BGPanel implements MachineListener {
 	
 	MachineStatusPanel() {
 		Font statusFont = Base.getFontPref("status.font","SansSerif,plain,12");
-		Font smallFont = statusFont.deriveFont(10f);
-		smallLabel.setFont(smallFont);
-		tempLabel.setFont(smallFont);
-		machineLabel.setFont(smallFont);
+		Base.logger.info(statusFont.toString());
 		mainLabel.setFont(statusFont);
+		machineLabel.setFont(statusFont);
+		smallLabel.setFont(statusFont);
+		tempLabel.setFont(statusFont);
 		mainLabel.setText("Not Connected");
-	
 		setLayout(new MigLayout("fill,novisualpadding, ins 5 10 5 10"));
 		add(mainLabel, "top, left, growx, split");
 		add(machineLabel, "top, right, wrap");
 		add(smallLabel, "bottom, left, growx, split");
 		add(tempLabel, "bottom, right");
 
-		FontMetrics smallMetrics = this.getFontMetrics(smallFont);
 		FontMetrics bigMetrics = this.getFontMetrics(statusFont);
 		// Height should be ~3 lines 
-		int height = (smallMetrics.getAscent() + smallMetrics.getDescent()) * 2 +
-				bigMetrics.getAscent() + smallMetrics.getDescent();
+		int height = bigMetrics.getHeight() * 3;
 		setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
 		setMinimumSize(new Dimension(0, height));
-		int prefWidth = 80 * smallMetrics.charWidth('n');
+		int prefWidth = 80 * bigMetrics.charWidth('n');
 		setPreferredSize(new Dimension(prefWidth, height));
 		setBackground(BG_ERROR);
 	}

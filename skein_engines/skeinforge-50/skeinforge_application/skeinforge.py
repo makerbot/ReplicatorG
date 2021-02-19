@@ -623,7 +623,7 @@ def main():
 			(moduleName, prefSpec) = prefSpec.split(':', 1)
 			(prefName, valueName) = prefSpec.split('=', 1)
 			#settings.addPreferenceOverride(moduleName, prefName, valueName)
-			settings.temporaryAddPreferenceOverride(moduleName, prefName, valueName)
+			#settings.temporaryAddPreferenceOverride(moduleName, prefName, valueName)
 	sys.argv = [sys.argv[0]] + args
 	if len( args ) > 0:
 		writeOutput( ' '.join(args) )

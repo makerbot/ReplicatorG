@@ -99,7 +99,7 @@ class BottomRepository:
 			'skeinforge_application.skeinforge_plugins.craft_plugins.bottom.html', self)
 		self.fileNameInput = settings.FileNameInput().getFromFileName(
 			fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Bottom', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Bottom')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.bottom.html')
 		self.activateBottom = settings.BooleanSetting().getFromValue('Activate Bottom', self, True)
 		self.additionalHeightOverLayerThickness = settings.FloatSpin().getFromValue(
 			0.0, 'Additional Height over Layer Thickness (ratio):', self, 1.0, 0.5)

@@ -74,6 +74,11 @@ The scale setting is the scale of the image in pixels per millimeter, the higher
 
 The zoom in mouse tool will zoom in the display at the point where the mouse was clicked, increasing the scale by a factor of two.  The zoom out tool will zoom out the display at the point where the mouse was clicked, decreasing the scale by a factor of two.
 
+===Font scale factor===
+This is needed to adjust for the ratio between the numbers
+reported by font.measure() and the pixel density of the monitor.
+Unfortunately there seems to be no reliable way of calculating it.
+
 ===Screen Inset===
 ====Screen Horizontal Inset====
 Default is one hundred.
@@ -144,6 +149,8 @@ from skeinforge_application.skeinforge_utilities import skeinforge_polyfile
 from skeinforge_application.skeinforge_utilities import skeinforge_profile
 import os
 import sys
+import Tkinter
+import tkFont
 
 __author__ = 'Enrique Perez (perez_enrique@yahoo.com)'
 __date__ = '$Date: 2008/21/04 $'
@@ -177,15 +184,11 @@ def getWindowGivenTextRepository( fileName, gcodeText, repository ):
 	"Display a gcode file in a skeinlayer window given the text and settings."
 	skein = SkeinlayerSkein()
 	skein.parseGcode( fileName, gcodeText, repository )
+	print('')
 	return SkeinWindow( repository, skein )
 
 def writeOutput(fileName, fileNamePenultimate, fileNameSuffix, filePenultimateWritten, gcodeText=''):
 	"Display a skeinlayered gcode file for a skeinforge gcode file, if 'Activate Skeinlayer' is selected."
-	try:
-		import Tkinter
-	except:
-		print('Warning, skeinlayer will do nothing because Tkinter is not installed.')
-		return
 	repository = settings.getReadRepository( SkeinlayerRepository() )
 	if repository.activateSkeinlayer.value:
 		gcodeText = archive.getTextIfEmpty( fileNameSuffix, gcodeText )
@@ -199,7 +202,7 @@ class SkeinlayerRepository( tableau.TableauRepository ):
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.analyze_plugins.skeinlayer.html', self)
 		self.baseNameSynonym = 'skeinview.csv'
 		self.fileNameInput = settings.FileNameInput().getFromFileName( [ ('Gcode text files', '*.gcode') ], 'Open File for Skeinlayer', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Skeinlayer')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.analyze_plugins.skeinlayer.html')
 		self.activateSkeinlayer = settings.BooleanSetting().getFromValue('Activate Skeinlayer', self, True )
 		self.addAnimation()
 		self.drawArrows = settings.BooleanSetting().getFromValue('Draw Arrows', self, True )
@@ -367,10 +370,13 @@ class SkeinlayerSkein:
 			self.linearMove(line, location)
 			self.oldLocation = location
 
-
-class SkeinWindow( tableau.TableauWindow ):
+class SkeinWindow( tableau.TableauWindow):
 	def __init__(self, repository, skein):
 		"Initialize the skein window.setWindowNewMouseTool"
+		self.sizedfont = tkFont.nametofont('TkDefaultFont').copy()
+		self.skein = skein
+		self.screenSize = skein.screenSize
+		self.setrulingExtent(repository.pixelmagic.value)
 		self.addCanvasMenuRootScrollSkein(repository, skein, '_skeinlayer', 'Skeinlayer')
 		horizontalRulerBoundingBox = (0, 0, int( skein.screenSize.real ), self.rulingExtent)
 		self.horizontalRulerCanvas = settings.Tkinter.Canvas(self.root, width = self.canvasWidth, height = self.rulingExtent, scrollregion=horizontalRulerBoundingBox)
@@ -381,10 +387,10 @@ class SkeinWindow( tableau.TableauWindow ):
 		self.verticalRulerCanvas.grid(row=2, rowspan=96, column=1, sticky=settings.Tkinter.N+settings.Tkinter.S)
 		self.verticalRulerCanvas['yscrollcommand'] = self.yScrollbar.set
 		self.xStringVar = settings.Tkinter.StringVar(self.root)
-		self.xLabel = settings.Tkinter.Label(self.root, textvariable=self.xStringVar)
+		self.xLabel = settings.Tkinter.Label(self.root, textvariable=self.xStringVar, font = self.sizedfont)
 		self.xLabel.grid(row=0, column=3, sticky=settings.Tkinter.W)
 		self.yStringVar = settings.Tkinter.StringVar(self.root)
-		self.yLabel = settings.Tkinter.Label(self.root, textvariable=self.yStringVar)
+		self.yLabel = settings.Tkinter.Label(self.root, textvariable=self.yStringVar, font = self.sizedfont)
 		self.yLabel.grid(row=0, column=4, sticky=settings.Tkinter.W)
 		self.setWindowNewMouseTool(display_line.getNewMouseTool, repository.displayLine)
 		self.setWindowNewMouseTool(view_move.getNewMouseTool, repository.viewMove)
@@ -397,7 +403,7 @@ class SkeinWindow( tableau.TableauWindow ):
 		"Add a ruling to the horizontal ruler."
 		xPixel = self.skein.getScreenCoordinates( complex( xMillimeters, 0.0 ) ).real
 		self.createVerticalLine( 0.0, xPixel )
-		self.horizontalRulerCanvas.create_text( xPixel + 2, 0, anchor = settings.Tkinter.NW, text = self.getRoundedRulingText( 1, xMillimeters ) )
+		self.horizontalRulerCanvas.create_text( xPixel + 2, 0, anchor = settings.Tkinter.NW, text = self.digits(xMillimeters ), font = self.sizedfont )
 		cumulativeDistance = xMillimeters
 		self.createVerticalLine( self.rulingExtentTiny, self.skein.getScreenCoordinates( complex( xMillimeters + self.separationWidthMillimetersTenth, 0.0 ) ).real )
 		for subRulingIndex in xrange(4):
@@ -407,28 +413,18 @@ class SkeinWindow( tableau.TableauWindow ):
 
 	def addVerticalRulerRuling( self, yMillimeters ):
 		"Add a ruling to the vertical ruler."
-		fontHeight = 12
 		yPixel = self.skein.getScreenCoordinates( complex( 0.0, yMillimeters ) ).imag
 		self.createHorizontalLine( 0.0, yPixel )
 		yPixel += 2
-		roundedRulingText = self.getRoundedRulingText( 1, yMillimeters )
-		effectiveRulingTextLength = len( roundedRulingText )
-		if roundedRulingText.find('.') != - 1:
-			effectiveRulingTextLength -= 1
+		roundedRulingText = self.digits(yMillimeters )
+		effectiveRulingTextLength = self.rulingExtent
 		cumulativeDistance = yMillimeters
 		self.createHorizontalLine( self.rulingExtentTiny, self.skein.getScreenCoordinates( complex( 0.0, yMillimeters + self.separationWidthMillimetersTenth ) ).imag )
 		for subRulingIndex in xrange(4):
 			cumulativeDistance += self.separationWidthMillimetersFifth
 			self.createHorizontalLine( self.rulingExtentShort, self.skein.getScreenCoordinates( complex( 0.0, cumulativeDistance ) ).imag )
 			self.createHorizontalLine( self.rulingExtentTiny, self.skein.getScreenCoordinates( complex( 0.0, cumulativeDistance + self.separationWidthMillimetersTenth ) ).imag )
-		if effectiveRulingTextLength < 4:
-			self.verticalRulerCanvas.create_text( 0, yPixel, anchor = settings.Tkinter.NW, text = roundedRulingText )
-			return
-		for character in roundedRulingText:
-			if character == '.':
-				yPixel -= fontHeight * 2 / 3
-			self.verticalRulerCanvas.create_text( 0, yPixel, anchor = settings.Tkinter.NW, text = character )
-			yPixel += fontHeight
+		self.verticalRulerCanvas.create_text( 0, yPixel, anchor = settings.Tkinter.NW, text = roundedRulingText, font = self.sizedfont )
 
 	def createHorizontalLine( self, begin, yPixel ):
 		"Create a horizontal line for the horizontal ruler."
@@ -546,6 +542,28 @@ class SkeinWindow( tableau.TableauWindow ):
 		"Relay xview changes."
 		self.canvas.xview( *args )
 		self.horizontalRulerCanvas.xview( *args )
+
+	def digits(self, val):
+		"Convert (float) val to a reasonably short string"
+		if abs(val) >= 10.0:
+			return str(int(val))
+		if abs(val) > 0.1:
+			return str.format('{:.1f}', val)
+		if val == 0.0:
+			return '0'
+		return str.format('{:.2f}', val)
+
+	def setrulingExtent(self, pixelmagic):
+		"Work out self.rulingExtent from image boundbox"
+		val = abs(self.skein.cornerMinimumComplex.real)
+		length = self.sizedfont.measure(self.digits(val))
+		val = abs(self.skein.cornerMaximumComplex.real)
+		length = max(self.sizedfont.measure(self.digits(val)), length)
+		val = abs(self.skein.cornerMinimumComplex.imag)
+		length = max(self.sizedfont.measure(self.digits(val)), length)
+		val = abs(self.skein.cornerMaximumComplex.imag)
+		length = max(self.sizedfont.measure(self.digits(val)), length)
+		self.rulingExtent = int(length * pixelmagic)
 
 	def relayYview( self, *args ):
 		"Relay yview changes."

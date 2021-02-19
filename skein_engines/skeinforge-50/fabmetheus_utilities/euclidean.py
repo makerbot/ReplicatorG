@@ -1856,10 +1856,14 @@ def isWithinChannel( channelRadius, pointIndex, loop ):
 	point = loop[pointIndex]
 	behindSegmentComplex = loop[(pointIndex + len(loop) - 1) % len(loop)] - point
 	behindSegmentComplexLength = abs( behindSegmentComplex )
+	if behindSegmentComplexLength == 0.0:
+		return True
 	if behindSegmentComplexLength < channelRadius:
 		return True
 	aheadSegmentComplex = loop[(pointIndex + 1) % len(loop)] - point
 	aheadSegmentComplexLength = abs( aheadSegmentComplex )
+	if aheadSegmentComplexLength == 0.0:
+		return True
 	if aheadSegmentComplexLength < channelRadius:
 		return True
 	behindSegmentComplex /= behindSegmentComplexLength

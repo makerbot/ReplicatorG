@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.logging.Level;
 
 import replicatorg.app.Base;
 import replicatorg.app.exceptions.SerialException;
@@ -183,9 +184,11 @@ public class Serial implements SerialPortEventListener {
 	
 
 	private CommPortIdentifier findPortIdentifier(String name) {
+		Base.logger.log(Level.FINEST, "findPortIdentifier(" + name + ")");
 		Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
 		while (portList.hasMoreElements()) {
 			CommPortIdentifier id = (CommPortIdentifier)portList.nextElement();
+			Base.logger.log(Level.FINEST, "Trying " + id.getName());
 			if (id.getPortType() == CommPortIdentifier.PORT_SERIAL && 
 					id.getName().equals(name)) {
 				return id;
@@ -196,6 +199,7 @@ public class Serial implements SerialPortEventListener {
 	
 
 	private void init(String name, int rate, char parity, int data, float stop) throws SerialException {
+		Base.logger.log(Level.FINEST, "init(" + name + ", " + rate + ")");
 		// Prepare parameters
 		this.name = name;
 		this.rate = rate;

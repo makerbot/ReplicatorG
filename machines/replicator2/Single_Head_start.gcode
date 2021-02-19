@@ -18,8 +18,10 @@ M6 T0 (wait for toolhead, and HBP to reach temperature)
 G130 X127 Y127 Z40 A127 B127 (Set Stepper motor Vref to defaults)
 M108 R3.0 T0
 G0 X-141 Y-74 (Position Nozzle)
-G0 Z0.6      (Position Height)
+G0 Z0.6      (Position Height)(**** end of start.gcode ****)
+
 M108 R5.0    (Set Extruder Speed)
 M101         (Start Extruder)
 G4 P2000     (Create Anchor)
-(**** end of start.gcode ****)
+(Don't remove the </layer> in the next line - it's needed for dual extrusion.)
+(</layer> **** end of start.gcode ****)

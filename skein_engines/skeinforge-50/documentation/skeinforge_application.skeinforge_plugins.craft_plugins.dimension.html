@@ -21,7 +21,8 @@ and in Erik de Bruijn's conversion script page at:<br>
  <br>
 <a href="http://objects.reprap.org/wiki/3D-to-5D-Gcode.php">http://objects.reprap.org/wiki/3D-to-5D-Gcode.php</a><br>
  <br>
-The dimension manual page is at:<br>
+The original dimension manual page is at:<br>
+This page describes the modified version in this release of ReplicatorG.<br>
  <br>
 <a href="http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Dimension">http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Dimension</a><br>
  <br>
@@ -41,6 +42,7 @@ Nophead wrote an excellent article on how to set the filament parameters:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Filament Packing Density">Filament Packing Density</a><br />
 &nbsp;&nbsp;<a href="#Maximum E Value before Reset">Maximum E Value before Reset</a><br />
 &nbsp;&nbsp;<a href="#Minimum Travel for Retraction">Minimum Travel for Retraction</a><br />
+&nbsp;&nbsp;<a href="#Z Distance Multiplier">Z Distance Multiplier</a><br />
 &nbsp;&nbsp;<a href="#Retract Within Island">Retract Within Island</a><br />
 &nbsp;&nbsp;<a href="#Retraction Distance">Retraction Distance</a><br />
 &nbsp;&nbsp;<a href="#Restart Extra Distance">Restart Extra Distance</a><br />
@@ -103,6 +105,12 @@ Defines the maximum E value before it is reset with the 'G92 E0' command line.  
 Default: 1.0 millimeter<br>
  <br>
 Defines the minimum distance that the extruder head has to travel from the end of one thread to the beginning of another, in order to trigger the extruder retraction.  Setting this to a high value means the extruder will retract only occasionally, setting it to a low value means the extruder will retract most of the time.<br>
+ <br>
+<a name="Z Distance Multiplier" id="Z Distance Multiplier"></a><h3>Z Distance Multiplier</h3>
+
+Default: 10<br>
+ <br>
+Defines the multiplier that is applied to the Z distance when calculating a distance to compare with the Minimum Travel for Retraction. This is set to a large value to force Filament Retraction before a layer change. Dual Extrusion inserts tool switches on a layer change, so this should prevent filament oozing out of the extruder which is currently inactive. It can be set to 1 if you never use Dual Extrusion.<br>
  <br>
 <a name="Retract Within Island" id="Retract Within Island"></a><h3>Retract Within Island</h3>
 

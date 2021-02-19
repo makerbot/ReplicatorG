@@ -37,7 +37,6 @@ import replicatorg.plugin.toolpath.skeinforge.SkeinforgeGenerator.Profile;
 class EditProfileDialog extends JDialog {
 	final boolean postProcessToolheadIndex = true;
 	final String manageStr = "Manage profiles...";
-	final String profilePref = "replicatorg.skeinforge.profilePref";
 	JButton editButton = new JButton("Edit...");
 	JButton duplicateButton = new JButton("Duplicate...");
 	JButton locateButton = new JButton("Locate...");
@@ -147,9 +146,8 @@ class EditProfileDialog extends JDialog {
 		        if (evt.getClickCount() == 2) { // Double-click generates with this profile
 		            int idx = list.locationToIndex(evt.getPoint());
 		            Profile p = ProfileUtils.getListedProfile(list.getModel(), profiles, idx);
-					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 					parentGenerator.configSuccess = true;
-					parentGenerator.profile = p.getFullPath();
+					parentGenerator.setProfile(p);
 					setVisible(false);
 		        }
 		    }
@@ -165,9 +163,8 @@ class EditProfileDialog extends JDialog {
 					int idx = prefList.getSelectedIndex();
 					Base.logger.fine("idx="+idx);
 					Profile p = ProfileUtils.getListedProfile(prefList.getModel(), profiles, idx);
-					Base.preferences.put("lastGeneratorProfileSelected",p.toString());
 					parentGenerator.configSuccess = true;
-					parentGenerator.profile = p.getFullPath();
+					parentGenerator.setProfile(p);
 					setVisible(false);
 				} else if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 					setVisible(false);

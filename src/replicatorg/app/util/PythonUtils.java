@@ -121,9 +121,15 @@ public class PythonUtils {
 		{
 			String path = Base.preferences.get(PYTON_PATH_PREF, null);
 			if (path != null) {
+				System.err.println("PYTON_PATH_PREF=" + path);
 				File candidate = new File(path);
 				if (candidate.exists()) {
-					candidates.add(candidate.getAbsolutePath());
+					Version ver = checkVersion(path, minVersion, maxVersion);
+					if (ver != null) {
+						pythonPath = path;
+						pythonVersion = ver;
+						return path; // just use it
+					}
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-(******* End.gcode*******)
+(******* beginning of End.gcode*******)
 M73 P100 (end  build progress )
 G0 Z155
 M18

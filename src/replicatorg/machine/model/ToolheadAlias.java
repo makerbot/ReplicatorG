@@ -2,7 +2,7 @@ package replicatorg.machine.model;
 
 /**
  * This class represents a lookup system for toolhead info. IT can be used to 
- * convert variouis ID's from one to another, based on 
+ * convert various ID's from one to another, based on 
  * 
  * Should this be moved into ToolModel?
  *   -Ted 

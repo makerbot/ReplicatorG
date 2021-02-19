@@ -45,6 +45,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -96,8 +97,6 @@ public class DualStrusionWindow extends JFrame{
 	File rightStl = null;
 	File leftGcode = null;
 	File rightGcode = null;
-	MutableGCodeSource startSource;
-	MutableGCodeSource endSource;
 
 	boolean failure = false;
 	JLabel failureLabel = new JLabel();
@@ -114,9 +113,9 @@ public class DualStrusionWindow extends JFrame{
 	 * 
 	 * This is the default constructor, it is only invoked if the ReplicatorG window did not already have a piece of gcode open
 	 */
-	public DualStrusionWindow(MachineType type, MutableGCodeSource startCode, MutableGCodeSource endCode)
+	public DualStrusionWindow(MachineType type)
 	{
-		this(type, startCode, endCode, null);
+		this(type, null);
 	}
 	
 	/**
@@ -127,13 +126,11 @@ public class DualStrusionWindow extends JFrame{
 	 * This is a constructor that takes the filepath of the gcode open currently in ReplicatorG
 	 * @param s the path of the gcode currently open in RepG
 	 */
-	public DualStrusionWindow(MachineType type, MutableGCodeSource startCode, MutableGCodeSource endCode, String path) {
+	public DualStrusionWindow(MachineType type, String path) {
 		super("DualStrusion Window");
 
 		Base.logger.log(Level.FINE, "Dualstrusion window booting up...");
 		
-		startSource = startCode;
-		endSource = endCode;
 		this.type = type;
 		
 		panels = new JPanel(new CardLayout());
@@ -203,20 +200,20 @@ public class DualStrusionWindow extends JFrame{
 					rightToolhead.setText(s);
 			}
 		});
-//		JButton switchItem = new JButton("Switch Toolheads"); //This button switches the contents of the two text fields in order to easily swap Primary and Secondary Toolheads
-//		switchItem.addActionListener(new ActionListener()
-//		{
-//			public void actionPerformed(ActionEvent arg0) {
-//				String temp = leftToolhead.getText();
-//				leftToolhead.setText(rightToolhead.getText());
-//				rightToolhead.setText(temp);
-//
-//			}
-//		});
-//		panel.add(switchItem, "wrap");
-		panel.add(new JLabel("Right Extruder"), "split");
-		panel.add(rightToolhead,"split, growx");
-		panel.add(rightChooserButton, "wrap");
+        panel.add(new JLabel("Right Extruder"), "split");
+        panel.add(rightToolhead,"split, growx");
+        panel.add(rightChooserButton, "wrap");
+
+        final String pref = new String("dualstrusionwindow.pauseonchange");
+		JCheckBox cb = new JCheckBox("Pause when changing tool");
+		cb.setSelected(Base.preferences.getBoolean(pref, false));
+        cb.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox box = (JCheckBox)e.getSource();
+                Base.preferences.putBoolean(pref, box.isSelected());
+            }
+        });
+        panel.add(cb, "wrap");
 
 		final JTextField destinationTextField = new JTextField(50);
 		destinationTextField.setText(Base.preferences.get("dualstrusionwindow.destfile", ""));
@@ -356,11 +353,15 @@ public class DualStrusionWindow extends JFrame{
 				if(leftStl != null)
 				{
 					leftGcode = new File(replaceExtension(leftStl.getAbsolutePath(), "gcode"));
+					Base.logger.log(Level.SEVERE,
+						"Starting stlToGcode(LEFT)\n");
 					stlToGcode(leftStl, leftGcode, ToolheadAlias.LEFT, DualStrusionWindow.this.type);
 				}
 				if(rightStl != null)
 				{
 					rightGcode = new File(replaceExtension(rightStl.getAbsolutePath(), "gcode"));
+					Base.logger.log(Level.SEVERE,
+						"Starting stlToGcode(RIGHT)\n");
 					stlToGcode(rightStl, rightGcode, ToolheadAlias.RIGHT, DualStrusionWindow.this.type);
 				}
 
@@ -422,31 +423,105 @@ public class DualStrusionWindow extends JFrame{
 		
 		return panel;
 	}
-	
+
+	private class myListener implements GeneratorListener {
+		boolean left;
+		ToolpathGenerator gen;
+		myListener(boolean x, ToolpathGenerator g)
+		{
+			left = x;
+			gen = g;
+		}
+		@Override
+		public void updateGenerator(GeneratorEvent evt) {
+			// If config dialog closed and success == false
+			// config canceled
+			if("Config Done".equals(evt.getMessage()) &&
+				(!((SkeinforgeGenerator)evt.getSource()).configSuccess))
+			{
+					System.err.println("DualStrusionWindow 466 aborting");
+					abort("Skeinforge generation canceled.");
+			}
+		}
+		@Override
+		public void generationComplete(GeneratorEvent evt) {
+			if (evt.getCompletion() == Completion.FAILURE)
+			{
+				System.err.println("DualStrusionWindow 471 aborting");
+				abort("SkeinForge returned FAILURE - Aborting dualstrusion generation");
+				return;
+			}
+			else if (failure)
+			{
+				System.err.println("DualStrusionWindow 477 aborting");
+				abort("SkeinForge returned FAILURE - Aborting dualstrusion generation");
+				return;
+			}
+			if (gen instanceof SkeinforgeGenerator)
+			{
+				SkeinforgeGenerator sfg = (SkeinforgeGenerator)gen;
+				if(left)
+				{
+					Base.preferences.put(
+						"dualstrusionwindow.leftProfile",
+						sfg.getProfile().getFullPath());
+				}
+				else
+				{
+					Base.preferences.put(
+						"dualstrusionwindow.rightProfile",
+						sfg.getProfile().getFullPath());
+				}
+			}
+			completed.countDown();
+			if(completed.getCount() == 0)
+			{
+				combineGcodes();
+			}
+		}
+	}
+
 	/*
 	 * run the selected toolpath generator to convert the stl to gcode,
 	 * skeinforge takes special pre- and post- processing
 	 */
 	private void stlToGcode(File stl, File gcode, ToolheadAlias tool, MachineType machineType)
 	{
+		String lastProfile;
+		SkeinforgePostProcessor spp = null;
+		boolean isLeft = (tool == ToolheadAlias.LEFT);
 		try{
 			if(!gcode.exists())
 				gcode.createNewFile();
 
 			String title = "STL to GCode ";
-			if(tool == ToolheadAlias.LEFT)
+			if(isLeft)
+			{
 				title += "(Left) ";
-			if(tool == ToolheadAlias.RIGHT)
+				lastProfile =
+					Base.preferences.get("dualstrusionwindow.leftProfile", "");
+			}
+			else
+			{
 				title += "(Right) ";
+				lastProfile =
+					Base.preferences.get("dualstrusionwindow.rightProfile", "");
+			}
 			title += "Progress";
 			
 			final JFrame progress = new JFrame(title);
-			final ToolpathGenerator gen = ToolpathGeneratorFactory.createSelectedGenerator();
+			ToolpathGenerator gen =
+				 ToolpathGeneratorFactory.createSelectedGenerator();
 
 			if(gen instanceof SkeinforgeGenerator)
 			{
-				SkeinforgePostProcessor spp = ((SkeinforgeGenerator)gen).getPostProcessor();
-				
+				SkeinforgeGenerator sfg = (SkeinforgeGenerator)gen;
+				sfg.dualStrusion = true;
+				if (!lastProfile.isEmpty())
+				{
+					sfg.setProfile(lastProfile);
+				}
+				spp = sfg.getPostProcessor();
 				spp.enableDualstrusion();
 				spp.setMachineType(machineType);
 				spp.setAddProgressUpdates(false);
@@ -455,34 +530,7 @@ public class DualStrusionWindow extends JFrame{
 			final Build b = new Build(stl.getAbsolutePath());
 			final ToolpathGeneratorThread tgt = new ToolpathGeneratorThread(progress, gen, b);
 
-			tgt.addListener(new GeneratorListener(){
-				@Override
-				public void updateGenerator(GeneratorEvent evt) {
-					// If config dialog closed and success == false
-					// config canceled
-					if("Config Done".equals(evt.getMessage()) &&
-						(!((SkeinforgeGenerator)evt.getSource()).configSuccess))
-					{
-							abort("Skeinforge generation canceled.");
-					}
-				}
-
-				@Override
-				public void generationComplete(GeneratorEvent evt) {
-					if(evt.getCompletion() == Completion.FAILURE || failure)
-					{
-						abort("SkeinForge returned FAILURE - Aborting dualstrusion generation");
-						return;
-					}
-					
-					completed.countDown();
-					if(completed.getCount() == 0)
-					{
-						combineGcodes();
-					}
-				}
-				
-			});
+			tgt.addListener(new myListener(isLeft, gen));
 			if(tool == ToolheadAlias.LEFT)
 				tgt.setDualStrusionSupportFlag(true, 200, 300, stl.getName());
 			else
@@ -531,7 +579,7 @@ public class DualStrusionWindow extends JFrame{
 			return;
 		}
 		
-		DualStrusionConstruction dsConstruction = new DualStrusionConstruction(leftGcode, rightGcode, startSource, endSource, type, uWipe);
+		DualStrusionConstruction dsConstruction = new DualStrusionConstruction(leftGcode, rightGcode, type, uWipe);
 		dsConstruction.combine();
 		dsConstruction.getCombinedFile().writeToFile(dest);
 		

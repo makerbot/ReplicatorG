@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -39,7 +40,7 @@ public class InfoPanel extends JFrame {
 		infoArea.setBorder(BorderFactory.createEmptyBorder());
 		infoArea.setBackground(getBackground());
 	
-		add(infoArea);
+		add(new JScrollPane(infoArea));
 		pack();
 		
 		infoArea.setText(getMachineInfo());

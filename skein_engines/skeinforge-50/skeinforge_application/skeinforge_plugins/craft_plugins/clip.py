@@ -91,7 +91,7 @@ class ClipRepository:
 		"Set the default settings, execute title & settings fileName."
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.clip.html', self)
 		self.fileNameInput = settings.FileNameInput().getFromFileName(fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Clip', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Clip')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.clip.html')
 		self.activateClip = settings.BooleanSetting().getFromValue('Activate Clip', self, True)
 		self.clipOverEdgeWidth = settings.FloatSpin().getFromValue(0.1, 'Clip Over Perimeter Width (ratio):', self, 0.8, 0.5)
 		self.maximumConnectionDistanceOverEdgeWidth = settings.FloatSpin().getFromValue(1.0, 'Maximum Connection Distance Over Perimeter Width (ratio):', self, 20.0, 10.0)

@@ -119,21 +119,21 @@ public class ToolpathGeneratorThread extends Thread {
 				}});
 			}
 		}
-		Base.logger.info("Beginning toolpath generation.");
+		Base.logger.info("Beginning toolpath generation. " + name);
 
 		try {
 			BuildCode code = generator.generateToolpath();
-			//Base.logger.severe("Toolpath generation POST generateToolpath!");
+			//Base.logger.severe("Toolpath generation POST generateToolpath! " + name);
 			if (code != null) {
 				build.reloadCode();
+				//Base.logger.severe("Toolpath generation complete! " + name);
 				generator.emitCompletion(GeneratorListener.Completion.SUCCESS);
-				//Base.logger.severe("Toolpath generation complete!");
 			} else {
+				Base.logger.severe("Toolpath generation failed (returned null)! " + name);
 				generator.emitCompletion(GeneratorListener.Completion.FAILURE);
-				//Base.logger.severe("Toolpath generation failed!" + code);
 			}
 		} catch (Exception e) {
-			//Base.logger.severe("Toolpath generation failed!" + e);
+			Base.logger.severe("Toolpath generation failed! " + name + " " + e);
 			generator.emitCompletion(GeneratorListener.Completion.FAILURE);
 		} finally {
 			if (progressDialog != null) {

@@ -232,6 +232,8 @@ ToolpathGenerator.GeneratorListener
 
 	public EstimationThread estimationThread;
 
+	private Font editorFont =
+		Base.getFontPref("editor.font","Monospaced,plain,12");
 	JMenuItem saveMenuItem;
 	JMenuItem saveAsMenuItem;
 	JMenuItem generateItem;
@@ -246,7 +248,6 @@ ToolpathGenerator.GeneratorListener
 //	JMenuItem editStartItem;
 //	JMenuItem editEndItem;
 	JMenu changeToolheadMenu = new JMenu("Swap Toolhead in .gcode");
-
 	
 	JMenu machineMenu;
 	MachineMenuListener machineMenuListener;
@@ -298,7 +299,6 @@ ToolpathGenerator.GeneratorListener
 
 	public MainWindow() {
 		super(WINDOW_TITLE);
-		setLocationByPlatform(true);
 		MRJApplicationUtils.registerAboutHandler(this);
 		MRJApplicationUtils.registerPrefsHandler(this);
 		MRJApplicationUtils.registerQuitHandler(this);
@@ -392,9 +392,7 @@ ToolpathGenerator.GeneratorListener
 			splitPane.setDividerSize(dividerSize);
 		}
 
-		splitPane.setPreferredSize(new Dimension(600,600));
 		pane.add(splitPane,"growx,growy,shrinkx,shrinky");
-		pack();
 
 		//		textarea.setTransferHandler(new TransferHandler() {
 		//			private static final long serialVersionUID = 2093323078348794384L;
@@ -470,6 +468,11 @@ ToolpathGenerator.GeneratorListener
 		if (Base.openedAtStartup != null) {
 			handleOpen2(Base.openedAtStartup);
 		} else {
+			int width =
+				Base.preferences.getInt("replicatorg.last.window.width", 600);
+			int height =
+				Base.preferences.getInt("replicatorg.last.window.height", 600);
+			setSize(width, height);
 			// last sketch that was in use, or used to launch the app
 			final String prefName = "replicatorg.initialopenbehavior";
 			int ordinal = Base.preferences.getInt(prefName, InitialOpenBehavior.OPEN_LAST.ordinal());
@@ -535,9 +538,7 @@ ToolpathGenerator.GeneratorListener
 
 		// apply changes to the font size for the editor
 		// TextAreaPainter painter = textarea.getPainter();
-		painter.setFont(Base.getFontPref("editor.font","Monospaced,plain,10"));
-		// Font font = painter.getFont();
-		// textarea.getPainter().setFont(new Font("Courier", Font.PLAIN, 36));
+		painter.setFont(Base.getFontPref("editor.font","Monospaced,plain,12"));
 	}
 
 	/**
@@ -549,10 +550,8 @@ ToolpathGenerator.GeneratorListener
 
 		// window location information
 		Rectangle bounds = getBounds();
-		Base.preferences.putInt("last.window.x", bounds.x);
-		Base.preferences.putInt("last.window.y", bounds.y);
-		Base.preferences.putInt("last.window.width", bounds.width);
-		Base.preferences.putInt("last.window.height", bounds.height);
+		Base.preferences.putInt("replicatorg.last.window.width", bounds.width);
+		Base.preferences.putInt("replicatorg.last.window.height", bounds.height);
 
 		// last sketch that was in use
 		// Preferences.set("last.sketch.name", sketchName);
@@ -739,12 +738,13 @@ ToolpathGenerator.GeneratorListener
 		if (names.isEmpty()) {
 			// Be aware that there is code in machineStateChanged that relies on this string
 			// I know it's a hack, but it works
-			JMenuItem item = new JMenuItem("No serial ports detected");
+			JMenuItem item =
+				newJMenuItem("No serial ports detected");
 			item.setEnabled(false);
 			serialMenu.add(item);
 		}
 		serialMenu.addSeparator();
-		JMenuItem item = new JMenuItem("Rescan serial ports");
+		JMenuItem item = newJMenuItem("Rescan serial ports");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				reloadSerialMenu();
@@ -778,7 +778,7 @@ ToolpathGenerator.GeneratorListener
 			for (String fileName : mruList) {
 				String entry = Integer.toString(index) + ". "
 				+ fileName.substring(fileName.lastIndexOf('/') + 1);
-				JMenuItem item = new JMenuItem(entry, KeyEvent.VK_0 + index);
+				JMenuItem item = newJMenuItem(entry, KeyEvent.VK_0 + index);
 				item.addActionListener(new FileOpenActionListener(fileName));
 				mruMenu.add(item);
 				index = index + 1;
@@ -835,7 +835,7 @@ ToolpathGenerator.GeneratorListener
 		menu.add(buildExamplesMenu()); 
 		menu.add(buildScriptsMenu()); 
 
-		JMenuItem resetParamsItem = new JMenuItem("Reset all preferences");
+		JMenuItem resetParamsItem = newJMenuItem("Reset all preferences");
 		resetParamsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				resetPreferences();
@@ -876,7 +876,7 @@ ToolpathGenerator.GeneratorListener
 		JMenuItem item;
 		JMenu menu = new JMenu("Thingiverse");
 		
-		item = new JMenuItem("What's New?");
+		item = newJMenuItem("What's New?");
 		item.addActionListener( new ActionListener(){
 			//do bare bones launch
 			@Override
@@ -886,7 +886,7 @@ ToolpathGenerator.GeneratorListener
 		});
 		menu.add(item);
 		
-		item = new JMenuItem("What's Popular?");
+		item = newJMenuItem("What's Popular?");
 		item.addActionListener( new ActionListener(){
 			//do bare bones launch
 			@Override
@@ -896,7 +896,7 @@ ToolpathGenerator.GeneratorListener
 		});
 		menu.add(item);
 		
-		item = new JMenuItem("Dual Extrusion Models!");
+		item = newJMenuItem("Dual Extrusion Models!");
 		item.addActionListener( new ActionListener(){
 			//do bare bones launch
 			@Override
@@ -933,7 +933,7 @@ ToolpathGenerator.GeneratorListener
 		JMenuItem item;
 		JMenu menu = new JMenu("Help");
 		
-		item = new JMenuItem("Offline Documentation");
+		item = newJMenuItem("Offline Documentation");
 		item.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -952,7 +952,7 @@ ToolpathGenerator.GeneratorListener
 		});
 		menu.add(item);
 		
-		item = new JMenuItem("Supported GCodes");
+		item = newJMenuItem("Supported GCodes");
 		item.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -1009,7 +1009,7 @@ ToolpathGenerator.GeneratorListener
 			if (m.matches()) {
 				try {
 					FileOpenActionListener l = new FileOpenActionListener(path.getCanonicalPath());
-					JMenuItem item = new JMenuItem(path.getName());
+					JMenuItem item = newJMenuItem(path.getName());
 					item.addActionListener(l);
 					return item;
 				} catch (IOException ioe) { return null; }
@@ -1024,8 +1024,8 @@ ToolpathGenerator.GeneratorListener
 		JMenuItem m = buildMenuFromPath(examplesDir,p);
 		if(m == null) {
 			JMenuItem m2 = new JMenu("Examples");
-			m2.add(new JMenuItem("No example dirs found."));
-			m2.add(new JMenuItem("Check if this dir exists:" + Base.getApplicationFile("examples")));
+			m2.add(newJMenuItem("No example dirs found."));
+			m2.add(newJMenuItem("Check if this dir exists:" + Base.getApplicationFile("examples")));
 			return m2;
 		} else {
 			m.setText("Examples");
@@ -1039,8 +1039,8 @@ ToolpathGenerator.GeneratorListener
 		JMenuItem m = buildMenuFromPath(examplesDir,p);
 		if(m == null) {
 			JMenuItem m2 = new JMenu("Scripts");
-			m2.add(new JMenuItem("No scripts found."));
-			m2.add(new JMenuItem("Check if this dir exists:" + Base.getApplicationFile("scripts")));
+			m2.add(newJMenuItem("No scripts found."));
+			m2.add(newJMenuItem("Check if this dir exists:" + Base.getApplicationFile("scripts")));
 			return m2;
 		} else {
 			m.setText("Scripts");
@@ -1245,10 +1245,13 @@ ToolpathGenerator.GeneratorListener
 		return menu;
 	}
 
-	JMenuItem onboardParamsItem = new JMenuItem("Onboard Preferences...");
+	JMenuItem onboardParamsItem =
+		newJMenuItem("Onboard Preferences...");
 //	JMenuItem toolheadIndexingItem = new JMenuItem("Set Toolhead Index...");
-	JMenuItem realtimeControlItem = new JMenuItem("Open real time controls window...");
-	JMenuItem infoPanelItem = new JMenuItem("Machine information...");
+	JMenuItem realtimeControlItem =
+		newJMenuItem("Open real time controls window...");
+	JMenuItem infoPanelItem =
+		newJMenuItem("Machine information...");
 	JMenuItem preheatItem;
 
 	protected JMenu buildMachineMenu() {
@@ -1300,7 +1303,7 @@ ToolpathGenerator.GeneratorListener
 			menu.add(realtimeControlItem);
 		}
 
-		item = new JMenuItem("Upload new firmware...");
+		item = newJMenuItem("Upload new firmware...");
 		item.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				FirmwareUploader.startUploader(MainWindow.this);
@@ -1317,7 +1320,7 @@ ToolpathGenerator.GeneratorListener
 		infoPanelItem.setVisible(true);
 		menu.add(infoPanelItem);
 		
-		preheatItem = new JMenuItem("preheat Not Set");
+		preheatItem = newJMenuItem("preheat Not Set");
 		preheatItem.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -1701,7 +1704,14 @@ ToolpathGenerator.GeneratorListener
 	/**
 	 * Convenience method, see below.
 	 */
-	static public JMenuItem newJMenuItem(String title, int what) {
+	public JMenuItem newJMenuItem(String title) {
+		return newJMenuItem(title, 0, false);
+	}
+
+	/**
+	 * Convenience method, see below.
+	 */
+	public JMenuItem newJMenuItem(String title, int what) {
 		return newJMenuItem(title, what, false);
 	}
 
@@ -1711,12 +1721,13 @@ ToolpathGenerator.GeneratorListener
 	 * that would require a five line helper function just to set the command
 	 * key for a menu item.
 	 */
-	static public JMenuItem newJMenuItem(String title, int what, boolean shift) {
+	public JMenuItem newJMenuItem(String title, int what, boolean shift) {
 		JMenuItem menuItem = new JMenuItem(title);
 		int modifiers = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		if (shift)
 			modifiers |= ActionEvent.SHIFT_MASK;
-		menuItem.setAccelerator(KeyStroke.getKeyStroke(what, modifiers));
+		if (what != 0)
+			menuItem.setAccelerator(KeyStroke.getKeyStroke(what, modifiers));
 		return menuItem;
 	}
 
@@ -2719,15 +2730,10 @@ ToolpathGenerator.GeneratorListener
 			
 			// this is stuff that DualStrusionConstruction needs, and until there's a better way to get it there...
 			MachineType type = machineLoader.getMachineInterface().getMachineType();
-			MutableGCodeSource startCode = 
-					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getDualstartBookendCode());
-			MutableGCodeSource endCode = 
-					new MutableGCodeSource(machineLoader.getMachineInterface().getModel().getEndBookendCode());
-			
 			if(getBuild().getCode() != null)
-				dsw = new DualStrusionWindow(type, startCode, endCode, getBuild().getMainFilePath());
+				dsw = new DualStrusionWindow(type, getBuild().getMainFilePath());
 			else
-				dsw = new DualStrusionWindow(type, startCode, endCode);
+				dsw = new DualStrusionWindow(type);
 			dsw.setVisible(true);
 		}
 
@@ -3190,7 +3196,7 @@ ToolpathGenerator.GeneratorListener
 	 * Clean up files and store UI preferences on shutdown.  This is called by
 	 * the shutdown hook and will be run in virtually all shutdown scenarios.
 	 * Because it is used in a shutdown hook, there is no reason to call this
-	 * method explicit.y
+	 * method explicitly
 	 */
 	public void onShutdown() {
 
@@ -3305,7 +3311,7 @@ ToolpathGenerator.GeneratorListener
 		public TextAreaPopup() {
 			JMenuItem item;
 
-			cutItem = new JMenuItem("Cut");
+			cutItem = newJMenuItem("Cut");
 			cutItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.cut();
@@ -3314,7 +3320,7 @@ ToolpathGenerator.GeneratorListener
 			});
 			this.add(cutItem);
 
-			copyItem = new JMenuItem("Copy");
+			copyItem = newJMenuItem("Copy");
 			copyItem.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.copy();
@@ -3322,7 +3328,7 @@ ToolpathGenerator.GeneratorListener
 			});
 			this.add(copyItem);
 
-			item = new JMenuItem("Paste");
+			item = newJMenuItem("Paste");
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.paste();
@@ -3331,7 +3337,7 @@ ToolpathGenerator.GeneratorListener
 			});
 			this.add(item);
 
-			item = new JMenuItem("Select All");
+			item = newJMenuItem("Select All");
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					textarea.selectAll();

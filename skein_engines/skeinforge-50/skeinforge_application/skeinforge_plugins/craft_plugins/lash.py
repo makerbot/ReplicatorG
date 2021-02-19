@@ -87,7 +87,7 @@ class LashRepository:
 		"Set the default settings, execute title & settings fileName."
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.lash.html', self)
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Lash', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Lash')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.lash.html')
 		self.activateLash = settings.BooleanSetting().getFromValue('Activate Lash', self, False )
 		self.xBacklash = settings.FloatSpin().getFromValue( 0.1, 'X Backlash (mm):', self, 0.5, 0.2 )
 		self.yBacklash = settings.FloatSpin().getFromValue( 0.1, 'Y Backlash (mm):', self, 0.5, 0.3 )

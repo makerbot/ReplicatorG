@@ -41,8 +41,9 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	}
 	
 	public boolean configSuccess = false;
+	public boolean dualStrusion = false;
 	ConfigurationDialog cd;
-	String profile = null;
+	private Profile profile = null;
 	List <SkeinforgePreference> preferences;
 	
 	BuildCode output;
@@ -50,6 +51,22 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 	
 	public SkeinforgeGenerator() {
 		postprocess = new SkeinforgePostProcessor(this);
+	}
+
+	public void setProfile(Profile p) {
+		profile = p;
+		if (!dualStrusion)
+		{
+			Base.preferences.put("lastGeneratorProfileSelected",p.toString());
+		}
+	}
+
+	public void setProfile(String s) {
+		setProfile(new Profile(s));
+	}
+
+	public Profile getProfile() {
+		return profile;
 	}
 
 	public boolean runSanityChecks() {
@@ -75,16 +92,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		return (result == JOptionPane.OK_OPTION);
 	}
 	
-	static public String getSelectedProfile() {
-		String name = Base.preferences.get("replicatorg.skeinforge.profile", "");
-		return name;
-	}
-
-	static public void setSelectedProfile(String name) {
-		Base.preferences.put("replicatorg.skeinforge.profile", name);
-	}
-
-	static class Profile implements Comparable<Profile> {
+	public static class Profile implements Comparable<Profile> {
 		private String fullPath;
 		private String name;
 		// targetMachines is a filter that will allow this profile to only be show for specified machines
@@ -469,22 +477,39 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		File newProfDir = new File(getUserProfilesDir(),
 				newName);
 		File oldProfDir = new File(originalProfile.getFullPath());
+		String oldName = oldProfDir.getName();
 		try {
 			Base.copyDir(oldProfDir, newProfDir);
-			Profile newProf = new Profile(newProfDir.getAbsolutePath());
-			editProfile(newProf);
-			return newProf;
 		} catch (IOException ioe) {
 			Base.logger.log(Level.SEVERE,
 					"Couldn't copy directory", ioe);
+			return null;
 		}
-		return null;
+		String subDir = newProfDir.getAbsolutePath() + "/profiles/";
+		File f = new File(subDir + "extrusion.csv");
+		if (f.exists()) {
+			try {
+				String s = Base.loadFile(f);
+				Base.saveFile(s.replace(oldName, newName), f);
+			} catch (IOException ioe) {
+				Base.logger.log(Level.SEVERE,
+						"Couldn't edit extrusion.csv");
+				// We still created the profile, so return it
+			}
+		}
+		subDir = subDir + "extrusion/";
+		f = new File(subDir + oldName);
+		f.renameTo(new File(subDir + newName)); // no IOException possible
+		Profile newProf = new Profile(newProfDir.getAbsolutePath());
+		editProfile(newProf);
+		return newProf;
 	}
 	
 	public void editProfile(Profile profile) {
 		String[] arguments = { PythonUtils.getPythonPath(), "skeinforge.py",
-				"-p", profile.getFullPath() };
+				"-p", profile.getFullPath()};
 		ProcessBuilder pb = new ProcessBuilder(arguments);
+		pb.inheritIO();
 		File skeinforgeDir = getSkeinforgeDir();
 		pb.directory(skeinforgeDir);
 		Process process = null;
@@ -547,6 +572,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 			}
 		} catch (IOException ioe) {
 			Base.logger.log(Level.SEVERE, "Could not run skeinforge.", ioe);
+			Base.logger.log(Level.SEVERE, ioe.toString());
 		} catch (InterruptedException e) {
 			// We are most likely shutting down, or the process has been
 			// manually aborted.
@@ -579,7 +605,7 @@ public abstract class SkeinforgeGenerator extends ToolpathGenerator {
 		List<String> arguments = new LinkedList<String>();
 		// The -u makes python output unbuffered. Oh joyous day.
 		String[] baseArguments = { PythonUtils.getPythonPath(), "-u",
-				"skeinforge.py", "-p", profile };
+				"skeinforge.py", "-p", profile.getFullPath() };
 		for (String arg : baseArguments) {
 			arguments.add(arg);
 		}

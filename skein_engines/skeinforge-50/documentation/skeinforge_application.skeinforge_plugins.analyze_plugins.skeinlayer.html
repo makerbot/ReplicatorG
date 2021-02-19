@@ -38,6 +38,7 @@ Skeinlayer is derived from Nophead's preview script.  The extruded lines are in 
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Viewpoint Move">Viewpoint Move</a><br />
 &nbsp;&nbsp;<a href="#Numeric Pointer">Numeric Pointer</a><br />
 &nbsp;&nbsp;<a href="#Scale">Scale</a><br />
+&nbsp;&nbsp;<a href="#FontScaleFactor">Font scale factor</a><br />
 &nbsp;&nbsp;<a href="#Screen Inset">Screen Inset</a><br />
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Screen Horizontal Inset">Screen Horizontal Inset</a><br />
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Screen Vertical Inset">Screen Vertical Inset</a><br />
@@ -133,9 +134,19 @@ Default is ten.<br>
  <br>
 The scale setting is the scale of the image in pixels per millimeter, the higher the number, the greater the size of the display.<br>
  <br>
-The zoom in mouse tool will zoom in the display at the point where the mouse was clicked, increasing the scale by a factor of two.  The zoom out tool will zoom out the display at the point where the mouse was clicked, decreasing the scale by a factor of two.<br>
- <br>
-<a name="Screen Inset" id="Screen Inset"></a><h3>Screen Inset</h3>
+The zoom in mouse tool will zoom in the display at the point where the mouse was clicked, increasing the scale by a factor of two.  The zoom out tool will zoom out the display at the point where the mouse was clicked, decreasing the scale by a factor of two.<br><br>
+<a name="FontScaleFactor" id="FontScaleFactor"></a><h3>Font scale factor</h3>
+
+Default is 2.0<br><br>
+
+This adjusts for the scaling between the text sizes reported by the font
+software and the number of screen pixels needed. If the numbers on the scale
+ruler at the left of the picture displayed by running skeinlayer look a bit
+crowded, increase it a bit: if there is too much empty space,
+decrease it a bit. The default of 2.0 should be about right
+for a 72 dots per inch monitor.
+<br><br>
+<a name="Screen Inset" id="Screen Inset"></a><h3>Screen Inset</h3></h3>
 
 <a name="Screen Horizontal Inset" id="Screen Horizontal Inset"></a><h4>Screen Horizontal Inset</h4>
 

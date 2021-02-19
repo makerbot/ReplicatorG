@@ -24,5 +24,5 @@ M101 (Extruder on, forward)
 G04 P5000 (Wait t/1000 seconds)
 M103 (Extruder off)
 (**** end pre-wipe commands ****)
-(**** end of start.txt ****)
-
+(Don't remove the </layer> in the next line - it's needed for dual extrusion.)
+(</layer> **** end of start.gcode ****)

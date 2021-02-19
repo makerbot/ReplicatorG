@@ -361,7 +361,7 @@ class FilletRepository:
 		"Set the default settings, execute title & settings fileName."
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.fillet.html', self )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File to be Filleted', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Fillet')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.fillet.html')
 		self.activateFillet = settings.BooleanSetting().getFromValue('Activate Fillet', self, False )
 		self.filletProcedureChoiceLabel = settings.LabelDisplay().getFromName('Fillet Procedure Choice: ', self )
 		filletLatentStringVar = settings.LatentStringVar()

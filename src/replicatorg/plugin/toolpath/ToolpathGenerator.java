@@ -104,9 +104,20 @@ public abstract class ToolpathGenerator {
 	}
 	
 	public void emitCompletion(GeneratorListener.Completion completion) {
+		if (completion == Completion.FAILURE)
+		{
+			Base.logger.severe("emitCompletion(Completion.FAILURE)");
+		}
 		for (GeneratorListener listener : listeners) {
-			Base.logger.finest("emitCompletion! sent to " + listener.toString());
-			listener.generationComplete(new GeneratorEvent(this, null, completion));
+			if (listener == null)
+			{
+				Base.logger.severe("null listener");
+			}
+			else
+			{
+				Base.logger.finest("emitCompletion! sent to " + listener.toString());
+				listener.generationComplete(new GeneratorEvent(this, null, completion));
+			}
 		}
 	}
 

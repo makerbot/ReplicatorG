@@ -181,7 +181,7 @@ class SynopsisRepository:
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.analyze_plugins.synopsis.html', self )
 		self.activateSynopsis = settings.BooleanSetting().getFromValue('Activate Synopsis', self, False )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( [ ('Gcode text files', '*.gcode') ], 'Open File to Write Synopsis for', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Synopsis')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.analyze_plugins.synopsis.html')
 		self.exportProfileAsCSVFile = settings.BooleanSetting().getFromValue('Export Profile As CSV File', self, True)
 		self.exportProfileAsZipFile = settings.BooleanSetting().getFromValue('Export Profile As Zip File', self, False)
 		self.executeTitle = 'Synopsis'

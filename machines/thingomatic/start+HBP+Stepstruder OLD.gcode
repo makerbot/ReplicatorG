@@ -15,4 +15,5 @@ M132 X Y Z (Recall stored home offsets for XYZ)
 (**** end homing ****)
 M6 T0
 M108 R3.0 T0
-(**** end of start.gcode ****)
+(Don't remove the </layer> in the next line - it's needed for dual extrusion.)
+(</layer> **** end of start.gcode ****)

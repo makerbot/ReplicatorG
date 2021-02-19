@@ -93,7 +93,7 @@ class ClairvoyanceRepository:
 	def __init__(self):
 		'Set the default settings, execute title & settings fileName.'
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.analyze_plugins.clairvoyance.html', self)
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Clairvoyance')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.analyze_plugins.clairvoyance.html')
 		self.activateClairvoyance = settings.BooleanSetting().getFromValue('Activate Clairvoyance', self, False)
 		settings.LabelSeparator().getFromRepository(self)
 		self.fileNameInput = settings.FileNameInput().getFromFileName([('Gcode text files', '*.gcode')], 'Open File to Generate Clairvoyances for', self, '')

@@ -13,10 +13,13 @@
 <a href="skeinforge_application.skeinforge_plugins.craft_plugins.dwindle.html">Previous</a> / <a href="skeinforge_application.skeinforge_plugins.craft_plugins.export_plugins.binary_16_byte.html">Next</a> / <a href="contents.html">Contents</a>
 </p>
 <p><tt><br>
-Export is a craft tool to pick an export plugin, add information to the file name, and delete comments.<br>
+Export is a craft tool to pick an export plugin, add information to the file name, and delete selected comments.<br>
  <br>
-The export manual page is at:<br>
+The original export manual page is at:<br>
+This page described the modified version in this release of ReplicatorG.<br>
+<br>
 <a href="http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Export">http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Export</a><br>
+This page describes the modified version in this release of ReplicatorG.<br>
  <br>
 <br />
 <a href="#Operation">Operation</a><br />
@@ -26,10 +29,17 @@ The export manual page is at:<br>
 &nbsp;&nbsp;<a href="#Add Timestamp Extension">Add Timestamp Extension</a><br />
 &nbsp;&nbsp;<a href="#Also Send Output To">Also Send Output To</a><br />
 &nbsp;&nbsp;<a href="#Analyze Gcode">Analyze Gcode</a><br />
-&nbsp;&nbsp;<a href="#Comment Choice">Comment Choice</a><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Do Not Delete Comments">Do Not Delete Comments</a><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete Crafting Comments">Delete Crafting Comments</a><br />
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete All Comments">Delete All Comments</a><br />
+&nbsp;&nbsp;<a href="#Comment Deletion Choices">Comment Deletion Choices</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete &LT;keep&GT; Comments">Delete &LT;keep&GT; Comments</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete Trace Comments">Delete Trace Comments</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete &LT;layer&GT; Comments">Delete &LT;layer&GT; Comments</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete Settings Comments">Delete Settings Comments</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete Other Initialisation Comments">Delete Other Initialisation Comments</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete Other Preface Comments">Delete Other Preface Comments</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete Other Crafting Comments">Delete Other Crafting Comments</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete Other Tagged Comments">Delete Other Tagged Comments</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete Other Starred Comments">Delete Other Starred Comments</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Delete All Other Comments">Delete All Other Comments</a><br />
 &nbsp;&nbsp;<a href="#Export Operations">Export Operations</a><br />
 &nbsp;&nbsp;<a href="#File Extension">File Extension</a><br />
 &nbsp;&nbsp;<a href="#Name of Replace File">Name of Replace File</a><br />
@@ -92,22 +102,73 @@ Default is on.<br>
  <br>
 When selected, the penultimate gcode will be sent to the analyze plugins to be analyzed and viewed.<br>
  <br>
-<a name="Comment Choice" id="Comment Choice"></a><h3>Comment Choice</h3>
-
-Default is 'Delete All Comments'.<br>
+<a name="Comment Deletion Choices" id="Comment Deletion Choices"></a><h3>Comment Deletion Choices</h3>
+This section specifies which comments, if any, should be deleted during export.<br>
  <br>
-<a name="Do Not Delete Comments" id="Do Not Delete Comments"></a><h4>Do Not Delete Comments</h4>
-
-When selected, export will not delete comments.  Crafting comments slow down the processing in many firmware types, which leads to pauses and therefore a lower quality print.<br>
+<a name="Delete &LT;keep&GT; Comments" id="Delete &LT;keep&GT; Comments"></a><h4>Delete &LT;keep&GT; Comments</h4>
+Default is unchecked.<br>
  <br>
-<a name="Delete Crafting Comments" id="Delete Crafting Comments"></a><h4>Delete Crafting Comments</h4>
 
-When selected, export will delete the time consuming crafting comments, but leave the initialization comments.  Since the crafting comments are deleted, there are no pauses during extrusion.  The remaining initialization comments provide some useful information for the analyze tools.<br>
+If checked, any preface comments starting with &LT;keep&GT; are removed. The code as shipped does not generate any &LT;keep&GT; comments, but user modifications may add some. They can be useful for recording information like the profile or version used to generate the gcode, if other comments are being deleted.
+<br>
  <br>
-<a name="Delete All Comments" id="Delete All Comments"></a><h4>Delete All Comments</h4>
+<a name="Delete Trace Comments" id="Delete Trace Comments"></a><h4>Delete Trace Comments</h4>
+Default is unchecked.<br>
+ <br>
 
-When selected, export will delete all comments.  The comments are not necessary to run a fabricator.  Some printers do not support comments at all so the safest way is choose this option.<br>
+If checked, any preface comments starting with &LT;trace&GT; are removed. The code as shipped does not generate any &LT;trace&GT; comments, but there is a debugging aid which adds some.
+<br>
  <br>
+<a name="Delete &LT;layer&GT; Comments" id="Delete &LT;layer&GT; Comments"></a><h4>Delete &LT;layer&GT; Comments</h4>
+Default is unchecked.<br>
+ <br>
+
+If checked, any preface comments starting with &LT;layer&GT; are removed. The Dual Extrusion gcode merge logic requires the &LT;layer&GT; comments to be left in, so this box should normally remain unchecked unless you have a single extruder printer and never use Dual Extrusion.
+<br>
+ <br>
+<a name="Delete Settings Comments" id="Delete Settings Comments"></a><h4>Delete Settings Comments</h4>
+Default is unchecked.<br>
+ <br>
+
+If checked, the block of comments near the start of the gcode reporting the settings used are removed.<br>
+<br>
+<a name="Delete Other Initialisation Comments" id="Delete Other Initialisation Comments"></a><h4>Delete Other Initialisation Comments</h4>
+Default is unchecked.<br>
+ <br>
+
+If checked, the block of comments near the start of the gcode
+between (&LT;extruderInitialization&GT;) and (&LT;/extruderInitialization&GT;), apart from any described above, are removed.<br>
+<br>
+<a name="Delete Other Preface Comments" id="Delete Other Preface Comments"></a><h4>Delete Other Preface Comments</h4>
+Default is unchecked.<br>
+ <br>
+
+If checked, any preface comments [before (&LT;alteration&GT;)] not mentioned above are removed. If Alteration is not enabled, all comments are preface comments.<br>
+<br>
+<a name="Delete Other Crafting Comments" id="Delete Other Crafting Comments"></a><h4>Delete Other Crafting Comments</h4>
+Default is unchecked.<br>
+ <br>
+
+If checked, all comments between (&LT;crafting&GT;) and (&LT;/crafting&GT;), other than those described above, are removed. You will usually not want these unless you are debugging the gcode generator. &LT;layer&GT; comments <b>are</b> described above, so checking this option does not remove them unless the Delete &LT;layer&GT; Comments option is also checked.<br>
+<br>
+<a name="Delete Other Tagged Comments" id="Delete Other Tagged Comments"></a><h4>Delete Other Tagged Comments</h4>
+Default is unchecked.<br>
+ <br>
+
+If checked, all comments starting with '(&LT;', other than those described above, are removed.<br>
+<br>
+<a name="Delete Other Starred Comments" id="Delete Other Starred Comments"></a><h4>Delete Other Starred Comments</h4>
+Default is unchecked.<br>
+ <br>
+
+If checked, all comments starting with '(*', other than those described above, are removed..<br>
+<br>
+<a name="Delete All Other Comments" id="Delete All Other Comments"></a><h4>Delete All Other Comments</h4>
+Default is unchecked.<br>
+ <br>
+
+If checked, all comments  other than those described above are removed.<br>
+<br>
 <a name="Export Operations" id="Export Operations"></a><h3>Export Operations</h3>
 
 Export presents the user with a choice of the export plugins in the export_plugins folder.  The chosen plugin will then modify the gcode or translate it into another format.  There is also the "Do Not Change Output" choice, which will not change the output.  An export plugin is a script in the export_plugins folder which has the getOutput function, the globalIsReplaceable variable and if it's output is not replaceable, the writeOutput function.<br>

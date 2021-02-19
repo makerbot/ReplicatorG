@@ -372,7 +372,7 @@ public class SkeinforgePostProcessor {
 	{
 		toolheadTarget = tool;
 	}
-	
+
 	/**
 	 * sets the type of machine the code is being generated for
 	 * @param type

@@ -774,7 +774,7 @@ class FillRepository:
 		'Set the default settings, execute title & settings fileName.'
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.fill.html', self )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Fill', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Fill')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.fill.html')
 		self.activateFill = settings.BooleanSetting().getFromValue('Activate Fill', self, True)
 		settings.LabelSeparator().getFromRepository(self)
 		settings.LabelDisplay().getFromName('- Diaphragm -', self )
@@ -867,6 +867,12 @@ class FillSkein:
 		self.isJunctionWide = True
 		surroundingCarves = []
 		self.distanceFeedRate.addLine('(<layer> %s )' % rotatedLayer.z)
+		if layerIndex == 0:
+			self.distanceFeedRate.addLine('(<alterationDeleteThisPrefix/>)M104'
+			+ ' S<setting.temperature.objectFirstLayerInfillTemperature>')
+		else:
+			self.distanceFeedRate.addLine('(<alterationDeleteThisPrefix/>)M104'
+			+ ' S<setting.temperature.objectNextLayersTemperature>')
 		if layerRemainder >= int(round(self.repository.diaphragmThickness.value)):
 			for surroundingIndex in xrange(1, self.solidSurfaceThickness + 1):
 				self.addRotatedCarve(layerIndex, -surroundingIndex, reverseRotation, surroundingCarves)

@@ -44,18 +44,26 @@ The default 'Activate Temperature' checkbox is on.  When it is on, the functions
 
 <a name="Rate" id="Rate"></a><h3>Rate</h3>
 
-The default cooling rate and heating rate for the extruder were both been derived from bothacker's graph at:<br>
-<a href="http://bothacker.com/wp-content/uploads/2009/09/18h5m53s9.29.2009.png">http://bothacker.com/wp-content/uploads/2009/09/18h5m53s9.29.2009.png</a><br>
- <br>
+The default cooling rate and heating rate for the extruder were both been derived from bothacker's graph at http://fabmetheus.crsndoo.com/wiki/index.php/File:Bothacker_temperature_graph.png:
+</p>
+<table class="gallery" cellspacing="0" cellpadding="0" align="right">
+	<tr>
+		<td><div class="gallerybox" style="width: 535px;">
+			<div class="thumb" style="padding: 41px 0; width: 530px;"><div style="margin-left: auto; margin-right: auto; width: 500px;"><a href="http://fabmetheus.crsndoo.com/wiki/index.php/File:Bothacker_temperature_graph.png" class="image"><img alt="Bothacker temperature graph.png" src="http://fabmetheus.crsndoo.com/wiki/images/thumb/Bothacker_temperature_graph.png/500px-Bothacker_temperature_graph.png" width="500" height="346" /></a></div></div>
+			<div class="gallerytext">
+			</div>
+		</div></td>
+	</tr>
+</table>
 <a name="Cooling Rate" id="Cooling Rate"></a><h4>Cooling Rate</h4>
 
-Default is three degrees Celcius per second.<br>
+Default is three degrees Celsius per second.<br>
  <br>
 Defines the cooling rate of the extruder.<br>
  <br>
 <a name="Heating Rate" id="Heating Rate"></a><h4>Heating Rate</h4>
 
-Default is ten degrees Celcius per second.<br>
+Default is ten degrees Celsius per second.<br>
  <br>
 Defines the heating rate of the extruder.<br>
  <br>
@@ -63,46 +71,51 @@ Defines the heating rate of the extruder.<br>
 
 <a name="Base Temperature" id="Base Temperature"></a><h4>Base Temperature</h4>
 
-Default for ABS is two hundred degrees Celcius.<br>
+Default for ABS is two hundred degrees Celsius.<br>
  <br>
 Defines the raft base temperature.<br>
  <br>
 <a name="Interface Temperature" id="Interface Temperature"></a><h4>Interface Temperature</h4>
 
-Default for ABS is two hundred degrees Celcius.<br>
+Default for ABS is two hundred degrees Celsius.<br>
  <br>
 Defines the raft interface temperature.<br>
  <br>
 <a name="Object First Layer Infill Temperature" id="Object First Layer Infill Temperature"></a><h4>Object First Layer Infill Temperature</h4>
 
-Default for ABS is 195 degrees Celcius.<br>
+Default for ABS is 195 degrees Celsius.<br>
  <br>
 Defines the infill temperature of the first layer of the object.<br>
  <br>
 <a name="Object First Layer Perimeter Temperature" id="Object First Layer Perimeter Temperature"></a><h4>Object First Layer Perimeter Temperature</h4>
 
-Default for ABS is two hundred and twenty degrees Celcius.<br>
+Default for ABS is two hundred and twenty degrees Celsius.<br>
  <br>
 Defines the edge temperature of the first layer of the object.<br>
+Currently (version 0040) this value is ignored: the Object First Layer Infill Temperature is used instead. This may get fixed in some future version.
  <br>
 <a name="Object Next Layers Temperature" id="Object Next Layers Temperature"></a><h4>Object Next Layers Temperature</h4>
 
-Default for ABS is two hundred and thirty degrees Celcius.<br>
+Default for ABS is two hundred and thirty degrees Celsius.<br>
  <br>
 Defines the temperature of the next layers of the object.<br>
  <br>
 <a name="Support Layers Temperature" id="Support Layers Temperature"></a><h4>Support Layers Temperature</h4>
 
-Default for ABS is two hundred degrees Celcius.<br>
+Default for ABS is two hundred degrees Celsius.<br>
  <br>
 Defines the support layers temperature.<br>
  <br>
 <a name="Supported Layers Temperature" id="Supported Layers Temperature"></a><h4>Supported Layers Temperature</h4>
 
-Default for ABS is two hundred and thirty degrees Celcius.<br>
+Default for ABS is two hundred and thirty degrees Celsius.<br>
  <br>
 Defines the temperature of the supported layers of the object, those layers which are right above a support layer.<br>
  <br>
+<pre>Note: The temperatures that are use for each of the above layers is dependent on the type of polymer used and also to some extent the ambient
+temperature of the environment and the accuracy of the thermistor in the print head. Guide temperatures are given for each material and can
+be accessed via the <a href="http://fabmetheus.crsndoo.com/wiki/index.php/Polymers" title="Polymers">Polymers</a> page.
+</pre>
 <a name="Examples" id="Examples"></a><h2>Examples</h2>
 <hr>
 

@@ -339,8 +339,7 @@ class RaftRepository:
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.raft.html', self)
 		self.fileNameInput = settings.FileNameInput().getFromFileName(
 			fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Raft', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute(
-			'http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Raft')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.raft.html')
 		self.activateRaft = settings.BooleanSetting().getFromValue('Activate Raft', self, True)
 		self.addRaftElevateNozzleOrbitSetAltitude = settings.BooleanSetting().getFromValue(
 			'Add Raft, Elevate Nozzle, Orbit:', self, True)
@@ -923,7 +922,10 @@ class RaftSkein:
 			elif firstWord == '(<objectNextLayersTemperature>':
 				self.objectNextLayersTemperature = float(splitLine[1])
 			elif firstWord == '(<orbitalFeedRatePerSecond>':
-				self.orbitalFeedRatePerSecond = float(splitLine[1])
+				if float(splitLine[1]) == 0.0:
+					self.orbitalFeedRatePerSecond = 2.01
+				else:
+					self.orbitalFeedRatePerSecond = float(splitLine[1])
 			elif firstWord == '(<operatingFeedRatePerSecond>':
 				self.operatingFeedRateMinute = 60.0 * float(splitLine[1])
 				self.feedRateMinute = self.operatingFeedRateMinute

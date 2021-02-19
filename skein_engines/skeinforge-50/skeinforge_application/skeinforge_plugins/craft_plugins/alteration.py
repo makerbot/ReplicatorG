@@ -83,7 +83,9 @@ from skeinforge_application.skeinforge_utilities import skeinforge_craft
 from skeinforge_application.skeinforge_utilities import skeinforge_polyfile
 from skeinforge_application.skeinforge_utilities import skeinforge_profile
 import cStringIO
+import os
 import sys
+import time
 
 
 __author__ = 'Enrique Perez (perez_enrique@yahoo.com)'
@@ -93,7 +95,8 @@ __license__ = 'GNU Affero General Public License http://www.gnu.org/licenses/agp
 
 def getCraftedText(fileName, text='', repository=None):
 	'Alteration a gcode linear move text.'
-	return getCraftedTextFromText(archive.getTextIfEmpty(fileName, text), repository)
+	preamble = '(generated from file ' + fileName + ' )\n'
+	return preamble + getCraftedTextFromText(archive.getTextIfEmpty(fileName, text), repository)
 
 def getCraftedTextFromText(gcodeText, repository=None):
 	'Alteration a gcode linear move text.'
@@ -145,7 +148,7 @@ class AlterationRepository:
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.alteration.html', self )
 		self.baseNameSynonym = 'bookend.csv'
 		self.fileNameInput = settings.FileNameInput().getFromFileName(fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Alteration', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Alteration')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.alteration.html')
 		self.activateAlteration = settings.BooleanSetting().getFromValue('Activate Alteration', self, True)
 		self.nameOfEndFile = settings.StringSetting().getFromValue('Name of End File:', self, 'end.gcode')
 		self.nameOfStartFile = settings.StringSetting().getFromValue('Name of Start File:', self, 'start.gcode')
@@ -178,11 +181,14 @@ class AlterationSkein:
 		self.lines = archive.getTextLines(gcodeText)
 		if repository.replaceVariableWithSetting.value:
 			self.setSettingDictionary()
+		self.distanceFeedRate.addLine('(generated ' +  time.ctime() + ' using profile ' +  os.path.basename(archive.globalTemporarySettingsPath) + ')')
+		print('Using start file ' + repository.nameOfStartFile.value)
 		self.addFromUpperLowerFile(repository.nameOfStartFile.value) # Add a start file if it exists.
 		self.parseInitialization()
 		for self.lineIndex in xrange(self.lineIndex, len(self.lines)):
 			line = self.lines[self.lineIndex]
 			self.distanceFeedRate.addLine(line)
+		print('Using end file ' + repository.nameOfEndFile.value)
 		self.addFromUpperLowerFile(repository.nameOfEndFile.value) # Add an end file if it exists.
 		gcodeText = self.getReplacedAlterationText()
 		if repository.removeRedundantMcode.value:

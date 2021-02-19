@@ -116,7 +116,7 @@ class OozebaneRepository:
 		"Set the default settings, execute title & settings fileName."
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.craft_plugins.oozebane.html', self )
 		self.fileNameInput = settings.FileNameInput().getFromFileName( fabmetheus_interpret.getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Oozebane', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Oozebane')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.craft_plugins.oozebane.html')
 		self.activateOozebane = settings.BooleanSetting().getFromValue('Activate Oozebane', self, False )
 		self.afterStartupDistance = settings.FloatSpin().getFromValue( 0.7, 'After Startup Distance (millimeters):', self, 1.7, 1.2 )
 		self.earlyShutdownDistance = settings.FloatSpin().getFromValue( 0.7, 'Early Shutdown Distance (millimeters):', self, 1.7, 1.2 )
@@ -167,11 +167,6 @@ class OozebaneSkein:
 			if not self.isCloseToEither( locationBack, location, self.oldLocation ):
 				self.distanceFeedRate.addLine( self.getLinearMoveWithFeedRate( feedRate, locationBack ) )
 		self.startupStepIndex += 1
-
-	def addLineSetShutdowns(self, line):
-		"Add a line and set the shutdown variables."
-		self.distanceFeedRate.addLine(line)
-		self.isShutdownEarly = True
 
 	def getActiveFeedRateRatio(self):
 		"Get the feed rate of the first active move over the operating feed rate."
@@ -238,7 +233,7 @@ class OozebaneSkein:
 				shutdownFlowRateMultiplier = self.getShutdownFlowRateMultiplier( 1.0 - distanceThreadEnd / self.earlyShutdownDistance, len( self.earlyShutdownDistances ) )
 				line = self.getLinearMoveWithFeedRate( self.feedRateMinute * shutdownFlowRateMultiplier, location )
 			self.distanceFeedRate.addLine(line)
-			return False
+			return distanceThreadEnd != None
 		segment = self.oldLocation - location
 		segmentLength = segment.magnitude()
 		distanceBack = self.earlyShutdownDistances[ self.shutdownStepIndex ] - distanceThreadEnd
@@ -249,7 +244,9 @@ class OozebaneSkein:
 			if not self.isCloseToEither( locationBack, location, self.oldLocation ):
 				line = self.getLinearMoveWithFeedRate( self.feedRateMinute, locationBack )
 			self.distanceFeedRate.addLine(line)
-			self.addLineSetShutdowns('M103')
+			self.distanceFeedRate.addLine("(<EarlyShutdownActive>)")
+			self.distanceFeedRate.addLine('M103')
+			self.isShutdownEarly = True
 			return True
 		if self.isClose( locationBack, self.oldLocation ):
 			return True
@@ -478,6 +475,7 @@ class OozebaneSkein:
 			self.distanceFromThreadEndToThreadBeginning = None
 			self.earlyStartupDistance = None
 			if self.isShutdownEarly:
+				self.distanceFeedRate.addLine("(<EarlyShutdownFinished>)")
 				self.isShutdownEarly = False
 				return
 		self.distanceFeedRate.addLine(line)

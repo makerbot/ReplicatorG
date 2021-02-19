@@ -119,7 +119,7 @@ class InterpretRepository:
 		"Set the default settings, execute title & settings fileName."
 		skeinforge_profile.addListsToCraftTypeRepository('skeinforge_application.skeinforge_plugins.analyze_plugins.interpret.html', self)
 		self.fileNameInput = settings.FileNameInput().getFromFileName( getGNUTranslatorGcodeFileTypeTuples(), 'Open File for Interpret', self, '')
-		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromAbsolute('http://fabmetheus.crsndoo.com/wiki/index.php/Skeinforge_Interpret')
+		self.openWikiManualHelpPage = settings.HelpPage().getOpenFromDocumentationSubName('skeinforge_application.skeinforge_plugins.analyze_plugins.interpret.html')
 		self.activateInterpret = settings.BooleanSetting().getFromValue('Activate Interpret', self, False )
 		self.printInterpretion = settings.BooleanSetting().getFromValue('Print Interpretion', self, False )
 		self.textProgram = settings.StringSetting().getFromValue('Text Program:', self, 'webbrowser')
